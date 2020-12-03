@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "langhooks.h"
 #include "attr-fnspec.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -610,10 +612,6 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
 {
   gasm *p;
   int size = strlen (string);
-
-  /* ASMs with labels cannot have outputs.  This should have been
-     enforced by the front end.  */
-  gcc_assert (nlabels == 0 || noutputs == 0);
 
   p = as_a <gasm *> (
         gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
@@ -1532,24 +1530,45 @@ int
 gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 {
   attr_fnspec fnspec = gimple_call_fnspec (stmt);
-
-  if (!fnspec.known_p ())
-    return 0;
-
   int flags = 0;
 
-  if (!fnspec.arg_specified_p (arg))
-    ;
-  else if (!fnspec.arg_used_p (arg))
-    flags = EAF_UNUSED;
-  else
+  if (fnspec.known_p ())
     {
-      if (fnspec.arg_direct_p (arg))
-	flags |= EAF_DIRECT;
-      if (fnspec.arg_noescape_p (arg))
-	flags |= EAF_NOESCAPE;
-      if (fnspec.arg_readonly_p (arg))
-	flags |= EAF_NOCLOBBER;
+      if (!fnspec.arg_specified_p (arg))
+	;
+      else if (!fnspec.arg_used_p (arg))
+	flags = EAF_UNUSED;
+      else
+	{
+	  if (fnspec.arg_direct_p (arg))
+	    flags |= EAF_DIRECT;
+	  if (fnspec.arg_noescape_p (arg))
+	    flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
+	  if (fnspec.arg_readonly_p (arg))
+	    flags |= EAF_NOCLOBBER;
+	}
+    }
+  tree callee = gimple_call_fndecl (stmt);
+  if (callee)
+    {
+      cgraph_node *node = cgraph_node::get (callee);
+      modref_summary *summary = node ? get_modref_function_summary (node)
+				: NULL;
+
+      if (summary && summary->arg_flags.length () > arg)
+	{
+	  int modref_flags = summary->arg_flags[arg];
+
+	  /* We have possibly optimized out load.  Be conservative here.  */
+	  if (!node->binds_to_current_def_p ())
+	    {
+	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
+		modref_flags &= ~EAF_UNUSED;
+	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
+		modref_flags &= ~EAF_DIRECT;
+	    }
+	  flags |= modref_flags;
+	}
     }
   return flags;
 }

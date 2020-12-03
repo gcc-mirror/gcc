@@ -434,15 +434,16 @@ Syntax::
 
   ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
 
-  RM_ASSERTION_KIND ::= Assert               |
-                        Static_Predicate     |
-                        Dynamic_Predicate    |
-                        Pre                  |
-                        Pre'Class            |
-                        Post                 |
-                        Post'Class           |
-                        Type_Invariant       |
-                        Type_Invariant'Class
+  RM_ASSERTION_KIND ::= Assert                    |
+                        Static_Predicate          |
+                        Dynamic_Predicate         |
+                        Pre                       |
+                        Pre'Class                 |
+                        Post                      |
+                        Post'Class                |
+                        Type_Invariant            |
+                        Type_Invariant'Class      |
+                        Default_Initial_Condition
 
   ID_ASSERTION_KIND ::= Assertions           |
                         Assert_And_Cut       |
@@ -450,6 +451,7 @@ Syntax::
                         Contract_Cases       |
                         Debug                |
                         Ghost                |
+                        Initial_Condition    |
                         Invariant            |
                         Invariant'Class      |
                         Loop_Invariant       |
@@ -458,7 +460,8 @@ Syntax::
                         Precondition         |
                         Predicate            |
                         Refined_Post         |
-                        Statement_Assertions
+                        Statement_Assertions |
+                        Subprogram_Variant
 
   POLICY_IDENTIFIER ::= Check | Disable | Ignore | Suppressible
 

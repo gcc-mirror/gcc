@@ -1650,7 +1650,6 @@ package body Ch6 is
 
          elsif Token = Tok_Comma then
             T_Semicolon;
-            Scan; -- past comma
 
          --  Special check for omitted separator
 

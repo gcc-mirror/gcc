@@ -995,7 +995,7 @@ Parse::parameter_list(bool* is_varargs)
     }
   if (mix_error)
     {
-      go_error_at(location, "invalid named/anonymous mix");
+      go_error_at(location, "mixed named and unnamed function parameters");
       saw_error = true;
     }
   if (saw_error)
@@ -1567,7 +1567,6 @@ Parse::type_spec(void*, unsigned int pragmas)
       go_error_at(this->location(),
 		  "unexpected semicolon or newline in type declaration");
       type = Type::make_error_type();
-      this->advance_token();
     }
 
   if (type->is_error_type())
@@ -2165,8 +2164,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 		  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 		  ins = uniq_idents.insert(id);
 		  if (!ins.second && !Gogo::is_sink_name(id))
-		    go_error_at(id_location, "multiple assignments to %s",
-				Gogo::message_name(id).c_str());
+		    {
+		      // Use %s to print := to avoid -Wformat-diag warning.
+		      go_error_at(id_location,
+				  "%qs repeated on left side of %s",
+				  Gogo::message_name(id).c_str(), ":=");
+		    }
 		  til.push_back(Typed_identifier(id, NULL, location));
 		}
 	      else
@@ -2219,7 +2222,11 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
   const Token* token = this->advance_token();
 
   if (!dup_name.empty())
-    go_error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
+    {
+      // Use %s to print := to avoid -Wformat-diag warning.
+      go_error_at(dup_loc, "%qs repeated on left side of %s",
+		  dup_name.c_str(), ":=");
+    }
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
@@ -4414,7 +4421,7 @@ Parse::if_stat()
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after if clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after if clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -4810,7 +4817,7 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 	    }
 	}
       if (!used)
-	go_error_at(type_switch.location, "%qs declared and not used",
+	go_error_at(type_switch.location, "%qs declared but not used",
 		    Gogo::message_name(var_name).c_str());
     }
   return statement;
@@ -5351,7 +5358,7 @@ Parse::for_stat(Label* label)
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after for clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after for clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -5422,7 +5429,7 @@ Parse::for_clause(Expression** cond, Block** post)
     *cond = NULL;
   else if (this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      go_error_at(this->location(), "missing %<{%> after for clause");
+      go_error_at(this->location(), "unexpected semicolon or newline, expecting %<{%> after for clause");
       *cond = NULL;
       *post = NULL;
       return;
@@ -5780,7 +5787,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 
   if (!token->is_string())
     {
-      go_error_at(this->location(), "import statement not a string");
+      go_error_at(this->location(), "import path must be a string");
       this->advance_token();
       return;
     }

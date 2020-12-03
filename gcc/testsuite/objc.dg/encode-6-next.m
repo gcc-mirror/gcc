@@ -2,6 +2,7 @@
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 struct Cxx {
   const struct Cxx *next;

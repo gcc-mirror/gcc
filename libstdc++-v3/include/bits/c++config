@@ -653,35 +653,36 @@ namespace std
 #define _GLIBCXX_USE_FLOAT128
 #endif
 
-#if __GNUC__ >= 7
-// Assume these are available if the compiler claims to be a recent GCC:
+#ifdef __has_builtin
+# ifdef __is_identifier
+// Intel and older Clang require !__is_identifier for some built-ins:
+#  define _GLIBCXX_HAS_BUILTIN(B) __has_builtin(B) || ! __is_identifier(B)
+# else
+#  define _GLIBCXX_HAS_BUILTIN(B) __has_builtin(B)
+# endif
+#endif
+
+#if _GLIBCXX_HAS_BUILTIN(__has_unique_object_representations)
 # define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#endif
+
+#if _GLIBCXX_HAS_BUILTIN(__is_aggregate)
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+#endif
+
+#if _GLIBCXX_HAS_BUILTIN(__builtin_is_constant_evaluated)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+#endif
+
+#if _GLIBCXX_HAS_BUILTIN(__is_same)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
+#endif
+
+#if _GLIBCXX_HAS_BUILTIN(__builtin_launder)
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# if __GNUC__ >= 9
-#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-# endif
-# if __GNUC__ >= 11
-#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
-# endif
-#elif defined(__is_identifier) && defined(__has_builtin)
-// For non-GNU compilers:
-# if ! __is_identifier(__has_unique_object_representations)
-#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-# endif
-# if ! __is_identifier(__is_aggregate)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-# endif
-# if __has_builtin(__builtin_launder)
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# endif
-# if __has_builtin(__builtin_is_constant_evaluated)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-# endif
-# if ! __is_identifier(__is_same)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
-# endif
-#endif // GCC
+#endif
+
+#undef _GLIBCXX_HAS_BUILTIN
 
 #if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 # define __glibcxx_assert_1(_Condition)		\

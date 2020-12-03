@@ -230,10 +230,8 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	  if (i == 1 && (is_gimple_call (stmt) || is_gimple_assign (stmt)))
 	    gimplify_expr (&op, &pre, NULL, is_gimple_lvalue, fb_lvalue);
 	  else if (i == 2
-		   && is_gimple_assign (stmt)
-		   && num_ops == 2
-		   && get_gimple_rhs_class (gimple_expr_code (stmt))
-		      == GIMPLE_SINGLE_RHS)
+		   && gimple_assign_single_p (stmt)
+		   && num_ops == 2)
 	    gimplify_expr (&op, &pre, NULL,
 			   rhs_predicate_for (gimple_assign_lhs (stmt)),
 			   fb_rvalue);
@@ -255,10 +253,8 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	{
 	  bool need_temp = false;
 
-	  if (is_gimple_assign (stmt)
-	      && num_ops == 2
-	      && get_gimple_rhs_class (gimple_expr_code (stmt))
-		 == GIMPLE_SINGLE_RHS)
+	  if (gimple_assign_single_p (stmt)
+	      && num_ops == 2)
 	    gimplify_expr (gimple_assign_rhs1_ptr (stmt), &pre, NULL,
 			   rhs_predicate_for (gimple_assign_lhs (stmt)),
 			   fb_rvalue);

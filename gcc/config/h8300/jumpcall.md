@@ -4,78 +4,67 @@
 
 ;; Conditional jump instructions
 
-(define_expand "cbranchqi4"
-  [(use (match_operator 0 "ordered_comparison_operator"
-         [(match_operand:QI 1 "h8300_dst_operand" "")
-          (match_operand:QI 2 "h8300_src_operand" "")]))
-   (use (match_operand 3 ""))]
-  ""
-  {
-    h8300_expand_branch (operands);
-    DONE;
-  })
-
-(define_expand "cbranchhi4"
-  [(use (match_operator 0 "ordered_comparison_operator"
-         [(match_operand:HI 1 "h8300_dst_operand" "")
-          (match_operand:HI 2 "h8300_src_operand" "")]))
-   (use (match_operand 3 ""))]
-  ""
-  {
-    h8300_expand_branch (operands);
-    DONE;
-  })
-
-(define_expand "cbranchsi4"
-  [(use (match_operator 0 "ordered_comparison_operator"
-         [(match_operand:SI 1 "h8300_dst_operand" "")
-          (match_operand:SI 2 "h8300_src_operand" "")]))
-   (use (match_operand 3 ""))]
-  ""
-  {
-    h8300_expand_branch (operands);
-    DONE;
-  })
-
-(define_insn "branch"
+(define_expand "cbranch<mode>4"
   [(set (pc)
-	(if_then_else (match_operator 2 "comparison_operator"
-		       [(cc0) (const_int 0)])
-		      (match_operand 0 "pc_or_label_operand" "")
-		      (match_operand 1 "pc_or_label_operand" "")))]
-  "operands[0] == pc_rtx || operands[1] == pc_rtx"
-{
-  if ((cc_status.flags & CC_OVERFLOW_UNUSABLE) != 0
-      && (GET_CODE (operands[2]) == GT
-	  || GET_CODE (operands[2]) == GE
-	  || GET_CODE (operands[2]) == LE
-	  || GET_CODE (operands[2]) == LT))
-    {
-      cc_status.flags &= ~CC_OVERFLOW_UNUSABLE;
-      return 0;
-    }
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		        [(match_operand:QHSI 1 "h8300_dst_operand")
+			 (match_operand:QHSI 2 "h8300_src_operand")])
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  "")
 
-  if (operands[0] != pc_rtx)
-    {
-      if (get_attr_length (insn) == 2)
-	return "b%j2	%l0";
-      else if (get_attr_length (insn) == 4)
-	return "b%j2	%l0:16";
-      else
-	return "b%k2	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
-    }
+(define_insn_and_split "*branch"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+		       [(match_operand:QHSI 1 "h8300_dst_operand" "rQ")
+			(match_operand:QHSI 2 "h8300_src_operand" "rQi")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (reg:H8cc CC_REG)
+	(compare:H8cc (match_dup 1) (match_dup 2)))
+   (set (pc)
+	(if_then_else (match_op_dup 0
+		       [(reg:H8cc CC_REG) (const_int 0)])
+		      (label_ref (match_dup 3)) (pc)))]
+  "")
+
+(define_insn "*branch_1"
+  [(set (pc)
+	(if_then_else (match_operator 1 "comparison_operator"
+		       [(reg:H8cc CC_REG) (const_int 0)])
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  "reload_completed"
+{
+  if (get_attr_length (insn) == 2)
+    return "b%j1	%l0";
+  else if (get_attr_length (insn) == 4)
+    return "b%j1	%l0:16";
   else
-    {
-      if (get_attr_length (insn) == 2)
-	return "b%k2	%l1";
-      else if (get_attr_length (insn) == 4)
-	return "b%k2	%l1:16";
-      else
-	return "b%j2	.Lh8BR%=\;jmp	@%l1\\n.Lh8BR%=:";
-    }
+    return "b%k1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
 }
- [(set_attr "type" "branch")
-   (set_attr "cc" "none")])
+ [(set_attr "type" "branch")])
+
+
+(define_insn "*branch_1_false"
+  [(set (pc)
+	(if_then_else (match_operator 1 "comparison_operator"
+		       [(reg:H8cc CC_REG) (const_int 0)])
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
+  "reload_completed"
+{
+  if (get_attr_length (insn) == 2)
+    return "b%k1	%l0";
+  else if (get_attr_length (insn) == 4)
+    return "b%k1	%l0:16";
+  else
+    return "b%j1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
+}
+ [(set_attr "type" "branch")])
 
 ;; The brabc/brabs patterns have been disabled because their length computation
 ;; is horribly broken.  When we call out to a function via a SYMBOL_REF we get
@@ -109,8 +98,7 @@
     }
 }
   [(set_attr "type" "bitbranch")
-   (set_attr "length_table" "bitbranch")
-   (set_attr "cc" "none")])
+   (set_attr "length_table" "bitbranch")])
 
 (define_insn "*brabs"
   [(set (pc)
@@ -134,8 +122,7 @@
     }
 }
   [(set_attr "type" "bitbranch")
-   (set_attr "length_table" "bitbranch")
-   (set_attr "cc" "none")])
+   (set_attr "length_table" "bitbranch")])
 
 ;; Unconditional and other jump instructions.
 
@@ -179,8 +166,7 @@
    (set (attr "delay_slot")
 	(if_then_else (match_test "TARGET_H8300SX")
 		      (const_string "jump")
-		      (const_string "none")))
-   (set_attr "cc" "none")])
+		      (const_string "none")))])
 
 ;; This is a define expand, because pointers may be either 16 or 32 bits.
 
@@ -201,8 +187,7 @@
       return "jmp	@%S0";
     abort ();
   }
-  [(set_attr "cc" "none")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; This is a define expand, because pointers may be either 16 or 32 bits.
 
@@ -221,8 +206,7 @@
       return "jmp	@%S0";
     abort ();
   }
-  [(set_attr "cc" "none")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; Call subroutine with no return value.
 

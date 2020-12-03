@@ -223,7 +223,6 @@ public:
             case LINKd:             mc = 'F';       break;
             case LINKc:             mc = 'U';       break;
             case LINKwindows:       mc = 'W';       break;
-            case LINKpascal:        mc = 'V';       break;
             case LINKcpp:           mc = 'R';       break;
             case LINKobjc:          mc = 'Y';       break;
             default:
@@ -415,7 +414,6 @@ public:
 
                 case LINKc:
                 case LINKwindows:
-                case LINKpascal:
                 case LINKobjc:
                     buf->writestring(d->ident->toChars());
                     return;

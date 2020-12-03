@@ -205,11 +205,12 @@ omp_destroy_allocator (omp_allocator_handle_t allocator)
 ialias (omp_init_allocator)
 ialias (omp_destroy_allocator)
 
-void *
-omp_alloc (size_t size, omp_allocator_handle_t allocator)
+static void *
+omp_aligned_alloc (size_t alignment, size_t size,
+		   omp_allocator_handle_t allocator)
 {
   struct omp_allocator_data *allocator_data;
-  size_t alignment, new_size;
+  size_t new_size;
   void *ptr, *ret;
 
   if (__builtin_expect (size == 0, 0))
@@ -227,12 +228,14 @@ retry:
   if (allocator > omp_max_predefined_alloc)
     {
       allocator_data = (struct omp_allocator_data *) allocator;
-      alignment = allocator_data->alignment;
+      if (alignment < allocator_data->alignment)
+	alignment = allocator_data->alignment;
     }
   else
     {
       allocator_data = NULL;
-      alignment = sizeof (void *);
+      if (alignment < sizeof (void *))
+	alignment = sizeof (void *);
     }
 
   new_size = sizeof (struct omp_mem_header);
@@ -339,6 +342,27 @@ fail:
   return NULL;
 }
 
+void *
+omp_alloc (size_t size, omp_allocator_handle_t allocator)
+{
+  return omp_aligned_alloc (1, size, allocator);
+}
+
+/* Like omp_aligned_alloc, but apply on top of that:
+   "For allocations that arise from this ... the null_fb value of the
+   fallback allocator trait behaves as if the abort_fb had been specified."  */
+
+void *
+GOMP_alloc (size_t alignment, size_t size, uintptr_t allocator)
+{
+  void *ret = omp_aligned_alloc (alignment, size,
+				 (omp_allocator_handle_t) allocator);
+  if (__builtin_expect (ret == NULL, 0) && size)
+    gomp_fatal ("Out of memory allocating %lu bytes",
+		(unsigned long) size);
+  return ret;
+}
+
 void
 omp_free (void *ptr, omp_allocator_handle_t allocator)
 {
@@ -365,4 +389,12 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 	}
     }
   free (data->ptr);
+}
+
+ialias (omp_free)
+
+void
+GOMP_free (void *ptr, uintptr_t allocator)
+{
+  return omp_free (ptr, (omp_allocator_handle_t) allocator);
 }

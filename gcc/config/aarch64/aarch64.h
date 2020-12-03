@@ -224,6 +224,9 @@ extern unsigned aarch64_architecture_version;
 /* 64-bit Floating-point Matrix Multiply (F64MM) extensions.  */
 #define AARCH64_FL_F64MM      (1ULL << 38)
 
+/* Flag Manipulation Instructions (FLAGM) extension.  */
+#define AARCH64_FL_FLAGM      (1ULL << 39)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -241,7 +244,7 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4 | AARCH64_FL_FLAGM)
 #define AARCH64_FL_FOR_ARCH8_5			\
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
    | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)
@@ -1024,16 +1027,19 @@ typedef struct
 #define MOVE_RATIO(speed) \
   (!STRICT_ALIGNMENT ? 2 : (((speed) ? 15 : AARCH64_CALL_RATIO) / 2))
 
-/* For CLEAR_RATIO, when optimizing for size, give a better estimate
-   of the length of a memset call, but use the default otherwise.  */
+/* Like MOVE_RATIO, without -mstrict-align, make decisions in "setmem" when
+   we would use more than 3 scalar instructions.
+   Otherwise follow a sensible default: when optimizing for size, give a better
+   estimate of the length of a memset call, but use the default otherwise.  */
 #define CLEAR_RATIO(speed) \
-  ((speed) ? 15 : AARCH64_CALL_RATIO)
+  (!STRICT_ALIGNMENT ? 4 : (speed) ? 15 : AARCH64_CALL_RATIO)
 
-/* SET_RATIO is similar to CLEAR_RATIO, but for a non-zero constant, so when
-   optimizing for size adjust the ratio to account for the overhead of loading
-   the constant.  */
+/* SET_RATIO is similar to CLEAR_RATIO, but for a non-zero constant.  Without
+   -mstrict-align, make decisions in "setmem".  Otherwise follow a sensible
+   default: when optimizing for size adjust the ratio to account for the
+   overhead of loading the constant.  */
 #define SET_RATIO(speed) \
-  ((speed) ? 15 : AARCH64_CALL_RATIO - 2)
+  (!STRICT_ALIGNMENT ? 0 : (speed) ? 15 : AARCH64_CALL_RATIO - 2)
 
 /* Disable auto-increment in move_by_pieces et al.  Use of auto-increment is
    rarely a good idea in straight-line code since it adds an extra address

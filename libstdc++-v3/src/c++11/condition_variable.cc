@@ -31,51 +31,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef __GTHREAD_COND_INIT
   condition_variable::condition_variable() noexcept = default;
-#else
-  condition_variable::condition_variable() noexcept
-  {
-    __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
-  }
-#endif
 
-  condition_variable::~condition_variable() noexcept
-  {
-    // XXX no thread blocked
-    /* int __e = */ __gthread_cond_destroy(&_M_cond);
-    // if __e == EBUSY then blocked
-  }
+  condition_variable::~condition_variable() noexcept = default;
 
   void
   condition_variable::wait(unique_lock<mutex>& __lock) noexcept
   {
-    int __e = __gthread_cond_wait(&_M_cond, __lock.mutex()->native_handle());
-
-    if (__e)
-      std::terminate();
+    _M_cond.wait(*__lock.mutex());
   }
 
   void
   condition_variable::notify_one() noexcept
   {
-    int __e = __gthread_cond_signal(&_M_cond);
-
-    // XXX not in spec
-    // EINVAL
-    if (__e)
-      __throw_system_error(__e);
+    _M_cond.notify_one();
   }
 
   void
   condition_variable::notify_all() noexcept
   {
-    int __e = __gthread_cond_broadcast(&_M_cond);
-
-    // XXX not in spec
-    // EINVAL
-    if (__e)
-      __throw_system_error(__e);
+    _M_cond.notify_all();
   }
 
   extern void

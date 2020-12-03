@@ -4,6 +4,7 @@
 
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 @interface TestMyTests
 - (void) testSpoon;

@@ -15,6 +15,7 @@ import (
 //go:linkname panicmakeslicelen
 //go:linkname panicmakeslicecap
 //go:linkname makeslice
+//go:linkname checkMakeSlice
 //go:linkname makeslice64
 //go:linkname growslice
 //go:linkname slicecopy
@@ -91,6 +92,13 @@ func makeslicecopy(et *_type, tolen int, fromlen int, from unsafe.Pointer) unsaf
 }
 
 func makeslice(et *_type, len, cap int) unsafe.Pointer {
+	mem := checkMakeSlice(et, len, cap)
+	return mallocgc(mem, et, true)
+}
+
+// checkMakeSlice is called for append(s, make([]T, len, cap)...) to check
+// the values of len and cap.
+func checkMakeSlice(et *_type, len, cap int) uintptr {
 	mem, overflow := math.MulUintptr(et.size, uintptr(cap))
 	if overflow || mem > maxAlloc || len < 0 || len > cap {
 		// NOTE: Produce a 'len out of range' error instead of a
@@ -104,8 +112,7 @@ func makeslice(et *_type, len, cap int) unsafe.Pointer {
 		}
 		panicmakeslicecap()
 	}
-
-	return mallocgc(mem, et, true)
+	return mem
 }
 
 func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer {

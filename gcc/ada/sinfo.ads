@@ -2412,6 +2412,11 @@ package Sinfo is
    --    instantiation prologue renames these attributes, and expansion later
    --    converts them into subprogram bodies.
 
+   --  Was_Default_Init_Box_Association (Flag14-Sem)
+   --    Present in N_Component_Association. Set to True if the original source
+   --    is an aggregate component association with a box (<>) for a component
+   --    that is initialized by default.
+
    --  Was_Expression_Function (Flag18-Sem)
    --    Present in N_Subprogram_Body. True if the original source had an
    --    N_Expression_Function, which was converted to the N_Subprogram_Body
@@ -4120,6 +4125,7 @@ package Sinfo is
       --  Expression (Node3) (empty if Box_Present)
       --  Loop_Actions (List5-Sem)
       --  Box_Present (Flag15)
+      --  Was_Default_Init_Box_Association (Flag14)
       --  Inherited_Discriminant (Flag13)
 
       --  Note: this structure is used for both record component associations
@@ -4128,7 +4134,9 @@ package Sinfo is
       --  list of selector names in the record aggregate case, or a list of
       --  discrete choices in the array aggregate case or an N_Others_Choice
       --  node (which appears as a singleton list). Box_Present gives support
-      --  to Ada 2005 (AI-287).
+      --  to Ada 2005 (AI-287). Was_Default_Init_Box_Association is used for
+      --  determining the need for Default_Initial_Condition check on component
+      --  associations with a box.
 
       ----------------------------------
       -- 4.3.1  Component Choice List --
@@ -10254,6 +10262,9 @@ package Sinfo is
    function Was_Attribute_Reference
      (N : Node_Id) return Boolean;    -- Flag2
 
+   function Was_Default_Init_Box_Association
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Was_Expression_Function
      (N : Node_Id) return Boolean;    -- Flag18
 
@@ -11365,6 +11376,9 @@ package Sinfo is
 
    procedure Set_Was_Attribute_Reference
      (N : Node_Id; Val : Boolean := True);    -- Flag2
+
+   procedure Set_Was_Default_Init_Box_Association
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Was_Expression_Function
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -13477,6 +13491,7 @@ package Sinfo is
    pragma Inline (Visible_Declarations);
    pragma Inline (Used_Operations);
    pragma Inline (Was_Attribute_Reference);
+   pragma Inline (Was_Default_Init_Box_Association);
    pragma Inline (Was_Expression_Function);
    pragma Inline (Was_Originally_Stub);
 
@@ -13842,6 +13857,7 @@ package Sinfo is
    pragma Inline (Set_Variants);
    pragma Inline (Set_Visible_Declarations);
    pragma Inline (Set_Was_Attribute_Reference);
+   pragma Inline (Set_Was_Default_Init_Box_Association);
    pragma Inline (Set_Was_Expression_Function);
    pragma Inline (Set_Was_Originally_Stub);
 

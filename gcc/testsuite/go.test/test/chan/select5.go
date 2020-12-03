@@ -1,6 +1,6 @@
 // runoutput
 
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -27,16 +27,16 @@ func main() {
 	fmt.Fprintln(out, header)
 	a := new(arg)
 
-	// Generate each kind of test as a separate function to avoid
-	// hitting the 6g optimizer with one enormous function.
+	// Generate each test as a separate function to avoid
+	// hitting the gc optimizer with one enormous function.
 	// If we name all the functions init we don't have to
 	// maintain a list of which ones to run.
 	do := func(t *template.Template) {
-		fmt.Fprintln(out, `func init() {`)
 		for ; next(); a.reset() {
+			fmt.Fprintln(out, `func init() {`)
 			run(t, a, out)
+			fmt.Fprintln(out, `}`)
 		}
-		fmt.Fprintln(out, `}`)
 	}
 
 	do(recv)

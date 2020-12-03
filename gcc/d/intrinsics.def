@@ -93,22 +93,34 @@ DEF_D_BUILTIN (NEGSL, NONE, "negs", "core.checkedint", "FNaNbNiNflKbZl")
 
 /* core.math intrinsics.  */
 
+DEF_D_BUILTIN (COSF, COSF, "cos", "core.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (COS, COS, "cos", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (COSL, COSL, "cos", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (FABSF, FABSL, "fabs", "core.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (FABS, FABS, "fabs", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (FABSL, FABSL, "fabs", "core.math", "FNaNbNiNfeZe")
+DEF_D_BUILTIN (LDEXPF, LDEXPF, "ldexp", "core.math", "FNaNbNiNffiZf")
+DEF_D_BUILTIN (LDEXP, LDEXP, "ldexp", "core.math", "FNaNbNiNfdiZd")
 DEF_D_BUILTIN (LDEXPL, LDEXPL, "ldexp", "core.math", "FNaNbNiNfeiZe")
+DEF_D_BUILTIN (RINTF, RINTF, "rint", "core.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (RINT, RINT, "rint", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (RINTL, RINTL, "rint", "core.math", "FNaNbNiNfeZe")
 
-/* Not sure if `llroundl' stands as a good replacement for the expected
+/* Not sure if `llround{f,l}' stands as a good replacement for the expected
    behavior of `rndtol()'.  */
+DEF_D_BUILTIN (RNDTOLF, LLROUNDF, "rndtol", "core.math", "FNaNbNiNffZl")
+DEF_D_BUILTIN (RNDTOL, LLROUND, "rndtol", "core.math", "FNaNbNiNfdZl")
 DEF_D_BUILTIN (RNDTOLL, LLROUNDL, "rndtol", "core.math", "FNaNbNiNfeZl")
 
+DEF_D_BUILTIN (SINF, SINF, "sin", "core.math", "FNaNbNiNffZf")
+DEF_D_BUILTIN (SIN, SIN, "sin", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (SINL, SINL, "sin", "core.math", "FNaNbNiNfeZe")
 DEF_D_BUILTIN (SQRTF, SQRTF, "sqrt", "core.math", "FNaNbNiNffZf")
 DEF_D_BUILTIN (SQRT, SQRT, "sqrt", "core.math", "FNaNbNiNfdZd")
 DEF_D_BUILTIN (SQRTL, SQRTL, "sqrt", "core.math", "FNaNbNiNfeZe")
-DEF_D_BUILTIN (TOPRECF, NONE, "toPrec", "core.math", "FNaNbNffZI1T")
-DEF_D_BUILTIN (TOPREC, NONE, "toPrec", "core.math", "FNaNbNfdZI1T")
-DEF_D_BUILTIN (TOPRECL, NONE, "toPrec", "core.math", "FNaNbNfeZI1T")
+DEF_D_BUILTIN (TOPRECF, NONE, "toPrec", "core.math", "FfZI1T")
+DEF_D_BUILTIN (TOPREC, NONE, "toPrec", "core.math", "FdZI1T")
+DEF_D_BUILTIN (TOPRECL, NONE, "toPrec", "core.math", "FeZI1T")
 
 /* std.math intrinsics.  */
 

@@ -2452,6 +2452,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (! DECL_COMDAT (olddecl))
     DECL_COMDAT (newdecl) = 0;
 
+  if (VAR_OR_FUNCTION_DECL_P (newdecl) && DECL_LOCAL_DECL_P (newdecl))
+    {
+      if (!DECL_LOCAL_DECL_P (olddecl))
+	/* This can happen if olddecl was brought in from the
+	   enclosing namespace via a using-decl.  The new decl is
+	   then not a block-scope extern at all.  */
+	DECL_LOCAL_DECL_P (newdecl) = false;
+      else
+	{
+	  retrofit_lang_decl (newdecl);
+	  DECL_LOCAL_DECL_ALIAS (newdecl) = DECL_LOCAL_DECL_ALIAS (olddecl);
+	}
+    }
+
   new_template_info = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
@@ -2735,8 +2749,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      with that from NEWDECL below.  */
   if (DECL_LANG_SPECIFIC (olddecl))
     {
-      gcc_assert (DECL_LANG_SPECIFIC (olddecl)
-		  != DECL_LANG_SPECIFIC (newdecl));
+      gcc_checking_assert (DECL_LANG_SPECIFIC (olddecl)
+			   != DECL_LANG_SPECIFIC (newdecl));
       ggc_free (DECL_LANG_SPECIFIC (olddecl));
     }
 
@@ -2866,7 +2880,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     done later in decl_attributes since we are called before attributes
 	     are assigned.  */
 	  if (DECL_SECTION_NAME (newdecl) != NULL)
-	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+	    set_decl_section_name (olddecl, newdecl);
 
 	  if (DECL_ONE_ONLY (newdecl))
 	    {
@@ -4118,6 +4132,14 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
       return tmpl;
     }
 
+  return make_unbound_class_template_raw (context, name, parm_list);
+}
+
+/* Build an UNBOUND_CLASS_TEMPLATE.  */
+
+tree
+make_unbound_class_template_raw (tree context, tree name, tree parm_list)
+{
   /* Build the UNBOUND_CLASS_TEMPLATE.  */
   tree t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
@@ -5234,6 +5256,7 @@ start_decl (const cp_declarator *declarator,
   bool was_public;
   int flags;
   bool alias;
+  tree initial;
 
   *pushed_scope_p = NULL_TREE;
 
@@ -5258,6 +5281,10 @@ start_decl (const cp_declarator *declarator,
       return error_mark_node;
     }
 
+  /* Save the DECL_INITIAL value in case it gets clobbered to assist
+     with attribute validation.  */
+  initial = DECL_INITIAL (decl);
+
   if (initialized)
     {
       if (! toplevel_bindings_p ()
@@ -5267,6 +5294,10 @@ start_decl (const cp_declarator *declarator,
       DECL_EXTERNAL (decl) = 0;
       if (toplevel_bindings_p ())
 	TREE_STATIC (decl) = 1;
+      /* Tell 'cplus_decl_attributes' this is an initialized decl,
+	 even though we might not yet have the initializer expression.  */
+      if (!DECL_INITIAL (decl))
+	DECL_INITIAL (decl) = error_mark_node;
     }
   alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) != 0;
   
@@ -5284,6 +5315,10 @@ start_decl (const cp_declarator *declarator,
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (&decl, attributes, flags);
+
+  /* Restore the original DECL_INITIAL that we may have clobbered earlier to
+     assist with attribute validation.  */
+  DECL_INITIAL (decl) = initial;
 
   /* Dllimported symbols cannot be defined.  Static data members (which
      can be initialized in-class and dllimported) go through grokfield,
@@ -6865,9 +6900,17 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	     have returned an INIT_EXPR rather than a CALL_EXPR.  In that
 	     case, pull the initializer back out and pass it down into
 	     store_init_value.  */
-	  while (TREE_CODE (init_code) == EXPR_STMT
-		 || TREE_CODE (init_code) == CONVERT_EXPR)
-	    init_code = TREE_OPERAND (init_code, 0);
+	  while (true)
+	    {
+	      if (TREE_CODE (init_code) == EXPR_STMT
+		  || TREE_CODE (init_code) == STMT_EXPR
+		  || TREE_CODE (init_code) == CONVERT_EXPR)
+		init_code = TREE_OPERAND (init_code, 0);
+	      else if (TREE_CODE (init_code) == BIND_EXPR)
+		init_code = BIND_EXPR_BODY (init_code);
+	      else
+		break;
+	    }
 	  if (TREE_CODE (init_code) == INIT_EXPR)
 	    {
 	      /* In C++20, the call to build_aggr_init could have created
@@ -7926,10 +7969,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
-      /* Check for abstractness of the type. Notice that there is no
-	 need to strip array types here since the check for those types
-	 is already done within create_array_type_for_decl.  */
-      abstract_virtuals_error (decl, type);
+      /* Check for abstractness of the type.  */
+      if (var_definition_p)
+	abstract_virtuals_error (decl, type);
 
       if (TREE_TYPE (decl) == error_mark_node)
 	/* No initialization required.  */
@@ -10335,7 +10377,7 @@ fold_sizeof_expr (tree t)
   else
     r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
 				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
-				    false);
+				    false, false);
   if (r == error_mark_node)
     r = size_one_node;
   return r;
@@ -10700,11 +10742,6 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
   if (size)
     itype = compute_array_index_type_loc (loc, name, size,
 					  tf_warning_or_error);
-
-  /* [dcl.array]
-     T is called the array element type; this type shall not be [...] an
-     abstract class type.  */
-  abstract_virtuals_error (name, type);
 
   return build_cplus_array_type (type, itype);
 }
@@ -12097,11 +12134,6 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Declaring a function type.  */
 
-	    {
-	      iloc_sentinel ils (declspecs->locations[ds_type_spec]);
-	      abstract_virtuals_error (ACU_RETURN, type);
-	    }
-
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
 	    /* Pick up virt-specifiers.  */
@@ -13121,6 +13153,16 @@ grokdeclarator (const cp_declarator *declarator,
 	      if (decl_context == PARM && AUTO_IS_DECLTYPE (auto_node))
 		error_at (typespec_loc,
 			  "cannot declare a parameter with %<decltype(auto)%>");
+	      else if (tree c = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+		{
+		  auto_diagnostic_group g;
+		  error_at (typespec_loc,
+			    "class template placeholder %qE not permitted "
+			    "in this context", c);
+		  if (decl_context == PARM && cxx_dialect >= cxx20)
+		    inform (typespec_loc, "use %<auto%> for an "
+			    "abbreviated function template");
+		}
 	      else
 		error_at (typespec_loc,
 			  "%<auto%> parameter not permitted in this context");
@@ -13872,6 +13914,7 @@ require_complete_types_for_parms (tree parms)
 	  relayout_decl (parms);
 	  DECL_ARG_TYPE (parms) = type_passed_as (TREE_TYPE (parms));
 
+	  abstract_virtuals_error (parms, TREE_TYPE (parms));
 	  maybe_warn_parm_abi (TREE_TYPE (parms),
 			       DECL_SOURCE_LOCATION (parms));
 	}
@@ -14109,9 +14152,6 @@ grokparms (tree parmlist, tree *parms)
 	      type = build_pointer_type (type);
 	      TREE_TYPE (decl) = type;
 	    }
-	  else if (abstract_virtuals_error (decl, type))
-	    /* Ignore any default argument.  */
-	    init = NULL_TREE;
 	  else if (cxx_dialect < cxx17 && INDIRECT_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
@@ -16871,20 +16911,6 @@ record_key_method_defined (tree fndecl)
     }
 }
 
-/* Subroutine of finish_function.
-   Save the body of constexpr functions for possible
-   future compile time evaluation.  */
-
-static void
-maybe_save_function_definition (tree fun)
-{
-  if (!processing_template_decl
-      && DECL_DECLARED_CONSTEXPR_P (fun)
-      && !cp_function_chain->invalid_constexpr
-      && !DECL_CLONED_FUNCTION_P (fun))
-    register_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
-}
-
 /* Attempt to add a fix-it hint to RICHLOC suggesting the insertion
    of "return *this;" immediately before its location, using FNDECL's
    first statement (if any) to give the indentation, if appropriate.  */
@@ -16918,7 +16944,7 @@ emit_coro_helper (tree helper)
   allocate_struct_function (helper, false);
   cfun->language = ggc_cleared_alloc<language_function> ();
   poplevel (1, 0, 1);
-  maybe_save_function_definition (helper);
+  maybe_save_constexpr_fundef (helper);
   /* We must start each function with a clear fold cache.  */
   clear_fold_cache ();
   cp_fold_function (helper);
@@ -17152,7 +17178,7 @@ finish_function (bool inline_p)
 
   /* Save constexpr function body before it gets munged by
      the NRV transformation.   */
-  maybe_save_function_definition (fndecl);
+  maybe_save_constexpr_fundef (fndecl);
 
   /* Invoke the pre-genericize plugin before we start munging things.  */
   if (!processing_template_decl)
@@ -17427,9 +17453,6 @@ complete_vars (tree type)
       else
 	ix++;
     }
-
-  /* Check for pending declarations which may have abstract type.  */
-  complete_type_check_abstract (type);
 }
 
 /* If DECL is of a type which needs a cleanup, build and return an
@@ -17597,6 +17620,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case DEFERRED_PARSE:	return TS_CP_DEFERRED_PARSE;
     case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
     case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
+    case BINDING_VECTOR:		return TS_CP_BINDING_VECTOR;
     case OVERLOAD:		return TS_CP_OVERLOAD;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;

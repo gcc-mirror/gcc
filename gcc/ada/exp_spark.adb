@@ -52,16 +52,6 @@ package body Exp_SPARK is
    -- Local Subprograms --
    -----------------------
 
-   procedure Expand_SPARK_Array_Aggregate (N : Node_Id; Index : Node_Id);
-   --  Perform array-aggregate-specific expansion of an array sub-aggregate N
-   --  corresponding to the Index of the outer-most aggregate. This routine
-   --  mimics Resolve_Array_Aggregate which only checks the aggregate for being
-   --  well-formed, but doesn't analyze nor apply range checks to
-   --  iterated_component_associations.
-
-   procedure Expand_SPARK_N_Aggregate (N : Node_Id);
-   --  Perform aggregate-specific expansion
-
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Perform attribute-reference-specific expansion
 
@@ -112,9 +102,6 @@ package body Exp_SPARK is
          =>
             Qualify_Entity_Names (N);
 
-         when N_Aggregate =>
-            Expand_SPARK_N_Aggregate (N);
-
          --  Replace occurrences of System'To_Address by calls to
          --  System.Storage_Elements.To_Address.
 
@@ -159,107 +146,6 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
-
-   ----------------------------------
-   -- Expand_SPARK_Array_Aggregate --
-   ----------------------------------
-
-   procedure Expand_SPARK_Array_Aggregate (N : Node_Id; Index : Node_Id) is
-
-      procedure Expand_Aggr_Expr (Expr : Node_Id);
-      --  If Expr is a subaggregate, then process it recursively; otherwise it
-      --  is an expression for the array components which might not have been
-      --  analyzed and where scalar range checks could be missing.
-
-      ----------------------
-      -- Expand_Aggr_Expr --
-      ----------------------
-
-      procedure Expand_Aggr_Expr (Expr : Node_Id) is
-         Nxt_Ind : constant Node_Id := Next_Index (Index);
-      begin
-         if Present (Nxt_Ind) then
-            Expand_SPARK_Array_Aggregate (Expr, Index => Nxt_Ind);
-         else
-            declare
-               Comp_Type : constant Entity_Id := Component_Type (Etype (N));
-            begin
-               Analyze_And_Resolve (Expr, Comp_Type);
-
-               if Is_Scalar_Type (Comp_Type) then
-                  Apply_Scalar_Range_Check (Expr, Comp_Type);
-               end if;
-            end;
-         end if;
-      end Expand_Aggr_Expr;
-
-      --  Local variables
-
-      Assoc : Node_Id := First (Component_Associations (N));
-
-   --  Start of processing for Expand_SPARK_Array_Aggregate
-
-   begin
-      while Present (Assoc) loop
-         --  For iterated_component_association we must apply range check to
-         --  discrete choices and re-analyze the expression, because frontend
-         --  only checks its legality and then analyzes the expanded loop code.
-
-         if Nkind (Assoc) = N_Iterated_Component_Association then
-            declare
-               Choice : Node_Id;
-            begin
-               --  Analyze discrete choices
-
-               Choice := First (Discrete_Choices (Assoc));
-
-               while Present (Choice) loop
-
-                  --  The index denotes a range of elements where range checks
-                  --  have been already applied.
-
-                  if Nkind (Choice) in N_Others_Choice
-                                     | N_Range
-                                     | N_Subtype_Indication
-                  then
-                     null;
-
-                  --  Otherwise the index denotes a single element (or a
-                  --  subtype name which doesn't require range checks).
-
-                  else pragma Assert (Nkind (Choice) in N_Subexpr);
-                     Apply_Scalar_Range_Check (Choice, Etype (Index));
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               --  Keep processing the expression with index parameter in scope
-
-               Push_Scope (Scope (Defining_Identifier (Assoc)));
-               Enter_Name (Defining_Identifier (Assoc));
-               Expand_Aggr_Expr (Expression (Assoc));
-               End_Scope;
-            end;
-
-         --  For ordinary component associations we recurse into subaggregates,
-         --  because there could be nested iterated_component_association (and
-         --  it is harmless to analyze and apply checks if there is none).
-
-         else pragma Assert (Nkind (Assoc) = N_Component_Association);
-            declare
-               Expr : constant Node_Id := Expression (Assoc);
-               pragma Assert (Present (Expr) xor Box_Present (Assoc));
-            begin
-               if Present (Expr) then
-                  Expand_Aggr_Expr (Expr);
-               end if;
-            end;
-         end if;
-
-         Next (Assoc);
-      end loop;
-   end Expand_SPARK_Array_Aggregate;
 
    ----------------------------------
    -- Expand_SPARK_Delta_Or_Update --
@@ -471,21 +357,12 @@ package body Exp_SPARK is
       --  procedure for it as done during regular expansion for compilation.
 
       if Has_DIC (E) and then Is_Tagged_Type (E) then
-         Build_DIC_Procedure_Body (E, For_Freeze => True);
+         --  Why is this needed for DIC, but not for other aspects (such as
+         --  Type_Invariant)???
+
+         Build_DIC_Procedure_Body (E);
       end if;
    end Expand_SPARK_N_Freeze_Type;
-
-   ------------------------------
-   -- Expand_SPARK_N_Aggregate --
-   ------------------------------
-
-   procedure Expand_SPARK_N_Aggregate (N : Node_Id) is
-      Aggr_Typ : constant Entity_Id := Etype (N);
-   begin
-      if Is_Array_Type (Aggr_Typ) then
-         Expand_SPARK_Array_Aggregate (N, Index => First_Index (Aggr_Typ));
-      end if;
-   end Expand_SPARK_N_Aggregate;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --
@@ -500,101 +377,105 @@ package body Exp_SPARK is
       Expr    : Node_Id;
 
    begin
-      if Attr_Id = Attribute_To_Address then
+      case Attr_Id is
+         when Attribute_To_Address =>
 
-         --  Extract and convert argument to expected type for call
+            --  Extract and convert argument to expected type for call
 
-         Expr :=
-           Make_Type_Conversion (Loc,
-             Subtype_Mark =>
-               New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-             Expression   => Relocate_Node (First (Expressions (N))));
+            Expr :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
+                Expression   => Relocate_Node (First (Expressions (N))));
 
-         --  Replace attribute reference with call
+            --  Replace attribute reference with call
 
-         Rewrite (N,
-           Make_Function_Call (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE_To_Address), Loc),
-             Parameter_Associations => New_List (Expr)));
-         Analyze_And_Resolve (N, Typ);
+            Rewrite
+              (N,
+               Make_Function_Call (Loc,
+                 Name                   =>
+                   New_Occurrence_Of (RTE (RE_To_Address), Loc),
+                 Parameter_Associations => New_List (Expr)));
+            Analyze_And_Resolve (N, Typ);
 
-      elsif Attr_Id = Attribute_Object_Size
-        or else Attr_Id = Attribute_Size
-        or else Attr_Id = Attribute_Value_Size
-        or else Attr_Id = Attribute_VADS_Size
-      then
-         Exp_Attr.Expand_Size_Attribute (N);
+         when Attribute_Object_Size
+            | Attribute_Size
+            | Attribute_Value_Size
+            | Attribute_VADS_Size
+         =>
+            Exp_Attr.Expand_Size_Attribute (N);
 
-      --  For attributes which return Universal_Integer, introduce a conversion
-      --  to the expected type with the appropriate check flags set.
+         --  For attributes which return Universal_Integer, introduce a
+         --  conversion to the expected type with the appropriate check flags
+         --  set.
 
-      elsif Attr_Id = Attribute_Alignment
-        or else Attr_Id = Attribute_Bit
-        or else Attr_Id = Attribute_Bit_Position
-        or else Attr_Id = Attribute_Descriptor_Size
-        or else Attr_Id = Attribute_First_Bit
-        or else Attr_Id = Attribute_Last_Bit
-        or else Attr_Id = Attribute_Length
-        or else Attr_Id = Attribute_Max_Size_In_Storage_Elements
-        or else Attr_Id = Attribute_Pos
-        or else Attr_Id = Attribute_Position
-        or else Attr_Id = Attribute_Range_Length
-        or else Attr_Id = Attribute_Aft
-        or else Attr_Id = Attribute_Max_Alignment_For_Allocation
-      then
-         --  If the expected type is Long_Long_Integer, there will be no check
-         --  flag as the compiler assumes attributes always fit in this type.
-         --  Since in SPARK_Mode we do not take Storage_Error into account, we
-         --  cannot make this assumption and need to produce a check.
-         --  ??? It should be enough to add this check for attributes
-         --  'Length, 'Range_Length and 'Pos when the type is as big
-         --  as Long_Long_Integer.
+         when Attribute_Aft
+            | Attribute_Alignment
+            | Attribute_Bit
+            | Attribute_Bit_Position
+            | Attribute_Descriptor_Size
+            | Attribute_First_Bit
+            | Attribute_Last_Bit
+            | Attribute_Length
+            | Attribute_Max_Alignment_For_Allocation
+            | Attribute_Max_Size_In_Storage_Elements
+            | Attribute_Pos
+            | Attribute_Position
+            | Attribute_Range_Length
+         =>
+            --  If the expected type is Long_Long_Integer, there will be no
+            --  check flag as the compiler assumes attributes always fit in
+            --  this type. Since in SPARK_Mode we do not take Storage_Error
+            --  into account, we cannot make this assumption and need to
+            --  produce a check. ??? It should be enough to add this check for
+            --  attributes 'Length, 'Range_Length and 'Pos when the type is as
+            --  big as Long_Long_Integer.
 
-         declare
-            Typ : Entity_Id;
-         begin
-            if Attr_Id = Attribute_Range_Length
-              or else Attr_Id = Attribute_Pos
+            declare
+               Typ : Entity_Id;
+            begin
+               if Attr_Id in Attribute_Pos | Attribute_Range_Length then
+                  Typ := Etype (Prefix (N));
+
+               elsif Attr_Id = Attribute_Length then
+                  Typ := Get_Index_Subtype (N);
+
+               else
+                  Typ := Empty;
+               end if;
+
+               Apply_Universal_Integer_Attribute_Checks (N);
+
+               if Present (Typ)
+                 and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
+               then
+                  --  ??? This should rather be a range check, but this would
+                  --  crash GNATprove which somehow recovers the proper kind
+                  --  of check anyway.
+                  Set_Do_Overflow_Check (N);
+               end if;
+            end;
+
+         when Attribute_Constrained =>
+
+            --  If the prefix is an access to object, the attribute applies to
+            --  the designated object, so rewrite with an explicit dereference.
+
+            if Is_Access_Type (Etype (Pref))
+              and then
+              (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
             then
-               Typ := Etype (Prefix (N));
-
-            elsif Attr_Id = Attribute_Length then
-               Typ := Get_Index_Subtype (N);
-
-            else
-               Typ := Empty;
+               Rewrite (Pref,
+                        Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
+               Analyze_And_Resolve (N, Standard_Boolean);
             end if;
 
-            Apply_Universal_Integer_Attribute_Checks (N);
+         when Attribute_Update =>
+            Expand_SPARK_Delta_Or_Update (Typ, First (Expressions (N)));
 
-            if Present (Typ)
-              and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
-            then
-               --  ??? This should rather be a range check, but this would
-               --  crash GNATprove which somehow recovers the proper kind
-               --  of check anyway.
-               Set_Do_Overflow_Check (N);
-            end if;
-         end;
-
-      elsif Attr_Id = Attribute_Constrained then
-
-         --  If the prefix is an access to object, the attribute applies to
-         --  the designated object, so rewrite with an explicit dereference.
-
-         if Is_Access_Type (Etype (Pref))
-           and then
-             (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
-         then
-            Rewrite (Pref,
-                     Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
-            Analyze_And_Resolve (N, Standard_Boolean);
-         end if;
-
-      elsif Attr_Id = Attribute_Update then
-         Expand_SPARK_Delta_Or_Update (Typ, First (Expressions (N)));
-      end if;
+         when others =>
+            null;
+      end case;
    end Expand_SPARK_N_Attribute_Reference;
 
    ------------------------------------
@@ -652,7 +533,7 @@ package body Exp_SPARK is
         and then Present (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
       then
-         Call := Build_DIC_Call (Loc, Obj_Id, Typ);
+         Call := Build_DIC_Call (Loc, New_Occurrence_Of (Obj_Id, Loc), Typ);
 
          --  Partially insert the call into the tree by setting its parent
          --  pointer.

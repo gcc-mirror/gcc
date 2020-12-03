@@ -333,7 +333,7 @@ private
       Node      : Count_Type'Base := No_Node;
    end record;
 
-   procedure  Read
+   procedure Read
      (Stream   : not null access Root_Stream_Type'Class;
       Position : out Cursor);
    for Cursor'Read use Read;

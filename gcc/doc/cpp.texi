@@ -2451,6 +2451,15 @@ features are supported by GCC.
 @item __NO_MATH_ERRNO__
 This macro is defined if @option{-fno-math-errno} is used, or enabled
 by another option such as @option{-ffast-math} or by default.
+
+@item __GNUC_EXECUTION_CHARSET_NAME
+@itemx __GNUC_WIDE_EXECUTION_CHARSET_NAME
+These macros are defined to expand to a narrow string literal of
+the name of the narrow and wide compile-time execution character
+set used.  It directly reflects the name passed to the options
+@option{-fexec-charset} and @option{-fwide-exec-charset}, or the defaults
+documented for those options (that is, it can expand to something like
+@code{"UTF-8"}).  @xref{Invocation}.
 @end table
 
 @node System-specific Predefined Macros
@@ -3159,6 +3168,7 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * Elif::
 * @code{__has_attribute}::
 * @code{__has_cpp_attribute}::
+* @code{__has_c_attribute}::
 * @code{__has_builtin}::
 * @code{__has_include}::
 @end menu
@@ -3432,8 +3442,9 @@ condition succeeds after the original @samp{#if} and all previous
 The special operator @code{__has_attribute (@var{operand})} may be used
 in @samp{#if} and @samp{#elif} expressions to test whether the attribute
 referenced by its @var{operand} is recognized by GCC.  Using the operator
-in other contexts is not valid.  In C code, @var{operand} must be
-a valid identifier.  In C++ code, @var{operand} may be optionally
+in other contexts is not valid.  In C code, if compiling for strict
+conformance to standards before C2x, @var{operand} must be
+a valid identifier.  Otherwise, @var{operand} may be optionally
 introduced by the @code{@var{attribute-scope}::} prefix.
 The @var{attribute-scope} prefix identifies the ``namespace'' within
 which the attribute is recognized.  The scope of GCC attributes is
@@ -3478,6 +3489,21 @@ the attribute was first introduced into the C++ standard.  For additional
 information including the dates of the introduction of current standard
 attributes, see @w{@uref{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations/,
 SD-6: SG10 Feature Test Recommendations}}.
+
+@node @code{__has_c_attribute}
+@subsection @code{__has_c_attribute}
+@cindex @code{__has_c_attribute}
+
+The special operator @code{__has_c_attribute (@var{operand})} may be
+used in @samp{#if} and @samp{#elif} expressions in C code to test
+whether the attribute referenced by its @var{operand} is recognized by
+GCC in attributes using the @samp{[[]]} syntax.  GNU attributes must
+be specified with the scope @samp{gnu} or @samp{__gnu__} with
+@code{__has_c_attribute}.  When @var{operand} designates a supported
+standard attribute it evaluates to an integer constant of the form
+@code{YYYYMM} indicating the year and month when the attribute was
+first introduced into the C standard, or when the syntax of operands
+to the attribute was extended in the C standard.
 
 @node @code{__has_builtin}
 @subsection @code{__has_builtin}

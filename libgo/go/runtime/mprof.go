@@ -942,7 +942,7 @@ func ThreadCreateProfile(p []StackRecord) (n int, ok bool) {
 	return
 }
 
-//go:linkname runtime_goroutineProfileWithLabels runtime..z2fpprof.runtime_goroutineProfileWithLabels
+//go:linkname runtime_goroutineProfileWithLabels runtime_1pprof.runtime__goroutineProfileWithLabels
 func runtime_goroutineProfileWithLabels(p []StackRecord, labels []unsafe.Pointer) (n int, ok bool) {
 	return goroutineProfileWithLabels(p, labels)
 }

@@ -232,12 +232,14 @@ enum scalar_storage_order_kind {
   SSO_LITTLE_ENDIAN
 };
 
-/* Vectorizer cost-model.  */
+/* Vectorizer cost-model.  Except for DEFAULT, the values are ordered from
+   the most conservative to the least conservative.  */
 enum vect_cost_model {
+  VECT_COST_MODEL_VERY_CHEAP = -3,
+  VECT_COST_MODEL_CHEAP = -2,
+  VECT_COST_MODEL_DYNAMIC = -1,
   VECT_COST_MODEL_UNLIMITED = 0,
-  VECT_COST_MODEL_CHEAP = 1,
-  VECT_COST_MODEL_DYNAMIC = 2,
-  VECT_COST_MODEL_DEFAULT = 3
+  VECT_COST_MODEL_DEFAULT = 1
 };
 
 /* Different instrumentation modes.  */
@@ -274,6 +276,9 @@ enum sanitize_code {
   SANITIZE_BUILTIN = 1UL << 25,
   SANITIZE_POINTER_COMPARE = 1UL << 26,
   SANITIZE_POINTER_SUBTRACT = 1UL << 27,
+  SANITIZE_HWADDRESS = 1UL << 28,
+  SANITIZE_USER_HWADDRESS = 1UL << 29,
+  SANITIZE_KERNEL_HWADDRESS = 1UL << 30,
   SANITIZE_SHIFT = SANITIZE_SHIFT_BASE | SANITIZE_SHIFT_EXPONENT,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN
@@ -413,6 +418,13 @@ enum evrp_mode
   EVRP_MODE_DEBUG = 8 | EVRP_MODE_TRACE,
   EVRP_MODE_RVRP_TRACE = EVRP_MODE_RVRP_ONLY | EVRP_MODE_TRACE,
   EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
+};
+
+/* Modes of OpenACC 'kernels' constructs handling.  */
+enum openacc_kernels
+{
+  OPENACC_KERNELS_DECOMPOSE,
+  OPENACC_KERNELS_PARLOOPS
 };
 
 #endif

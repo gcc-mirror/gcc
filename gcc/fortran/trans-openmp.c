@@ -626,6 +626,8 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
     case OMP_CLAUSE_LASTPRIVATE:
     case OMP_CLAUSE_LINEAR:
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
       break;
     default:
       gcc_unreachable ();
@@ -699,7 +701,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   then_b = gfc_finish_block (&cond_block);
 
   /* Reduction clause requires allocated ALLOCATABLE.  */
-  if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_REDUCTION)
+  if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_REDUCTION
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_IN_REDUCTION
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_TASK_REDUCTION)
     {
       gfc_init_block (&cond_block);
       if (GFC_DESCRIPTOR_TYPE_P (type))
@@ -2029,9 +2033,25 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
 }
 
 static tree
-gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
+gfc_trans_omp_reduction_list (int kind, gfc_omp_namelist *namelist, tree list,
 			      locus where, bool mark_addressable)
 {
+  omp_clause_code clause = OMP_CLAUSE_REDUCTION;
+  switch (kind)
+    {
+    case OMP_LIST_REDUCTION:
+    case OMP_LIST_REDUCTION_INSCAN:
+    case OMP_LIST_REDUCTION_TASK:
+      break;
+    case OMP_LIST_IN_REDUCTION:
+      clause = OMP_CLAUSE_IN_REDUCTION;
+      break;
+    case OMP_LIST_TASK_REDUCTION:
+      clause = OMP_CLAUSE_TASK_REDUCTION;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   for (; namelist != NULL; namelist = namelist->next)
     if (namelist->sym->attr.referenced)
       {
@@ -2039,10 +2059,14 @@ gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
 	if (t != error_mark_node)
 	  {
 	    tree node = build_omp_clause (gfc_get_location (&namelist->where),
-					  OMP_CLAUSE_REDUCTION);
+					  clause);
 	    OMP_CLAUSE_DECL (node) = t;
 	    if (mark_addressable)
 	      TREE_ADDRESSABLE (t) = 1;
+	    if (kind == OMP_LIST_REDUCTION_INSCAN)
+	      OMP_CLAUSE_REDUCTION_INSCAN (node) = 1;
+	    if (kind == OMP_LIST_REDUCTION_TASK)
+	      OMP_CLAUSE_REDUCTION_TASK (node) = 1;
 	    switch (namelist->u.reduction_op)
 	      {
 	      case OMP_REDUCTION_PLUS:
@@ -2267,10 +2291,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       switch (list)
 	{
 	case OMP_LIST_REDUCTION:
+	case OMP_LIST_REDUCTION_INSCAN:
+	case OMP_LIST_REDUCTION_TASK:
+	case OMP_LIST_IN_REDUCTION:
+	case OMP_LIST_TASK_REDUCTION:
 	  /* An OpenACC async clause indicates the need to set reduction
 	     arguments addressable, to allow asynchronous copy-out.  */
-	  omp_clauses = gfc_trans_omp_reduction_list (n, omp_clauses, where,
-						      clauses->async);
+	  omp_clauses = gfc_trans_omp_reduction_list (list, n, omp_clauses,
+						      where, clauses->async);
 	  break;
 	case OMP_LIST_PRIVATE:
 	  clause_code = OMP_CLAUSE_PRIVATE;
@@ -3894,8 +3922,8 @@ gfc_trans_oacc_construct (gfc_code *code)
   oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 					code->loc, false, true);
   stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
-		     oacc_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), construct_code,
+		     void_type_node, stmt, oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -5207,18 +5235,27 @@ gfc_split_omp_clauses (gfc_code *code,
       /* Reduction is allowed on simd, do, parallel and teams.
 	 Duplicate it on all of them, but omit on do if
 	 parallel is present.  */
-      if (mask & GFC_OMP_MASK_TEAMS)
-	clausesa[GFC_OMP_SPLIT_TEAMS].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      if (mask & GFC_OMP_MASK_PARALLEL)
-	clausesa[GFC_OMP_SPLIT_PARALLEL].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      else if (mask & GFC_OMP_MASK_DO)
-	clausesa[GFC_OMP_SPLIT_DO].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      if (mask & GFC_OMP_MASK_SIMD)
-	clausesa[GFC_OMP_SPLIT_SIMD].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
+      for (int i = OMP_LIST_REDUCTION; i <= OMP_LIST_REDUCTION_TASK; i++)
+	{
+	  if (mask & GFC_OMP_MASK_TEAMS)
+	    clausesa[GFC_OMP_SPLIT_TEAMS].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  if (mask & GFC_OMP_MASK_PARALLEL)
+	    clausesa[GFC_OMP_SPLIT_PARALLEL].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  else if (mask & GFC_OMP_MASK_DO)
+	    clausesa[GFC_OMP_SPLIT_DO].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  if (mask & GFC_OMP_MASK_SIMD)
+	    clausesa[GFC_OMP_SPLIT_SIMD].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	}
+      if (mask & GFC_OMP_MASK_TARGET)
+	clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_IN_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_IN_REDUCTION];
+      if (mask & GFC_OMP_MASK_TASKLOOP)
+	clausesa[GFC_OMP_SPLIT_TASKLOOP].lists[OMP_LIST_IN_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_IN_REDUCTION];
       /* Linear clause is supported on do and simd,
 	 put it on the innermost one.  */
       clausesa[innermost].lists[OMP_LIST_LINEAR]
@@ -5314,8 +5351,8 @@ gfc_trans_omp_parallel_do (gfc_code *code, stmtblock_t *pblock,
     }
   else if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, NULL_TREE);
-  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+		     void_type_node, stmt, omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -5357,8 +5394,8 @@ gfc_trans_omp_parallel_do_simd (gfc_code *code, stmtblock_t *pblock,
     stmt = build3_v (BIND_EXPR, NULL, stmt, NULL_TREE);
   if (flag_openmp)
     {
-      stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
-			 omp_clauses);
+      stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+			 void_type_node, stmt, omp_clauses);
       OMP_PARALLEL_COMBINED (stmt) = 1;
     }
   gfc_add_expr_to_block (&block, stmt);
@@ -5384,8 +5421,8 @@ gfc_trans_omp_parallel_sections (gfc_code *code)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else
     poplevel (0, 0);
-  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+		     void_type_node, stmt, omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -5407,8 +5444,8 @@ gfc_trans_omp_parallel_workshare (gfc_code *code)
   pushlevel ();
   stmt = gfc_trans_omp_workshare (code, &workshare_clauses);
   stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
-  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+		     void_type_node, stmt, omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -5420,6 +5457,7 @@ gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
   stmtblock_t block, body;
   tree omp_clauses, stmt;
   bool has_lastprivate = clauses->lists[OMP_LIST_LASTPRIVATE] != NULL;
+  location_t loc = gfc_get_location (&code->loc);
 
   gfc_start_block (&block);
 
@@ -5440,8 +5478,7 @@ gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
     }
   stmt = gfc_finish_block (&body);
 
-  stmt = build2_loc (input_location, OMP_SECTIONS, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (loc, OMP_SECTIONS, void_type_node, stmt, omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
 
   return gfc_finish_block (&block);
@@ -5452,8 +5489,8 @@ gfc_trans_omp_single (gfc_code *code, gfc_omp_clauses *clauses)
 {
   tree omp_clauses = gfc_trans_omp_clauses (NULL, clauses, code->loc);
   tree stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2_loc (input_location, OMP_SINGLE, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_SINGLE, void_type_node,
+		     stmt, omp_clauses);
   return stmt;
 }
 
@@ -5469,8 +5506,8 @@ gfc_trans_omp_task (gfc_code *code)
   pushlevel ();
   stmt = gfc_trans_omp_code (code->block->next, true);
   stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
-  stmt = build2_loc (input_location, OMP_TASK, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_TASK, void_type_node,
+		     stmt, omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -5612,8 +5649,8 @@ gfc_trans_omp_teams (gfc_code *code, gfc_omp_clauses *clausesa,
   if (flag_openmp)
     {
       stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
-      stmt = build2_loc (input_location, OMP_TEAMS, void_type_node, stmt,
-			 omp_clauses);
+      stmt = build2_loc (gfc_get_location (&code->loc), OMP_TEAMS,
+			 void_type_node, stmt, omp_clauses);
       if (combined)
 	OMP_TEAMS_COMBINED (stmt) = 1;
     }
@@ -5716,8 +5753,8 @@ gfc_trans_omp_target (gfc_code *code)
     }
   if (flag_openmp)
     {
-      stmt = build2_loc (input_location, OMP_TARGET, void_type_node, stmt,
-			 omp_clauses);
+      stmt = build2_loc (gfc_get_location (&code->loc), OMP_TARGET,
+			 void_type_node, stmt, omp_clauses);
       if (code->op != EXEC_OMP_TARGET)
 	OMP_TARGET_COMBINED (stmt) = 1;
       cfun->has_omp_target = true;
@@ -5778,8 +5815,8 @@ gfc_trans_omp_target_data (gfc_code *code)
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
   stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2_loc (input_location, OMP_TARGET_DATA, void_type_node, stmt,
-		     omp_clauses);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_TARGET_DATA,
+		     void_type_node, stmt, omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -5839,6 +5876,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
   bool singleblock_in_progress = false;
   /* True if previous gfc_code in workshare construct is not workshared.  */
   bool prev_singleunit;
+  location_t loc = gfc_get_location (&code->loc);
 
   code = code->block->next;
 
@@ -5929,7 +5967,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 		{
 		  /* Finish single block and add it to pblock.  */
 		  tmp = gfc_finish_block (&singleblock);
-		  tmp = build2_loc (input_location, OMP_SINGLE,
+		  tmp = build2_loc (loc, OMP_SINGLE,
 				    void_type_node, tmp, NULL_TREE);
 		  gfc_add_expr_to_block (pblock, tmp);
 		  /* Add current gfc_code to pblock.  */
@@ -5945,6 +5983,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 		  gfc_init_block (&singleblock);
 		  gfc_add_expr_to_block (&singleblock, res);
 		  singleblock_in_progress = true;
+		  loc = gfc_get_location (&code->loc);
 		}
 	      else
 		/* Add the new statement to the block.  */
@@ -5959,7 +5998,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
     {
       /* Finish single block and add it to pblock.  */
       tmp = gfc_finish_block (&singleblock);
-      tmp = build2_loc (input_location, OMP_SINGLE, void_type_node, tmp,
+      tmp = build2_loc (loc, OMP_SINGLE, void_type_node, tmp,
 			clauses->nowait
 			? build_omp_clause (input_location, OMP_CLAUSE_NOWAIT)
 			: NULL_TREE);

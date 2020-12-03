@@ -39,6 +39,7 @@ dg-init
 # for all systems we point to the libobjc includes and use the -fgnu-runtime
 set add_flags "additional_flags=-I${srcdir}/../../libobjc"
 lappend add_flags "additional_flags=-fgnu-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "unclaimed-category-1a.o"
@@ -50,6 +51,7 @@ if ![string match "" $lines] then {
 if [istarget "*-*-darwin*" ] {
 set add_flags ""
 lappend add_flags "additional_flags=-fnext-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "unclaimed-category-1a.o"
@@ -66,6 +68,7 @@ if ![string match "" $lines] then {
 # and load-category-1a.m, link them together, and execute the result.
 set add_flags "additional_flags=-I${srcdir}/../../libobjc"
 lappend add_flags "additional_flags=-fgnu-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-1a.o"
@@ -77,6 +80,7 @@ if ![string match "" $lines] then {
 if [istarget "*-*-darwin*" ] {
 set add_flags ""
 lappend add_flags "additional_flags=-fnext-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-1a.o"
@@ -93,6 +97,7 @@ if ![string match "" $lines] then {
 # and load-category-2a.m, link them together, and execute the result.
 set add_flags "additional_flags=-I${srcdir}/../../libobjc"
 lappend add_flags "additional_flags=-fgnu-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-2a.m" "load-category-2a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-2a.o"
@@ -104,6 +109,7 @@ if ![string match "" $lines] then {
 if [istarget "*-*-darwin*" ] {
 set add_flags ""
 lappend add_flags "additional_flags=-fnext-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-2a.m" "load-category-2a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-2a.o"
@@ -120,6 +126,7 @@ if ![string match "" $lines] then {
 # and load-category-3a.m, link them together, and execute the result.
 set add_flags "additional_flags=-I${srcdir}/../../libobjc"
 lappend add_flags "additional_flags=-fgnu-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-3a.m" "load-category-3a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-3a.o"
@@ -131,6 +138,7 @@ if ![string match "" $lines] then {
 if [istarget "*-*-darwin*" ] {
 set add_flags ""
 lappend add_flags "additional_flags=-fnext-runtime"
+lappend add_flags "additional_flags=-Wno-objc-root-class"
 set lines [objc_target_compile "$srcdir/$subdir/load-category-3a.m" "load-category-3a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "load-category-3a.o"

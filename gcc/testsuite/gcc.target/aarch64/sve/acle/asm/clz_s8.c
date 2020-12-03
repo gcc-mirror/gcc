@@ -33,6 +33,7 @@ TEST_DUAL_Z (clz_s8_z, svuint8_t, svint8_t,
 
 /*
 ** clz_s8_x:
+**	movprfx	z0, z4
 **	clz	z0\.b, p0/m, z4\.b
 **	ret
 */

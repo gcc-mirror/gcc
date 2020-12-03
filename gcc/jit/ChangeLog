@@ -1,3 +1,157 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* jit-recording.c (recording::function::dump_to_dot): Avoid
+	-Wformat-diag.
+	(recording::block::dump_to_dot): Same.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (jit.serial): Change from goal to a
+	variable.
+	(.PHONY): Drop jit.serial and jit.prev.
+	($(LIBGCCJIT_FILENAME)): Depend on $(jit.serial) rather than
+	jit.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (jit.serial): New goal.
+	(.PHONY): Add jit.serial jit.prev.
+	($(LIBGCCJIT_FILENAME)): Depend on jit.prev.  Call LINK_PROGRESS.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/87291
+	* docs/cp/topics/asm.rst: New file.
+	* docs/cp/topics/index.rst (Topic Reference): Add it.
+	* docs/topics/asm.rst: New file.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_15): New.
+	* docs/topics/functions.rst (Statements): Add link to extended
+	asm.
+	* docs/topics/index.rst (Topic Reference): Add asm.rst.
+	* docs/topics/objects.rst: Add gcc_jit_extended_asm to ASCII art.
+	* docs/_build/texinfo/Makefile: Regenerate.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::recording::extended_asm): New forward
+	decl.
+	(gcc::jit::recording::top_level_asm): Likewise.
+	* jit-playback.c: Include "stmt.h".
+	(build_string): New.
+	(gcc::jit::playback::context::new_string_literal): Disambiguate
+	build_string call.
+	(gcc::jit::playback::context::add_top_level_asm): New.
+	(build_operand_chain): New.
+	(build_clobbers): New.
+	(build_goto_operands): New.
+	(gcc::jit::playback::block::add_extended_asm): New.
+	* jit-playback.h (gcc::jit::playback::context::add_top_level_asm):
+	New decl.
+	(struct gcc::jit::playback::asm_operand): New struct.
+	(gcc::jit::playback::block::add_extended_asm): New decl.
+	* jit-recording.c (gcc::jit::recording::context::dump_to_file):
+	Dump top-level asms.
+	(gcc::jit::recording::context::add_top_level_asm): New.
+	(gcc::jit::recording::block::add_extended_asm): New.
+	(gcc::jit::recording::block::end_with_extended_asm_goto): New.
+	(gcc::jit::recording::asm_operand::asm_operand): New.
+	(gcc::jit::recording::asm_operand::print): New.
+	(gcc::jit::recording::asm_operand::make_debug_string): New.
+	(gcc::jit::recording::output_asm_operand::write_reproducer): New.
+	(gcc::jit::recording::output_asm_operand::print): New.
+	(gcc::jit::recording::input_asm_operand::write_reproducer): New.
+	(gcc::jit::recording::input_asm_operand::print): New.
+	(gcc::jit::recording::extended_asm::add_output_operand): New.
+	(gcc::jit::recording::extended_asm::add_input_operand): New.
+	(gcc::jit::recording::extended_asm::add_clobber): New.
+	(gcc::jit::recording::extended_asm::replay_into): New.
+	(gcc::jit::recording::extended_asm::make_debug_string): New.
+	(gcc::jit::recording::extended_asm::write_flags): New.
+	(gcc::jit::recording::extended_asm::write_clobbers): New.
+	(gcc::jit::recording::extended_asm_simple::write_reproducer): New.
+	(gcc::jit::recording::extended_asm::maybe_populate_playback_blocks):
+	New.
+	(gcc::jit::recording::extended_asm_goto::extended_asm_goto): New.
+	(gcc::jit::recording::extended_asm_goto::replay_into): New.
+	(gcc::jit::recording::extended_asm_goto::write_reproducer): New.
+	(gcc::jit::recording::extended_asm_goto::get_successor_blocks):
+	New.
+	(gcc::jit::recording::extended_asm_goto::maybe_print_gotos): New.
+	(gcc::jit::recording::extended_asm_goto::maybe_populate_playback_blocks):
+	New.
+	(gcc::jit::recording::top_level_asm::top_level_asm): New.
+	(gcc::jit::recording::top_level_asm::replay_into): New.
+	(gcc::jit::recording::top_level_asm::make_debug_string): New.
+	(gcc::jit::recording::top_level_asm::write_to_dump): New.
+	(gcc::jit::recording::top_level_asm::write_reproducer): New.
+	* jit-recording.h
+	(gcc::jit::recording::context::add_top_level_asm): New decl.
+	(gcc::jit::recording::context::m_top_level_asms): New field.
+	(gcc::jit::recording::block::add_extended_asm): New decl.
+	(gcc::jit::recording::block::end_with_extended_asm_goto): New
+	decl.
+	(gcc::jit::recording::asm_operand): New class.
+	(gcc::jit::recording::output_asm_operand): New class.
+	(gcc::jit::recording::input_asm_operand): New class.
+	(gcc::jit::recording::extended_asm): New class.
+	(gcc::jit::recording::extended_asm_simple): New class.
+	(gcc::jit::recording::extended_asm_goto): New class.
+	(gcc::jit::recording::top_level_asm): New class.
+	* libgccjit++.h (gccjit::extended_asm): New forward decl.
+	(gccjit::context::add_top_level_asm): New.
+	(gccjit::block::add_extended_asm): New.
+	(gccjit::block::end_with_extended_asm_goto): New.
+	(gccjit::extended_asm): New class.
+	(gccjit::extended_asm::extended_asm): New ctors.
+	(gccjit::extended_asm::set_volatile_flag): New.
+	(gccjit::extended_asm::set_inline_flag): New.
+	(gccjit::extended_asm::add_output_operand): New.
+	(gccjit::extended_asm::add_input_operand): New.
+	(gccjit::extended_asm::add_clobber): New.
+	(gccjit::extended_asm::get_inner_extended_asm): New.
+	* libgccjit.c (struct gcc_jit_extended_asm): New.
+	(jit_error): Make "loc" param take a gcc::jit::recording::location *
+	rather than a gcc_jit_location *.
+	(gcc_jit_block_add_extended_asm): New entrypoint.
+	(gcc_jit_block_end_with_extended_asm_goto): New entrypoint.
+	(gcc_jit_extended_asm_as_object): New entrypoint.
+	(gcc_jit_extended_asm_set_volatile_flag): New entrypoint.
+	(gcc_jit_extended_asm_set_inline_flag): New entrypoint.
+	(gcc_jit_extended_asm_add_output_operand): New entrypoint.
+	(gcc_jit_extended_asm_add_clobber): New entrypoint.
+	(gcc_jit_context_add_top_level_asm): New entrypoint.
+	* libgccjit.h: Add gcc_jit_extended_asm to ASCII art.
+	(gcc_jit_extended_asm): New typedef.
+	(LIBGCCJIT_HAVE_ASM_STATEMENTS): New define.
+	(gcc_jit_block_add_extended_asm): New entrypoint.
+	(gcc_jit_block_end_with_extended_asm_goto): New entrypoint.
+	(gcc_jit_extended_asm_as_object): New entrypoint.
+	(gcc_jit_extended_asm_set_volatile_flag): New entrypoint.
+	(gcc_jit_extended_asm_set_inline_flag): New entrypoint.
+	(gcc_jit_extended_asm_add_output_operand): New entrypoint.
+	(gcc_jit_extended_asm_add_input_operand): New entrypoint.
+	(gcc_jit_extended_asm_add_clobber): New entrypoint.
+	(gcc_jit_context_add_top_level_asm): New entrypoint.
+	* libgccjit.map (LIBGCCJIT_ABI_15): New.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (recording::context::new_string): Add "escaped"
+	param and use it when creating the new recording::string instance.
+	(recording::string::string): Add "escaped" param and use it to
+	initialize m_escaped.
+	(recording::string::make_debug_string): Replace check that first
+	char is double-quote with use of m_escaped.  Fix escaping of
+	'\t' and '\n'.  Set "escaped" on the result.
+	* jit-recording.h (recording::context::new_string): Add "escaped"
+	param.
+	(recording::string::string): Add "escaped" param.
+	(recording::string::m_escaped): New field.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgccjit.h: Fix typo in comment.
+
 2020-09-14  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.

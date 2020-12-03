@@ -259,7 +259,7 @@ get_emutls_init_templ_addr (tree decl)
   if (targetm.emutls.tmpl_section)
     set_decl_section_name (to, targetm.emutls.tmpl_section);
   else
-    set_decl_section_name (to, DECL_SECTION_NAME (decl));
+    set_decl_section_name (to, decl);
 
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */

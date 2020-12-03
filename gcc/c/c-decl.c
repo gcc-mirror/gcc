@@ -2884,7 +2884,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	       || TREE_PUBLIC (olddecl)
 	       || TREE_STATIC (olddecl))
 	      && DECL_SECTION_NAME (newdecl) != NULL)
-	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+	    set_decl_section_name (olddecl, newdecl);
 
 	  /* This isn't quite correct for something like
 		int __thread x attribute ((tls_model ("local-exec")));
@@ -5775,6 +5775,8 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	       type = TREE_TYPE (type))
 	    {
 	      tree nelts = array_type_nelts (type);
+	      if (error_operand_p (nelts))
+		return attrs;
 	      if (TREE_CODE (nelts) != INTEGER_CST)
 		{
 		  /* Each variable VLA bound is represented by the dollar
@@ -9596,7 +9598,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   current_function_decl = pushdecl (decl1);
 
   if (tree access = build_attr_access_from_parms (parms, false))
-    decl_attributes (&current_function_decl, access, 0, old_decl);
+    decl_attributes (&current_function_decl, access, ATTR_FLAG_INTERNAL,
+		     old_decl);
 
   push_scope ();
   declare_parm_level ();

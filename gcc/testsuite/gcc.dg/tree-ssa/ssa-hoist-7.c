@@ -49,6 +49,6 @@ void foo (int a, int b, int c, int d, int e, int x, int y, int z)
 
 /* Now inserting x + y five times is unnecessary but the cascading
    cannot be avoided with the simple-minded dataflow.  But make sure
-   we do the insertions all in the first iteration.  */
-/* { dg-final { scan-tree-dump "insert iterations == 2" "pre" } } */
+   we do not iterate PRE insertion.  */
+/* { dg-final { scan-tree-dump "insert iterations == 1" "pre" } } */
 /* { dg-final { scan-tree-dump "HOIST inserted: 5" "pre" } } */

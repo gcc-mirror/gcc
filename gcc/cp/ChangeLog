@@ -1,3 +1,473 @@
+2020-12-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c++/97947
+	* typeck2.c (digest_init_r): Handle OPAQUE_TYPE as an aggregate type.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	PR c++/93093
+	* cp-tree.h (source_location_current_p): Declare.
+	* tree.c (source_location_current_p): New function.
+	* call.c (immediate_invocation_p): New function.
+	(build_over_call): Use it to resolve LWG3396.
+	* constexpr.c (cxx_eval_builtin_function_call): Temporarily set
+	current_function_decl from ctx->call->fundef->decl if any.
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Fold calls
+	to immediate function std::source_location::current ().
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Improve diagnostic for
+	disallowed CTAD placeholder.
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (check_initializer): Also look through STMT_EXPR
+	and BIND_EXPR.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (comparing_typenames): Declare.
+	* pt.c (comparing_typenames): Define.
+	(spec_hasher::equal): Increment it around comparisons.
+	* typeck.c (structural_comptypes): Adjust TYPENAME resolution
+	check.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97975
+	* constexpr.c (fold_non_dependent_init): Add a tree parameter.
+	Use it.
+	* cp-tree.h (fold_non_dependent_init): Add a tree parameter with
+	a default value.
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr
+	only when checking the initializer for constexpr variables.
+	Call fold_non_dependent_init instead of maybe_constant_init.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97187
+	PR c++/97993
+	* pt.c (tsubst_copy_and_build) <case NEW_EXPR>: Return error_mark_node
+	if init is erroneous.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_MODULE_PURVIEW_P, DECL_MODULE_IMPORT_P)
+	(DECL_MODULE_ENTITY_P): New.
+	(DECL_MODULE_PENDING_SPECIALIZATIONS_P): New.
+	(DECL_MODULE_PENDING_MEMBERS_P): New.
+	(DECL_MODULE_ATTACHMENTS_P): New.
+	(DECL_MODULE_EXPORT_P): New.
+	(struct lang_decl_base): Shrink sel field.  Add new
+	module-specific fields.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_TINFO_P): Also for TYPE_DECLs.
+	(get_tinfo_decl_direct): Declare.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): Declare.
+	* rtti.c (get_tinfo_decl_direct): Externalize.
+	(get_tinfo_desc): Set DECL_TINFO_P on the typedef.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): New.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (maybe_add_lang_decl_raw, maybe_add_lang_type_raw):
+	Declare.
+	* lex.c (maybe_add_lang_decl_raw, maybe_add_lang_type_raw):
+	Externalize, reformat.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_cplus_array_type): Add defaulted DEP parm.
+	* tree.c (set_array_type_common): Add DEP parm.
+	(build_cplus_array_type): Add DEP parm, determine dependency if
+	needed.
+	(cp_build_qualified_type_real): Adjust array-building call.
+	(strip_typedefs): Likewise.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (cxx_print_xnode): Increase binding-vector prefix size.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.def (BINDING_VECTOR): New.
+	* name-lookup.h (struct binding_slot): New.
+	(BINDING_VECTOR_SLOTS_PER_CLUSTER): New.
+	(struct binding_index, struct binding_cluster): New.
+	(BINDING_VECTOR_ALLOC_CLUSTERS, BINDING_VECTOR_CLUSTER_BASE)
+	(BINDING_VECTOR_CLUSTER): New.
+	(struct tree_binding_vec): New.
+	(BINDING_VECTOR_NAME, BINDING_VECTOR_GLOBAL_DUPS_P)
+	(BINDING_VECTOR_PARTITION_DUPS_P): New.
+	(BINDING_BINDING_GLOBAL_P, BINDING_BINDING_PARTITION_P): New.
+	(BINDING_VECTOR_PENDING_SPECIALIZATIONS)
+	(BINDING_VECTOR_PENDING_IS_HEADER_P)
+	(BINDING_VECTOR_PENDING_IS_PARTITION_P): New.
+	* cp-tree.h (enum cp_tree_node_structure_enum): Add
+	TS_CP_BINDING_VECTOR.
+	(union lang_tree_node): Add binding_vec field.
+	(make_binding_vec): Declare.
+	(named_decl_hash::hash, named_decl_hash::equal): Check for binding
+	vector.
+	* decl.c (cp_tree_node_structure): Add BINDING_VECTOR case.
+	* ptree.c (cxx_print_xnode): Add BINDING_VECTOR case.
+	* tree.c (make_binding_vec): New.
+
+2020-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/98054
+	* cxx-pretty-print.c (pp_cxx_trait_expression):
+	Add support for __is_nothrow_{assignable,constructible}.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98072
+	* parser.c (cp_parser_omp_depobj): Suppress location wrappers when
+	parsing depend clause.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (init_reswords): Maybe enable module keywords.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* lang-specs.h: Add module-related options.
+
+2020-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_declaration): Add a not about where
+	attributes may be placed.
+
+2020-11-27  Martin Sebor  <msebor@redhat.com>
+
+	* error.c (add_quotes): Revert previous change and use pragma to
+	suppress -Wformat-diag.
+
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++spec.c (TIMELIB, TIME_LIBRARY): Remove.
+	(lang_specific_driver): Remove TIME_LIBRARY handling.
+
+2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_var_list_no_open): Assert that array
+	section's 'low_bound', 'length' are not location wrapper nodes.
+	(cp_parser_oacc_all_clauses, cp_parser_oacc_cache): Instantiate
+	'auto_suppress_location_wrappers'.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* constraint.cc (debug_argument_list): Avoid -Wformat-diag.
+	* error.c (function_category): Same.
+	(print_template_differences): Same.
+	* logic.cc (debug): Same.
+	* name-lookup.c (lookup_using_decl): Same.
+	* parser.c (maybe_add_cast_fixit): Same.
+	(cp_parser_template_introduction): Same.
+	* typeck.c (access_failure_info::add_fixit_hint): Same.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* pt.c (tsubst_omp_clauses): Handle 'OMP_CLAUSE__CACHE_'.
+	(tsubst_expr): Handle 'OACC_CACHE'.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97899
+	* typeck2.c (store_init_value): Don't split_nonconstant_init in a
+	template.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* constexpr.c (cxx_eval_binary_expression): For shifts by constant
+	with MSB set, emulate older wide_int_binop behavior to preserve
+	diagnostics and -fpermissive behavior.
+
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc: New dummy file.
+	* Make-lang.in: Add rules to build module.o
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* decl.c (start_decl): Set DECL_INITIAL for initialized decls
+	before attribute processing.
+
+2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* pt.c (tsubst): Use verify_type_context to check the type
+	of an array element.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* parser.c (warn_for_range_copy): Warn when the loop variable is
+	initialized with a value of a different type resulting in a copy.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97846
+	* constexpr.c (potential_constant_expression_1): Reject
+	LABEL_EXPRs that use non-artifical LABEL_DECLs.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97881
+	* parser.c (warn_about_ambiguous_parse): Only assume "int" if we
+	actually saw any type-specifiers.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97839
+	* parser.c (cp_parser_lambda_declarator_opt): Don't require ().
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* constexpr.c (cxx_set_object_constness): New function.
+	(cxx_eval_call_expression): Set new_obj for destructors too.
+	Call cxx_set_object_constness to set/unset TREE_READONLY of
+	the object under construction/destruction.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* error.c (dump_type): Handle opaque types.
+	(dump_type_prefix): Handle opaque types.
+	(dump_type_suffix): Handle opaque types.
+	(dump_expr): Handle opaque types.
+	* pt.c (tsubst): Allow opaque types in templates.
+	(unify): Allow opaque types in templates.
+	* typeck.c (structural_comptypes): Handle comparison
+	of opaque types.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (c++.serial): Change from goal to a variable.
+	(.PHONY): Drop c++.serial and c++.prev.
+	(cc1plus$(exeext)): Depend on $(c++.serial) rather than c++.serial.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct spec_entry): Moved from pt.c.
+	(walk_specializations, match_mergeable_specialization)
+	(get_mergeable_specialization_flags)
+	(add_mergeable_specialization): Declare.
+	* pt.c (struct spec_entry): Moved to cp-tree.h.
+	(walk_specializations, match_mergeable_specialization)
+	(get_mergeable_specialization_flags)
+	(add_mergeable_specialization): New.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct constexpr_fundef): Moved from constexpr.c.
+	(maybe_save_constexpr_fundef): Declare.
+	(register_constexpr_fundef): Take constexpr_fundef object, return
+	void.
+	* decl.c (mabe_save_function_definition): Delete, functionality
+	moved to maybe_save_constexpr_fundef.
+	(emit_coro_helper, finish_function): Adjust.
+	* constexpr.c (struct constexpr_fundef): Moved to cp-tree.h.
+	(constexpr_fundef_hasher::equal): Constify.
+	(constexpr_fundef_hasher::hash): Constify.
+	(retrieve_constexpr_fundef): Make non-static.
+	(maybe_save_constexpr_fundef): Break out checking and duplication
+	from ...
+	(register_constexpr_fundef): ... here.  Just register the constexpr.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97523
+	* init.c (build_new): When value-initializing an array new,
+	leave the INIT as an empty vector.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97895
+	* pt.c (do_auto_deduction): Don't crash when the constructor has
+	zero elements.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97905
+	* decl.c (duplicate_decls): Relax new assert.
+
+2020-11-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_objc_valid_prefix_attributes): Check
+	for empty attributes.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (c++.serial): New goal.
+	(.PHONY): Add c++.serial c++.prev.
+	(cc1plus$(exeext)): Depend on c++.prev.  Call LINK_PROGRESS.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97877
+	* decl.c (duplicate_decls): Deal with duplicated DECL_LOCAL_DECL_P
+	decls.  Extend decl_lang_specific checking assert.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum cp_tree_index): Reorder to place lazy fields
+	after newly-added CPTI_MODULE_HWM.
+
+2020-11-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97871
+	* parser.c (cp_parser_declaration): Remove checking assert.
+
+2020-11-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Only check abstractness on definition.
+	(require_complete_types_for_parms): Check abstractness here.
+	(create_array_type_for_decl): Not here.
+	(grokdeclarator, grokparms, complete_vars): Not here.
+	* pt.c (tsubst, tsubst_arg_types, tsubst_function_type): Not here.
+	* typeck2.c (struct pending_abstract_type): Remove.
+	(struct abstract_type_hasher): Remove.
+	(abstract_pending_vars, complete_type_check_abstract): Remove.
+	(abstract_virtuals_error_sfinae): Handle arrays.
+	* call.c (conv_is_prvalue): Split out from...
+	(conv_binds_ref_to_prvalue): ...here.
+	(implicit_conversion_1): Rename from implicit_conversion.
+	(implicit_conversion): An abstract prvalue is bad.
+	(convert_like_internal): Don't complain if expr is already
+	error_mark_node.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (USING_DECL_UNRELATED_P): New.
+	(CONST_DECL_USING_P): New.
+	* class.c (handle_using_decl): If USING_DECL_UNRELATED_P,
+	clone the CONST_DECL.
+	* name-lookup.c (supplement_binding_1): A clone hides its
+	using-declaration.
+	(lookup_using_decl): Rewrite to separate lookup and validation.
+	(do_class_using_decl): Adjust.
+	(finish_nonmember_using_decl): Adjust.
+	* parser.c (make_location): Add cp_token overload.
+	(finish_using_decl): Split out from...
+	(cp_parser_using_declaration): ...here.  Don't look through enums.
+	(cp_parser_using_enum): New.
+	(cp_parser_block_declaration): Call it.
+	(cp_parser_member_declaration): Call it.
+	* semantics.c (finish_id_expression_1): Handle enumerator
+	used from class scope.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* parser.c (cp_parser_asm_definition): Parse outputs for asm
+	goto too.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* parser.c (cp_parser_objc_class_interface): Pass the
+	location of the class name to the interface declaration.
+
+2020-11-13  Patrick Palka  <ppalka@redhat.com>
+
+	* semantics.c (finish_compound_literal): Don't wrap the original
+	compound literal in a TARGET_EXPR when inside a template.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97790
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_POINT_EXPR,
+	case TRY_FINALLY_EXPR, case CLEANUP_STMT>: Don't pass jump_target to
+	cxx_eval_constant_expression when evaluating the cleanups.
+
+2020-11-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_declaration): Unless we are compiling for
+	Ojective-C++, warn about and discard any attributes that prefix
+	a linkage specification.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* mangle.c (write_expression): Mangle __alignof_ differently
+	from alignof when the ABI version is at least 15.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* cp-tree.h (cxx_sizeof_or_alignof_expr): Add bool parameter.
+	* decl.c (fold_sizeof_expr): Pass false to
+	cxx_sizeof_or_alignof_expr.
+	* parser.c (cp_parser_unary_expression): Pass std_alignof to
+	cxx_sizeof_or_alignof_expr.
+	* pt.c (tsubst_copy): Pass false to cxx_sizeof_or_alignof_expr.
+	(tsubst_copy_and_build): Pass std_alignof to
+	cxx_sizeof_or_alignof_expr.
+	* typeck.c (cxx_alignof_expr): Add std_alignof bool parameter
+	and pass it to cxx_sizeof_or_alignof_type.  Set ALIGNOF_EXPR_STD_P
+	appropriately.
+	(cxx_sizeof_or_alignof_expr): Add std_alignof bool parameter
+	and pass it to cxx_alignof_expr.  Assert op is either
+	SIZEOF_EXPR or ALIGNOF_EXPR.
+
+2020-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* pt.c (tsubst_qualified_id): Use EXPR_LOCATION of the qualified-id.
+	Use it to maybe_wrap_with_location the final expression.
+
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* cp-tree.h (finish_static_assert): Adjust declaration.
+	* parser.c (cp_parser_static_assert): Pass false to
+	finish_static_assert.
+	* pt.c (tsubst_expr): Pass true to finish_static_assert.
+	* semantics.c (find_failing_clause_r): New function.
+	(find_failing_clause): New function.
+	(finish_static_assert): Add a bool parameter.  Use
+	iloc_sentinel.  Call contextual_conv_bool instead of
+	perform_implicit_conversion_flags.  Don't check for INTEGER_CST before
+	calling integer_zerop.  Call find_failing_clause and maybe use its
+	location.  Print the original condition or the failing clause if
+	SHOW_EXPR_P.
+
+2020-11-10  Strager Neds  <strager.nds@gmail.com>
+
+	* decl.c (duplicate_decls): Use new overload of
+	set_decl_section_name.
+	* method.c (use_thunk): Same.
+	* optimize.c (maybe_clone_body): Same.
+	* coroutines.cc (act_des_fn): Same.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97748
+	* cvt.c (convert_to_void): Check (complain & tf_warning) in the outer
+	if rather than twice times in the inner one.  Use warn_if_unused_value.
+	Formatting fix.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.c (cp_parser_omp_target_data): Add use of
+	new c_omp_adjust_map_clauses function. Add GOMP_MAP_ATTACH_DETACH as
+	handled map clause kind.
+	(cp_parser_omp_target_enter_data): Likewise.
+	(cp_parser_omp_target_exit_data): Likewise.
+	(cp_parser_omp_target): Likewise.
+	* semantics.c (handle_omp_array_sections): Adjust COMPONENT_REF case to
+	use GOMP_MAP_ATTACH_DETACH map kind for C_ORT_OMP region type. Fix
+	interaction between reference case and attach/detach.
+	(finish_omp_clauses): Adjust bitmap checks to allow struct decl and
+	same struct field access to co-exist on OpenMP construct.
+
 2020-11-09  Marek Polacek  <polacek@redhat.com>
 
 	DR 1914

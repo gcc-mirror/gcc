@@ -411,7 +411,7 @@ print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 
 		  write_indent (pp, vbar_for_next_frame);
 		  pp_string (pp, start_line_color);
-		  pp_printf (pp, "|");
+		  pp_character (pp, '|');
 		  pp_string (pp, end_line_color);
 		  pp_newline (pp);
 		}
@@ -519,6 +519,13 @@ default_tree_make_json_for_path (diagnostic_context *context,
 }
 
 #if CHECKING_P
+
+/* Disable warnings about missing quoting in GCC diagnostics for the print
+   calls in the tests below.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 namespace selftest {
 
@@ -813,5 +820,9 @@ tree_diagnostic_path_cc_tests ()
 }
 
 } // namespace selftest
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 #endif /* #if CHECKING_P */

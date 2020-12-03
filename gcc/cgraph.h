@@ -263,7 +263,7 @@ public:
     }
 
   /* Return section as string.  */
-  const char * get_section ()
+  const char * get_section () const
     {
       if (!x_section)
 	return NULL;
@@ -322,10 +322,17 @@ public:
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
 
+  /* Like set_section, but copying the section name from another node.  */
+  void set_section (const symtab_node &other);
+
   /* Set section, do not recurse into aliases.
      When one wants to change section of symbol and its aliases,
      use set_section.  */
   void set_section_for_node (const char *section);
+
+  /* Like set_section_for_node, but copying the section name from another
+     node.  */
+  void set_section_for_node (const symtab_node &other);
 
   /* Set initialization priority to PRIORITY.  */
   void set_init_priority (priority_type priority);
@@ -643,8 +650,9 @@ protected:
 				      void *data,
 				      bool include_overwrite);
 private:
-  /* Worker for set_section.  */
-  static bool set_section (symtab_node *n, void *s);
+  /* Workers for set_section.  */
+  static bool set_section_from_string (symtab_node *n, void *s);
+  static bool set_section_from_node (symtab_node *n, void *o);
 
   /* Worker for symtab_resolve_alias.  */
   static bool set_implicit_section (symtab_node *n, void *);

@@ -1141,7 +1141,7 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
-@item @{ dg-require-effective-target @var{keyword} [@{ @var{selector} @}] @}
+@item @{ dg-require-effective-target @var{keyword} [@{ target @var{selector} @}] @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
 If the directive includes the optional @samp{@{ @var{selector} @}}
@@ -1443,6 +1443,10 @@ Target has runtime support for any options added with
 @item inf
 Target supports floating point infinite (@code{inf}) for type
 @code{double}.
+
+@item inff
+Target supports floating point infinite (@code{inf}) for type
+@code{float}.
 @end table
 @subsubsection Fortran-specific attributes
 
@@ -2243,6 +2247,9 @@ Target supports compiling @code{avx2} instructions.
 @item avx2_runtime
 Target supports the execution of @code{avx2} instructions.
 
+@item avxvnni
+Target supports the execution of @code{avxvnni} instructions.
+
 @item avx512f
 Target supports compiling @code{avx512f} instructions.
 
@@ -2455,6 +2462,9 @@ Target supports wide characters.
 @subsubsection Other attributes
 
 @table @code
+@item R_flag_in_section
+Target supports the 'R' flag in .section directive in assembly inputs.
+
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
@@ -2538,8 +2548,14 @@ Target supports the @code{noinit} variable attribute.
 @item nonpic
 Target does not generate PIC by default.
 
+@item o_flag_in_section
+Target supports the 'o' flag in .section directive in assembly inputs.
+
 @item offload_gcn
 Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
+
+@item persistent
+Target supports the @code{persistent} variable attribute.
 
 @item pie_enabled
 Target generates PIE by default.

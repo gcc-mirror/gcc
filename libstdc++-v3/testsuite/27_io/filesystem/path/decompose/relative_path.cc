@@ -42,7 +42,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     bool after_root = false;
     const path prel = p.relative_path();

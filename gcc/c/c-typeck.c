@@ -2080,6 +2080,9 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
     exp.value = require_complete_type (loc, exp.value);
+  if (convert_p && !error_operand_p (exp.value)
+      && (TREE_CODE (TREE_TYPE (exp.value)) != ARRAY_TYPE))
+    exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;
@@ -10666,10 +10669,6 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
       TREE_VALUE (tail) = input;
     }
 
-  /* ASMs with labels cannot have outputs.  This should have been
-     enforced by the parser.  */
-  gcc_assert (outputs == NULL || labels == NULL);
-
   args = build_stmt (loc, ASM_EXPR, string, outputs, inputs, clobbers, labels);
 
   /* asm statements without outputs, including simple ones, are treated
@@ -12267,8 +12266,8 @@ build_binary_op (location_t location, enum tree_code code,
 	      result_type = common_pointer_type (type0, type1);
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
 		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
-		pedwarn (location, 0,
-			 "comparison of complete and incomplete pointers");
+		pedwarn_c99 (location, OPT_Wpedantic,
+			     "comparison of complete and incomplete pointers");
 	      else if (TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 		pedwarn (location, OPT_Wpedantic, "ISO C forbids "
 			 "ordered comparisons of pointers to functions");
@@ -15199,7 +15198,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      OMP_CLAUSE_LINEAR_STEP (c));
 	    remove = true;
 	  }
-	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		 && reduction_seen == -2)
 	  OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
 
 	if (remove)

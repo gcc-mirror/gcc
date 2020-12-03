@@ -135,7 +135,7 @@ extern GTY(()) int darwin_ms_struct;
 "%{shared:-Zdynamiclib} %<shared",					\
 "%{static:%{Zdynamic:%e conflicting code gen style switches are used}}",\
 "%{y*:%nthe y option is obsolete and ignored} %<y*",			\
-"%<Mach %<X"
+"%<Mach "
 
 #if LD64_HAS_EXPORT_DYNAMIC
 #define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
@@ -237,7 +237,7 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}} %<pie %<no-pie %<rdynamic "
+    "}}}}}}} %<pie %<no-pie %<rdynamic %<X "
 
 #define DSYMUTIL "\ndsymutil"
 
@@ -590,6 +590,9 @@ extern GTY(()) int darwin_ms_struct;
 
 /* Emit a label to separate the exception table.  */
 #define TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL darwin_emit_except_table_label
+
+/* Make an EH (personality or LDSA) symbol indirect as needed.  */
+#define TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT darwin_make_eh_symbol_indirect
 
 /* Our profiling scheme doesn't LP labels and counter words.  */
 

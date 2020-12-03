@@ -991,7 +991,12 @@ dwarf2out_do_cfi_startproc (bool second)
 	 in the assembler.  Further, the assembler can't handle any
 	 of the weirder relocation types.  */
       if (enc & DW_EH_PE_indirect)
-	ref = dw2_force_const_mem (ref, true);
+	{
+	  if (targetm.asm_out.make_eh_symbol_indirect != NULL)
+	    ref = targetm.asm_out.make_eh_symbol_indirect (ref, true);
+	  else
+	    ref = dw2_force_const_mem (ref, true);
+	}
 
       fprintf (asm_out_file, "\t.cfi_personality %#x,", enc);
       output_addr_const (asm_out_file, ref);
@@ -1009,7 +1014,12 @@ dwarf2out_do_cfi_startproc (bool second)
       SYMBOL_REF_FLAGS (ref) = SYMBOL_FLAG_LOCAL;
 
       if (enc & DW_EH_PE_indirect)
-	ref = dw2_force_const_mem (ref, true);
+	{
+	  if (targetm.asm_out.make_eh_symbol_indirect != NULL)
+	    ref = targetm.asm_out.make_eh_symbol_indirect (ref, true);
+	  else
+	    ref = dw2_force_const_mem (ref, true);
+	}
 
       fprintf (asm_out_file, "\t.cfi_lsda %#x,", enc);
       output_addr_const (asm_out_file, ref);
@@ -12963,18 +12973,19 @@ base_type_die (tree type, bool reverse)
 	  break;
 
 	case fixed_point_scale_factor_arbitrary:
-	  /* Arbitrary scale factors cannot be described in standard DWARF,
-	     yet.  */
+	  /* Arbitrary scale factors cannot be described in standard DWARF.  */
 	  if (!dwarf_strict)
 	    {
 	      /* Describe the scale factor as a rational constant.  */
 	      const dw_die_ref scale_factor
 		= new_die (DW_TAG_constant, comp_unit_die (), type);
 
-	      add_AT_unsigned (scale_factor, DW_AT_GNU_numerator,
-			       fpt_info.scale_factor.arbitrary.numerator);
-	      add_AT_int (scale_factor, DW_AT_GNU_denominator,
-			  fpt_info.scale_factor.arbitrary.denominator);
+	      add_scalar_info (scale_factor, DW_AT_GNU_numerator,
+			       fpt_info.scale_factor.arbitrary.numerator,
+			       dw_scalar_form_constant, NULL);
+	      add_scalar_info (scale_factor, DW_AT_GNU_denominator,
+			       fpt_info.scale_factor.arbitrary.denominator,
+			       dw_scalar_form_constant, NULL);
 
 	      add_AT_die_ref (base_type_result, DW_AT_small, scale_factor);
 	    }
@@ -13027,6 +13038,7 @@ is_base_type (tree type)
       return 1;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case ARRAY_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -20763,12 +20775,23 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	  else
 	    add_AT_int (die, attr, TREE_INT_CST_LOW (value));
 	}
-      else
+      else if (dwarf_version >= 5
+	       && TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (value))) == 128)
 	/* Otherwise represent the bound as an unsigned value with
 	   the precision of its type.  The precision and signedness
 	   of the type will be necessary to re-interpret it
 	   unambiguously.  */
 	add_AT_wide (die, attr, wi::to_wide (value));
+      else
+	{
+	  rtx v = immed_wide_int_const (wi::to_wide (value),
+					TYPE_MODE (TREE_TYPE (value)));
+	  dw_loc_descr_ref loc
+	    = loc_descriptor (v, TYPE_MODE (TREE_TYPE (value)),
+			      VAR_INIT_STATUS_INITIALIZED);
+	  if (loc)
+	    add_AT_loc (die, attr, loc);
+	}
       return;
     }
 
@@ -22183,6 +22206,9 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die, link);
 	  tree value = TREE_VALUE (link);
 
+	  if (DECL_P (value))
+	    equate_decl_number_to_die (value, enum_die);
+
 	  gcc_assert (!ENUM_IS_OPAQUE (type));
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
@@ -22766,6 +22792,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   tree origin = decl_ultimate_origin (decl);
   dw_die_ref subr_die;
   dw_die_ref old_die = lookup_decl_die (decl);
+  bool old_die_had_no_children = false;
 
   /* This function gets called multiple times for different stages of
      the debug process.  For example, for func() in this code:
@@ -22849,12 +22876,16 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
           available.
   */
   int declaration = (current_function_decl != decl
+		     || (!DECL_INITIAL (decl) && !origin)
 		     || class_or_namespace_scope_p (context_die));
 
   /* A declaration that has been previously dumped needs no
      additional information.  */
   if (old_die && declaration)
     return;
+
+  if (in_lto_p && old_die && old_die->die_child == NULL)
+    old_die_had_no_children = true;
 
   /* Now that the C++ front end lazily declares artificial member fns, we
      might need to retrofit the declaration into its class.  */
@@ -23375,6 +23406,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  else if (DECL_INITIAL (decl) == NULL_TREE)
 	    gen_unspecified_parameters_die (decl, subr_die);
 	}
+      else if ((subr_die != old_die || old_die_had_no_children)
+	       && prototype_p (TREE_TYPE (decl))
+	       && stdarg_p (TREE_TYPE (decl)))
+	gen_unspecified_parameters_die (decl, subr_die);
     }
 
   if (subr_die != old_die)
@@ -24609,7 +24644,7 @@ gen_compile_unit_die (const char *filename)
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
 	    if (strcmp (language_string, "GNU C11") == 0
 		|| strcmp (language_string, "GNU C17") == 0
-		|| strcmp (language_string, "GNU C2X"))
+		|| strcmp (language_string, "GNU C2X") == 0)
 	      language = DW_LANG_C11;
 	}
     }
@@ -24622,7 +24657,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C_plus_plus_11;
 	  else if (strcmp (language_string, "GNU C++14") == 0)
 	    language = DW_LANG_C_plus_plus_14;
-	  else if (strcmp (language_string, "GNU C++17") == 0)
+	  else if (strcmp (language_string, "GNU C++17") == 0
+		   || strcmp (language_string, "GNU C++20") == 0)
 	    /* For now.  */
 	    language = DW_LANG_C_plus_plus_14;
 	}
@@ -25236,6 +25272,10 @@ gen_member_die (tree type, dw_die_ref context_die)
 		  splice = false;
 		}
 	    }
+	  else if (child->die_tag == DW_TAG_enumerator)
+	    /* Enumerators remain under their enumeration even if
+	       their names are introduced in the enclosing scope.  */
+	    splice = false;
 
 	  if (splice)
 	    splice_child_die (context_die, child);
@@ -25749,6 +25789,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       return;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -26145,6 +26186,13 @@ force_decl_die (tree decl)
 	  else
 	    /* DWARF2 has neither DW_TAG_module, nor DW_TAG_namespace.  */
 	    decl_die = comp_unit_die ();
+	  break;
+
+	case CONST_DECL:
+	  /* Enumerators shouldn't need force_decl_die.  */
+	  gcc_assert (DECL_CONTEXT (decl) == NULL_TREE
+		      || TREE_CODE (DECL_CONTEXT (decl)) != ENUMERAL_TYPE);
+	  gen_decl_die (decl, NULL, NULL, context_die);
 	  break;
 
 	case TRANSLATION_UNIT_DECL:
@@ -26732,7 +26780,7 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
   else
     xloc = expand_location (input_location);
 
-  if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
+  if (TREE_CODE (decl) == TYPE_DECL)
     {
       at_import_die = force_type_die (TREE_TYPE (decl));
       /* For namespace N { typedef void T; } using N::T; base_type_die
@@ -32135,12 +32183,12 @@ dwarf2out_early_finish (const char *filename)
      emit full debugging info for them.  */
   retry_incomplete_types ();
 
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
+
   /* The point here is to flush out the limbo list so that it is empty
      and we don't need to stream it for LTO.  */
   flush_limbo_die_list ();
-
-  gen_scheduled_generic_parms_dies ();
-  gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add DW_AT_linkage_name for all deferred DIEs.  */
   for (limbo_die_node *node = deferred_asm_name; node; node = node->next)

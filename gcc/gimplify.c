@@ -1237,8 +1237,11 @@ asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
 
   /* It's necessary to have all stack variables aligned to ASAN granularity
      bytes.  */
-  if (DECL_ALIGN_UNIT (decl) <= ASAN_SHADOW_GRANULARITY)
-    SET_DECL_ALIGN (decl, BITS_PER_UNIT * ASAN_SHADOW_GRANULARITY);
+  gcc_assert (!hwasan_sanitize_p () || hwasan_sanitize_stack_p ());
+  unsigned shadow_granularity
+    = hwasan_sanitize_p () ? HWASAN_TAG_GRANULE_SIZE : ASAN_SHADOW_GRANULARITY;
+  if (DECL_ALIGN_UNIT (decl) <= shadow_granularity)
+    SET_DECL_ALIGN (decl, BITS_PER_UNIT * shadow_granularity);
 
   HOST_WIDE_INT flags = poison ? ASAN_MARK_POISON : ASAN_MARK_UNPOISON;
 
@@ -3384,6 +3387,20 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	cfun->calls_eh_return = true;
 	break;
 
+      case BUILT_IN_CLEAR_PADDING:
+	if (call_expr_nargs (*expr_p) == 1)
+	  {
+	    /* Remember the original type of the argument in an internal
+	       dummy second argument, as in GIMPLE pointer conversions are
+	       useless.  */
+	    p = CALL_EXPR_ARG (*expr_p, 0);
+	    *expr_p
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
+	    return GS_OK;
+	  }
+	break;
+
       default:
         ;
       }
@@ -5517,6 +5534,19 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	      *expr_p = wrap;
 	    return GS_OK;
 	  }
+
+	case NOP_EXPR:
+	  /* Pull out compound literal expressions from a NOP_EXPR.
+	     Those are created in the C FE to drop qualifiers during
+	     lvalue conversion.  */
+	  if ((TREE_CODE (TREE_OPERAND (*from_p, 0)) == COMPOUND_LITERAL_EXPR)
+	      && tree_ssa_useless_type_conversion (*from_p))
+	    {
+	      *from_p = TREE_OPERAND (*from_p, 0);
+	      ret = GS_OK;
+	      changed = true;
+	    }
+	  break;
 
 	case COMPOUND_LITERAL_EXPR:
 	  {
@@ -8672,7 +8702,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "invalid %<task%> reduction modifier on construct "
-			    "other than %<parallel%>, %<for%> or %<sections%>");
+			    "other than %<parallel%>, %qs or %<sections%>",
+			    lang_GNU_Fortran () ? "do" : "for");
 		  OMP_CLAUSE_REDUCTION_TASK (c) = 0;
 		}
 	    }
@@ -9903,10 +9934,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      remove = true;
 	      break;
 	    }
+	  else if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+		   || (TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
+		       == INTEGER_CST))
+	    ;
 	  else if (code == OMP_TASKLOOP
-		   && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-		   && (TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
-		       != INTEGER_CST))
+		   || !DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
 	    OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
 	      = get_initialized_tmp_var (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
 					 pre_p, NULL, false);
@@ -10474,6 +10507,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		       && omp_shared_to_firstprivate_optimizable_decl_p (decl))
 		omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
 	    }
+	  else
+	    n->value &= ~GOVD_EXPLICIT;
 	  break;
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -10773,6 +10808,41 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      && omp_shared_to_firstprivate_optimizable_decl_p (decl))
 	    omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  decl = OMP_CLAUSE_DECL (c);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  if (n != NULL && !(n->value & GOVD_SEEN))
+	    {
+	      if ((n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE | GOVD_LINEAR))
+		  != 0
+		  && (n->value & (GOVD_REDUCTION | GOVD_LASTPRIVATE)) == 0)
+		remove = true;
+	    }
+	  if (!remove
+	      && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+	      && TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)) != INTEGER_CST
+	      && ((ctx->region_type & (ORT_PARALLEL | ORT_TARGET)) != 0
+		  || (ctx->region_type & ORT_TASKLOOP) == ORT_TASK
+		  || (ctx->region_type & ORT_HOST_TEAMS) == ORT_HOST_TEAMS))
+	    {
+	      tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) allocator);
+	      if (n == NULL)
+		{
+		  enum omp_clause_default_kind default_kind
+		    = ctx->default_kind;
+		  ctx->default_kind = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
+		  omp_notice_variable (ctx, OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
+				       true);
+		  ctx->default_kind = default_kind;
+		}
+	      else
+		omp_notice_variable (ctx, OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
+				     true);
+	    }
+	  break;
+
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_IF:
@@ -10822,7 +10892,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
-	case OMP_CLAUSE_ALLOCATE:
 	  break;
 
 	default:
@@ -11622,6 +11691,15 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_TILE);
   if (c)
     tile = list_length (OMP_CLAUSE_TILE_LIST (c));
+  c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ALLOCATE);
+  hash_set<tree> *allocate_uids = NULL;
+  if (c)
+    {
+      allocate_uids = new hash_set<tree>;
+      for (; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE)
+	  allocate_uids->add (OMP_CLAUSE_DECL (c));
+    }
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {
       t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i);
@@ -11948,12 +12026,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	 as an iteration counter.  This is valid, since DECL cannot be
 	 modified in the body of the loop.  Similarly for any iteration vars
 	 in simd with collapse > 1 where the iterator vars must be
-	 lastprivate.  */
+	 lastprivate.  And similarly for vars mentioned in allocate clauses.  */
       if (orig_for_stmt != for_stmt)
 	var = decl;
       else if (!is_gimple_reg (decl)
 	       || (ort == ORT_SIMD
-		   && TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1))
+		   && TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1)
+	       || (allocate_uids && allocate_uids->contains (decl)))
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 	  /* Make sure omp_add_variable is not called on it prematurely.
@@ -12180,6 +12259,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     }
 
   BITMAP_FREE (has_decl_expr);
+  delete allocate_uids;
 
   if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP
       || (loop_p && orig_for_stmt == for_stmt))
@@ -12413,22 +12493,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  /* Allocate clause we duplicate on task and inner taskloop
 	     if the decl is lastprivate, otherwise just put on task.  */
 	  case OMP_CLAUSE_ALLOCATE:
+	    if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+		&& DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
+	      {
+		/* Additionally, put firstprivate clause on task
+		   for the allocator if it is not constant.  */
+		*gtask_clauses_ptr
+		  = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+				      OMP_CLAUSE_FIRSTPRIVATE);
+		OMP_CLAUSE_DECL (*gtask_clauses_ptr)
+		  = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+		gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
+	      }
 	    if (lastprivate_uids
 		&& bitmap_bit_p (lastprivate_uids,
 				 DECL_UID (OMP_CLAUSE_DECL (c))))
 	      {
-		if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-		    && DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
-		  {
-		    /* Additionally, put firstprivate clause on task
-		       for the allocator if it is not constant.  */
-		    *gtask_clauses_ptr
-		      = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-					  OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (*gtask_clauses_ptr)
-		      = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
-		    gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
-		  }
 		*gfor_clauses_ptr = c;
 		gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 		*gtask_clauses_ptr = copy_node (c);
@@ -12703,7 +12783,8 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	  {
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "invalid %<task%> reduction modifier on construct "
-		      "other than %<parallel%>, %<for%> or %<sections%>");
+		      "other than %<parallel%>, %qs or %<sections%>",
+		      lang_GNU_Fortran () ? "do" : "for");
 	    OMP_CLAUSE_REDUCTION_TASK (*pc) = 0;
 	  }
 	pc = &OMP_CLAUSE_CHAIN (*pc);
@@ -15314,7 +15395,7 @@ gimplify_function_tree (tree fndecl)
      if necessary.  */
   cfun->curr_properties |= PROP_gimple_lva;
 
-  if (asan_sanitize_use_after_scope () && sanitize_flags_p (SANITIZE_ADDRESS))
+  if (asan_sanitize_use_after_scope ())
     asan_poisoned_variables = new hash_set<tree> ();
   bind = gimplify_body (fndecl, true);
   if (asan_poisoned_variables)

@@ -29,8 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
-#include "expmed.h"
 #include "optabs.h"
+#include "expmed.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -6171,6 +6171,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
       return 0;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case METHOD_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:
@@ -9034,6 +9035,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  target, unsignedp);
       return target;
 
+    case WIDEN_PLUS_EXPR:
+    case WIDEN_MINUS_EXPR:
     case WIDEN_MULT_EXPR:
       /* If first operand is constant, swap them.
 	 Thus the following special case checks need only
@@ -9754,6 +9757,10 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	return temp;
       }
 
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:

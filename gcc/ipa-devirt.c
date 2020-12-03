@@ -1521,6 +1521,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	break;
       }
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case NULLPTR_TYPE:
       break;
 
@@ -2031,6 +2032,8 @@ bool
 odr_based_tbaa_p (const_tree type)
 {
   if (!RECORD_OR_UNION_TYPE_P (type))
+    return false;
+  if (!odr_hash)
     return false;
   odr_type t = get_odr_type (const_cast <tree> (type), false);
   if (!t || !t->tbaa_enabled)

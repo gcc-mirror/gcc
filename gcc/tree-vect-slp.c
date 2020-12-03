@@ -48,11 +48,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-eh.h"
 #include "tree-cfg.h"
+#include "alloc-pool.h"
 
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 
-object_allocator<_slp_tree> *slp_tree_pool;
+static object_allocator<_slp_tree> *slp_tree_pool;
+static slp_tree slp_first_node;
+
+void
+vect_slp_init (void)
+{
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes");
+}
+
+void
+vect_slp_fini (void)
+{
+  while (slp_first_node)
+    delete slp_first_node;
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
+}
 
 void *
 _slp_tree::operator new (size_t n)
@@ -73,6 +90,11 @@ _slp_tree::operator delete (void *node, size_t n)
 
 _slp_tree::_slp_tree ()
 {
+  this->prev_node = NULL;
+  if (slp_first_node)
+    slp_first_node->prev_node = this;
+  this->next_node = slp_first_node;
+  slp_first_node = this;
   SLP_TREE_SCALAR_STMTS (this) = vNULL;
   SLP_TREE_SCALAR_OPS (this) = vNULL;
   SLP_TREE_VEC_STMTS (this) = vNULL;
@@ -94,6 +116,12 @@ _slp_tree::_slp_tree ()
 
 _slp_tree::~_slp_tree ()
 {
+  if (this->prev_node)
+    this->prev_node->next_node = this->next_node;
+  else
+    slp_first_node = this->next_node;
+  if (this->next_node)
+    this->next_node->prev_node = this->prev_node;
   SLP_TREE_CHILDREN (this).release ();
   SLP_TREE_SCALAR_STMTS (this).release ();
   SLP_TREE_SCALAR_OPS (this).release ();
@@ -1908,6 +1936,14 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		      : ""), node,
 		   estimated_poly_value (node->max_nunits),
 					 SLP_TREE_REF_COUNT (node));
+  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
+    {
+      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	dump_printf_loc (metadata, user_loc, "op: VEC_PERM_EXPR\n");
+      else
+	dump_printf_loc (metadata, user_loc, "op template: %G",
+			 SLP_TREE_REPRESENTATIVE (node)->stmt);
+    }
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
       dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
@@ -2069,13 +2105,6 @@ vect_gather_slp_loads (vec<slp_tree> &loads, slp_tree node,
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	vect_gather_slp_loads (loads, child, visited);
     }
-}
-
-static void
-vect_gather_slp_loads (slp_instance inst, slp_tree node)
-{
-  hash_set<slp_tree> visited;
-  vect_gather_slp_loads (SLP_INSTANCE_LOADS (inst), node, visited);
 }
 
 
@@ -2252,7 +2281,6 @@ vect_build_slp_instance (vec_info *vinfo,
 	  new_instance->cost_vec = vNULL;
 	  new_instance->subgraph_entries = vNULL;
 
-	  vect_gather_slp_loads (new_instance, node);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP size %u vs. limit %u.\n",
@@ -2629,8 +2657,18 @@ vect_slp_build_vertices (vec_info *info, vec<slp_tree> &vertices,
   unsigned i;
   slp_instance instance;
   FOR_EACH_VEC_ELT (info->slp_instances, i, instance)
-    vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
-			     leafs);
+    {
+      unsigned n_v = vertices.length ();
+      unsigned n_l = leafs.length ();
+      vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
+			       leafs);
+      /* If we added vertices but no entries to the reverse graph we've
+	 added a cycle that is not backwards-reachable.   Push the entry
+	 to mimic as leaf then.  */
+      if (vertices.length () > n_v
+	  && leafs.length () == n_l)
+	leafs.safe_push (SLP_INSTANCE_TREE (instance)->vertex);
+    }
 }
 
 /* Apply (reverse) bijectite PERM to VEC.  */
@@ -2724,9 +2762,11 @@ vect_optimize_slp (vec_info *vinfo)
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
-      /* Loads are the only thing generating permutes and leafs do not
-	 change across iterations.  */
-      bitmap_set_bit (n_visited, idx);
+      /* Leafs do not change across iterations.  Note leafs also double
+	 as entries to the reverse graph.  */
+      if (!slpg->vertices[idx].succ)
+	bitmap_set_bit (n_visited, idx);
+      /* Loads are the only thing generating permutes.  */
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
@@ -3059,6 +3099,21 @@ vect_optimize_slp (vec_info *vinfo)
     }
 }
 
+/* Gather loads reachable from the individual SLP graph entries.  */
+
+void
+vect_gather_slp_loads (vec_info *vinfo)
+{
+  unsigned i;
+  slp_instance instance;
+  FOR_EACH_VEC_ELT (vinfo->slp_instances, i, instance)
+    {
+      hash_set<slp_tree> visited;
+      vect_gather_slp_loads (SLP_INSTANCE_LOADS (instance),
+			     SLP_INSTANCE_TREE (instance), visited);
+    }
+}
+
 
 /* For each possible SLP instance decide whether to SLP it and calculate overall
    unrolling factor needed to SLP the loop.  Return TRUE if decided to SLP at
@@ -3142,6 +3197,65 @@ vect_detect_hybrid_slp (tree *tp, int *, void *data)
   return NULL_TREE;
 }
 
+/* Look if STMT_INFO is consumed by SLP indirectly and mark it pure_slp
+   if so, otherwise pushing it to WORKLIST.  */
+
+static void
+maybe_push_to_hybrid_worklist (vec_info *vinfo,
+			       vec<stmt_vec_info> &worklist,
+			       stmt_vec_info stmt_info)
+{
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Processing hybrid candidate : %G", stmt_info->stmt);
+  stmt_vec_info orig_info = vect_orig_stmt (stmt_info);
+  imm_use_iterator iter2;
+  ssa_op_iter iter1;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  bool any_def = false;
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, orig_info->stmt, iter1, SSA_OP_DEF)
+    {
+      any_def = true;
+      FOR_EACH_IMM_USE_FAST (use_p, iter2, DEF_FROM_PTR (def_p))
+	{
+	  if (is_gimple_debug (USE_STMT (use_p)))
+	    continue;
+	  stmt_vec_info use_info = vinfo->lookup_stmt (USE_STMT (use_p));
+	  /* An out-of loop use means this is a loop_vect sink.  */
+	  if (!use_info)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Found loop_vect sink: %G", stmt_info->stmt);
+	      worklist.safe_push (stmt_info);
+	      return;
+	    }
+	  else if (!STMT_SLP_TYPE (vect_stmt_to_vectorize (use_info)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Found loop_vect use: %G", use_info->stmt);
+	      worklist.safe_push (stmt_info);
+	      return;
+	    }
+	}
+    }
+  /* No def means this is a loo_vect sink.  */
+  if (!any_def)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Found loop_vect sink: %G", stmt_info->stmt);
+      worklist.safe_push (stmt_info);
+      return;
+    }
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Marked SLP consumed stmt pure: %G", stmt_info->stmt);
+  STMT_SLP_TYPE (stmt_info) = pure_slp;
+}
+
 /* Find stmts that must be both vectorized and SLPed.  */
 
 void
@@ -3151,9 +3265,14 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 
   /* All stmts participating in SLP are marked pure_slp, all other
      stmts are loop_vect.
-     First collect all loop_vect stmts into a worklist.  */
+     First collect all loop_vect stmts into a worklist.
+     SLP patterns cause not all original scalar stmts to appear in
+     SLP_TREE_SCALAR_STMTS and thus not all of them are marked pure_slp.
+     Rectify this here and do a backward walk over the IL only considering
+     stmts as loop_vect when they are used by a loop_vect stmt and otherwise
+     mark them as pure_slp.  */
   auto_vec<stmt_vec_info> worklist;
-  for (unsigned i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
+  for (int i = LOOP_VINFO_LOOP (loop_vinfo)->num_nodes - 1; i >= 0; --i)
     {
       basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -3162,10 +3281,11 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 	  gphi *phi = gsi.phi ();
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (phi);
 	  if (!STMT_SLP_TYPE (stmt_info) && STMT_VINFO_RELEVANT (stmt_info))
-	    worklist.safe_push (stmt_info);
+	    maybe_push_to_hybrid_worklist (loop_vinfo,
+					   worklist, stmt_info);
 	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      for (gimple_stmt_iterator gsi = gsi_last_bb (bb); !gsi_end_p (gsi);
+	   gsi_prev (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt))
@@ -3181,12 +3301,14 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 		    = loop_vinfo->lookup_stmt (gsi_stmt (gsi2));
 		  if (!STMT_SLP_TYPE (patt_info)
 		      && STMT_VINFO_RELEVANT (patt_info))
-		    worklist.safe_push (patt_info);
+		    maybe_push_to_hybrid_worklist (loop_vinfo,
+						   worklist, patt_info);
 		}
 	      stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
 	    }
 	  if (!STMT_SLP_TYPE (stmt_info) && STMT_VINFO_RELEVANT (stmt_info))
-	    worklist.safe_push (stmt_info);
+	    maybe_push_to_hybrid_worklist (loop_vinfo,
+					   worklist, stmt_info);
 	}
     }
 
@@ -4140,6 +4262,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   /* Optimize permutations.  */
   vect_optimize_slp (bb_vinfo);
 
+  /* Gather the loads reachable from the SLP graph entries.  */
+  vect_gather_slp_loads (bb_vinfo);
+
   vect_record_base_alignments (bb_vinfo);
 
   /* Analyze and verify the alignment of data references and the
@@ -5092,7 +5217,8 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   slp_tree child;
   unsigned i;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!types_compatible_p (SLP_TREE_VECTYPE (child), vectype))
+    if (!vect_maybe_update_slp_op_vectype (child, vectype)
+	|| !types_compatible_p (SLP_TREE_VECTYPE (child), vectype))
       {
 	if (dump_enabled_p ())
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

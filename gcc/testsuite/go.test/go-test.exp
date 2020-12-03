@@ -105,7 +105,7 @@ proc errchk { test opts } {
 	    set copy_line $out_line
 	}
 
-	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\".*$" $copy_line "// \{ dg-error \"\\2\" \}" out_line
+	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\" *\(\\*/\)?$" $copy_line "// \{ dg-error \"\\2\" \}\\3" out_line
 	if [string match "*dg-error*\\\[*" $out_line] {
 	    set index [string first "dg-error" $out_line]
 	    regsub -start $index -all "\\\\\\\[" $out_line "\\\\\\\\\\\[" out_line
@@ -648,7 +648,7 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		errchk [lindex $last 1] "[lrange $last 2 end]"
@@ -692,7 +692,7 @@ proc go-gc-tests { } {
 	    if { [llength $packages] > 0 } {
 		set del [list]
 		foreach p $packages {
-		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		foreach f $del {
@@ -712,7 +712,7 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		set dg-do-what-default "link"
@@ -737,11 +737,11 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		set dg-do-what-default "link"
-		dg-test -keep-output [lrange $last 1 end] "$del -O" "-w $DEFAULT_GOCFLAGS"
+		dg-test -keep-output [lrange $last 1 end] "$del -O -I." "-w $DEFAULT_GOCFLAGS"
 		set base "[file rootname [file tail [lindex $last 1]]]"
 		set output_file "./$base.exe"
 		lappend del $output_file

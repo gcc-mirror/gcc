@@ -1,0 +1,236 @@
+-- C453001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVES:
+--     Check that overflow checking is not performed for adding operators of
+--     modular types.
+--
+-- TEST DESCRIPTION:
+--     Check that Constraint_Error is not raised by + or - when the result
+--     is out of the range of the base type.
+--     Also check that assignment to values in the upper half of the range
+--     does not raise Constraint_Error.
+--
+--     We define modular types of various common sizes. We cannot
+--     assume a binary modulus greater than 2**16 is supported by 3.5.4(23),
+--     so the DWord type might be smaller on some targets. We also try
+--     a small prime number as a modulus (these are often used for hashing).
+--     We also the language-defined types
+--     System.Storage_Elements.Storage_Element, Ada.Streams.Stream_Element,
+--     and Ada.Containers.Hash_Type.
+--
+-- CHANGE HISTORY:
+--      11 Feb 17   JAC   Initial pre-release version.
+--      30 Mar 17   RLB   Renamed, removed non-modular test cases, removed
+--                        types that aren't required to be supported, added
+--                        other language-defined types, added key to locate
+--                        failures, added additional test cases.
+--      03 Apr 17   RLB   Removed Ada.Containers from the Ada 95 version of
+--                        this test.
+--
+--!
+with Report;
+with System.Storage_Elements;
+with Ada.Streams;
+
+procedure C453001 is
+   type Unsigned_Byte_Type    is mod 16#100#; -- 256;
+
+   type Unsigned_Word_Type    is mod 16#1_0000#; -- 65536;
+
+   type Unsigned_DWord_Type   is mod
+                                Natural'Min (2**32, System.Max_Binary_Modulus);
+
+   type Unsigned_NBM_Type     is mod System.Max_Nonbinary_Modulus;
+
+   type Biggest_Unsigned_Type is mod System.Max_Binary_Modulus;
+
+   type Prime_Type            is mod 23; -- Prime number for hashing.
+
+   generic
+      type Mod_Type is mod <>; -- Assume this is a base type.
+      Key : in String;
+   procedure Test_Operators;
+
+   procedure Test_Operators is
+
+      function Ident_Mod (Val : in Mod_Type) return Mod_Type is
+         -- Optimization breaker.
+      begin
+         if Report.Equal (4, 12) then -- Always False (but complex).
+            return 1;
+         else
+            return Val;
+         end if;
+      end Ident_Mod;
+
+   begin
+      if Mod_Type'First /= 0 then -- The First of a base type is always 0.
+         Report.Failed ("Not base type first - " & Key);
+      end if;
+      if Mod_Type'Last /= Mod_Type'Base'Last then
+         Report.Failed ("Not base type last - " & Key);
+      end if;
+
+      -- Note: Mod_Type'First always is 0.
+
+      -- Check addition
+      declare
+         M : constant Mod_Type := Mod_Type'Last;
+         V : Mod_Type;
+      begin
+         V := M + 1; -- Should wrap around
+         if Ident_Mod (V) /= 0 then
+            Report.Failed ("Addition didn't wrap round - " & Key);
+         end if;
+         V := Ident_Mod (M - 2) + 5; -- Should wrap around
+         if Ident_Mod (V) /= 2 then
+            Report.Failed ("Addition didn't wrap round again - " & Key);
+         end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised for addition - " & Key);
+         when others           =>
+            Report.Failed
+             ("Some even more unexpected exception raised for addition - " &
+               Key);
+      end;
+
+      -- Check subtraction
+      declare
+         M : constant Mod_Type := 0;
+         V : Mod_Type;
+      begin
+         V := M - 1; -- Should wrap around
+         if Ident_Mod (V) /= Mod_Type'Last then
+            Report.Failed ("Subtraction didn't wrap round - " & Key);
+         end if;
+         V := Ident_Mod (3) - 7; -- Should wrap around
+         if Ident_Mod (V) /= Mod_Type'Last-3 then
+            Report.Failed ("Subtraction didn't wrap round again - " & Key);
+         end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised for subtraction - " & Key);
+         when others           =>
+            Report.Failed
+             ("Some even more unexpected exception raised for subtraction - " &
+                Key);
+      end;
+
+   end Test_Operators;
+
+   procedure Test_Unsigned_Byte_Operators    is new Test_Operators
+                                              (Unsigned_Byte_Type, "Byte");
+
+   procedure Test_Unsigned_Word_Operators    is new Test_Operators
+                                              (Unsigned_Word_Type, "Word");
+
+   procedure Test_Unsigned_DWord_Operators   is new Test_Operators
+                                              (Unsigned_DWord_Type, "DWord");
+
+   procedure Test_Unsigned_NBM_Operators     is new Test_Operators
+                                                 (Unsigned_NBM_Type, "NBM");
+
+   procedure Test_Biggest_Unsigned_Operators is new Test_Operators
+                                              (Biggest_Unsigned_Type, "Big");
+
+   procedure Test_Prime_Operators is new Test_Operators (Prime_Type, "Prime");
+
+   procedure Test_Storage_Element_Operators  is new Test_Operators
+                        (System.Storage_Elements.Storage_Element, "Storage");
+
+   procedure Test_Stream_Element_Operators   is new Test_Operators
+                                     (Ada.Streams.Stream_Element, "Stream");
+
+begin
+
+   Report.Test
+     ("C453001",
+      "Check that overflow checking is not performed for adding operators " &
+      "of modular types");
+
+   -- Check assignment
+   declare
+      -- Define subtypes
+      subtype My_Unsigned_Byte_Type  is Unsigned_Byte_Type;
+      subtype My_Unsigned_Word_Type  is Unsigned_Word_Type;
+      subtype My_Unsigned_DWord_Type is Unsigned_DWord_Type;
+
+      -- Define constants in upper half of range
+      C1 : constant Unsigned_Byte_Type     := Unsigned_Byte_Type'Last;
+      C2 : constant My_Unsigned_Byte_Type  := 16#FE#;
+      C3 : constant Unsigned_Word_Type     := 16#FACE#;
+      C4 : constant My_Unsigned_Word_Type  := My_Unsigned_Word_Type'Last;
+      C5 : constant Unsigned_DWord_Type    := My_Unsigned_DWord_Type'Last;
+
+      -- Define variables
+      V1 : Unsigned_Byte_Type;
+      V2 : My_Unsigned_Byte_Type;
+      V3 : Unsigned_Word_Type;
+      V4 : My_Unsigned_Word_Type;
+      V5 : Unsigned_DWord_Type;
+   begin
+      V1 := C1;
+      V1 := C2;
+      V2 := C1;
+      V2 := C2;
+      V3 := C3;
+      V3 := C4;
+      V4 := C3;
+      V4 := C4;
+      V5 := C5;
+      if V1 /= C2 or V2 /= C2 or V3 /= C4 or V4 /= C4 or V5 /= C5 then
+         Report.Comment ("Don't optimize assignment!"); -- Optimization breaker
+      end if;
+   exception
+      when Constraint_Error =>
+         Report.Failed ("Constraint_Error raised for assignment");
+      when others           =>
+         Report.Failed ("Some even more unexpected exception raised " &
+                        "for assignment");
+   end;
+
+   Test_Unsigned_Byte_Operators;
+   Test_Unsigned_Word_Operators;
+   Test_Unsigned_DWord_Operators;
+   Test_Unsigned_NBM_Operators;
+   Test_Biggest_Unsigned_Operators;
+   Test_Prime_Operators;
+   Test_Storage_Element_Operators;
+   Test_Stream_Element_Operators;
+
+   Report.Result;
+
+end C453001;
+

@@ -440,7 +440,7 @@ void	runtime_freedefer(Defer*);
 
 extern void _cgo_wait_runtime_init_done (void);
 extern void _cgo_notify_runtime_init_done (void)
-  __asm__ (GOSYM_PREFIX "runtime._cgo_notify_runtime_init_done");
+  __asm__ (GOSYM_PREFIX "runtime.__cgo__notify__runtime__init__done");
 extern _Bool runtime_iscgo;
 extern uintptr __go_end __attribute__ ((weak));
 extern void *getitab(const struct _type *, const struct _type *, _Bool)

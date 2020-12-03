@@ -269,8 +269,8 @@ libstdc++-symbols.ver-sun : libstdc++-symbols.ver \
 	perl $(toplevel_srcdir)/contrib/make_sunver.pl \
 	  libstdc++-symbols.ver \
 	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
-	 `echo $(libstdc___la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	 `echo ' $(libstdc___la_LIBADD) ' | \
+	    sed -e 's,/\([^/.]*\)\.la,/.libs/\1.a,g' -e 's/ -l[^ ]* / /'` \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 if ENABLE_SYMVERS_DARWIN

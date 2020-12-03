@@ -154,8 +154,8 @@ sm_state_map::entry_t::cmp (const entry_t &entry_a, const entry_t &entry_b)
 
 /* sm_state_map's ctor.  */
 
-sm_state_map::sm_state_map (const state_machine &sm, int sm_idx)
-: m_sm (sm), m_sm_idx (sm_idx), m_map (), m_global_state (sm.get_start_state ())
+sm_state_map::sm_state_map (const state_machine &sm)
+: m_sm (sm), m_map (), m_global_state (sm.get_start_state ())
 {
 }
 
@@ -656,7 +656,7 @@ program_state::program_state (const extrinsic_state &ext_state)
   const int num_states = ext_state.get_num_checkers ();
   for (int i = 0; i < num_states; i++)
     {
-      sm_state_map *sm = new sm_state_map (ext_state.get_sm (i), i);
+      sm_state_map *sm = new sm_state_map (ext_state.get_sm (i));
       m_checker_states.quick_push (sm);
     }
 }
@@ -1251,7 +1251,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm, 0);
+    sm_state_map map (*sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
 
@@ -1280,7 +1280,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm, 0);
+    sm_state_map map (*sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
     ASSERT_EQ (map.get_state (y_sval, ext_state), start);
@@ -1303,9 +1303,9 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map0 (*sm, 0);
-    sm_state_map map1 (*sm, 0);
-    sm_state_map map2 (*sm, 0);
+    sm_state_map map0 (*sm);
+    sm_state_map map1 (*sm);
+    sm_state_map map2 (*sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
@@ -1326,9 +1326,9 @@ test_sm_state_map ()
     const state_machine::state_t TEST_STATE_2 = &test_state_2;
     const state_machine::state test_state_3 ("test state 3", 3);
     const state_machine::state_t TEST_STATE_3 = &test_state_3;
-    sm_state_map map0 (*sm, 0);
-    sm_state_map map1 (*sm, 0);
-    sm_state_map map2 (*sm, 0);
+    sm_state_map map0 (*sm);
+    sm_state_map map1 (*sm);
+    sm_state_map map2 (*sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);

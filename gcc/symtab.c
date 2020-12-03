@@ -368,6 +368,36 @@ section_name_hasher::equal (section_hash_entry *n1, const char *name)
   return n1->name == name || !strcmp (n1->name, name);
 }
 
+/* Bump the reference count on ENTRY so that it is retained.  */
+
+static section_hash_entry *
+retain_section_hash_entry (section_hash_entry *entry)
+{
+  entry->ref_count++;
+  return entry;
+}
+
+/* Drop the reference count on ENTRY and remove it if the reference
+   count drops to zero.  */
+
+static void
+release_section_hash_entry (section_hash_entry *entry)
+{
+  if (entry)
+    {
+      entry->ref_count--;
+      if (!entry->ref_count)
+	{
+	  hashval_t hash = htab_hash_string (entry->name);
+	  section_hash_entry **slot
+	    = symtab->section_hash->find_slot_with_hash (entry->name,
+						 hash, INSERT);
+	  ggc_free (entry);
+	  symtab->section_hash->clear_slot (slot);
+	}
+    }
+}
+
 /* Add node into symbol table.  This function is not used directly, but via
    cgraph/varpool node creation routines.  */
 
@@ -1484,8 +1514,7 @@ symtab_node::copy_visibility_from (symtab_node *n)
   DECL_DLLIMPORT_P (decl) = DECL_DLLIMPORT_P (n->decl);
   resolution = n->resolution;
   set_comdat_group (n->get_comdat_group ());
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(n->get_section ()), true);
+  set_section (*n);
   externally_visible = n->externally_visible;
   if (!DECL_RTL_SET_P (decl))
     return;
@@ -1610,54 +1639,73 @@ void
 symtab_node::set_section_for_node (const char *section)
 {
   const char *current = get_section ();
-  section_hash_entry **slot;
 
   if (current == section
       || (current && section
 	  && !strcmp (current, section)))
     return;
 
-  if (current)
-    {
-      x_section->ref_count--;
-      if (!x_section->ref_count)
-	{
-	  hashval_t hash = htab_hash_string (x_section->name);
-	  slot = symtab->section_hash->find_slot_with_hash (x_section->name,
-							    hash, INSERT);
-	  ggc_free (x_section);
-	  symtab->section_hash->clear_slot (slot);
-	}
-      x_section = NULL;
-    }
+  release_section_hash_entry (x_section);
   if (!section)
     {
+      x_section = NULL;
       implicit_section = false;
       return;
     }
   if (!symtab->section_hash)
     symtab->section_hash = hash_table<section_name_hasher>::create_ggc (10);
-  slot = symtab->section_hash->find_slot_with_hash (section,
-						    htab_hash_string (section),
-						    INSERT);
+  section_hash_entry **slot = symtab->section_hash->find_slot_with_hash
+    (section, htab_hash_string (section), INSERT);
   if (*slot)
-    x_section = (section_hash_entry *)*slot;
+    x_section = retain_section_hash_entry (*slot);
   else
     {
       int len = strlen (section);
       *slot = x_section = ggc_cleared_alloc<section_hash_entry> ();
+      x_section->ref_count = 1;
       x_section->name = ggc_vec_alloc<char> (len + 1);
       memcpy (x_section->name, section, len + 1);
     }
-  x_section->ref_count++;
 }
 
-/* Worker for set_section.  */
+/* Set the section of node THIS to be the same as the section
+   of node OTHER.  Keep reference counts of the sections
+   up-to-date as needed.  */
+
+void
+symtab_node::set_section_for_node (const symtab_node &other)
+{
+  if (x_section == other.x_section)
+    return;
+  if (get_section () && other.get_section ())
+    gcc_checking_assert (strcmp (get_section (), other.get_section ()) != 0);
+  release_section_hash_entry (x_section);
+  if (other.x_section)
+    x_section = retain_section_hash_entry (other.x_section);
+  else
+    {
+      x_section = NULL;
+      implicit_section = false;
+    }
+}
+
+/* Workers for set_section.  */
 
 bool
-symtab_node::set_section (symtab_node *n, void *s)
+symtab_node::set_section_from_string (symtab_node *n, void *s)
 {
   n->set_section_for_node ((char *)s);
+  return false;
+}
+
+/* Set the section of node N to be the same as the section
+   of node O.  */
+
+bool
+symtab_node::set_section_from_node (symtab_node *n, void *o)
+{
+  const symtab_node &other = *static_cast<const symtab_node *> (o);
+  n->set_section_for_node (other);
   return false;
 }
 
@@ -1668,7 +1716,14 @@ symtab_node::set_section (const char *section)
 {
   gcc_assert (!this->alias || !this->analyzed);
   call_for_symbol_and_aliases
-    (symtab_node::set_section, const_cast<char *>(section), true);
+    (symtab_node::set_section_from_string, const_cast<char *>(section), true);
+}
+
+void
+symtab_node::set_section (const symtab_node &other)
+{
+  call_for_symbol_and_aliases
+    (symtab_node::set_section_from_node, const_cast<symtab_node *>(&other), true);
 }
 
 /* Return the initialization priority.  */
@@ -1814,8 +1869,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
     {
       error ("section of alias %q+D must match section of its target", decl);
     }
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(target->get_section ()), true);
+  set_section (*target);
   if (target->implicit_section)
     call_for_symbol_and_aliases (set_implicit_section, NULL, true);
 

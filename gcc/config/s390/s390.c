@@ -9400,6 +9400,37 @@ s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
     }
 }
 
+/* Return true if MEM refers to an integer constant in the literal pool.  If
+   VAL is not nullptr, then also fill it with the constant's value.  */
+
+bool
+s390_const_int_pool_entry_p (rtx mem, HOST_WIDE_INT *val)
+{
+  /* Try to match the following:
+     - (mem (unspec [(symbol_ref) (reg)] UNSPEC_LTREF)).
+     - (mem (symbol_ref)).  */
+
+  if (!MEM_P (mem))
+    return false;
+
+  rtx addr = XEXP (mem, 0);
+  rtx sym;
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_LTREF)
+    sym = XVECEXP (addr, 0, 0);
+  else
+    sym = addr;
+
+  if (!SYMBOL_REF_P (sym) || !CONSTANT_POOL_ADDRESS_P (sym))
+    return false;
+
+  rtx val_rtx = get_pool_constant (sym);
+  if (!CONST_INT_P (val_rtx))
+    return false;
+
+  if (val != nullptr)
+    *val = INTVAL (val_rtx);
+  return true;
+}
 
 /* Return an RTL expression representing the value of the return address
    for the frame COUNT steps up from the current frame.  FRAME is the
@@ -11746,7 +11777,7 @@ s390_output_split_stack_data (rtx parm_block, rtx call_done,
   rtx ops[] = { parm_block, call_done };
 
   switch_to_section (targetm.asm_out.function_rodata_section
-		     (current_function_decl));
+		     (current_function_decl, false));
 
   if (TARGET_64BIT)
     output_asm_insn (".align\t8", NULL);
@@ -16376,20 +16407,28 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
   return NULL;
 }
 
-/* Implement TARGET_C_EXCESS_PRECISION.
+#if ENABLE_S390_EXCESS_FLOAT_PRECISION == 1
+/* Implement TARGET_C_EXCESS_PRECISION to maintain historic behavior with older
+   glibc versions
 
-   FIXME: For historical reasons, float_t and double_t are typedef'ed to
+   For historical reasons, float_t and double_t had been typedef'ed to
    double on s390, causing operations on float_t to operate in a higher
    precision than is necessary.  However, it is not the case that SFmode
    operations have implicit excess precision, and we generate more optimal
    code if we let the compiler know no implicit extra precision is added.
 
-   That means when we are compiling with -fexcess-precision=fast, the value
-   we set for FLT_EVAL_METHOD will be out of line with the actual precision of
-   float_t (though they would be correct for -fexcess-precision=standard).
+   With a glibc with that "historic" definition, configure will enable this hook
+   to set FLT_EVAL_METHOD to 1 for -fexcess-precision=standard (e.g., as implied
+   by -std=cXY).  That means when we are compiling with -fexcess-precision=fast,
+   the value we set for FLT_EVAL_METHOD will be out of line with the actual
+   precision of float_t.
 
-   A complete fix would modify glibc to remove the unnecessary typedef
-   of float_t to double.  */
+   Newer versions of glibc will be modified to derive the definition of float_t
+   from FLT_EVAL_METHOD on s390x, as on many other architectures.  There,
+   configure will disable this hook by default, so that we defer to the default
+   of FLT_EVAL_METHOD_PROMOTE_TO_FLOAT and a resulting typedef of float_t to
+   float.  Note that in that scenario, float_t and FLT_EVAL_METHOD will be in
+   line independent of -fexcess-precision. */
 
 static enum flt_eval_method
 s390_excess_precision (enum excess_precision_type type)
@@ -16412,6 +16451,7 @@ s390_excess_precision (enum excess_precision_type type)
     }
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
+#endif
 
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
@@ -16708,8 +16748,12 @@ s390_shift_truncation_mask (machine_mode mode)
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
+#if ENABLE_S390_EXCESS_FLOAT_PRECISION == 1
+/* This hook is only needed to maintain the historic behavior with glibc
+   versions that typedef float_t to double. */
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION s390_excess_precision
+#endif
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority

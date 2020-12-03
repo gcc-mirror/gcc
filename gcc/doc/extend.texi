@@ -6161,9 +6161,10 @@ and for static member methods.
 On 32-bit and 64-bit x86 targets, you can use an ABI attribute
 to indicate which calling convention should be used for a function.  The
 @code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
-while the @code{sysv_abi} attribute tells the compiler to use the ABI
-used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
-when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
+while the @code{sysv_abi} attribute tells the compiler to use the System V
+ELF ABI, which is used on GNU/Linux and other systems.  The default is to use
+the Microsoft ABI when targeting Windows.  On all other systems, the default
+is the System V ELF ABI.
 
 Note, the @code{ms_abi} attribute for Microsoft Windows 64-bit targets currently
 requires the @option{-maccumulate-outgoing-args} option.
@@ -6749,6 +6750,11 @@ Enable/disable the generation of the KEYLOCKER instructions.
 @itemx no-widekl
 @cindex @code{target("widekl")} function attribute, x86
 Enable/disable the generation of the WIDEKL instructions.
+
+@item avxvnni
+@itemx no-avxvnni
+@cindex @code{target("avxvnni")} function attribute, x86
+Enable/disable the generation of the AVXVNNI instructions.
 
 @item cld
 @itemx no-cld
@@ -7420,9 +7426,49 @@ The @code{weak} attribute is described in
 @cindex @code{noinit} variable attribute
 Any data with the @code{noinit} attribute will not be initialized by
 the C runtime startup code, or the program loader.  Not initializing
-data in this way can reduce program startup times.  This attribute is
-specific to ELF targets and relies on the linker to place such data in
-the right location
+data in this way can reduce program startup times.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place sections with the @code{.noinit} prefix in the right
+location.
+
+@item persistent
+@cindex @code{persistent} variable attribute
+Any data with the @code{persistent} attribute will not be initialized by
+the C runtime startup code, but will be initialized by the program
+loader.  This enables the value of the variable to @samp{persist}
+between processor resets.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place the sections with the @code{.persistent} prefix in the
+right location.  Specifically, some type of non-volatile, writeable
+memory is required.
+
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_nullability} variable attribute
+This attribute applies to pointer variables only.  It allows marking the
+pointer with one of four possible values describing the conditions under
+which the pointer might have a @code{nil} value. In most cases, the
+attribute is intended to be an internal representation for property and
+method nullability (specified by language keywords); it is not recommended
+to use it directly.
+
+When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
+known about the conditions in which the pointer might be @code{nil}. Making
+this state specific serves to avoid false positives in diagnostics.
+
+When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
+no meaning if it is @code{nil} and thus the compiler is free to emit
+diagnostics if it can be determined that the value will be @code{nil}.
+
+When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
+be @code{nil} and carry meaning as such.
+
+When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
+the context of property attribute lists) this describes the case in which a
+property setter may take the value @code{nil} (which perhaps causes the
+property to be reset in some manner to a default) but for which the property
+getter will never validly return @code{nil}.
 
 @end table
 
@@ -7817,23 +7863,6 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @subsection MSP430 Variable Attributes
 
 @table @code
-@item noinit
-@cindex @code{noinit} variable attribute, MSP430 
-Any data with the @code{noinit} attribute will not be initialised by
-the C runtime startup code, or the program loader.  Not initialising
-data in this way can reduce program startup times.
-
-@item persistent
-@cindex @code{persistent} variable attribute, MSP430 
-Any variable with the @code{persistent} attribute will not be
-initialised by the C runtime startup code.  Instead its value will be
-set once, when the application is loaded, and then never initialised
-again, even if the processor is reset or the program restarts.
-Persistent data is intended to be placed into FLASH RAM, where its
-value will be retained across resets.  The linker script being used to
-create the application should ensure that persistent data is correctly
-placed.
-
 @item upper
 @itemx either
 @cindex @code{upper} variable attribute, MSP430 
@@ -8512,6 +8541,12 @@ particular, if a class is thrown as an exception in one shared object
 and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
+
+@item objc_root_class @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_root_class} type attribute
+This attribute marks a class as being a root class, and thus allows
+the compiler to elide any warnings about a missing superclass and to
+make additional checks for mandatory methods as needed.
 
 @end table
 
@@ -9529,7 +9564,7 @@ asm @var{asm-qualifiers} ( @var{AssemblerTemplate}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
 asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
-                      : 
+                      : @var{OutputOperands}
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
@@ -9636,7 +9671,7 @@ there is no need for the output variables. Also, the optimizers may move
 code out of loops if they believe that the code will always return the same 
 result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
-that have no output operands, including @code{asm goto} statements, 
+that have no output operands and @code{asm goto} statements, 
 are implicitly volatile.
 
 This i386 code demonstrates a case that does not use (or require) the 
@@ -10495,9 +10530,6 @@ case, consider using the @code{__builtin_unreachable} intrinsic after the
 using the @code{hot} and @code{cold} label attributes (@pxref{Label 
 Attributes}).
 
-An @code{asm goto} statement cannot have outputs.
-This is due to an internal restriction of 
-the compiler: control transfer instructions cannot have outputs. 
 If the assembler code does modify anything, use the @code{"memory"} clobber 
 to force the 
 optimizers to flush all register values to memory and reload them if 
@@ -10505,6 +10537,13 @@ necessary after the @code{asm} statement.
 
 Also note that an @code{asm goto} statement is always implicitly
 considered volatile.
+
+Be careful when you set output operands inside @code{asm goto} only on
+some possible control flow paths.  If you don't set up the output on
+given path and never use it on this path, it is okay.  Otherwise, you
+should use @samp{+} constraint modifier meaning that the operand is
+input and output one.  With this modifier you will have the correct
+values on all possible paths from the @code{asm goto}.
 
 To reference a label in the assembler template,
 prefix it with @samp{%l} (lowercase @samp{L}) followed 
@@ -10548,6 +10587,41 @@ int frob(int x)
   return y;
 error:
   return -1;
+@}
+@end example
+
+The following example shows an @code{asm goto} that uses an output.
+
+@example
+int foo(int count)
+@{
+  asm goto ("dec %0; jb %l[stop]"
+            : "+r" (count)
+            :
+            :
+            : stop);
+  return count;
+stop:
+  return 0;
+@}
+@end example
+
+The following artificial example shows an @code{asm goto} that sets
+up an output only on one path inside the @code{asm goto}.  Usage of
+constraint modifier @code{=} instead of @code{+} would be wrong as
+@code{factor} is used on all paths from the @code{asm goto}.
+
+@example
+int foo(int inp)
+@{
+  int factor = 0;
+  asm goto ("cmp %1, 10; jb %l[lab]; mov 2, %0"
+            : "+r" (factor)
+            : "r" (inp)
+            :
+            : lab);
+lab:
+  return inp * factor; /* return 2 * inp or 0 if inp < 10 */
 @}
 @end example
 
@@ -13487,6 +13561,34 @@ initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_clear_padding (@var{ptr})
+The built-in function @code{__builtin_clear_padding} function clears
+padding bits inside of the object representation of object pointed by
+@var{ptr}, which has to be a pointer.  The value representation of the
+object is not affected.  The type of the object is assumed to be the type
+the pointer points to.  Inside of a union, the only cleared bits are
+bits that are padding bits for all the union members.
+
+This built-in-function is useful if the padding bits of an object might
+have intederminate values and the object representation needs to be
+bitwise compared to some other object, for example for atomic operations.
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
+The @code{__builtin_bit_cast} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::bit_cast} C++ template function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+This built-in function allows reinterpreting the bits of the @var{arg}
+argument as if it had type @var{type}.  @var{type} and the type of the
+@var{arg} argument need to be trivially copyable types with the same size.
+When manifestly constant-evaluated, it performs extra diagnostics required
+for @code{std::bit_cast} and returns a constant expression if @var{arg}
+is a constant expression.  For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
@@ -14077,6 +14179,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* PRU Built-in Functions::
 * RISC-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
@@ -21856,6 +21959,33 @@ void __builtin_mma_disassemble_pair (void *, __vector_pair *);
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 @end smallexample
+
+@node PRU Built-in Functions
+@subsection PRU Built-in Functions
+
+GCC provides a couple of special builtin functions to aid in utilizing
+special PRU instructions.
+
+The built-in functions supported are:
+
+@table @code
+@item __delay_cycles (long long @var{cycles})
+This inserts an instruction sequence that takes exactly @var{cycles}
+cycles (between 0 and 0xffffffff) to complete.  The inserted sequence
+may use jumps, loops, or no-ops, and does not interfere with any other
+instructions.  Note that @var{cycles} must be a compile-time constant
+integer - that is, you must pass a number, not a variable that may be
+optimized to a constant later.  The number of cycles delayed by this
+builtin is exact.
+
+@item __halt (void)
+This inserts a HALT instruction to stop processor execution.
+
+@item unsigned int __lmbd (unsigned int @var{wordval}, unsigned int @var{bitval})
+This inserts LMBD instruction to calculate the left-most bit with value
+@var{bitval} in value @var{wordval}.  Only the least significant bit
+of @var{bitval} is taken into account.
+@end table
 
 @node RISC-V Built-in Functions
 @subsection RISC-V Built-in Functions

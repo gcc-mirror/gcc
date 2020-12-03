@@ -1,21 +1,23 @@
-/* Test qualifier discard of typeof for atomic types. */
+/* Test qualifier preservation of typeof and discarded for __auto_type. */
 /* { dg-do compile } */
 /* { dg-options "-std=c11" } */
 
-/* Check that the qualifiers are discarded for atomic types. */
+/* Check that the qualifiers are preserved for atomic types. */
 
 extern int i;
 
 extern int * p;
 
 extern int _Atomic const ci;
-extern __typeof (ci) i;
+extern __typeof (ci) ci;
 
 extern int _Atomic volatile vi;
-extern __typeof (vi) i;
+extern __typeof (vi) vi;
 
 extern int * _Atomic restrict ri;
-extern __typeof (ri) p;
+extern __typeof (ri) ri;
+
+/* Check that the qualifiers are discarded for atomic types. */
 
 void f(void)
 {
@@ -46,14 +48,16 @@ extern __typeof (nvi) k;
 extern int * restrict nri;
 extern __typeof (nri) q;
 
+/* Check that the qualifiers are discarded for non-atomic types. */
+
 void g(void)
 {
   __auto_type aci = nci;
-  int const *paci = &aci;
+  int *paci = &aci;
 
   __auto_type avi = nvi;
-  int volatile *pavi = &avi;
+  int *pavi = &avi;
 
   __auto_type ari = nri;
-  int * restrict *pari = &ari;
+  int **pari = &ari;
 }

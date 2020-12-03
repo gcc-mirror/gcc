@@ -2656,6 +2656,22 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
   hard_regs_live_known = live_known;
   static_reload_reg_p = reload_reg_p;
 
+  if (JUMP_P (insn) && INSN_CODE (insn) < 0)
+    {
+      extract_insn (insn);
+      for (i = 0; i < recog_data.n_operands; i++)
+	if (recog_data.operand_type[i] != OP_IN)
+	  break;
+      if (i < recog_data.n_operands)
+	{
+	  error_for_asm (insn,
+			 "the target does not support %<asm goto%> "
+			 "with outputs in %<asm%>");
+	  ira_nullify_asm_goto (insn);
+	  return 0;
+	}
+    }
+
   /* JUMP_INSNs and CALL_INSNs are not allowed to have any output reloads;
      neither are insns that SET cc0.  Insns that use CC0 are not allowed
      to have any input reloads.  */

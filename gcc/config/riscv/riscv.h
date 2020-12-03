@@ -70,13 +70,29 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 #define TARGET_64BIT           (__riscv_xlen == 64)
 #endif /* IN_LIBGCC2 */
 
+#ifdef HAVE_AS_MISA_SPEC
+#define ASM_MISA_SPEC "%{misa-spec=*}"
+#else
+#define ASM_MISA_SPEC ""
+#endif
+
+/* Reference:
+     https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing  */
+#define STRINGIZING(s) __STRINGIZING(s)
+#define __STRINGIZING(s) #s
+
+#define MULTILIB_DEFAULTS \
+  {"march=" STRINGIZING (TARGET_RISCV_DEFAULT_ARCH), \
+   "mabi=" STRINGIZING (TARGET_RISCV_DEFAULT_ABI) }
+
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %(subtarget_asm_debugging_spec) \
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
 %{march=*} \
 %{mabi=*} \
-%(subtarget_asm_spec)"
+%(subtarget_asm_spec)" \
+ASM_MISA_SPEC
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS					\
@@ -342,8 +358,12 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
    The epilogue temporary mustn't conflict with the return registers,
    the frame pointer, the EH stack adjustment, or the EH data registers. */
 
-#define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST)
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
+
+#define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_CALL_ADDRESS_TEMP(MODE) \
+  gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
 
 #define MCOUNT_NAME "_mcount"
 

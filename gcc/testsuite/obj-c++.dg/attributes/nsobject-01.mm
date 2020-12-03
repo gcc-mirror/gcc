@@ -1,5 +1,5 @@
 /* Test handling of the NSObject attribute.  */
-/*  { dg-additional-options "-fsyntax-only " } */
+/* { dg-additional-options "-fsyntax-only -Wno-objc-root-class" } */
 
 typedef struct AnObj * __attribute__ ((NSObject)) AnObjRef;
 typedef struct AnObj * __attribute__ ((__NSObject__)) AnotherObjRef;

@@ -414,7 +414,7 @@ i[34567]86-*-*)
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
-		       hresetintrin.h keylockerintrin.h"
+		       hresetintrin.h keylockerintrin.h avxvnniintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -451,7 +451,7 @@ x86_64-*-*)
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
-		       hresetintrin.h keylockerintrin.h"
+		       hresetintrin.h keylockerintrin.h avxvnniintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -702,8 +702,10 @@ case ${target} in
   extra_options="${extra_options} darwin.opt"
   c_target_objs="${c_target_objs} darwin-c.o"
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
+  d_target_objs="${d_target_objs} darwin-d.o"
   fortran_target_objs="darwin-f.o"
   target_has_targetcm=yes
+  target_has_targetdm=yes
   extra_objs="${extra_objs} darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
@@ -731,6 +733,9 @@ case ${target} in
   extra_options="$extra_options rpath.opt dragonfly.opt"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} dragonfly-d.o"
+  tmake_file="${tmake_file} t-dragonfly"
+  target_has_targetdm=yes
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
@@ -779,6 +784,9 @@ case ${target} in
       default_use_cxa_atexit=yes;;
   esac
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} freebsd-d.o"
+  tmake_file="${tmake_file} t-freebsd"
+  target_has_targetdm=yes
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
@@ -4083,9 +4091,26 @@ fi
 supported_defaults=
 case "${target}" in
 	aarch64*-*-*)
-		supported_defaults="abi cpu arch"
-		for which in cpu arch; do
-
+		supported_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64"
+		if test x$with_cpu_64 != x && test x$with_cpu = x; then
+			with_cpu=$with_cpu_64
+		fi
+		if test x$with_cpu_32 != x && test x$with_cpu = x; then
+			with_cpu=$with_cpu_32
+		fi
+		if test x$with_arch_64 != x && test x$with_arch = x; then
+			with_arch=$with_arch_64
+		fi
+		if test x$with_arch_32 != x && test x$with_arch = x; then
+			with_arch=$with_arch_32
+		fi
+		if test x$with_tune_64 != x && test x$with_tune = x; then
+			with_tune=$with_tune_64
+		fi
+		if test x$with_tune_32 != x && test x$with_tune = x; then
+			with_tune=$with_tune_32
+		fi
+		for which in cpu arch tune; do
 			eval "val=\$with_$which"
 			base_val=`echo $val | sed -e 's/\+.*//'`
 			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
@@ -4524,12 +4549,27 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute"
+		supported_defaults="abi arch tune riscv_attribute isa_spec"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		case "${with_isa_spec}" in
+		""|default|2.2)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
+			;;
+		20191213 | 201912)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			;;
+		20190608 | 201906)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"
+			;;
+		*)
+			echo "--with-isa-spec only accept 2.2, 20191213, 201912, 20190608 or 201906" 1>&2
+			exit 1
 		esac
 
 		case "${with_riscv_attribute}" in
@@ -4575,6 +4615,8 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		with_arch=`${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
+		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ARCH=${with_arch}"
 
 		# Make sure --with-abi is valid.  If it was not specified,
 		# pick a default based on the ISA, preferring soft-float
@@ -4596,6 +4638,7 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ABI=${with_abi}"
 
 		# Make sure ABI and ISA are compatible.
 		case "${with_abi},${with_arch}" in
@@ -4638,7 +4681,6 @@ case "${target}" in
 
 		# Handle --with-multilib-list.
 		if test "x${with_multilib_list}" != xdefault; then
-			tm_file="${tm_file} riscv/withmultilib.h"
 			tmake_file="${tmake_file} riscv/t-withmultilib"
 
 			case ${with_multilib_list} in
@@ -4648,42 +4690,6 @@ case "${target}" in
 				;;
 			*)
 				echo "--with-multilib-list=${with_multilib_list} not supported."
-				exit 1
-			esac
-
-			# Define macros to select the default multilib.
-			case ${with_arch} in
-			rv32gc)
-				tm_defines="${tm_defines} TARGET_MLIB_ARCH=1"
-				;;
-			rv64gc)
-				tm_defines="${tm_defines} TARGET_MLIB_ARCH=2"
-				;;
-			*)
-				echo "unsupported --with-arch for --with-multilib-list"
-				exit 1
-			esac
-			case ${with_abi} in
-			ilp32)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=1"
-				;;
-			ilp32f)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=2"
-				;;
-			ilp32d)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=3"
-				;;
-			lp64)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=4"
-				;;
-			lp64f)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=5"
-				;;
-			lp64d)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=6"
-				;;
-			*)
-				echo "unsupported --with-abi for --with-multilib"
 				exit 1
 			esac
 		fi
@@ -5226,8 +5232,8 @@ case ${target} in
 	i[34567]86-*-darwin* | x86_64-*-darwin*)
 		;;
 	i[34567]86-*-linux* | x86_64-*-linux*)
-		extra_objs="${extra_objs} cet.o"
-		tmake_file="$tmake_file i386/t-linux i386/t-cet"
+		extra_objs="${extra_objs} gnu-property.o"
+		tmake_file="$tmake_file i386/t-linux i386/t-gnu-property"
 		;;
 	i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu)
 		tmake_file="$tmake_file i386/t-kfreebsd"

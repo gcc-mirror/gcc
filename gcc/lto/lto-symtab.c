@@ -985,7 +985,7 @@ lto_symtab_merge_symbols (void)
       /* Do the actual merging.  
 	 At this point we invalidate hash translating decls into symtab nodes
 	 because after removing one of duplicate decls the hash is not correcly
-	 updated to the ohter dupliate.  */
+	 updated to the other duplicate.  */
       FOR_EACH_SYMBOL (node)
 	if (lto_symtab_symbol_p (node)
 	    && node->next_sharing_asm_name

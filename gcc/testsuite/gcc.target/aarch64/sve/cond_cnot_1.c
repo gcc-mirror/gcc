@@ -31,5 +31,4 @@ TEST_ALL (DEF_LOOP)
 
 /* { dg-final { scan-assembler-not {\tmov\tz} } } */
 /* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
-/* Currently we canonicalize the ?: so that !b[i] is the "false" value.  */
-/* { dg-final { scan-assembler-not {\tsel\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tsel\t} } } */

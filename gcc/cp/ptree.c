@@ -250,6 +250,44 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "function", OVL_FUNCTION (node), indent + 4);
       print_node (file, "next", OVL_CHAIN (node), indent + 4);
       break;
+    case BINDING_VECTOR:
+      {
+	unsigned len = BINDING_VECTOR_NUM_CLUSTERS (node);
+	print_node (file, "name", BINDING_VECTOR_NAME (node), indent + 4);
+	fprintf (file, " clusters %u, alloc %u", len,
+		 BINDING_VECTOR_ALLOC_CLUSTERS (node));
+	for (unsigned ix = 0; ix != len; ix++)
+	  {
+	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
+	    char pfx[24];
+	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      if (cluster->indices[jx].span)
+		{
+		  int len = sprintf (pfx, "module:%u",
+				     cluster->indices[jx].base);
+		  if (cluster->indices[jx].span > 1)
+		    len += sprintf (&pfx[len], "(+%u)",
+				    cluster->indices[jx].span);
+		  len += sprintf (&pfx[len], " cluster:%u/%u", ix, jx);
+		  binding_slot &slot = cluster->slots[jx];
+		  if (slot.is_lazy ())
+		    {
+		      indent_to (file, indent + 4);
+		      unsigned lazy = slot.get_lazy ();
+		      fprintf (file, "%s snum:%u flags:%d",
+			       pfx, lazy >> 2, lazy & 3);
+		    }
+		  else if (slot)
+		    print_node (file, pfx, slot, indent + 4);
+		  else
+		    {
+		      indent_to (file, indent + 4);
+		      fprintf (file, "%s NULL", pfx);
+		    }
+		}
+	  }
+      }
+      break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);
       indent_to (file, indent + 3);

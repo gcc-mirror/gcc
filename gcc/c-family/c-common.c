@@ -374,6 +374,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
+  { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_call_with_static_chain",
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
@@ -540,6 +541,12 @@ const struct c_common_resword c_common_reswords[] =
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
 
+  /* Modules-related keywords, these are internal unspellable tokens,
+     created by the preprocessor.  */
+  { "module ",		RID__MODULE,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "import ",		RID__IMPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "export ",		RID__EXPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+
   /* Coroutines-related keywords */
   { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
   { "co_yield",		RID_CO_YIELD,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
@@ -580,6 +587,12 @@ const struct c_common_resword c_common_reswords[] =
   { "readwrite",	RID_READWRITE,		D_OBJC },
   { "retain",		RID_RETAIN,		D_OBJC },
   { "setter",		RID_SETTER,		D_OBJC },
+  /* These are Objective C implementation of nullability, accepted only in
+     specific contexts.  */
+  { "null_unspecified", RID_NULL_UNSPECIFIED,	D_OBJC },
+  { "nullable",		RID_NULLABLE,		D_OBJC },
+  { "nonnull",		RID_NONNULL,		D_OBJC },
+  { "null_resettable",	RID_NULL_RESETTABLE,	D_OBJC },
 };
 
 const unsigned int num_c_common_reswords =
@@ -6127,9 +6140,16 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	    }
 	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"has pointer to %<const%> type (%qT)", fndecl,
+	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 3, fndecl, "const",
 			TREE_TYPE (args[2]));
+	      return false;
+	    }
+	  else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (args[2]))))
+	    {
+	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 3, fndecl,
+			"_Atomic", TREE_TYPE (args[2]));
 	      return false;
 	    }
 	  return true;
@@ -6159,6 +6179,39 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	    {
 	      error_at (ARG_LOCATION (2), "argument 3 in call to function "
 			"%qE has boolean type", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    case BUILT_IN_CLEAR_PADDING:
+      if (builtin_function_validate_nargs (loc, fndecl, nargs, 1))
+	{
+	  if (!POINTER_TYPE_P (TREE_TYPE (args[0])))
+	    {
+	      error_at (ARG_LOCATION (0), "argument %u in call to function "
+			"%qE does not have pointer type", 1, fndecl);
+	      return false;
+	    }
+	  else if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (args[0]))))
+	    {
+	      error_at (ARG_LOCATION (0), "argument %u in call to function "
+			"%qE points to incomplete type", 1, fndecl);
+	      return false;
+	    }
+	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[0]))))
+	    {
+	      error_at (ARG_LOCATION (0), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 1, fndecl, "const",
+			TREE_TYPE (args[0]));
+	      return false;
+	    }
+	  else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (args[0]))))
+	    {
+	      error_at (ARG_LOCATION (0), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 1, fndecl,
+			"_Atomic", TREE_TYPE (args[0]));
 	      return false;
 	    }
 	  return true;

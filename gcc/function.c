@@ -2206,12 +2206,14 @@ use_register_for_decl (const_tree decl)
       /* Otherwise, if RESULT_DECL is DECL_BY_REFERENCE, it will take
 	 the function_result_decl's assignment.  Since it's a pointer,
 	 we can short-circuit a number of the tests below, and we must
-	 duplicat e them because we don't have the
-	 function_result_decl to test.  */
+	 duplicate them because we don't have the function_result_decl
+	 to test.  */
       if (!targetm.calls.allocate_stack_slots_for_args ())
 	return true;
       /* We don't set DECL_IGNORED_P for the function_result_decl.  */
       if (optimize)
+	return true;
+      if (cfun->tail_call_marked)
 	return true;
       /* We don't set DECL_REGISTER for the function_result_decl.  */
       return false;
@@ -5880,6 +5882,10 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (only_arg && !FUNCTION_ARG_REGNO_P (regno))
 	continue;
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
+	continue;
+#endif
 
       /* Now this is a register that we might want to zero.  */
       SET_HARD_REG_BIT (selected_hardregs, regno);

@@ -146,6 +146,7 @@ endif
 
 # Define the names for selecting Ada in LANGUAGES.
 ada: gnat1$(exeext) gnatbind$(exeext)
+ada.serial = gnat1$(exeext)
 
 # Tell GNU Make to ignore these, if they exist.
 .PHONY: ada
@@ -667,10 +668,13 @@ ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
 # Needs to be built with CC=gcc
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
-gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBDEPS)
+gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a \
+		$(LIBDEPS) $(ada.prev)
+	@$(call LINK_PROGRESS,$(INDEX.ada),start)
 	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) \
 	  libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
 	$(RM) stamp-gnatlib2-rts stamp-tools
+	@$(call LINK_PROGRESS,$(INDEX.ada),end)
 
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
 	+$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(CFLAGS)

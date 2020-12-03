@@ -1256,16 +1256,15 @@ structural_comptypes (tree t1, tree t2, int strict)
 
   gcc_assert (TYPE_P (t1) && TYPE_P (t2));
 
-  if (!comparing_specializations)
-    {
-      /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
-	 current instantiation.  */
-      if (TREE_CODE (t1) == TYPENAME_TYPE)
-	t1 = resolve_typename_type (t1, /*only_current_p=*/true);
+  /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
+     current instantiation, and we don't care about typename
+     structural equality.  The comparing_typenames check is after the
+     code check, in order to early-out the common case.  */
+  if (TREE_CODE (t1) == TYPENAME_TYPE && !comparing_typenames)
+    t1 = resolve_typename_type (t1, /*only_current_p=*/true);
 
-      if (TREE_CODE (t2) == TYPENAME_TYPE)
-	t2 = resolve_typename_type (t2, /*only_current_p=*/true);
-    }
+  if (TREE_CODE (t2) == TYPENAME_TYPE && !comparing_typenames)
+    t2 = resolve_typename_type (t2, /*only_current_p=*/true);
 
   if (TYPE_PTRMEMFUNC_P (t1))
     t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
@@ -1314,6 +1313,7 @@ structural_comptypes (tree t1, tree t2, int strict)
       /* All void and bool types are the same.  */
       break;
 
+    case OPAQUE_TYPE:
     case INTEGER_TYPE:
     case FIXED_POINT_TYPE:
     case REAL_TYPE:
@@ -1832,10 +1832,12 @@ cxx_sizeof_expr (location_t loc, tree e, tsubst_flags_t complain)
 /* Implement the __alignof keyword: Return the minimum required
    alignment of E, measured in bytes.  For VAR_DECL's and
    FIELD_DECL's return DECL_ALIGN (which can be set from an
-   "aligned" __attribute__ specification).  */
+   "aligned" __attribute__ specification).  STD_ALIGNOF acts
+   like in cxx_sizeof_or_alignof_type.  */
 
 static tree
-cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
+cxx_alignof_expr (location_t loc, tree e, bool std_alignof,
+		  tsubst_flags_t complain)
 {
   tree t;
 
@@ -1848,6 +1850,7 @@ cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
       TREE_SIDE_EFFECTS (e) = 0;
       TREE_READONLY (e) = 1;
       SET_EXPR_LOCATION (e, loc);
+      ALIGNOF_EXPR_STD_P (e) = std_alignof;
 
       return e;
     }
@@ -1900,23 +1903,25 @@ cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
     }
   else
     return cxx_sizeof_or_alignof_type (loc, TREE_TYPE (e),
-				       ALIGNOF_EXPR, false,
+				       ALIGNOF_EXPR, std_alignof,
                                        complain & tf_error);
 
   return fold_convert_loc (loc, size_type_node, t);
 }
 
 /* Process a sizeof or alignof expression E with code OP where the operand
-   is an expression.  */
+   is an expression. STD_ALIGNOF acts like in cxx_sizeof_or_alignof_type.  */
 
 tree
 cxx_sizeof_or_alignof_expr (location_t loc, tree e, enum tree_code op,
-			    bool complain)
+			    bool std_alignof, bool complain)
 {
+  gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   if (op == SIZEOF_EXPR)
     return cxx_sizeof_expr (loc, e, complain? tf_warning_or_error : tf_none);
   else
-    return cxx_alignof_expr (loc, e, complain? tf_warning_or_error : tf_none);
+    return cxx_alignof_expr (loc, e, std_alignof,
+			     complain? tf_warning_or_error : tf_none);
 }
 
 /*  Build a representation of an expression 'alignas(E).'  Return the
@@ -2895,7 +2900,8 @@ access_failure_info::add_fixit_hint (rich_location *richloc,
 				     tree accessor_decl)
 {
   pretty_printer pp;
-  pp_printf (&pp, "%s()", IDENTIFIER_POINTER (DECL_NAME (accessor_decl)));
+  pp_string (&pp, IDENTIFIER_POINTER (DECL_NAME (accessor_decl)));
+  pp_string (&pp, "()");
   richloc->add_fixit_replace (pp_formatted_text (&pp));
 }
 

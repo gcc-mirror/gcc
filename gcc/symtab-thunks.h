@@ -167,7 +167,7 @@ inline void
 thunk_info::release ()
 {
   if (symtab->m_thunks)
-    delete (symtab->m_thunks);
+    ggc_delete (symtab->m_thunks);
   symtab->m_thunks = NULL;
 }
 #endif  /* GCC_SYMTAB_THUNKS_H  */

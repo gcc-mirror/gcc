@@ -1187,8 +1187,9 @@ struct GTY(()) machine_function
 #define TARGET_INDIRECT_BRANCH_TABLE s390_indirect_branch_table
 
 #ifdef GENERATOR_FILE
-/* gencondmd.c is built before insn-flags.h.  */
-#define HAVE_TF(icode) true
+/* gencondmd.c is built before insn-flags.h.  Use an arbitrary opaque value
+   that cannot be optimized away by gen_insn.  */
+#define HAVE_TF(icode) TARGET_HARD_FLOAT
 #else
 #define HAVE_TF(icode) (HAVE_##icode##_fpr || HAVE_##icode##_vr)
 #endif

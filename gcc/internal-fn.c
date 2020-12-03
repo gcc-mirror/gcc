@@ -469,6 +469,111 @@ expand_UBSAN_OBJECT_SIZE (internal_fn, gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
+expand_HWASAN_CHECK (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* For hwasan stack tagging:
+   Clear tags on the dynamically allocated space.
+   For use after an object dynamically allocated on the stack goes out of
+   scope.  */
+static void
+expand_HWASAN_ALLOCA_UNPOISON (internal_fn, gcall *gc)
+{
+  gcc_assert (Pmode == ptr_mode);
+  tree restored_position = gimple_call_arg (gc, 0);
+  rtx restored_rtx = expand_expr (restored_position, NULL_RTX, VOIDmode,
+				  EXPAND_NORMAL);
+  rtx func = init_one_libfunc ("__hwasan_tag_memory");
+  rtx off = expand_simple_binop (Pmode, MINUS, restored_rtx,
+				 stack_pointer_rtx, NULL_RTX, 0,
+				 OPTAB_WIDEN);
+  emit_library_call_value (func, NULL_RTX, LCT_NORMAL, VOIDmode,
+			   virtual_stack_dynamic_rtx, Pmode,
+			   HWASAN_STACK_BACKGROUND, QImode,
+			   off, Pmode);
+}
+
+/* For hwasan stack tagging:
+   Return a tag to be used for a dynamic allocation.  */
+static void
+expand_HWASAN_CHOOSE_TAG (internal_fn, gcall *gc)
+{
+  tree tag = gimple_call_lhs (gc);
+  rtx target = expand_expr (tag, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  machine_mode mode = GET_MODE (target);
+  gcc_assert (mode == QImode);
+
+  rtx base_tag = targetm.memtag.extract_tag (hwasan_frame_base (), NULL_RTX);
+  gcc_assert (base_tag);
+  rtx tag_offset = gen_int_mode (hwasan_current_frame_tag (), QImode);
+  rtx chosen_tag = expand_simple_binop (QImode, PLUS, base_tag, tag_offset,
+					target, /* unsignedp = */1,
+					OPTAB_WIDEN);
+  chosen_tag = hwasan_truncate_to_tag_size (chosen_tag, target);
+
+  /* Really need to put the tag into the `target` RTX.  */
+  if (chosen_tag != target)
+    {
+      rtx temp = chosen_tag;
+      gcc_assert (GET_MODE (chosen_tag) == mode);
+      emit_move_insn (target, temp);
+    }
+
+  hwasan_increment_frame_tag ();
+}
+
+/* For hwasan stack tagging:
+   Tag a region of space in the shadow stack according to the base pointer of
+   an object on the stack.  N.b. the length provided in the internal call is
+   required to be aligned to HWASAN_TAG_GRANULE_SIZE.  */
+static void
+expand_HWASAN_MARK (internal_fn, gcall *gc)
+{
+  gcc_assert (ptr_mode == Pmode);
+  HOST_WIDE_INT flag = tree_to_shwi (gimple_call_arg (gc, 0));
+  bool is_poison = ((asan_mark_flags)flag) == ASAN_MARK_POISON;
+
+  tree base = gimple_call_arg (gc, 1);
+  gcc_checking_assert (TREE_CODE (base) == ADDR_EXPR);
+  rtx base_rtx = expand_normal (base);
+
+  rtx tag = is_poison ? HWASAN_STACK_BACKGROUND
+    : targetm.memtag.extract_tag (base_rtx, NULL_RTX);
+  rtx address = targetm.memtag.untagged_pointer (base_rtx, NULL_RTX);
+
+  tree len = gimple_call_arg (gc, 2);
+  rtx r_len = expand_normal (len);
+
+  rtx func = init_one_libfunc ("__hwasan_tag_memory");
+  emit_library_call (func, LCT_NORMAL, VOIDmode, address, Pmode,
+		     tag, QImode, r_len, Pmode);
+}
+
+/* For hwasan stack tagging:
+   Store a tag into a pointer.  */
+static void
+expand_HWASAN_SET_TAG (internal_fn, gcall *gc)
+{
+  gcc_assert (ptr_mode == Pmode);
+  tree g_target = gimple_call_lhs (gc);
+  tree g_ptr = gimple_call_arg (gc, 0);
+  tree g_tag = gimple_call_arg (gc, 1);
+
+  rtx ptr = expand_normal (g_ptr);
+  rtx tag = expand_expr (g_tag, NULL_RTX, QImode, EXPAND_NORMAL);
+  rtx target = expand_normal (g_target);
+
+  rtx untagged = targetm.memtag.untagged_pointer (ptr, target);
+  rtx tagged_value = targetm.memtag.set_tag (untagged, tag, target);
+  if (tagged_value != target)
+    emit_move_insn (target, tagged_value);
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
 expand_ASAN_CHECK (internal_fn, gcall *)
 {
   gcc_unreachable ();
@@ -552,6 +657,16 @@ get_min_precision (tree arg, signop sign)
 	}
       if (++cnt > 30)
 	return prec + (orig_sign != sign);
+    }
+  if (CONVERT_EXPR_P (arg)
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
+      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg, 0))) > prec)
+    {
+      /* We have e.g. (unsigned short) y_2 where int y_2 = (int) x_1(D);
+	 If y_2's min precision is smaller than prec, return that.  */
+      int oprec = get_min_precision (TREE_OPERAND (arg, 0), sign);
+      if (oprec < prec)
+	return oprec + (orig_sign != sign);
     }
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
@@ -683,7 +798,7 @@ expand_ubsan_result_store (rtx target, rtx res)
 /* Add sub/add overflow checking to the statement STMT.
    CODE says whether the operation is +, or -.  */
 
-static void
+void
 expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 			tree arg0, tree arg1, bool unsr_p, bool uns0_p,
 			bool uns1_p, bool is_ubsan, tree *datap)
@@ -1357,6 +1472,37 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				   NULL, done_label, profile_probability::very_likely ());
 	  goto do_error_label;
 	case 3:
+	  if (get_min_precision (arg1, UNSIGNED)
+	      + get_min_precision (arg0, SIGNED) <= GET_MODE_PRECISION (mode))
+	    {
+	      /* If the first operand is sign extended from narrower type, the
+		 second operand is zero extended from narrower type and
+		 the sum of the two precisions is smaller or equal to the
+		 result precision: if the first argument is at runtime
+		 non-negative, maximum result will be 0x7e81 or 0x7f..fe80..01
+		 and there will be no overflow, if the first argument is
+		 negative and the second argument zero, the result will be
+		 0 and there will be no overflow, if the first argument is
+		 negative and the second argument positive, the result when
+		 treated as signed will be negative (minimum -0x7f80 or
+		 -0x7f..f80..0) there there will be always overflow.  So, do
+		 res = (U) (s1 * u2)
+		 ovf = (S) res < 0  */
+	      struct separate_ops ops;
+	      ops.code = MULT_EXPR;
+	      ops.type
+		= build_nonstandard_integer_type (GET_MODE_PRECISION (mode),
+						  1);
+	      ops.op0 = make_tree (ops.type, op0);
+	      ops.op1 = make_tree (ops.type, op1);
+	      ops.op2 = NULL_TREE;
+	      ops.location = loc;
+	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	      do_compare_rtx_and_jump (res, const0_rtx, GE, false,
+				       mode, NULL_RTX, NULL, done_label,
+				       profile_probability::very_likely ());
+	      goto do_error_label;
+	    }
 	  rtx_code_label *do_main_label;
 	  do_main_label = gen_label_rtx ();
 	  do_compare_rtx_and_jump (op0, const0_rtx, GE, false, mode, NULL_RTX,
@@ -1374,7 +1520,16 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* u1 * u2 -> sr  */
   if (uns0_p && uns1_p && !unsr_p)
     {
-      uns = true;
+      if ((pos_neg0 | pos_neg1) == 1)
+	{
+	  /* If both arguments are zero extended from narrower types,
+	     the MSB will be clear on both and so we can pretend it is
+	     a normal s1 * s2 -> sr multiplication.  */
+	  uns0_p = false;
+	  uns1_p = false;
+	}
+      else
+	uns = true;
       /* Rest of handling of this case after res is computed.  */
       goto do_main;
     }
@@ -1452,6 +1607,37 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
 	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
 				       true, mode, NULL_RTX, NULL, done_label,
+				       profile_probability::very_likely ());
+	      goto do_error_label;
+	    }
+	  if (get_min_precision (arg0, SIGNED)
+	      + get_min_precision (arg1, SIGNED) <= GET_MODE_PRECISION (mode))
+	    {
+	      /* If both operands are sign extended from narrower types and
+		 the sum of the two precisions is smaller or equal to the
+		 result precision: if both arguments are at runtime
+		 non-negative, maximum result will be 0x3f01 or 0x3f..f0..01
+		 and there will be no overflow, if both arguments are negative,
+		 maximum result will be 0x40..00 and there will be no overflow
+		 either, if one argument is positive and the other argument
+		 negative, the result when treated as signed will be negative
+		 and there will be always overflow, and if one argument is
+		 zero and the other negative the result will be zero and no
+		 overflow.  So, do
+		 res = (U) (s1 * s2)
+		 ovf = (S) res < 0  */
+	      struct separate_ops ops;
+	      ops.code = MULT_EXPR;
+	      ops.type
+		= build_nonstandard_integer_type (GET_MODE_PRECISION (mode),
+						  1);
+	      ops.op0 = make_tree (ops.type, op0);
+	      ops.op1 = make_tree (ops.type, op1);
+	      ops.op2 = NULL_TREE;
+	      ops.location = loc;
+	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	      do_compare_rtx_and_jump (res, const0_rtx, GE, false,
+				       mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
@@ -3044,27 +3230,68 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
 	 the division and modulo and if it emits any library calls or any
 	 {,U}{DIV,MOD} rtxes throw it away and use a divmod optab or
 	 divmod libcall.  */
-      struct separate_ops ops;
-      ops.code = TRUNC_DIV_EXPR;
-      ops.type = type;
-      ops.op0 = make_tree (ops.type, op0);
-      ops.op1 = arg1;
-      ops.op2 = NULL_TREE;
-      ops.location = gimple_location (call_stmt);
-      start_sequence ();
-      quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-      if (contains_call_div_mod (get_insns ()))
-	quotient = NULL_RTX;
-      else
+      scalar_int_mode int_mode;
+      if (remainder == NULL_RTX
+	  && optimize
+	  && CONST_INT_P (op1)
+	  && !pow2p_hwi (INTVAL (op1))
+	  && is_int_mode (TYPE_MODE (type), &int_mode)
+	  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+	  && optab_handler (and_optab, word_mode) != CODE_FOR_nothing
+	  && optab_handler (add_optab, word_mode) != CODE_FOR_nothing
+	  && optimize_insn_for_speed_p ())
 	{
-	  ops.code = TRUNC_MOD_EXPR;
-	  remainder = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	  if (contains_call_div_mod (get_insns ()))
-	    remainder = NULL_RTX;
+	  rtx_insn *last = get_last_insn ();
+	  remainder = NULL_RTX;
+	  quotient = expand_doubleword_divmod (int_mode, op0, op1, &remainder,
+					       TYPE_UNSIGNED (type));
+	  if (quotient != NULL_RTX)
+	    {
+	      if (optab_handler (mov_optab, int_mode) != CODE_FOR_nothing)
+		{
+		  rtx_insn *move = emit_move_insn (quotient, quotient);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UDIV : DIV, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		  move = emit_move_insn (remainder, remainder);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UMOD : MOD, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		}
+	    }
+	  else
+	    delete_insns_since (last);
 	}
-      if (remainder)
-	insns = get_insns ();
-      end_sequence ();
+
+      if (remainder == NULL_RTX)
+	{
+	  struct separate_ops ops;
+	  ops.code = TRUNC_DIV_EXPR;
+	  ops.type = type;
+	  ops.op0 = make_tree (ops.type, op0);
+	  ops.op1 = arg1;
+	  ops.op2 = NULL_TREE;
+	  ops.location = gimple_location (call_stmt);
+	  start_sequence ();
+	  quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (contains_call_div_mod (get_insns ()))
+	    quotient = NULL_RTX;
+	  else
+	    {
+	      ops.code = TRUNC_MOD_EXPR;
+	      remainder = expand_expr_real_2 (&ops, NULL_RTX, mode,
+					      EXPAND_NORMAL);
+	      if (contains_call_div_mod (get_insns ()))
+		remainder = NULL_RTX;
+	    }
+	  if (remainder)
+	    insns = get_insns ();
+	  end_sequence ();
+	}
     }
 
   if (remainder)

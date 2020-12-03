@@ -27,6 +27,7 @@ D_LIBPHOBOS = -DLIBPHOBOS=\"gphobos\"
 
 # The name for selecting d in LANGUAGES.
 d: d21$(exeext)
+d.serial = d21$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: d
@@ -162,9 +163,11 @@ D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_GENERATED_OBJS) $(D_OBJS) $(D_TARGET_OBJS)
 
 d_OBJS = $(D_ALL_OBJS) d/d-spec.o
 
-d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
+d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
+	@$(call LINK_PROGRESS,$(INDEX.d),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.d),end)
 
 # Documentation.
 

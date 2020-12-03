@@ -67,7 +67,7 @@ void* warn_malloc_3_5 (const char *s, unsigned n)
 {
   if (n < 3 || 5 < n)
     n = 3;
-  char *p = (char*)malloc (n);          // { dg-message "at offset 1 into destination object of size \\\[3, 5] allocated by 'malloc'" }
+  char *p = (char*)malloc (n);          // { dg-message "at offset 1 into destination object of size \\\[3, 5] allocated by 'malloc'" "note" }
   // The size below should be a range like the one above.
   strncpy (p + 1, s, 5);                // { dg-warning "writing 5 bytes into a region of size 4 " }
   return p;
@@ -89,7 +89,7 @@ void* warn_usr_alloc_3_5 (UsrAlloc *usr_alloc, const char *s, unsigned n)
 {
   if (n < 3 || 5 < n)
     n = 3;
-  char *p = (char*)usr_alloc (n, 3);    // { dg-message "at offset 1 into destination object of size \\\[9, 15] allocated by 'usr_alloc'" }
+  char *p = (char*)usr_alloc (n, 3);    // { dg-message "at offset 1 into destination object of size \\\[9, 15] allocated by 'usr_alloc'" "note" }
   // The size below should be a range like the one above.
   strncpy (p + 1, s, 15);               // { dg-warning "writing 15 bytes into a region of size 14 " }
   return p;
@@ -179,67 +179,67 @@ void test_note (const char *s)
   extern void sink (void*);
 
   {
-    char a[1][1][2];                    // { dg-message "destination object" }
+    char a[1][1][2];                    // { dg-message "destination object" "note" }
     strncpy (a[0][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
     sink (a);
   }
 
   {
-    char a[1][1][2];                    // { dg-message "at offset 2 into " }
+    char a[1][1][2];                    // { dg-message "at offset 2 into " "note" }
     strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
     sink (a);
   }
 
   {
-    char a[1][2][2];                    // { dg-message "destination object" }
+    char a[1][2][2];                    // { dg-message "destination object" "note" }
     strncpy (a[0][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
     sink (a);
   }
 
   {
-    char a[1][2][2];                    // { dg-message "at offset 2 into " }
+    char a[1][2][2];                    // { dg-message "at offset 2 into " "note" }
     strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
     sink (a);
   }
 
   {
-    char a[1][2][2];                    // { dg-message "at offset 4 into " }
+    char a[1][2][2];                    // { dg-message "at offset 4 into " "note" }
     strncpy (a[1][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
     sink (a);
   }
 
   {
-    char a[2][1][2];                    // { dg-message "at offset 2 into " }
+    char a[2][1][2];                    // { dg-message "at offset 2 into " "note" }
     strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
     sink (a);
   }
 
   {
-    char a[2][1][2];                    // { dg-message "at offset 2 into " }
+    char a[2][1][2];                    // { dg-message "at offset 2 into " "note" }
     strncpy (a[1][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
     sink (a);
   }
 
   {
-    char a[2][2][3];                    // { dg-message "at offset 9 into " }
+    char a[2][2][3];                    // { dg-message "at offset 9 into " "note" }
     strncpy (a[1][1], s, 4);            // { dg-warning "writing 4 bytes into a region of size 3 " }
     sink (a);
   }
 
   {
-    char a[2][3][3];                    // { dg-message "at offset 12 into " }
+    char a[2][3][3];                    // { dg-message "at offset 12 into " "note" }
     strncpy (a[1][1], s, 5);            // { dg-warning "writing 5 bytes into a region of size 3 " }
     sink (a);
   }
 
   {
-    char a[2][3][3];                    // { dg-message "at offset 12 into " }
+    char a[2][3][3];                    // { dg-message "at offset 12 into " "note" }
     strncpy (a[1][1], s, 6);            // { dg-warning "writing 6 bytes into a region of size 3 " }
     sink (a);
   }
 
   {
-    char a[2][3][3];                    // { dg-message "at offset 15 into " }
+    char a[2][3][3];                    // { dg-message "at offset 15 into " "note" }
     strncpy (a[1][2], s, 7);            // { dg-warning "writing 7 bytes into a region of size 3 " }
     sink (a);
   }

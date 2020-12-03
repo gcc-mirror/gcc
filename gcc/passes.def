@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_unused_result);
   NEXT_PASS (pass_diagnose_omp_blocks);
   NEXT_PASS (pass_diagnose_tm_blocks);
+  NEXT_PASS (pass_omp_oacc_kernels_decompose);
   NEXT_PASS (pass_lower_omp);
   NEXT_PASS (pass_lower_cf);
   NEXT_PASS (pass_lower_tm);
@@ -93,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
 	  NEXT_PASS (pass_modref);
 	  NEXT_PASS (pass_tail_recursion);
+	  NEXT_PASS (pass_if_to_switch);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
 	  NEXT_PASS (pass_profile);

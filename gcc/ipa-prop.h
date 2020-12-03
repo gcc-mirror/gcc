@@ -94,9 +94,14 @@ struct GTY(()) ipa_pass_through_data
   /* Number of the caller's formal parameter being passed.  */
   int formal_id;
   /* Operation that is performed on the argument before it is passed on.
-     NOP_EXPR means no operation.  Otherwise oper must be a simple binary
-     arithmetic operation where the caller's parameter is the first operand and
-     operand field from this structure is the second one.  */
+     Special values which have other meaning than in normal contexts:
+       - NOP_EXPR means no operation, not even type conversion.
+       - ASSERT_EXPR means that only the value in operand is allowed to pass
+         through (without any change), for all other values the result is
+         unknown.
+     Otherwise operation must be a simple binary or unary arithmetic operation
+     where the caller's parameter is the first operand and (for binary
+     operations) the operand field from this structure is the second one.  */
   enum tree_code operation;
   /* When the passed value is a pointer, it is set to true only when we are
      certain that no write to the object it points to has occurred since the
@@ -620,6 +625,7 @@ inline
 ipa_node_params::~ipa_node_params ()
 {
   free (lattices);
+  vec_free (descriptors);
   known_csts.release ();
   known_contexts.release ();
 }
@@ -895,6 +901,10 @@ class GTY((for_user)) ipa_edge_args
   /* Destructor.  */
   ~ipa_edge_args ()
     {
+      unsigned int i;
+      ipa_jump_func *jf;
+      FOR_EACH_VEC_SAFE_ELT (jump_functions, i, jf)
+	vec_free (jf->agg.items);
       vec_free (jump_functions);
       vec_free (polymorphic_call_contexts);
     }

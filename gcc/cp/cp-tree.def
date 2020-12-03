@@ -233,6 +233,9 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 /* One of a set of overloaded functions.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
+/* A vector of binding slots.  */
+DEFTREECODE (BINDING_VECTOR, "binding_vector", tcc_exceptional, 0)
+
 /* A pseudo-destructor, of the form "OBJECT.~DESTRUCTOR" or
    "OBJECT.SCOPE::~DESTRUCTOR.  The first operand is the OBJECT.  The
    second operand (if non-NULL) is the SCOPE.  The third operand is
@@ -437,6 +440,9 @@ DEFTREECODE (UNARY_RIGHT_FOLD_EXPR, "unary_right_fold_expr", tcc_expression, 2)
 DEFTREECODE (BINARY_LEFT_FOLD_EXPR, "binary_left_fold_expr", tcc_expression, 3)
 DEFTREECODE (BINARY_RIGHT_FOLD_EXPR, "binary_right_fold_expr", tcc_expression, 3)
 
+/* Represents the __builtin_bit_cast (type, expr) expression.
+   The type is in TREE_TYPE, expression in TREE_OPERAND (bitcast, 0).  */
+DEFTREECODE (BIT_CAST_EXPR, "bit_cast_expr", tcc_expression, 1)
 
 /** C++ extensions. */
 

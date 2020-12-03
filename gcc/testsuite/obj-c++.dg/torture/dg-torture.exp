@@ -7,11 +7,11 @@ dg-init
 # Gather a list of all tests.
 set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mm]]
  
-obj-c++-dg-runtest $tests "" "-fgnu-runtime"
+obj-c++-dg-runtest $tests "" "-fgnu-runtime  -Wno-objc-root-class"
 
 # darwin targets can also run code with the NeXT runtime.
 if [istarget "*-*-darwin*" ] {
-  obj-c++-dg-runtest $tests "" "-fnext-runtime"
+  obj-c++-dg-runtest $tests "" "-fnext-runtime  -Wno-objc-root-class"
 }
 
 dg-finish

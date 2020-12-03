@@ -105,6 +105,9 @@ package ImpDef is
    Minimum_Task_Switch : constant Duration := 0.001;
    --                                         ^^^ --- MODIFY HERE AS NEEDED
 
+   -- The above constant has been chosen for use with delay statements in the
+   -- GCC testsuite so that they do not take too long, but may be too small.
+
    Long_Minimum_Task_Switch : constant Duration := 0.1;
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
@@ -118,6 +121,9 @@ package ImpDef is
 
    Switch_To_New_Task : constant Duration := 0.001;
    --                                        ^^^ -- MODIFY HERE AS NEEDED
+
+   -- The above constant has been chosen for use with delay statements in the
+   -- GCC testsuite so that they do not take too long, but may be too small.
 
    Long_Switch_To_New_Task : constant Duration := 0.1;
 
@@ -208,7 +214,7 @@ package ImpDef is
  
    -- CD30005_1_Foreign_Address : constant System.Address:=
    --          System.Storage_Elements.To_Address ( 16#0000_0000# )
-   --               --MODIFY HERE AS REQUIRED --- ^^^^^^^^^^^^^
+   --                    MODIFY HERE AS REQUIRED --- ^^^^^^^^^^^^^
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
@@ -337,10 +343,13 @@ package ImpDef is
    -- package Address_Value_IO is
    --     new Ada.Text_IO.Integer_IO(System.Storage_Elements.Integer_Address);
 
-    package Address_Value_IO is
-         new Ada.Text_IO.Modular_IO(System.Storage_Elements.Integer_Address);
+   package Address_Value_IO is
+        new Ada.Text_IO.Modular_IO(System.Storage_Elements.Integer_Address);
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
+
+   -- The following constants have been defined for use with various delay
+   -- statements in the GCC testsuite so that they do not take too long.
 
    One_Second : constant Duration := 0.001;
    One_Long_Second : constant Duration := 0.1;

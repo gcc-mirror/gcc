@@ -638,6 +638,9 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
   char *pair;
   size_t i;
 
+  ret.to = to;
+  ret.from = from;
+
   if (!strcasecmp (to, from))
     {
       ret.func = convert_no_conversion;

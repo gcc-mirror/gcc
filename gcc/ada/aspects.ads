@@ -142,6 +142,7 @@ package Aspects is
       Aspect_Size,
       Aspect_Small,
       Aspect_SPARK_Mode,                    -- GNAT
+      Aspect_Stable_Properties,
       Aspect_Static_Predicate,
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
@@ -237,16 +238,17 @@ package Aspects is
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Input          => True,
-      Aspect_Invariant      => True,
-      Aspect_Output         => True,
-      Aspect_Pre            => True,
-      Aspect_Predicate      => True,
-      Aspect_Post           => True,
-      Aspect_Read           => True,
-      Aspect_Write          => True,
-      Aspect_Type_Invariant => True,
-      others                => False);
+     (Aspect_Input             => True,
+      Aspect_Invariant         => True,
+      Aspect_Output            => True,
+      Aspect_Pre               => True,
+      Aspect_Predicate         => True,
+      Aspect_Post              => True,
+      Aspect_Read              => True,
+      Aspect_Write             => True,
+      Aspect_Stable_Properties => True,
+      Aspect_Type_Invariant    => True,
+      others                   => False);
 
    --  The following array identifies all implementation defined aspects
 
@@ -427,6 +429,7 @@ package Aspects is
       Aspect_Size                       => Expression,
       Aspect_Small                      => Expression,
       Aspect_SPARK_Mode                 => Optional_Name,
+      Aspect_Stable_Properties          => Expression,
       Aspect_Static_Predicate           => Expression,
       Aspect_Storage_Pool               => Name,
       Aspect_Storage_Size               => Expression,
@@ -528,6 +531,7 @@ package Aspects is
       Aspect_Size                         => True,
       Aspect_Small                        => True,
       Aspect_SPARK_Mode                   => False,
+      Aspect_Stable_Properties            => False,
       Aspect_Static_Predicate             => False,
       Aspect_Storage_Pool                 => True,
       Aspect_Storage_Size                 => True,
@@ -704,6 +708,7 @@ package Aspects is
       Aspect_Size                         => Name_Size,
       Aspect_Small                        => Name_Small,
       Aspect_SPARK_Mode                   => Name_SPARK_Mode,
+      Aspect_Stable_Properties            => Name_Stable_Properties,
       Aspect_Static                       => Name_Static,
       Aspect_Static_Predicate             => Name_Static_Predicate,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
@@ -965,6 +970,7 @@ package Aspects is
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
+      Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static                       => Never_Delay,
       Aspect_Subprogram_Variant           => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
@@ -1094,18 +1100,24 @@ package Aspects is
    --  aspect specification list, the routine has no effect. It is assumed that
    --  both nodes can support aspects.
 
-   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
-   --  Find the aspect specification of aspect A associated with entity I.
+   function Find_Aspect (Id            : Entity_Id;
+                         A             : Aspect_Id;
+                         Class_Present : Boolean := False) return Node_Id;
+   --  Find the aspect specification of aspect A (or A'Class if Class_Present)
+   --  associated with entity I.
    --  Return Empty if Id does not have the requested aspect.
 
    function Find_Value_Of_Aspect
-     (Id : Entity_Id;
-      A  : Aspect_Id) return Node_Id;
-   --  Find the value of aspect A associated with entity Id. Return Empty if
-   --  Id does not have the requested aspect.
+     (Id            : Entity_Id;
+      A             : Aspect_Id;
+      Class_Present : Boolean := False) return Node_Id;
+   --  Find the value of aspect A (or A'Class, if Class_Present) associated
+   --  with entity Id. Return Empty if Id does not have the requested aspect.
 
-   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean;
-   --  Determine whether entity Id has aspect A
+   function Has_Aspect (Id            : Entity_Id;
+                        A             : Aspect_Id;
+                        Class_Present : Boolean := False) return Boolean;
+   --  Determine whether entity Id has aspect A (or A'Class, if Class_Present)
 
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. On entry it

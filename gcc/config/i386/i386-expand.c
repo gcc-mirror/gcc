@@ -196,6 +196,17 @@ ix86_expand_move (machine_mode mode, rtx operands[])
   op0 = operands[0];
   op1 = operands[1];
 
+  /* Avoid complex sets of likely spilled hard registers before reload.  */
+  if (!ix86_hardreg_mov_ok (op0, op1))
+    {
+      tmp = gen_reg_rtx (mode);
+      operands[0] = tmp;
+      ix86_expand_move (mode, operands);
+      operands[0] = op0;
+      operands[1] = tmp;
+      op1 = tmp;
+    }
+
   switch (GET_CODE (op1))
     {
     case CONST:
@@ -8052,7 +8063,17 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	    }
 	  else if (!TARGET_PECOFF && !TARGET_MACHO)
 	    {
-	      if (TARGET_64BIT)
+	      if (TARGET_64BIT
+		  && ix86_cmodel == CM_LARGE_PIC
+		  && DEFAULT_ABI != MS_ABI)
+		{
+		  fnaddr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+					   UNSPEC_GOT);
+		  fnaddr = gen_rtx_CONST (Pmode, fnaddr);
+		  fnaddr = force_reg (Pmode, fnaddr);
+		  fnaddr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, fnaddr);
+		}
+	      else if (TARGET_64BIT)
 		{
 		  fnaddr = gen_rtx_UNSPEC (Pmode,
 					   gen_rtvec (1, addr),
@@ -8288,16 +8309,12 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
 			       enum rtx_code sub_code)
 {
   rtx pat;
-  int i;
-  int nargs;
+  unsigned int i, nargs;
   bool comparison_p = false;
   bool tf_p = false;
   bool last_arg_constant = false;
   int num_memory = 0;
-  struct {
-    rtx op;
-    machine_mode mode;
-  } args[4];
+  rtx xops[4];
 
   machine_mode tmode = insn_data[icode].operand[0].mode;
 
@@ -8391,7 +8408,7 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
   else if (memory_operand (target, tmode))
     num_memory++;
 
-  gcc_assert (nargs <= 4);
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   for (i = 0; i < nargs; i++)
     {
@@ -8471,38 +8488,36 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
 	    op = force_reg (mode, op);
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
 
     case 2:
       if (tf_p)
-	pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
+	pat = GEN_FCN (icode) (target, xops[0], xops[1],
 			       GEN_INT ((int)sub_code));
       else if (! comparison_p)
-	pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+	pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       else
 	{
 	  rtx cmp_op = gen_rtx_fmt_ee (sub_code, GET_MODE (target),
-				       args[0].op,
-				       args[1].op);
+				       xops[0], xops[1]);
 
-	  pat = GEN_FCN (icode) (target, cmp_op, args[0].op, args[1].op);
+	  pat = GEN_FCN (icode) (target, cmp_op, xops[0], xops[1]);
 	}
       break;
 
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
 
     case 4:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2], xops[3]);
       break;
 
     default:
@@ -8982,11 +8997,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   unsigned int nargs_constant = 0;
   unsigned int mask_pos = 0;
   int num_memory = 0;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[6];
+  rtx xops[6];
   bool second_arg_count = false;
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
@@ -9746,7 +9757,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       gcc_unreachable ();
     }
 
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (comparison != UNKNOWN)
     {
@@ -9953,34 +9964,31 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (real_target, args[0].op);
+      pat = GEN_FCN (icode) (real_target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1], xops[2]);
       break;
     case 4:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3]);
       break;
     case 5:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4]);
       break;
     case 6:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op,
-			     args[5].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4], xops[5]);
       break;
     default:
       gcc_unreachable ();
@@ -10247,11 +10255,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 {
   rtx pat;
   unsigned int i, nargs;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[6];
+  rtx xops[6];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -10351,7 +10355,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     default:
       gcc_unreachable ();
     }
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (optimize
       || target == 0
@@ -10423,34 +10427,31 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
     case 4:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3]);
       break;
     case 5:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4]);
       break;
     case 6:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op,
-			     args[5].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4], xops[5]);
       break;
     default:
       gcc_unreachable ();
@@ -10477,13 +10478,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   rtx pat, op;
   unsigned int i, nargs, arg_adjust, memory;
   bool aligned_mem = false;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[3];
+  rtx xops[3];
   enum insn_code icode = d->icode;
-  bool last_arg_constant = false;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
   enum { load, store } klass;
@@ -10556,7 +10552,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 1;
       klass = store;
       /* Reserve memory operand for target.  */
-      memory = ARRAY_SIZE (args);
+      memory = ARRAY_SIZE (xops);
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
@@ -10693,7 +10689,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */
-      memory = ARRAY_SIZE (args);
+      memory = ARRAY_SIZE (xops);
       break;
     case V4SF_FTYPE_PCV4SF_V4SF_UQI:
     case V8SF_FTYPE_PCV8SF_V8SF_UQI:
@@ -10767,7 +10763,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       gcc_unreachable ();
     }
 
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (klass == store)
     {
@@ -10807,59 +10803,51 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   for (i = 0; i < nargs; i++)
     {
       machine_mode mode = insn_p->operand[i + 1].mode;
-      bool match;
 
       arg = CALL_EXPR_ARG (exp, i + arg_adjust);
       op = expand_normal (arg);
-      match = insn_p->operand[i + 1].predicate (op, mode);
 
-      if (last_arg_constant && (i + 1) == nargs)
+      if (i == memory)
 	{
-	  if (!match)
-	    {
-	      error ("the last argument must be an 8-bit immediate");
-	      return const0_rtx;
-	    }
+	  /* This must be the memory operand.  */
+	  op = ix86_zero_extend_to_Pmode (op);
+	  op = gen_rtx_MEM (mode, op);
+	  /* op at this point has just BITS_PER_UNIT MEM_ALIGN
+	     on it.  Try to improve it using get_pointer_alignment,
+	     and if the special builtin is one that requires strict
+	     mode alignment, also from it's GET_MODE_ALIGNMENT.
+	     Failure to do so could lead to ix86_legitimate_combined_insn
+	     rejecting all changes to such insns.  */
+	  unsigned int align = get_pointer_alignment (arg);
+	  if (aligned_mem && align < GET_MODE_ALIGNMENT (mode))
+	    align = GET_MODE_ALIGNMENT (mode);
+	  if (MEM_ALIGN (op) < align)
+	    set_mem_align (op, align);
 	}
       else
 	{
-	  if (i == memory)
-	    {
-	      /* This must be the memory operand.  */
-	      op = ix86_zero_extend_to_Pmode (op);
-	      op = gen_rtx_MEM (mode, op);
-	      /* op at this point has just BITS_PER_UNIT MEM_ALIGN
-		 on it.  Try to improve it using get_pointer_alignment,
-		 and if the special builtin is one that requires strict
-		 mode alignment, also from it's GET_MODE_ALIGNMENT.
-		 Failure to do so could lead to ix86_legitimate_combined_insn
-		 rejecting all changes to such insns.  */
-	      unsigned int align = get_pointer_alignment (arg);
-	      if (aligned_mem && align < GET_MODE_ALIGNMENT (mode))
-		align = GET_MODE_ALIGNMENT (mode);
-	      if (MEM_ALIGN (op) < align)
-		set_mem_align (op, align);
-	    }
+	  /* This must be register.  */
+	  if (VECTOR_MODE_P (mode))
+	    op = safe_vector_operand (op, mode);
+
+	  op = fixup_modeless_constant (op, mode);
+
+	  /* NB: 3-operands load implied it's a mask load,
+	     and that mask operand shoud be at the end.
+	     Keep all-ones mask which would be simplified by the expander.  */
+	  if (nargs == 3 && i == 2 && klass == load
+	      && constm1_operand (op, mode))
+	    ;
+	  else if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	    op = copy_to_mode_reg (mode, op);
 	  else
 	    {
-	      /* This must be register.  */
-	      if (VECTOR_MODE_P (mode))
-		op = safe_vector_operand (op, mode);
-
-	      op = fixup_modeless_constant (op, mode);
-
-	      if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-		op = copy_to_mode_reg (mode, op);
-	      else
-	        {
-	          op = copy_to_reg (op);
-	          op = lowpart_subreg (mode, op, GET_MODE (op));
-	        }
+	      op = copy_to_reg (op);
+	      op = lowpart_subreg (mode, op, GET_MODE (op));
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i]= op;
     }
 
   switch (nargs)
@@ -10868,13 +10856,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       pat = GEN_FCN (icode) (target);
       break;
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
     default:
       gcc_unreachable ();
@@ -10882,6 +10870,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 
   if (! pat)
     return 0;
+
   emit_insn (pat);
   return klass == store ? 0 : target;
 }
@@ -11059,6 +11048,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
      OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32
      OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
+     (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL) or
+       OPTION_MASK_ISA2_AVXVNNI
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -11076,6 +11067,17 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
+
+  if ((((bisa & (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
+	== (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
+       || (bisa2 & OPTION_MASK_ISA2_AVXVNNI) != 0)
+      && (((isa & (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
+	   == (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL))
+	  || (isa2 & OPTION_MASK_ISA2_AVXVNNI) != 0))
+    {
+      isa |= OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL;
+      isa2 |= OPTION_MASK_ISA2_AVXVNNI;
+    }
 
   if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
       /* __builtin_ia32_maskmovq requires MMX registers.  */
@@ -14538,6 +14540,112 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
     }
 
   ix86_expand_vector_init_general (mmx_ok, mode, target, vals);
+}
+
+/* Implemented as
+   V setg (V v, int idx, T val)
+   {
+     V idxv = (V){idx, idx, idx, idx, idx, idx, idx, idx};
+     V valv = (V){val, val, val, val, val, val, val, val};
+     V mask = ((V){0, 1, 2, 3, 4, 5, 6, 7} == idxv);
+     v = (v & ~mask) | (valv & mask);
+     return v;
+   }.  */
+void
+ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
+{
+  rtx vec[64];
+  machine_mode mode = GET_MODE (target);
+  machine_mode cmp_mode = mode;
+  int n_elts = GET_MODE_NUNITS (mode);
+  rtx valv,idxv,constv,idx_tmp;
+  bool ok = false;
+
+  /* 512-bits vector byte/word broadcast and comparison only available
+     under TARGET_AVX512BW, break 512-bits vector into two 256-bits vector
+     when without TARGET_AVX512BW.  */
+  if ((mode == V32HImode || mode == V64QImode) && !TARGET_AVX512BW)
+    {
+      gcc_assert (TARGET_AVX512F);
+      rtx vhi, vlo, idx_hi;
+      machine_mode half_mode;
+      rtx (*extract_hi)(rtx, rtx);
+      rtx (*extract_lo)(rtx, rtx);
+
+      if (mode == V32HImode)
+	{
+	  half_mode = V16HImode;
+	  extract_hi = gen_vec_extract_hi_v32hi;
+	  extract_lo = gen_vec_extract_lo_v32hi;
+	}
+      else
+	{
+	  half_mode = V32QImode;
+	  extract_hi = gen_vec_extract_hi_v64qi;
+	  extract_lo = gen_vec_extract_lo_v64qi;
+	}
+
+      vhi = gen_reg_rtx (half_mode);
+      vlo = gen_reg_rtx (half_mode);
+      idx_hi = gen_reg_rtx (GET_MODE (idx));
+      emit_insn (extract_hi (vhi, target));
+      emit_insn (extract_lo (vlo, target));
+      vec[0] = idx_hi;
+      vec[1] = idx;
+      vec[2] = GEN_INT (n_elts/2);
+      ix86_expand_binary_operator (MINUS, GET_MODE (idx), vec);
+      ix86_expand_vector_set_var (vhi, val, idx_hi);
+      ix86_expand_vector_set_var (vlo, val, idx);
+      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_CONCAT (mode, vlo, vhi)));
+      return;
+    }
+
+  if (FLOAT_MODE_P (GET_MODE_INNER (mode)))
+    {
+      switch (mode)
+	{
+	case E_V2DFmode:
+	  cmp_mode = V2DImode;
+	  break;
+	case E_V4DFmode:
+	  cmp_mode = V4DImode;
+	  break;
+	case E_V8DFmode:
+	  cmp_mode = V8DImode;
+	  break;
+	case E_V4SFmode:
+	  cmp_mode = V4SImode;
+	  break;
+	case E_V8SFmode:
+	  cmp_mode = V8SImode;
+	  break;
+	case E_V16SFmode:
+	  cmp_mode = V16SImode;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  for (int i = 0; i != n_elts; i++)
+    vec[i] = GEN_INT (i);
+  constv = gen_rtx_CONST_VECTOR (cmp_mode, gen_rtvec_v (n_elts, vec));
+  valv = gen_reg_rtx (mode);
+  idxv = gen_reg_rtx (cmp_mode);
+  idx_tmp = convert_to_mode (GET_MODE_INNER (cmp_mode), idx, 1);
+
+  ok = ix86_expand_vector_init_duplicate (false, mode, valv, val);
+  gcc_assert (ok);
+  ok = ix86_expand_vector_init_duplicate (false, cmp_mode, idxv, idx_tmp);
+  gcc_assert (ok);
+  vec[0] = target;
+  vec[1] = valv;
+  vec[2] = target;
+  vec[3] = gen_rtx_EQ (mode, idxv, constv);
+  vec[4] = idxv;
+  vec[5] = constv;
+  ok = ix86_expand_int_vcond (vec);
+  gcc_assert (ok);
 }
 
 void

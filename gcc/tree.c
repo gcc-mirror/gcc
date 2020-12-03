@@ -773,6 +773,33 @@ set_decl_section_name (tree node, const char *value)
   snode->set_section (value);
 }
 
+/* Set section name of NODE to match the section name of OTHER.
+
+   set_decl_section_name (decl, other) is equivalent to
+   set_decl_section_name (decl, DECL_SECTION_NAME (other)), but possibly more
+   efficient.  */
+void
+set_decl_section_name (tree decl, const_tree other)
+{
+  struct symtab_node *other_node = symtab_node::get (other);
+  if (other_node)
+    {
+      struct symtab_node *decl_node;
+      if (VAR_P (decl))
+    decl_node = varpool_node::get_create (decl);
+      else
+    decl_node = cgraph_node::get_create (decl);
+      decl_node->set_section (*other_node);
+    }
+  else
+    {
+      struct symtab_node *decl_node = symtab_node::get (decl);
+      if (!decl_node)
+    return;
+      decl_node->set_section (NULL);
+    }
+}
+
 /* Return TLS model of a variable NODE.  */
 enum tls_model
 decl_tls_model (const_tree node)
@@ -837,6 +864,7 @@ tree_code_size (enum tree_code code)
 	case BOOLEAN_TYPE:
 	case INTEGER_TYPE:
 	case REAL_TYPE:
+	case OPAQUE_TYPE:
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
 	case NULLPTR_TYPE:
@@ -1214,7 +1242,7 @@ copy_node (tree node MEM_STAT_DECL)
 	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
 	  DECL_HAS_VALUE_EXPR_P (t) = 1;
 	}
-      /* DECL_DEBUG_EXPR is copied explicitely by callers.  */
+      /* DECL_DEBUG_EXPR is copied explicitly by callers.  */
       if (VAR_P (node))
 	{
 	  DECL_HAS_DEBUG_EXPR_P (t) = 0;
@@ -1727,8 +1755,15 @@ wide_int_to_tree (tree type, const poly_wide_int_ref &value)
   return build_poly_int_cst (type, value);
 }
 
-void
-cache_integer_cst (tree t)
+/* Insert INTEGER_CST T into a cache of integer constants.  And return
+   the cached constant (which may or may not be T).  If MIGHT_DUPLICATE
+   is false, and T falls into the type's 'smaller values' range, there
+   cannot be an existing entry.  Otherwise, if MIGHT_DUPLICATE is true,
+   or the value is large, should an existing entry exist, it is
+   returned (rather than inserting T).  */
+
+tree
+cache_integer_cst (tree t, bool might_duplicate ATTRIBUTE_UNUSED)
 {
   tree type = TREE_TYPE (t);
   int ix = -1;
@@ -1742,7 +1777,7 @@ cache_integer_cst (tree t)
   switch (TREE_CODE (type))
     {
     case NULLPTR_TYPE:
-      gcc_assert (integer_zerop (t));
+      gcc_checking_assert (integer_zerop (t));
       /* Fallthru.  */
 
     case POINTER_TYPE:
@@ -1822,21 +1857,32 @@ cache_integer_cst (tree t)
 	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
 	}
 
-      gcc_assert (TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) == NULL_TREE);
-      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+      if (tree r = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix))
+	{
+	  gcc_checking_assert (might_duplicate);
+	  t = r;
+	}
+      else
+	TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
     }
   else
     {
       /* Use the cache of larger shared ints.  */
       tree *slot = int_cst_hash_table->find_slot (t, INSERT);
-      /* If there is already an entry for the number verify it's the
-         same.  */
-      if (*slot)
-	gcc_assert (wi::to_wide (tree (*slot)) == wi::to_wide (t));
+      if (tree r = *slot)
+	{
+	  /* If there is already an entry for the number verify it's the
+	     same value.  */
+	  gcc_checking_assert (wi::to_wide (tree (r)) == wi::to_wide (t));
+	  /* And return the cached value.  */
+	  t = r;
+	}
       else
 	/* Otherwise insert this one into the hash table.  */
 	*slot = t;
     }
+
+  return t;
 }
 
 
@@ -3437,7 +3483,17 @@ array_type_nelts (const_tree type)
 
   /* TYPE_MAX_VALUE may not be set if the array has unknown length.  */
   if (!max)
-    return error_mark_node;
+    {
+      /* zero sized arrays are represented from C FE as complete types with
+	 NULL TYPE_MAX_VALUE and zero TYPE_SIZE, while C++ FE represents
+	 them as min 0, max -1.  */
+      if (COMPLETE_TYPE_P (type)
+	  && integer_zerop (TYPE_SIZE (type))
+	  && integer_zerop (min))
+	return build_int_cst (TREE_TYPE (min), -1);
+
+      return error_mark_node;
+    }
 
   return (integer_zerop (min)
 	  ? max
@@ -3916,6 +3972,7 @@ type_contains_placeholder_1 (const_tree type)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -7044,6 +7101,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
   switch (TREE_CODE (a->type))
     {
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case COMPLEX_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -10675,6 +10733,12 @@ build_common_builtin_nodes (void)
 
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node, NULL_TREE);
+  if (!builtin_decl_explicit_p (BUILT_IN_CLEAR_CACHE))
+    local_define_builtin ("__builtin___clear_cache", ftype,
+			  BUILT_IN_CLEAR_CACHE,
+			  "__builtin___clear_cache",
+			  ECF_NOTHROW);
+
   local_define_builtin ("__builtin_nonlocal_goto", ftype,
 			BUILT_IN_NONLOCAL_GOTO,
 			"__builtin_nonlocal_goto",
@@ -13682,9 +13746,9 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
 
-  special_array_member arkbuf;
+  special_array_member sambuf;
   if (!sam)
-    sam = &arkbuf;
+    sam = &sambuf;
   *sam = special_array_member::none;
 
   /* The object/argument referenced by the COMPONENT_REF and its type.  */
@@ -13698,7 +13762,13 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
     {
       tree memtype = TREE_TYPE (member);
       if (TREE_CODE (memtype) != ARRAY_TYPE)
-	return memsize;
+	/* DECL_SIZE may be less than TYPE_SIZE in C++ when referring
+	   to the type of a class with a virtual base which doesn't
+	   reflect the size of the virtual's members (see pr97595).
+	   If that's the case fail for now and implement something
+	   more robust in the future.  */
+	return (tree_int_cst_equal (memsize, TYPE_SIZE_UNIT (memtype))
+		? memsize : NULL_TREE);
 
       bool trailing = array_at_struct_end_p (ref);
       bool zero_length = integer_zerop (memsize);
@@ -15014,6 +15084,10 @@ maybe_wrap_with_location (tree expr, location_t loc)
   if (EXCEPTIONAL_CLASS_P (expr))
     return expr;
 
+  /* Compiler-generated temporary variables don't need a wrapper.  */
+  if (DECL_P (expr) && DECL_ARTIFICIAL (expr) && DECL_IGNORED_P (expr))
+    return expr;
+
   /* If any auto_suppress_location_wrappers are active, don't create
      wrappers.  */
   if (suppress_location_wrappers > 0)
@@ -15105,22 +15179,22 @@ get_nonnull_args (const_tree fntype)
 /* Returns true if TYPE is a type where it and all of its subobjects
    (recursively) are of structure, union, or array type.  */
 
-static bool
-default_is_empty_type (tree type)
+bool
+is_empty_type (const_tree type)
 {
   if (RECORD_OR_UNION_TYPE_P (type))
     {
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && !DECL_PADDING_P (field)
-	    && !default_is_empty_type (TREE_TYPE (field)))
+	    && !is_empty_type (TREE_TYPE (field)))
 	  return false;
       return true;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     return (integer_minus_onep (array_type_nelts (type))
 	    || TYPE_DOMAIN (type) == NULL_TREE
-	    || default_is_empty_type (TREE_TYPE (type)));
+	    || is_empty_type (TREE_TYPE (type)));
   return false;
 }
 
@@ -15139,7 +15213,7 @@ default_is_empty_record (const_tree type)
   if (TREE_ADDRESSABLE (type))
     return false;
 
-  return default_is_empty_type (TYPE_MAIN_VARIANT (type));
+  return is_empty_type (TYPE_MAIN_VARIANT (type));
 }
 
 /* Determine whether TYPE is a structure with a flexible array member,

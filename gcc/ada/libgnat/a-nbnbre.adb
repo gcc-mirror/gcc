@@ -29,9 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default version of this package, based on Big_Integers only.
-
 with Ada.Strings.Text_Output.Utils;
+with System.Unsigned_Types; use System.Unsigned_Types;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is
 
@@ -84,14 +83,16 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "=" (L, R : Valid_Big_Real) return Boolean is
-     (abs L.Num = abs R.Num and then L.Den = R.Den);
+     (L.Num = R.Num and then L.Den = R.Den);
 
    ---------
    -- "<" --
    ---------
 
    function "<" (L, R : Valid_Big_Real) return Boolean is
-     (abs L.Num * R.Den < abs R.Num * L.Den);
+     (L.Num * R.Den < R.Num * L.Den);
+   --  The denominator is guaranteed to be positive since Normalized is
+   --  always called when constructing a Valid_Big_Real
 
    ----------
    -- "<=" --
@@ -117,22 +118,185 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
    package body Float_Conversions is
 
+      package Conv is new
+        Big_Integers.Unsigned_Conversions (Long_Long_Unsigned);
+
       -----------------
       -- To_Big_Real --
       -----------------
 
+      --  We get the fractional representation of the floating-point number by
+      --  multiplying Num'Fraction by 2.0**M, with M the size of the mantissa,
+      --  which gives zero or a number in the range [2.0**(M-1)..2.0**M), which
+      --  means that it is an integer N of M bits. The floating-point number is
+      --  thus equal to N / 2**(M-E) where E is its Num'Exponent.
+
       function To_Big_Real (Arg : Num) return Valid_Big_Real is
+
+         A : constant Num'Base := abs (Arg);
+         E : constant Integer  := Num'Exponent (A);
+         F : constant Num'Base := Num'Fraction (A);
+         M : constant Natural  := Num'Machine_Mantissa;
+
+         N, D : Big_Integer;
+
       begin
-         return From_String (Arg'Image);
+         pragma Assert (Num'Machine_Radix = 2);
+         --  This implementation does not handle radix 16
+
+         pragma Assert (M <= 64);
+         --  This implementation handles only 80-bit IEEE Extended or smaller
+
+         N := Conv.To_Big_Integer (Long_Long_Unsigned (F * 2.0**M));
+
+         --  If E is smaller than M, the denominator is 2**(M-E)
+
+         if E < M then
+            D := To_Big_Integer (2) ** (M - E);
+
+         --  Or else, if E is larger than M, multiply the numerator by 2**(E-M)
+
+         elsif E > M then
+            N := N * To_Big_Integer (2) ** (E - M);
+            D := To_Big_Integer (1);
+
+         --  Otherwise E is equal to M and the result is just N
+
+         else
+            D := To_Big_Integer (1);
+         end if;
+
+         return (if Arg >= 0.0 then N / D else -N / D);
       end To_Big_Real;
 
       -------------------
       -- From_Big_Real --
       -------------------
 
+      --  We get the (Frac, Exp) representation of the real number by finding
+      --  the exponent E such that it lies in the range [2.0**(E-1)..2.0**E),
+      --  multiplying the number by 2.0**(M-E) with M the size of the mantissa,
+      --  and converting the result to integer N in the range [2**(M-1)..2**M)
+      --  with rounding to nearest, ties to even, and finally call Num'Compose.
+      --  This does not apply to the zero, for which we return 0.0 early.
+
       function From_Big_Real (Arg : Big_Real) return Num is
+
+         M    : constant Natural     := Num'Machine_Mantissa;
+         One  : constant Big_Real    := To_Real (1);
+         Two  : constant Big_Real    := To_Real (2);
+         Half : constant Big_Real    := One / Two;
+         TwoI : constant Big_Integer := To_Big_Integer (2);
+
+         function Log2_Estimate (V : Big_Real) return Natural;
+         --  Return an integer not larger than Log2 (V) for V >= 1.0
+
+         function Minus_Log2_Estimate (V : Big_Real) return Natural;
+         --  Return an integer not larger than -Log2 (V) for V < 1.0
+
+         -------------------
+         -- Log2_Estimate --
+         -------------------
+
+         function Log2_Estimate (V : Big_Real) return Natural is
+            Log : Natural  := 1;
+            Pow : Big_Real := Two;
+
+         begin
+            while V >= Pow loop
+               Pow := Pow * Pow;
+               Log := Log + Log;
+            end loop;
+
+            return Log / 2;
+         end Log2_Estimate;
+
+         -------------------------
+         -- Minus_Log2_Estimate --
+         -------------------------
+
+         function Minus_Log2_Estimate (V : Big_Real) return Natural is
+            Log : Natural  := 1;
+            Pow : Big_Real := Half;
+
+         begin
+            while V <= Pow loop
+               Pow := Pow * Pow;
+               Log := Log + Log;
+            end loop;
+
+            return Log / 2;
+         end Minus_Log2_Estimate;
+
+         --  Local variables
+
+         V : Big_Real := abs (Arg);
+         E : Integer  := 0;
+         L : Integer;
+
+         A, B, Q, X : Big_Integer;
+         N          : Long_Long_Unsigned;
+         R          : Num'Base;
+
       begin
-         return Num'Value (To_String (Arg));
+         pragma Assert (Num'Machine_Radix = 2);
+         --  This implementation does not handle radix 16
+
+         pragma Assert (M <= 64);
+         --  This implementation handles only 80-bit IEEE Extended or smaller
+
+         --  Protect from degenerate case
+
+         if Numerator (V) = To_Big_Integer (0) then
+            return 0.0;
+         end if;
+
+         --  Use a binary search to compute exponent E
+
+         while V < Half loop
+            L := Minus_Log2_Estimate (V);
+            V := V * (Two ** L);
+            E := E - L;
+         end loop;
+
+         --  The dissymetry with above is expected since we go below 2
+
+         while V >= One loop
+            L := Log2_Estimate (V) + 1;
+            V := V / (Two ** L);
+            E := E + L;
+         end loop;
+
+         --  The multiplication by 2.0**(-E) has already been done in the loops
+
+         V := V * To_Big_Real (TwoI ** M);
+
+         --  Now go into the integer domain and divide
+
+         A := Numerator (V);
+         B := Denominator (V);
+
+         Q := A / B;
+         N := Conv.From_Big_Integer (Q);
+
+         --  Round to nearest, ties to even, by comparing twice the remainder
+
+         X := (A - Q * B) * TwoI;
+
+         if X > B or else (X = B and then (N mod 2) = 1) then
+            N := N + 1;
+
+            --  If the adjusted quotient overflows the mantissa, scale up
+
+            if N = 2**M then
+               N := 1;
+               E := E + 1;
+            end if;
+         end if;
+
+         R := Num'Compose (Num'Base (N), E);
+
+         return (if Numerator (Arg) >= To_Big_Integer (0) then R else -R);
       end From_Big_Real;
 
    end Float_Conversions;
@@ -143,22 +307,78 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
    package body Fixed_Conversions is
 
+      package Float_Aux is new Float_Conversions (Long_Long_Float);
+
+      subtype LLLI is Long_Long_Long_Integer;
+      subtype LLLU is Long_Long_Long_Unsigned;
+
+      Too_Large : constant Boolean :=
+                    Num'Small_Numerator > LLLU'Last
+                      or else Num'Small_Denominator > LLLU'Last;
+      --  True if the Small is too large for Long_Long_Long_Unsigned, in which
+      --  case we convert to/from Long_Long_Float as an intermediate step.
+
+      package Conv_I is new Big_Integers.Signed_Conversions (LLLI);
+      package Conv_U is new Big_Integers.Unsigned_Conversions (LLLU);
+
       -----------------
       -- To_Big_Real --
       -----------------
 
+      --  We just compute V * N / D where V is the mantissa value of the fixed
+      --  point number, and N resp. D is the numerator resp. the denominator of
+      --  the Small of the fixed-point type.
+
       function To_Big_Real (Arg : Num) return Valid_Big_Real is
+         N, D, V : Big_Integer;
+
       begin
-         return From_String (Arg'Image);
+         if Too_Large then
+            return Float_Aux.To_Big_Real (Long_Long_Float (Arg));
+         end if;
+
+         N := Conv_U.To_Big_Integer (Num'Small_Numerator);
+         D := Conv_U.To_Big_Integer (Num'Small_Denominator);
+         V := Conv_I.To_Big_Integer (LLLI'Integer_Value (Arg));
+
+         return V * N / D;
       end To_Big_Real;
 
       -------------------
       -- From_Big_Real --
       -------------------
 
+      --  We first compute A / B = Arg * D / N where N resp. D is the numerator
+      --  resp. the denominator of the Small of the fixed-point type. Then we
+      --  divide A by B and convert the result to the mantissa value.
+
       function From_Big_Real (Arg : Big_Real) return Num is
+         N, D, A, B, Q, X : Big_Integer;
+
       begin
-         return Num'Value (To_String (Arg));
+         if Too_Large then
+            return Num (Float_Aux.From_Big_Real (Arg));
+         end if;
+
+         N := Conv_U.To_Big_Integer (Num'Small_Numerator);
+         D := Conv_U.To_Big_Integer (Num'Small_Denominator);
+         A := Numerator (Arg) * D;
+         B := Denominator (Arg) * N;
+
+         Q := A / B;
+
+         --  Round to nearest, ties to away, by comparing twice the remainder
+
+         X := (A - Q * B) * To_Big_Integer (2);
+
+         if X >= B then
+            Q := Q + To_Big_Integer (1);
+
+         elsif X <= -B then
+            Q := Q - To_Big_Integer (1);
+         end if;
+
+         return Num'Fixed_Value (Conv_I.From_Big_Integer (Q));
       end From_Big_Real;
 
    end Fixed_Conversions;
@@ -318,7 +538,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Real is
+   function From_String (Arg : String) return Valid_Big_Real is
       Ten   : constant Big_Integer := To_Big_Integer (10);
       Frac  : Big_Integer;
       Exp   : Integer := 0;
@@ -340,7 +560,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          elsif Arg (J) = '.' then
             Index := J - 1;
             exit;
-         else
+         elsif Arg (J) /= '_' then
             Pow := Pow + 1;
          end if;
       end loop;
@@ -371,6 +591,13 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          Normalize (Result);
          return Result;
       end;
+   end From_String;
+
+   function From_String
+     (Numerator, Denominator : String) return Valid_Big_Real is
+   begin
+      return Big_Integers.From_String (Numerator) /
+        Big_Integers.From_String (Denominator);
    end From_String;
 
    --------------------------

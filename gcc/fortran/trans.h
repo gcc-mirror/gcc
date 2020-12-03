@@ -608,7 +608,8 @@ tree gfc_get_label_decl (gfc_st_label *);
 
 /* Return the decl for an external function.  */
 tree gfc_get_extern_function_decl (gfc_symbol *,
-				   gfc_actual_arglist *args = NULL);
+				   gfc_actual_arglist *args = NULL,
+				   const char *fnspec = NULL);
 
 /* Return the decl for a function.  */
 tree gfc_get_function_decl (gfc_symbol *);

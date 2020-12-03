@@ -1680,18 +1680,21 @@ package body Sem_Aggr is
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
-         --  Analyze the expression without expansion, to verify legality.
-         --  After analysis we remove references to the index variable because
-         --  the expression will be analyzed anew when the enclosing aggregate
-         --  is expanded, and the construct is rewritten as a loop with a new
-         --  index variable.
+         --  Analyze  expression without expansion, to verify legality.
+         --  When generating code, we then remove references to the index
+         --  variable, because the expression will be analyzed anew after
+         --  rewritting as a loop with a new index variable; when not
+         --  generating code we leave the analyzed expression as it is.
 
          Expr := Expression (N);
 
          Expander_Mode_Save_And_Set (False);
          Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
          Expander_Mode_Restore;
-         Remove_References (Expr);
+
+         if Operating_Mode /= Check_Semantics then
+            Remove_References (Expr);
+         end if;
 
          --  An iterated_component_association may appear in a nested
          --  aggregate for a multidimensional structure: preserve the bounds
@@ -1867,10 +1870,15 @@ package body Sem_Aggr is
       --  Test for the validity of an others choice if present
 
       if Others_Present and then not Others_Allowed then
-         Error_Msg_N
-           ("OTHERS choice not allowed here",
-            First (Choice_List (First (Component_Associations (N)))));
-         return Failure;
+         declare
+            Others_N : constant Node_Id :=
+              First (Choice_List (First (Component_Associations (N))));
+         begin
+            Error_Msg_N ("OTHERS choice not allowed here", Others_N);
+            Error_Msg_N ("\qualify the aggregate with a constrained subtype "
+                         & "to provide bounds for it", Others_N);
+            return Failure;
+         end;
       end if;
 
       --  Protect against cascaded errors
@@ -3069,6 +3077,10 @@ package body Sem_Aggr is
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
                else
                   Analyze_And_Resolve (Choice, Index_Type);
                end if;
@@ -3106,28 +3118,31 @@ package body Sem_Aggr is
          else
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
+               Analyze (Choice);
+
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
-               else
-                  Analyze (Choice);
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+               then
+                  --  Choice covers a range of values
 
-                  if Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
+                  if Base_Type (Entity (Choice)) /=
+                     Base_Type (Index_Type)
                   then
-                     --  Choice covers a range of values
-
-                     if Base_Type (Entity (Choice)) /=
-                        Base_Type (Index_Type)
-                     then
-                        Error_Msg_NE
-                          ("choice does not match index type of &",
-                           Choice, Typ);
-                     end if;
-                  else
-                     Resolve (Choice, Index_Type);
+                     Error_Msg_NE
+                       ("choice does not match index type of &",
+                        Choice, Typ);
                   end if;
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
+               else
+                  Resolve (Choice, Index_Type);
                end if;
 
                Next (Choice);
@@ -3700,9 +3715,10 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value.
 
-      Box_Node       : Node_Id := Empty;
-      Is_Box_Present : Boolean := False;
-      Others_Box     : Natural := 0;
+      Box_Node               : Node_Id := Empty;
+      Is_Box_Present         : Boolean := False;
+      Is_Box_Init_By_Default : Boolean := False;
+      Others_Box             : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -3827,6 +3843,17 @@ package body Sem_Aggr is
              Choices     => Choice_List,
              Expression  => Expr,
              Box_Present => Is_Box_Present));
+
+         --  If this association has a box for a component that is initialized
+         --  by default, then set flag on the new association to indicate that
+         --  the original association was for such a box-initialized component.
+
+         if Resolve_Record_Aggregate.Is_Box_Present
+           and then not Is_Box_Present
+           and then Is_Box_Init_By_Default  -- ???
+         then
+            Set_Was_Default_Init_Box_Association (Last (Assoc_List));
+         end if;
       end Add_Association;
 
       -----------------------------
@@ -4044,6 +4071,7 @@ package body Sem_Aggr is
 
       begin
          Is_Box_Present := False;
+         Is_Box_Init_By_Default := False;
 
          if No (From) then
             return Empty;
@@ -5039,6 +5067,11 @@ package body Sem_Aggr is
                Ctyp : constant Entity_Id := Etype (Component);
 
             begin
+               --  Initially assume that the box is for a default-initialized
+               --  component and reset to False in cases where that's not true.
+
+               Is_Box_Init_By_Default := True;
+
                --  If there is a default expression for the aggregate, copy
                --  it into a new association. This copy must modify the scopes
                --  of internal types that may be attached to the expression
@@ -5062,6 +5095,11 @@ package body Sem_Aggr is
                  and then Nkind (Parent (Component)) = N_Component_Declaration
                  and then Present (Expression (Parent (Component)))
                then
+                  --  If component declaration has an initialization expression
+                  --  then this is not a case of default initialization.
+
+                  Is_Box_Init_By_Default := False;
+
                   Expr :=
                     New_Copy_Tree_And_Copy_Dimensions
                       (Expression (Parent (Component)),

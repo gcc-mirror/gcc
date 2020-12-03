@@ -24,6 +24,9 @@
 LIBPHOBOS_SUPPORTED=no
 LIBDRUNTIME_ONLY=auto
 case "${target}" in
+  *-*-dragonfly*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   aarch64*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
@@ -44,6 +47,9 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   s390*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  x86_64-*-freebsd* | i?86-*-freebsd*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-kfreebsd*-gnu | i?86-*-kfreebsd*-gnu)

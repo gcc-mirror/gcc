@@ -235,6 +235,8 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_coroutines)
     mask |= D_CXX_COROUTINES;
+  if (!flag_modules)
+    mask |= D_CXX_MODULES;
   if (!flag_tm)
     mask |= D_TRANSMEM;
   if (!flag_char8_t)
@@ -678,7 +680,7 @@ build_lang_decl_loc (location_t loc, enum tree_code code, tree name, tree type)
 /* Maybe add a raw lang_decl to T, a decl.  Return true if it needed
    one.  */
 
-static bool
+bool
 maybe_add_lang_decl_raw (tree t, bool decomp_p)
 {
   size_t size;
@@ -831,8 +833,7 @@ copy_lang_type (tree node)
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  struct lang_type *lt
-    = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
+  auto *lt = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
 
   memcpy (lt, TYPE_LANG_SPECIFIC (node), (sizeof (struct lang_type)));
   TYPE_LANG_SPECIFIC (node) = lt;
@@ -858,15 +859,15 @@ copy_type (tree type MEM_STAT_DECL)
 
 /* Add a raw lang_type to T, a type, should it need one.  */
 
-static bool
+bool
 maybe_add_lang_type_raw (tree t)
 {
   if (!RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
     return false;
   
-  TYPE_LANG_SPECIFIC (t)
-    = (struct lang_type *) (ggc_internal_cleared_alloc
-			    (sizeof (struct lang_type)));
+  auto *lt = (struct lang_type *) (ggc_internal_cleared_alloc
+				   (sizeof (struct lang_type)));
+  TYPE_LANG_SPECIFIC (t) = lt;
 
   if (GATHER_STATISTICS)
     {

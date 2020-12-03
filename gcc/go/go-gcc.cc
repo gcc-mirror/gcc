@@ -2756,7 +2756,7 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
   if (symtab_node::get(var_decl)
       && symtab_node::get(var_decl)->implicit_section)
     {
-      set_decl_section_name (var_decl, NULL);
+      set_decl_section_name (var_decl, (const char *) NULL);
       resolve_unique_section (var_decl,
 			      compute_reloc_for_constant (expr_tree),
 			      1);

@@ -1,3 +1,135 @@
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/cache-1.C: New.
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: Update.
+
+2020-11-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90 (main): Adjust
+	expected results.
+
+2020-11-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c: Don't redefine relocations if elf.h has them.
+	(reserved): Delete unused define.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Avoid
+	Tcl 8.5-specific behavior.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
+2020-11-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_global_icv): Remove nest_var field.  Add
+	max_active_levels_var field.
+	(gomp_max_active_levels_var): Remove.
+	(parse_boolean): Return true on success.
+	(handle_omp_display_env): Express OMP_NESTED in terms of
+	max_active_levels_var.  Change format specifier for
+	max_active_levels_var.
+	(initialize_env): Set max_active_levels_var from
+	OMP_MAX_ACTIVE_LEVELS, OMP_NESTED, OMP_NUM_THREADS and
+	OMP_PROC_BIND.
+	* icv.c (omp_set_nested): Express in terms of
+	max_active_levels_var.
+	(omp_get_nested): Likewise.
+	(omp_set_max_active_levels): Use max_active_levels_var field instead
+	of gomp_max_active_levels_var.
+	(omp_get_max_active_levels): Likewise.
+	* libgomp.h (struct gomp_task_icv): Remove nest_var field.  Add
+	max_active_levels_var field.
+	(gomp_supported_active_levels): Set to UCHAR_MAX.
+	(gomp_max_active_levels_var): Delete.
+	* libgomp.texi (omp_get_nested): Update documentation.
+	(omp_set_nested): Likewise.
+	(OMP_MAX_ACTIVE_LEVELS): Likewise.
+	(OMP_NESTED): Likewise.
+	(OMP_NUM_THREADS): Likewise.
+	(OMP_PROC_BIND): Likewise.
+	* parallel.c (gomp_resolve_num_threads): Replace reference
+	to nest_var with max_active_levels_var.  Use max_active_levels_var
+	field instead of gomp_max_active_levels_var.
+
+2020-11-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c/usleep.h (fallback_usleep): Renamed from
+	nvptx_usleep; use also for device={arch(gcn)}.
+
+2020-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (struct S): New type.
+	(foo): Add tests for non-VLA private and firstprivate clauses on
+	omp task.
+	(bar): Likewise.  Remove taking of address from private/firstprivate
+	variables.
+	* testsuite/libgomp.c++/allocate-1.C (struct S): New type.
+	(foo): Add p, q, px and s arguments.  Add tests for array reductions
+	and for non-VLA private and firstprivate clauses on omp task.
+	(bar): Removed.
+	(main): Adjust foo caller.  Don't call bar.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	New.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Adjust.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/94358
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: New.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (foo): Add tests
+	for array reductions.
+	(main): Adjust foo callers.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (GOMP_alloc, GOMP_free): Export at GOMP_5.0.1.
+	* omp.h.in (omp_alloc): Add malloc and alloc_size attributes.
+	* libgomp_g.h (GOMP_alloc, GOMP_free): Declare.
+	* allocator.c (omp_aligned_alloc): New for now static function,
+	add alignment argument and handle it.
+	(omp_alloc): Reimplement using omp_aligned_alloc.
+	(GOMP_alloc, GOMP_free): New functions.
+	(omp_free): Add ialias.
+	* testsuite/libgomp.c-c++-common/allocate-1.c: New test.
+	* testsuite/libgomp.c++/allocate-1.C: New test.
+
+2020-11-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/97782
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Adjust.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* libgomp.h (enum gomp_map_vars_kind): Adjust enum values to be bit-flag
+	usable.
+	* oacc-mem.c (acc_map_data): Adjust gomp_map_vars argument flags to
+	'GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_ENTER_DATA'.
+	(goacc_enter_datum): Likewise for call to gomp_map_vars_async.
+	(goacc_enter_data_internal): Likewise.
+	* target.c (gomp_map_vars_internal):
+	Change checks of GOMP_MAP_VARS_ENTER_DATA to use bit-and (&). Adjust use
+	of gomp_attach_pointer for OpenMP cases.
+	(gomp_exit_data): Add handling of GOMP_MAP_DETACH.
+	(GOMP_target_enter_exit_data): Add handling of GOMP_MAP_ATTACH.
+	* testsuite/libgomp.c-c++-common/ptr-attach-1.c: New testcase.
+
 2020-11-05  Ulrich Drepper  <drepper@redhat.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 

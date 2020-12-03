@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (rinta_f16_x_tied1, svfloat16_t,
 
 /*
 ** rinta_f16_x_untied:
+**	movprfx	z0, z1
 **	frinta	z0\.h, p0/m, z1\.h
 **	ret
 */

@@ -58,9 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-reachable_regions::reachable_regions (region_model *model,
-				      region_model_manager *mgr)
-: m_model (model), m_store (model->get_store ()), m_mgr (mgr),
+reachable_regions::reachable_regions (region_model *model)
+: m_model (model), m_store (model->get_store ()),
   m_reachable_base_regs (), m_mutable_base_regs ()
 {
 }

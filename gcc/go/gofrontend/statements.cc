@@ -1985,18 +1985,42 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
 							    NULL, loc);
   b->add_statement(val_temp);
 
-  // ok = CODE(type_descriptor, expr, &val_temp)
+  // var ok_temp bool
+  Temporary_statement* ok_temp = NULL;
+  if (!this->ok_->is_sink_expression())
+    {
+      ok_temp = Statement::make_temporary(this->ok_->type(),
+					  NULL, loc);
+      b->add_statement(ok_temp);
+    }
+
+  // ok_temp = CODE(type_descriptor, expr, &val_temp)
   Expression* p1 = Expression::make_type_descriptor(this->type_, loc);
   Expression* ref = Expression::make_temporary_reference(val_temp, loc);
   Expression* p3 = Expression::make_unary(OPERATOR_AND, ref, loc);
   Expression* call = Runtime::make_call(code, loc, 3, p1, this->expr_, p3);
-  Statement* s = Statement::make_assignment(this->ok_, call, loc);
+  Statement* s;
+  if (ok_temp == NULL)
+    s = Statement::make_statement(call, true);
+  else
+    {
+      Expression* ok_ref = Expression::make_temporary_reference(ok_temp, loc);
+      s = Statement::make_assignment(ok_ref, call, loc);
+    }
   b->add_statement(s);
 
   // val = val_temp
   ref = Expression::make_temporary_reference(val_temp, loc);
   s = Statement::make_assignment(this->val_, ref, loc);
   b->add_statement(s);
+
+  // ok = ok_temp
+  if (ok_temp != NULL)
+    {
+      ref = Expression::make_temporary_reference(ok_temp, loc);
+      s = Statement::make_assignment(this->ok_, ref, loc);
+      b->add_statement(s);
+    }
 }
 
 // Dump the AST representation for a tuple type guard statement.

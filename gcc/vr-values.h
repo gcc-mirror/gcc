@@ -148,7 +148,7 @@ class vr_values : public range_query
   void extract_range_from_comparison (value_range_equiv *, gimple *);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
-  bool extract_range_builtin (value_range_equiv *, gimple *);
+  bool extract_range_from_ubsan_builtin (value_range_equiv *, gimple *);
 
   /* This probably belongs in the lattice rather than in here.  */
   bool values_propagated;

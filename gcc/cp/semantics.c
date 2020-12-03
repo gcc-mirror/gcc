@@ -3006,12 +3006,7 @@ finish_compound_literal (tree type, tree compound_literal,
 
   /* If we're in a template, return the original compound literal.  */
   if (orig_cl)
-    {
-      if (!VECTOR_TYPE_P (type))
-	return get_target_expr_sfinae (orig_cl, complain);
-      else
-	return orig_cl;
-    }
+    return orig_cl;
 
   if (TREE_CODE (compound_literal) == CONSTRUCTOR)
     {
@@ -4024,9 +4019,17 @@ finish_id_expression_1 (tree id_expression,
 	      if (context != current_class_type)
 		{
 		  tree path = currently_open_derived_class (context);
-		  perform_or_defer_access_check (TYPE_BINFO (path),
-						 decl, decl,
-						 tf_warning_or_error);
+		  if (!path)
+		    /* PATH can be null for using an enum of an unrelated
+		       class; we checked its access in lookup_using_decl.
+
+		       ??? Should this case make a clone instead, like
+		       handle_using_decl?  */
+		    gcc_assert (TREE_CODE (decl) == CONST_DECL);
+		  else
+		    perform_or_defer_access_check (TYPE_BINFO (path),
+						   decl, decl,
+						   tf_warning_or_error);
 		}
 	    }
 
@@ -9827,13 +9830,53 @@ init_cp_semantics (void)
 {
 }
 
+
+/* If we have a condition in conjunctive normal form (CNF), find the first
+   failing clause.  In other words, given an expression like
+
+     true && true && false && true && false
+
+   return the first 'false'.  EXPR is the expression.  */
+
+static tree
+find_failing_clause_r (tree expr)
+{
+  if (TREE_CODE (expr) == TRUTH_ANDIF_EXPR)
+    {
+      /* First check the left side...  */
+      tree e = find_failing_clause_r (TREE_OPERAND (expr, 0));
+      if (e == NULL_TREE)
+	/* ...if we didn't find a false clause, check the right side.  */
+	e = find_failing_clause_r (TREE_OPERAND (expr, 1));
+      return e;
+    }
+  tree e = contextual_conv_bool (expr, tf_none);
+  e = fold_non_dependent_expr (e, tf_none, /*manifestly_const_eval=*/true);
+  if (integer_zerop (e))
+    /* This is the failing clause.  */
+    return expr;
+  return NULL_TREE;
+}
+
+/* Wrapper for find_failing_clause_r.  */
+
+static tree
+find_failing_clause (tree expr)
+{
+  if (TREE_CODE (expr) != TRUTH_ANDIF_EXPR)
+    return NULL_TREE;
+  return find_failing_clause_r (expr);
+}
+
 /* Build a STATIC_ASSERT for a static assertion with the condition
    CONDITION and the message text MESSAGE.  LOCATION is the location
    of the static assertion in the source code.  When MEMBER_P, this
-   static assertion is a member of a class.  */
+   static assertion is a member of a class.  If SHOW_EXPR_P is true,
+   print the condition (because it was instantiation-dependent).  */
+
 void
 finish_static_assert (tree condition, tree message, location_t location,
-                      bool member_p)
+		      bool member_p, bool show_expr_p)
 {
   tsubst_flags_t complain = tf_warning_or_error;
 
@@ -9871,8 +9914,7 @@ finish_static_assert (tree condition, tree message, location_t location,
   tree orig_condition = condition;
 
   /* Fold the expression and convert it to a boolean value. */
-  condition = perform_implicit_conversion_flags (boolean_type_node, condition,
-						 complain, LOOKUP_NORMAL);
+  condition = contextual_conv_bool (condition, complain);
   condition = fold_non_dependent_expr (condition, complain,
 				       /*manifestly_const_eval=*/true);
 
@@ -9881,21 +9923,32 @@ finish_static_assert (tree condition, tree message, location_t location,
     ;
   else
     {
-      location_t saved_loc = input_location;
+      iloc_sentinel ils (location);
 
-      input_location = location;
-      if (TREE_CODE (condition) == INTEGER_CST
-          && integer_zerop (condition))
+      if (integer_zerop (condition))
 	{
 	  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT
 				     (TREE_TYPE (TREE_TYPE (message))));
 	  int len = TREE_STRING_LENGTH (message) / sz - 1;
+
+	  /* See if we can find which clause was failing (for logical AND).  */
+	  tree bad = find_failing_clause (orig_condition);
+	  /* If not, or its location is unusable, fall back to the previous
+	     location.  */
+	  location_t cloc = location;
+	  if (cp_expr_location (bad) != UNKNOWN_LOCATION)
+	    cloc = cp_expr_location (bad);
+
           /* Report the error. */
 	  if (len == 0)
-            error ("static assertion failed");
+	    error_at (cloc, "static assertion failed");
 	  else
-            error ("static assertion failed: %s",
-		   TREE_STRING_POINTER (message));
+	    error_at (cloc, "static assertion failed: %s",
+		      TREE_STRING_POINTER (message));
+	  if (show_expr_p)
+	    inform (cloc, "%qE evaluates to false",
+		    /* Nobody wants to see the artificial (bool) cast.  */
+		    (bad ? tree_strip_nop_conversions (bad) : orig_condition));
 
 	  /* Actually explain the failure if this is a concept check or a
 	     requires-expression.  */
@@ -9909,7 +9962,6 @@ finish_static_assert (tree condition, tree message, location_t location,
 	  if (require_rvalue_constant_expression (condition))
 	    cxx_constant_value (condition);
 	}
-      input_location = saved_loc;
     }
 }
 
@@ -10625,6 +10677,77 @@ cp_build_vec_convert (tree arg, location_t loc, tree type,
     return ret;
 
   return build_call_expr_internal_loc (loc, IFN_VEC_CONVERT, type, 1, arg);
+}
+
+/* Finish __builtin_bit_cast (type, arg).  */
+
+tree
+cp_build_bit_cast (location_t loc, tree type, tree arg,
+		   tsubst_flags_t complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (!dependent_type_p (type))
+    {
+      if (!complete_type_or_maybe_complain (type, NULL_TREE, complain))
+	return error_mark_node;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  /* std::bit_cast for destination ARRAY_TYPE is not possible,
+	     as functions may not return an array, so don't bother trying
+	     to support this (and then deal with VLAs etc.).  */
+	  error_at (loc, "%<__builtin_bit_cast%> destination type %qT "
+			 "is an array type", type);
+	  return error_mark_node;
+	}
+      if (!trivially_copyable_p (type))
+	{
+	  error_at (loc, "%<__builtin_bit_cast%> destination type %qT "
+			 "is not trivially copyable", type);
+	  return error_mark_node;
+	}
+    }
+
+  if (error_operand_p (arg))
+    return error_mark_node;
+
+  if (!type_dependent_expression_p (arg))
+    {
+      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+	{
+	  /* Don't perform array-to-pointer conversion.  */
+	  arg = mark_rvalue_use (arg, loc, true);
+	  if (!complete_type_or_maybe_complain (TREE_TYPE (arg), arg, complain))
+	    return error_mark_node;
+	}
+      else
+	arg = decay_conversion (arg, complain);
+
+      if (error_operand_p (arg))
+	return error_mark_node;
+
+      if (!trivially_copyable_p (TREE_TYPE (arg)))
+	{
+	  error_at (cp_expr_loc_or_loc (arg, loc),
+		    "%<__builtin_bit_cast%> source type %qT "
+		    "is not trivially copyable", TREE_TYPE (arg));
+	  return error_mark_node;
+	}
+      if (!dependent_type_p (type)
+	  && !cp_tree_equal (TYPE_SIZE_UNIT (type),
+			     TYPE_SIZE_UNIT (TREE_TYPE (arg))))
+	{
+	  error_at (loc, "%<__builtin_bit_cast%> source size %qE "
+			 "not equal to destination type size %qE",
+			 TYPE_SIZE_UNIT (TREE_TYPE (arg)),
+			 TYPE_SIZE_UNIT (type));
+	  return error_mark_node;
+	}
+    }
+
+  tree ret = build_min (BIT_CAST_EXPR, type, arg);
+  SET_EXPR_LOCATION (ret, loc);
+  return ret;
 }
 
 #include "gt-cp-semantics.h"

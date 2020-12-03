@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, May 2011.  */
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 #include <stdlib.h>

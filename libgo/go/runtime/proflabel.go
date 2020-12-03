@@ -8,7 +8,7 @@ import "unsafe"
 
 var labelSync uintptr
 
-//go:linkname runtime_setProfLabel runtime..z2fpprof.runtime_setProfLabel
+//go:linkname runtime_setProfLabel runtime_1pprof.runtime__setProfLabel
 func runtime_setProfLabel(labels unsafe.Pointer) {
 	// Introduce race edge for read-back via profile.
 	// This would more properly use &getg().labels as the sync address,
@@ -34,7 +34,7 @@ func runtime_setProfLabel(labels unsafe.Pointer) {
 	getg().labels = labels
 }
 
-//go:linkname runtime_getProfLabel runtime..z2fpprof.runtime_getProfLabel
+//go:linkname runtime_getProfLabel runtime_1pprof.runtime__getProfLabel
 func runtime_getProfLabel() unsafe.Pointer {
 	return getg().labels
 }

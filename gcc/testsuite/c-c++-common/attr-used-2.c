@@ -9,3 +9,4 @@ void foo()
 }
 
 /* { dg-final { scan-assembler "xyzzy" } } */
+/* { dg-final { scan-assembler "\.data.*,\"awR\"" { target R_flag_in_section } } } */

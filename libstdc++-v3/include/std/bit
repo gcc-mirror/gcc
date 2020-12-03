@@ -49,6 +49,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#if __cplusplus > 201703l && __has_builtin(__builtin_bit_cast)
+#define __cpp_lib_bit_cast 201806L
+
+  /// Create a value of type `To` from the bits of `from`.
+  template<typename _To, typename _From>
+    constexpr _To
+    bit_cast(const _From& __from) noexcept
+    {
+      return __builtin_bit_cast(_To, __from);
+    }
+#endif
+
   /// @cond undoc
 
   template<typename _Tp>

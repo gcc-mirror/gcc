@@ -27,9 +27,11 @@ extern int folding_initializer;
 /* Convert between trees and native memory representation.  */
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern int native_encode_initializer (tree, unsigned char *, int,
-				      int off = -1);
+				      int off = -1, unsigned char * = nullptr);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
 extern bool can_native_interpret_type_p (tree);
+extern tree native_interpret_aggregate (tree, const unsigned char *, int, int);
+extern tree find_bitfield_repr_type (int, int);
 extern void shift_bytes_in_array_left (unsigned char *, unsigned int,
 				       unsigned int);
 extern void shift_bytes_in_array_right (unsigned char *, unsigned int,
@@ -186,6 +188,13 @@ extern tree non_lvalue_loc (location_t, tree);
 extern bool tree_expr_nonzero_p (tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
+extern bool tree_expr_finite_p (const_tree);
+extern bool tree_expr_infinite_p (const_tree);
+extern bool tree_expr_maybe_infinite_p (const_tree);
+extern bool tree_expr_signaling_nan_p (const_tree);
+extern bool tree_expr_maybe_signaling_nan_p (const_tree);
+extern bool tree_expr_nan_p (const_tree);
+extern bool tree_expr_maybe_nan_p (const_tree);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);

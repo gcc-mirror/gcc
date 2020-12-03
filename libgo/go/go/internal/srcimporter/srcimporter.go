@@ -262,5 +262,5 @@ func (p *Importer) joinPath(elem ...string) string {
 	return filepath.Join(elem...)
 }
 
-//go:linkname setUsesCgo go/types.srcimporter_setUsesCgo
+//go:linkname setUsesCgo go_1types.srcimporter__setUsesCgo
 func setUsesCgo(conf *types.Config)

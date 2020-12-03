@@ -163,6 +163,7 @@ extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
 extern bool ix86_check_no_addr_space (rtx);
 extern void ix86_split_idivmod (machine_mode, rtx[], bool);
+extern bool ix86_hardreg_mov_ok (rtx, rtx);
 
 extern rtx assign_386_stack_local (machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
@@ -244,6 +245,7 @@ extern rtx ix86_rewrite_tls_address (rtx);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
+extern void ix86_expand_vector_set_var (rtx, rtx, rtx);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 

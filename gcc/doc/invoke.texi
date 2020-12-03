@@ -97,7 +97,7 @@ The usual way to run GCC is to run the executable called @command{gcc}, or
 When you compile C++ programs, you should invoke GCC as @command{g++} 
 instead.  @xref{Invoking G++,,Compiling C++ Programs}, 
 for information about the differences in behavior between @command{gcc} 
-and @code{g++} when compiling C++ programs.
+and @command{g++} when compiling C++ programs.
 
 @cindex grouping options
 @cindex options, grouping
@@ -201,7 +201,7 @@ in the following sections.
 -aux-info @var{filename}  -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function}  -fgimple@gol
 -fhosted  -ffreestanding @gol
--fopenacc  -fopenacc-dim=@var{geom} @gol
+-fopenacc  -fopenacc-dim=@var{geom}  -fopenacc-kernels=@var{mode} @gol
 -fopenmp  -fopenmp-simd @gol
 -fms-extensions  -fplan9-extensions  -fsso-struct=@var{endianness} @gol
 -fallow-single-precision  -fcond-mismatch  -flax-vector-conversions @gol
@@ -276,7 +276,7 @@ Objective-C and Objective-C++ Dialects}.
 -fzero-link @gol
 -gen-decls @gol
 -Wassign-intercept  -Wno-property-assign-default @gol
--Wno-protocol  -Wselector @gol
+-Wno-protocol -Wobjc-root-class -Wselector @gol
 -Wstrict-selector-match @gol
 -Wundeclared-selector}
 
@@ -425,6 +425,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-null-dereference @gol
 -Wno-analyzer-possible-null-argument @gol
 -Wno-analyzer-possible-null-dereference @gol
+-Wno-analyzer-shift-count-negative @gol
+-Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
 -Wno-analyzer-tainted-array-index @gol
 -Wanalyzer-too-complex @gol
@@ -564,6 +566,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
+-fprofile-info-section  -fprofile-info-section=@var{name} @gol
 -fprofile-note=@var{path} -fprofile-prefix-path=@var{path} @gol
 -fprofile-update=@var{method} -fprofile-filter-files=@var{regex} @gol
 -fprofile-exclude-files=@var{regex} @gol
@@ -1367,7 +1370,7 @@ See RS/6000 and PowerPC Options.
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
--mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset@gol
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mkl -mwidekl @gol
@@ -1389,7 +1392,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
--mindirect-branch-register}
+-mindirect-branch-register -mneeded}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -2587,6 +2590,18 @@ not explicitly specify.  The @var{geom} value is a triple of
 ':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
 can be omitted, to use a target-specific default value.
 
+@item -fopenacc-kernels=@var{mode}
+@opindex fopenacc-kernels
+@cindex OpenACC accelerator programming
+Specify mode of OpenACC `kernels' constructs handling.
+With @option{-fopenacc-kernels=decompose}, OpenACC `kernels'
+constructs are decomposed into parts, a sequence of compute
+constructs, each then handled individually.
+This is work in progress.
+With @option{-fopenacc-kernels=parloops}, OpenACC `kernels' constructs
+are handled by the @samp{parloops} pass, en bloc.
+This is the current default.
+
 @item -fopenmp
 @opindex fopenmp
 @cindex OpenMP parallel
@@ -2806,6 +2821,9 @@ change in version 12.
 
 Version 14, which first appeared in G++ 10, corrects the mangling of
 the nullptr expression.
+
+Version 15, which first appeared in G++ 11, changes the mangling of
+@code{__alignof__} to be distinct from that of @code{alignof}.
 
 See also @option{-Wabi}.
 
@@ -3663,7 +3681,23 @@ void fn () @{
 @end smallexample
 
 It does not warn when the type being copied is a trivially-copyable type whose
-size is less than 64 bytes.  This warning is enabled by @option{-Wall}.
+size is less than 64 bytes.
+
+This warning also warns when a loop variable in a range-based for-loop is
+initialized with a value of a different type resulting in a copy.  For example:
+
+@smallexample
+void fn() @{
+  int arr[10];
+  for (const double &x : arr) @{ @dots{} @}
+@}
+@end smallexample
+
+In the example above, in every iteration of the loop a temporary value of
+type @code{double} is created and destroyed, to which the reference
+@code{const double &} is bound.
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wredundant-tags @r{(C++ and Objective-C++ only)}
 @opindex Wredundant-tags
@@ -4342,6 +4376,13 @@ implemented in the class, even if a method implementation is inherited
 from the superclass.  If you use the @option{-Wno-protocol} option, then
 methods inherited from the superclass are considered to be implemented,
 and no warning is issued for them.
+
+@item -Wobjc-root-class @r{(Objective-C and Objective-C++ only)}
+@opindex Wobjc-root-class
+Warn if a class interface lacks a superclass. Most classes will inherit
+from @code{NSObject} (or @code{Object}) for example.  When declaring
+classes intended to be root classes, the warning can be suppressed by
+marking their interfaces with @code{__attribute__((objc_root_class))}.
 
 @item -Wselector @r{(Objective-C and Objective-C++ only)}
 @opindex Wselector
@@ -8894,6 +8935,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-shift-count-negative @gol
+-Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
@@ -9026,6 +9069,35 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 value known to be NULL is dereferenced.
+
+@item -Wno-analyzer-shift-count-negative
+@opindex Wanalyzer-shift-count-negative
+@opindex Wno-analyzer-shift-count-negative
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-shift-count-negative} to disable it.
+
+This diagnostic warns for paths through the code in which a
+shift is attempted with a negative count.  It is analogous to
+the @option{-Wshift-count-negative} diagnostic implemented in
+the C/C++ front ends, but is implemented based on analyzing
+interprocedural paths, rather than merely parsing the syntax tree.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
+@item -Wno-analyzer-shift-count-overflow
+@opindex Wanalyzer-shift-count-overflow
+@opindex Wno-analyzer-shift-count-overflow
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-shift-count-overflow} to disable it.
+
+This diagnostic warns for paths through the code in which a
+shift is attempted with a count greater than or equal to the
+precision of the operand's type.  It is analogous to
+the @option{-Wshift-count-overflow} diagnostic implemented in
+the C/C++ front ends, but is implemented based on analyzing
+interprocedural paths, rather than merely parsing the syntax tree.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
 
 @item -Wno-analyzer-stale-setjmp-buffer
 @opindex Wanalyzer-stale-setjmp-buffer
@@ -11384,7 +11456,8 @@ and @option{-fauto-profile}.
 @item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
 Alter the cost model used for vectorization.  The @var{model} argument
-should be one of @samp{unlimited}, @samp{dynamic} or @samp{cheap}.
+should be one of @samp{unlimited}, @samp{dynamic}, @samp{cheap} or
+@samp{very-cheap}.
 With the @samp{unlimited} model the vectorized code-path is assumed
 to be profitable while with the @samp{dynamic} model a runtime check
 guards the vectorized code-path to enable it only for iteration
@@ -11392,7 +11465,14 @@ counts that will likely execute faster than when executing the original
 scalar loop.  The @samp{cheap} model disables vectorization of
 loops where doing so would be cost prohibitive for example due to
 required runtime checks for data dependence or alignment but otherwise
-is equal to the @samp{dynamic} model.
+is equal to the @samp{dynamic} model.  The @samp{very-cheap} model only
+allows vectorization if the vector code would entirely replace the
+scalar code that is being vectorized.  For example, if each iteration
+of a vectorized loop would only be able to handle exactly four iterations
+of the scalar loop, the @samp{very-cheap} model would only allow
+vectorization if the scalar iteration count is known to be a multiple
+of four.
+
 The default cost model depends on other optimization flags and is
 either @samp{dynamic} or @samp{cheap}.
 
@@ -12953,6 +13033,13 @@ memory locations using the mod/ref information.  This parameter ought to be
 bigger than @option{--param ipa-modref-max-bases} and @option{--param
 ipa-modref-max-refs}.
 
+@item ipa-modref-max-depth
+Specifies the maximum depth of DFS walk used by modref escape analysis.
+Setting to 0 disables the analysis completely.
+
+@item modref-max-escape-points
+Specifies the maximum number of escape points tracked by modref per SSA-name.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that
@@ -13446,11 +13533,6 @@ is aborted and the load or store is not considered redundant.  The
 number of queries is algorithmically limited to the number of
 stores on all paths from the load to the function entry.
 
-@item max-pre-hoist-insert-iterations
-The maximum number of iterations doing insertion during code
-hoisting which is done as part of the partial redundancy elimination
-insertion phase.
-
 @item ira-max-loops-num
 IRA uses regional register allocation by default.  If a function
 contains more loops than the number given by this parameter, only at most
@@ -13747,6 +13829,53 @@ is greater or equal to this number, use callbacks instead of inline checks.
 E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
 
+@item hwasan-instrument-stack
+Enable hwasan instrumentation of statically sized stack-allocated variables.
+This kind of instrumentation is enabled by default when using
+@option{-fsanitize=hwaddress} and disabled by default when using
+@option{-fsanitize=kernel-hwaddress}.
+To disable stack instrumentation use
+@option{--param hwasan-instrument-stack=0}, and to enable it use
+@option{--param hwasan-instrument-stack=1}.
+
+@item hwasan-random-frame-tag
+When using stack instrumentation, decide tags for stack variables using a
+deterministic sequence beginning at a random tag for each frame.  With this
+parameter unset tags are chosen using the same sequence but beginning from 1.
+This is enabled by default for @option{-fsanitize=hwaddress} and unavailable
+for @option{-fsanitize=kernel-hwaddress}.
+To disable it use @option{--param hwasan-random-frame-tag=0}.
+
+@item hwasan-instrument-allocas
+Enable hwasan instrumentation of dynamically sized stack-allocated variables.
+This kind of instrumentation is enabled by default when using
+@option{-fsanitize=hwaddress} and disabled by default when using
+@option{-fsanitize=kernel-hwaddress}.
+To disable instrumentation of such variables use
+@option{--param hwasan-instrument-allocas=0}, and to enable it use
+@option{--param hwasan-instrument-allocas=1}.
+
+@item hwasan-instrument-reads
+Enable hwasan checks on memory reads.  Instrumentation of reads is enabled by
+default for both @option{-fsanitize=hwaddress} and
+@option{-fsanitize=kernel-hwaddress}.
+To disable checking memory reads use
+@option{--param hwasan-instrument-reads=0}.
+
+@item hwasan-instrument-writes
+Enable hwasan checks on memory writes.  Instrumentation of writes is enabled by
+default for both @option{-fsanitize=hwaddress} and
+@option{-fsanitize=kernel-hwaddress}.
+To disable checking memory writes use
+@option{--param hwasan-instrument-writes=0}.
+
+@item hwasan-instrument-mem-intrinsics
+Enable hwasan instrumentation of builtin functions.  Instrumentation of these
+builtin functions is enabled by default for both @option{-fsanitize=hwaddress}
+and @option{-fsanitize=kernel-hwaddress}.
+To disable instrumentation of builtin functions use
+@option{--param hwasan-instrument-mem-intrinsics=0}.
+
 @item use-after-scope-direct-emission-threshold
 If the size of a local variable in bytes is smaller or equal to this
 number, directly poison (or unpoison) shadow memory instead of using
@@ -13996,6 +14125,24 @@ The number of Newton iterations for calculating the reciprocal for double type.
 The precision of division is propotional to this param when division
 approximation is enabled.  The default value is 2.
 
+@item aarch64-autovec-preference
+Force an ISA selection strategy for auto-vectorization.  Accepts values from
+0 to 4, inclusive.
+@table @samp
+@item 0
+Use the default heuristics.
+@item 1
+Use only Advanced SIMD for auto-vectorization.
+@item 2
+Use only SVE for auto-vectorization.
+@item 3
+Use both Advanced SIMD and SVE.  Prefer Advanced SIMD when the costs are
+deemed equal.
+@item 4
+Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
+@end table
+The default value is 0.
+
 @end table
 
 @end table
@@ -14183,6 +14330,34 @@ the profile feedback data files. See @option{-fprofile-dir}.
 To optimize the program based on the collected profile information, use
 @option{-fprofile-use}.  @xref{Optimize Options}, for more information.
 
+@item -fprofile-info-section
+@itemx -fprofile-info-section=@var{name}
+@opindex fprofile-info-section
+
+Register the profile information in the specified section instead of using a
+constructor/destructor.  The section name is @var{name} if it is specified,
+otherwise the section name defaults to @code{.gcov_info}.  A pointer to the
+profile information generated by @option{-fprofile-arcs} or
+@option{-ftest-coverage} is placed in the specified section for each
+translation unit.  This option disables the profile information registration
+through a constructor and it disables the profile information processing
+through a destructor.  This option is not intended to be used in hosted
+environments such as GNU/Linux.  It targets systems with limited resources
+which do not support constructors and destructors.  The linker could collect
+the input sections in a continuous memory block and define start and end
+symbols.  The runtime support could dump the profiling information registered
+in this linker set during program termination to a serial line for example.  A
+GNU linker script example which defines a linker output section follows:
+
+@smallexample
+  .gcov_info      :
+  @{
+    PROVIDE (__gcov_info_start = .);
+    KEEP (*(.gcov_info))
+    PROVIDE (__gcov_info_end = .);
+  @}
+@end smallexample
+
 @item -fprofile-note=@var{path}
 @opindex fprofile-note
 
@@ -14258,7 +14433,7 @@ Note that it is quite common that execution counts of some part of
 programs depends, for example, on length of temporary file names or
 memory space randomization (that may affect hash-table collision rate).
 Such non-reproducible part of programs may be annotated by
-@code{no_instrument_function} function attribute. @code{gcov-dump} with
+@code{no_instrument_function} function attribute. @command{gcov-dump} with
 @option{-l} can be used to dump gathered data and verify that they are
 indeed reproducible.
 
@@ -14281,12 +14456,46 @@ more details.  The run-time behavior can be influenced using the
 the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
-The option cannot be combined with @option{-fsanitize=thread}.
+The option cannot be combined with @option{-fsanitize=thread} or
+@option{-fsanitize=hwaddress}.  Note that the only target this option is
+currently supported on is AArch64.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
 See @uref{https://github.com/google/kasan/wiki} for more details.
+
+@item -fsanitize=hwaddress
+@opindex fsanitize=hwaddress
+Enable Hardware-assisted AddressSanitizer, which uses a hardware ability to
+ignore the top byte of a pointer to allow the detection of memory errors with
+a low memory overhead.
+Memory access instructions are instrumented to detect out-of-bounds and
+use-after-free bugs.
+The option enables @option{-fsanitize-address-use-after-scope}.
+See
+@uref{https://clang.llvm.org/docs/HardwareAssistedAddressSanitizerDesign.html}
+for more details.  The run-time behavior can be influenced using the
+@env{HWASAN_OPTIONS} environment variable.  When set to @code{help=1},
+the available options are shown at startup of the instrumented program.
+The option cannot be combined with @option{-fsanitize=thread} or
+@option{-fsanitize=address}, and is currently only available on AArch64.
+
+@item -fsanitize=kernel-hwaddress
+@opindex fsanitize=kernel-hwaddress
+Enable Hardware-assisted AddressSanitizer for compilation of the Linux kernel.
+Similar to @option{-fsanitize=kernel-address} but using an alternate
+instrumentation method, and similar to @option{-fsanitize=hwaddress} but with
+instrumentation differences necessary for compiling the Linux kernel.
+These differences are to avoid hwasan library initialization calls and to
+account for the stack pointer having a different value in its top byte.
+
+@emph{Note:} This option has different defaults to the @option{-fsanitize=hwaddress}.
+Instrumenting the stack and alloca calls are not on by default but are still
+possible by specifying the command-line options
+@option{--param hwasan-instrument-stack=1} and
+@option{--param hwasan-instrument-allocas=1} respectively. Using a random frame
+tag is not implemented for kernel instrumentation.
 
 @item -fsanitize=pointer-compare
 @opindex fsanitize=pointer-compare
@@ -17955,6 +18164,9 @@ Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item flagm
+Enable the Flag Manipulation instructions Extension. This option is enabled by
+default for @option{-march=armv8.4-a}.
 
 @end table
 
@@ -29529,13 +29741,13 @@ BMI, BMI2 and F16C instruction set support.
 @item broadwell
 Intel Broadwell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI, BMI2,
-F16C, RDSEED and ADCX instruction set support.
+F16C, RDSEED ADCX and PREFETCHW instruction set support.
 
 @item skylake
 Intel Skylake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC and XSAVES instruction set
-support.
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC and XSAVES
+instruction set support.
 
 @item bonnell
 Intel Bonnell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
@@ -29564,32 +29776,33 @@ MOVDIR64B, CLDEMOTE and WAITPKG instruction set support.
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHWT1, AVX512F, AVX512PF, AVX512ER and
-AVX512CD instruction set support.
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, PREFETCHWT1, AVX512F, AVX512PF,
+AVX512ER and AVX512CD instruction set support.
 
 @item knm
 Intel Knights Mill CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHWT1, AVX512F, AVX512PF, AVX512ER, AVX512CD,
-AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, PREFETCHWT1, AVX512F, AVX512PF,
+AVX512ER, AVX512CD, AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction
+set support.
 
 @item skylake-avx512
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
 CLWB, AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
 @item cannonlake
 Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA and UMIP instruction set support.
 
 @item icelake-client
 Intel Icelake Client CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
 AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES instruction set support.
@@ -29597,7 +29810,7 @@ AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES instruction set support.
 @item icelake-server
 Intel Icelake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
 AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES, PCONFIG and WBNOINVD instruction
@@ -29606,37 +29819,40 @@ set support.
 @item cascadelake
 Intel Cascadelake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
+BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
 AVX512VL, AVX512BW, AVX512DQ, AVX512CD and AVX512VNNI instruction set support.
 
 @item cooperlake
 Intel cooperlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
+BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
 AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI and AVX512BF16 instruction
 set support.
 
 @item tigerlake
 Intel Tigerlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL,
-AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI, AVX512IFMA, SHA, CLWB, UMIP, RDPID,
-GFNI, AVX512VBMI2, AVX512VPOPCNTDQ, AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES,
-PCONFIG, WBNOINVD, MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT and KEYLOCKER
+BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
+AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI, AVX512IFMA, SHA, CLWB, UMIP,
+RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ, AVX512BITALG, AVX512VNNI, VPCLMULQDQ,
+VAES, PCONFIG, WBNOINVD, MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT and KEYLOCKER
 instruction set support.
 
 @item sapphirerapids
 Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND,
-FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
-AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16, MOVDIRI,
-MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE,
-TSXLDTRK, UINTR, AMX-BF16, AMX-TILE and AMX-INT8 instruction set support.
+FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES,
+AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16,
+MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
+SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8 and AVX-VNNI
+instruction set support.
 
 @item alderlake
 Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, CLDEMOTE,
-PTWRITE, WAITPKG, SERIALIZE, KEYLOCKER and HRESET instruction set support.
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
+BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, CLDEMOTE,
+PTWRITE, WAITPKG, SERIALIZE, KEYLOCKER, HRESET and AVX-VNNI instruction set
+support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -30409,6 +30625,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mavx512vnni
 @opindex mavx512vnni
 @need 200
+@itemx -mavxvnni
+@opindex mavxvnni
+@need 200
 @itemx -mavx5124vnniw
 @opindex mavx5124vnniw
 @need 200
@@ -30443,9 +30662,9 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
 ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
-UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL or CLDEMOTE extended
-instruction sets. Each has a corresponding @option{-mno-} option to disable
-use of these instructions.
+UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL, AVXVNNI or CLDEMOTE
+extended instruction sets. Each has a corresponding @option{-mno-} option to
+disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -31161,6 +31380,12 @@ environments.
 Generate code for short address mode.  This is only supported for 32-bit
 and x32 environments.  It is the default address mode for 32-bit and
 x32 environments.
+
+@item -mneeded
+@itemx -mno-needed
+@opindex mneeded
+Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property for Linux target to
+indicate the micro-architecture ISA level required to execute the binary.
 @end table
 
 @node x86 Windows Options
@@ -31634,6 +31859,9 @@ Marks the argument containing or following the @samp{%w} as the
 designated output file of this compilation.  This puts the argument
 into the sequence of arguments that @samp{%o} substitutes.
 
+@item %V
+Indicates that this compilation produces no output file.
+
 @item %o
 Substitutes the names of all the output files, with spaces
 automatically placed around them.  You should write spaces
@@ -31651,16 +31879,6 @@ handling is such that @samp{%O} is treated exactly as if it had already
 been substituted, except that @samp{%g, %u, and %U} do not currently
 support additional @var{suffix} characters following @samp{%O} as they do
 following, for example, @samp{.o}.
-
-@item %p
-Substitutes the standard macro predefinitions for the
-current target machine.  Use this when running @command{cpp}.
-
-@item %P
-Like @samp{%p}, but puts @samp{__} before and after the name of each
-predefined macro, except for macros that start with @samp{__} or with
-@samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ISO
-C@.
 
 @item %I
 Substitute any of @option{-iprefix} (made from @env{GCC_EXEC_PREFIX}),
@@ -31686,6 +31904,9 @@ searched.
 Print @var{str} as an error message.  @var{str} is terminated by a newline.
 Use this when inconsistent options are detected.
 
+@item %n@var{str}
+Print @var{str} as a notice.  @var{str} is terminated by a newline.
+
 @item %(@var{name})
 Substitute the contents of spec string @var{name} at this point.
 
@@ -31701,6 +31922,12 @@ Output the accumulated assembler options specified by @option{-Wa}.
 
 @item %Z
 Output the accumulated preprocessor options specified by @option{-Wp}.
+
+@item %M
+Output @code{multilib_os_dir}.
+
+@item %R
+Output the concatenation of @code{target_system_root} and @code{target_sysroot_suffix}.
 
 @item %a
 Process the @code{asm} spec.  This is used to compute the
@@ -31760,6 +31987,12 @@ Remove all occurrences of @code{-S} from the command line.  Note---this
 command is position dependent.  @samp{%} commands in the spec string
 before this one see @code{-S}, @samp{%} commands in the spec string
 after this one do not.
+
+@item %<S*
+Similar to @samp{%<S}, but match all switches beginning with @code{-S}.
+
+@item %>S
+Similar to @samp{%<S}, but keep @code{-S} in the GCC command line.
 
 @item %:@var{function}(@var{args})
 Call the named function @var{function}, passing it @var{args}.
@@ -31821,6 +32054,14 @@ usage:
 -l%:if-exists-then-else(%:getenv(VSB_DIR rtnet.h) rtnet net)
 @end smallexample
 
+@item @code{sanitize}
+The @code{sanitize} spec function takes no arguments.  It returns non-NULL if
+any address, thread or undefined behaviour sanitizers are active.
+
+@smallexample
+%@{%:sanitize(address):-funwind-tables@}
+@end smallexample
+
 @item @code{replace-outfile}
 The @code{replace-outfile} spec function takes two arguments.  It looks for the
 first argument in the outfiles array and replaces it with the second argument.  Here
@@ -31837,6 +32078,56 @@ its usage:
 
 @smallexample
 %:remove-outfile(-lm)
+@end smallexample
+
+@item @code{version-compare}
+The @code{version-compare} spec function takes four or five arguments of the following
+form:
+
+@smallexample
+<comparison-op> <arg1> [<arg2>] <switch> <result>
+@end smallexample
+
+It returns @code{result} if the comparison evaluates to true, and NULL if it doesn't.
+The supported @code{comparison-op} values are:
+
+@table @code
+@item >=
+True if @code{switch} is a later (or same) version than @code{arg1}
+
+@item !>
+Opposite of @code{>=}
+
+@item <
+True if @code{switch} is an earlier version than @code{arg1}
+
+@item !<
+Opposite of @code{<}
+
+@item ><
+True if @code{switch} is @code{arg1} or later, and earlier than @code{arg2}
+
+@item <>
+True if @code{switch} is earlier than @code{arg1}, or is @code{arg2} or later
+@end table
+
+If the @code{switch} is not present at all, the condition is false unless the first character
+of the @code{comparison-op} is @code{!}.
+
+@smallexample
+%:version-compare(>= 10.3 mmacosx-version-min= -lmx)
+@end smallexample
+
+The above example would add @option{-lmx} if @option{-mmacosx-version-min=10.3.9} was
+passed.
+
+@item @code{include}
+The @code{include} spec function behaves much like @code{%include}, with the advantage
+that it can be nested inside a spec and thus be conditionalized.  It takes one argument,
+the filename, and looks for it in the startfile path.  It always returns NULL.
+
+@smallexample
+%@{static-libasan|static:%:include(libsanitizer.spec)%(link_libasan)@}
 @end smallexample
 
 @item @code{pass-through-libs}
@@ -31864,6 +32155,25 @@ Use "-Wa,OPTION" to pass "OPTION" to the assembler.
 
 It is used to separate compiler options from assembler options
 in the @option{--target-help} output.
+
+@item @code{gt}
+The @code{gt} spec function takes two or more arguments.  It returns @code{""} (the
+empty string) if the second-to-last argument is greater than the last argument, and NULL
+otherwise.  The following example inserts the @code{link_gomp} spec if the last
+@option{-ftree-parallelize-loops=} option given on the command line is greater than 1:
+
+@smallexample
+%@{%:gt(%@{ftree-parallelize-loops=*:%*@} 1):%:include(libgomp.spec)%(link_gomp)@}
+@end smallexample
+
+@item @code{debug-level-gt}
+The @code{debug-level-gt} spec function takes one argument and returns @code{""} (the
+empty string) if @code{debug_info_level} is greater than the specified number, and NULL
+otherwise.
+
+@smallexample
+%@{%:debug-level-gt(0):%@{gdwarf*:--gdwarf2@}@}
+@end smallexample
 @end table
 
 @item %@{S@}
@@ -31877,6 +32187,10 @@ and outputs the command-line option @option{-foo}.
 @item %W@{S@}
 Like %@{@code{S}@} but mark last argument supplied within as a file to be
 deleted on failure.
+
+@item %@@@{S@}
+Like %@{@code{S}@} but puts the result into a @code{FILE} and substitutes
+@code{@@FILE} if an @code{@@file} argument has been supplied.
 
 @item %@{S*@}
 Substitutes all the switches specified to GCC whose names start
@@ -31959,6 +32273,12 @@ jim.d         -bar -boggle
 -d fred.c     -foo -baz -boggle
 -d jim.d      -bar -baz -boggle
 @end smallexample
+
+@item %@{%:@var{function}(@var{args}):X@}
+
+Call function named @var{function} with args @var{args}.  If the
+function returns non-NULL, then @code{X} is substituted, if it returns
+NULL, it isn't substituted.
 
 @item %@{S:X; T:Y; :D@}
 

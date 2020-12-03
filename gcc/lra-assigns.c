@@ -1715,8 +1715,8 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
 	start_insn = lra_insn_recog_data[uid]->insn;
       n++;
     }
-  /* For reload pseudo we should have at most 3 insns referring for it:
-     input/output reload insns and the original insn.  */
+  /* For reload pseudo we should have at most 3 insns referring for
+     it: input/output reload insns and the original insn.  */
   if (n > 3)
     return false;
   if (n > 1)
@@ -1792,7 +1792,8 @@ lra_split_hard_reg_for (void)
       {
 	if (! find_reload_regno_insns (i, first, last))
 	  continue;
-	if (spill_hard_reg_in_range (i, rclass, first, last))
+	if (BLOCK_FOR_INSN (first) == BLOCK_FOR_INSN (last)
+	    && spill_hard_reg_in_range (i, rclass, first, last))
 	  {
 	    bitmap_clear (&failed_reload_pseudos);
 	    return true;
@@ -1817,16 +1818,10 @@ lra_split_hard_reg_for (void)
 	  lra_asm_error_p = asm_p = true;
 	  error_for_asm (insn,
 			 "%<asm%> operand has impossible constraints");
-	  /* Avoid further trouble with this insn.
-	     For asm goto, instead of fixing up all the edges
-	     just clear the template and clear input operands
-	     (asm goto doesn't have any output operands).  */
+	  /* Avoid further trouble with this insn.  */
 	  if (JUMP_P (insn))
 	    {
-	      rtx asm_op = extract_asm_operands (PATTERN (insn));
-	      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
-	      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
-	      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
+	      ira_nullify_asm_goto (insn);
 	      lra_update_insn_regno_info (insn);
 	    }
 	  else

@@ -6454,11 +6454,7 @@ package body Sem_Util is
                        and then Etype (First_Formal (Id)) =
                                 Etype (Next_Formal (First_Formal (Id)))
                      then
-                        if No (Eq_Prims_List) then
-                           Eq_Prims_List := New_Elmt_List;
-                        end if;
-
-                        Append_Elmt (Id, Eq_Prims_List);
+                        Append_New_Elmt (Id, Eq_Prims_List);
                      end if;
                   end if;
                end if;
@@ -7859,6 +7855,8 @@ package body Sem_Util is
                         or else
                       Nkind (Decl) in N_Later_Decl_Item
                         or else
+                      Nkind (Decl) in N_Renaming_Declaration
+                        or else
                       Nkind (Decl) = N_Number_Declaration)
       loop
          Decl := Parent (Decl);
@@ -8290,6 +8288,13 @@ package body Sem_Util is
                   else
                      Set_Name_Entity_Id (Chars (E), Homonym (E));
                   end if;
+
+                  --  The inherited operation cannot be retrieved
+                  --  by name, even though it may remain accesssible
+                  --  in some cases involving subprogram bodies without
+                  --  specs appearing in with_clauses..
+
+                  Set_Is_Immediately_Visible (E, False);
                end if;
             end;
 
@@ -11394,7 +11399,7 @@ package body Sem_Util is
             Comp : Entity_Id;
 
          begin
-            --  Loop to Check components
+            --  Loop to check components
 
             Comp := First_Component_Or_Discriminant (Typ);
             while Present (Comp) loop
@@ -12727,12 +12732,11 @@ package body Sem_Util is
    ----------------------------------
 
    function Has_Non_Trivial_Precondition (Subp : Entity_Id) return Boolean is
-      Pre : constant Node_Id := Find_Aspect (Subp, Aspect_Pre);
-
+      Pre : constant Node_Id := Find_Aspect (Subp, Aspect_Pre,
+                                             Class_Present => True);
    begin
       return
         Present (Pre)
-          and then Class_Present (Pre)
           and then not Is_Entity_Name (Expression (Pre));
    end Has_Non_Trivial_Precondition;
 
@@ -16582,7 +16586,9 @@ package body Sem_Util is
    -- Is_Effectively_Volatile --
    -----------------------------
 
-   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
+   function Is_Effectively_Volatile
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean is
    begin
       if Is_Type (Id) then
 
@@ -16610,15 +16616,16 @@ package body Sem_Util is
                   --  Test for presence of ancestor, as the full view of a
                   --  private type may be missing in case of error.
 
-                  return
-                    Present (Anc)
-                      and then Is_Effectively_Volatile (Component_Type (Anc));
+                  return Present (Anc)
+                    and then Is_Effectively_Volatile
+                      (Component_Type (Anc), Ignore_Protected);
                end;
             end if;
 
-         --  A protected type is always volatile
+         --  A protected type is always volatile unless Ignore_Protected is
+         --  True.
 
-         elsif Is_Protected_Type (Id) then
+         elsif Is_Protected_Type (Id) and then not Ignore_Protected then
             return True;
 
          --  A descendant of Ada.Synchronous_Task_Control.Suspension_Object is
@@ -16644,7 +16651,7 @@ package body Sem_Util is
             and then not
               (Ekind (Id) = E_Variable and then No_Caching_Enabled (Id)))
              or else Has_Volatile_Components (Id)
-             or else Is_Effectively_Volatile (Etype (Id));
+             or else Is_Effectively_Volatile (Etype (Id), Ignore_Protected);
       end if;
    end Is_Effectively_Volatile;
 
@@ -16653,15 +16660,19 @@ package body Sem_Util is
    -----------------------------------------
 
    function Is_Effectively_Volatile_For_Reading
-     (Id : Entity_Id) return Boolean
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean
    is
    begin
-      --  A concurrent type is effectively volatile for reading
+      --  A concurrent type is effectively volatile for reading, except for a
+      --  protected type when Ignore_Protected is True.
 
-      if Is_Concurrent_Type (Id) then
+      if Is_Task_Type (Id)
+        or else (Is_Protected_Type (Id) and then not Ignore_Protected)
+      then
          return True;
 
-      elsif Is_Effectively_Volatile (Id) then
+      elsif Is_Effectively_Volatile (Id, Ignore_Protected) then
 
         --  Other volatile types and objects are effectively volatile for
         --  reading when they have property Async_Writers or Effective_Reads
@@ -16689,10 +16700,9 @@ package body Sem_Util is
                --  Test for presence of ancestor, as the full view of a
                --  private type may be missing in case of error.
 
-               return
-                 Present (Anc)
-                   and then Is_Effectively_Volatile_For_Reading
-                     (Component_Type (Anc));
+               return Present (Anc)
+                 and then Is_Effectively_Volatile_For_Reading
+                   (Component_Type (Anc), Ignore_Protected);
             end;
          end if;
       end if;
@@ -16706,6 +16716,9 @@ package body Sem_Util is
    ------------------------------------
 
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
+      function Is_Effectively_Volatile (E : Entity_Id) return Boolean is
+         (Is_Effectively_Volatile (E, Ignore_Protected => False));
+
       function Is_Effectively_Volatile_Object_Inst
       is new Is_Effectively_Volatile_Object_Shared (Is_Effectively_Volatile);
    begin
@@ -16719,6 +16732,10 @@ package body Sem_Util is
    function Is_Effectively_Volatile_Object_For_Reading
      (N : Node_Id) return Boolean
    is
+      function Is_Effectively_Volatile_For_Reading
+        (E : Entity_Id) return Boolean
+      is (Is_Effectively_Volatile_For_Reading (E, Ignore_Protected => False));
+
       function Is_Effectively_Volatile_Object_For_Reading_Inst
       is new Is_Effectively_Volatile_Object_Shared
         (Is_Effectively_Volatile_For_Reading);
@@ -18311,7 +18328,10 @@ package body Sem_Util is
 
             --  In Ada 95 an aggregate is an object reference
 
-            when N_Aggregate =>
+            when N_Aggregate
+               | N_Delta_Aggregate
+               | N_Extension_Aggregate
+            =>
                return Ada_Version >= Ada_95;
 
             --  A string literal is not an object reference, but it might come
@@ -20434,8 +20454,7 @@ package body Sem_Util is
 
          elsif Nkind (P) = N_Type_Conversion
            and then not Comes_From_Source (P)
-           and then Is_Array_Type (Etype (P))
-           and then Is_Packed (Etype (P))
+           and then Is_Packed_Array (Etype (P))
          then
             return Is_Variable (Expression (P));
 
@@ -22439,11 +22458,7 @@ package body Sem_Util is
       function Search_Decl (N : Node_Id) return Traverse_Result is
       begin
          if Nkind (N) in N_Declaration then
-            if No (Decls) then
-               Decls := New_Elmt_List;
-            end if;
-
-            Append_Elmt (N, Decls);
+            Append_New_Elmt (N, Decls);
          end if;
 
          return OK;
@@ -25455,7 +25470,7 @@ package body Sem_Util is
       --  All other cases do not require a transient scope
 
       else
-         pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
+         pragma Assert (Is_Concurrent_Type (Typ));
          return False;
       end if;
    end Old_Requires_Transient_Scope;
@@ -25678,7 +25693,7 @@ package body Sem_Util is
          end if;
       end if;
 
-      return (Empty);
+      return Empty;
    end Param_Entity;
 
    ----------------------
@@ -26169,7 +26184,8 @@ package body Sem_Util is
      (Typ      : Entity_Id;
       From_Typ : Entity_Id)
    is
-      DIC_Proc : Entity_Id;
+      DIC_Proc         : Entity_Id;
+      Partial_DIC_Proc : Entity_Id;
 
    begin
       if Present (Typ) and then Present (From_Typ) then
@@ -26190,6 +26206,7 @@ package body Sem_Util is
          end if;
 
          DIC_Proc := DIC_Procedure (From_Typ);
+         Partial_DIC_Proc := Partial_DIC_Procedure (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes.
@@ -26204,6 +26221,12 @@ package body Sem_Util is
 
          if Present (DIC_Proc) and then No (DIC_Procedure (Typ)) then
             Set_DIC_Procedure (Typ, DIC_Proc);
+         end if;
+
+         if Present (Partial_DIC_Proc)
+           and then No (Partial_DIC_Procedure (Typ))
+         then
+            Set_Partial_DIC_Procedure (Typ, Partial_DIC_Proc);
          end if;
       end if;
    end Propagate_DIC_Attributes;
@@ -26245,7 +26268,7 @@ package body Sem_Util is
          end if;
 
          if Has_Own_Invariants (From_Typ) then
-            Set_Has_Own_Invariants (Typ);
+            Set_Has_Own_Invariants (Base_Type (Typ));
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
@@ -27583,8 +27606,6 @@ package body Sem_Util is
             Style.Check_Identifier (Nod, Val_Actual);
          end if;
       end if;
-
-      Set_Entity (N, Val);
    end Set_Entity_With_Checks;
 
    ------------------------------

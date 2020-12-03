@@ -6,7 +6,7 @@
 
 template<int> struct A
 {
-  A::A; // { dg-error "constructor|not a base" }
+  A::A; // { dg-error "constructor|not a direct base" }
 };
 
 struct B

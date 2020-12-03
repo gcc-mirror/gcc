@@ -1,0 +1,167 @@
+# Copyright (C) 2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib asan-dg.exp
+
+# Return 1 if target can compile a binary for hardware address
+# sanitization, 0 otherwise.
+#
+# NOTE: This should only be used between calls to hwasan_init and
+# hwasan_finish.  It is therefore defined here rather than in
+# target-supports.exp.
+
+proc check_effective_target_fsanitize_hwaddress {} {
+    if ![check_no_compiler_messages fsanitize_hwaddress executable {
+	int main (void) { return 0; }
+    }] {
+	return 0;
+    }
+    return 1;
+}
+
+# Return 1 if target can compile and run a binary for hardware address
+# sanitization, 0 otherwise.
+#
+# NOTE: This should only be used between calls to hwasan_init and
+# hwasan_finish.  It is therefore defined here rather than in
+# target-supports.exp.
+
+proc check_effective_target_hwaddress_exec {} {
+    if ![check_runtime hwaddress_exec {
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+	extern int prctl(int, unsigned long, unsigned long, unsigned long, unsigned long);
+	#ifdef __cplusplus
+	}
+	#endif
+	int main (void) {
+	#define PR_SET_TAGGED_ADDR_CTRL 55
+	#define PR_GET_TAGGED_ADDR_CTRL 56
+	#define PR_TAGGED_ADDR_ENABLE (1UL << 0)
+	  if (prctl (PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0) == -1)
+	    return 1;
+	  if (prctl(PR_SET_TAGGED_ADDR_CTRL, PR_TAGGED_ADDR_ENABLE, 0, 0, 0) == -1
+	      || !prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0))
+	    return 1;
+	  return 0;
+	}
+    }] {
+	return 0;
+    }
+    return 1;
+}
+
+proc hwasan_include_flags {} {
+    global srcdir
+    global TESTING_IN_BUILD_TREE
+
+    set flags ""
+
+    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+      return "${flags}"
+    }
+
+    set flags "-I$srcdir/../../libsanitizer/include"
+
+    return "$flags"
+}
+
+#
+# hwasan_link_flags -- compute library path and flags to find libhwasan.
+# (implementation in asan-dg.exp)
+#
+
+proc hwasan_link_flags { paths } {
+    return [asan_link_flags_1 $paths hwasan]
+}
+
+#
+# hwasan_init -- called at the start of each subdir of tests
+#
+
+proc hwasan_init { args } {
+    global TEST_ALWAYS_FLAGS
+    global ALWAYS_CXXFLAGS
+    global TOOL_OPTIONS
+    global hwasan_saved_TEST_ALWAYS_FLAGS
+    global hwasan_saved_ALWAYS_CXXFLAGS
+
+    setenv HWASAN_OPTIONS "random_tags=0"
+
+    set link_flags ""
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    set link_flags "[hwasan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	} else {
+	    set link_flags "[hwasan_link_flags [get_multilibs]]"
+	}
+    }
+
+    set include_flags "[hwasan_include_flags]"
+
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set hwasan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
+    }
+    if [info exists ALWAYS_CXXFLAGS] {
+	set hwasan_saved_ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS
+	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags}" $ALWAYS_CXXFLAGS]
+    } else {
+	if [info exists TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags $TEST_ALWAYS_FLAGS"
+	} else {
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=hwaddress --param hwasan-random-frame-tag=0 -g $include_flags"
+	}
+    }
+}
+
+#
+# hwasan_finish -- called at the start of each subdir of tests
+#
+
+proc hwasan_finish { args } {
+    global TEST_ALWAYS_FLAGS
+    global hwasan_saved_TEST_ALWAYS_FLAGS
+    global hwasan_saved_ALWAYS_CXXFLAGS
+    global hwasan_saved_library_path
+    global ld_library_path
+
+    unsetenv HWASAN_OPTIONS
+
+    if [info exists hwasan_saved_ALWAYS_CXXFLAGS ] {
+	set ALWAYS_CXXFLAGS $hwasan_saved_ALWAYS_CXXFLAGS
+    } else {
+	if [info exists hwasan_saved_TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS $hwasan_saved_TEST_ALWAYS_FLAGS
+	} else {
+	    unset TEST_ALWAYS_FLAGS
+	}
+    }
+    if [info exists hwasan_saved_library_path] {
+	set ld_library_path $hwasan_saved_library_path
+	set_ld_library_path_env_vars
+    }
+    clear_effective_target_cache
+}
+
+# Utility for running gtest hwasan emulation under dejagnu, invoked via dg-final.
+# Call pass if variable has the desired value, otherwise fail.
+#
+# Argument 0 handles expected failures and the like
+proc hwasan-gtest { args } {
+    asan-gtest {*}$args
+}

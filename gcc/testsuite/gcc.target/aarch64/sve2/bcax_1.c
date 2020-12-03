@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details --save-temps" } */
 
-#define OP(x,y,z) ((x) ^ ((y) & (z)))
+#define OP(x,y,z) ((x) ^ (~(y) & (z)))
 
 #include "bitsel_1.c"
 

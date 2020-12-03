@@ -216,7 +216,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-muintr",		OPTION_MASK_ISA2_UINTR },
   { "-mhreset",		OPTION_MASK_ISA2_HRESET },
   { "-mkl",		OPTION_MASK_ISA2_KL },
-  { "-mwidekl", 	OPTION_MASK_ISA2_WIDEKL }
+  { "-mwidekl", 	OPTION_MASK_ISA2_WIDEKL },
+  { "-mavxvnni",	OPTION_MASK_ISA2_AVXVNNI }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1047,6 +1048,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("amx-int8", OPT_mamx_int8),
     IX86_ATTR_ISA ("amx-bf16", OPT_mamx_bf16),
     IX86_ATTR_ISA ("hreset", OPT_mhreset),
+    IX86_ATTR_ISA ("avxvnni",   OPT_mavxvnni),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -1207,7 +1209,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	    {
 	      if (!opt_set_p)
 		{
-		  error_at (loc, "pragma or attribute %<target(\"%s\")%>  "
+		  error_at (loc, "pragma or attribute %<target(\"%s\")%> "
 			    "does not allow a negated form", p);
 		  return false;
 		}
@@ -2075,7 +2077,7 @@ ix86_option_override_internal (bool main_args_p,
 	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
 		|| opts->x_ix86_abi != SYSV_ABI))
 	  {
-	    error (G_("%<%s%> architecture level is only defined"
+	    error (G_("%qs architecture level is only defined"
 		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
 	    return false;
 	  }
@@ -2304,6 +2306,10 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags2_explicit
 		 & OPTION_MASK_ISA2_AMX_BF16))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_BF16;
+	if (((processor_alias_table[i].flags & PTA_AVXVNNI) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AVXVNNI))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVXVNNI;
         if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
             && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
           opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;

@@ -39,21 +39,18 @@ package Exp_Sel is
    --    begin
    --       Blk
    --    exception
-   --       when Abort_Signal => Abort_Undefer / null;
+   --       when Abort_Signal => null;
    --    end;
    --  Abr_Blk_Ent is the name of the generated block, Cln_Blk_Ent is the name
    --  of the encapsulated cleanup block, Blk is the actual block name.
    --  The exception handler code is built by Build_Abort_Block_Handler.
 
    function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id;
-   --  Generate if front-end exception:
-   --    when others =>
-   --      Abort_Undefer;
-   --  or if back-end exception:
+   --  Generate:
    --    when others =>
    --      null;
    --  This is an exception handler to stop propagation of aborts, without
-   --  modifying the deferal level.
+   --  modifying the deferral level.
 
    function Build_B
      (Loc   : Source_Ptr;

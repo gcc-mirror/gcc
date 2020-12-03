@@ -3110,7 +3110,7 @@ riscv_legitimize_call_address (rtx addr)
 {
   if (!call_insn_operand (addr, VOIDmode))
     {
-      rtx reg = RISCV_PROLOGUE_TEMP (Pmode);
+      rtx reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
       riscv_emit_move (reg, addr);
       return reg;
     }
@@ -3707,18 +3707,18 @@ riscv_compute_frame_info (void)
 {
   struct riscv_frame_info *frame;
   HOST_WIDE_INT offset;
-  bool interrupt_save_t1 = false;
+  bool interrupt_save_prologue_temp = false;
   unsigned int regno, i, num_x_saved = 0, num_f_saved = 0;
 
   frame = &cfun->machine->frame;
 
   /* In an interrupt function, if we have a large frame, then we need to
-     save/restore t1.  We check for this before clearing the frame struct.  */
+     save/restore t0.  We check for this before clearing the frame struct.  */
   if (cfun->machine->interrupt_handler_p)
     {
       HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
       if (! SMALL_OPERAND (frame->total_size - step1))
-	interrupt_save_t1 = true;
+	interrupt_save_prologue_temp = true;
     }
 
   memset (frame, 0, sizeof (*frame));
@@ -3728,7 +3728,8 @@ riscv_compute_frame_info (void)
       /* Find out which GPRs we need to save.  */
       for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
 	if (riscv_save_reg_p (regno)
-	    || (interrupt_save_t1 && (regno == T1_REGNUM)))
+	    || (interrupt_save_prologue_temp
+		&& (regno == RISCV_PROLOGUE_TEMP_REGNUM)))
 	  frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
 
       /* If this function calls eh_return, we must also save and restore the
@@ -4902,9 +4903,9 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
       rtx target_function = force_reg (Pmode, XEXP (DECL_RTL (fndecl), 0));
       /* lui     t2, hi(chain)
-	 lui     t1, hi(func)
+	 lui     t0, hi(func)
 	 addi    t2, t2, lo(chain)
-	 jr      r1, lo(func)
+	 jr      t0, lo(func)
       */
       unsigned HOST_WIDE_INT lui_hi_chain_code, lui_hi_func_code;
       unsigned HOST_WIDE_INT lo_chain_code, lo_func_code;
@@ -4929,7 +4930,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       mem = adjust_address (m_tramp, SImode, 0);
       riscv_emit_move (mem, lui_hi_chain);
 
-      /* Gen lui t1, hi(func).  */
+      /* Gen lui t0, hi(func).  */
       rtx hi_func = riscv_force_binary (SImode, PLUS, target_function,
 					fixup_value);
       hi_func = riscv_force_binary (SImode, AND, hi_func,
@@ -4956,7 +4957,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       mem = adjust_address (m_tramp, SImode, 2 * GET_MODE_SIZE (SImode));
       riscv_emit_move (mem, addi_lo_chain);
 
-      /* Gen jr r1, lo(func).  */
+      /* Gen jr t0, lo(func).  */
       rtx lo_func = riscv_force_binary (SImode, AND, target_function,
 					imm12_mask);
       lo_func = riscv_force_binary (SImode, ASHIFT, lo_func, GEN_INT (20));
@@ -4975,9 +4976,9 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       target_function_offset = static_chain_offset + GET_MODE_SIZE (ptr_mode);
 
       /* auipc   t2, 0
-	 l[wd]   t1, target_function_offset(t2)
+	 l[wd]   t0, target_function_offset(t2)
 	 l[wd]   t2, static_chain_offset(t2)
-	 jr      t1
+	 jr      t0
       */
       trampoline[0] = OPCODE_AUIPC | (STATIC_CHAIN_REGNUM << SHIFT_RD);
       trampoline[1] = (Pmode == DImode ? OPCODE_LD : OPCODE_LW)
@@ -5299,6 +5300,19 @@ riscv_gpr_save_operation_p (rtx op)
   return true;
 }
 
+/* Implement TARGET_ASAN_SHADOW_OFFSET.  */
+
+static unsigned HOST_WIDE_INT
+riscv_asan_shadow_offset (void)
+{
+  /* We only have libsanitizer support for RV64 at present.
+
+     This number must match kRiscv*_ShadowOffset* in the file
+     libsanitizer/asan/asan_mapping.h which is currently 1<<29 for rv64,
+     even though 1<<36 makes more sense.  */
+  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 29) : 0;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5481,6 +5495,9 @@ riscv_gpr_save_operation_p (rtx op)
 
 #undef TARGET_NEW_ADDRESS_PROFITABLE_P
 #define TARGET_NEW_ADDRESS_PROFITABLE_P riscv_new_address_profitable_p
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

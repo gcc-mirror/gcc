@@ -37,6 +37,7 @@
 #
 # Define the names for selecting c in LANGUAGES.
 c: cc1$(exeext)
+c.serial = cc1$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c gcc
@@ -82,8 +83,10 @@ cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	fi
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
+	@$(call LINK_PROGRESS,$(INDEX.c),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
 	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.c),end)
 
 cc1.fda: ../stage1-gcc/cc1$(exeext) ../prev-gcc/$(PERF_DATA)
 	$(CREATE_GCOV) -binary ../stage1-gcc/cc1$(exeext) -gcov cc1.fda -profile ../prev-gcc/$(PERF_DATA) -gcov_version 1

@@ -52,6 +52,7 @@
 #define HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT 0xA002
 
 /* These probably won't be in elf.h for a while.  */
+#ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
 #define R_AMDGPU_ABS32_LO	1	/* (S + A) & 0xFFFFFFFF  */
 #define R_AMDGPU_ABS32_HI	2	/* (S + A) >> 32  */
@@ -64,8 +65,8 @@
 #define R_AMDGPU_GOTPCREL32_HI	9	/* (G + GOT + A - P) >> 32  */
 #define R_AMDGPU_REL32_LO	10	/* (S + A - P) & 0xFFFFFFFF  */
 #define R_AMDGPU_REL32_HI	11	/* (S + A - P) >> 32  */
-#define reserved		12
 #define R_AMDGPU_RELATIVE64	13	/* B + A  */
+#endif
 
 /* GCN specific definitions for asynchronous queues.  */
 

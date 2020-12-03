@@ -218,6 +218,9 @@ package body Adabkend is
                end case;
             end if;
 
+         elsif Switch_Chars (First .. Last) = "S" then
+            Generate_Asm := True;
+
          --  Ignore all other back-end switches
 
          elsif Is_Back_End_Switch (Switch_Chars) then

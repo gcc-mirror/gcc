@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize --param aarch64-sve-compare-costs=0" } */
 
 #include "cond_arith_3.c"
 

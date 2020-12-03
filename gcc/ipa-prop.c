@@ -1682,7 +1682,7 @@ build_agg_jump_func_from_list (struct ipa_known_agg_contents_list *list,
 			       int value_count, HOST_WIDE_INT arg_offset,
 			       struct ipa_jump_func *jfunc)
 {
-  vec_alloc (jfunc->agg.items, value_count);
+  vec_safe_reserve (jfunc->agg.items, value_count, true);
   for (; list; list = list->next)
     {
       struct ipa_agg_jf_item item;
@@ -1775,75 +1775,123 @@ analyze_agg_content_value (struct ipa_func_body_info *fbi,
 
       stmt = SSA_NAME_DEF_STMT (rhs1);
       if (!is_gimple_assign (stmt))
-	return;
+	break;
 
       rhs1 = gimple_assign_rhs1 (stmt);
     }
 
-  code = gimple_assign_rhs_code (stmt);
-  switch (gimple_assign_rhs_class (stmt))
+  if (gphi *phi = dyn_cast<gphi *> (stmt))
     {
-    case GIMPLE_SINGLE_RHS:
-      if (is_gimple_ip_invariant (rhs1))
+      /* Also special case like the following (a is a formal parameter):
+
+	   _12 = *a_11(D).dim[0].stride;
+	   ...
+	   # iftmp.22_9 = PHI <_12(2), 1(3)>
+	   ...
+	   parm.6.dim[0].stride = iftmp.22_9;
+	   ...
+	   __x_MOD_foo (&parm.6, b_31(D));
+
+	 The aggregate function describing parm.6.dim[0].stride is encoded as a
+	 PASS-THROUGH jump function with ASSERT_EXPR operation whith operand 1
+	 (the constant from the PHI node).  */
+
+      if (gimple_phi_num_args (phi) != 2)
+	return;
+      tree arg0 = gimple_phi_arg_def (phi, 0);
+      tree arg1 = gimple_phi_arg_def (phi, 1);
+      tree operand;
+
+      if (is_gimple_ip_invariant (arg1))
 	{
-	  agg_value->pass_through.operand = rhs1;
-	  return;
+	  operand = arg1;
+	  rhs1 = arg0;
 	}
-      code = NOP_EXPR;
-      break;
-
-    case GIMPLE_UNARY_RHS:
-      /* NOTE: A GIMPLE_UNARY_RHS operation might not be tcc_unary
-	 (truth_not_expr is example), GIMPLE_BINARY_RHS does not imply
-	 tcc_binary, this subtleness is somewhat misleading.
-
-	 Since tcc_unary is widely used in IPA-CP code to check an operation
-	 with one operand, here we only allow tc_unary operation to avoid
-	 possible problem.  Then we can use (opclass == tc_unary) or not to
-	 distinguish unary and binary.  */
-      if (TREE_CODE_CLASS (code) != tcc_unary || CONVERT_EXPR_CODE_P (code))
+      else if (is_gimple_ip_invariant (arg0))
+	{
+	  operand = arg0;
+	  rhs1 = arg1;
+	}
+      else
 	return;
 
       rhs1 = get_ssa_def_if_simple_copy (rhs1, &stmt);
-      break;
+      if (!is_gimple_assign (stmt))
+	return;
 
-    case GIMPLE_BINARY_RHS:
-      {
-	gimple *rhs1_stmt = stmt;
-	gimple *rhs2_stmt = stmt;
-	tree rhs2 = gimple_assign_rhs2 (stmt);
+      code = ASSERT_EXPR;
+      agg_value->pass_through.operand = operand;
+    }
+  else if (is_gimple_assign (stmt))
+    {
+      code = gimple_assign_rhs_code (stmt);
+      switch (gimple_assign_rhs_class (stmt))
+	{
+	case GIMPLE_SINGLE_RHS:
+	  if (is_gimple_ip_invariant (rhs1))
+	    {
+	      agg_value->pass_through.operand = rhs1;
+	      return;
+	    }
+	  code = NOP_EXPR;
+	  break;
 
-	rhs1 = get_ssa_def_if_simple_copy (rhs1, &rhs1_stmt);
-	rhs2 = get_ssa_def_if_simple_copy (rhs2, &rhs2_stmt);
+	case GIMPLE_UNARY_RHS:
+	  /* NOTE: A GIMPLE_UNARY_RHS operation might not be tcc_unary
+	     (truth_not_expr is example), GIMPLE_BINARY_RHS does not imply
+	     tcc_binary, this subtleness is somewhat misleading.
 
-	if (is_gimple_ip_invariant (rhs2))
+	     Since tcc_unary is widely used in IPA-CP code to check an operation
+	     with one operand, here we only allow tc_unary operation to avoid
+	     possible problem.  Then we can use (opclass == tc_unary) or not to
+	     distinguish unary and binary.  */
+	  if (TREE_CODE_CLASS (code) != tcc_unary || CONVERT_EXPR_CODE_P (code))
+	    return;
+
+	  rhs1 = get_ssa_def_if_simple_copy (rhs1, &stmt);
+	  break;
+
+	case GIMPLE_BINARY_RHS:
 	  {
-	    agg_value->pass_through.operand = rhs2;
-	    stmt = rhs1_stmt;
-	  }
-	else if (is_gimple_ip_invariant (rhs1))
-	  {
-	    if (TREE_CODE_CLASS (code) == tcc_comparison)
-	      code = swap_tree_comparison (code);
-	    else if (!commutative_tree_code (code))
+	    gimple *rhs1_stmt = stmt;
+	    gimple *rhs2_stmt = stmt;
+	    tree rhs2 = gimple_assign_rhs2 (stmt);
+
+	    rhs1 = get_ssa_def_if_simple_copy (rhs1, &rhs1_stmt);
+	    rhs2 = get_ssa_def_if_simple_copy (rhs2, &rhs2_stmt);
+
+	    if (is_gimple_ip_invariant (rhs2))
+	      {
+		agg_value->pass_through.operand = rhs2;
+		stmt = rhs1_stmt;
+	      }
+	    else if (is_gimple_ip_invariant (rhs1))
+	      {
+		if (TREE_CODE_CLASS (code) == tcc_comparison)
+		  code = swap_tree_comparison (code);
+		else if (!commutative_tree_code (code))
+		  return;
+
+		agg_value->pass_through.operand = rhs1;
+		stmt = rhs2_stmt;
+		rhs1 = rhs2;
+	      }
+	    else
 	      return;
 
-	    agg_value->pass_through.operand = rhs1;
-	    stmt = rhs2_stmt;
-	    rhs1 = rhs2;
+	    if (TREE_CODE_CLASS (code) != tcc_comparison
+		&& !useless_type_conversion_p (TREE_TYPE (lhs),
+					       TREE_TYPE (rhs1)))
+	      return;
 	  }
-	else
-	  return;
+	  break;
 
-	if (TREE_CODE_CLASS (code) != tcc_comparison
-	    && !useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs1)))
+	default:
 	  return;
-      }
-      break;
-
-    default:
-      return;
-  }
+	}
+    }
+  else
+    return;
 
   if (TREE_CODE (rhs1) != SSA_NAME)
     index = load_from_unmodified_param_or_agg (fbi, fbi->info, stmt,
@@ -4745,7 +4793,10 @@ ipa_read_jump_function (class lto_input_block *ib,
 
   count = streamer_read_uhwi (ib);
   if (prevails)
-    vec_alloc (jump_func->agg.items, count);
+    {
+      jump_func->agg.items = NULL;
+      vec_safe_reserve (jump_func->agg.items, count, true);
+    }
   if (count)
     {
       struct bitpack_d bp = streamer_read_bitpack (ib);

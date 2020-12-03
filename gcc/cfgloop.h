@@ -824,7 +824,7 @@ extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
 extern void loop_optimizer_init (unsigned);
-extern void loop_optimizer_finalize (function *);
+extern void loop_optimizer_finalize (function *, bool = false);
 inline void
 loop_optimizer_finalize ()
 {

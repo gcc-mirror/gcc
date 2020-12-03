@@ -253,6 +253,8 @@ static if (floatTraits!(real).realFormat == RealFormat.ieeeQuadruple)
     enum real MAXGAMMA = 1755.5483429L;
 else static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended)
     enum real MAXGAMMA = 1755.5483429L;
+else static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended53)
+    enum real MAXGAMMA = 1755.5483429L;
 else static if (floatTraits!(real).realFormat == RealFormat.ieeeDouble)
     enum real MAXGAMMA = 171.6243769L;
 else
@@ -599,6 +601,11 @@ static if (floatTraits!(real).realFormat == RealFormat.ieeeQuadruple)
     enum real MINLOG = -0x1.6546282207802c89d24d65e96274p+13; // log(real.min_normal*real.epsilon) = log(smallest denormal)
 }
 else static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended)
+{
+    enum real MAXLOG = 0x1.62e42fefa39ef358p+13L;  // log(real.max)
+    enum real MINLOG = -0x1.6436716d5406e6d8p+13L; // log(real.min_normal*real.epsilon) = log(smallest denormal)
+}
+else static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended53)
 {
     enum real MAXLOG = 0x1.62e42fefa39ef358p+13L;  // log(real.max)
     enum real MINLOG = -0x1.6436716d5406e6d8p+13L; // log(real.min_normal*real.epsilon) = log(smallest denormal)

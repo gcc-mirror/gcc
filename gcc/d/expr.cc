@@ -838,59 +838,81 @@ public:
     Type *tb2 = e->e2->type->toBasetype ();
     Type *etype = tb1->nextOf ()->toBasetype ();
 
+    /* Save the address of `e1', so it can be evaluated first.
+       As all D run-time library functions for concat assignments update `e1'
+       in-place and then return its value, the saved address can also be used as
+       the result of this expression as well.  */
+    tree lhs = build_expr (e->e1);
+    tree lexpr = stabilize_expr (&lhs);
+    tree ptr = d_save_expr (build_address (lhs));
+    tree result = NULL_TREE;
+
     if (tb1->ty == Tarray && tb2->ty == Tdchar
 	&& (etype->ty == Tchar || etype->ty == Twchar))
       {
-	/* Append a dchar to a char[] or wchar[]  */
+	/* Append a dchar to a char[] or wchar[]:
+	   The assignment is handled by the D run-time library, so only
+	   need to call `_d_arrayappend[cw]d(&e1, e2)'  */
 	libcall_fn libcall = (etype->ty == Tchar)
 	  ? LIBCALL_ARRAYAPPENDCD : LIBCALL_ARRAYAPPENDWD;
 
-	this->result_ = build_libcall (libcall, e->type, 2,
-				       build_address (build_expr (e->e1)),
-				       build_expr (e->e2));
+	result = build_libcall (libcall, e->type, 2,
+				ptr, build_expr (e->e2));
       }
     else
       {
 	gcc_assert (tb1->ty == Tarray || tb2->ty == Tsarray);
 
-	tree tinfo = build_typeinfo (e->loc, e->type);
-	tree ptr = build_address (build_expr (e->e1));
-
 	if ((tb2->ty == Tarray || tb2->ty == Tsarray)
 	    && same_type_p (etype, tb2->nextOf ()->toBasetype ()))
 	  {
-	    /* Append an array.  */
-	    this->result_ = build_libcall (LIBCALL_ARRAYAPPENDT, e->type, 3,
-					   tinfo, ptr, d_array_convert (e->e2));
-
+	    /* Append an array to another array:
+	       The assignment is handled by the D run-time library, so only
+	       need to call `_d_arrayappendT(ti, &e1, e2)'  */
+	    result = build_libcall (LIBCALL_ARRAYAPPENDT, e->type, 3,
+				    build_typeinfo (e->loc, e->type),
+				    ptr, d_array_convert (e->e2));
 	  }
 	else if (same_type_p (etype, tb2))
 	  {
-	    /* Append an element.  */
-	    tree result = build_libcall (LIBCALL_ARRAYAPPENDCTX, e->type, 3,
-					 tinfo, ptr, size_one_node);
-	    result = d_save_expr (result);
+	    /* Append an element to an array:
+	       The assignment is generated inline, so need to handle temporaries
+	       here, and ensure that they are evaluated in the correct order.
+
+	       The generated code should end up being equivalent to:
+		    _d_arrayappendcTX(ti, &e1, 1)[e1.length - 1] = e2
+	     */
+	    tree callexp = build_libcall (LIBCALL_ARRAYAPPENDCTX, e->type, 3,
+					  build_typeinfo (e->loc, e->type),
+					  ptr, size_one_node);
+	    callexp = d_save_expr (callexp);
 
 	    /* Assign e2 to last element.  */
-	    tree offexp = d_array_length (result);
+	    tree offexp = d_array_length (callexp);
 	    offexp = build2 (MINUS_EXPR, TREE_TYPE (offexp),
 			     offexp, size_one_node);
 
-	    tree ptrexp = d_array_ptr (result);
+	    tree ptrexp = d_array_ptr (callexp);
 	    ptrexp = void_okay_p (ptrexp);
 	    ptrexp = build_array_index (ptrexp, offexp);
 
 	    /* Evaluate expression before appending.  */
-	    tree t2 = build_expr (e->e2);
-	    tree expr = stabilize_expr (&t2);
+	    tree rhs = build_expr (e->e2);
+	    tree rexpr = stabilize_expr (&rhs);
 
-	    result = modify_expr (build_deref (ptrexp), t2);
+	    if (TREE_CODE (rhs) == CALL_EXPR)
+	      rhs = force_target_expr (rhs);
 
-	    this->result_ = compound_expr (expr, result);
+	    result = modify_expr (build_deref (ptrexp), rhs);
+	    result = compound_expr (rexpr, result);
 	  }
 	else
 	  gcc_unreachable ();
       }
+
+    /* Construct in order: ptr = &e1, _d_arrayappend(ptr, e2), *ptr;  */
+    result = compound_expr (compound_expr (lexpr, ptr), result);
+    this->result_ = compound_expr (result, build_deref (ptr));
   }
 
   /* Build an assignment expression.  The right operand is implicitly

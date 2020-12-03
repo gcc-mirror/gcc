@@ -163,6 +163,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     compare_exchange_strong(bool& __i1, bool __i2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
+
+#if __cpp_lib_atomic_wait
+    void
+    wait(bool __old, memory_order __m = memory_order_seq_cst) const noexcept
+    { _M_base.wait(__old, __m); }
+
+    // TODO add const volatile overload
+
+    void
+    notify_one() const noexcept
+    { _M_base.notify_one(); }
+
+    void
+    notify_all() const noexcept
+    { _M_base.notify_all(); }
+#endif // __cpp_lib_atomic_wait
   };
 
 #if __cplusplus <= 201703L
@@ -363,6 +379,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
+
+#if __cpp_lib_atomic_wait 
+    void
+    wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
+    {
+      std::__atomic_wait(&_M_i, __old,
+			 [__m, this, __old]
+			 {
+			   const auto __v = this->load(__m);
+			   // TODO make this ignore padding bits when we
+			   // can do that
+			   return __builtin_memcmp(&__old, &__v,
+						    sizeof(_Tp)) != 0;
+			 });
+    }
+
+    // TODO add const volatile overload
+
+    void
+    notify_one() const noexcept
+    { std::__atomic_notify(&_M_i, false); }
+
+    void
+    notify_all() const noexcept
+    { std::__atomic_notify(&_M_i, true); }
+#endif // __cpp_lib_atomic_wait 
+
     };
 #undef _GLIBCXX20_INIT
 
@@ -601,6 +644,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __cmpexch_failure_order(__m));
       }
 
+#if __cpp_lib_atomic_wait 
+    void
+    wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) noexcept
+    { _M_b.wait(__old, __m); }
+
+    // TODO add const volatile overload
+
+    void
+    notify_one() const noexcept
+    { _M_b.notify_one(); }
+
+    void
+    notify_all() const noexcept
+    { _M_b.notify_all(); }
+#endif // __cpp_lib_atomic_wait
       __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
@@ -1352,6 +1410,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						     memory_order_seq_cst,
 						     memory_order_seq_cst);
     }
+
+
+#if __cpp_lib_atomic_wait
+  template<typename _Tp>
+    inline void
+    atomic_wait(const atomic<_Tp>* __a,
+	        typename std::atomic<_Tp>::value_type __old) noexcept
+    { __a->wait(__old); }
+
+  template<typename _Tp>
+    inline void
+    atomic_wait_explicit(const atomic<_Tp>* __a,
+			 typename std::atomic<_Tp>::value_type __old,
+			 std::memory_order __m) noexcept
+    { __a->wait(__old, __m); }
+
+  template<typename _Tp>
+    inline void
+    atomic_notify_one(atomic<_Tp>* __a) noexcept
+    { __a->notify_one(); }
+
+  template<typename _Tp>
+    inline void
+    atomic_notify_all(atomic<_Tp>* __a) noexcept
+    { __a->notify_all(); }
+#endif // __cpp_lib_atomic_wait
 
   // Function templates for atomic_integral and atomic_pointer operations only.
   // Some operations (and, or, xor) are only available for atomic integrals,

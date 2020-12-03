@@ -57,7 +57,7 @@ package System is
    Max_Base_Digits       : constant := Long_Long_Float'Digits;
    Max_Digits            : constant := Long_Long_Float'Digits;
 
-   Max_Mantissa          : constant := 63;
+   Max_Mantissa          : constant := Standard'Max_Integer_Size - 1;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
    Tick                  : constant := 0.000_001;

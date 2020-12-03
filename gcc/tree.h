@@ -625,6 +625,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define FUNC_OR_METHOD_TYPE_P(NODE) \
   (TREE_CODE (NODE) == FUNCTION_TYPE || TREE_CODE (NODE) == METHOD_TYPE)
 
+#define OPAQUE_TYPE_P(NODE) \
+    (TREE_CODE (NODE) == OPAQUE_TYPE)
+
 /* Define many boolean fields that all tree nodes have.  */
 
 /* In VAR_DECL, PARM_DECL and RESULT_DECL nodes, nonzero means address
@@ -1214,7 +1217,7 @@ get_expr_source_range (tree expr)
 extern void protected_set_expr_location (tree, location_t);
 extern void protected_set_expr_location_if_unset (tree, location_t);
 
-extern tree maybe_wrap_with_location (tree, location_t);
+WARN_UNUSED_RESULT extern tree maybe_wrap_with_location (tree, location_t);
 
 extern int suppress_location_wrappers;
 
@@ -1984,8 +1987,10 @@ class auto_suppress_location_wrappers
    so they must be checked as well.  */
 
 #define TYPE_UID(NODE) (TYPE_CHECK (NODE)->type_common.uid)
-/* Type size in bits as a tree expression.  Need not be constant
-   and may be null.  */
+/* Type size in bits as a tree expression.  Need not be constant and may
+   be greater than TYPE_SIZE for a C++ FIELD_DECL representing a base
+   class subobject with its own virtual base classes (which are laid out
+   separately).  */
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type_common.size)
 /* Likewise, type size in bytes.  */
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type_common.size_unit)
@@ -2518,7 +2523,9 @@ extern tree vector_element_bits_tree (const_tree);
 #define DECL_INITIAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.initial)
 
 /* Holds the size of the datum, in bits, as a tree expression.
-   Need not be constant and may be null.  */
+   Need not be constant and may be null.  May be less than TYPE_SIZE
+   for a C++ FIELD_DECL representing a base class subobject with its
+   own virtual base classes (which are laid out separately).  */
 #define DECL_SIZE(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size)
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size_unit)
@@ -2658,6 +2665,20 @@ extern tree vector_element_bits_tree (const_tree);
    This indicates to compiler tools that this decl needs to be preserved.  */
 #define DECL_PRESERVE_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.preserve_flag
+
+/* Nonzero for a decl that is decorated with the "noinit" attribute.
+   decls with this attribute are placed into the ".noinit" section, so they are
+   not initialized by the target's startup code.  */
+#define DECL_NOINIT_P(DECL)	\
+  (DECL_P (DECL)		\
+   && (lookup_attribute ("noinit", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
+
+/* Nonzero for a decl that is decorated with the "persistent" attribute.
+   decls with this attribute are placed into the ".persistent" section, so they
+   are not initialized by the target's startup code.  */
+#define DECL_PERSISTENT_P(DECL)	\
+  (DECL_P (DECL)		\
+   && (lookup_attribute ("persistent", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
 
 /* For function local variables of COMPLEX and VECTOR types,
    indicates that the variable is not aliased, and that all
@@ -4281,6 +4302,7 @@ extern tree decl_comdat_group (const_tree);
 extern tree decl_comdat_group_id (const_tree);
 extern const char *decl_section_name (const_tree);
 extern void set_decl_section_name (tree, const char *);
+extern void set_decl_section_name (tree, const_tree);
 extern enum tls_model decl_tls_model (const_tree);
 extern void set_decl_tls_model (tree, enum tls_model);
 
@@ -5120,7 +5142,7 @@ extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_needed (tree);
 extern bool warn_deprecated_use (tree, tree);
-extern void cache_integer_cst (tree);
+extern tree cache_integer_cst (tree, bool might_duplicate = false);
 extern const char *combined_fn_name (combined_fn);
 
 /* Compare and hash for any structure which begins with a canonical
@@ -5577,6 +5599,13 @@ is_lang_specific (const_tree t)
 /* Valid builtin number.  */
 #define BUILTIN_VALID_P(FNCODE) \
   (IN_RANGE ((int)FNCODE, ((int)BUILT_IN_NONE) + 1, ((int) END_BUILTINS) - 1))
+
+/* Obtain a pointer to the identifier string holding the asm name for
+   BUILTIN, a BUILT_IN code.  This is handy if the target
+   mangles/overrides the function name that implements the
+   builtin.  */
+#define BUILTIN_ASM_NAME_PTR(BUILTIN) \
+  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (builtin_decl_explicit (BUILTIN))))
 
 /* Return the tree node for an explicit standard builtin function or NULL.  */
 static inline tree
@@ -6232,6 +6261,7 @@ extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
+extern bool is_empty_type (const_tree);
 extern bool default_is_empty_record (const_tree);
 extern bool flexible_array_type_p (const_tree);
 extern HOST_WIDE_INT arg_int_size_in_bytes (const_tree);

@@ -1,3 +1,34 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (objc.serial): Change from goal to a variable.
+	(.PHONY): Drop objc.serial and objc.prev.
+	(cc1obj$(exeext)): Depend on $(objc.serial) rather than objc.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (objc.serial): New goal.
+	(.PHONY): Add objc.serial objc.prev.
+	(cc1obj$(exeext)): Depend on objc.prev.  Call LINK_PROGRESS.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle nullability.
+	(objc_add_property_declaration): Handle nullability attributes.
+	Check that these are applicable to the property type.
+	* objc-act.h (enum objc_property_nullability): New.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* objc-act.c (objc_start_class_interface): Accept the location
+	of the class name, use it in existing diagnostic.
+	(start_class): Accept obj_root_class type attributes.  Warn when
+	the interface for an implementation does not contain a super
+	class (unless the diagnostic is suppressed by the the command
+	line flag or the objc_root_class type attribute).
+
 2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-act.c (objc_prop_attr_kind_for_rid): Handle class

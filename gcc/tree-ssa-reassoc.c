@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"
+#include "tree-ssa-reassoc.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -188,15 +189,6 @@ static struct
   int pows_created;
 } reassociate_stats;
 
-/* Operator, rank pair.  */
-struct operand_entry
-{
-  unsigned int rank;
-  unsigned int id;
-  tree op;
-  unsigned int count;
-  gimple *stmt_to_insert;
-};
 
 static object_allocator<operand_entry> operand_entry_pool
   ("operand entry pool");
@@ -226,7 +218,7 @@ static bool reassoc_stmt_dominates_stmt_p (gimple *, gimple *);
 /* Wrapper around gsi_remove, which adjusts gimple_uid of debug stmts
    possibly added by gsi_remove.  */
 
-bool
+static bool
 reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -425,41 +417,43 @@ get_rank (tree e)
       long rank;
       tree op;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (e))
-	return find_operand_rank (e);
-
-      stmt = SSA_NAME_DEF_STMT (e);
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	return phi_rank (stmt);
-
-      if (!is_gimple_assign (stmt))
-	return bb_rank[gimple_bb (stmt)->index];
-
       /* If we already have a rank for this expression, use that.  */
       rank = find_operand_rank (e);
       if (rank != -1)
 	return rank;
 
-      /* Otherwise, find the maximum rank for the operands.  As an
-	 exception, remove the bias from loop-carried phis when propagating
-	 the rank so that dependent operations are not also biased.  */
-      /* Simply walk over all SSA uses - this takes advatage of the
-         fact that non-SSA operands are is_gimple_min_invariant and
-	 thus have rank 0.  */
-      rank = 0;
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	rank = propagate_rank (rank, op);
+      stmt = SSA_NAME_DEF_STMT (e);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	rank = phi_rank (stmt);
+
+      else if (!is_gimple_assign (stmt))
+	rank = bb_rank[gimple_bb (stmt)->index];
+
+      else
+	{
+	  /* Otherwise, find the maximum rank for the operands.  As an
+	     exception, remove the bias from loop-carried phis when propagating
+	     the rank so that dependent operations are not also biased.  */
+	  /* Simply walk over all SSA uses - this takes advatage of the
+	     fact that non-SSA operands are is_gimple_min_invariant and
+	     thus have rank 0.  */
+	  rank = 0;
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	    rank = propagate_rank (rank, op);
+
+	  rank += 1;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Rank for ");
 	  print_generic_expr (dump_file, e);
-	  fprintf (dump_file, " is %ld\n", (rank + 1));
+	  fprintf (dump_file, " is %ld\n", rank);
 	}
 
       /* Note the rank in the hashtable so we don't recompute it.  */
-      insert_operand_rank (e, (rank + 1));
-      return (rank + 1);
+      insert_operand_rank (e, rank);
+      return rank;
     }
 
   /* Constants, globals, etc., are rank 0 */
@@ -2406,18 +2400,7 @@ optimize_ops_list (enum tree_code opcode,
    For more information see comments above fold_test_range in fold-const.c,
    this implementation is for GIMPLE.  */
 
-struct range_entry
-{
-  tree exp;
-  tree low;
-  tree high;
-  bool in_p;
-  bool strict_overflow_p;
-  unsigned int idx, next;
-};
 
-void dump_range_entry (FILE *file, struct range_entry *r);
-void debug_range_entry (struct range_entry *r);
 
 /* Dump the range entry R to FILE, skipping its expression if SKIP_EXP.  */
 
@@ -2447,7 +2430,7 @@ debug_range_entry (struct range_entry *r)
    an SSA_NAME and STMT argument is ignored, otherwise STMT
    argument should be a GIMPLE_COND.  */
 
-static void
+void
 init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 {
   int in_p;
@@ -4284,7 +4267,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
    range test optimization, all SSA_NAMEs set in the bb are consumed
    in the bb and there are no PHIs.  */
 
-static bool
+bool
 no_side_effect_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;

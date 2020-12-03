@@ -33,6 +33,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore.
+
+pragma Assertion_Policy (Pre => Ignore);
+
 with Ada.Characters.Latin_1;
 
 package Ada.Strings.Maps is
@@ -61,23 +67,85 @@ package Ada.Strings.Maps is
 
    type Character_Ranges is array (Positive range <>) of Character_Range;
 
-   function To_Set    (Ranges : Character_Ranges) return Character_Set;
+   function To_Set    (Ranges : Character_Ranges) return Character_Set with
+     Post =>
+       (if Ranges'Length = 0 then To_Set'Result = Null_Set)
+          and then
+       (for all Char in Character =>
+          (if Is_In (Char, To_Set'Result)
+           then (for some Span of Ranges => Char in Span.Low .. Span.High)))
+          and then
+       (for all Span of Ranges =>
+          (for all Char in Span.Low .. Span.High =>
+             Is_In (Char, To_Set'Result)));
 
-   function To_Set    (Span   : Character_Range)  return Character_Set;
+   function To_Set    (Span   : Character_Range)  return Character_Set with
+     Post =>
+       (if Span.High < Span.Low then To_Set'Result = Null_Set)
+          and then
+       (for all Char in Character =>
+          (if Is_In (Char, To_Set'Result) then Char in Span.Low .. Span.High))
+          and then
+       (for all Char in Span.Low .. Span.High => Is_In (Char, To_Set'Result));
 
-   function To_Ranges (Set    : Character_Set)    return Character_Ranges;
+   function To_Ranges (Set    : Character_Set)    return Character_Ranges with
+     Post =>
+       (if Set = Null_Set then To_Ranges'Result'Length = 0)
+          and then
+       (for all Char in Character =>
+          (if Is_In (Char, Set)
+           then
+             (for some Span of To_Ranges'Result =>
+                Char in Span.Low .. Span.High)))
+          and then
+       (for all Span of To_Ranges'Result =>
+          (for all Char in Span.Low .. Span.High => Is_In (Char, Set)));
 
    ----------------------------------
    -- Operations on Character Sets --
    ----------------------------------
 
-   function "="   (Left, Right : Character_Set) return Boolean;
+   function "="   (Left, Right : Character_Set) return Boolean with
+     Post =>
+       "="'Result
+         =
+       (for all Char in Character =>
+          (Is_In (Char, Left) = Is_In (Char, Right)));
 
-   function "not" (Right       : Character_Set) return Character_Set;
-   function "and" (Left, Right : Character_Set) return Character_Set;
-   function "or"  (Left, Right : Character_Set) return Character_Set;
-   function "xor" (Left, Right : Character_Set) return Character_Set;
-   function "-"   (Left, Right : Character_Set) return Character_Set;
+   function "not" (Right       : Character_Set) return Character_Set with
+     Post =>
+       (for all Char in Character =>
+          (Is_In (Char, "not"'Result)
+             =
+           not Is_In (Char, Right)));
+
+   function "and" (Left, Right : Character_Set) return Character_Set with
+     Post =>
+       (for all Char in Character =>
+          (Is_In (Char, "and"'Result)
+             =
+           (Is_In (Char, Left) and Is_In (Char, Right))));
+
+   function "or"  (Left, Right : Character_Set) return Character_Set with
+     Post =>
+       (for all Char in Character =>
+          (Is_In (Char, "or"'Result)
+             =
+           (Is_In (Char, Left) or Is_In (Char, Right))));
+
+   function "xor" (Left, Right : Character_Set) return Character_Set with
+     Post =>
+       (for all Char in Character =>
+          (Is_In (Char, "xor"'Result)
+             =
+           (Is_In (Char, Left) xor Is_In (Char, Right))));
+
+   function "-"   (Left, Right : Character_Set) return Character_Set with
+     Post =>
+       (for all Char in Character =>
+          (Is_In (Char, "-"'Result)
+             =
+           (Is_In (Char, Left) and not Is_In (Char, Right))));
 
    function Is_In
      (Element : Character;
@@ -85,20 +153,54 @@ package Ada.Strings.Maps is
 
    function Is_Subset
      (Elements : Character_Set;
-      Set      : Character_Set) return     Boolean;
+      Set      : Character_Set) return Boolean
+   with
+     Post =>
+         Is_Subset'Result
+           =
+         (for all Char in Character =>
+            (if Is_In (Char, Elements) then Is_In (Char, Set)));
 
    function "<="
      (Left  : Character_Set;
-      Right : Character_Set) return  Boolean
+      Right : Character_Set) return Boolean
    renames Is_Subset;
 
    subtype Character_Sequence is String;
    --  Alternative representation for a set of character values
 
-   function To_Set (Sequence  : Character_Sequence) return Character_Set;
-   function To_Set (Singleton : Character)          return Character_Set;
+   function To_Set (Sequence  : Character_Sequence) return Character_Set with
+     Post =>
+       (if Sequence'Length = 0 then To_Set'Result = Null_Set)
+          and then
+       (for all Char in Character =>
+          (if Is_In (Char, To_Set'Result)
+           then (for some X of Sequence => Char = X)))
+          and then
+       (for all Char of Sequence => Is_In (Char, To_Set'Result));
 
-   function To_Sequence (Set : Character_Set) return Character_Sequence;
+   function To_Set (Singleton : Character)          return Character_Set with
+     Post =>
+       Is_In (Singleton, To_Set'Result)
+         and then
+       (for all Char in Character =>
+          (if Char /= Singleton
+           then not Is_In (Char, To_Set'Result)));
+
+   function To_Sequence (Set : Character_Set) return Character_Sequence with
+     Post =>
+       (if Set = Null_Set then To_Sequence'Result'Length = 0)
+          and then
+       (for all Char in Character =>
+          (if Is_In (Char, Set)
+           then (for some X of To_Sequence'Result => Char = X)))
+          and then
+       (for all Char of To_Sequence'Result => Is_In (Char, Set))
+          and then
+       (for all J in To_Sequence'Result'Range =>
+          (for all K in To_Sequence'Result'Range =>
+             (if J /= K
+              then To_Sequence'Result (J) /= To_Sequence'Result (K))));
 
    ------------------------------------
    -- Character Mapping Declarations --
@@ -119,13 +221,48 @@ package Ada.Strings.Maps is
    ----------------------------
 
    function To_Mapping
-     (From, To : Character_Sequence) return Character_Mapping;
+     (From, To : Character_Sequence) return Character_Mapping
+   with
+     Pre  =>
+       From'Length = To'Length
+         and then
+       (for all J in From'Range =>
+          (for all K in From'Range =>
+             (if J /= K then From (J) /= From (K)))),
+     Post =>
+       (if From = To then To_Mapping'Result = Identity)
+          and then
+       (for all Char in Character =>
+          ((for all J in From'Range =>
+             (if From (J) = Char
+              then Value (To_Mapping'Result, Char)
+                   = To (J - From'First + To'First)))
+             and then
+           (if (for all X of From => Char /= X)
+            then Value (To_Mapping'Result, Char) = Char)));
 
    function To_Domain
-     (Map : Character_Mapping) return Character_Sequence;
+     (Map : Character_Mapping) return Character_Sequence with
+     Post =>
+       (if Map = Identity then To_Domain'Result'Length = 0)
+          and then
+       To_Domain'Result'First = 1
+          and then
+       (for all Char in Character =>
+          (if (for all X of To_Domain'Result => X /= Char)
+           then Value (Map, Char) = Char))
+          and then
+       (for all Char of To_Domain'Result => Value (Map, Char) /= Char);
 
    function To_Range
-     (Map : Character_Mapping) return Character_Sequence;
+     (Map : Character_Mapping) return Character_Sequence with
+     Post =>
+       To_Range'Result'First = 1
+         and then
+       To_Range'Result'Last = To_Domain (Map)'Last
+         and then
+       (for all J in To_Range'Result'Range =>
+          To_Range'Result (J) = Value (Map, To_Domain (Map) (J)));
 
    type Character_Mapping_Function is
       access function (From : Character) return Character;

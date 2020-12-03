@@ -1,5 +1,6 @@
 /* Test for usage of namespace inside @implementation. */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 @interface MyDocument
 @end
 

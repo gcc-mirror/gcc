@@ -1,3 +1,138 @@
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98011
+	* scanner.c (skip_free_comments, skip_fixed_comments): If only
+	-fopenacc but not -fopenmp is used, ignore OpenMP's conditional
+	compilation sentinels. Fix indentation, use 'else if' for readability.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98010
+	PR fortran/98013
+	* options.c (gfc_post_options): Also imply recursive with
+	-fopenacc.
+	* trans-decl.c (gfc_generate_function_code): Simplify condition.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_expr): Use '==' not '=' for '.eq.'.
+
+2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.c (simplify_parameter_variable): Fix up character length
+	after copying an array-valued expression.
+
+2020-11-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/97454
+	* trans-decl.c (gfc_get_extern_function_decl): Add argument
+	fnspec.
+	* trans-intrinsic.c (MAX_SPEC_ARG): Define.
+	(intrinsic_fnspec): New function.
+	(ADD_CHAR): Define.
+	(specific_intrinsic_symbol): Adjust comment. Pass
+	fn spec to gfc_get_extern_function_decl.
+	(gfc_conv_intrinsic_funcall): Add ANY, ALL, NORM2, PRODUCT
+	and SUM intrnisic. Add FIXME for cshift et al.
+	* trans-types.c	(gfc_get_function_type): Add fnspec argument,
+	handle it.
+	* trans-types.h (gfc_get_function_type): Add optinal fnspec
+	argument.
+	* trans.h (gfc_get_extern_function_decl): Likewise.
+
+2020-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85796
+	* resolve.c (traverse_data_list): Fix copy&paste errors; catch
+	step=0 in implied do loop.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (fortran.serial): Change from goal to a variable.
+	(.PHONY): Drop fortran.serial and fortran.prev.
+	(f951$(exeext)): Depend on $(fortran.serial) rather than
+	fortran.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (fortran.serial): New goal.
+	(.PHONY): Add fortran.serial fortran.prev.
+	(f951$(exeext)): Depend on fortran.prev.  Call LINK_PROGRESS.
+
+2020-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.texi: Fix description of GFC_RTCHECK_* to match actual
+	code.
+
+2020-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Generate runtime
+	checking code for status of argument.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt (fopenacc-kernels): Add.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST):
+	Define.
+	(gfc_init_builtin_functions): Add alloc_size and warn_unused_result
+	attributes to __builtin_GOMP_alloc.
+	* types.def (BT_PTRMODE): New primitive type.
+	(BT_FN_VOID_PTR_PTRMODE, BT_FN_PTR_SIZE_SIZE_PTRMODE): New function
+	types.
+
+2020-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97782
+	* trans-openmp.c (gfc_trans_oacc_construct, gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_do_simd, gfc_trans_omp_parallel_sections,
+	gfc_trans_omp_parallel_workshare, gfc_trans_omp_sections
+	gfc_trans_omp_single, gfc_trans_omp_task, gfc_trans_omp_teams
+	gfc_trans_omp_target, gfc_trans_omp_target_data,
+	gfc_trans_omp_workshare): Use code->loc instead of input_location
+	when building the OMP_/OACC_ construct.
+
+2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/97768
+	* misc.c (gfc_typename): Use ex->value.character.length only if
+	ex->expr_type == EXPR_CONSTANT.  If ex->ts.deferred, print : instead
+	of length.  If ex->ts.u.cl && ex->ts.u.cl->length == NULL, print *
+	instead of length.  Otherwise if character length is non-constant,
+	print just CHARACTER or CHARACTER(KIND=N).
+
+2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle new reduction enums.
+	* gfortran.h (OMP_LIST_REDUCTION_INSCAN, OMP_LIST_REDUCTION_TASK,
+	OMP_LIST_IN_REDUCTION, OMP_LIST_TASK_REDUCTION): Add enums.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_IN_REDUCTION
+	and OMP_CLAUSE_TASK_REDUCTION.
+	(gfc_match_omp_clause_reduction): Extend reduction handling;
+	moved from ...
+	(gfc_match_omp_clauses): ... here. Add calls to it.
+	(OMP_TASK_CLAUSES, OMP_TARGET_CLAUSES, OMP_TASKLOOP_CLAUSES):
+	Add OMP_CLAUSE_IN_REDUCTION.
+	(gfc_match_omp_taskgroup): Add task_reduction matching.
+	(resolve_omp_clauses): Update for new reduction clause changes;
+	remove removed nonmonotonic-schedule restrictions.
+	(gfc_resolve_omp_parallel_blocks): Add new enums to switch.
+	* trans-openmp.c (gfc_omp_clause_default_ctor,
+	gfc_trans_omp_reduction_list, gfc_trans_omp_clauses,
+	gfc_split_omp_clauses): Handle updated reduction clause.
+
+2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95847
+	* trans-decl.c (gfc_get_symbol_decl): Do not (re)set the location
+	of an external procedure.
+	(build_entry_thunks, generate_coarray_init, create_main_function,
+	gfc_generate_function_code): Use fndecl's location in BIND_EXPR.
+
 2020-11-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/90111

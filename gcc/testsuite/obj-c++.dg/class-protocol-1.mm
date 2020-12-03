@@ -1,6 +1,7 @@
 /* Check Class <protocol> types */
 /* Author: David Ayers <d.ayers@inode.at> */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 #include "../objc-obj-c++-shared/runtime.h"

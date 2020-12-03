@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test that you can use an unnamed argument with @catch.  This test is the same
    as exceptions-3.m, but with no name for @catch arguments.  */

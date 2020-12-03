@@ -791,7 +791,6 @@ public:
     /* Handle any special support for calling conventions.  */
     switch (t->linkage)
       {
-      case LINKpascal:
       case LINKwindows:
 	/* [attribute/linkage]
 

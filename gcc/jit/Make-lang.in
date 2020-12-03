@@ -81,6 +81,8 @@ jit: $(LIBGCCJIT_FILENAME) \
 	$(FULL_DRIVER_NAME)
 endif
 
+jit.serial = $(LIBGCCJIT_FILENAME)
+
 # Tell GNU make to ignore these if they exist.
 .PHONY: jit
 
@@ -117,12 +119,14 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	libbackend.a libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER) \
 	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
-	$(EXTRA_GCC_OBJS)
+	$(EXTRA_GCC_OBJS) $(jit.prev)
+	@$(call LINK_PROGRESS,$(INDEX.jit),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS) \
 	     $(LIBGCCJIT_EXTRA_OPTS)
+	@$(call LINK_PROGRESS,$(INDEX.jit),end)
 
 # Create symlinks when not building for Windows
 ifeq (,$(findstring mingw,$(target)))

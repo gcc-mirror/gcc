@@ -3731,83 +3731,81 @@ package body Sem_Eval is
             Raises_Constraint_Error (Right)
          then
             return;
+         end if;
 
          --  OK, we have the case where we may be able to do this fold
 
-         else
-            Left_Len  := Static_Length (Left);
-            Right_Len := Static_Length (Right);
+         Left_Len  := Static_Length (Left);
+         Right_Len := Static_Length (Right);
 
-            if Left_Len /= Uint_Minus_1
-              and then Right_Len /= Uint_Minus_1
-              and then Left_Len /= Right_Len
-            then
-               --  AI12-0201: comparison of string is static in Ada 202x
+         if Left_Len /= Uint_Minus_1
+           and then Right_Len /= Uint_Minus_1
+           and then Left_Len /= Right_Len
+         then
+            --  AI12-0201: comparison of string is static in Ada 202x
 
-               Fold_Uint
-                 (N,
-                  Test (Nkind (N) = N_Op_Ne),
-                  Static => Ada_Version >= Ada_2020
-                              and then Is_String_Type (Left_Typ));
-               Warn_On_Known_Condition (N);
-               return;
-            end if;
+            Fold_Uint
+              (N,
+               Test (Nkind (N) = N_Op_Ne),
+               Static => Ada_Version >= Ada_2020
+                           and then Is_String_Type (Left_Typ));
+            Warn_On_Known_Condition (N);
+            return;
          end if;
+      end if;
 
       --  General case
 
-      else
-         --  Initialize the value of Is_Static_Expression. The value of Fold
-         --  returned by Test_Expression_Is_Foldable is not needed since, even
-         --  when some operand is a variable, we can still perform the static
-         --  evaluation of the expression in some cases (for example, for a
-         --  variable of a subtype of Integer we statically know that any value
-         --  stored in such variable is smaller than Integer'Last).
+      --  Initialize the value of Is_Static_Expression. The value of Fold
+      --  returned by Test_Expression_Is_Foldable is not needed since, even
+      --  when some operand is a variable, we can still perform the static
+      --  evaluation of the expression in some cases (for example, for a
+      --  variable of a subtype of Integer we statically know that any value
+      --  stored in such variable is smaller than Integer'Last).
 
-         Test_Expression_Is_Foldable
-           (N, Left, Right, Is_Static_Expression, Fold);
+      Test_Expression_Is_Foldable
+        (N, Left, Right, Is_Static_Expression, Fold);
 
-         --  Comparisons of scalars can give static results.
-         --  In addition starting with Ada 202x (AI12-0201), comparison of
-         --  strings can also give static results, and as noted above, we also
-         --  allow for earlier Ada versions internally generated equality and
-         --  inequality for strings.
-         --  ??? The Comes_From_Source test below isn't correct and will accept
-         --  some cases that are illegal in Ada 2012. and before. Now that
-         --  Ada 202x has relaxed the rules, this doesn't really matter.
+      --  Comparisons of scalars can give static results.
+      --  In addition starting with Ada 202x (AI12-0201), comparison of strings
+      --  can also give static results, and as noted above, we also allow for
+      --  earlier Ada versions internally generated equality and inequality for
+      --  strings.
+      --  ??? The Comes_From_Source test below isn't correct and will accept
+      --  some cases that are illegal in Ada 2012. and before. Now that Ada
+      --  202x has relaxed the rules, this doesn't really matter.
 
-         if Is_String_Type (Left_Typ) then
-            if Ada_Version < Ada_2020
-              and then (Comes_From_Source (N)
-                         or else Nkind (N) not in N_Op_Eq | N_Op_Ne)
-            then
-               Is_Static_Expression := False;
-               Set_Is_Static_Expression (N, False);
-            end if;
-
-         elsif not Is_Scalar_Type (Left_Typ) then
+      if Is_String_Type (Left_Typ) then
+         if Ada_Version < Ada_2020
+           and then (Comes_From_Source (N)
+                      or else Nkind (N) not in N_Op_Eq | N_Op_Ne)
+         then
             Is_Static_Expression := False;
             Set_Is_Static_Expression (N, False);
          end if;
 
-         --  For operators on universal numeric types called as functions with
-         --  an explicit scope, determine appropriate specific numeric type,
-         --  and diagnose possible ambiguity.
+      elsif not Is_Scalar_Type (Left_Typ) then
+         Is_Static_Expression := False;
+         Set_Is_Static_Expression (N, False);
+      end if;
 
-         if Is_Universal_Numeric_Type (Left_Typ)
-              and then
-            Is_Universal_Numeric_Type (Right_Typ)
-         then
-            Op_Typ := Find_Universal_Operator_Type (N);
-         end if;
+      --  For operators on universal numeric types called as functions with an
+      --  explicit scope, determine appropriate specific numeric type, and
+      --  diagnose possible ambiguity.
 
-         --  Attempt to fold the relational operator
+      if Is_Universal_Numeric_Type (Left_Typ)
+           and then
+         Is_Universal_Numeric_Type (Right_Typ)
+      then
+         Op_Typ := Find_Universal_Operator_Type (N);
+      end if;
 
-         if Is_Static_Expression and then Is_Real_Type (Left_Typ) then
-            Fold_Static_Real_Op;
-         else
-            Fold_General_Op (Is_Static_Expression);
-         end if;
+      --  Attempt to fold the relational operator
+
+      if Is_Static_Expression and then Is_Real_Type (Left_Typ) then
+         Fold_Static_Real_Op;
+      else
+         Fold_General_Op (Is_Static_Expression);
       end if;
 
       --  For the case of a folded relational operator on a specific numeric
@@ -3944,6 +3942,7 @@ package body Sem_Eval is
 
    procedure Eval_Slice (N : Node_Id) is
       Drange : constant Node_Id := Discrete_Range (N);
+      Name   : constant Node_Id := Prefix (N);
 
    begin
       if Nkind (Drange) = N_Range then
@@ -3955,13 +3954,13 @@ package body Sem_Eval is
       --  the type of A, is redundant, the slice can be replaced with A, and
       --  this is worth a warning.
 
-      if Is_Entity_Name (Prefix (N)) then
+      if Is_Entity_Name (Name) then
          declare
-            E : constant Entity_Id := Entity (Prefix (N));
+            E : constant Entity_Id := Entity (Name);
             T : constant Entity_Id := Etype (E);
 
          begin
-            if Ekind (E) = E_Constant
+            if Is_Object (E)
               and then Is_Array_Type (T)
               and then Is_Entity_Name (Drange)
             then
@@ -4806,6 +4805,8 @@ package body Sem_Eval is
          end if;
       end Check_Elab_Call;
 
+      Modulus : Uint;
+
    begin
       if Compile_Time_Known_Value (Left)
         and then Compile_Time_Known_Value (Right)
@@ -4815,30 +4816,55 @@ package body Sem_Eval is
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
-            --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+            declare
+               Modulus : Uint;
+            begin
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
 
-            Fold_Uint
-              (N,
-               (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
-                 rem Modulus (Typ),
-               Static => Static);
+               --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                    rem Modulus,
+                  Static => Static);
+            end;
 
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
 
-            --  Fold Shift_Right (X, Y) by computing abs X / 2**Y
+            --  X >> 0 is a no-op
 
-            Fold_Uint
-              (N,
-               abs Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
-               Static => Static);
+            if Expr_Value (Right) = Uint_0 then
+               Fold_Uint (N, Expr_Value (Left), Static => Static);
+            else
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
 
+               --  Fold X >> Y by computing (X [+ Modulus]) / 2**Y
+               --  Note that after a Shift_Right operation (with Y > 0), the
+               --  result is always positive, even if the original operand was
+               --  negative.
+
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) +
+                     (if Expr_Value (Left) >= Uint_0 then Uint_0 else Modulus))
+                  / (Uint_2 ** Expr_Value (Right)),
+                  Static => Static);
+            end if;
          elsif Op = N_Op_Shift_Right_Arithmetic then
             Check_Elab_Call;
 
             declare
                Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
-               Modulus : Uint;
             begin
                if Is_Modular_Integer_Type (Typ) then
                   Modulus := Einfo.Modulus (Typ);
@@ -6301,11 +6327,13 @@ package body Sem_Eval is
          if Subtypes_Statically_Match (T1, T2) then
             return True;
 
-         --  If either subtype is nonstatic then they're not compatible
+         --  A scalar subtype S1 is compatible with S2 if their bounds
+         --  are static and compatible, even if S1 has dynamic predicates
+         --  and is thus non-static. Predicate compatibility has been
+         --  checked above.
 
-         elsif not Is_OK_Static_Subtype (T1)
-                 or else
-               not Is_OK_Static_Subtype (T2)
+         elsif not Is_Static_Range (Scalar_Range (T1))
+                 or else not Is_Static_Range (Scalar_Range (T2))
          then
             return False;
 
@@ -6352,6 +6380,14 @@ package body Sem_Eval is
                        (Designated_Type (T1), Designated_Type (T2)))
            and then not (Can_Never_Be_Null (T2)
                           and then not Can_Never_Be_Null (T1));
+
+      --  Private types without discriminants can be handled specially.
+      --  Predicate matching has been checked above.
+
+      elsif Is_Private_Type (T1)
+        and then not Has_Discriminants (T1)
+      then
+         return not Has_Discriminants (T2);
 
       --  All other cases
 
@@ -7318,7 +7354,7 @@ package body Sem_Eval is
 
             elsif Ekind (E) = E_Constant then
 
-               --  One case we can give a metter message is when we have a
+               --  One case we can give a better message is when we have a
                --  string literal created by concatenating an aggregate with
                --  an others expression.
 

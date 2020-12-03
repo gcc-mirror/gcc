@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 2 }
 // { dg-require-namedlocale "en_US.UTF-8" }
 
 //

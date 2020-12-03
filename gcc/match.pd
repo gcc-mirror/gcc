@@ -650,9 +650,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
   (div (mult:c @0 @1) @1)
-  (if (ANY_INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_UNDEFINED (type))
-   @0)))
+  (if (ANY_INTEGRAL_TYPE_P (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type))
+    @0
+#if GIMPLE
+    (with
+     {
+       bool overflowed = true;
+       wide_int wmin0, wmax0, wmin1, wmax1;
+       if (INTEGRAL_TYPE_P (type)
+	   && get_range_info (@0, &wmin0, &wmax0) == VR_RANGE
+	   && get_range_info (@1, &wmin1, &wmax1) == VR_RANGE)
+	 {
+	   /* If the multiplication can't overflow/wrap around, then
+	      it can be optimized too.  */
+	   wi::overflow_type min_ovf, max_ovf;
+	   wi::mul (wmin0, wmin1, TYPE_SIGN (type), &min_ovf);
+	   wi::mul (wmax0, wmax1, TYPE_SIGN (type), &max_ovf);
+	   if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+	     {
+	       wi::mul (wmin0, wmax1, TYPE_SIGN (type), &min_ovf);
+	       wi::mul (wmax0, wmin1, TYPE_SIGN (type), &max_ovf);
+	       if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+		 overflowed = false;
+	     }
+	 }
+     }
+    (if (!overflowed)
+     @0))
+#endif
+   ))))
 
 (for op (negate abs)
  /* Simplify cos(-x) and cos(|x|) -> cos(x).  Similarly for cosh.  */
@@ -900,6 +927,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_not (bit_ior:cs (bit_not @0) @1))
  (bit_and @0 (bit_not @1)))
+
+/* (a ^ b) & ((b ^ c) ^ a) --> (a ^ b) & ~c */
+(simplify
+ (bit_and:c (bit_xor:c@3 @0 @1) (bit_xor:cs (bit_xor:cs @1 @2) @0))
+ (bit_and @3 (bit_not @2)))
+
+/* (a ^ b) | ((b ^ c) ^ a) --> (a ^ b) | c */
+(simplify
+ (bit_ior:c (bit_xor:c@3 @0 @1) (bit_xor:c (bit_xor:c @1 @2) @0))
+ (bit_ior @3 @2))
 
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
@@ -1422,6 +1459,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (bitop:c (rbitop:c (bit_not @0) @1) @0)
   (bitop @0 @1)))
+
+/* ((x | y) & z) | x -> (z & y) | x */
+(simplify
+  (bit_ior:c (bit_and:cs (bit_ior:cs @0 @1) @2) @0)
+  (bit_ior (bit_and @2 @1) @0))
 
 /* (x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2) */
 (simplify
@@ -2841,6 +2883,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
   (comb (cmp @0 @2) (cmp @1 @2))))
 
+/* X <= MAX(X, Y) -> true
+   X > MAX(X, Y) -> false 
+   X >= MIN(X, Y) -> true
+   X < MIN(X, Y) -> false */
+(for minmax (min     min     max     max     )
+     cmp    (ge      lt      le      gt      )
+ (simplify
+  (cmp @0 (minmax:c @0 @1))
+  { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
+
 /* Undo fancy way of writing max/min or other ?: expressions,
    like a - ((a - b) & -(a < b)), in this case into (a < b) ? b : a.
    People normally use ?: and that is what we actually try to optimize.  */
@@ -2890,8 +2942,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize -1 >> x for arithmetic right shifts.  */
 (simplify
  (rshift integer_all_onesp@0 @1)
- (if (!TYPE_UNSIGNED (type)
-      && tree_expr_nonnegative_p (@1))
+ (if (!TYPE_UNSIGNED (type))
   @0))
 
 /* Optimize (x >> c) << c into x & (-1<<c).  */
@@ -3110,7 +3161,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (shift (convert?:s (bit_op:s @0 INTEGER_CST@2)) INTEGER_CST@1)
    (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
     (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
-     (bit_op (shift (convert @0) @1) { mask; }))))))
+     (if (mask)
+      (bit_op (shift (convert @0) @1) { mask; })))))))
 
 /* ~(~X >> Y) -> X >> Y (for arithmetic shift).  */
 (simplify
@@ -4922,6 +4974,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    { constant_boolean_node (cmp == ORDERED_EXPR || cmp == LTGT_EXPR
 			    ? false : true, type); })))
 
+/* Fold UNORDERED if either operand must be NaN, or neither can be.  */
+(simplify
+  (unordered @0 @1)
+  (switch
+    (if (tree_expr_nan_p (@0) || tree_expr_nan_p (@1))
+	{ constant_boolean_node (true, type); })
+    (if (!tree_expr_maybe_nan_p (@0) && !tree_expr_maybe_nan_p (@1))
+	{ constant_boolean_node (false, type); })))
+
+/* Fold ORDERED if either operand must be NaN, or neither can be.  */
+(simplify
+  (ordered @0 @1)
+  (switch
+    (if (tree_expr_nan_p (@0) || tree_expr_nan_p (@1))
+	{ constant_boolean_node (false, type); })
+    (if (!tree_expr_maybe_nan_p (@0) && !tree_expr_maybe_nan_p (@1))
+	{ constant_boolean_node (true, type); })))
+
 /* bool_var != 0 becomes bool_var.  */
 (simplify
  (ne @0 integer_zerop)
@@ -5053,7 +5123,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Simplify sqrt(x) * sqrt(x) -> x.  */
  (simplify
   (mult (SQRT_ALL@1 @0) @1)
-  (if (!HONOR_SNANS (type))
+  (if (!tree_expr_maybe_signaling_nan_p (@0))
    @0))
 
  (for op (plus minus)

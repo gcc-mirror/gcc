@@ -62,7 +62,7 @@ protected:
   ranger_cache m_cache;
 private:
   bool range_of_phi (irange &r, gphi *phi);
-  bool range_of_non_trivial_assignment (irange &r, gimple *s);
+  bool range_of_address (irange &r, gimple *s);
   bool range_of_builtin_call (irange &r, gcall *call);
   bool range_with_loop_info (irange &r, tree name);
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *,
@@ -97,8 +97,12 @@ extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
 static inline range_operator *
 gimple_range_handler (const gimple *s)
 {
-  if ((gimple_code (s) == GIMPLE_ASSIGN) || (gimple_code (s) == GIMPLE_COND))
-    return range_op_handler (gimple_expr_code (s), gimple_expr_type (s));
+  if (const gassign *ass = dyn_cast<const gassign *> (s))
+    return range_op_handler (gimple_assign_rhs_code (ass),
+			     TREE_TYPE (gimple_assign_lhs (ass)));
+  if (const gcond *cond = dyn_cast<const gcond *> (s))
+    return range_op_handler (gimple_cond_code (cond),
+			     TREE_TYPE (gimple_cond_lhs (cond)));
   return NULL;
 }
 

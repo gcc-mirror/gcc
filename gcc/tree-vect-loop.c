@@ -1827,6 +1827,19 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* If using the "very cheap" model. reject cases in which we'd keep
+     a copy of the scalar code (even if we might be able to vectorize it).  */
+  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+      && (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+	  || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "some scalar iterations would need to be peeled\n");
+      return 0;
+    }
+
   int min_profitable_iters, min_profitable_estimate;
   vect_estimate_min_profitable_iters (loop_vinfo, &min_profitable_iters,
 				      &min_profitable_estimate);
@@ -1883,6 +1896,20 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 	dump_printf_loc (MSG_NOTE, vect_location, "no need for a runtime"
 			 " choice between the scalar and vector loops\n");
       min_profitable_estimate = min_profitable_iters;
+    }
+
+  /* If the vector loop needs multiple iterations to be beneficial then
+     things are probably too close to call, and the conservative thing
+     would be to stick with the scalar code.  */
+  if (flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP
+      && min_profitable_estimate > (int) vect_vf_for_cost (loop_vinfo))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "one iteration of the vector loop would be"
+			 " more expensive than the equivalent number of"
+			 " iterations of the scalar loop\n");
+      return 0;
     }
 
   HOST_WIDE_INT estimated_niter;
@@ -2298,6 +2325,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
       /* Optimize the SLP graph with the vectorization factor fixed.  */
       vect_optimize_slp (loop_vinfo);
+
+      /* Gather the loads reachable from the SLP graph entries.  */
+      vect_gather_slp_loads (loop_vinfo);
     }
 
   bool saved_can_use_partial_vectors_p
@@ -7590,6 +7620,17 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      /* Deal with copies from externs or constants that disguise as
+	 loop-closed PHI nodes (PR97886).  */
+      if (slp_node
+	  && !vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
+						SLP_TREE_VECTYPE (slp_node)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
       STMT_VINFO_TYPE (stmt_info) = lc_phi_info_type;
       return true;
     }
@@ -7999,6 +8040,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	    {
 	      /* The scalar steps of the IVs.  */
 	      tree elt = steps[(ivn*const_nunits + eltn) % group_size];
+	      elt = gimple_convert (&init_stmts, TREE_TYPE (step_vectype), elt);
 	      step_elts.quick_push (elt);
 	      if (!init_node)
 		{
@@ -8018,7 +8060,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   : build_int_cstu (stept, mul_elt));
 	    }
 	  vec_step = gimple_build_vector (&init_stmts, &step_elts);
-	  vec_step = gimple_convert (&init_stmts, step_vectype, vec_step);
 	  vec_steps.safe_push (vec_step);
 	  tree step_mul = gimple_build_vector (&init_stmts, &mul_elts);
 	  if (peel_mul)
@@ -8702,6 +8743,24 @@ vectorizable_live_operation (vec_info *vinfo,
 				   "def\n");
 		continue;
 	      }
+	    /* ???  It can also happen that we end up pulling a def into
+	       a loop where replacing out-of-loop uses would require
+	       a new LC SSA PHI node.  Retain the original scalar in
+	       those cases as well.  PR98064.  */
+	    if (TREE_CODE (new_tree) == SSA_NAME
+		&& !SSA_NAME_IS_DEFAULT_DEF (new_tree)
+		&& (gimple_bb (use_stmt)->loop_father
+		    != gimple_bb (vec_stmt)->loop_father)
+		&& !flow_loop_nested_p (gimple_bb (vec_stmt)->loop_father,
+					gimple_bb (use_stmt)->loop_father))
+	      {
+		if (dump_enabled_p ())
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "Using original scalar computation for "
+				   "live lane because there is an out-of-loop "
+				   "definition for it\n");
+		continue;
+	      }
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 	      SET_USE (use_p, new_tree);
 	    update_stmt (use_stmt);
@@ -9022,7 +9081,7 @@ maybe_set_vectorized_backedge_value (loop_vec_info loop_vinfo,
    When vectorizing STMT_INFO as a store, set *SEEN_STORE to its
    stmt_vec_info.  */
 
-static void
+static bool
 vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi, stmt_vec_info *seen_store)
 {
@@ -9038,7 +9097,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
       && !STMT_VINFO_LIVE_P (stmt_info))
-    return;
+    return false;
 
   if (STMT_VINFO_VECTYPE (stmt_info))
     {
@@ -9055,13 +9114,15 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   /* Pure SLP statements have already been vectorized.  We still need
      to apply loop vectorization to hybrid SLP statements.  */
   if (PURE_SLP_STMT (stmt_info))
-    return;
+    return false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
 
   if (vect_transform_stmt (loop_vinfo, stmt_info, gsi, NULL, NULL))
     *seen_store = stmt_info;
+
+  return true;
 }
 
 /* Helper function to pass to simplify_replace_tree to enable replacing tree's
@@ -9487,17 +9548,17 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			}
 		      stmt_vec_info pat_stmt_info
 			= STMT_VINFO_RELATED_STMT (stmt_info);
-		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info, &si,
-						&seen_store);
-		      maybe_set_vectorized_backedge_value (loop_vinfo,
-							   pat_stmt_info);
+		      if (vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
+						    &si, &seen_store))
+			maybe_set_vectorized_backedge_value (loop_vinfo,
+							     pat_stmt_info);
 		    }
 		  else
 		    {
-		      vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-						&seen_store);
-		      maybe_set_vectorized_backedge_value (loop_vinfo,
-							   stmt_info);
+		      if (vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
+						    &seen_store))
+			maybe_set_vectorized_backedge_value (loop_vinfo,
+							     stmt_info);
 		    }
 		}
 	      gsi_next (&si);

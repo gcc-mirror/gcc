@@ -18889,6 +18889,22 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
+/* Return true if a set of DST by the expression SRC should be allowed.
+   This prevents complex sets of likely_spilled hard regs before reload.  */
+
+bool
+ix86_hardreg_mov_ok (rtx dst, rtx src)
+{
+  /* Avoid complex sets of likely_spilled hard registers before reload.  */
+  if (REG_P (dst) && HARD_REGISTER_P (dst)
+      && !REG_P (src) && !MEM_P (src)
+      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
+      && !reload_completed)
+    return false;
+  return true;
+}
+
 /* If we are copying between registers from different register sets
    (e.g. FP and integer), we may need a memory location.
 
@@ -21492,40 +21508,18 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	  continue;
 	}
 
-      if (dest_mode == DImode && !TARGET_64BIT)
-	dest_mode = SImode;
-
-      if (dest_mode != QImode)
-	{
-	  rtx destqi = gen_reg_rtx (QImode);
-	  emit_insn (gen_rtx_SET (destqi, x));
-
-	  if (TARGET_ZERO_EXTEND_WITH_AND
-	      && optimize_function_for_speed_p (cfun))
-	    {
-	      x = force_reg (dest_mode, const0_rtx);
-
-	      emit_insn (gen_movstrictqi (gen_lowpart (QImode, x), destqi));
-	    }
-	  else
-	    {
-	      x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
-	      if (dest_mode == GET_MODE (dest)
-		  && !register_operand (dest, GET_MODE (dest)))
-		x = force_reg (dest_mode, x);
-	    }
-	}
-
-      if (dest_mode != GET_MODE (dest))
-	{
-	  rtx tmp = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_rtx_SET (tmp, x));
-	  emit_insn (gen_zero_extendsidi2 (dest, tmp));
-	}
-      else
+      if (dest_mode == QImode)
 	emit_insn (gen_rtx_SET (dest, x));
+      else
+	{
+	  rtx reg = gen_reg_rtx (QImode);
+	  emit_insn (gen_rtx_SET (reg, x));
+
+	  reg = convert_to_mode (dest_mode, reg, 1);
+	  emit_move_insn (dest, reg);
+	}
     }
+
   rtx_insn *seq = get_insns ();
   end_sequence ();
 

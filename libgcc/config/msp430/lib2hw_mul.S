@@ -207,6 +207,73 @@
 	MOV.W   &\RES3, R15		; Ready high 16-bits for return
 .endm
 
+.macro mult64_hw  MPY32_LO MPY32_HI OP2_LO OP2_HI RES0 RES1 RES2 RES3
+;* * 64-bit hardware multiply with a 64-bit result
+;*	int64 = int64 * int64
+;*
+;*   - Operand 1 is in R8, R9, R10, R11
+;*   - Operand 2 is in R12, R13, R14, R15
+;*   - Result    is in R12, R13, R14, R15
+;*
+;* 64-bit multiplication is achieved using the 32-bit hardware multiplier with
+;* the following equation:
+;*    R12:R15 = (R8:R9 * R12:R13) + ((R8:R9 * R14:R15) << 32) + ((R10:R11 * R12:R13) << 32)
+;*
+;* The left shift by 32 is handled with minimal cost by saving the two low
+;* words and discarding the two high words.
+;*
+;* To ensure that the multiply is performed atomically, interrupts are
+;* disabled upon routine entry.  Interrupt state is restored upon exit.
+;*
+;*   Registers used:  R6, R7, R8, R9, R10, R11, R12, R13, R14, R15
+;*
+;* Macro arguments are the memory locations of the hardware registers.
+;*
+#if defined(__MSP430X_LARGE__)
+	PUSHM.A	#5, R10
+#elif defined(__MSP430X__)
+	PUSHM.W	#5, R10
+#else
+	PUSH R10 { PUSH R9 { PUSH R8 { PUSH R7 { PUSH R6
+#endif
+	; Multiply the low 32-bits of op0 and the high 32-bits of op1.
+	MOV.W	R8, &\MPY32_LO
+	MOV.W	R9, &\MPY32_HI
+	MOV.W	R14, &\OP2_LO
+	MOV.W	R15, &\OP2_HI
+	; Save the low 32-bits of the result.
+	MOV.W	&\RES0, R6
+	MOV.W	&\RES1, R7
+	; Multiply the high 32-bits of op0 and the low 32-bits of op1.
+	MOV.W	R10, &\MPY32_LO
+	MOV.W	R11, &\MPY32_HI
+	MOV.W	R12, &\OP2_LO
+	MOV.W	R13, &\OP2_HI
+	; Add the low 32-bits of the result to the previously saved result.
+	ADD.W	&\RES0, R6
+	ADDC.W	&\RES1, R7
+	; Multiply the low 32-bits of op0 and op1.
+	MOV.W	R8, &\MPY32_LO
+	MOV.W	R9, &\MPY32_HI
+	MOV.W	R12, &\OP2_LO
+	MOV.W	R13, &\OP2_HI
+	; Write the return values
+	MOV.W	&\RES0, R12
+	MOV.W   &\RES1, R13
+	MOV.W	&\RES2, R14
+	MOV.W   &\RES3, R15
+	; Add the saved low 32-bit results from earlier to the high 32-bits of
+	; this result, effectively shifting those two results left by 32 bits.
+	ADD.W	R6, R14
+	ADDC.W  R7, R15
+#if defined(__MSP430X_LARGE__)
+	POPM.A	#5, R10
+#elif defined(__MSP430X__)
+	POPM.W	#5, R10
+#else
+	POP R6 { POP R7 { POP R8 { POP R9 { POP R10
+#endif
+.endm
 
 ;; EABI mandated names:
 ;; 
@@ -353,9 +420,9 @@
 	mult1632 MPY, OP2, RESLO, RESHI
 	end_func   __umulhisi2
 
-	start_func __mulsi2_hw32  __mspabi_mpyl  __mspabi_mpyl_hw32
+	start_func __mulsi2  __mspabi_mpyl  __mspabi_mpyl_hw32
 	mult32_hw MPY32L, MPY32H, OP2L, OP2H, RES0, RES1
-	end_func   __mulsi2_hw32
+	end_func   __mulsi2
 
 	start_func __mulsidi2  __mspabi_mpysll  __mspabi_mpysll_hw32
 	mult3264_hw MPYS32L, MPYS32H, OP2L, OP2H, RES0, RES1, RES2, RES3
@@ -365,17 +432,18 @@
 	mult3264_hw MPY32L, MPY32H, OP2L, OP2H, RES0, RES1, RES2, RES3
 	end_func   __umulsidi2
 
-	;; FIXME: Add a hardware version of this function.
-	fake_func __muldi3    __mspabi_mpyll  __mspabi_mpyll_hw32
+	start_func __muldi3   __mspabi_mpyll __mspabi_mpyll_hw32
+	mult64_hw MPY32L, MPY32H, OP2L, OP2H, RES0, RES1, RES2, RES3
+	end_func __muldi3
 
 #elif defined MUL_F5
 /* The F5xxx series of MCUs support the same 16-bit and 32-bit multiply
    as the second generation hardware, but they are accessed from different
    memory registers.  */
 
-	start_func __mulhi2_f5 __mspabi_mpyi  __mspabi_mpyi_f5hw
+	start_func __mulhi2 __mspabi_mpyi  __mspabi_mpyi_f5hw
 	mult16 MPY_F5, OP2_F5, RESLO_F5
-	end_func   __mulhi2_f5
+	end_func   __mulhi2
 
 	start_func __mulhisi2  __mspabi_mpysl  __mspabi_mpysl_f5hw
 	mult1632 MPYS_F5, OP2_F5, RESLO_F5, RESHI_F5
@@ -385,9 +453,9 @@
 	mult1632 MPY_F5, OP2_F5, RESLO_F5, RESHI_F5
 	end_func   __umulhisi2
 
-	start_func __mulsi2_f5  __mspabi_mpyl  __mspabi_mpyl_f5hw
+	start_func __mulsi2  __mspabi_mpyl  __mspabi_mpyl_f5hw
 	mult32_hw MPY32L_F5, MPY32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5
-	end_func   __mulsi2_f5
+	end_func   __mulsi2
 
 	start_func __mulsidi2  __mspabi_mpysll  __mspabi_mpysll_f5hw
 	mult3264_hw MPYS32L_F5, MPYS32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5, RES2_F5, RES3_F5
@@ -397,8 +465,9 @@
 	mult3264_hw MPY32L_F5, MPY32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5, RES2_F5, RES3_F5
 	end_func   __umulsidi2
 
-	;; FIXME: Add a hardware version of this function.
-	fake_func __muldi3   __mspabi_mpyll __mspabi_mpyll_f5hw
+	start_func __muldi3   __mspabi_mpyll __mspabi_mpyll_f5hw
+	mult64_hw MPY32L_F5, MPY32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5, RES2_F5, RES3_F5
+	end_func __muldi3
 
 #else
 #error MUL type not defined

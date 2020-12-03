@@ -3,6 +3,7 @@
 // { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 
 volatile int l;
+int *volatile p;
 
 namespace S
 {
@@ -11,10 +12,11 @@ namespace S
   f()
   {
     int i = 42;
-    l = i;		// { dg-final { gdb-test 14 "i" "42" } }
+    l = i;		// { dg-final { gdb-test 15 "i" "42" } }
     {
       extern int i;
-      l = i;		// { dg-final { gdb-test 17 "i" "24" } }
+      p[0]++;
+      l = i;		// { dg-final { gdb-test 19 "i" "24" } }
     }
   }
 }
@@ -22,6 +24,8 @@ namespace S
 int
 main (void)
 {
+  int x = 0;
+  p = &x;
   S::f ();
   return 0;
 }

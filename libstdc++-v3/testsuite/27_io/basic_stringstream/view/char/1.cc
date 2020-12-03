@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.7.1.1  basic_stringbuf constructors  [lib.stringbuf.cons]
+// 29.8.5.4  basic_stringstream member functions  [stringstream.members]
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
@@ -31,5 +31,17 @@ main()
   std::string s("This is a test");
   std::stringstream stm(s);
   VERIFY( stm.view() == s );
-  return 0;
+  VERIFY( stm.view() == const_cast<const std::stringstream&>(stm).view() );
+
+  s += " with a longer string";
+  stm << s;
+  VERIFY( stm.view() == s );
+
+  s = "This is a shorter string";
+  stm.str(s);
+  VERIFY( stm.view() == s );
+
+  std::string s2;
+  stm >> s2;
+  VERIFY( stm.view() == s );
 }

@@ -535,7 +535,7 @@ package body Checks is
       --  We do not need checks if we are not generating code (i.e. the
       --  expander is not active). This is not just an optimization, there
       --  are cases (e.g. with pragma Debug) where generating the checks
-      --  can cause real trouble).
+      --  can cause real trouble.
 
       if not Expander_Active then
          return;
@@ -3258,23 +3258,16 @@ package body Checks is
       end if;
 
       --  Return if we know expression is definitely in the range of the target
-      --  type as determined by Determine_Range. Right now we only do this for
-      --  discrete types, and not fixed-point or floating-point types.
-
-      --  The additional less-precise tests below catch these cases
-
-      --  In GNATprove_Mode, also deal with the case of a conversion from
-      --  floating-point to integer. It is only possible because analysis
-      --  in GNATprove rules out the possibility of a NaN or infinite value.
+      --  type as determined by Determine_Range_To_Discrete. Right now we only
+      --  do this for discrete target types, i.e. neither for fixed-point nor
+      --  for floating-point types. But the additional less precise tests below
+      --  catch these cases.
 
       --  Note: skip this if we are given a source_typ, since the point of
       --  supplying a Source_Typ is to stop us looking at the expression.
       --  We could sharpen this test to be out parameters only ???
 
       if Is_Discrete_Type (Target_Typ)
-        and then (Is_Discrete_Type (Etype (Expr))
-                   or else (GNATprove_Mode
-                             and then Is_Floating_Point_Type (Etype (Expr))))
         and then not Is_Unconstrained_Subscr_Ref
         and then No (Source_Typ)
       then
@@ -3318,35 +3311,8 @@ package body Checks is
 
                   --  Otherwise determine range of value
 
-                  if Is_Discrete_Type (Etype (Expr)) then
-                     Determine_Range
-                       (Expr, OK, Lo, Hi, Assume_Valid => True);
-
-                  --  When converting a float to an integer type, determine the
-                  --  range in real first, and then convert the bounds using
-                  --  UR_To_Uint which correctly rounds away from zero when
-                  --  half way between two integers, as required by normal
-                  --  Ada 95 rounding semantics. It is only possible because
-                  --  analysis in GNATprove rules out the possibility of a NaN
-                  --  or infinite value.
-
-                  elsif GNATprove_Mode
-                    and then Is_Floating_Point_Type (Etype (Expr))
-                  then
-                     declare
-                        Hir : Ureal;
-                        Lor : Ureal;
-
-                     begin
-                        Determine_Range_R
-                          (Expr, OK, Lor, Hir, Assume_Valid => True);
-
-                        if OK then
-                           Lo := UR_To_Uint (Lor);
-                           Hi := UR_To_Uint (Hir);
-                        end if;
-                     end;
-                  end if;
+                  Determine_Range_To_Discrete
+                    (Expr, OK, Lo, Hi, Fixed_Int, Assume_Valid => True);
 
                   if OK then
 
@@ -3389,10 +3355,12 @@ package body Checks is
       --  Check if we can determine at compile time whether Expr is in the
       --  range of the target type. Note that if S_Typ is within the bounds
       --  of Target_Typ then this must be the case. This check is meaningful
-      --  only if this is not a conversion between integer and real types.
+      --  only if this is not a conversion between integer and real types,
+      --  unless for a fixed-point type if Fixed_Int is set.
 
       if not Is_Unconstrained_Subscr_Ref
-        and then Is_Discrete_Type (S_Typ) = Is_Discrete_Type (Target_Typ)
+        and then (Is_Discrete_Type (S_Typ) = Is_Discrete_Type (Target_Typ)
+                   or else (Fixed_Int and then Is_Discrete_Type (Target_Typ)))
         and then
           (In_Subrange_Of (S_Typ, Target_Typ, Fixed_Int)
 
@@ -3705,12 +3673,15 @@ package body Checks is
                then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
                else
-                  --  Conversions involving fixed-point types are expanded
-                  --  separately, and do not need a Range_Check flag, except
-                  --  in GNATprove_Mode, where the explicit constraint check
-                  --  will not be generated.
+                  --  Raw conversions involving fixed-point types are expanded
+                  --  separately and do not need a Range_Check flag yet, except
+                  --  in GNATprove_Mode where this expansion is not performed.
+                  --  This does not apply to conversion where fixed-point types
+                  --  are treated as integers, which are precisely generated by
+                  --  this expansion.
 
                   if GNATprove_Mode
+                    or else Conv_OK
                     or else (not Is_Fixed_Point_Type (Expr_Type)
                               and then not Is_Fixed_Point_Type (Target_Type))
                   then
@@ -5354,38 +5325,11 @@ package body Checks is
             end case;
 
          when N_Type_Conversion =>
+            --  For a type conversion, we can try to refine the range using the
+            --  converted value.
 
-            --  For type conversion from one discrete type to another, we can
-            --  refine the range using the converted value.
-
-            if Is_Discrete_Type (Etype (Expression (N))) then
-               Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
-
-            --  When converting a float to an integer type, determine the range
-            --  in real first, and then convert the bounds using UR_To_Uint
-            --  which correctly rounds away from zero when half way between two
-            --  integers, as required by normal Ada 95 rounding semantics. It
-            --  is only possible because analysis in GNATprove rules out the
-            --  possibility of a NaN or infinite value.
-
-            elsif GNATprove_Mode
-              and then Is_Floating_Point_Type (Etype (Expression (N)))
-            then
-               declare
-                  Lor_Real, Hir_Real : Ureal;
-               begin
-                  Determine_Range_R (Expression (N), OK1, Lor_Real, Hir_Real,
-                                     Assume_Valid);
-
-                  if OK1 then
-                     Lor := UR_To_Uint (Lor_Real);
-                     Hir := UR_To_Uint (Hir_Real);
-                  end if;
-               end;
-
-            else
-               OK1 := False;
-            end if;
+            Determine_Range_To_Discrete
+              (Expression (N), OK1, Lor, Hir, Conversion_OK (N), Assume_Valid);
 
          --  Nothing special to do for all other expression kinds
 
@@ -5904,6 +5848,96 @@ package body Checks is
             return;
          end if;
    end Determine_Range_R;
+
+   ---------------------------------
+   -- Determine_Range_To_Discrete --
+   ---------------------------------
+
+   procedure Determine_Range_To_Discrete
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Uint;
+      Hi           : out Uint;
+      Fixed_Int    : Boolean := False;
+      Assume_Valid : Boolean := False)
+   is
+      Typ : constant Entity_Id := Etype (N);
+
+   begin
+      --  For a discrete type, simply defer to Determine_Range
+
+      if Is_Discrete_Type (Typ) then
+         Determine_Range (N, OK, Lo, Hi, Assume_Valid);
+
+      --  For a fixed point type treated as an integer, we can determine the
+      --  range using the Corresponding_Integer_Value of the bounds of the
+      --  type or base type. This is done by the calls to Expr_Value below.
+
+      elsif Is_Fixed_Point_Type (Typ) and then Fixed_Int then
+         declare
+            Btyp, Ftyp : Entity_Id;
+            Bound      : Node_Id;
+
+         begin
+            if Assume_Valid then
+               Ftyp := Typ;
+            else
+               Ftyp := Underlying_Type (Base_Type (Typ));
+            end if;
+
+            Btyp := Base_Type (Ftyp);
+
+            --  First the low bound
+
+            Bound := Type_Low_Bound (Ftyp);
+
+            if Compile_Time_Known_Value (Bound) then
+               Lo := Expr_Value (Bound);
+            else
+               Lo := Expr_Value (Type_Low_Bound (Btyp));
+            end if;
+
+            --  Then the high bound
+
+            Bound := Type_High_Bound (Ftyp);
+
+            if Compile_Time_Known_Value (Bound) then
+               Hi := Expr_Value (Bound);
+            else
+               Hi := Expr_Value (Type_High_Bound (Btyp));
+            end if;
+
+            OK := True;
+         end;
+
+      --  For a floating-point type, we can determine the range in real first,
+      --  and then convert the bounds using UR_To_Uint, which correctly rounds
+      --  away from zero when half way between two integers, as required by
+      --  normal Ada 95 rounding semantics. But this is only possible because
+      --  GNATprove's analysis rules out the possibility of a NaN or infinite.
+
+      elsif GNATprove_Mode and then Is_Floating_Point_Type (Typ) then
+         declare
+            Lo_Real, Hi_Real : Ureal;
+
+         begin
+            Determine_Range_R (N, OK, Lo_Real, Hi_Real, Assume_Valid);
+
+            if OK then
+               Lo := UR_To_Uint (Lo_Real);
+               Hi := UR_To_Uint (Hi_Real);
+            else
+               Lo := No_Uint;
+               Hi := No_Uint;
+            end if;
+         end;
+
+      else
+         Lo := No_Uint;
+         Hi := No_Uint;
+         OK := False;
+      end if;
+   end Determine_Range_To_Discrete;
 
    ------------------------------------
    -- Discriminant_Checks_Suppressed --
@@ -10551,10 +10585,10 @@ package body Checks is
    begin
       --  Checks will be applied only when generating code. In GNATprove mode,
       --  we do not apply the checks, but we still call Selected_Range_Checks
-      --  to possibly issue errors on SPARK code when a run-time error can be
-      --  detected at compile time.
+      --  outside of generics to possibly issue errors on SPARK code when a
+      --  run-time error can be detected at compile time.
 
-      if not Expander_Active and not GNATprove_Mode then
+      if Inside_A_Generic or (not GNATprove_Mode and not Expander_Active) then
          return Ret_Result;
       end if;
 

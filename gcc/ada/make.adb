@@ -464,7 +464,7 @@ package body Make is
    Ada_Flag_1        : constant String_Access := new String'("-x");
    Ada_Flag_2        : constant String_Access := new String'("ada");
    AdaSCIL_Flag      : constant String_Access := new String'("adascil");
-   GNAT_Flag         : constant String_Access := new String'("-gnatpg");
+   GNAT_Flag         : constant String_Access := new String'("-gnatg");
    Do_Not_Check_Flag : constant String_Access := new String'("-x");
 
    Object_Suffix : constant String := Get_Target_Object_Suffix.all;
@@ -1677,7 +1677,7 @@ package body Make is
          L            : File_Name_Type;
          Source_Index : Int;
          Args         : Argument_List) return Process_Id;
-      --  Compiles S using Args. If S is a GNAT predefined source "-gnatpg" is
+      --  Compiles S using Args. If S is a GNAT predefined source "-gnatg" is
       --  added to Args. Non blocking call. L corresponds to the expected
       --  library file name. Process_Id of the process spawned to execute the
       --  compilation.
@@ -2027,7 +2027,7 @@ package body Make is
             end loop;
          end;
 
-         --  Set -gnatpg for predefined files (for this purpose the renamings
+         --  Set -gnatg for predefined files (for this purpose the renamings
          --  such as Text_IO do not count as predefined). Note that we strip
          --  the directory name from the source file name because the call to
          --  Fname.Is_Predefined_File_Name cannot deal with directory prefixes.
@@ -4697,19 +4697,9 @@ package body Make is
             pragma Assert (Argv'Last = 2);
             Minimal_Recompilation := True;
 
-         --  -u
+         --  -u and -U (they are differentiated elsewhere)
 
-         elsif Argv (2) = 'u' and then Argv'Last = 2 then
-            Unique_Compile := True;
-            Compile_Only   := True;
-            Do_Bind_Step   := False;
-            Do_Link_Step   := False;
-
-         --  -U
-
-         elsif Argv (2) = 'U'
-           and then Argv'Last = 2
-         then
+         elsif Argv (2) in 'u' | 'U' and then Argv'Last = 2 then
             Unique_Compile := True;
             Compile_Only   := True;
             Do_Bind_Step   := False;

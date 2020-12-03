@@ -753,6 +753,7 @@ dump_gimple_call_args (pretty_printer *buffer, const gcall *gs,
 	  limit = ARRAY_SIZE (reduction_args);
 	  break;
 
+	case IFN_HWASAN_MARK:
 	case IFN_ASAN_MARK:
 #define DEF(X) #X
 	  static const char *const asan_mark_args[] = {IFN_ASAN_MARK_FLAGS};
@@ -1699,6 +1700,15 @@ dump_gimple_omp_target (pretty_printer *buffer, const gomp_target *gs,
       break;
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
       kind = " oacc_host_data";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+      kind = " oacc_parallel_kernels_parallelized";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+      kind = " oacc_parallel_kernels_gang_single";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+      kind = " oacc_data_kernels";
       break;
     default:
       gcc_unreachable ();

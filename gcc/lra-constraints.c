@@ -3954,10 +3954,10 @@ curr_insn_transform (bool check_only_p)
   no_input_reloads_p = no_output_reloads_p = false;
   goal_alt_number = -1;
   change_p = sec_mem_p = false;
-  /* JUMP_INSNs and CALL_INSNs are not allowed to have any output
-     reloads; neither are insns that SET cc0.  Insns that use CC0 are
-     not allowed to have any input reloads.  */
-  if (JUMP_P (curr_insn) || CALL_P (curr_insn))
+  /* CALL_INSNs are not allowed to have any output reloads; neither
+     are insns that SET cc0.  Insns that use CC0 are not allowed to
+     have any input reloads.  */
+  if (CALL_P (curr_insn))
     no_output_reloads_p = true;
 
   if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (curr_insn)))
@@ -4104,9 +4104,18 @@ curr_insn_transform (bool check_only_p)
       error_for_asm (curr_insn,
 		     "inconsistent operand constraints in an %<asm%>");
       lra_asm_error_p = true;
-      /* Avoid further trouble with this insn.  Don't generate use
-	 pattern here as we could use the insn SP offset.  */
-      lra_set_insn_deleted (curr_insn);
+      if (! JUMP_P (curr_insn))
+	{
+	  /* Avoid further trouble with this insn.  Don't generate use
+	     pattern here as we could use the insn SP offset.  */
+	  lra_set_insn_deleted (curr_insn);
+	}
+      else
+	{
+	  lra_invalidate_insn_data (curr_insn);
+	  ira_nullify_asm_goto (curr_insn);
+	  lra_update_insn_regno_info (curr_insn);
+	}
       return true;
     }
 

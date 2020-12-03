@@ -2075,7 +2075,8 @@ get_proc_pointer_decl (gfc_symbol *sym)
 /* Get a basic decl for an external function.  */
 
 tree
-gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+			      const char *fnspec)
 {
   tree type;
   tree fndecl;
@@ -2287,7 +2288,8 @@ module_sym:
       mangled_name = gfc_sym_mangled_function_id (sym);
     }
 
-  type = gfc_get_function_type (sym, actual_args);
+  type = gfc_get_function_type (sym, actual_args, fnspec);
+
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
@@ -6965,8 +6967,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   gfc_init_block (&cleanup);
 
   /* Reset recursion-check variable.  */
-  if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-      && !is_recursive && !flag_openmp && recurcheckvar != NULL_TREE)
+  if (recurcheckvar != NULL_TREE)
     {
       gfc_add_modify (&cleanup, recurcheckvar, logical_false_node);
       recurcheckvar = NULL;

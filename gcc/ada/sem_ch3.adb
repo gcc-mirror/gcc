@@ -1411,6 +1411,8 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (T, False);
       end if;
 
+      Set_Etype (T, T);
+
       --  For SPARK, check that the designated type is compatible with
       --  respect to volatility with the access type.
 
@@ -1430,8 +1432,6 @@ package body Sem_Ch3 is
            (Full_Desig, T, "designated type", "access type",
             Srcpos_Bearer => T);
       end if;
-
-      Set_Etype (T, T);
 
       --  If the type has appeared already in a with_type clause, it is frozen
       --  and the pointer size is already set. Else, initialize.
@@ -2312,13 +2312,6 @@ package body Sem_Ch3 is
 
          procedure Build_Assertion_Bodies_For_Type (Typ : Entity_Id) is
          begin
-            --  Preanalyze and resolve the Default_Initial_Condition assertion
-            --  expression at the end of the declarations to catch any errors.
-
-            if Has_DIC (Typ) then
-               Build_DIC_Procedure_Body (Typ);
-            end if;
-
             if Nkind (Context) = N_Package_Specification then
 
                --  Preanalyze and resolve the class-wide invariants of an
@@ -2341,32 +2334,57 @@ package body Sem_Ch3 is
                         Partial_Invariant => True);
                   end if;
 
-               --  Preanalyze and resolve the invariants of a private type
-               --  at the end of the visible declarations to catch potential
-               --  errors. Inherited class-wide invariants are not included
-               --  because they have already been resolved.
+               elsif Decls = Visible_Declarations (Context) then
+                  --  Preanalyze and resolve the invariants of a private type
+                  --  at the end of the visible declarations to catch potential
+                  --  errors. Inherited class-wide invariants are not included
+                  --  because they have already been resolved.
 
-               elsif Decls = Visible_Declarations (Context)
-                 and then Ekind (Typ) in E_Limited_Private_Type
-                                       | E_Private_Type
-                                       | E_Record_Type_With_Private
-                 and then Has_Own_Invariants (Typ)
-               then
-                  Build_Invariant_Procedure_Body
-                    (Typ               => Typ,
-                     Partial_Invariant => True);
+                  if Ekind (Typ) in E_Limited_Private_Type
+                                  | E_Private_Type
+                                  | E_Record_Type_With_Private
+                    and then Has_Own_Invariants (Typ)
+                  then
+                     Build_Invariant_Procedure_Body
+                       (Typ               => Typ,
+                        Partial_Invariant => True);
+                  end if;
 
-               --  Preanalyze and resolve the invariants of a private type's
-               --  full view at the end of the private declarations to catch
-               --  potential errors.
+                  --  Preanalyze and resolve the Default_Initial_Condition
+                  --  assertion expression at the end of the declarations to
+                  --  catch any errors.
 
-               elsif Decls = Private_Declarations (Context)
-                 and then (not Is_Private_Type (Typ)
-                            or else Present (Underlying_Full_View (Typ)))
-                 and then Has_Private_Declaration (Typ)
-                 and then Has_Invariants (Typ)
-               then
-                  Build_Invariant_Procedure_Body (Typ);
+                  if Ekind (Typ) in E_Limited_Private_Type
+                                  | E_Private_Type
+                                  | E_Record_Type_With_Private
+                     and then Has_Own_DIC (Typ)
+                  then
+                     Build_DIC_Procedure_Body
+                       (Typ         => Typ,
+                        Partial_DIC => True);
+                  end if;
+
+               elsif Decls = Private_Declarations (Context) then
+
+                  --  Preanalyze and resolve the invariants of a private type's
+                  --  full view at the end of the private declarations to catch
+                  --  potential errors.
+
+                  if (not Is_Private_Type (Typ)
+                       or else Present (Underlying_Full_View (Typ)))
+                    and then Has_Private_Declaration (Typ)
+                    and then Has_Invariants (Typ)
+                  then
+                     Build_Invariant_Procedure_Body (Typ);
+                  end if;
+
+                  if (not Is_Private_Type (Typ)
+                       or else Present (Underlying_Full_View (Typ)))
+                    and then Has_Private_Declaration (Typ)
+                    and then Has_DIC (Typ)
+                  then
+                     Build_DIC_Procedure_Body (Typ);
+                  end if;
                end if;
             end if;
          end Build_Assertion_Bodies_For_Type;
@@ -14945,6 +14963,10 @@ package body Sem_Ch3 is
       Loc           : constant Source_Ptr := Sloc (Def);
       Digs_Expr     : constant Node_Id    := Digits_Expression (Def);
       Delta_Expr    : constant Node_Id    := Delta_Expression (Def);
+      Max_Digits    : constant Nat        :=
+                        (if System_Max_Integer_Size = 128 then 38 else 18);
+      --  Maximum number of digits that can be represented in an integer
+
       Implicit_Base : Entity_Id;
       Digs_Val      : Uint;
       Delta_Val     : Ureal;
@@ -14982,9 +15004,10 @@ package body Sem_Ch3 is
                Scale_Val := Scale_Val + 1;
             end loop;
 
-            if Scale_Val > 18 then
-               Error_Msg_N ("scale exceeds maximum value of 18", Def);
-               Scale_Val := UI_From_Int (+18);
+            if Scale_Val > Max_Digits then
+               Error_Msg_Uint_1 := UI_From_Int (Max_Digits);
+               Error_Msg_N ("scale exceeds maximum value of ^", Def);
+               Scale_Val := UI_From_Int (Max_Digits);
             end if;
 
          else
@@ -14993,9 +15016,10 @@ package body Sem_Ch3 is
                Scale_Val := Scale_Val - 1;
             end loop;
 
-            if Scale_Val < -18 then
-               Error_Msg_N ("scale is less than minimum value of -18", Def);
-               Scale_Val := UI_From_Int (-18);
+            if Scale_Val < -Max_Digits then
+               Error_Msg_Uint_1 := UI_From_Int (-Max_Digits);
+               Error_Msg_N ("scale is less than minimum value of ^", Def);
+               Scale_Val := UI_From_Int (-Max_Digits);
             end if;
          end if;
 
@@ -15017,9 +15041,10 @@ package body Sem_Ch3 is
       Check_Digits_Expression (Digs_Expr);
       Digs_Val := Expr_Value (Digs_Expr);
 
-      if Digs_Val > 18 then
-         Digs_Val := UI_From_Int (+18);
-         Error_Msg_N ("digits value out of range, maximum is 18", Digs_Expr);
+      if Digs_Val > Max_Digits then
+         Error_Msg_Uint_1 := UI_From_Int (Max_Digits);
+         Error_Msg_N ("digits value out of range, maximum is ^", Digs_Expr);
+         Digs_Val := UI_From_Int (Max_Digits);
       end if;
 
       Set_Digits_Value (Implicit_Base, Digs_Val);
@@ -20093,7 +20118,7 @@ package body Sem_Ch3 is
          --  Per-Object Expressions" in spec of package Sem).
 
          if Present (Expression (Discr)) then
-            Preanalyze_Spec_Expression (Expression (Discr), Discr_Type);
+            Preanalyze_Default_Expression (Expression (Discr), Discr_Type);
 
             --  Legaity checks
 

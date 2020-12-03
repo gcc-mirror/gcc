@@ -33,7 +33,8 @@
 
 --  The full capability is currently supported on the following targets:
 
---     GNU/Linux x86, x86_64, ia64
+--     GNU/Linux x86, x86_64
+--     Windows x86, x86_64
 
 --  Note: on targets other than those listed above, a dummy implementation
 --  of the body returns a series of LF separated strings of the form "0x..."

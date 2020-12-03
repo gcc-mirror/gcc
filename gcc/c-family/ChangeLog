@@ -1,3 +1,218 @@
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add predefined
+	{__GNUC_EXECUTION_CHARSET_NAME} and
+	_WIDE_EXECUTION_CHARSET_NAME} macros.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (module, import, export): New internal tokens (with
+	trailing space).
+	* c-common.h (RID__MODULE, RID__IMPORT & RID__EXPORT): Enumerate
+	them.
+	(D_CXX_MODULES, D_CXX_MODULES_FLAGS): Enable them.
+	* c-cppbuiltin.c (c_cpp_builtins): Feature macro.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_init_options): Ask for module dependencies.
+	(c_common_handle_option): Handle -Mmodules -Mno-modules.
+	* c-pch.c (c_common_valid_pch): ... does not play with C++
+	modules.
+	* c.opt (Mmodules, Mno-modules): New preprocessor dependency
+	options.
+	(fmodules-ts, fmodule-header, fmodule-implicit-inline)
+	(fmodule-only, fmodule-mapper, fmodule-lazy)
+	(fmodule-version-ignore, Winvalid-imported-macros)
+	(flang-info-include-translate, flang-info-include-translate-not):
+	New options
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_nested_type) <RECORD_TYPE>: Remove obsolete code.
+	(dump_ada_structure): Also deal with convention, unchecked union and
+	bit-field for nested types.  In the latter case, print an Alignment
+	aspect along with the Pack aspect.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* c-attribs.c (handle_patchable_function_entry_attribute): Avoid
+	-Wformat-diag.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* c-warn.c (warn_parm_array_mismatch): Avoid invalid redeclarations.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-attribs.c (handle_special_var_sec_attribute): New.
+	(handle_noinit_attribute): Remove.
+	(attr_noinit_exclusions): Rename to...
+	(attr_section_exclusions): ...this, and add "persistent" attribute
+	exclusion.
+	(c_common_attribute_table): Add "persistent" attribute.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* c-pretty-print.c (c_pretty_printer::simple_type_specifier):
+	Treat opaque types like other types.
+	(c_pretty_printer::direct_abstract_declarator): Opaque types are
+	supported types.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-warn.c (warn_parm_array_mismatch): Bail on invalid redeclarations
+	with fewer arguments.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* c-attribs.c (handle_access_attribute): Handle ATTR_FLAG_INTERNAL.
+	Error out on invalid modes.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_CLEAR_PADDING.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c (c_lex_with_flags): CPP_HEADER_NAMEs can now be seen.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.h (enum c_tree_index): Reorder to place lazy fields
+	after newly-added CTI_MODULE_HWM.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Define
+	"*_IS_IEC_60559__" macros.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c: #include "langhooks.h".
+	(cb_undef): Maybe call preprocess_undef lang hook.
+	* c-opts.c (c_common_post_options): Maybe call preprocess_options
+	lang hook.
+	(push_command_line_include): Maybe call preprocess_main_file lang
+	hook.
+	(cb_file_change): Likewise.
+	* c-ppoutput.c: #include "langhooks.h.
+	(scan_translation_unit): Maybe call preprocess_token lang hook.
+	(class do_streamer): New, derive from token_streamer.
+	(directives_only_cb): Data pointer is do_streamer, call
+	preprocess_token lang hook.
+	(scan_translation_unit_directives_only): Use do_streamer.
+	(print_line_1): Move src_line recording to after string output.
+	(cb_undef): Maybe call preprocess_undef lang hook.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ppoutput.c (scan_translation_unit): Use token_streamer, remove
+	code duplicating that functionality.
+
+2020-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90628
+	* c-common.c (check_builtin_function_arguments)
+	<case BUILT_IN_ADD_OVERFLOW>: Diagnose when last argument is pointer
+	to _Atomic.  For the TYPE_READONLY case, adjust message to be usable
+	for more builtins and argument positions.
+
+2020-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/97854
+	* stub-objc.c: Include c-common.h to declare enum rid.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63287
+	* c-cppbuiltin.c: Include configargs.h.
+	(c_cpp_builtins): For C++11 and later if THREAD_MODEL_SPEC is not
+	defined, predefine __STDCPP_THREADS__ to 1 unless thread_model is
+	"single".
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (fopenacc-kernels): Add.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_using_enum.
+
+2020-11-13  Piotr H. Dabrowski  <phd@phd.re>
+
+	PR c++/91318
+	* c-cppbuiltin.c: c_cpp_builtins_optimize_pragma(): use cpp_define_unused()
+
+2020-11-13  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (build_attr_access_from_parms): Format properly.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* c-common.c (c_common_reswords): null_unspecified, nullable,
+	nonnull, null_resettable: New keywords.
+	* c-common.h (enum rid): RID_NULL_UNSPECIFIED, RID_NULLABLE,
+	RID_NONNULL, RID_NULL_RESETTABLE: New.
+	(OBJC_IS_PATTR_KEYWORD): Include nullability keywords in the
+	ranges accepted for property attributes.
+	* c-attribs.c (handle_objc_nullability_attribute): New.
+	* c-objc.h (enum objc_property_attribute_group): Add
+	OBJC_PROPATTR_GROUP_NULLABLE.
+	(enum objc_property_attribute_kind):Add
+	OBJC_PROPERTY_ATTR_NULL_UNSPECIFIED, OBJC_PROPERTY_ATTR_NULLABLE,
+	OBJC_PROPERTY_ATTR_NONNULL, OBJC_PROPERTY_ATTR_NULL_RESETTABLE.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* c-attribs.c (handle_objc_root_class_attribute): New
+	* c-objc.h (objc_start_class_interface): Add a location
+	value for the position of the class name.
+	* c.opt: Add Wobjc-root-class.
+	* stub-objc.c (objc_start_class_interface): Add a location
+	value for the position of the class name.
+
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (c_common_has_attribute): Take argument std_syntax.
+	Allow scope for C.  Handle standard attributes for C.  Do not
+	accept unscoped attributes if std_syntax and not handled as
+	standard attributes.
+	* c-common.h (c_common_has_attribute): Update prototype.
+
+2020-11-12  Nicholas Guriev  <guriev-ns@ya.ru>
+
+	PR pch/86674
+	* c-pch.c (c_common_valid_pch): Use cpp_warning with CPP_W_INVALID_PCH
+	reason to fix -Werror=invalid-pch and -Wno-error=invalid-pch switches.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* c-opts.c (c_common_post_options): Update latest_abi_version.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97748
+	* c-common.h (warn_if_unused_value): Add quiet argument defaulted
+	to false.
+	* c-warn.c (warn_if_unused_value): Likewise.  Pass it down
+	recursively and just return true instead of warning if it is true.
+	Handle COMPLEX_EXPR.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-common.h (c_omp_adjust_map_clauses): New declaration.
+	* c-omp.c (struct map_clause): Helper type for c_omp_adjust_map_clauses.
+	(c_omp_adjust_map_clauses): New function.
+
 2020-11-09  Marek Polacek  <polacek@redhat.com>
 
 	DR 1914

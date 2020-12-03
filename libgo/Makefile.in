@@ -240,12 +240,11 @@ am__objects_2 = $(am__objects_1)
 @LIBGO_IS_RTEMS_TRUE@am__objects_3 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
 am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
-	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cdiv.lo \
-	runtime/go-cgo.lo runtime/go-construct-map.lo \
-	runtime/go-ffi.lo runtime/go-fieldtrack.lo \
-	runtime/go-matherr.lo runtime/go-memclr.lo \
-	runtime/go-memequal.lo runtime/go-nanotime.lo \
-	runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cgo.lo \
+	runtime/go-construct-map.lo runtime/go-ffi.lo \
+	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
+	runtime/go-memclr.lo runtime/go-memequal.lo \
+	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
 	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
@@ -892,7 +891,6 @@ runtime_files = \
 	runtime/go-assert.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
-	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
 	runtime/go-ffi.c \
@@ -1343,8 +1341,6 @@ runtime/go-caller.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-callers.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-cdiv.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-cgo.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-construct-map.lo: runtime/$(am__dirstamp) \
@@ -1417,7 +1413,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-assert.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-callers.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-construct-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-context.Plo@am__quote@

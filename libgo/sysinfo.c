@@ -337,6 +337,9 @@ enum {
 #ifdef BIOCVERSION
   BIOCVERSION_val = BIOCVERSION,
 #endif
+#ifdef SO_RCVTIMEO
+  SO_RCVTIMEO_val = SO_RCVTIMEO,
+#endif
 };
 
 // SIOCGIFMTU can't be added in the above enum as it might

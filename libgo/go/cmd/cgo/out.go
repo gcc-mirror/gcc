@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"cmd/internal/pkgpath"
 	"debug/elf"
 	"debug/macho"
 	"debug/pe"
@@ -15,7 +16,6 @@ import (
 	"go/token"
 	"internal/xcoff"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -191,7 +191,7 @@ func (p *Package) writeDefs() {
 			panic(fmt.Errorf("invalid var kind %q", n.Kind))
 		}
 		if *gccgo {
-			fmt.Fprintf(fc, `extern void *%s __asm__("%s.%s");`, n.Mangle, gccgoSymbolPrefix, n.Mangle)
+			fmt.Fprintf(fc, `extern void *%s __asm__("%s.%s");`, n.Mangle, gccgoSymbolPrefix, gccgoToSymbol(n.Mangle))
 			fmt.Fprintf(&gccgoInit, "\t%s = &%s;\n", n.Mangle, n.C)
 			fmt.Fprintf(fc, "\n")
 		}
@@ -341,6 +341,8 @@ func dynimport(obj string) {
 			if s.Version != "" {
 				targ += "#" + s.Version
 			}
+			checkImportSymName(s.Name)
+			checkImportSymName(targ)
 			fmt.Fprintf(stdout, "//go:cgo_import_dynamic %s %s %q\n", s.Name, targ, s.Library)
 		}
 		lib, _ := f.ImportedLibraries()
@@ -356,6 +358,7 @@ func dynimport(obj string) {
 			if len(s) > 0 && s[0] == '_' {
 				s = s[1:]
 			}
+			checkImportSymName(s)
 			fmt.Fprintf(stdout, "//go:cgo_import_dynamic %s %s %q\n", s, s, "")
 		}
 		lib, _ := f.ImportedLibraries()
@@ -370,6 +373,8 @@ func dynimport(obj string) {
 		for _, s := range sym {
 			ss := strings.Split(s, ":")
 			name := strings.Split(ss[0], "@")[0]
+			checkImportSymName(name)
+			checkImportSymName(ss[0])
 			fmt.Fprintf(stdout, "//go:cgo_import_dynamic %s %s %q\n", name, ss[0], strings.ToLower(ss[1]))
 		}
 		return
@@ -387,6 +392,7 @@ func dynimport(obj string) {
 				// Go symbols.
 				continue
 			}
+			checkImportSymName(s.Name)
 			fmt.Fprintf(stdout, "//go:cgo_import_dynamic %s %s %q\n", s.Name, s.Name, s.Library)
 		}
 		lib, err := f.ImportedLibraries()
@@ -400,6 +406,23 @@ func dynimport(obj string) {
 	}
 
 	fatalf("cannot parse %s as ELF, Mach-O, PE or XCOFF", obj)
+}
+
+// checkImportSymName checks a symbol name we are going to emit as part
+// of a //go:cgo_import_dynamic pragma. These names come from object
+// files, so they may be corrupt. We are going to emit them unquoted,
+// so while they don't need to be valid symbol names (and in some cases,
+// involving symbol versions, they won't be) they must contain only
+// graphic characters and must not contain Go comments.
+func checkImportSymName(s string) {
+	for _, c := range s {
+		if !unicode.IsGraphic(c) || unicode.IsSpace(c) {
+			fatalf("dynamic symbol %q contains unsupported character", s)
+		}
+	}
+	if strings.Index(s, "//") >= 0 || strings.Index(s, "/*") >= 0 {
+		fatalf("dynamic symbol %q contains Go comment")
+	}
 }
 
 // Construct a gcc struct matching the gc argument frame.
@@ -1168,7 +1191,7 @@ func (p *Package) writeGccgoExports(fgo2, fm, fgcc, fgcch io.Writer) {
 		// will not be able to link against it from the C
 		// code.
 		goName := "Cgoexp_" + exp.ExpName
-		fmt.Fprintf(fgcc, `extern %s %s %s __asm__("%s.%s");`, cRet, goName, cParams, gccgoSymbolPrefix, goName)
+		fmt.Fprintf(fgcc, `extern %s %s %s __asm__("%s.%s");`, cRet, goName, cParams, gccgoSymbolPrefix, gccgoToSymbol(goName))
 		fmt.Fprint(fgcc, "\n")
 
 		fmt.Fprint(fgcc, "\nCGO_NO_SANITIZE_THREAD\n")
@@ -1202,7 +1225,7 @@ func (p *Package) writeGccgoExports(fgo2, fm, fgcc, fgcch io.Writer) {
 		fmt.Fprint(fgcc, "}\n")
 
 		// Dummy declaration for _cgo_main.c
-		fmt.Fprintf(fm, `char %s[1] __asm__("%s.%s");`, goName, gccgoSymbolPrefix, goName)
+		fmt.Fprintf(fm, `char %s[1] __asm__("%s.%s");`, goName, gccgoSymbolPrefix, gccgoToSymbol(goName))
 		fmt.Fprint(fm, "\n")
 
 		// For gccgo we use a wrapper function in Go, in order
@@ -1286,112 +1309,23 @@ func (p *Package) writeExportHeader(fgcch io.Writer) {
 	fmt.Fprintf(fgcch, "%s\n", p.gccExportHeaderProlog())
 }
 
-// gccgoUsesNewMangling reports whether gccgo uses the new collision-free
-// packagepath mangling scheme (see determineGccgoManglingScheme for more
-// info).
-func gccgoUsesNewMangling() bool {
-	if !gccgoMangleCheckDone {
-		gccgoNewmanglingInEffect = determineGccgoManglingScheme()
-		gccgoMangleCheckDone = true
-	}
-	return gccgoNewmanglingInEffect
-}
-
-const mangleCheckCode = `
-package läufer
-func Run(x int) int {
-  return 1
-}
-`
-
-// determineGccgoManglingScheme performs a runtime test to see which
-// flavor of packagepath mangling gccgo is using. Older versions of
-// gccgo use a simple mangling scheme where there can be collisions
-// between packages whose paths are different but mangle to the same
-// string. More recent versions of gccgo use a new mangler that avoids
-// these collisions. Return value is whether gccgo uses the new mangling.
-func determineGccgoManglingScheme() bool {
-
-	// Emit a small Go file for gccgo to compile.
-	filepat := "*_gccgo_manglecheck.go"
-	var f *os.File
-	var err error
-	if f, err = ioutil.TempFile(*objDir, filepat); err != nil {
-		fatalf("%v", err)
-	}
-	gofilename := f.Name()
-	defer os.Remove(gofilename)
-
-	if err = ioutil.WriteFile(gofilename, []byte(mangleCheckCode), 0666); err != nil {
-		fatalf("%v", err)
-	}
-
-	// Compile with gccgo, capturing generated assembly.
-	gccgocmd := os.Getenv("GCCGO")
-	if gccgocmd == "" {
-		gpath, gerr := exec.LookPath("gccgo")
-		if gerr != nil {
-			fatalf("unable to locate gccgo: %v", gerr)
+// gccgoToSymbol converts a name to a mangled symbol for gccgo.
+func gccgoToSymbol(ppath string) string {
+	if gccgoMangler == nil {
+		var err error
+		cmd := os.Getenv("GCCGO")
+		if cmd == "" {
+			cmd, err = exec.LookPath("gccgo")
+			if err != nil {
+				fatalf("unable to locate gccgo: %v", err)
+			}
 		}
-		gccgocmd = gpath
-	}
-	cmd := exec.Command(gccgocmd, "-S", "-o", "-", gofilename)
-	buf, cerr := cmd.CombinedOutput()
-	if cerr != nil {
-		fatalf("%s", cerr)
-	}
-
-	// New mangling: expect go.l..u00e4ufer.Run
-	// Old mangling: expect go.l__ufer.Run
-	return regexp.MustCompile(`go\.l\.\.u00e4ufer\.Run`).Match(buf)
-}
-
-// gccgoPkgpathToSymbolNew converts a package path to a gccgo-style
-// package symbol.
-func gccgoPkgpathToSymbolNew(ppath string) string {
-	bsl := []byte{}
-	changed := false
-	for _, c := range []byte(ppath) {
-		switch {
-		case 'A' <= c && c <= 'Z', 'a' <= c && c <= 'z',
-			'0' <= c && c <= '9', c == '_':
-			bsl = append(bsl, c)
-		case c == '.':
-			bsl = append(bsl, ".x2e"...)
-		default:
-			changed = true
-			encbytes := []byte(fmt.Sprintf("..z%02x", c))
-			bsl = append(bsl, encbytes...)
+		gccgoMangler, err = pkgpath.ToSymbolFunc(cmd, *objDir)
+		if err != nil {
+			fatalf("%v", err)
 		}
 	}
-	if !changed {
-		return ppath
-	}
-	return string(bsl)
-}
-
-// gccgoPkgpathToSymbolOld converts a package path to a gccgo-style
-// package symbol using the older mangling scheme.
-func gccgoPkgpathToSymbolOld(ppath string) string {
-	clean := func(r rune) rune {
-		switch {
-		case 'A' <= r && r <= 'Z', 'a' <= r && r <= 'z',
-			'0' <= r && r <= '9':
-			return r
-		}
-		return '_'
-	}
-	return strings.Map(clean, ppath)
-}
-
-// gccgoPkgpathToSymbol converts a package path to a mangled packagepath
-// symbol.
-func gccgoPkgpathToSymbol(ppath string) string {
-	if gccgoUsesNewMangling() {
-		return gccgoPkgpathToSymbolNew(ppath)
-	} else {
-		return gccgoPkgpathToSymbolOld(ppath)
-	}
+	return gccgoMangler(ppath)
 }
 
 // Return the package prefix when using gccgo.
@@ -1401,12 +1335,12 @@ func (p *Package) gccgoSymbolPrefix() string {
 	}
 
 	if *gccgopkgpath != "" {
-		return gccgoPkgpathToSymbol(*gccgopkgpath)
+		return gccgoToSymbol(*gccgopkgpath)
 	}
 	if *gccgoprefix == "" && p.PackageName == "main" {
 		return "main"
 	}
-	prefix := gccgoPkgpathToSymbol(*gccgoprefix)
+	prefix := gccgoToSymbol(*gccgoprefix)
 	if prefix == "" {
 		prefix = "go"
 	}
@@ -1798,8 +1732,12 @@ void _cgoPREFIX_Cfunc__Cmalloc(void *v) {
 `
 
 func (p *Package) cPrologGccgo() string {
-	return strings.Replace(strings.Replace(cPrologGccgo, "PREFIX", cPrefix, -1),
-		"GCCGOSYMBOLPREF", p.gccgoSymbolPrefix(), -1)
+	r := strings.NewReplacer(
+		"PREFIX", cPrefix,
+		"GCCGOSYMBOLPREF", p.gccgoSymbolPrefix(),
+		"_cgoCheckPointer", gccgoToSymbol("_cgoCheckPointer"),
+		"_cgoCheckResult", gccgoToSymbol("_cgoCheckResult"))
+	return r.Replace(cPrologGccgo)
 }
 
 const cPrologGccgo = `

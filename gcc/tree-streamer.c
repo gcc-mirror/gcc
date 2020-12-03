@@ -317,6 +317,7 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
     case TREE_LIST:
     case VOID_CST:
     case VOID_TYPE:
+    case OPAQUE_TYPE:
       /* No recursive trees.  */
       break;
     case ARRAY_TYPE:
