@@ -1,5 +1,8 @@
 2020-12-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 62fb1b9e0da
+	c++: Fix array type dependency [PR 98107] 
+
 	c++tools/
 	* configure.ac: Need ACX_NONCANONICAL_TARGET
 	* configure: Rebuilt.

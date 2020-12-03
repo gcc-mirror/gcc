@@ -48,11 +48,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-eh.h"
 #include "tree-cfg.h"
+#include "alloc-pool.h"
 
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 
-object_allocator<_slp_tree> *slp_tree_pool;
+static object_allocator<_slp_tree> *slp_tree_pool;
+static slp_tree slp_first_node;
+
+void
+vect_slp_init (void)
+{
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes");
+}
+
+void
+vect_slp_fini (void)
+{
+  while (slp_first_node)
+    delete slp_first_node;
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
+}
 
 void *
 _slp_tree::operator new (size_t n)
@@ -73,6 +90,11 @@ _slp_tree::operator delete (void *node, size_t n)
 
 _slp_tree::_slp_tree ()
 {
+  this->prev_node = NULL;
+  if (slp_first_node)
+    slp_first_node->prev_node = this;
+  this->next_node = slp_first_node;
+  slp_first_node = this;
   SLP_TREE_SCALAR_STMTS (this) = vNULL;
   SLP_TREE_SCALAR_OPS (this) = vNULL;
   SLP_TREE_VEC_STMTS (this) = vNULL;
@@ -94,6 +116,12 @@ _slp_tree::_slp_tree ()
 
 _slp_tree::~_slp_tree ()
 {
+  if (this->prev_node)
+    this->prev_node->next_node = this->next_node;
+  else
+    slp_first_node = this->next_node;
+  if (this->next_node)
+    this->next_node->prev_node = this->prev_node;
   SLP_TREE_CHILDREN (this).release ();
   SLP_TREE_SCALAR_STMTS (this).release ();
   SLP_TREE_SCALAR_OPS (this).release ();

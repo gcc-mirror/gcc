@@ -7770,26 +7770,63 @@ expand_builtin_copysign (tree exp, rtx target, rtx subtarget)
   return expand_copysign (op0, op1, target);
 }
 
-/* Expand a call to __builtin___clear_cache.  */
+/* Emit a call to __builtin___clear_cache.  */
 
-static rtx
-expand_builtin___clear_cache (tree exp)
+void
+default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 {
-  if (!targetm.code_for_clear_cache)
+  rtx callee = gen_rtx_SYMBOL_REF (Pmode,
+				   BUILTIN_ASM_NAME_PTR
+				   (BUILT_IN_CLEAR_CACHE));
+
+  emit_library_call (callee,
+		     LCT_NORMAL, VOIDmode,
+		     begin, ptr_mode,
+		     end, ptr_mode);
+}
+
+/* Emit a call to __builtin___clear_cache, unless the target specifies
+   it as do-nothing.  This function can be used by trampoline
+   finalizers to duplicate the effects of expanding a call to the
+   clear_cache builtin.  */
+
+void
+maybe_emit_call_builtin___clear_cache (rtx begin, rtx end)
+{
+  if (GET_MODE (begin) != ptr_mode || GET_MODE (end) != ptr_mode)
     {
-#ifdef CLEAR_INSN_CACHE
-      /* There is no "clear_cache" insn, and __clear_cache() in libgcc
-	 does something.  Just do the default expansion to a call to
-	 __clear_cache().  */
-      return NULL_RTX;
-#else
+      error ("both arguments to %<__builtin___clear_cache%> must be pointers");
+      return;
+    }
+
+  if (targetm.have_clear_cache ())
+    {
+      /* We have a "clear_cache" insn, and it will handle everything.  */
+      class expand_operand ops[2];
+
+      create_address_operand (&ops[0], begin);
+      create_address_operand (&ops[1], end);
+
+      if (maybe_expand_insn (targetm.code_for_clear_cache, 2, ops))
+	return;
+    }
+  else
+    {
+#ifndef CLEAR_INSN_CACHE
       /* There is no "clear_cache" insn, and __clear_cache() in libgcc
 	 does nothing.  There is no need to call it.  Do nothing.  */
-      return const0_rtx;
+      return;
 #endif /* CLEAR_INSN_CACHE */
     }
 
-  /* We have a "clear_cache" insn, and it will handle everything.  */
+  targetm.calls.emit_call_builtin___clear_cache (begin, end);
+}
+
+/* Expand a call to __builtin___clear_cache.  */
+
+static void
+expand_builtin___clear_cache (tree exp)
+{
   tree begin, end;
   rtx begin_rtx, end_rtx;
 
@@ -7799,25 +7836,16 @@ expand_builtin___clear_cache (tree exp)
   if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     {
       error ("both arguments to %<__builtin___clear_cache%> must be pointers");
-      return const0_rtx;
+      return;
     }
 
-  if (targetm.have_clear_cache ())
-    {
-      class expand_operand ops[2];
+  begin = CALL_EXPR_ARG (exp, 0);
+  begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
 
-      begin = CALL_EXPR_ARG (exp, 0);
-      begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
+  end = CALL_EXPR_ARG (exp, 1);
+  end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
 
-      end = CALL_EXPR_ARG (exp, 1);
-      end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
-
-      create_address_operand (&ops[0], begin_rtx);
-      create_address_operand (&ops[1], end_rtx);
-      if (maybe_expand_insn (targetm.code_for_clear_cache, 2, ops))
-	return const0_rtx;
-    }
-  return const0_rtx;
+  maybe_emit_call_builtin___clear_cache (begin_rtx, end_rtx);
 }
 
 /* Given a trampoline address, make sure it satisfies TRAMPOLINE_ALIGNMENT.  */
@@ -9507,6 +9535,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECLE
       && fcode != BUILT_IN_EXECVP
       && fcode != BUILT_IN_EXECVE
+      && fcode != BUILT_IN_CLEAR_CACHE
       && !ALLOCA_FUNCTION_CODE_P (fcode)
       && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
@@ -9696,10 +9725,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return expand_builtin_next_arg ();
 
     case BUILT_IN_CLEAR_CACHE:
-      target = expand_builtin___clear_cache (exp);
-      if (target)
-        return target;
-      break;
+      expand_builtin___clear_cache (exp);
+      return const0_rtx;
 
     case BUILT_IN_CLASSIFY_TYPE:
       return expand_builtin_classify_type (exp);

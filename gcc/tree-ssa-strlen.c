@@ -5684,7 +5684,7 @@ printf_strlen_execute (function *fun, bool warn_only)
 	       "  failures:          %u\n"
 	       "  max_depth:         %u\n",
 	       nidxs,
-	       (nused * 100) / nidxs,
+	       nidxs == 0 ? 0 : (nused * 100) / nidxs,
 	       walker.ptr_qry.var_cache->access_refs.length (),
 	       walker.ptr_qry.hits, walker.ptr_qry.misses,
 	       walker.ptr_qry.failures, walker.ptr_qry.max_depth);

@@ -259,8 +259,13 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 	       !gsi_end_p (gsi);
 	       gsi_next_nondebug (&gsi))
 	    {
+	      /* Do not allow OpenACC loop markers and __builtin_constant_p on
+		 threading paths.  The latter is disallowed, because an
+		 expression might be constant on two threading paths, and
+		 become non-constant (i.e.: phi) when they merge.  */
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (gimple_call_internal_p (stmt, IFN_UNIQUE))
+	      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
+		  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
 		{
 		  m_path.pop ();
 		  return NULL;

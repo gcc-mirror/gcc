@@ -462,6 +462,7 @@ b460001.a
 b460002.a
 b460004.a
 b460005.a
+b460006.a
 b46002a.ada
 b46003a.ada
 b46004a.ada
@@ -846,6 +847,7 @@ b85015a.ada
 b8510010.a
 b8510011.a
 b8510012.am
+b854001.a
 b86001a0.ada
 b86001a1.ada
 b87b23b.ada
@@ -1517,6 +1519,7 @@ bd8004b.tst
 bd8004c.tst
 bdb0a01.a
 bdd2001.a
+bdd2002.a
 bde0001.a
 bde0002.a
 bde0003.a
@@ -1525,6 +1528,8 @@ bde0005.a
 bde0006.a
 bde0007.a
 bde0008.a
+bde0009.a
+bde0010.a
 be2101e.ada
 be2101j.ada
 be2114a.ada
@@ -1876,6 +1881,10 @@ c37404a.ada
 c37404b.ada
 c37405a.ada
 c37411a.ada
+c380001.a
+c380002.a
+c380003.a
+c380004.a
 c38002a.ada
 c38002b.ada
 c38005a.ada
@@ -2218,6 +2227,7 @@ c45532o.dep
 c45532p.dep
 c45534b.ada
 c45536a.dep
+c456001.a
 c45611a.ada
 c45611b.dep
 c45611c.dep
@@ -2227,9 +2237,6 @@ c45613c.dep
 c45614a.ada
 c45614b.dep
 c45614c.dep
-c45622a.ada
-c45624a.ada
-c45624b.ada
 c45631a.ada
 c45631b.dep
 c45631c.dep
@@ -2563,6 +2570,7 @@ c761006.a
 c761007.a
 c761010.a
 c761011.a
+c761012.a
 c83007a.ada
 c83012d.ada
 c83022a.ada
@@ -2639,6 +2647,7 @@ c85018b.ada
 c85019a.ada
 c854001.a
 c854002.a
+c854003.a
 c86003a.ada
 c86004a.ada
 c86004b0.ada
@@ -3275,6 +3284,7 @@ cc51003.a
 cc51004.a
 cc51006.a
 cc51007.a
+cc51008.a
 cc51a01.a
 cc51b03.a
 cc51d01.a
@@ -3293,6 +3303,7 @@ cc70b02.a
 cc70c01.a
 cc70c02.a
 cd10001.a
+cd10002.a
 cd1009a.ada
 cd1009b.ada
 cd1009d.ada
@@ -3466,6 +3477,9 @@ cdb0a01.a
 cdb0a02.a
 cdd1001.a
 cdd2001.a
+cdd2a01.a
+cdd2a02.a
+cdd2a03.a
 cde0001.a
 ce2102a.ada
 ce2102b.ada
@@ -4049,6 +4063,7 @@ fc70c00.a
 fcndecl.ada
 fd72a00.a
 fdb0a00.a
+fdd2a00.a
 fxa5a00.a
 fxaca00.a
 fxacb00.a
@@ -4200,6 +4215,15 @@ la5008f0.ada
 la5008f1.ada
 la5008g0.ada
 la5008g1.ada
+lc300010.a
+lc300011.a
+lc300012.am
+lc300020.a
+lc300021.a
+lc300022.am
+lc300030.a
+lc300031.a
+lc300032.am
 lencheck.ada
 lxd70010.a
 lxd70011.a

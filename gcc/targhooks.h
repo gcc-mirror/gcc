@@ -166,6 +166,7 @@ extern bool default_function_value_regno_p (const unsigned int);
 extern rtx default_internal_arg_pointer (void);
 extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
+extern void default_emit_call_builtin___clear_cache (rtx, rtx);
 extern poly_int64 default_return_pops_args (tree, tree, poly_int64);
 extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
 							    reg_class_t);

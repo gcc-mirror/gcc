@@ -5457,9 +5457,22 @@ Note that the block move need only cover the constant parts of the
 trampoline.  If the target isolates the variable parts of the trampoline
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.
 
-If the target requires any other actions, such as flushing caches or
+If the target requires any other actions, such as flushing caches
+(possibly calling function maybe_emit_call_builtin___clear_cache) or
 enabling stack execution, these actions should be performed after
 initializing the trampoline proper.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE (rtx @var{begin}, rtx @var{end})
+On targets that do not define a @code{clear_cache} insn expander,
+but that define the @code{CLEAR_CACHE_INSN} macro,
+maybe_emit_call_builtin___clear_cache relies on this target hook
+to clear an address range in the instruction cache.
+
+The default implementation calls the @code{__clear_cache} builtin,
+taking the assembler name from the builtin declaration.  Overriding
+definitions may call alternate functions, with alternate calling
+conventions, or emit alternate RTX to perform the job.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_TRAMPOLINE_ADJUST_ADDRESS (rtx @var{addr})
@@ -5490,7 +5503,7 @@ the following macro.
 If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
-@var{end} are both pointer expressions.
+@var{end} are pointer expressions.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,

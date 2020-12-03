@@ -6946,9 +6946,17 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	     have returned an INIT_EXPR rather than a CALL_EXPR.  In that
 	     case, pull the initializer back out and pass it down into
 	     store_init_value.  */
-	  while (TREE_CODE (init_code) == EXPR_STMT
-		 || TREE_CODE (init_code) == CONVERT_EXPR)
-	    init_code = TREE_OPERAND (init_code, 0);
+	  while (true)
+	    {
+	      if (TREE_CODE (init_code) == EXPR_STMT
+		  || TREE_CODE (init_code) == STMT_EXPR
+		  || TREE_CODE (init_code) == CONVERT_EXPR)
+		init_code = TREE_OPERAND (init_code, 0);
+	      else if (TREE_CODE (init_code) == BIND_EXPR)
+		init_code = BIND_EXPR_BODY (init_code);
+	      else
+		break;
+	    }
 	  if (TREE_CODE (init_code) == INIT_EXPR)
 	    {
 	      /* In C++20, the call to build_aggr_init could have created
@@ -13197,6 +13205,16 @@ grokdeclarator (const cp_declarator *declarator,
 	      if (decl_context == PARM && AUTO_IS_DECLTYPE (auto_node))
 		error_at (typespec_loc,
 			  "cannot declare a parameter with %<decltype(auto)%>");
+	      else if (tree c = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+		{
+		  auto_diagnostic_group g;
+		  error_at (typespec_loc,
+			    "class template placeholder %qE not permitted "
+			    "in this context", c);
+		  if (decl_context == PARM && cxx_dialect >= cxx20)
+		    inform (typespec_loc, "use %<auto%> for an "
+			    "abbreviated function template");
+		}
 	      else
 		error_at (typespec_loc,
 			  "%<auto%> parameter not permitted in this context");

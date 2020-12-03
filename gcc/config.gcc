@@ -4615,6 +4615,7 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		with_arch=`${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
 		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ARCH=${with_arch}"
 
 		# Make sure --with-abi is valid.  If it was not specified,

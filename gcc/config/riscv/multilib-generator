@@ -35,9 +35,11 @@
 
 from __future__ import print_function
 import sys
+import os
 import collections
 import itertools
 from functools import reduce
+import subprocess
 
 #
 # TODO: Add test for this script.
@@ -48,82 +50,13 @@ abis = collections.OrderedDict()
 required = []
 reuse = []
 
-canonical_order = "mafdgqlcbjtpvn"
-LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
-
-#
-# IMPLIED_EXT(ext) -> implied extension list.
-#
-IMPLIED_EXT = {
-  "d" : ["f"],
-}
-
 def arch_canonicalize(arch):
-  # TODO: Support extension version.
-  new_arch = ""
-  if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
-    # TODO: We should expand g to imad_zifencei once we support newer spec.
-    new_arch = arch[:5].replace("g", "imafd")
-  else:
-    raise Exception("Unexpected arch: `%s`" % arch[:5])
-
-  # Find any Z, S, H or X
-  long_ext_prefixes_idx = map(lambda x: arch.find(x), LONG_EXT_PREFIXES)
-
-  # Filter out any non-existent index.
-  long_ext_prefixes_idx = list(filter(lambda x: x != -1, long_ext_prefixes_idx))
-  if long_ext_prefixes_idx:
-    first_long_ext_idx = min(long_ext_prefixes_idx)
-    long_exts = arch[first_long_ext_idx:].split("_")
-    std_exts = list(arch[5:first_long_ext_idx])
-  else:
-    long_exts = []
-    std_exts = list(arch[5:])
-
-  #
-  # Handle implied extensions.
-  #
-  for ext in std_exts + long_exts:
-    if ext in IMPLIED_EXT:
-      implied_exts = IMPLIED_EXT[ext]
-      for implied_ext in implied_exts:
-        if implied_ext not in std_exts + long_exts:
-          long_exts.append(implied_ext)
-
-  # Single letter extension might appear in the long_exts list,
-  # becasue we just append extensions list to the arch string.
-  std_exts += list(filter(lambda x:len(x) == 1, long_exts))
-
-  # Multi-letter extension must be in lexicographic order.
-  long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts)))
-
-  # Put extensions in canonical order.
-  for ext in canonical_order:
-    if ext in std_exts:
-      new_arch += ext
-
-  # Check every extension is processed.
-  for ext in std_exts:
-    if ext == '_':
-      continue
-    if ext not in canonical_order:
-      raise Exception("Unsupported extension `%s`" % ext)
-
-  # Concat rest of the multi-char extensions.
-  if long_exts:
-    new_arch += "_" + "_".join(long_exts)
-  return new_arch
-
-#
-# add underline for each multi-char extensions.
-# e.g. ["a", "zfh"] -> ["a", "_zfh"]
-#
-def add_underline_prefix(ext):
-  for long_ext_prefix in LONG_EXT_PREFIXES:
-    if ext.startswith(long_ext_prefix):
-      return "_" + ext
-
-  return ext
+  this_file = os.path.abspath(os.path.join( __file__))
+  arch_can_script = \
+    os.path.join(os.path.dirname(this_file), "arch-canonicalize")
+  proc = subprocess.Popen([arch_can_script, arch], stdout=subprocess.PIPE)
+  out, err = proc.communicate()
+  return out.strip()
 
 #
 # Handle expansion operation.

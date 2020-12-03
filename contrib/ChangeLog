@@ -1,3 +1,7 @@
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Configure sendemail.to.
+
 2020-11-30  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Suggest close file for

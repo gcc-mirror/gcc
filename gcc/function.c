@@ -2206,12 +2206,14 @@ use_register_for_decl (const_tree decl)
       /* Otherwise, if RESULT_DECL is DECL_BY_REFERENCE, it will take
 	 the function_result_decl's assignment.  Since it's a pointer,
 	 we can short-circuit a number of the tests below, and we must
-	 duplicat e them because we don't have the
-	 function_result_decl to test.  */
+	 duplicate them because we don't have the function_result_decl
+	 to test.  */
       if (!targetm.calls.allocate_stack_slots_for_args ())
 	return true;
       /* We don't set DECL_IGNORED_P for the function_result_decl.  */
       if (optimize)
+	return true;
+      if (cfun->tail_call_marked)
 	return true;
       /* We don't set DECL_REGISTER for the function_result_decl.  */
       return false;

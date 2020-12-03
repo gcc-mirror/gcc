@@ -36,6 +36,7 @@
 --
 -- HISTORY:
 --      16 DEC 1999   RLB   Initial Version.
+--      20 JAN 2009   RLB   Corrected error messages.
 
 with Report;
 procedure C433001 is
@@ -82,10 +83,10 @@ procedure C433001 is
            Report.Failed ("First Component incorrect (" & Test_Case & ")");
         end if;
         if Obj(Low+1) /= Second_Component then
-           Report.Failed ("First Component incorrect (" & Test_Case & ")");
+           Report.Failed ("Second Component incorrect (" & Test_Case & ")");
         end if;
         if Obj(High) /= Last_Component then
-           Report.Failed ("First Component incorrect (" & Test_Case & ")");
+           Report.Failed ("Last Component incorrect (" & Test_Case & ")");
         end if;
     end Check_1;
 
@@ -104,10 +105,10 @@ procedure C433001 is
            Report.Failed ("First Component incorrect (" & Test_Case & ")");
         end if;
         if Obj(Color_Type'Succ(Low)) /= Second_Component then
-           Report.Failed ("First Component incorrect (" & Test_Case & ")");
+           Report.Failed ("Second Component incorrect (" & Test_Case & ")");
         end if;
         if Obj(High) /= Last_Component then
-           Report.Failed ("First Component incorrect (" & Test_Case & ")");
+           Report.Failed ("Last Component incorrect (" & Test_Case & ")");
         end if;
     end Check_2;
 

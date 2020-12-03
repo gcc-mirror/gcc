@@ -440,6 +440,9 @@ DEFTREECODE (UNARY_RIGHT_FOLD_EXPR, "unary_right_fold_expr", tcc_expression, 2)
 DEFTREECODE (BINARY_LEFT_FOLD_EXPR, "binary_left_fold_expr", tcc_expression, 3)
 DEFTREECODE (BINARY_RIGHT_FOLD_EXPR, "binary_right_fold_expr", tcc_expression, 3)
 
+/* Represents the __builtin_bit_cast (type, expr) expression.
+   The type is in TREE_TYPE, expression in TREE_OPERAND (bitcast, 0).  */
+DEFTREECODE (BIT_CAST_EXPR, "bit_cast_expr", tcc_expression, 1)
 
 /** C++ extensions. */
 

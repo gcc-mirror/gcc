@@ -128,6 +128,7 @@ extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
 extern bool validate_gimple_arglist (const gcall *, ...);
 extern rtx default_expand_builtin (tree, rtx, rtx, machine_mode, int);
+extern void maybe_emit_call_builtin___clear_cache (rtx, rtx);
 extern bool fold_builtin_next_arg (tree, bool);
 extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc_srcptr, mpc_rnd_t));
 extern tree fold_call_stmt (gcall *, bool);

@@ -4418,10 +4418,10 @@ arc_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
   emit_move_insn (adjust_address (tramp, SImode, 8), fnaddr);
   emit_move_insn (adjust_address (tramp, SImode, 12), cxt);
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, XEXP (tramp, 0), Pmode,
-		     plus_constant (Pmode, XEXP (tramp, 0), TRAMPOLINE_SIZE),
-		     Pmode);
+  maybe_emit_call_builtin___clear_cache (XEXP (tramp, 0),
+					 plus_constant (Pmode,
+							XEXP (tramp, 0),
+							TRAMPOLINE_SIZE));
 }
 
 /* Add the given function declaration to emit code in JLI section.  */

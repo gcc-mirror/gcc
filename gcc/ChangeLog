@@ -1,3 +1,222 @@
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (add_scalar_info): Only use add_AT_wide for 128-bit
+	constants and only in dwarf-5 or later, where DW_FORM_data16 is
+	available.  Otherwise use DW_FORM_block*/DW_FORM_exprloc with
+	DW_OP_implicit_value to describe the constant.
+
+2020-12-02  qing zhao  <qinzhao@gcc.gnu.org>
+
+	PR rtl-optimization/97777
+	* reg-stack.c (rest_of_handle_stack_regs): call
+	df_insn_rescan_all if reg_to_stack return true.
+
+2020-12-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390-protos.h (s390_const_int_pool_entry_p): New
+	function.
+	* config/s390/s390.c (s390_const_int_pool_entry_p): New
+	function.
+	* config/s390/s390.md: Add define_peephole2 that produces llihf
+	and oilf.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97630
+	* tree-vectorizer.h (_slp_tree::next_node,
+	_slp_tree::prev_node): New.
+	(vect_slp_init): Declare.
+	(vect_slp_fini): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Call vect_slp_init/fini.
+	(pass_slp_vectorize::execute): Likewise.
+	* tree-vect-slp.c (vect_slp_init): New.
+	(vect_slp_fini): Likewise.
+	(slp_first_node): New global.
+	(_slp_tree::_slp_tree): Link node into the SLP tree list.
+	(_slp_tree::~_slp_tree): Delink node from the SLP tree list.
+
+2020-12-02  Scott Snyder  <sss@li-snyder.org>
+
+	PR plugins/98059
+	* vec.h (auto_delete_vec): Use
+	DISABLE_COPY_AND_ASSIGN(auto_delete_vec) instead of
+	DISABLE_COPY_AND_ASSIGN(auto_delete_vec<T>) to make it valid C++20
+	after DR2237.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98075
+	* cgraph.c (cgraph_node::dump): Dump decl_is_malloc flag.
+	* ipa-pure-const.c (propagate_malloc): Do not set malloc
+	attribute for void functions.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/93195
+	PR middle-end/93197
+	* configure.ac (HAVE_GAS_SECTION_LINK_ORDER): New.  Define 1 if
+	the assembler supports the section flag 'o' for specifying
+	section with link-order.
+	* output.h (SECTION_LINK_ORDER): New.  Defined to 0x8000000.
+	(SECTION_MACH_DEP): Changed from 0x8000000 to 0x10000000.
+	* targhooks.c (default_print_patchable_function_entry): Pass
+	SECTION_LINK_ORDER to switch_to_section if the section flag 'o'
+	works.  Pass current_function_decl to switch_to_section.
+	* varasm.c (default_elf_asm_named_section): Use 'o' flag for
+	SECTION_LINK_ORDER if assembler supports it.
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* doc/sourcebuild.texi: Document o_flag_in_section.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.opt: Add the missing '.' for -mneeded.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_transform_loop_stmt): Return whether
+	we vectorized a stmt.
+	(vect_transform_loop): Only call maybe_set_vectorized_backedge_value
+	when we vectorized the stmt.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* expmed.h (expand_divmod): Only declare if GCC_OPTABS_H is defined.
+	Add enum optabs_method argument defaulted to OPTAB_LIB_WIDEN.
+	* expmed.c: Include expmed.h after optabs.h.
+	(expand_divmod): Add methods argument, if it is not OPTAB_{,LIB_}WIDEN,
+	don't choose a wider mode, and pass it to other calls instead of
+	hardcoded OPTAB_LIB_WIDEN.  Avoid emitting libcalls if not
+	OPTAB_LIB or OPTAB_LIB_WIDEN.
+	* optabs.c: Include expmed.h after optabs.h.
+	(expand_doubleword_mod, expand_doubleword_divmod): Pass OPTAB_DIRECT
+	as last argument to expand_divmod.
+	(expand_binop): Punt if {s,u}divmod_optab has handler for double-word
+	int_mode.
+	* expr.c: Include expmed.h after optabs.h.
+	* explow.c: Include expmed.h after optabs.h.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* optabs.h (expand_doubleword_divmod): Declare.
+	* optabs.c (expand_doubleword_divmod): New function.
+	(expand_binop): Use it.
+	* internal-fn.c (expand_DIVMOD): Likewise.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR c/98087
+	* gimple-fold.c (clear_padding_type): Do not divide by zero.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	* gdbinit.in: Write what each command calls
+	for a debugging function.
+
+2020-12-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Use OPTION_MASK_DIRECT_MOVE for Power8 target_enable instead
+	of OPTION_MASK_HTM.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER):
+	Remove OPTION_MASK_HTM.
+	(RS6000_CPU): Add OPTION_MASK_HTM to power8, power9 and
+	powerpc64le entries.
+
+2020-12-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98079
+	* config/i386/i386.md (abs<mode>2): Enable QImode
+	only for !TARGET_PARTIAL_REG_STALL.
+	(*abs<mode>2_1): Ditto.
+	(<maxmin:code><mode>3): Ditto.
+	(*<maxmin:code><mode>3_1): Ditto.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic.c (diagnostic_report_diagnostic): ICE causes to
+	terminate compiler immediately, so I guess it should be printed
+	always.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/88702
+	* gimple-if-to-switch.cc (pass_if_to_switch::execute):
+	Require at least 2 BBs.
+	* gimple-if-to-switch.cc (find_conditions): Require
+	equal precision for low and high of a range.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98084
+	* gimple-if-to-switch.cc (find_conditions): Consider only
+	integral types.
+
+2020-12-02  Jeff Law  <law@redhat.com>
+
+	* config/h8300/addsub.md (addqi3_clobber_flags): Rename to
+	addqi3_flags and annotate with a <cczn> for define_subst.
+	(addhi3_h8sx_clobber_flags): Likewise.
+	(subqi3_clobber_flags, sub<mode>3_clobber_flags): Likewise.
+	(neg<mode2>_clobber_flags): Similarly.
+	(addsi3_clobber_flags): Similarly.  Update last argument to
+	output_plussi to distinguish when we need flags or do not need
+	flags.
+	(addhi3_clobber_flags): Similarly.  Twiddle code for cases
+	+-1, +-2 and +-4.
+	* config/h8300/h8300.md: Define iterators, mode attributes and
+	substitutions for use in compare/test elimination.
+	* config/h8300/jumpcall.md (branch, branch_1): Use H8cc mode
+	iterator to cover the different modes for the CC register.
+	(branch_1_false): Likewise.
+
+2020-12-02  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* loop-iv.c: Fix a typo, s/bu/by/, in the `iv_analyze_expr'
+	description in the introduction.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* configure.ac (HAVE_GAS_SHF_GNU_RETAIN): New.  Define 1 if
+	the assembler supports marking sections with SHF_GNU_RETAIN flag.
+	* output.h (SECTION_RETAIN): New.  Defined as 0x4000000.
+	(SECTION_MACH_DEP): Changed from 0x4000000 to 0x8000000.
+	(default_unique_section): Add a bool argument.
+	* varasm.c (get_section): Set SECTION_RETAIN for the preserved
+	symbol with HAVE_GAS_SHF_GNU_RETAIN.
+	(resolve_unique_section): Used named section for the preserved
+	symbol if assembler supports SHF_GNU_RETAIN.
+	(get_variable_section): Handle the preserved common symbol with
+	HAVE_GAS_SHF_GNU_RETAIN.
+	(default_elf_asm_named_section): Require the full declaration and
+	use the 'R' flag for SECTION_RETAIN.
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* doc/sourcebuild.texi: Document R_flag_in_section.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config.gcc: Replace cet.o with gnu-property.o.  Replace
+	i386/t-cet with i386/t-gnu-property.
+	* config/i386/cet.c: Renamed to ...
+	* config/i386/gnu-property.c: This.
+	(emit_gnu_property): New function.
+	(file_end_indicate_exec_stack_and_cet): Renamed to ...
+	(file_end_indicate_exec_stack_and_gnu_property): This.  Call
+	emit_gnu_property to generate GNU_PROPERTY_X86_FEATURE_1_AND and
+	GNU_PROPERTY_X86_ISA_1_NEEDED properties.
+	* config/i386/i386.opt (mneeded): New.
+	* config/i386/linux-common.h (file_end_indicate_exec_stack_and_cet):
+	Renamed to ...
+	(file_end_indicate_exec_stack_and_gnu_property): This.
+	(TARGET_ASM_FILE_END): Updated.
+	* config/i386/t-cet: Renamed to ...
+	* config/i386/t-gnu-property: This.
+	(cet.o): Renamed to ...
+	(gnu-property.o): This.
+	* doc/invoke.texi: Document -mneeded.
+
 2020-12-01  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
 
 	PR tree-optimization/96708
