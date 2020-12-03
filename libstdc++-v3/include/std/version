@@ -201,6 +201,9 @@
 # define __cpp_lib_atomic_wait 201907L
 #endif
 #define __cpp_lib_bind_front 201907L
+#if __has_builtin(__builtin_bit_cast)
+# define __cpp_lib_bit_cast 201806L
+#endif
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
