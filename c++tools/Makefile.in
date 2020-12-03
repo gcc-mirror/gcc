@@ -18,7 +18,7 @@
 srcdir := @srcdir@
 prefix := @prefix@
 bindir := @bindir@
-libexecdir := @libexecdir&
+libexecdir := @libexecdir@
 target_noncanonical := @target_noncanonical@
 version := $(shell cat $(srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(version)
