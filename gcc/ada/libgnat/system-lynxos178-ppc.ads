@@ -102,7 +102,7 @@ package System is
    --  (Priority'First + Priority'Last) / 2
 
    --  However, the default priority given by the OS is not the same thing as
-   --  the Ada value Default_Prioirity (previous examples include VxWorks).
+   --  the Ada value Default_Priority (previous examples include VxWorks).
    --  Therefore, we follow a model based on the full range of LynxOS-178
    --  priorities.
 
