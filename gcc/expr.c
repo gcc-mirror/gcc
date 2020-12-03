@@ -8560,7 +8560,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
   reduce_bit_field = (INTEGRAL_TYPE_P (type)
 		      && !type_has_mode_precision_p (type));
 
-  if (reduce_bit_field && modifier == EXPAND_STACK_PARM)
+  if (reduce_bit_field
+      && (modifier == EXPAND_STACK_PARM
+	  || (target && GET_MODE (target) != mode)))
     target = 0;
 
   /* Use subtarget as the target for operand 0 of a binary operation.  */
@@ -11434,26 +11436,25 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 static rtx
 reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
 {
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
   HOST_WIDE_INT prec = TYPE_PRECISION (type);
-  if (target && GET_MODE (target) != GET_MODE (exp))
-    target = 0;
-  /* For constant values, reduce using build_int_cst_type. */
-  poly_int64 const_exp;
-  if (poly_int_rtx_p (exp, &const_exp))
+  gcc_assert ((GET_MODE (exp) == VOIDmode || GET_MODE (exp) == mode)
+	      && (!target || GET_MODE (target) == mode));
+
+  /* For constant values, reduce using wide_int_to_tree. */
+  if (poly_int_rtx_p (exp))
     {
-      tree t = build_int_cst_type (type, const_exp);
+      tree t = wide_int_to_tree (type, wi::to_poly_wide (exp, mode));
       return expand_expr (t, target, VOIDmode, EXPAND_NORMAL);
     }
   else if (TYPE_UNSIGNED (type))
     {
-      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (exp));
       rtx mask = immed_wide_int_const
 	(wi::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
       return expand_and (mode, exp, mask, target);
     }
   else
     {
-      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (exp));
       int count = GET_MODE_PRECISION (mode) - prec;
       exp = expand_shift (LSHIFT_EXPR, mode, exp, count, target, 0);
       return expand_shift (RSHIFT_EXPR, mode, exp, count, target, 0);
