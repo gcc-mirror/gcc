@@ -3012,11 +3012,11 @@ protected:
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {
-public:
   std::unique_ptr<Expr> return_expr;
 
   Location locus;
 
+public:
   std::string as_string () const override;
 
   /* Returns whether the object has an expression returned (i.e. not void return
@@ -3058,6 +3058,8 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Expr *get_expr () { return return_expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

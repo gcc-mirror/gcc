@@ -774,9 +774,42 @@ TypeResolution::visit (AST::RangeFromToInclExpr &expr)
 void
 TypeResolution::visit (AST::RangeToInclExpr &expr)
 {}
+
 void
 TypeResolution::visit (AST::ReturnExpr &expr)
-{}
+{
+  // Ensure the type of this matches the function
+  auto before = typeBuffer.size ();
+  expr.get_expr ()->accept_vis (*this);
+
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.get_expr ()->get_locus_slow (),
+		     "unable to determine type for return expr");
+      return;
+    }
+
+  auto inferedType = typeBuffer.back ();
+  typeBuffer.pop_back ();
+
+  // check this is compatible with the return type
+  // this will again have issues with structs before we move to HIR
+
+  auto function = scope.CurrentFunction ();
+  if (!function->has_function_return_type ())
+    {
+      rust_error_at (expr.get_locus (), "return for void function %s",
+		     function->as_string ().c_str ());
+      return;
+    }
+
+  if (!typesAreCompatible (function->return_type.get (), inferedType,
+			   expr.get_locus_slow ()))
+    {
+      return;
+    }
+}
+
 void
 TypeResolution::visit (AST::UnsafeBlockExpr &expr)
 {}
@@ -889,18 +922,26 @@ TypeResolution::visit (AST::Function &function)
   // its  a marker for a void function
   scope.InsertType (function.function_name, function.return_type.get ());
   scope.InsertFunction (function.function_name, &function);
+  scope.PushFunction (&function);
   scope.Push ();
 
   for (auto &param : function.function_params)
     {
       if (!isTypeInScope (param.type.get (), param.locus))
-	return;
+	{
+	  scope.Pop ();
+	  scope.PopFunction ();
+	  return;
+	}
 
       auto before = letPatternBuffer.size ();
       param.param_name->accept_vis (*this);
       if (letPatternBuffer.size () <= before)
 	{
 	  rust_error_at (param.locus, "failed to analyse parameter name");
+
+	  scope.Pop ();
+	  scope.PopFunction ();
 	  return;
 	}
 
@@ -913,7 +954,11 @@ TypeResolution::visit (AST::Function &function)
   if (function.has_function_return_type ())
     {
       if (!isTypeInScope (function.return_type.get (), function.locus))
-	return;
+	{
+	  scope.Pop ();
+	  scope.PopFunction ();
+	  return;
+	}
     }
 
   // walk the expression body
@@ -927,6 +972,7 @@ TypeResolution::visit (AST::Function &function)
     function.locals.push_back (value);
 
   scope.Pop ();
+  scope.PopFunction ();
 }
 
 void

@@ -805,10 +805,10 @@ void
 Compilation::visit (AST::ReturnExpr &expr)
 {
   Bexpression *ret = NULL;
-  VISIT_POP (expr.return_expr->get_locus_slow (), expr.return_expr, ret, exprs);
+  VISIT_POP (expr.get_expr ()->get_locus_slow (), expr.get_expr (), ret, exprs);
   if (ret == NULL)
     {
-      rust_fatal_error (expr.return_expr->get_locus_slow (),
+      rust_fatal_error (expr.get_expr ()->get_locus_slow (),
 			"failed to compile");
       return;
     }
@@ -816,7 +816,7 @@ Compilation::visit (AST::ReturnExpr &expr)
   std::vector<Bexpression *> retstmts;
   retstmts.push_back (ret);
   auto s = backend->return_statement (scope.GetCurrentFndecl (), retstmts,
-				      expr.locus);
+				      expr.get_locus ());
   scope.AddStatement (s);
 }
 

@@ -55,6 +55,12 @@ public:
     return functionScope.Lookup (ident, fn);
   }
 
+  void PushFunction (AST::Function *fn) { functionStack.push_back (fn); }
+
+  void PopFunction () { functionStack.pop_back (); }
+
+  AST::Function *CurrentFunction () { return functionStack.back (); }
+
   void InsertLocal (std::string ident, AST::LetStmt *let)
   {
     localsPerBlock.Insert (ident, let);
@@ -91,6 +97,8 @@ public:
   }
 
 private:
+  std::vector<AST::Function *> functionStack;
+
   Scope<AST::Function *> functionScope;
   Scope<AST::LetStmt *> localsPerBlock;
   Scope<AST::StructStruct *> structsPerBlock;
