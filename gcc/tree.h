@@ -5600,6 +5600,13 @@ is_lang_specific (const_tree t)
 #define BUILTIN_VALID_P(FNCODE) \
   (IN_RANGE ((int)FNCODE, ((int)BUILT_IN_NONE) + 1, ((int) END_BUILTINS) - 1))
 
+/* Obtain a pointer to the identifier string holding the asm name for
+   BUILTIN, a BUILT_IN code.  This is handy if the target
+   mangles/overrides the function name that implements the
+   builtin.  */
+#define BUILTIN_ASM_NAME_PTR(BUILTIN) \
+  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (builtin_decl_explicit (BUILTIN))))
+
 /* Return the tree node for an explicit standard builtin function or NULL.  */
 static inline tree
 builtin_decl_explicit (enum built_in_function fncode)

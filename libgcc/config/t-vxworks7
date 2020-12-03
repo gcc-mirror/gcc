@@ -4,7 +4,6 @@ LIBGCC2_DEBUG_CFLAGS =
 # We provide our own implementation for __clear_cache, using a
 # VxWorks specific entry point.
 LIB2FUNCS_EXCLUDE += _clear_cache
-LIB2ADD += $(srcdir)/config/vxcache.c
 
 # This ensures that the correct target headers are used; some VxWorks
 # system headers have names that collide with GCC's internal (host)

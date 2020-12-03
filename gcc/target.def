@@ -5166,11 +5166,27 @@ Note that the block move need only cover the constant parts of the\n\
 trampoline.  If the target isolates the variable parts of the trampoline\n\
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.\n\
 \n\
-If the target requires any other actions, such as flushing caches or\n\
+If the target requires any other actions, such as flushing caches\n\
+(possibly calling function maybe_emit_call_builtin___clear_cache) or\n\
 enabling stack execution, these actions should be performed after\n\
 initializing the trampoline proper.",
  void, (rtx m_tramp, tree fndecl, rtx static_chain),
  default_trampoline_init)
+
+/* Emit a call to a function to clear the instruction cache.  */
+DEFHOOK
+(emit_call_builtin___clear_cache,
+ "On targets that do not define a @code{clear_cache} insn expander,\n\
+but that define the @code{CLEAR_CACHE_INSN} macro,\n\
+maybe_emit_call_builtin___clear_cache relies on this target hook\n\
+to clear an address range in the instruction cache.\n\
+\n\
+The default implementation calls the @code{__clear_cache} builtin,\n\
+taking the assembler name from the builtin declaration.  Overriding\n\
+definitions may call alternate functions, with alternate calling\n\
+conventions, or emit alternate RTX to perform the job.",
+ void, (rtx begin, rtx end),
+ default_emit_call_builtin___clear_cache)
 
 /* Adjust the address of the trampoline in a target-specific way.  */
 DEFHOOK
