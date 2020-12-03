@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Known bugs or deficiencies include:
 
      all methods must be provided in header files; can't use a source
-     file that contains only the method templates and "just win".  */
+     file that contains only the method templates and "just win".
+
+     Fixed by: C++20 modules.  */
 
 #include "config.h"
 #include "system.h"
@@ -6044,6 +6046,14 @@ push_template_decl (tree decl, bool is_friend)
 	      tmpl = NULL_TREE;
 	    }
 	}
+      else if (is_friend)
+	{
+	  /* Record this decl as belonging to the current class.  It's
+	     not chained onto anything else.  */
+	  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (tmpl) = true;
+	  gcc_checking_assert (!DECL_CHAIN (tmpl));
+	  DECL_CHAIN (tmpl) = current_scope ();
+	}
     }
   else if (tmpl)
     /* The type may have been completed, or (erroneously) changed.  */
@@ -11053,6 +11063,7 @@ tsubst_friend_function (tree decl, tree args)
   DECL_USE_TEMPLATE (new_friend) = 0;
   if (TREE_CODE (new_friend) == TEMPLATE_DECL)
     {
+      DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (new_friend) = false;
       DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
