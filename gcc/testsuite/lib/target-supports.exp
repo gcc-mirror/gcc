@@ -10346,3 +10346,8 @@ proc check_effective_target_movdir { } {
 	}
     } "-mmovdiri -mmovdir64b" ]
 }
+
+# Return 1 if GCC was configured with --with-tune=cortex-a76
+proc check_effective_target_tune_cortex_a76 { } {
+    return [check_configured_with "with-tune=cortex-a76"]
+}
