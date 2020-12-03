@@ -412,7 +412,8 @@ flip_storage_order (machine_mode mode, rtx x)
 	  && __builtin_expect (reverse_float_storage_order_supported < 0, 0))
 	check_reverse_float_storage_order_support ();
 
-      if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode))
+      if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode)
+	  || !targetm.scalar_mode_supported_p (int_mode))
 	{
 	  sorry ("reverse storage order for %smode", GET_MODE_NAME (mode));
 	  return x;
