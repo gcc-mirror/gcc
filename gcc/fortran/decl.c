@@ -7390,6 +7390,7 @@ gfc_match_function_decl (void)
      procedure interface body.  */
     if (sym->attr.is_bind_c && sym->attr.module_procedure && sym->old_symbol
   	&& strcmp (sym->name, sym->old_symbol->name) == 0
+	&& sym->binding_label && sym->old_symbol->binding_label
 	&& strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
       {
 	  const char *null = "NULL", *s1, *s2;
@@ -7905,6 +7906,7 @@ gfc_match_subroutine (void)
 	 procedure interface body.  */
       if (sym->attr.module_procedure && sym->old_symbol
   	  && strcmp (sym->name, sym->old_symbol->name) == 0
+	  && sym->binding_label && sym->old_symbol->binding_label
 	  && strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
 	{
 	  const char *null = "NULL", *s1, *s2;
