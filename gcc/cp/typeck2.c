@@ -1150,6 +1150,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	      || VECTOR_TYPE_P (type)
 	      || code == RECORD_TYPE
 	      || code == UNION_TYPE
+	      || code == OPAQUE_TYPE
 	      || code == COMPLEX_TYPE);
 
   /* "If T is a class type and the initializer list has a single
