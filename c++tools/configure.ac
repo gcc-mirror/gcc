@@ -28,7 +28,7 @@ AC_INIT(c++tools)
 AC_CONFIG_SRCDIR([server.cc])
 
 # Determine the noncanonical names used for directories.
-ACX_NONCANONICAL_HOST
+ACX_NONCANONICAL_TARGET
 
 AC_CANONICAL_SYSTEM
 AC_PROG_INSTALL

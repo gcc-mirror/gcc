@@ -610,7 +610,7 @@ host_os
 host_vendor
 host_cpu
 host
-host_noncanonical
+target_noncanonical
 build_os
 build_vendor
 build_cpu
@@ -1884,6 +1884,11 @@ esac
  case ${host_alias} in
   "") host_noncanonical=${build_noncanonical} ;;
   *) host_noncanonical=${host_alias} ;;
+esac
+
+ case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
 esac
 
 

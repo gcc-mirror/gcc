@@ -1,6 +1,10 @@
 2020-12-03  Nathan Sidwell  <nathan@acm.org>
 
 	c++tools/
+	* configure.ac: Need ACX_NONCANONICAL_TARGET
+	* configure: Rebuilt.
+
+	c++tools/
 	* Makefile.in (libexecdir): Fix typo.
 
 2020-12-02  Nathan Sidwell  <nathan@acm.org>
