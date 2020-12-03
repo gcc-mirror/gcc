@@ -5193,7 +5193,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       cond = cond_exec_get_condition (jump);
       if (! cond)
-	return FALSE;
+	goto nce;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
       profile_probability prob_val
