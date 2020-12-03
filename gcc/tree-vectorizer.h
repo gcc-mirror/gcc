@@ -849,6 +849,16 @@ loop_vec_info_for_loop (class loop *loop)
   return (loop_vec_info) loop->aux;
 }
 
+struct slp_root
+{
+  slp_root (slp_instance_kind kind_, vec<stmt_vec_info> stmts_,
+	    stmt_vec_info root_)
+    : kind(kind_), stmts(stmts_), root(root_) {}
+  slp_instance_kind kind;
+  vec<stmt_vec_info> stmts;
+  stmt_vec_info root;
+};
+
 typedef class _bb_vec_info : public vec_info
 {
 public:
@@ -860,6 +870,8 @@ public:
      entry edge to cover bbs[0] PHI nodes and have a region entry
      insert location.  */
   vec<basic_block> bbs;
+
+  vec<slp_root> roots;
 } *bb_vec_info;
 
 #define BB_VINFO_BB(B)               (B)->bb
