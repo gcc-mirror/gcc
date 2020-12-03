@@ -67,8 +67,8 @@ is
    begin
       return Result : Vector do
          Reserve_Capacity (Result, Length (Left) + Length (Right));
-         Append (Result, Left);
-         Append (Result, Right);
+         Append_Vector (Result, Left);
+         Append_Vector (Result, Right);
       end return;
    end "&";
 
@@ -76,7 +76,7 @@ is
    begin
       return Result : Vector do
          Reserve_Capacity (Result, Length (Left) + 1);
-         Append (Result, Left);
+         Append_Vector (Result, Left);
          Append (Result, Right);
       end return;
    end "&";
@@ -86,7 +86,7 @@ is
       return Result : Vector do
          Reserve_Capacity (Result, 1 + Length (Right));
          Append (Result, Left);
-         Append (Result, Right);
+         Append_Vector (Result, Right);
       end return;
    end "&";
 
@@ -176,25 +176,25 @@ is
       end;
    end Adjust;
 
-   ------------
-   -- Append --
-   ------------
+   -------------------
+   -- Append_Vector --
+   -------------------
 
-   procedure Append (Container : in out Vector; New_Item : Vector) is
+   procedure Append_Vector (Container : in out Vector; New_Item : Vector) is
    begin
       if Is_Empty (New_Item) then
          return;
       elsif Checks and then Container.Last = Index_Type'Last then
          raise Constraint_Error with "vector is already at its maximum length";
       else
-         Insert (Container, Container.Last + 1, New_Item);
+         Insert_Vector (Container, Container.Last + 1, New_Item);
       end if;
-   end Append;
+   end Append_Vector;
 
    procedure Append
      (Container : in out Vector;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
    begin
       --  In the general case, we pass the buck to Insert, but for efficiency,
@@ -229,16 +229,16 @@ is
       end if;
    end Append;
 
-   ----------------
-   -- Append_One --
-   ----------------
+   ------------
+   -- Append --
+   ------------
 
-   procedure Append_One (Container : in out Vector;
+   procedure Append (Container : in out Vector;
                         New_Item   :        Element_Type)
    is
    begin
       Insert (Container, Last_Index (Container) + 1, New_Item, 1);
-   end Append_One;
+   end Append;
 
    ----------------------
    -- Append_Slow_Path --
@@ -269,7 +269,7 @@ is
          return;
       else
          Target.Clear;
-         Target.Append (Source);
+         Target.Append_Vector (Source);
       end if;
    end Assign;
 
@@ -1619,7 +1619,7 @@ is
       end;
    end Insert;
 
-   procedure Insert
+   procedure Insert_Vector
      (Container : in out Vector;
       Before    : Extended_Index;
       New_Item  : Vector)
@@ -1766,9 +1766,9 @@ is
             Dst_Index := Dst_Index + 1;
          end loop;
       end;
-   end Insert;
+   end Insert_Vector;
 
-   procedure Insert
+   procedure Insert_Vector
      (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector)
@@ -1798,10 +1798,10 @@ is
          Index := Before.Index;
       end if;
 
-      Insert (Container, Index, New_Item);
-   end Insert;
+      Insert_Vector (Container, Index, New_Item);
+   end Insert_Vector;
 
-   procedure Insert
+   procedure Insert_Vector
      (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector;
@@ -1838,10 +1838,10 @@ is
          Index := Before.Index;
       end if;
 
-      Insert (Container, Index, New_Item);
+      Insert_Vector (Container, Index, New_Item);
 
       Position := (Container'Unrestricted_Access, Index);
-   end Insert;
+   end Insert_Vector;
 
    procedure Insert
      (Container : in out Vector;
@@ -2559,11 +2559,6 @@ is
    -- Prepend --
    -------------
 
-   procedure Prepend (Container : in out Vector; New_Item : Vector) is
-   begin
-      Insert (Container, Index_Type'First, New_Item);
-   end Prepend;
-
    procedure Prepend
      (Container : in out Vector;
       New_Item  : Element_Type;
@@ -2572,6 +2567,15 @@ is
    begin
       Insert (Container, Index_Type'First, New_Item, Count);
    end Prepend;
+
+   -------------
+   -- Prepend_Vector --
+   -------------
+
+   procedure Prepend_Vector (Container : in out Vector; New_Item : Vector) is
+   begin
+      Insert_Vector (Container, Index_Type'First, New_Item);
+   end Prepend_Vector;
 
    --------------
    -- Previous --
