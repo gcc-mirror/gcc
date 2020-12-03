@@ -4432,7 +4432,7 @@ build_template_parm_index (int index,
    parameter.  Returns the canonical type parameter, which may be TYPE
    if no such parameter existed.  */
 
-static tree
+tree
 canonical_type_parameter (tree type)
 {
   int idx = TEMPLATE_TYPE_IDX (type);
@@ -13212,19 +13212,24 @@ tsubst_argument_pack (tree orig_arg, tree args, tsubst_flags_t complain,
 		      tree in_decl)
 {
   /* Substitute into each of the arguments.  */
-  tree new_arg = TYPE_P (orig_arg)
-    ? cxx_make_type (TREE_CODE (orig_arg))
-    : make_node (TREE_CODE (orig_arg));
-
   tree pack_args = tsubst_template_args (ARGUMENT_PACK_ARGS (orig_arg),
 					 args, complain, in_decl);
-  if (pack_args == error_mark_node)
-    new_arg = error_mark_node;
-  else
-    SET_ARGUMENT_PACK_ARGS (new_arg, pack_args);
+  tree new_arg = error_mark_node;
+  if (pack_args != error_mark_node)
+    {
+      if (TYPE_P (orig_arg))
+	{
+	  new_arg = cxx_make_type (TREE_CODE (orig_arg));
+	  SET_TYPE_STRUCTURAL_EQUALITY (new_arg);
+	}
+      else
+	{
+	  new_arg = make_node (TREE_CODE (orig_arg));
+	  TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
+	}
 
-  if (TREE_CODE (new_arg) == NONTYPE_ARGUMENT_PACK)
-    TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
+      SET_ARGUMENT_PACK_ARGS (new_arg, pack_args);
+    }
 
   return new_arg;
 }
