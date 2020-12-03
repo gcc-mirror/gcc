@@ -7494,6 +7494,7 @@ package body Sem_Res is
             Node := First (Actions (N));
             while Present (Node) loop
                if Nkind (Node) = N_Object_Declaration
+                 and then Is_Type (Etype (Defining_Identifier (Node)))
                  and then Requires_Transient_Scope
                             (Etype (Defining_Identifier (Node)))
                then

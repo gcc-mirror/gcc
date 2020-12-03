@@ -1072,14 +1072,18 @@ package body Sem_Aux is
    ---------------------
 
    function Is_Limited_Type (Ent : Entity_Id) return Boolean is
-      Btype : constant E := Base_Type (Ent);
-      Rtype : constant E := Root_Type (Btype);
+      Btype : Entity_Id;
+      Rtype : Entity_Id;
 
    begin
       if not Is_Type (Ent) then
          return False;
+      end if;
 
-      elsif Ekind (Btype) = E_Limited_Private_Type
+      Btype := Base_Type (Ent);
+      Rtype := Root_Type (Btype);
+
+      if Ekind (Btype) = E_Limited_Private_Type
         or else Is_Limited_Composite (Btype)
       then
          return True;

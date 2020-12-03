@@ -2278,9 +2278,12 @@ package body Sem_Ch4 is
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
 
       procedure Check_Action_OK (A : Node_Id);
-      --  Check that the action is something that is allows as a declare_item
-      --  of a declare_expression, except the checks are suppressed for
-      --  generated code.
+      --  Check that the action A is allowed as a declare_item of a declare
+      --  expression if N and A come from source.
+
+      ---------------------
+      -- Check_Action_OK --
+      ---------------------
 
       procedure Check_Action_OK (A : Node_Id) is
       begin
@@ -2324,7 +2327,7 @@ package body Sem_Ch4 is
          Error_Msg_N ("object renaming or constant declaration expected", A);
       end Check_Action_OK;
 
-      A : Node_Id;
+      A        : Node_Id;
       EWA_Scop : Entity_Id;
 
    --  Start of processing for Analyze_Expression_With_Actions
