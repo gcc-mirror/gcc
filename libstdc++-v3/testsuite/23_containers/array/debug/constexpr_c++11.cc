@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++11 -D_GLIBCXX_DEBUG" }
 // { dg-do compile { target c++11 } }
 
 // Copyright (C) 2011-2020 Free Software Foundation, Inc.
