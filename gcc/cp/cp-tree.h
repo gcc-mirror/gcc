@@ -7372,6 +7372,8 @@ extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_vec_convert		(tree, location_t, tree,
 						 tsubst_flags_t);
+extern tree cp_build_bit_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
 extern void record_null_lambda_scope		(tree);

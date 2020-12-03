@@ -3969,6 +3969,7 @@ cp_tree_equal (tree t1, tree t2)
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
+    case BIT_CAST_EXPR:
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       /* Now compare operands as usual.  */
@@ -5214,6 +5215,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case CONST_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
+    case BIT_CAST_EXPR:
       if (TREE_TYPE (*tp))
 	WALK_SUBTREE (TREE_TYPE (*tp));
 

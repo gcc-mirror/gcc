@@ -16731,6 +16731,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	return build1 (code, type, op0);
       }
 
+    case BIT_CAST_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	return cp_build_bit_cast (EXPR_LOCATION (t), type, op0, complain);
+      }
+
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0))
 	  || ARGUMENT_PACK_P (TREE_OPERAND (t, 0)))

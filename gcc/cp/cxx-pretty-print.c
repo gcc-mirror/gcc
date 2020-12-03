@@ -655,6 +655,15 @@ cxx_pretty_printer::postfix_expression (tree t)
       pp_right_paren (this);
       break;
 
+    case BIT_CAST_EXPR:
+      pp_cxx_ws_string (this, "__builtin_bit_cast");
+      pp_left_paren (this);
+      type_id (TREE_TYPE (t));
+      pp_comma (this);
+      expression (TREE_OPERAND (t, 0));
+      pp_right_paren (this);
+      break;
+
     case EMPTY_CLASS_EXPR:
       type_id (TREE_TYPE (t));
       pp_left_paren (this);

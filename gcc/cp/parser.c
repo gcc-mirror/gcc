@@ -7250,6 +7250,32 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				     tf_warning_or_error);
       }
 
+    case RID_BUILTIN_BIT_CAST:
+      {
+	tree expression;
+	tree type;
+	/* Consume the `__builtin_bit_cast' token.  */
+	cp_lexer_consume_token (parser->lexer);
+	/* Look for the opening `('.  */
+	matching_parens parens;
+	parens.require_open (parser);
+	location_t type_location
+	  = cp_lexer_peek_token (parser->lexer)->location;
+	/* Parse the type-id.  */
+	{
+	  type_id_in_expr_sentinel s (parser);
+	  type = cp_parser_type_id (parser);
+	}
+	/* Look for the `,'.  */
+	cp_parser_require (parser, CPP_COMMA, RT_COMMA);
+	/* Now, parse the assignment-expression.  */
+	expression = cp_parser_assignment_expression (parser);
+	/* Look for the closing `)'.  */
+	parens.require_close (parser);
+	return cp_build_bit_cast (type_location, type, expression,
+				  tf_warning_or_error);
+      }
+
     default:
       {
 	tree type;

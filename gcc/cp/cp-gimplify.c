@@ -1560,6 +1560,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 				 cp_genericize_r, cp_walk_subtrees);
       break;
 
+    case BIT_CAST_EXPR:
+      *stmt_p = build1_loc (EXPR_LOCATION (stmt), VIEW_CONVERT_EXPR,
+			    TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
+      break;
+
     default:
       if (IS_TYPE_OR_DECL_P (stmt))
 	*walk_subtrees = 0;
