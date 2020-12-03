@@ -3752,6 +3752,12 @@ case "${target}" in
 				  sed -e 's/,.*$//'`
 			  fi
 
+			  # Disallow extensions in --with-tune=cortex-a53+crc.
+			  if [ $which = tune ] && [ x"$ext_val" != x ]; then
+			    echo "Architecture extensions not supported in --with-$which=$val" 1>&2
+			    exit 1
+			  fi
+
 			  while [ x"$ext_val" != x ]
 			  do
 				ext_val=`echo $ext_val | sed -e 's/\+//'`
@@ -3801,8 +3807,13 @@ case "${target}" in
 			  fi
 			  true
 			else
-			  echo "Unknown $which used in --with-$which=$val" 1>&2
-			  exit 1
+			  # Allow --with-$which=native.
+			  if [ "$val" = native ]; then
+			    true
+			  else
+			    echo "Unknown $which used in --with-$which=$val" 1>&2
+			    exit 1
+			  fi
 			fi
 		done
 		;;
