@@ -357,24 +357,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  C++ Synchronized Buffered Ostream </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf">
         P0053R7 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201711L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Manipulators for C++ Synchronized Buffered Ostream </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0753r2.pdf">
         P0753R2 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201803L</code> </entry>
     </row>
 
@@ -1024,13 +1022,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Bit-casting object representations </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0476r2.html">
         P0476R2 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11 </entry>
       <entry> <code>__cpp_lib_bit_cast &gt;= 201806L</code> </entry>
     </row>
 
@@ -1411,26 +1408,24 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> std::source_location </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1208r6.pdf">
         P1208R6 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11 </entry>
       <entry>
         <code>__cpp_lib_source_location &gt;= 201907L</code>
       </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Efficient access to std::basic_stringbuf's Buffer </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0408r7.pdf">
         P0408R7 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11 </entry>
       <entry />
     </row>
 
