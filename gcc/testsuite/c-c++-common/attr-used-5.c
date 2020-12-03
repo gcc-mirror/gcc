@@ -10,6 +10,7 @@ extern struct dtv_slotinfo_list *list;
 
 static int __attribute__ ((section ("__libc_freeres_fn")))
 free_slotinfo (struct dtv_slotinfo_list **elemp)
+/* { dg-warning "'.*' without 'used' attribute and '.*' with 'used' attribute are placed in a section with the same name" "" { target R_flag_in_section } .-1 } */
 {
   if (!free_slotinfo (&(*elemp)->next))
     return 0;

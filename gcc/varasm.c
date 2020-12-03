@@ -7765,11 +7765,27 @@ switch_to_section (section *new_section, tree decl)
 	{
 	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
 	     section.  */
+	  tree used_decl, no_used_decl;
+
 	  if (DECL_PRESERVE_P (decl))
-	    new_section->common.flags |= SECTION_RETAIN;
+	    {
+	      new_section->common.flags |= SECTION_RETAIN;
+	      used_decl = decl;
+	      no_used_decl = new_section->named.decl;
+	    }
 	  else
-	    new_section->common.flags &= ~(SECTION_RETAIN
-					   | SECTION_DECLARED);
+	    {
+	      new_section->common.flags &= ~(SECTION_RETAIN
+					     | SECTION_DECLARED);
+	      used_decl = new_section->named.decl;
+	      no_used_decl = decl;
+	    }
+	  warning (OPT_Wattributes,
+		   "%+qD without %<used%> attribute and %qD with "
+		   "%<used%> attribute are placed in a section with "
+		   "the same name", no_used_decl, used_decl);
+	  inform (DECL_SOURCE_LOCATION (used_decl),
+		  "%qD was declared here", used_decl);
 	}
       else
 	return;

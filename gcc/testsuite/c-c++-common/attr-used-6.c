@@ -18,6 +18,7 @@ free_slotinfo (struct dtv_slotinfo_list **elemp)
 
 __attribute__ ((section ("__libc_freeres_fn")))
 void free_mem (void)
+/* { dg-warning "'.*' without 'used' attribute and '.*' with 'used' attribute are placed in a section with the same name" "" { target R_flag_in_section } .-1 } */
 {
   free_slotinfo (&list);
 }
