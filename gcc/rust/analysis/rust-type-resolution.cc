@@ -1181,13 +1181,13 @@ TypeResolution::visit (AST::LetStmt &stmt)
       auto typeString = typeComparisonBuffer.back ();
       typeComparisonBuffer.pop_back ();
 
-      AST::Type *val = NULL;
-      if (!scope.LookupType (typeString, &val))
-	{
-	  rust_error_at (stmt.locus, "LetStmt has unknown type: %s",
-			 stmt.type->as_string ().c_str ());
-	  return;
-	}
+      // AST::Type *val = NULL;
+      // if (!scope.LookupType (typeString, &val))
+      //   {
+      //     rust_error_at (stmt.locus, "LetStmt has unknown type: %s",
+      //   		 stmt.type->as_string ().c_str ());
+      //     return;
+      //   }
     }
   else if (inferedType != nullptr)
     {
@@ -1201,13 +1201,13 @@ TypeResolution::visit (AST::LetStmt &stmt)
       auto typeString = typeComparisonBuffer.back ();
       typeComparisonBuffer.pop_back ();
 
-      AST::Type *val = NULL;
-      if (!scope.LookupType (typeString, &val))
-	{
-	  rust_error_at (stmt.locus, "Inferred unknown type: %s",
-			 inferedType->as_string ().c_str ());
-	  return;
-	}
+      // AST::Type *val = NULL;
+      // if (!scope.LookupType (typeString, &val))
+      //   {
+      //     rust_error_at (stmt.locus, "Inferred unknown type: %s",
+      //   		 inferedType->as_string ().c_str ());
+      //     return;
+      //   }
     }
   else
     {
