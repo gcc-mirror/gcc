@@ -238,6 +238,9 @@
 # define __cpp_lib_semaphore 201907L
 #endif
 #define __cpp_lib_shift 201806L
+#if __has_builtin(__builtin_source_location)
+# define __cpp_lib_source_location 201907L
+#endif
 #if __cpp_lib_concepts
 # define __cpp_lib_span 202002L
 #endif
