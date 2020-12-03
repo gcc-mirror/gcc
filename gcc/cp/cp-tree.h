@@ -975,8 +975,10 @@ public:
   operator vec_t *() const { return v; }
   vec_t ** operator& () { return &v; }
 
-  /* Breaks pointer/value consistency for convenience.  */
-  tree& operator[] (unsigned i) const { return (*v)[i]; }
+  /* Breaks pointer/value consistency for convenience.  This takes ptrdiff_t
+     rather than unsigned to avoid ambiguity with the built-in operator[]
+     (bootstrap/91828).  */
+  tree& operator[] (ptrdiff_t i) const { return (*v)[i]; }
 
   ~releasing_vec() { release_tree_vector (v); }
 private:
