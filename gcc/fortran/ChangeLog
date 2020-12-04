@@ -1,3 +1,9 @@
+2020-12-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95342
+	* decl.c (gfc_match_function_decl): Avoid NULL pointer dereference.
+	(gfc_match_subroutine): Likewise.
+
 2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/98011

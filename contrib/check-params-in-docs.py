@@ -23,6 +23,7 @@
 #
 
 import argparse
+import sys
 from itertools import dropwhile, takewhile
 
 
@@ -42,7 +43,7 @@ parser.add_argument('params_output')
 
 args = parser.parse_args()
 
-ignored = set(['logical-op-non-short-circuit'])
+ignored = {'logical-op-non-short-circuit'}
 params = {}
 
 for line in open(args.params_output).readlines():
@@ -58,15 +59,21 @@ texi = list(texi)[1:]
 
 token = '@item '
 texi = [x[len(token):] for x in texi if x.startswith(token)]
+# skip digits
+texi = [x for x in texi if not x[0].isdigit()]
+# skip aarch64 params
+texi = [x for x in texi if not x.startswith('aarch64')]
 sorted_texi = sorted(texi)
 
 texi_set = set(texi) - ignored
 params_set = set(params.keys()) - ignored
 
+success = True
 extra = texi_set - params_set
 if len(extra):
     print('Extra:')
     print(extra)
+    success = False
 
 missing = params_set - texi_set
 if len(missing):
@@ -75,6 +82,9 @@ if len(missing):
         print('@item ' + m)
         print(params[m])
         print()
+    success = False
 
 if texi != sorted_texi:
     print('WARNING: not sorted alphabetically!')
+
+sys.exit(0 if success else 1)

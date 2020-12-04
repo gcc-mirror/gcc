@@ -89,7 +89,7 @@ int main ()
   VERIFY(main_sl.line() == main_sl_line);
   // closing paren of call
   VERIFY(main_sl.column() == 64);
-  VERIFY(main_sl_fn_name.ends_with("main"sv));
+  VERIFY(main_sl_fn_name.ends_with("main()"sv));
   VERIFY(main_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view f_arg_sl_fn_name(f_arg_sl.function_name());
@@ -97,28 +97,28 @@ int main ()
   VERIFY(f_arg_sl.line() == f_arg_sl_line);
   // closing paren of call
   VERIFY(f_arg_sl.column() == 64);
-  VERIFY(f_arg_sl_fn_name.ends_with("main"sv));
+  VERIFY(f_arg_sl_fn_name.ends_with("main()"sv));
   VERIFY(f_arg_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view g_sl_fn_name(g_sl.function_name());
   std::string_view g_sl_fi_name(g_sl.file_name());
   VERIFY(g_sl.line() == g_sl_line);
   VERIFY(g_sl.column() == 58); // closing paren of call
-  VERIFY(g_sl_fn_name.ends_with("g"sv));
+  VERIFY(g_sl_fn_name.ends_with("g()"sv));
   VERIFY(g_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view h_sl_fn_name(h_sl.function_name());
   std::string_view h_sl_fi_name(h_sl.file_name());
   VERIFY(h_sl.line() == 23);
   VERIFY(h_sl.column() == 58); // closing paren of call
-  VERIFY(h_sl_fn_name.ends_with("h"sv));
+  VERIFY(h_sl_fn_name.ends_with("h()"sv));
   VERIFY(h_sl_fi_name.ends_with("srcloc.h"sv));
 
   std::string_view member_main_sl_fn_name(member_main_sl.member.function_name());
   std::string_view member_main_sl_fi_name(member_main_sl.member.file_name());
   VERIFY(member_main_sl.member.line() == main_sl_line);
   VERIFY(member_main_sl.member.column() == 64);
-  VERIFY(member_main_sl_fn_name.ends_with("main"sv));
+  VERIFY(member_main_sl_fn_name.ends_with("main()"sv));
   VERIFY(member_main_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view member_defaulted_sl_fi_name(
@@ -128,9 +128,7 @@ int main ()
   VERIFY(member_defaulted_sl.member.line() == 46);
   // closing paren of constructor declaration
   VERIFY(member_defaulted_sl.member.column() == 25);
-#if 0
   VERIFY(member_defaulted_sl_fn_name.starts_with("s::s(int)"sv));
-#endif
   VERIFY(member_defaulted_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view member_sl_fi_name(
@@ -140,7 +138,7 @@ int main ()
   VERIFY(member_sl.member.line() == member_sl_line);
   // closing brace/paren of constructor
   VERIFY(member_sl.member.column() == 19);
-  VERIFY(member_sl_fn_name.starts_with("main"sv));
+  VERIFY(member_sl_fn_name.starts_with("int main()"sv));
   VERIFY(member_sl_fi_name.ends_with("1.cc"sv));
 
   std::string_view f_sl_fi_name(f_sl.file_name());
@@ -148,7 +146,7 @@ int main ()
   VERIFY(f_sl.line() == f_sl_line);
   // closing paren of call
   VERIFY(f_sl.column() == 33);
-  VERIFY(f_sl_fn_name.ends_with("main"sv));
+  VERIFY(f_sl_fn_name.ends_with("main()"sv));
   VERIFY(f_sl_fi_name.ends_with("1.cc"sv));
 
   return 0;

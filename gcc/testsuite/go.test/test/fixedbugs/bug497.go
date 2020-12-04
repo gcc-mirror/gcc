@@ -4,7 +4,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Gccgo used to miscompile this, because of the empty struct.
+// Gccgo used to miscompile passing a global variable with a
+// zero-sized type to a function.
 
 package main
 

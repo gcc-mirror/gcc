@@ -1,3 +1,21 @@
+2020-12-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR libgcc/97543
+	PR libgcc/97643
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): New make variable.
+	(IBM128_SHARED_OBJS): New make variable.
+	(IBM128_OBJS): New make variable.  Set all objects to use the
+	explicit IBM format, and disable gnu attributes.
+	(IBM128_CFLAGS): New make variable.
+	(gcc_s_compile): Add -mno-gnu-attribute to all shared library
+	modules.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/t-vxworks (LIB2ADD): Drop.
+	* config/t-vxworks7 (LIB2ADD): Likewise.
+	* config/vxcache.c: Remove.
+
 2020-11-30  Stefan Kanthak  <stefan.kanthak@nexgo.de>
 
 	* libgcc2.c (bswapsi2): Make constants unsigned.

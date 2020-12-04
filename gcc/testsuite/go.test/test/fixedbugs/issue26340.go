@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file.
 
 // gccgo did not permit omitting the type of a composite literal
-// element when the element type is a pointer type.
+// element when one of the middle omitted types was a pointer type.
 
 package p
 

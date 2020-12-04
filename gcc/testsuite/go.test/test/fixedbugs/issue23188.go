@@ -9,7 +9,7 @@
 package main
 
 func main() {
-        arr := []int{1, 2}
+	arr := []int{1, 2}
 
 	// The spec says that in an assignment statement the operands
 	// of all index expressions and pointer indirections on the
@@ -24,7 +24,7 @@ func main() {
 	//   tmp3 := len(arr)
 	//   arr = arr[:tmp3-1]
 	//   tmp1[tmp2] = 3
-        arr, arr[len(arr)-1] = arr[:len(arr)-1], 3
+	arr, arr[len(arr)-1] = arr[:len(arr)-1], 3
 
 	if len(arr) != 1 || arr[0] != 1 || arr[:2][1] != 3 {
 		panic(arr)

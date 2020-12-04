@@ -1,3 +1,148 @@
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-nodiscard1.C: XFAIL.
+
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90629
+	PR middle-end/94527
+	* g++.dg/asan/asan_test.cc: Fix a bug.
+	* g++.dg/warn/delete-array-1.C: Add expected warning.
+	* g++.old-deja/g++.other/delete2.C: Add expected warning.
+	* g++.dg/warn/Wfree-nonheap-object-2.C: New test.
+	* g++.dg/warn/Wfree-nonheap-object.C: New test.
+	* g++.dg/warn/Wmismatched-new-delete.C: New test.
+	* g++.dg/warn/Wmismatched-dealloc-2.C: New test.
+	* g++.dg/warn/Wmismatched-dealloc.C: New test.
+	* gcc.dg/Wmismatched-dealloc.c: New test.
+	* gcc.dg/analyzer/malloc-1.c: Prune out expected warning.
+	* gcc.dg/attr-malloc.c: New test.
+	* gcc.dg/free-1.c: Adjust text of expected warning.
+	* gcc.dg/free-2.c: Same.
+	* gcc.dg/torture/pr71816.c: Prune out expected warning.
+	* gcc.dg/tree-ssa/pr19831-2.c: Add an expected warning.
+	* gcc.dg/Wfree-nonheap-object-2.c: New test.
+	* gcc.dg/Wfree-nonheap-object-3.c: New test.
+	* gcc.dg/Wfree-nonheap-object.c: New test.
+	* g++.dg/warn/Wfree-nonheap-object.s: New file.
+
+2020-12-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95342
+	* gfortran.dg/pr95342.f90: New test.
+
+2020-12-03  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (go-gc-tests): Add -I. when building all
+	sources in a directory (errorcheckdir, compiledir, rundir,
+	rundircmpout).
+
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98019
+	* g++.dg/cpp2a/concepts-nodiscard1.C: New test.
+
+2020-12-03  Uroš Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98086
+	* gcc.target/i386/pr98086.c: New test.
+
+2020-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98115
+	PR c++/98116
+	* g++.dg/template/pr98115.C: New.
+	* g++.dg/template/pr98116.C: New.
+
+2020-12-03  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/stack-clash-4.c: New test.
+
+2020-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/undef_1.c: New test.
+
+2020-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr98099.c: New test.
+
+2020-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/cpp2a/pr98082.C: New test.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* g++.dg/cpp2a/bit-cast1.C: New test.
+	* g++.dg/cpp2a/bit-cast2.C: New test.
+	* g++.dg/cpp2a/bit-cast3.C: New test.
+	* g++.dg/cpp2a/bit-cast4.C: New test.
+	* g++.dg/cpp2a/bit-cast5.C: New test.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/consteval-defarg2.C: New test.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98104
+	* g++.dg/warn/pr98104.C: New test.
+
+2020-12-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr96906-1.c: New test.
+	* gcc.target/i386/pr96906-1.c: Add -mno-avx512f.
+
+2020-12-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Adjust testcase to
+	make sure only masked load instruction is generated.
+	* gcc.target/i386/avx512bw-vmovdqu8-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovapd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovaps-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/pr97642-1.c: New test.
+	* gcc.target/i386/pr97642-2.c: New test.
+
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/parse/defarg17.C: New test.
+
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/consteval-defarg1.C: New test.
+
+2020-12-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/97770
+	* gcc.target/i386/avx512bitalg-pr97770-1.c: New test.
+	* gcc.target/i386/avx512vpopcntdq-pr97770-1.c: Likewise.
+	* gcc.target/i386/avx512vpopcntdq-pr97770-2.c: Likewise.
+	* gcc.target/i386/avx512vpopcntdqvl-pr97770-1.c: Likewise.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/options.exp (check_for_options_with_filter): Detect
+	unavailable compiler for the selected language, and bail out
+	as unsupported.
+
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust expected warnings
+	to correctly reflect the maximum object size.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-11.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-18.c: Same.
+
+2020-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/builtin-constant-p-threading.c: New test.
+
 2020-12-03  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR c++/97947
