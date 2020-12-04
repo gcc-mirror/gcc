@@ -5422,10 +5422,6 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   resolving of typenames in structural_comptypes.  */
-extern int comparing_typenames;
-
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
@@ -7563,7 +7559,7 @@ extern bool is_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
-extern tree build_cplus_array_type		(tree, tree, int is_dep = -1);
+extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
 extern bool array_of_runtime_bound_p		(tree);
 extern bool vla_type_p				(tree);
