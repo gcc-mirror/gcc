@@ -13878,14 +13878,20 @@ package body Sem_Util is
    -------------------
 
    function In_Check_Node (N : Node_Id) return Boolean is
-      Node : Node_Id := Parent (N);
+      Par : Node_Id := Parent (N);
    begin
-      while Present (Node) loop
-         if Nkind (Node) in N_Raise_xxx_Error then
+      while Present (Par) loop
+         if Nkind (Par) in N_Raise_xxx_Error then
             return True;
-         end if;
 
-         Node := Parent (Node);
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return False;
+
+         else
+            Par := Parent (Par);
+         end if;
       end loop;
 
       return False;
