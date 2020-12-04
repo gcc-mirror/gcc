@@ -7375,9 +7375,9 @@ AC_MSG_RESULT($ld_pushpopstate_support)
 # gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
 # float_t from that, this behavior can be configured with
 # --enable-s390-excess-float-precision. When given as enabled, that flag selects
-# the old model. When omitted, native builds will derive the flag from the
-# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
-# model. In any other case, it defaults to the new model.
+# the old model. When omitted, native builds and cross compiles that have target
+# libc headers will detect whether libc clamps float_t to double and in that
+# case maintain the old model. Otherwise, they will default to the new model.
 AC_ARG_ENABLE(s390-excess-float-precision,
   [AS_HELP_STRING([--enable-s390-excess-float-precision],
 		  [on s390 targets, evaluate float with double precision
@@ -7386,20 +7386,42 @@ AC_ARG_ENABLE(s390-excess-float-precision,
 
 case $target in
   s390*-linux*)
-  if test "$target" = "$host" -a "$host" = "$build" -a \
-      x"$enable_s390_excess_float_precision" = xauto; then
-    AC_CACHE_CHECK([for glibc clamping float_t to double],
-      gcc_cv_float_t_clamped_to_double,
-      [AC_RUN_IFELSE([AC_LANG_SOURCE([
+  if test x"$enable_s390_excess_float_precision" = xauto; then
+    # Can we autodetect the behavior of the target libc?
+    if test "$target" = "$host" -a "$host" = "$build"; then
+      enable_s390_excess_float_precision=autodetect
+    elif test "x$with_headers" != xno; then
+      # cross build. are target headers available?
+      # carefully coerce the build-system compiler to use target headers
+      saved_CXXFLAGS="$CXXFLAGS"
+      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+]])], [enable_s390_excess_float_precision=autodetect], [])
+      CXXFLAGS="$saved_CXXFLAGS"
+    fi
+
+    if test x"$enable_s390_excess_float_precision" = xautodetect; then
+      saved_CXXFLAGS="$CXXFLAGS"
+      if ! test "$target" = "$host" -a "$host" = "$build"; then
+        CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+	unset CROSS_TEST_CXXFLAGS
+      fi
+      AC_CACHE_CHECK([for glibc clamping float_t to double],
+        gcc_cv_float_t_clamped_to_double, [
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #define __FLT_EVAL_METHOD__ 0
 #include <math.h>
-int main() {
-  return !(sizeof(float_t) == sizeof(double));
-}])],
-        [gcc_cv_float_t_clamped_to_double=yes],
-        [gcc_cv_float_t_clamped_to_double=no])])
-    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
-      enable_s390_excess_float_precision=yes
+int dummy[sizeof(float_t) == sizeof(double) ? 1 : -1];
+]])],
+          [gcc_cv_float_t_clamped_to_double=yes],
+          [gcc_cv_float_t_clamped_to_double=no])])
+      CXXFLAGS="$saved_CXXFLAGS"
+      enable_s390_excess_float_precision="$gcc_cv_float_t_clamped_to_double"
+    else
+      # no way to detect behavior of target libc, default to new model
+      enable_s390_excess_float_precision=no
     fi
   fi
 

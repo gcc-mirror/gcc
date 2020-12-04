@@ -2277,9 +2277,10 @@ On s390(x) targets, enable treatment of float expressions with double precision
 when in standards-compliant mode (e.g., when @code{--std=c99} or
 @code{-fexcess-precision=standard} are given).
 
-For a native build, the option's default is derived from glibc's behavior. When
-glibc clamps float_t to double, gcc follows and enables the option. In all other
-cases, it defaults to off.
+For a native build and cross compiles that have target headers, the option's
+default is derived from glibc's behavior. When glibc clamps float_t to double,
+GCC follows and enables the option. For other cross compiles, the default is
+disabled.
 @end table
 
 @subheading Cross-Compiler-Specific Options
