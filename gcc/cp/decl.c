@@ -4186,6 +4186,8 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
   return make_unbound_class_template_raw (context, name, parm_list);
 }
 
+/* Build an UNBOUND_CLASS_TEMPLATE.  */
+
 tree
 make_unbound_class_template_raw (tree context, tree name, tree parm_list)
 {

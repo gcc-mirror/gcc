@@ -88,7 +88,7 @@ quux ()
   const char *file1 = source_location::current ().file_name ();
   const char *file2 = __FILE__;
   const char *function1 = source_location::current ().function_name ();
-  const char *function2 = __FUNCTION__;
+  const char *function2 = __PRETTY_FUNCTION__;
   int line1 = source_location::current ().line ();
   int line2 = __LINE__ - 1;
   int column

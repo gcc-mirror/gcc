@@ -68,16 +68,6 @@ union cumulative_args_t { void *p; };
 
 #endif /* !CHECKING_P */
 
-/* Types used by the record_gcc_switches() target function.  */
-enum print_switch_type
-{
-  SWITCH_TYPE_PASSED,		/* A switch passed on the command line.  */
-  SWITCH_TYPE_ENABLED,		/* An option that is currently enabled.  */
-  SWITCH_TYPE_DESCRIPTIVE,	/* Descriptive text, not a switch or option.  */
-  SWITCH_TYPE_LINE_START,	/* Please emit any necessary text at the start of a line.  */
-  SWITCH_TYPE_LINE_END		/* Please emit a line terminator.  */
-};
-
 /* Types of memory operation understood by the "by_pieces" infrastructure.
    Used by the TARGET_USE_BY_PIECES_INFRASTRUCTURE_P target hook and
    internally by the functions in expr.c.  */
@@ -96,10 +86,8 @@ extern unsigned HOST_WIDE_INT by_pieces_ninsns (unsigned HOST_WIDE_INT,
 						unsigned int,
 						by_pieces_operation);
 
-typedef int (* print_switch_fn_type) (print_switch_type, const char *);
-
 /* An example implementation for ELF targets.  Defined in varasm.c  */
-extern int elf_record_gcc_switches (print_switch_type type, const char *);
+extern void elf_record_gcc_switches (const char *);
 
 /* Some places still assume that all pointer or address modes are the
    standard Pmode and ptr_mode.  These optimizations become invalid if

@@ -1,3 +1,189 @@
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90629
+	PR middle-end/94527
+	* builtins.c (access_ref::access_ref): Initialize new member.
+	(compute_objsize): Use access_ref::deref.  Handle simple pointer
+	assignment.
+	(expand_builtin): Remove handling of the free built-in.
+	(call_dealloc_argno): Same.
+	(find_assignment_location): New function.
+	(fndecl_alloc_p): Same.
+	(gimple_call_alloc_p): Same.
+	(call_dealloc_p): Same.
+	(matching_alloc_calls_p): Same.
+	(warn_dealloc_offset): Same.
+	(maybe_emit_free_warning): Same.
+	* builtins.h (struct access_ref): Declare new member.
+	(maybe_emit_free_warning): Make extern.  Make use of access_ref.
+	Handle -Wmismatched-new-delete.
+	* calls.c (initialize_argument_information): Call
+	maybe_emit_free_warning.
+	* doc/extend.texi (attribute malloc): Update.
+	* doc/invoke.texi (-Wfree-nonheap-object): Expand documentation.
+	(-Wmismatched-new-delete): Document new option.
+	(-Wmismatched-dealloc): Document new option.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree.c (build_common_builtin_nodes): Declare
+	__builtin___clear_cache for all languages.
+	* builtins.c (maybe_emit_call_builtin___clear_cache): Accept
+	Pmode arguments.
+
+2020-12-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add "-mthumb -mcpu=cortex-r52
+	-mfloat-abi=hard" multilib.
+
+2020-12-03  Uroš Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98086
+	* config/i386/i386.c (ix86_md_asm_adjustmd): Rewrite
+	zero-extension part to use convert_to_mode.
+
+2020-12-03  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("@probe_stack2<mode>"): Change mode
+	iterator to W.
+
+2020-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svundef_impl::fold):
+	Delete.
+
+2020-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/98099
+	* expmed.c (flip_storage_order): In the case of a non-integer mode,
+	sorry out if the integer mode to be used instead is not supported.
+
+2020-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/98082
+	* function.c (use_register_for_decl): Also return true for a result
+	if cfun->tail_call_marked is true.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* fold-const.h (native_encode_initializer): Add mask argument
+	defaulted to nullptr.
+	(find_bitfield_repr_type): Declare.
+	(native_interpret_aggregate): Declare.
+	* fold-const.c (find_bitfield_repr_type): New function.
+	(native_encode_initializer): Add mask argument and support for
+	filling it.  Handle also some bitfields without integral
+	DECL_BIT_FIELD_REPRESENTATIVE.
+	(native_interpret_aggregate): New function.
+	* gimple-fold.h (clear_type_padding_in_mask): Declare.
+	* gimple-fold.c (struct clear_padding_struct): Add clear_in_mask
+	member.
+	(clear_padding_flush): Handle buf->clear_in_mask.
+	(clear_padding_union): Copy clear_in_mask.  Don't error if
+	buf->clear_in_mask is set.
+	(clear_padding_type): Don't error if buf->clear_in_mask is set.
+	(clear_type_padding_in_mask): New function.
+	(gimple_fold_builtin_clear_padding): Set buf.clear_in_mask to false.
+	* doc/extend.texi (__builtin_bit_cast): Document.
+
+2020-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_stmts_at_dest):
+	Do not allow __builtin_constant_p on a threading path.
+
+2020-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* tree-ssa-strlen.c (printf_strlen_execute): Avoid division by
+	0.
+
+2020-12-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator (arch_canonicalize): Move
+	code to arch-canonicalize, and call that script to canonicalize arch
+	string.
+	(canonical_order): Move code to arch-canonicalize.
+	(LONG_EXT_PREFIXES): Ditto.
+	(IMPLIED_EXT): Ditto.
+	* config/riscv/arch-canonicalize: New.
+	* config.gcc (riscv*-*-*): Canonicalize --with-arch.
+
+2020-12-03  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION): New +flagm option in -march for AArch64.
+	* config/aarch64/aarch64.h (AARCH64_FL_FLAGM): Add new flagm extension bit
+	mask.
+	(AARCH64_FL_FOR_ARCH8_4): Add flagm to Armv8.4-A.
+	* doc/invoke.texi: Update docs with +flagm.
+
+2020-12-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96906
+	* config/i386/sse.md
+	(<avx512>_ucmp<mode>3<mask_scalar_merge_name>): Add a new
+	define_split after this insn.
+
+2020-12-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97642
+	* config/i386/i386-expand.c
+	(ix86_expand_special_args_builtin): Don't move all-ones mask
+	operands into register.
+	* config/i386/sse.md (UNSPEC_MASKLOAD): New unspec.
+	(*<avx512>_load<mode>_mask): New define_insns for masked load
+	instructions.
+	(<avx512>_load<mode>_mask): Changed to define_expands which
+	specifically handle memory or all-ones mask operands.
+	(<avx512>_blendm<mode>): Changed to define_insns which are same
+	as original <avx512>_load<mode>_mask with adjustment of
+	operands order.
+	(*<avx512>_load<mode>): New define_insn_and_split which is
+	used to optimize for masked load with all one mask.
+
+2020-12-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/97770
+	* config/i386/sse.md (popcount<mode>2): New expander
+	for SI/DI vector modes.
+	(popcount<mode>2): Likewise for QI/HI vector modes.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* builtins.c (default_emit_call_builtin___clear_cache): New.
+	(maybe_emit_call_builtin___clear_cache): New.
+	(expand_builtin___clear_cache): Split into the above.
+	(expand_builtin): Do not issue clear_cache call any more.
+	* builtins.h (maybe_emit_call_builtin___clear_cache): Declare.
+	* config/aarch64/aarch64.c (aarch64_trampoline_init): Use
+	maybe_emit_call_builtin___clear_cache.
+	* config/arc/arc.c (arc_trampoline_init): Likewise.
+	* config/arm/arm.c (arm_trampoline_init): Likewise.
+	* config/c6x/c6x.c (c6x_initialize_trampoline): Likewise.
+	* config/csky/csky.c (csky_trampoline_init): Likewise.
+	* config/m68k/linux.h (FInALIZE_TRAMPOLINE): Likewise.
+	* config/tilegx/tilegx.c (tilegx_trampoline_init): Likewise.
+	* config/tilepro/tilepro.c (tilepro_trampoline_init): Ditto.
+	* config/vxworks.c: Include rtl.h, memmodel.h, and optabs.h.
+	(vxworks_emit_call_builtin___clear_cache): New.
+	* config/vxworks.h (CLEAR_INSN_CACHE): Drop.
+	(TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE): Define.
+	* target.def (trampoline_init): In the documentation, refer to
+	maybe_emit_call_builtin___clear_cache.
+	(emit_call_builtin___clear_cache): New.
+	* doc/tm.texi.in: Add new hook point.
+	(CLEAR_CACHE_INSN): Remove duplicate 'both'.
+	* doc/tm.texi: Rebuilt.
+	* targhooks.h (default_meit_call_builtin___clear_cache):
+	Declare.
+	* tree.h (BUILTIN_ASM_NAME_PTR): New.
+
+2020-12-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* tree-ssa-threadbackward.c (thread_jumps::profitable_jump_thread_path):
+	Do not allow __builtin_constant_p on a threading path.
+
 2020-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (add_scalar_info): Only use add_AT_wide for 128-bit

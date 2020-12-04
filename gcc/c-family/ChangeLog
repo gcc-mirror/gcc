@@ -1,3 +1,18 @@
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90629
+	PR middle-end/94527
+	* c-attribs.c (handle_dealloc_attribute): New function.
+	(handle_malloc_attribute): Handle argument forms of attribute.
+	* c.opt (-Wmismatched-dealloc): New option.
+	(-Wmismatched-new-delete): New option.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* c-common.h (enum rid): Add RID_BUILTIN_BIT_CAST.
+	* c-common.c (c_common_reswords): Add __builtin_bit_cast.
+
 2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Add predefined

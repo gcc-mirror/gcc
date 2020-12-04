@@ -6287,8 +6287,21 @@ Binary_expression::lower_array_comparison(Gogo* gogo,
   args->push_back(this->operand_address(inserter, this->left_));
   args->push_back(this->operand_address(inserter, this->right_));
 
-  Expression* ret = Expression::make_call(func, args, false, loc);
+  Call_expression* ce = Expression::make_call(func, args, false, loc);
 
+  // Record that this is a call to a generated equality function.  We
+  // need to do this because a comparison returns an abstract boolean
+  // type, but the function necessarily returns "bool".  The
+  // difference shows up in code like
+  //     type mybool bool
+  //     var b mybool = [10]string{} == [10]string{}
+  // The comparison function returns "bool", but since a comparison
+  // has an abstract boolean type we need an implicit conversion to
+  // "mybool".  The implicit conversion is inserted in
+  // Call_expression::do_flatten.
+  ce->set_is_equal_function();
+
+  Expression* ret = ce;
   if (this->op_ == OPERATOR_NOTEQ)
     ret = Expression::make_unary(OPERATOR_NOT, ret, loc);
 
@@ -6978,27 +6991,6 @@ Binary_expression::do_get_backend(Translate_context* context)
   // The only binary operation for string is +, and that should have
   // been converted to a String_concat_expression in do_lower.
   go_assert(!left_type->is_string_type());
-
-  // For complex division Go might want slightly different results than the
-  // backend implementation provides, so we have our own runtime routine.
-  if (this->op_ == OPERATOR_DIV && this->left_->type()->complex_type() != NULL)
-    {
-      Runtime::Function complex_code;
-      switch (this->left_->type()->complex_type()->bits())
-	{
-	case 64:
-          complex_code = Runtime::COMPLEX64_DIV;
-	  break;
-	case 128:
-          complex_code = Runtime::COMPLEX128_DIV;
-	  break;
-	default:
-	  go_unreachable();
-	}
-      Expression* complex_div =
-          Runtime::make_call(complex_code, loc, 2, this->left_, this->right_);
-      return complex_div->get_backend(context);
-    }
 
   Bexpression* left = this->left_->get_backend(context);
   Bexpression* right = this->right_->get_backend(context);
@@ -11184,6 +11176,13 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
         return ret;
     }
 
+  // Add an implicit conversion to a boolean type, if needed.  See the
+  // comment in Binary_expression::lower_array_comparison.
+  if (this->is_equal_function_
+      && this->type_ != NULL
+      && this->type_ != Type::lookup_bool_type())
+    return Expression::make_cast(this->type_, this, this->location());
+
   return this;
 }
 
@@ -11959,7 +11958,7 @@ Call_expression::do_type()
 // parameter types to set the types of the arguments.
 
 void
-Call_expression::do_determine_type(const Type_context*)
+Call_expression::do_determine_type(const Type_context* context)
 {
   if (!this->determining_types())
     return;
@@ -12005,6 +12004,22 @@ Call_expression::do_determine_type(const Type_context*)
 	  else
 	    (*pa)->determine_type_no_context();
 	}
+    }
+
+  // If this is a call to a generated equality function, we determine
+  // the type based on the context.  See the comment in
+  // Binary_expression::lower_array_comparison.
+  if (this->is_equal_function_
+      && !context->may_be_abstract
+      && context->type != NULL
+      && context->type->is_boolean_type()
+      && context->type != Type::lookup_bool_type())
+    {
+      go_assert(this->type_ == NULL
+		|| this->type_ == Type::lookup_bool_type()
+		|| this->type_ == context->type
+		|| this->type_->is_error());
+      this->type_ = context->type;
     }
 }
 

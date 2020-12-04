@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-iftoswitch-optimized" } */
+/* { dg-options "-O2 -fdump-tree-iftoswitch-optimized --param case-values-threshold=5" } */
 
 int global;
 int foo ();

@@ -609,3 +609,5 @@ int test_49 (int i)
   *p = 1; /* { dg-warning "dereference of NULL 'p' \\\[CWE-476\\\]" } */
   return x;
 }
+
+/* { dg-prune-output "\\\[-Wfree-nonheap-object" } */

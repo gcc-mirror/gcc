@@ -1,3 +1,70 @@
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (releasing_vec::operator[]): Change parameter type to
+	ptrdiff_t.
+
+2020-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_EXPORT): New.
+	(class ovl_iterator): Add get_using, exporting_p.
+	* tree.c (ovl_insert): Extend using_or_hidden meaning to include
+	an exported using.
+
+2020-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_UNINSTANTIATED_TEMPLATE_FRIEND): New.
+	* pt.c (push_template_decl): Set it.
+	(tsubst_friend_function): Clear it.
+
+2020-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (make_unbound_class_template_raw): Declare.
+	(canonical_type_parameter): Declare.
+	* decl.c (make_unbound_class_template_raw): Break out of ...
+	(make_unboud_class_template): ... here.  Call it.
+	* pt.c (canonical_type_parameter): Externalize.  Refactor & set
+	structural_equality for type parms.
+
+2020-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98107
+	* tree.c (build_cplus_array_type): Mark dependency of new variant.
+	(cp_build_qualified_type_real, strip_typedefs): Assert
+	TYPE_DEPENDENT_P_VALID, or not a dependent type.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* cp-tree.h (cp_build_bit_cast): Declare.
+	* cp-tree.def (BIT_CAST_EXPR): New tree code.
+	* cp-objcp-common.c (names_builtin_p): Handle RID_BUILTIN_BIT_CAST.
+	(cp_common_init_ts): Handle BIT_CAST_EXPR.
+	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
+	Likewise.
+	* parser.c (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_BIT_CAST.
+	* semantics.c (cp_build_bit_cast): New function.
+	* tree.c (cp_tree_equal): Handle BIT_CAST_EXPR.
+	(cp_walk_subtrees): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+	* constexpr.c (check_bit_cast_type, cxx_eval_bit_cast): New functions.
+	(cxx_eval_constant_expression): Handle BIT_CAST_EXPR.
+	(potential_constant_expression_1): Likewise.
+	* cp-gimplify.c (cp_genericize_r): Likewise.
+
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_primary_expression): Distinguish
+	parms from vars in error.
+	(cp_parser_late_parsing_default_args): Pushdecl parms
+	as we go.
+
+2020-12-03  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (begin_scope): Set immediate_fn_ctx_p.
+	* parser.c (cp_parser_late_parsing_default_args): Push
+	sk_function_parms scope.
+
 2020-12-03  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR c++/97947

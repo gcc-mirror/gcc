@@ -2623,6 +2623,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   /* Check attribute access arguments.  */
   maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, exp);
+
+  /* Check calls to operator new for mismatched forms and attempts
+     to deallocate unallocated objects.  */
+  maybe_emit_free_warning (exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.

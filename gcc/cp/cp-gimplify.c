@@ -3005,7 +3005,7 @@ fold_builtin_source_location (location_t loc)
 	      const char *name = "";
 
 	      if (current_function_decl)
-		name = cxx_printable_name (current_function_decl, 0);
+		name = cxx_printable_name (current_function_decl, 2);
 
 	      val = build_string_literal (strlen (name) + 1, name);
 	    }

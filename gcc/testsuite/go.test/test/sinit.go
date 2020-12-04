@@ -1,16 +1,16 @@
-// $G -S $D/$F.go | egrep initdone >/dev/null && echo BUG sinit || true
+// skip
 
-// NOTE: This test is not run by 'run.go' and so not run by all.bash.
-// To run this test you must use the ./run shell script.
-
-// Copyright 2010 The Go Authors.  All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // Test that many initializations can be done at link time and
 // generate no executable init functions.
+// This test is run by sinit_run.go.
 
 package p
+
+import "unsafe"
 
 // Should be no init func in the assembly.
 // All these initializations should be done at link time.
@@ -43,15 +43,12 @@ var c = []int{1201, 1202, 1203}
 
 var aa = [3][3]int{[3]int{2001, 2002, 2003}, [3]int{2004, 2005, 2006}, [3]int{2007, 2008, 2009}}
 var as = [3]S{S{2101, 2102, 2103}, S{2104, 2105, 2106}, S{2107, 2108, 2109}}
-var ac = [3][]int{[]int{2201, 2202, 2203}, []int{2204, 2205, 2206}, []int{2207, 2208, 2209}}
 
 var sa = SA{[3]int{3001, 3002, 3003}, [3]int{3004, 3005, 3006}, [3]int{3007, 3008, 3009}}
 var ss = SS{S{3101, 3102, 3103}, S{3104, 3105, 3106}, S{3107, 3108, 3109}}
-var sc = SC{[]int{3201, 3202, 3203}, []int{3204, 3205, 3206}, []int{3207, 3208, 3209}}
 
 var ca = [][3]int{[3]int{4001, 4002, 4003}, [3]int{4004, 4005, 4006}, [3]int{4007, 4008, 4009}}
 var cs = []S{S{4101, 4102, 4103}, S{4104, 4105, 4106}, S{4107, 4108, 4109}}
-var cc = [][]int{[]int{4201, 4202, 4203}, []int{4204, 4205, 4206}, []int{4207, 4208, 4209}}
 
 var answers = [...]int{
 	// s
@@ -106,20 +103,27 @@ var answers = [...]int{
 }
 
 var (
-	copy_zero = zero
-	copy_one = one
-	copy_pi = pi
-	copy_slice = slice
+	copy_zero     = zero
+	copy_one      = one
+	copy_pi       = pi
+	copy_slice    = slice
 	copy_sliceInt = sliceInt
-	copy_hello = hello
-	copy_bytes = bytes
+	copy_hello    = hello
+
+	// Could be handled without an initialization function, but
+	// requires special handling for "a = []byte("..."); b = a"
+	// which is not a likely case.
+	// copy_bytes = bytes
+	// https://codereview.appspot.com/171840043 is one approach to
+	// make this special case work.
+
 	copy_four, copy_five = four, five
-	copy_x, copy_y = x, y
-	copy_nilslice = nilslice
-	copy_nilmap = nilmap
-	copy_nilfunc = nilfunc
-	copy_nilchan = nilchan
-	copy_nilptr = nilptr
+	copy_x, copy_y       = x, y
+	copy_nilslice        = nilslice
+	copy_nilmap          = nilmap
+	copy_nilfunc         = nilfunc
+	copy_nilchan         = nilchan
+	copy_nilptr          = nilptr
 )
 
 var copy_a = a
@@ -128,15 +132,12 @@ var copy_c = c
 
 var copy_aa = aa
 var copy_as = as
-var copy_ac = ac
 
 var copy_sa = sa
 var copy_ss = ss
-var copy_sc = sc
 
 var copy_ca = ca
 var copy_cs = cs
-var copy_cc = cc
 
 var copy_answers = answers
 
@@ -172,7 +173,7 @@ var sx []int
 var s0 = []int{0, 0, 0}
 var s1 = []int{1, 2, 3}
 
-func fi() int
+func fi() int { return 1 }
 
 var ax [10]int
 var a0 = [10]int{0, 0, 0}
@@ -202,58 +203,66 @@ var pt0b = &T{X: 0}
 var pt1 = &T{X: 1, Y: 2}
 var pt1a = &T{3, 4}
 
-var copy_bx = bx
+// The checks similar to
+// var copy_bx = bx
+// are commented out.  The  compiler no longer statically initializes them.
+// See issue 7665 and https://codereview.appspot.com/93200044.
+// If https://codereview.appspot.com/169040043 is submitted, and this
+// test is changed to pass -complete to the compiler, then we can
+// uncomment the copy lines again.
+
+// var copy_bx = bx
 var copy_b0 = b0
 var copy_b1 = b1
 
-var copy_fx = fx
+// var copy_fx = fx
 var copy_f0 = f0
 var copy_f1 = f1
 
-var copy_gx = gx
+// var copy_gx = gx
 var copy_g0 = g0
 var copy_g1 = g1
 
-var copy_ix = ix
+// var copy_ix = ix
 var copy_i0 = i0
 var copy_i1 = i1
 
-var copy_jx = jx
+// var copy_jx = jx
 var copy_j0 = j0
 var copy_j1 = j1
 
-var copy_cx = cx
+// var copy_cx = cx
 var copy_c0 = c0
 var copy_c1 = c1
 
-var copy_dx = dx
+// var copy_dx = dx
 var copy_d0 = d0
 var copy_d1 = d1
 
-var copy_sx = sx
+// var copy_sx = sx
 var copy_s0 = s0
 var copy_s1 = s1
 
-var copy_ax = ax
+// var copy_ax = ax
 var copy_a0 = a0
 var copy_a1 = a1
 
-var copy_tx = tx
+// var copy_tx = tx
 var copy_t0 = t0
 var copy_t0a = t0a
 var copy_t0b = t0b
 var copy_t1 = t1
 var copy_t1a = t1a
 
-var copy_psx = psx
+// var copy_psx = psx
 var copy_ps0 = ps0
 var copy_ps1 = ps1
 
-var copy_pax = pax
+// var copy_pax = pax
 var copy_pa0 = pa0
 var copy_pa1 = pa1
 
-var copy_ptx = ptx
+// var copy_ptx = ptx
 var copy_pt0 = pt0
 var copy_pt0a = pt0a
 var copy_pt0b = pt0b
@@ -266,6 +275,11 @@ type T1 int
 
 func (t *T1) M() {}
 
-type Mer interface { M() }
+type Mer interface {
+	M()
+}
 
 var _ Mer = (*T1)(nil)
+
+var Byte byte
+var PtrByte unsafe.Pointer = unsafe.Pointer(&Byte)

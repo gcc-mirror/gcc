@@ -1,7 +1,12 @@
+2020-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 97eaf8c92f9
+	c++: Module API declarations
+
 2020-12-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 62fb1b9e0da
-	c++: Fix array type dependency [PR 98107] 
+	c++: Fix array type dependency [PR 98107]
 
 	c++tools/
 	* configure.ac: Need ACX_NONCANONICAL_TARGET
