@@ -36,7 +36,7 @@ jobs:
            mkdir -p gccrs-build;
            cd gccrs-build;
            ../configure \
-               --enable-languages=c,c++,rust \
+               --enable-languages=rust \
                --disable-bootstrap \
                --enable-multilib
 

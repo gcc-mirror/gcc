@@ -52,7 +52,7 @@ RUN /bin/sh -c set -ex; \
     ./contrib/download_prerequisites; 	{ rm *.tar.* || true; }; \
     mkdir -p /usr/src/gcc/gcc-build; \
     cd /usr/src/gcc/gcc-build; \
-    /usr/src/gcc/configure --disable-bootstrap --disable-multilib --enable-languages=c,c++,rust; \
+    /usr/src/gcc/configure --disable-bootstrap --disable-multilib --enable-languages=rust; \
     make -j "$(nproc)"; \
     make install-strip; \
     cd /root; \
