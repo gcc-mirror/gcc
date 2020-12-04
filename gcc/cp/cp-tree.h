@@ -6886,6 +6886,103 @@ extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
+/* In module.cc  */
+class module_state; /* Forward declare.  */
+inline bool modules_p () { return flag_modules != 0; }
+
+/* The kind of module or part thereof that we're in.  */
+enum module_kind_bits
+{
+  MK_MODULE = 1 << 0,     /* This TU is a module.  */
+  MK_GLOBAL = 1 << 1,     /* Entities are in the global module.  */
+  MK_INTERFACE = 1 << 2,  /* This TU is an interface.  */
+  MK_PARTITION = 1 << 3,  /* This TU is a partition.  */
+  MK_EXPORTING = 1 << 4,  /* We are in an export region.  */
+};
+
+/* We do lots of bit-manipulation, so an unsigned is easier.  */
+extern unsigned module_kind;
+
+/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
+ MODULE GLOBAL
+   0	  0	not a module
+   0	  1	GMF of named module (we've not yet seen module-decl)
+   1	  0	purview of named module
+   1	  1	header unit.   */
+
+inline bool module_purview_p ()
+{ return module_kind & MK_MODULE; }
+inline bool global_purview_p ()
+{ return module_kind & MK_GLOBAL; }
+
+inline bool not_module_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool named_module_p ()
+{ /* This is a named module if exactly one of MODULE and GLOBAL is
+     set.  */
+  /* The divides are constant shifts!  */
+  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
+}
+inline bool header_module_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
+inline bool named_module_purview_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+inline bool module_interface_p ()
+{ return module_kind & MK_INTERFACE; }
+inline bool module_partition_p ()
+{ return module_kind & MK_PARTITION; }
+inline bool module_has_cmi_p ()
+{ return module_kind & (MK_INTERFACE | MK_PARTITION); }
+
+/* We're currently exporting declarations.  */
+inline bool module_exporting_p ()
+{ return module_kind & MK_EXPORTING; }
+
+extern module_state *get_module (tree name, module_state *parent = NULL,
+				 bool partition = false);
+extern bool module_may_redeclare (tree decl);
+
+extern int module_initializer_kind ();
+extern void module_add_import_initializers ();
+
+/* Where the namespace-scope decl was originally declared.  */
+extern void set_originating_module (tree, bool friend_p = false);
+extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
+extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
+extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
+
+/* Where current instance of the decl got declared/defined/instantiated.  */
+extern void set_instantiating_module (tree);
+extern void set_defining_module (tree);
+extern void maybe_attach_decl (tree ctx, tree decl);
+
+extern void mangle_module (int m, bool include_partition);
+extern void mangle_module_fini ();
+extern void lazy_load_binding (unsigned mod, tree ns, tree id,
+			       binding_slot *bslot);
+extern void lazy_load_specializations (tree tmpl);
+extern void lazy_load_members (tree decl);
+extern bool lazy_specializations_p (unsigned, bool, bool);
+extern module_state *preprocess_module (module_state *, location_t,
+					bool in_purview, 
+					bool is_import, bool export_p,
+					cpp_reader *reader);
+extern void preprocessed_module (cpp_reader *reader);
+extern void import_module (module_state *, location_t, bool export_p,
+			   tree attr, cpp_reader *);
+extern void declare_module (module_state *, location_t, bool export_p,
+			    tree attr, cpp_reader *);
+extern void init_modules (cpp_reader *);
+extern void fini_modules ();
+extern void maybe_check_all_macros (cpp_reader *);
+extern void finish_module_processing (cpp_reader *);
+extern char const *module_name (unsigned, bool header_ok);
+extern bitmap get_import_bitmap ();
+extern bitmap module_visible_instantiation_path (bitmap *);
+extern void module_begin_main_file (cpp_reader *, line_maps *,
+				    const line_map_ordinary *);
+extern void module_preprocess_options (cpp_reader *);
+extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
