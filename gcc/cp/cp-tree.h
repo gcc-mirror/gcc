@@ -488,10 +488,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
-      DECL_MODULE_EXPORT_P (in _DECL)
       OVL_NESTED_P (in OVERLOAD)
       LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
-      Reserved for DECL_MODULE_EXPORT (in DECL_)
+      DECL_MODULE_EXPORT_P (in _DECL)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -503,6 +502,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
+      OVL_EXPORT_P (in OVERLOAD)
    6: TYPE_MARKED_P (in _TYPE)
       DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
@@ -545,6 +545,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
       DECL_INVALID_OVERRIDER_P (in a FUNCTION_DECL)
+      DECL_UNINSTANIATED_TEMPLATE_FRIEND_P (in TEMPLATE_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_FIELD_IS_BASE (in FIELD_DECL)
@@ -779,6 +780,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
+/* If set, this OVL_USING_P overload is exported.  */
+#define OVL_EXPORT_P(NODE)	TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -838,6 +841,11 @@ class ovl_iterator {
 
     return fn;
   }
+  tree get_using () const
+  {
+    gcc_checking_assert (using_p ());
+    return ovl;
+  }
 
  public:
   /* Whether this overload was introduced by a using decl.  */
@@ -846,6 +854,12 @@ class ovl_iterator {
     return (TREE_CODE (ovl) == USING_DECL
 	    || (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl)));
   }
+  /* Whether this using is being exported.  */
+  bool exporting_p () const
+  {
+    return OVL_EXPORT_P (get_using ());
+  }
+  
   bool hidden_p () const
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
@@ -961,8 +975,10 @@ public:
   operator vec_t *() const { return v; }
   vec_t ** operator& () { return &v; }
 
-  /* Breaks pointer/value consistency for convenience.  */
-  tree& operator[] (unsigned i) const { return (*v)[i]; }
+  /* Breaks pointer/value consistency for convenience.  This takes ptrdiff_t
+     rather than unsigned to avoid ambiguity with the built-in operator[]
+     (bootstrap/91828).  */
+  tree& operator[] (ptrdiff_t i) const { return (*v)[i]; }
 
   ~releasing_vec() { release_tree_vector (v); }
 private:
@@ -3160,6 +3176,13 @@ struct GTY(()) lang_decl {
 #define DECL_UNIQUE_FRIEND_P(NODE) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE)) \
    ->u.base.friend_or_tls)
+
+/* True of a TEMPLATE_DECL that is a template class friend.  Such
+   decls are not pushed until instantiated (as they may depend on
+   parameters of the befriending class).  DECL_CHAIN is the
+   befriending class.  */
+#define DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P(NODE) \
+  (DECL_LANG_FLAG_4 (TEMPLATE_DECL_CHECK (NODE)))
 
 /* Nonzero if the thread-local variable was declared with __thread as
    opposed to thread_local.  */
@@ -5399,10 +5422,6 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   resolving of typenames in structural_comptypes.  */
-extern int comparing_typenames;
-
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
@@ -6863,6 +6882,103 @@ extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
+/* In module.cc  */
+class module_state; /* Forward declare.  */
+inline bool modules_p () { return flag_modules != 0; }
+
+/* The kind of module or part thereof that we're in.  */
+enum module_kind_bits
+{
+  MK_MODULE = 1 << 0,     /* This TU is a module.  */
+  MK_GLOBAL = 1 << 1,     /* Entities are in the global module.  */
+  MK_INTERFACE = 1 << 2,  /* This TU is an interface.  */
+  MK_PARTITION = 1 << 3,  /* This TU is a partition.  */
+  MK_EXPORTING = 1 << 4,  /* We are in an export region.  */
+};
+
+/* We do lots of bit-manipulation, so an unsigned is easier.  */
+extern unsigned module_kind;
+
+/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
+ MODULE GLOBAL
+   0	  0	not a module
+   0	  1	GMF of named module (we've not yet seen module-decl)
+   1	  0	purview of named module
+   1	  1	header unit.   */
+
+inline bool module_purview_p ()
+{ return module_kind & MK_MODULE; }
+inline bool global_purview_p ()
+{ return module_kind & MK_GLOBAL; }
+
+inline bool not_module_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool named_module_p ()
+{ /* This is a named module if exactly one of MODULE and GLOBAL is
+     set.  */
+  /* The divides are constant shifts!  */
+  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
+}
+inline bool header_module_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
+inline bool named_module_purview_p ()
+{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+inline bool module_interface_p ()
+{ return module_kind & MK_INTERFACE; }
+inline bool module_partition_p ()
+{ return module_kind & MK_PARTITION; }
+inline bool module_has_cmi_p ()
+{ return module_kind & (MK_INTERFACE | MK_PARTITION); }
+
+/* We're currently exporting declarations.  */
+inline bool module_exporting_p ()
+{ return module_kind & MK_EXPORTING; }
+
+extern module_state *get_module (tree name, module_state *parent = NULL,
+				 bool partition = false);
+extern bool module_may_redeclare (tree decl);
+
+extern int module_initializer_kind ();
+extern void module_add_import_initializers ();
+
+/* Where the namespace-scope decl was originally declared.  */
+extern void set_originating_module (tree, bool friend_p = false);
+extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
+extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
+extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
+
+/* Where current instance of the decl got declared/defined/instantiated.  */
+extern void set_instantiating_module (tree);
+extern void set_defining_module (tree);
+extern void maybe_attach_decl (tree ctx, tree decl);
+
+extern void mangle_module (int m, bool include_partition);
+extern void mangle_module_fini ();
+extern void lazy_load_binding (unsigned mod, tree ns, tree id,
+			       binding_slot *bslot);
+extern void lazy_load_specializations (tree tmpl);
+extern void lazy_load_members (tree decl);
+extern bool lazy_specializations_p (unsigned, bool, bool);
+extern module_state *preprocess_module (module_state *, location_t,
+					bool in_purview, 
+					bool is_import, bool export_p,
+					cpp_reader *reader);
+extern void preprocessed_module (cpp_reader *reader);
+extern void import_module (module_state *, location_t, bool export_p,
+			   tree attr, cpp_reader *);
+extern void declare_module (module_state *, location_t, bool export_p,
+			    tree attr, cpp_reader *);
+extern void init_modules (cpp_reader *);
+extern void fini_modules ();
+extern void maybe_check_all_macros (cpp_reader *);
+extern void finish_module_processing (cpp_reader *);
+extern char const *module_name (unsigned, bool header_ok);
+extern bitmap get_import_bitmap ();
+extern bitmap module_visible_instantiation_path (bitmap *);
+extern void module_begin_main_file (cpp_reader *, line_maps *,
+				    const line_map_ordinary *);
+extern void module_preprocess_options (cpp_reader *);
+extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
@@ -7443,7 +7559,7 @@ extern bool is_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
-extern tree build_cplus_array_type		(tree, tree, int is_dep = -1);
+extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
 extern bool array_of_runtime_bound_p		(tree);
 extern bool vla_type_p				(tree);

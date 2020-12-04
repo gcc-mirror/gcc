@@ -46,12 +46,12 @@ struct S {
   source_location loc = source_location::current ();
 
   constexpr S (int l, source_location loc = source_location::current ())
-  : func(__FUNCTION__), line(l), loc(loc)
+  : func(__PRETTY_FUNCTION__), line(l), loc(loc)
   {}
 
   constexpr S (double)
-  : func(__FUNCTION__), line(__LINE__)
-  //                                 ^ column 38
+  : func(__PRETTY_FUNCTION__), line(__LINE__)
+  //                                        ^ column 45
   {}
 };
 
@@ -76,7 +76,7 @@ bar ()
   //                                           ^ column 48
   const source_location *d[3] = { &a, &b, &c };
   const char *file1 = __FILE__;
-  const char *function1 = b.function_name ();
+  const char *function1 = __PRETTY_FUNCTION__;
   for (int j = 0; j < 3; j++)
     {
       int i= 0;
@@ -107,7 +107,7 @@ bar ()
     return false;
   if (e.loc.column () != 8)
     return false;
-  if (f.loc.column () != 38)
+  if (f.loc.column () != 45)
     return false;
   return true;
 }

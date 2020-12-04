@@ -220,6 +220,12 @@ struct access_ref
      argument to the minimum.  */
   offset_int size_remaining (offset_int * = NULL) const;
 
+  /* Return true if *THIS is an access to a declared object.  */
+  bool ref_declared () const
+  {
+    return DECL_P (ref) && base0 && deref < 1;
+  }
+
   /* Set the size range to the maximum.  */
   void set_max_size_range ()
   {
@@ -261,6 +267,9 @@ struct access_ref
 
   /* Used to fold integer expressions when called from front ends.  */
   tree (*eval)(tree);
+  /* Positive when REF is dereferenced, negative when its address is
+     taken.  */
+  int deref;
   /* Set if trailing one-element arrays should be treated as flexible
      array members.  */
   bool trail1special;
@@ -350,5 +359,6 @@ extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
 			     range_query * = NULL);
 extern bool check_access (tree, tree, tree, tree, tree,
 			  access_mode, const access_data * = NULL);
+extern void maybe_emit_free_warning (tree);
 
 #endif /* GCC_BUILTINS_H */

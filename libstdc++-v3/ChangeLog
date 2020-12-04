@@ -1,3 +1,57 @@
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	* testsuite/ext/vstring/modifiers/clear/56166.cc: Suppress a false
+	positive warning.
+
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bit.cast/bit_cast.cc: Remove stray
+	word from copy&paste.
+	* testsuite/26_numerics/bit/bit.cast/version.cc: Likewise.
+
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update C++20 status.
+	* doc/html/*: Regenerate.
+
+2020-12-03  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add <source_location>.
+	* include/Makefile.am: Add <source_location>.
+	* include/Makefile.in: Regenerate.
+	* include/std/version (__cpp_lib_source_location): Define.
+	* include/std/source_location: New file.
+	* testsuite/18_support/source_location/1.cc: New test.
+	* testsuite/18_support/source_location/consteval.cc: New test.
+	* testsuite/18_support/source_location/srcloc.h: New test.
+	* testsuite/18_support/source_location/version.cc: New test.
+
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93121
+	* include/std/bit (__cpp_lib_bit_cast, bit_cast): Define.
+	* include/std/version (__cpp_lib_bit_cast): Define.
+	* testsuite/26_numerics/bit/bit.cast/bit_cast.cc: New test.
+	* testsuite/26_numerics/bit/bit.cast/version.cc: New test.
+
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt:
+	Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Update.
+
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/array (array::operator[](size_t) const, array::front() const)
+	(array::back() const) [__cplusplus == 201103]: Disable
+	assertions.
+	* testsuite/23_containers/array/element_access/constexpr_element_access.cc:
+	Check for correct values.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/array/debug/constexpr_c++11.cc: New test.
+
 2020-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65480

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "opt-suggestions.h"
 #include "diagnostic-color.h"
+#include "version.h"
 #include "selftest.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
@@ -3264,6 +3265,124 @@ get_option_url (diagnostic_context *, int option_index)
 		   NULL);
   else
     return NULL;
+}
+
+/* Return a heap allocated producer with command line options.  */
+
+char *
+gen_command_line_string (cl_decoded_option *options,
+			 unsigned int options_count)
+{
+  auto_vec<const char *> switches;
+  char *options_string, *tail;
+  const char *p;
+  size_t len = 0;
+
+  for (unsigned i = 0; i < options_count; i++)
+    switch (options[i].opt_index)
+      {
+      case OPT_o:
+      case OPT_d:
+      case OPT_dumpbase:
+      case OPT_dumpdir:
+      case OPT_quiet:
+      case OPT_version:
+      case OPT_v:
+      case OPT_w:
+      case OPT_L:
+      case OPT_D:
+      case OPT_I:
+      case OPT_U:
+      case OPT_SPECIAL_unknown:
+      case OPT_SPECIAL_ignore:
+      case OPT_SPECIAL_warn_removed:
+      case OPT_SPECIAL_program_name:
+      case OPT_SPECIAL_input_file:
+      case OPT_grecord_gcc_switches:
+      case OPT_frecord_gcc_switches:
+      case OPT__output_pch_:
+      case OPT_fdiagnostics_show_location_:
+      case OPT_fdiagnostics_show_option:
+      case OPT_fdiagnostics_show_caret:
+      case OPT_fdiagnostics_show_labels:
+      case OPT_fdiagnostics_show_line_numbers:
+      case OPT_fdiagnostics_color_:
+      case OPT_fdiagnostics_format_:
+      case OPT_fverbose_asm:
+      case OPT____:
+      case OPT__sysroot_:
+      case OPT_nostdinc:
+      case OPT_nostdinc__:
+      case OPT_fpreprocessed:
+      case OPT_fltrans_output_list_:
+      case OPT_fresolution_:
+      case OPT_fdebug_prefix_map_:
+      case OPT_fmacro_prefix_map_:
+      case OPT_ffile_prefix_map_:
+      case OPT_fcompare_debug:
+      case OPT_fchecking:
+      case OPT_fchecking_:
+	/* Ignore these.  */
+	continue;
+      case OPT_flto_:
+	{
+	  const char *lto_canonical = "-flto";
+	  switches.safe_push (lto_canonical);
+	  len += strlen (lto_canonical) + 1;
+	  break;
+	}
+      default:
+	if (cl_options[options[i].opt_index].flags
+	    & CL_NO_DWARF_RECORD)
+	  continue;
+	gcc_checking_assert (options[i].canonical_option[0][0] == '-');
+	switch (options[i].canonical_option[0][1])
+	  {
+	  case 'M':
+	  case 'i':
+	  case 'W':
+	    continue;
+	  case 'f':
+	    if (strncmp (options[i].canonical_option[0] + 2,
+			 "dump", 4) == 0)
+	      continue;
+	    break;
+	  default:
+	    break;
+	  }
+	switches.safe_push (options[i].orig_option_with_args_text);
+	len += strlen (options[i].orig_option_with_args_text) + 1;
+	break;
+      }
+
+  options_string = XNEWVEC (char, len + 1);
+  tail = options_string;
+
+  unsigned i;
+  FOR_EACH_VEC_ELT (switches, i, p)
+    {
+      len = strlen (p);
+      memcpy (tail, p, len);
+      tail += len;
+      if (i != switches.length () - 1)
+	{
+	  *tail = ' ';
+	  ++tail;
+	}
+    }
+
+  *tail = '\0';
+  return options_string;
+}
+
+/* Return a heap allocated producer string including command line options.  */
+
+char *
+gen_producer_string (const char *language_string, cl_decoded_option *options,
+		     unsigned int options_count)
+{
+  return concat (language_string, " ", version_string, " ",
+		 gen_command_line_string (options, options_count), NULL);
 }
 
 #if CHECKING_P

@@ -113,6 +113,7 @@ static tree handle_no_instrument_function_attribute (tree *, tree,
 static tree handle_no_profile_instrument_function_attribute (tree *, tree,
 							     tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree handle_dealloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_limit_stack_attribute (tree *, tree, tree, int,
 					     bool *);
@@ -364,7 +365,7 @@ const struct attribute_spec c_common_attribute_table[] =
   { "no_profile_instrument_function",  0, 0, true, false, false, false,
 			      handle_no_profile_instrument_function_attribute,
 			      NULL },
-  { "malloc",                 0, 0, true,  false, false, false,
+  { "malloc",                 0, 2, true,  false, false, false,
 			      handle_malloc_attribute, attr_alloc_exclusions },
   { "returns_twice",          0, 0, true,  false, false, false,
 			      handle_returns_twice_attribute,
@@ -524,6 +525,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_objc_root_class_attribute, NULL },
   { "objc_nullability",	      1, 1, true, false, false, false,
 			      handle_objc_nullability_attribute, NULL },
+  { "*dealloc",                1, 2, true, false, false, false,
+			      handle_dealloc_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -3127,20 +3130,179 @@ handle_no_profile_instrument_function_attribute (tree *node, tree name, tree,
   return NULL_TREE;
 }
 
-/* Handle a "malloc" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Handle the "malloc" attribute.  */
 
 static tree
-handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+handle_malloc_attribute (tree *node, tree name, tree args,
 			 int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  if (TREE_CODE (*node) == FUNCTION_DECL
-      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
-    DECL_IS_MALLOC (*node) = 1;
-  else
+  tree fndecl = *node;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qE attribute ignored; valid only "
+	       "for functions",
+	       name);
       *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  tree rettype = TREE_TYPE (TREE_TYPE (*node));
+  if (!POINTER_TYPE_P (rettype))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored on functions "
+	       "returning %qT; valid only for pointer return types",
+	       name, rettype);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (!args)
+    {
+      /* Only the form of the attribute with no arguments declares
+	 a function malloc-like.  */
+      DECL_IS_MALLOC (*node) = 1;
+      return NULL_TREE;
+    }
+
+  tree dealloc = TREE_VALUE (args);
+  if (error_operand_p (dealloc))
+    {
+      /* If the argument is in error it will have already been diagnosed.
+	 Avoid issuing redundant errors here.  */
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* In C++ the argument may be wrapped in a cast to disambiguate one
+     of a number of overloads (such as operator delete).  Strip it.  */
+  STRIP_NOPS (dealloc);
+  if (TREE_CODE (dealloc) == ADDR_EXPR)
+    dealloc = TREE_OPERAND (dealloc, 0);
+
+  if (TREE_CODE (dealloc) != FUNCTION_DECL)
+    {
+      if (TREE_CODE (dealloc) == OVERLOAD)
+	{
+	  /* Handle specially the common case of specifying one of a number
+	     of overloads, such as operator delete.  */
+	  error ("%qE attribute argument 1 is ambiguous", name);
+	  inform (input_location,
+		  "use a cast to the expected type to disambiguate");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      error ("%qE attribute argument 1 does not name a function", name);
+      if (DECL_P (dealloc))
+	inform (DECL_SOURCE_LOCATION (dealloc),
+		"argument references a symbol declared here");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Mentioning the deallocation function qualifies as its use.  */
+  TREE_USED (dealloc) = 1;
+
+  tree fntype = TREE_TYPE (dealloc);
+  tree argpos = TREE_CHAIN (args) ? TREE_VALUE (TREE_CHAIN (args)) : NULL_TREE;
+  if (!argpos)
+    {
+      tree argtypes = TYPE_ARG_TYPES (fntype);
+      if (!argtypes)
+	{
+	  /* Reject functions without a prototype.  */
+	  error ("%qE attribute argument 1 must take a pointer "
+		 "type as its first argument", name);
+	  inform (DECL_SOURCE_LOCATION (dealloc),
+		  "refernced symbol declared here" );
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      tree argtype = TREE_VALUE (argtypes);
+      if (TREE_CODE (argtype) != POINTER_TYPE)
+	{
+	  /* Reject functions that don't take a pointer as their first
+	     argument.  */
+	  error ("%qE attribute argument 1 must take a pointer type "
+		 "as its first argument; have %qT", name, argtype);
+	  inform (DECL_SOURCE_LOCATION (dealloc),
+		  "referenced symbol declared here" );
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      *no_add_attrs = false;
+      tree attr_free = build_tree_list (NULL_TREE, DECL_NAME (fndecl));
+      attr_free = build_tree_list (get_identifier ("*dealloc"), attr_free);
+      decl_attributes (&dealloc, attr_free, 0);
+      return NULL_TREE;
+    }
+
+  /* Validate the positional argument.  */
+  argpos = positional_argument (fntype, name, argpos, POINTER_TYPE);
+  if (!argpos)
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* It's valid to declare the same function with multiple instances
+     of attribute malloc, each naming the same or different deallocator
+     functions, and each referencing either the same or a different
+     positional argument.  */
+  *no_add_attrs = false;
+  tree attr_free = tree_cons (NULL_TREE, argpos, NULL_TREE);
+  attr_free = tree_cons (NULL_TREE, DECL_NAME (fndecl), attr_free);
+  attr_free = build_tree_list (get_identifier ("*dealloc"), attr_free);
+  decl_attributes (&dealloc, attr_free, 0);
+  return NULL_TREE;
+}
+
+/* Handle the internal "*dealloc" attribute added for functions declared
+   with the one- and two-argument forms of attribute malloc.  Add it
+   to *NODE unless it's already there with the same arguments.  */
+
+static tree
+handle_dealloc_attribute (tree *node, tree name, tree args, int,
+			  bool *no_add_attrs)
+{
+  tree fndecl = *node;
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return NULL_TREE;
+
+  tree arg_fname = TREE_VALUE (args);
+  args = TREE_CHAIN (args);
+  tree arg_pos = args ? TREE_VALUE (args) : NULL_TREE;
+
+  gcc_checking_assert (TREE_CODE (arg_fname) == IDENTIFIER_NODE);
+
+  const char* const namestr = IDENTIFIER_POINTER (name);
+  for (tree at = attrs; (at = lookup_attribute (namestr, at));
+       at = TREE_CHAIN (at))
+    {
+      tree alloc = TREE_VALUE (at);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      alloc = TREE_VALUE (alloc);
+      pos = pos ? TREE_VALUE (pos) : NULL_TREE;
+      gcc_checking_assert (TREE_CODE (alloc) == IDENTIFIER_NODE);
+
+      if (alloc == arg_fname
+	  && ((!pos && !arg_pos)
+	      || (pos && arg_pos && tree_int_cst_equal (pos, arg_pos))))
+	{
+	  /* The function already has the attribute either without any
+	     arguments or with the same arguments as the attribute that's
+	     being added.  Return without adding another copy.  */
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
     }
 
   return NULL_TREE;

@@ -1,7 +1,7 @@
 /* PR middle-end/98099 */
 /* Reported by G. Steinmetz <gscfq@t-online.de> */
 
-/* { dg-do compile } */
+/* { dg-do compile { target dfp } } */
 /* { dg-options "-fsso-struct=big-endian" } */
 
 struct S { _Decimal128 a; };

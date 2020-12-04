@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Known bugs or deficiencies include:
 
      all methods must be provided in header files; can't use a source
-     file that contains only the method templates and "just win".  */
+     file that contains only the method templates and "just win".
+
+     Fixed by: C++20 modules.  */
 
 #include "config.h"
 #include "system.h"
@@ -1702,11 +1704,9 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   return spec;
 }
 
-/* Restricts tree and type comparisons.  */
-int comparing_specializations;
-int comparing_typenames;
-
 /* Returns true iff two spec_entry nodes are equivalent.  */
+
+int comparing_specializations;
 
 bool
 spec_hasher::equal (spec_entry *e1, spec_entry *e2)
@@ -1714,7 +1714,6 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
   int equal;
 
   ++comparing_specializations;
-  ++comparing_typenames;
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
@@ -1730,7 +1729,6 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
       equal = equivalent_constraints (c1, c2);
     }
   --comparing_specializations;
-  --comparing_typenames;
 
   return equal;
 }
@@ -6044,6 +6042,14 @@ push_template_decl (tree decl, bool is_friend)
 	      tmpl = NULL_TREE;
 	    }
 	}
+      else if (is_friend)
+	{
+	  /* Record this decl as belonging to the current class.  It's
+	     not chained onto anything else.  */
+	  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (tmpl) = true;
+	  gcc_checking_assert (!DECL_CHAIN (tmpl));
+	  DECL_CHAIN (tmpl) = current_scope ();
+	}
     }
   else if (tmpl)
     /* The type may have been completed, or (erroneously) changed.  */
@@ -8260,7 +8266,7 @@ convert_template_argument (tree parm,
 
   /* When determining whether an argument pack expansion is a template,
      look at the pattern.  */
-  if (TREE_CODE (arg) == TYPE_PACK_EXPANSION)
+  if (PACK_EXPANSION_P (arg))
     arg = PACK_EXPANSION_PATTERN (arg);
 
   /* Deal with an injected-class-name used as a template template arg.  */
@@ -11053,6 +11059,7 @@ tsubst_friend_function (tree decl, tree args)
   DECL_USE_TEMPLATE (new_friend) = 0;
   if (TREE_CODE (new_friend) == TEMPLATE_DECL)
     {
+      DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (new_friend) = false;
       DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
@@ -29006,6 +29013,12 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
     return ptype;
 
+  /* Initializing one placeholder from another.  */
+  if (init && TREE_CODE (init) == TEMPLATE_PARM_INDEX
+      && is_auto (TREE_TYPE (init))
+      && CLASS_PLACEHOLDER_TEMPLATE (TREE_TYPE (init)) == tmpl)
+    return cp_build_qualified_type (TREE_TYPE (init), cp_type_quals (ptype));
+
   /* Look through alias templates that just rename another template.  */
   tmpl = get_underlying_template (tmpl);
   if (!ctad_template_p (tmpl))
@@ -29021,10 +29034,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	pedwarn (input_location, 0, "alias template deduction only available "
 		 "with %<-std=c++20%> or %<-std=gnu++20%>");
     }
-
-  if (init && TREE_TYPE (init) == ptype)
-    /* Using the template parm as its own argument.  */
-    return ptype;
 
   tree type = TREE_TYPE (tmpl);
 
@@ -29273,7 +29282,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
       /* We don't recurse here because we can't deduce from a nested
 	 initializer_list.  */
       if (CONSTRUCTOR_ELTS (init))
-	for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
+	for (constructor_elt &elt : CONSTRUCTOR_ELTS (init))
 	  elt.value = resolve_nondeduced_context (elt.value, complain);
     }
   else

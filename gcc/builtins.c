@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
@@ -182,7 +183,6 @@ static rtx expand_builtin_memory_chk (tree, rtx, machine_mode,
 				      enum built_in_function);
 static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
-static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
@@ -201,8 +201,8 @@ static void expand_builtin_sync_synchronize (void);
 
 access_ref::access_ref (tree bound /* = NULL_TREE */,
 			bool minaccess /* = false */)
-: ref (), eval ([](tree x){ return x; }), trail1special (true), base0 (true),
-  parmarray ()
+: ref (), eval ([](tree x){ return x; }), deref (), trail1special (true),
+  base0 (true), parmarray ()
 {
   /* Set to valid.  */
   offrng[0] = offrng[1] = 0;
@@ -5313,7 +5313,10 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 
   const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
   if (addr)
-    ptr = TREE_OPERAND (ptr, 0);
+    {
+      --pref->deref;
+      ptr = TREE_OPERAND (ptr, 0);
+    }
 
   if (DECL_P (ptr))
     {
@@ -5421,6 +5424,8 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 
   if (code == ARRAY_REF || code == MEM_REF)
     {
+      ++pref->deref;
+
       tree ref = TREE_OPERAND (ptr, 0);
       tree reftype = TREE_TYPE (ref);
       if (!addr && code == ARRAY_REF
@@ -5543,6 +5548,10 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
       tree ref = TREE_OPERAND (ptr, 0);
       if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
+
+      /* Clear DEREF since the offset is being applied to the target
+	 of the dereference.  */
+      pref->deref = 0;
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
@@ -10630,11 +10639,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       maybe_emit_sprintf_chk_warning (exp, fcode);
       break;
 
-    case BUILT_IN_FREE:
-      if (warn_free_nonheap_object)
-	maybe_emit_free_warning (exp);
-      break;
-
     case BUILT_IN_THREAD_POINTER:
       return expand_builtin_thread_pointer (exp, target);
 
@@ -12944,30 +12948,403 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 		access_write_only);
 }
 
-/* Emit warning if a free is called with address of a variable.  */
+/* Return true if STMT is a call to an allocation function.  Unless
+   ALL_ALLOC is set, consider only functions that return dynmamically
+   allocated objects.  Otherwise return true even for all forms of
+   alloca (including VLA).  */
 
-static void
+static bool
+fndecl_alloc_p (tree fndecl, bool all_alloc)
+{
+  if (!fndecl)
+    return false;
+
+  /* A call to operator new isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_NEW_P (fndecl))
+    return true;
+
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  return all_alloc;
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STRDUP:
+	case BUILT_IN_STRNDUP:
+	  return true;
+	default:
+	  break;
+	}
+    }
+
+  /* A function is considered an allocation function if it's declared
+     with attribute malloc with an argument naming its associated
+     deallocation function.  */
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return false;
+
+  for (tree allocs = attrs;
+       (allocs = lookup_attribute ("malloc", allocs));
+       allocs = TREE_CHAIN (allocs))
+    {
+      tree args = TREE_VALUE (allocs);
+      if (!args)
+	continue;
+
+      if (TREE_VALUE (args))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if STMT is a call to an allocation function.  A wrapper
+   around fndecl_alloc_p.  */
+
+static bool
+gimple_call_alloc_p (gimple *stmt, bool all_alloc = false)
+{
+  return fndecl_alloc_p (gimple_call_fndecl (stmt), all_alloc);
+}
+
+/* Return the zero-based number corresponding to the argument being
+   deallocated if STMT is a call to a deallocation function or UINT_MAX
+   if it isn't.  */
+
+static unsigned
+call_dealloc_argno (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  if (!fndecl)
+    return UINT_MAX;
+
+  /* A call to operator delete isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_DELETE_P (fndecl))
+    return 0;
+
+  /* TODO: Handle user-defined functions with attribute malloc?  Handle
+     known non-built-ins like fopen?  */
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_FREE:
+	case BUILT_IN_REALLOC:
+	  return 0;
+	default:
+	  break;
+	}
+      return UINT_MAX;
+    }
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return UINT_MAX;
+
+  for (tree atfree = attrs;
+       (atfree = lookup_attribute ("*dealloc", atfree));
+       atfree = TREE_CHAIN (atfree))
+    {
+      tree alloc = TREE_VALUE (atfree);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      if (!pos)
+	return 0;
+
+      pos = TREE_VALUE (pos);
+      return TREE_INT_CST_LOW (pos) - 1;
+    }
+
+  return UINT_MAX;
+}
+
+/* Return true if STMT is a call to a deallocation function.  */
+
+static inline bool
+call_dealloc_p (tree exp)
+{
+  return call_dealloc_argno (exp) != UINT_MAX;
+}
+
+/* ALLOC_DECL and DEALLOC_DECL are pair of allocation and deallocation
+   functions.  Return true if the latter is suitable to deallocate objects
+   allocated by calls to the former.  */
+
+static bool
+matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
+{
+  if (DECL_IS_OPERATOR_NEW_P (alloc_decl))
+    {
+      if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	{
+	  /* Return true iff both functions are of the same array or
+	     singleton form and false otherwise.  */
+	  tree alloc_id = DECL_NAME (alloc_decl);
+	  tree dealloc_id = DECL_NAME (dealloc_decl);
+	  const char *alloc_fname = IDENTIFIER_POINTER (alloc_id);
+	  const char *dealloc_fname = IDENTIFIER_POINTER (dealloc_id);
+	  return !strchr (alloc_fname, '[') == !strchr (dealloc_fname, '[');
+	}
+
+      /* Return false for deallocation functions that are known not
+	 to match.  */
+      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
+	  || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	return false;
+      /* Otherwise proceed below to check the deallocation function's
+	 "*dealloc" attributes to look for one that mentions this operator
+	 new.  */
+    }
+  else if (fndecl_built_in_p (alloc_decl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (alloc_decl))
+	{
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  return false;
+
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STRDUP:
+	case BUILT_IN_STRNDUP:
+	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	    return false;
+
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
+	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	    return true;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  /* If DEALLOC_DECL has internal "*dealloc" attribute scan the list of
+     its associated allocation functions for ALLOC_DECL.  If it's found
+     they are a matching pair, otherwise they're not.  */
+  tree attrs = DECL_ATTRIBUTES (dealloc_decl);
+  if (!attrs)
+    return false;
+
+  for (tree funs = attrs;
+       (funs = lookup_attribute ("*dealloc", funs));
+       funs = TREE_CHAIN (funs))
+    {
+      tree args = TREE_VALUE (funs);
+      if (!args)
+	continue;
+
+      tree fname = TREE_VALUE (args);
+      if (!fname)
+	continue;
+
+      if (fname == DECL_NAME (alloc_decl))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if DEALLOC_DECL is a function suitable to deallocate
+   objectes allocated by the ALLOC call.  */
+
+static bool
+matching_alloc_calls_p (gimple *alloc, tree dealloc_decl)
+{
+  tree alloc_decl = gimple_call_fndecl (alloc);
+  if (!alloc_decl)
+    return true;
+
+  return matching_alloc_calls_p (alloc_decl, dealloc_decl);
+}
+
+/* Diagnose a call to FNDECL to deallocate a pointer referenced by
+   AREF that includes a nonzero offset.  Such a pointer cannot refer
+   to the beginning of an allocated object.  A negative offset may
+   refer to it only if the target pointer is unknown.  */
+
+static bool
+warn_dealloc_offset (location_t loc, tree exp, tree fndecl,
+		     const access_ref &aref)
+{
+  char offstr[80];
+  offstr[0] = '\0';
+  if (wi::fits_shwi_p (aref.offrng[0]))
+    {
+      if (aref.offrng[0] == aref.offrng[1]
+	  || !wi::fits_shwi_p (aref.offrng[1]))
+	sprintf (offstr, " %lli",
+		 (long long)aref.offrng[0].to_shwi ());
+      else
+	sprintf (offstr, " [%lli, %lli]",
+		 (long long)aref.offrng[0].to_shwi (),
+		 (long long)aref.offrng[1].to_shwi ());
+    }
+
+  if (!warning_at (loc, OPT_Wfree_nonheap_object,
+		   "%K%qD called on pointer %qE with nonzero offset%s",
+		   exp, fndecl, aref.ref, offstr))
+    return false;
+
+  if (DECL_P (aref.ref))
+    inform (DECL_SOURCE_LOCATION (aref.ref), "declared here");
+  else if (TREE_CODE (aref.ref) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (aref.ref);
+      if (is_gimple_call (def_stmt))
+	{
+	  tree alloc_decl = gimple_call_fndecl (def_stmt);
+	  inform (gimple_location (def_stmt),
+		  "returned from a call to %qD", alloc_decl);
+	}
+    }
+
+  return true;
+}
+
+/* Issue a warning if a deallocation function such as free, realloc,
+   or C++ operator delete is called with an argument not returned by
+   a matching allocation function such as malloc or the corresponding
+   form of C++ operatorn new.  */
+
+void
 maybe_emit_free_warning (tree exp)
 {
-  if (call_expr_nargs (exp) != 1)
+  tree fndecl = get_callee_fndecl (exp);
+  if (!fndecl)
     return;
 
-  tree arg = CALL_EXPR_ARG (exp, 0);
-
-  STRIP_NOPS (arg);
-  if (TREE_CODE (arg) != ADDR_EXPR)
+  unsigned argno = call_dealloc_argno (exp);
+  if ((unsigned) call_expr_nargs (exp) <= argno)
     return;
 
-  arg = get_base_address (TREE_OPERAND (arg, 0));
-  if (arg == NULL || INDIRECT_REF_P (arg) || TREE_CODE (arg) == MEM_REF)
+  tree ptr = CALL_EXPR_ARG (exp, argno);
+  if (integer_zerop (ptr))
     return;
 
-  if (SSA_VAR_P (arg))
-    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
-		"%Kattempt to free a non-heap object %qD", exp, arg);
-  else
-    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
-		"%Kattempt to free a non-heap object", exp);
+  access_ref aref;
+  if (!compute_objsize (ptr, 0, &aref))
+    return;
+
+  tree ref = aref.ref;
+  if (integer_zerop (ref))
+    return;
+
+  tree dealloc_decl = get_callee_fndecl (exp);
+  location_t loc = tree_nonartificial_location (exp);
+  loc = expansion_point_location_if_in_system_header (loc);
+
+  if (DECL_P (ref) || EXPR_P (ref))
+    {
+      /* Diagnose freeing a declared object.  */
+      if (aref.ref_declared ()
+	  && warning_at (loc, OPT_Wfree_nonheap_object,
+			 "%K%qD called on unallocated object %qD",
+			 exp, dealloc_decl, ref))
+	{
+	  inform (DECL_SOURCE_LOCATION (ref),
+		  "declared here");
+	  return;
+	}
+
+      /* Diagnose freeing a pointer that includes a positive offset.
+	 Such a pointer cannot refer to the beginning of an allocated
+	 object.  A negative offset may refer to it.  */
+      if (!aref.deref
+	  && aref.sizrng[0] != aref.sizrng[1]
+	  && aref.offrng[0] > 0 && aref.offrng[1] > 0
+	  && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+	return;
+    }
+  else if (CONSTANT_CLASS_P (ref))
+    {
+      if (warning_at (loc, OPT_Wfree_nonheap_object,
+		      "%K%qD called on a pointer to an unallocated "
+		      "object %qE", exp, dealloc_decl, ref))
+	{
+	  if (TREE_CODE (ptr) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
+	      if (is_gimple_assign (def_stmt))
+		{
+		  location_t loc = gimple_location (def_stmt);
+		  inform (loc, "assigned here");
+		}
+	    }
+	  return;
+	}
+    }
+  else if (TREE_CODE (ref) == SSA_NAME)
+    {
+      /* Also warn if the pointer argument refers to the result
+	 of an allocation call like alloca or VLA.  */
+      gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
+      if (is_gimple_call (def_stmt))
+	{
+	  bool warned = false;
+	  if (gimple_call_alloc_p (def_stmt))
+	    {
+	      if (matching_alloc_calls_p (def_stmt, dealloc_decl))
+		{
+		  if (!aref.deref
+		      && aref.offrng[0] > 0 && aref.offrng[1] > 0
+		      && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+		    return;
+		}
+	      else
+		{
+		  tree alloc_decl = gimple_call_fndecl (def_stmt);
+		  int opt = (DECL_IS_OPERATOR_NEW_P (alloc_decl)
+			     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+			     ? OPT_Wmismatched_new_delete
+			     : OPT_Wmismatched_dealloc);
+		  warned = warning_at (loc, opt,
+				       "%K%qD called on pointer returned "
+				       "from a mismatched allocation "
+				       "function", exp, dealloc_decl);
+		}
+	    }
+	  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_ALLOCA)
+	    	   || gimple_call_builtin_p (def_stmt,
+	    				     BUILT_IN_ALLOCA_WITH_ALIGN))
+	    warned = warning_at (loc, OPT_Wfree_nonheap_object,
+				 "%K%qD called on pointer to "
+				 "an unallocated object",
+				 exp, dealloc_decl);
+	  else if (!aref.deref
+		   && aref.offrng[0] > 0 && aref.offrng[1] > 0
+		   && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+	    return;
+
+	  if (warned)
+	    {
+	      tree fndecl = gimple_call_fndecl (def_stmt);
+	      inform (gimple_location (def_stmt),
+		      "returned from a call to %qD", fndecl);
+	      return;
+	    }
+	}
+      else if (gimple_nop_p (def_stmt))
+	{
+	  ref = SSA_NAME_VAR (ref);
+	  /* Diagnose freeing a pointer that includes a positive offset.  */
+	  if (TREE_CODE (ref) == PARM_DECL
+	      && !aref.deref
+	      && aref.sizrng[0] != aref.sizrng[1]
+	      && aref.offrng[0] > 0 && aref.offrng[1] > 0
+	      && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+	    return;
+	}
+    }
 }
 
 /* Fold a call to __builtin_object_size with arguments PTR and OST,

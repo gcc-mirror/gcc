@@ -3233,20 +3233,63 @@ this reason the attribute is not allowed on types to annotate indirect
 calls.
 
 @item malloc
+@item malloc (@var{deallocator})
+@item malloc (@var{deallocator}, @var{ptr-index})
 @cindex @code{malloc} function attribute
 @cindex functions that behave like malloc
-This tells the compiler that a function is @code{malloc}-like, i.e.,
-that the pointer @var{P} returned by the function cannot alias any
+Attribute @code{malloc} indicates that a function is @code{malloc}-like,
+i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
 pointers to valid objects occur in any storage addressed by @var{P}.
 
-Using this attribute can improve optimization.  Compiler predicts
-that a function with the attribute returns non-null in most cases.
-Functions like
-@code{malloc} and @code{calloc} have this property because they return
-a pointer to uninitialized or zeroed-out storage.  However, functions
-like @code{realloc} do not have this property, as they can return a
-pointer to storage containing pointers.
+Independently, the form of the attribute with one or two arguments
+associates @code{deallocator} as a suitable deallocation function for
+pointers returned from the @code{malloc}-like function.  @var{ptr-index}
+denotes the positional argument to which when the pointer is passed in
+calls to @code{deallocator} has the effect of deallocating it.
+
+Using the attribute with no arguments is designed to improve optimization.
+The compiler predicts that a function with the attribute returns non-null
+in most cases.  Functions like @code{malloc} and @code{calloc} have this
+property because they return a pointer to uninitialized or zeroed-out
+storage.  However, functions like @code{realloc} do not have this property,
+as they may return pointers to storage containing pointers to existing
+objects.
+
+Associating a function with a @var{deallocator} helps detect calls to
+mismatched allocation and deallocation functions and diagnose them
+under the control of options such as @option{-Wmismatched-dealloc}.
+To indicate that an allocation function both satisifies the nonaliasing
+property and has a deallocator associated with it, both the plain form
+of the attribute and the one with the @var{deallocator} argument must
+be used.
+
+For example, besides stating that the functions return pointers that do
+not alias any others, the following declarations make the @code{fclose}
+and @code{frepen} functions suitable deallocators for pointers returned
+from all the functions that return them, and the @code{pclose} function
+as the only other suitable deallocator besides @code{freopen} for pointers
+returned from @code{popen}.  The deallocator functions must declared
+before they can be referenced in the attribute.
+
+@smallexample
+int   fclose (FILE*);
+FILE* freopen (const char*, const char*, FILE*);
+int   pclose (FILE*);
+
+__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+  FILE* fdopen (int);
+__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+  FILE* fopen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+  FILE* fmemopen(void *, size_t, const char *);
+__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+  FILE* freopen (const char*, const char*, FILE*);
+__attribute__ ((malloc, malloc (pclose), malloc (freopen, 3)))
+  FILE* popen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+  FILE* tmpfile (void);
+@end smallexample
 
 @item no_icf
 @cindex @code{no_icf} function attribute
