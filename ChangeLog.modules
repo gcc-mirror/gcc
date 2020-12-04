@@ -1,5 +1,8 @@
 2020-12-04  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 5a26d4a204c
+	c++: Revert dependent-array changes
+
 	Merge trunk 97eaf8c92f9
 	c++: Module API declarations
 
