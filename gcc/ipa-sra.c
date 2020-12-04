@@ -1461,7 +1461,7 @@ verify_access_tree_1 (gensum_param_access *access, HOST_WIDE_INT parent_offset,
 {
   while (access)
     {
-      gcc_assert (access->offset >= 0 && access->size > 0);
+      gcc_assert (access->offset >= 0 && access->size >= 0);
 
       if (parent_size != 0)
 	{
