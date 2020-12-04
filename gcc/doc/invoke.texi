@@ -13041,6 +13041,9 @@ growth limit is needed to avoid exponential explosion of code size.  Thus for
 smaller units, the size is increased to @option{--param large-unit-insns}
 before applying @option{--param inline-unit-growth}.
 
+@item lazy-modules
+Maximum number of concurrently open C++ module files when lazy loading.
+
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.
 For example, parameter value 20 limits unit growth to 1.2 times the original
@@ -13051,6 +13054,9 @@ feedback) are not accounted into the unit size.
 Specifies maximal overall growth of the compilation unit caused by
 interprocedural constant propagation.  For example, parameter value 10 limits
 unit growth to 1.1 times the original size.
+
+@item ipa-cp-large-unit-insns
+The size of translation unit that IPA-CP pass considers large.
 
 @item large-stack-frame
 The limit specifying large stack frames.  While inlining the algorithm is trying
@@ -13106,19 +13112,19 @@ Deeper chains are still handled by late inlining.
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.
 
-@item ipa-modref-max-bases
-@item ipa-modref-max-refs
-@item ipa-modref-max-accesses
+@item modref-max-bases
+@item modref-max-refs
+@item modref-max-accesses
 Specifies the maximal number of base pointers, referneces and accesses stored
 for a single function by mod/ref analysis.
 
-@item ipa-modref-max-tests
+@item modref-max-tests
 Specifies the maxmal number of tests alias oracle can perform to disambiguate
 memory locations using the mod/ref information.  This parameter ought to be
-bigger than @option{--param ipa-modref-max-bases} and @option{--param
-ipa-modref-max-refs}.
+bigger than @option{--param modref-max-bases} and @option{--param
+modref-max-refs}.
 
-@item ipa-modref-max-depth
+@item modref-max-depth
 Specifies the maximum depth of DFS walk used by modref escape analysis.
 Setting to 0 disables the analysis completely.
 
@@ -13966,6 +13972,12 @@ If the size of a local variable in bytes is smaller or equal to this
 number, directly poison (or unpoison) shadow memory instead of using
 run-time callbacks.
 
+@item tsan-distinguish-volatile
+Emit special instrumentation for accesses to volatiles.
+
+@item tsan-instrument-func-entry-exit
+Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
+
 @item max-fsm-thread-path-insns
 Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
@@ -14004,6 +14016,9 @@ we may be able to devirtualize speculatively.
 @item max-vrp-switch-assertions
 The maximum number of assertions to add along the default edge of a switch
 statement during VRP.
+
+@item evrp-mode
+Specifies the mode Early VRP should operate in.
 
 @item unroll-jam-min-percent
 The minimum percentage of memory references that must be optimized
@@ -14169,14 +14184,25 @@ Maximum number of VALUEs handled during a single find_base_term call.
 The maximum number of exploded nodes per program point within
 the analyzer, before terminating analysis of that point.
 
+@item analyzer-max-constraints
+The maximum number of constraints per state.
+
 @item analyzer-min-snodes-for-call-summary
 The minimum number of supernodes within a function for the
 analyzer to consider summarizing its effects at call sites.
+
+@item analyzer-max-enodes-for-full-dump
+The maximum depth of exploded nodes that should appear in a dot dump
+before switching to a less verbose format.
 
 @item analyzer-max-recursion-depth
 The maximum number of times a callsite can appear in a call stack
 within the analyzer, before terminating analysis of a call that would
 recurse deeper.
+
+@item analyzer-max-svalue-depth
+The maximum depth of a symbolic value, before approximating
+the value as unknown.
 
 @item gimple-fe-computed-hot-bb-threshold
 The number of executions of a basic block which is considered hot.
