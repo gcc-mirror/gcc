@@ -182,14 +182,14 @@ static GTY(()) section *debug_frame_section;
    bytes.
 
    However, the SGI/MIPS ABI uses an initial length which is equal to
-   DWARF_OFFSET_SIZE.  It is defined (elsewhere) accordingly.  */
+   dwarf_offset_size.  It is defined (elsewhere) accordingly.  */
 
 #ifndef DWARF_INITIAL_LENGTH_SIZE
-#define DWARF_INITIAL_LENGTH_SIZE (DWARF_OFFSET_SIZE == 4 ? 4 : 12)
+#define DWARF_INITIAL_LENGTH_SIZE (dwarf_offset_size == 4 ? 4 : 12)
 #endif
 
 #ifndef DWARF_INITIAL_LENGTH_SIZE_STR
-#define DWARF_INITIAL_LENGTH_SIZE_STR (DWARF_OFFSET_SIZE == 4 ? "-4" : "-12")
+#define DWARF_INITIAL_LENGTH_SIZE_STR (dwarf_offset_size == 4 ? "-4" : "-12")
 #endif
 
 /* Round SIZE up to the nearest BOUNDARY.  */
@@ -199,7 +199,7 @@ static GTY(()) section *debug_frame_section;
 /* CIE identifier.  */
 #if HOST_BITS_PER_WIDE_INT >= 64
 #define DWARF_CIE_ID \
-  (unsigned HOST_WIDE_INT) (DWARF_OFFSET_SIZE == 4 ? DW_CIE_ID : DW64_CIE_ID)
+  (unsigned HOST_WIDE_INT) (dwarf_offset_size == 4 ? DW_CIE_ID : DW64_CIE_ID)
 #else
 #define DWARF_CIE_ID DW_CIE_ID
 #endif
@@ -287,8 +287,8 @@ static GTY(()) bool do_eh_frame = false;
 static unsigned int rnglist_idx;
 
 /* Data and reference forms for relocatable data.  */
-#define DW_FORM_data (DWARF_OFFSET_SIZE == 8 ? DW_FORM_data8 : DW_FORM_data4)
-#define DW_FORM_ref (DWARF_OFFSET_SIZE == 8 ? DW_FORM_ref8 : DW_FORM_ref4)
+#define DW_FORM_data (dwarf_offset_size == 8 ? DW_FORM_data8 : DW_FORM_data4)
+#define DW_FORM_ref (dwarf_offset_size == 8 ? DW_FORM_ref8 : DW_FORM_ref4)
 
 #ifndef DEBUG_FRAME_SECTION
 #define DEBUG_FRAME_SECTION	".debug_frame"
@@ -602,10 +602,10 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + j);
   if (!XCOFF_DEBUGGING_INFO || for_eh)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4 && !for_eh)
 	dw2_asm_output_data (4, 0xffffffff, "Initial length escape value"
 			     " indicating 64-bit DWARF extension");
-      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+      dw2_asm_output_delta (for_eh ? 4 : dwarf_offset_size, l2, l1,
 			    "FDE Length");
     }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
@@ -613,7 +613,7 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   if (for_eh)
     dw2_asm_output_delta (4, l1, section_start_label, "FDE CIE offset");
   else
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, section_start_label,
+    dw2_asm_output_offset (dwarf_offset_size, section_start_label,
 			   debug_frame_section, "FDE CIE offset");
 
   begin = second ? fde->dw_fde_second_begin : fde->dw_fde_begin;
@@ -806,17 +806,17 @@ output_call_frame_info (int for_eh)
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
   if (!XCOFF_DEBUGGING_INFO || for_eh)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4 && !for_eh)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4 && !for_eh)
 	dw2_asm_output_data (4, 0xffffffff,
 	  "Initial length escape value indicating 64-bit DWARF extension");
-      dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
+      dw2_asm_output_delta (for_eh ? 4 : dwarf_offset_size, l2, l1,
 			    "Length of Common Information Entry");
     }
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
   /* Now that the CIE pointer is PC-relative for EH,
      use 0 to identify the CIE.  */
-  dw2_asm_output_data ((for_eh ? 4 : DWARF_OFFSET_SIZE),
+  dw2_asm_output_data ((for_eh ? 4 : dwarf_offset_size),
 		       (for_eh ? 0 : DWARF_CIE_ID),
 		       "CIE Identifier Tag");
 
@@ -1623,7 +1623,7 @@ loc_list_plus_const (dw_loc_list_ref list_head, poly_int64 offset)
 }
 
 #define DWARF_REF_SIZE	\
-  (dwarf_version == 2 ? DWARF2_ADDR_SIZE : DWARF_OFFSET_SIZE)
+  (dwarf_version == 2 ? DWARF2_ADDR_SIZE : dwarf_offset_size)
 
 /* The number of bits that can be encoded by largest DW_FORM_dataN.
    In DWARF4 and earlier it is DW_FORM_data8 with 64 bits, in DWARF5
@@ -3229,33 +3229,33 @@ skeleton_chain_node;
 
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE \
-  (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE			\
+  (DWARF_INITIAL_LENGTH_SIZE + dwarf_offset_size			\
    + (dwarf_version >= 5 ? 4 : 3))
 
 /* Fixed size portion of the DWARF comdat type unit header.  */
 #define DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE \
   (DWARF_COMPILE_UNIT_HEADER_SIZE					\
-   + DWARF_TYPE_SIGNATURE_SIZE + DWARF_OFFSET_SIZE)
+   + DWARF_TYPE_SIGNATURE_SIZE + dwarf_offset_size)
 
 /* Fixed size portion of the DWARF skeleton compilation unit header.  */
 #define DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE \
   (DWARF_COMPILE_UNIT_HEADER_SIZE + (dwarf_version >= 5 ? 8 : 0))
 
 /* Fixed size portion of public names info.  */
-#define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
+#define DWARF_PUBNAMES_HEADER_SIZE (2 * dwarf_offset_size + 2)
 
 /* Fixed size portion of the address range info.  */
 #define DWARF_ARANGES_HEADER_SIZE					\
-  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4,	\
+  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + dwarf_offset_size + 4,	\
 		DWARF2_ADDR_SIZE * 2)					\
    - DWARF_INITIAL_LENGTH_SIZE)
 
 /* Size of padding portion in the address range info.  It must be
    aligned to twice the pointer size.  */
 #define DWARF_ARANGES_PAD_SIZE \
-  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4, \
+  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + dwarf_offset_size + 4, \
 		DWARF2_ADDR_SIZE * 2)				   \
-   - (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4))
+   - (DWARF_INITIAL_LENGTH_SIZE + dwarf_offset_size + 4))
 
 /* Use assembler line directives if available.  */
 #ifndef DWARF2_ASM_LINE_DEBUG_INFO
@@ -4787,7 +4787,7 @@ find_string_form (struct indirect_string_node *node)
 
   /* If the string is shorter or equal to the size of the reference, it is
      always better to put it inline.  */
-  if (len <= DWARF_OFFSET_SIZE || node->refcount == 0)
+  if (len <= (unsigned) dwarf_offset_size || node->refcount == 0)
     return node->form = DW_FORM_string;
 
   /* If we cannot expect the linker to merge strings in .debug_str
@@ -4795,7 +4795,7 @@ find_string_form (struct indirect_string_node *node)
      single module.  */
   if (DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
       || ((debug_str_section->common.flags & SECTION_MERGE) == 0
-	  && (len - DWARF_OFFSET_SIZE) * node->refcount <= len))
+	  && (len - dwarf_offset_size) * node->refcount <= len))
     return node->form = DW_FORM_string;
 
   set_indirect_string (node);
@@ -8892,7 +8892,7 @@ output_loclists_offsets (dw_die_ref die)
 	dw_loc_list_ref l = AT_loc_list (a);
 	if (l->offset_emitted)
 	  continue;
-	dw2_asm_output_delta (DWARF_OFFSET_SIZE, l->ll_symbol,
+	dw2_asm_output_delta (dwarf_offset_size, l->ll_symbol,
 			      loc_section_label, NULL);
 	gcc_assert (l->hash == loc_list_idx);
 	loc_list_idx++;
@@ -9400,7 +9400,7 @@ size_of_die (dw_die_ref die)
             size += DWARF2_ADDR_SIZE;
 	  break;
 	case dw_val_class_offset:
-	  size += DWARF_OFFSET_SIZE;
+	  size += dwarf_offset_size;
 	  break;
 	case dw_val_class_loc:
 	  {
@@ -9421,10 +9421,10 @@ size_of_die (dw_die_ref die)
 	      size += size_of_uleb128 (AT_loc_list (a)->hash);
 	    }
           else
-            size += DWARF_OFFSET_SIZE;
+            size += dwarf_offset_size;
 	  break;
 	case dw_val_class_view_list:
-	  size += DWARF_OFFSET_SIZE;
+	  size += dwarf_offset_size;
 	  break;
 	case dw_val_class_range_list:
 	  if (value_format (a) == DW_FORM_rnglistx)
@@ -9434,7 +9434,7 @@ size_of_die (dw_die_ref die)
 	      size += size_of_uleb128 (r->idx);
 	    }
 	  else
-	    size += DWARF_OFFSET_SIZE;
+	    size += dwarf_offset_size;
 	  break;
 	case dw_val_class_const:
 	  size += size_of_sleb128 (AT_int (a));
@@ -9508,13 +9508,13 @@ size_of_die (dw_die_ref die)
 	      else if (dwarf_version == 2)
 		size += DWARF2_ADDR_SIZE;
 	      else
-		size += DWARF_OFFSET_SIZE;
+		size += dwarf_offset_size;
 	    }
 	  else
-	    size += DWARF_OFFSET_SIZE;
+	    size += dwarf_offset_size;
 	  break;
 	case dw_val_class_fde_ref:
-	  size += DWARF_OFFSET_SIZE;
+	  size += dwarf_offset_size;
 	  break;
 	case dw_val_class_lbl_id:
           if (dwarf_split_debug_info && AT_index (a) != NOT_INDEXED)
@@ -9528,12 +9528,12 @@ size_of_die (dw_die_ref die)
 	case dw_val_class_lineptr:
 	case dw_val_class_macptr:
 	case dw_val_class_loclistsptr:
-	  size += DWARF_OFFSET_SIZE;
+	  size += dwarf_offset_size;
 	  break;
 	case dw_val_class_str:
           form = AT_string_form (a);
 	  if (form == DW_FORM_strp || form == DW_FORM_line_strp)
-	    size += DWARF_OFFSET_SIZE;
+	    size += dwarf_offset_size;
 	  else if (form == dwarf_FORM (DW_FORM_strx))
 	    size += size_of_uleb128 (AT_index (a));
 	  else
@@ -9546,7 +9546,7 @@ size_of_die (dw_die_ref die)
 	  size += 8;
 	  break;
 	case dw_val_class_vms_delta:
-	  size += DWARF_OFFSET_SIZE;
+	  size += dwarf_offset_size;
 	  break;
 	case dw_val_class_high_pc:
 	  size += DWARF2_ADDR_SIZE;
@@ -9724,9 +9724,9 @@ size_of_pubnames (vec<pubname_entry, va_gc> *names)
   size = DWARF_PUBNAMES_HEADER_SIZE;
   FOR_EACH_VEC_ELT (*names, i, p)
     if (include_pubname_in_output (names, p))
-      size += strlen (p->name) + DWARF_OFFSET_SIZE + 1 + space_for_flags;
+      size += strlen (p->name) + dwarf_offset_size + 1 + space_for_flags;
 
-  size += DWARF_OFFSET_SIZE;
+  size += dwarf_offset_size;
   return size;
 }
 
@@ -9823,7 +9823,7 @@ value_format (dw_attr_node *a)
       /* FALLTHRU */
     case dw_val_class_vms_delta:
     case dw_val_class_offset:
-      switch (DWARF_OFFSET_SIZE)
+      switch (dwarf_offset_size)
 	{
 	case 4:
 	  return DW_FORM_data4;
@@ -10525,7 +10525,7 @@ output_range_list_offset (dw_attr_node *a)
       if (dwarf_version >= 5)
 	{
 	  dw_ranges *r = &(*ranges_table)[a->dw_attr_val.v.val_offset];
-	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, r->label,
+	  dw2_asm_output_offset (dwarf_offset_size, r->label,
 				 debug_ranges_section, "%s", name);
 	}
       else
@@ -10533,7 +10533,7 @@ output_range_list_offset (dw_attr_node *a)
 	  char *p = strchr (ranges_section_label, '\0');
 	  sprintf (p, "+" HOST_WIDE_INT_PRINT_HEX,
 		   a->dw_attr_val.v.val_offset * 2 * DWARF2_ADDR_SIZE);
-	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, ranges_section_label,
+	  dw2_asm_output_offset (dwarf_offset_size, ranges_section_label,
 				 debug_ranges_section, "%s", name);
 	  *p = '\0';
 	}
@@ -10545,7 +10545,7 @@ output_range_list_offset (dw_attr_node *a)
       dw2_asm_output_data_uleb128 (r->idx, "%s", name);
     }
   else
-    dw2_asm_output_data (DWARF_OFFSET_SIZE,
+    dw2_asm_output_data (dwarf_offset_size,
 			 a->dw_attr_val.v.val_offset * 2 * DWARF2_ADDR_SIZE,
                          "%s (offset from %s)", name, ranges_section_label);
 }
@@ -10559,7 +10559,7 @@ output_loc_list_offset (dw_attr_node *a)
 
   gcc_assert (sym);
   if (!dwarf_split_debug_info)
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, sym, debug_loc_section,
+    dw2_asm_output_offset (dwarf_offset_size, sym, debug_loc_section,
                            "%s", dwarf_attr_name (a->dw_attr));
   else if (dwarf_version >= 5)
     {
@@ -10569,7 +10569,7 @@ output_loc_list_offset (dw_attr_node *a)
 				   sym);
     }
   else
-    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label,
+    dw2_asm_output_delta (dwarf_offset_size, sym, loc_section_label,
 			  "%s", dwarf_attr_name (a->dw_attr));
 }
 
@@ -10582,10 +10582,10 @@ output_view_list_offset (dw_attr_node *a)
 
   gcc_assert (sym);
   if (dwarf_split_debug_info)
-    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label,
+    dw2_asm_output_delta (dwarf_offset_size, sym, loc_section_label,
                           "%s", dwarf_attr_name (a->dw_attr));
   else
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, sym, debug_loc_section,
+    dw2_asm_output_offset (dwarf_offset_size, sym, debug_loc_section,
                            "%s", dwarf_attr_name (a->dw_attr));
 }
 
@@ -10663,7 +10663,7 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_offset:
-	  dw2_asm_output_data (DWARF_OFFSET_SIZE, a->dw_attr_val.v.val_offset,
+	  dw2_asm_output_data (dwarf_offset_size, a->dw_attr_val.v.val_offset,
 			       "%s", name);
 	  break;
 
@@ -10857,7 +10857,7 @@ output_die (dw_die_ref die)
 		  if (dwarf_version == 2)
 		    size = DWARF2_ADDR_SIZE;
 		  else
-		    size = DWARF_OFFSET_SIZE;
+		    size = dwarf_offset_size;
 		  /* ???  We cannot unconditionally output die_offset if
 		     non-zero - others might create references to those
 		     DIEs via symbols.
@@ -10877,7 +10877,7 @@ output_die (dw_die_ref die)
 	  else
 	    {
 	      gcc_assert (AT_ref (a)->die_offset);
-	      dw2_asm_output_data (DWARF_OFFSET_SIZE, AT_ref (a)->die_offset,
+	      dw2_asm_output_data (dwarf_offset_size, AT_ref (a)->die_offset,
 				   "%s", name);
 	    }
 	  break;
@@ -10888,18 +10888,18 @@ output_die (dw_die_ref die)
 
 	    ASM_GENERATE_INTERNAL_LABEL (l1, FDE_LABEL,
 					 a->dw_attr_val.v.val_fde_index * 2);
-	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, l1, debug_frame_section,
+	    dw2_asm_output_offset (dwarf_offset_size, l1, debug_frame_section,
 				   "%s", name);
 	  }
 	  break;
 
 	case dw_val_class_vms_delta:
 #ifdef ASM_OUTPUT_DWARF_VMS_DELTA
-	  dw2_asm_output_vms_delta (DWARF_OFFSET_SIZE,
+	  dw2_asm_output_vms_delta (dwarf_offset_size,
 				    AT_vms_delta2 (a), AT_vms_delta1 (a),
 				    "%s", name);
 #else
-	  dw2_asm_output_delta (DWARF_OFFSET_SIZE,
+	  dw2_asm_output_delta (dwarf_offset_size,
 				AT_vms_delta2 (a), AT_vms_delta1 (a),
 				"%s", name);
 #endif
@@ -10910,28 +10910,28 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_lineptr:
-	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, AT_lbl (a),
+	  dw2_asm_output_offset (dwarf_offset_size, AT_lbl (a),
 				 debug_line_section, "%s", name);
 	  break;
 
 	case dw_val_class_macptr:
-	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, AT_lbl (a),
+	  dw2_asm_output_offset (dwarf_offset_size, AT_lbl (a),
 				 debug_macinfo_section, "%s", name);
 	  break;
 
 	case dw_val_class_loclistsptr:
-	  dw2_asm_output_offset (DWARF_OFFSET_SIZE, AT_lbl (a),
+	  dw2_asm_output_offset (dwarf_offset_size, AT_lbl (a),
 				 debug_loc_section, "%s", name);
 	  break;
 
 	case dw_val_class_str:
           if (a->dw_attr_val.v.val_str->form == DW_FORM_strp)
-            dw2_asm_output_offset (DWARF_OFFSET_SIZE,
+            dw2_asm_output_offset (dwarf_offset_size,
                                    a->dw_attr_val.v.val_str->label,
                                    debug_str_section,
                                    "%s: \"%s\"", name, AT_string (a));
 	  else if (a->dw_attr_val.v.val_str->form == DW_FORM_line_strp)
-	    dw2_asm_output_offset (DWARF_OFFSET_SIZE,
+	    dw2_asm_output_offset (dwarf_offset_size,
 				   a->dw_attr_val.v.val_str->label,
 				   debug_line_str_section,
 				   "%s: \"%s\"", name, AT_string (a));
@@ -11048,10 +11048,10 @@ output_compilation_unit_header (enum dwarf_unit_type ut)
 {
   if (!XCOFF_DEBUGGING_INFO)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	dw2_asm_output_data (4, 0xffffffff,
 	  "Initial length escape value indicating 64-bit DWARF extension");
-      dw2_asm_output_data (DWARF_OFFSET_SIZE,
+      dw2_asm_output_data (dwarf_offset_size,
 			   next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
 			   "Length of Compilation Unit Info");
     }
@@ -11071,7 +11071,7 @@ output_compilation_unit_header (enum dwarf_unit_type ut)
       dw2_asm_output_data (1, ut, "%s", name);
       dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
     }
-  dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
+  dw2_asm_output_offset (dwarf_offset_size, abbrev_section_label,
 			 debug_abbrev_section,
 			 "Offset Into Abbrev. Section");
   if (dwarf_version < 5)
@@ -11261,12 +11261,12 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
   /* Produce the skeleton compilation-unit header.  This one differs enough from
      a normal CU header that it's better not to call output_compilation_unit
      header.  */
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+  if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
     dw2_asm_output_data (4, 0xffffffff,
 			 "Initial length escape value indicating 64-bit "
 			 "DWARF extension");
 
-  dw2_asm_output_data (DWARF_OFFSET_SIZE,
+  dw2_asm_output_data (dwarf_offset_size,
 		       DWARF_COMPILE_UNIT_SKELETON_HEADER_SIZE
                        - DWARF_INITIAL_LENGTH_SIZE
                        + size_of_die (comp_unit),
@@ -11277,7 +11277,7 @@ output_skeleton_debug_sections (dw_die_ref comp_unit,
       dw2_asm_output_data (1, DW_UT_skeleton, "DW_UT_skeleton");
       dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
     }
-  dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_skeleton_abbrev_section_label,
+  dw2_asm_output_offset (dwarf_offset_size, debug_skeleton_abbrev_section_label,
 			 debug_skeleton_abbrev_section,
                          "Offset Into Abbrev. Section");
   if (dwarf_version < 5)
@@ -11362,7 +11362,7 @@ output_comdat_type_unit (comdat_type_node *node,
   output_compilation_unit_header (dwarf_split_debug_info
 				  ? DW_UT_split_type : DW_UT_type);
   output_signature (node->signature, "Type Signature");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, node->type_die->die_offset,
+  dw2_asm_output_data (dwarf_offset_size, node->type_die->die_offset,
 		       "Offset to Type DIE");
   output_die (node->root_die);
 
@@ -11491,7 +11491,7 @@ output_pubname (dw_offset die_offset, pubname_entry *entry)
   dw_die_ref die = entry->die;
   int is_static = get_AT_flag (die, DW_AT_external) ? 0 : 1;
 
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, die_offset, "DIE offset");
+  dw2_asm_output_data (dwarf_offset_size, die_offset, "DIE offset");
 
   if (debug_generate_pub_sections == 2)
     {
@@ -11565,10 +11565,10 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 
   if (!XCOFF_DEBUGGING_INFO)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	dw2_asm_output_data (4, 0xffffffff,
 	  "Initial length escape value indicating 64-bit DWARF extension");
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length,
+      dw2_asm_output_data (dwarf_offset_size, pubnames_length,
 			   "Pub Info Length");
     }
 
@@ -11576,14 +11576,14 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
   dw2_asm_output_data (2, 2, "DWARF pubnames/pubtypes version");
 
   if (dwarf_split_debug_info)
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_skeleton_info_section_label,
+    dw2_asm_output_offset (dwarf_offset_size, debug_skeleton_info_section_label,
                            debug_skeleton_info_section,
                            "Offset of Compilation Unit Info");
   else
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_info_section_label,
+    dw2_asm_output_offset (dwarf_offset_size, debug_info_section_label,
                            debug_info_section,
                            "Offset of Compilation Unit Info");
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, next_die_offset,
+  dw2_asm_output_data (dwarf_offset_size, next_die_offset,
 		       "Compilation Unit Length");
 
   FOR_EACH_VEC_ELT (*names, i, pub)
@@ -11614,7 +11614,7 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 	}
     }
 
-  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, NULL);
+  dw2_asm_output_data (dwarf_offset_size, 0, NULL);
 }
 
 /* Output public names and types tables if necessary.  */
@@ -11647,21 +11647,21 @@ output_aranges (void)
   
   if (!XCOFF_DEBUGGING_INFO)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	dw2_asm_output_data (4, 0xffffffff,
 	  "Initial length escape value indicating 64-bit DWARF extension");
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
+      dw2_asm_output_data (dwarf_offset_size, aranges_length,
 			   "Length of Address Ranges Info");
     }
 
   /* Version number for aranges is still 2, even up to DWARF5.  */
   dw2_asm_output_data (2, 2, "DWARF aranges version");
   if (dwarf_split_debug_info)
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_skeleton_info_section_label,
+    dw2_asm_output_offset (dwarf_offset_size, debug_skeleton_info_section_label,
                            debug_skeleton_info_section,
                            "Offset of Compilation Unit Info");
   else
-    dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_info_section_label,
+    dw2_asm_output_offset (dwarf_offset_size, debug_info_section_label,
                            debug_info_section,
                            "Offset of Compilation Unit Info");
   dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Size of Address");
@@ -11936,11 +11936,11 @@ output_rnglists (unsigned generation)
 			       2 + generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL,
 			       3 + generation * 4);
-  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+  if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
     dw2_asm_output_data (4, 0xffffffff,
 			 "Initial length escape value indicating "
 			 "64-bit DWARF extension");
-  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+  dw2_asm_output_delta (dwarf_offset_size, l2, l1,
 			"Length of Range Lists");
   ASM_OUTPUT_LABEL (asm_out_file, l1);
   output_dwarf_version ();
@@ -11959,7 +11959,7 @@ output_rnglists (unsigned generation)
       ASM_OUTPUT_LABEL (asm_out_file, ranges_base_label);
       FOR_EACH_VEC_SAFE_ELT (ranges_table, i, r)
 	if (r->label)
-	  dw2_asm_output_delta (DWARF_OFFSET_SIZE, r->label,
+	  dw2_asm_output_delta (dwarf_offset_size, r->label,
 				ranges_base_label, NULL);
     }
 
@@ -12219,7 +12219,7 @@ output_line_string (enum dwarf_form form, const char *str,
       node = find_AT_string_in_table (str, debug_line_str_hash);
       set_indirect_string (node);
       node->form = form;
-      dw2_asm_output_offset (DWARF_OFFSET_SIZE, node->label,
+      dw2_asm_output_offset (dwarf_offset_size, node->label,
 			     debug_line_str_section, "%s: %#x: \"%s\"",
 			     entry_kind, 0, node->str);
       break;
@@ -12728,10 +12728,10 @@ output_line_info (bool prologue_only)
 
   if (!XCOFF_DEBUGGING_INFO)
     {
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	dw2_asm_output_data (4, 0xffffffff,
 	  "Initial length escape value indicating 64-bit DWARF extension");
-      dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+      dw2_asm_output_delta (dwarf_offset_size, l2, l1,
 			    "Length of Source Line Info");
     }
 
@@ -12743,7 +12743,7 @@ output_line_info (bool prologue_only)
       dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Address Size");
       dw2_asm_output_data (1, 0, "Segment Size");
     }
-  dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
+  dw2_asm_output_delta (dwarf_offset_size, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
   /* Define the architecture-dependent minimum instruction length (in bytes).
@@ -28208,7 +28208,7 @@ output_macinfo_op (macinfo_entry *ref)
     case DW_MACINFO_undef:
       len = strlen (ref->info) + 1;
       if (!dwarf_strict
-	  && len > DWARF_OFFSET_SIZE
+	  && len > (size_t) dwarf_offset_size
 	  && !DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
 	  && (debug_str_section->common.flags & SECTION_MERGE) != 0)
 	{
@@ -28249,7 +28249,7 @@ output_macinfo_op (macinfo_entry *ref)
       dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu",
 				   (unsigned long) ref->lineno);
       if (node->form == DW_FORM_strp)
-        dw2_asm_output_offset (DWARF_OFFSET_SIZE, node->label,
+        dw2_asm_output_offset (dwarf_offset_size, node->label,
                                debug_str_section, "The macro: \"%s\"",
                                ref->info);
       else
@@ -28261,7 +28261,7 @@ output_macinfo_op (macinfo_entry *ref)
       ASM_GENERATE_INTERNAL_LABEL (label,
 				   DEBUG_MACRO_SECTION_LABEL,
 				   ref->lineno + macinfo_label_base);
-      dw2_asm_output_offset (DWARF_OFFSET_SIZE, label, NULL, NULL);
+      dw2_asm_output_offset (dwarf_offset_size, label, NULL, NULL);
       break;
     default:
       fprintf (asm_out_file, "%s unrecognized macinfo code %lu\n",
@@ -28345,7 +28345,7 @@ optimize_macinfo_range (unsigned int idx, vec<macinfo_entry, va_gc> *files,
   /* The group name format is: wmN.[<encoded filename>.]<lineno>.<md5sum>  */
   grp_name = XALLOCAVEC (char, 4 + encoded_filename_len + linebuf_len + 1
 			 + 16 * 2 + 1);
-  memcpy (grp_name, DWARF_OFFSET_SIZE == 4 ? "wm4." : "wm8.", 4);
+  memcpy (grp_name, dwarf_offset_size == 4 ? "wm4." : "wm8.", 4);
   tail = grp_name + 4;
   if (encoded_filename_len)
     {
@@ -28416,7 +28416,7 @@ save_macinfo_strings (void)
           case DW_MACINFO_undef:
             len = strlen (ref->info) + 1;
             if (!dwarf_strict
-                && len > DWARF_OFFSET_SIZE
+                && len > (unsigned) dwarf_offset_size
                 && !DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
                 && (debug_str_section->common.flags & SECTION_MERGE) != 0)
               set_indirect_string (find_AT_string (ref->info));
@@ -28469,11 +28469,11 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
     {
       dw2_asm_output_data (2, dwarf_version >= 5 ? 5 : 4,
 			   "DWARF macro version number");
-      if (DWARF_OFFSET_SIZE == 8)
+      if (dwarf_offset_size == 8)
 	dw2_asm_output_data (1, 3, "Flags: 64-bit, lineptr present");
       else
 	dw2_asm_output_data (1, 2, "Flags: 32-bit, lineptr present");
-      dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_line_label,
+      dw2_asm_output_offset (dwarf_offset_size, debug_line_label,
                              debug_line_section, NULL);
     }
 
@@ -28562,7 +28562,7 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 	  ref->info = NULL;
 	  dw2_asm_output_data (2, dwarf_version >= 5 ? 5 : 4,
 			       "DWARF macro version number");
-	  if (DWARF_OFFSET_SIZE == 8)
+	  if (dwarf_offset_size == 8)
 	    dw2_asm_output_data (1, 1, "Flags: 64-bit");
 	  else
 	    dw2_asm_output_data (1, 0, "Flags: 32-bit");
@@ -28899,7 +28899,7 @@ output_index_string_offset (indirect_string_node **h, unsigned int *offset)
       /* Assert that this node has been assigned an index.  */
       gcc_assert (node->index != NO_INDEX_ASSIGNED
                   && node->index != NOT_INDEXED);
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, *offset,
+      dw2_asm_output_data (dwarf_offset_size, *offset,
                            "indexed string 0x%x: %s", node->index, node->str);
       *offset += strlen (node->str) + 1;
     }
@@ -28993,11 +28993,11 @@ output_indirect_strings (void)
 
 	  debug_str_hash->traverse_noresize
 	    <unsigned int *, count_index_strings> (&last_idx);
-	  str_offsets_length = last_idx * DWARF_OFFSET_SIZE + 4;
-	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	  str_offsets_length = last_idx * dwarf_offset_size + 4;
+	  if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	    dw2_asm_output_data (4, 0xffffffff,
 				 "Escape value for 64-bit DWARF extension");
-	  dw2_asm_output_data (DWARF_OFFSET_SIZE, str_offsets_length,
+	  dw2_asm_output_data (dwarf_offset_size, str_offsets_length,
 			       "Length of string offsets unit");
 	  dw2_asm_output_data (2, 5, "DWARF string offsets version");
 	  dw2_asm_output_data (2, 0, "Header zero padding");
@@ -29087,10 +29087,10 @@ output_addr_table (void)
 	<unsigned int *, count_index_addrs> (&last_idx);
       addrs_length = last_idx * DWARF2_ADDR_SIZE + 4;
 
-      if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+      if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	dw2_asm_output_data (4, 0xffffffff,
 			     "Escape value for 64-bit DWARF extension");
-      dw2_asm_output_data (DWARF_OFFSET_SIZE, addrs_length,
+      dw2_asm_output_data (dwarf_offset_size, addrs_length,
 			   "Length of Address Unit");
       dw2_asm_output_data (2, 5, "DWARF addr version");
       dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Size of Address");
@@ -31649,11 +31649,11 @@ dwarf2out_finish (const char *filename)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_LOC_SECTION_LABEL, 2);
 	  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_LOC_SECTION_LABEL, 3);
-	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	  if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
 	    dw2_asm_output_data (4, 0xffffffff,
 				 "Initial length escape value indicating "
 				 "64-bit DWARF extension");
-	  dw2_asm_output_delta (DWARF_OFFSET_SIZE, l2, l1,
+	  dw2_asm_output_delta (dwarf_offset_size, l2, l1,
 			    "Length of Location Lists");
 	  ASM_OUTPUT_LABEL (asm_out_file, l1);
 	  output_dwarf_version ();

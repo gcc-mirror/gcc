@@ -453,7 +453,7 @@ Objective-C and Objective-C++ Dialects}.
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gas-loc-support  -gno-as-loc-support @gol
 -gas-locview-support  -gno-as-locview-support @gol
--gcolumn-info  -gno-column-info @gol
+-gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64 @gol
 -gstatement-frontiers  -gno-statement-frontiers @gol
 -gvariable-location-views  -gno-variable-location-views @gol
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
@@ -9653,6 +9653,18 @@ information as possible into a separate output file with the extension
 @file{.dwo}.  This option allows the build system to avoid linking files with
 debug information.  To be useful, this option requires a debugger capable of
 reading @file{.dwo} files.
+
+@item -gdwarf32
+@itemx -gdwarf64
+@opindex gdwarf32
+@opindex gdwarf64
+If DWARF debugging information is enabled, the @option{-gdwarf32} selects
+the 32-bit DWARF format and the @option{-gdwarf64} selects the 64-bit
+DWARF format.  The default is target specific, on most targets it is
+@option{-gdwarf32} though.  The 32-bit DWARF format is smaller, but
+can't support more than 2GiB of debug information in any of the DWARF
+debug information sections.  The 64-bit DWARF format allows larger debug
+information and might not be well supported by all consumers yet.
 
 @item -gdescribe-dies
 @opindex gdescribe-dies
