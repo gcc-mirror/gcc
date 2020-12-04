@@ -1,3 +1,32 @@
+2020-12-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2020-12-03  Uroš Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98086
+	* config/i386/i386.c (ix86_md_asm_adjustmd): Rewrite
+	zero-extension part to use convert_to_mode.
+
+2020-12-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2020-12-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add "-mthumb -mcpu=cortex-r52
+	-mfloat-abi=hard" multilib.
+
+2020-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95694
+	* expr.c (expand_expr_real_2): Get the mode from the type rather
+	than the rtx, and assert that it is consistent with the mode of
+	the rtx (where known).  Optimize all constant integers, not just
+	those that can be represented in poly_int64.
+
 2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

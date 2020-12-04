@@ -1,3 +1,13 @@
+2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt:
+	Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Update.
+
 2020-12-01  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
