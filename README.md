@@ -27,7 +27,7 @@ this is why a build directory is created.
 ```bash
 $ mkdir gccrs-build
 $ cd gccrs-build
-$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=c,c++,rust
+$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust
 $ make
 ```
 
