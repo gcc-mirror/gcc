@@ -763,18 +763,22 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		tree tmp_var, tmp_off;
 		split_constant_offset (op0, &tmp_var, &tmp_off, cache, limit);
 
-		/* See whether we have an SSA_NAME whose range is known
-		   to be [A, B].  */
-		if (TREE_CODE (tmp_var) != SSA_NAME)
-		  return false;
+		/* See whether we have an known range [A, B] for tmp_var.  */
 		wide_int var_min, var_max;
-		value_range_kind vr_type = get_range_info (tmp_var, &var_min,
-							   &var_max);
-		wide_int var_nonzero = get_nonzero_bits (tmp_var);
 		signop sgn = TYPE_SIGN (itype);
-		if (intersect_range_with_nonzero_bits (vr_type, &var_min,
-						       &var_max, var_nonzero,
-						       sgn) != VR_RANGE)
+		if (TREE_CODE (tmp_var) == SSA_NAME)
+		  {
+		    value_range_kind vr_type
+		      = get_range_info (tmp_var, &var_min, &var_max);
+		    wide_int var_nonzero = get_nonzero_bits (tmp_var);
+		    if (intersect_range_with_nonzero_bits (vr_type, &var_min,
+							   &var_max,
+							   var_nonzero,
+							   sgn) != VR_RANGE)
+		      return false;
+		  }
+		else if (determine_value_range (tmp_var, &var_min, &var_max)
+			 != VR_RANGE)
 		  return false;
 
 		/* See whether the range of OP0 (i.e. TMP_VAR + TMP_OFF)
