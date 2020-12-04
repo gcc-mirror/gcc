@@ -88,4 +88,4 @@ Not all contributions must be code, we would love to see new test cases or bugs 
 We can be found on all usual Rust channels such as Zulip but we also have our own channels:
 
  * GCC Rust Zulip: https://gcc-rust.zulipchat.com/
- * Twitter: comming-soon
+ * Twitter: https://twitter.com/gcc_rust
