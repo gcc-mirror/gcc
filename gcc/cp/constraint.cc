@@ -619,7 +619,8 @@ build_parameter_mapping (tree expr, tree args, tree decl)
   return map;
 }
 
-/* True if the parameter mappings of two atomic constraints are equivalent.  */
+/* True if the parameter mappings of two atomic constraints formed
+   from the same expression are equivalent.  */
 
 static bool
 parameter_mapping_equivalent_p (tree t1, tree t2)
@@ -628,6 +629,7 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
   tree map2 = ATOMIC_CONSTR_MAP (t2);
   while (map1 && map2)
     {
+      gcc_checking_assert (TREE_VALUE (map1) == TREE_VALUE (map2));
       tree arg1 = TREE_PURPOSE (map1);
       tree arg2 = TREE_PURPOSE (map2);
       if (!template_args_equal (arg1, arg2))
@@ -635,6 +637,7 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
       map1 = TREE_CHAIN (map1);
       map2 = TREE_CHAIN (map2);
     }
+  gcc_checking_assert (!map1 && !map2);
   return true;
 }
 
@@ -2092,14 +2095,16 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
-  /* Ensure that we're in an evaluation context prior to satisfaction.  */
-  tree norm = TREE_TYPE (t);
-  tree result = satisfy_constraint (norm, args,
-				    sat_info (info.complain, info.in_decl));
-  if (result == error_mark_node && info.quiet ())
+  /* Perform satisfaction quietly with the regular normal form.  */
+  sat_info quiet (tf_none, info.in_decl);
+  tree norm = TREE_VALUE (TREE_TYPE (t));
+  tree diag_norm = TREE_PURPOSE (TREE_TYPE (t));
+  tree result = satisfy_constraint (norm, args, quiet);
+  if (result == error_mark_node)
     {
+      /* Replay the error using the diagnostic normal form.  */
       sat_info noisy (tf_warning_or_error, info.in_decl);
-      satisfy_constraint (norm, args, noisy);
+      satisfy_constraint (diag_norm, args, noisy);
     }
   if (result != boolean_true_node)
     return error_mark_node;
@@ -3137,10 +3142,15 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  tree norm = normalize_constraint_expression (expr, false);
+  /* We need to normalize the constraints now, at parse time, while
+     we have the necessary template context.  We normalize twice,
+     once without diagnostic information and once with, which we'll
+     later use for quiet and noisy satisfaction respectively.  */
+  tree norm = normalize_constraint_expression (expr, /*diag=*/false);
+  tree diag_norm = normalize_constraint_expression (expr, /*diag=*/true);
 
-  /* Build the constraint, saving its normalization as its type.  */
-  tree r = build1 (NESTED_REQ, norm, expr);
+  /* Build the constraint, saving its two normalizations as its type.  */
+  tree r = build1 (NESTED_REQ, build_tree_list (diag_norm, norm), expr);
   SET_EXPR_LOCATION (r, loc);
   return r;
 }
@@ -3541,9 +3551,10 @@ diagnose_type_requirement (tree req, tree args, tree in_decl)
 static void
 diagnose_nested_requirement (tree req, tree args)
 {
-  /* Quietly check for satisfaction first. We can elaborate details
-     later if needed.  */
-  tree norm = TREE_TYPE (req);
+  /* Quietly check for satisfaction first using the regular normal form.
+     We can elaborate details later if needed.  */
+  tree norm = TREE_VALUE (TREE_TYPE (req));
+  tree diag_norm = TREE_PURPOSE (TREE_TYPE (req));
   sat_info info (tf_none, NULL_TREE);
   tree result = satisfy_constraint (norm, args, info);
   if (result == boolean_true_node)
@@ -3553,10 +3564,10 @@ diagnose_nested_requirement (tree req, tree args)
   location_t loc = cp_expr_location (expr);
   if (diagnosing_failed_constraint::replay_errors_p ())
     {
-      /* Replay the substitution error.  */
+      /* Replay the substitution error using the diagnostic normal form.  */
       inform (loc, "nested requirement %qE is not satisfied, because", expr);
       sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-      satisfy_constraint_expression (expr, args, noisy);
+      satisfy_constraint (diag_norm, args, noisy);
     }
   else
     inform (loc, "nested requirement %qE is not satisfied", expr);
