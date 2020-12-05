@@ -757,8 +757,8 @@
 ;; These handle aligned 8-bit and 16-bit fields,
 ;; which can usually be done with move instructions.
 
-(define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+ro")
+(define_insn "*insv_aligned"
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+ro")
 			 (match_operand:QI 1 "const_int_operand" "n")
 			 (match_operand:SI 2 "const_int_operand" "n"))
 	(match_operand:SI 3 "general_operand" "g"))]
@@ -786,9 +786,9 @@
   return \"movw %3,%0\";
 }")
 
-(define_insn ""
+(define_insn "*extzv_aligned"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=&g")
-	(zero_extract:SI (match_operand:SI 1 "register_operand" "ro")
+	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "const_int_operand" "n")
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
@@ -814,9 +814,9 @@
   return \"movzwl %1,%0\";
 }")
 
-(define_insn ""
+(define_insn "*extv_aligned"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(sign_extract:SI (match_operand:SI 1 "register_operand" "ro")
+	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "const_int_operand" "n")
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
@@ -842,7 +842,7 @@
   return \"cvtwl %1,%0\";
 }")
 
-;; Register-only SImode cases of bit-field insns.
+;; Register and non-offsettable-memory SImode cases of bit-field insns.
 
 (define_insn ""
   [(set (cc0)
@@ -869,9 +869,9 @@
 ;; by a bicl or sign extension.  Because we might end up choosing ext[z]v
 ;; anyway, we can't allow immediate values for the primary source operand.
 
-(define_insn ""
+(define_insn "*extv_non_const"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(sign_extract:SI (match_operand:SI 1 "register_operand" "ro")
+	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "nrmT")))]
   ""
@@ -886,9 +886,9 @@
   return \"rotl %R3,%1,%0\;cvtwl %0,%0\";
 }")
 
-(define_insn ""
+(define_insn "*extzv_non_const"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(zero_extract:SI (match_operand:SI 1 "register_operand" "ro")
+	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "nrmT")))]
   ""
@@ -962,7 +962,7 @@
   ""
   "")
 
-(define_insn ""
+(define_insn "*extzv"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
 	(zero_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:QI 2 "general_operand" "g")
@@ -1015,8 +1015,8 @@
   ""
   "")
 
-(define_insn ""
-  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "+g")
+(define_insn "*insv"
+  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "+m")
 			 (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "general_operand" "nrmT"))
 	(match_operand:SI 3 "general_operand" "nrmT"))]
@@ -1046,8 +1046,8 @@
   return \"insv %3,%2,%1,%0\";
 }")
 
-(define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r")
+(define_insn "*insv_2"
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+ro")
 			 (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "general_operand" "nrmT"))
 	(match_operand:SI 3 "general_operand" "nrmT"))]
