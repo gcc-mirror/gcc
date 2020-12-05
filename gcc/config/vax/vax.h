@@ -683,3 +683,7 @@ VAX operand formatting codes:
    by the proper FDE definition.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, PC_REGNUM)
 
+/* Upon failure to find the bit the FFS hardware instruction returns
+   the position of the bit immediately following the field specified.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)	\
+  ((VALUE) = GET_MODE_BITSIZE (MODE), 2)

@@ -1135,6 +1135,9 @@ vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
 	    case REG:
 	      cc_status.flags = CC_NO_OVERFLOW;
 	      break;
+	    case CTZ:
+	      cc_status.flags = CC_NOT_NEGATIVE;
+	      break;
 	    default:
 	      break;
 	    }

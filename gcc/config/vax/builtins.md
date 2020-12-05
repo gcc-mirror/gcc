@@ -39,7 +39,7 @@
   rtx cond = gen_rtx_NE (VOIDmode, cc0_rtx, const0_rtx);
   rtx target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label_ref, pc_rtx);
 
-  emit_insn (gen_ffssi2_internal (operands[0], operands[1]));
+  emit_insn (gen_ctzsi2 (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (pc_rtx, target));
   emit_insn (gen_negsi2 (operands[0], const1_rtx));
   emit_label (label);
@@ -47,9 +47,9 @@
   DONE;
 }")
 
-(define_insn "ffssi2_internal"
+(define_insn "ctzsi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
-	(ffs:SI (match_operand:SI 1 "general_operand" "nrQT")))
+	(ctz:SI (match_operand:SI 1 "general_operand" "nrQT")))
    (set (cc0)
 	(compare (match_dup 1)
 		 (const_int 0)))]
