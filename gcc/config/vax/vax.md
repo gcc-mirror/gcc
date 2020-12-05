@@ -1634,3 +1634,5 @@
   emit_barrier ();
   DONE;
 })
+
+(include "builtins.md")
