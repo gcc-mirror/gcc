@@ -1017,7 +1017,7 @@ Gogo::type_descriptor_backend_name(const Type* type, Named_type* nt,
   bool is_pointer = false;
   if (nt == NULL && type->points_to() != NULL)
     {
-      nt = type->points_to()->named_type();
+      nt = type->points_to()->unalias()->named_type();
       is_pointer = true;
     }
 
