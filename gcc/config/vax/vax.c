@@ -54,6 +54,10 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
+static machine_mode vax_cc_modes_compatible (machine_mode, machine_mode);
+static rtx_insn *vax_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+				    vec<const char *> &,
+				    vec<rtx> &, HARD_REG_SET &);
 static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
 static void vax_function_arg_advance (cumulative_args_t,
 				      const function_arg_info &);
@@ -81,10 +85,22 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+/* Enable compare elimination pass.  */
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM VAX_PSL_REGNUM
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS vax_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST vax_address_cost
+
+/* Return the narrowest CC mode that spans both modes offered.  */
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE vax_cc_modes_compatible
+
+/* Mark PSL as clobbered for compatibility with the CC0 representation.  */
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST vax_md_asm_adjust
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
@@ -1070,6 +1086,102 @@ vax_acceptable_pic_operand_p (rtx x ATTRIBUTE_UNUSED,
   return true;
 }
 
+/* Given a comparison code (NE, EQ, etc.) and the operands of a COMPARE,
+   return the mode to be used for the comparison.  As we have the same
+   interpretation of condition codes across all the instructions we just
+   return the narrowest mode suitable for the comparison code requested.  */
+
+extern machine_mode
+vax_select_cc_mode (enum rtx_code op,
+		    rtx x ATTRIBUTE_UNUSED, rtx y ATTRIBUTE_UNUSED)
+{
+  switch (op)
+    {
+    default:
+      gcc_unreachable ();
+    case NE:
+    case EQ:
+      return CCZmode;
+    case GE:
+    case LT:
+      return CCNmode;
+    case GT:
+    case LE:
+      return CCNZmode;
+    case GEU:
+    case GTU:
+    case LEU:
+    case LTU:
+      return CCmode;
+    }
+}
+
+/* Return the narrowest CC mode that spans both modes offered.  If they
+   intersect, this will be the wider of the two, and if they do not then
+   find find one that is a superset of both (i.e. CCNZmode for a pair
+   consisting of CCNmode and CCZmode).  A wider CC writer will satisfy
+   a narrower CC reader, e.g. a comparison operator that uses CCZmode
+   can use a CCNZmode output of a previous instruction.  */
+
+static machine_mode
+vax_cc_modes_compatible (machine_mode m1, machine_mode m2)
+{
+  switch (m1)
+    {
+    default:
+      gcc_unreachable ();
+    case E_CCmode:
+      switch (m2)
+	{
+	default:
+	  gcc_unreachable ();
+	case E_CCmode:
+	case E_CCNZmode:
+	case E_CCNmode:
+	case E_CCZmode:
+	  return m1;
+	}
+    case E_CCNZmode:
+      switch (m2)
+	{
+	default:
+	  gcc_unreachable ();
+	case E_CCmode:
+	  return m2;
+	case E_CCNmode:
+	case E_CCNZmode:
+	case E_CCZmode:
+	  return m1;
+	}
+    case E_CCNmode:
+    case E_CCZmode:
+      switch (m2)
+	{
+	default:
+	  gcc_unreachable ();
+	case E_CCmode:
+	case E_CCNZmode:
+	  return m2;
+	case E_CCNmode:
+	case E_CCZmode:
+	  return m1 == m2 ? m1 : E_CCNZmode;
+	}
+    }
+}
+
+/* Mark PSL as clobbered for compatibility with the CC0 representation.  */
+
+static rtx_insn *
+vax_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
+		   vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		   vec<const char *> &constraints ATTRIBUTE_UNUSED,
+		   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+{
+  clobbers.safe_push (gen_rtx_REG (CCmode, VAX_PSL_REGNUM));
+  SET_HARD_REG_BIT (clobbered_regs, VAX_PSL_REGNUM);
+  return NULL;
+}
+
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.
 	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>  #conservative entry mask
@@ -1102,80 +1214,20 @@ vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
   return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
 }
 
-/* Worker function for NOTICE_UPDATE_CC.  */
-
-void
-vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (exp) == SET)
-    {
-      if (GET_CODE (SET_SRC (exp)) == CALL)
-	CC_STATUS_INIT;
-      else if (GET_CODE (SET_DEST (exp)) != ZERO_EXTRACT
-	       && GET_CODE (SET_DEST (exp)) != PC)
-	{
-	  cc_status.flags = 0;
-	  /* The integer operations below don't set carry or
-	     set it in an incompatible way.  That's ok though
-	     as the Z bit is all we need when doing unsigned
-	     comparisons on the result of these insns (since
-	     they're always with 0).  Set CC_NO_OVERFLOW to
-	     generate the correct unsigned branches.  */
-	  switch (GET_CODE (SET_SRC (exp)))
-	    {
-	    case NEG:
-	      if (GET_MODE_CLASS (GET_MODE (exp)) == MODE_FLOAT)
-		break;
-	      /* FALLTHRU */
-	    case AND:
-	    case IOR:
-	    case XOR:
-	    case NOT:
-	    case MEM:
-	    case REG:
-	      cc_status.flags = CC_NO_OVERFLOW;
-	      break;
-	    case CTZ:
-	      cc_status.flags = CC_NOT_NEGATIVE;
-	      break;
-	    default:
-	      break;
-	    }
-	  cc_status.value1 = SET_DEST (exp);
-	  cc_status.value2 = SET_SRC (exp);
-	}
-    }
-  else if (GET_CODE (exp) == PARALLEL
-	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
-    {
-      if (GET_CODE (SET_SRC (XVECEXP (exp, 0, 0))) == CALL)
-	CC_STATUS_INIT;
-      else if (GET_CODE (SET_DEST (XVECEXP (exp, 0, 0))) != PC)
-	{
-	  cc_status.flags = 0;
-	  cc_status.value1 = SET_DEST (XVECEXP (exp, 0, 0));
-	  cc_status.value2 = SET_SRC (XVECEXP (exp, 0, 0));
-	}
-      else
-	/* PARALLELs whose first element sets the PC are aob,
-	   sob insns.  They do change the cc's.  */
-	CC_STATUS_INIT;
-    }
-  else
-    CC_STATUS_INIT;
-  if (cc_status.value1 && REG_P (cc_status.value1)
-      && cc_status.value2
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
-    cc_status.value2 = 0;
-  if (cc_status.value1 && MEM_P (cc_status.value1)
-      && cc_status.value2
-      && MEM_P (cc_status.value2))
-    cc_status.value2 = 0;
-  /* Actual condition, one line up, should be that value2's address
-     depends on value1, but that is too much of a pain.  */
-}
-
 /* Output integer move instructions.  */
+
+bool
+vax_maybe_split_dimode_move (rtx *operands)
+{
+  return (TARGET_QMATH
+	  && (!MEM_P (operands[0])
+	      || GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
+	      || GET_CODE (XEXP (operands[0], 0)) == POST_INC
+	      || !illegal_addsub_di_memory_operand (operands[0], DImode))
+	  && ((CONST_INT_P (operands[1])
+	       && (unsigned HOST_WIDE_INT) INTVAL (operands[1]) >= 64)
+	      || GET_CODE (operands[1]) == CONST_DOUBLE));
+}
 
 const char *
 vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
@@ -1252,14 +1304,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	    }
 	}
 
-      if (TARGET_QMATH
-	  && (!MEM_P (operands[0])
-	      || GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
-	      || GET_CODE (XEXP (operands[0], 0)) == POST_INC
-	      || !illegal_addsub_di_memory_operand (operands[0], DImode))
-	  && ((CONST_INT_P (operands[1])
-	       && (unsigned HOST_WIDE_INT) INTVAL (operands[1]) >= 64)
-	      || GET_CODE (operands[1]) == CONST_DOUBLE))
+      if (vax_maybe_split_dimode_move (operands))
 	{
 	  hi[0] = operands[0];
 	  hi[1] = operands[1];

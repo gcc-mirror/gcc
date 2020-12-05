@@ -26,7 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #define REGISTER_PREFIX "%"
 #define REGISTER_NAMES \
   { "%r0", "%r1",  "%r2",  "%r3", "%r4", "%r5", "%r6", "%r7", \
-    "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc", }
+    "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc", \
+    "%psl" }
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"

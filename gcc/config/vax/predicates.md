@@ -17,6 +17,10 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Return true if OP is a constant zero operand.
+(define_predicate "const_zero_operand"
+  (match_test "op == CONST0_RTX (mode)"))
+
 ;; Special case of a symbolic operand that's used as a
 ;; operand.
 
@@ -109,3 +113,19 @@
 (define_predicate "any_memory_operand"
   (ior (match_operand 0 "memory_operand")
        (match_operand 0 "volatile_mem_operand")))
+
+;; Return true if OP is a comparison operator that requires at least CCmode.
+(define_predicate "vax_cc_comparison_operator"
+  (match_code "geu,gtu,leu,ltu"))
+
+;; Return true if OP is a comparison operator that requires at least CCNmode.
+(define_predicate "vax_ccn_comparison_operator"
+  (match_code "ge,lt"))
+
+;; Return true if OP is a comparison operator that requires at least CCNZmode.
+(define_predicate "vax_ccnz_comparison_operator"
+  (match_code "gt,le"))
+
+;; Return true if OP is a comparison operator that requires at least CCZmode.
+(define_predicate "vax_ccz_comparison_operator"
+  (match_code "ne,eq"))

@@ -39,10 +39,10 @@
 {
   rtx label = gen_label_rtx ();
   rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
-  rtx cond = gen_rtx_NE (VOIDmode, cc0_rtx, const0_rtx);
+  rtx cond = gen_rtx_NE (VOIDmode, operands[1], const0_rtx);
   rtx target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label_ref, pc_rtx);
 
-  emit_insn (gen_ctz<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_ctz<mode>2_ccz (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (pc_rtx, target));
   emit_insn (gen_neg<mode>2 (operands[0], const1_rtx));
   emit_label (label);
@@ -50,33 +50,114 @@
   DONE;
 }")
 
-(define_insn "ctz<mode>2"
+(define_insn_and_split "ctz<mode>2"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
+	(ctz:SI (match_operand:VAXint 1 "general_operand" "nrQT")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (ctz:SI (match_dup 1)))
+      (clobber (reg:CC VAX_PSL_REGNUM))])]
+  "")
+
+(define_insn "*ctz<mode>2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
 	(ctz:SI (match_operand:VAXint 1 "general_operand" "nrQT")))
-   (set (cc0)
-	(compare (match_dup 1)
-		 (const_int 0)))]
+   (clobber (reg:CC VAX_PSL_REGNUM))]
+  "reload_completed"
+  "ffs $0,$<width>,%1,%0")
+
+(define_insn_and_split "ctz<mode>2_ccz"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
+	(ctz:SI (match_operand:VAXint 1 "general_operand" "nrQT")))]
   ""
+  "#"
+  "reload_completed"
+  [(parallel
+     [(set (reg:CCZ VAX_PSL_REGNUM)
+	   (compare:CCZ (match_dup 1)
+			(const_int 0)))
+      (set (match_dup 0)
+	   (ctz:SI (match_dup 1)))])]
+  "")
+
+(define_insn "*ctz<mode>2_ccz"
+  [(set (reg:CCZ VAX_PSL_REGNUM)
+	(compare:CCZ (match_operand:VAXint 1 "general_operand" "nrQT")
+		     (const_int 0)))
+   (set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
+	(ctz:SI (match_dup 1)))]
+  "reload_completed"
   "ffs $0,$<width>,%1,%0")
 
 ;; Our FFS hardware instruction supports any field width,
 ;; so handle narrower inputs directly as well.
 (define_peephole2
-  [(set (match_operand:SI 0 "register_operand")
-        (any_extend:SI (match_operand:VAXintQH 1 "general_operand")))
+  [(parallel
+     [(set (match_operand:SI 0 "register_operand")
+	   (any_extend:SI (match_operand:VAXintQH 1 "general_operand")))
+      (clobber (reg:CC VAX_PSL_REGNUM))])
    (parallel
      [(set (match_operand:SI 2 "nonimmediate_operand")
 	   (ctz:SI (match_dup 0)))
-      (set (cc0)
-	   (compare (match_dup 2)
-		    (const_int 0)))])]
+      (clobber (reg:CC VAX_PSL_REGNUM))])]
   "rtx_equal_p (operands[0], operands[2]) || peep2_reg_dead_p (2, operands[0])"
   [(parallel
      [(set (match_dup 2)
 	   (ctz:SI (match_dup 1)))
-      (set (cc0)
-	   (compare (match_dup 1)
-		    (const_int 0)))])]
+      (clobber (reg:CC VAX_PSL_REGNUM))])]
+  "")
+
+;; The FFS hardware instruction sets the Z condition code based on
+;; the input field rather than the output operand, so the compare
+;; elimination pass cannot handle it.  Try to get rid of the extra
+;; operation by hand.
+;;
+;; The "ctz<mode>2_ccz" patterns require their `operands[1]' not to
+;; have a mode dependent address, so all we need to verify is that
+;; the two operands are not the same, in which case it's the FFS
+;; output rather than input that condition codes are checked for.
+(define_peephole2
+  [(parallel
+     [(set (match_operand:SI 0 "nonimmediate_operand")
+	   (ctz:SI (match_operand:VAXint 1 "general_operand")))
+      (clobber (reg:CC VAX_PSL_REGNUM))])
+   (set (reg:CCZ VAX_PSL_REGNUM)
+	(compare:CCZ (match_dup 1)
+		     (const_int 0)))]
+  "!rtx_equal_p (operands[0], operands[1])"
+  [(parallel
+     [(set (reg:CCZ VAX_PSL_REGNUM)
+	   (compare:CCZ (match_dup 1)
+			(const_int 0)))
+      (set (match_dup 0)
+	   (ctz:SI (match_dup 1)))])]
+  "")
+
+;; This effectively combines the two peepholes above,
+;; matching the sequence produced by `ffs<mode>2'.
+(define_peephole2
+  [(parallel
+     [(set (match_operand:SI 0 "register_operand")
+	   (any_extend:SI (match_operand:VAXintQH 1 "general_operand")))
+      (clobber (reg:CC VAX_PSL_REGNUM))])
+   (parallel
+     [(set (match_operand:SI 2 "nonimmediate_operand")
+	   (ctz:SI (match_dup 0)))
+      (clobber (reg:CC VAX_PSL_REGNUM))])
+   (set (reg:CCZ VAX_PSL_REGNUM)
+	(compare:CCZ (match_dup 0)
+		     (const_int 0)))]
+  "!rtx_equal_p (operands[0], operands[2])
+   && peep2_reg_dead_p (3, operands[0])"
+  [(parallel
+     [(set (reg:CCZ VAX_PSL_REGNUM)
+	   (compare:CCZ (match_dup 1)
+			(const_int 0)))
+      (set (match_dup 2)
+	   (ctz:SI (match_dup 1)))])]
   "")
 
 (define_expand "sync_lock_test_and_set<mode>"
