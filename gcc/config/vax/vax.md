@@ -498,17 +498,17 @@
    div<VAXint:isfx>2 %2,%0
    div<VAXint:isfx>3 %2,%1,%0")
 
-;This is left out because it is very slow;
-;we are better off programming around the "lack" of this insn.
-;(define_insn "divmoddisi4"
-;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-;	(div:SI (match_operand:DI 1 "general_operand" "g")
-;		(match_operand:SI 2 "general_operand" "g")))
-;   (set (match_operand:SI 3 "nonimmediate_operand" "=g")
-;	(mod:SI (match_dup 1)
-;		(match_dup 2)))]
-;  ""
-;  "ediv %2,%1,%0,%3")
+;; This is left out because it is very slow;
+;; we are better off programming around the "lack" of this insn.
+;;(define_insn "divmoddisi4"
+;;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
+;;	(div:SI (match_operand:DI 1 "general_operand" "g")
+;;		(match_operand:SI 2 "general_operand" "g")))
+;;   (set (match_operand:SI 3 "nonimmediate_operand" "=g")
+;;	(mod:SI (match_dup 1)
+;;		(match_dup 2)))]
+;;  ""
+;;  "ediv %2,%1,%0,%3")
 
 ;; Bit-and on the VAX is done with a clear-bits insn.
 (define_expand "and<mode>3"
@@ -740,14 +740,14 @@
   ""
   "rotl %2,%1,%0")
 
-;This insn is probably slower than a multiply and an add.
-;(define_insn "*amulsi4"
-;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-;	(mult:SI (plus:SI (match_operand:SI 1 "general_operand" "g")
-;			  (match_operand:SI 2 "general_operand" "g"))
-;		 (match_operand:SI 3 "general_operand" "g")))]
-;  ""
-;  "index %1,$0x80000000,$0x7fffffff,%3,%2,%0")
+;; This insn is probably slower than a multiply and an add.
+;;(define_insn "*amulsi4"
+;;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
+;;	(mult:SI (plus:SI (match_operand:SI 1 "general_operand" "g")
+;;			  (match_operand:SI 2 "general_operand" "g"))
+;;		 (match_operand:SI 3 "general_operand" "g")))]
+;;  ""
+;;  "index %1,$0x80000000,$0x7fffffff,%3,%2,%0")
 
 ;; Special cases of bit-field insns which we should
 ;; recognize in preference to the general case.
