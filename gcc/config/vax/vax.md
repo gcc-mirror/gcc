@@ -206,16 +206,28 @@
 }")
 
 ;; This is here to accept 4 arguments and pass the first 3 along
-;; to the cpymemhi1 pattern that really does the work.
+;; to the movmemhi1 pattern that really does the work.
 (define_expand "cpymemhi"
-  [(set (match_operand:BLK 0 "general_operand" "=g")
-	(match_operand:BLK 1 "general_operand" "g"))
-   (use (match_operand:HI 2 "general_operand" "g"))
+  [(set (match_operand:BLK 0 "memory_operand" "")
+	(match_operand:BLK 1 "memory_operand" ""))
+   (use (match_operand:HI 2 "general_operand" ""))
    (match_operand 3 "" "")]
   ""
   "
 {
-  emit_insn (gen_cpymemhi1 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_movmemhi1 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_expand "movmemhi"
+  [(set (match_operand:BLK 0 "memory_operand" "")
+	(match_operand:BLK 1 "memory_operand" ""))
+   (use (match_operand:HI 2 "general_operand" ""))
+   (match_operand 3 "" "")]
+  ""
+  "
+{
+  emit_insn (gen_movmemhi1 (operands[0], operands[1], operands[2]));
   DONE;
 }")
 
@@ -224,7 +236,7 @@
 ;; that anything generated as this insn will be recognized as one
 ;; and that it won't successfully combine with anything.
 
-(define_insn "cpymemhi1"
+(define_insn "movmemhi1"
   [(set (match_operand:BLK 0 "memory_operand" "=o")
 	(match_operand:BLK 1 "memory_operand" "o"))
    (use (match_operand:HI 2 "general_operand" "g"))
