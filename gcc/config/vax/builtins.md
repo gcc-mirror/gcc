@@ -24,6 +24,8 @@
   ]
 )
 
+(define_mode_attr bb_mem [(QI "m") (HI "Q") (SI "Q")])
+
 (define_expand "ffssi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(ffs:SI (match_operand:SI 1 "general_operand" "")))]
@@ -73,57 +75,23 @@
   DONE;
 }")
 
-(define_insn "jbbssiqi"
+(define_insn "jbbssi<mode>"
   [(parallel
     [(set (pc)
 	  (if_then_else
-	    (ne (zero_extract:SI (match_operand:QI 0 "memory_operand" "g")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
-		(const_int 0))
+	    (eq (zero_extract:SI
+		  (match_operand:VAXint 0 "memory_operand" "<bb_mem>")
+		  (const_int 1)
+		  (match_operand:SI 1 "general_operand" "nrmT"))
+		(const_int 1))
 	    (label_ref (match_operand 2 "" ""))
 	    (pc)))
-     (set (zero_extract:SI (match_operand:QI 3 "memory_operand" "+0")
+     (set (zero_extract:SI (match_operand:VAXint 3 "memory_operand" "+0")
 			   (const_int 1)
 			   (match_dup 1))
 	  (const_int 1))])]
   ""
   "jbssi %1,%0,%l2")
-
-(define_insn "jbbssihi"
-  [(parallel
-    [(set (pc)
-	  (if_then_else
-	    (ne (zero_extract:SI (match_operand:HI 0 "memory_operand" "Q")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
-		(const_int 0))
-	    (label_ref (match_operand 2 "" ""))
-	    (pc)))
-     (set (zero_extract:SI (match_operand:HI 3 "memory_operand" "+0")
-			   (const_int 1)
-			   (match_dup 1))
-	  (const_int 1))])]
-  ""
-  "jbssi %1,%0,%l2")
-
-(define_insn "jbbssisi"
-  [(parallel
-    [(set (pc)
-	  (if_then_else
-	    (ne (zero_extract:SI (match_operand:SI 0 "memory_operand" "Q")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
-		(const_int 0))
-	    (label_ref (match_operand 2 "" ""))
-	    (pc)))
-     (set (zero_extract:SI (match_operand:SI 3 "memory_operand" "+0")
-			   (const_int 1)
-			   (match_dup 1))
-	  (const_int 1))])]
-  ""
-  "jbssi %1,%0,%l2")
-
 
 (define_expand "sync_lock_release<mode>"
   [(set (match_operand:VAXint 0 "memory_operand" "+m")
@@ -145,54 +113,20 @@
   DONE;
 }")
 
-(define_insn "jbbcciqi"
+(define_insn "jbbcci<mode>"
   [(parallel
     [(set (pc)
 	  (if_then_else
-	    (eq (zero_extract:SI (match_operand:QI 0 "memory_operand" "g")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
+	    (eq (zero_extract:SI
+		  (match_operand:VAXint 0 "memory_operand" "<bb_mem>")
+		  (const_int 1)
+		  (match_operand:SI 1 "general_operand" "nrmT"))
 		(const_int 0))
 	    (label_ref (match_operand 2 "" ""))
 	    (pc)))
-     (set (zero_extract:SI (match_operand:QI 3 "memory_operand" "+0")
+     (set (zero_extract:SI (match_operand:VAXint 3 "memory_operand" "+0")
 			   (const_int 1)
 			   (match_dup 1))
 	  (const_int 0))])]
   ""
   "jbcci %1,%0,%l2")
-
-(define_insn "jbbccihi"
-  [(parallel
-    [(set (pc)
-	  (if_then_else
-	    (eq (zero_extract:SI (match_operand:HI 0 "memory_operand" "Q")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
-		(const_int 0))
-	    (label_ref (match_operand 2 "" ""))
-	    (pc)))
-     (set (zero_extract:SI (match_operand:HI 3 "memory_operand" "+0")
-			   (const_int 1)
-			   (match_dup 1))
-	  (const_int 0))])]
-  ""
-  "jbcci %1,%0,%l2")
-
-(define_insn "jbbccisi"
-  [(parallel
-    [(set (pc)
-	  (if_then_else
-	    (eq (zero_extract:SI (match_operand:SI 0 "memory_operand" "Q")
-				 (const_int 1)
-				 (match_operand:SI 1 "general_operand" "nrm"))
-		(const_int 0))
-	    (label_ref (match_operand 2 "" ""))
-	    (pc)))
-     (set (zero_extract:SI (match_operand:SI 3 "memory_operand" "+0")
-			   (const_int 1)
-			   (match_dup 1))
-	  (const_int 0))])]
-  ""
-  "jbcci %1,%0,%l2")
-
