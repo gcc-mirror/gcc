@@ -853,20 +853,20 @@
 
 ;; Register and non-offsettable-memory SImode cases of bit-field insns.
 
-(define_insn ""
+(define_insn "*cmpv"
   [(set (cc0)
 	(compare
-	 (sign_extract:SI (match_operand:SI 0 "register_operand" "r")
+	 (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "ro")
 			  (match_operand:QI 1 "general_operand" "g")
 			  (match_operand:SI 2 "general_operand" "nrmT"))
 	 (match_operand:SI 3 "general_operand" "nrmT")))]
   ""
   "cmpv %2,%1,%0,%3")
 
-(define_insn ""
+(define_insn "*cmpzv"
   [(set (cc0)
 	(compare
-	 (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+	 (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "ro")
 			  (match_operand:QI 1 "general_operand" "g")
 			  (match_operand:SI 2 "general_operand" "nrmT"))
 	 (match_operand:SI 3 "general_operand" "nrmT")))]
@@ -921,7 +921,7 @@
 ;; nonimmediate_operand is used to make sure that mode-ambiguous cases
 ;; don't match these (and therefore match the cases above instead).
 
-(define_insn ""
+(define_insn "*cmpv_2"
   [(set (cc0)
 	(compare
 	 (sign_extract:SI (match_operand:QI 0 "memory_operand" "m")
@@ -931,10 +931,10 @@
   ""
   "cmpv %2,%1,%0,%3")
 
-(define_insn ""
+(define_insn "*cmpzv_2"
   [(set (cc0)
 	(compare
-	 (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "rm")
+	 (zero_extract:SI (match_operand:QI 0 "memory_operand" "m")
 			  (match_operand:QI 1 "general_operand" "g")
 			  (match_operand:SI 2 "general_operand" "nrmT"))
 	 (match_operand:SI 3 "general_operand" "nrmT")))]
