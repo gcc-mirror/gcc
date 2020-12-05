@@ -1651,6 +1651,16 @@ rtx_reader::read_rtx_code (const char *code_name)
       return return_rtx;
     }
 
+  /* Handle "const_double_zero".  */
+  if (strcmp (code_name, "const_double_zero") == 0)
+    {
+      code = CONST_DOUBLE;
+      return_rtx = rtx_alloc (code);
+      memset (return_rtx, 0, RTX_CODE_SIZE (code));
+      PUT_CODE (return_rtx, code);
+      return return_rtx;
+    }
+
   /* If we end up with an insn expression then we free this space below.  */
   return_rtx = rtx_alloc_for_name (code_name);
   code = GET_CODE (return_rtx);
