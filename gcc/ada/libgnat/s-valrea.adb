@@ -43,10 +43,10 @@ package body System.Val_Real is
    --  We need an unsigned type large enough to represent the mantissa
 
    Need_Extra : constant Boolean := Num'Machine_Mantissa > Uns'Size - 4;
-   --  If the mantissa of the floating-point type is almost as large as that
-   --  of the unsigned type, we do not have enough space for an extra digit
-   --  in the unsigned type so we handle the extra digit separately, at the
-   --  cost of a potential roundoff error.
+   --  If the mantissa of the floating-point type is almost as large as the
+   --  unsigned type, we do not have enough space for an extra digit in the
+   --  unsigned type so we handle the extra digit separately, at the cost of
+   --  a potential roundoff error.
 
    Precision_Limit : constant Uns :=
      (if Need_Extra then 2**Num'Machine_Mantissa - 1 else 2**Uns'Size - 1);
