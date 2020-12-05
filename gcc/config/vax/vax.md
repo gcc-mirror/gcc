@@ -762,11 +762,14 @@
 			 (match_operand:QI 1 "const_int_operand" "n")
 			 (match_operand:SI 2 "const_int_operand" "n"))
 	(match_operand:SI 3 "general_operand" "g"))]
-   "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
+  "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
    && (!MEM_P (operands[0])
-       || ! mode_dependent_address_p (XEXP (operands[0], 0),
-				      MEM_ADDR_SPACE (operands[0])))
+       || ((!flag_pic
+	    || vax_acceptable_pic_operand_p (XEXP (operands[0], 0),
+					     true, true))
+	   && !mode_dependent_address_p (XEXP (operands[0], 0),
+					 MEM_ADDR_SPACE (operands[0]))))
    && (!(REG_P (operands[0])
 	 || (SUBREG_P (operands[0]) && REG_P (SUBREG_REG (operands[0]))))
        || INTVAL (operands[2]) == 0)"
@@ -794,8 +797,11 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (!MEM_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0),
-				      MEM_ADDR_SPACE (operands[1])))
+       || ((!flag_pic
+	    || vax_acceptable_pic_operand_p (XEXP (operands[1], 0),
+					     true, true))
+	   && !mode_dependent_address_p (XEXP (operands[1], 0),
+					 MEM_ADDR_SPACE (operands[1]))))
    && (!(REG_P (operands[1])
 	 || (SUBREG_P (operands[1]) && REG_P (SUBREG_REG (operands[1]))))
        || INTVAL (operands[3]) == 0)"
@@ -822,8 +828,11 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (!MEM_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0),
-				      MEM_ADDR_SPACE (operands[1])))
+       || ((!flag_pic
+	    || vax_acceptable_pic_operand_p (XEXP (operands[1], 0),
+					     true, true))
+	   && !mode_dependent_address_p (XEXP (operands[1], 0),
+					 MEM_ADDR_SPACE (operands[1]))))
    && (!(REG_P (operands[1])
 	 || (SUBREG_P (operands[1]) && REG_P (SUBREG_REG (operands[1]))))
        || INTVAL (operands[3]) == 0)"
