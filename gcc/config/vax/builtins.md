@@ -26,6 +26,9 @@
 
 (define_mode_attr bb_mem [(QI "m") (HI "Q") (SI "Q")])
 
+(define_int_iterator bit [0 1])
+(define_int_attr ccss [(0 "cc") (1 "ss")])
+
 (define_expand "ffssi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(ffs:SI (match_operand:SI 1 "general_operand" "")))]
@@ -75,24 +78,6 @@
   DONE;
 }")
 
-(define_insn "jbbssi<mode>"
-  [(parallel
-    [(set (pc)
-	  (if_then_else
-	    (eq (zero_extract:SI
-		  (match_operand:VAXint 0 "memory_operand" "<bb_mem>")
-		  (const_int 1)
-		  (match_operand:SI 1 "general_operand" "nrmT"))
-		(const_int 1))
-	    (label_ref (match_operand 2 "" ""))
-	    (pc)))
-     (set (zero_extract:SI (match_operand:VAXint 3 "memory_operand" "+0")
-			   (const_int 1)
-			   (match_dup 1))
-	  (const_int 1))])]
-  ""
-  "jbssi %1,%0,%l2")
-
 (define_expand "sync_lock_release<mode>"
   [(set (match_operand:VAXint 0 "memory_operand" "+m")
 	(unspec:VAXint [(match_operand:VAXint 1 "const_int_operand" "n")
@@ -113,7 +98,7 @@
   DONE;
 }")
 
-(define_insn "jbbcci<mode>"
+(define_insn "jbb<ccss>i<mode>"
   [(parallel
     [(set (pc)
 	  (if_then_else
@@ -121,12 +106,12 @@
 		  (match_operand:VAXint 0 "memory_operand" "<bb_mem>")
 		  (const_int 1)
 		  (match_operand:SI 1 "general_operand" "nrmT"))
-		(const_int 0))
+		(const_int bit))
 	    (label_ref (match_operand 2 "" ""))
 	    (pc)))
      (set (zero_extract:SI (match_operand:VAXint 3 "memory_operand" "+0")
 			   (const_int 1)
 			   (match_dup 1))
-	  (const_int 0))])]
+	  (const_int bit))])]
   ""
-  "jbcci %1,%0,%l2")
+  "jb<ccss>i %1,%0,%l2")
