@@ -105,7 +105,7 @@
    (clobber (reg FCC_REGNUM))]
   ""
   [(set (reg:CC FCC_REGNUM)
-	(compare:CC (match_dup 1) (const_int 0)))
+	(compare:CC (match_dup 1) (const_double_zero)))
    (set (match_dup 0) (match_dup 1))])
 
 (define_subst "fcc_ccnz"
@@ -113,7 +113,7 @@
    (clobber (reg FCC_REGNUM))]
   ""
   [(set (reg:CCNZ FCC_REGNUM)
-	(compare:CCNZ (match_dup 1) (const_int 0)))
+	(compare:CCNZ (match_dup 1) (const_double_zero)))
    (set (match_dup 0) (match_dup 1))])
 
 (define_subst_attr "cc_cc" "cc_cc" "_nocc" "_cc")
