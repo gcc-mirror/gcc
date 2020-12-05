@@ -1,3 +1,18 @@
+2020-12-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backported from master:
+	2020-12-04  Hans-Peter Nilsson  <hp@axis.com>
+		    Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94600
+	* doc/implement-c.texi (Qualifiers implementation): Add blurb
+	about access to the whole of a volatile aggregate object, only for
+	same-size as a scalar object.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.c (verify_access_tree_1): Relax assertion on the size.
+
 2020-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
