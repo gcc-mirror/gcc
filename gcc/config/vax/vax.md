@@ -1111,7 +1111,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "j%c0 %l1")
+  "j%k0 %l1")
 
 ;; Recognize reversed jumps.
 (define_insn "*branch_reversed"
@@ -1122,7 +1122,7 @@
 		      (pc)
 		      (label_ref (match_operand 1 "" ""))))]
   ""
-  "j%C0 %l1") ; %C0 negates condition
+  "j%K0 %l1") ; %K0 negates condition
 
 ;; Recognize jbs, jlbs, jbc and jlbc instructions.  Note that the operand
 ;; of jlbs and jlbc insns are SImode in the hardware.  However, if it is

@@ -509,9 +509,9 @@ print_operand (FILE *file, rtx x, int code)
     fputc (ASM_DOUBLE_CHAR, file);
   else if (code == '|')
     fputs (REGISTER_PREFIX, file);
-  else if (code == 'c')
+  else if (code == 'k')
     fputs (cond_name (x), file);
-  else if (code == 'C')
+  else if (code == 'K')
     fputs (rev_cond_name (x), file);
   else if (code == 'D' && CONST_INT_P (x) && INTVAL (x) < 0)
     fprintf (file, "$" NEG_HWI_PRINT_HEX16, INTVAL (x));
