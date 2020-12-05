@@ -1936,7 +1936,7 @@ simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
   while (1)
     {
       insn = BB_END (e->src);
-      if (any_condjump_p (insn))
+      if (any_condjump_p (insn) && onlyjump_p (insn))
 	{
 	  rtx cond = get_condition (BB_END (e->src), NULL, false, true);
 
@@ -2887,7 +2887,7 @@ check_simple_exit (class loop *loop, edge e, class niter_desc *desc)
     return;
 
   /* It must end in a simple conditional jump.  */
-  if (!any_condjump_p (BB_END (exit_bb)))
+  if (!any_condjump_p (BB_END (exit_bb)) || !onlyjump_p (BB_END (exit_bb)))
     return;
 
   ein = EDGE_SUCC (exit_bb, 0);
