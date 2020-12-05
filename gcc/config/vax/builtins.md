@@ -19,8 +19,7 @@
 
 (define_constants
   [
-    (VUNSPEC_LOCK 100)		; sync lock and test
-    (VUNSPEC_UNLOCK 101)	; sync lock release
+    (VUNSPEC_LOCK 100)		; sync lock operations
   ]
 )
 
@@ -58,10 +57,9 @@
   "ffs $0,$32,%1,%0")
 
 (define_expand "sync_lock_test_and_set<mode>"
-  [(set (match_operand:VAXint 0 "nonimmediate_operand" "=&g")
-	(unspec:VAXint [(match_operand:VAXint 1 "memory_operand" "+m")
-		    (match_operand:VAXint 2 "const_int_operand" "n")
-		   ] VUNSPEC_LOCK))]
+  [(match_operand:VAXint 0 "nonimmediate_operand" "=&g")
+   (match_operand:VAXint 1 "memory_operand" "+m")
+   (match_operand:VAXint 2 "const_int_operand" "n")]
   ""
   "
 {
@@ -72,46 +70,46 @@
 
   label = gen_label_rtx ();
   emit_move_insn (operands[0], const1_rtx);
-  emit_jump_insn (gen_jbbssi<mode> (operands[1], const0_rtx, label, operands[1]));
+  emit_jump_insn (gen_jbbssi<mode> (operands[1], const0_rtx, label,
+				    operands[1]));
   emit_move_insn (operands[0], const0_rtx);
   emit_label (label);
   DONE;
 }")
 
 (define_expand "sync_lock_release<mode>"
-  [(set (match_operand:VAXint 0 "memory_operand" "+m")
-	(unspec:VAXint [(match_operand:VAXint 1 "const_int_operand" "n")
-		   ] VUNSPEC_UNLOCK))]
+  [(match_operand:VAXint 0 "memory_operand" "+m")
+   (match_operand:VAXint 1 "const_int_operand" "n")]
   ""
   "
 {
   rtx label;
+
   if (operands[1] != const0_rtx)
     FAIL;
-#if 1
+
   label = gen_label_rtx ();
-  emit_jump_insn (gen_jbbcci<mode> (operands[0], const0_rtx, label, operands[0]));
+  emit_jump_insn (gen_jbbcci<mode> (operands[0], const0_rtx, label,
+				    operands[0]));
   emit_label (label);
-#else
-  emit_move_insn (operands[0], const0_rtx);
-#endif
   DONE;
 }")
 
 (define_insn "jbb<ccss>i<mode>"
-  [(parallel
+  [(unspec_volatile
     [(set (pc)
 	  (if_then_else
 	    (eq (zero_extract:SI
-		  (match_operand:VAXint 0 "memory_operand" "<bb_mem>")
+		  (match_operand:VAXint 0 "any_memory_operand" "<bb_mem>")
 		  (const_int 1)
 		  (match_operand:SI 1 "general_operand" "nrmT"))
 		(const_int bit))
 	    (label_ref (match_operand 2 "" ""))
 	    (pc)))
-     (set (zero_extract:SI (match_operand:VAXint 3 "memory_operand" "+0")
+     (set (zero_extract:SI (match_operand:VAXint 3 "any_memory_operand" "+0")
 			   (const_int 1)
 			   (match_dup 1))
-	  (const_int bit))])]
+	  (const_int bit))]
+    VUNSPEC_LOCK)]
   ""
   "jb<ccss>i %1,%0,%l2")
