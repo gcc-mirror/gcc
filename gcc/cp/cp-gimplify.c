@@ -882,7 +882,7 @@ static tree genericize_spaceship (tree expr)
   tree type = TREE_TYPE (expr);
   tree op0 = TREE_OPERAND (expr, 0);
   tree op1 = TREE_OPERAND (expr, 1);
-  return genericize_spaceship (type, op0, op1);
+  return genericize_spaceship (input_location, type, op0, op1);
 }
 
 /* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
