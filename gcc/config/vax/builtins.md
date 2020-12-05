@@ -23,14 +23,15 @@
   ]
 )
 
+(define_mode_attr width [(QI "8") (HI "16") (SI "32")])
 (define_mode_attr bb_mem [(QI "m") (HI "Q") (SI "Q")])
 
 (define_int_iterator bit [0 1])
 (define_int_attr ccss [(0 "cc") (1 "ss")])
 
-(define_expand "ffssi2"
+(define_expand "ffs<mode>2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
-	(ffs:SI (match_operand:SI 1 "general_operand" "")))]
+	(ffs:SI (match_operand:VAXint 1 "general_operand" "")))]
   ""
   "
 {
@@ -39,22 +40,22 @@
   rtx cond = gen_rtx_NE (VOIDmode, cc0_rtx, const0_rtx);
   rtx target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label_ref, pc_rtx);
 
-  emit_insn (gen_ctzsi2 (operands[0], operands[1]));
+  emit_insn (gen_ctz<mode>2 (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (pc_rtx, target));
-  emit_insn (gen_negsi2 (operands[0], const1_rtx));
+  emit_insn (gen_neg<mode>2 (operands[0], const1_rtx));
   emit_label (label);
-  emit_insn (gen_addsi3 (operands[0], operands[0], const1_rtx));
+  emit_insn (gen_add<mode>3 (operands[0], operands[0], const1_rtx));
   DONE;
 }")
 
-(define_insn "ctzsi2"
+(define_insn "ctz<mode>2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rQ")
-	(ctz:SI (match_operand:SI 1 "general_operand" "nrQT")))
+	(ctz:SI (match_operand:VAXint 1 "general_operand" "nrQT")))
    (set (cc0)
 	(compare (match_dup 1)
 		 (const_int 0)))]
   ""
-  "ffs $0,$32,%1,%0")
+  "ffs $0,$<width>,%1,%0")
 
 (define_expand "sync_lock_test_and_set<mode>"
   [(match_operand:VAXint 0 "nonimmediate_operand" "=&g")
