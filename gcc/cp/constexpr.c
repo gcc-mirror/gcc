@@ -4237,11 +4237,32 @@ same_type_ignoring_tlq_and_bounds_p (tree type1, tree type2)
   return same_type_ignoring_top_level_qualifiers_p (type1, type2);
 }
 
+/* Try to determine the currently active union member for an expression
+   with UNION_TYPE.  If it can be determined, return the FIELD_DECL,
+   otherwise return NULL_TREE.  */
+
+static tree
+cxx_union_active_member (const constexpr_ctx *ctx, tree t)
+{
+  constexpr_ctx new_ctx = *ctx;
+  new_ctx.quiet = true;
+  bool non_constant_p = false, overflow_p = false;
+  tree ctor = cxx_eval_constant_expression (&new_ctx, t, false,
+					    &non_constant_p,
+					    &overflow_p);
+  if (TREE_CODE (ctor) == CONSTRUCTOR
+      && CONSTRUCTOR_NELTS (ctor) == 1
+      && CONSTRUCTOR_ELT (ctor, 0)->index
+      && TREE_CODE (CONSTRUCTOR_ELT (ctor, 0)->index) == FIELD_DECL)
+    return CONSTRUCTOR_ELT (ctor, 0)->index;
+  return NULL_TREE;
+}
+
 /* Helper function for cxx_fold_indirect_ref_1, called recursively.  */
 
 static tree
-cxx_fold_indirect_ref_1 (location_t loc, tree type, tree op,
-			 unsigned HOST_WIDE_INT off, bool *empty_base)
+cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
+			 tree op, unsigned HOST_WIDE_INT off, bool *empty_base)
 {
   tree optype = TREE_TYPE (op);
   unsigned HOST_WIDE_INT const_nunits;
@@ -4300,13 +4321,29 @@ cxx_fold_indirect_ref_1 (location_t loc, tree type, tree op,
 	  tree index = size_int (idx + tree_to_uhwi (min_val));
 	  op = build4_loc (loc, ARRAY_REF, TREE_TYPE (optype), op, index,
 			   NULL_TREE, NULL_TREE);
-	  return cxx_fold_indirect_ref_1 (loc, type, op, rem,
+	  return cxx_fold_indirect_ref_1 (ctx, loc, type, op, rem,
 					  empty_base);
 	}
     }
   /* ((foo *)&struct_with_foo_field)[x] => COMPONENT_REF */
-  else if (TREE_CODE (optype) == RECORD_TYPE)
+  else if (TREE_CODE (optype) == RECORD_TYPE
+	   || TREE_CODE (optype) == UNION_TYPE)
     {
+      if (TREE_CODE (optype) == UNION_TYPE)
+	/* For unions prefer the currently active member.  */
+	if (tree field = cxx_union_active_member (ctx, op))
+	  {
+	    unsigned HOST_WIDE_INT el_sz
+	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	    if (off < el_sz)
+	      {
+		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field),
+				   op, field, NULL_TREE);
+		if (tree ret = cxx_fold_indirect_ref_1 (ctx, loc, type, cop,
+							off, empty_base))
+		  return ret;
+	      }
+	  }
       for (tree field = TYPE_FIELDS (optype);
 	   field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
@@ -4317,13 +4354,13 @@ cxx_fold_indirect_ref_1 (location_t loc, tree type, tree op,
 	    if (!tree_fits_uhwi_p (pos))
 	      continue;
 	    unsigned HOST_WIDE_INT upos = tree_to_uhwi (pos);
-	    unsigned el_sz
+	    unsigned HOST_WIDE_INT el_sz
 	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
 	    if (upos <= off && off < upos + el_sz)
 	      {
 		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field),
 				   op, field, NULL_TREE);
-		if (tree ret = cxx_fold_indirect_ref_1 (loc, type, cop,
+		if (tree ret = cxx_fold_indirect_ref_1 (ctx, loc, type, cop,
 							off - upos,
 							empty_base))
 		  return ret;
@@ -4344,7 +4381,8 @@ cxx_fold_indirect_ref_1 (location_t loc, tree type, tree op,
    with TBAA in fold_indirect_ref_1.  */
 
 static tree
-cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
+cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
+		       tree op0, bool *empty_base)
 {
   tree sub = op0;
   tree subtype;
@@ -4382,7 +4420,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	    return op;
 	}
       else
-	return cxx_fold_indirect_ref_1 (loc, type, op, 0, empty_base);
+	return cxx_fold_indirect_ref_1 (ctx, loc, type, op, 0, empty_base);
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
 	   && tree_fits_uhwi_p (TREE_OPERAND (sub, 1)))
@@ -4392,7 +4430,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 
       STRIP_NOPS (op00);
       if (TREE_CODE (op00) == ADDR_EXPR)
-	return cxx_fold_indirect_ref_1 (loc, type, TREE_OPERAND (op00, 0),
+	return cxx_fold_indirect_ref_1 (ctx, loc, type, TREE_OPERAND (op00, 0),
 					tree_to_uhwi (op01), empty_base);
     }
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
@@ -4402,7 +4440,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
       tree type_domain;
       tree min_val = size_zero_node;
       tree newsub
-	= cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
+	= cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (subtype), sub, NULL);
       if (newsub)
 	sub = newsub;
       else
@@ -4437,8 +4475,8 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
     }
 
   /* First try to simplify it directly.  */
-  tree r = cxx_fold_indirect_ref (EXPR_LOCATION (t), TREE_TYPE (t), orig_op0,
-				  &empty_base);
+  tree r = cxx_fold_indirect_ref (ctx, EXPR_LOCATION (t), TREE_TYPE (t),
+				  orig_op0, &empty_base);
   if (!r)
     {
       /* If that didn't work, evaluate the operand first.  */
@@ -4457,7 +4495,7 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 	  return t;
 	}
 
-      r = cxx_fold_indirect_ref (EXPR_LOCATION (t), TREE_TYPE (t), op0,
+      r = cxx_fold_indirect_ref (ctx, EXPR_LOCATION (t), TREE_TYPE (t), op0,
 				 &empty_base);
       if (r == NULL_TREE)
 	{
