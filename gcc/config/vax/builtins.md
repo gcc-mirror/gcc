@@ -29,6 +29,8 @@
 (define_int_iterator bit [0 1])
 (define_int_attr ccss [(0 "cc") (1 "ss")])
 
+(define_code_iterator any_extend [sign_extend zero_extend])
+
 (define_expand "ffs<mode>2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(ffs:SI (match_operand:VAXint 1 "general_operand" "")))]
@@ -56,6 +58,26 @@
 		 (const_int 0)))]
   ""
   "ffs $0,$<width>,%1,%0")
+
+;; Our FFS hardware instruction supports any field width,
+;; so handle narrower inputs directly as well.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+        (any_extend:SI (match_operand:VAXintQH 1 "general_operand")))
+   (parallel
+     [(set (match_operand:SI 2 "nonimmediate_operand")
+	   (ctz:SI (match_dup 0)))
+      (set (cc0)
+	   (compare (match_dup 2)
+		    (const_int 0)))])]
+  "rtx_equal_p (operands[0], operands[2]) || peep2_reg_dead_p (2, operands[0])"
+  [(parallel
+     [(set (match_dup 2)
+	   (ctz:SI (match_dup 1)))
+      (set (cc0)
+	   (compare (match_dup 1)
+		    (const_int 0)))])]
+  "")
 
 (define_expand "sync_lock_test_and_set<mode>"
   [(match_operand:VAXint 0 "nonimmediate_operand" "=&g")
