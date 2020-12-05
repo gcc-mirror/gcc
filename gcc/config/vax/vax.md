@@ -754,8 +754,8 @@
 
 ;; Special cases of bit-field insns which we should
 ;; recognize in preference to the general case.
-;; These handle aligned 8-bit and 16-bit fields,
-;; which can usually be done with move instructions.
+;; These handle aligned 8-bit and 16-bit fields
+;; that can be done with move or convert instructions.
 
 (define_insn "*insv_aligned"
   [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+ro")
@@ -766,19 +766,19 @@
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
    && (!MEM_P (operands[0])
        || ! mode_dependent_address_p (XEXP (operands[0], 0),
-				       MEM_ADDR_SPACE (operands[0])))"
+				      MEM_ADDR_SPACE (operands[0])))
+   && (!(REG_P (operands[0])
+	 || (SUBREG_P (operands[0]) && REG_P (SUBREG_REG (operands[0]))))
+       || INTVAL (operands[2]) == 0)"
   "*
 {
-  if (REG_P (operands[0]))
-    {
-      if (INTVAL (operands[2]) != 0)
-	return \"insv %3,%2,%1,%0\";
-    }
-  else
+  if (!REG_P (operands[0]))
     operands[0]
       = adjust_address (operands[0],
 			INTVAL (operands[1]) == 8 ? QImode : HImode,
 			INTVAL (operands[2]) / 8);
+  else
+    gcc_assert (INTVAL (operands[2]) == 0);
 
   CC_STATUS_INIT;
   if (INTVAL (operands[1]) == 8)
@@ -795,19 +795,19 @@
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (!MEM_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0),
-				      MEM_ADDR_SPACE (operands[1])))"
+				      MEM_ADDR_SPACE (operands[1])))
+   && (!(REG_P (operands[1])
+	 || (SUBREG_P (operands[1]) && REG_P (SUBREG_REG (operands[1]))))
+       || INTVAL (operands[3]) == 0)"
   "*
 {
-  if (REG_P (operands[1]))
-    {
-      if (INTVAL (operands[3]) != 0)
-	return \"extzv %3,%2,%1,%0\";
-    }
-  else
+  if (!REG_P (operands[1]))
     operands[1]
       = adjust_address (operands[1],
 			INTVAL (operands[2]) == 8 ? QImode : HImode,
 			INTVAL (operands[3]) / 8);
+  else
+    gcc_assert (INTVAL (operands[3]) == 0);
 
   if (INTVAL (operands[2]) == 8)
     return \"movzbl %1,%0\";
@@ -823,19 +823,19 @@
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (!MEM_P (operands[1])
        || ! mode_dependent_address_p (XEXP (operands[1], 0),
-				      MEM_ADDR_SPACE (operands[1])))"
+				      MEM_ADDR_SPACE (operands[1])))
+   && (!(REG_P (operands[1])
+	 || (SUBREG_P (operands[1]) && REG_P (SUBREG_REG (operands[1]))))
+       || INTVAL (operands[3]) == 0)"
   "*
 {
-  if (REG_P (operands[1]))
-    {
-      if (INTVAL (operands[3]) != 0)
-	return \"extv %3,%2,%1,%0\";
-    }
-  else
+  if (!REG_P (operands[1]))
     operands[1]
       = adjust_address (operands[1],
 			INTVAL (operands[2]) == 8 ? QImode : HImode,
 			INTVAL (operands[3]) / 8);
+  else
+    gcc_assert (INTVAL (operands[3]) == 0);
 
   if (INTVAL (operands[2]) == 8)
     return \"cvtbl %1,%0\";
