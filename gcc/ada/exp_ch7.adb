@@ -6756,22 +6756,6 @@ package body Exp_Ch7 is
       end if;
    end Make_Adjust_Call;
 
-   ----------------------
-   -- Make_Detach_Call --
-   ----------------------
-
-   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (Obj_Ref);
-
-   begin
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name                   =>
-            New_Occurrence_Of (RTE (RE_Detach), Loc),
-          Parameter_Associations => New_List (
-            Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
-   end Make_Detach_Call;
-
    ---------------
    -- Make_Call --
    ---------------

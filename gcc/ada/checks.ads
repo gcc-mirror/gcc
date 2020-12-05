@@ -64,7 +64,6 @@ package Checks is
    function Range_Checks_Suppressed          (E : Entity_Id) return Boolean;
    function Storage_Checks_Suppressed        (E : Entity_Id) return Boolean;
    function Tag_Checks_Suppressed            (E : Entity_Id) return Boolean;
-   function Validity_Checks_Suppressed       (E : Entity_Id) return Boolean;
    --  These functions check to see if the named check is suppressed, either
    --  by an active scope suppress setting, or because the check has been
    --  specifically suppressed for the given entity. If no entity is relevant

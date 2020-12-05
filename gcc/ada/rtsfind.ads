@@ -941,7 +941,6 @@ package Rtsfind is
      RE_Add_Offset_To_Address,           -- System.Finalization_Masters
      RE_Attach,                          -- System.Finalization_Masters
      RE_Base_Pool,                       -- System.Finalization_Masters
-     RE_Detach,                          -- System.Finalization_Masters
      RE_Finalization_Master,             -- System.Finalization_Masters
      RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
      RE_Set_Base_Pool,                   -- System.Finalization_Masters
@@ -2622,7 +2621,6 @@ package Rtsfind is
      RE_Add_Offset_To_Address            => System_Finalization_Masters,
      RE_Attach                           => System_Finalization_Masters,
      RE_Base_Pool                        => System_Finalization_Masters,
-     RE_Detach                           => System_Finalization_Masters,
      RE_Finalization_Master              => System_Finalization_Masters,
      RE_Finalization_Master_Ptr          => System_Finalization_Masters,
      RE_Set_Base_Pool                    => System_Finalization_Masters,

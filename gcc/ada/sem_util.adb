@@ -2472,7 +2472,7 @@ package body Sem_Util is
 
       function Build_Discriminal_Array_Constraint return List_Id;
       --  If one or more of the bounds of the component depends on
-      --  discriminants, build  actual constraint using the discriminants
+      --  discriminants, build actual constraint using the discriminants
       --  of the prefix.
 
       function Build_Discriminal_Record_Constraint return List_Id;

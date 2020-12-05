@@ -11195,8 +11195,7 @@ package body Checks is
 
    procedure Validity_Check_Range
      (N          : Node_Id;
-      Related_Id : Entity_Id := Empty)
-   is
+      Related_Id : Entity_Id := Empty) is
    begin
       if Validity_Checks_On and Validity_Check_Operands then
          if Nkind (N) = N_Range then
@@ -11212,18 +11211,5 @@ package body Checks is
          end if;
       end if;
    end Validity_Check_Range;
-
-   --------------------------------
-   -- Validity_Checks_Suppressed --
-   --------------------------------
-
-   function Validity_Checks_Suppressed (E : Entity_Id) return Boolean is
-   begin
-      if Present (E) and then Checks_May_Be_Suppressed (E) then
-         return Is_Check_Suppressed (E, Validity_Check);
-      else
-         return Scope_Suppress.Suppress (Validity_Check);
-      end if;
-   end Validity_Checks_Suppressed;
 
 end Checks;
