@@ -105,10 +105,10 @@
 
 ;; Some VAXen don't support this instruction.
 ;;(define_insn "movti"
-;;  [(set (match_operand:TI 0 "general_operand" "=g")
+;;  [(set (match_operand:TI 0 "nonimmediate_operand" "=g")
 ;;	(match_operand:TI 1 "general_operand" "g"))]
 ;;  ""
-;;  "movh %1,%0")
+;;  "movo %1,%0")
 
 (define_insn "movdi"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=g")
@@ -501,12 +501,12 @@
 ;This is left out because it is very slow;
 ;we are better off programming around the "lack" of this insn.
 ;(define_insn "divmoddisi4"
-;  [(set (match_operand:SI 0 "general_operand" "=g")
+;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
 ;	(div:SI (match_operand:DI 1 "general_operand" "g")
 ;		(match_operand:SI 2 "general_operand" "g")))
-;   (set (match_operand:SI 3 "general_operand" "=g")
-;	(mod:SI (match_operand:DI 1 "general_operand" "g")
-;		(match_operand:SI 2 "general_operand" "g")))]
+;   (set (match_operand:SI 3 "nonimmediate_operand" "=g")
+;	(mod:SI (match_dup 1)
+;		(match_dup 2)))]
 ;  ""
 ;  "ediv %2,%1,%0,%3")
 
@@ -741,8 +741,8 @@
   "rotl %2,%1,%0")
 
 ;This insn is probably slower than a multiply and an add.
-;(define_insn ""
-;  [(set (match_operand:SI 0 "general_operand" "=g")
+;(define_insn "*amulsi4"
+;  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
 ;	(mult:SI (plus:SI (match_operand:SI 1 "general_operand" "g")
 ;			  (match_operand:SI 2 "general_operand" "g"))
 ;		 (match_operand:SI 3 "general_operand" "g")))]
