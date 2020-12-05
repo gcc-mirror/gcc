@@ -941,7 +941,15 @@
   ""
   "cmpzv %2,%1,%0,%3")
 
-(define_insn "extv"
+(define_expand "extv"
+  [(set (match_operand:SI 0 "general_operand" "")
+	(sign_extract:SI (match_operand:SI 1 "general_operand" "")
+			 (match_operand:QI 2 "general_operand" "")
+			 (match_operand:SI 3 "general_operand" "")))]
+  ""
+  "")
+
+(define_insn "*extv"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
 	(sign_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:QI 2 "general_operand" "g")
