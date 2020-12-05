@@ -1,3 +1,42 @@
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93083
+	* pt.c (convert_template_argument): Handle equivalent placeholders.
+	(do_class_deduction): Look through EXPR_PACK_EXPANSION, too.
+
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (clear_consteval_vfns): Remove *.
+	* pt.c (do_auto_deduction): Remove *.
+	* parser.c (cp_parser_late_parsing_default_args): Change loop
+	to use range 'for'.
+
+2020-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98116
+	* cp-tree.h (comparing_typenames): Delete.
+	(cplus_build_array_type): Remove default parm.
+	* pt.c (comparing_typenames): Delete.
+	(spec_hasher::equal): Don't increment it.
+	* tree.c (set_array_type_canon): Remove dep parm.
+	(build_cplus_array_type): Remove dep parm changes.
+	(cp_build_qualified_type_real): Remove dependent array type
+	changes.
+	(strip_typedefs): Likewise.
+	* typeck.c (structural_comptypes): Revert comparing_typename
+	changes.
+
+2020-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h: Add various inline module state predicates, and
+	declare the API that will be provided by modules.cc
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	* cp-gimplify.c (fold_builtin_source_location): Use 2 instead of 0
+	as last argument to cxx_printable_name.
+
 2020-12-03  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (releasing_vec::operator[]): Change parameter type to

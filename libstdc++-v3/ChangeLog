@@ -1,3 +1,11 @@
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	* testsuite/18_support/source_location/1.cc (main): Adjust for
+	__builtin_source_location using __PRETTY_FUNCTION__-like names instead
+	__FUNCTION__-like.
+	* testsuite/18_support/source_location/consteval.cc (main): Likewise.
+
 2020-12-03  Martin Sebor  <msebor@redhat.com>
 
 	* testsuite/ext/vstring/modifiers/clear/56166.cc: Suppress a false

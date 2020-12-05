@@ -1,3 +1,86 @@
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	* vec.h (begin, end): Add overloads for vec*.
+	* tree.c (build_constructor_from_vec): Remove *.
+
+2020-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Change PTR_SIZE to POINTER_SIZE_UNITS.
+
+2020-12-04  Hans-Peter Nilsson  <hp@axis.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94600
+	* doc/implement-c.texi (Qualifiers implementation): Add blurb
+	about access to the whole of a volatile aggregate object, only for
+	same-size as a scalar object.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98130
+	* gimple.c (gimple_call_fnspec): Only return ".co " for replaceable
+	operator delete or ".mC" for replaceable operator new called from
+	new/delete.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask,
+	splitter after *<rotate_insn><mode>3_mask_1): New combine splitters.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* fold-const.c (native_encode_initializer): Use build_zero_cst
+	instead of build_constructor.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* cfgexpand.c (expand_gimple_basic_block): For vars with
+	vector type, use TYPE_MODE rather than DECL_MODE.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (-gdwarf32, -gdwarf64): New options.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Default
+	dwarf_offset_size to 8 if not overridden from the command line.
+	* dwarf2out.c: Change all occurrences of DWARF_OFFSET_SIZE to
+	dwarf_offset_size.
+	* doc/invoke.texi (-gdwarf32, -gdwarf64): Document.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/tm.texi: Change argument of the record_gcc_switches
+	hook and remove SWITCH_TYPE_* enum values.
+	* dwarf2out.c (gen_producer_string): Move to opts.c and remove
+	handling of the dwarf_record_gcc_switches option.
+	(dwarf2out_early_finish): Use moved gen_producer_string
+	function.
+	* opts.c (gen_producer_string): New.
+	* opts.h (gen_producer_string): New.
+	* target.def: Change type of record_gcc_switches.
+	* target.h (enum print_switch_type): Remove.
+	(elf_record_gcc_switches): Change first argument.
+	* toplev.c (MAX_LINE): Remove.
+	(print_to_asm_out_file):  Likewise.
+	(print_to_stderr): Likewise.
+	(print_single_switch): Likewise.
+	(print_switch_values): Likewise.
+	(init_asm_output): Use new gen_producer_string function.
+	(process_options): Likewise.
+	* varasm.c (elf_record_gcc_switches): Just save the string argument
+	to the ELF container.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.c (verify_access_tree_1): Relax assertion on the size.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing params.
+
 2020-12-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90629

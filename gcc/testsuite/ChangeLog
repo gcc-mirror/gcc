@@ -1,3 +1,61 @@
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93083
+	* g++.dg/cpp2a/nontype-class40.C: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98130
+	* g++.dg/opt/pr98130.C: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	* gcc.target/i386/pr96226.c: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* g++.dg/cpp2a/bit-cast6.C: New test.
+
+2020-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98116
+	* g++.dg/template/pr98116.C: Enable robust checking.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* gcc.target/i386/pr98100.c: New test.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/98123
+	* gcc.dg/tree-ssa/if-to-switch-4.c: Add param to make the test
+	stable on all architectures.
+	* gcc.dg/tree-ssa/if-to-switch-6.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-8.c: Likewise.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr98099.c: Compile only for dfp targets.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt91.ads, gnat.dg/opt91.adb: New test.
+	* gnat.dg/opt91_pkg.ads, gnat.dg/opt91_pkg.adb: New helper.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	* g++.dg/cpp2a/srcloc1.C (quux): Use __PRETTY_FUNCTION__ instead of
+	function.
+	* g++.dg/cpp2a/srcloc2.C (quux): Likewise.
+	* g++.dg/cpp2a/srcloc15.C (S::S): Likewise.
+	(bar): Likewise.  Adjust expected column.
+	* g++.dg/cpp2a/srcloc17.C (S::S): Likewise.
+	(bar): Likewise.  Adjust expected column.
+
 2020-12-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/concepts-nodiscard1.C: XFAIL.
