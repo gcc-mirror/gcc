@@ -89,6 +89,16 @@ along with GCC; see the file COPYING3.  If not see
      %{!fpic: \
        %{!fPIC:-fPIC}}}"
 
+/* Don't let the LTO compiler switch the PIC options off.  */
+#define VAX_CC1_SPEC \
+  VAX_CC1_AND_CC1PLUS_SPEC \
+  " %{flinker-output=exec" \
+  ":%{no-pie:-flinker-output=exec;:-flinker-output=pie};" \
+  ":%{flinker-output=*}}" \
+  "%<flinker-output*"
+#define VAX_CC1PLUS_SPEC \
+  VAX_CC1_AND_CC1PLUS_SPEC
+
 /* VAX ELF is always gas; override the generic VAX ASM_SPEC.  */
 
 #undef ASM_SPEC
