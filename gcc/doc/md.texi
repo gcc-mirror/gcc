@@ -11223,11 +11223,11 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int}
-must have the same rtx format.  @xref{RTL Classes}. Int iterators can appear
-in only those rtx fields that have 'i' as the specifier. This means that
-each @var{int} has to be a constant defined using define_constant or
-define_c_enum.
+@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
+same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
+those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
+means that each @var{int} has to be a constant defined using define_constant
+or define_c_enum.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by
