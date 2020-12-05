@@ -1033,6 +1033,39 @@ vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
   return true;
 }
 
+/* With ELF we do not support GOT entries for external `symbol+offset'
+   references, so do not accept external symbol references if an offset
+   is to be added.  Do not accept external symbol references at all if
+   LOCAL_P is set.  This is for cases where making a reference indirect
+   would make it invalid.  Do not accept any kind of symbols if SYMBOL_P
+   is clear.  This is for situations where the a reference is used as an
+   immediate value for operations other than address loads (MOVA/PUSHA),
+   as those operations do not support PC-relative immediates.  */
+
+bool
+vax_acceptable_pic_operand_p (rtx x ATTRIBUTE_UNUSED,
+			      bool local_p ATTRIBUTE_UNUSED,
+			      bool symbol_p ATTRIBUTE_UNUSED)
+{
+#ifdef NO_EXTERNAL_INDIRECT_ADDRESS
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS)
+    {
+      x = XEXP (XEXP (x, 0), 0);
+      local_p = true;
+    }
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      return symbol_p && !(local_p && !SYMBOL_REF_LOCAL_P (x));
+    case LABEL_REF:
+      return symbol_p && !(local_p && LABEL_REF_NONLOCAL_P (x));
+    default:
+      break;
+    }
+#endif
+  return true;
+}
+
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.
 	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>  #conservative entry mask
@@ -1370,8 +1403,10 @@ vax_output_int_add (rtx_insn *insn, rtx *operands, machine_mode mode)
 	  {
 	    gcc_assert (rtx_equal_p (operands[0], operands[1]));
 #ifdef NO_EXTERNAL_INDIRECT_ADDRESS
-	    gcc_assert (!flag_pic || !external_memory_operand (low[2], SImode));
-	    gcc_assert (!flag_pic || !external_memory_operand (low[0], SImode));
+	    gcc_assert (!flag_pic
+			|| !non_pic_external_memory_operand (low[2], SImode));
+	    gcc_assert (!flag_pic
+			|| !non_pic_external_memory_operand (low[0], SImode));
 #endif
 
 	    /* No reason to add a 0 to the low part and thus no carry, so just

@@ -338,34 +338,6 @@
    add<VAXfp:fsfx>2 %1,%0
    add<VAXfp:fsfx>3 %1,%2,%0")
 
-(define_insn "pushlclsymreg"
-  [(set (match_operand:SI 0 "push_operand" "=g")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r")
-		 (match_operand:SI 2 "local_symbolic_operand" "i")))]
-  "flag_pic"
-  "pushab %a2[%1]")
-
-(define_insn "pushextsymreg"
-  [(set (match_operand:SI 0 "push_operand" "=g")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r")
-		 (match_operand:SI 2 "external_symbolic_operand" "i")))]
-  "flag_pic"
-  "pushab %a2[%1]")
-
-(define_insn "movlclsymreg"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r")
-		 (match_operand:SI 2 "local_symbolic_operand" "i")))]
-  "flag_pic"
-  "movab %a2[%1],%0")
-
-(define_insn "movextsymreg"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(plus:SI (match_operand:SI 1 "register_operand" "%r")
-		 (match_operand:SI 2 "external_symbolic_operand" "i")))]
-  "flag_pic"
-  "movab %a2[%1],%0")
-
 (define_insn "add<mode>3"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g")
 	(plus:VAXint (match_operand:VAXint 1 "general_operand" "nrmT")
@@ -1525,29 +1497,31 @@
   ""
   "casel %0,$0,%1")
 
-(define_insn "pushextsym"
+(define_insn "*pushsym"
   [(set (match_operand:SI 0 "push_operand" "=g")
-	(match_operand:SI 1 "external_symbolic_operand" "i"))]
+	(match_operand:SI 1 "pic_symbolic_operand" "A"))]
   ""
   "pushab %a1")
 
-(define_insn "movextsym"
+(define_insn "*movsym"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(match_operand:SI 1 "external_symbolic_operand" "i"))]
+	(match_operand:SI 1 "pic_symbolic_operand" "A"))]
   ""
   "movab %a1,%0")
 
-(define_insn "pushlclsym"
+(define_insn "*pushsymreg"
   [(set (match_operand:SI 0 "push_operand" "=g")
-	(match_operand:SI 1 "local_symbolic_operand" "i"))]
-  ""
-  "pushab %a1")
+	(plus:SI (match_operand:SI 1 "register_operand" "%r")
+		 (match_operand:SI 2 "pic_symbolic_operand" "A")))]
+  "flag_pic"
+  "pushab %a2[%1]")
 
-(define_insn "movlclsym"
+(define_insn "*movsymreg"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=g")
-	(match_operand:SI 1 "local_symbolic_operand" "i"))]
-  ""
-  "movab %a1,%0")
+	(plus:SI (match_operand:SI 1 "register_operand" "%r")
+		 (match_operand:SI 2 "pic_symbolic_operand" "A")))]
+  "flag_pic"
+  "movab %a2[%1],%0")
 
 ;;- load or push effective address
 ;; These come after the move and add/sub patterns

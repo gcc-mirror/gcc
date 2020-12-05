@@ -21,6 +21,7 @@ extern bool legitimate_constant_address_p (rtx);
 extern void vax_expand_prologue (void);
 
 #ifdef RTX_CODE
+extern bool vax_acceptable_pic_operand_p (rtx, bool, bool);
 extern const char *cond_name (rtx);
 extern bool adjacent_operands_p (rtx, rtx, machine_mode);
 extern const char *rev_cond_name (rtx);

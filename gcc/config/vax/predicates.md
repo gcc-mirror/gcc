@@ -23,33 +23,17 @@
 (define_predicate "symbolic_operand"
   (match_code "const,symbol_ref,label_ref"))
 
-(define_predicate "local_symbolic_operand"
-  (match_code "const,symbol_ref,label_ref")
-{
-  if (GET_CODE (op) == LABEL_REF)
-    return 1;
-  if (GET_CODE (op) == SYMBOL_REF)
-    return !flag_pic || SYMBOL_REF_LOCAL_P (op);
-  if (GET_CODE (XEXP (XEXP (op, 0), 0)) == LABEL_REF)
-    return 1;
-  return !flag_pic || SYMBOL_REF_LOCAL_P (XEXP (XEXP (op, 0), 0));
-})
-
-(define_predicate "external_symbolic_operand"
-  (and (match_code "symbol_ref")
-       (not (match_operand 0 "local_symbolic_operand" ""))))
-
-(define_predicate "external_const_operand"
-  (and (match_code "const")
-       (match_test "GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-		    && !SYMBOL_REF_LOCAL_P (XEXP (XEXP (op, 0), 0))")))
+(define_predicate "pic_symbolic_operand"
+  (and (match_code "const,symbol_ref,label_ref")
+       (match_test "!flag_pic
+		    || vax_acceptable_pic_operand_p (op, false, true)")))
 
 (define_predicate "nonsymbolic_operand"
   (and (ior (match_test "!flag_pic")
 	    (not (match_operand 0 "symbolic_operand")))
        (match_operand 0 "general_operand" "")))
 
-(define_predicate "external_memory_operand"
+(define_predicate "non_pic_external_memory_operand"
    (match_code "mem")
 {
   rtx addr = XEXP (op, 0);
@@ -61,8 +45,8 @@
     addr = XEXP (addr, 0);
   if (GET_CODE (addr) == PLUS)
     addr = XEXP (addr, 1);
-  return external_symbolic_operand (addr, SImode)
-	 || external_const_operand (addr, SImode);
+  return (symbolic_operand (addr, SImode)
+	  && !vax_acceptable_pic_operand_p (addr, true, true));
 })
 
 (define_predicate "indirect_memory_operand"
@@ -87,7 +71,7 @@
 (define_predicate "illegal_blk_memory_operand"
    (and (match_code "mem")
 	(ior (and (match_test "flag_pic")
-		  (match_operand 0 "external_memory_operand" ""))
+		  (match_operand 0 "non_pic_external_memory_operand" ""))
 	     (ior (match_operand 0 "indexed_memory_operand" "")
 		  (ior (match_operand 0 "indirect_memory_operand" "")
 		       (match_test "GET_CODE (XEXP (op, 0)) == PRE_DEC"))))))
@@ -95,7 +79,7 @@
 (define_predicate "illegal_addsub_di_memory_operand"
    (and (match_code "mem")
 	(ior (and (match_test "flag_pic")
-		  (match_operand 0 "external_memory_operand" ""))
+		  (match_operand 0 "non_pic_external_memory_operand" ""))
 	     (ior (match_operand 0 "indexed_memory_operand" "")
 		  (ior (match_operand 0 "indirect_memory_operand" "")
 		       (match_test "GET_CODE (XEXP (op, 0)) == PRE_DEC"))))))

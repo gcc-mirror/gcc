@@ -442,6 +442,11 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    of a shift count.  */
 /* #define SHIFT_COUNT_TRUNCATED */
 
+/* We need to reject symbol references in PIC code except for address
+   loads, handled elsewhere.  */
+#define LEGITIMATE_PIC_OPERAND_P(x)	\
+  vax_acceptable_pic_operand_p ((x), false, false)
+
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
