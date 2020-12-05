@@ -445,35 +445,32 @@
 
 (define_insn "mulsidi3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=g")
-	(mult:DI (sign_extend:DI
-		  (match_operand:SI 1 "nonimmediate_operand" "nrmT"))
-		 (sign_extend:DI
-		  (match_operand:SI 2 "nonimmediate_operand" "nrmT"))))]
+	(mult:DI
+	  (sign_extend:DI (match_operand:SI 1 "general_operand" "nrmT"))
+	  (sign_extend:DI (match_operand:SI 2 "general_operand" "nrmT"))))]
   ""
   "emul %1,%2,$0,%0")
 
-(define_insn ""
+(define_insn "*maddsidi4"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=g")
 	(plus:DI
-	 (mult:DI (sign_extend:DI
-		   (match_operand:SI 1 "nonimmediate_operand" "nrmT"))
-		  (sign_extend:DI
-		   (match_operand:SI 2 "nonimmediate_operand" "nrmT")))
-	 (sign_extend:DI (match_operand:SI 3 "nonimmediate_operand" "g"))))]
+	  (mult:DI
+	    (sign_extend:DI (match_operand:SI 1 "general_operand" "nrmT"))
+	    (sign_extend:DI (match_operand:SI 2 "general_operand" "nrmT")))
+	  (sign_extend:DI (match_operand:SI 3 "general_operand" "g"))))]
   ""
   "emul %1,%2,%3,%0")
 
 ;; 'F' constraint means type CONST_DOUBLE
-(define_insn ""
+(define_insn "*maddsidi4_const"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=g")
 	(plus:DI
-	 (mult:DI (sign_extend:DI
-		   (match_operand:SI 1 "nonimmediate_operand" "nrmT"))
-		  (sign_extend:DI
-		   (match_operand:SI 2 "nonimmediate_operand" "nrmT")))
-	 (match_operand:DI 3 "immediate_operand" "F")))]
+	  (mult:DI
+	    (sign_extend:DI (match_operand:SI 1 "general_operand" "nrmT"))
+	    (sign_extend:DI (match_operand:SI 2 "general_operand" "nrmT")))
+	  (match_operand:DI 3 "immediate_operand" "F")))]
   "GET_CODE (operands[3]) == CONST_DOUBLE
-    && CONST_DOUBLE_HIGH (operands[3]) == (CONST_DOUBLE_LOW (operands[3]) >> 31)"
+   && CONST_DOUBLE_HIGH (operands[3]) == (CONST_DOUBLE_LOW (operands[3]) >> 31)"
   "*
 {
   if (CONST_DOUBLE_HIGH (operands[3]))
