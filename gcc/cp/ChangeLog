@@ -1,3 +1,59 @@
+2020-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97093
+	* constraint.cc (parameter_mapping_equivalent_p): Add some
+	sanity checks.  Clarify comment.
+	(tsubst_nested_requirement): Always perform satisfaction
+	quietly first.  If that yields an erroneous result, emit a
+	context message and replay satisfaction noisily with the
+	diagnostic normal form.
+	(finish_nested_requirement): Normalize the constraint-expression
+	twice, once with diagnostic information and once without.  Store
+	them in a TREE_LIST within the TREE_TYPE.
+	(diagnose_nested_requirement): When replaying satisfaction, use
+	the diagnostic normal form instead of renormalizing on the spot.
+
+2020-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97093
+	* constraint.cc (struct sat_info): Define.
+	(tsubst_nested_requirement): Pass a sat_info object to
+	satisfy_constraint.
+	(satisfy_constraint_r): Take a sat_info argument instead of
+	subst_info.
+	(satisfy_conjunction): Likewise.
+	(satisfy_disjunction): Likewise.  Instead of first evaluating
+	each branch quietly, evaluate each branch only with
+	unsatisfaction diagnostics disabled.  Exit early if evaluation
+	of a branch returns error_mark_node.
+	(satisfy_atom): Take a sat_info argument instead of subst_info.
+	Fix a comment.  Check diagnose_unsatisfaction_p() instead of
+	noisy() before replaying a substitution failure.
+	(satisfy_constraint): Take a sat_info argument instead of
+	subst_info.
+	(satisfy_associated_constraints): Likewise.
+	(satisfy_constraint_expression): Likewise.
+	(satisfy_declaration_constraints): Likewise.
+	(constraint_satisfaction_value): Likewise and adjust
+	accordingly.  Fix formatting.
+	(constraints_satisfied_p): Pass a sat_info object to
+	constraint_satisfaction_value.
+	(evaluate_concept_check): Pass a sat_info object to
+	satisfy_constraint_expression.
+	(diagnose_nested_requirement): Likewise.
+	(diagnose_constraints): Pass an appropriate sat_info object to
+	constraint_satisfaction_value.
+
+2020-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98122
+	* constexpr.c (cxx_union_active_member): New function.
+	(cxx_fold_indirect_ref_1): Add ctx argument, pass it through to
+	recursive call.  Handle UNION_TYPE.
+	(cxx_fold_indirect_ref): Add ctx argument, pass it to recursive calls
+	and cxx_fold_indirect_ref_1.
+	(cxx_eval_indirect_ref): Adjust cxx_fold_indirect_ref calls.
+
 2020-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93083

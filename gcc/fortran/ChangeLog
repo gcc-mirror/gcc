@@ -1,3 +1,9 @@
+2020-12-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98016
+	* resolve.c (resolve_symbol): Set formal_arg_flag before
+	resolving an array spec and restore value afterwards.
+
 2020-12-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95342

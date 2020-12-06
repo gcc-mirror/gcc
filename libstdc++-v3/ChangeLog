@@ -1,3 +1,8 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
 2020-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80780
