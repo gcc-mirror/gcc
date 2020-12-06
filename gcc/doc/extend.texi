@@ -24210,7 +24210,7 @@ void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
 @end smallexample
 
-The following built-in functions are available when @option{-mcet} or
+The following built-in functions are available when
 @option{-mshstk} option is used.  They support shadow stack
 machine instructions from Intel Control-flow Enforcement Technology (CET).
 Each built-in function generates the  machine instruction that is part
