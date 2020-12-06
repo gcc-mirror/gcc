@@ -1,3 +1,26 @@
+2021-03-04  Andrew Stubbs <ams@codesourcery.com>
+
+	* dwarf2out.cc (notional_parents_list): New file variable.
+	(gen_subprogram_die): Record offload kernel functions in
+	notional_parents_list.
+	(fixup_notional_parents): New function.
+	(dwarf2out_finish): Call fixup_notional_parents.
+	(dwarf2out_c_finalize): Reset notional_parents_list.
+
+2021-02-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Replace existing low/high PC
+	attributes, rather than ICE.
+
+2021-01-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Check offload attributes only.
+
+2021-01-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Add high/low_pc attributes for
+	parents of offload kernels.
+
 2021-01-13  Julian Brown  <julian@codesourcery.com>
 
 	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Add
