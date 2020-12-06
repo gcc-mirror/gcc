@@ -23787,6 +23787,20 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      /* We have already generated the labels.  */
              add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
                                  fde->dw_fde_end, false);
+
+	     /* Offload kernel functions are nested within a parent function
+	        that doesn't actually exist within the offload object.  GDB
+		will ignore the function and everything nested within unless
+		we give it a notional code range (the values aren't
+		important, as long as they are valid).  */
+	     if (flag_generate_offload
+		 && lookup_attribute ("omp target entrypoint",
+				      DECL_ATTRIBUTES (decl))
+		 && subr_die->die_parent
+		 && subr_die->die_parent->die_tag == DW_TAG_subprogram
+		 && !get_AT_low_pc (subr_die->die_parent))
+	       add_AT_low_high_pc (subr_die->die_parent, fde->dw_fde_begin,
+				   fde->dw_fde_end, false);
 	    }
 	  else
 	    {

@@ -1,3 +1,8 @@
+2020-12-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Add high/low_pc attributes for
+	parents of offload kernels.
+
 2021-01-13  Julian Brown  <julian@codesourcery.com>
 
 	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Add
