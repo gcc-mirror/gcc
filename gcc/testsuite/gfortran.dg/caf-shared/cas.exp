@@ -1,0 +1,61 @@
+# Copyright (C) 2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# Contributed by Thomas König <tkoenig@gcc.gnu.org>
+
+# Test shared coarray support.
+
+load_lib gfortran-dg.exp
+
+set blddir [lookfor_file [get_multilibs] libcaf_shared]
+puts $blddir
+
+dg-init
+
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+
+# Return true if the rt library is supported on the target.
+proc check_effective_target_librt_available { } {
+    return [check_no_compiler_messages librt_available executable {
+	int main (void) { return 0; }
+    } "-lrt"]
+}
+
+set maybe_rt_lib ""
+if [check_effective_target_librt_available] {
+    set maybe_rt_lib "-lrt"
+}
+
+# Main loop.
+foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $test] then {
+	continue
+    }
+    set option_list [list { -O2 } ]
+
+    set nshort [file tail [file dirname $test]]/[file tail $test]
+    list-module-names $test
+
+    foreach flags $option_list {
+	verbose "Testing $nshort (libcaf_single), $flags" 1
+        set gfortran_aux_module_flags "-pthread -fcoarray=shared $flags -lcaf_single"
+	dg-test $test "-pthread -fcoarray=shared $flags -lcaf_shared $maybe_rt_lib" ""
+	cleanup-modules ""
+    }
+}
