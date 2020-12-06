@@ -13468,7 +13468,7 @@ Type*
 String_index_expression::do_type()
 {
   if (this->end_ == NULL)
-    return Type::lookup_integer_type("uint8");
+    return Type::lookup_integer_type("byte");
   else
     return this->string_->type();
 }
@@ -14021,7 +14021,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
 
   Expression* length_expr = Expression::make_integer_ul(s.length(), NULL, loc);
 
-  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Array_type* array_type = Type::make_array_type(byte_type, length_expr);
   array_type->set_is_array_incomparable();
 

@@ -6341,7 +6341,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   else if (range_type->is_string_type())
     {
       index_type = Type::lookup_integer_type("int");
-      value_type = gogo->lookup_global("rune")->type_value();
+      value_type = Type::lookup_integer_type("rune");
     }
   else if (range_type->map_type() != NULL)
     {
@@ -6812,7 +6812,7 @@ For_range_statement::lower_range_string(Gogo* gogo,
     rune_type = value_temp->type();
   else
     {
-      rune_type = gogo->lookup_global("rune")->type_value();
+      rune_type = Type::lookup_integer_type("rune");
       value_temp = Statement::make_temporary(rune_type, NULL, loc);
       init->add_statement(value_temp);
     }
