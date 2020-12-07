@@ -85,7 +85,7 @@ package Sem_Type is
    --  with the appropriate use clause. The global variable Candidate_Type is
    --  set in Add_One_Interp whenever an interpretation might be legal for an
    --  operator if the type were directly visible. This variable is used in
-   --  sem_ch4 when no legal interpretation is found.
+   --  Sem_Ch4 when no legal interpretation is found.
 
    Candidate_Type : Entity_Id;
 
