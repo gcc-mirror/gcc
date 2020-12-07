@@ -97,7 +97,7 @@ package body Sem_Type is
 
    Header_Size : constant Int := 2 ** 12;
    No_Entry    : constant Int := -1;
-   Headers     : array (0 .. Header_Size) of Int := (others => No_Entry);
+   Headers     : array (0 .. Header_Size) of Int;
 
    package Interp_Map is new Table.Table (
      Table_Component_Type => Interp_Ref,

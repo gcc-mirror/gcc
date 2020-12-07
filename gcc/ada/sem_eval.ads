@@ -556,8 +556,7 @@ package Sem_Eval is
    --  messages must always point to the same location as the parent message.
 
    procedure Initialize;
-   --  Initializes the internal data structures. Must be called before each
-   --  separate main program unit (e.g. in a GNSA/ASIS context).
+   --  Initializes the internal data structures
 
 private
    --  The Eval routines are all marked inline, since they are called once
