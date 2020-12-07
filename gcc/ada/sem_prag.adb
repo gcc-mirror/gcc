@@ -566,8 +566,8 @@ package body Sem_Prag is
          --  Check that the expression is a proper aggregate (no parentheses)
 
          if Paren_Count (CCases) /= 0 then
-            Error_Msg -- CODEFIX
-              ("redundant parentheses", First_Sloc (CCases));
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", CCases);
          end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
@@ -15041,9 +15041,8 @@ package body Sem_Prag is
             else
                --  All other cases: diagnose error
 
-               Error_Msg
-                 ("argument of pragma ""Debug"" is not procedure call",
-                  Sloc (Call));
+               Error_Msg_N
+                 ("argument of pragma ""Debug"" is not procedure call", Call);
                return;
             end if;
 
@@ -25632,9 +25631,9 @@ package body Sem_Prag is
                               Set_Specific_Warning_On (Loc, Message, Err);
 
                               if Err then
-                                 Error_Msg
+                                 Error_Msg_N
                                    ("??pragma Warnings On with no matching "
-                                    & "Warnings Off", Loc);
+                                    & "Warnings Off", N);
                               end if;
                            end if;
                         end;
@@ -29206,8 +29205,8 @@ package body Sem_Prag is
          --  Check that the expression is a proper aggregate (no parentheses)
 
          if Paren_Count (Variants) /= 0 then
-            Error_Msg -- CODEFIX
-              ("redundant parentheses", First_Sloc (Variants));
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", Variants);
          end if;
 
          --  Ensure that the formal parameters are visible when analyzing all

@@ -1575,9 +1575,8 @@ package body Sem_Ch3 is
 
    begin
       if not RTE_Available (RE_Interface_Tag) then
-         Error_Msg
-           ("(Ada 2005) interface types not supported by this run-time!",
-            Sloc (N));
+         Error_Msg_N
+           ("(Ada 2005) interface types not supported by this run-time!", N);
          return;
       end if;
 

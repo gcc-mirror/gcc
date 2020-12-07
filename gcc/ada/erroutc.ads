@@ -197,7 +197,7 @@ package Erroutc is
       --  refers to a template, always references the original template
       --  not an instantiation copy.
 
-      Sptr : Source_Ptr;
+      Sptr : Source_Span;
       --  Flag pointer. In the case of an error that refers to a template,
       --  always references the original template, not an instantiation copy.
       --  This value is the actual place in the source that the error message

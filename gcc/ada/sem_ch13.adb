@@ -4147,8 +4147,8 @@ package body Sem_Ch13 is
                         --  Must not be parenthesized
 
                         if Paren_Count (Expr) /= 0 then
-                           Error_Msg -- CODEFIX
-                             ("redundant parentheses", First_Sloc (Expr));
+                           Error_Msg_F -- CODEFIX
+                             ("redundant parentheses", Expr);
                         end if;
 
                         --  List of arguments is list of aggregate expressions
@@ -4442,8 +4442,8 @@ package body Sem_Ch13 is
                   --  parentheses).
 
                   if Paren_Count (Expr) /= 0 then
-                     Error_Msg -- CODEFIX
-                       ("redundant parentheses", First_Sloc (Expr));
+                     Error_Msg_F -- CODEFIX
+                       ("redundant parentheses", Expr);
                      goto Continue;
                   end if;
 
@@ -4860,11 +4860,11 @@ package body Sem_Ch13 is
                      Error_Msg_Name_1 := Aspect_Names (A_Id);
                      Error_Msg_Sloc := Sloc (Inherited_Aspect);
 
-                     Error_Msg
+                     Error_Msg_N
                        ("overriding aspect specification for "
                           & "nonoverridable aspect % does not confirm "
                           & "aspect specification inherited from #",
-                        Sloc (Aspect));
+                        Aspect);
                   end if;
                end;
             end if;
@@ -7909,9 +7909,8 @@ package body Sem_Ch13 is
       --  Check that the expression is a proper aggregate (no parentheses)
 
       elsif Paren_Count (Aggr) /= 0 then
-         Error_Msg
-           ("extra parentheses surrounding aggregate not allowed",
-            First_Sloc (Aggr));
+         Error_Msg_F
+           ("extra parentheses surrounding aggregate not allowed", Aggr);
          return;
 
       --  All tests passed, so set rep clause in place

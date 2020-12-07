@@ -218,6 +218,16 @@ package Types is
    --  which source it refers to. Note that negative numbers are allowed to
    --  accommodate the following special values.
 
+   type Source_Span is record
+      Ptr, First, Last : Source_Ptr;
+   end record;
+   --  Type used to represent a source span, consisting in a main location Ptr,
+   --  with a First and Last location, such that Ptr in First .. Last
+
+   function To_Span (Loc : Source_Ptr) return Source_Span is ((others => Loc));
+   function To_Span (Ptr, First, Last : Source_Ptr) return Source_Span is
+     ((Ptr, First, Last));
+
    No_Location : constant Source_Ptr := -1;
    --  Value used to indicate no source position set in a node. A test for a
    --  Source_Ptr value being > No_Location is the approved way to test for a

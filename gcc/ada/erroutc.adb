@@ -321,7 +321,7 @@ package body Erroutc is
 
       Write_Str
         ("  Sptr     = ");
-      Write_Location (E.Sptr);
+      Write_Location (E.Sptr.Ptr);  --  ??? Do not write the full span for now
       Write_Eol;
 
       Write_Str
@@ -350,7 +350,7 @@ package body Erroutc is
 
    function Get_Location (E : Error_Msg_Id) return Source_Ptr is
    begin
-      return Errors.Table (E).Sptr;
+      return Errors.Table (E).Sptr.Ptr;
    end Get_Location;
 
    ----------------
@@ -477,7 +477,7 @@ package body Erroutc is
         and then Errors.Table (T).Line = Errors.Table (E).Line
         and then Errors.Table (T).Sfile = Errors.Table (E).Sfile
       loop
-         if Errors.Table (T).Sptr > Errors.Table (E).Sptr then
+         if Errors.Table (T).Sptr.Ptr > Errors.Table (E).Sptr.Ptr then
             Mult_Flags := True;
          end if;
 
@@ -490,7 +490,7 @@ package body Erroutc is
 
       if not Debug_Flag_2 then
          Write_Str ("        ");
-         P := Line_Start (Errors.Table (E).Sptr);
+         P := Line_Start (Errors.Table (E).Sptr.Ptr);
          Flag_Num := 1;
 
          --  Loop through error messages for this line to place flags
@@ -507,7 +507,7 @@ package body Erroutc is
             begin
                --  Loop to output blanks till current flag position
 
-               while P < Errors.Table (T).Sptr loop
+               while P < Errors.Table (T).Sptr.Ptr loop
 
                   --  Horizontal tab case, just echo the tab
 
@@ -536,7 +536,7 @@ package body Erroutc is
                --  Output flag (unless already output, this happens if more
                --  than one error message occurs at the same flag position).
 
-               if P = Errors.Table (T).Sptr then
+               if P = Errors.Table (T).Sptr.Ptr then
                   if (Flag_Num = 1 and then not Mult_Flags)
                     or else Flag_Num > 9
                   then
@@ -955,8 +955,8 @@ package body Erroutc is
       function To_Be_Purged (E : Error_Msg_Id) return Boolean is
       begin
          if E /= No_Error_Msg
-           and then Errors.Table (E).Sptr > From
-           and then Errors.Table (E).Sptr < To
+           and then Errors.Table (E).Sptr.Ptr > From
+           and then Errors.Table (E).Sptr.Ptr < To
          then
             if Errors.Table (E).Warn or else Errors.Table (E).Style then
                Warnings_Detected := Warnings_Detected - 1;
