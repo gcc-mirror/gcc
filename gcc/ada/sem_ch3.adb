@@ -4164,27 +4164,10 @@ package body Sem_Ch3 is
          Set_Related_Array_Object (Base_Type (T), Id);
       end if;
 
-      --  Special checks for protected objects not at library level
+      --  Check for protected objects not at library level
 
       if Has_Protected (T) and then not Is_Library_Level_Entity (Id) then
          Check_Restriction (No_Local_Protected_Objects, Id);
-
-         --  Protected objects with interrupt handlers must be at library level
-
-         --  Ada 2005: This test is not needed (and the corresponding clause
-         --  in the RM is removed) because accessibility checks are sufficient
-         --  to make handlers not at the library level illegal.
-
-         --  AI05-0303: The AI is in fact a binding interpretation, and thus
-         --  applies to the '95 version of the language as well.
-
-         if Is_Protected_Type (T)
-           and then Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_95
-         then
-            Error_Msg_N
-              ("interrupt object can only be declared at library level", Id);
-         end if;
       end if;
 
       --  Check for violation of No_Local_Timing_Events
