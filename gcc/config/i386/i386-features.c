@@ -1266,9 +1266,10 @@ pseudo_reg_set (rtx_insn *insn)
     return NULL;
 
   /* Check pseudo register push first. */
+  machine_mode mode = TARGET_64BIT ? TImode : DImode;
   if (REG_P (SET_SRC (set))
       && !HARD_REGISTER_P (SET_SRC (set))
-      && push_operand (SET_DEST (set), GET_MODE (SET_DEST (set))))
+      && push_operand (SET_DEST (set), mode))
     return set;
 
   df_ref ref;

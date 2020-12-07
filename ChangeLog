@@ -1,3 +1,9 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* libtool.m4: Update handling of Darwin platform link flags
+	for Darwin20.
+
 2020-12-02  Simon Marchi  <simon.marchi@polymtl.ca>
 
 	* .gitignore: Sync with binutils-gdb

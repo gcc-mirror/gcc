@@ -3272,13 +3272,6 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
     return false;
 
   gcc_assert (size_cost > 0);
-  if (size_cost == INT_MAX)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "     good_cloning_opportunity_p returning "
-		 "false because of size overflow.\n");
-      return false;
-    }
 
   class ipa_node_params *info = IPA_NODE_REF (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
@@ -3848,20 +3841,6 @@ propagate_constants_topo (class ipa_topo_info *topo)
     }
 }
 
-
-/* Return the sum of A and B if none of them is bigger than INT_MAX/2, return
-   INT_MAX.  */
-
-static int
-safe_add (int a, int b)
-{
-  if (a > INT_MAX/2 || b > INT_MAX/2)
-    return INT_MAX;
-  else
-    return a + b;
-}
-
-
 /* Propagate the estimated effects of individual values along the topological
    from the dependent values to those they depend on.  */
 
@@ -3870,30 +3849,51 @@ void
 value_topo_info<valtype>::propagate_effects ()
 {
   ipcp_value<valtype> *base;
+  hash_set<ipcp_value<valtype> *> processed_srcvals;
 
   for (base = values_topo; base; base = base->topo_next)
     {
       ipcp_value_source<valtype> *src;
       ipcp_value<valtype> *val;
       sreal time = 0;
-      int size = 0;
+      HOST_WIDE_INT size = 0;
 
       for (val = base; val; val = val->scc_next)
 	{
 	  time = time + val->local_time_benefit + val->prop_time_benefit;
-	  size = safe_add (size, safe_add (val->local_size_cost,
-					   val->prop_size_cost));
+	  size = size + val->local_size_cost + val->prop_size_cost;
 	}
 
       for (val = base; val; val = val->scc_next)
-	for (src = val->sources; src; src = src->next)
-	  if (src->val
-	      && src->cs->maybe_hot_p ())
+	{
+	  processed_srcvals.empty ();
+	  for (src = val->sources; src; src = src->next)
+	    if (src->val
+		&& src->cs->maybe_hot_p ())
+	      {
+		if (!processed_srcvals.add (src->val))
+		  {
+		    HOST_WIDE_INT prop_size = size + src->val->prop_size_cost;
+		    if (prop_size < INT_MAX)
+		      src->val->prop_size_cost = prop_size;
+		    else
+		      continue;
+		  }
+		src->val->prop_time_benefit
+		  += time * src->cs->sreal_frequency ();
+	      }
+
+	  if (size < INT_MAX)
 	    {
-	      src->val->prop_time_benefit = time + src->val->prop_time_benefit;
-	      src->val->prop_size_cost = safe_add (size,
-						   src->val->prop_size_cost);
+	      val->prop_time_benefit = time;
+	      val->prop_size_cost = size;
 	    }
+	  else
+	    {
+	      val->prop_time_benefit = 0;
+	      val->prop_size_cost = 0;
+	    }
+	}
     }
 }
 
@@ -5508,12 +5508,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   if (!good_cloning_opportunity_p (node, val->local_time_benefit,
 				   freq_sum, count_sum,
 				   val->local_size_cost)
-      && !good_cloning_opportunity_p (node,
-				      val->local_time_benefit
-				      + val->prop_time_benefit,
-				      freq_sum, count_sum,
-				      safe_add (val->local_size_cost,
-						val->prop_size_cost)))
+      && !good_cloning_opportunity_p (node, val->prop_time_benefit,
+				      freq_sum, count_sum, val->prop_size_cost))
     return false;
 
   if (dump_file)

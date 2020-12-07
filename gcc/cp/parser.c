@@ -30611,9 +30611,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
     {
       tree default_arg = TREE_PURPOSE (parm);
       tree parsed_arg;
-      vec<tree, va_gc> *insts;
-      tree copy;
-      unsigned ix;
 
       tree parmdecl = parms[i];
       pushdecl (parmdecl);
@@ -30633,8 +30630,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       TREE_PURPOSE (parm) = parsed_arg;
 
       /* Update any instantiations we've already created.  */
-      for (insts = DEFPARSE_INSTANTIATIONS (default_arg), ix = 0;
-	   vec_safe_iterate (insts, ix, &copy); ix++)
+      for (tree copy : DEFPARSE_INSTANTIATIONS (default_arg))
 	TREE_PURPOSE (copy) = parsed_arg;
     }
 

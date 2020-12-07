@@ -1247,14 +1247,8 @@ cxx_safe_function_type_cast_p (tree t1, tree t2)
 static bool
 structural_comptypes (tree t1, tree t2, int strict)
 {
-  if (t1 == t2)
-    return true;
-
-  /* Suppress errors caused by previously reported errors.  */
-  if (t1 == error_mark_node || t2 == error_mark_node)
-    return false;
-
-  gcc_assert (TYPE_P (t1) && TYPE_P (t2));
+  /* Both should be types that are not obviously the same.  */
+  gcc_checking_assert (t1 != t2 && TYPE_P (t1) && TYPE_P (t2));
 
   if (!comparing_specializations)
     {
@@ -1300,13 +1294,13 @@ structural_comptypes (tree t1, tree t2, int strict)
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
-
   if (TREE_CODE (t1) != ARRAY_TYPE
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-    return true;
+    goto check_alias;
 
-
-  /* Compare the types.  Break out if they could be the same.  */
+  /* Compare the types.  Return false on known not-same. Break on not
+     known.   Never return true from this switch -- you'll break
+     specialization comparison.    */
   switch (TREE_CODE (t1))
     {
     case VOID_TYPE:
@@ -1332,7 +1326,11 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 have identical properties, different TYPE_MAIN_VARIANTs, but
 	 represent the same type.  The canonical type system keeps
 	 track of equivalence in this case, so we fall back on it.  */
-      return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+      if (TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
+	return false;
+
+      /* We don't need or want the attribute comparison.  */
+      goto check_alias;
 
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
@@ -1477,24 +1475,28 @@ structural_comptypes (tree t1, tree t2, int strict)
       return false;
     }
 
-  /* Don't treat an alias template specialization with dependent
-     arguments as equivalent to its underlying type when used as a
-     template argument; we need them to be distinct so that we
-     substitute into the specialization arguments at instantiation
-     time.  And aliases can't be equivalent without being ==, so
-     we don't need to look any deeper.  */
+  /* If we get here, we know that from a target independent POV the
+     types are the same.  Make sure the target attributes are also
+     the same.  */
+  if (!comp_type_attributes (t1, t2))
+    return false;
+
+ check_alias:
   if (comparing_specializations)
     {
+      /* Don't treat an alias template specialization with dependent
+	 arguments as equivalent to its underlying type when used as a
+	 template argument; we need them to be distinct so that we
+	 substitute into the specialization arguments at instantiation
+	 time.  And aliases can't be equivalent without being ==, so
+	 we don't need to look any deeper.  */
       tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
       tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
       if ((dep1 || dep2) && dep1 != dep2)
 	return false;
     }
 
-  /* If we get here, we know that from a target independent POV the
-     types are the same.  Make sure the target attributes are also
-     the same.  */
-  return comp_type_attributes (t1, t2);
+  return true;
 }
 
 /* Return true if T1 and T2 are related as allowed by STRICT.  STRICT
@@ -1509,6 +1511,13 @@ comptypes (tree t1, tree t2, int strict)
   gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
 		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
 
+  if (t1 == t2)
+    return true;
+
+  /* Suppress errors caused by previously reported errors.  */
+  if (t1 == error_mark_node || t2 == error_mark_node)
+    return false;
+
   if (strict == COMPARE_STRICT && comparing_specializations
       && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
     /* If comparing_specializations, treat dependent aliases as distinct.  */
@@ -1516,12 +1525,6 @@ comptypes (tree t1, tree t2, int strict)
 
   if (strict == COMPARE_STRICT)
     {
-      if (t1 == t2)
-	return true;
-
-      if (t1 == error_mark_node || t2 == error_mark_node)
-	return false;
-
       if (TYPE_STRUCTURAL_EQUALITY_P (t1) || TYPE_STRUCTURAL_EQUALITY_P (t2))
 	/* At least one of the types requires structural equality, so
 	   perform a deep check. */

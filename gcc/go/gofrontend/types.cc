@@ -2764,7 +2764,7 @@ class Ptrmask
   symname() const;
 
   Expression*
-  constructor(Gogo* gogo) const;
+  constructor() const;
 
  private:
   void
@@ -2959,10 +2959,10 @@ Ptrmask::symname() const
 // initialize the runtime ptrmask value.
 
 Expression*
-Ptrmask::constructor(Gogo* gogo) const
+Ptrmask::constructor() const
 {
   Location bloc = Linemap::predeclared_location();
-  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Expression* len = Expression::make_integer_ul(this->bits_.size(), NULL,
 						bloc);
   Array_type* at = Type::make_array_type(byte_type, len);
@@ -3007,7 +3007,7 @@ Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
       return ins.first->second;
     }
 
-  Expression* val = ptrmask.constructor(gogo);
+  Expression* val = ptrmask.constructor();
   Translate_context context(gogo, NULL, NULL, NULL);
   context.set_is_const();
   Bexpression* bval = val->get_backend(&context);
@@ -3046,7 +3046,7 @@ class GCProg
   end();
 
   Expression*
-  constructor(Gogo* gogo) const;
+  constructor() const;
 
  private:
   void
@@ -3357,7 +3357,7 @@ GCProg::end()
 // Return an Expression for the bytes in a GC program.
 
 Expression*
-GCProg::constructor(Gogo* gogo) const
+GCProg::constructor() const
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -3367,7 +3367,7 @@ GCProg::constructor(Gogo* gogo) const
 
   Type* uint32_type = Type::lookup_integer_type("uint32");
 
-  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Expression* len = Expression::make_integer_ul(this->bytes_.size(), NULL,
 						bloc);
   Array_type* at = Type::make_array_type(byte_type, len);
@@ -3414,7 +3414,7 @@ Type::gcprog_constructor(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
 
   go_assert(offset >= ptrdata && offset <= type_size);
 
-  return prog.constructor(gogo);
+  return prog.constructor();
 }
 
 // Return a composite literal for the uncommon type information for
@@ -4141,6 +4141,23 @@ Integer_type::create_abstract_character_type()
   return abstract_type;
 }
 
+// Create an alias to an integer type.  This is used for byte and rune.
+
+Named_type*
+Integer_type::create_integer_type_alias(const char* name,
+					Named_type* real_type)
+{
+  std::string sname(name);
+  Named_object* no = Named_object::make_type(sname, NULL, real_type,
+					     Linemap::predeclared_location());
+  Named_type* nt = no->type_value();
+  nt->set_is_alias();
+  std::pair<Named_integer_types::iterator, bool> ins =
+    Integer_type::named_integer_types.insert(std::make_pair(sname, nt));
+  go_assert(ins.second);
+  return nt;
+}
+
 // Integer type compatibility.
 
 bool
@@ -4216,6 +4233,14 @@ Integer_type*
 Type::make_abstract_character_type()
 {
   return Integer_type::create_abstract_character_type();
+}
+
+// Make an integer type alias.
+
+Named_type*
+Type::make_integer_type_alias(const char* name, Named_type* real_type)
+{
+  return Integer_type::create_integer_type_alias(name, real_type);
 }
 
 // Look up an integer type.
@@ -4466,7 +4491,7 @@ String_type::do_get_backend(Gogo* gogo)
     {
       std::vector<Backend::Btyped_identifier> fields(2);
 
-      Type* b = gogo->lookup_global("byte")->type_value();
+      Type* b = Type::lookup_integer_type("byte");
       Type* pb = Type::make_pointer_type(b);
 
       // We aren't going to get back to this field to finish the

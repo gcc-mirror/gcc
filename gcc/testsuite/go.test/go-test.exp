@@ -131,11 +131,11 @@ proc errchk { test opts } {
 	    set index [string first "dg-error" $out_line]
 	    regsub -start $index -all "\(\[^\\\\]\)\}\(.\)" $out_line "\\1\\\\\[\\\}\\\\\]\\2" out_line
 	}
-	if [string match "*dg-error*\(*" $out_line] {
+	if [string match "*dg-error*\\\[^\\\\\]\(*" $out_line] {
 	    set index [string first "dg-error" $out_line]
 	    regsub -start $index -all "\\\\\\\(" $out_line "\\\\\[\\\(\\\\\]" out_line
 	}
-	if [string match "*dg-error*\)*\}" $out_line] {
+	if [string match "*dg-error*\\\[^\\\\\]\)*\}" $out_line] {
 	    set index [string first "dg-error" $out_line]
 	    regsub -start $index -all "\\\\\\\)\(.\)" $out_line "\\\\\[\\\)\\\\\]\\1" out_line
 	}

@@ -970,6 +970,10 @@ lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
       /* Even if the parameter is by copy, prefer an lvalue.  */
       return true;
 
+    case N_Simple_Return_Statement:
+      /* Likewise for a return value.  */
+      return true;
+
     case N_Indexed_Component:
     case N_Selected_Component:
       /* If an elementary component is used, take it from the constant.  */
@@ -4513,7 +4517,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  and the return type has variable size, because the gimplifier
 	  doesn't handle these cases.
 
-       4. There is no target and we have misaligned In Out or Out parameters
+       4. There is a target which is a bit-field and the function returns an
+	  unconstrained record type with default discriminant, because the
+	  return may copy more data than the bit-field can contain.
+
+       5. There is no target and we have misaligned In Out or Out parameters
 	  passed by reference, because we need to preserve the return value
 	  before copying back the parameters.  However, in this case, we'll
 	  defer creating the temporary, see below.
@@ -4536,7 +4544,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		  || (TREE_CODE (TREE_TYPE (gnu_target)) == ARRAY_TYPE
 		      && TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_target)))
 			 == INTEGER_CST))
-	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)))
+	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)
+	  || (gnu_target
+	      && TREE_CODE (gnu_target) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (gnu_target, 1))
+	      && type_is_padding_self_referential (gnu_result_type))))
     {
       gnu_retval = create_temporary ("R", gnu_result_type);
       DECL_RETURN_VALUE_P (gnu_retval) = 1;
@@ -8249,8 +8261,10 @@ gnat_to_gnu (Node_Id gnat_node)
       /* Remove padding only if the inner object is of self-referential
 	 size: in that case it must be an object of unconstrained type
 	 with a default discriminant and we want to avoid copying too
-	 much data.  */
-      if (type_is_padding_self_referential (TREE_TYPE (gnu_result)))
+	 much data.  But do not remove it if it is already too small.  */
+      if (type_is_padding_self_referential (TREE_TYPE (gnu_result))
+	  && !(TREE_CODE (gnu_result) == COMPONENT_REF
+	       && DECL_BIT_FIELD (TREE_OPERAND (gnu_result, 1))))
 	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
 			      gnu_result);
     }
@@ -10716,8 +10730,11 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
 
   tree gnu_target = gnat_to_gnu_entity (gnat_target, NULL_TREE, false);
 
-  /* Thunk and target must have the same nesting level, if any.  */
-  gcc_assert (DECL_CONTEXT (gnu_thunk) == DECL_CONTEXT (gnu_target));
+  /* If the target is local, then thunk and target must have the same context
+     because cgraph_node::expand_thunk can only forward the static chain.  */
+  if (DECL_STATIC_CHAIN (gnu_target)
+      && DECL_CONTEXT (gnu_thunk) != DECL_CONTEXT (gnu_target))
+    return false;
 
   /* If the target returns by invisible reference and is external, apply the
      same transformation as Subprogram_Body_to_gnu here.  */

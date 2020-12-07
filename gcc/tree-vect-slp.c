@@ -2578,6 +2578,19 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 			       ? slp_inst_kind_store : slp_inst_kind_ctor,
 			       max_tree_size);
 
+  if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo))
+    {
+      for (unsigned i = 0; i < bb_vinfo->roots.length (); ++i)
+	{
+	  vect_location = bb_vinfo->roots[i].root->stmt;
+	  if (vect_build_slp_instance (bb_vinfo, bb_vinfo->roots[i].kind,
+				       bb_vinfo->roots[i].stmts,
+				       bb_vinfo->roots[i].root,
+				       max_tree_size, bst_map, NULL))
+	    bb_vinfo->roots[i].stmts = vNULL;
+	}
+    }
+
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
       /* Find SLP sequences starting from reduction chains.  */
@@ -3336,7 +3349,7 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 /* Initialize a bb_vec_info struct for the statements in BBS basic blocks.  */
 
 _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
-  : vec_info (vec_info::bb, init_cost (NULL), shared), bbs (_bbs)
+  : vec_info (vec_info::bb, init_cost (NULL), shared), bbs (_bbs), roots (vNULL)
 {
   for (unsigned i = 0; i < bbs.length (); ++i)
     {
@@ -3383,6 +3396,10 @@ _bb_vec_info::~_bb_vec_info ()
 	  gimple_set_uid (stmt, -1);
 	}
     }
+
+  for (unsigned i = 0; i < roots.length (); ++i)
+    roots[i].stmts.release ();
+  roots.release ();
 }
 
 /* Subroutine of vect_slp_analyze_node_operations.  Handle the root of NODE,
@@ -4105,6 +4122,38 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   return true;
 }
 
+/* qsort comparator for lane defs.  */
+
+static int
+vld_cmp (const void *a_, const void *b_)
+{
+  auto *a = (const std::pair<unsigned, tree> *)a_;
+  auto *b = (const std::pair<unsigned, tree> *)b_;
+  return a->first - b->first;
+}
+
+/* Return true if USE_STMT is a vector lane insert into VEC and set
+   *THIS_LANE to the lane number that is set.  */
+
+static bool
+vect_slp_is_lane_insert (gimple *use_stmt, tree vec, unsigned *this_lane)
+{
+  gassign *use_ass = dyn_cast <gassign *> (use_stmt);
+  if (!use_ass
+      || gimple_assign_rhs_code (use_ass) != BIT_INSERT_EXPR
+      || (vec
+	  ? gimple_assign_rhs1 (use_ass) != vec
+	  : ((vec = gimple_assign_rhs1 (use_ass)), false))
+      || !useless_type_conversion_p (TREE_TYPE (TREE_TYPE (vec)),
+				     TREE_TYPE (gimple_assign_rhs2 (use_ass)))
+      || !constant_multiple_p
+	    (tree_to_poly_uint64 (gimple_assign_rhs3 (use_ass)),
+	     tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (TREE_TYPE (vec)))),
+	     this_lane))
+    return false;
+  return true;
+}
+
 /* Find any vectorizable constructors and add them to the grouped_store
    array.  */
 
@@ -4116,28 +4165,114 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	 !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gassign *assign = dyn_cast<gassign *> (gsi_stmt (gsi));
-      if (!assign || gimple_assign_rhs_code (assign) != CONSTRUCTOR)
+      if (!assign)
 	continue;
 
       tree rhs = gimple_assign_rhs1 (assign);
-      if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
-	  || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)),
-		       CONSTRUCTOR_NELTS (rhs))
-	  || VECTOR_TYPE_P (TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value))
-	  || uniform_vector_p (rhs))
-	continue;
+      if (gimple_assign_rhs_code (assign) == CONSTRUCTOR)
+	{
+	  if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
+	      || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)),
+			   CONSTRUCTOR_NELTS (rhs))
+	      || VECTOR_TYPE_P (TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value))
+	      || uniform_vector_p (rhs))
+	    continue;
 
-      unsigned j;
-      tree val;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), j, val)
-	if (TREE_CODE (val) != SSA_NAME
-	    || !bb_vinfo->lookup_def (val))
-	  break;
-      if (j != CONSTRUCTOR_NELTS (rhs))
-	continue;
+	  unsigned j;
+	  tree val;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), j, val)
+	      if (TREE_CODE (val) != SSA_NAME
+		  || !bb_vinfo->lookup_def (val))
+		break;
+	  if (j != CONSTRUCTOR_NELTS (rhs))
+	    continue;
 
-      stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (assign);
-      BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
+	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (assign);
+	  BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
+	}
+      else if (gimple_assign_rhs_code (assign) == BIT_INSERT_EXPR
+	       && VECTOR_TYPE_P (TREE_TYPE (rhs))
+	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).is_constant ()
+	       && integer_zerop (gimple_assign_rhs3 (assign))
+	       && useless_type_conversion_p
+		    (TREE_TYPE (TREE_TYPE (rhs)),
+		     TREE_TYPE (gimple_assign_rhs2 (assign))))
+	{
+	  /* We start to match on insert to lane zero but since the
+	     inserts need not be ordered we'd have to search both
+	     the def and the use chains.  */
+	  tree vectype = TREE_TYPE (rhs);
+	  unsigned nlanes = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+	  auto_vec<std::pair<unsigned, tree> > lane_defs (nlanes);
+	  auto_sbitmap lanes (nlanes);
+	  bitmap_clear (lanes);
+	  bitmap_set_bit (lanes, 0);
+	  tree def = gimple_assign_lhs (assign);
+	  lane_defs.quick_push
+		      (std::make_pair (0, gimple_assign_rhs2 (assign)));
+	  unsigned lanes_found = 1;
+	  /* Start with the use chains, the last stmt will be the root.  */
+	  stmt_vec_info last = bb_vinfo->lookup_stmt (assign);
+	  do
+	    {
+	      use_operand_p use_p;
+	      gimple *use_stmt;
+	      if (!single_imm_use (def, &use_p, &use_stmt))
+		break;
+	      unsigned this_lane;
+	      if (!bb_vinfo->lookup_stmt (use_stmt)
+		  || !vect_slp_is_lane_insert (use_stmt, def, &this_lane)
+		  || !bb_vinfo->lookup_def (gimple_assign_rhs2 (use_stmt)))
+		break;
+	      if (bitmap_bit_p (lanes, this_lane))
+		break;
+	      lanes_found++;
+	      bitmap_set_bit (lanes, this_lane);
+	      gassign *use_ass = as_a <gassign *> (use_stmt);
+	      lane_defs.quick_push (std::make_pair
+				     (this_lane, gimple_assign_rhs2 (use_ass)));
+	      last = bb_vinfo->lookup_stmt (use_ass);
+	      def = gimple_assign_lhs (use_ass);
+	    }
+	  while (lanes_found < nlanes);
+	  if (lanes_found < nlanes)
+	    {
+	      /* Now search the def chain.  */
+	      def = gimple_assign_rhs1 (assign);
+	      do
+		{
+		  if (!has_single_use (def))
+		    break;
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (def);
+		  unsigned this_lane;
+		  if (!bb_vinfo->lookup_stmt (def_stmt)
+		      || !vect_slp_is_lane_insert (def_stmt,
+						   NULL_TREE, &this_lane)
+		      || !bb_vinfo->lookup_def (gimple_assign_rhs2 (def_stmt)))
+		    break;
+		  if (bitmap_bit_p (lanes, this_lane))
+		    break;
+		  lanes_found++;
+		  bitmap_set_bit (lanes, this_lane);
+		  lane_defs.quick_push (std::make_pair
+					  (this_lane,
+					   gimple_assign_rhs2 (def_stmt)));
+		  def = gimple_assign_rhs1 (def_stmt);
+		}
+	      while (lanes_found < nlanes);
+	    }
+	  if (lanes_found == nlanes)
+	    {
+	      /* Sort lane_defs after the lane index and register the root.  */
+	      lane_defs.qsort (vld_cmp);
+	      vec<stmt_vec_info> stmts;
+	      stmts.create (nlanes);
+	      for (unsigned i = 0; i < nlanes; ++i)
+		stmts.quick_push (bb_vinfo->lookup_def (lane_defs[i].second));
+	      bb_vinfo->roots.safe_push (slp_root (slp_inst_kind_ctor,
+						   stmts, last));
+	    }
+	}
     }
 }
 
@@ -4227,7 +4362,8 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   /* If there are no grouped stores and no constructors in the region
      there is no need to continue with pattern recog as vect_analyze_slp
      will fail anyway.  */
-  if (bb_vinfo->grouped_stores.is_empty ())
+  if (bb_vinfo->grouped_stores.is_empty ()
+      && bb_vinfo->roots.is_empty ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -4290,8 +4426,22 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 	 relevant.  */
       vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
       vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
-      if (SLP_INSTANCE_ROOT_STMT (instance))
-	STMT_SLP_TYPE (SLP_INSTANCE_ROOT_STMT (instance)) = pure_slp;
+      if (stmt_vec_info root = SLP_INSTANCE_ROOT_STMT (instance))
+	{
+	  STMT_SLP_TYPE (root) = pure_slp;
+	  if (is_gimple_assign (root->stmt)
+	      && gimple_assign_rhs_code (root->stmt) == BIT_INSERT_EXPR)
+	    {
+	      /* ???  We should probably record the whole vector of
+		 root stmts so we do not have to back-track here...  */
+	      for (unsigned n = SLP_TREE_LANES (SLP_INSTANCE_TREE (instance));
+		   n != 1; --n)
+		{
+		  root = bb_vinfo->lookup_def (gimple_assign_rhs1 (root->stmt));
+		  STMT_SLP_TYPE (root) = pure_slp;
+		}
+	    }
+	}
 
       i++;
     }

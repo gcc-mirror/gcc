@@ -1,3 +1,8 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
 2020-12-02  Ian Lance Taylor  <iant@golang.org>
 
 	* dwarf.c (resolve_string): Use > rather than >= to check whether

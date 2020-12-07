@@ -462,6 +462,10 @@ class Type
   make_integer_type(const char* name, bool is_unsigned, int bits,
 		    int runtime_type_kind);
 
+  // Make a named integer type alias.  This is used for byte and rune.
+  static Named_type*
+  make_integer_type_alias(const char* name, Named_type* real_type);
+
   // Look up a named integer type.
   static Named_type*
   lookup_integer_type(const char* name);
@@ -1742,6 +1746,10 @@ class Integer_type : public Type
   // Create an abstract character type.
   static Integer_type*
   create_abstract_character_type();
+
+  // Create an alias to an integer type.
+  static Named_type*
+  create_integer_type_alias(const char* name, Named_type* real_type);
 
   // Whether this is an abstract integer type.
   bool

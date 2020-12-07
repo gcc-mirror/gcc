@@ -1,13 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "" } */
 /* { dg-final { scan-assembler     "ashq .*,\\\$0xffffffffffffffff," } } */
 /* { dg-final { scan-assembler-not "ashq .*,\\\$-1," } } */
 
-void
-a (void)
+unsigned long long
+a (unsigned long i)
 {
-	unsigned long i = 1;
-	unsigned long long v;
-
-	v = ~ (unsigned long long) 0 << i;
+  return ~(unsigned long long) 0 << i;
 }
