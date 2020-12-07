@@ -13,5 +13,5 @@ foo ()
 /* For alloca a common code routine emits the probes.  Make sure the
    "probe_stack" expander is used in that case. We want to use mem
    compares instead of stores.  */
-/* { dg-final { scan-assembler-times "cg\t" 5 { target lp64 } } } */
-/* { dg-final { scan-assembler-times "c\t" 5 { target { ! lp64 } } } } */
+/* { dg-final { scan-assembler-times "cg\t" 5 { target s390_zarch } } } */
+/* { dg-final { scan-assembler-times "c\t" 5 { target { ! s390_zarch } } } } */
