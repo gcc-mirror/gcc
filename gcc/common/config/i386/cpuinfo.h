@@ -241,6 +241,23 @@ get_amd_cpu (struct __processor_model *cpu_model,
 	  cpu_model->__cpu_subtype = AMDFAM17H_ZNVER1;
 	}
       break;
+    case 0x19:
+      cpu_model->__cpu_type = AMDFAM19H;
+      /* AMD family 19h version 1.  */
+      if (model <= 0x0f)
+	{
+	  cpu = "znver3";
+	  CHECK___builtin_cpu_is ("znver3");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_VAES))
+	{
+	  cpu = "znver3";
+	  CHECK___builtin_cpu_is ("znver3");
+	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
+	}
+      break;
     default:
       break;
     }

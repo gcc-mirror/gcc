@@ -7790,8 +7790,8 @@ default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 
   emit_library_call (callee,
 		     LCT_NORMAL, VOIDmode,
-		     begin, ptr_mode,
-		     end, ptr_mode);
+		     convert_memory_address (ptr_mode, begin), ptr_mode,
+		     convert_memory_address (ptr_mode, end), ptr_mode);
 }
 
 /* Emit a call to __builtin___clear_cache, unless the target specifies

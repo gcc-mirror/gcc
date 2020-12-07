@@ -16,6 +16,7 @@ static_assert(requires(S o, int i) {
 
 template<typename T>
   concept c = requires (T t) { requires (T)5; }; // { dg-error "has type .int." }
+// { dg-bogus "not satisfied" "" { target *-*-* } .-1 }
 
 int
 foo()

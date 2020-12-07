@@ -117,17 +117,11 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
 
   // "byte" is an alias for "uint8".
   uint8_type->integer_type()->set_is_byte();
-  Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
-						    loc);
-  byte_type->type_value()->set_is_alias();
-  this->add_named_type(byte_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("byte", uint8_type));
 
   // "rune" is an alias for "int32".
   int32_type->integer_type()->set_is_rune();
-  Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
-						    loc);
-  rune_type->type_value()->set_is_alias();
-  this->add_named_type(rune_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("rune", int32_type));
 
   this->add_named_type(Type::make_named_bool_type());
 
@@ -765,7 +759,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Type* pvt = Type::make_pointer_type(Type::make_void_type());
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* byte_type = this->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Type* pointer_byte_type = Type::make_pointer_type(byte_type);
   Struct_type* root_type =
     Type::make_builtin_struct_type(4,

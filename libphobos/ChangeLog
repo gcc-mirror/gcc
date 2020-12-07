@@ -1,3 +1,8 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
 2020-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/87818

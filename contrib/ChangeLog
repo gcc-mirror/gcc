@@ -1,3 +1,8 @@
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: use flake8 and add some
+	tweaks to ignore aarch64 params.
+
 2020-12-02  Jason Merrill  <jason@redhat.com>
 
 	* gcc-git-customization.sh: Configure sendemail.to.

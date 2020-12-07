@@ -337,7 +337,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	    }
 
 	  /* Do the replacement of conditional if it can be done.  */
-	  if (two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
+	  if (!early_p && two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (!early_p
 		   && conditional_replacement (bb, bb1, e1, e2, phi,
@@ -635,7 +635,6 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (TREE_CODE (lhs) != SSA_NAME
       || !INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-      || TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
       || TREE_CODE (rhs) != INTEGER_CST)
     return false;
 
@@ -648,9 +647,25 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
       return false;
     }
 
+  /* Defer boolean x ? 0 : {1,-1} or x ? {1,-1} : 0 to
+     conditional_replacement.  */
+  if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+      && (integer_zerop (arg0)
+	  || integer_zerop (arg1)
+	  || TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE
+	  || (TYPE_PRECISION (TREE_TYPE (arg0))
+	      <= TYPE_PRECISION (TREE_TYPE (lhs)))))
+    return false;
+
   wide_int min, max;
-  if (get_range_info (lhs, &min, &max) != VR_RANGE
-      || min + 1 != max
+  if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE)
+    {
+      min = wi::to_wide (boolean_false_node);
+      max = wi::to_wide (boolean_true_node);
+    }
+  else if (get_range_info (lhs, &min, &max) != VR_RANGE)
+    return false;
+  if (min + 1 != max
       || (wi::to_wide (rhs) != min
 	  && wi::to_wide (rhs) != max))
     return false;

@@ -2056,23 +2056,45 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     }
 }
 
+static constexpr size_t verify_sequence_points_limit = 1024;
+
+/* Called from verify_sequence_points via walk_tree.  */
+
+static tree
+verify_tree_lim_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (++*((size_t *) data) > verify_sequence_points_limit)
+    return integer_zero_node;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
 /* Try to warn for undefined behavior in EXPR due to missing sequence
    points.  */
 
 void
 verify_sequence_points (tree expr)
 {
-  struct tlist *before_sp = 0, *after_sp = 0;
+  tlist *before_sp = nullptr, *after_sp = nullptr;
 
-  warned_ids = 0;
-  save_expr_cache = 0;
-  if (tlist_firstobj == 0)
+  /* verify_tree is highly recursive, and merge_tlist is O(n^2),
+     so we return early if the expression is too big.  */
+  size_t n = 0;
+  if (walk_tree (&expr, verify_tree_lim_r, &n, nullptr))
+    return;
+
+  warned_ids = nullptr;
+  save_expr_cache = nullptr;
+  if (!tlist_firstobj)
     {
       gcc_obstack_init (&tlist_obstack);
       tlist_firstobj = (char *) obstack_alloc (&tlist_obstack, 0);
     }
 
-  verify_tree (expr, &before_sp, &after_sp, 0);
+  verify_tree (expr, &before_sp, &after_sp, NULL_TREE);
   warn_for_collisions (after_sp);
   obstack_free (&tlist_obstack, tlist_firstobj);
 }

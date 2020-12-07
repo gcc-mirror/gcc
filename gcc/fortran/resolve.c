@@ -15394,8 +15394,12 @@ resolve_symbol (gfc_symbol *sym)
   else if (mp_flag && sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
     {
       bool saved_specification_expr = specification_expr;
+      bool saved_formal_arg_flag = formal_arg_flag;
+
       specification_expr = true;
+      formal_arg_flag = true;
       gfc_resolve_array_spec (sym->result->as, false);
+      formal_arg_flag = saved_formal_arg_flag;
       specification_expr = saved_specification_expr;
     }
 

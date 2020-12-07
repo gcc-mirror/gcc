@@ -4862,7 +4862,8 @@ rtl_block_empty_p (basic_block bb)
     return true;
 
   FOR_BB_INSNS (bb, insn)
-    if (NONDEBUG_INSN_P (insn) && !any_uncondjump_p (insn))
+    if (NONDEBUG_INSN_P (insn)
+	&& (!any_uncondjump_p (insn) || !onlyjump_p (insn)))
       return false;
 
   return true;

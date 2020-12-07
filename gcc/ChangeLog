@@ -1,3 +1,438 @@
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98162
+	* doc/extend.texi: Remove -mcet.
+
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98161
+	* config/i386/i386-features.c (pseudo_reg_set): Check mode of
+	pseudo register push.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* tree-ssa-phiopt.c (two_value_replacement): Optimize even boolean lhs
+	cases as long as arg0 has wider precision and conditional_replacement
+	doesn't handle that case.
+	(tree_ssa_phiopt_worker): Don't call two_value_replacement during
+	early phiopt.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* match.pd (-(type)!A -> (type)A - 1): New optimization.
+
+2020-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_DEF): Reference macro arguments.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	PR target/95294
+	* config/vax/elf.h (REGISTER_NAMES): Append `%psl'.
+	* config/vax/vax-modes.def (CCN, CCNZ, CCZ): New modes.
+	* config/vax/vax-protos.h (vax_select_cc_mode): New prototype.
+	(vax_maybe_split_dimode_move): Likewise.
+	(vax_notice_update_cc): Remove prototype.
+	* config/vax/vax.c (TARGET_FLAGS_REGNUM): New macro.
+	(TARGET_CC_MODES_COMPATIBLE): Likewise.
+	(TARGET_MD_ASM_ADJUST): Likewise.
+	(vax_select_cc_mode): New function
+	(vax_cc_modes_compatible): Likewise.
+	(vax_md_asm_adjust): Likewise.
+	(vax_notice_update_cc): Remove function.
+	(vax_output_int_move): Factor out code checking if a DImode move
+	may have to be split...
+	(vax_maybe_split_dimode_move): ... into this new function.
+	* config/vax/vax.h (FIRST_PSEUDO_REGISTER): Bump up.
+	(FIXED_REGISTERS): Append an entry for PSL.
+	(CALL_USED_REGISTERS): Likewise.
+	(NOTICE_UPDATE_CC, OUTPUT_JUMP): Remove macros.
+	(SELECT_CC_MODE): New macro.
+	(REGISTER_NAMES): Append `psl'.
+	* config/vax/predicates.md (const_zero_operand)
+	(vax_cc_comparison_operator, vax_ccn_comparison_operator)
+	(vax_ccnz_comparison_operator, vax_ccz_comparison_operator):
+	New predicates.
+	* config/vax/builtins.md: Rewrite for MODE_CC representation.
+	* config/vax/vax.md: Likewise.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/elf.h (VAX_CC1_SPEC, VAX_CC1PLUS_SPEC): New macros.
+	* config/vax/netbsd-elf.h (CC1_SPEC): Use VAX_CC1_SPEC rather
+	than VAX_CC1_AND_CC1PLUS_SPEC.
+	(CC1PLUS_SPEC): Use VAX_CC1PLUS_SPEC rather than
+	VAX_CC1_AND_CC1PLUS_SPEC.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/pdp11/pdp11.md (fcc_cc, fcc_ccnz): Use
+	`const_double_zero' to express double zero constant.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* read-rtl.c (rtx_reader::read_rtx_code): Handle syntactic
+	`const_double_zero' rtx.
+	* doc/rtl.texi (Constant Expression Types): Document it.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (divmoddisi4, *amulsi4): Make the comment
+	notation consistent with the rest of the file.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (movti): Fix output predicate.  Emit `movo'
+	rather than `movh'.
+	(divmoddisi4): Fix output predicates, correct RTL.
+	(*amulsi4): Name insn.  Fix output predicate.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (mulsidi3): Fix the multiplicand predicates.
+	(*maddsidi4, *maddsidi4_const): Likewise.  Name insns.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (*cmpv_2): Name insn.
+	(*cmpv, *cmpzv, *cmpzv_2): Likewise.  Fix location predicate and
+	constraint.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (extv): Rename insn to...
+	(*extv): ... this.
+	(extv): New expander.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (*insv_aligned, *extzv_aligned)
+	(*extv_aligned): Also make sure the memory address of a bit-field
+	location can be adjusted in the PIC mode.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (*insv_aligned, *extzv_aligned)
+	(*extv_aligned): Reject register bit-field locations that are not
+	aligned to the least significant bit; update output statement
+	accordingly.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (*insv_aligned, *extzv_aligned)
+	(*extv_aligned, *extv_non_const, *extzv_non_const): Name insns.
+	Fix location predicate.
+	(*extzv): Name insn.
+	(*insv): Likewise.  Fix location constraint.
+	(*insv_2): Likewise, and the predicate.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (cpymemhi1): Rename insn to...
+	(movmemhi1): ... this.
+	(cpymemhi): Update accordingly.  Remove constraints.
+	(movmemhi): New expander.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md: Add a peephole2 for QImode and HImode
+	`ctz' operations.
+	(any_extend): New code iterator.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md (width): New mode attribute.
+	(ffssi2): Rework expander into...
+	(ffs<mode>2): ... this.
+	(ctzsi2): Rework insn into...
+	(ctz<mode>2): ... this.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md (ffssi2_internal): Rename insn to...
+	(ctzsi2): ... this.  Update the RTL operation.
+	(ffssi2): Update accordingly.
+	* config/vax/vax.c (vax_notice_update_cc): Handle CTZ.
+	* config/vax/vax.h (CTZ_DEFINED_VALUE_AT_ZERO): New macro.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md: Include `builtins.md'.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/predicates.md (volatile_mem_operand)
+	(any_memory_operand): New predicates.
+	* config/vax/builtins.md (VUNSPEC_UNLOCK): Remove constant.
+	(sync_lock_test_and_set<mode>): Remove `set' and `unspec'
+	operations, match operands only.  Reformat.
+	(sync_lock_release<mode>): Likewise.  Remove cruft.
+	(jbb<ccss>i<mode>): Wrap into `unspec_volatile', use
+	`any_memory_operand' predicate.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md (bit): New int iterator.
+	(ccss): New int attribute.
+	(jbbssi<mode>, jbbcci<mode>): Fold insns into...
+	(jbb<ccss>i<mode>): ... this.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md (bb_mem): New mode attribute.
+	(jbbssiqi, jbbssihi, jbbssisi): Fold insns into...
+	(jbbssi<mode>): ... this.
+	(jbbcciqi, jbbccihi, jbbccisi): Likewise...
+	(jbbcci<mode>): ... this.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* jump.c (pc_set): Also accept a jump wrapped in UNSPEC or
+	UNSPEC_VOLATILE.
+	(any_uncondjump_p, any_condjump_p): Update comment accordingly.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* loop-doloop.c (add_test): Only remove the jump if `onlyjump_p'.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* cfgrtl.c (rtl_block_empty_p): Return false if `!onlyjump_p'
+	too.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Only try to remove a
+	conditional jump if `onlyjump_p'.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* loop-iv.c (simplify_using_initial_values): Only process jumps
+	that match `onlyjump_p'.
+	(check_simple_exit): Likewise.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* ifcvt.c (dead_or_predicable) [!IFCVT_MODIFY_TESTS]: Bail out
+	if `!onlyjump_p'.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* read-rtl.c: Add a page-feed separator at the start of iterator
+	code.
+	(struct iterator_group): Change the return type to HOST_WIDE_INT
+	for the `find_builtin' member.  Likewise the second parameter
+	type for the `apply_iterator' member.
+	(atoll) [!HAVE_ATOQ]: Reorder.
+	(find_mode, find_code): Change the return type to HOST_WIDE_INT.
+	(apply_mode_iterator, apply_code_iterator)
+	(apply_subst_iterator): Change the second parameter type to
+	HOST_WIDE_INT.
+	(find_int): Handle input suitable for HOST_WIDE_INT output.
+	(apply_int_iterator): Rewrite in terms of explicit format
+	interpretation.
+	(rtx_reader::read_rtx_operand) <'w'>: Fold into...
+	<'i', 'n', 'p'>: ... this.
+	* doc/md.texi (Int Iterators): Document 'w' rtx format support.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/builtins.md (ffssi2): Make preparation statements
+	actually buildable.
+	(ffssi2_internal): Fix input constraints; make the RTL pattern
+	match reality for `cc0'.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_address_cost): Express the cost in terms
+	of COSTS_N_INSNS.
+	(vax_rtx_costs): Likewise.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/constraints.md (A): New constraint.
+	* config/vax/predicates.md (external_symbolic_operand)
+	(external_const_operand): Remove predicates.
+	(local_symbolic_operand): Rename to...
+	(pic_symbolic_operand): ... this, and rework.
+	(external_memory_operand): Rename to...
+	(non_pic_external_memory_operand): ... this, and rework.
+	(illegal_blk_memory_operand, illegal_addsub_di_memory_operand):
+	Update accordingly.
+	* config/vax/vax-protos.h (vax_acceptable_pic_operand_p): New
+	prototype.
+	* config/vax/vax.c (vax_acceptable_pic_operand_p): New function.
+	(vax_output_int_add): Update according to predicate rework.
+	* config/vax/vax.h (LEGITIMATE_PIC_OPERAND_P): New macro.
+	* config/vax/vax.md (pushlclsymreg, pushextsymreg): Fold
+	together, and rename to...
+	(*pushsymreg): ... this.  Use the `pic_symbolic_operand'
+	predicate and the `A' constraint for the displacement operand.
+	(movlclsymreg, movextsymreg): Fold together, and rename to...
+	(*movsymreg): ... this.  Use the `pic_symbolic_operand'
+	predicate and the `A' constraint for the displacement operand.
+	(pushextsym, pushlclsym): Fold together, and rename to...
+	(*pushsym): ... this.  Use the `pic_symbolic_operand' predicate
+	and the `A' constraint for the displacement operand.
+	(movextsym, movlclsym): Fold together, and rename to...
+	(*movsym): ... this.  Use the `pic_symbolic_operand' predicate
+	and the `A' constraint for the displacement operand.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (print_operand): Replace `c' and `C' with
+	`k' and `K' respectively.
+	* config/vax/vax.md (*branch, *branch_reversed): Update
+	accordingly.
+
+2020-12-05  Matt Thomas  <matt@3am-software.com>
+	    Maciej W. Rozycki  <macro@linux-mips.org>
+
+	PR target/58901
+	* reload.c (push_reload): Also reload the inner expression of a
+	SUBREG for pseudos associated with a mode-dependent memory
+	reference.
+	(find_reloads): Force a reload likewise.
+
+2020-12-05  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/97421
+	* modulo-sched.c (generate_prolog_epilog): Remove forward
+	declaration, adjust last argument name and type.
+	(const_iteration_count): Add bool pointer parameter to return
+	whether count register is read in pre-header after its
+	initialization.
+	(sms_schedule): Fix count register initialization adjustment
+	procedure according to what const_iteration_count said.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-12-05  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Sharavan Kumar  <Shravan.Kumar@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu) recognize znver3.
+	* common/config/i386/i386-common.c (processor_names): Add
+	znver3.
+	(processor_alias_table): Add znver3 and AMDFAM19H entry.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add
+	AMDFAM19H.
+	(processor_subtypes): AMDFAM19H_ZNVER3.
+	* config.gcc (i[34567]86-*-linux* | ...): Likewise.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize znver3 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	znver3.
+	* config/i386/i386-options.c (m_znver3): New definition.
+	(m_ZNVER): Include m_znver3.
+	(processor_cost_table): Add znver3.
+	* config/i386/i386.c (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_znver3): New definition.
+	(enum processor_type): Add PROCESSOR_ZNVER3.
+	* config/i386/i386.md (define_attr "cpu"): Add znver3.
+	* config/i386/x86-tune-sched.c: (ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS:
+	Likewise.
+	* config/i386/znver1.md: Add new reservations for znver3.
+	* doc/extend.texi: Add details about znver3.
+	* doc/invoke.texi: Likewise.
+
+2020-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask,
+	splitter after *<rotate_insn><mode>3_mask_1): Drop the masking from
+	the patterns to split into.
+
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	* vec.h (begin, end): Add overloads for vec*.
+	* tree.c (build_constructor_from_vec): Remove *.
+
+2020-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Change PTR_SIZE to POINTER_SIZE_UNITS.
+
+2020-12-04  Hans-Peter Nilsson  <hp@axis.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/94600
+	* doc/implement-c.texi (Qualifiers implementation): Add blurb
+	about access to the whole of a volatile aggregate object, only for
+	same-size as a scalar object.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98130
+	* gimple.c (gimple_call_fnspec): Only return ".co " for replaceable
+	operator delete or ".mC" for replaceable operator new called from
+	new/delete.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask,
+	splitter after *<rotate_insn><mode>3_mask_1): New combine splitters.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* fold-const.c (native_encode_initializer): Use build_zero_cst
+	instead of build_constructor.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* cfgexpand.c (expand_gimple_basic_block): For vars with
+	vector type, use TYPE_MODE rather than DECL_MODE.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (-gdwarf32, -gdwarf64): New options.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Default
+	dwarf_offset_size to 8 if not overridden from the command line.
+	* dwarf2out.c: Change all occurrences of DWARF_OFFSET_SIZE to
+	dwarf_offset_size.
+	* doc/invoke.texi (-gdwarf32, -gdwarf64): Document.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/tm.texi: Change argument of the record_gcc_switches
+	hook and remove SWITCH_TYPE_* enum values.
+	* dwarf2out.c (gen_producer_string): Move to opts.c and remove
+	handling of the dwarf_record_gcc_switches option.
+	(dwarf2out_early_finish): Use moved gen_producer_string
+	function.
+	* opts.c (gen_producer_string): New.
+	* opts.h (gen_producer_string): New.
+	* target.def: Change type of record_gcc_switches.
+	* target.h (enum print_switch_type): Remove.
+	(elf_record_gcc_switches): Change first argument.
+	* toplev.c (MAX_LINE): Remove.
+	(print_to_asm_out_file):  Likewise.
+	(print_to_stderr): Likewise.
+	(print_single_switch): Likewise.
+	(print_switch_values): Likewise.
+	(init_asm_output): Use new gen_producer_string function.
+	(process_options): Likewise.
+	* varasm.c (elf_record_gcc_switches): Just save the string argument
+	to the ELF container.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.c (verify_access_tree_1): Relax assertion on the size.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing params.
+
 2020-12-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90629

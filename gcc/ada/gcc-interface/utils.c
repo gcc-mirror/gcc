@@ -4930,10 +4930,6 @@ convert (tree type, tree expr)
 					  convert (TREE_TYPE (type),
 						   TYPE_MIN_VALUE (type))));
 
-      /* ... fall through ... */
-
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
       /* If we are converting an additive expression to an integer type
 	 with lower precision, be wary of the optimization that can be
 	 applied by convert_to_integer.  There are 2 problematic cases:
@@ -4945,8 +4941,7 @@ convert (tree type, tree expr)
 	     intermediate conversion that changes the sign could
 	     be inserted and thus introduce an artificial overflow
 	     at compile time when the placeholder is substituted.  */
-      if (code == INTEGER_TYPE
-	  && ecode == INTEGER_TYPE
+      if (ecode == INTEGER_TYPE
 	  && TYPE_PRECISION (type) < TYPE_PRECISION (etype)
 	  && (TREE_CODE (expr) == PLUS_EXPR || TREE_CODE (expr) == MINUS_EXPR))
 	{
@@ -4955,10 +4950,17 @@ convert (tree type, tree expr)
 	  if ((TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
 	       && TYPE_BIASED_REPRESENTATION_P (TREE_TYPE (op0)))
 	      || CONTAINS_PLACEHOLDER_P (expr))
-	    return build1 (NOP_EXPR, type, expr);
+	    return fold_convert (type, expr);
 	}
 
+      /* ... fall through ... */
+
+    case ENUMERAL_TYPE:
       return fold (convert_to_integer (type, expr));
+
+    case BOOLEAN_TYPE:
+      /* Do not use convert_to_integer with boolean types.  */
+      return fold_convert_loc (EXPR_LOCATION (expr), type, expr);
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -5901,7 +5903,7 @@ gnat_write_global_declarations (void)
       struct varpool_node *node;
       char *label;
 
-      ASM_FORMAT_PRIVATE_NAME (label, first_global_object_name, 0);
+      ASM_FORMAT_PRIVATE_NAME (label, first_global_object_name, ULONG_MAX);
       dummy_global
 	= build_decl (BUILTINS_LOCATION, VAR_DECL, get_identifier (label),
 		      void_type_node);
