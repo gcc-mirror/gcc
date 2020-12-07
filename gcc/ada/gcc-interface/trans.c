@@ -970,6 +970,10 @@ lvalue_for_aggregate_p (Node_Id gnat_node, tree gnu_type)
       /* Even if the parameter is by copy, prefer an lvalue.  */
       return true;
 
+    case N_Simple_Return_Statement:
+      /* Likewise for a return value.  */
+      return true;
+
     case N_Indexed_Component:
     case N_Selected_Component:
       /* If an elementary component is used, take it from the constant.  */
