@@ -10353,7 +10353,7 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
 {
   const Entity_Kind kind = Ekind (gnat_entity);
   const bool has_suffix = (suffix != NULL);
-  String_Template temp = {1, has_suffix ? strlen (suffix) : 0};
+  String_Template temp = {1, has_suffix ? (int) strlen (suffix) : 0};
   String_Pointer sp = {suffix, &temp};
 
   Get_External_Name (gnat_entity, has_suffix, sp);
