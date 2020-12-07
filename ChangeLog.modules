@@ -1,5 +1,19 @@
 2020-12-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (comparing_typenames): Replace with ...
+	(map_context_from, map_context_to): ... this.
+	* typeck.c (structural_comptypes): Adjust.
+	* pt.c (comparing_typenames): Delete.
+	(spec_hasher::equal): Adjust.
+	* tree.c (cp_tree_equal): Check map_context_from & to for failed
+	parameter context.
+	* module.cc (map_context_from, map_context_to): Define.
+	(check_mergeable_decl): Set & unset map_context vars.
+	(trees_in::is_matching_decl): Likewise.
+	(module_state::read_cluster): Set & unset
+	comparing_specializations, not comparing_typenames.
+
 	Merge trunk ffb268ffcf9
 	c++: Adjust array type construction
 

@@ -1252,12 +1252,12 @@ structural_comptypes (tree t1, tree t2, int strict)
 
   /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
      current instantiation, and we don't care about typename
-     structural equality.  The comparing_typenames check is after the
+     structural equality.  The comparing_specialiations check is after the
      code check, in order to early-out the common case.  */
-  if (TREE_CODE (t1) == TYPENAME_TYPE && !comparing_typenames)
+  if (TREE_CODE (t1) == TYPENAME_TYPE && !comparing_specializations)
     t1 = resolve_typename_type (t1, /*only_current_p=*/true);
 
-  if (TREE_CODE (t2) == TYPENAME_TYPE && !comparing_typenames)
+  if (TREE_CODE (t2) == TYPENAME_TYPE && !comparing_specializations)
     t2 = resolve_typename_type (t2, /*only_current_p=*/true);
 
   if (TYPE_PTRMEMFUNC_P (t1))

@@ -5422,9 +5422,9 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   resolving of typenames in structural_comptypes.  */
-extern int comparing_typenames;
+/* When comparing specializations permit context _FROM to match _TO.  */
+extern tree map_context_from;
+extern tree map_context_to;
 
 /* In parser.c.  */
 

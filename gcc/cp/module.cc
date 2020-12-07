@@ -268,6 +268,11 @@ static inline const_tree identifier (const cpp_hashnode *node)
   return identifier (const_cast <cpp_hashnode *> (node));
 }
 
+/* During duplicate detection we need to tell some comparators that
+   these are equivalent.  */
+tree map_context_from;
+tree map_context_to;
+
 /* Id for dumping module information.  */
 int module_dump_id;
 
@@ -10600,7 +10605,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 static tree
 check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 {
-  for (ovl_iterator iter (ovl); iter; ++iter)
+  tree found = NULL_TREE;
+  for (ovl_iterator iter (ovl); !found && iter; ++iter)
     {
       tree match = *iter;
 
@@ -10613,7 +10619,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	  if (TREE_CODE (match) == NAMESPACE_DECL
 	      && !DECL_NAMESPACE_ALIAS (match))
 	    /* Namespaces are never overloaded.  */
-	    return match;
+	    found = match;
 
 	  continue;
 	}
@@ -10627,12 +10633,17 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
 	      if (d_inner == error_mark_node
 		  && TYPE_DECL_ALIAS_P (m_inner))
-		return match;
+		{
+		  found = match;
+		  break;
+		}
 	      goto again;
 	    }
 	  break;
 
 	case FUNCTION_DECL:
+	  map_context_from = d_inner;
+	  map_context_to = m_inner;
 	  if (tree m_type = TREE_TYPE (m_inner))
 	    if ((!key.ret
 		 || same_type_p (key.ret, fndecl_declared_return_type (m_inner)))
@@ -10653,9 +10664,10 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		      m_reqs = CI_DECLARATOR_REQS (m_reqs);
 		  }
 
-		if (cp_tree_equal (m_reqs, key.constraints))
-		  return match;
+		if (cp_tree_equal (key.constraints, m_reqs))
+		  found = match;
 	      }
+	  map_context_from = map_context_to = NULL_TREE;
 	  break;
 
 	case TYPE_DECL:
@@ -10667,16 +10679,17 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	      else if (mk == MK_enum
 		       && (TYPE_NAME (ENUM_UNDERLYING_TYPE (TREE_TYPE (m_inner)))
 			   == key.ret))
-		return match;
+		found = match;
 	    }
 	  break;
 
 	default:
-	  return match;
+	  found = match;
+	  break;
 	}
     }
 
-  return NULL_TREE;
+  return found;
 }
 
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only
@@ -11061,7 +11074,13 @@ trees_in::is_matching_decl (tree existing, tree decl)
       gcc_checking_assert (TREE_CODE (DECL_TEMPLATE_RESULT (existing))
 			   == TREE_CODE (inner));
     }
-  
+
+  gcc_checking_assert (!map_context_from);
+  /* This mapping requres the new decl on the lhs and the existing
+     entity on the rhs of the comparitors below.  */
+  map_context_from = inner;
+  map_context_to = STRIP_TEMPLATE (existing);
+
   if (TREE_CODE (inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
@@ -11070,7 +11089,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
       if (decl != inner && DECL_NAME (inner) == fun_identifier
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (inner)))
 	/* This has a recursive type that will compare different.  */;
-      else if (!same_type_p (e_ret, d_ret))
+      else if (!same_type_p (d_ret, e_ret))
 	goto mismatch;
 
       tree e_type = TREE_TYPE (existing);
@@ -11087,9 +11106,9 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	  if (!(e_args && d_args))
 	    goto mismatch;
 
-	  if (!same_type_p (TREE_VALUE (e_args), TREE_VALUE (d_args)))
+	  if (!same_type_p (TREE_VALUE (d_args), TREE_VALUE (e_args)))
 	    goto mismatch;
-	  
+
 	  // FIXME: Check default values
 	}
 
@@ -11122,15 +11141,16 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	    }
 	}
       else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
-	       && !comp_except_specs (e_spec, d_spec, ce_type))
+	       && !comp_except_specs (d_spec, e_spec, ce_type))
 	goto mismatch;
     }
   /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
      here. I suspect the entities that directly do that are things
      that shouldn't go to duplicate_decls (FIELD_DECLs etc).   */
-  else if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
+  else if (!cp_tree_equal (TREE_TYPE (decl), TREE_TYPE (existing)))
     {
     mismatch:
+      map_context_from = map_context_to = NULL_TREE;
       if (DECL_IS_UNDECLARED_BUILTIN (existing))
 	/* Just like duplicate_decls, presum the user knows what
 	   they're doing in overriding a builtin.   */
@@ -11146,6 +11166,8 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	  return false;
 	}
     }
+
+  map_context_from = map_context_to = NULL_TREE;
 
   if (DECL_IS_UNDECLARED_BUILTIN (existing)
       && !DECL_IS_UNDECLARED_BUILTIN (decl))
@@ -14737,8 +14759,8 @@ module_state::read_cluster (unsigned snum)
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
 
-  /* We care about typename structural equality.  */
-  comparing_typenames++;
+  /* We care about structural equality.  */
+  comparing_specializations++;
 
   /* First seed the imports.  */
   while (tree import = sec.tree_node ())
@@ -14913,7 +14935,8 @@ module_state::read_cluster (unsigned snum)
 #undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
-  comparing_typenames--;
+  comparing_specializations--;
+
   dump.outdent ();
   dump () && dump ("Read section:%u", snum);
 
