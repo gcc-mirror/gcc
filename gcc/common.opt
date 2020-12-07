@@ -842,6 +842,10 @@ Wvector-operation-performance
 Common Var(warn_vector_operation_performance) Warning
 Warn when a vector operation is compiled outside the SIMD.
 
+Wtsan
+Common Var(warn_tsan) Init(1) Warning
+Warn about unsupported features in ThreadSanitizer.
+
 Xassembler
 Driver Separate
 
