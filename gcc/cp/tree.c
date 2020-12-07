@@ -998,7 +998,7 @@ build_min_array_type (tree elt_type, tree index_type)
    build_cplus_array_type.  */
 
 static void
-set_array_type_canon (tree t, tree elt_type, tree index_type)
+set_array_type_canon (tree t, tree elt_type, tree index_type, bool dep)
 {
   /* Set the canonical type for this new node.  */
   if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
@@ -1009,30 +1009,33 @@ set_array_type_canon (tree t, tree elt_type, tree index_type)
     TYPE_CANONICAL (t)
       = build_cplus_array_type (TYPE_CANONICAL (elt_type),
 				index_type
-				? TYPE_CANONICAL (index_type) : index_type);
+				? TYPE_CANONICAL (index_type) : index_type,
+				dep);
   else
     TYPE_CANONICAL (t) = t;
 }
 
 /* Like build_array_type, but handle special C++ semantics: an array of a
    variant element type is a variant of the array of the main variant of
-   the element type.  */
+   the element type.  IS_DEPENDENT is -ve if we should determine the
+   dependency.  Otherwise its bool value indicates dependency.  */
 
 tree
-build_cplus_array_type (tree elt_type, tree index_type)
+build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 {
   tree t;
 
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
-  bool dependent = (uses_template_parms (elt_type)
-		    || (index_type && uses_template_parms (index_type)));
+  if (dependent < 0)
+    dependent = (uses_template_parms (elt_type)
+		 || (index_type && uses_template_parms (index_type)));
 
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
     /* Start with an array of the TYPE_MAIN_VARIANT.  */
     t = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
-				index_type);
+				index_type, dependent);
   else if (dependent)
     {
       /* Since type_hash_canon calls layout_type, we need to use our own
@@ -1062,13 +1065,20 @@ build_cplus_array_type (tree elt_type, tree index_type)
 	  *e = t;
 
 	  /* Set the canonical type for this new node.  */
-	  set_array_type_canon (t, elt_type, index_type);
+	  set_array_type_canon (t, elt_type, index_type, dependent);
+
+	  /* Mark it as dependent now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = true;
 	}
     }
   else
     {
       bool typeless_storage = is_byte_access_type (elt_type);
       t = build_array_type (elt_type, index_type, typeless_storage);
+
+      /* Mark as non-dependenty now, this will save time later.  */
+      TYPE_DEPENDENT_P_VALID (t) = true;
     }
 
   /* Now check whether we already have this array variant.  */
@@ -1083,7 +1093,10 @@ build_cplus_array_type (tree elt_type, tree index_type)
       if (!t)
 	{
 	  t = build_min_array_type (elt_type, index_type);
-	  set_array_type_canon (t, elt_type, index_type);
+	  /* Mark dependency now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = dependent;
+	  set_array_type_canon (t, elt_type, index_type, dependent);
 	  if (!dependent)
 	    {
 	      layout_type (t);
@@ -1319,7 +1332,10 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
-	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type));
+	  gcc_checking_assert (TYPE_DEPENDENT_P_VALID (type)
+			       || !dependent_type_p (type));
+	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
+				      TYPE_DEPENDENT_P (type));
 
 	  /* Keep the typedef name.  */
 	  if (TYPE_NAME (t) != TYPE_NAME (type))
@@ -1555,7 +1571,9 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     case ARRAY_TYPE:
       type = strip_typedefs (TREE_TYPE (t), remove_attributes, flags);
       t0  = strip_typedefs (TYPE_DOMAIN (t), remove_attributes, flags);
-      result = build_cplus_array_type (type, t0);
+      gcc_checking_assert (TYPE_DEPENDENT_P_VALID (t)
+			   || !dependent_type_p (t));
+      result = build_cplus_array_type (type, t0, TYPE_DEPENDENT_P (t));
       break;
     case FUNCTION_TYPE:
     case METHOD_TYPE:
