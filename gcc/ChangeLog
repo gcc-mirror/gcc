@@ -1,3 +1,28 @@
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98162
+	* doc/extend.texi: Remove -mcet.
+
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98161
+	* config/i386/i386-features.c (pseudo_reg_set): Check mode of
+	pseudo register push.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* tree-ssa-phiopt.c (two_value_replacement): Optimize even boolean lhs
+	cases as long as arg0 has wider precision and conditional_replacement
+	doesn't handle that case.
+	(tree_ssa_phiopt_worker): Don't call two_value_replacement during
+	early phiopt.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* match.pd (-(type)!A -> (type)A - 1): New optimization.
+
 2020-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    David Edelsohn  <dje.gcc@gmail.com>
 

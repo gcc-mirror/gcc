@@ -1,3 +1,29 @@
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr98161.c: New test.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* gcc.dg/tree-ssa/pr96232-2.c: New test.
+	* gcc.dg/tree-ssa/pr88676-2.c: Check phiopt2 dump rather than phiopt1.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* gcc.dg/tree-ssa/pr96232-1.c: New test.
+
+2020-12-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR testsuite/98156
+	* gfortran.dg/coarray/alloc_comp_1.f90: Upper cobound is
+	determined by num_images(), not this_image().
+
+2020-12-06  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/signbit-1.c: Reinstate lp64 condition.
+	* gcc.target/powerpc/signbit-2.c: Match 32-bit output too.
+
 2020-12-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/97093
