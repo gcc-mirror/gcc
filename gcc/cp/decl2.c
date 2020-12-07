@@ -1928,7 +1928,7 @@ static void
 clear_consteval_vfns (vec<tree> &consteval_vtables)
 {
   for (tree vtable : consteval_vtables)
-    for (constructor_elt &elt : *CONSTRUCTOR_ELTS (DECL_INITIAL (vtable)))
+    for (constructor_elt &elt : CONSTRUCTOR_ELTS (DECL_INITIAL (vtable)))
       {
 	tree fn = cp_get_fndecl_from_callee (elt.value, /*fold*/false);
 	if (fn && DECL_IMMEDIATE_FUNCTION_P (fn))

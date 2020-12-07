@@ -43,6 +43,7 @@ if test "$gcc_cv_have_tls" = yes ; then
     *-*-linux*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	;;
+
   esac
 fi
 
@@ -144,8 +145,14 @@ case "${target}" in
   *-*-gnu* | *-*-k*bsd*-gnu \
   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
   | *-*-solaris2* | *-*-sysv4* | *-*-hpux11* \
-  | *-*-darwin* | *-*-aix* | *-*-dragonfly*)
+  | *-*-aix* | *-*-dragonfly*)
 	# POSIX system.  The OS is supported.
+	;;
+
+  *-*-darwin*)
+	# The OS is supported, but we need dynamic lookup to support undefined
+	# weak symbols at link-time.
+	XLDFLAGS="${XLDFLAGS} -Wl,-undefined,dynamic_lookup"
 	;;
 
   *)	# Non-POSIX, or embedded system

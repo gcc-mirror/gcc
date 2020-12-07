@@ -378,7 +378,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   bb = split_edge_and_insert (*e, seq);
   *e = single_succ_edge (bb);
 
-  if (any_uncondjump_p (jump))
+  if (any_uncondjump_p (jump) && onlyjump_p (jump))
     {
       /* The condition is always true.  */
       delete_insn (jump);

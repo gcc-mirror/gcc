@@ -1,3 +1,388 @@
+2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr98161.c: New test.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* gcc.dg/tree-ssa/pr96232-2.c: New test.
+	* gcc.dg/tree-ssa/pr88676-2.c: Check phiopt2 dump rather than phiopt1.
+
+2020-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96232
+	* gcc.dg/tree-ssa/pr96232-1.c: New test.
+
+2020-12-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR testsuite/98156
+	* gfortran.dg/coarray/alloc_comp_1.f90: Upper cobound is
+	determined by num_images(), not this_image().
+
+2020-12-06  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/signbit-1.c: Reinstate lp64 condition.
+	* gcc.target/powerpc/signbit-2.c: Match 32-bit output too.
+
+2020-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97093
+	* g++.dg/cpp2a/concepts-requires22.C: New test.
+
+2020-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97093
+	* g++.dg/concepts/pr94252.C: Verify we no longer issue a
+	spurious unsatisfaction note when diagnosing ill-formed
+	satisfaction.
+	* g++.dg/cpp2a/concepts-requires18.C: No longer expect a
+	spurious unsatisfaction diagnostic when evaluating the
+	nested-requirement subst<void&> of a requires-expression that
+	appears outside of a template.
+	* g++.dg/cpp2a/concepts-requires21.C: Verify we no longer issue
+	a spurious unsatisfaction note when evaluating a
+	nested-requirement of a requires-expression that appears outside
+	of a template.
+	* g++.dg/cpp2a/concepts-nonbool3.C: New test.
+	* g++.dg/cpp2a/concepts-pr97093.C: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	PR target/95294
+	* gcc.target/vax/cmpelim-eq-adddf.c: New test.
+	* gcc.target/vax/cmpelim-eq-addhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-addqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-addsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-addsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-andhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-andqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-andsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-ashlsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-ashrsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-divdf.c: New test.
+	* gcc.target/vax/cmpelim-eq-divhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-divqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-divsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-divsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-extendhisi.c: New test.
+	* gcc.target/vax/cmpelim-eq-extendqisi.c: New test.
+	* gcc.target/vax/cmpelim-eq-extvsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-extzvsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixdfhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixdfqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixdfsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixsfhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixsfqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-fixsfsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-floatsisf.c: New test.
+	* gcc.target/vax/cmpelim-eq-insvsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-iorhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-iorqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-iorsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-mova.c: New test.
+	* gcc.target/vax/cmpelim-eq-movdf.c: New test.
+	* gcc.target/vax/cmpelim-eq-movhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-movqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-movsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-movsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-muldf.c: New test.
+	* gcc.target/vax/cmpelim-eq-mulhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-mulqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-mulsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-mulsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-nothi.c: New test.
+	* gcc.target/vax/cmpelim-eq-notqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-notsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-rotlsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-rotrsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-subdf.c: New test.
+	* gcc.target/vax/cmpelim-eq-subhi.c: New test.
+	* gcc.target/vax/cmpelim-eq-subqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-subsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-subsi.c: New test.
+	* gcc.target/vax/cmpelim-eq-truncdfsf.c: New test.
+	* gcc.target/vax/cmpelim-eq-trunchiqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-truncsihi.c: New test.
+	* gcc.target/vax/cmpelim-eq-truncsiqi.c: New test.
+	* gcc.target/vax/cmpelim-eq-zextendhisi.c: New test.
+	* gcc.target/vax/cmpelim-eq-zextendqihi.c: New test.
+	* gcc.target/vax/cmpelim-eq-zextendqisi.c: New test.
+	* gcc.target/vax/cmpelim-le-adddf.c: New test.
+	* gcc.target/vax/cmpelim-le-addhi.c: New test.
+	* gcc.target/vax/cmpelim-le-addqi.c: New test.
+	* gcc.target/vax/cmpelim-le-addsf.c: New test.
+	* gcc.target/vax/cmpelim-le-addsi.c: New test.
+	* gcc.target/vax/cmpelim-le-andhi.c: New test.
+	* gcc.target/vax/cmpelim-le-andqi.c: New test.
+	* gcc.target/vax/cmpelim-le-andsi.c: New test.
+	* gcc.target/vax/cmpelim-le-ashlsi.c: New test.
+	* gcc.target/vax/cmpelim-le-ashrsi.c: New test.
+	* gcc.target/vax/cmpelim-le-divdf.c: New test.
+	* gcc.target/vax/cmpelim-le-divhi.c: New test.
+	* gcc.target/vax/cmpelim-le-divqi.c: New test.
+	* gcc.target/vax/cmpelim-le-divsf.c: New test.
+	* gcc.target/vax/cmpelim-le-divsi.c: New test.
+	* gcc.target/vax/cmpelim-le-extendhisi.c: New test.
+	* gcc.target/vax/cmpelim-le-extendqisi.c: New test.
+	* gcc.target/vax/cmpelim-le-extvsi.c: New test.
+	* gcc.target/vax/cmpelim-le-extzvsi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixdfhi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixdfqi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixdfsi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixsfhi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixsfqi.c: New test.
+	* gcc.target/vax/cmpelim-le-fixsfsi.c: New test.
+	* gcc.target/vax/cmpelim-le-floatsisf.c: New test.
+	* gcc.target/vax/cmpelim-le-insvsi.c: New test.
+	* gcc.target/vax/cmpelim-le-iorhi.c: New test.
+	* gcc.target/vax/cmpelim-le-iorqi.c: New test.
+	* gcc.target/vax/cmpelim-le-iorsi.c: New test.
+	* gcc.target/vax/cmpelim-le-movdf.c: New test.
+	* gcc.target/vax/cmpelim-le-movhi.c: New test.
+	* gcc.target/vax/cmpelim-le-movqi.c: New test.
+	* gcc.target/vax/cmpelim-le-movsf.c: New test.
+	* gcc.target/vax/cmpelim-le-movsi.c: New test.
+	* gcc.target/vax/cmpelim-le-muldf.c: New test.
+	* gcc.target/vax/cmpelim-le-mulhi.c: New test.
+	* gcc.target/vax/cmpelim-le-mulqi.c: New test.
+	* gcc.target/vax/cmpelim-le-mulsf.c: New test.
+	* gcc.target/vax/cmpelim-le-mulsi.c: New test.
+	* gcc.target/vax/cmpelim-le-nothi.c: New test.
+	* gcc.target/vax/cmpelim-le-notqi.c: New test.
+	* gcc.target/vax/cmpelim-le-notsi.c: New test.
+	* gcc.target/vax/cmpelim-le-rotlsi.c: New test.
+	* gcc.target/vax/cmpelim-le-rotrsi.c: New test.
+	* gcc.target/vax/cmpelim-le-subdf.c: New test.
+	* gcc.target/vax/cmpelim-le-subhi.c: New test.
+	* gcc.target/vax/cmpelim-le-subqi.c: New test.
+	* gcc.target/vax/cmpelim-le-subsf.c: New test.
+	* gcc.target/vax/cmpelim-le-subsi.c: New test.
+	* gcc.target/vax/cmpelim-le-truncdfsf.c: New test.
+	* gcc.target/vax/cmpelim-le-xorhi.c: New test.
+	* gcc.target/vax/cmpelim-le-xorqi.c: New test.
+	* gcc.target/vax/cmpelim-le-xorsi.c: New test.
+	* gcc.target/vax/cmpelim-leu-subhi.c: New test.
+	* gcc.target/vax/cmpelim-leu-subqi.c: New test.
+	* gcc.target/vax/cmpelim-leu-subsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-adddf.c: New test.
+	* gcc.target/vax/cmpelim-lt-addhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-addqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-addsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-addsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-andhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-andqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-andsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-ashlsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-ashrsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-divdf.c: New test.
+	* gcc.target/vax/cmpelim-lt-divhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-divqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-divsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-divsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-extendhisi.c: New test.
+	* gcc.target/vax/cmpelim-lt-extendqisi.c: New test.
+	* gcc.target/vax/cmpelim-lt-extvsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-extzvsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixdfhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixdfqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixdfsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixsfhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixsfqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-fixsfsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-floatsisf.c: New test.
+	* gcc.target/vax/cmpelim-lt-insvsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-iorhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-iorqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-iorsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-movdf.c: New test.
+	* gcc.target/vax/cmpelim-lt-movhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-movqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-movsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-movsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-muldf.c: New test.
+	* gcc.target/vax/cmpelim-lt-mulhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-mulqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-mulsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-mulsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-nothi.c: New test.
+	* gcc.target/vax/cmpelim-lt-notqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-notsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-rotlsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-rotrsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-subdf.c: New test.
+	* gcc.target/vax/cmpelim-lt-subhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-subqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-subsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-subsi.c: New test.
+	* gcc.target/vax/cmpelim-lt-truncdfsf.c: New test.
+	* gcc.target/vax/cmpelim-lt-xorhi.c: New test.
+	* gcc.target/vax/cmpelim-lt-xorqi.c: New test.
+	* gcc.target/vax/cmpelim-lt-xorsi.c: New test.
+	* gcc.target/vax/cmpelim-ltu-subhi.c: New test.
+	* gcc.target/vax/cmpelim-ltu-subqi.c: New test.
+	* gcc.target/vax/cmpelim-ltu-subsi.c: New test.
+	* gcc.target/vax/cmpelim-xx-addsi.c: New test.
+	* gcc.target/vax/cmpelim-xx-insvsi.c: New test.
+	* gcc.target/vax/cmpelim-xxu-subsi.c: New test.
+	* gcc.target/vax/peephole2-eq-andhi.c: New test.
+	* gcc.target/vax/peephole2-eq-andqi.c: New test.
+	* gcc.target/vax/peephole2-eq-andsi.c: New test.
+	* gcc.target/vax/peephole2-eq-cmpvsi.c: New test.
+	* gcc.target/vax/peephole2-eq-cmpzvsi.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzhi-0.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzhi-1.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzqi-0.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzqi-1.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzsi-0.c: New test.
+	* gcc.target/vax/peephole2-eq-ctzsi-1.c: New test.
+	* gcc.target/vax/peephole2-eq-ffshi.c: New test.
+	* gcc.target/vax/peephole2-eq-ffsqi.c: New test.
+	* gcc.target/vax/peephole2-eq-ffssi.c: New test.
+	* gcc.target/vax/peephole2-le-andhi.c: New test.
+	* gcc.target/vax/peephole2-le-andqi.c: New test.
+	* gcc.target/vax/peephole2-le-andsi.c: New test.
+	* gcc.target/vax/peephole2-le-cmpvsi.c: New test.
+	* gcc.target/vax/peephole2-le-cmpzvsi.c: New test.
+	* gcc.target/vax/peephole2-leu-cmpvsi.c: New test.
+	* gcc.target/vax/peephole2-leu-cmpzvsi.c: New test.
+	* gcc.target/vax/peephole2-lt-andhi.c: New test.
+	* gcc.target/vax/peephole2-lt-andqi.c: New test.
+	* gcc.target/vax/peephole2-lt-andsi.c: New test.
+	* gcc.target/vax/peephole2-lt-cmpvsi.c: New test.
+	* gcc.target/vax/peephole2-lt-cmpzvsi.c: New test.
+	* gcc.target/vax/peephole2-ltu-cmpvsi.c: New test.
+	* gcc.target/vax/peephole2-ltu-cmpzvsi.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/movmem.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/cpymem.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/ctzhi.c: New test.
+	* gcc.target/vax/ctzqi.c: New test.
+	* gcc.target/vax/ffshi.c: New test.
+	* gcc.target/vax/ffsqi.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/ctzsi.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/bbcci.c: New test.
+	* gcc.target/vax/bbssi.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/ffssi.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.dg/loop-8.c: Exclude for `vax-*-*'.
+	* gcc.target/vax/compare-add-zero.c: New test.
+	* gcc.target/vax/compare-mov-zero.c: New test.
+
+2020-12-05  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/vax.exp: Use `gcc-dg-runtest' rather than
+	`dg-runtest'.
+	* gcc.target/vax/pr56875.c (dg-options): Make empty.
+	(a): Rewrite for calculations to make effect.  Reformat.
+
+2020-12-05  Matt Thomas  <matt@3am-software.com>
+	    Maciej W. Rozycki  <macro@linux-mips.org>
+
+	PR target/58901
+	* gcc.c-torture/compile/pr58901-0.c: New test.
+	* gcc.c-torture/compile/pr58901-1.c: New test.
+
+2020-12-05  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/97421
+	* gcc.c-torture/execute/pr97421-1.c: New test.
+	* gcc.c-torture/execute/pr97421-2.c: New test.
+	* gcc.c-torture/execute/pr97421-3.c: New test.
+
+2020-12-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98016
+	* gfortran.dg/pr98016.f90: New test.
+
+2020-12-05  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Sharavan Kumar  <Shravan.Kumar@amd.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.target/i386/mv29.C: New file.
+
+2020-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98122
+	* g++.dg/cpp1y/constexpr-98122.C: New test.
+	* g++.dg/cpp2a/constexpr-98122.C: New test.
+
+2020-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93083
+	* g++.dg/cpp2a/nontype-class40.C: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98130
+	* g++.dg/opt/pr98130.C: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	* gcc.target/i386/pr96226.c: New test.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* g++.dg/cpp2a/bit-cast6.C: New test.
+
+2020-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98116
+	* g++.dg/template/pr98116.C: Enable robust checking.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* gcc.target/i386/pr98100.c: New test.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/98123
+	* gcc.dg/tree-ssa/if-to-switch-4.c: Add param to make the test
+	stable on all architectures.
+	* gcc.dg/tree-ssa/if-to-switch-6.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-8.c: Likewise.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr98099.c: Compile only for dfp targets.
+
+2020-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt91.ads, gnat.dg/opt91.adb: New test.
+	* gnat.dg/opt91_pkg.ads, gnat.dg/opt91_pkg.adb: New helper.
+
+2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	* g++.dg/cpp2a/srcloc1.C (quux): Use __PRETTY_FUNCTION__ instead of
+	function.
+	* g++.dg/cpp2a/srcloc2.C (quux): Likewise.
+	* g++.dg/cpp2a/srcloc15.C (S::S): Likewise.
+	(bar): Likewise.  Adjust expected column.
+	* g++.dg/cpp2a/srcloc17.C (S::S): Likewise.
+	(bar): Likewise.  Adjust expected column.
+
 2020-12-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/concepts-nodiscard1.C: XFAIL.

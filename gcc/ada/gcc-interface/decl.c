@@ -1764,6 +1764,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* Use the arbitrary scale factor description.  Note that we support
 	   a Small_Value whose magnitude is larger than 64-bit even on 32-bit
 	   platforms, so we unconditionally use a (dummy) 128-bit type.  */
+	else
 	  {
 	    const Uint gnat_num = Norm_Num (gnat_small_value);
 	    const Uint gnat_den = Norm_Den (gnat_small_value);
@@ -10352,7 +10353,7 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
 {
   const Entity_Kind kind = Ekind (gnat_entity);
   const bool has_suffix = (suffix != NULL);
-  String_Template temp = {1, has_suffix ? strlen (suffix) : 0};
+  String_Template temp = {1, has_suffix ? (int) strlen (suffix) : 0};
   String_Pointer sp = {suffix, &temp};
 
   Get_External_Name (gnat_entity, has_suffix, sp);

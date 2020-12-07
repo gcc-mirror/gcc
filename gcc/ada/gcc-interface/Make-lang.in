@@ -42,7 +42,7 @@ MV = mv
 MKDIR = mkdir -p
 RM = rm -f
 RMDIR = rm -rf
-
+
 
 # Extra flags to pass to recursive makes.
 COMMON_ADAFLAGS= -gnatpg
@@ -814,7 +814,6 @@ doc/gnat_rm.pdf: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 
-
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).
 
@@ -908,7 +907,7 @@ ada.maintainer-clean:
 	-$(RM) ada/nmake.ads
 	-$(RM) ada/treeprs.ads
 	-$(RM) ada/snames.ads ada/snames.adb ada/snames.h
-
+
 # Stage hooks:
 # The main makefile has already created stage?/ada
 
@@ -1005,7 +1004,7 @@ $(check_acats_targets): check-acats%:
 	touch $$GCC_RUNTEST_PARALLELIZE_DIR/finished
 
 .PHONY: check-acats $(check_acats_targets)
-
+
 # Compiling object files from source files.
 
 # Ada language specific files.

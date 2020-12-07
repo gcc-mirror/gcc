@@ -1681,6 +1681,8 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p)
 	    }
 	}
       gcall *new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
+      if (gimple_has_location (stmt))
+	gimple_set_location (new_stmt, gimple_location (stmt));
       gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
       gimple_call_copy_flags (new_stmt, stmt);
       if (tree lhs = gimple_call_lhs (stmt))

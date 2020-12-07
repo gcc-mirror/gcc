@@ -3859,6 +3859,14 @@ When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
 
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will also save the function from linker garbage collection.  To support
+this behavior, functions that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
+option), will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
+
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} function attribute
 This attribute affects the linkage of the declaration to which it is attached.
@@ -7419,6 +7427,14 @@ referenced.
 When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
 class itself is instantiated.
+
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will also save the variable from linker garbage collection.  To support
+this behavior, variables that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-fdata-sections} option),
+will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
 
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
@@ -22882,6 +22898,12 @@ AMD Family 17h Zen version 1.
 
 @item znver2
 AMD Family 17h Zen version 2.
+
+@item amdfam19h
+AMD Family 19h CPU.
+
+@item znver3
+AMD Family 19h Zen version 3.
 @end table
 
 Here is an example:
@@ -24204,7 +24226,7 @@ void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
 @end smallexample
 
-The following built-in functions are available when @option{-mcet} or
+The following built-in functions are available when
 @option{-mshstk} option is used.  They support shadow stack
 machine instructions from Intel Control-flow Enforcement Technology (CET).
 Each built-in function generates the  machine instruction that is part

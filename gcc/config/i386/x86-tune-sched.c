@@ -66,6 +66,7 @@ ix86_issue_rate (void)
     case PROCESSOR_BDVER4:
     case PROCESSOR_ZNVER1:
     case PROCESSOR_ZNVER2:
+    case PROCESSOR_ZNVER3:
     case PROCESSOR_CORE2:
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
@@ -396,6 +397,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
     case PROCESSOR_ZNVER1:
     case PROCESSOR_ZNVER2:
+    case PROCESSOR_ZNVER3:
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))

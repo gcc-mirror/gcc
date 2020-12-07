@@ -98,7 +98,42 @@ struct subst_info
   tree in_decl;
 };
 
-static tree satisfy_constraint (tree, tree, subst_info);
+/* Provides additional context for satisfaction.
+
+   The flag noisy() controls whether to diagnose ill-formed satisfaction,
+   such as the satisfaction value of an atom being non-bool or non-constant.
+
+   The flag diagnose_unsatisfaction_p() controls whether to explain why
+   a constraint is not satisfied.
+
+   The entrypoints to satisfaction for which we set noisy+unsat are
+   diagnose_constraints and diagnose_nested_requirement.  The entrypoints for
+   which we set noisy-unsat are the replays inside constraint_satisfaction_value,
+   evaluate_concept_check and tsubst_nested_requirement.  In other entrypoints,
+   e.g. constraints_satisfied_p, we enter satisfaction quietly (both flags
+   cleared).  */
+
+struct sat_info : subst_info
+{
+  sat_info (tsubst_flags_t cmp, tree in, bool diag_unsat = false)
+    : subst_info (cmp, in), diagnose_unsatisfaction (diag_unsat)
+  {
+    if (diagnose_unsatisfaction_p ())
+      gcc_checking_assert (noisy ());
+  }
+
+  /* True if we should diagnose the cause of satisfaction failure.
+     Implies noisy().  */
+  bool
+  diagnose_unsatisfaction_p () const
+  {
+    return diagnose_unsatisfaction;
+  }
+
+  bool diagnose_unsatisfaction;
+};
+
+static tree satisfy_constraint (tree, tree, sat_info);
 
 /* True if T is known to be some type other than bool. Note that this
    is false for dependent types and errors.  */
@@ -584,7 +619,8 @@ build_parameter_mapping (tree expr, tree args, tree decl)
   return map;
 }
 
-/* True if the parameter mappings of two atomic constraints are equivalent.  */
+/* True if the parameter mappings of two atomic constraints formed
+   from the same expression are equivalent.  */
 
 static bool
 parameter_mapping_equivalent_p (tree t1, tree t2)
@@ -593,6 +629,7 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
   tree map2 = ATOMIC_CONSTR_MAP (t2);
   while (map1 && map2)
     {
+      gcc_checking_assert (TREE_VALUE (map1) == TREE_VALUE (map2));
       tree arg1 = TREE_PURPOSE (map1);
       tree arg2 = TREE_PURPOSE (map2);
       if (!template_args_equal (arg1, arg2))
@@ -600,6 +637,7 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
       map1 = TREE_CHAIN (map1);
       map2 = TREE_CHAIN (map2);
     }
+  gcc_checking_assert (!map1 && !map2);
   return true;
 }
 
@@ -2057,13 +2095,16 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
-  /* Ensure that we're in an evaluation context prior to satisfaction.  */
-  tree norm = TREE_TYPE (t);
-  tree result = satisfy_constraint (norm, args, info);
-  if (result == error_mark_node && info.quiet ())
+  /* Perform satisfaction quietly with the regular normal form.  */
+  sat_info quiet (tf_none, info.in_decl);
+  tree norm = TREE_VALUE (TREE_TYPE (t));
+  tree diag_norm = TREE_PURPOSE (TREE_TYPE (t));
+  tree result = satisfy_constraint (norm, args, quiet);
+  if (result == error_mark_node)
     {
-      subst_info noisy (tf_warning_or_error, info.in_decl);
-      satisfy_constraint (norm, args, noisy);
+      /* Replay the error using the diagnostic normal form.  */
+      sat_info noisy (tf_warning_or_error, info.in_decl);
+      satisfy_constraint (diag_norm, args, noisy);
     }
   if (result != boolean_true_node)
     return error_mark_node;
@@ -2499,12 +2540,12 @@ tsubst_constraint (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return expr;
 }
 
-static tree satisfy_constraint_r (tree, tree, subst_info info);
+static tree satisfy_constraint_r (tree, tree, sat_info info);
 
 /* Compute the satisfaction of a conjunction.  */
 
 static tree
-satisfy_conjunction (tree t, tree args, subst_info info)
+satisfy_conjunction (tree t, tree args, sat_info info)
 {
   tree lhs = satisfy_constraint_r (TREE_OPERAND (t, 0), args, info);
   if (lhs == error_mark_node || lhs == boolean_false_node)
@@ -2558,20 +2599,25 @@ collect_operands_of_disjunction (tree t, auto_vec<tree_pair> *operands)
 /* Compute the satisfaction of a disjunction.  */
 
 static tree
-satisfy_disjunction (tree t, tree args, subst_info info)
+satisfy_disjunction (tree t, tree args, sat_info info)
 {
-  /* Evaluate the operands quietly.  */
-  subst_info quiet (tf_none, NULL_TREE);
+  /* Evaluate each operand with unsatisfaction diagnostics disabled.  */
+  sat_info sub = info;
+  sub.diagnose_unsatisfaction = false;
 
-  /* Register the constraint for diagnostics, if needed.  */
-  diagnosing_failed_constraint failure (t, args, info.noisy ());
+  tree lhs = satisfy_constraint_r (TREE_OPERAND (t, 0), args, sub);
+  if (lhs == boolean_true_node || lhs == error_mark_node)
+    return lhs;
 
-  tree lhs = satisfy_constraint_r (TREE_OPERAND (t, 0), args, quiet);
-  if (lhs == boolean_true_node)
-    return boolean_true_node;
-  tree rhs = satisfy_constraint_r (TREE_OPERAND (t, 1), args, quiet);
-  if (rhs != boolean_true_node && info.noisy ())
+  tree rhs = satisfy_constraint_r (TREE_OPERAND (t, 1), args, sub);
+  if (rhs == boolean_true_node || rhs == error_mark_node)
+    return rhs;
+
+  /* Both branches evaluated to false.  Explain the satisfaction failure in
+     each branch.  */
+  if (info.diagnose_unsatisfaction_p ())
     {
+      diagnosing_failed_constraint failure (t, args, info.noisy ());
       cp_expr disj_expr = CONSTR_EXPR (t);
       inform (disj_expr.get_location (),
 	      "no operand of the disjunction is satisfied");
@@ -2592,7 +2638,8 @@ satisfy_disjunction (tree t, tree args, subst_info info)
 	    }
 	}
     }
-  return rhs;
+
+  return boolean_false_node;
 }
 
 /* Ensures that T is a truth value and not (accidentally, as sometimes
@@ -2673,7 +2720,7 @@ static void diagnose_atomic_constraint (tree, tree, tree, subst_info);
 /* Compute the satisfaction of an atomic constraint.  */
 
 static tree
-satisfy_atom (tree t, tree args, subst_info info)
+satisfy_atom (tree t, tree args, sat_info info)
 {
   satisfaction_cache cache (t, args, info.complain);
   if (tree r = cache.get ())
@@ -2691,9 +2738,9 @@ satisfy_atom (tree t, tree args, subst_info info)
   tree map = tsubst_parameter_mapping (ATOMIC_CONSTR_MAP (t), args, quiet);
   if (map == error_mark_node)
     {
-      /* If instantiation of the parameter mapping fails, the program
-         is ill-formed.  */
-      if (info.noisy())
+      /* If instantiation of the parameter mapping fails, the constraint is
+	 not satisfied.  Replay the substitution.  */
+      if (info.diagnose_unsatisfaction_p ())
 	tsubst_parameter_mapping (ATOMIC_CONSTR_MAP (t), args, info);
       return cache.save (boolean_false_node);
     }
@@ -2720,7 +2767,7 @@ satisfy_atom (tree t, tree args, subst_info info)
     {
       /* If substitution results in an invalid type or expression, the constraint
 	 is not satisfied. Replay the substitution.  */
-      if (info.noisy ())
+      if (info.diagnose_unsatisfaction_p ())
 	tsubst_expr (expr, args, info.complain, info.in_decl, false);
       return cache.save (inst_cache.save (boolean_false_node));
     }
@@ -2748,7 +2795,7 @@ satisfy_atom (tree t, tree args, subst_info info)
 	result = error_mark_node;
     }
   result = satisfaction_value (result);
-  if (result == boolean_false_node && info.noisy ())
+  if (result == boolean_false_node && info.diagnose_unsatisfaction_p ())
     diagnose_atomic_constraint (t, map, result, info);
 
   return cache.save (inst_cache.save (result));
@@ -2766,7 +2813,7 @@ satisfy_atom (tree t, tree args, subst_info info)
    constraint only matters for subsumption.  */
 
 static tree
-satisfy_constraint_r (tree t, tree args, subst_info info)
+satisfy_constraint_r (tree t, tree args, sat_info info)
 {
   if (t == error_mark_node)
     return error_mark_node;
@@ -2787,7 +2834,7 @@ satisfy_constraint_r (tree t, tree args, subst_info info)
 /* Check that the normalized constraint T is satisfied for ARGS.  */
 
 static tree
-satisfy_constraint (tree t, tree args, subst_info info)
+satisfy_constraint (tree t, tree args, sat_info info)
 {
   auto_timevar time (TV_CONSTRAINT_SAT);
 
@@ -2805,7 +2852,7 @@ satisfy_constraint (tree t, tree args, subst_info info)
    value (either true, false, or error).  */
 
 static tree
-satisfy_associated_constraints (tree t, tree args, subst_info info)
+satisfy_associated_constraints (tree t, tree args, sat_info info)
 {
   /* If there are no constraints then this is trivially satisfied.  */
   if (!t)
@@ -2823,7 +2870,7 @@ satisfy_associated_constraints (tree t, tree args, subst_info info)
    satisfaction value. */
 
 static tree
-satisfy_constraint_expression (tree t, tree args, subst_info info)
+satisfy_constraint_expression (tree t, tree args, sat_info info)
 {
   if (t == error_mark_node)
     return error_mark_node;
@@ -2852,12 +2899,12 @@ satisfy_constraint_expression (tree t, tree args, subst_info info)
 tree
 satisfy_constraint_expression (tree expr)
 {
-  subst_info info (tf_none, NULL_TREE);
+  sat_info info (tf_none, NULL_TREE);
   return satisfy_constraint_expression (expr, NULL_TREE, info);
 }
 
 static tree
-satisfy_declaration_constraints (tree t, subst_info info)
+satisfy_declaration_constraints (tree t, sat_info info)
 {
   gcc_assert (DECL_P (t));
   const tree saved_t = t;
@@ -2917,7 +2964,7 @@ satisfy_declaration_constraints (tree t, subst_info info)
 }
 
 static tree
-satisfy_declaration_constraints (tree t, tree args, subst_info info)
+satisfy_declaration_constraints (tree t, tree args, sat_info info)
 {
   /* Update the declaration for diagnostics.  */
   info.in_decl = t;
@@ -2942,9 +2989,8 @@ satisfy_declaration_constraints (tree t, tree args, subst_info info)
 }
 
 static tree
-constraint_satisfaction_value (tree t, tsubst_flags_t complain)
+constraint_satisfaction_value (tree t, sat_info info)
 {
-  subst_info info (complain, NULL_TREE);
   tree r;
   if (DECL_P (t))
     r = satisfy_declaration_constraints (t, info);
@@ -2952,26 +2998,31 @@ constraint_satisfaction_value (tree t, tsubst_flags_t complain)
     r = satisfy_constraint_expression (t, NULL_TREE, info);
   if (r == error_mark_node && info.quiet ()
       && !(DECL_P (t) && TREE_NO_WARNING (t)))
-      {
-	constraint_satisfaction_value (t, tf_warning_or_error);
-	if (DECL_P (t))
-	  /* Avoid giving these errors again.  */
-	  TREE_NO_WARNING (t) = true;
-      }
+    {
+      /* Replay the error with re-normalized requirements.  */
+      sat_info noisy (tf_warning_or_error, info.in_decl);
+      constraint_satisfaction_value (t, noisy);
+      if (DECL_P (t))
+	/* Avoid giving these errors again.  */
+	TREE_NO_WARNING (t) = true;
+    }
   return r;
 }
 
 static tree
-constraint_satisfaction_value (tree t, tree args, tsubst_flags_t complain)
+constraint_satisfaction_value (tree t, tree args, sat_info info)
 {
-  subst_info info (complain, NULL_TREE);
   tree r;
   if (DECL_P (t))
     r = satisfy_declaration_constraints (t, args, info);
   else
     r = satisfy_constraint_expression (t, args, info);
   if (r == error_mark_node && info.quiet ())
-    constraint_satisfaction_value (t, args, tf_warning_or_error);
+    {
+      /* Replay the error with re-normalized requirements.  */
+      sat_info noisy (tf_warning_or_error, info.in_decl);
+      constraint_satisfaction_value (t, args, noisy);
+    }
   return r;
 }
 
@@ -2984,7 +3035,8 @@ constraints_satisfied_p (tree t)
   if (!flag_concepts)
     return true;
 
-  return constraint_satisfaction_value (t, tf_none) == boolean_true_node;
+  sat_info quiet (tf_none, NULL_TREE);
+  return constraint_satisfaction_value (t, quiet) == boolean_true_node;
 }
 
 /* True iff the result of satisfying T with ARGS is BOOLEAN_TRUE_NODE
@@ -2996,7 +3048,8 @@ constraints_satisfied_p (tree t, tree args)
   if (!flag_concepts)
     return true;
 
-  return constraint_satisfaction_value (t, args, tf_none) == boolean_true_node;
+  sat_info quiet (tf_none, NULL_TREE);
+  return constraint_satisfaction_value (t, args, quiet) == boolean_true_node;
 }
 
 /* Evaluate a concept check of the form C<ARGS>. This is only used for the
@@ -3011,14 +3064,14 @@ evaluate_concept_check (tree check, tsubst_flags_t complain)
   gcc_assert (concept_check_p (check));
 
   /* Check for satisfaction without diagnostics.  */
-  subst_info quiet (tf_none, NULL_TREE);
+  sat_info quiet (tf_none, NULL_TREE);
   tree result = satisfy_constraint_expression (check, NULL_TREE, quiet);
   if (result == error_mark_node && (complain & tf_error))
-  {
-    /* Replay the error with re-normalized requirements.  */
-    subst_info noisy (tf_warning_or_error, NULL_TREE);
-    satisfy_constraint_expression (check, NULL_TREE, noisy);
-  }
+    {
+      /* Replay the error with re-normalized requirements.  */
+      sat_info noisy (tf_warning_or_error, NULL_TREE);
+      satisfy_constraint_expression (check, NULL_TREE, noisy);
+    }
   return result;
 }
 
@@ -3089,10 +3142,15 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  tree norm = normalize_constraint_expression (expr, false);
+  /* We need to normalize the constraints now, at parse time, while
+     we have the necessary template context.  We normalize twice,
+     once without diagnostic information and once with, which we'll
+     later use for quiet and noisy satisfaction respectively.  */
+  tree norm = normalize_constraint_expression (expr, /*diag=*/false);
+  tree diag_norm = normalize_constraint_expression (expr, /*diag=*/true);
 
-  /* Build the constraint, saving its normalization as its type.  */
-  tree r = build1 (NESTED_REQ, norm, expr);
+  /* Build the constraint, saving its two normalizations as its type.  */
+  tree r = build1 (NESTED_REQ, build_tree_list (diag_norm, norm), expr);
   SET_EXPR_LOCATION (r, loc);
   return r;
 }
@@ -3493,10 +3551,11 @@ diagnose_type_requirement (tree req, tree args, tree in_decl)
 static void
 diagnose_nested_requirement (tree req, tree args)
 {
-  /* Quietly check for satisfaction first. We can elaborate details
-     later if needed.  */
-  tree norm = TREE_TYPE (req);
-  subst_info info (tf_none, NULL_TREE);
+  /* Quietly check for satisfaction first using the regular normal form.
+     We can elaborate details later if needed.  */
+  tree norm = TREE_VALUE (TREE_TYPE (req));
+  tree diag_norm = TREE_PURPOSE (TREE_TYPE (req));
+  sat_info info (tf_none, NULL_TREE);
   tree result = satisfy_constraint (norm, args, info);
   if (result == boolean_true_node)
     return;
@@ -3505,10 +3564,10 @@ diagnose_nested_requirement (tree req, tree args)
   location_t loc = cp_expr_location (expr);
   if (diagnosing_failed_constraint::replay_errors_p ())
     {
-      /* Replay the substitution error.  */
+      /* Replay the substitution error using the diagnostic normal form.  */
       inform (loc, "nested requirement %qE is not satisfied, because", expr);
-      subst_info noisy (tf_warning_or_error, NULL_TREE);
-      satisfy_constraint_expression (expr, args, noisy);
+      sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
+      satisfy_constraint (diag_norm, args, noisy);
     }
   else
     inform (loc, "nested requirement %qE is not satisfied", expr);
@@ -3651,11 +3710,12 @@ diagnose_constraints (location_t loc, tree t, tree args)
   if (concepts_diagnostics_max_depth == 0)
     return;
 
-  /* Replay satisfaction, but diagnose errors.  */
+  /* Replay satisfaction, but diagnose unsatisfaction.  */
+  sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
   if (!args)
-    constraint_satisfaction_value (t, tf_warning_or_error);
+    constraint_satisfaction_value (t, noisy);
   else
-    constraint_satisfaction_value (t, args, tf_warning_or_error);
+    constraint_satisfaction_value (t, args, noisy);
 
   static bool suggested_p;
   if (concepts_diagnostics_max_depth_exceeded_p
