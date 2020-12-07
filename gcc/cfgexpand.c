@@ -5956,14 +5956,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      else if (gimple_debug_begin_stmt_p (stmt))
 		val = GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT ();
 	      else if (gimple_debug_inline_entry_p (stmt))
-		{
-		  tree block = gimple_block (stmt);
-
-		  if (block)
-		    val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
-		  else
-		    goto delink_debug_stmt;
-		}
+		val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
 	      else
 		gcc_unreachable ();
 
