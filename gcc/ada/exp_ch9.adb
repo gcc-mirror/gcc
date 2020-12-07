@@ -120,7 +120,7 @@ package body Exp_Ch9 is
    function Build_Barrier_Function
      (N   : Node_Id;
       Ent : Entity_Id;
-      Pid : Node_Id) return Node_Id;
+      Pid : Entity_Id) return Node_Id;
    --  Build the function body returning the value of the barrier expression
    --  for the specified entry body.
 
@@ -1052,7 +1052,7 @@ package body Exp_Ch9 is
    function Build_Barrier_Function
      (N   : Node_Id;
       Ent : Entity_Id;
-      Pid : Node_Id) return Node_Id
+      Pid : Entity_Id) return Node_Id
    is
       Ent_Formals : constant Node_Id    := Entry_Body_Formal_Part (N);
       Cond        : constant Node_Id    := Condition (Ent_Formals);
@@ -6322,8 +6322,8 @@ package body Exp_Ch9 is
                end if;
 
             when N_Short_Circuit
-              | N_If_Expression
-              | N_Case_Expression
+               | N_If_Expression
+               | N_Case_Expression
             =>
                return OK;
 
