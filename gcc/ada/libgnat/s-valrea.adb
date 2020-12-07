@@ -173,7 +173,9 @@ package body System.Val_Real is
 
             when 10 =>
                declare
-                  Powten : constant array (0 .. Maxpow) of Num;
+                  subtype Pow_Num is Num range 1.0 .. Num'Last;
+
+                  Powten : constant array (0 .. Maxpow) of Pow_Num;
                   pragma Import (Ada, Powten);
                   for Powten'Address use Powten_Address;
 
