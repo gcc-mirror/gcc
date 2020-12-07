@@ -5804,7 +5804,7 @@ gnat_write_global_declarations (void)
       struct varpool_node *node;
       char *label;
 
-      ASM_FORMAT_PRIVATE_NAME (label, first_global_object_name, 0);
+      ASM_FORMAT_PRIVATE_NAME (label, first_global_object_name, ULONG_MAX);
       dummy_global
 	= build_decl (BUILTINS_LOCATION, VAR_DECL, get_identifier (label),
 		      void_type_node);
