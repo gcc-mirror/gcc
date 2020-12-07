@@ -271,8 +271,7 @@
 (define_insn "mve_vnegq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")]
-	 VNEGQ_F))
+	(neg:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vneg.f%#<V_sz_elem>  %q0, %q1"
@@ -422,8 +421,7 @@
 (define_insn "mve_vnegq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
-	 VNEGQ_S))
+	(neg:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
   "vneg.s%#<V_sz_elem>  %q0, %q1"

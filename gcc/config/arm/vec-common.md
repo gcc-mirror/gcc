@@ -199,3 +199,9 @@
 	(not:VDQ (match_operand:VDQ 1 "s_register_operand")))]
   "ARM_HAVE_<MODE>_ARITH"
 )
+
+(define_expand "neg<mode>2"
+  [(set (match_operand:VDQWH 0 "s_register_operand" "")
+	(neg:VDQWH (match_operand:VDQWH 1 "s_register_operand" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
