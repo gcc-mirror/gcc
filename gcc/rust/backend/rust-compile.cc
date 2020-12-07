@@ -88,21 +88,21 @@ bool
 Compilation::compileVarDecl (Bfunction *fndecl, AST::LetStmt *stmt,
 			     std::vector<Bvariable *> &vars)
 {
-  AST::Type *type = stmt->has_type () ? stmt->type.get () : stmt->inferedType;
+  AST::Type *type = stmt->has_type () ? stmt->get_type ().get () : stmt->inferedType;
   translatedType = NULL;
   type->accept_vis (*this);
   if (translatedType == NULL)
     {
-      rust_error_at (stmt->locus, "failed to compile type for var decl");
+      rust_error_at (stmt->get_locus (), "failed to compile type for var decl");
       return false;
     }
 
-  stmt->variables_pattern->accept_vis (*this);
+  stmt->get_pattern ()->accept_vis (*this);
   for (auto &pattern : patternBuffer)
     {
       auto var = backend->local_variable (fndecl, pattern.get_ident (),
 					  translatedType, NULL /*decl_var*/,
-					  false /*address_taken*/, stmt->locus);
+					  false /*address_taken*/, stmt->get_locus ());
       vars.push_back (var);
       scope.InsertVar (pattern.get_ident (), var);
     }
@@ -1298,7 +1298,7 @@ Compilation::visit (AST::LetStmt &stmt)
   if (!stmt.has_init_expr ())
     return;
 
-  stmt.variables_pattern->accept_vis (*this);
+  stmt.get_pattern ()->accept_vis (*this);
   for (auto &pattern : patternBuffer)
     {
       Bvariable *var = NULL;

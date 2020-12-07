@@ -9205,7 +9205,7 @@ Parser<ManagedTokenSource>::parse_for_prefixed_type ()
 // Parses a maybe named param used in bare function types.
 template <typename ManagedTokenSource>
 AST::MaybeNamedParam
-Parser<ManagedTokenSource>::parse_maybe_named_param ()
+Parser<ManagedTokenSource>::parse_maybe_named_param (std::vector<AST::Attribute> outer_attrs)
 {
   /* Basically guess that param is named if first token is identifier or
    * underscore and second token is semicolon. This should probably have no
@@ -9242,7 +9242,7 @@ Parser<ManagedTokenSource>::parse_maybe_named_param ()
     }
 
   return AST::MaybeNamedParam (std::move (name), kind, std::move (type),
-			       current->get_locus ());
+			       std::move (outer_attrs), current->get_locus ());
 }
 
 /* Parses a bare function type (with the given for lifetimes for convenience -
@@ -9258,63 +9258,58 @@ Parser<ManagedTokenSource>::parse_bare_function_type (
   AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
   if (!skip_token (FN_TOK))
-    {
       return nullptr;
-    }
 
   if (!skip_token (LEFT_PAREN))
-    {
       return nullptr;
-    }
 
   // parse function params, if they exist
   std::vector<AST::MaybeNamedParam> params;
   bool is_variadic = false;
+  std::vector<AST::Attribute> variadic_attrs;
+
   const_TokenPtr t = lexer.peek_token ();
-  while (t->get_id () != RIGHT_PAREN)
+  while (t->get_id () != RIGHT_PAREN) 
+  {
+    std::vector<AST::Attribute> temp_attrs = parse_outer_attributes ();
+
+    if (lexer.peek_token ()->get_id () == ELLIPSIS) 
     {
-      // handle ellipsis (only if next character is right paren)
-      if (t->get_id () == ELLIPSIS)
-	{
-	  if (lexer.peek_token (1)->get_id () == RIGHT_PAREN)
-	    {
-	      lexer.skip_token ();
-	      is_variadic = true;
-	      break;
-	    }
-	  else
-	    {
-	      rust_error_at (t->get_locus (),
-			     "ellipsis (for variadic) can only go at end of "
-			     "bare function type");
-	      return nullptr;
-	    }
-	}
-
-      // parse required param
-      AST::MaybeNamedParam param = parse_maybe_named_param ();
-      if (param.is_error ())
-	{
-	  rust_error_at (
-	    t->get_locus (),
-	    "failed to parse maybe named param in bare function type");
-	  return nullptr;
-	}
-      params.push_back (std::move (param));
-
-      if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
       lexer.skip_token ();
+      is_variadic = true;
+      variadic_attrs = std::move (temp_attrs);
 
       t = lexer.peek_token ();
+
+      if (t->get_id() != RIGHT_PAREN) 
+      {
+          rust_error_at (t->get_locus (),
+				   "expected right parentheses after variadic in maybe named function "
+           "parameters, found %qs",
+				   t->get_token_description ());
+		      return nullptr;
+      }
+
+      break;
     }
 
-  if (!skip_token (RIGHT_PAREN))
+    AST::MaybeNamedParam param = parse_maybe_named_param (std::move (temp_attrs));
+    if (param.is_error ()) 
     {
+      rust_error_at (lexer.peek_token ()->get_locus (), "failed to parse maybe named param in bare function type");
       return nullptr;
     }
+    params.push_back (std::move (param));
+
+    if (lexer.peek_token ()->get_id () != COMMA)
+	    break;
+
+    lexer.skip_token ();
+    t = lexer.peek_token ();
+  }
+
+  if (!skip_token (RIGHT_PAREN))
+      return nullptr;
 
   // bare function return type, if exists
   std::unique_ptr<AST::TypeNoBounds> return_type = nullptr;
@@ -9335,7 +9330,7 @@ Parser<ManagedTokenSource>::parse_bare_function_type (
 
   return std::unique_ptr<AST::BareFunctionType> (new AST::BareFunctionType (
     std::move (for_lifetimes), std::move (qualifiers), std::move (params),
-    is_variadic, std::move (return_type), best_try_locus));
+    is_variadic, std::move (variadic_attrs), std::move (return_type), best_try_locus));
 }
 
 // Parses a reference type (mutable or immutable, with given lifetime).

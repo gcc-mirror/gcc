@@ -2349,6 +2349,7 @@ namespace Rust {
             }
         }
 
+        // I don't think it would be possible to strip macros without expansion
         void visit(AST::MacroMatchFragment& match) override {}
         void visit(AST::MacroMatchRepetition& match) override {}
         void visit(AST::MacroMatcher& matcher) override {}
@@ -2401,13 +2402,23 @@ namespace Rust {
             // not possible
         }
         void visit(AST::RangePatternBoundPath& bound) override {
-            // TODO: maybe possible if path is possible
+            // can expand path, but not strip it directly
+            auto& path = bound.get_path();
+            visit(path);
+            if (path.is_marked_for_strip())
+                rust_error_at(path.get_locus(), "cannot strip path in this position");
         }
         void visit(AST::RangePatternBoundQualPath& bound) override {
-            // TODO: maybe possible if path is possible
+            // can expand path, but not strip it directly
+            auto& path = bound.get_qualified_path();
+            visit(path);
+            if (path.is_marked_for_strip())
+                rust_error_at(path.get_locus(), "cannot strip path in this position");
         }
         void visit(AST::RangePattern& pattern) override {
-            // TODO: possible if any bounds are possible
+            // should have no capability to strip lower or upper bounds, only expand
+            pattern.get_lower_bound()->accept_vis(*this);
+            pattern.get_upper_bound()->accept_vis(*this);
         }
         void visit(AST::ReferencePattern& pattern) override {
             auto& sub_pattern = pattern.get_referenced_pattern();
@@ -2452,6 +2463,12 @@ namespace Rust {
             }
         }
         void visit(AST::StructPattern& pattern) override {
+            // expand (but don't strip) path
+            auto& path = pattern.get_path();
+            visit(path);
+            if (path.is_marked_for_strip())
+                rust_error_at(path.get_locus(), "cannot strip path in this position");
+
             // TODO: apparently struct pattern fields can have outer attrs. so can they be stripped?
             if (!pattern.has_struct_pattern_elems())
                 return;
@@ -2506,7 +2523,11 @@ namespace Rust {
             }
         }
         void visit(AST::TupleStructPattern& pattern) override {
-            // TODO: stripping of path?
+            // expand (but don't strip) path
+            auto& path = pattern.get_path();
+            visit(path);
+            if (path.is_marked_for_strip())
+                rust_error_at(path.get_locus(), "cannot strip path in this position");
 
             if (pattern.has_items()) 
                 pattern.get_items()->accept_vis(*this);
@@ -2578,6 +2599,14 @@ namespace Rust {
             pattern->accept_vis(*this);
             if (pattern->is_marked_for_strip())
                 rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+            
+            // similar for type
+            if (stmt.has_type()) {
+                auto& type = stmt.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
 
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
@@ -2621,25 +2650,123 @@ namespace Rust {
             }
         }
 
-        // stripping shouldn't be required or possible for types
-        void visit(AST::TraitBound& bound) override {}
-        void visit(AST::ImplTraitType& type) override {}
-        void visit(AST::TraitObjectType& type) override {}
-        void visit(AST::ParenthesisedType& type) override {}
-        void visit(AST::ImplTraitTypeOneBound& type) override {}
-        void visit(AST::TraitObjectTypeOneBound& type) override {}
-        void visit(AST::TupleType& type) override {}
-        void visit(AST::NeverType& type) override {}
-        void visit(AST::RawPointerType& type) override {}
-        void visit(AST::ReferenceType& type) override {}
-        void visit(AST::ArrayType& type) override {
-            // TODO: array type contains a "constant expression" - could this have strippable sub-exprs?
+        void visit(AST::TraitBound& bound) override {
+            // nothing in for lifetimes to strip
+            
+            // expand but don't strip type path
+            auto& path = bound.get_type_path();
+            visit(path);
+            if (path.is_marked_for_strip())
+                rust_error_at(path.get_locus(), "cannot strip type path in this position");
         }
-        void visit(AST::SliceType& type) override {}
-        void visit(AST::InferredType& type) override {}
+        void visit(AST::ImplTraitType& type) override {
+            // don't strip directly, only components of bounds
+            for (auto& bound : type.get_type_param_bounds()) 
+                bound->accept_vis(*this);
+        }
+        void visit(AST::TraitObjectType& type) override {
+            // don't strip directly, only components of bounds
+            for (auto& bound : type.get_type_param_bounds()) 
+                bound->accept_vis(*this);
+        }
+        void visit(AST::ParenthesisedType& type) override {
+            // expand but don't strip inner type
+            auto& inner_type = type.get_type_in_parens();
+            inner_type->accept_vis(*this);
+            if (inner_type->is_marked_for_strip())
+                rust_error_at(inner_type->get_locus_slow(), "cannot strip type in this position");
+        }
+        void visit(AST::ImplTraitTypeOneBound& type) override {
+            // no stripping possible
+            visit(type.get_trait_bound());
+        }
+        void visit(AST::TraitObjectTypeOneBound& type) override {
+            // no stripping possible
+            visit(type.get_trait_bound());
+        }
+        void visit(AST::TupleType& type) override {
+            // TODO: assuming that types can't be stripped as types don't have outer attributes
+            for (auto& elem_type : type.get_elems()) {
+                elem_type->accept_vis(*this);
+                if (elem_type->is_marked_for_strip())
+                    rust_error_at(elem_type->get_locus_slow(), "cannot strip type in this position");
+            }
+        }
+        void visit(AST::NeverType& type) override {
+            // no stripping possible
+        }
+        void visit(AST::RawPointerType& type) override {
+            // expand but don't strip type pointed to
+            auto& pointed_type = type.get_type_pointed_to();
+            pointed_type->accept_vis(*this);
+            if (pointed_type->is_marked_for_strip())
+                rust_error_at(pointed_type->get_locus_slow(), "cannot strip type in this position");
+        }
+        void visit(AST::ReferenceType& type) override {
+            // expand but don't strip type referenced
+            auto& referenced_type = type.get_type_referenced();
+            referenced_type->accept_vis(*this);
+            if (referenced_type->is_marked_for_strip())
+                rust_error_at(referenced_type->get_locus_slow(), "cannot strip type in this position");
+        }
+        void visit(AST::ArrayType& type) override {
+            // expand but don't strip type referenced
+            auto& base_type = type.get_elem_type();
+            base_type->accept_vis(*this);
+            if (base_type->is_marked_for_strip())
+                rust_error_at(base_type->get_locus_slow(), "cannot strip type in this position");
+            
+            // same for expression
+            auto& size_expr = type.get_size_expr();
+            size_expr->accept_vis(*this);
+            if (size_expr->is_marked_for_strip())
+                rust_error_at(size_expr->get_locus_slow(), "cannot strip expression in this position");
+        }
+        void visit(AST::SliceType& type) override {
+            // expand but don't strip elem type
+            auto& elem_type = type.get_elem_type();
+            elem_type->accept_vis(*this);
+            if (elem_type->is_marked_for_strip())
+                rust_error_at(elem_type->get_locus_slow(), "cannot strip type in this position");
+        }
+        void visit(AST::InferredType& type) override {
+            // none possible
+        }
         void visit(AST::BareFunctionType& type) override {
-            // TODO: bare function type contains "maybe-named params" that have outer attributes - could this be strippable?
-            // apparently "attribute rules are same as on regular function params", so looks like a yes
+            // seem to be no generics
+
+            // presumably function params can be stripped
+            auto& params = type.get_function_params();
+            for (int i = 0; i < params.size();) {
+                auto& param = params[i];
+
+                auto& param_attrs = param.get_outer_attrs();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg(param_attrs)) {
+                    params.erase(params.begin() + i);
+                    continue;
+                }
+
+                auto& type = param.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+                
+                // increment if nothing else happens
+                i++;
+            }
+
+            /* TODO: assuming that variadic nature cannot be stripped. If this
+             * is not true, then have code here to do so. */
+            
+            if (type.has_return_type()) {
+                auto& return_type = type.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+            
+            // no where clause, apparently
         }
     };
 

@@ -1038,7 +1038,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
   if (stmt.has_type () && stmt.has_init_expr ())
     {
-      if (!typesAreCompatible (stmt.type.get (), inferedType,
+      if (!typesAreCompatible (stmt.get_type ().get (), inferedType,
 			       stmt.get_init_expr ()->get_locus_slow ()))
 	{
 	  return;

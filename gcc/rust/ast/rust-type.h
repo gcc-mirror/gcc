@@ -43,6 +43,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: this mutable getter seems kinda dodgy
+  TypePath &get_type_path () { return type_path; }
+  const TypePath &get_type_path () const { return type_path; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -109,6 +113,10 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
 };
 
 // An opaque value of another type that implements a set of traits
@@ -168,6 +176,10 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
 };
 
 // A type with parentheses around it, used to avoid ambiguity.
@@ -226,6 +238,12 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<Type> &get_type_in_parens () { 
+    rust_assert (type_in_parens != nullptr);
+    return type_in_parens; 
+  }
 };
 
 // Impl trait with a single bound? Poor reference material here.
@@ -253,6 +271,12 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: would a "vis_type" be better?
+  TraitBound &get_trait_bound () { 
+    // TODO: check to ensure invariants are met?
+    return trait_bound; 
+  }
 };
 
 /* A trait object with a single trait bound. The "trait bound" is really just
@@ -292,6 +316,12 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: would a "vis_type" be better?
+  TraitBound &get_trait_bound () { 
+    // TODO: check to ensure invariants are met?
+    return trait_bound; 
+  }
 };
 
 class TypePath; // definition moved to "rust-path.h"
@@ -341,6 +371,10 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
+  const std::vector<std::unique_ptr<Type> > &get_elems () const { return elems; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -429,6 +463,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<TypeNoBounds> &get_type_pointed_to () { 
+    rust_assert (type != nullptr);
+    return type; 
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -490,6 +530,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<TypeNoBounds> &get_type_referenced () { 
+    rust_assert (type != nullptr);
+    return type; 
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -539,6 +585,18 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<Type> &get_elem_type () { 
+    rust_assert (elem_type != nullptr);
+    return elem_type; 
+  }
+
+  // TODO: would a "vis_expr" be better?
+  std::unique_ptr<Expr> &get_size_expr () { 
+    rust_assert (size != nullptr);
+    return size; 
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -585,6 +643,12 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<Type> &get_elem_type () { 
+    rust_assert (elem_type != nullptr);
+    return elem_type; 
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -635,6 +699,8 @@ public:
   };
 
 private:
+  std::vector<Attribute> outer_attrs;
+
   std::unique_ptr<Type> param_type;
 
   ParamKind param_kind;
@@ -644,14 +710,14 @@ private:
 
 public:
   MaybeNamedParam (Identifier name, ParamKind param_kind,
-		   std::unique_ptr<Type> param_type, Location locus)
-    : param_type (std::move (param_type)), param_kind (param_kind),
+		   std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), param_type (std::move (param_type)), param_kind (param_kind),
       name (std::move (name)), locus (locus)
   {}
 
   // Copy constructor with clone
   MaybeNamedParam (MaybeNamedParam const &other)
-    : param_kind (other.param_kind), name (other.name), locus (other.locus)
+    : outer_attrs (other.outer_attrs), param_kind (other.param_kind), name (other.name), locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.param_type != nullptr)
@@ -663,6 +729,7 @@ public:
   // Overloaded assignment operator with clone
   MaybeNamedParam &operator= (MaybeNamedParam const &other)
   {
+    outer_attrs = other.outer_attrs;
     name = other.name;
     param_kind = other.param_kind;
     locus = other.locus;
@@ -688,10 +755,20 @@ public:
   // Creates an error state param.
   static MaybeNamedParam create_error ()
   {
-    return MaybeNamedParam ("", UNNAMED, nullptr, Location ());
+    return MaybeNamedParam ("", UNNAMED, nullptr, {}, Location ());
   }
 
   Location get_locus () const { return locus; }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<Type> &get_type () { 
+    rust_assert (param_type != nullptr);
+    return param_type; 
+  }
 };
 
 /* A function pointer type - can be created via coercion from function items and
@@ -705,6 +782,7 @@ class BareFunctionType : public TypeNoBounds
   FunctionQualifiers function_qualifiers;
   std::vector<MaybeNamedParam> params;
   bool is_variadic;
+  std::vector<Attribute> variadic_attrs;
 
   // bool has_return_type;
   // BareFunctionReturnType return_type;
@@ -721,19 +799,22 @@ public:
 
   BareFunctionType (std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
-		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
+		    std::vector<MaybeNamedParam> named_params, bool is_variadic, std::vector<Attribute> variadic_attrs,
 		    std::unique_ptr<TypeNoBounds> type, Location locus)
     : for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), is_variadic (is_variadic),
-      return_type (std::move (type)), locus (locus)
-  {}
+      variadic_attrs (std::move (variadic_attrs)), return_type (std::move (type)), locus (locus)
+  {
+    if (!variadic_attrs.empty())
+      is_variadic = true;
+  }
 
   // Copy constructor with clone
   BareFunctionType (BareFunctionType const &other)
     : for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
-      is_variadic (other.is_variadic), locus (other.locus)
+      is_variadic (other.is_variadic), variadic_attrs (other.variadic_attrs), locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.return_type != nullptr)
@@ -747,6 +828,7 @@ public:
     function_qualifiers = other.function_qualifiers;
     params = other.params;
     is_variadic = other.is_variadic;
+    variadic_attrs = other.variadic_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference
@@ -768,6 +850,16 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems kinda dodgy
+  std::vector<MaybeNamedParam> &get_function_params () { return params; }
+  const std::vector<MaybeNamedParam> &get_function_params () const { return params; }
+
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<TypeNoBounds> &get_return_type () { 
+    rust_assert (has_return_type ());
+    return return_type; 
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

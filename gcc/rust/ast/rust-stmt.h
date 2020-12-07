@@ -41,7 +41,6 @@ class LetStmt : public Stmt
   // bool has_outer_attrs;
   std::vector<Attribute> outer_attrs;
 
-public:
   std::unique_ptr<Pattern> variables_pattern;
 
   // bool has_type;
@@ -52,6 +51,7 @@ public:
 
   Location locus;
 
+public:
   Type *inferedType;
 
   // Returns whether let statement has outer attributes.
@@ -138,6 +138,11 @@ public:
   std::unique_ptr<Pattern> &get_pattern () {
     rust_assert (variables_pattern != nullptr);
     return variables_pattern;
+  }
+
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (has_type ());
+    return type;
   }
 
 protected:

@@ -223,6 +223,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: this mutable getter seems kinda dodgy
+  PathInExpression &get_path () { return path; }
+  const PathInExpression &get_path () const { return path; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -250,6 +254,10 @@ public:
   Location get_locus () const { return path.get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems kinda dodgy
+  QualifiedPathInExpression &get_qualified_path () { return path; }
+  const QualifiedPathInExpression &get_qualified_path () const { return path; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -309,6 +317,17 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? or is a "vis_bound" better?
+  std::unique_ptr<RangePatternBound>& get_lower_bound () {
+    rust_assert (lower != nullptr);
+    return lower;
+  }
+
+  std::unique_ptr<RangePatternBound>& get_upper_bound () {
+    rust_assert (upper != nullptr);
+    return upper;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -735,6 +754,9 @@ public:
   StructPatternElements &get_struct_pattern_elems () { return elems; }
   const StructPatternElements &get_struct_pattern_elems () const { return elems; }
 
+  PathInExpression &get_path () { return path; }
+  const PathInExpression &get_path () const { return path; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -939,6 +961,9 @@ public:
     rust_assert (has_items ());
     return items; 
   }
+
+  PathInExpression &get_path () { return path; }
+  const PathInExpression &get_path () const { return path; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

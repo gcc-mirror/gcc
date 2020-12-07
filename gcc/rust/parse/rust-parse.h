@@ -545,7 +545,7 @@ private:
   std::unique_ptr<AST::Type> parse_paren_prefixed_type ();
   std::unique_ptr<AST::TypeNoBounds> parse_paren_prefixed_type_no_bounds ();
   std::unique_ptr<AST::Type> parse_for_prefixed_type ();
-  AST::MaybeNamedParam parse_maybe_named_param ();
+  AST::MaybeNamedParam parse_maybe_named_param (std::vector<AST::Attribute> outer_attrs);
 
   // Statement-related
   std::unique_ptr<AST::Stmt> parse_stmt ();
