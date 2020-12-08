@@ -57,7 +57,8 @@ CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
-ifeq ($(DEVPHASE_c),experimental)
+# In non-release builds, use a date-related module version.
+ifneq ($(DEVPHASE_c),)
 # Some date's don't grok 'r', if so, simply use today's
 # date (don't bootstrap at midnight).
 MODULE_VERSION := $(shell date -r $(srcdir)/cp/module.cc '+%y%m%d-%H%M' \

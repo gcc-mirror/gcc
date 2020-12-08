@@ -184,6 +184,20 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 
 	  tree op0_type = TREE_TYPE (op0);
 	  tree op0a_type = TREE_TYPE (op0a);
+
+	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
+
+	  if (integer_minus_onep (op1)
+	      && integer_zerop (op2)
+	      && TYPE_MODE (TREE_TYPE (lhs)) == TYPE_MODE (TREE_TYPE (op0))
+	      && expand_vec_cmp_expr_p (op0a_type, op0_type, tcode))
+	    {
+	      tree conv_op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), op0);
+	      gassign *new_stmt = gimple_build_assign (lhs, conv_op);
+	      gsi_replace (gsi, new_stmt, true);
+	      return new_stmt;
+	    }
+
 	  if (used_vec_cond_exprs >= 2
 	      && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
 		  != CODE_FOR_nothing)

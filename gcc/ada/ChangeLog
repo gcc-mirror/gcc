@@ -1,3 +1,45 @@
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in: Remove ^L characters.
+	* gcc-interface/decl.c (create_concat_name): Add cast.
+
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (maybe_make_gnu_thunk): Return false if the
+	target is local and thunk and target do not have the same context.
+
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_for_aggregate_p): Also return true
+	for return statements.
+	* gcc-interface/utils.c (gnat_write_global_declarations): Use the
+	maximum index for the dummy object to avoid a name collision.
+
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <Fixed_Point_Type>: Put
+	back the "else" unduly removed.
+
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Also create a temporary for
+	the return value if the LHS is a bit-field and the return type is
+	a type padding a self-referential type.
+	(gnat_to_gnu): Do not remove the padding on the result if it is too
+	small with regard to the natural padding size.
+
+2020-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert) <INTEGER_TYPE>: Call fold_convert
+	in the cases where convert_to_integer is not called.
+	<BOOLEAN_TYPE>: Call fold_convert instead of convert_to_integer.
+
+2020-12-07  Matthias Klose  <doko@ubuntu.com>
+
+	PR ada/97504
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <mips*-*-linux*>: Use wraplf
+	version of Aux_Long_Long_Float.
+
 2020-11-30  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* libgnat/s-trasym.ads: Update the list of supported platforms.

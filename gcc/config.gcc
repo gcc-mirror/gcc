@@ -4623,7 +4623,10 @@ case "${target}" in
 			exit 1
 			;;
 		esac
-		with_arch=`${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
+		PYTHON=`which python || which python3 || which python2`
+		if test "x${PYTHON}" != x; then
+			with_arch=`${PYTHON} ${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
+		fi
 		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ARCH=${with_arch}"
 
 		# Make sure --with-abi is valid.  If it was not specified,

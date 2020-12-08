@@ -1,3 +1,9 @@
+2020-12-07  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/97981
+	* c-typeck.c (convert_lvalue_to_rvalue): Move the code
+	that drops qualifiers to the end of the function.
+
 2020-11-26  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/65455

@@ -1,3 +1,26 @@
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98043
+	* decl.c (pop_switch): If SWITCH_STMT_TYPE is a scoped enum type,
+	set it to the type of SWITCH_STMT_COND.
+
+2020-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_cplus_array_type): Add defaulted DEP parm.
+	* tree.c (set_array_type_common): Add DEP parm.
+	(build_cplus_array_type): Add DEP parm, determine dependency if
+	needed.  Mark dependency of new types.
+	(cp_build_qualified_type_real): Adjust array-building call, assert
+	no surprising dependency.
+	(strip_typedefs): Likewise.
+
+2020-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98116
+	* typeck.c (structural_comptypes): Move early outs to comptype.
+	Always check template-alias match when comparing_specializations.
+	(comptypes): Do early out checking here.
+
 2020-12-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/97093
