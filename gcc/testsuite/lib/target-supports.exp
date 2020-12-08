@@ -654,7 +654,7 @@ proc check_profiling_available { test_what } {
 	    return 0
 	}
         global srcdir
-	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "true -v >/dev/null"]
+	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "-m8 true -v >/dev/null"]
 	if { [lindex $status 0] != 0 } {
 	    verbose "autofdo not supported because perf does not work"
 	    return 0
