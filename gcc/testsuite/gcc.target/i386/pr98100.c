@@ -1,6 +1,7 @@
 /* PR target/98100 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-avx -fvar-tracking-assignments -g0" } */
+/* { dg-require-ifunc "" } */
 
 __attribute__((target_clones("default","avx2"))) void
 foo ()
