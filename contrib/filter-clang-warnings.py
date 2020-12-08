@@ -44,10 +44,12 @@ def skip_warning(filename, message):
             'insn-attrtab.c': ['-Wparentheses-equality'],
             'gimple-match.c': ['-Wunused-', '-Wtautological-compare'],
             'generic-match.c': ['-Wunused-', '-Wtautological-compare'],
-            'i386.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'i386.md': ['-Wparentheses-equality', '-Wtautological-compare',
+                        '-Wtautological-overlap-compare'],
             'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
-            'genautomata.c': ['-Wstring-plus-int']
-
+            'genautomata.c': ['-Wstring-plus-int'],
+            'gfortran.texi': [''],
+            'libtool': ['']
     }
 
     for name, ignores in ignores.items():
