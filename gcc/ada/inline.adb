@@ -3578,17 +3578,10 @@ package body Inline is
             return OK;
          end Do_Reset;
 
-         function Do_Reset_Calls is new Traverse_Func (Do_Reset);
-
-         --  Local variables
-
-         Dummy : constant Traverse_Result := Do_Reset_Calls (N);
-         pragma Unreferenced (Dummy);
-
-         --  Start of processing for Reset_Dispatching_Calls
+         procedure Do_Reset_Calls is new Traverse_Proc (Do_Reset);
 
       begin
-         null;
+         Do_Reset_Calls (N);
       end Reset_Dispatching_Calls;
 
       ---------------------------
