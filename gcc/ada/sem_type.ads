@@ -268,10 +268,6 @@ package Sem_Type is
    procedure Write_Interp (It : Interp);
    --  Debugging procedure to display an Interp
 
-   procedure Write_Interp_Ref (Map_Ptr : Int);
-   --  Debugging procedure to display entry in Interp_Map. Would not be needed
-   --  if it were possible to debug instantiations of Table.
-
    procedure Write_Overloads (N : Node_Id);
    --  Debugging procedure to output info on possibly overloaded entities for
    --  specified node.
