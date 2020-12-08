@@ -64,3 +64,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "langhooks.h"
 
+module_state *
+get_module (tree, module_state *, bool)
+{
+  return nullptr;
+}
+
+module_state *
+preprocess_module (module_state *, unsigned, bool, bool, bool, cpp_reader *)
+{
+  return nullptr;
+}
+
+void
+preprocessed_module (cpp_reader *)
+{
+}
+
