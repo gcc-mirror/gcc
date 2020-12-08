@@ -4243,7 +4243,8 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	      def = gimple_assign_rhs1 (assign);
 	      do
 		{
-		  if (!has_single_use (def))
+		  if (TREE_CODE (def) != SSA_NAME
+		      || !has_single_use (def))
 		    break;
 		  gimple *def_stmt = SSA_NAME_DEF_STMT (def);
 		  unsigned this_lane;
