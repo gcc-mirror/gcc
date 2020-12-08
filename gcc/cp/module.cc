@@ -83,6 +83,17 @@ mangle_module_fini ()
 }
 
 int
+module_initializer_kind ()
+{
+  return 0;
+}
+
+void
+module_add_import_initializers ()
+{
+}
+
+int
 get_originating_module (tree, bool)
 {
   return 0;
