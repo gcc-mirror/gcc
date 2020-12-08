@@ -3883,6 +3883,42 @@ error:
 
 
 match
+gfc_match_omp_scan (void)
+{
+  bool incl;
+  gfc_omp_clauses *c = gfc_get_omp_clauses ();
+  gfc_gobble_whitespace ();
+  if ((incl = (gfc_match ("inclusive") == MATCH_YES))
+      || gfc_match ("exclusive") == MATCH_YES)
+    {
+      if (gfc_match_omp_variable_list (" (", &c->lists[incl ? OMP_LIST_SCAN_IN
+							    : OMP_LIST_SCAN_EX],
+				       false) != MATCH_YES)
+	{
+	  gfc_free_omp_clauses (c);
+	  return MATCH_ERROR;
+	}
+    }
+  else
+    {
+      gfc_error ("Expected INCLUSIVE or EXCLUSIVE clause at %C");
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
+  if (gfc_match_omp_eos () != MATCH_YES)
+    {
+      gfc_error ("Unexpected junk after !$OMP SCAN at %C");
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
+
+  new_st.op = EXEC_OMP_SCAN;
+  new_st.ext.omp_clauses = c;
+  return MATCH_YES;
+}
+
+
+match
 gfc_match_omp_sections (void)
 {
   return match_omp (EXEC_OMP_SECTIONS, OMP_SECTIONS_CLAUSES);
@@ -4296,13 +4332,7 @@ gfc_match_omp_barrier (void)
 match
 gfc_match_omp_taskgroup (void)
 {
-  gfc_omp_clauses *c;
-  if (gfc_match_omp_clauses (&c, OMP_CLAUSE_TASK_REDUCTION, true, true)
-      != MATCH_YES)
-    return MATCH_ERROR;
-  new_st.op = EXEC_OMP_TASKGROUP;
-  new_st.ext.omp_clauses = c;
-  return MATCH_YES;
+  return match_omp (EXEC_OMP_TASKGROUP, OMP_CLAUSE_TASK_REDUCTION);
 }
 
 
@@ -4628,7 +4658,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   static const char *clause_names[]
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
 	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
-	"TO", "FROM", "REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
+	"TO", "FROM", "INCLUSIVE", "EXCLUSIVE",
+	"REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
@@ -4865,6 +4896,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
 		     &n->where);
       }
+  if (omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]
+      && code->op != EXEC_OMP_DO
+      && code->op != EXEC_OMP_SIMD
+      && code->op != EXEC_OMP_DO_SIMD
+      && code->op != EXEC_OMP_PARALLEL_DO
+      && code->op != EXEC_OMP_PARALLEL_DO_SIMD)
+    gfc_error ("%<inscan%> REDUCTION clause on construct other than DO, SIMD, "
+	       "DO SIMD, PARALLEL DO, PARALLEL DO SIMD at %L",
+	       &omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where);
 
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE
@@ -4982,6 +5022,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	n->sym->mark = 1;
     }
 
+  bool has_inscan = false, has_notinscan = false;
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
@@ -5289,6 +5330,17 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				     || list == OMP_LIST_REDUCTION_TASK
 				     || list == OMP_LIST_IN_REDUCTION
 				     || list == OMP_LIST_TASK_REDUCTION);
+		if (list == OMP_LIST_REDUCTION_INSCAN)
+		  has_inscan = true;
+		else if (is_reduction)
+		  has_notinscan = true;
+		if (has_inscan && has_notinscan && is_reduction)
+		  {
+		    gfc_error ("%<inscan%> and non-%<inscan%> %<reduction%> "
+			       "clauses on the same construct %L",
+			       &n->where);
+		    break;
+		  }
 		if (n->sym->attr.threadprivate)
 		  gfc_error ("THREADPRIVATE object %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
@@ -6151,6 +6203,28 @@ gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 	}
       if (i < omp_current_do_collapse || omp_current_do_collapse <= 0)
 	omp_current_do_collapse = 1;
+      if (code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
+	{
+	  locus *loc
+	    = &code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where;
+	  if (code->ext.omp_clauses->ordered)
+	    gfc_error ("ORDERED clause specified together with %<inscan%> "
+		       "REDUCTION clause at %L", loc);
+	  if (code->ext.omp_clauses->sched_kind != OMP_SCHED_NONE)
+	    gfc_error ("SCHEDULE clause specified together with %<inscan%> "
+		       "REDUCTION clause at %L", loc);
+	  if (!c->block
+	      || !c->block->next
+	      || !c->block->next->next
+	      || c->block->next->next->op != EXEC_OMP_SCAN
+	      || !c->block->next->next->next
+	      || c->block->next->next->next->next)
+	    gfc_error ("With INSCAN at %L, expected loop body with !$OMP SCAN "
+		       "between two structured-block-sequences", loc);
+	  else
+	    /* Mark as checked; flag will be unset later.  */
+	    c->block->next->next->ext.omp_clauses->if_present = true;
+	}
     }
   gfc_resolve_blocks (code->block, ns);
   omp_current_do_collapse = 0;
@@ -6534,6 +6608,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_DISTRIBUTE_SIMD;
     case EXEC_OMP_DO_SIMD:
       return ST_OMP_DO_SIMD;
+    case EXEC_OMP_SCAN:
+      return ST_OMP_SCAN;
     case EXEC_OMP_SIMD:
       return ST_OMP_SIMD;
     case EXEC_OMP_TARGET:
@@ -6972,7 +7048,7 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
    of each directive.  */
 
 void
-gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
+gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
 {
   resolve_omp_directive_inside_oacc_region (code);
 
@@ -7045,6 +7121,14 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 	  && mpz_sgn (code->ext.omp_clauses->hint->value.integer) != 0)
 	gfc_error ("OMP CRITICAL at %L with HINT clause requires a NAME, "
 		   "except when omp_sync_hint_none is used", &code->loc);
+      break;
+    case EXEC_OMP_SCAN:
+      /* Flag is only used to checking, hence, it is unset afterwards.  */
+      if (!code->ext.omp_clauses->if_present)
+	gfc_error ("Unexpected !$OMP SCAN at %L outside loop construct with "
+		   "%<inscan%> REDUCTION clause", &code->loc);
+      code->ext.omp_clauses->if_present = false;
+      resolve_omp_clauses (code, code->ext.omp_clauses, ns);
       break;
     default:
       break;
