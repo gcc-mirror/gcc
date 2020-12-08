@@ -3159,7 +3159,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 					  overflow_p);
   else if (code == SPACESHIP_EXPR)
     {
-      r = genericize_spaceship (type, lhs, rhs);
+      r = genericize_spaceship (loc, type, lhs, rhs);
       return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
 					   overflow_p);
     }

@@ -1,5 +1,8 @@
 2020-12-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 570c312c03e
+	c++: Originating and instantiating module
+
 	Merge trunk dded5f78ccb
 	c++: template and clone fns for modules
 

@@ -522,6 +522,12 @@ pass_if_to_switch::execute (function *fun)
 	      if (!info2 || info->m_ranges[0].exp != info2->m_ranges[0].exp)
 		break;
 
+	      /* It is important that the blocks are linked through FALSE_EDGE.
+		 For an expression of index != VALUE, true and false edges
+		 are flipped.  */
+	      if (info2->m_false_edge != e)
+		break;
+
 	      chain->m_entries.safe_push (info2);
 	      bitmap_set_bit (seen_bbs, e->src->index);
 	      info = info2;
