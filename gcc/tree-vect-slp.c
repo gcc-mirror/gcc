@@ -2212,7 +2212,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 static bool
 vect_build_slp_instance (vec_info *vinfo,
 			 slp_instance_kind kind,
-			 vec<stmt_vec_info> scalar_stmts,
+			 vec<stmt_vec_info> &scalar_stmts,
 			 stmt_vec_info root_stmt_info,
 			 unsigned max_tree_size,
 			 scalar_stmts_to_slp_tree_map_t *bst_map,
