@@ -49,6 +49,16 @@ int recip_mask_explicit
 TargetSave
 int x_recip_mask_explicit
 
+;; A copy of flag_excess_precision as a target variable that should
+;; force a different DECL_FUNCTION_SPECIFIC_TARGET upon
+;; flag_excess_precision changes.
+TargetVariable
+enum excess_precision ix86_excess_precision = EXCESS_PRECISION_DEFAULT
+
+;; Similarly for flag_unsafe_math_optimizations.
+TargetVariable
+bool ix86_unsafe_math_optimizations = false
+
 ;; Definitions to add to the cl_target_option structure
 ;; -march= processor
 TargetSave

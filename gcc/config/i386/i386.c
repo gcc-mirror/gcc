@@ -22604,7 +22604,7 @@ ix86_init_libfuncs (void)
    apparently at random.  */
 
 static enum flt_eval_method
-ix86_excess_precision (enum excess_precision_type type)
+ix86_get_excess_precision (enum excess_precision_type type)
 {
   switch (type)
     {
@@ -23126,7 +23126,7 @@ ix86_run_selftests (void)
 #define TARGET_MD_ASM_ADJUST ix86_md_asm_adjust
 
 #undef TARGET_C_EXCESS_PRECISION
-#define TARGET_C_EXCESS_PRECISION ix86_excess_precision
+#define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_SETUP_INCOMING_VARARGS

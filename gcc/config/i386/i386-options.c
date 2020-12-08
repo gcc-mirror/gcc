@@ -1302,6 +1302,14 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       /* Add any builtin functions with the new isa if any.  */
       ix86_add_new_builtins (opts->x_ix86_isa_flags, opts->x_ix86_isa_flags2);
 
+      enum excess_precision orig_ix86_excess_precision
+	= opts->x_ix86_excess_precision;
+      bool orig_ix86_unsafe_math_optimizations
+	= opts->x_ix86_unsafe_math_optimizations;
+      opts->x_ix86_excess_precision = opts->x_flag_excess_precision;
+      opts->x_ix86_unsafe_math_optimizations
+	= opts->x_flag_unsafe_math_optimizations;
+
       /* Save the current options unless we are validating options for
 	 #pragma.  */
       t = build_target_option_node (opts);
@@ -1310,6 +1318,9 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       opts->x_ix86_tune_string = orig_tune_string;
       opts_set->x_ix86_fpmath = orig_fpmath_set;
       opts_set->x_prefer_vector_width_type = orig_pvw_set;
+      opts->x_ix86_excess_precision = orig_ix86_excess_precision;
+      opts->x_ix86_unsafe_math_optimizations
+	= orig_ix86_unsafe_math_optimizations;
 
       release_options_strings (option_strings);
     }
@@ -2888,8 +2899,14 @@ ix86_option_override_internal (bool main_args_p,
   /* Save the initial options in case the user does function specific
      options.  */
   if (main_args_p)
-    target_option_default_node = target_option_current_node
-      = build_target_option_node (opts);
+    {
+      opts->x_ix86_excess_precision
+	= opts->x_flag_excess_precision;
+      opts->x_ix86_unsafe_math_optimizations
+	= opts->x_flag_unsafe_math_optimizations;
+      target_option_default_node = target_option_current_node
+	= build_target_option_node (opts);
+    }
 
   if (opts->x_flag_cf_protection != CF_NONE)
     opts->x_flag_cf_protection
@@ -3186,6 +3203,24 @@ ix86_set_current_function (tree fndecl)
   if (old_tree != new_tree)
     {
       cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+      if (TREE_TARGET_GLOBALS (new_tree))
+	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+      else if (new_tree == target_option_default_node)
+	restore_target_globals (&default_target_globals);
+      else
+	TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
+    }
+  else if (flag_unsafe_math_optimizations
+	   != TREE_TARGET_OPTION (new_tree)->x_ix86_unsafe_math_optimizations
+	   || (flag_excess_precision
+	       != TREE_TARGET_OPTION (new_tree)->x_ix86_excess_precision))
+    {
+      cl_target_option_restore (&global_options,
+				TREE_TARGET_OPTION (new_tree));
+      ix86_excess_precision = flag_excess_precision;
+      ix86_unsafe_math_optimizations = flag_unsafe_math_optimizations;
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_tree
+	= build_target_option_node (&global_options);
       if (TREE_TARGET_GLOBALS (new_tree))
 	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
       else if (new_tree == target_option_default_node)
