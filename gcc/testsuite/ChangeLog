@@ -1,3 +1,58 @@
+2020-12-07  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/97981
+	* gcc.dg/pr97981.c: New test.
+	* gcc.dg/pr60195.c: Adapt test.
+
+2020-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98147
+	* gcc.dg/pr98147.c: New test.
+
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98043
+	* g++.dg/cpp0x/enum41.C: New test.
+
+2020-12-07  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (errchk): Don't backslash quote parentheses
+	that are already backslash quoted.
+
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98126
+	* g++.dg/warn/Wsequence-point-4.C: New test.
+
+2020-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98116
+	* g++.dg/template/pr98116.C: Remove dg-ice.
+	* g++.dg/template/pr98116-2.C: New.
+
+2020-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98113
+	* gcc.dg/vect/bb-slp-70.c: New testcase.
+
+2020-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98117
+	* gcc.dg/torture/pr98117.c: New testcase.
+
+2020-12-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: New target check s390_zarch.
+	* gcc.target/s390/stack-clash-1.c: Use s390_zarch instead of lp64.
+	* gcc.target/s390/stack-clash-2.c: Likewise.
+	* gcc.target/s390/stack-clash-3.c: Likewise.
+	* gcc.target/s390/stack-clash-5.c: New test.
+
+2020-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98137
+	* gcc.dg/vect/bb-slp-pr98137.c: New testcase.
+
 2020-12-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/pr98161.c: New test.

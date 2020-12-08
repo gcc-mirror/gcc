@@ -1,3 +1,9 @@
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98126
+	* c-common.c (verify_tree_lim_r): New function.
+	(verify_sequence_points): Use it.  Use nullptr instead of 0.
+
 2020-12-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90629

@@ -1704,9 +1704,10 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   return spec;
 }
 
-/* Returns true iff two spec_entry nodes are equivalent.  */
-
+/* Restricts tree and type comparisons.  */
 int comparing_specializations;
+
+/* Returns true iff two spec_entry nodes are equivalent.  */
 
 bool
 spec_hasher::equal (spec_entry *e1, spec_entry *e2)
@@ -10909,6 +10910,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   new_level->errors = errorcount + sorrycount;
   new_level->next = NULL;
   new_level->refcount = 0;
+  new_level->path = new_level->visible = nullptr;
   set_refcount_ptr (new_level->next, current_tinst_level);
   set_refcount_ptr (current_tinst_level, new_level);
 
@@ -29668,29 +29670,27 @@ walk_specializations (bool decls_p,
     fn (decls_p, *iter, data);
 }
 
-/* Lookup the specialization of TMPL, ARGS in the decl or type
-   specialization table.  Return what's there, or if SPEC is non-null,
-   add it and return NULL.  */
+/* Lookup the specialization of *ELT, in the decl or type
+   specialization table.  Return the SPEC that's already there (NULL if
+   nothing).  If INSERT is true, and there was nothing, add the new
+   spec.  */
 
 tree
-match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
+match_mergeable_specialization (bool decl_p, spec_entry *elt, bool insert)
 {
-  spec_entry elt = {tmpl, args, spec};
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
-  hashval_t hash = spec_hasher::hash (&elt);
+  hashval_t hash = spec_hasher::hash (elt);
   spec_entry **slot
-    = specializations->find_slot_with_hash (&elt, hash,
-					    spec ? INSERT : NO_INSERT);
-  spec_entry *entry = slot ? *slot: NULL;
-  
-  if (entry)
-    return entry->spec;
+    = specializations->find_slot_with_hash (elt, hash,
+					    insert ? INSERT : NO_INSERT);
+  if (slot && *slot)
+    return (*slot)->spec;
 
-  if (spec)
+  if (insert)
     {
-      entry = ggc_alloc<spec_entry> ();
-      *entry = elt;
+      auto entry = ggc_alloc<spec_entry> ();
+      *entry = *elt;
       *slot = entry;
     }
 

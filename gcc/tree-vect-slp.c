@@ -2212,7 +2212,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 static bool
 vect_build_slp_instance (vec_info *vinfo,
 			 slp_instance_kind kind,
-			 vec<stmt_vec_info> scalar_stmts,
+			 vec<stmt_vec_info> &scalar_stmts,
 			 stmt_vec_info root_stmt_info,
 			 unsigned max_tree_size,
 			 scalar_stmts_to_slp_tree_map_t *bst_map,
@@ -4193,10 +4193,12 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
       else if (gimple_assign_rhs_code (assign) == BIT_INSERT_EXPR
 	       && VECTOR_TYPE_P (TREE_TYPE (rhs))
 	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).is_constant ()
+	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).to_constant () > 1
 	       && integer_zerop (gimple_assign_rhs3 (assign))
 	       && useless_type_conversion_p
 		    (TREE_TYPE (TREE_TYPE (rhs)),
-		     TREE_TYPE (gimple_assign_rhs2 (assign))))
+		     TREE_TYPE (gimple_assign_rhs2 (assign)))
+	       && bb_vinfo->lookup_def (gimple_assign_rhs2 (assign)))
 	{
 	  /* We start to match on insert to lane zero but since the
 	     inserts need not be ordered we'd have to search both
@@ -4241,7 +4243,8 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	      def = gimple_assign_rhs1 (assign);
 	      do
 		{
-		  if (!has_single_use (def))
+		  if (TREE_CODE (def) != SSA_NAME
+		      || !has_single_use (def))
 		    break;
 		  gimple *def_stmt = SSA_NAME_DEF_STMT (def);
 		  unsigned this_lane;

@@ -16,8 +16,11 @@ CALC (double *s1, double *s2, double *r)
 
   for (i = 0; i < SIZE; i++)
     {
-      tmp = (~(*(long long *) &s1[i])) & (*(long long *) &s2[i]);
-      r[i] = *(double *) &tmp;
+      union U { double d; long long l; } u1, u2;
+      u1.d = s1[i];
+      u2.d = s2[i];
+      u1.l = (~u1.l) & u2.l;
+      r[i] = u1.d;
     }
 }
 
