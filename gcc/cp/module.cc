@@ -70,6 +70,23 @@ get_module (tree, module_state *, bool)
   return nullptr;
 }
 
+
+void
+mangle_module (int, bool)
+{
+}
+
+void
+mangle_module_fini ()
+{
+}
+
+int
+get_originating_module (tree, bool)
+{
+  return 0;
+}
+
 module_state *
 preprocess_module (module_state *, unsigned, bool, bool, bool, cpp_reader *)
 {
