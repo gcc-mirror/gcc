@@ -1,5 +1,8 @@
 2020-12-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk dded5f78ccb
+	c++: template and clone fns for modules
+
 	Merge trunk 0bd4fecbea3
 	c++: Fix MODULE_VERSION breakage
 

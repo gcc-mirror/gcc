@@ -2334,6 +2334,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_NONTEMPORAL:
 	  clause_code = OMP_CLAUSE_NONTEMPORAL;
 	  goto add_clause;
+	case OMP_LIST_SCAN_IN:
+	  clause_code = OMP_CLAUSE_INCLUSIVE;
+	  goto add_clause;
+	case OMP_LIST_SCAN_EX:
+	  clause_code = OMP_CLAUSE_EXCLUSIVE;
+	  goto add_clause;
 
 	add_clause:
 	  omp_clauses
@@ -4707,7 +4713,31 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   code->exit_label = NULL_TREE;
 
   /* Main loop body.  */
-  tmp = gfc_trans_omp_code (code->block->next, true);
+  if (clauses->lists[OMP_LIST_REDUCTION_INSCAN])
+    {
+      gcc_assert (code->block->next->next->op == EXEC_OMP_SCAN);
+      gcc_assert (code->block->next->next->next->next == NULL);
+      locus *cloc = &code->block->next->next->loc;
+      location_t loc = gfc_get_location (cloc);
+
+      gfc_code code2 = *code->block->next;
+      code2.next = NULL;
+      tmp = gfc_trans_code (&code2);
+      tmp = build2 (OMP_SCAN, void_type_node, tmp, NULL_TREE);
+      SET_EXPR_LOCATION (tmp, loc);
+      gfc_add_expr_to_block (&body, tmp);
+      input_location = loc;
+      tree c = gfc_trans_omp_clauses (&body,
+				      code->block->next->next->ext.omp_clauses,
+				      *cloc);
+      code2 = *code->block->next->next->next;
+      code2.next = NULL;
+      tmp = gfc_trans_code (&code2);
+      tmp = build2 (OMP_SCAN, void_type_node, tmp, c);
+      SET_EXPR_LOCATION (tmp, loc);
+    }
+  else
+    tmp = gfc_trans_omp_code (code->block->next, true);
   gfc_add_expr_to_block (&body, tmp);
 
   /* Label for cycle statements (if needed).  */
@@ -5234,13 +5264,15 @@ gfc_split_omp_clauses (gfc_code *code,
 	  = code->ext.omp_clauses->lists[OMP_LIST_LASTPRIVATE];
       /* Reduction is allowed on simd, do, parallel and teams.
 	 Duplicate it on all of them, but omit on do if
-	 parallel is present.  */
+	 parallel is present; additionally, inscan applies to do/simd only.  */
       for (int i = OMP_LIST_REDUCTION; i <= OMP_LIST_REDUCTION_TASK; i++)
 	{
-	  if (mask & GFC_OMP_MASK_TEAMS)
+	  if (mask & GFC_OMP_MASK_TEAMS
+	      && i != OMP_LIST_REDUCTION_INSCAN)
 	    clausesa[GFC_OMP_SPLIT_TEAMS].lists[i]
 	      = code->ext.omp_clauses->lists[i];
-	  if (mask & GFC_OMP_MASK_PARALLEL)
+	  if (mask & GFC_OMP_MASK_PARALLEL
+	      && i != OMP_LIST_REDUCTION_INSCAN)
 	    clausesa[GFC_OMP_SPLIT_PARALLEL].lists[i]
 	      = code->ext.omp_clauses->lists[i];
 	  else if (mask & GFC_OMP_MASK_DO)

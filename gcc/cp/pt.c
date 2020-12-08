@@ -29734,12 +29734,13 @@ walk_specializations (bool decls_p,
     fn (decls_p, *iter, data);
 }
 
-/* Lookup the specialization of TMPL, ARGS, SPEC, in the decl or type
-   specialization table.  Return what's already there (NULL if
-   nothing).  If INSERT is true, and there was nothing, add the new spec.  */
+/* Lookup the specialization of *ELT, in the decl or type
+   specialization table.  Return the SPEC that's already there (NULL if
+   nothing).  If INSERT is true, and there was nothing, add the new
+   spec.  */
 
 tree
-  match_mergeable_specialization (bool decl_p, spec_entry *elt, bool insert)
+match_mergeable_specialization (bool decl_p, spec_entry *elt, bool insert)
 {
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
