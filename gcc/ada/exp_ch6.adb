@@ -3801,7 +3801,7 @@ package body Exp_Ch6 is
                   --  is internally generated code that manipulates addresses,
                   --  e.g. when building interface tables. No check should
                   --  occur in this case, and the discriminated object is not
-                  --  directly a hand.
+                  --  directly at hand.
 
                   if not Comes_From_Source (Actual)
                     and then Nkind (Actual) = N_Unchecked_Type_Conversion
