@@ -4193,10 +4193,12 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
       else if (gimple_assign_rhs_code (assign) == BIT_INSERT_EXPR
 	       && VECTOR_TYPE_P (TREE_TYPE (rhs))
 	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).is_constant ()
+	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).to_constant () > 1
 	       && integer_zerop (gimple_assign_rhs3 (assign))
 	       && useless_type_conversion_p
 		    (TREE_TYPE (TREE_TYPE (rhs)),
-		     TREE_TYPE (gimple_assign_rhs2 (assign))))
+		     TREE_TYPE (gimple_assign_rhs2 (assign)))
+	       && bb_vinfo->lookup_def (gimple_assign_rhs2 (assign)))
 	{
 	  /* We start to match on insert to lane zero but since the
 	     inserts need not be ordered we'd have to search both
