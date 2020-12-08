@@ -5812,98 +5812,98 @@ __extension__ extern __inline int8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_s8 (int8x8_t __a)
 {
-  return (int8x8_t)__builtin_neon_vmvnv8qi (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_s16 (int16x4_t __a)
 {
-  return (int16x4_t)__builtin_neon_vmvnv4hi (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_s32 (int32x2_t __a)
 {
-  return (int32x2_t)__builtin_neon_vmvnv2si (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_u8 (uint8x8_t __a)
 {
-  return (uint8x8_t)__builtin_neon_vmvnv8qi ((int8x8_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_u16 (uint16x4_t __a)
 {
-  return (uint16x4_t)__builtin_neon_vmvnv4hi ((int16x4_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_u32 (uint32x2_t __a)
 {
-  return (uint32x2_t)__builtin_neon_vmvnv2si ((int32x2_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvn_p8 (poly8x8_t __a)
 {
-  return (poly8x8_t)__builtin_neon_vmvnv8qi ((int8x8_t) __a);
+  return (poly8x8_t) ~((int8x8_t) __a);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_s8 (int8x16_t __a)
 {
-  return (int8x16_t)__builtin_neon_vmvnv16qi (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_s16 (int16x8_t __a)
 {
-  return (int16x8_t)__builtin_neon_vmvnv8hi (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_s32 (int32x4_t __a)
 {
-  return (int32x4_t)__builtin_neon_vmvnv4si (__a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_u8 (uint8x16_t __a)
 {
-  return (uint8x16_t)__builtin_neon_vmvnv16qi ((int8x16_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_u16 (uint16x8_t __a)
 {
-  return (uint16x8_t)__builtin_neon_vmvnv8hi ((int16x8_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_u32 (uint32x4_t __a)
 {
-  return (uint32x4_t)__builtin_neon_vmvnv4si ((int32x4_t) __a);
+  return ~__a;
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmvnq_p8 (poly8x16_t __a)
 {
-  return (poly8x16_t)__builtin_neon_vmvnv16qi ((int8x16_t) __a);
+  return (poly8x16_t) ~((int8x16_t) __a);
 }
 
 __extension__ extern __inline int8x8_t
