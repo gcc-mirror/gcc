@@ -571,7 +571,7 @@ func schedinit() {
 	cpuinit() // must run before alginit
 	alginit() // maps must not be used before this call
 
-	msigsave(_g_.m)
+	sigsave(&_g_.m.sigmask)
 	initSigmask = _g_.m.sigmask
 
 	goargs()
@@ -1496,6 +1496,18 @@ func needm(x byte) {
 		exit(1)
 	}
 
+	// Save and block signals before getting an M.
+	// The signal handler may call needm itself,
+	// and we must avoid a deadlock. Also, once g is installed,
+	// any incoming signals will try to execute,
+	// but we won't have the sigaltstack settings and other data
+	// set up appropriately until the end of minit, which will
+	// unblock the signals. This is the same dance as when
+	// starting a new m to run Go code via newosproc.
+	var sigmask sigset
+	sigsave(&sigmask)
+	sigblock()
+
 	// Lock extra list, take head, unlock popped list.
 	// nilokay=false is safe here because of the invariant above,
 	// that the extra list always contains or will soon contain
@@ -1513,14 +1525,8 @@ func needm(x byte) {
 	extraMCount--
 	unlockextra(mp.schedlink.ptr())
 
-	// Save and block signals before installing g.
-	// Once g is installed, any incoming signals will try to execute,
-	// but we won't have the sigaltstack settings and other data
-	// set up appropriately until the end of minit, which will
-	// unblock the signals. This is the same dance as when
-	// starting a new m to run Go code via newosproc.
-	msigsave(mp)
-	sigblock()
+	// Store the original signal mask for use by minit.
+	mp.sigmask = sigmask
 
 	// Install g (= m->curg).
 	setg(mp.curg)
@@ -3300,7 +3306,7 @@ func beforefork() {
 	// a signal handler before exec if a signal is sent to the process
 	// group. See issue #18600.
 	gp.m.locks++
-	msigsave(gp.m)
+	sigsave(&gp.m.sigmask)
 	sigblock()
 }
 
