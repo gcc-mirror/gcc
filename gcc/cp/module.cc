@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #define MODULE_MINOR(V) ((V) % 10000)
 #define EXPERIMENT(A,B) (IS_EXPERIMENTAL (MODULE_VERSION) ? (A) : (B))
 #ifndef MODULE_VERSION
+// Be sure you're ready!  Remove #error this before release!
 #error "Shtopp! What are you doing? This is not ready yet."
 #include "bversion.h"
 #define MODULE_VERSION (BUILDING_GCC_MAJOR * 10000U + BUILDING_GCC_MINOR)
