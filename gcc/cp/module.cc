@@ -18,4 +18,49 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This file intentionally left empty.  */
+/* This file intentionally left empty of all but barest minium.  */
+
+/* In expermental (trunk) sources, MODULE_VERSION is a #define passed
+   in from the Makefile.  It records the modification date of the
+   source directory -- that's the only way to stay sane.  In release
+   sources, we (plan to) use the compiler's major.minor versioning.
+   While the format might not change between at minor versions, it
+   seems simplest to tie the two together.  There's no concept of
+   inter-version compatibility.  */
+#define IS_EXPERIMENTAL(V) ((V) >= (1U << 20))
+#define MODULE_MAJOR(V) ((V) / 10000)
+#define MODULE_MINOR(V) ((V) % 10000)
+#define EXPERIMENT(A,B) (IS_EXPERIMENTAL (MODULE_VERSION) ? (A) : (B))
+#ifndef MODULE_VERSION
+#error "Shtopp! What are you doing? This is not ready yet."
+#include "bversion.h"
+#define MODULE_VERSION (BUILDING_GCC_MAJOR * 10000U + BUILDING_GCC_MINOR)
+#elif !IS_EXPERIMENTAL (MODULE_VERSION)
+#error "This is not the version I was looking for."
+#endif
+
+#define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
+#include "config.h"
+
+#include "system.h"
+#include "coretypes.h"
+#include "cp-tree.h"
+#include "timevar.h"
+#include "stringpool.h"
+#include "dumpfile.h"
+#include "bitmap.h"
+#include "cgraph.h"
+#include "tree-iterator.h"
+#include "cpplib.h"
+#include "mkdeps.h"
+#include "incpath.h"
+#include "libiberty.h"
+#include "stor-layout.h"
+#include "version.h"
+#include "tree-diagnostic.h"
+#include "toplev.h"
+#include "opts.h"
+#include "attribs.h"
+#include "intl.h"
+#include "langhooks.h"
+
