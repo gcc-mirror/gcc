@@ -99,6 +99,16 @@ get_originating_module (tree, bool)
   return 0;
 }
 
+void
+set_instantiating_module (tree)
+{
+}
+
+void
+set_originating_module (tree, bool)
+{
+}
+
 module_state *
 preprocess_module (module_state *, unsigned, bool, bool, bool, cpp_reader *)
 {

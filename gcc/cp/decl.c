@@ -9878,6 +9878,8 @@ grokfndecl (tree ctype,
       && !processing_template_decl)
     deduce_noexcept_on_destructor (decl);
 
+  set_originating_module (decl);
+
   decl = check_explicit_specialization (orig_declarator, decl,
 					template_count,
 					2 * funcdef_flag +
@@ -10121,6 +10123,8 @@ grokvardecl (tree type,
       TREE_STATIC (decl) = declspecs->storage_class == sc_static;
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
+
+  set_originating_module (decl);
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
     {
@@ -12965,6 +12969,8 @@ grokdeclarator (const cp_declarator *declarator,
                revert this subsequently if it determines that
                the clones should share a common implementation.  */
 	    DECL_ABSTRACT_P (decl) = true;
+
+	  set_originating_module (decl);
 	}
       else if (current_class_type
 	       && constructor_name_p (unqualified_id, current_class_type))
@@ -13499,6 +13505,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      ;  /* We already issued a permerror.  */
 	    else if (decl && DECL_NAME (decl))
 	      {
+		set_originating_module (decl, true);
+		
 		if (initialized)
 		  /* Kludge: We need funcdef_flag to be true in do_friend for
 		     in-class defaulted functions, but that breaks grokfndecl.

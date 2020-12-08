@@ -960,6 +960,9 @@ maybe_new_partial_specialization (tree type)
       TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
       TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
 
+      set_instantiating_module (d);
+      DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
+
       return t;
     }
 
@@ -4921,6 +4924,17 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   TREE_TYPE (tmpl) = TREE_TYPE (decl);
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
+
+  if (modules_p ())
+    {
+      /* Propagate module information from the decl.  */
+      DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
+      if (DECL_LANG_SPECIFIC (decl))
+	{
+	  DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (decl);
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (decl));
+	}
+    }
 
   return tmpl;
 }
@@ -9994,6 +10008,12 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}
 
+      set_instantiating_module (type_decl);
+      /* Although GEN_TMPL is the TEMPLATE_DECL, it has the same value
+	 of export flag.  We want to propagate this because it might
+	 be a friend declaration that pushes a new hidden binding.  */
+      DECL_MODULE_EXPORT_P (type_decl) = DECL_MODULE_EXPORT_P (gen_tmpl);
+
       if (CLASS_TYPE_P (template_type))
 	{
 	  TREE_PRIVATE (type_decl)
@@ -13912,6 +13932,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (!DECL_DELETED_FN (r))
     DECL_INITIAL (r) = NULL_TREE;
   DECL_CONTEXT (r) = ctx;
+  set_instantiating_module (r);
 
   /* Handle explicit(dependent-expr).  */
   if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
@@ -14234,6 +14255,24 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   DECL_TEMPLATE_RESULT (r) = inner;
   TREE_TYPE (r) = TREE_TYPE (inner);
   DECL_CONTEXT (r) = DECL_CONTEXT (inner);
+
+  if (modules_p ())
+    {
+      /* Propagate module information from the decl.  */
+      DECL_MODULE_EXPORT_P (r) = DECL_MODULE_EXPORT_P (inner);
+      if (DECL_LANG_SPECIFIC (inner))
+	{
+	  DECL_MODULE_PURVIEW_P (r) = DECL_MODULE_PURVIEW_P (inner);
+	  /* If this is a constrained template, the above tsubst of
+	     inner can find the unconstrained template, which may have
+	     come from an import.  This is ok, because we don't
+	     register this instantiation (see below).  */
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (inner)
+			       || (TEMPLATE_PARMS_CONSTRAINTS
+				   (DECL_TEMPLATE_PARMS (t))));
+	  DECL_MODULE_IMPORT_P (r) = false;
+	}
+    }
 
   DECL_TEMPLATE_INSTANTIATIONS (r) = NULL_TREE;
   DECL_TEMPLATE_SPECIALIZATIONS (r) = NULL_TREE;
@@ -14789,6 +14828,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
 	  SET_DECL_RTL (r, NULL);
+	set_instantiating_module (r);
+
 	/* The initializer must not be expanded until it is required;
 	   see [temp.inst].  */
 	DECL_INITIAL (r) = NULL_TREE;
@@ -20950,6 +20991,8 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
+
+  set_instantiating_module (fndecl);
 
   /* Now we know the specialization, compute access previously
      deferred.  Do no access control for inheriting constructors,
@@ -28036,6 +28079,8 @@ finish_concept_definition (cp_expr id, tree init)
   tree decl = build_lang_decl_loc (loc, CONCEPT_DECL, *id, boolean_type_node);
   DECL_CONTEXT (decl) = current_scope ();
   DECL_INITIAL (decl) = init;
+
+  set_originating_module (decl, false);
 
   /* Push the enclosing template.  */
   return push_template_decl (decl);
