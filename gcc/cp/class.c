@@ -4920,7 +4920,7 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-static void
+void
 build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
 		    bool update_methods)
 {
