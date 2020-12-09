@@ -2594,8 +2594,9 @@ package body Sem_Ch13 is
 
                   for Asp in Pre_Post_Aspects loop
                      if Has_Aspect (E, Asp) then
+                        Error_Msg_Name_1 := Aspect_Names (Asp);
                         Error_Msg_N
-                          ("this aspect is not allowed for a static "
+                          ("aspect % is not allowed for a static "
                            & "expression function",
                            Find_Aspect (E, Asp));
 
