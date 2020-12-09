@@ -1,5 +1,9 @@
 2020-12-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (member_vec_dedup): Remove gratuitous chaining.
+	(check_local_shadow): No need to check for clone.
+
 	Merge trunk e4c3ec980fa
 	c++: Module-specific error and tree dumping
 

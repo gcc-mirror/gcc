@@ -2290,11 +2290,7 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
 	  if (!current)
 	    current = to_type;
 	  else
-	    {
-	      current = stat_hack (current, to_type);
-	      /* Also point the chain at the decls.  */
-	      OVL_CHAIN (current) = STAT_DECL (current);
-	    }
+	    current = stat_hack (current, to_type);
 	}
 
       if (current)
@@ -3132,11 +3128,6 @@ check_local_shadow (tree decl)
 
   /* External decls are something else.  */
   if (DECL_EXTERNAL (decl))
-    return;
-
-  /* No need to do it when cloning, and with modules this can cause
-     out-of-order reading when we try and instantiate stuff.  */
-  if (current_function_decl && DECL_CLONED_FUNCTION_P (current_function_decl))
     return;
 
   tree old = NULL_TREE;
