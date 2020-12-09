@@ -65,6 +65,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "langhooks.h"
 
+/* What the current TU is.  */
+unsigned module_kind;
+
 module_state *
 get_module (tree, module_state *, bool)
 {
@@ -99,6 +102,37 @@ get_originating_module (tree, bool)
   return 0;
 }
 
+bool
+module_may_redeclare (tree)
+{
+  return true;
+}
+
+void
+set_instantiating_module (tree)
+{
+}
+
+void
+set_defining_module (tree)
+{
+}
+
+void
+set_originating_module (tree, bool)
+{
+}
+
+void
+import_module (module_state *, location_t, bool, tree, cpp_reader *)
+{
+}
+
+void
+declare_module (module_state *, location_t, bool, tree, cpp_reader *)
+{
+}
+
 module_state *
 preprocess_module (module_state *, unsigned, bool, bool, bool, cpp_reader *)
 {
@@ -110,3 +144,21 @@ preprocessed_module (cpp_reader *)
 {
 }
 
+void
+init_modules (cpp_reader *)
+{
+  /* Do not turn on yet.  */
+  if (modules_p ())
+    fatal_error (input_location,
+		 "Shtopp! What are you doing? This is not ready yet.");
+}
+
+void
+maybe_check_all_macros (cpp_reader *)
+{
+}
+
+void
+fini_modules ()
+{
+}

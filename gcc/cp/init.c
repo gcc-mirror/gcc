@@ -1922,7 +1922,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   in an exception region.  */;
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
-			    flags, complain);
+			    flags, complain | tf_no_cleanup);
 
       if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
 	/* We need to protect the initialization of a catch parm with a

@@ -767,6 +767,9 @@
    */
 #undef LT_OBJDIR
 
+/* Defined if no way to sleep is available. */
+#undef NO_SLEEP
+
 /* Name of package */
 #undef PACKAGE
 

@@ -1,3 +1,9 @@
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-pragma.c (omp_pragmas): Remove "master".
+	(omp_pragmas_simd): Add "master".
+
 2020-12-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98126

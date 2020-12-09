@@ -8860,7 +8860,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
        LOOKUP_ONLYCONVERTING.  */
     newrhs = convert_for_initialization (lhs, olhstype, newrhs, LOOKUP_NORMAL,
 					 ICR_INIT, NULL_TREE, 0,
-                                         complain);
+					 complain | tf_no_cleanup);
   else
     newrhs = convert_for_assignment (olhstype, newrhs, ICR_ASSIGN,
 				     NULL_TREE, 0, complain, LOOKUP_IMPLICIT);

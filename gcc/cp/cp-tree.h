@@ -6335,6 +6335,13 @@ extern tree build_new_op			(const op_location_t &,
 						 enum tree_code,
 						 int, tree, tree, tree, tree *,
 						 tsubst_flags_t);
+/* Wrapper that leaves out the usually-null op3 and overload parms.  */
+inline tree build_new_op (const op_location_t &loc, enum tree_code code,
+			  int flags, tree arg1, tree arg2,
+			  tsubst_flags_t complain)
+{
+  return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL, complain);
+}
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
@@ -7807,7 +7814,7 @@ extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
 extern tree spaceship_type			(tree, tsubst_flags_t = tf_warning_or_error);
-extern tree genericize_spaceship		(tree, tree, tree);
+extern tree genericize_spaceship		(location_t, tree, tree, tree);
 extern tree cp_build_binary_op                  (const op_location_t &,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);

@@ -1063,43 +1063,60 @@ spaceship_type (tree optype, tsubst_flags_t complain)
   return lookup_comparison_category (tag, complain);
 }
 
-/* Turn <=> with type TYPE and operands OP0 and OP1 into GENERIC.  */
+/* Turn <=> with type TYPE and operands OP0 and OP1 into GENERIC.
+   This is also used by build_comparison_op for fallback to op< and op==
+   in a defaulted op<=>.  */
 
 tree
-genericize_spaceship (tree type, tree op0, tree op1)
+genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
 {
   /* ??? maybe optimize based on knowledge of representation? */
   comp_cat_tag tag = cat_tag_for (type);
+
+  if (tag == cc_last && is_auto (type))
+    {
+      /* build_comparison_op is checking to see if we want to suggest changing
+	 the op<=> return type from auto to a specific comparison category; any
+	 category will do for now.  */
+      tag = cc_strong_ordering;
+      type = lookup_comparison_category (tag, tf_none);
+      if (type == error_mark_node)
+	return error_mark_node;
+    }
+
   gcc_checking_assert (tag < cc_last);
 
   tree r;
-  op0 = save_expr (op0);
-  op1 = save_expr (op1);
+  if (SCALAR_TYPE_P (TREE_TYPE (op0)))
+    {
+      op0 = save_expr (op0);
+      op1 = save_expr (op1);
+    }
 
   tree gt = lookup_comparison_result (tag, type, 1);
+
+  int flags = LOOKUP_NORMAL;
+  tsubst_flags_t complain = tf_none;
 
   if (tag == cc_partial_ordering)
     {
       /* op0 == op1 ? equivalent : op0 < op1 ? less :
-	 op0 > op1 ? greater : unordered */
+	 op1 < op0 ? greater : unordered */
       tree uo = lookup_comparison_result (tag, type, 3);
-      tree comp = fold_build2 (GT_EXPR, boolean_type_node, op0, op1);
-      r = fold_build3 (COND_EXPR, type, comp, gt, uo);
+      tree comp = build_new_op (loc, LT_EXPR, flags, op1, op0, complain);
+      r = build_conditional_expr (loc, comp, gt, uo, complain);
     }
   else
     /* op0 == op1 ? equal : op0 < op1 ? less : greater */
     r = gt;
 
   tree lt = lookup_comparison_result (tag, type, 2);
-  tree comp = fold_build2 (LT_EXPR, boolean_type_node, op0, op1);
-  r = fold_build3 (COND_EXPR, type, comp, lt, r);
+  tree comp = build_new_op (loc, LT_EXPR, flags, op0, op1, complain);
+  r = build_conditional_expr (loc, comp, lt, r, complain);
 
   tree eq = lookup_comparison_result (tag, type, 0);
-  comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
-  r = fold_build3 (COND_EXPR, type, comp, eq, r);
-
-  /* Wrap the whole thing in a TARGET_EXPR like build_conditional_expr_1.  */
-  r = get_target_expr (r);
+  comp = build_new_op (loc, EQ_EXPR, flags, op0, op1, complain);
+  r = build_conditional_expr (loc, comp, eq, r, complain);
 
   return r;
 }
@@ -1323,7 +1340,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
   if (!info.defining && !(complain & tf_error) && !DECL_MAYBE_DELETED (fndecl))
     return;
 
-  int flags = LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED;
+  int flags = LOOKUP_NORMAL;
   const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (fndecl));
   tree_code code = op->tree_code;
 
@@ -1364,6 +1381,10 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 
   if (code == EQ_EXPR || code == SPACESHIP_EXPR)
     {
+      comp_cat_tag retcat = cc_last;
+      if (code == SPACESHIP_EXPR && !FNDECL_USED_AUTO (fndecl))
+	retcat = cat_tag_for (rettype);
+
       bool bad = false;
       auto_vec<tree> comps;
 
@@ -1375,13 +1396,15 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	{
 	  tree expr_type = TREE_TYPE (field);
 
+	  location_t field_loc = DECL_SOURCE_LOCATION (field);
+
 	  /* A defaulted comparison operator function for class C is defined as
 	     deleted if any non-static data member of C is of reference type or
 	     C has variant members.  */
 	  if (TREE_CODE (expr_type) == REFERENCE_TYPE)
 	    {
 	      if (complain & tf_error)
-		inform (DECL_SOURCE_LOCATION (field), "cannot default compare "
+		inform (field_loc, "cannot default compare "
 			"reference member %qD", field);
 	      bad = true;
 	      continue;
@@ -1390,7 +1413,7 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 		   && next_initializable_field (TYPE_FIELDS (expr_type)))
 	    {
 	      if (complain & tf_error)
-		inform (DECL_SOURCE_LOCATION (field), "cannot default compare "
+		inform (field_loc, "cannot default compare "
 			"anonymous union member");
 	      bad = true;
 	      continue;
@@ -1400,22 +1423,66 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 				 NULL_TREE);
 	  tree rhs_mem = build3 (COMPONENT_REF, expr_type, rhs, field,
 				 NULL_TREE);
-	  tree comp = build_new_op (info.loc, code, flags, lhs_mem, rhs_mem,
-				    NULL_TREE, NULL, complain);
+	  tree overload = NULL_TREE;
+	  tree comp = build_new_op (field_loc, code, flags, lhs_mem, rhs_mem,
+				    NULL_TREE, &overload,
+				    retcat != cc_last ? tf_none : complain);
 	  if (comp == error_mark_node)
 	    {
-	      bad = true;
-	      continue;
+	      if (overload == NULL_TREE && code == SPACESHIP_EXPR
+		  && (retcat != cc_last || complain))
+		{
+		  tree comptype = (retcat != cc_last ? rettype
+				   : DECL_SAVED_AUTO_RETURN_TYPE (fndecl));
+		  /* No viable <=>, try using op< and op==.  */
+		  tree lteq = genericize_spaceship (field_loc, comptype,
+						    lhs_mem, rhs_mem);
+		  if (lteq != error_mark_node)
+		    {
+		      /* We found usable < and ==.  */
+		      if (retcat != cc_last)
+			/* Return type is a comparison category, use them.  */
+			comp = lteq;
+		      else if (complain & tf_error)
+			/* Return type is auto, suggest changing it.  */
+			inform (info.loc, "changing the return type from %qs "
+				"to a comparison category type will allow the "
+				"comparison to use %qs and %qs", "auto",
+				"operator<", "operator==");
+		    }
+		  else if (retcat != cc_last && complain != tf_none)
+		    /* No usable < and ==, give an error for op<=>.  */
+		    build_new_op (field_loc, code, flags, lhs_mem, rhs_mem,
+				  complain);
+		}
+	      if (comp == error_mark_node)
+		{
+		  bad = true;
+		  continue;
+		}
 	    }
-	  if (code == SPACESHIP_EXPR
-	      && cat_tag_for (TREE_TYPE (comp)) == cc_last)
+	  if (code != SPACESHIP_EXPR)
+	    ;
+	  else if (FNDECL_USED_AUTO (fndecl)
+		   && cat_tag_for (TREE_TYPE (comp)) == cc_last)
 	    {
 	      /* The operator function is defined as deleted if ... Ri is not a
 		 comparison category type.  */
 	      if (complain & tf_error)
-		inform (DECL_SOURCE_LOCATION (field),
+		inform (field_loc,
 			"three-way comparison of %qD has type %qT, not a "
 			"comparison category type", field, TREE_TYPE (comp));
+	      bad = true;
+	      continue;
+	    }
+	  else if (!FNDECL_USED_AUTO (fndecl)
+		   && !can_convert (rettype, TREE_TYPE (comp), complain))
+	    {
+	      if (complain & tf_error)
+		error_at (field_loc,
+			  "three-way comparison of %qD has type %qT, which "
+			  "does not convert to %qT",
+			  field, TREE_TYPE (comp), rettype);
 	      bad = true;
 	      continue;
 	    }

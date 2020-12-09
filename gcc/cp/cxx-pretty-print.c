@@ -1381,6 +1381,10 @@ cxx_pretty_printer::simple_type_specifier (tree t)
       pp_cxx_right_paren (this);
       break;
 
+    case NULLPTR_TYPE:
+      pp_cxx_ws_string (this, "std::nullptr_t");
+      break;
+
     default:
       c_pretty_printer::simple_type_specifier (t);
       break;
@@ -1408,6 +1412,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case DECLTYPE_TYPE:
+    case NULLPTR_TYPE:
       pp_cxx_cv_qualifier_seq (pp, t);
       pp->simple_type_specifier (t);
       break;
@@ -1873,6 +1878,7 @@ cxx_pretty_printer::type_id (tree t)
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
     case DECLTYPE_TYPE:
+    case NULLPTR_TYPE:
     case TEMPLATE_ID_EXPR:
     case OFFSET_TYPE:
       pp_cxx_type_specifier_seq (this, t);

@@ -192,6 +192,29 @@ struct cpu_regmove_cost
   const int FP2FP;
 };
 
+struct simd_vec_cost
+{
+  const int int_stmt_cost;		/* Cost of any int vector operation,
+					   excluding load, store, permute,
+					   vector-to-scalar and
+					   scalar-to-vector operation.  */
+  const int fp_stmt_cost;		 /* Cost of any fp vector operation,
+					    excluding load, store, permute,
+					    vector-to-scalar and
+					    scalar-to-vector operation.  */
+  const int permute_cost;		 /* Cost of permute operation.  */
+  const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
+  const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
+					    operation.  */
+  const int align_load_cost;	 /* Cost of aligned vector load.  */
+  const int unalign_load_cost;	 /* Cost of unaligned vector load.  */
+  const int unalign_store_cost;	 /* Cost of unaligned vector store.  */
+  const int store_cost;		 /* Cost of vector store.  */
+};
+
+typedef struct simd_vec_cost advsimd_vec_cost;
+typedef struct simd_vec_cost sve_vec_cost;
+
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
@@ -201,24 +224,10 @@ struct cpu_vector_cost
 					    excluding load and store.  */
   const int scalar_load_cost;		 /* Cost of scalar load.  */
   const int scalar_store_cost;		 /* Cost of scalar store.  */
-  const int vec_int_stmt_cost;		 /* Cost of any int vector operation,
-					    excluding load, store, permute,
-					    vector-to-scalar and
-					    scalar-to-vector operation.  */
-  const int vec_fp_stmt_cost;		 /* Cost of any fp vector operation,
-					    excluding load, store, permute,
-					    vector-to-scalar and
-					    scalar-to-vector operation.  */
-  const int vec_permute_cost;		 /* Cost of permute operation.  */
-  const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
-  const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
-					    operation.  */
-  const int vec_align_load_cost;	 /* Cost of aligned vector load.  */
-  const int vec_unalign_load_cost;	 /* Cost of unaligned vector load.  */
-  const int vec_unalign_store_cost;	 /* Cost of unaligned vector store.  */
-  const int vec_store_cost;		 /* Cost of vector store.  */
   const int cond_taken_branch_cost;	 /* Cost of taken branch.  */
   const int cond_not_taken_branch_cost;  /* Cost of not taken branch.  */
+  const advsimd_vec_cost *advsimd;	 /* Cost of Advanced SIMD operations.  */
+  const sve_vec_cost *sve;		 /* Cost of SVE operations.  */
 };
 
 /* Branch costs.  */

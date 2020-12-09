@@ -21751,6 +21751,7 @@ $as_echo "$ac_has_usleep" >&6; }
   fi
 
   if test x"$ac_has_nanosleep$ac_has_sleep" = x"nono"; then
+      ac_no_sleep=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Sleep" >&5
 $as_echo_n "checking for Sleep... " >&6; }
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -21774,9 +21775,16 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 $as_echo "#define HAVE_WIN32_SLEEP 1" >>confdefs.h
 
+	ac_no_sleep=no
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_win32_sleep" >&5
 $as_echo "$ac_has_win32_sleep" >&6; }
+  fi
+
+  if test x"$ac_no_sleep" = x"yes"; then
+
+$as_echo "#define NO_SLEEP 1" >>confdefs.h
+
   fi
 
 

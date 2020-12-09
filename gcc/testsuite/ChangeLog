@@ -1,3 +1,101 @@
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98191
+	* gcc.dg/torture/pr98191.c: Add dg-additional-options with
+	-w -Wno-psabi.
+
+2020-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98103
+	* g++.dg/ubsan/vptr-18.C: New test.
+
+2020-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96299
+	* g++.dg/cpp2a/spaceship-synth-neg2.C: Move error.
+	* g++.dg/cpp2a/spaceship-p1186.C: New test.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98182
+	* gcc.dg/tree-ssa/if-to-switch-10.c: New test.
+	* gcc.dg/tree-ssa/pr98182.c: New test.
+
+2020-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/reduction4.f90: Update; move FE some tests to ...
+	* gfortran.dg/gomp/reduction6.f90: ... this new test and ...
+	* gfortran.dg/gomp/reduction7.f90: ... this new test.
+	* gfortran.dg/gomp/reduction5.f90: Add dg-error.
+	* gfortran.dg/gomp/scan-1.f90: New test.
+	* gfortran.dg/gomp/scan-2.f90: New test.
+	* gfortran.dg/gomp/scan-3.f90: New test.
+	* gfortran.dg/gomp/scan-4.f90: New test.
+	* gfortran.dg/gomp/scan-5.f90: New test.
+	* gfortran.dg/gomp/scan-6.f90: New test.
+	* gfortran.dg/gomp/scan-7.f90: New test.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94440
+	* gcc.target/i386/pr94440-1.c: New file.
+	* gcc.target/i386/pr94440-2.c: New file.
+
+2020-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx512vpopcntdq-pr97770-2.c: Require
+	avx512vpopcntdq support.
+	* gcc.target/i386/avx512vpopcntdqvl-pr97770-1.c: Require
+	avx512vpopcntdq, avx512vl support.
+
+2020-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr98100.c: Require ifunc support.
+
+2020-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/95900
+	* gcc.dg/vect/bb-slp-pr95866.c: Require sse2 for the
+	BIT_FIELD_REF match.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512dq-vandnpd-2.c (CALC): Use union
+	to avoid aliasing violations.
+	* gcc.target/i386/avx512dq-vandnps-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vandpd-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vandps-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vorpd-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vorps-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vxorpd-2.c (CALC): Likewise.
+	* gcc.target/i386/avx512dq-vxorps-2.c (CALC): Likewise.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-c++-common/gomp/pr98187.c: New test.
+
+2020-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98191
+	* gcc.dg/torture/pr98191.c: New testcase.
+
+2020-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97559
+	* gcc.dg/torture/pr97559-1.c: New testcase.
+	* gcc.dg/torture/pr97559-2.c: Likewise.
+
+2020-12-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/97872
+	* gcc.target/arm/pr97872.c: New test.
+
+2020-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/96470
+	* gnat.dg/opt39.adb: Add dg-additional-options for PowerPC.
+
 2020-12-07  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/97981
