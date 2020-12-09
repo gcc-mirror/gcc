@@ -4531,6 +4531,10 @@ no_linkage_error (tree decl)
     /* In C++11 it's ok if the decl is defined.  */
     return;
 
+  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
+    /* An imported decl is ok.  */
+    return;
+
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
   if (t == NULL_TREE)
     /* The type that got us on no_linkage_decls must have gotten a name for
@@ -5225,6 +5229,8 @@ c_parse_final_cleanups (void)
   /* We're done with the splay-tree now.  */
   if (priority_info_map)
     splay_tree_delete (priority_info_map);
+
+  fini_modules ();
 
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();

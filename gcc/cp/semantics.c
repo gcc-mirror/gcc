@@ -3220,6 +3220,19 @@ begin_class_definition (tree t)
       t = make_class_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t);
     }
+
+  if (modules_p ())
+    {
+      if (!module_may_redeclare (TYPE_NAME (t)))
+	{
+	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
+	  return error_mark_node;
+	}
+      set_instantiating_module (TYPE_NAME (t));
+      set_defining_module (TYPE_NAME (t));
+    }
+
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
@@ -4506,7 +4519,8 @@ expand_or_defer_fn_1 (tree fn)
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
       /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
-      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+      if (!DECL_DECLARED_CONSTEXPR_P (fn)
+	  && !(modules_p () && DECL_DECLARED_INLINE_P (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }

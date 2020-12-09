@@ -2008,6 +2008,39 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (!validate_constexpr_redeclaration (olddecl, newdecl))
     return error_mark_node;
 
+  if (modules_p ()
+      && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
+      && TREE_CODE (olddecl) != NAMESPACE_DECL
+      && !hiding)
+    {
+      if (DECL_ARTIFICIAL (olddecl))
+	{
+	  gcc_checking_assert (!(DECL_LANG_SPECIFIC (olddecl)
+				 && DECL_MODULE_IMPORT_P (olddecl)));
+	  if (!(global_purview_p () || not_module_p ()))
+	    error ("declaration %qD conflicts with builtin", newdecl);
+	  else
+	    DECL_MODULE_EXPORT_P (olddecl) = DECL_MODULE_EXPORT_P (newdecl);
+	}
+      else
+	{
+	  if (!module_may_redeclare (olddecl))
+	    {
+	      error ("declaration %qD conflicts with import", newdecl);
+	      inform (olddecl_loc, "import declared %q#D here", olddecl);
+
+	      return error_mark_node;
+	    }
+
+	  if (DECL_MODULE_EXPORT_P (newdecl)
+	      && !DECL_MODULE_EXPORT_P (olddecl))
+	    {
+	      error ("conflicting exporting declaration %qD", newdecl);
+	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
+	    }
+	}
+    }
+
   /* We have committed to returning OLDDECL at this point.  */
 
   /* If new decl is `static' and an `extern' was seen previously,
@@ -2217,6 +2250,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		DECL_CONTEXT (parm) = old_result;
 	    }
 	}
+
+      DECL_MODULE_IMPORT_P (olddecl)
+	= DECL_MODULE_IMPORT_P (old_result)
+	= DECL_MODULE_IMPORT_P (newdecl);
 
       return olddecl;
     }
@@ -2836,6 +2873,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
 	      sizeof (struct tree_decl_common) - sizeof (struct tree_common));
+
+      if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
+	{
+	  /* Repropagate the module information to the template.  */
+	  tree tmpl = DECL_TI_TEMPLATE (olddecl);
+
+	  if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
+	    {
+	      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
+	      gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl));
+	      DECL_MODULE_IMPORT_P (tmpl) = false;
+	    }
+	}
+
       switch (TREE_CODE (newdecl))
 	{
 	case LABEL_DECL:
@@ -4330,7 +4381,8 @@ cxx_init_decl_processing (void)
   gcc_assert (global_namespace == NULL_TREE);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_identifier,
 				      void_type_node);
-  TREE_PUBLIC (global_namespace) = 1;
+  TREE_PUBLIC (global_namespace) = true;
+  DECL_MODULE_EXPORT_P (global_namespace) = true;
   DECL_CONTEXT (global_namespace)
     = build_translation_unit_decl (get_identifier (main_input_filename));
   /* Remember whether we want the empty class passing ABI change warning
@@ -4628,6 +4680,9 @@ cxx_init_decl_processing (void)
 
   if (! supports_one_only ())
     flag_weak = 0;
+
+  if (modules_p ())
+    init_modules (parse_in);
 
   make_fname_decl = cp_make_fname_decl;
   start_fname_decls ();
@@ -5453,8 +5508,14 @@ start_decl (const cp_declarator *declarator,
 
   if ((DECL_EXTERNAL (decl) || TREE_CODE (decl) == FUNCTION_DECL)
       && current_function_decl)
-    /* A function-scope decl of some namespace-scope decl.  */
-    DECL_LOCAL_DECL_P (decl) = true;
+    {
+      /* A function-scope decl of some namespace-scope decl.  */
+      DECL_LOCAL_DECL_P (decl) = true;
+      if (named_module_purview_p ())
+	error_at (declarator->id_loc,
+		  "block-scope extern declaration %q#D not permitted"
+		  " in module purview", decl);
+    }
 
   /* Enter this declaration into the symbol table.  Don't push the plain
      VAR_DECL for a variable template.  */
@@ -5470,7 +5531,9 @@ start_decl (const cp_declarator *declarator,
 
   if (VAR_P (decl)
       && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
-      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
+      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl)
+      /* But not templated variables.  */
+      && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)))
     {
       /* This is a const variable with implicit 'static'.  Set
 	 DECL_THIS_STATIC so we can tell it from variables that are
@@ -15143,6 +15206,41 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  inform (location_of (t), "previous declaration %qD", t);
 	  return error_mark_node;
 	}
+
+      if (modules_p ()
+	  && how == TAG_how::CURRENT_ONLY)
+	{
+	  tree decl = TYPE_NAME (t);
+	  if (!module_may_redeclare (decl))
+	    {
+	      error ("cannot declare %qD in a different module", decl);
+	      inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	      return error_mark_node;
+	    }
+
+	  tree maybe_tmpl = decl;
+	  if (CLASS_TYPE_P (t) && CLASSTYPE_IS_TEMPLATE (t))
+	    maybe_tmpl = CLASSTYPE_TI_TEMPLATE (t);
+
+	  if (DECL_LANG_SPECIFIC (decl)
+	      && DECL_MODULE_IMPORT_P (decl)
+	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	    {
+	      /* Push it into this TU's symbol slot.  */
+	      gcc_checking_assert (current_namespace == CP_DECL_CONTEXT (decl));
+	      if (maybe_tmpl != decl)
+		/* We're in the template parm binding level.
+		   Pushtag has logic to slide under that, but we're
+		   not pushing a *new* type.  */
+		push_nested_namespace (CP_DECL_CONTEXT (decl));
+
+	      pushdecl (maybe_tmpl);
+	      if (maybe_tmpl != decl)
+		pop_nested_namespace (CP_DECL_CONTEXT (decl));
+	    }
+
+	  set_instantiating_module (maybe_tmpl);
+	}
     }
 
   return t;
@@ -15487,6 +15585,19 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 		  "previous definition here");
 	  underlying_type = NULL_TREE;
 	}
+
+      if (modules_p ())
+	{
+	  if (!module_may_redeclare (TYPE_NAME (enumtype)))
+	    {
+	      error ("cannot define %qD in different module",
+		     TYPE_NAME (enumtype));
+	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)),
+		      "declared here");
+	      enumtype = error_mark_node;
+	    }
+	  set_instantiating_module (TYPE_NAME (enumtype));
+	}
     }
 
   if (!enumtype || TREE_CODE (enumtype) != ENUMERAL_TYPE
@@ -15747,6 +15858,11 @@ finish_enum_value_list (tree enumtype)
   else
     underlying_type = ENUM_UNDERLYING_TYPE (enumtype);
 
+  /* If the enum is exported, mark the consts too.  */
+  bool export_p = (UNSCOPED_ENUM_P (enumtype)
+		   && DECL_MODULE_EXPORT_P (TYPE_STUB_DECL (enumtype))
+		   && at_namespace_scope_p ());
+
   /* Convert each of the enumerators to the type of the underlying
      type of the enumeration.  */
   for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
@@ -15769,6 +15885,8 @@ finish_enum_value_list (tree enumtype)
 	  TREE_TYPE (value) = enumtype;
 	}
       DECL_INITIAL (decl) = value;
+      if (export_p)
+	DECL_MODULE_EXPORT_P (decl) = true;
     }
 
   /* Fix up all variant types of this enum type.  */
@@ -17366,10 +17484,25 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   check_template_shadow (fndecl);
 
-  if (TREE_PUBLIC (fndecl))
-    DECL_COMDAT (fndecl) = 1;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
-  DECL_NO_INLINE_WARNING_P (fndecl) = 1;
+  /* p1779 ABI-Isolation makes inline not a default for in-class
+     definitions in named module purview.  If the user explicitly
+     made it inline, grokdeclarator will already have done the right
+     things.  */
+  if ((!named_module_purview_p ()
+       || flag_module_implicit_inline
+      /* Lambda's operator function remains inline.  */
+       || LAMBDA_TYPE_P (DECL_CONTEXT (fndecl)))
+      /* If the user explicitly asked for this to be inline, we don't
+	 need to do more, but more importantly we want to warn if we
+	 can't inline it.  */
+      && !DECL_DECLARED_INLINE_P (fndecl))
+    {
+      if (TREE_PUBLIC (fndecl))
+	DECL_COMDAT (fndecl) = 1;
+      DECL_DECLARED_INLINE_P (fndecl) = 1;
+      /* It's ok if we can't inline this.  */
+      DECL_NO_INLINE_WARNING_P (fndecl) = 1;
+    }
 
   /* We process method specializations in finish_struct_1.  */
   if (processing_template_decl && !DECL_TEMPLATE_SPECIALIZATION (fndecl))
