@@ -179,6 +179,38 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   pp->m_format_postprocessor = new cxx_format_postprocessor ();
 }
 
+/* Dump an '@module' name suffix for DECL, if any.  */
+
+static void
+dump_module_suffix (cxx_pretty_printer *pp, tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (!DECL_CONTEXT (decl))
+    return;
+
+  if (TREE_CODE (decl) != CONST_DECL
+      || !UNSCOPED_ENUM_P (DECL_CONTEXT (decl)))
+    {
+      if (!DECL_NAMESPACE_SCOPE_P (decl))
+	return;
+
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (decl)
+	  && (TREE_PUBLIC (decl) || !TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
+	return;
+    }
+
+  if (unsigned m = get_originating_module (decl))
+    if (const char *n = module_name (m, false))
+      {
+	pp_character (pp, '@');
+	pp->padding = pp_none;
+	pp_string (pp, n);
+      }
+}
+
 /* Dump a scope, if deemed necessary.  */
 
 static void
@@ -771,6 +803,8 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
   else
     pp_cxx_tree_identifier (pp, DECL_NAME (decl));
 
+  dump_module_suffix (pp, decl);
+
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
 			 !CLASSTYPE_USE_TEMPLATE (t),
@@ -1077,6 +1111,9 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     pp_string (pp, M_("<structured bindings>"));
   else
     pp_string (pp, M_("<anonymous>"));
+
+  dump_module_suffix (pp, t);
+
   if (flags & TFF_DECL_SPECIFIERS)
     dump_type_suffix (pp, type, flags);
 }
@@ -1893,6 +1930,8 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
     }
   else
     dump_decl (pp, name, flags);
+
+  dump_module_suffix (pp, t);
 
   if (DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
