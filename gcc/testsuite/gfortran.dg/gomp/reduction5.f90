@@ -42,4 +42,18 @@ end do
   a = a + 1
 !$omp end teams
 
+!$omp parallel reduction(inscan,+:a)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
+do i=1,10
+  a = a + 1
+end do
+!$omp end parallel
+
+!$omp parallel
+!$omp sections reduction(inscan,+:a)   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
+  !$omp section
+  a = a + 1
+!$omp end sections
+!$omp end parallel
+
+
 end
