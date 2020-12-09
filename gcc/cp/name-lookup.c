@@ -1338,6 +1338,36 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
   return val;
 }
 
+/* We're about to lookup NAME in KLASS.  Make sure any lazily declared
+   members are now declared.  */
+
+static void
+maybe_lazily_declare (tree klass, tree name)
+{
+  /* Lazily declare functions, if we're going to search these.  */
+  if (IDENTIFIER_CTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
+	lazily_declare_fn (sfk_constructor, klass);
+      if (CLASSTYPE_LAZY_COPY_CTOR (klass))
+	lazily_declare_fn (sfk_copy_constructor, klass);
+      if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
+	lazily_declare_fn (sfk_move_constructor, klass);
+    }
+  else if (IDENTIFIER_DTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
+	lazily_declare_fn (sfk_destructor, klass);
+    }
+  else if (name == assign_op_identifier)
+    {
+      if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
+	lazily_declare_fn (sfk_copy_assignment, klass);
+      if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
+	lazily_declare_fn (sfk_move_assignment, klass);
+    }
+}
+
 /* Look for NAME's binding in exactly KLASS.  See
    get_class_binding_direct for argument description.  Does lazy
    special function creation as necessary.  */
@@ -1348,30 +1378,7 @@ get_class_binding (tree klass, tree name, bool want_type /*=false*/)
   klass = complete_type (klass);
 
   if (COMPLETE_TYPE_P (klass))
-    {
-      /* Lazily declare functions, if we're going to search these.  */
-      if (IDENTIFIER_CTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
-	    lazily_declare_fn (sfk_constructor, klass);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
-	    lazily_declare_fn (sfk_copy_constructor, klass);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
-	    lazily_declare_fn (sfk_move_constructor, klass);
-	}
-      else if (IDENTIFIER_DTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
-	    lazily_declare_fn (sfk_destructor, klass);
-	}
-      else if (name == assign_op_identifier)
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
-	    lazily_declare_fn (sfk_copy_assignment, klass);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
-	    lazily_declare_fn (sfk_move_assignment, klass);
-	}
-    }
+    maybe_lazily_declare (klass, name);
 
   return get_class_binding_direct (klass, name, want_type);
 }
@@ -1392,14 +1399,11 @@ find_member_slot (tree klass, tree name)
       vec_alloc (member_vec, 8);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
       if (complete_p)
-	{
-	  /* If the class is complete but had no member_vec, we need
-	     to add the TYPE_FIELDS into it.  We're also most likely
-	     to be adding ctors & dtors, so ask for 6 spare slots (the
-	     abstract cdtors and their clones).  */
-	  set_class_bindings (klass, 6);
-	  member_vec = CLASSTYPE_MEMBER_VEC (klass);
-	}
+	/* If the class is complete but had no member_vec, we need to
+	   add the TYPE_FIELDS into it.  We're also most likely to be
+	   adding ctors & dtors, so ask for 6 spare slots (the
+	   abstract cdtors and their clones).  */
+	member_vec = set_class_bindings (klass, 6);
     }
 
   if (IDENTIFIER_CONV_OP_P (name))
@@ -1741,18 +1745,18 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
    no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
    know there must be at least 1 field -- the self-reference
    TYPE_DECL, except for anon aggregates, which will have at least
-   one field anyway.  */
+   one field anyway.  If EXTRA < 0, always create the vector.  */
 
-void 
-set_class_bindings (tree klass, unsigned extra)
+vec<tree, va_gc> *
+set_class_bindings (tree klass, int extra)
 {
   unsigned n_fields = count_class_fields (klass);
   vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
 
-  if (member_vec || n_fields >= 8)
+  if (member_vec || n_fields >= 8 || extra < 0)
     {
       /* Append the new fields.  */
-      vec_safe_reserve_exact (member_vec, extra + n_fields);
+      vec_safe_reserve_exact (member_vec, n_fields + (extra >= 0 ? extra : 0));
       member_vec_append_class_fields (member_vec, klass);
     }
 
@@ -1762,6 +1766,8 @@ set_class_bindings (tree klass, unsigned extra)
       member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
+
+  return member_vec;
 }
 
 /* Insert lately defined enum ENUMTYPE into KLASS for the sorted case.  */
@@ -3717,13 +3723,6 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
   else
     {
       gcc_assert (decl);
-      if (CHECKING_P)
-	{
-	  tree *slot = find_namespace_slot (current_namespace, id);
-	  gcc_checking_assert (slot
-			       && (decl == MAYBE_STAT_TYPE (*slot)
-				   || decl == MAYBE_STAT_DECL (*slot)));
-	}
 
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -4547,7 +4546,8 @@ push_class_level_binding (tree name, tree x)
 }
 
 /* Process and lookup a using decl SCOPE::lookup.name, filling in
-   lookup.values & lookup.type.  Return true if ok.  */
+   lookup.values & lookup.type.  Return a USING_DECL, or NULL_TREE on
+   failure.  */
 
 static tree
 lookup_using_decl (tree scope, name_lookup &lookup)
@@ -4757,6 +4757,7 @@ lookup_using_decl (tree scope, name_lookup &lookup)
   USING_DECL_SCOPE (using_decl) = scope;
   USING_DECL_DECLS (using_decl) = lookup.value;
   DECL_DEPENDENT_P (using_decl) = dependent_p;
+  DECL_CONTEXT (using_decl) = current;
   if (TYPE_P (current) && b_kind == bk_not_base)
     USING_DECL_UNRELATED_P (using_decl) = true;
 
@@ -6918,7 +6919,6 @@ do_pushtag (tree name, tree type, TAG_how how)
   if (identifier_type_value_1 (name) != type)
     {
       tree tdef;
-      int in_class = 0;
       tree context = TYPE_CONTEXT (type);
 
       if (! context)
@@ -6949,11 +6949,6 @@ do_pushtag (tree name, tree type, TAG_how how)
       if (!context)
 	context = current_namespace;
 
-      if (b->kind == sk_class
-	  || (b->kind == sk_template_parms
-	      && b->level_chain->kind == sk_class))
-	in_class = 1;
-
       tdef = create_implicit_typedef (name, type);
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
       decl = maybe_process_template_type_declaration
@@ -6961,8 +6956,10 @@ do_pushtag (tree name, tree type, TAG_how how)
       if (decl == error_mark_node)
 	return decl;
 
+      bool in_class = false;
       if (b->kind == sk_class)
 	{
+	  in_class = true;
 	  if (!TYPE_BEING_DEFINED (current_class_type))
 	    /* Don't push anywhere if the class is complete; a lambda in an
 	       NSDMI is not a member of the class.  */
@@ -6976,7 +6973,9 @@ do_pushtag (tree name, tree type, TAG_how how)
 	  else
 	    pushdecl_class_level (decl);
 	}
-      else if (b->kind != sk_template_parms)
+      else if (b->kind == sk_template_parms)
+	in_class = b->level_chain->kind == sk_class;
+      else
 	{
 	  decl = do_pushdecl_with_scope
 	    (decl, b, /*hiding=*/(how == TAG_how::HIDDEN_FRIEND));
@@ -6993,7 +6992,7 @@ do_pushtag (tree name, tree type, TAG_how how)
 	    }
 	}
 
-      if (! in_class)
+      if (!in_class)
 	set_identifier_type_value_with_scope (name, tdef, b);
 
       TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
