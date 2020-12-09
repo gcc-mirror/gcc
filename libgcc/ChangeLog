@@ -1,3 +1,8 @@
+2020-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack-thread.c (free_segments): Block signals during
+	thread exit.
+
 2020-12-03  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR libgcc/97543

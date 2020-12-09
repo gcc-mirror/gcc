@@ -1,3 +1,12 @@
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter more cases.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Modernize and filter 2 more
+	patterns.
+
 2020-12-04  Martin Liska  <mliska@suse.cz>
 
 	* check-params-in-docs.py: use flake8 and add some

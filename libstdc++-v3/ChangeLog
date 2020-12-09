@@ -1,3 +1,15 @@
+2020-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96299
+	* testsuite/18_support/comparisons/algorithms/partial_order.cc:
+	One more line needs to use VERIFY instead of static_assert.
+
+2020-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Use consistent
+	indentation.
+	* doc/html/manual/source_code_style.html: Regenerate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
