@@ -2500,10 +2500,7 @@ package body Sem_Ch13 is
 
             begin
                if Ada_Version < Ada_2020 then
-                  Error_Msg_N
-                    ("aspect % is an Ada 202x feature", Aspect);
-                  Error_Msg_N ("\compile with -gnat2020", Aspect);
-
+                  Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
                   return;
                end if;
 
@@ -4575,11 +4572,7 @@ package body Sem_Ch13 is
                   --  Ada 202x (AI12-0363): Full_Access_Only
 
                   elsif A_Id = Aspect_Full_Access_Only then
-                     if Ada_Version < Ada_2020 then
-                        Error_Msg_N
-                          ("aspect % is an Ada 202x feature", Aspect);
-                        Error_Msg_N ("\compile with -gnat2020", Aspect);
-                     end if;
+                     Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
 
                   --  Ada 202x (AI12-0075): static expression functions
 
