@@ -2610,25 +2610,23 @@ package body Sem_Ch13 is
                   --  component type C, a similar rule applies to C."
                end if;
 
-               --  Preanalyze the expression (if any) when the aspect resides
-               --  in a generic unit. (Is this generic-related code necessary
-               --  for this aspect? It's modeled on what's done for aspect
-               --  Disable_Controlled. ???)
+               --  When the expression is present, it must be static. If it
+               --  evaluates to True, the expression function is treated as
+               --  a static function. Otherwise the aspect appears without
+               --  an expression and defaults to True.
 
-               if Inside_A_Generic then
-                  if Present (Expr) then
+               if Present (Expr) then
+                  --  Preanalyze the expression when the aspect resides in a
+                  --  generic unit. (Is this generic-related code necessary
+                  --  for this aspect? It's modeled on what's done for aspect
+                  --  Disable_Controlled. ???)
+
+                  if Inside_A_Generic then
                      Preanalyze_And_Resolve (Expr, Any_Boolean);
-                  end if;
 
-               --  Otherwise the aspect resides in a nongeneric context
+                  --  Otherwise the aspect resides in a nongeneric context
 
-               else
-                  --  When the expression statically evaluates to True, the
-                  --  expression function is treated as a static function.
-                  --  Otherwise the aspect appears without an expression and
-                  --  defaults to True.
-
-                  if Present (Expr) then
+                  else
                      Analyze_And_Resolve (Expr, Any_Boolean);
 
                      --  Error if the boolean expression is not static
