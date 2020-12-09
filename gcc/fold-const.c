@@ -8256,6 +8256,7 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		    {
 		      cnt--;
 		      field = fld;
+		      pos = int_byte_position (field);
 		      val = build_zero_cst (TREE_TYPE (fld));
 		      if (TREE_CODE (val) == CONSTRUCTOR)
 			to_free = val;
