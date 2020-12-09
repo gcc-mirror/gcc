@@ -642,6 +642,7 @@ languages = { language=brig;	gcc-check-target=check-brig;
 				lib-check-target=check-target-libhsail-rt; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
+languages = { language=rust;	gcc-check-target=check-rust; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

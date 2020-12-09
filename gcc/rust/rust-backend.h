@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RUST_BACKEND_H
+#define RUST_BACKEND_H
 
 #include <gmp.h>
 #include <mpfr.h>
@@ -759,3 +760,5 @@ public:
   // section in the output object file.
   virtual void write_export_data (const char *bytes, unsigned int size) = 0;
 };
+
+#endif // RUST_BACKEND_H

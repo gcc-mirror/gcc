@@ -972,6 +972,17 @@ public:
   const std::vector<std::unique_ptr<Expr> > &get_values () const { return values; }
   std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
 
+  size_t get_num_values () const { return values.size (); }
+
+  void iterate (std::function<bool (Expr *)> cb)
+  {
+    for (auto it = values.begin (); it != values.end (); it++)
+      {
+	if (!cb ((*it).get ()))
+	  return;
+      }
+  }
+
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
   {
@@ -1048,6 +1059,10 @@ class ArrayExpr : public ExprWithoutBlock
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
 
+  // this is a reference to what the inferred type is based on
+  // this init expression
+  Type *inferredType;
+
 public:
   std::string as_string () const override;
 
@@ -1110,6 +1125,9 @@ public:
     rust_assert (internal_elements != nullptr);
     return internal_elements;
   }
+
+  Type *get_inferred_type () { return inferredType; }
+  void set_inferred_type (Type *type) { inferredType = type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
