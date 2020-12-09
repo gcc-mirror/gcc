@@ -132,8 +132,7 @@ public:
   {}
 
   // Copy constructor with clone
-  MacroMatchRepetition (MacroMatchRepetition const &other)
-    : op (other.op)
+  MacroMatchRepetition (MacroMatchRepetition const &other) : op (other.op)
   {
     // guard to protect from null pointer dereference
     if (other.sep != nullptr)
@@ -291,7 +290,7 @@ class MacroRulesDefinition : public MacroItem
 {
   std::vector<Attribute> outer_attrs;
   Identifier rule_name;
-  // MacroRulesDef rules_def; 
+  // MacroRulesDef rules_def;
   // only curly without required semicolon at end
   DelimType delim_type;
   // MacroRules rules;
@@ -363,7 +362,7 @@ protected:
   {
     return new MacroInvocation (*this);
   }
-  
+
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MacroInvocation *clone_expr_without_block_impl () const override

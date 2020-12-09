@@ -115,8 +115,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 };
 
 // An opaque value of another type that implements a set of traits
@@ -178,8 +185,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 };
 
 // A type with parentheses around it, used to avoid ambiguity.
@@ -240,9 +254,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_type_in_parens () { 
+  std::unique_ptr<Type> &get_type_in_parens ()
+  {
     rust_assert (type_in_parens != nullptr);
-    return type_in_parens; 
+    return type_in_parens;
   }
 };
 
@@ -273,9 +288,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  TraitBound &get_trait_bound () { 
+  TraitBound &get_trait_bound ()
+  {
     // TODO: check to ensure invariants are met?
-    return trait_bound; 
+    return trait_bound;
   }
 };
 
@@ -318,9 +334,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  TraitBound &get_trait_bound () { 
+  TraitBound &get_trait_bound ()
+  {
     // TODO: check to ensure invariants are met?
-    return trait_bound; 
+    return trait_bound;
   }
 };
 
@@ -374,7 +391,10 @@ public:
 
   // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
-  const std::vector<std::unique_ptr<Type> > &get_elems () const { return elems; }
+  const std::vector<std::unique_ptr<Type> > &get_elems () const
+  {
+    return elems;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -464,9 +484,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_type_pointed_to () { 
+  std::unique_ptr<TypeNoBounds> &get_type_pointed_to ()
+  {
     rust_assert (type != nullptr);
-    return type; 
+    return type;
   }
 
 protected:
@@ -531,9 +552,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_type_referenced () { 
+  std::unique_ptr<TypeNoBounds> &get_type_referenced ()
+  {
     rust_assert (type != nullptr);
-    return type; 
+    return type;
   }
 
 protected:
@@ -586,15 +608,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_elem_type () { 
+  std::unique_ptr<Type> &get_elem_type ()
+  {
     rust_assert (elem_type != nullptr);
-    return elem_type; 
+    return elem_type;
   }
 
   // TODO: would a "vis_expr" be better?
-  std::unique_ptr<Expr> &get_size_expr () { 
+  std::unique_ptr<Expr> &get_size_expr ()
+  {
     rust_assert (size != nullptr);
-    return size; 
+    return size;
   }
 
 protected:
@@ -645,9 +669,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_elem_type () { 
+  std::unique_ptr<Type> &get_elem_type ()
+  {
     rust_assert (elem_type != nullptr);
-    return elem_type; 
+    return elem_type;
   }
 
 protected:
@@ -710,14 +735,17 @@ private:
 
 public:
   MaybeNamedParam (Identifier name, ParamKind param_kind,
-		   std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), param_type (std::move (param_type)), param_kind (param_kind),
+		   std::unique_ptr<Type> param_type,
+		   std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
+      param_type (std::move (param_type)), param_kind (param_kind),
       name (std::move (name)), locus (locus)
   {}
 
   // Copy constructor with clone
   MaybeNamedParam (MaybeNamedParam const &other)
-    : outer_attrs (other.outer_attrs), param_kind (other.param_kind), name (other.name), locus (other.locus)
+    : outer_attrs (other.outer_attrs), param_kind (other.param_kind),
+      name (other.name), locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.param_type != nullptr)
@@ -765,9 +793,10 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_type () { 
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (param_type != nullptr);
-    return param_type; 
+    return param_type;
   }
 };
 
@@ -799,14 +828,16 @@ public:
 
   BareFunctionType (std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
-		    std::vector<MaybeNamedParam> named_params, bool is_variadic, std::vector<Attribute> variadic_attrs,
+		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
+		    std::vector<Attribute> variadic_attrs,
 		    std::unique_ptr<TypeNoBounds> type, Location locus)
     : for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), is_variadic (is_variadic),
-      variadic_attrs (std::move (variadic_attrs)), return_type (std::move (type)), locus (locus)
+      variadic_attrs (std::move (variadic_attrs)),
+      return_type (std::move (type)), locus (locus)
   {
-    if (!variadic_attrs.empty())
+    if (!variadic_attrs.empty ())
       is_variadic = true;
   }
 
@@ -814,7 +845,8 @@ public:
   BareFunctionType (BareFunctionType const &other)
     : for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
-      is_variadic (other.is_variadic), variadic_attrs (other.variadic_attrs), locus (other.locus)
+      is_variadic (other.is_variadic), variadic_attrs (other.variadic_attrs),
+      locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.return_type != nullptr)
@@ -853,12 +885,16 @@ public:
 
   // TODO: this mutable getter seems kinda dodgy
   std::vector<MaybeNamedParam> &get_function_params () { return params; }
-  const std::vector<MaybeNamedParam> &get_function_params () const { return params; }
+  const std::vector<MaybeNamedParam> &get_function_params () const
+  {
+    return params;
+  }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<TypeNoBounds> &get_return_type () { 
+  std::unique_ptr<TypeNoBounds> &get_return_type ()
+  {
     rust_assert (has_return_type ());
-    return return_type; 
+    return return_type;
   }
 
 protected:

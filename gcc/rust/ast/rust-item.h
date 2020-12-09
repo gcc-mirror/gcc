@@ -57,7 +57,7 @@ class TypeParam : public GenericParam
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
+  std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
 
   // bool has_type;
@@ -76,8 +76,8 @@ public:
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
   TypeParam (Identifier type_representation, Location locus = Location (),
-	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
-	     = std::vector<std::unique_ptr<TypeParamBound>> (),
+	     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds
+	     = std::vector<std::unique_ptr<TypeParamBound> > (),
 	     std::unique_ptr<Type> type = nullptr,
 	     Attribute outer_attr = Attribute::create_empty ())
     : outer_attr (std::move (outer_attr)),
@@ -89,8 +89,7 @@ public:
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
     : outer_attr (other.outer_attr),
-      type_representation (other.type_representation),
-      locus (other.locus)
+      type_representation (other.type_representation), locus (other.locus)
   {
     // guard to prevent null pointer dereference
     if (other.type != nullptr)
@@ -132,14 +131,22 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -211,7 +218,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
+  std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
 
   // should this store location info?
@@ -225,7 +232,7 @@ public:
 
   TypeBoundWhereClauseItem (
     std::vector<LifetimeParam> for_lifetimes, std::unique_ptr<Type> bound_type,
-    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
+    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds))
@@ -264,14 +271,22 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (bound_type != nullptr);
     return bound_type;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -285,13 +300,13 @@ protected:
 struct WhereClause
 {
 private:
-  std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items;
+  std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items;
 
   // should this store location info?
 
 public:
   WhereClause (
-    std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items)
+    std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items)
     : where_clause_items (std::move (where_clause_items))
   {}
 
@@ -320,7 +335,7 @@ public:
   // Creates a WhereClause with no items.
   static WhereClause create_empty ()
   {
-    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> ());
+    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem> > ());
   }
 
   // Returns whether the WhereClause has no items.
@@ -329,8 +344,14 @@ public:
   std::string as_string () const;
 
   // TODO: this mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<WhereClauseItem> > &get_items () { return where_clause_items; }
-  const std::vector<std::unique_ptr<WhereClauseItem> > &get_items () const { return where_clause_items; }
+  std::vector<std::unique_ptr<WhereClauseItem> > &get_items ()
+  {
+    return where_clause_items;
+  }
+  const std::vector<std::unique_ptr<WhereClauseItem> > &get_items () const
+  {
+    return where_clause_items;
+  }
 };
 
 // A self parameter in a method
@@ -423,7 +444,8 @@ public:
   Location get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (has_type ());
     return type;
   }
@@ -479,8 +501,9 @@ private:
 
 public:
   FunctionParam (std::unique_ptr<Pattern> param_name,
-		 std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), locus (locus), 
+		 std::unique_ptr<Type> param_type,
+		 std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), locus (locus),
       param_name (std::move (param_name)), type (std::move (param_type))
   {}
 
@@ -534,13 +557,15 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Pattern> &get_pattern () {
+  std::unique_ptr<Pattern> &get_pattern ()
+  {
     rust_assert (param_name != nullptr);
     return param_name;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
@@ -647,7 +672,7 @@ class Method : public InherentImplItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   SelfParam self_param;
 
@@ -670,14 +695,15 @@ public:
   // Returns whether the method is in an error state.
   bool is_error () const
   {
-    return function_body == nullptr || method_name.empty () || self_param.is_error ();
+    return function_body == nullptr || method_name.empty ()
+	   || self_param.is_error ();
   }
 
   // Creates an error state method.
   static Method create_error ()
   {
     return Method ("", FunctionQualifiers (FunctionQualifiers::NONE, true),
-		   std::vector<std::unique_ptr<GenericParam>> (),
+		   std::vector<std::unique_ptr<GenericParam> > (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
 		   Visibility::create_error (), std::vector<Attribute> (), {});
@@ -700,7 +726,7 @@ public:
 
   // Mega-constructor with all possible fields
   Method (Identifier method_name, FunctionQualifiers qualifiers,
-	  std::vector<std::unique_ptr<GenericParam>> generic_params,
+	  std::vector<std::unique_ptr<GenericParam> > generic_params,
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
@@ -712,8 +738,8 @@ public:
       self_param (std::move (self_param)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), function_body (std::move (function_body)),
-      locus (locus)
+      where_clause (std::move (where_clause)),
+      function_body (std::move (function_body)), locus (locus)
   {}
 
   // TODO: add constructor with less fields
@@ -728,7 +754,7 @@ public:
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
       return_type = other.return_type->clone_type ();
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.function_body != nullptr)
       function_body = other.function_body->clone_block_expr ();
@@ -779,20 +805,33 @@ public:
 
   // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { function_body = nullptr; }
-  bool is_marked_for_strip () const override { return function_body == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return function_body == nullptr;
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   std::vector<FunctionParam> &get_function_params () { return function_params; }
-  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition () {
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
     rust_assert (function_body != nullptr);
     return function_body;
   }
@@ -801,13 +840,15 @@ public:
   const SelfParam &get_self_param () const { return self_param; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -838,11 +879,12 @@ protected:
   // Visibility constructor
   VisItem (Visibility visibility,
 	   std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : visibility (std::move (visibility)), outer_attrs(std::move (outer_attrs))
+    : visibility (std::move (visibility)), outer_attrs (std::move (outer_attrs))
   {}
 
   // Visibility copy constructor
-  VisItem (VisItem const &other) : visibility (other.visibility), outer_attrs(other.outer_attrs)
+  VisItem (VisItem const &other)
+    : visibility (other.visibility), outer_attrs (other.outer_attrs)
   {}
 
   // Overload assignment operator to clone
@@ -903,7 +945,7 @@ class ModuleBodied : public Module
   // bool has_inner_attrs;
   std::vector<Attribute> inner_attrs;
   // bool has_items;
-  std::vector<std::unique_ptr<Item>> items;
+  std::vector<std::unique_ptr<Item> > items;
 
 public:
   std::string as_string () const override;
@@ -916,8 +958,8 @@ public:
 
   // Full constructor
   ModuleBodied (Identifier name, Location locus,
-		std::vector<std::unique_ptr<Item>> items
-		= std::vector<std::unique_ptr<Item>> (),
+		std::vector<std::unique_ptr<Item> > items
+		= std::vector<std::unique_ptr<Item> > (),
 		Visibility visibility = Visibility::create_error (),
 		std::vector<Attribute> inner_attrs = std::vector<Attribute> (),
 		std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
@@ -959,11 +1001,14 @@ public:
   void add_crate_name (std::vector<std::string> &names) const override;
 
   // TODO: think of better way to do this - mutable getter seems dodgy
-  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
-  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<Item>>& get_items () const { return items; }
-  std::vector<std::unique_ptr<Item>>& get_items () { return items; }
+  const std::vector<std::unique_ptr<Item> > &get_items () const
+  {
+    return items;
+  }
+  std::vector<std::unique_ptr<Item> > &get_items () { return items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -977,9 +1022,11 @@ protected:
 // Module without a body, loaded from external file
 class ModuleNoBody : public Module
 {
-  /* TODO: are modules loaded from file unique? As in, can you load the same file into two different
-   * other files? Because this may make the difference between simply replacing this with the module
-   * "definition" (as loaded from another file) vs this having to "reference" a module with body. */
+  /* TODO: are modules loaded from file unique? As in, can you load the same
+   * file into two different other files? Because this may make the difference
+   * between simply replacing this with the module
+   * "definition" (as loaded from another file) vs this having to "reference" a
+   * module with body. */
 public:
   std::string as_string () const override;
 
@@ -1048,7 +1095,10 @@ public:
 
   // Invalid if crate name is empty, so base stripping on that.
   void mark_for_strip () override { referenced_crate = ""; }
-  bool is_marked_for_strip () const override { return referenced_crate.empty (); }
+  bool is_marked_for_strip () const override
+  {
+    return referenced_crate.empty ();
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1149,11 +1199,11 @@ private:
   PathType path_type;
   SimplePath path;
 
-  std::vector<std::unique_ptr<UseTree>> trees;
+  std::vector<std::unique_ptr<UseTree> > trees;
 
 public:
   UseTreeList (PathType path_type, SimplePath path,
-	       std::vector<std::unique_ptr<UseTree>> trees, Location locus)
+	       std::vector<std::unique_ptr<UseTree> > trees, Location locus)
     : UseTree (locus), path_type (path_type), path (std::move (path)),
       trees (std::move (trees))
   {
@@ -1337,7 +1387,7 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_function_params;
   // FunctionParams function_params;
@@ -1372,7 +1422,7 @@ public:
 
   // Mega-constructor with all possible fields
   Function (Identifier function_name, FunctionQualifiers qualifiers,
-	    std::vector<std::unique_ptr<GenericParam>> generic_params,
+	    std::vector<std::unique_ptr<GenericParam> > generic_params,
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
@@ -1399,7 +1449,7 @@ public:
     // guard to prevent null dereference (always required)
     if (other.return_type != nullptr)
       return_type = other.return_type->clone_type ();
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.function_body != nullptr)
       function_body = other.function_body->clone_block_expr ();
@@ -1426,7 +1476,7 @@ public:
       return_type = other.return_type->clone_type ();
     else
       return_type = nullptr;
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.function_body != nullptr)
       function_body = other.function_body->clone_block_expr ();
@@ -1450,17 +1500,30 @@ public:
 
   // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { function_body = nullptr; }
-  bool is_marked_for_strip () const override { return function_body == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return function_body == nullptr;
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
-  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition () {
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
     rust_assert (function_body != nullptr);
     return function_body;
   }
@@ -1470,13 +1533,15 @@ public:
   Identifier get_function_name () const { return function_name; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
@@ -1508,7 +1573,7 @@ class TypeAlias : public VisItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1528,7 +1593,7 @@ public:
 
   // Mega-constructor with all possible fields
   TypeAlias (Identifier new_type_name,
-	     std::vector<std::unique_ptr<GenericParam>> generic_params,
+	     std::vector<std::unique_ptr<GenericParam> > generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
 	     Visibility vis, std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -1585,19 +1650,30 @@ public:
 
   // Invalid if existing type is null, so base stripping on that.
   void mark_for_strip () override { existing_type = nullptr; }
-  bool is_marked_for_strip () const override { return existing_type == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return existing_type == nullptr;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type_aliased () {
+  std::unique_ptr<Type> &get_type_aliased ()
+  {
     rust_assert (existing_type != nullptr);
     return existing_type;
   }
@@ -1624,7 +1700,7 @@ protected:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1647,18 +1723,25 @@ public:
 
   Identifier get_struct_name () const { return struct_name; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
 protected:
   Struct (Identifier struct_name,
-	  std::vector<std::unique_ptr<GenericParam>> generic_params,
+	  std::vector<std::unique_ptr<GenericParam> > generic_params,
 	  WhereClause where_clause, Visibility vis, Location locus,
 	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -1780,7 +1863,8 @@ public:
   Identifier get_field_name () const { return field_name; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_field_type () {
+  std::unique_ptr<Type> &get_field_type ()
+  {
     rust_assert (field_type != nullptr);
     return field_type;
   }
@@ -1799,7 +1883,7 @@ public:
 
   // Mega-constructor with all possible fields
   StructStruct (std::vector<StructField> fields, Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam>> generic_params,
+		std::vector<std::unique_ptr<GenericParam> > generic_params,
 		WhereClause where_clause, bool is_unit, Visibility vis,
 		std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
@@ -1810,12 +1894,13 @@ public:
 
   // Unit struct constructor
   StructStruct (Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam>> generic_params,
+		std::vector<std::unique_ptr<GenericParam> > generic_params,
 		WhereClause where_clause, Visibility vis,
 		std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
 	      std::move (where_clause), std::move (vis), locus,
-	      std::move (outer_attrs)), is_unit (true)
+	      std::move (outer_attrs)),
+      is_unit (true)
   {}
   // TODO: can a unit struct have generic fields? assuming yes for now.
 
@@ -1914,7 +1999,8 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_field_type () {
+  std::unique_ptr<Type> &get_field_type ()
+  {
     rust_assert (field_type != nullptr);
     return field_type;
   }
@@ -1930,7 +2016,7 @@ public:
 
   // Mega-constructor with all possible fields
   TupleStruct (std::vector<TupleField> fields, Identifier struct_name,
-	       std::vector<std::unique_ptr<GenericParam>> generic_params,
+	       std::vector<std::unique_ptr<GenericParam> > generic_params,
 	       WhereClause where_clause, Visibility vis,
 	       std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
@@ -2026,7 +2112,10 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<TupleField> &get_tuple_fields () { return tuple_fields; }
-  const std::vector<TupleField> &get_tuple_fields () const { return tuple_fields; }
+  const std::vector<TupleField> &get_tuple_fields () const
+  {
+    return tuple_fields;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2059,7 +2148,10 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<StructField> &get_struct_fields () { return struct_fields; }
-  const std::vector<StructField> &get_struct_fields () const { return struct_fields; }
+  const std::vector<StructField> &get_struct_fields () const
+  {
+    return struct_fields;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2106,7 +2198,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr () {
+  std::unique_ptr<Expr> &get_expr ()
+  {
     rust_assert (expression != nullptr);
     return expression;
   }
@@ -2126,12 +2219,12 @@ class Enum : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
 
-  std::vector<std::unique_ptr<EnumItem>> items;
+  std::vector<std::unique_ptr<EnumItem> > items;
 
   Location locus;
 
@@ -2150,8 +2243,8 @@ public:
 
   // Mega-constructor
   Enum (Identifier enum_name, Visibility vis,
-	std::vector<std::unique_ptr<GenericParam>> generic_params,
-	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
+	std::vector<std::unique_ptr<GenericParam> > generic_params,
+	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem> > items,
 	std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       enum_name (std::move (enum_name)),
@@ -2208,14 +2301,24 @@ public:
   bool is_marked_for_strip () const override { return enum_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
-  const std::vector<std::unique_ptr<EnumItem>> &get_variants () const { return items; }
+  std::vector<std::unique_ptr<EnumItem> > &get_variants () { return items; }
+  const std::vector<std::unique_ptr<EnumItem> > &get_variants () const
+  {
+    return items;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -2233,7 +2336,7 @@ class Union : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -2252,7 +2355,7 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Union (Identifier union_name, Visibility vis,
-	 std::vector<std::unique_ptr<GenericParam>> generic_params,
+	 std::vector<std::unique_ptr<GenericParam> > generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
 	 std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -2305,11 +2408,18 @@ public:
   std::vector<StructField> &get_variants () { return variants; }
   const std::vector<StructField> &get_variants () const { return variants; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -2390,17 +2500,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if type or expression are null, so base stripping on that.
-  void mark_for_strip () override { type = nullptr; const_expr = nullptr; }
-  bool is_marked_for_strip () const override { return type == nullptr && const_expr == nullptr; }
+  void mark_for_strip () override
+  {
+    type = nullptr;
+    const_expr = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return type == nullptr && const_expr == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr () {
+  std::unique_ptr<Expr> &get_expr ()
+  {
     rust_assert (const_expr != nullptr);
     return const_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
@@ -2491,17 +2610,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if type or expression are null, so base stripping on that.
-  void mark_for_strip () override { type = nullptr; expr = nullptr; }
-  bool is_marked_for_strip () const override { return type == nullptr && expr == nullptr; }
+  void mark_for_strip () override
+  {
+    type = nullptr;
+    expr = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return type == nullptr && expr == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr () {
+  std::unique_ptr<Expr> &get_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
@@ -2525,7 +2653,7 @@ private:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_params;
   // FunctionParams function_params;
@@ -2554,7 +2682,7 @@ public:
 
   // Mega-constructor
   TraitFunctionDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		     std::vector<std::unique_ptr<GenericParam>> generic_params,
+		     std::vector<std::unique_ptr<GenericParam> > generic_params,
 		     std::vector<FunctionParam> function_params,
 		     std::unique_ptr<Type> return_type,
 		     WhereClause where_clause)
@@ -2569,8 +2697,7 @@ public:
   // Copy constructor with clone
   TraitFunctionDecl (TraitFunctionDecl const &other)
     : qualifiers (other.qualifiers), function_name (other.function_name),
-      function_params (other.function_params),
-      where_clause (other.where_clause)
+      function_params (other.function_params), where_clause (other.where_clause)
   {
     // guard to prevent nullptr dereference
     if (other.return_type != nullptr)
@@ -2616,19 +2743,30 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
-  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -2690,20 +2828,25 @@ public:
 
   // Invalid if trait decl is empty, so base stripping on that.
   void mark_for_strip () override { decl.mark_for_strip (); }
-  bool is_marked_for_strip () const override { return decl.is_marked_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return decl.is_marked_for_strip ();
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition () {
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
     rust_assert (has_definition ());
     return block_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  TraitFunctionDecl &get_trait_function_decl () {
+  TraitFunctionDecl &get_trait_function_decl ()
+  {
     // TODO: maybe only allow access if not marked for strip?
     return decl;
   }
@@ -2726,7 +2869,7 @@ private:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   SelfParam self_param;
 
@@ -2757,7 +2900,7 @@ public:
 
   // Mega-constructor
   TraitMethodDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		   std::vector<std::unique_ptr<GenericParam>> generic_params,
+		   std::vector<std::unique_ptr<GenericParam> > generic_params,
 		   SelfParam self_param,
 		   std::vector<FunctionParam> function_params,
 		   std::unique_ptr<Type> return_type, WhereClause where_clause)
@@ -2821,19 +2964,30 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
-  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -2862,8 +3016,7 @@ public:
 
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
-    : outer_attrs (other.outer_attrs), decl (other.decl),
-      locus (other.locus)
+    : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.block_expr != nullptr)
@@ -2899,21 +3052,26 @@ public:
 
   // Invalid if trait decl is empty, so base stripping on that.
   void mark_for_strip () override { decl.mark_for_strip (); }
-  bool is_marked_for_strip () const override { return decl.is_marked_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return decl.is_marked_for_strip ();
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  TraitMethodDecl &get_trait_method_decl () {
+  TraitMethodDecl &get_trait_method_decl ()
+  {
     // TODO: maybe only allow access if not marked for strip?
     return decl;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition () {
-    rust_assert (has_definition());
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
+    rust_assert (has_definition ());
     return block_expr;
   }
 
@@ -2955,7 +3113,7 @@ public:
     // guard to prevent null dereference
     if (other.expr != nullptr)
       expr = other.expr->clone_expr ();
-    
+
     // guard to prevent null dereference (only for error state)
     if (other.type != nullptr)
       type = other.type->clone_type ();
@@ -3003,13 +3161,15 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr () {
+  std::unique_ptr<Expr> &get_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
@@ -3031,7 +3191,7 @@ class TraitItemType : public TraitItem
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
+  std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
 
   Location locus;
@@ -3042,7 +3202,7 @@ public:
 
   TraitItemType (
     Identifier name,
-    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)), name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
@@ -3091,8 +3251,15 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -3110,11 +3277,11 @@ class Trait : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
+  std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
 
   // bool has_where_clause;
@@ -3123,7 +3290,7 @@ class Trait : public VisItem
   std::vector<Attribute> inner_attrs;
 
   // bool has_trait_items;
-  std::vector<std::unique_ptr<TraitItem>> trait_items;
+  std::vector<std::unique_ptr<TraitItem> > trait_items;
 
   Location locus;
 
@@ -3147,23 +3314,26 @@ public:
 
   // Mega-constructor
   Trait (Identifier name, bool is_unsafe,
-	 std::vector<std::unique_ptr<GenericParam>> generic_params,
-	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+	 std::vector<std::unique_ptr<GenericParam> > generic_params,
+	 std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
 	 WhereClause where_clause,
-	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
-	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs, Location locus)
+	 std::vector<std::unique_ptr<TraitItem> > trait_items, Visibility vis,
+	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
+	 Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), name (std::move (name)),
       generic_params (std::move (generic_params)),
       type_param_bounds (std::move (type_param_bounds)),
-      where_clause (std::move (where_clause)), inner_attrs (std::move (inner_attrs)),
+      where_clause (std::move (where_clause)),
+      inner_attrs (std::move (inner_attrs)),
       trait_items (std::move (trait_items)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   Trait (Trait const &other)
     : VisItem (other), has_unsafe (other.has_unsafe), name (other.name),
-      where_clause (other.where_clause), inner_attrs (other.inner_attrs), locus (other.locus)
+      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
+      locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -3216,20 +3386,40 @@ public:
   bool is_marked_for_strip () const override { return name.empty (); }
 
   // TODO: think of better way to do this
-  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
-  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<TraitItem>>& get_trait_items () const { return trait_items; }
-  std::vector<std::unique_ptr<TraitItem>>& get_trait_items () { return trait_items; }
+  const std::vector<std::unique_ptr<TraitItem> > &get_trait_items () const
+  {
+    return trait_items;
+  }
+  std::vector<std::unique_ptr<TraitItem> > &get_trait_items ()
+  {
+    return trait_items;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
-  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
@@ -3247,7 +3437,7 @@ class Impl : public VisItem
 protected:
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   std::unique_ptr<Type> trait_type;
 
@@ -3278,27 +3468,35 @@ public:
   bool is_marked_for_strip () const override { return trait_type == nullptr; }
 
   // TODO: think of better way to do this
-  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
-  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (trait_type != nullptr);
     return trait_type;
   }
 
 protected:
   // Mega-constructor
-  Impl (std::vector<std::unique_ptr<GenericParam>> generic_params,
+  Impl (std::vector<std::unique_ptr<GenericParam> > generic_params,
 	std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	Visibility vis, std::vector<Attribute> inner_attrs,
 	std::vector<Attribute> outer_attrs, Location locus)
@@ -3311,7 +3509,7 @@ protected:
 
   // Copy constructor
   Impl (Impl const &other)
-    : VisItem (other), where_clause (other.where_clause), 
+    : VisItem (other), where_clause (other.where_clause),
       inner_attrs (other.inner_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
@@ -3353,7 +3551,7 @@ protected:
 class InherentImpl : public Impl
 {
   // bool has_impl_items;
-  std::vector<std::unique_ptr<InherentImplItem>> impl_items;
+  std::vector<std::unique_ptr<InherentImplItem> > impl_items;
 
 public:
   std::string as_string () const override;
@@ -3362,8 +3560,8 @@ public:
   bool has_impl_items () const { return !impl_items.empty (); }
 
   // Mega-constructor
-  InherentImpl (std::vector<std::unique_ptr<InherentImplItem>> impl_items,
-		std::vector<std::unique_ptr<GenericParam>> generic_params,
+  InherentImpl (std::vector<std::unique_ptr<InherentImplItem> > impl_items,
+		std::vector<std::unique_ptr<GenericParam> > generic_params,
 		std::unique_ptr<Type> trait_type, WhereClause where_clause,
 		Visibility vis, std::vector<Attribute> inner_attrs,
 		std::vector<Attribute> outer_attrs, Location locus)
@@ -3400,8 +3598,14 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<InherentImplItem>>& get_impl_items () const { return impl_items; }
-  std::vector<std::unique_ptr<InherentImplItem>>& get_impl_items () { return impl_items; }
+  const std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items () const
+  {
+    return impl_items;
+  }
+  std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items ()
+  {
+    return impl_items;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -3420,7 +3624,7 @@ class TraitImpl : public Impl
   TypePath trait_path;
 
   // bool has_impl_items;
-  std::vector<std::unique_ptr<TraitImplItem>> impl_items;
+  std::vector<std::unique_ptr<TraitImplItem> > impl_items;
 
 public:
   std::string as_string () const override;
@@ -3430,8 +3634,8 @@ public:
 
   // Mega-constructor
   TraitImpl (TypePath trait_path, bool is_unsafe, bool has_exclam,
-	     std::vector<std::unique_ptr<TraitImplItem>> impl_items,
-	     std::vector<std::unique_ptr<GenericParam>> generic_params,
+	     std::vector<std::unique_ptr<TraitImplItem> > impl_items,
+	     std::vector<std::unique_ptr<GenericParam> > generic_params,
 	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	     Visibility vis, std::vector<Attribute> inner_attrs,
 	     std::vector<Attribute> outer_attrs, Location locus)
@@ -3476,11 +3680,18 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () const { return impl_items; }
-  std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () { return impl_items; }
+  const std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items () const
+  {
+    return impl_items;
+  }
+  std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items ()
+  {
+    return impl_items;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  TypePath &get_trait_path () {
+  TypePath &get_trait_path ()
+  {
     // TODO: assert that trait path is not empty?
     return trait_path;
   }
@@ -3587,17 +3798,17 @@ class ExternalStaticItem : public ExternalItem
 
 public:
   ExternalStaticItem (Identifier item_name, std::unique_ptr<Type> item_type,
-		      bool is_mut, Visibility vis, std::vector<Attribute> outer_attrs, 
-          Location locus)
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)), 
-      item_name (std::move (item_name)), locus (locus), has_mut (is_mut), 
+		      bool is_mut, Visibility vis,
+		      std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
+      item_name (std::move (item_name)), locus (locus), has_mut (is_mut),
       item_type (std::move (item_type))
   {}
 
   // Copy constructor
   ExternalStaticItem (ExternalStaticItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility), item_name (other.item_name), 
-      locus (other.locus), has_mut (other.has_mut)
+    : outer_attrs (other.outer_attrs), visibility (other.visibility),
+      item_name (other.item_name), locus (other.locus), has_mut (other.has_mut)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.item_type != nullptr)
@@ -3647,7 +3858,8 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (item_type != nullptr);
     return item_type;
   }
@@ -3666,14 +3878,14 @@ struct NamedFunctionParam
 {
 private:
   // bool has_name;   // otherwise is _
-  std::string name; 
+  std::string name;
 
   std::unique_ptr<Type> param_type;
 
   // TODO: should this store location data?
 
   // seemingly new since writing this node
-  std::vector<Attribute> outer_attrs; 
+  std::vector<Attribute> outer_attrs;
 
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
@@ -3695,8 +3907,10 @@ public:
     return NamedFunctionParam ("", nullptr, {});
   }
 
-  NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs)
-    : name (std::move (name)), param_type (std::move (param_type)), outer_attrs (std::move (outer_attrs))
+  NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type,
+		      std::vector<Attribute> outer_attrs)
+    : name (std::move (name)), param_type (std::move (param_type)),
+      outer_attrs (std::move (outer_attrs))
   {}
 
   // Copy constructor
@@ -3741,7 +3955,8 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (param_type != nullptr);
     return param_type;
   }
@@ -3761,7 +3976,7 @@ class ExternalFunctionItem : public ExternalItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
 
   // bool has_return_type;
   // FunctionReturnType return_type;
@@ -3794,33 +4009,41 @@ public:
   bool is_variadic () const { return has_variadics; }
 
   // Returns whether item has outer attributes on its variadic parameters.
-  bool has_variadic_outer_attrs () const { return !variadic_outer_attrs.empty (); }
+  bool has_variadic_outer_attrs () const
+  {
+    return !variadic_outer_attrs.empty ();
+  }
 
   Location get_locus () const { return locus; }
 
   ExternalFunctionItem (
     Identifier item_name,
-    std::vector<std::unique_ptr<GenericParam>> generic_params,
+    std::vector<std::unique_ptr<GenericParam> > generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
-    std::vector<NamedFunctionParam> function_params, bool has_variadics, std::vector<Attribute> variadic_outer_attrs,
-    Visibility vis, std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)), 
+    std::vector<NamedFunctionParam> function_params, bool has_variadics,
+    std::vector<Attribute> variadic_outer_attrs, Visibility vis,
+    std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       item_name (std::move (item_name)), locus (locus),
       generic_params (std::move (generic_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_params (std::move (function_params)),
-      has_variadics (has_variadics), variadic_outer_attrs (std::move (variadic_outer_attrs))
+      has_variadics (has_variadics),
+      variadic_outer_attrs (std::move (variadic_outer_attrs))
   {
-    // TODO: assert that if has variadic outer attrs, then has_variadics is true?
+    // TODO: assert that if has variadic outer attrs, then has_variadics is
+    // true?
   }
 
   // Copy constructor with clone
   ExternalFunctionItem (ExternalFunctionItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility), item_name (other.item_name), 
-      locus (other.locus), where_clause (other.where_clause),
+    : outer_attrs (other.outer_attrs), visibility (other.visibility),
+      item_name (other.item_name), locus (other.locus),
+      where_clause (other.where_clause),
       function_params (other.function_params),
-      has_variadics (other.has_variadics), variadic_outer_attrs (other.variadic_outer_attrs)
+      has_variadics (other.has_variadics),
+      variadic_outer_attrs (other.variadic_outer_attrs)
   {
     // guard to prevent null pointer dereference
     if (other.return_type != nullptr)
@@ -3872,20 +4095,34 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
-  std::vector<NamedFunctionParam> &get_function_params () { return function_params; }
-  const std::vector<NamedFunctionParam> &get_function_params () const { return function_params; }
+  std::vector<NamedFunctionParam> &get_function_params ()
+  {
+    return function_params;
+  }
+  const std::vector<NamedFunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause () {
+  WhereClause &get_where_clause ()
+  {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
@@ -3909,10 +4146,10 @@ class ExternBlock : public VisItem
   std::vector<Attribute> inner_attrs;
 
   // bool has_extern_items;
-  std::vector<std::unique_ptr<ExternalItem>> extern_items;
+  std::vector<std::unique_ptr<ExternalItem> > extern_items;
 
   Location locus;
-  
+
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
 
@@ -3929,7 +4166,7 @@ public:
   bool has_abi () const { return !abi.empty (); }
 
   ExternBlock (std::string abi,
-	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
+	       std::vector<std::unique_ptr<ExternalItem> > extern_items,
 	       Visibility vis, std::vector<Attribute> inner_attrs,
 	       std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)), abi (std::move (abi)),
@@ -3976,12 +4213,18 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<ExternalItem>>& get_extern_items () const { return extern_items; }
-  std::vector<std::unique_ptr<ExternalItem>>& get_extern_items () { return extern_items; }
+  const std::vector<std::unique_ptr<ExternalItem> > &get_extern_items () const
+  {
+    return extern_items;
+  }
+  std::vector<std::unique_ptr<ExternalItem> > &get_extern_items ()
+  {
+    return extern_items;
+  }
 
   // TODO: think of better way to do this
-  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
-  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

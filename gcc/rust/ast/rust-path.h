@@ -101,7 +101,8 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type != nullptr);
     return type;
   }
@@ -111,7 +112,7 @@ public:
 struct GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
-  std::vector<std::unique_ptr<Type>> type_args;
+  std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
   Location locus;
 
@@ -124,7 +125,7 @@ public:
   }
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
-	       std::vector<std::unique_ptr<Type>> type_args,
+	       std::vector<std::unique_ptr<Type> > type_args,
 	       std::vector<GenericArgsBinding> binding_args,
 	       Location locus = Location ())
     : lifetime_args (std::move (lifetime_args)),
@@ -166,21 +167,17 @@ public:
   static GenericArgs create_empty ()
   {
     return GenericArgs (std::vector<Lifetime> (),
-			std::vector<std::unique_ptr<Type>> (),
+			std::vector<std::unique_ptr<Type> > (),
 			std::vector<GenericArgsBinding> ());
   }
 
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::vector<std::unique_ptr<Type>> &get_type_args () {
-    return type_args;
-  }
+  std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::vector<GenericArgsBinding> &get_binding_args () {
-    return binding_args;
-  }
+  std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -213,8 +210,8 @@ public:
   PathExprSegment (std::string segment_name, Location locus,
 		   std::vector<Lifetime> lifetime_args
 		   = std::vector<Lifetime> (),
-		   std::vector<std::unique_ptr<Type>> type_args
-		   = std::vector<std::unique_ptr<Type>> (),
+		   std::vector<std::unique_ptr<Type> > type_args
+		   = std::vector<std::unique_ptr<Type> > (),
 		   std::vector<GenericArgsBinding> binding_args
 		   = std::vector<GenericArgsBinding> ())
     : segment_name (PathIdentSegment (std::move (segment_name))),
@@ -238,7 +235,8 @@ public:
   Location get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  GenericArgs &get_generic_args () {
+  GenericArgs &get_generic_args ()
+  {
     rust_assert (has_generic_args ());
     return generic_args;
   }
@@ -262,7 +260,11 @@ protected:
   SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
 
   // Removes all segments of the path.
-  void remove_all_segments () { segments.clear (); segments.shrink_to_fit (); }
+  void remove_all_segments ()
+  {
+    segments.clear ();
+    segments.shrink_to_fit ();
+  }
 
 public:
   /* Returns whether the path is a single segment (excluding qualified path
@@ -427,7 +429,7 @@ public:
   TypePathSegmentGeneric (std::string segment_name,
 			  bool has_separating_scope_resolution,
 			  std::vector<Lifetime> lifetime_args,
-			  std::vector<std::unique_ptr<Type>> type_args,
+			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
 			  Location locus)
     : TypePathSegment (std::move (segment_name),
@@ -442,7 +444,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  GenericArgs &get_generic_args () {
+  GenericArgs &get_generic_args ()
+  {
     rust_assert (has_generic_args ());
     return generic_args;
   }
@@ -463,7 +466,7 @@ private:
   /*bool has_inputs;
   TypePathFnInputs inputs;*/
   // inlined from TypePathFnInputs
-  std::vector<std::unique_ptr<Type>> inputs;
+  std::vector<std::unique_ptr<Type> > inputs;
 
   // bool has_type;
   std::unique_ptr<Type> return_type;
@@ -491,7 +494,7 @@ public:
   static TypePathFunction create_error () { return TypePathFunction (true); }
 
   // Constructor
-  TypePathFunction (std::vector<std::unique_ptr<Type>> inputs,
+  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
 		    std::unique_ptr<Type> type = nullptr)
     : inputs (std::move (inputs)), return_type (std::move (type)),
       is_invalid (false)
@@ -537,11 +540,15 @@ public:
   std::string as_string () const;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Type>> &get_params () const { return inputs; }
-  std::vector<std::unique_ptr<Type>> &get_params () { return inputs; }
+  const std::vector<std::unique_ptr<Type> > &get_params () const
+  {
+    return inputs;
+  }
+  std::vector<std::unique_ptr<Type> > &get_params () { return inputs; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (has_return_type ());
     return return_type;
   }
@@ -578,7 +585,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  TypePathFunction &get_type_path_function () {
+  TypePathFunction &get_type_path_function ()
+  {
     rust_assert (!function_path.is_error ());
     return function_path;
   }
@@ -595,7 +603,7 @@ protected:
 class TypePath : public TypeNoBounds
 {
   bool has_opening_scope_resolution;
-  std::vector<std::unique_ptr<TypePathSegment>> segments;
+  std::vector<std::unique_ptr<TypePathSegment> > segments;
   Location locus;
 
 protected:
@@ -620,12 +628,12 @@ public:
   // Creates an error state TypePath.
   static TypePath create_error ()
   {
-    return TypePath (std::vector<std::unique_ptr<TypePathSegment>> (),
+    return TypePath (std::vector<std::unique_ptr<TypePathSegment> > (),
 		     Location ());
   }
 
   // Constructor
-  TypePath (std::vector<std::unique_ptr<TypePathSegment>> segments,
+  TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    Location locus, bool has_opening_scope_resolution = false)
     : has_opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (segments)), locus (locus)
@@ -673,8 +681,14 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this seems kinda dodgy
-  std::vector<std::unique_ptr<TypePathSegment>> &get_segments () { return segments; }
-  const std::vector<std::unique_ptr<TypePathSegment>> &get_segments () const { return segments; }
+  std::vector<std::unique_ptr<TypePathSegment> > &get_segments ()
+  {
+    return segments;
+  }
+  const std::vector<std::unique_ptr<TypePathSegment> > &get_segments () const
+  {
+    return segments;
+  }
 };
 
 struct QualifiedPathType
@@ -744,13 +758,15 @@ public:
   Location get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (type_to_invoke_on != nullptr);
     return type_to_invoke_on;
   }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  TypePath &get_as_type_path () {
+  TypePath &get_as_type_path ()
+  {
     rust_assert (has_as_clause ());
     return trait_path;
   }
@@ -795,11 +811,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if path_type is error, so base stripping on that.
-  void mark_for_strip () override { path_type = QualifiedPathType::create_error (); }
+  void mark_for_strip () override
+  {
+    path_type = QualifiedPathType::create_error ();
+  }
   bool is_marked_for_strip () const override { return is_error (); }
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  QualifiedPathType &get_qualified_path_type () {
+  QualifiedPathType &get_qualified_path_type ()
+  {
     rust_assert (!path_type.is_error ());
     return path_type;
   }
@@ -825,7 +845,7 @@ protected:
 class QualifiedPathInType : public TypeNoBounds
 {
   QualifiedPathType path_type;
-  std::vector<std::unique_ptr<TypePathSegment>> segments;
+  std::vector<std::unique_ptr<TypePathSegment> > segments;
   Location locus;
 
 protected:
@@ -839,7 +859,7 @@ protected:
 public:
   QualifiedPathInType (
     QualifiedPathType qual_path_type,
-    std::vector<std::unique_ptr<TypePathSegment>> path_segments,
+    std::vector<std::unique_ptr<TypePathSegment> > path_segments,
     Location locus = Location ())
     : path_type (std::move (qual_path_type)),
       segments (std::move (path_segments)), locus (locus)
@@ -882,7 +902,7 @@ public:
   {
     return QualifiedPathInType (
       QualifiedPathType::create_error (),
-      std::vector<std::unique_ptr<TypePathSegment>> ());
+      std::vector<std::unique_ptr<TypePathSegment> > ());
   }
 
   std::string as_string () const override;
@@ -890,14 +910,21 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  QualifiedPathType &get_qualified_path_type () {
+  QualifiedPathType &get_qualified_path_type ()
+  {
     rust_assert (!path_type.is_error ());
     return path_type;
   }
 
   // TODO: this seems kinda dodgy
-  std::vector<std::unique_ptr<TypePathSegment>> &get_segments () { return segments; }
-  const std::vector<std::unique_ptr<TypePathSegment>> &get_segments () const { return segments; }
+  std::vector<std::unique_ptr<TypePathSegment> > &get_segments ()
+  {
+    return segments;
+  }
+  const std::vector<std::unique_ptr<TypePathSegment> > &get_segments () const
+  {
+    return segments;
+  }
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const final override { return get_locus (); }

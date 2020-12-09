@@ -83,7 +83,7 @@ public:
 
   /* Converts token tree to a flat token stream. Tokens must be pointer to avoid
    * mutual dependency with Token. */
-  virtual std::vector<std::unique_ptr<Token>> to_token_stream () const = 0;
+  virtual std::vector<std::unique_ptr<Token> > to_token_stream () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -193,7 +193,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Return copy of itself but in token stream form.
-  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
+  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
   TokenId get_id () const { return token_id; }
 
@@ -526,7 +526,7 @@ protected:
 class DelimTokenTree : public TokenTree, public AttrInput
 {
   DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree>> token_trees;
+  std::vector<std::unique_ptr<TokenTree> > token_trees;
   Location locus;
 
 protected:
@@ -551,8 +551,8 @@ protected:
 
 public:
   DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree>> token_trees
-		  = std::vector<std::unique_ptr<TokenTree>> (),
+		  std::vector<std::unique_ptr<TokenTree> > token_trees
+		  = std::vector<std::unique_ptr<TokenTree> > (),
 		  Location locus = Location ())
     : delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
@@ -590,8 +590,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  bool
-  check_cfg_predicate (const Session&) const override
+  bool check_cfg_predicate (const Session &) const override
   {
     // this should never be called - should be converted first
     return false;
@@ -599,7 +598,7 @@ public:
 
   AttrInput *parse_to_meta_item () const override;
 
-  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
+  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
   std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
   {
@@ -636,7 +635,10 @@ public:
 
   /* HACK: used to simplify parsing - creates a copy of that type, or returns
    * null */
-  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const { return nullptr; }
+  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const
+  {
+    return nullptr;
+  }
 
   // HACK: used to simplify parsing - same thing
   virtual SimplePath to_path_item () const
@@ -644,7 +646,7 @@ public:
     return SimplePath::create_empty ();
   }
 
-  virtual Attribute to_attribute() const { return Attribute::create_empty (); }
+  virtual Attribute to_attribute () const { return Attribute::create_empty (); }
 
   virtual bool check_cfg_predicate (const Session &session) const = 0;
 };
@@ -652,11 +654,11 @@ public:
 // Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
 class AttrInputMetaItemContainer : public AttrInput
 {
-  std::vector<std::unique_ptr<MetaItemInner>> items;
+  std::vector<std::unique_ptr<MetaItemInner> > items;
 
 public:
   AttrInputMetaItemContainer (
-    std::vector<std::unique_ptr<MetaItemInner>> items)
+    std::vector<std::unique_ptr<MetaItemInner> > items)
     : items (std::move (items))
   {}
 
@@ -1001,10 +1003,7 @@ public:
 
   /* HACK: convert to trait bound. Virtual method overriden by classes that
    * enable this. */
-  virtual TraitBound *to_trait_bound (bool) const
-  {
-    return nullptr;
-  }
+  virtual TraitBound *to_trait_bound (bool) const { return nullptr; }
   /* as pointer, shouldn't require definition beforehand, only forward
    * declaration. */
 
@@ -1220,7 +1219,7 @@ class MacroItem : public Item
 {
   /*public:
   std::string as_string() const;*/
-  //std::vector<Attribute> outer_attrs;
+  // std::vector<Attribute> outer_attrs;
 
 protected:
   /*MacroItem (std::vector<Attribute> outer_attribs)
@@ -1290,7 +1289,7 @@ protected:
   virtual TraitImplItem *clone_trait_impl_item_impl () const = 0;
 
 public:
-  virtual ~TraitImplItem () {};
+  virtual ~TraitImplItem (){};
 
   // Unique pointer custom clone function
   std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
@@ -1335,20 +1334,21 @@ protected:
 class MacroInvocationSemi : public MacroItem,
 			    public TraitItem,
 			    public InherentImplItem,
-			    public TraitImplItem, public ExternalItem
+			    public TraitImplItem,
+			    public ExternalItem
 {
   std::vector<Attribute> outer_attrs;
   SimplePath path;
   // all delim types except curly must have invocation end with a semicolon
   DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree>> token_trees;
+  std::vector<std::unique_ptr<TokenTree> > token_trees;
   Location locus;
 
 public:
   std::string as_string () const override;
 
   MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
-		       std::vector<std::unique_ptr<TokenTree>> token_trees,
+		       std::vector<std::unique_ptr<TokenTree> > token_trees,
 		       std::vector<Attribute> outer_attribs, Location locus)
     : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
       delim_type (delim_type), token_trees (std::move (token_trees)),
@@ -1358,8 +1358,8 @@ public:
   // Copy constructor with vector clone
   MacroInvocationSemi (MacroInvocationSemi const &other)
     : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), outer_attrs(other.outer_attrs), path (other.path), delim_type (other.delim_type),
-      locus (other.locus)
+      TraitImplItem (other), outer_attrs (other.outer_attrs), path (other.path),
+      delim_type (other.delim_type), locus (other.locus)
   {
     token_trees.reserve (other.token_trees.size ());
     for (const auto &e : other.token_trees)
@@ -1458,11 +1458,11 @@ struct Crate
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
-  std::vector<std::unique_ptr<Item>> items;
+  std::vector<std::unique_ptr<Item> > items;
 
 public:
   // Constructor
-  Crate (std::vector<std::unique_ptr<Item>> items,
+  Crate (std::vector<std::unique_ptr<Item> > items,
 	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false,
 	 bool has_shebang = false)
     : has_utf8bom (has_utf8bom), has_shebang (has_shebang),
@@ -1503,13 +1503,14 @@ public:
   std::string as_string () const;
 
   // Delete all crate information, e.g. if fails cfg.
-  void strip_crate () {
+  void strip_crate ()
+  {
     inner_attrs.clear ();
     inner_attrs.shrink_to_fit ();
 
     items.clear ();
     items.shrink_to_fit ();
-    // TODO: is this the best way to do this? 
+    // TODO: is this the best way to do this?
   }
 };
 

@@ -119,8 +119,7 @@ public:
 
   /* this can never be a cfg predicate - cfg and cfg_attr require a token-tree
    * cfg */
-  bool
-  check_cfg_predicate (const Session&) const override { return false; }
+  bool check_cfg_predicate (const Session &) const override { return false; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -241,7 +240,10 @@ public:
 
   // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { main_or_left_expr = nullptr; }
-  bool is_marked_for_strip () const override { return main_or_left_expr == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return main_or_left_expr == nullptr;
+  }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -257,14 +259,16 @@ public:
   BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
 	      bool is_double_borrow, std::vector<Attribute> outer_attribs,
 	      Location locus)
-    : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs), 
-      locus), is_mut (is_mut_borrow), double_borrow (is_double_borrow)
+    : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs),
+		    locus),
+      is_mut (is_mut_borrow), double_borrow (is_double_borrow)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_borrowed_expr () {
+  std::unique_ptr<Expr> &get_borrowed_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
@@ -293,7 +297,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_dereferenced_expr () {
+  std::unique_ptr<Expr> &get_dereferenced_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
@@ -323,7 +328,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_propagating_expr () {
+  std::unique_ptr<Expr> &get_propagating_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
@@ -369,7 +375,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_negated_expr () {
+  std::unique_ptr<Expr> &get_negated_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
@@ -446,13 +453,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr () {
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr () {
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
@@ -528,13 +537,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr () {
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr () {
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
@@ -604,13 +615,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr () {
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr () {
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
@@ -657,20 +670,22 @@ public:
     return *this;
   }
 
-  // move constructors 
+  // move constructors
   TypeCastExpr (TypeCastExpr &&other) = default;
   TypeCastExpr &operator= (TypeCastExpr &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_casted_expr () {
+  std::unique_ptr<Expr> &get_casted_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<TypeNoBounds> &get_type_to_cast_to () {
+  std::unique_ptr<TypeNoBounds> &get_type_to_cast_to ()
+  {
     rust_assert (type_to_convert_to != nullptr);
     return type_to_convert_to;
   }
@@ -727,13 +742,15 @@ public:
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr () {
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr () {
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
@@ -811,13 +828,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr () {
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr () {
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
@@ -891,10 +910,14 @@ public:
 
   // Invalid if inner expr is null, so base stripping on that.
   void mark_for_strip () override { expr_in_parens = nullptr; }
-  bool is_marked_for_strip () const override { return expr_in_parens == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return expr_in_parens == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr_in_parens () {
+  std::unique_ptr<Expr> &get_expr_in_parens ()
+  {
     rust_assert (expr_in_parens != nullptr);
     return expr_in_parens;
   }
@@ -969,7 +992,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_values () const { return values; }
+  const std::vector<std::unique_ptr<Expr> > &get_values () const
+  {
+    return values;
+  }
   std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
 
   size_t get_num_values () const { return values.size (); }
@@ -1030,13 +1056,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_elem_to_copy () {
+  std::unique_ptr<Expr> &get_elem_to_copy ()
+  {
     rust_assert (elem_to_copy != nullptr);
     return elem_to_copy;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_num_copies () {
+  std::unique_ptr<Expr> &get_num_copies ()
+  {
     rust_assert (num_copies != nullptr);
     return num_copies;
   }
@@ -1055,7 +1083,7 @@ class ArrayExpr : public ExprWithoutBlock
   std::unique_ptr<ArrayElems> internal_elements;
 
   Location locus;
-  
+
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
 
@@ -1121,7 +1149,8 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ArrayElems> &get_array_elems () {
+  std::unique_ptr<ArrayElems> &get_array_elems ()
+  {
     rust_assert (internal_elements != nullptr);
     return internal_elements;
   }
@@ -1182,7 +1211,7 @@ public:
     // guard to prevent null dereference (only required if error state)
     if (other.array_expr != nullptr)
       array_expr = other.array_expr->clone_expr ();
-    else 
+    else
       array_expr = nullptr;
     if (other.index_expr != nullptr)
       index_expr = other.index_expr->clone_expr ();
@@ -1202,17 +1231,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if either expr is null, so base stripping on that.
-  void mark_for_strip () override { array_expr = nullptr; index_expr = nullptr; }
-  bool is_marked_for_strip () const override { return array_expr == nullptr && index_expr == nullptr; }
+  void mark_for_strip () override
+  {
+    array_expr = nullptr;
+    index_expr = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return array_expr == nullptr && index_expr == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_array_expr () {
+  std::unique_ptr<Expr> &get_array_expr ()
+  {
     rust_assert (array_expr != nullptr);
     return array_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_index_expr () {
+  std::unique_ptr<Expr> &get_index_expr ()
+  {
     rust_assert (index_expr != nullptr);
     return index_expr;
   }
@@ -1295,8 +1333,14 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const { return tuple_elems; }
-  std::vector<std::unique_ptr<Expr> > &get_tuple_elems () { return tuple_elems; }
+  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const
+  {
+    return tuple_elems;
+  }
+  std::vector<std::unique_ptr<Expr> > &get_tuple_elems ()
+  {
+    return tuple_elems;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1332,7 +1376,8 @@ public:
 
   // Copy constructor requires a clone for tuple_expr
   TupleIndexExpr (TupleIndexExpr const &other)
-    : ExprWithoutBlock (other), tuple_index (other.tuple_index), locus (other.locus)
+    : ExprWithoutBlock (other), tuple_index (other.tuple_index),
+      locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.tuple_expr != nullptr)
@@ -1370,7 +1415,8 @@ public:
   bool is_marked_for_strip () const override { return tuple_expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_tuple_expr () {
+  std::unique_ptr<Expr> &get_tuple_expr ()
+  {
     rust_assert (tuple_expr != nullptr);
     return tuple_expr;
   }
@@ -1404,7 +1450,10 @@ public:
   std::string as_string () const override;
 
   // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { struct_name = PathInExpression::create_error (); }
+  void mark_for_strip () override
+  {
+    struct_name = PathInExpression::create_error ();
+  }
   bool is_marked_for_strip () const override { return struct_name.is_error (); }
 };
 
@@ -1493,7 +1542,8 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_base_struct () {
+  std::unique_ptr<Expr> &get_base_struct ()
+  {
     rust_assert (base_struct != nullptr);
     return base_struct;
   }
@@ -1577,7 +1627,8 @@ public:
   std::string as_string () const override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_value () {
+  std::unique_ptr<Expr> &get_value ()
+  {
     rust_assert (value != nullptr);
     return value;
   }
@@ -1693,8 +1744,14 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<StructExprField> > &get_fields () { return fields; }
-  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const { return fields; }
+  std::vector<std::unique_ptr<StructExprField> > &get_fields ()
+  {
+    return fields;
+  }
+  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
+  {
+    return fields;
+  }
 
   StructBase &get_struct_base () { return struct_base; }
   const StructBase &get_struct_base () const { return struct_base; }
@@ -1709,7 +1766,7 @@ protected:
 };
 
 // AST node of the functional update struct creator
-/* TODO: remove and replace with StructExprStructFields, except with empty 
+/* TODO: remove and replace with StructExprStructFields, except with empty
  * vector of fields? */
 class StructExprStructBase : public StructExprStruct
 {
@@ -1795,7 +1852,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  const std::vector<std::unique_ptr<Expr> > &get_elems () const { return exprs; }
+  const std::vector<std::unique_ptr<Expr> > &get_elems () const
+  {
+    return exprs;
+  }
   std::vector<std::unique_ptr<Expr> > &get_elems () { return exprs; }
 
 protected:
@@ -1853,12 +1913,21 @@ protected:
   {}
 
 public:
-  const PathInExpression& get_enum_variant_path () const { return enum_variant_path; }
-  PathInExpression& get_enum_variant_path () { return enum_variant_path; }
+  const PathInExpression &get_enum_variant_path () const
+  {
+    return enum_variant_path;
+  }
+  PathInExpression &get_enum_variant_path () { return enum_variant_path; }
 
   // Invalid if path is in error state, so base stripping on that.
-  void mark_for_strip () override { enum_variant_path = PathInExpression::create_error (); }
-  bool is_marked_for_strip () const override { return enum_variant_path.is_error (); }
+  void mark_for_strip () override
+  {
+    enum_variant_path = PathInExpression::create_error ();
+  }
+  bool is_marked_for_strip () const override
+  {
+    return enum_variant_path.is_error ();
+  }
 };
 
 /* Base AST node for a single enum expression field (in enum instance creation)
@@ -1942,7 +2011,8 @@ public:
   std::string as_string () const override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_value () {
+  std::unique_ptr<Expr> &get_value ()
+  {
     rust_assert (value != nullptr);
     return value;
   }
@@ -2054,7 +2124,10 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<std::unique_ptr<EnumExprField> > &get_fields () { return fields; }
-  const std::vector<std::unique_ptr<EnumExprField> > &get_fields () const { return fields; }
+  const std::vector<std::unique_ptr<EnumExprField> > &get_fields () const
+  {
+    return fields;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2114,7 +2187,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  const std::vector<std::unique_ptr<Expr> > &get_elems () const { return values; }
+  const std::vector<std::unique_ptr<Expr> > &get_elems () const
+  {
+    return values;
+  }
   std::vector<std::unique_ptr<Expr> > &get_elems () { return values; }
 
 protected:
@@ -2186,7 +2262,8 @@ public:
 
   // copy constructor requires clone
   CallExpr (CallExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus) {
+    : ExprWithoutBlock (other), locus (other.locus)
+  {
     // guard to prevent null dereference (only required if error state)
     if (other.function != nullptr)
       function = other.function->clone_expr ();
@@ -2233,11 +2310,15 @@ public:
   bool is_marked_for_strip () const override { return function == nullptr; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_params () const { return params; }
+  const std::vector<std::unique_ptr<Expr> > &get_params () const
+  {
+    return params;
+  }
   std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_function_expr () {
+  std::unique_ptr<Expr> &get_function_expr ()
+  {
     rust_assert (function != nullptr);
     return function;
   }
@@ -2276,7 +2357,9 @@ public:
 
   // copy constructor required due to cloning
   MethodCallExpr (MethodCallExpr const &other)
-    : ExprWithoutBlock (other), method_name (other.method_name), locus (other.locus) {
+    : ExprWithoutBlock (other), method_name (other.method_name),
+      locus (other.locus)
+  {
     // guard to prevent null dereference (only required if error state)
     if (other.receiver != nullptr)
       receiver = other.receiver->clone_expr ();
@@ -2321,11 +2404,15 @@ public:
   bool is_marked_for_strip () const override { return receiver == nullptr; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Expr> > &get_params () const { return params; }
+  const std::vector<std::unique_ptr<Expr> > &get_params () const
+  {
+    return params;
+  }
   std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_receiver_expr () {
+  std::unique_ptr<Expr> &get_receiver_expr ()
+  {
     rust_assert (receiver != nullptr);
     return receiver;
   }
@@ -2402,7 +2489,8 @@ public:
   bool is_marked_for_strip () const override { return receiver == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_receiver_expr () {
+  std::unique_ptr<Expr> &get_receiver_expr ()
+  {
     rust_assert (receiver != nullptr);
     return receiver;
   }
@@ -2438,14 +2526,14 @@ public:
 
   // Constructor for closure parameter
   ClosureParam (std::unique_ptr<Pattern> param_pattern,
-		std::unique_ptr<Type> param_type = nullptr, std::vector<Attribute> outer_attrs = {})
-    : outer_attrs (std::move(outer_attrs)), pattern (std::move (param_pattern)), 
-      type (std::move (param_type))
+		std::unique_ptr<Type> param_type = nullptr,
+		std::vector<Attribute> outer_attrs = {})
+    : outer_attrs (std::move (outer_attrs)),
+      pattern (std::move (param_pattern)), type (std::move (param_type))
   {}
 
   // Copy constructor required due to cloning as a result of unique_ptrs
-  ClosureParam (ClosureParam const &other)
-    : outer_attrs (other.outer_attrs)
+  ClosureParam (ClosureParam const &other) : outer_attrs (other.outer_attrs)
   {
     // guard to protect from null pointer dereference
     if (other.pattern != nullptr)
@@ -2490,13 +2578,15 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Pattern> &get_pattern () {
+  std::unique_ptr<Pattern> &get_pattern ()
+  {
     rust_assert (pattern != nullptr);
     return pattern;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (has_type_given ());
     return type;
   }
@@ -2550,8 +2640,7 @@ public:
   {}
 
   // Copy constructor must be defined to allow copying via cloning of unique_ptr
-  ClosureExprInner (ClosureExprInner const &other)
-    : ClosureExpr (other)
+  ClosureExprInner (ClosureExprInner const &other) : ClosureExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.closure_inner != nullptr)
@@ -2583,10 +2672,14 @@ public:
 
   // Invalid if inner expr is null, so base stripping on that.
   void mark_for_strip () override { closure_inner = nullptr; }
-  bool is_marked_for_strip () const override { return closure_inner == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return closure_inner == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_definition_expr () {
+  std::unique_ptr<Expr> &get_definition_expr ()
+  {
     rust_assert (closure_inner != nullptr);
     return closure_inner;
   }
@@ -2633,7 +2726,8 @@ public:
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
-    : ExprWithBlock (other), inner_attrs (other.inner_attrs), locus (other.locus)
+    : ExprWithBlock (other), inner_attrs (other.inner_attrs),
+      locus (other.locus)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2681,23 +2775,30 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if has no statements or final expr, so base stripping on that.
-  void mark_for_strip () override 
-  { 
-    expr = nullptr; 
-    statements.clear (); 
-    statements.shrink_to_fit (); 
+  void mark_for_strip () override
+  {
+    expr = nullptr;
+    statements.clear ();
+    statements.shrink_to_fit ();
   }
-  bool is_marked_for_strip () const override { return expr == nullptr && statements.empty (); }
+  bool is_marked_for_strip () const override
+  {
+    return expr == nullptr && statements.empty ();
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<Stmt> > &get_statements () const { return statements; }
+  const std::vector<std::unique_ptr<Stmt> > &get_statements () const
+  {
+    return statements;
+  }
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithoutBlock> &get_tail_expr () {
+  std::unique_ptr<ExprWithoutBlock> &get_tail_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
@@ -2783,19 +2884,21 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  /* Invalid if inner expr is null, so base stripping on that. Technically, 
+  /* Invalid if inner expr is null, so base stripping on that. Technically,
    * type should also not be null. */
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition_block () {
+  std::unique_ptr<BlockExpr> &get_definition_block ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type () {
+  std::unique_ptr<Type> &get_return_type ()
+  {
     rust_assert (return_type != nullptr);
     return return_type;
   }
@@ -2887,7 +2990,8 @@ public:
 
   // Copy constructor defined to use clone for unique pointer
   BreakExpr (BreakExpr const &other)
-    : ExprWithoutBlock (other), label (other.label), locus (other.locus), marked_for_strip (other.marked_for_strip)
+    : ExprWithoutBlock (other), label (other.label), locus (other.locus),
+      marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.break_expr != nullptr)
@@ -2926,7 +3030,8 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_break_expr () {
+  std::unique_ptr<Expr> &get_break_expr ()
+  {
     rust_assert (break_expr != nullptr);
     return break_expr;
   }
@@ -2973,8 +3078,7 @@ public:
   {}
 
   // Copy constructor with cloning
-  RangeFromToExpr (RangeFromToExpr const &other)
-    : RangeExpr (other)
+  RangeFromToExpr (RangeFromToExpr const &other) : RangeExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.from != nullptr)
@@ -3007,18 +3111,27 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if either expr is null, so base stripping on that. 
-  void mark_for_strip () override { from = nullptr; to = nullptr; }
-  bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
+  // Invalid if either expr is null, so base stripping on that.
+  void mark_for_strip () override
+  {
+    from = nullptr;
+    to = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return from == nullptr && to == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr () {
+  std::unique_ptr<Expr> &get_from_expr ()
+  {
     rust_assert (from != nullptr);
     return from;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr () {
+  std::unique_ptr<Expr> &get_to_expr ()
+  {
     rust_assert (to != nullptr);
     return to;
   }
@@ -3046,8 +3159,7 @@ public:
   {}
 
   // Copy constructor with clone
-  RangeFromExpr (RangeFromExpr const &other)
-    : RangeExpr (other)
+  RangeFromExpr (RangeFromExpr const &other) : RangeExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.from != nullptr)
@@ -3058,7 +3170,7 @@ public:
   RangeFromExpr &operator= (RangeFromExpr const &other)
   {
     RangeExpr::operator= (other);
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.from != nullptr)
       from = other.from->clone_expr ();
@@ -3074,12 +3186,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if expr is null, so base stripping on that. 
+  // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { from = nullptr; }
   bool is_marked_for_strip () const override { return from == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr () {
+  std::unique_ptr<Expr> &get_from_expr ()
+  {
     rust_assert (from != nullptr);
     return from;
   }
@@ -3108,8 +3221,7 @@ public:
   {}
 
   // Copy constructor with clone
-  RangeToExpr (RangeToExpr const &other)
-    : RangeExpr (other)
+  RangeToExpr (RangeToExpr const &other) : RangeExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.to != nullptr)
@@ -3120,7 +3232,7 @@ public:
   RangeToExpr &operator= (RangeToExpr const &other)
   {
     RangeExpr::operator= (other);
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.to != nullptr)
       to = other.to->clone_expr ();
@@ -3136,12 +3248,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if expr is null, so base stripping on that. 
+  // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { to = nullptr; }
   bool is_marked_for_strip () const override { return to == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr () {
+  std::unique_ptr<Expr> &get_to_expr ()
+  {
     rust_assert (to != nullptr);
     return to;
   }
@@ -3201,8 +3314,7 @@ public:
   // outer attributes not allowed
 
   // Copy constructor with clone
-  RangeFromToInclExpr (RangeFromToInclExpr const &other)
-    : RangeExpr (other)
+  RangeFromToInclExpr (RangeFromToInclExpr const &other) : RangeExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.from != nullptr)
@@ -3215,7 +3327,7 @@ public:
   RangeFromToInclExpr &operator= (RangeFromToInclExpr const &other)
   {
     RangeExpr::operator= (other);
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.from != nullptr)
       from = other.from->clone_expr ();
@@ -3235,18 +3347,27 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if either expr is null, so base stripping on that. 
-  void mark_for_strip () override { from = nullptr; to = nullptr; }
-  bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
+  // Invalid if either expr is null, so base stripping on that.
+  void mark_for_strip () override
+  {
+    from = nullptr;
+    to = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return from == nullptr && to == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr () {
+  std::unique_ptr<Expr> &get_from_expr ()
+  {
     rust_assert (from != nullptr);
     return from;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr () {
+  std::unique_ptr<Expr> &get_to_expr ()
+  {
     rust_assert (to != nullptr);
     return to;
   }
@@ -3275,8 +3396,7 @@ public:
   // outer attributes not allowed
 
   // Copy constructor with clone
-  RangeToInclExpr (RangeToInclExpr const &other)
-    : RangeExpr (other)
+  RangeToInclExpr (RangeToInclExpr const &other) : RangeExpr (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.to != nullptr)
@@ -3287,7 +3407,7 @@ public:
   RangeToInclExpr &operator= (RangeToInclExpr const &other)
   {
     RangeExpr::operator= (other);
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.to != nullptr)
       to = other.to->clone_expr ();
@@ -3303,12 +3423,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if expr is null, so base stripping on that. 
+  // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { to = nullptr; }
   bool is_marked_for_strip () const override { return to == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr () {
+  std::unique_ptr<Expr> &get_to_expr ()
+  {
     rust_assert (to != nullptr);
     return to;
   }
@@ -3348,7 +3469,8 @@ public:
 
   // Copy constructor with clone
   ReturnExpr (ReturnExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus), marked_for_strip (other.marked_for_strip)
+    : ExprWithoutBlock (other), locus (other.locus),
+      marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.return_expr != nullptr)
@@ -3386,7 +3508,8 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_returned_expr () {
+  std::unique_ptr<Expr> &get_returned_expr ()
+  {
     rust_assert (return_expr != nullptr);
     return return_expr;
   }
@@ -3453,12 +3576,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if block is null, so base stripping on that. 
+  // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_block_expr () {
+  std::unique_ptr<BlockExpr> &get_block_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
@@ -3555,12 +3679,13 @@ public:
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
 
-  // Invalid if loop block is null, so base stripping on that. 
+  // Invalid if loop block is null, so base stripping on that.
   void mark_for_strip () override { loop_block = nullptr; }
   bool is_marked_for_strip () const override { return loop_block == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_loop_block () {
+  std::unique_ptr<BlockExpr> &get_loop_block ()
+  {
     rust_assert (loop_block != nullptr);
     return loop_block;
   }
@@ -3634,7 +3759,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_predicate_expr () {
+  std::unique_ptr<Expr> &get_predicate_expr ()
+  {
     rust_assert (condition != nullptr);
     return condition;
   }
@@ -3706,14 +3832,21 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_scrutinee_expr () {
+  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  {
     rust_assert (scrutinee != nullptr);
     return scrutinee;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  {
+    return match_arm_patterns;
+  }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3771,13 +3904,15 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_iterator_expr () {
+  std::unique_ptr<Expr> &get_iterator_expr ()
+  {
     rust_assert (iterator_expr != nullptr);
     return iterator_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Pattern> &get_pattern () {
+  std::unique_ptr<Pattern> &get_pattern ()
+  {
     rust_assert (pattern != nullptr);
     return pattern;
   }
@@ -3814,8 +3949,7 @@ public:
   // outer attributes are never allowed on IfExprs
 
   // Copy constructor with clone
-  IfExpr (IfExpr const &other)
-    : ExprWithBlock (other), locus (other.locus)
+  IfExpr (IfExpr const &other) : ExprWithBlock (other), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.condition != nullptr)
@@ -3866,20 +4000,29 @@ public:
   void vis_if_block (ASTVisitor &vis) { if_block->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_condition_expr () {
+  std::unique_ptr<Expr> &get_condition_expr ()
+  {
     rust_assert (condition != nullptr);
     return condition;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_if_block () {
+  std::unique_ptr<BlockExpr> &get_if_block ()
+  {
     rust_assert (if_block != nullptr);
     return if_block;
   }
 
-  // Invalid if if block or condition is null, so base stripping on that. 
-  void mark_for_strip () override { if_block = nullptr; condition = nullptr; }
-  bool is_marked_for_strip () const override { return if_block == nullptr && condition == nullptr; }
+  // Invalid if if block or condition is null, so base stripping on that.
+  void mark_for_strip () override
+  {
+    if_block = nullptr;
+    condition = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return if_block == nullptr && condition == nullptr;
+  }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -3934,7 +4077,8 @@ public:
   void vis_else_block (ASTVisitor &vis) { else_block->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_else_block () {
+  std::unique_ptr<BlockExpr> &get_else_block ()
+  {
     rust_assert (else_block != nullptr);
     return else_block;
   }
@@ -3992,7 +4136,8 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<IfExpr> &get_conseq_if_expr () {
+  std::unique_ptr<IfExpr> &get_conseq_if_expr ()
+  {
     rust_assert (conseq_if_expr != nullptr);
     return conseq_if_expr;
   }
@@ -4080,25 +4225,40 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if block or value is null, so base stripping on that. 
-  void mark_for_strip () override { if_block = nullptr; value = nullptr; }
-  bool is_marked_for_strip () const override { return if_block == nullptr && value == nullptr; }
+  // Invalid if block or value is null, so base stripping on that.
+  void mark_for_strip () override
+  {
+    if_block = nullptr;
+    value = nullptr;
+  }
+  bool is_marked_for_strip () const override
+  {
+    return if_block == nullptr && value == nullptr;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_value_expr () {
+  std::unique_ptr<Expr> &get_value_expr ()
+  {
     rust_assert (value != nullptr);
     return value;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_if_block () {
+  std::unique_ptr<BlockExpr> &get_if_block ()
+  {
     rust_assert (if_block != nullptr);
     return if_block;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  {
+    return match_arm_patterns;
+  }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4155,7 +4315,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr () {
+  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr ()
+  {
     rust_assert (if_let_expr != nullptr);
     return if_let_expr;
   }
@@ -4213,7 +4374,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_else_block () {
+  std::unique_ptr<BlockExpr> &get_else_block ()
+  {
     rust_assert (else_block != nullptr);
     return else_block;
   }
@@ -4270,7 +4432,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<IfExpr> &get_conseq_if_expr () {
+  std::unique_ptr<IfExpr> &get_conseq_if_expr ()
+  {
     rust_assert (if_expr != nullptr);
     return if_expr;
   }
@@ -4327,7 +4490,8 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr () {
+  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr ()
+  {
     rust_assert (if_let_expr != nullptr);
     return if_let_expr;
   }
@@ -4415,7 +4579,8 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_guard_expr () {
+  std::unique_ptr<Expr> &get_guard_expr ()
+  {
     rust_assert (has_match_arm_guard ());
     return guard_expr;
   }
@@ -4424,8 +4589,14 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  {
+    return match_arm_patterns;
+  }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
 };
 
 /*
@@ -4493,13 +4664,15 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr () {
+  std::unique_ptr<Expr> &get_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  MatchArm &get_arm () {
+  MatchArm &get_arm ()
+  {
     rust_assert (!arm.is_error ());
     return arm;
   }
@@ -4628,7 +4801,7 @@ public:
 
   // Copy constructor requires clone due to unique_ptr
   MatchExpr (MatchExpr const &other)
-    : ExprWithBlock (other), inner_attrs (other.inner_attrs), 
+    : ExprWithBlock (other), inner_attrs (other.inner_attrs),
       match_arms (other.match_arms), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
@@ -4671,7 +4844,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if branch value is null, so base stripping on that. 
+  // Invalid if branch value is null, so base stripping on that.
   void mark_for_strip () override { branch_value = nullptr; }
   bool is_marked_for_strip () const override { return branch_value == nullptr; }
 
@@ -4680,7 +4853,8 @@ public:
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_scrutinee_expr () {
+  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  {
     rust_assert (branch_value != nullptr);
     return branch_value;
   }
@@ -4746,12 +4920,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if awaited expr is null, so base stripping on that. 
+  // Invalid if awaited expr is null, so base stripping on that.
   void mark_for_strip () override { awaited_expr = nullptr; }
   bool is_marked_for_strip () const override { return awaited_expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_awaited_expr () {
+  std::unique_ptr<Expr> &get_awaited_expr ()
+  {
     rust_assert (awaited_expr != nullptr);
     return awaited_expr;
   }
@@ -4816,12 +4991,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if block is null, so base stripping on that. 
+  // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { block_expr = nullptr; }
   bool is_marked_for_strip () const override { return block_expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_block_expr () {
+  std::unique_ptr<BlockExpr> &get_block_expr ()
+  {
     rust_assert (block_expr != nullptr);
     return block_expr;
   }

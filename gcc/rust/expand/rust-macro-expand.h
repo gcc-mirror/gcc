@@ -27,7 +27,8 @@ struct MacroExpander
   ExpansionCfg cfg;
   unsigned int expansion_depth = 0;
 
-  MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session) : cfg (cfg), crate (crate), session (session)
+  MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
+    : cfg (cfg), crate (crate), session (session)
   {}
 
   ~MacroExpander () = default;
@@ -40,8 +41,8 @@ struct MacroExpander
   // should this be public or private?
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
-  void expand_cfg_attrs(std::vector<AST::Attribute>& attrs);
-  bool fails_cfg(std::vector<AST::Attribute>& attr);
+  void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
+  bool fails_cfg (std::vector<AST::Attribute> &attr);
 
   /* TODO: make it extend ASTVisitor so that individual items can be accessed
    * properly? */

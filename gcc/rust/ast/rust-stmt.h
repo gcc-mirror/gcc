@@ -80,7 +80,7 @@ public:
     // guard to prevent null dereference (only required if error state)
     if (other.variables_pattern != nullptr)
       variables_pattern = other.variables_pattern->clone_pattern ();
-    
+
     // guard to prevent null dereference (always required)
     if (other.init_expr != nullptr)
       init_expr = other.init_expr->clone_expr ();
@@ -99,7 +99,7 @@ public:
       variables_pattern = other.variables_pattern->clone_pattern ();
     else
       variables_pattern = nullptr;
-    
+
     // guard to prevent null dereference (always required)
     if (other.init_expr != nullptr)
       init_expr = other.init_expr->clone_expr ();
@@ -123,24 +123,30 @@ public:
 
   // Invalid if pattern is null, so base stripping on that.
   void mark_for_strip () override { variables_pattern = nullptr; }
-  bool is_marked_for_strip () const override { return variables_pattern == nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return variables_pattern == nullptr;
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_init_expr () {
+  std::unique_ptr<Expr> &get_init_expr ()
+  {
     rust_assert (has_init_expr ());
     return init_expr;
   }
 
-  std::unique_ptr<Pattern> &get_pattern () {
+  std::unique_ptr<Pattern> &get_pattern ()
+  {
     rust_assert (variables_pattern != nullptr);
     return variables_pattern;
   }
 
-  std::unique_ptr<Type> &get_type () {
+  std::unique_ptr<Type> &get_type ()
+  {
     rust_assert (has_type ());
     return type;
   }
@@ -188,8 +194,7 @@ public:
   {}*/
 
   // Copy constructor with clone
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
-    : ExprStmt (other)
+  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other) : ExprStmt (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
@@ -203,7 +208,7 @@ public:
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
   {
     ExprStmt::operator= (other);
-    //expr = other.expr->clone_expr ();
+    // expr = other.expr->clone_expr ();
 
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
@@ -225,7 +230,8 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithoutBlock> &get_expr () {
+  std::unique_ptr<ExprWithoutBlock> &get_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
@@ -254,8 +260,7 @@ public:
   {}
 
   // Copy constructor with clone
-  ExprStmtWithBlock (ExprStmtWithBlock const &other)
-    : ExprStmt (other)
+  ExprStmtWithBlock (ExprStmtWithBlock const &other) : ExprStmt (other)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
@@ -266,7 +271,7 @@ public:
   ExprStmtWithBlock &operator= (ExprStmtWithBlock const &other)
   {
     ExprStmt::operator= (other);
-    
+
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
       expr = other.expr->clone_expr_with_block ();
@@ -287,7 +292,8 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithBlock> &get_expr () {
+  std::unique_ptr<ExprWithBlock> &get_expr ()
+  {
     rust_assert (expr != nullptr);
     return expr;
   }
