@@ -1,5 +1,12 @@
 2020-12-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (maybe_attach_decl): Use modules_p.
+	(module_preprocess_options): Likewise.
+	* pt.c (lookup_template_class_1)
+	(instantiate_template_specializations): Likewise.
+	* parser.c (cp_lexer_new_main): Rename confusing variable.
+
 	Merge trunk cf97b970fe5
 	c++: Decl module-specific semantic processing
 

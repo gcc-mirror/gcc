@@ -18472,7 +18472,7 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
 void
 maybe_attach_decl (tree ctx, tree decl)
 {
-  if (!flag_modules)
+  if (!modules_p ())
     return;
 
   // FIXME: For now just deal with lambdas attached to var decls.
@@ -19891,7 +19891,7 @@ void
 module_preprocess_options (cpp_reader *reader)
 {
   gcc_checking_assert (!lang_hooks.preprocess_undef);
-  if (flag_modules)
+  if (modules_p ())
     {
       auto *cb = cpp_get_callbacks (reader);
       

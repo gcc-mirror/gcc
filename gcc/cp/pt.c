@@ -9789,7 +9789,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	return error_mark_node;
 
       gen_tmpl = most_general_template (templ);
-      if (flag_modules)
+      if (modules_p ())
 	{
 	  tree origin = get_originating_module_decl (gen_tmpl);
 	  load_pending_specializations (CP_DECL_CONTEXT (origin),
@@ -20917,7 +20917,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 		(DECL_TI_ARGS (DECL_TEMPLATE_RESULT (tmpl)),
 		 targ_ptr));
 
-  if (flag_modules)
+  if (modules_p ())
     {
       tree origin = get_originating_module_decl (gen_tmpl);
       load_pending_specializations (CP_DECL_CONTEXT (origin),

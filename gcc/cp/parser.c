@@ -646,17 +646,17 @@ cp_lexer_new_main (void)
   /* Put the first token in the buffer.  */
   cp_token *tok = lexer->buffer->quick_push (token);
 
-  uintptr_t coro = 0;
+  uintptr_t filter = 0;
   if (modules_p ())
-    coro = module_token_cdtor (parse_in, coro);
+    filter = module_token_cdtor (parse_in, filter);
 
   /* Get the remaining tokens from the preprocessor.  */
   while (tok->type != CPP_EOF)
     {
-      if (coro)
+      if (filter)
 	/* Process the previous token.  */
 	module_token_lang (tok->type, tok->keyword, tok->u.value,
-			   tok->location, coro);
+			   tok->location, filter);
       tok = vec_safe_push (lexer->buffer, cp_token ());
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
@@ -666,8 +666,8 @@ cp_lexer_new_main (void)
                       + lexer->buffer->length ()
 		      - 1;
 
-  if (coro)
-    module_token_cdtor (parse_in, coro);
+  if (filter)
+    module_token_cdtor (parse_in, filter);
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -13791,6 +13791,8 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
 	error_at (token->location, "import cannot appear directly in"
 		  " a linkage-specification");
 
+      /* Module-purview imports must not be from source inclusion
+	 [cpp.import]/7  */
       if (attrs && module_purview_p () && !global_purview_p ()
 	  && private_lookup_attribute ("__translated",
 				       strlen ("__translated"), attrs))
