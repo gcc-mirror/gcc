@@ -646,9 +646,17 @@ cp_lexer_new_main (void)
   /* Put the first token in the buffer.  */
   cp_token *tok = lexer->buffer->quick_push (token);
 
+  uintptr_t filter = 0;
+  if (modules_p ())
+    filter = module_token_cdtor (parse_in, filter);
+
   /* Get the remaining tokens from the preprocessor.  */
   while (tok->type != CPP_EOF)
     {
+      if (filter)
+	/* Process the previous token.  */
+	module_token_lang (tok->type, tok->keyword, tok->u.value,
+			   tok->location, filter);
       tok = vec_safe_push (lexer->buffer, cp_token ());
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
@@ -658,9 +666,14 @@ cp_lexer_new_main (void)
                       + lexer->buffer->length ()
 		      - 1;
 
+  if (filter)
+    module_token_cdtor (parse_in, filter);
+
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
   done_lexing = true;
+
+  maybe_check_all_macros (parse_in);
 
   gcc_assert (!lexer->next_token->purged_p);
   return lexer;
@@ -842,6 +855,8 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
   token->purged_p = false;
   token->error_reported = false;
   token->tree_check_p = false;
+  /* Usually never see a zero, but just in case ... */
+  token->main_source_p = line_table->depth <= 1;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -2190,6 +2205,28 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
+/* State of module-declaration parsing.  */
+enum module_parse
+{
+  MP_NOT_MODULE,	/* Not a module.  */
+
+  _MP_UNUSED,
+
+  MP_FIRST,	/* First declaration of TU.  */
+  MP_GLOBAL,	/* Global Module Fragment.  */
+
+  MP_PURVIEW_IMPORTS,   /* Imports of a module.  */
+  MP_PURVIEW,	/* Purview of a named module.  */
+
+  MP_PRIVATE_IMPORTS, /* Imports of a Private Module Fragment.  */
+  MP_PRIVATE,   /* Private Module Fragment.  */
+};
+
+static module_parse cp_parser_module_declaration
+  (cp_parser *parser, module_parse, bool exporting);
+static void cp_parser_import_declaration
+  (cp_parser *parser, module_parse, bool exporting);
+
 /* Declarations [gram.dcl.dcl] */
 
 static void cp_parser_declaration_seq_opt
@@ -3419,6 +3456,15 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_NOEXCEPT])
 	inform (location, "C++11 %<noexcept%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
+      else if (TREE_CODE (id) == IDENTIFIER_NODE
+	       && (id_equal (id, "module") || id_equal (id, "import")))
+	{
+	  if (!modules_p ())
+	    inform (location, "%qE only available with %<-fmodules-ts%>", id);
+	  else
+	    inform (location, "%qE was not recognized as a module control-line",
+		    id);
+	}
       else if (cxx_dialect < cxx11
 	       && TREE_CODE (id) == IDENTIFIER_NODE
 	       && id_equal (id, "thread_local"))
@@ -3712,6 +3758,13 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	    condop_depth--;
 	  break;
 
+	case CPP_KEYWORD:
+	  if (token->keyword != RID__EXPORT
+	      && token->keyword != RID__MODULE
+	      && token->keyword != RID__IMPORT)
+	    break;
+	  /* FALLTHROUGH  */
+
 	case CPP_PRAGMA:
 	  /* We fell into a pragma.  Skip it, and continue. */
 	  cp_parser_skip_to_pragma_eol (parser, recovering ? token : nullptr);
@@ -3808,6 +3861,13 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  ++nesting_depth;
 	  break;
 
+	case CPP_KEYWORD:
+	  if (token->keyword != RID__EXPORT
+	      && token->keyword != RID__MODULE
+	      && token->keyword != RID__IMPORT)
+	    break;
+	  /* FALLTHROUGH  */
+
 	case CPP_PRAGMA:
 	  /* We fell into a pragma.  Skip it, and continue or return. */
 	  cp_parser_skip_to_pragma_eol (parser, token);
@@ -3889,6 +3949,13 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  /* Nest. */
 	  nesting_depth++;
 	  break;
+
+	case CPP_KEYWORD:
+	  if (token->keyword != RID__EXPORT
+	      && token->keyword != RID__MODULE
+	      && token->keyword != RID__IMPORT)
+	    break;
+	  /* FALLTHROUGH  */
 
 	case CPP_PRAGMA:
 	  /* Skip it, and continue or return. */
@@ -4771,6 +4838,10 @@ cp_parser_translation_unit (cp_parser* parser)
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
 
+  module_parse mp_state = MP_NOT_MODULE;
+  if (modules_p () && !header_module_p ())
+    mp_state = MP_FIRST;
+
   bool implicit_extern_c = false;
 
   /* Parse until EOF.  */
@@ -4793,6 +4864,55 @@ cp_parser_translation_unit (cp_parser* parser)
 
       if (token->type == CPP_EOF)
 	break;
+
+      if (modules_p ())
+	{
+	  /* Top-level module declarations are ok, and change the
+	     portion of file we're in.  Top-level import declarations
+	     are significant for the import portions.  */
+
+	  cp_token *next = token;
+	  bool exporting = token->keyword == RID__EXPORT;
+	  if (exporting)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      next = cp_lexer_peek_token (parser->lexer);
+	    }
+	  if (next->keyword == RID__MODULE)
+	    {
+	      mp_state
+		= cp_parser_module_declaration (parser, mp_state, exporting);
+	      continue;
+	    }
+	  else if (next->keyword == RID__IMPORT)
+	    {
+	      if (mp_state == MP_FIRST)
+		mp_state = MP_NOT_MODULE;
+	      cp_parser_import_declaration (parser, mp_state, exporting);
+	      continue;
+	    }
+	  else
+	    gcc_checking_assert (!exporting);
+
+	  if (mp_state == MP_GLOBAL && token->main_source_p)
+	    {
+	      static bool warned = false;
+	      if (!warned)
+		{
+		  warned = true;
+		  error_at (token->location,
+			    "global module fragment contents must be"
+			    " from preprocessor inclusion");
+		}
+	    }
+	}
+
+      /* This relies on the ordering of module_parse values.  */
+      if (mp_state == MP_PURVIEW_IMPORTS || mp_state == MP_PRIVATE_IMPORTS)
+	/* We're no longer in the import portion of a named module.  */
+	mp_state = module_parse (mp_state + 1);
+      else if (mp_state == MP_FIRST)
+	mp_state = MP_NOT_MODULE;
 
       if (token->type == CPP_CLOSE_BRACE)
 	{
@@ -13513,9 +13633,236 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
     }
 }
 
+/* Modules */
+
+/* Parse a module-name,
+   identifier
+   module-name . identifier
+   header-name
+
+   Returns a pointer to module object, NULL.   */
+
+static module_state *
+cp_parser_module_name (cp_parser *parser)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if (token->type == CPP_HEADER_NAME)
+    {
+      cp_lexer_consume_token (parser->lexer);
+
+      return get_module (token->u.value);
+    }
+
+  module_state *parent = NULL;
+  bool partitioned = false;
+  if (token->type == CPP_COLON && named_module_p ())
+    {
+      partitioned = true;
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+  for (;;)
+    {
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_NAME)
+	{
+	  cp_parser_error (parser, "expected module-name");
+	  break;
+	}
+
+      tree name = cp_lexer_consume_token (parser->lexer)->u.value;
+      parent = get_module (name, parent, partitioned);
+      token = cp_lexer_peek_token (parser->lexer);
+      if (!partitioned && token->type == CPP_COLON)
+	partitioned = true;
+      else if (token->type != CPP_DOT)
+	break;
+
+      cp_lexer_consume_token (parser->lexer);
+   }
+
+  return parent;
+}
+
+/* Named module-declaration
+     __module ; PRAGMA_EOL
+     __module private ; PRAGMA_EOL (unimplemented)
+     [__export] __module module-name attr-spec-seq-opt ; PRAGMA_EOL
+*/
+
+static module_parse
+cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
+			      bool exporting)
+{
+  /* We're a pseudo pragma.  */
+  parser->lexer->in_pragma = true;
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+  if (mp_state == MP_FIRST && !exporting
+      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+    {
+      /* Start global module fragment.  */
+      cp_lexer_consume_token (parser->lexer);
+      module_kind |= MK_GLOBAL;
+      mp_state = MP_GLOBAL;
+      cp_parser_require_pragma_eol (parser, token);
+    }
+  else if (!exporting
+	   && cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+	   && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_PRIVATE)
+	   && cp_lexer_nth_token_is (parser->lexer, 3, CPP_SEMICOLON))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_require_pragma_eol (parser, token);
+
+      if ((mp_state != MP_PURVIEW && mp_state != MP_PURVIEW_IMPORTS)
+	  || !module_interface_p () || module_partition_p ())
+	error_at (token->location,
+		  "private module fragment not permitted here");
+      else
+	{
+	  mp_state = MP_PRIVATE_IMPORTS;
+	  sorry_at (token->location, "private module fragment");
+	}
+    }
+  else if (mp_state != MP_FIRST && mp_state != MP_GLOBAL)
+    {
+      error_at (token->location, "module-declaration not permitted here");
+    skip_eol:
+      cp_parser_skip_to_pragma_eol (parser, token);
+    }
+  else
+    {
+      module_state *mod = cp_parser_module_name (parser);
+      tree attrs = cp_parser_attributes_opt (parser);
+
+      mp_state = MP_PURVIEW_IMPORTS;
+      if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+	goto skip_eol;
+
+      declare_module (mod, token->location, exporting, attrs, parse_in);
+      cp_parser_require_pragma_eol (parser, token);
+    }
+
+  return mp_state;
+}
+
+/* Import-declaration
+   [__export] __import module-name attr-spec-seq-opt ; PRAGMA_EOL */
+
+static void
+cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
+			      bool exporting)
+{
+  /* We're a pseudo pragma.  */
+  parser->lexer->in_pragma = true;
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+  if (mp_state != MP_PURVIEW_IMPORTS
+      && mp_state != MP_PRIVATE_IMPORTS
+      && module_purview_p ()
+      && !global_purview_p ())
+    {
+      error_at (token->location, "post-module-declaration"
+		" imports must be contiguous");
+    note_lexer:
+      inform (token->location, "perhaps insert a line break, or other"
+	      " disambiguation, to prevent this being considered a"
+	      " module control-line");
+    skip_eol:
+      cp_parser_skip_to_pragma_eol (parser, token);
+    }
+  else if (current_scope () != global_namespace)
+    {
+      error_at (token->location, "import-declaration must be at global scope");
+      goto note_lexer;
+    }
+  else
+    {
+      module_state *mod = cp_parser_module_name (parser);
+      tree attrs = cp_parser_attributes_opt (parser);
+
+      if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+	goto skip_eol;
+      cp_parser_require_pragma_eol (parser, token);
+
+      if (parser->in_unbraced_linkage_specification_p)
+	error_at (token->location, "import cannot appear directly in"
+		  " a linkage-specification");
+
+      /* Module-purview imports must not be from source inclusion
+	 [cpp.import]/7  */
+      if (attrs && module_purview_p () && !global_purview_p ()
+	  && private_lookup_attribute ("__translated",
+				       strlen ("__translated"), attrs))
+	error_at (token->location, "post-module-declaration imports"
+		  " must not be include-translated");
+      else if ((mp_state == MP_PURVIEW_IMPORTS
+		|| mp_state == MP_PRIVATE_IMPORTS)
+	       && !token->main_source_p)
+	error_at (token->location, "post-module-declaration imports"
+		  " must not be from header inclusion");
+
+      import_module (mod, token->location, exporting, attrs, parse_in);
+    }
+}
+
+/*  export-declaration.
+
+    export declaration
+    export { declaration-seq-opt }  */
+
+static void
+cp_parser_module_export (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+  if (!module_interface_p ())
+    error_at (token->location,
+	      "%qE may only occur after a module interface declaration",
+	      token->u.value);
+
+  bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
+
+  unsigned mk = module_kind;
+  if (module_exporting_p ())
+    error_at (token->location,
+	      "%qE may only occur once in an export declaration",
+	      token->u.value);
+  module_kind |= MK_EXPORTING;
+
+  if (braced)
+    {
+      cp_ensure_no_omp_declare_simd (parser);
+      cp_ensure_no_oacc_routine (parser);
+
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_declaration_seq_opt (parser);
+      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+    }
+  else
+    {
+      /* Explicitly check if the next tokens might be a
+         module-directive line, so we can give a clearer error message
+         about why the directive will be rejected.  */
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID__MODULE)
+	  || cp_lexer_next_token_is_keyword (parser->lexer, RID__IMPORT)
+	  || cp_lexer_next_token_is_keyword (parser->lexer, RID__EXPORT))
+	error_at (token->location, "%<export%> not part of following"
+		  " module-directive");
+      cp_parser_declaration (parser, NULL_TREE);
+    }
+
+  module_kind = mk;
+}
+
 /* Declarations [gram.dcl.dcl] */
 
-/* Parse an optional declaration-sequence.
+/* Parse an optional declaration-sequence.  TOP_LEVEL is true, if this
+   is the top-level declaration sequence.  That affects whether we
+   deal with module-preamble.
 
    declaration-seq:
      declaration
@@ -13549,6 +13896,14 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 
    C++17:
      deduction-guide
+
+   modules:
+     (all these are only allowed at the outermost level, check
+   	that semantically, for better diagnostics)
+     module-declaration
+     module-export-declaration
+     module-import-declaration
+     export-declaration
 
    GNU extension:
 
@@ -13643,10 +13998,28 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  /* If the next token is `export', then we have a template
-     declaration.  */
+  /* If the next token is `export', it's new-style modules or
+     old-style template.  */
   else if (token1->keyword == RID_EXPORT)
-    cp_parser_template_declaration (parser, /*member_p=*/false);
+    {
+      if (!modules_p ())
+	cp_parser_template_declaration (parser, /*member_p=*/false);
+      else
+	cp_parser_module_export (parser);
+    }
+  else if (token1->keyword == RID__EXPORT
+	   || token1->keyword == RID__IMPORT
+	   || token1->keyword == RID__MODULE)
+    {
+      bool exporting = token1->keyword == RID__EXPORT;
+      cp_token *next = exporting ? token2 : token1;
+      if (exporting)
+	cp_lexer_consume_token (parser->lexer);
+      if (next->keyword == RID__MODULE)
+	cp_parser_module_declaration (parser, MP_NOT_MODULE, exporting);
+      else
+	cp_parser_import_declaration (parser, MP_NOT_MODULE, exporting);
+    }
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */
@@ -16141,7 +16514,7 @@ cp_parser_template_declaration (cp_parser* parser, bool member_p)
       else if (cxx_dialect < cxx20)
 	warning (0, "keyword %<export%> is deprecated, and is ignored");
       else
-	warning (0, "keyword %<export%> not implemented, and will be ignored");
+	warning (0, "keyword %<export%> is enabled with %<-fmodules-ts%>");
     }
 
   cp_parser_template_declaration_after_export (parser, member_p);
@@ -29544,6 +29917,14 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 
   /* Finish the function.  */
   fn = finish_function (inline_p);
+
+  if (modules_p ()
+      && !inline_p
+      && TYPE_P (DECL_CONTEXT (fn))
+      && (DECL_DECLARED_INLINE_P (fn)
+	  || processing_template_decl))
+    set_defining_module (fn);
+
   /* Generate code for it, if necessary.  */
   expand_or_defer_fn (fn);
   /* Restore the saved values.  */

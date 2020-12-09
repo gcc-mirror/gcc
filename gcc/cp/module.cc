@@ -123,6 +123,16 @@ set_originating_module (tree, bool)
 {
 }
 
+void
+import_module (module_state *, location_t, bool, tree, cpp_reader *)
+{
+}
+
+void
+declare_module (module_state *, location_t, bool, tree, cpp_reader *)
+{
+}
+
 module_state *
 preprocess_module (module_state *, unsigned, bool, bool, bool, cpp_reader *)
 {
@@ -141,6 +151,11 @@ init_modules (cpp_reader *)
   if (modules_p ())
     fatal_error (input_location,
 		 "Shtopp! What are you doing? This is not ready yet.");
+}
+
+void
+maybe_check_all_macros (cpp_reader *)
+{
 }
 
 void
