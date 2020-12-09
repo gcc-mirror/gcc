@@ -17250,6 +17250,55 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
   return stmt;
 }
 
+/* OpenMP 5.0:
+   # pragma omp allocate (list)  [allocator(allocator)]  */
+
+static void
+c_parser_omp_allocate (location_t loc, c_parser *parser)
+{
+  tree allocator = NULL_TREE;
+  tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      matching_parens parens;
+      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      c_parser_consume_token (parser);
+      if (strcmp ("allocator", p) != 0)
+	error_at (c_parser_peek_token (parser)->location,
+		  "expected %<allocator%>");
+      else if (parens.require_open (parser))
+	{
+	  location_t expr_loc = c_parser_peek_token (parser)->location;
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+	  allocator = expr.value;
+	  allocator = c_fully_fold (allocator, false, NULL);
+	  tree orig_type
+	    = expr.original_type ? expr.original_type : TREE_TYPE (allocator);
+	  orig_type = TYPE_MAIN_VARIANT (orig_type);
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (allocator))
+	      || TREE_CODE (orig_type) != ENUMERAL_TYPE
+	      || TYPE_NAME (orig_type)
+		 != get_identifier ("omp_allocator_handle_t"))
+	    {
+	      error_at (expr_loc, "%<allocator%> clause allocator expression "
+				"has type %qT rather than "
+				"%<omp_allocator_handle_t%>",
+				TREE_TYPE (allocator));
+	      allocator = NULL_TREE;
+	    }
+	  parens.skip_until_found_close (parser);
+	}
+    }
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (allocator)
+    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+
+  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
+}
+
 /* OpenMP 2.5:
    # pragma omp atomic new-line
      expression-stmt
@@ -21537,6 +21586,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       strcpy (p_name, "#pragma wait");
       stmt = c_parser_oacc_wait (loc, parser, p_name);
       break;
+    case PRAGMA_OMP_ALLOCATE:
+      c_parser_omp_allocate (loc, parser);
+      return;
     case PRAGMA_OMP_ATOMIC:
       c_parser_omp_atomic (loc, parser, false);
       return;

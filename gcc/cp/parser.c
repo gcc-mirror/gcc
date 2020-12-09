@@ -38198,6 +38198,42 @@ cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
   return finish_omp_structured_block (stmt);
 }
 
+/* OpenMP 5.0:
+   # pragma omp allocate (list)  [allocator(allocator)]  */
+
+static void
+cp_parser_omp_allocate (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree allocator = NULL_TREE;
+  location_t loc = pragma_tok->location;
+  tree nl = cp_parser_omp_var_list (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      matching_parens parens;
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      location_t cloc = cp_lexer_peek_token (parser->lexer)->location;
+      cp_lexer_consume_token (parser->lexer);
+      if (strcmp (p, "allocator") != 0)
+	error_at (cloc, "expected %<allocator%>");
+      else if (parens.require_open (parser))
+	{
+	  allocator = cp_parser_assignment_expression (parser);
+	  if (allocator == error_mark_node)
+	    allocator = NULL_TREE;
+	  parens.require_close (parser);
+	}
+    }
+  cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  if (allocator)
+    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+
+  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
+}
+
 /* OpenMP 2.5:
    # pragma omp atomic new-line
      expression-stmt
@@ -43838,6 +43874,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
     case PRAGMA_OACC_WAIT:
       stmt = cp_parser_oacc_wait (parser, pragma_tok);
       break;
+    case PRAGMA_OMP_ALLOCATE:
+      cp_parser_omp_allocate (parser, pragma_tok);
+      return;
     case PRAGMA_OMP_ATOMIC:
       cp_parser_omp_atomic (parser, pragma_tok, false);
       return;
@@ -44483,7 +44522,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	goto bad_stmt;
       cp_parser_omp_construct (parser, pragma_tok, if_p);
       return true;
-
+    case PRAGMA_OMP_ALLOCATE:
+      cp_parser_omp_allocate (parser, pragma_tok);
+      return false;
     case PRAGMA_OACC_ATOMIC:
     case PRAGMA_OACC_CACHE:
     case PRAGMA_OACC_DATA:
