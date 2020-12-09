@@ -550,7 +550,7 @@ Compilation::visit (AST::ArrayExpr &expr)
   translatedType = nullptr;
 
   auto before = arrayConsStack.size ();
-  expr.get_internal_elements ()->accept_vis (*this);
+  expr.get_array_elems ()->accept_vis (*this);
   if (arrayConsStack.size () <= before)
     {
       rust_error_at (expr.get_locus_slow (),
@@ -1465,7 +1465,7 @@ Compilation::visit (AST::ArrayType &type)
 {
   Btype *elementType;
   translatedType = nullptr;
-  type.get_element_type ()->accept_vis (*this);
+  type.get_elem_type ()->accept_vis (*this);
   if (translatedType == nullptr)
     {
       rust_error_at (type.get_locus (),
