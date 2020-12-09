@@ -1626,14 +1626,20 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   fi
 
   if test x"$ac_has_nanosleep$ac_has_sleep" = x"nono"; then
+      ac_no_sleep=yes
       AC_MSG_CHECKING([for Sleep])
       AC_TRY_COMPILE([#include <windows.h>],
                      [Sleep(1)],
                      [ac_has_win32_sleep=yes],[ac_has_win32_sleep=no])
       if test x"$ac_has_win32_sleep" = x"yes"; then
         AC_DEFINE(HAVE_WIN32_SLEEP,1, [Defined if Sleep exists.])
+	ac_no_sleep=no
       fi
       AC_MSG_RESULT($ac_has_win32_sleep)
+  fi
+
+  if test x"$ac_no_sleep" = x"yes"; then
+    AC_DEFINE(NO_SLEEP,1, [Defined if no way to sleep is available.])
   fi
 
   AC_SUBST(GLIBCXX_LIBS)

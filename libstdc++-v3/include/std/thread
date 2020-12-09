@@ -122,8 +122,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   namespace this_thread
   {
+#ifndef _GLIBCXX_NO_SLEEP
+
+#ifndef _GLIBCXX_USE_NANOSLEEP
     void
     __sleep_for(chrono::seconds, chrono::nanoseconds);
+#endif
 
     /// this_thread::sleep_for
     template<typename _Rep, typename _Period>
@@ -168,7 +172,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __now = _Clock::now();
 	  }
       }
-  }
+  } // namespace this_thread
+#endif // ! NO_SLEEP
 
 #ifdef __cpp_lib_jthread
 

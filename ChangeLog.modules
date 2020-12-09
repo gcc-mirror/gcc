@@ -1,5 +1,8 @@
 2020-12-09  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk e4c3ec980fa
+	c++: Module-specific error and tree dumping
+
 	gcc/cp/
 	* module.cc (maybe_attach_decl): Use modules_p.
 	(module_preprocess_options): Likewise.

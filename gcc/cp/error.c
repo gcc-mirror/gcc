@@ -179,6 +179,8 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   pp->m_format_postprocessor = new cxx_format_postprocessor ();
 }
 
+/* Dump an '@module' name suffix for DECL, if any.  */
+
 static void
 dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 {

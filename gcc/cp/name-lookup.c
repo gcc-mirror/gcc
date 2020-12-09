@@ -4804,13 +4804,6 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
   else
     {
       gcc_assert (decl);
-      if (false && CHECKING_P)
-	{
-	  tree *slot = find_namespace_slot (current_namespace, id);
-	  gcc_checking_assert (slot
-			       && (decl == MAYBE_STAT_TYPE (*slot)
-				   || decl == MAYBE_STAT_DECL (*slot)));
-	}
 
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -8316,8 +8309,10 @@ do_pushtag (tree name, tree type, TAG_how how)
       if (decl == error_mark_node)
 	return decl;
 
+      bool in_class = false;
       if (b->kind == sk_class)
 	{
+	  in_class = true;
 	  if (!TYPE_BEING_DEFINED (current_class_type))
 	    /* Don't push anywhere if the class is complete; a lambda in an
 	       NSDMI is not a member of the class.  */
@@ -8331,7 +8326,9 @@ do_pushtag (tree name, tree type, TAG_how how)
 	  else
 	    pushdecl_class_level (decl);
 	}
-      else if (b->kind != sk_template_parms)
+      else if (b->kind == sk_template_parms)
+	in_class = b->level_chain->kind == sk_class;
+      else
 	{
 	  decl = do_pushdecl_with_scope
 	    (decl, b, /*hiding=*/(how == TAG_how::HIDDEN_FRIEND));
@@ -8347,6 +8344,9 @@ do_pushtag (tree name, tree type, TAG_how how)
 	      return error_mark_node;
 	    }
 	}
+
+      if (!in_class)
+	set_identifier_type_value_with_scope (name, tdef, b);
 
       TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
 
