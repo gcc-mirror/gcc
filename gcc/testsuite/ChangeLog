@@ -1,3 +1,8 @@
+2020-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/96470
+	* gnat.dg/opt39.adb: Add dg-additional-options for PowerPC.
+
 2020-12-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
