@@ -1046,7 +1046,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
     }
   else if (stmt.has_type () && !stmt.has_init_expr ())
     {
-      inferedType = stmt.type.get ();
+      inferedType = stmt.get_type ().get ();
     }
 
   // TODO check we know what the type is in the scope requires the builtins to
