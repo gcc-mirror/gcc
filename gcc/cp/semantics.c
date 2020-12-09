@@ -3221,7 +3221,7 @@ begin_class_definition (tree t)
       pushtag (TYPE_IDENTIFIER (t), t);
     }
 
-  if (flag_modules)
+  if (modules_p ())
     {
       if (!module_may_redeclare (TYPE_NAME (t)))
 	{

@@ -28,11 +28,6 @@ do i=1,10
 end do
 !$omp end parallel
 
-!$omp parallel reduction(inscan,+:a)  ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-do i=1,10
-  a = a + 1
-end do
-!$omp end parallel
 
 ! ------------ simd ------------
 !$omp simd reduction(+:a)
@@ -41,6 +36,11 @@ do i=1,10
 end do
 
 !$omp simd reduction(default,+:a)
+do i=1,10
+  a = a + 1
+end do
+
+!$omp simd reduction(task,+:a)  ! { dg-error "invalid 'task' reduction modifier on construct other than 'parallel', 'do' or 'sections'" }
 do i=1,10
   a = a + 1
 end do
@@ -89,13 +89,6 @@ end do
 !$omp end sections
 !$omp end parallel
 
-!$omp parallel
-!$omp sections reduction(inscan,+:a)   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
-  !$omp section
-  a = a + 1
-!$omp end sections
-!$omp end parallel
-
 ! ------------ task ------------
 !$omp task in_reduction(+:a)
   a = a + 1
@@ -136,13 +129,11 @@ end
 
 ! { dg-final { scan-tree-dump-times "#pragma omp for reduction\\(\\\+:a\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp for reduction\\(task,\\\+:a\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp parallel\[\n\r\]" 7 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp parallel\[\n\r\]" 6 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel private\\(i\\) reduction\\(\\\+:a\\)" 2 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp parallel private\\(i\\) reduction\\(inscan,\\\+:a\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel private\\(i\\) reduction\\(task,\\\+:a\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp section\[\n\r\]" 4 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp section\[\n\r\]" 3 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp sections reduction\\(\\\+:a\\)" 2 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp sections reduction\\(inscan,\\\+:a\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp sections reduction\\(task,\\\+:a\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) reduction\\(\\\+:a\\)" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp simd linear\\(i:1\\) reduction\\(task,\\\+:a\\)" 1 "original" } }

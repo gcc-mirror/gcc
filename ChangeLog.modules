@@ -1,3 +1,8 @@
+2020-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk cf97b970fe5
+	c++: Decl module-specific semantic processing
+
 2020-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 570c312c03e

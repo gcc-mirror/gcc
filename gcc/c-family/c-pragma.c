@@ -1309,6 +1309,7 @@ static const struct omp_pragma_def oacc_pragmas[] = {
   { "wait", PRAGMA_OACC_WAIT }
 };
 static const struct omp_pragma_def omp_pragmas[] = {
+  { "allocate", PRAGMA_OMP_ALLOCATE },
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
   { "cancel", PRAGMA_OMP_CANCEL },

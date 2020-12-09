@@ -1,3 +1,109 @@
+2020-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98103
+	* constexpr.c (cxx_eval_dynamic_cast_fn): If the evaluating of vtable
+	yields a null pointer, give an error and return.  Use objtype.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (layout_class_type): Call set_instantiating_module.
+	(build_self_reference): Likewise.
+	* decl.c (grokfndecl): Call set_originating_module.
+	(grokvardecl): Likewise.
+	(grokdeclarator): Likewise.
+	* pt.c (maybe_new_partial_specialization): Call
+	set_instantiating_module, propagate DECL_MODULE_EXPORT_P.
+	(lookup_template_class_1): Likewise.
+	(tsubst_function_decl): Likewise.
+	(tsubst_decl, instantiate_template_1): Likewise.
+	(build_template_decl): Propagate module flags.
+	(tsubst_template_dcl): Likewise.
+	(finish_concept_definition): Call set_originating_module.
+	* module.cc (set_instantiating_module, set_originating_module): Stubs.
+
+2020-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96299
+	* cp-tree.h (build_new_op): Add overload that omits some parms.
+	(genericize_spaceship): Add location_t parm.
+	* constexpr.c (cxx_eval_binary_expression): Pass it.
+	* cp-gimplify.c (genericize_spaceship): Pass it.
+	* method.c (genericize_spaceship): Handle class-type arguments.
+	(build_comparison_op): Fall back to op</== when appropriate.
+
+2020-12-08  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_new_op_1): Set *overload for ambiguity.
+	(build_new_method_call_1): Likewise.
+
+2020-12-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl2.c: (is_atomic_expensive_p): New helper function.
+	(build_atomic_load_byte): Rename to...
+	(build_atomic_load_type): ... and add new parameter type.
+	(get_guard_cond): Skip the atomic here if that is expensive.
+	Use the correct type for the atomic load on certain targets.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct tinst_level): Add path & visible fields.
+	(build_cdtor_clones): Declare.
+	(match_mergeable_specialization): Use a spec_entry, add insert parm.
+	* class.c (build_cdtor_clones): Externalize.
+	* pt.c (push_tinst_level_loc): Clear new fields.
+	(match_mergeable_specialization): Adjust API.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (start_objects): Refactor and adjust for named module
+	initializers.
+	(finish_objects): Likewise.
+	(generate_ctor_or_dtor_function): Likewise.
+	* module.cc (module_initializer_kind)
+	(module_add_import_initializers): Stubs.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* Make-lang.in (MODULE_VERSION): Override when DEVPHASE not empty.
+	* module.cc: Comment.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (mangle_module_substitution, mangle_identifier)
+	(mangle_module_global_init): Declare.
+	* mangle.c (struct globals): Add mod field.
+	 (mangle_module_substitution, mangle_identifier)
+	(mangle_module_global_init): Define.
+	(write_module, maybe_write_module): New.
+	(write_name): Call it.
+	(start_mangling): Clear mod field.
+	(finish_mangling_internal): Adjust.
+	* module.cc (mangle_module, mangle_module_fini)
+	(get_originating_module): Stubs.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (module_token_pre, module_token_cdtor)
+	(module_token_lang): Declare.
+	* lex.c: Include langhooks.
+	(struct module_token_filter): New.
+	* cp-tree.h (module_token_pre, module_token_cdtor)
+	(module_token_lang): Define.
+	* module.cc (get_module, preprocess_module, preprocessed_module):
+	Nop stubs.
+
+2020-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* Make-lang.in (MODULE_VERSION): Define.
+	* module.cc: Add includes.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* parser.c (cp_parser_omp_parallel): For parallel master with
+	-fopenmp-simd only, just call cp_parser_omp_master instead of
+	wrapping it in OMP_PARALLEL.
+
 2020-12-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98043

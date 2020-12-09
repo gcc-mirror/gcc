@@ -15571,7 +15571,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  underlying_type = NULL_TREE;
 	}
 
-      if (flag_modules)
+      if (modules_p ())
 	{
 	  if (!module_may_redeclare (TYPE_NAME (enumtype)))
 	    {

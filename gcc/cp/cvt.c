@@ -1031,6 +1031,9 @@ cp_get_callee_fndecl_nofold (tree call)
 static void
 maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 {
+  if (!warn_unused_result || c_inhibit_evaluation_warnings)
+    return;
+
   tree call = expr;
   if (TREE_CODE (expr) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (expr);

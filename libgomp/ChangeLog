@@ -1,3 +1,7 @@
+2020-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/scan-1.f90: New test.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

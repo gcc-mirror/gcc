@@ -1,3 +1,22 @@
+2020-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses, show_omp_node,
+	show_code_node): Handle OMP SCAN.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_SCAN.
+	(enum): Add OMP_LIST_SCAN_IN and OMP_LIST_SCAN_EX.
+	(enum gfc_exec_op): Add EXEC_OMP_SCAN.
+	* match.h (gfc_match_omp_scan): New prototype.
+	* openmp.c (gfc_match_omp_scan): New.
+	(gfc_match_omp_taskgroup): Cleanup.
+	(resolve_omp_clauses, gfc_resolve_omp_do_blocks,
+	omp_code_to_statement, gfc_resolve_omp_directive): Handle 'omp scan'.
+	* parse.c (decode_omp_directive, next_statement,
+	gfc_ascii_statement): Likewise.
+	* resolve.c (gfc_resolve_code): Handle EXEC_OMP_SCAN.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_trans_omp_do,
+	gfc_split_omp_clauses): Handle 'omp scan'.
+
 2020-12-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98016
