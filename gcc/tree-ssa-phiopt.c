@@ -658,13 +658,13 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   wide_int min, max;
-  if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE)
+  if (get_range_info (lhs, &min, &max) != VR_RANGE)
     {
-      min = wi::to_wide (boolean_false_node);
-      max = wi::to_wide (boolean_true_node);
+      int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+      signop sgn = TYPE_SIGN (TREE_TYPE (lhs));
+      min = wi::min_value (prec, sgn);
+      max = wi::max_value (prec, sgn);
     }
-  else if (get_range_info (lhs, &min, &max) != VR_RANGE)
-    return false;
   if (min + 1 != max
       || (wi::to_wide (rhs) != min
 	  && wi::to_wide (rhs) != max))
