@@ -54,7 +54,8 @@ def arch_canonicalize(arch):
   this_file = os.path.abspath(os.path.join( __file__))
   arch_can_script = \
     os.path.join(os.path.dirname(this_file), "arch-canonicalize")
-  proc = subprocess.Popen([arch_can_script, arch], stdout=subprocess.PIPE)
+  proc = subprocess.Popen([sys.executable, arch_can_script, arch],
+                          stdout=subprocess.PIPE)
   out, err = proc.communicate()
   return out.strip()
 
