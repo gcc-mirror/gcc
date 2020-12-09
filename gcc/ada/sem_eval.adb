@@ -3847,11 +3847,7 @@ package body Sem_Eval is
          --  Simplify a selected_component on an aggregate by extracting
          --  the field directly.
 
-         Node := Prefix (N);
-
-         while Nkind (Node) = N_Qualified_Expression loop
-            Node := Expression (Node);
-         end loop;
+         Node := Unqualify (Prefix (N));
 
          if Nkind (Node) = N_Aggregate then
             Comp := First (Component_Associations (Node));
