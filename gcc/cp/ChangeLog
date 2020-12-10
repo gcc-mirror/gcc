@@ -1,3 +1,9 @@
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93083
+	* pt.c (convert_template_argument): Handle equivalent placeholders.
+	(do_class_deduction): Look through EXPR_PACK_EXPANSION, too.
+
 2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

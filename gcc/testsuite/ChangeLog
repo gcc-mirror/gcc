@@ -1,3 +1,8 @@
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93083
+	* g++.dg/cpp2a/nontype-class40.C: New test.
+
 2020-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/96470
