@@ -1,6 +1,5 @@
 // PR c++/90799
 // { dg-do compile { target c++17 } }
-// { dg-ice "unify" }
 
 template<class T>
 void foo() noexcept(T::value);
