@@ -1,23 +1,23 @@
+// Copyright (C) 2020 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
 #ifndef RUST_AST_ITEM_H
 #define RUST_AST_ITEM_H
-/*
-Copyright (C) 2009-2020 Free Software Foundation, Inc.
-
-This file is part of GCC.
-
-GCC is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 3, or (at your option) any later
-version.
-
-GCC is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>. */
 
 #include "rust-ast.h"
 #include "rust-path.h"
@@ -504,11 +504,13 @@ public:
 		 std::unique_ptr<Type> param_type,
 		 std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)), locus (locus),
-      param_name (std::move (param_name)), type (std::move (param_type))
+      param_name (std::move (param_name)), type (std::move (param_type)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor uses clone
-  FunctionParam (FunctionParam const &other) : locus (other.locus)
+  FunctionParam (FunctionParam const &other)
+    : locus (other.locus), node_id (other.node_id)
   {
     // guard to prevent nullptr dereference
     if (other.param_name != nullptr)
@@ -521,6 +523,7 @@ public:
   FunctionParam &operator= (FunctionParam const &other)
   {
     locus = other.locus;
+    node_id = other.node_id;
 
     // guard to prevent nullptr dereference
     if (other.param_name != nullptr)
@@ -569,6 +572,10 @@ public:
     rust_assert (type != nullptr);
     return type;
   }
+  NodeId get_node_id () const { return node_id; }
+
+protected:
+  NodeId node_id;
 };
 
 // Visibility of item - if the item has it, then it is some form of public
@@ -3320,6 +3327,7 @@ public:
 	 std::vector<std::unique_ptr<TraitItem> > trait_items, Visibility vis,
 	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
 	 Location locus)
+
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), name (std::move (name)),
       generic_params (std::move (generic_params)),

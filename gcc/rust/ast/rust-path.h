@@ -240,6 +240,8 @@ public:
     rust_assert (has_generic_args ());
     return generic_args;
   }
+
+  PathIdentSegment &get_ident_segment () { return segment_name; }
 };
 
 // AST node representing a pattern that involves a "path" - abstract base class
@@ -276,6 +278,15 @@ public:
   // TODO: this seems kinda dodgy
   std::vector<PathExprSegment> &get_segments () { return segments; }
   const std::vector<PathExprSegment> &get_segments () const { return segments; }
+
+  void iterate_path_segments (std::function<bool (PathExprSegment &)> cb)
+  {
+    for (auto it = segments.begin (); it != segments.end (); it++)
+      {
+	if (!cb (*it))
+	  return;
+      }
+  }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows generic
@@ -328,6 +339,7 @@ public:
   // Invalid if path is empty (error state), so base stripping on that.
   void mark_for_strip () override { remove_all_segments (); }
   bool is_marked_for_strip () const override { return is_error (); }
+  bool opening_scope_resolution () { return has_opening_scope_resolution; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -404,6 +416,13 @@ public:
 
   // not pure virtual as class not abstract
   virtual void accept_vis (ASTVisitor &vis);
+
+  bool get_separating_scope_resolution () const
+  {
+    return has_separating_scope_resolution;
+  }
+
+  PathIdentSegment get_ident_segment () { return ident_segment; };
 };
 
 // Segment used in type path with generic args
@@ -688,6 +707,17 @@ public:
   const std::vector<std::unique_ptr<TypePathSegment> > &get_segments () const
   {
     return segments;
+  }
+
+  size_t get_num_segments () const { return segments.size (); }
+
+  void iterate_segments (std::function<bool (TypePathSegment *)> cb)
+  {
+    for (auto it = segments.begin (); it != segments.end (); it++)
+      {
+	if (!cb ((*it).get ()))
+	  return;
+      }
   }
 };
 

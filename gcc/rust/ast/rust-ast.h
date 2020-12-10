@@ -1,18 +1,31 @@
+// Copyright (C) 2020 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
 #ifndef RUST_AST_BASE_H
 #define RUST_AST_BASE_H
 // Base for AST used in gccrs, basically required by all specific ast things
 
 #include "rust-system.h"
-
-// STL imports
-#include <memory>
-#include <string>
-#include <vector>
+#include "rust-hir-map.h"
 
 // gccrs imports
 // required for AST::Token
 #include "rust-token.h"
-
 #include "rust-location.h"
 
 namespace Rust {
@@ -253,6 +266,95 @@ public:
   bool is_error () const { return value_as_string == ""; }
 };
 
+// A token tree with delimiters
+class DelimTokenTree : public TokenTree, public AttrInput
+{
+  DelimType delim_type;
+  std::vector<std::unique_ptr<TokenTree> > token_trees;
+  Location locus;
+
+protected:
+  DelimTokenTree *clone_delim_tok_tree_impl () const
+  {
+    return new DelimTokenTree (*this);
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_attr_input_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_token_tree_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+public:
+  DelimTokenTree (DelimType delim_type,
+		  std::vector<std::unique_ptr<TokenTree> > token_trees
+		  = std::vector<std::unique_ptr<TokenTree> > (),
+		  Location locus = Location ())
+    : delim_type (delim_type), token_trees (std::move (token_trees)),
+      locus (locus)
+  {}
+
+  // Copy constructor with vector clone
+  DelimTokenTree (DelimTokenTree const &other)
+    : delim_type (other.delim_type), locus (other.locus)
+  {
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+  }
+
+  // overloaded assignment operator with vector clone
+  DelimTokenTree &operator= (DelimTokenTree const &other)
+  {
+    delim_type = other.delim_type;
+    locus = other.locus;
+
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+
+    return *this;
+  }
+
+  // move constructors
+  DelimTokenTree (DelimTokenTree &&other) = default;
+  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
+
+  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  bool
+  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
+  {
+    // this should never be called - should be converted first
+    return false;
+  }
+
+  AttrInput *parse_to_meta_item () const override;
+
+  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
+
+  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
+  {
+    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
+  }
+};
+
+/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
+ * be defined */
+class AttrInputLiteral;
+
 /* TODO: move applicable stuff into here or just don't include it because
  * nothing uses it A segment of a path (maybe) */
 class PathSegment
@@ -473,7 +575,7 @@ public:
   std::string as_string () const;
 
   // TODO: does this require visitor pattern as not polymorphic?
-  
+
   const SimplePath &get_path () const { return path; }
   SimplePath &get_path () { return path; }
 
@@ -768,10 +870,15 @@ public:
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
+  NodeId get_node_id () const { return node_id; }
 
 protected:
+  Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
   // Clone function implementation as pure virtual method
   virtual Stmt *clone_stmt_impl () const = 0;
+
+  NodeId node_id;
 };
 
 // Rust "item" AST node (declaration of top-level/module-level allowed stuff)
@@ -848,10 +955,13 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
   // Constructor
   Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : outer_attrs (std::move (outer_attribs))
+    : outer_attrs (std::move (outer_attribs)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Clone function implementation as pure virtual method
@@ -863,6 +973,8 @@ protected:
   {
     outer_attrs = std::move (outer_attrs_to_set);
   }
+
+  NodeId node_id;
 };
 
 // AST node for an expression without an accompanying block - abstract

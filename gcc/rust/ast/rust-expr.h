@@ -1647,7 +1647,8 @@ class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 
 public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
-				  std::unique_ptr<Expr> field_value, Location locus)
+				  std::unique_ptr<Expr> field_value,
+				  Location locus)
     : StructExprFieldWithVal (std::move (field_value)),
       field_name (std::move (field_identifier)), locus (locus)
   {}
@@ -1679,7 +1680,8 @@ class StructExprFieldIndexValue : public StructExprFieldWithVal
 public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
 			     std::unique_ptr<Expr> field_value, Location locus)
-    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index), locus (locus)
+    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index),
+      locus (locus)
   {}
 
   std::string as_string () const override;
@@ -2039,7 +2041,8 @@ class EnumExprFieldIdentifierValue : public EnumExprFieldWithVal
 
 public:
   EnumExprFieldIdentifierValue (Identifier field_name,
-				std::unique_ptr<Expr> field_value, Location locus)
+				std::unique_ptr<Expr> field_value,
+				Location locus)
     : EnumExprFieldWithVal (std::move (field_value)),
       field_name (std::move (field_name)), locus (locus)
   {}
@@ -2071,7 +2074,8 @@ class EnumExprFieldIndexValue : public EnumExprFieldWithVal
 public:
   EnumExprFieldIndexValue (TupleIndex field_index,
 			   std::unique_ptr<Expr> field_value, Location locus)
-    : EnumExprFieldWithVal (std::move (field_value)), index (field_index), locus (locus)
+    : EnumExprFieldWithVal (std::move (field_value)), index (field_index),
+      locus (locus)
   {}
 
   std::string as_string () const override;
@@ -2324,6 +2328,20 @@ public:
   // Invalid if function expr is null, so base stripping on that.
   void mark_for_strip () override { function = nullptr; }
   bool is_marked_for_strip () const override { return function == nullptr; }
+
+  void iterate_params (std::function<bool (Expr *)> cb)
+  {
+    for (auto it = params.begin (); it != params.end (); it++)
+      {
+	if (!cb (it->get ()))
+	  return;
+      }
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  CallExpr *clone_expr_impl () const override { return new CallExpr (*this); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<std::unique_ptr<Expr> > &get_params () const
@@ -2793,13 +2811,16 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Can be completely empty, so have to have a separate flag.
-  void mark_for_strip () override
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  void iterate_stmts (std::function<bool (Stmt *)> cb)
   {
-    marked_for_strip = true;
-  }
-  bool is_marked_for_strip () const override
-  {
-    return marked_for_strip;
+    for (auto it = statements.begin (); it != statements.end (); it++)
+      {
+	if (!cb (it->get ()))
+	  return;
+      }
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
