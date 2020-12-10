@@ -74,6 +74,7 @@ GRS_OBJS = \
     rust/rust-scan.o \
     rust/rust-compile.o \
     rust/rust-macro-expand.o \
+    rust/rust-hir-map.o \
     $(END)
 # removed object files from here
 
@@ -217,7 +218,7 @@ CFLAGS-rust/rust-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
 
 # cross-folder includes - add new folders later
-RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse -I $(srcdir)/rust/ast -I $(srcdir)/rust/analysis -I $(srcdir)/rust/backend -I $(srcdir)/rust/expand
+RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse -I $(srcdir)/rust/ast -I $(srcdir)/rust/analysis -I $(srcdir)/rust/backend -I $(srcdir)/rust/expand -I $(srcdir)/rust/util
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
