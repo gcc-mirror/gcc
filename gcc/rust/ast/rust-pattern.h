@@ -69,8 +69,8 @@ public:
   IdentifierPattern (Identifier ident, Location locus, bool is_ref = false,
 		     bool is_mut = false,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
-    : variable_ident (std::move (ident)), is_ref (is_ref), is_mut (is_mut),
-      to_bind (std::move (to_bind)), locus (locus)
+    : Pattern (), variable_ident (std::move (ident)), is_ref (is_ref),
+      is_mut (is_mut), to_bind (std::move (to_bind)), locus (locus)
   {}
 
   // Copy constructor with clone
@@ -78,7 +78,9 @@ public:
     : variable_ident (other.variable_ident), is_ref (other.is_ref),
       is_mut (other.is_mut), locus (other.locus)
   {
-    // fix to prevent null pointer dereference
+    node_id = other.node_id;
+    // fix to get prevent null pointer dereference
+
     if (other.to_bind != nullptr)
       to_bind = other.to_bind->clone_pattern ();
   }
@@ -90,6 +92,7 @@ public:
     is_ref = other.is_ref;
     is_mut = other.is_mut;
     locus = other.locus;
+    node_id = other.node_id;
 
     // fix to prevent null pointer dereference
     if (other.to_bind != nullptr)
@@ -117,6 +120,9 @@ public:
   }
 
   Identifier get_ident () const { return variable_ident; }
+
+  bool get_is_mut () const { return is_mut; }
+  bool get_is_ref () const { return is_ref; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

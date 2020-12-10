@@ -64,10 +64,16 @@ NodeMapping::get_local_defid () const
 DefId
 NodeMapping::get_defid () const
 {
+  return get_defid (get_crate_num (), get_local_defid ());
+}
+
+DefId
+NodeMapping::get_defid (CrateNum crate_num, LocalDefId local_defid)
+{
   DefId val = 0;
-  val |= get_crate_num ();
+  val |= crate_num;
   val = val << sizeof (uint32_t);
-  val |= get_local_defid ();
+  val |= local_defid;
   return val;
 }
 

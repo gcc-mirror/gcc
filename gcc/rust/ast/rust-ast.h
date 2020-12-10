@@ -266,91 +266,6 @@ public:
   bool is_error () const { return value_as_string == ""; }
 };
 
-// A token tree with delimiters
-class DelimTokenTree : public TokenTree, public AttrInput
-{
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
-  Location locus;
-
-protected:
-  DelimTokenTree *clone_delim_tok_tree_impl () const
-  {
-    return new DelimTokenTree (*this);
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_attr_input_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_token_tree_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-public:
-  DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree> > token_trees
-		  = std::vector<std::unique_ptr<TokenTree> > (),
-		  Location locus = Location ())
-    : delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}
-
-  // Copy constructor with vector clone
-  DelimTokenTree (DelimTokenTree const &other)
-    : delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // overloaded assignment operator with vector clone
-  DelimTokenTree &operator= (DelimTokenTree const &other)
-  {
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  // move constructors
-  DelimTokenTree (DelimTokenTree &&other) = default;
-  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
-
-  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool
-  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
-  {
-    // this should never be called - should be converted first
-    return false;
-  }
-
-  AttrInput *parse_to_meta_item () const override;
-
-  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
-
-  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
-  {
-    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
-  }
-};
-
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
  * be defined */
 class AttrInputLiteral;
@@ -955,7 +870,7 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
-  NodeId get_node_id () const { return node_id; }
+  virtual NodeId get_node_id () const { return node_id; }
 
 protected:
   // Constructor
@@ -1090,9 +1005,15 @@ public:
    * methods. */
   virtual Location get_locus_slow () const = 0;
 
+  virtual NodeId get_node_id () const { return node_id; }
+
 protected:
   // Clone pattern implementation as pure virtual method
   virtual Pattern *clone_pattern_impl () const = 0;
+
+  Pattern () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
+  NodeId node_id;
 };
 
 // forward decl for Type
@@ -1127,9 +1048,15 @@ public:
 
   virtual Location get_locus_slow () const = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
+  Type () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
+
+  NodeId node_id;
 };
 
 // A type without parentheses? - abstract
@@ -1153,6 +1080,8 @@ protected:
   {
     return clone_type_no_bounds_impl ();
   }
+
+  TypeNoBounds () : Type () {}
 };
 
 /* Abstract base class representing a type param bound - Lifetime and TraitBound
@@ -1572,19 +1501,22 @@ struct Crate
    * top-level one)? */
   std::vector<std::unique_ptr<Item> > items;
 
+  NodeId node_id;
+
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items,
 	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false,
 	 bool has_shebang = false)
     : has_utf8bom (has_utf8bom), has_shebang (has_shebang),
-      inner_attrs (std::move (inner_attrs)), items (std::move (items))
+      inner_attrs (std::move (inner_attrs)), items (std::move (items)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
     : has_utf8bom (other.has_utf8bom), has_shebang (other.has_shebang),
-      inner_attrs (other.inner_attrs)
+      inner_attrs (other.inner_attrs), node_id (other.node_id)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1599,6 +1531,7 @@ public:
     inner_attrs = other.inner_attrs;
     has_shebang = other.has_shebang;
     has_utf8bom = other.has_utf8bom;
+    node_id = other.node_id;
 
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1624,6 +1557,8 @@ public:
     items.shrink_to_fit ();
     // TODO: is this the best way to do this?
   }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // Base path expression AST node - abstract

@@ -29,14 +29,13 @@
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-scan.h"
-#include "rust-name-resolution.h"
-#include "rust-type-resolution.h"
 #include "rust-macro-expand.h"
 #include "rust-compile.h"
+#include "rust-target.h"
 
 // hir passes wip
+#include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
-#include "rust-target.h"
 
 extern Linemap *
 rust_get_linemap ();
@@ -399,6 +398,10 @@ Session::enable_dump (std::string arg)
       // return false;
       options.dump_option = CompileOptions::TARGET_OPTION_DUMP;
     }
+  else if (arg == "hir")
+    {
+      options.dump_option = CompileOptions::HIR_DUMP;
+    }
   else if (arg == "")
     {
       rust_error_at (Location (), "dump option was not given a name. choose "
@@ -526,6 +529,17 @@ Session::parse_file (const char *filename)
     {
       // TODO: what do I dump here? resolved names? AST with resolved names?
     }
+
+  // lower AST to HIR
+  HIR::Crate hir = HIR::ASTLowering::Resolve (parsed_crate);
+  if (options.dump_option == CompileOptions::HIR_DUMP)
+    {
+      fprintf (stderr, "%s", hir.as_string ().c_str ());
+      return;
+    }
+
+  // type resolve
+  // TODO
 
   if (saw_errors ())
     return;
@@ -759,16 +773,7 @@ void
 Session::resolution (AST::Crate &crate)
 {
   fprintf (stderr, "started name resolution\n");
-  Analysis::TopLevelScan toplevel (crate);
-  // Name resolution must be in front of type resolution
-  Analysis::NameResolution::Resolve (crate, toplevel);
-  Analysis::TypeResolution::Resolve (crate, toplevel);
-
-  // inject hir passes
-  HIR::Crate hir = HIR::ASTLowering::Resolve (crate);
-  fprintf (stderr, "HIR PASSES:\n");
-  fprintf (stderr, "%s", hir.as_string ().c_str ());
-  fprintf (stderr, "HIR PASSES - DONE:\n");
+  Resolver::NameResolution::Resolve (crate);
   fprintf (stderr, "finished name resolution\n");
 }
 

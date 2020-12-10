@@ -63,6 +63,8 @@ public:
   LocalDefId get_local_defid () const;
   DefId get_defid () const;
 
+  static DefId get_defid (CrateNum crate_num, LocalDefId local_defid);
+
   std::string as_string () const;
 
 private:
@@ -126,6 +128,9 @@ private:
   std::map<CrateNum, std::map<LocalDefId, HIR::Item *> > localDefIdMappings;
   std::map<CrateNum, std::map<HirId, HIR::Item *> > hirItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::Expr *> > hirExprMappings;
+
+  // reverse mappings
+  std::map<CrateNum, std::map<NodeId, HirId> > nodeIdToHirMappings;
 };
 
 } // namespace Analysis

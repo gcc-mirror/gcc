@@ -16,43 +16,39 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_AST_LOWER_PATTERN
-#define RUST_AST_LOWER_PATTERN
+#ifndef RUST_AST_RESOLVE_TOPLEVEL_H
+#define RUST_AST_RESOLVE_TOPLEVEL_H
 
-#include "rust-ast-lower-base.h"
-#include "rust-diagnostics.h"
+#include "rust-ast-resolve-base.h"
+#include "rust-ast-full.h"
 
 namespace Rust {
-namespace HIR {
+namespace Resolver {
 
-class ASTLoweringPattern : public ASTLoweringBase
+class ResolveTopLevel : public ResolverBase
 {
 public:
-  static HIR::Pattern *translate (AST::Pattern *pattern)
+  static void go (AST::Item *item)
   {
-    ASTLoweringPattern resolver;
-    pattern->accept_vis (resolver);
-    return resolver.translated;
-  }
+    ResolveTopLevel resolver;
+    item->accept_vis (resolver);
+  };
 
-  virtual ~ASTLoweringPattern () {}
+  ~ResolveTopLevel () {}
 
-  void visit (AST::IdentifierPattern &pattern)
+  void visit (AST::Function &function)
   {
-    std::unique_ptr<Pattern> to_bind;
-    translated
-      = new HIR::IdentifierPattern (pattern.get_ident (), pattern.get_locus (),
-				    pattern.get_is_ref (),
-				    pattern.get_is_mut (), std::move (to_bind));
+    // function_names are simple std::String identifiers so this can be a
+    // NodeId mapping to the Function node
+    resolver->get_name_scope ().insert (function.get_function_name (),
+					function.get_node_id ());
   }
 
 private:
-  ASTLoweringPattern () : translated (nullptr) {}
-
-  HIR::Pattern *translated;
+  ResolveTopLevel () : ResolverBase (UNKNOWN_NODEID) {}
 };
 
-} // namespace HIR
+} // namespace Resolver
 } // namespace Rust
 
-#endif // RUST_AST_LOWER_PATTERN
+#endif // RUST_AST_RESOLVE_TOPLEVEL_H

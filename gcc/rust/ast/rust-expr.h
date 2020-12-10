@@ -2338,11 +2338,6 @@ public:
       }
   }
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  CallExpr *clone_expr_impl () const override { return new CallExpr (*this); }
-
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<std::unique_ptr<Expr> > &get_params () const
   {

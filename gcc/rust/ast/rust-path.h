@@ -296,6 +296,8 @@ class PathInExpression : public PathPattern, public PathExpr
   bool has_opening_scope_resolution;
   Location locus;
 
+  NodeId _node_id;
+
 public:
   std::string as_string () const override;
 
@@ -307,7 +309,8 @@ public:
 		    = std::vector<Attribute> ())
     : PathPattern (std::move (path_segments)),
       PathExpr (std::move (outer_attrs)),
-      has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
+      has_opening_scope_resolution (has_opening_scope_resolution),
+      locus (locus), _node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Creates an error state path in expression.
@@ -340,6 +343,8 @@ public:
   void mark_for_strip () override { remove_all_segments (); }
   bool is_marked_for_strip () const override { return is_error (); }
   bool opening_scope_resolution () { return has_opening_scope_resolution; }
+
+  NodeId get_node_id () const override { return _node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -654,7 +659,8 @@ public:
   // Constructor
   TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    Location locus, bool has_opening_scope_resolution = false)
-    : has_opening_scope_resolution (has_opening_scope_resolution),
+    : TypeNoBounds (),
+      has_opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (segments)), locus (locus)
   {}
 

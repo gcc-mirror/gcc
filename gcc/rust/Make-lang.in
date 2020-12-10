@@ -77,6 +77,7 @@ GRS_OBJS = \
     rust/rust-hir-full-test.o \
     rust/rust-hir-map.o \
     rust/rust-ast-lower.o \
+    rust/rust-ast-resolve.o \
     $(END)
 # removed object files from here
 
@@ -229,7 +230,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/expand \
 	-I $(srcdir)/rust/hir/tree \
 	-I $(srcdir)/rust/hir \
-	-I $(srcdir)/rust/hir_resolve \
+	-I $(srcdir)/rust/resolve \
 	-I $(srcdir)/rust/util
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
@@ -286,4 +287,8 @@ rust/%.o: rust/hir/tree/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
+# build rust/hir/tree files in rust folder
+rust/%.o: rust/resolve/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
 

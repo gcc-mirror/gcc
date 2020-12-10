@@ -53,21 +53,21 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
-    Identifier function_name = function.function_name;
+    Identifier function_name = function.get_function_name ();
     Location locus = function.get_locus ();
 
     std::unique_ptr<HIR::Type> return_type
-      = function.has_function_return_type () ? std::unique_ptr<HIR::Type> (
-	  ASTLoweringType::translate (function.return_type.get ()))
-					     : nullptr;
+      = function.has_return_type () ? std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (function.get_return_type ().get ()))
+				    : nullptr;
 
     std::vector<HIR::FunctionParam> function_params;
-    for (auto &param : function.function_params)
+    for (auto &param : function.get_function_params ())
       {
 	auto translated_pattern = std::unique_ptr<HIR::Pattern> (
-	  ASTLoweringPattern::translate (param.param_name.get ()));
+	  ASTLoweringPattern::translate (param.get_pattern ().get ()));
 	auto translated_type = std::unique_ptr<HIR::Type> (
-	  ASTLoweringType::translate (param.type.get ()));
+	  ASTLoweringType::translate (param.get_type ().get ()));
 
 	function_params.push_back (
 	  HIR::FunctionParam (std::move (translated_pattern),
@@ -76,7 +76,7 @@ public:
 
     std::unique_ptr<HIR::BlockExpr> function_body
       = std::unique_ptr<HIR::BlockExpr> (
-	translate (function.function_body.get ()));
+	translate (function.get_definition ().get ()));
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),

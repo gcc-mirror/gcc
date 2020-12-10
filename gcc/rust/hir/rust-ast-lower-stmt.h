@@ -48,7 +48,7 @@ public:
 
   void visit (AST::ExprStmtWithoutBlock &stmt)
   {
-    HIR::Expr *expr = ASTLoweringExpr::translate (stmt.expr.get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr ().get ());
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -64,13 +64,13 @@ public:
   {
     std::vector<HIR::Attribute> outer_attrs;
     HIR::Pattern *variables
-      = ASTLoweringPattern::translate (stmt.variables_pattern.get ());
+      = ASTLoweringPattern::translate (stmt.get_pattern ().get ());
     HIR::Type *type = stmt.has_type ()
-			? ASTLoweringType::translate (stmt.type.get ())
+			? ASTLoweringType::translate (stmt.get_type ().get ())
 			: nullptr;
     HIR::Expr *init_expression
       = stmt.has_init_expr ()
-	  ? ASTLoweringExpr::translate (stmt.init_expr.get ())
+	  ? ASTLoweringExpr::translate (stmt.get_init_expr ().get ())
 	  : nullptr;
 
     auto crate_num = mappings->get_current_crate ();
