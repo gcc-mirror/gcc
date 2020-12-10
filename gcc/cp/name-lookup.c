@@ -4567,7 +4567,7 @@ pushdecl_outermost_localscope (tree x)
 
 static bool
 do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
-			 tree *value_p, tree *type_p)
+			 bool insert_p, tree *value_p, tree *type_p)
 {
   tree value = *value_p;
   tree type = *type_p;
@@ -4587,13 +4587,33 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       lookup.value = NULL_TREE;
     }
 
+  /* Only process exporting if we're going to be inserting.  */
+  bool revealing_p = insert_p && !fn_scope_p && module_has_cmi_p ();
+
+  /* First do the value binding.  */
   if (!lookup.value)
-    /* Nothing.  */;
+    /* Nothing (only implicit typedef found).  */
+    gcc_checking_assert (lookup.type);
   else if (OVL_P (lookup.value) && (!value || OVL_P (value)))
     {
       for (lkp_iterator usings (lookup.value); usings; ++usings)
 	{
 	  tree new_fn = *usings;
+	  bool exporting = revealing_p && module_exporting_p ();
+	  if (exporting)
+	    {
+	      /* If the using decl is exported, the things it refers
+		 to must also be exported (or not in module purview).  */
+	      if (!DECL_MODULE_EXPORT_P (new_fn)
+		  && (DECL_LANG_SPECIFIC (new_fn)
+		      && DECL_MODULE_PURVIEW_P (new_fn)))
+		{
+		  error ("%q#D does not have external linkage", new_fn);
+		  inform (DECL_SOURCE_LOCATION (new_fn),
+			  "%q#D declared here", new_fn);
+		  exporting = false;
+		}
+	    }
 
 	  /* [namespace.udecl]
 
@@ -4601,6 +4621,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	     scope has the same name and the same parameter types as a
 	     function introduced by a using declaration the program is
 	     ill-formed.  */
+	  /* This seems overreaching, asking core -- why do we care
+	     about decls in the namespace that we cannot name (because
+	     they are not transitively imported.  We just check the
+	     decls that are in this TU.  */
 	  bool found = false;
 	  for (ovl_iterator old (value); !found && old; ++old)
 	    {
@@ -4609,8 +4633,25 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	      if (new_fn == old_fn)
 		{
 		  /* The function already exists in the current
-		     namespace.  */
+		     namespace.  We will still want to insert it if
+		     it is revealing a not-revealed thing.  */
 		  found = true;
+		  if (!revealing_p)
+		    ;
+		  else if (old.using_p ())
+		    {
+		      if (exporting)
+			/* Update in place.  'tis ok.  */
+			OVL_EXPORT_P (old.get_using ()) = true;
+		      ;
+		    }
+		  else if (DECL_MODULE_EXPORT_P (new_fn))
+		    ;
+		  else
+		    {
+		      value = old.remove_node (value);
+		      found = false;
+		    }
 		  break;
 		}
 	      else if (old.using_p ())
@@ -4634,11 +4675,11 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	    }
 
-	  if (!found)
+	  if (!found && insert_p)
 	    /* Unlike the decl-pushing case we don't drop anticipated
 	       builtins here.  They don't cause a problem, and we'd
 	       like to match them with a future declaration.  */
-	    value = ovl_insert (new_fn, value, true);
+	    value = ovl_insert (new_fn, value, 1 + exporting);
 	}
     }
   else if (value
@@ -4649,28 +4690,34 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       diagnose_name_conflict (lookup.value, value);
       failed = true;
     }
-  else
+  else if (insert_p)
+    // FIXME:what if we're newly exporting lookup.value
     value = lookup.value;
-
+  
+  /* Now the type binding.  */
   if (lookup.type && lookup.type != type)
     {
+      // FIXME: What if we're exporting lookup.type?
       if (type && !decls_match (lookup.type, type))
 	{
 	  diagnose_name_conflict (lookup.type, type);
 	  failed = true;
 	}
-      else
+      else if (insert_p)
 	type = lookup.type;
     }
 
-  /* If value is empty, shift any class or enumeration name back.  */
-  if (!value)
+  if (insert_p)
     {
-      value = type;
-      type = NULL_TREE;
+      /* If value is empty, shift any class or enumeration name back.  */
+      if (!value)
+	{
+	  value = type;
+	  type = NULL_TREE;
+	}
+      *value_p = value;
+      *type_p = type;
     }
-  *value_p = value;
-  *type_p = type;
 
   return failed;
 }
@@ -5506,8 +5553,10 @@ do_class_using_decl (tree scope, tree name)
 }
 
 
-/* Return the binding for NAME in NS.  If NS is NULL, look in
-   global_namespace.  */
+/* Return the binding for NAME in NS in the current TU.  If NS is
+   NULL, look in global_namespace.  We will not find declarations
+   from imports.  Users of this who, having found nothing, push a new
+   decl must be prepared for that pushing to match an existing decl.  */
 
 tree
 get_namespace_binding (tree ns, tree name)
@@ -5908,21 +5957,94 @@ finish_nonmember_using_decl (tree scope, tree name)
   if (current_binding_level->kind == sk_namespace)
     {
       tree *slot = find_namespace_slot (current_namespace, name, true);
+      tree *mslot = get_fixed_binding_slot (slot, name,
+					    BINDING_SLOT_CURRENT, true);
+      bool failed = false;
 
-      tree value = MAYBE_STAT_DECL (*slot);
-      tree type = MAYBE_STAT_TYPE (*slot);
-
-      do_nonmember_using_decl (lookup, false, &value, &type);
-
-      if (STAT_HACK_P (*slot))
+      if (mslot != slot)
 	{
-	  STAT_DECL (*slot) = value;
-	  STAT_TYPE (*slot) = type;
+	  /* A module vector.  I presume the binding list is going to
+	     be sparser than the import bitmap.  Hence iterate over
+	     the former checking for bits set in the bitmap.  */
+	  bitmap imports = get_import_bitmap ();
+	  binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (*slot);
+
+	  /* Scan the imported bindings.  */
+	  unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (*slot);
+	  if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
+	    {
+	      ix--;
+	      cluster++;
+	    }
+
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
+	  for (; ix--; cluster++)
+	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      {
+		/* Are we importing this module?  */
+		if (unsigned base = cluster->indices[jx].base)
+		  if (unsigned span = cluster->indices[jx].span)
+		    do
+		      if (bitmap_bit_p (imports, base))
+			goto found;
+		    while (++base, --span);
+		continue;
+
+	      found:;
+		/* Is it loaded?  */
+		if (cluster->slots[jx].is_lazy ())
+		  {
+		    gcc_assert (cluster->indices[jx].span == 1);
+		    lazy_load_binding (cluster->indices[jx].base,
+				       scope, name, &cluster->slots[jx]);
+		  }
+
+		tree value = cluster->slots[jx];
+		if (!value)
+		  /* Load errors could mean there's nothing here.  */
+		  continue;
+
+		/* Extract what we can see from here.  If there's no
+		   stat_hack, then everything was exported.  */
+		tree type = NULL_TREE;
+
+		/* If no stat hack, everything is visible.  */
+		if (STAT_HACK_P (value))
+		  {
+		    if (STAT_TYPE_VISIBLE_P (value))
+		      type = STAT_TYPE (value);
+		    value = STAT_VISIBLE (value);
+		  }
+
+		if (do_nonmember_using_decl (lookup, false, false,
+					     &value, &type))
+		  {
+		    failed = true;
+		    break;
+		  }
+	      }
 	}
-      else if (type)
-	*slot = stat_hack (value, type);
-      else
-	*slot = value;
+
+      if (!failed)
+	{
+	  /* Now do the current slot.  */
+	  tree value = MAYBE_STAT_DECL (*mslot);
+	  tree type = MAYBE_STAT_TYPE (*mslot);
+
+	  do_nonmember_using_decl (lookup, false, true, &value, &type);
+
+	  // FIXME: Partition mergeableness?
+	  if (STAT_HACK_P (*mslot))
+	    {
+	      STAT_DECL (*mslot) = value;
+	      STAT_TYPE (*mslot) = type;
+	    }
+	  else if (type)
+	    *mslot = stat_hack (value, type);
+	  else
+	    *mslot = value;
+	}
     }
   else
     {
@@ -5940,7 +6062,7 @@ finish_nonmember_using_decl (tree scope, tree name)
       /* DR 36 questions why using-decls at function scope may not be
 	 duplicates.  Disallow it, as C++11 claimed and PR 20420
 	 implemented.  */
-      do_nonmember_using_decl (lookup, true, &value, &type);
+      do_nonmember_using_decl (lookup, true, true, &value, &type);
 
       if (!value)
 	;
