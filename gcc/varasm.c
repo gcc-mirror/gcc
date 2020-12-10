@@ -294,6 +294,7 @@ get_section (const char *name, unsigned int flags, tree decl,
   flags |= SECTION_NAMED;
   if (HAVE_GAS_SHF_GNU_RETAIN
       && decl != nullptr
+      && DECL_P (decl)
       && DECL_PRESERVE_P (decl))
     flags |= SECTION_RETAIN;
   if (*slot == NULL)
