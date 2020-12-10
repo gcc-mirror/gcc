@@ -42,6 +42,8 @@ pragma Warnings (Off, "non-static constant in preelaborated unit");
 --  Every constant is static given our instantiation model
 
 package body System.Fat_Gen is
+   use type Interfaces.Unsigned_16;
+   use type Interfaces.Unsigned_32;
    use type Interfaces.Unsigned_64;
 
    pragma Assert (T'Machine_Radix = 2);
@@ -59,6 +61,18 @@ package body System.Fat_Gen is
    --  Small : constant T := Rad ** (T'Machine_Emin - 1);
    --  Smallest positive normalized number
 
+   Small16 : constant Interfaces.Unsigned_16 := 2**(Mantissa - 1);
+   Small32 : constant Interfaces.Unsigned_32 := 2**(Mantissa - 1);
+   Small64 : constant Interfaces.Unsigned_64 := 2**(Mantissa - 1);
+   Small80 : constant array (1 .. 2) of Interfaces.Unsigned_64 :=
+               (2**48 * (1 - Standard'Default_Bit_Order),
+                1 * Standard'Default_Bit_Order);
+   for Small80'Alignment use Standard'Maximum_Alignment;
+   --  We cannot use the direct declaration because it cannot be translated
+   --  into C90, as the hexadecimal floating constants were introduced in C99.
+   --  So we work around this by using an overlay of the integer constant.
+   --  ??? Revisit this when the new CCG technoloy is in production
+
    --  Tiny : constant T := Rad ** (T'Machine_Emin - Mantissa);
    --  Smallest positive denormalized number
 
@@ -72,6 +86,7 @@ package body System.Fat_Gen is
    --  We cannot use the direct declaration because it cannot be translated
    --  into C90, as the hexadecimal floating constants were introduced in C99.
    --  So we work around this by using an overlay of the integer constant.
+   --  ??? Revisit this when the new CCG technoloy is in production
 
    RM1 : constant T := Rad ** (Mantissa - 1);
    --  Smallest positive member of the large consecutive integers. It is equal
@@ -424,6 +439,13 @@ package body System.Fat_Gen is
    ----------
 
    function Pred (X : T) return T is
+      Small : constant T;
+      pragma Import (Ada, Small);
+      for Small'Address use (if     T'Size   = 16 then Small16'Address
+                              elsif T'Size   = 32 then Small32'Address
+                              elsif T'Size   = 64 then Small64'Address
+                              elsif Mantissa = 64 then Small80'Address
+                              else raise Program_Error);
       Tiny : constant T;
       pragma Import (Ada, Tiny);
       for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
@@ -438,7 +460,7 @@ package body System.Fat_Gen is
       --  Zero has to be treated specially, since its exponent is zero
 
       if X = 0.0 then
-         return -Tiny;
+         return -(if T'Denorm then Tiny else Small);
 
       --  Special treatment for largest negative number: raise Constraint_Error
 
@@ -700,6 +722,13 @@ package body System.Fat_Gen is
    ----------
 
    function Succ (X : T) return T is
+      Small : constant T;
+      pragma Import (Ada, Small);
+      for Small'Address use (if     T'Size   = 16 then Small16'Address
+                              elsif T'Size   = 32 then Small32'Address
+                              elsif T'Size   = 64 then Small64'Address
+                              elsif Mantissa = 64 then Small80'Address
+                              else raise Program_Error);
       Tiny : constant T;
       pragma Import (Ada, Tiny);
       for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
@@ -714,7 +743,7 @@ package body System.Fat_Gen is
       --  Treat zero specially since it has a zero exponent
 
       if X = 0.0 then
-         return Tiny;
+         return (if T'Denorm then Tiny else Small);
 
       --  Special treatment for largest positive number: raise Constraint_Error
 
