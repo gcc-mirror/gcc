@@ -75,6 +75,7 @@ GRS_OBJS = \
     rust/rust-compile.o \
     rust/rust-macro-expand.o \
     rust/rust-hir-map.o \
+    rust/rust-hir-full-test.o \
     $(END)
 # removed object files from here
 
@@ -271,6 +272,11 @@ rust/%.o: rust/expand/%.cc
 
 # build rust/util files in rust folder
 rust/%.o: rust/util/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build rust/hir/tree files in rust folder
+rust/%.o: rust/hir/tree/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
