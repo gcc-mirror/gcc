@@ -481,6 +481,33 @@ extern void push_operator_bindings (void);
 extern void discard_operator_bindings (tree);
 
 /* Lower level interface for modules. */
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
+extern tree lookup_class_binding (tree ctx, tree name);
+extern bool import_module_binding (tree ctx, tree name, unsigned mod,
+				   unsigned snum);
+extern bool set_module_binding (tree ctx, tree name, unsigned mod,
+				int mod_glob_flag,
+				tree value, tree type, tree visible);
+extern void add_module_decl (tree ctx, tree name, tree decl);
+
+enum WMB_Flags
+{
+  WMB_None = 0,
+  WMB_Dups = 1 << 0,
+  WMB_Export = 1 << 1,
+  WMB_Using = 1 << 2,
+  WMB_Hidden = 1 << 3,
+};
+
+extern unsigned walk_module_binding (tree binding, bitmap partitions,
+				     bool (*)(tree decl, WMB_Flags, void *data),
+				     void *data);
+extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
+				    location_t, bool visible_p, bool inline_p);
+extern void note_pending_specializations (tree ns, tree name, bool is_header);
+extern void load_pending_specializations (tree ns, tree name);
+extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */
