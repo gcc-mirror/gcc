@@ -16708,6 +16708,89 @@ s390_shift_truncation_mask (machine_mode mode)
   return mode == DImode || mode == SImode ? 63 : 0;
 }
 
+/* Return TRUE iff CONSTRAINT is an "f" constraint, possibly with additional
+   modifiers.  */
+
+static bool
+f_constraint_p (const char *constraint)
+{
+  for (size_t i = 0, c_len = strlen (constraint); i < c_len;
+       i += CONSTRAINT_LEN (constraint[i], constraint + i))
+    {
+      if (constraint[i] == 'f')
+	return true;
+    }
+  return false;
+}
+
+/* Implement TARGET_MD_ASM_ADJUST hook in order to fix up "f"
+   constraints when long doubles are stored in vector registers.  */
+
+static rtx_insn *
+s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
+		    vec<machine_mode> &input_modes,
+		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		    HARD_REG_SET & /*clobbered_regs*/)
+{
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing to do.  */
+    return NULL;
+
+  rtx_insn *after_md_seq = NULL, *after_md_end = NULL;
+
+  unsigned ninputs = inputs.length ();
+  unsigned noutputs = outputs.length ();
+  for (unsigned i = 0; i < noutputs; i++)
+    {
+      if (GET_MODE (outputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[i];
+      bool allows_mem, allows_reg, is_inout;
+      bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
+					 &allows_mem, &allows_reg, &is_inout);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "=f" - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      gcc_assert (!is_inout);
+      /* Copy output value from a FPR pair into a vector register.  */
+      rtx fprx2 = gen_reg_rtx (FPRX2mode);
+      push_to_sequence2 (after_md_seq, after_md_end);
+      emit_insn (gen_fprx2_to_tf (outputs[i], fprx2));
+      after_md_seq = get_insns ();
+      after_md_end = get_last_insn ();
+      end_sequence ();
+      outputs[i] = fprx2;
+    }
+
+  for (unsigned i = 0; i < ninputs; i++)
+    {
+      if (GET_MODE (inputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[noutputs + i];
+      bool allows_mem, allows_reg;
+      bool ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+					constraints.address (), &allows_mem,
+					&allows_reg);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "f" (or "=f" for inout
+	   operands) - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      /* Copy input value from a vector register into a FPR pair.  */
+      rtx fprx2 = gen_reg_rtx (FPRX2mode);
+      emit_insn (gen_tf_to_fprx2 (fprx2, inputs[i]));
+      inputs[i] = fprx2;
+      input_modes[i] = FPRX2mode;
+    }
+
+  return after_md_seq;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -17014,6 +17097,9 @@ s390_shift_truncation_mask (machine_mode mode)
    the floating point instructions.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 0xfff
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST s390_md_asm_adjust
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
