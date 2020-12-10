@@ -618,7 +618,7 @@ proc go-gc-tests { } {
 	    go-execute-xfail $test
 	} elseif { $test_line == "// errorcheck" } {
 	    errchk $test ""
-	} elseif { $test_line == "// errorcheckdir" } {
+	} elseif { $test_line == "// errorcheckdir" || $test_line == "// errorcheckdir -n" } {
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
 	    set dir "[file rootname $test].dir"
