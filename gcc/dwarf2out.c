@@ -18245,10 +18245,11 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case PLACEHOLDER_EXPR:
       /* This case involves extracting fields from an object to determine the
 	 position of other fields. It is supposed to appear only as the first
-         operand of COMPONENT_REF nodes and to reference precisely the type
-         that the context allows.  */
+	 operand of COMPONENT_REF nodes and to reference precisely the type
+	 that the context allows or its enclosing type.  */
       if (context != NULL
-          && TREE_TYPE (loc) == context->context_type
+	  && (TREE_TYPE (loc) == context->context_type
+	      || TREE_TYPE (loc) == TYPE_CONTEXT (context->context_type))
 	  && want_address >= 1)
 	{
 	  if (dwarf_version >= 3 || !dwarf_strict)

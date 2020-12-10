@@ -101,50 +101,32 @@ proc errchk { test opts } {
 	set changed ""
 	while { $changed != $copy_line } {
 	    set changed $copy_line
-	    regsub "\(// \[^\"\]*\"\[^\"\]*\)\" \"" $copy_line "\\1|" out_line
+	    regsub {(// [^"]*"[^"]*)" "} $copy_line {\1|} out_line
 	    set copy_line $out_line
 	}
 
-	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\" *\(\\*/\)?$" $copy_line "// \{ dg-error \"\\2\" \}\\3" out_line
-	if [string match "*dg-error*\\\[*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\[" $out_line "\\\\\\\\\\\[" out_line
+	set index [string first // $copy_line]
+	set eindex [string first ERROR $copy_line]
+	if { $index >= 0 && $eindex > $index } {
+	    # We're putting the regexp in curly braces, so replace any
+	    # curly braces in the regexp with hex escapes.
+	    regsub -start $index -all "\{" $copy_line {\x7b} copy_line
+	    regsub -start $index -all "\}" $copy_line {\x7d} copy_line
+
+	    # Replace .* with [ -~]* because .* will eat newlines.
+	    # We can't easily use (?n) because this regexp will appear
+	    # in the middle of a large regexp.
+	    regsub -all {\.\*} $copy_line {[ -~]*} copy_line
 	}
-	if [string match "*dg-error*\\\]*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\]" $out_line "\\\\\\\\\\\]" out_line
-	}
-	if [string match "*dg-error*.\**" $out_line] {
-	    # I worked out the right number of backslashes by
-	    # experimentation, not analysis.
-	    regsub -all "\\.\\*" $out_line "\\\\\[ -~\\\\\]*" out_line
-	}
-	if [string match "*dg-error*\\\[?\\\]*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -all "\\\[\(.\)\\\]" $out_line "\\\\\[\\1\\\\\]" out_line
-	}
-	if [string match "*dg-error*\{*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\(\[^\\\\]\)\{" $out_line "\\1\\\\\[\\\{\\\\\]" out_line
-	}
-	if [string match "*dg-error*\}*\}" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\(\[^\\\\]\)\}\(.\)" $out_line "\\1\\\\\[\\\}\\\\\]\\2" out_line
-	}
-	if [string match "*dg-error*\\\[^\\\\\]\(*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\(" $out_line "\\\\\[\\\(\\\\\]" out_line
-	}
-	if [string match "*dg-error*\\\[^\\\\\]\)*\}" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\)\(.\)" $out_line "\\\\\[\\\)\\\\\]\\1" out_line
-	}
-	# Special case for bug332, in which the error message wants to
-	# match the file name, which is not what dg-error expects.
-	if [string match "*dg-error*bug332*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index "bug332" $out_line "undefined type" out_line
-	}
+
+	# Change
+	#   // ERROR "string"
+	# to
+	#   // { dg-error {string} }
+	# The latter is what go-dg-runtest expects.
+	# Retain an optional trailing */, for syntax/semi6.go.
+	regsub {// (GCCGO_)?ERROR "([^"]*)" *(\*/)?$} $copy_line "// \{ dg-error \{\\2\} \}\\3" out_line
+
 	puts $fdout $out_line
     }
     close $fdin
@@ -636,7 +618,7 @@ proc go-gc-tests { } {
 	    go-execute-xfail $test
 	} elseif { $test_line == "// errorcheck" } {
 	    errchk $test ""
-	} elseif { $test_line == "// errorcheckdir" } {
+	} elseif { $test_line == "// errorcheckdir" || $test_line == "// errorcheckdir -n" } {
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
 	    set dir "[file rootname $test].dir"

@@ -1,3 +1,66 @@
+2020-12-09  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (errchk): Rewrite regexp quoting to use
+	curly braces, making it much simpler.
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98213
+	* g++.dg/pr98213.C: New testcase.
+
+2020-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97517
+	* g++.dg/diagnostic/nullptr.C: New test.
+
+2020-12-09  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98182
+	* gcc.dg/tree-ssa/if-to-switch-1.c: Add case-values-threshold in
+	order to fix them for aarch64.
+	* gcc.dg/tree-ssa/if-to-switch-10.c: Likewise.
+
+2020-12-09  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/zvector/autovec-double-signaling-eq.c: Build
+	with exceptions.
+	* gcc.target/s390/zvector/autovec-float-signaling-eq.c:
+	Likewise.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-5.c: New test.
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/98200
+	* gcc.dg/gimplefe-error-8.c: New testcase.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/reduction4.f90: Update scan-trees, add
+	lost testcase; move test with FE error to ...
+	* gfortran.dg/gomp/reduction5.f90: ... here.
+
+2020-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98199
+	* gcc.c-torture/compile/pr98199.c: New test.
+
+2020-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98193
+	* g++.dg/cpp2a/bit-cast7.C: New test.
+
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-nodiscard1.C: Remove xfail.
+
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59238
+	* g++.dg/cpp0x/new4.C: New test.
+
 2020-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/98191

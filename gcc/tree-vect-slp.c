@@ -544,11 +544,20 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	  continue;
 	}
 
-      if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
-	oprnd_info->any_pattern = true;
-
       oprnd_info->def_stmts.quick_push (def_stmt_info);
       oprnd_info->ops.quick_push (oprnd);
+
+      if (def_stmt_info
+	  && is_pattern_stmt_p (def_stmt_info))
+	{
+	  if (STMT_VINFO_RELATED_STMT (vect_orig_stmt (def_stmt_info))
+	      != def_stmt_info)
+	    oprnd_info->any_pattern = true;
+	  else
+	    /* If we promote this to external use the original stmt def.  */
+	    oprnd_info->ops.last ()
+	      = gimple_get_lhs (vect_orig_stmt (def_stmt_info)->stmt);
+	}
 
       /* If there's a extern def on a backedge make sure we can
 	 code-generate at the region start.

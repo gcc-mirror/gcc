@@ -1,3 +1,14 @@
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_allocate): New.
+	(c_parser_omp_construct): Call it.
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/98200
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Return
+	early on error.
+
 2020-12-07  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/97981

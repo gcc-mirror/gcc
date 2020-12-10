@@ -18016,8 +18016,8 @@ and the features that they enable by default:
 @item @samp{armv8-a} @tab Armv8-A @tab @samp{+fp}, @samp{+simd}
 @item @samp{armv8.1-a} @tab Armv8.1-A @tab @samp{armv8-a}, @samp{+crc}, @samp{+lse}, @samp{+rdma}
 @item @samp{armv8.2-a} @tab Armv8.2-A @tab @samp{armv8.1-a}
-@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}
-@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+fp16fml}, @samp{+dotprod}
+@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}, @samp{+pauth}
+@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+flagm}, @samp{+fp16fml}, @samp{+dotprod}
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
@@ -18288,8 +18288,9 @@ Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
 @item flagm
-Enable the Flag Manipulation instructions Extension. This option is enabled by
-default for @option{-march=armv8.4-a}.
+Enable the Flag Manipulation instructions Extension.
+@item pauth
+Enable the Pointer Authentication Extension.
 
 @end table
 

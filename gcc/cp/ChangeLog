@@ -1,3 +1,78 @@
+2020-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.h (struct cp_token): Add main_source_p field.
+	* parser.c (cp_lexer_new_main): Pass thought module token filter.
+	Check macros.
+	(cp_lexer_get_preprocessor_token): Set main_source_p.
+	(enum module_parse): New.
+	(cp_parser_diagnose_invalid_type_name): Deal with unrecognized
+	module-directives.
+	(cp_parser_skip_to_closing_parenthesize_1): Skip module-directivres.
+	(cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_skiup_to_end_of_block_or_statement): Likewise.
+	(cp_parser_translation_unit): Add module parsing calls.
+	(cp_parser_module_name, cp_parser_module_declaration): New.
+	(cp_parser_import_declaration, cp_parser_module_export): New.
+	(cp_parser_declaration): Add module export detection.
+	(cp_parser_template_declaration): Adjust 'export' error message.
+	(cp_parser_function_definition_after_declarator): Add
+	module-specific logic.
+	* module.cc (import_module, declare_module)
+	(maybe_check_all_macros): Stubs.
+
+2020-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97517
+	* cxx-pretty-print.c (cxx_pretty_printer::simple_type_specifier): Handle
+	NULLPTR_TYPE.
+	(pp_cxx_type_specifier_seq): Likewise.
+	(cxx_pretty_printer::type_id): Likewise.
+
+2020-12-09  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Add module-specific redeclaration
+	logic.
+	(cxx_init_decl_processing): Export the global namespace, maybe
+	initialize modules.
+	(start_decl): Reject local-extern in a module, adjust linkage of
+	template var.
+	(xref_tag_1): Add module-specific redeclaration logic.
+	(start_enum): Likewise.
+	(finish_enum_value_list): Export unscoped members of an exported
+	enum.
+	(grokmethod): Implement p1779 linkage of in-class defined
+	functions.
+	* decl2.c (no_linkage_error): Imports are ok.
+	(c_parse_final_cleanups): Call fini_modules.
+	* lex.c (cxx_dup_lang_specific): Clear some module flags in the
+	copy.
+	* module.cc (module_kind): Define.
+	(module_may_redeclare, set_defining_module): Stubs.
+	(init_modules): Error on modules.
+	(fini_modules): Stub.
+	* rtti.c (push_abi_namespace): Save and reset module_kind.
+	(pop_abi_namespace): Restore module kind.
+	(build_dynamic_cast_1, tinfo_base_init): Adjust.
+	* semantics.c (begin_class_definition): Add module-specific logic.
+	(expand_or_defer_fn_1): Keep bodies of more fns when modules_p.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.c (cp_parser_omp_allocate): New.
+	(cp_parser_omp_construct, cp_parser_pragma): Call it.
+
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98019
+	* cvt.c (maybe_warn_nodiscard): Check c_inhibit_evaluation_warnings.
+
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59238
+	* init.c (expand_default_init): Pass tf_no_cleanup when building
+	a TARGET_EXPR to go on the RHS of an INIT_EXPR.
+	* typeck.c (cp_build_modify_expr): Likewise.
+
 2020-12-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98103

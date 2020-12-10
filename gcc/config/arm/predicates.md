@@ -107,7 +107,7 @@
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {
-  return (TARGET_NEON
+  return ((TARGET_NEON || TARGET_HAVE_MVE)
           && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
 })
 

@@ -1,3 +1,74 @@
+2020-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98188
+	* tree-ssa-phiopt.c (two_value_replacement): Don't special case
+	BOOLEAN_TYPEs for ranges, instead if get_range_info doesn't return
+	VR_RANGE, set min/max to wi::min/max_value.
+
+2020-12-09  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION): New +pauth option in -march for AArch64.
+	* config/aarch64/aarch64.h (AARCH64_FL_PAUTH): New pauth extension bitmask.
+	(AARCH64_ISA_PUATH): New ISA bitmask for PAUTH.
+	(AARCH64_FL_FOR_ARCH8_3): Add PAUTH to Armv8.3-A.
+	(TARGET_PAUTH): New target mask to isolate PAUTH instructions.
+	* config/aarch64/aarch64.md (do_return): Condition set to TARGET_PAUTH.
+	* doc/invoke.texi: Update docs for +flagm and +pauth.
+
+2020-12-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (REG_ALLOC_ORDER): Remove
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98213
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Cache successfully
+	processed PHIs.
+	(hoist_memory_references): Adjust.
+
+2020-12-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-protos.h (cpu_vector_cost): Move simd
+	fields to...
+	(simd_vec_cost): ... Here.  Define.
+	(advsimd_vec_cost): Define.
+	(sve_vec_cost): Define.
+	* config/aarch64/aarch64.c (generic_advsimd_vector_cost):
+	Define.
+	(generic_sve_vector_cost): Likewise.
+	(generic_vector_cost): Update.
+	(qdf24xx_advsimd_vector_cost): Define.
+	(qdf24xx_vector_cost): Update.
+	(thunderx_advsimd_vector_cost): Define.
+	(thunderx_vector_cost): Update.
+	(tsv110_advsimd_vector_cost): Define.
+	(tsv110_vector_cost): Likewise.
+	(cortexa57_advsimd_vector_cost): Define.
+	(cortexa57_vector_cost): Update.
+	(exynosm1_advsimd_vector_cost): Define.
+	(exynosm1_vector_cost): Update.
+	(xgene1_advsimd_vector_cost): Define.
+	(xgene1_vector_cost): Update.
+	(thunderx2t99_advsimd_vector_cost): Define.
+	(thunderx2t99_vector_cost): Update.
+	(thunderx3t110_advsimd_vector_cost): Define.
+	(thunderx3t110_vector_cost): Update.
+	(aarch64_builtin_vectorization_cost): Handle sve and advsimd
+	vector cost fields.
+
+2020-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98199
+	* fold-const.c (native_encode_initializer): Fix handling bit-fields
+	when off > 0.
+
+2020-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98193
+	* fold-const.c (native_encode_initializer): Set pos to field's
+	byte position if iterating over a field with missing initializer.
+
 2020-12-08  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/98182

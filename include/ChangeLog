@@ -1,3 +1,9 @@
+2020-12-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* hsa.h: Replace whole file.
+	* hsa_ext_amd.h: New file.
+	* hsa_ext_image.h: New file.
+
 2020-09-24  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2.def: Add DWARF5 Unit type header encoding macros

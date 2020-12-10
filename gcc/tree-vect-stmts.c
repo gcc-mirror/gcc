@@ -5123,6 +5123,17 @@ vectorizable_assignment (vec_info *vinfo,
 		       GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
     return false;
 
+  if (VECTOR_BOOLEAN_TYPE_P (vectype)
+      && !VECTOR_BOOLEAN_TYPE_P (vectype_in))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't convert between boolean and non "
+			 "boolean vectors %T\n", TREE_TYPE (op));
+
+      return false;
+    }
+
   /* We do not handle bit-precision changes.  */
   if ((CONVERT_EXPR_CODE_P (code)
        || code == VIEW_CONVERT_EXPR)
@@ -5132,12 +5143,7 @@ vectorizable_assignment (vec_info *vinfo,
       /* But a conversion that does not change the bit-pattern is ok.  */
       && !((TYPE_PRECISION (TREE_TYPE (scalar_dest))
 	    > TYPE_PRECISION (TREE_TYPE (op)))
-	   && TYPE_UNSIGNED (TREE_TYPE (op)))
-      /* Conversion between boolean types of different sizes is
-	 a simple assignment in case their vectypes are same
-	 boolean vectors.  */
-      && (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	  || !VECTOR_BOOLEAN_TYPE_P (vectype_in)))
+	   && TYPE_UNSIGNED (TREE_TYPE (op))))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

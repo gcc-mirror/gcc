@@ -6993,7 +6993,7 @@ extern void maybe_check_all_macros (cpp_reader *);
 extern void finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
-extern bitmap module_visible_instantiation_path (bitmap *);
+extern bitmap visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
 extern void module_preprocess_options (cpp_reader *);
