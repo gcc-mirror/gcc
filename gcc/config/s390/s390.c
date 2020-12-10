@@ -16714,13 +16714,21 @@ s390_shift_truncation_mask (machine_mode mode)
 static bool
 f_constraint_p (const char *constraint)
 {
+  bool seen_f_p = false;
+  bool seen_v_p = false;
+
   for (size_t i = 0, c_len = strlen (constraint); i < c_len;
        i += CONSTRAINT_LEN (constraint[i], constraint + i))
     {
       if (constraint[i] == 'f')
-	return true;
+	seen_f_p = true;
+      if (constraint[i] == 'v')
+	seen_v_p = true;
     }
-  return false;
+
+  /* Treat "fv" constraints as "v", because LRA will choose the widest register
+   * class.  */
+  return seen_f_p && !seen_v_p;
 }
 
 /* Implement TARGET_MD_ASM_ADJUST hook in order to fix up "f"
