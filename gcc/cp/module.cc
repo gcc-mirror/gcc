@@ -135,9 +135,31 @@ set_defining_module (tree)
 {
 }
 
+tree
+get_originating_module_decl (tree decl)
+{
+  return decl;
+}
+
 void
 set_originating_module (tree, bool)
 {
+}
+
+void
+lazy_load_binding (unsigned, tree, tree, binding_slot *)
+{
+}
+
+void
+lazy_load_members (tree)
+{
+}
+
+bitmap
+visible_instantiation_path (bitmap *)
+{
+  return nullptr;
 }
 
 void

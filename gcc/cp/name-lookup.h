@@ -480,4 +480,7 @@ extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
 extern void discard_operator_bindings (tree);
 
+/* Lower level interface for modules. */
+extern void add_mergeable_namespace_entity (tree *slot, tree decl);
+
 #endif /* GCC_CP_NAME_LOOKUP_H */
