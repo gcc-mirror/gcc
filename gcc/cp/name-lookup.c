@@ -1639,7 +1639,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
       /* INST_PATH will be NULL, if this is /not/ 2nd-phase ADL.  */
       bitmap inst_path = NULL;
       /* VISIBLE is the regular import bitmap.  */
-      bitmap visible = module_visible_instantiation_path (&inst_path);
+      bitmap visible = visible_instantiation_path (&inst_path);
 
       for (unsigned ix = scopes->length (); ix--;)
 	{

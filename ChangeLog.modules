@@ -1,5 +1,8 @@
 2020-12-10  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 4f1d8bd5096
+	c++: modules & using-decls
+
 	Merge trunk afc14c8d0a9
 	c++: modularize spelling suggestions
 

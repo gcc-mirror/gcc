@@ -18192,7 +18192,7 @@ path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
    entities of those modules.  */
 
 bitmap
-module_visible_instantiation_path (bitmap *path_map_p)
+visible_instantiation_path (bitmap *path_map_p)
 {
   if (!modules_p ())
     return NULL;
