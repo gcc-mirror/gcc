@@ -1114,13 +1114,19 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	           /* ... or if there is no libcall for it.  */
 	           || code_to_optab (code) == unknown_optab))
         {
-	  enum rtx_code first_code;
+	  enum rtx_code first_code, orig_code = code;
 	  bool and_them = split_comparison (code, mode, &first_code, &code);
 
 	  /* If there are no NaNs, the first comparison should always fall
 	     through.  */
 	  if (!HONOR_NANS (mode))
 	    gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
+
+	  else if ((orig_code == EQ || orig_code == NE)
+		   && rtx_equal_p (op0, op1))
+	    /* Self-comparisons x == x or x != x can be optimized into
+	       just x ord x or x nord x.  */
+	    code = orig_code == EQ ? ORDERED : UNORDERED;
 
 	  else
 	    {
