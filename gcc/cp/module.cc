@@ -80,6 +80,12 @@ module_name (unsigned, bool)
   return nullptr;
 }
 
+bitmap
+get_import_bitmap ()
+{
+  return nullptr;
+}
+
 void
 mangle_module (int, bool)
 {

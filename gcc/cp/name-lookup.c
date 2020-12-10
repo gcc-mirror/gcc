@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/name-hint.h"
 #include "c-family/known-headers.h"
 #include "c-family/c-spellcheck.h"
+#include "bitmap.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -45,6 +46,18 @@ static name_hint maybe_suggest_missing_std_header (location_t location,
 						   tree name);
 static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 					     bool suggest_misspellings);
+
+/* Slots in BINDING_VECTOR.  */
+enum binding_slots
+{
+ BINDING_SLOT_CURRENT,	/* Slot for current TU.  */
+ BINDING_SLOT_GLOBAL,	/* Slot for merged global module. */
+ BINDING_SLOT_PARTITION, /* Slot for merged partition entities
+			    (optional).  */
+
+ /* Number of always-allocated slots.  */
+ BINDING_SLOTS_FIXED = BINDING_SLOT_GLOBAL + 1
+};
 
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
@@ -6137,9 +6150,10 @@ maybe_add_fuzzy_decl (auto_vec<tree> &vec, tree decl)
 }
 
 /* Examing the namespace binding BINDING, and add at most one instance
-   of the name, if it contains a visible entity of interest.  */
+   of the name, if it contains a visible entity of interest.  Return
+   true if we added something.  */
 
-void
+bool
 maybe_add_fuzzy_binding (auto_vec<tree> &vec, tree binding,
 			      lookup_name_fuzzy_kind kind)
 {
@@ -6151,7 +6165,7 @@ maybe_add_fuzzy_binding (auto_vec<tree> &vec, tree binding,
 	  && STAT_TYPE (binding))
 	{
 	  if (maybe_add_fuzzy_decl (vec, STAT_TYPE (binding)))
-	    return;
+	    return true;
 	}
       else if (!STAT_DECL_HIDDEN_P (binding))
 	value = STAT_DECL (binding);
@@ -6166,8 +6180,11 @@ maybe_add_fuzzy_binding (auto_vec<tree> &vec, tree binding,
       if (kind != FUZZY_LOOKUP_TYPENAME
 	  || TREE_CODE (STRIP_TEMPLATE (value)) == TYPE_DECL)
 	if (maybe_add_fuzzy_decl (vec, value))
-	  return;
+	  return true;
     }
+
+  /* Nothing found.  */
+  return false;
 }
 
 /* Helper function for lookup_name_fuzzy.
@@ -6233,8 +6250,54 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	(DECL_NAMESPACE_BINDINGS (ns)->end ());
       for (hash_table<named_decl_hash>::iterator iter
 	     (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-	maybe_add_fuzzy_binding (vec, *iter, kind);
+	{
+	  tree binding = *iter;
 
+	  if (TREE_CODE (binding) == BINDING_VECTOR)
+	    {
+	      bitmap imports = get_import_bitmap ();
+	      binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (binding);
+
+	      if (tree bind = cluster->slots[BINDING_SLOT_CURRENT])
+		if (maybe_add_fuzzy_binding (vec, bind, kind))
+		  continue;
+
+	      /* Scan the imported bindings.  */
+	      unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (binding);
+	      if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
+		{
+		  ix--;
+		  cluster++;
+		}
+
+	      for (; ix--; cluster++)
+		for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER;
+		     jx++)
+		  {
+		    /* Are we importing this module?  */
+		    if (unsigned base = cluster->indices[jx].base)
+		      if (unsigned span = cluster->indices[jx].span)
+			do
+			  if (bitmap_bit_p (imports, base))
+			    goto found;
+			while (++base, --span);
+		    continue;
+
+		  found:;
+		    /* Is it loaded?  */
+		    if (cluster->slots[jx].is_lazy ())
+		      /* Let's not read in everything on the first
+			 spello! **/
+		      continue;
+		    if (tree bind = cluster->slots[jx])
+		      if (maybe_add_fuzzy_binding (vec, bind, kind))
+			break;
+		  }
+	    }
+	  else
+	    maybe_add_fuzzy_binding (vec, binding, kind);
+	}
+	
       vec.qsort ([] (const void *a_, const void *b_)
 		 {
 		   return strcmp (IDENTIFIER_POINTER (*(const tree *)a_),
