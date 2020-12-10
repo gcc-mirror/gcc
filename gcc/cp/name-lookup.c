@@ -1916,7 +1916,7 @@ push_binding (tree id, tree decl, cp_binding_level* level)
 void
 pop_local_binding (tree id, tree decl)
 {
-  if (id == NULL_TREE)
+  if (!id || IDENTIFIER_ANON_P (id))
     /* It's easiest to write the loops that call this function without
        checking whether or not the entities involved have names.  We
        get here for such an entity.  */
@@ -2266,8 +2266,9 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   tree to_type = old_type;
   bool local_overload = false;
 
-  gcc_assert (level->kind == sk_namespace ? !binding
+  gcc_assert (!level || level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
+
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -2343,7 +2344,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	warning (OPT_Wshadow, "%q#D hides constructor for %q#D",
 		 decl, to_type);
 
-      local_overload = old && level->kind != sk_namespace;
+      local_overload = old && level && level->kind != sk_namespace;
       to_val = ovl_insert (decl, old, -int (hiding));
     }
   else if (old)
@@ -2354,11 +2355,8 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
       else if (TREE_CODE (old) == TYPE_DECL)
 	{
 	  if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
-	    {
-	      /* Two type decls to the same type.  Do nothing.  */
-	      gcc_checking_assert (!hiding);
-	      return old;
-	    }
+	    /* Two type decls to the same type.  Do nothing.  */
+	    return old;
 	  else
 	    goto conflict;
 	}
@@ -2370,7 +2368,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	    goto conflict;
 
 	  /* The new one must be an alias at this point.  */
-	  gcc_assert (DECL_NAMESPACE_ALIAS (decl) && !hiding);
+	  gcc_assert (DECL_NAMESPACE_ALIAS (decl));
 	  return old;
 	}
       else if (TREE_CODE (old) == VAR_DECL)
@@ -2405,7 +2403,11 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  gcc_checking_assert (binding->value && OVL_P (binding->value));
 	  update_local_overload (binding, to_val);
 	}
-      else
+      else if (level
+	       && !(TREE_CODE (decl) == NAMESPACE_DECL
+		    && !DECL_NAMESPACE_ALIAS (decl)))
+	/* Don't add namespaces here.  They're done in
+	   push_namespace.  */
 	add_decl_to_level (level, decl);
 
       if (slot)
@@ -2911,6 +2913,41 @@ push_local_extern_decl_alias (tree decl)
   DECL_LOCAL_DECL_ALIAS (decl) = alias;
 }
 
+/* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
+
+static void
+newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
+{
+  if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      tree type = TREE_TYPE (decl);
+
+      if (type != error_mark_node)
+	{
+	  if (TYPE_NAME (type) != decl)
+	    set_underlying_type (decl);
+
+	  set_identifier_type_value_with_scope (name, decl, level);
+
+	  if (level->kind != sk_namespace
+	      && !instantiating_current_function_p ())
+	    /* This is a locally defined typedef in a function that
+	       is not a template instantation, record it to implement
+	       -Wunused-local-typedefs.  */
+	    record_locally_defined_typedef (decl);
+	}
+    }
+  else
+    {
+      if (VAR_P (decl) && !DECL_LOCAL_DECL_P (decl))
+	maybe_register_incomplete_var (decl);
+
+      if (VAR_OR_FUNCTION_DECL_P (decl)
+	  && DECL_EXTERN_C_P (decl))
+	check_extern_c_conflict (decl);
+    }
+}
+
 /* Record DECL as belonging to the current lexical scope.  Check for
    errors (such as an incompatible declaration for the same name
    already seen in the same scope).  IS_FRIEND is true if DECL is
@@ -2939,7 +2976,7 @@ do_pushdecl (tree decl, bool hiding)
   /* An anonymous namespace has a NULL DECL_NAME, but we still want to
      insert it.  Other NULL-named decls, not so much.  */
   tree name = DECL_NAME (decl);
-  if (name || TREE_CODE (decl) == NAMESPACE_DECL)
+  if (name ? !IDENTIFIER_ANON_P (name) : TREE_CODE (decl) == NAMESPACE_DECL)
     {
       cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */
@@ -3064,38 +3101,15 @@ do_pushdecl (tree decl, bool hiding)
       if (old != decl)
 	/* An existing decl matched, use it.  */
 	decl = old;
-      else if (TREE_CODE (decl) == TYPE_DECL)
-	{
-	  tree type = TREE_TYPE (decl);
-
-	  if (type != error_mark_node)
-	    {
-	      if (TYPE_NAME (type) != decl)
-		set_underlying_type (decl);
-
-	      set_identifier_type_value_with_scope (name, decl, level);
-	    }
-
-	  /* If this is a locally defined typedef in a function that
-	     is not a template instantation, record it to implement
-	     -Wunused-local-typedefs.  */
-	  if (!instantiating_current_function_p ())
-	    record_locally_defined_typedef (decl);
-	}
       else
 	{
-	  if (VAR_P (decl) && !DECL_LOCAL_DECL_P (decl))
-	    maybe_register_incomplete_var (decl);
+	  newbinding_bookkeeping (name, decl, level);
+	  
 
-	  if (VAR_OR_FUNCTION_DECL_P (decl))
-	    {
-	      if (DECL_LOCAL_DECL_P (decl)
-		  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
-		push_local_extern_decl_alias (decl);
-
-	      if (DECL_EXTERN_C_P (decl))
-		check_extern_c_conflict (decl);
-	    }
+	  if (VAR_OR_FUNCTION_DECL_P (decl)
+	      && DECL_LOCAL_DECL_P (decl)
+	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	    push_local_extern_decl_alias (decl);
 	}
     }
   else
@@ -3105,8 +3119,8 @@ do_pushdecl (tree decl, bool hiding)
 }
 
 /* Record a decl-node X as belonging to the current lexical scope.
-   It's a friend if IS_FRIEND is true -- which affects exactly where
-   we push it.  */
+   The new binding is hidden if HIDING is true (an anticipated builtin
+   or hidden friend).   */
 
 tree
 pushdecl (tree x, bool hiding)
@@ -7279,8 +7293,6 @@ do_push_nested_namespace (tree ns)
   else
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
-      gcc_checking_assert
-	(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
@@ -7302,10 +7314,10 @@ do_pop_nested_namespace (tree ns)
   do_pop_from_top_level ();
 }
 
-/* Add TARGET to USINGS, if it does not already exist there.
-   We used to build the complete graph of usings at this point, from
-   the POV of the source namespaces.  Now we build that as we perform
-   the unqualified search.  */
+/* Add TARGET to USINGS, if it does not already exist there.  We used
+   to build the complete graph of usings at this point, from the POV
+   of the source namespaces.  Now we build that as we perform the
+   unqualified search.  */
 
 static void
 add_using_namespace (vec<tree, va_gc> *&usings, tree target)
@@ -7412,6 +7424,55 @@ push_inline_namespaces (tree ns)
   return count;
 }
 
+/* Create a new namespace decl NAME in CTX.  */
+
+static tree
+make_namespace (tree ctx, tree name, location_t loc, bool inline_p)
+{
+  /* Create the namespace.  */
+  tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+  DECL_SOURCE_LOCATION (ns) = loc;
+  SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
+  if (!SCOPE_DEPTH (ns))
+    /* We only allow depth 255. */
+    sorry ("cannot nest more than %d namespaces", SCOPE_DEPTH (ctx));
+  DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
+
+  if (!name)
+    /* Anon-namespaces in different header-unit imports are distinct.
+       But that's ok as their contents all have internal linkage.
+       (This is different to how they'd behave as textual includes,
+       but doing this at all is really odd source.)  */
+    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
+  else if (TREE_PUBLIC (ctx))
+    TREE_PUBLIC (ns) = true;
+
+  if (inline_p)
+    DECL_NAMESPACE_INLINE_P (ns) = true;
+
+  return ns;
+}
+
+/* NS was newly created, finish off making it.  */
+
+static void
+make_namespace_finish (tree ns)
+{
+  tree ctx = CP_DECL_CONTEXT (ns);
+  cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
+  scope->this_entity = ns;
+  scope->more_cleanups_ok = true;
+  scope->kind = sk_namespace;
+  scope->level_chain = NAMESPACE_LEVEL (ctx);
+  NAMESPACE_LEVEL (ns) = scope;
+
+  if (DECL_NAMESPACE_INLINE_P (ns))
+    vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), ns);
+
+  if (DECL_NAMESPACE_INLINE_P (ns) || !DECL_NAME (ns))
+    emit_debug_info_using_namespace (ctx, ns, true);
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
@@ -7488,45 +7549,40 @@ push_namespace (tree name, bool make_inline)
 	}
   }
 
-  bool new_ns = false;
   if (ns)
-    /* DR2061.  NS might be a member of an inline namespace.  We
-       need to push into those namespaces.  */
-    count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+    {
+      /* DR2061.  NS might be a member of an inline namespace.  We
+	 need to push into those namespaces.  */
+      count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+      if (DECL_SOURCE_LOCATION (ns) == BUILTINS_LOCATION)
+	/* It's not builtin now.  */
+	DECL_SOURCE_LOCATION (ns) = input_location;
+    }
   else
     {
-      ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-      SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;
-      if (!SCOPE_DEPTH (ns))
-	/* We only allow depth 255. */
-	sorry ("cannot nest more than %d namespaces",
-	       SCOPE_DEPTH (current_namespace));
-      DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
-      new_ns = true;
+      /* Before making a new namespace, see if we already have one in
+	 the existing partitions of the current namespace.  */
+      tree *slot = find_namespace_slot (current_namespace, name, false);
+      ns = make_namespace (current_namespace, name, input_location, make_inline);
 
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
       else
 	{
-	  if (!name)
+	  /* Finish up making the namespace.  */
+	  add_decl_to_level (NAMESPACE_LEVEL (current_namespace), ns);
+	  if (!slot)
 	    {
-	      SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
-
-	      if (!make_inline)
-		add_using_namespace (current_binding_level->using_directives,
-				     ns);
+	      slot = find_namespace_slot (current_namespace, name);
+	      /* This should find the slot created by pushdecl.  */
+	      gcc_checking_assert (slot && *slot == ns);
 	    }
-	  else if (TREE_PUBLIC (current_namespace))
-	    TREE_PUBLIC (ns) = 1;
+	  make_namespace_finish (ns);
 
-	  if (make_inline)
-	    {
-	      DECL_NAMESPACE_INLINE_P (ns) = true;
-	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
-	    }
-
-	  if (!name || make_inline)
-	    emit_debug_info_using_namespace (current_namespace, ns, true);
+	  /* Add the anon using-directive here, we don't do it in
+	     make_namespace_finish.  */
+	  if (!DECL_NAMESPACE_INLINE_P (ns) && !name)
+	    add_using_namespace (current_binding_level->using_directives, ns);
 	}
     }
 
@@ -7534,13 +7590,11 @@ push_namespace (tree name, bool make_inline)
     {
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
-	  error ("inline namespace must be specified at initial definition");
+	  error_at (input_location,
+		    "inline namespace must be specified at initial definition");
 	  inform (DECL_SOURCE_LOCATION (ns), "%qD defined here", ns);
 	}
-      if (new_ns)
-	begin_scope (sk_namespace, ns);
-      else
-	resume_scope (NAMESPACE_LEVEL (ns));
+      resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
       count++;
     }
