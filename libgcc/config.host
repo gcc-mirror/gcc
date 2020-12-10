@@ -718,7 +718,7 @@ i[34567]86-*-elf*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
 	;;
 x86_64-zephyr-elf)
-	tmake_file="$tmake_file i386/t-crtstuff i386/64/t-zephyr64 t-dfprules"
+	tmake_file="$tmake_file i386/t-crtstuff i386/64/t-zephyr64"
 	;;
 x86_64-*-elf* | x86_64-*-rtems*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
@@ -1571,6 +1571,13 @@ i[34567]86-*-linux* | x86_64-*-linux* | \
 esac
 
 case ${host} in
+x86_64-zephyr-elf)
+	tmake_file="${tmake_file} t-softfp-sfdf"
+	if test "${host_address}" = 32; then
+		tmake_file="${tmake_file} i386/${host_address}/t-softfp"
+	fi
+	tmake_file="${tmake_file} i386/64/t-softfp i386/t-softfp t-softfp t-dfprules"
+	;;
 i[34567]86-*-elfiamcu | i[34567]86-zephyr-elf | i[34567]86-*-rtems*)
 	# These use soft-fp for SFmode and DFmode, not just TFmode.
 	;;
