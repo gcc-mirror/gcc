@@ -1,3 +1,9 @@
+2020-12-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91953
+	* g++.dg/cpp1z/constexpr-if12.C: Remove error.
+	* g++.dg/cpp0x/constexpr-empty14.C: New test.
+
 2020-12-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
