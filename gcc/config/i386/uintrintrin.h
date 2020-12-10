@@ -38,9 +38,6 @@
 
 struct __uintr_frame
 {
-  /* The position of the most significant bit set in user-interrupt
-     request register.  */
-  unsigned long long uirrv;
   /* RIP of the interrupted user process.  */
   unsigned long long rip;
   /* RFLAGS of the interrupted user process.  */
