@@ -153,9 +153,6 @@ package body Exp_Ch7 is
    procedure Set_Node_To_Be_Wrapped (N : Node_Id);
    --  Set the field Node_To_Be_Wrapped of the current scope
 
-   --  ??? The entire comment needs to be rewritten
-   --  ??? which entire comment?
-
    procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id);
    --  Shared processing for Store_xxx_Actions_In_Scope
 
@@ -9841,7 +9838,7 @@ package body Exp_Ch7 is
       Actions : List_Id renames SE.Actions_To_Be_Wrapped (AK);
 
    begin
-      if No (Actions) then
+      if Is_Empty_List (Actions) then
          Actions := L;
 
          if Is_List_Member (SE.Node_To_Be_Wrapped) then

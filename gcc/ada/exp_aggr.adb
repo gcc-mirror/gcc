@@ -78,15 +78,6 @@ package body Exp_Aggr is
    type Case_Table_Type is array (Nat range <>) of Case_Bounds;
    --  Table type used by Check_Case_Choices procedure
 
-   procedure Collect_Initialization_Statements
-     (Obj        : Entity_Id;
-      N          : Node_Id;
-      Node_After : Node_Id);
-   --  If Obj is not frozen, collect actions inserted after N until, but not
-   --  including, Node_After, for initialization of Obj, and move them to an
-   --  expression with actions, which becomes the Initialization_Statements for
-   --  Obj.
-
    procedure Expand_Delta_Array_Aggregate  (N : Node_Id; Deltas : List_Id);
    procedure Expand_Delta_Record_Aggregate (N : Node_Id; Deltas : List_Id);
    procedure Expand_Container_Aggregate (N : Node_Id);
@@ -4210,40 +4201,6 @@ package body Exp_Aggr is
       return L;
    end Build_Record_Aggr_Code;
 
-   ---------------------------------------
-   -- Collect_Initialization_Statements --
-   ---------------------------------------
-
-   procedure Collect_Initialization_Statements
-     (Obj        : Entity_Id;
-      N          : Node_Id;
-      Node_After : Node_Id)
-   is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Init_Actions : constant List_Id    := New_List;
-      Init_Node    : Node_Id;
-      Comp_Stmt    : Node_Id;
-
-   begin
-      --  Nothing to do if Obj is already frozen, as in this case we known we
-      --  won't need to move the initialization statements about later on.
-
-      if Is_Frozen (Obj) then
-         return;
-      end if;
-
-      Init_Node := N;
-      while Next (Init_Node) /= Node_After loop
-         Append_To (Init_Actions, Remove_Next (Init_Node));
-      end loop;
-
-      if not Is_Empty_List (Init_Actions) then
-         Comp_Stmt := Make_Compound_Statement (Loc, Actions => Init_Actions);
-         Insert_Action_After (Init_Node, Comp_Stmt);
-         Set_Initialization_Statements (Obj, Comp_Stmt);
-      end if;
-   end Collect_Initialization_Statements;
-
    -------------------------------
    -- Convert_Aggr_In_Allocator --
    -------------------------------
@@ -4313,6 +4270,8 @@ package body Exp_Aggr is
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
       Occ  : constant Node_Id    := New_Occurrence_Of (Obj, Loc);
+
+      Has_Transient_Scope : Boolean := False;
 
       function Discriminants_Ok return Boolean;
       --  If the object type is constrained, the discriminants in the
@@ -4405,7 +4364,7 @@ package body Exp_Aggr is
       --  the finalization list of the return must be moved to the caller's
       --  finalization list to complete the return.
 
-      --  However, if the aggregate is limited, it is built in place, and the
+      --  Similarly if the aggregate is limited, it is built in place, and the
       --  controlled components are not assigned to intermediate temporaries
       --  so there is no need for a transient scope in this case either.
 
@@ -4414,13 +4373,60 @@ package body Exp_Aggr is
         and then not Is_Limited_Type (Typ)
       then
          Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
+         Has_Transient_Scope := True;
       end if;
 
       declare
-         Node_After : constant Node_Id := Next (N);
+         Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
+         Stmt  : Node_Id;
+         Param : Node_Id;
+
       begin
-         Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
-         Collect_Initialization_Statements (Obj, N, Node_After);
+         --  If Obj is already frozen or if N is wrapped in a transient scope,
+         --  Stmts do not need to be saved in Initialization_Statements since
+         --  there is no freezing issue.
+
+         if Is_Frozen (Obj) or else Has_Transient_Scope then
+            Insert_Actions_After (N, Stmts);
+         else
+            Stmt := Make_Compound_Statement (Sloc (N), Actions => Stmts);
+            Insert_Action_After (N, Stmt);
+
+            --  Insert_Action_After may freeze Obj in which case we should
+            --  remove the compound statement just created and simply insert
+            --  Stmts after N.
+
+            if Is_Frozen (Obj) then
+               Remove (Stmt);
+               Insert_Actions_After (N, Stmts);
+            else
+               Set_Initialization_Statements (Obj, Stmt);
+            end if;
+         end if;
+
+         --  If Typ has controlled components and a call to a Slice_Assign
+         --  procedure is part of the initialization statements, then we
+         --  need to initialize the array component since Slice_Assign will
+         --  need to adjust it.
+
+         if Has_Controlled_Component (Typ) then
+            Stmt := First (Stmts);
+
+            while Present (Stmt) loop
+               if Nkind (Stmt) = N_Procedure_Call_Statement
+                 and then Get_TSS_Name (Entity (Name (Stmt)))
+                            = TSS_Slice_Assign
+               then
+                  Param := First (Parameter_Associations (Stmt));
+                  Insert_Actions
+                    (Stmt,
+                     Build_Initialization_Call
+                       (Sloc (N), New_Copy_Tree (Param), Etype (Param)));
+               end if;
+
+               Next (Stmt);
+            end loop;
+         end if;
       end;
 
       Set_No_Initialization (N);
@@ -6793,6 +6799,7 @@ package body Exp_Aggr is
       --  code must be inserted after it. The defining entity might not come
       --  from source if this is part of an inlined body, but the declaration
       --  itself will.
+      --  The test below looks very specialized and kludgy???
 
       if Comes_From_Source (Tmp)
         or else
@@ -6800,18 +6807,18 @@ package body Exp_Aggr is
             and then Comes_From_Source (Parent (N))
             and then Tmp = Defining_Entity (Parent (N)))
       then
-         declare
-            Node_After : constant Node_Id := Next (Parent_Node);
-
-         begin
+         if Parent_Kind /= N_Object_Declaration or else Is_Frozen (Tmp) then
             Insert_Actions_After (Parent_Node, Aggr_Code);
-
-            if Parent_Kind = N_Object_Declaration then
-               Collect_Initialization_Statements
-                 (Obj => Tmp, N => Parent_Node, Node_After => Node_After);
-            end if;
-         end;
-
+         else
+            declare
+               Comp_Stmt : constant Node_Id :=
+                 Make_Compound_Statement
+                   (Sloc (Parent_Node), Actions => Aggr_Code);
+            begin
+               Insert_Action_After (Parent_Node, Comp_Stmt);
+               Set_Initialization_Statements (Tmp, Comp_Stmt);
+            end;
+         end if;
       else
          Insert_Actions (N, Aggr_Code);
       end if;

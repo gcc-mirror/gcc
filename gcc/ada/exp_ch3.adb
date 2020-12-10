@@ -124,7 +124,7 @@ package body Exp_Ch3 is
    --  Build assignment procedure for one-dimensional arrays of controlled
    --  types. Other array and slice assignments are expanded in-line, but
    --  the code expansion for controlled components (when control actions
-   --  are active) can lead to very large blocks that GCC3 handles poorly.
+   --  are active) can lead to very large blocks that GCC handles poorly.
 
    procedure Build_Untagged_Equality (Typ : Entity_Id);
    --  AI05-0123: Equality on untagged records composes. This procedure
@@ -4168,7 +4168,7 @@ package body Exp_Ch3 is
 
    --  Generates the following subprogram:
 
-   --    procedure Assign
+   --    procedure array_typeSA
    --     (Source,  Target    : Array_Type,
    --      Left_Lo, Left_Hi   : Index;
    --      Right_Lo, Right_Hi : Index;
@@ -4178,7 +4178,6 @@ package body Exp_Ch3 is
    --       Ri1 : Index;
 
    --    begin
-
    --       if Left_Hi < Left_Lo then
    --          return;
    --       end if;
@@ -4204,7 +4203,7 @@ package body Exp_Ch3 is
    --             Ri1 := Index'succ (Ri1);
    --          end if;
    --       end loop;
-   --    end Assign;
+   --    end array_typeSA;
 
    procedure Build_Slice_Assignment (Typ : Entity_Id) is
       Loc   : constant Source_Ptr := Sloc (Typ);
@@ -6561,7 +6560,7 @@ package body Exp_Ch3 is
          if Needs_Finalization (Typ) and then not No_Initialization (N) then
             Obj_Init :=
               Make_Init_Call
-                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                (Obj_Ref => New_Object_Reference,
                  Typ     => Typ);
          end if;
 
@@ -6977,11 +6976,7 @@ package body Exp_Ch3 is
       else
          --  Obtain actual expression from qualified expression
 
-         if Nkind (Expr) = N_Qualified_Expression then
-            Expr_Q := Expression (Expr);
-         else
-            Expr_Q := Expr;
-         end if;
+         Expr_Q := Unqualify (Expr);
 
          --  When we have the appropriate type of aggregate in the expression
          --  (it has been determined during analysis of the aggregate by
