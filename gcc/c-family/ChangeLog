@@ -1,3 +1,8 @@
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.c (omp_pragmas): Add 'allocate'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ALLOCATE.
+
 2020-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98187
