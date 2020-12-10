@@ -2704,6 +2704,7 @@ class BlockExpr : public ExprWithBlock
   std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
 
   Location locus;
+  bool marked_for_strip = false;
 
 public:
   std::string as_string () const override;
@@ -2727,7 +2728,7 @@ public:
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2744,6 +2745,7 @@ public:
     ExprWithBlock::operator= (other);
     inner_attrs = other.inner_attrs;
     locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
     // outer_attrs = other.outer_attrs;
 
     // guard to protect from null pointer dereference
@@ -2770,20 +2772,18 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if has no statements or final expr, so base stripping on that.
+  // Can be completely empty, so have to have a separate flag.
   void mark_for_strip () override
   {
-    expr = nullptr;
-    statements.clear ();
-    statements.shrink_to_fit ();
+    marked_for_strip = true;
   }
   bool is_marked_for_strip () const override
   {
-    return expr == nullptr && statements.empty ();
+    return marked_for_strip;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -2799,7 +2799,7 @@ public:
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<ExprWithoutBlock> &get_tail_expr ()
   {
-    rust_assert (expr != nullptr);
+    rust_assert (has_tail_expr ());
     return expr;
   }
 
