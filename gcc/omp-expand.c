@@ -3165,13 +3165,18 @@ expand_omp_for_generic (struct omp_region *region,
 	  gsi = gsi_last_bb (l0_bb);
 	  expand_omp_build_assign (&gsi, counts[fd->collapse - 1],
 				   istart0, true);
-	  gsi = gsi_last_bb (cont_bb);
-	  t = fold_build2 (PLUS_EXPR, fd->iter_type, counts[fd->collapse - 1],
-			   build_int_cst (fd->iter_type, 1));
-	  expand_omp_build_assign (&gsi, counts[fd->collapse - 1], t);
-	  tree aref = build4 (ARRAY_REF, fd->iter_type, counts[fd->ordered],
-			      size_zero_node, NULL_TREE, NULL_TREE);
-	  expand_omp_build_assign (&gsi, aref, counts[fd->collapse - 1]);
+	  if (cont_bb)
+	    {
+	      gsi = gsi_last_bb (cont_bb);
+	      t = fold_build2 (PLUS_EXPR, fd->iter_type,
+			       counts[fd->collapse - 1],
+			       build_int_cst (fd->iter_type, 1));
+	      expand_omp_build_assign (&gsi, counts[fd->collapse - 1], t);
+	      tree aref = build4 (ARRAY_REF, fd->iter_type,
+				  counts[fd->ordered], size_zero_node,
+				  NULL_TREE, NULL_TREE);
+	      expand_omp_build_assign (&gsi, aref, counts[fd->collapse - 1]);
+	    }
 	  t = counts[fd->collapse - 1];
 	}
       else if (fd->collapse > 1)
