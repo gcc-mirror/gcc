@@ -1,5 +1,8 @@
 2020-12-10  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk e6e4b20de33
+	c++: name lookup API for modules
+
 	Merge trunk 4f1d8bd5096
 	c++: modules & using-decls
 

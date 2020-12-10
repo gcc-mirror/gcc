@@ -19732,7 +19732,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   bool is_unnamed = false;
   tree underlying_type = NULL_TREE;
   cp_token *type_start_token = NULL;
-  temp_override<bool> cleanup (parser->colon_corrects_to_scope_p, false);
+  auto cleanup = make_temp_override (parser->colon_corrects_to_scope_p, false);
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -23381,7 +23381,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser,
   cp_token *token;
   bool ellipsis_p;
 
-  temp_override<bool> cleanup
+  auto cleanup = make_temp_override
     (parser->auto_is_implicit_function_template_parm_p);
 
   if (!processing_specialization
@@ -27488,7 +27488,7 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
 {
   tree attributes = NULL_TREE;
 
-  temp_override<bool> cleanup
+  auto cleanup = make_temp_override
     (parser->auto_is_implicit_function_template_parm_p, false);
 
   while (true)
@@ -27688,7 +27688,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
   tree attribute, attr_id = NULL_TREE, arguments;
   cp_token *token;
 
-  temp_override<bool> cleanup
+  auto cleanup = make_temp_override
     (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* First, parse name of the attribute, a.k.a attribute-token.  */

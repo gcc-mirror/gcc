@@ -3954,8 +3954,7 @@ walk_module_binding (tree binding, bitmap partitions,
 		     void *data)
 {
   // FIXME: We don't quite deal with using decls naming stat hack
-  // type.
-  // Also using decls exporting something from the same scope
+  // type.  Also using decls exporting something from the same scope.
   tree current = binding;
   unsigned count = 0;
 
@@ -6225,7 +6224,6 @@ do_namespace_alias (tree alias, tree name_space)
   DECL_NAMESPACE_ALIAS (alias) = name_space;
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
-
   set_originating_module (alias);
 
   pushdecl (alias);
@@ -9011,17 +9009,20 @@ pop_namespace (void)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
-// FIXME: Something is not correct about the VISIBLE_P handling.  We
-// need to insert this namespace into
-// (a) the GLOBAL or PARTITION slot, if it is TREE_PUBLIC
-// (b) The importing module's slot (always)
-// (c) Do we need to put it in the CURRENT slot?  This is the
-// confused piece.
+/* An import is defining namespace NAME inside CTX.  Find or create
+   that namespace and add it to the container's binding-vector.  */
 
 tree
 add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
 			bool visible_p, bool inline_p)
 {
+  // FIXME: Something is not correct about the VISIBLE_P handling.  We
+  // need to insert this namespace into
+  // (a) the GLOBAL or PARTITION slot, if it is TREE_PUBLIC
+  // (b) The importing module's slot (always)
+  // (c) Do we need to put it in the CURRENT slot?  This is the
+  // confused piece.
+
   gcc_checking_assert (origin);
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);

@@ -1101,7 +1101,7 @@ maybe_noexcept_warning (tree fn)
       && (!DECL_IN_SYSTEM_HEADER (fn)
 	  || global_dc->dc_warn_system_headers))
     {
-      temp_override<bool> s (global_dc->dc_warn_system_headers, true);
+      auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
       auto_diagnostic_group d;
       if (warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
 		   "because of a call to %qD", fn))
