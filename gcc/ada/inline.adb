@@ -2827,7 +2827,7 @@ package body Inline is
       -------------------------
 
       function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean is
-         Use_Counter : Int := 0;
+         Use_Counter : Nat := 0;
 
          function Count_Uses (N : Node_Id) return Traverse_Result;
          --  Traverse the tree and count the uses of the formal parameter.
@@ -2856,13 +2856,10 @@ package body Inline is
             then
                Use_Counter := Use_Counter + 1;
 
+               --  If this is a second use then abandon the traversal
+
                if Use_Counter > 1 then
-
-                  --  Denote more than one use and abandon the traversal
-
-                  Use_Counter := 2;
                   return Abandon;
-
                end if;
             end if;
 
