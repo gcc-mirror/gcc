@@ -40,6 +40,7 @@
 #include <string>
 #include <deque>
 #include <functional>
+#include <memory>
 
 // Rust frontend requires C++11 minimum, so will have unordered_map and set
 #include <unordered_map>
@@ -56,7 +57,7 @@
 #include "coretypes.h"
 
 #include "diagnostic-core.h" /* For error_at and friends.  */
-#include "intl.h"	    /* For _().  */
+#include "intl.h"	     /* For _().  */
 
 // When using gcc, rust_assert is just gcc_assert.
 #define rust_assert(EXPR) gcc_assert (EXPR)
