@@ -324,6 +324,55 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
   return reinterpret_cast<tree *> (&cluster.slots[off]);
 }
 
+/* *SLOT is a namespace binding slot.  Append a slot for imported
+   module IX.  */
+
+static binding_slot *
+append_imported_binding_slot (tree *slot, tree name, unsigned ix)
+{
+  gcc_checking_assert (ix);
+
+  if (!*slot ||  TREE_CODE (*slot) != BINDING_VECTOR)
+    /* Make an initial module vector.  */
+    get_fixed_binding_slot (slot, name, BINDING_SLOT_GLOBAL, -1);
+  else if (!BINDING_VECTOR_CLUSTER_LAST (*slot)
+	   ->indices[BINDING_VECTOR_SLOTS_PER_CLUSTER - 1].span)
+    /* There is space in the last cluster.  */;
+  else if (BINDING_VECTOR_NUM_CLUSTERS (*slot)
+	   != BINDING_VECTOR_ALLOC_CLUSTERS (*slot))
+    /* There is space in the vector.  */
+    BINDING_VECTOR_NUM_CLUSTERS (*slot)++;
+  else
+    {
+      /* Extend the vector.  */
+      unsigned have = BINDING_VECTOR_NUM_CLUSTERS (*slot);
+      unsigned want = (have * 3 + 1) / 2;
+
+      if (want > (unsigned short)~0)
+	want = (unsigned short)~0;
+
+      tree new_vec = make_binding_vec (name, want);
+      BINDING_VECTOR_NUM_CLUSTERS (new_vec) = have + 1;
+      memcpy (BINDING_VECTOR_CLUSTER_BASE (new_vec),
+	      BINDING_VECTOR_CLUSTER_BASE (*slot),
+	      have * sizeof (binding_cluster));
+      *slot = new_vec;
+    }
+
+  binding_cluster *last = BINDING_VECTOR_CLUSTER_LAST (*slot);
+  for (unsigned off = 0; off != BINDING_VECTOR_SLOTS_PER_CLUSTER; off++)
+    if (!last->indices[off].span)
+      {
+	/* Fill the free slot of the cluster.  */
+	last->indices[off].base = ix;
+	last->indices[off].span = 1;
+	last->slots[off] = NULL_TREE;
+	return &last->slots[off];
+      }
+
+  gcc_unreachable ();
+}
+
 /* Add DECL to the list of things declared in binding level B.  */
 
 static void
@@ -3835,6 +3884,23 @@ pushdecl (tree x, bool hiding)
   return ret;
 }
 
+/* A mergeable entity is being loaded into namespace NS slot NAME.
+   Create and return the appropriate vector slot for that.  Either a
+   GMF slot or a module-specific one.  */
+
+tree *
+mergeable_namespace_slots (tree ns, tree name, bool is_global, tree *vec)
+{
+  tree *mslot = find_namespace_slot (ns, name, true);
+  tree *vslot = get_fixed_binding_slot
+    (mslot, name, is_global ? BINDING_SLOT_GLOBAL : BINDING_SLOT_PARTITION, true);
+
+  gcc_checking_assert (TREE_CODE (*mslot) == BINDING_VECTOR);
+  *vec = *mslot;
+
+  return vslot;
+}
+
 /* DECL is a new mergeable namespace-scope decl.  Add it to the
    mergeable entities on GSLOT.  */
 
@@ -3842,6 +3908,286 @@ void
 add_mergeable_namespace_entity (tree *gslot, tree decl)
 {
   *gslot = ovl_make (decl, *gslot);
+}
+
+/* A mergeable entity of KLASS called NAME is being loaded.  Return
+   the set of things it could be.  All such non-as_base classes have
+   been given a member vec.  */
+
+tree
+lookup_class_binding (tree klass, tree name)
+{
+  tree found = NULL_TREE;
+
+  if (!COMPLETE_TYPE_P (klass))
+    ;
+  else if (TYPE_LANG_SPECIFIC (klass))
+    {
+      vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+
+      found = member_vec_binary_search (member_vec, name);
+      if (IDENTIFIER_CONV_OP_P (name))
+	{
+	  gcc_checking_assert (name == conv_op_identifier);
+	  if (found)
+	    found = OVL_CHAIN (found);
+	}
+    }
+  else
+    {
+      gcc_checking_assert (IS_FAKE_BASE_TYPE (klass)
+			   || TYPE_PTRMEMFUNC_P (klass));
+      found = fields_linear_search (klass, name, false);
+    }
+
+  return found;
+}
+
+/* Given a namespace-level binding BINDING, walk it, calling CALLBACK
+   for all decls of the current module.  When partitions are involved,
+   decls might be mentioned more than once.   */
+
+unsigned
+walk_module_binding (tree binding, bitmap partitions,
+		     bool (*callback) (tree decl, WMB_Flags, void *data),
+		     void *data)
+{
+  // FIXME: We don't quite deal with using decls naming stat hack
+  // type.  Also using decls exporting something from the same scope.
+  tree current = binding;
+  unsigned count = 0;
+
+  if (TREE_CODE (binding) == BINDING_VECTOR)
+    current = BINDING_VECTOR_CLUSTER (binding, 0).slots[BINDING_SLOT_CURRENT];
+
+  bool decl_hidden = false;
+  if (tree type = MAYBE_STAT_TYPE (current))
+    {
+      WMB_Flags flags = WMB_None;
+      if (STAT_TYPE_HIDDEN_P (current))
+	flags = WMB_Flags (flags | WMB_Hidden);
+      count += callback (type, flags, data);
+      decl_hidden = STAT_DECL_HIDDEN_P (current);
+    }
+
+  for (ovl_iterator iter (MAYBE_STAT_DECL (current)); iter; ++iter)
+    {
+      if (iter.hidden_p ())
+	decl_hidden = true;
+      if (!(decl_hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)))
+	{
+	  WMB_Flags flags = WMB_None;
+	  if (decl_hidden)
+	    flags = WMB_Flags (flags | WMB_Hidden);
+	  if (iter.using_p ())
+	    {
+	      flags = WMB_Flags (flags | WMB_Using);
+	      if (iter.exporting_p ())
+		flags = WMB_Flags (flags | WMB_Export);
+	    }
+	  count += callback (*iter, flags, data);
+	}
+      decl_hidden = false;
+    }
+
+  if (partitions && TREE_CODE (binding) == BINDING_VECTOR)
+    {
+      /* Process partition slots.  */
+      binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (binding);
+      unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (binding);
+      if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
+	{
+	  ix--;
+	  cluster++;
+	}
+
+      bool maybe_dups = BINDING_VECTOR_PARTITION_DUPS_P (binding);
+
+      for (; ix--; cluster++)
+	for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	  if (!cluster->slots[jx].is_lazy ())
+	    if (tree bind = cluster->slots[jx])
+	      {
+		if (TREE_CODE (bind) == NAMESPACE_DECL
+		    && !DECL_NAMESPACE_ALIAS (bind))
+		  {
+		    if (unsigned base = cluster->indices[jx].base)
+		      if (unsigned span = cluster->indices[jx].span)
+			do
+			  if (bitmap_bit_p (partitions, base))
+			    goto found;
+			while (++base, --span);
+		    /* Not a partition's namespace.  */
+		    continue;
+		  found:
+
+		    WMB_Flags flags = WMB_None;
+		    if (maybe_dups)
+		      flags = WMB_Flags (flags | WMB_Dups);
+		    count += callback (bind, flags, data);
+		  }
+		else if (STAT_HACK_P (bind) && MODULE_BINDING_PARTITION_P (bind))
+		  {
+		    if (tree btype = STAT_TYPE (bind))
+		      {
+			WMB_Flags flags = WMB_None;
+			if (maybe_dups)
+			  flags = WMB_Flags (flags | WMB_Dups);
+			if (STAT_TYPE_HIDDEN_P (bind))
+			  flags = WMB_Flags (flags | WMB_Hidden);
+
+			count += callback (btype, flags, data);
+		      }
+		    bool hidden = STAT_DECL_HIDDEN_P (bind);
+		    for (ovl_iterator iter (MAYBE_STAT_DECL (STAT_DECL (bind)));
+			 iter; ++iter)
+		      {
+			if (iter.hidden_p ())
+			  hidden = true;
+			gcc_checking_assert
+			  (!(hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)));
+
+			WMB_Flags flags = WMB_None;
+			if (maybe_dups)
+			  flags = WMB_Flags (flags | WMB_Dups);
+			if (decl_hidden)
+			  flags = WMB_Flags (flags | WMB_Hidden);
+			if (iter.using_p ())
+			  {
+			    flags = WMB_Flags (flags | WMB_Using);
+			    if (iter.exporting_p ())
+			      flags = WMB_Flags (flags | WMB_Export);
+			  }
+			count += callback (*iter, flags, data);
+			hidden = false;
+		      }
+		  }
+	      }
+    }
+
+  return count;
+}
+
+/* Imported module MOD has a binding to NS::NAME, stored in section
+   SNUM.  */
+
+bool
+import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
+{
+  tree *slot = find_namespace_slot (ns, name, true);
+  binding_slot *mslot = append_imported_binding_slot (slot, name, mod);
+
+  if (mslot->is_lazy () || *mslot)
+    /* Oops, something was already there.  */
+    return false;
+
+  mslot->set_lazy (snum);
+  return true;
+}
+
+/* An import of MODULE is binding NS::NAME.  There should be no
+   existing binding for >= MODULE.  MOD_GLOB indicates whether MODULE
+   is a header_unit (-1) or part of the current module (+1).  VALUE
+   and TYPE are the value and type bindings. VISIBLE are the value
+   bindings being exported.  */
+
+bool
+set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
+		    tree value, tree type, tree visible)
+{
+  if (!value)
+    /* Bogus BMIs could give rise to nothing to bind.  */
+    return false;
+
+  gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (value));
+  gcc_checking_assert (mod);
+
+  tree *slot = find_namespace_slot (ns, name, true);
+  binding_slot *mslot = search_imported_binding_slot (slot, mod);
+
+  if (!mslot || !mslot->is_lazy ())
+    /* Again, bogus BMI could give find to missing or already loaded slot.  */
+    return false;
+
+  tree bind = value;
+  if (type || visible != bind || mod_glob)
+    {
+      bind = stat_hack (bind, type);
+      STAT_VISIBLE (bind) = visible;
+      if ((mod_glob > 0 && TREE_PUBLIC (ns))
+	  || (type && DECL_MODULE_EXPORT_P (type)))
+	STAT_TYPE_VISIBLE_P (bind) = true;
+    }
+
+  /* Note if this is this-module or global binding.  */
+  if (mod_glob > 0)
+    MODULE_BINDING_PARTITION_P (bind) = true;
+  else if (mod_glob < 0)
+    MODULE_BINDING_GLOBAL_P (bind) = true;
+
+  *mslot = bind;
+
+  return true;
+}
+
+void
+note_pending_specializations (tree ns, tree name, bool is_header)
+{
+  if (tree *slot = find_namespace_slot (ns, name, false))
+    if (TREE_CODE (*slot) == BINDING_VECTOR)
+      {
+	tree vec = *slot;
+	BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = true;
+	if (is_header)
+	  BINDING_VECTOR_PENDING_IS_HEADER_P (vec) = true;
+	else
+	  BINDING_VECTOR_PENDING_IS_PARTITION_P (vec) = true;
+      }
+}
+
+void
+load_pending_specializations (tree ns, tree name)
+{
+  tree *slot = find_namespace_slot (ns, name, false);
+
+  if (!slot || TREE_CODE (*slot) != BINDING_VECTOR
+      || !BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (*slot))
+    return;
+
+  tree vec = *slot;
+  BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = false;
+
+  bool do_header = BINDING_VECTOR_PENDING_IS_HEADER_P (vec);
+  bool do_partition = BINDING_VECTOR_PENDING_IS_PARTITION_P (vec);
+  BINDING_VECTOR_PENDING_IS_HEADER_P (vec) = false;
+  BINDING_VECTOR_PENDING_IS_PARTITION_P (vec) = false;
+
+  gcc_checking_assert (do_header | do_partition);
+  binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (vec);
+  unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (vec);
+  if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
+    {
+      ix--;
+      cluster++;
+    }
+
+  for (; ix--; cluster++)
+    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
+      if (cluster->indices[jx].span
+	  && cluster->slots[jx].is_lazy ()
+	  && lazy_specializations_p (cluster->indices[jx].base,
+				     do_header, do_partition))
+	lazy_load_binding (cluster->indices[jx].base, ns, name,
+			   &cluster->slots[jx]);
+}
+
+void
+add_module_decl (tree ns, tree name, tree decl)
+{
+  gcc_assert (!DECL_CHAIN (decl));
+  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
+  newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
@@ -6714,7 +7060,7 @@ get_std_name_hint (const char *name)
 
 /* Describe DIALECT.  */
 
-static const char *
+const char *
 get_cxx_dialect_name (enum cxx_dialect dialect)
 {
   switch (dialect)
@@ -8660,6 +9006,69 @@ pop_namespace (void)
   leave_scope ();
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+/* An import is defining namespace NAME inside CTX.  Find or create
+   that namespace and add it to the container's binding-vector.  */
+
+tree
+add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
+			bool visible_p, bool inline_p)
+{
+  // FIXME: Something is not correct about the VISIBLE_P handling.  We
+  // need to insert this namespace into
+  // (a) the GLOBAL or PARTITION slot, if it is TREE_PUBLIC
+  // (b) The importing module's slot (always)
+  // (c) Do we need to put it in the CURRENT slot?  This is the
+  // confused piece.
+
+  gcc_checking_assert (origin);
+  tree *slot = find_namespace_slot (ctx, name, true);
+  tree decl = reuse_namespace (slot, ctx, name);
+  if (!decl)
+    {
+      decl = make_namespace (ctx, name, loc, inline_p);
+      DECL_MODULE_IMPORT_P (decl) = true;
+      make_namespace_finish (decl, slot, true);
+    }
+  else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
+    {
+      error_at (loc, "%s namespace %qD conflicts with reachable definition",
+		inline_p ? "inline" : "non-inline", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "reachable %s definition here",
+	      inline_p ? "non-inline" : "inline");
+    }
+
+  if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == BINDING_VECTOR)
+    {
+      /* See if we can extend the final slot.  */
+      binding_cluster *last = BINDING_VECTOR_CLUSTER_LAST (*slot);
+      gcc_checking_assert (last->indices[0].span);
+      unsigned jx = BINDING_VECTOR_SLOTS_PER_CLUSTER;
+
+      while (--jx)
+	if (last->indices[jx].span)
+	  break;
+      tree final = last->slots[jx];
+      if (visible_p == !STAT_HACK_P (final)
+	  && MAYBE_STAT_DECL (final) == decl
+	  && last->indices[jx].base + last->indices[jx].span == origin
+	  && (BINDING_VECTOR_NUM_CLUSTERS (*slot) > 1
+	      || (BINDING_VECTOR_SLOTS_PER_CLUSTER > BINDING_SLOTS_FIXED
+		  && jx >= BINDING_SLOTS_FIXED)))
+	{
+	  last->indices[jx].span++;
+	  return decl;
+	}
+    }
+
+  /* Append a new slot.  */
+  tree *mslot = &(tree &)*append_imported_binding_slot (slot, name, origin);
+
+  gcc_assert (!*mslot);
+  *mslot = visible_p ? decl : stat_hack (decl, NULL_TREE);
+
+  return decl;
 }
 
 /* External entry points for do_{push_to/pop_from}_top_level.  */

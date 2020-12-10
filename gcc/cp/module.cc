@@ -156,6 +156,12 @@ lazy_load_members (tree)
 {
 }
 
+bool
+lazy_specializations_p (unsigned, bool, bool)
+{
+  return false;
+}
+
 bitmap
 visible_instantiation_path (bitmap *)
 {
