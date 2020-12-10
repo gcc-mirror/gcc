@@ -1,5 +1,23 @@
-#include "rust-session-manager.h"
+// Copyright (C) 2020 Free Software Foundation, Inc.
 
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+// #include "rust-session-manager.h"
+
+#include "rust-session-manager.h"
 #include "rust-diagnostics.h"
 #include "diagnostic.h"
 #include "input.h"
@@ -13,12 +31,12 @@
 #include "rust-scan.h"
 #include "rust-name-resolution.h"
 #include "rust-type-resolution.h"
-#include "rust-compile.h"
 #include "rust-macro-expand.h"
+#include "rust-compile.h"
 
+// hir passes wip
+#include "rust-ast-lower.h"
 #include "rust-target.h"
-
-#include <algorithm>
 
 extern Linemap *
 rust_get_linemap ();
@@ -405,6 +423,7 @@ Session::parse_files (int num_files, const char **files)
 {
   for (int i = 0; i < num_files; i++)
     {
+      printf ("Attempting to parse file: %s\n", files[i]);
       parse_file (files[i]);
     }
   /* TODO: should semantic analysis be dealed with here? or per file? for now,
@@ -430,6 +449,10 @@ Session::parse_file (const char *filename)
 
   // generate crate from parser
   auto parsed_crate = parser.parse_crate ();
+
+  // setup the mappings for this AST
+  auto mappings = Analysis::Mappings::get ();
+  mappings->insert_ast_crate (&parsed_crate);
 
   // give a chance to give some debug
   switch (options.dump_option)
@@ -740,6 +763,12 @@ Session::resolution (AST::Crate &crate)
   // Name resolution must be in front of type resolution
   Analysis::NameResolution::Resolve (crate, toplevel);
   Analysis::TypeResolution::Resolve (crate, toplevel);
+
+  // inject hir passes
+  HIR::Crate hir = HIR::ASTLowering::Resolve (crate);
+  fprintf (stderr, "HIR PASSES:\n");
+  fprintf (stderr, "%s", hir.as_string ().c_str ());
+  fprintf (stderr, "HIR PASSES - DONE:\n");
   fprintf (stderr, "finished name resolution\n");
 }
 
