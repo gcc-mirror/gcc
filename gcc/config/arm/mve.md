@@ -894,17 +894,30 @@
 ;;
 ;; [vandq_u, vandq_s])
 ;;
-(define_insn "mve_vandq_<supf><mode>"
+;; signed and unsigned versions are the same: define the unsigned
+;; insn, and use an expander for the signed one as we still reference
+;; both names from arm_mve.h.
+;; We use the same code as in neon.md (TODO: avoid this duplication).
+(define_insn "mve_vandq_u<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VANDQ))
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w,w")
+	(and:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w,0")
+		   (match_operand:MVE_2 2 "neon_inv_logic_op2" "w,DL")))
   ]
   "TARGET_HAVE_MVE"
-  "vand %q0, %q1, %q2"
+  "@
+   vand\t%q0, %q1, %q2
+   * return neon_output_logic_immediate (\"vand\", &operands[2], <MODE>mode, 1, VALID_NEON_QREG_MODE (<MODE>mode));"
   [(set_attr "type" "mve_move")
 ])
+(define_expand "mve_vandq_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(and:MVE_2 (match_operand:MVE_2 1 "s_register_operand")
+		   (match_operand:MVE_2 2 "neon_inv_logic_op2")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vbicq_s, vbicq_u])
@@ -2019,9 +2032,8 @@
 (define_insn "mve_vandq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VANDQ_F))
+	(and:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vand %q0, %q1, %q2"

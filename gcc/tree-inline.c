@@ -1819,12 +1819,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  /* If the inlined function has too many debug markers,
 	     don't copy them.  */
 	  if (id->src_cfun->debug_marker_count
-	      > param_max_debug_marker_count)
+	      > param_max_debug_marker_count
+	      || id->reset_location)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
-	  if (id->reset_location)
-	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -3169,7 +3168,14 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
     }
 
   if (gimple_debug_nonbind_marker_p (stmt))
-    return;
+    {
+      if (id->call_stmt && !gimple_block (stmt))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gsi_remove (&gsi, true);
+	}
+      return;
+    }
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));

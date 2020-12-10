@@ -1,3 +1,16 @@
+2020-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Define NO_SLEEP
+	if none of nanosleep, sleep and Sleep is available.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/std/thread [_GLIBCXX_NO_SLEEP] (__sleep_for): Do
+	not declare.
+	[_GLIBCXX_NO_SLEEP] (sleep_for, sleep_until): Do not
+	define.
+	* src/c++11/thread.cc [_GLIBCXX_NO_SLEEP] (__sleep_for): Do
+	not define.
+
 2020-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96299

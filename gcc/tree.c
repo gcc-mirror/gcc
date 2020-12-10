@@ -10736,7 +10736,7 @@ build_common_builtin_nodes (void)
   if (!builtin_decl_explicit_p (BUILT_IN_CLEAR_CACHE))
     local_define_builtin ("__builtin___clear_cache", ftype,
 			  BUILT_IN_CLEAR_CACHE,
-			  "__builtin___clear_cache",
+			  "__clear_cache",
 			  ECF_NOTHROW);
 
   local_define_builtin ("__builtin_nonlocal_goto", ftype,

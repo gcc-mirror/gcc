@@ -227,6 +227,9 @@ extern unsigned aarch64_architecture_version;
 /* Flag Manipulation Instructions (FLAGM) extension.  */
 #define AARCH64_FL_FLAGM      (1ULL << 39)
 
+/* Pointer Authentication (PAUTH) extension.  */
+#define AARCH64_FL_PAUTH      (1ULL << 40)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -241,7 +244,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_2			\
   (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
 #define AARCH64_FL_FOR_ARCH8_3			\
-  (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
+  (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3 | AARCH64_FL_PAUTH)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
    | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4 | AARCH64_FL_FLAGM)
@@ -290,6 +293,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_BF16	   (aarch64_isa_flags & AARCH64_FL_BF16)
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
 #define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
+#define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -377,6 +381,9 @@ extern unsigned aarch64_architecture_version;
 #define TARGET_BF16_FP (AARCH64_ISA_BF16)
 #define TARGET_BF16_SIMD (AARCH64_ISA_BF16 && TARGET_SIMD)
 #define TARGET_SVE_BF16 (TARGET_SVE && AARCH64_ISA_BF16)
+
+/* PAUTH instructions are enabled through +pauth.  */
+#define TARGET_PAUTH (AARCH64_ISA_PAUTH)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

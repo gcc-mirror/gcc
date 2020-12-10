@@ -1,3 +1,8 @@
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk afc14c8d0a9
+	c++: modularize spelling suggestions
+
 2020-12-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

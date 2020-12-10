@@ -471,6 +471,9 @@ typedef struct s_undef_t s_undef_t2;
 typedef struct s_fwd *s_fwd_p;
 /* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd_p \\*_s_fwd$" } } */
 
+struct s_fwd v_fwd;
+/* { dg-final { scan-file godump-1.out "(?n)^var _v_fwd _s_fwd" } } */
+
 struct s_fwd { };
 /* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd struct \{ \}$" } } */
 

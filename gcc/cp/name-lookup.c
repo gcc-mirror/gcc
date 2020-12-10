@@ -49,11 +49,16 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 					     bool suggest_misspellings);
 
 /* Slots in BINDING_VECTOR.  */
-#define BINDING_SLOT_CURRENT 0	/* Slot for current TU.  */
-#define BINDING_SLOT_GLOBAL 1	/* Slot for merged global module. */
-#define BINDING_SLOT_PARTITION 2 /* Slot for merged partition entities
-				   (optional).  */
-#define BINDING_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
+enum binding_slots
+{
+ BINDING_SLOT_CURRENT,	/* Slot for current TU.  */
+ BINDING_SLOT_GLOBAL,	/* Slot for merged global module. */
+ BINDING_SLOT_PARTITION, /* Slot for merged partition entities
+			    (optional).  */
+
+ /* Number of always-allocated slots.  */
+ BINDING_SLOTS_FIXED = BINDING_SLOT_GLOBAL + 1
+};
 
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
@@ -2970,14 +2975,12 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  gcc_checking_assert (binding->value && OVL_P (binding->value));
 	  update_local_overload (binding, to_val);
 	}
-      else
-	{
-	  /* Don't add namespaces here.  They're done in
-	     push_namespace.  */
-	  if (level && (TREE_CODE (decl) != NAMESPACE_DECL
-			|| DECL_NAMESPACE_ALIAS (decl)))
-	    add_decl_to_level (level, decl);
-	}
+      else if (level
+	       && !(TREE_CODE (decl) == NAMESPACE_DECL
+		    && !DECL_NAMESPACE_ALIAS (decl)))
+	/* Don't add namespaces here.  They're done in
+	   push_namespace.  */
+	add_decl_to_level (level, decl);
 
       if (slot)
 	{
@@ -3870,8 +3873,8 @@ do_pushdecl (tree decl, bool hiding)
 }
 
 /* Record a decl-node X as belonging to the current lexical scope.
-   It's a friend if IS_FRIEND is true -- which affects exactly where
-   we push it.  */
+   The new binding is hidden if HIDING is true (an anticipated builtin
+   or hidden friend).   */
 
 tree
 pushdecl (tree x, bool hiding)
@@ -8793,9 +8796,10 @@ make_namespace (tree ctx, tree name, location_t loc, bool inline_p)
   DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
 
   if (!name)
-    /* It's possible we'll need to give anon-namespaces in different
-       header-unit imports distinct names.  If so, I think those
-       names can be unique to this TU -- use the module index?  */
+    /* Anon-namespaces in different header-unit imports are distinct.
+       But that's ok as their contents all have internal linkage.
+       (This is different to how they'd behave as textual includes,
+       but doing this at all is really odd source.)  */
     SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
   else if (TREE_PUBLIC (ctx))
     TREE_PUBLIC (ns) = true;
@@ -8805,6 +8809,8 @@ make_namespace (tree ctx, tree name, location_t loc, bool inline_p)
 
   return ns;
 }
+
+/* NS was newly created, finish off making it.  */
 
 static void
 make_namespace_finish (tree ns, tree *slot, bool from_import = false)
@@ -8817,7 +8823,6 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       *gslot = ns;
     }
 
-  /* NS was newly created, finish off making it.  */
   tree ctx = CP_DECL_CONTEXT (ns);
   cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
   scope->this_entity = ns;
@@ -8951,7 +8956,7 @@ push_namespace (tree name, bool make_inline)
 	ns = NULL_TREE;
       else
 	{
-	  /* finish up making the namespace.  */
+	  /* Finish up making the namespace.  */
 	  add_decl_to_level (NAMESPACE_LEVEL (current_namespace), ns);
 	  if (!slot)
 	    {

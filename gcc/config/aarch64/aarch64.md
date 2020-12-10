@@ -873,7 +873,7 @@
   {
     const char *ret = NULL;
     if (aarch64_return_address_signing_enabled ()
-	&& TARGET_ARMV8_3
+	&& (TARGET_PAUTH)
 	&& !crtl->calls_eh_return)
       {
 	if (aarch64_ra_sign_key == AARCH64_KEY_B)
