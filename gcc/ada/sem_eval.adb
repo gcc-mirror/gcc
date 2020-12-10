@@ -3849,7 +3849,9 @@ package body Sem_Eval is
 
          Node := Unqualify (Prefix (N));
 
-         if Nkind (Node) = N_Aggregate then
+         if Nkind (Node) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Node)
+         then
             Comp := First (Component_Associations (Node));
             Nam  := Chars (Selector_Name (N));
 
