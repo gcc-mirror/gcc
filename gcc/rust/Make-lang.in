@@ -218,7 +218,17 @@ CFLAGS-rust/rust-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
 
 # cross-folder includes - add new folders later
-RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse -I $(srcdir)/rust/ast -I $(srcdir)/rust/analysis -I $(srcdir)/rust/backend -I $(srcdir)/rust/expand -I $(srcdir)/rust/util
+RUST_INCLUDES = -I $(srcdir)/rust \
+	-I $(srcdir)/rust/lex \
+	-I $(srcdir)/rust/parse \
+	-I $(srcdir)/rust/ast \
+	-I $(srcdir)/rust/analysis \
+	-I $(srcdir)/rust/backend \
+	-I $(srcdir)/rust/expand \
+	-I $(srcdir)/rust/hir/tree \
+	-I $(srcdir)/rust/hir \
+	-I $(srcdir)/rust/hir_resolve \
+	-I $(srcdir)/rust/util
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
@@ -227,33 +237,40 @@ CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
 
 # TODO: possibly find a way to ensure C++11 compilation level here?
+RUST_CXXFLAGS = -std=c++11 -Wno-unused-parameter -Wno-overloaded-virtual
 
 # build all rust/lex files in rust folder, add cross-folder includes
 rust/%.o: rust/lex/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
 # build all rust/parse files in rust folder, add cross-folder includes
 rust/%.o: rust/parse/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
 # build rust/ast files in rust folder
 rust/%.o: rust/ast/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
 # build rust/analysis files in rust folder
 rust/%.o: rust/analysis/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
 # build rust/backend files in rust folder
 rust/%.o: rust/backend/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-# build rust/backend files in rust folder
+# build rust/expand files in rust folder
 rust/%.o: rust/expand/%.cc
-	$(COMPILE) -std=c++11 $(RUST_INCLUDES) $<
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
+
+# build rust/util files in rust folder
+rust/%.o: rust/util/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
