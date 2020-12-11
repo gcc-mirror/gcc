@@ -8589,6 +8589,7 @@ arc_reorg (void)
 		  if (!brcc_nolimm_operator (op, VOIDmode)
 		      && !long_immediate_operand (op1, VOIDmode)
 		      && (TARGET_ARC700
+			  || (TARGET_V2 && optimize_size)
 			  || next_active_insn (link_insn) != insn))
 		    continue;
 
