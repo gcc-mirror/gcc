@@ -35680,6 +35680,20 @@ vbfmlaltq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
   return __builtin_aarch64_bfmlalt_lane_qv4sf (__r, __a, __b, __index);
 }
 
+__extension__ extern __inline bfloat16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vget_low_bf16 (bfloat16x8_t __a)
+{
+  return __builtin_aarch64_vget_lo_halfv8bf (__a);
+}
+
+__extension__ extern __inline bfloat16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vget_high_bf16 (bfloat16x8_t __a)
+{
+  return __builtin_aarch64_vget_hi_halfv8bf (__a);
+}
+
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvt_f32_bf16 (bfloat16x4_t __a)
