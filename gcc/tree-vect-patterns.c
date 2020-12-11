@@ -4067,7 +4067,7 @@ vect_recog_bool_pattern (vec_info *vinfo,
       || rhs_code == VIEW_CONVERT_EXPR)
     {
       if (! INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	  || TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
+	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
       if (vectype == NULL_TREE)
