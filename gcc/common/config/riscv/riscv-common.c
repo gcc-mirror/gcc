@@ -112,6 +112,11 @@ static const char *riscv_supported_std_ext (void);
 
 static riscv_subset_list *current_subset_list = NULL;
 
+const riscv_subset_list *riscv_current_subset_list ()
+{
+  return current_subset_list;
+}
+
 riscv_subset_t::riscv_subset_t ()
   : name (), major_version (0), minor_version (0), next (NULL),
     explicit_version_p (false), implied_p (false)

@@ -85,6 +85,11 @@ public:
   unsigned xlen () const {return m_xlen;};
 
   static riscv_subset_list *parse (const char *, location_t);
+
+  const riscv_subset_t *begin () const {return m_head;};
+  const riscv_subset_t *end () const {return NULL;};
 };
+
+extern const riscv_subset_list *riscv_current_subset_list (void);
 
 #endif /* ! GCC_RISCV_SUBSET_H */
