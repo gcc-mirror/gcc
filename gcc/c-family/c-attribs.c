@@ -161,6 +161,8 @@ static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
+static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
+						    bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -274,6 +276,8 @@ const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "signed_bool_precision",  1, 1, false, true, false, true,
+			      handle_signed_bool_precision_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -893,6 +897,43 @@ validate_attr_arg (tree node[2], tree name, tree newarg)
 }
 
 /* Attribute handlers common to C front ends.  */
+
+/* Handle a "signed_bool_precision" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
+					int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (!flag_gimple)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != BOOLEAN_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute only supported on "
+	       "boolean types", name);
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT prec = HOST_WIDE_INT_M1U;
+  if (tree_fits_uhwi_p (TREE_VALUE (args)))
+    prec = tree_to_uhwi (TREE_VALUE (args));
+  if (prec > MAX_FIXED_MODE_SIZE)
+    {
+      warning (OPT_Wattributes, "%qE attribute with unsupported boolean "
+	       "precision", name);
+      return NULL_TREE;
+    }
+
+  tree new_type = build_nonstandard_boolean_type (prec);
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
 
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
