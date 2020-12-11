@@ -4887,11 +4887,7 @@ lower_var_init ()
 void
 c_parse_final_cleanups (void)
 {
-  tree vars;
-  bool reconsider;
   size_t i;
-  unsigned ssdf_count = 0;
-  int retries = 0;
   tree decl;
 
   locus_at_end_of_parsing = input_location;
@@ -4957,11 +4953,10 @@ c_parse_final_cleanups (void)
   /* Track vtables we want to emit that refer to consteval functions.  */
   auto_vec<tree> consteval_vtables;
 
-  do
+  int retries = 0;
+  unsigned ssdf_count = 0;
+  for (bool reconsider = true; reconsider; retries++)
     {
-      tree t;
-      tree decl;
-
       reconsider = false;
 
       /* If there are templates that we've put off instantiating, do
@@ -4974,6 +4969,7 @@ c_parse_final_cleanups (void)
 	 instantiation of members of that class.  If we write out
 	 vtables then we remove the class from our list so we don't
 	 have to look at it again.  */
+      tree t;
       for (i = keyed_classes->length ();
 	   keyed_classes->iterate (--i, &t);)
 	if (maybe_emit_vtables (t, consteval_vtables))
@@ -5003,9 +4999,7 @@ c_parse_final_cleanups (void)
 	 aggregates added during the initialization of these will be
 	 initialized in the correct order when we next come around the
 	 loop.  */
-      vars = prune_vars_needing_no_initialization (&static_aggregates);
-
-      if (vars)
+      if (tree vars = prune_vars_needing_no_initialization (&static_aggregates))
 	{
 	  /* We need to start a new initialization function each time
 	     through the loop.  That's because we need to know which
@@ -5052,7 +5046,6 @@ c_parse_final_cleanups (void)
 	     instantiations, etc.  */
 	  reconsider = true;
 	  ssdf_count++;
-	  /* ??? was:  locus_at_end_of_parsing.line++; */
 	}
 
       /* Now do the same for thread_local variables.  */
@@ -5162,14 +5155,12 @@ c_parse_final_cleanups (void)
 	  if (DECL_NOT_REALLY_EXTERN (decl) && decl_needed_p (decl))
 	    DECL_EXTERNAL (decl) = 0;
 	}
+
       if (vec_safe_length (pending_statics) != 0
 	  && wrapup_global_declarations (pending_statics->address (),
 					 pending_statics->length ()))
 	reconsider = true;
-
-      retries++;
     }
-  while (reconsider);
 
   lower_var_init ();
 
