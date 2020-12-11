@@ -1,5 +1,8 @@
 2020-12-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* decl2.c (c_parse_final_cleanups): Refactor.
+
 	Merge trunk 1c6b86b50d4
 	c++: module test harness
 
