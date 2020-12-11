@@ -1081,7 +1081,8 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 		return NULL_RTX;
 	    }
 	}
-      rtx remainder = expand_divmod (1, TRUNC_MOD_EXPR, word_mode, sum, op1,
+      rtx remainder = expand_divmod (1, TRUNC_MOD_EXPR, word_mode, sum,
+				     gen_int_mode (INTVAL (op1), word_mode),
 				     NULL_RTX, 1, OPTAB_DIRECT);
       if (remainder == NULL_RTX)
 	return NULL_RTX;
@@ -1099,7 +1100,8 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 		return NULL_RTX;
 	    }
 	  mask = expand_simple_binop (word_mode, AND, mask,
-				      GEN_INT (1 - INTVAL (op1)),
+				      gen_int_mode (1 - INTVAL (op1),
+						    word_mode),
 				      NULL_RTX, 1, OPTAB_DIRECT);
 	  if (mask == NULL_RTX)
 	    return NULL_RTX;
