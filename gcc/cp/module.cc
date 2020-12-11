@@ -65,6 +65,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "langhooks.h"
 
+/* During duplicate detection we need to tell some comparators that
+   these are equivalent.  */
+tree map_context_from;
+tree map_context_to;
+
 /* Id for dumping module information.  */
 int module_dump_id;
 

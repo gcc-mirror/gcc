@@ -5454,6 +5454,10 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
+/* When comparing specializations permit context _FROM to match _TO.  */
+extern tree map_context_from;
+extern tree map_context_to;
+
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
