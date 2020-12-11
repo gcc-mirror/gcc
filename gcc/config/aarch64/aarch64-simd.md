@@ -7238,3 +7238,31 @@
   "bfcvt\\t%h0, %s1"
   [(set_attr "type" "f_cvt")]
 )
+
+;; Use shl/shll/shll2 to convert BF scalar/vector modes to SF modes.
+(define_insn "aarch64_vbfcvt<mode>"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(unspec:V4SF [(match_operand:VBF 1 "register_operand" "w")]
+		      UNSPEC_BFCVTN))]
+  "TARGET_BF16_SIMD"
+  "shll\\t%0.4s, %1.4h, #16"
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+(define_insn "aarch64_vbfcvt_highv8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(unspec:V4SF [(match_operand:V8BF 1 "register_operand" "w")]
+		      UNSPEC_BFCVTN2))]
+  "TARGET_BF16_SIMD"
+  "shll2\\t%0.4s, %1.8h, #16"
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+(define_insn "aarch64_bfcvtsf"
+  [(set (match_operand:SF 0 "register_operand" "=w")
+	(unspec:SF [(match_operand:BF 1 "register_operand" "w")]
+		    UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  "shl\\t%d0, %d1, #16"
+  [(set_attr "type" "neon_shift_imm")]
+)
