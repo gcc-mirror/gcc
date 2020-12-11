@@ -4964,6 +4964,11 @@ c_parse_final_cleanups (void)
       instantiate_pending_templates (retries);
       ggc_collect ();
 
+      if (header_module_p ())
+	/* A header modules initializations are handled in its
+	   importer.  */
+	continue;
+
       /* Write out virtual tables as required.  Writing out the
 	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
@@ -5162,6 +5167,8 @@ c_parse_final_cleanups (void)
 	reconsider = true;
     }
 
+  finish_module_processing (parse_in);
+
   lower_var_init ();
 
   generate_mangling_aliases ();
@@ -5177,6 +5184,10 @@ c_parse_final_cleanups (void)
 	     #pragma interface, etc.) we decided not to emit the
 	     definition here.  */
 	  && !DECL_INITIAL (decl)
+	  /* A defaulted fn in a header module can be synthesized on
+	     demand later.  (In non-header modules we should have
+	     synthesized it above.)  */
+	  && !(DECL_DEFAULTED_FN (decl) && header_module_p ())
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
@@ -5210,9 +5221,8 @@ c_parse_final_cleanups (void)
     splay_tree_foreach (priority_info_map,
 			generate_ctor_and_dtor_functions_for_priority,
 			/*data=*/&locus_at_end_of_parsing);
-  else if (c_dialect_objc () && objc_static_init_needed_p ())
-    /* If this is obj-c++ and we need a static init, call
-       generate_ctor_or_dtor_function.  */
+  else if ((c_dialect_objc () && objc_static_init_needed_p ())
+	   || module_initializer_kind ())
     generate_ctor_or_dtor_function (/*constructor_p=*/true,
 				    DEFAULT_INIT_PRIORITY,
 				    &locus_at_end_of_parsing);
