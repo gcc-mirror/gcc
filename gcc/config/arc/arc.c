@@ -7663,11 +7663,18 @@ arc_invalid_within_doloop (const rtx_insn *insn)
 static rtx_insn *
 arc_active_insn (rtx_insn *insn)
 {
-  rtx_insn *nxt = next_active_insn (insn);
-
-  if (nxt && GET_CODE (PATTERN (nxt)) == ASM_INPUT)
-    nxt = next_active_insn (nxt);
-  return nxt;
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0
+	  || (active_insn_p (insn)
+	      && NONDEBUG_INSN_P (insn)
+	      && !NOTE_P (insn)
+	      && GET_CODE (PATTERN (insn)) != UNSPEC_VOLATILE
+	      && GET_CODE (PATTERN (insn)) != PARALLEL))
+	break;
+    }
+  return insn;
 }
 
 /* Search for a sequence made out of two stores and a given number of
@@ -7686,11 +7693,10 @@ check_store_cacheline_hazard (void)
       if (!succ0)
 	return;
 
-      if (!single_set (insn) || !single_set (succ0))
+      if (!single_set (insn))
 	continue;
 
-      if ((get_attr_type (insn) != TYPE_STORE)
-	  || (get_attr_type (succ0) != TYPE_STORE))
+      if ((get_attr_type (insn) != TYPE_STORE))
 	continue;
 
       /* Found at least two consecutive stores.  Goto the end of the
@@ -7698,6 +7704,9 @@ check_store_cacheline_hazard (void)
       for (insn1 = succ0; insn1; insn1 = arc_active_insn (insn1))
 	if (!single_set (insn1) || get_attr_type (insn1) != TYPE_STORE)
 	  break;
+
+      /* Save were we are.  */
+      succ0 = insn1;
 
       /* Now, check the next two instructions for the following cases:
          1. next instruction is a LD => insert 2 nops between store
@@ -7730,9 +7739,13 @@ check_store_cacheline_hazard (void)
 	    }
 	}
 
-      insn = insn1;
       if (found)
-	found = false;
+	{
+	  insn = insn1;
+	  found = false;
+	}
+      else
+	insn = succ0;
     }
 }
 
@@ -7807,7 +7820,6 @@ static void
 workaround_arc_anomaly (void)
 {
   rtx_insn *insn, *succ0;
-  rtx_insn *succ1;
 
   /* For any architecture: call arc_hazard here.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -7826,24 +7838,6 @@ workaround_arc_anomaly (void)
      nops between any sequence of stores and a load.  */
   if (arc_tune != ARC_TUNE_ARC7XX)
     check_store_cacheline_hazard ();
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      succ0 = next_real_insn (insn);
-      if (arc_store_addr_hazard_internal_p (insn, succ0))
-	{
-	  emit_insn_after (gen_nopv (), insn);
-	  emit_insn_after (gen_nopv (), insn);
-	  continue;
-	}
-
-      /* Avoid adding nops if the instruction between the ST and LD is
-	 a call or jump.  */
-      succ1 = next_real_insn (succ0);
-      if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
-	  && arc_store_addr_hazard_internal_p (insn, succ1))
-	emit_insn_after (gen_nopv (), insn);
-    }
 }
 
 /* A callback for the hw-doloop pass.  Called when a loop we have discovered
