@@ -1,3 +1,13 @@
+2020-12-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* pt.c (resolve_overloaded_unification): If the function
+	template specialization has a placeholder return type,
+	then instantiate it before attempting unification.
+
 2020-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93083

@@ -1,3 +1,83 @@
+2020-12-11  Dennis Zhang  <dennis.zhang@arm.com>
+
+	Backported from master:
+	2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_get.c: New test.
+
+2020-12-11  Dennis Zhang  <denzha01@e124712.cambridge.arm.com>
+
+	Backported from master:
+	2020-11-03  Dennis Zhang  <denzha01@e124712.cambridge.arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c
+	(test_vcvt_f32_bf16, test_vcvtq_low_f32_bf16): New tests.
+	(test_vcvtq_high_f32_bf16, test_vcvth_f32_bf16): Likewise.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_bf16_indices_1.c:
+	Run it also for arm-*-*.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/arm/simd/vstn_lane_bf16_1.c: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_bf16_indices_1.c:
+	Run it also for the arm backend.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/arm/simd/vldn_lane_bf16_1.c: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vst1_bf16_1.c: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vld1_bf16_1.c: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vst1_lane_bf16_1.c: New testcase.
+	* gcc.target/arm/simd/vstq1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vst1_lane_bf16_indices_1.c: Likewise.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vld1_lane_bf16_1.c: New testcase.
+	* gcc.target/arm/simd/vld1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vld1q_lane_bf16_indices_1.c: Likewise.
+
+2020-12-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/modular6.adb: New test.
+
+2020-12-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* g++.dg/cpp1y/auto-fn60.C: New test.
+
 2020-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93083
