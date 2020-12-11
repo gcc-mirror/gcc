@@ -1,3 +1,9 @@
+2020-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98226
+	* include/std/bit (__countl_one, __countr_one): Remove redundant
+	branches.
+
 2020-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Define NO_SLEEP

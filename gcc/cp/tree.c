@@ -3837,7 +3837,12 @@ cp_tree_equal (tree t1, tree t2)
 	 template.  */
 
       if (comparing_specializations
-	  && DECL_CONTEXT (t1) != DECL_CONTEXT (t2))
+	  && DECL_CONTEXT (t1) != DECL_CONTEXT (t2)
+	  /* Module duplicate checking can have t1 = new, t2 =
+	     existing, and they should be considered matching at this
+	     point.  */
+	  && (DECL_CONTEXT (t1) != map_context_from
+	      && DECL_CONTEXT (t2) != map_context_to))
 	/* When comparing hash table entries, only an exact match is
 	   good enough; we don't want to replace 'this' with the
 	   version from another function.  But be more flexible
@@ -3974,6 +3979,17 @@ cp_tree_equal (tree t1, tree t2)
       return same_type_p (TRAIT_EXPR_TYPE1 (t1), TRAIT_EXPR_TYPE1 (t2))
 	&& cp_tree_equal (TRAIT_EXPR_TYPE2 (t1), TRAIT_EXPR_TYPE2 (t2));
 
+    case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
+      /* Used for location wrappers with possibly NULL types.  */
+      if (!TREE_TYPE (t1) || !TREE_TYPE (t2))
+	{
+	  if (TREE_TYPE (t1) || TREE_TYPE (t2))
+	    return false;
+	  break;
+	}
+      /* FALLTHROUGH  */
+
     case CAST_EXPR:
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
@@ -3981,10 +3997,8 @@ cp_tree_equal (tree t1, tree t2)
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
     case NEW_EXPR:
-    CASE_CONVERT:
-    case NON_LVALUE_EXPR:
-    case VIEW_CONVERT_EXPR:
     case BIT_CAST_EXPR:
+    CASE_CONVERT:
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       /* Now compare operands as usual.  */

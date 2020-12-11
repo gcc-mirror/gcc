@@ -1,4 +1,6 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_int_mult } */
+/* { dg-require-effective-target vect_pack_trunc } */
 /* { dg-additional-options "-mavx2" { target avx2_runtime } } */
 
 #include "tree-vect.h"

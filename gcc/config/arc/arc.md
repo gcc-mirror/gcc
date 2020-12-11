@@ -871,6 +871,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 (define_code_iterator SEZ [sign_extend zero_extend])
 (define_code_attr SEZ_prefix [(sign_extend "sex") (zero_extend "ext")])
+; Optab prefix for sign/zero-extending operations
+(define_code_attr su_optab [(sign_extend "") (zero_extend "u")])
 
 (define_insn "*<SEZ_prefix>xt<SQH_postfix>_cmp0_noout"
   [(set (match_operand 0 "cc_set_register" "")
@@ -2840,43 +2842,25 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "compare")
    (set_attr "length" "4,4,8")])
 
-; w/c/c comes first (rather than w/0/C_0) to prevent the middle-end
-; needlessly prioritizing the matching constraint.
-; Rcw/0/C_0 comes before w/c/L so that the lower latency conditional
-; execution is used where possible.
-(define_insn_and_split "adc"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=w,Rcw,w,Rcw,w")
-	(plus:SI (plus:SI (ltu:SI (reg:CC_C CC_REG) (const_int 0))
-			  (match_operand:SI 1 "nonmemory_operand"
-							 "%c,0,c,0,cCal"))
-		 (match_operand:SI 2 "nonmemory_operand" "c,C_0,L,I,cCal")))]
+(define_insn "adc"
+  [(set (match_operand:SI 0 "register_operand"    "=r,  r,r,r,  r,r")
+	(plus:SI
+	 (plus:SI
+	  (ltu:SI (reg:CC_C CC_REG) (const_int 0))
+	  (match_operand:SI 1 "nonmemory_operand" "%r,  0,r,0,Cal,r"))
+	 (match_operand:SI 2 "nonmemory_operand"   "r,C_0,L,I,  r,Cal")))]
   "register_operand (operands[1], SImode)
    || register_operand (operands[2], SImode)"
   "@
-	adc %0,%1,%2
-	add.cs %0,%1,1
-	adc %0,%1,%2
-	adc %0,%1,%2
-	adc %0,%1,%2"
-  ; if we have a bad schedule after sched2, split.
-  "reload_completed
-   && !optimize_size && (!TARGET_ARC600_FAMILY)
-   && arc_scheduling_not_expected ()
-   && arc_sets_cc_p (prev_nonnote_insn (insn))
-   /* If next comes a return or other insn that needs a delay slot,
-      expect the adc to get into the delay slot.  */
-   && next_nonnote_insn (insn)
-   && !arc_need_delay (next_nonnote_insn (insn))
-   /* Restore operands before emitting.  */
-   && (extract_insn_cached (insn), 1)"
-  [(set (match_dup 0) (match_dup 3))
-   (cond_exec
-     (ltu (reg:CC_C CC_REG) (const_int 0))
-     (set (match_dup 0) (plus:SI (match_dup 0) (const_int 1))))]
-  "operands[3] = simplify_gen_binary (PLUS, SImode, operands[1], operands[2]);"
+    adc\\t%0,%1,%2
+    add.cs\\t%0,%1,1
+    adc\\t%0,%1,%2
+    adc\\t%0,%1,%2
+    adc\\t%0,%1,%2
+    adc\\t%0,%1,%2"
   [(set_attr "cond" "use")
    (set_attr "type" "cc_arith")
-   (set_attr "length" "4,4,4,4,8")])
+   (set_attr "length" "4,4,4,4,8,8")])
 
 ; combiner-splitter cmp / scc -> cmp / adc
 (define_split
@@ -3008,7 +2992,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
       DONE;
     }
   emit_insn (gen_sub_f (l0, l1, l2));
-  emit_insn (gen_sbc (h0, h1, h2, gen_rtx_REG (CCmode, CC_REG)));
+  emit_insn (gen_sbc (h0, h1, h2));
   DONE;
   ")
 
@@ -3023,44 +3007,25 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "cc_arith")
    (set_attr "length" "4")])
 
-; w/c/c comes first (rather than Rcw/0/C_0) to prevent the middle-end
-; needlessly prioritizing the matching constraint.
-; Rcw/0/C_0 comes before w/c/L so that the lower latency conditional execution
-; is used where possible.
-(define_insn_and_split "sbc"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=w,Rcw,w,Rcw,w")
-	(minus:SI (minus:SI (match_operand:SI 1 "nonmemory_operand"
-						"c,0,c,0,cCal")
-			    (ltu:SI (match_operand:CC_C 3 "cc_use_register")
-				    (const_int 0)))
-		  (match_operand:SI 2 "nonmemory_operand" "c,C_0,L,I,cCal")))]
+(define_insn "sbc"
+  [(set (match_operand:SI 0 "dest_reg_operand"   "=r,r,r,r,r,r")
+	(minus:SI
+	 (minus:SI
+	  (match_operand:SI 1 "nonmemory_operand" "r,  0,r,0,  r,Cal")
+	  (ltu:SI (reg:CC_C CC_REG) (const_int 0)))
+	 (match_operand:SI 2 "nonmemory_operand"  "r,C_0,L,I,Cal,r")))]
   "register_operand (operands[1], SImode)
    || register_operand (operands[2], SImode)"
   "@
-	sbc %0,%1,%2
-	sub.cs %0,%1,1
-	sbc %0,%1,%2
-	sbc %0,%1,%2
-	sbc %0,%1,%2"
-  ; if we have a bad schedule after sched2, split.
-  "reload_completed
-   && !optimize_size && (!TARGET_ARC600_FAMILY)
-   && arc_scheduling_not_expected ()
-   && arc_sets_cc_p (prev_nonnote_insn (insn))
-   /* If next comes a return or other insn that needs a delay slot,
-      expect the adc to get into the delay slot.  */
-   && next_nonnote_insn (insn)
-   && !arc_need_delay (next_nonnote_insn (insn))
-   /* Restore operands before emitting.  */
-   && (extract_insn_cached (insn), 1)"
-  [(set (match_dup 0) (match_dup 4))
-   (cond_exec
-     (ltu (reg:CC_C CC_REG) (const_int 0))
-     (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1))))]
-  "operands[4] = simplify_gen_binary (MINUS, SImode, operands[1], operands[2]);"
+    sbc\\t%0,%1,%2
+    sub.cs\\t%0,%1,1
+    sbc\\t%0,%1,%2
+    sbc\\t%0,%1,%2
+    sbc\\t%0,%1,%2
+    sbc\\t%0,%1,%2"
   [(set_attr "cond" "use")
    (set_attr "type" "cc_arith")
-   (set_attr "length" "4,4,4,4,8")])
+   (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "sub_f"
   [(set (reg:CC CC_REG)
@@ -6385,66 +6350,65 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "no")
    (set_attr "cond" "nocond")])
 
-(define_insn "mpyd_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
-		 (sign_extend:DI (match_operand:SI 2 "register_operand"	 "  c, c"))))
+(define_insn "mpyd<su_optab>_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	       "=r")
+	(mult:DI (SEZ:DI (match_operand:SI 1 "register_operand" "r"))
+		 (SEZ:DI (match_operand:SI 2 "register_operand" "r"))))
    (set (reg:DI ARCV2_ACC)
 	(mult:DI
-	  (sign_extend:DI (match_dup 1))
-	  (sign_extend:DI (match_dup 2))))]
+	  (SEZ:DI (match_dup 1))
+	  (SEZ:DI (match_dup 2))))]
   "TARGET_PLUS_MACD"
-  "mpyd%? %0,%1,%2"
-  [(set_attr "length" "4,4")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no")
-  (set_attr "cond" "canuse,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")])
 
-(define_insn "mpyd_imm_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
-		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
+(define_insn "*pmpyd<su_optab>_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	     "=r")
+	(mult:DI
+	 (SEZ:DI (match_operand:SI 1 "even_register_operand" "%0"))
+	 (SEZ:DI (match_operand:SI 2 "register_operand"      "r"))))
    (set (reg:DI ARCV2_ACC)
-	(mult:DI (sign_extend:DI (match_dup 1))
+	(mult:DI
+	  (SEZ:DI (match_dup 1))
+	  (SEZ:DI (match_dup 2))))]
+  "TARGET_PLUS_MACD"
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes")])
+
+(define_insn "mpyd<su_optab>_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"		"=r,r,  r")
+	(mult:DI (SEZ:DI (match_operand:SI 1 "register_operand"  "r,0,  r"))
+		 (match_operand 2	     "immediate_operand" "L,I,Cal")))
+   (set (reg:DI ARCV2_ACC)
+	(mult:DI (SEZ:DI (match_dup 1))
 		 (match_dup 2)))]
   "TARGET_PLUS_MACD"
-  "mpyd%? %0,%1,%2"
-  [(set_attr "length" "4,4,4,8,8")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no,no,yes,no")
-  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4,4,8")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")])
 
-(define_insn "mpydu_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c"))
-		 (zero_extend:DI (match_operand:SI 2 "register_operand" "   c, c"))))
+(define_insn "*pmpyd<su_optab>_imm_arcv2hs"
+  [(set (match_operand:DI 0 "even_register_operand"	    "=r,r")
+	(mult:DI
+	 (SEZ:DI (match_operand:SI 1 "even_register_operand" "0,0"))
+	 (match_operand 2	     "immediate_operand"     "L,Cal")))
    (set (reg:DI ARCV2_ACC)
-	(mult:DI (zero_extend:DI (match_dup 1))
-		 (zero_extend:DI (match_dup 2))))]
-  "TARGET_PLUS_MACD"
-  "mpydu%? %0,%1,%2"
-  [(set_attr "length" "4,4")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no")
-  (set_attr "cond" "canuse,nocond")])
-
-(define_insn "mpydu_imm_arcv2hs"
-  [(set (match_operand:DI 0 "even_register_operand"			"=Rcr, r,r,Rcr,	 r")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand"	 "  0, c,0,  0,	 c"))
-		 (match_operand 2		    "immediate_operand"	 "  L, L,I,Cal,Cal")))
-   (set (reg:DI ARCV2_ACC)
-	(mult:DI (zero_extend:DI (match_dup 1))
+	(mult:DI (SEZ:DI (match_dup 1))
 		 (match_dup 2)))]
   "TARGET_PLUS_MACD"
-  "mpydu%? %0,%1,%2"
-  [(set_attr "length" "4,4,4,8,8")
-  (set_attr "iscompact" "false")
-  (set_attr "type" "multi")
-  (set_attr "predicable" "yes,no,no,yes,no")
-  (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")])
+  "mpyd<su_optab>%?\\t%0,%1,%2"
+  [(set_attr "length" "4,8")
+   (set_attr "iscompact" "false")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "yes")])
 
 (define_insn "*add_shift"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")

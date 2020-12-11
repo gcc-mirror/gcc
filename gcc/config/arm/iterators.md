@@ -147,12 +147,7 @@
 (define_mode_iterator VN [V8HI V4SI V2DI])
 
 ;; All supported vector modes (except singleton DImode).
-(define_mode_iterator VDQ [(V8QI "!TARGET_HAVE_MVE") V16QI
-			   (V4HI "!TARGET_HAVE_MVE") V8HI
-			   (V2SI "!TARGET_HAVE_MVE") V4SI
-			   (V4HF "!TARGET_HAVE_MVE") V8HF
-			   (V2SF "!TARGET_HAVE_MVE") V4SF
-			   (V2DI "!TARGET_HAVE_MVE")])
+(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V4HF V8HF V2SF V4SF V2DI])
 
 ;; All supported floating-point vector modes (except V2DF).
 (define_mode_iterator VF [(V4HF "TARGET_NEON_FP16INST")
@@ -1252,8 +1247,8 @@
 		       (VMULLBQ_INT_S "s") (VMULLBQ_INT_U "u") (VQADDQ_S "s")
 		       (VMULLTQ_INT_S "s") (VMULLTQ_INT_U "u") (VQADDQ_U "u")
 		       (VMULQ_N_S "s") (VMULQ_N_U "u") (VMULQ_S "s")
-		       (VMULQ_U "u") (VORNQ_S "s") (VORNQ_U "u") (VORRQ_S "s")
-		       (VORRQ_U "u") (VQADDQ_N_S "s") (VQADDQ_N_U "u")
+		       (VMULQ_U "u") (VORNQ_S "s") (VORNQ_U "u")
+		       (VQADDQ_N_S "s") (VQADDQ_N_U "u")
 		       (VQRSHLQ_N_S "s") (VQRSHLQ_N_U "u") (VQRSHLQ_S "s")
 		       (VQRSHLQ_U "u") (VQSHLQ_N_S "s")	(VQSHLQ_N_U "u")
 		       (VQSHLQ_R_S "s") (VQSHLQ_R_U "u") (VQSHLQ_S "s")
@@ -1528,7 +1523,6 @@
 (define_int_iterator VMULQ [VMULQ_U VMULQ_S])
 (define_int_iterator VMULQ_N [VMULQ_N_U VMULQ_N_S])
 (define_int_iterator VORNQ [VORNQ_U VORNQ_S])
-(define_int_iterator VORRQ [VORRQ_S VORRQ_U])
 (define_int_iterator VQADDQ [VQADDQ_U VQADDQ_S])
 (define_int_iterator VQADDQ_N [VQADDQ_N_S VQADDQ_N_U])
 (define_int_iterator VQRSHLQ [VQRSHLQ_S VQRSHLQ_U])

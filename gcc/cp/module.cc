@@ -65,6 +65,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "langhooks.h"
 
+/* During duplicate detection we need to tell some comparators that
+   these are equivalent.  */
+tree map_context_from;
+tree map_context_to;
+
+/* Id for dumping module information.  */
+int module_dump_id;
+
 /* What the current TU is.  */
 unsigned module_kind;
 
@@ -156,6 +164,12 @@ lazy_load_members (tree)
 {
 }
 
+bool
+lazy_specializations_p (unsigned, bool, bool)
+{
+  return false;
+}
+
 bitmap
 visible_instantiation_path (bitmap *)
 {
@@ -184,6 +198,11 @@ preprocessed_module (cpp_reader *)
 }
 
 void
+module_begin_main_file (cpp_reader *, line_maps *, const line_map_ordinary *)
+{
+}
+
+void
 init_modules (cpp_reader *)
 {
   /* Do not turn on yet.  */
@@ -199,5 +218,16 @@ maybe_check_all_macros (cpp_reader *)
 
 void
 fini_modules ()
+{
+}
+
+bool
+handle_module_option (unsigned, const char *, int)
+{
+  return false;
+}
+
+void
+module_preprocess_options (cpp_reader *)
 {
 }

@@ -29,10 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 //
 // There are 2 primary entry points:
 //
-// has_edge_range_p (edge e, tree name)  
+// has_edge_range_p (tree name, edge e)
 //   returns true if the outgoing edge *may* be able to produce range
 //   information for ssa_name NAME on edge E.
 //   FALSE is returned if this edge does not affect the range of NAME.
+//   if no edge is specified, return TRUE if name may have a value calculated
+//   on *ANY* edge that has been seen.  FALSE indicates that the global value
+//   is applicable everywhere that has been processed.
 //
 // outgoing_edge_range_p (irange &range, edge e, tree name)
 //   Actually does the calculation of RANGE for name on E
@@ -68,7 +71,7 @@ public:
   gori_compute ();
   ~gori_compute ();
   bool outgoing_edge_range_p (irange &r, edge e, tree name);
-  bool has_edge_range_p (edge e, tree name);
+  bool has_edge_range_p (tree name, edge e = NULL);
   void dump (FILE *f);
 protected:
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);

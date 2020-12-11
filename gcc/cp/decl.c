@@ -11513,7 +11513,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   /* An object declared as __attribute__((deprecated)) suppresses
      warnings of uses of other deprecated items.  */
-  temp_override<deprecated_states> ds (deprecated_state);
+  auto ds = make_temp_override (deprecated_state);
   if (attrlist && lookup_attribute ("deprecated", *attrlist))
     deprecated_state = DEPRECATED_SUPPRESS;
 
