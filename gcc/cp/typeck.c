@@ -5983,7 +5983,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
 
-  if (!complete_type_or_else (target_type, NULL_TREE))
+  if (!complete_type_or_maybe_complain (target_type, NULL_TREE, complain))
     return error_mark_node;
 
   if (VOID_TYPE_P (target_type))

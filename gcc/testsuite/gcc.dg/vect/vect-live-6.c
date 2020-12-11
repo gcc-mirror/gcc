@@ -28,4 +28,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target { vect_int && vect_condition } } } } */

@@ -141,8 +141,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countl_zero<_Tp>((_Tp)~__x);
     }
 
@@ -184,8 +182,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countr_zero((_Tp)~__x);
     }
 

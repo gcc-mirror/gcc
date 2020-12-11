@@ -1138,18 +1138,37 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 		cprob = cprob.apply_scale (99, 100);
 	      else
 		cprob = profile_probability::even ();
-	      /* We want to split:
+	      /* For and_them we want to split:
 		 if (x) goto t; // prob;
+		 goto f;
 		 into
-		 if (a) goto t; // first_prob;
-		 if (b) goto t; // prob;
+		 if (a) ; else goto f; // first_prob for ;
+				       // 1 - first_prob for goto f;
+		 if (b) goto t; // adjusted prob;
+		 goto f;
 		 such that the overall probability of jumping to t
-		 remains the same and first_prob is prob * cprob.  */
+		 remains the same.  The and_them case should be
+		 probability-wise equivalent to the !and_them case with
+		 f and t swapped and also the conditions inverted, i.e.
+		 if (!a) goto f;
+		 if (!b) goto f;
+		 goto t;
+		 where the overall probability of jumping to f is
+		 1 - prob (thus the first prob.invert () below).
+		 cprob.invert () is because the a condition is inverted,
+		 so if it was originally ORDERED, !a is UNORDERED and
+		 thus should be relative 1% rather than 99%.
+		 The invert () on assignment to first_prob is because
+		 first_prob represents the probability of fallthru,
+		 rather than goto f.  And the last prob.invert () is
+		 because the adjusted prob represents the probability of
+		 jumping to t rather than to f.  */
 	      if (and_them)
 		{
 		  rtx_code_label *dest_label;
 		  prob = prob.invert ();
-		  profile_probability first_prob = prob.split (cprob).invert ();
+		  profile_probability first_prob
+		    = prob.split (cprob.invert ()).invert ();
 		  prob = prob.invert ();
 		  /* If we only jump if true, just bypass the second jump.  */
 		  if (! if_false_label)
@@ -1163,6 +1182,15 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
                   do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
 					   size, dest_label, NULL, first_prob);
 		}
+	      /* For !and_them we want to split:
+		 if (x) goto t; // prob;
+		 goto f;
+		 into
+		 if (a) goto t; // first_prob;
+		 if (b) goto t; // adjusted prob;
+		 goto f;
+		 such that the overall probability of jumping to t
+		 remains the same and first_prob is prob * cprob.  */
               else
 		{
 		  profile_probability first_prob = prob.split (cprob);

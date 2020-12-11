@@ -1,3 +1,8 @@
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 1c6b86b50d4
+	c++: module test harness
+
 2020-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk e6e4b20de33

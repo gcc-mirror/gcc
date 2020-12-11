@@ -5451,6 +5451,30 @@ expand_assignment (tree to, tree from, bool nontemporal)
 					       mode1, to_rtx, to, from,
 					       reversep))
 	    result = NULL;
+	  else if (SUBREG_P (to_rtx)
+		   && SUBREG_PROMOTED_VAR_P (to_rtx))
+	    {
+	      /* If to_rtx is a promoted subreg, we need to zero or sign
+		 extend the value afterwards.  */
+	      if (TREE_CODE (to) == MEM_REF
+		  && !REF_REVERSE_STORAGE_ORDER (to)
+		  && known_eq (bitpos, 0)
+		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
+		result = store_expr (from, to_rtx, 0, nontemporal, false);
+	      else
+		{
+		  rtx to_rtx1
+		    = lowpart_subreg (subreg_unpromoted_mode (to_rtx),
+				      SUBREG_REG (to_rtx),
+				      subreg_promoted_mode (to_rtx));
+		  result = store_field (to_rtx1, bitsize, bitpos,
+					bitregion_start, bitregion_end,
+					mode1, from, get_alias_set (to),
+					nontemporal, reversep);
+		  convert_move (SUBREG_REG (to_rtx), to_rtx1,
+				SUBREG_PROMOTED_SIGN (to_rtx));
+		}
+	    }
 	  else
 	    result = store_field (to_rtx, bitsize, bitpos,
 				  bitregion_start, bitregion_end,

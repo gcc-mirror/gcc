@@ -5658,8 +5658,8 @@ proc check_effective_target_arm_hf_eabi { } {
     }]
 }
 
-# Return 1 if this is an ARM target that uses the soft float ABI
-# with no floating-point instructions at all (e.g. -mfloat-abi=soft).
+# Return 1 if this is an ARM target uses emulated floating point
+# operations.
 
 proc check_effective_target_arm_softfloat { } {
     return [check_no_compiler_messages arm_softfloat object {

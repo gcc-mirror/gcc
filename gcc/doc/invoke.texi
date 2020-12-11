@@ -32997,9 +32997,13 @@ with @code{@@g++-mapper-server}.
 @item <@var{fdin}>@var{fdout}@r{[}?@var{ident}@r{]}
 File descriptors to communicate over.  The first form, @option{<>},
 communicates over stdin and stdout.  The second form specifies a
-bidirectional file descriptor and the last form allows specifying
-two independent descriptors.  Note that other compiler options might
-cause the compiler to read stdin or write stdout.
+bidirectional file descriptor and the last form allows specifying two
+independent descriptors.  Using file descriptors directly in this
+manner is fragile in general, as it can require the cooperation of
+intermediate processes.  In particular using stdin & stdout is fraught
+with danger as other compiler options might also cause the compiler to
+read stdin or write stdout, and it can have unfortunate interactions
+with signal delivery from the terminal.
 
 @item @var{file}@r{[}?@var{ident}@r{]}
 A mapping file consisting of space-separated module-name, filename
