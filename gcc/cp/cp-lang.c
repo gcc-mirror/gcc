@@ -77,6 +77,12 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
+#undef LANG_HOOKS_PREPROCESS_MAIN_FILE
+#define LANG_HOOKS_PREPROCESS_MAIN_FILE module_begin_main_file
+#undef LANG_HOOKS_PREPROCESS_OPTIONS
+#define LANG_HOOKS_PREPROCESS_OPTIONS module_preprocess_options
+#undef LANG_HOOKS_PREPROCESS_TOKEN
+#define LANG_HOOKS_PREPROCESS_TOKEN module_token_pre
 
 #if CHECKING_P
 #undef LANG_HOOKS_RUN_LANG_SELFTESTS
