@@ -7893,16 +7893,18 @@ package body Sem_Ch8 is
                         Set_Entity (N, Any_Type);
                         return;
 
-                     --  ??? This test is temporarily disabled (always
-                     --  False) because it causes an unwanted warning on
-                     --  GNAT sources (built with -gnatg, which includes
-                     --  Warn_On_Obsolescent_ Feature). Once this issue
-                     --  is cleared in the sources, it can be enabled.
+                     else
+                        if Restriction_Check_Required (No_Obsolescent_Features)
+                        then
+                           Check_Restriction
+                             (No_Obsolescent_Features, Prefix (N));
+                        end if;
 
-                     elsif Warn_On_Obsolescent_Feature and then False then
-                        Error_Msg_N
-                          ("applying ''Class to an untagged incomplete type"
-                           & " is an obsolescent feature (RM J.11)?r?", N);
+                        if Warn_On_Obsolescent_Feature then
+                           Error_Msg_N
+                             ("applying ''Class to an untagged incomplete type"
+                              & " is an obsolescent feature (RM J.11)?r?", N);
+                        end if;
                      end if;
                   end if;
 
