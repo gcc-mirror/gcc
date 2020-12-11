@@ -22,7 +22,7 @@ package Ada.Numerics.Big_Numbers.Big_Integers
   with Preelaborate
 is
    type Big_Integer is private
-     with Integer_Literal => From_String,
+     with Integer_Literal => From_Universal_Image,
           Put_Image       => Put_Image;
 
    function Is_Valid (Arg : Big_Integer) return Boolean
@@ -115,6 +115,9 @@ is
 
    function From_String (Arg : String) return Valid_Big_Integer
      with Global => null;
+
+   function From_Universal_Image (Arg : String) return Valid_Big_Integer
+     renames From_String;
 
    procedure Put_Image (S : in out Sink'Class; V : Big_Integer);
 
