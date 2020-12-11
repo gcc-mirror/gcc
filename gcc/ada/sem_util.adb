@@ -29957,7 +29957,7 @@ package body Sem_Util is
 
       procedure Normalize_Interval_List
          (List : in out Discrete_Interval_List; Last : out Nat);
-      --  Perform sorting and merging as required by Check_Consistency.
+      --  Perform sorting and merging as required by Check_Consistency
 
       -------------------------
       -- Aggregate_Intervals --
@@ -29971,6 +29971,10 @@ package body Sem_Util is
          function Unmerged_Intervals_Count return Nat;
          --  Count the number of intervals given in the aggregate N; the others
          --  choice (if present) is not taken into account.
+
+         ------------------------------
+         -- Unmerged_Intervals_Count --
+         ------------------------------
 
          function Unmerged_Intervals_Count return Nat is
             Count  : Nat := 0;
@@ -30072,7 +30076,7 @@ package body Sem_Util is
         (Discrete_Choices : List_Id) return Discrete_Interval_List
       is
          function Unmerged_Choice_Count return Nat;
-         --  The number of intervals before adjacent intervals are merged.
+         --  The number of intervals before adjacent intervals are merged
 
          ---------------------------
          -- Unmerged_Choice_Count --

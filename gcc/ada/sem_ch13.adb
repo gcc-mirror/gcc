@@ -11794,6 +11794,8 @@ package body Sem_Ch13 is
             end;
          end Check_Component_List;
 
+         --  Local variables
+
          Sbit : Uint;
          --  Starting bit for call to Check_Component_List. Zero for an
          --  untagged type. The size of the Tag for a nonderived tagged
