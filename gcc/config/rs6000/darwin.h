@@ -203,7 +203,7 @@
 
 /* Make both r2 and r13 available for allocation.  */
 #define FIXED_R2 0
-#define FIXED_R13 0
+#define FIXED_R13 TARGET_64BIT
 
 /* Base register for access to local variables of the function.  */
 
@@ -212,6 +212,9 @@
 
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
+
+#undef FIRST_SAVED_GP_REGNO
+#define FIRST_SAVED_GP_REGNO 13
 
 /* Darwin's stack must remain 16-byte aligned for both 32 and 64 bit
    ABIs.  */
