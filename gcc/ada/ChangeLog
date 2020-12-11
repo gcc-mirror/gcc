@@ -1,3 +1,9 @@
+2020-12-10  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/98230
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Mod): Use base
+	type of argument to obtain static bound and required size.
+
 2020-06-23  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Allocator>: Minor tweaks.

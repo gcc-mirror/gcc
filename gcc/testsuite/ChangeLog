@@ -1,3 +1,7 @@
+2020-12-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/modular6.adb: New test.
+
 2020-12-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91953
