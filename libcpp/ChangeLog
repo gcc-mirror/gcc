@@ -1,3 +1,7 @@
+2020-12-10  Jason Merrill  <jason@redhat.com>
+
+	* init.c (cpp_init_builtins): Update __cplusplus for C++20.
+
 2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	* charset.c (init_iconv_desc): Initialize "to" and "from" fields.

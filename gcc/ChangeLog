@@ -1,3 +1,243 @@
+2020-12-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (VDQ): Remove TARGET_HAVE_MVE
+	conditions.
+	* config/arm/vec-common.md (and<mode>3): Use
+	ARM_HAVE_<MODE>_ARITH.
+	(ior<mode>3): Likewise.
+
+2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_active_insn): Ignore all non essential
+	instructions when getting the next active instruction.
+	(check_store_cacheline_hazard): Update.
+	(workaround_arc_anomaly): Remove obsolete cache hazard code.
+
+2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_reorg): Avoid limm in BRcc.
+
+2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_scheduling_not_expected): Remove
+	it.
+	(arc_sets_cc_p): Likewise.
+	(arc_need_delay): Likewise.
+	* config/arc/arc.c (arc_sets_cc_p): Likewise.
+	(arc_need_delay): Likewise.
+	(arc_scheduling_not_expected): Likewise.
+	* config/arc/arc.md: Convert adc/sbc patterns to simple
+	instruction definitions.
+
+2020-12-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (supf): Remove VORRQ_S and VORRQ_U.
+	(VORRQ): Remove.
+	* config/arm/mve.md (mve_vorrq_s<mode>): New entry for vorr
+	instruction using expression ior.
+	(mve_vorrq_u<mode>): New expander.
+	(mve_vorrq_f<mode>): Use ior code instead of unspec.
+	* config/arm/neon.md (ior<mode>3): Renamed into ior<mode>3_neon.
+	* config/arm/predicates.md (imm_for_neon_logic_operand): Enable
+	for MVE.
+	* config/arm/unspecs.md (VORRQ_S, VORRQ_U, VORRQ_F): Remove.
+	* config/arm/vec-common.md (ior<mode>3): New expander.
+
+2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mpyd<su_optab>_arcv2hs): New template
+	pattern.
+	(*pmpyd<su_optab>_arcv2hs): Likewise.
+	(*pmpyd<su_optab>_imm_arcv2hs): Likewise.
+	(mpyd_arcv2hs): Moved into above template.
+	(mpyd_imm_arcv2hs): Moved into above template.
+	(mpydu_arcv2hs): Likewise.
+	(mpydu_imm_arcv2hs): Likewise.
+	(su_optab): New optab prefix for sign/zero-extending operations.
+
+2020-12-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98219
+	* config/i386/uintrintrin.h (__uintr_frame): Remove uirrv.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* doc/sourcebuild.texi (arm_softfloat): Improve documentation.
+
+2020-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98229
+	* optabs.c (expand_doubleword_mod): Canonicalize op1 and
+	1 - INTVAL (op1) as word_mode constants when used in
+	word_mode arithmetics.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98235
+	* tree-vect-slp.c (vect_build_slp_tree): Exchange npermutes
+	for limit.  Decrement that for each cache miss and fail
+	discovery when it reaches zero.
+	(vect_build_slp_tree_2): Remove npermutes handling and
+	simply pass down limit.
+	(vect_build_slp_instance): Use pass down limit.
+	(vect_analyze_slp_instance): Likewise.
+	(vect_analyze_slp): Base the SLP discovery limit on
+	max_tree_size and pass it down.
+
+2020-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98190
+	* expr.c (expand_assignment): If to_rtx is a promoted SUBREG,
+	ensure sign or zero extension either through use of store_expr
+	or by extending manually.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR rtl-optimization/97092
+	* ira-color.c (update_costs_from_allocno): Do not carry over mode
+	between subsequent iterations.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95582
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Check
+	for VECT_SCALAR_BOOLEAN_TYPE_P, not just precision one.
+
+2020-12-11  Hongyu  <hongyu.wang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Move check for HRESET/AVX_VNNI/UINTR out of avx512_usable.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98212
+	* dojump.c (do_compare_rtx_and_jump): Change computation of
+	first_prob for and_them.  Add comment explaining and_them case.
+
+2020-12-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/98174
+	* gimple-range-cache.cc (ranger_cache::ssa_range_in_bb): Only push
+	poor values to be examined if it isn't a pure global.
+	(ranger_cache::block_range): Don't process pure globals.
+	(ranger_cache::fill_block_cache): Adjust has_edge_range call.
+	* gimple-range-gori.cc (gori_map::all_outgoing): New bitmap.
+	(gori_map::gori_map): Allocate all_outgoing.
+	(gori_map::is_export_p): No specified BB returns global context.
+	(gori_map::calculate_gori): Accumulate each block into global.
+	(gori_compute::gori_compute): Preprocess each block for exports.
+	(gori_compute::has_edge_range_p): No edge returns global context.
+	* gimple-range-gori.h (has_edge_range_p): Provide default parameter.
+
+2020-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (loc_list_from_tree_1) <PLACEHOLDER_EXPR>: Deal with
+	a nested context type
+
+2020-12-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* cfgexpand.c (expand_gimple_basic_block): Remove special handling
+	of debug_inline_entries without block info.
+	* tree-inline.c (remap_gimple_stmt): Drop debug_nonbind_markers when
+	the call statement has no block info.
+	(copy_debug_stmt): Remove debug_nonbind_markers when inlining
+	and the block info is mapped to NULL.
+	* tree-ssa-live.c (clear_unused_block_pointer): Remove
+	debug_nonbind_markers originating from removed inline functions.
+
+2020-12-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_assignment): Remove special
+	allowance of VECTOR_BOOLEAN_TYPE_P conversions.
+
+2020-12-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (supf): Remove VANDQ_S and VANDQ_U.
+	(VANQ): Remove.
+	(VDQ): Add TARGET_HAVE_MVE condition where relevant.
+	* config/arm/mve.md (mve_vandq_u<mode>): New entry for vand
+	instruction using expression 'and'.
+	(mve_vandq_s<mode>): New expander.
+	(mve_vaddq_n_f<mode>): Use 'and' code instead of unspec.
+	* config/arm/neon.md (and<mode>3): Rename into and<mode>3_neon.
+	* config/arm/predicates.md (imm_for_neon_inv_logic_operand):
+	Enable for MVE.
+	* config/arm/unspecs.md (VANDQ_S, VANDQ_U, VANDQ_F): Remove.
+	* config/arm/vec-common.md (and<mode>3): New expander.
+
+2020-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98069
+	* tree-data-ref.c (compute_distributive_range): New function.
+	(nop_conversion_for_offset_p): Likewise.
+	(split_constant_offset): In the internal overload, treat integer
+	expressions as having an implicit cast to sizetype and express
+	them accordingly.  Pass back the range of the original (uncast)
+	expression in a new range parameter.
+	(split_constant_offset_1): Likewise.  Rework the handling of
+	conversions to account for the implicit sizetype casts.
+
+2020-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/97929
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Add
+	WIDEN_PLUS/WIDEN_MINUS case.
+
+2020-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* tree-pretty-print.c (dump_generic_node): Add case for
+	VEC_WIDEN_(PLUS/MINUS)_(HI/LO)_EXPR and WIDEN_(PLUS/MINUS)_EXPR.
+
+2020-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98211
+	* tree-vect-stmts.c (vectorizable_assignment): Disallow
+	invalid conversions to bool vector types.
+
+2020-12-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree.c (build_common_builtin_nodes): Drop __builtin_ from
+	__clear_cache libname.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98212
+	* dojump.c (do_compare_rtx_and_jump): When splitting NE and backend
+	can do UNEQ, prefer splitting x != y into x unord y || !(x uneq y)
+	instead of into x unord y || x ltgt y.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98169
+	* dojump.c (do_compare_rtx_and_jump): Don't split self-EQ/NE
+	comparisons, just use ORDERED or UNORDERED.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98205
+	* omp-expand.c (expand_omp_for_generic): Fix up broken_loop handling.
+
+2020-12-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Do
+	not mark the defs to occur in a pattern if it is the
+	pattern root and record the original stmt defs in that
+	case.
+
+2020-12-10  Simon Cook  <simon.cook@embecosm.com>
+
+	* config/riscv/multilib-generator (arch_canonicalize): Invoke
+	python interpreter when calling arch-canonicalize script.
+
+2020-12-10  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+	* godump.c (go_format_type): Don't consider whether a type has
+	been seen when determining whether to output a type by name.
+	Consider only the use_type_name parameter.
+	(go_output_typedef): When outputting a typedef, format the
+	declaration's original type, which contains the name of the
+	underlying type rather than the name of the typedef.
+
 2020-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/98188
