@@ -10291,59 +10291,6 @@ arc_attr_type (rtx_insn *insn)
   return get_attr_type (insn);
 }
 
-/* Return true if insn sets the condition codes.  */
-
-bool
-arc_sets_cc_p (rtx_insn *insn)
-{
-  if (NONJUMP_INSN_P (insn))
-    if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
-      insn = seq->insn (seq->len () - 1);
-  return arc_attr_type (insn) == TYPE_COMPARE;
-}
-
-/* Return true if INSN is an instruction with a delay slot we may want
-   to fill.  */
-
-bool
-arc_need_delay (rtx_insn *insn)
-{
-  rtx_insn *next;
-
-  if (!flag_delayed_branch)
-    return false;
-  /* The return at the end of a function needs a delay slot.  */
-  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE
-      && (!(next = next_active_insn (insn))
-	  || ((!NONJUMP_INSN_P (next) || GET_CODE (PATTERN (next)) != SEQUENCE)
-	      && arc_attr_type (next) == TYPE_RETURN))
-      && (!TARGET_PAD_RETURN
-	  || (prev_active_insn (insn)
-	      && prev_active_insn (prev_active_insn (insn))
-	      && prev_active_insn (prev_active_insn (prev_active_insn (insn))))))
-    return true;
-  if (NONJUMP_INSN_P (insn)
-      ? (GET_CODE (PATTERN (insn)) == USE
-	 || GET_CODE (PATTERN (insn)) == CLOBBER
-	 || GET_CODE (PATTERN (insn)) == SEQUENCE)
-      : JUMP_P (insn)
-      ? (GET_CODE (PATTERN (insn)) == ADDR_VEC
-	 || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-      : !CALL_P (insn))
-    return false;
-  return num_delay_slots (insn) != 0;
-}
-
-/* Return true if the scheduling pass(es) has/have already run,
-   i.e. where possible, we should try to mitigate high latencies
-   by different instruction selection.  */
-
-bool
-arc_scheduling_not_expected (void)
-{
-  return cfun->machine->arc_reorg_started;
-}
-
 /* Code has a minimum p2 alignment of 1, which we must restore after
    an ADDR_DIFF_VEC.  */
 
