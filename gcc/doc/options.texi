@@ -454,9 +454,6 @@ operands, which is passed to the @samp{warning} function.  If an alias
 is marked @code{Warn}, the target of the alias must not also be marked
 @code{Warn}.
 
-@item Report
-The state of the option should be printed by @option{-fverbose-asm}.
-
 @item Warning
 This is a warning option and should be shown as such in
 @option{--help} output.  This flag does not currently affect anything
