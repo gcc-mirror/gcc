@@ -1,3 +1,10 @@
+2020-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr98017.f90: New test.
+
 2020-12-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/modular6.adb: New test.
