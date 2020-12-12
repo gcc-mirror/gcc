@@ -12600,9 +12600,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_seq_add_seq (&new_body, join_seq);
 
       if (offloaded)
-	new_body = maybe_catch_exception (new_body);
-
-      gimple_seq_add_stmt (&new_body, gimple_build_omp_return (false));
+	{
+	  new_body = maybe_catch_exception (new_body);
+	  gimple_seq_add_stmt (&new_body, gimple_build_omp_return (false));
+	}
       gimple_omp_set_body (stmt, new_body);
     }
 
