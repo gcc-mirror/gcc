@@ -1,3 +1,11 @@
+2020-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.c (simplify_parameter_variable): Fix up character length
+	after copying an array-valued expression.
+
 2020-09-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
 
 	Revert:
