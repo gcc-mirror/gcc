@@ -2169,6 +2169,8 @@ public:
 
   Expr *get_fnexpr () { return function.get (); }
 
+  size_t num_params () const { return params.size (); }
+
   void iterate_params (std::function<bool (Expr *)> cb)
   {
     for (auto it = params.begin (); it != params.end (); it++)
@@ -2550,6 +2552,15 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  void iterate_stmts (std::function<bool (Stmt *)> cb)
+  {
+    for (auto it = statements.begin (); it != statements.end (); it++)
+      {
+	if (!cb (it->get ()))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3117,6 +3128,8 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Expr *get_expr () { return return_expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

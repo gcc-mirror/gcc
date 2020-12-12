@@ -20,8 +20,9 @@
 #include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-item.h"
 #include "rust-ast-full.h"
+#include "rust-tyty.h"
 
-#define MKBUILTIN_TYPE(_X, _R)                                                 \
+#define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \
     {                                                                          \
       AST::PathIdentSegment seg (_X);                                          \
@@ -34,6 +35,8 @@
 	= new AST::TypePath (::std::move (segs),                               \
 			     Linemap::predeclared_location (), false);         \
       _R.push_back (builtin_type);                                             \
+      tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
+			     _TY);                                             \
     }                                                                          \
   while (0)
 
@@ -43,7 +46,7 @@ namespace Resolver {
 // Resolver
 
 Resolver::Resolver ()
-  : mappings (Analysis::Mappings::get ()),
+  : mappings (Analysis::Mappings::get ()), tyctx (TypeCheckContext::get ()),
     name_scope (Scope (mappings->get_current_crate ())),
     type_scope (Scope (mappings->get_current_crate ()))
 {
@@ -116,22 +119,26 @@ Resolver::get_builtin_types ()
 void
 Resolver::generate_builtins ()
 {
-  MKBUILTIN_TYPE ("u8", builtins);
-  MKBUILTIN_TYPE ("u16", builtins);
-  MKBUILTIN_TYPE ("u32", builtins);
-  MKBUILTIN_TYPE ("u64", builtins);
+  auto u8
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U8);
+  auto u16
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U16);
+  auto u32
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U32);
+  auto i8 = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I8);
+  auto i16
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I16);
+  auto i32
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I32);
+  auto rbool = new TyTy::BoolType (mappings->get_next_hir_id ());
 
-  MKBUILTIN_TYPE ("i8", builtins);
-  MKBUILTIN_TYPE ("i16", builtins);
-  MKBUILTIN_TYPE ("i32", builtins);
-  MKBUILTIN_TYPE ("i64", builtins);
-
-  MKBUILTIN_TYPE ("f32", builtins);
-  MKBUILTIN_TYPE ("f64", builtins);
-
-  MKBUILTIN_TYPE ("char", builtins);
-  MKBUILTIN_TYPE ("str", builtins);
-  MKBUILTIN_TYPE ("bool", builtins);
+  MKBUILTIN_TYPE ("u8", builtins, u8);
+  MKBUILTIN_TYPE ("u16", builtins, u16);
+  MKBUILTIN_TYPE ("u32", builtins, u32);
+  MKBUILTIN_TYPE ("i8", builtins, i8);
+  MKBUILTIN_TYPE ("i16", builtins, i16);
+  MKBUILTIN_TYPE ("i32", builtins, i32);
+  MKBUILTIN_TYPE ("bool", builtins, rbool);
 }
 
 void

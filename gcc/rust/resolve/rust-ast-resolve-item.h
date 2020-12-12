@@ -23,6 +23,7 @@
 #include "rust-ast-full.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
+#include "rust-ast-resolve-stmt.h"
 
 namespace Rust {
 namespace Resolver {
@@ -51,11 +52,21 @@ public:
 				param.get_node_id ());
       }
 
+    // setup parent scoping for names
+    NodeId scope_node_id = function.get_definition ()->get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+
     function.get_definition ()->iterate_stmts (
       [&] (AST::Stmt *s) mutable -> bool {
-	// TODO
+	ResolveStmt::go (s, s->get_node_id ());
 	return true;
       });
+
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
   }
 
 private:

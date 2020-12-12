@@ -37,6 +37,10 @@ class Lexer;
 namespace AST {
 struct Crate;
 }
+// crate forward decl
+namespace HIR {
+struct Crate;
+}
 
 /* Data related to target, most useful for conditional compilation and
  * whatever. */
@@ -240,6 +244,11 @@ private:
    * Performs name resolution and type resolution, maybe complete gated
    * feature checking, maybe create buffered lints in future. */
   void resolution (AST::Crate &crate);
+  /* This lowers the AST down to HIR and assigns all mappings from AST
+   * NodeIds back to HirIds */
+  HIR::Crate lower_ast (AST::Crate &crate);
+  /* This adds the type resolution process */
+  void type_resolution (HIR::Crate &crate);
 };
 } // namespace Rust
 

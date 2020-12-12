@@ -92,13 +92,16 @@ protected:
 
 public:
   ImplTraitType (
+    Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     Location locus)
-    : type_param_bounds (std::move (type_param_bounds)), locus (locus)
+    : Type (mappings), type_param_bounds (std::move (type_param_bounds)),
+      locus (locus)
   {}
 
   // copy constructor with vector clone
-  ImplTraitType (ImplTraitType const &other) : locus (other.locus)
+  ImplTraitType (ImplTraitType const &other)
+    : Type (other.mappings), locus (other.locus)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -109,6 +112,7 @@ public:
   ImplTraitType &operator= (ImplTraitType const &other)
   {
     locus = other.locus;
+    mappings = other.mappings;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -148,15 +152,16 @@ protected:
 
 public:
   TraitObjectType (
+    Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     Location locus, bool is_dyn_dispatch = false)
-    : has_dyn (is_dyn_dispatch),
+    : Type (mappings), has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
 
   // copy constructor with vector clone
   TraitObjectType (TraitObjectType const &other)
-    : has_dyn (other.has_dyn), locus (other.locus)
+    : Type (other.mappings), has_dyn (other.has_dyn), locus (other.locus)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -166,6 +171,7 @@ public:
   // overloaded assignment operator to clone
   TraitObjectType &operator= (TraitObjectType const &other)
   {
+    mappings = other.mappings;
     has_dyn = other.has_dyn;
     locus = other.locus;
     type_param_bounds.reserve (other.type_param_bounds.size ());
@@ -209,19 +215,23 @@ protected:
 
 public:
   // Constructor uses Type pointer for polymorphism
-  ParenthesisedType (std::unique_ptr<Type> type_inside_parens, Location locus)
-    : type_in_parens (std::move (type_inside_parens)), locus (locus)
+  ParenthesisedType (Analysis::NodeMapping mappings,
+		     std::unique_ptr<Type> type_inside_parens, Location locus)
+    : TypeNoBounds (mappings), type_in_parens (std::move (type_inside_parens)),
+      locus (locus)
   {}
 
   /* Copy constructor uses custom deep copy method for type to preserve
    * polymorphism */
   ParenthesisedType (ParenthesisedType const &other)
-    : type_in_parens (other.type_in_parens->clone_type ()), locus (other.locus)
+    : TypeNoBounds (other.mappings),
+      type_in_parens (other.type_in_parens->clone_type ()), locus (other.locus)
   {}
 
   // overload assignment operator to use custom clone method
   ParenthesisedType &operator= (ParenthesisedType const &other)
   {
+    mappings = other.mappings;
     type_in_parens = other.type_in_parens->clone_type ();
     locus = other.locus;
     return *this;
@@ -273,8 +283,10 @@ protected:
   }
 
 public:
-  ImplTraitTypeOneBound (TraitBound trait_bound, Location locus)
-    : trait_bound (std::move (trait_bound)), locus (locus)
+  ImplTraitTypeOneBound (Analysis::NodeMapping mappings, TraitBound trait_bound,
+			 Location locus)
+    : TypeNoBounds (mappings), trait_bound (std::move (trait_bound)),
+      locus (locus)
   {}
 
   std::string as_string () const override;
@@ -309,10 +321,11 @@ protected:
   }
 
 public:
-  TraitObjectTypeOneBound (TraitBound trait_bound, Location locus,
+  TraitObjectTypeOneBound (Analysis::NodeMapping mappings,
+			   TraitBound trait_bound, Location locus,
 			   bool is_dyn_dispatch = false)
-    : has_dyn (is_dyn_dispatch), trait_bound (std::move (trait_bound)),
-      locus (locus)
+    : TypeNoBounds (mappings), has_dyn (is_dyn_dispatch),
+      trait_bound (std::move (trait_bound)), locus (locus)
   {}
 
   std::string as_string () const override;
@@ -343,13 +356,16 @@ public:
   // Returns whether the tuple type is the unit type, i.e. has no elements.
   bool is_unit_type () const { return elems.empty (); }
 
-  TupleType (std::vector<std::unique_ptr<Type> > elems, Location locus)
-    : elems (std::move (elems)), locus (locus)
+  TupleType (Analysis::NodeMapping mappings,
+	     std::vector<std::unique_ptr<Type> > elems, Location locus)
+    : TypeNoBounds (mappings), elems (std::move (elems)), locus (locus)
   {}
 
   // copy constructor with vector clone
-  TupleType (TupleType const &other) : locus (other.locus)
+  TupleType (TupleType const &other)
+    : TypeNoBounds (other.mappings), locus (other.locus)
   {
+    mappings = other.mappings;
     elems.reserve (other.elems.size ());
     for (const auto &e : other.elems)
       elems.push_back (e->clone_type ());
@@ -410,7 +426,9 @@ protected:
   }
 
 public:
-  NeverType (Location locus) : locus (locus) {}
+  NeverType (Analysis::NodeMapping mappings, Location locus)
+    : TypeNoBounds (mappings), locus (locus)
+  {}
 
   std::string as_string () const override { return "! (never type)"; }
 
@@ -439,21 +457,22 @@ public:
   PointerType get_pointer_type () const { return pointer_type; }
 
   // Constructor requires pointer for polymorphism reasons
-  RawPointerType (PointerType pointer_type,
+  RawPointerType (Analysis::NodeMapping mappings, PointerType pointer_type,
 		  std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus)
-    : pointer_type (pointer_type), type (std::move (type_no_bounds)),
-      locus (locus)
+    : TypeNoBounds (mappings), pointer_type (pointer_type),
+      type (std::move (type_no_bounds)), locus (locus)
   {}
 
   // Copy constructor calls custom polymorphic clone function
   RawPointerType (RawPointerType const &other)
-    : pointer_type (other.pointer_type),
+    : TypeNoBounds (other.mappings), pointer_type (other.pointer_type),
       type (other.type->clone_type_no_bounds ()), locus (other.locus)
   {}
 
   // overload assignment operator to use custom clone method
   RawPointerType &operator= (RawPointerType const &other)
   {
+    mappings = other.mappings;
     pointer_type = other.pointer_type;
     type = other.type->clone_type_no_bounds ();
     locus = other.locus;
@@ -504,21 +523,24 @@ public:
   bool has_lifetime () const { return !lifetime.is_error (); }
 
   // Constructor
-  ReferenceType (bool is_mut, std::unique_ptr<TypeNoBounds> type_no_bounds,
-		 Location locus, Lifetime lifetime = Lifetime::error ())
-    : lifetime (std::move (lifetime)), has_mut (is_mut),
-      type (std::move (type_no_bounds)), locus (locus)
+  ReferenceType (Analysis::NodeMapping mappings, bool is_mut,
+		 std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus,
+		 Lifetime lifetime = Lifetime::error ())
+    : TypeNoBounds (mappings), lifetime (std::move (lifetime)),
+      has_mut (is_mut), type (std::move (type_no_bounds)), locus (locus)
   {}
 
   // Copy constructor with custom clone method
   ReferenceType (ReferenceType const &other)
-    : lifetime (other.lifetime), has_mut (other.has_mut),
-      type (other.type->clone_type_no_bounds ()), locus (other.locus)
+    : TypeNoBounds (other.mappings), lifetime (other.lifetime),
+      has_mut (other.has_mut), type (other.type->clone_type_no_bounds ()),
+      locus (other.locus)
   {}
 
   // Operator overload assignment operator to custom clone the unique pointer
   ReferenceType &operator= (ReferenceType const &other)
   {
+    mappings = other.mappings;
     lifetime = other.lifetime;
     has_mut = other.has_mut;
     type = other.type->clone_type_no_bounds ();
@@ -562,20 +584,22 @@ class ArrayType : public TypeNoBounds
 
 public:
   // Constructor requires pointers for polymorphism
-  ArrayType (std::unique_ptr<Type> type, std::unique_ptr<Expr> array_size,
-	     Location locus)
-    : elem_type (std::move (type)), size (std::move (array_size)), locus (locus)
+  ArrayType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
+	     std::unique_ptr<Expr> array_size, Location locus)
+    : TypeNoBounds (mappings), elem_type (std::move (type)),
+      size (std::move (array_size)), locus (locus)
   {}
 
   // Copy constructor requires deep copies of both unique pointers
   ArrayType (ArrayType const &other)
-    : elem_type (other.elem_type->clone_type ()),
+    : TypeNoBounds (mappings), elem_type (other.elem_type->clone_type ()),
       size (other.size->clone_expr ()), locus (other.locus)
   {}
 
   // Overload assignment operator to deep copy pointers
   ArrayType &operator= (ArrayType const &other)
   {
+    mappings = other.mappings;
     elem_type = other.elem_type->clone_type ();
     size = other.size->clone_expr ();
     locus = other.locus;
@@ -620,18 +644,21 @@ class SliceType : public TypeNoBounds
 
 public:
   // Constructor requires pointer for polymorphism
-  SliceType (std::unique_ptr<Type> type, Location locus)
-    : elem_type (std::move (type)), locus (locus)
+  SliceType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
+	     Location locus)
+    : TypeNoBounds (mappings), elem_type (std::move (type)), locus (locus)
   {}
 
   // Copy constructor requires deep copy of Type smart pointer
   SliceType (SliceType const &other)
-    : elem_type (other.elem_type->clone_type ()), locus (other.locus)
+    : TypeNoBounds (other.mappings), elem_type (other.elem_type->clone_type ()),
+      locus (other.locus)
   {}
 
   // Overload assignment operator to deep copy
   SliceType &operator= (SliceType const &other)
   {
+    mappings = other.mappings;
     elem_type = other.elem_type->clone_type ();
     locus = other.locus;
 
@@ -684,7 +711,9 @@ protected:
   }
 
 public:
-  InferredType (Location locus) : locus (locus) {}
+  InferredType (Analysis::NodeMapping mappings, Location locus)
+    : TypeNoBounds (mappings), locus (locus)
+  {}
 
   std::string as_string () const override;
 
@@ -783,11 +812,12 @@ public:
   // Whether the function has ForLifetimes.
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
-  BareFunctionType (std::vector<LifetimeParam> lifetime_params,
+  BareFunctionType (Analysis::NodeMapping mappings,
+		    std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
 		    std::unique_ptr<TypeNoBounds> type, Location locus)
-    : for_lifetimes (std::move (lifetime_params)),
+    : TypeNoBounds (mappings), for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), is_variadic (is_variadic),
       return_type (std::move (type)), locus (locus)
@@ -795,7 +825,7 @@ public:
 
   // Copy constructor with clone
   BareFunctionType (BareFunctionType const &other)
-    : for_lifetimes (other.for_lifetimes),
+    : TypeNoBounds (other.mappings), for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
       is_variadic (other.is_variadic),
       return_type (other.return_type->clone_type_no_bounds ()),
@@ -805,6 +835,7 @@ public:
   // Overload assignment operator to deep copy
   BareFunctionType &operator= (BareFunctionType const &other)
   {
+    mappings = other.mappings;
     for_lifetimes = other.for_lifetimes;
     function_qualifiers = other.function_qualifiers;
     params = other.params;

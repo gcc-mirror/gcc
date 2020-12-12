@@ -58,6 +58,8 @@ public:
       = new HIR::ExprStmtWithoutBlock (mapping,
 				       std::unique_ptr<HIR::Expr> (expr),
 				       stmt.get_locus ());
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       stmt.get_locus ());
   }
 
   void visit (AST::LetStmt &stmt)
@@ -82,6 +84,8 @@ public:
 			  std::unique_ptr<HIR::Expr> (init_expression),
 			  std::unique_ptr<HIR::Type> (type),
 			  std::move (outer_attrs), stmt.get_locus ());
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       stmt.get_locus ());
   }
 
 private:

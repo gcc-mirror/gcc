@@ -41,16 +41,16 @@ public:
 
   void visit (AST::LetStmt &stmt)
   {
-    PatternDeclaration::go (stmt.variables_pattern.get (), stmt.get_node_id ());
+    PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
     if (stmt.has_type ())
-      ResolveType::go (stmt.type.get (), stmt.get_node_id ());
+      ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
 
     if (stmt.has_init_expr ())
-      ResolveExpr::go (stmt.init_expr.get (), stmt.get_node_id ());
+      ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id ());
   }
 
 private:
-  ResolveStmt () : ResolverBase (UNKNOWN_NODEID) {}
+  ResolveStmt (NodeId parent) : ResolverBase (parent) {}
 };
 
 } // namespace Resolver

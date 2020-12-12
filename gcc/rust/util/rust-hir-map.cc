@@ -133,6 +133,8 @@ Mappings::get_current_crate ()
       hirIdIter[currentCrateNum] = UNKNOWN_HIRID;
       nodeIdIter[currentCrateNum] = UNKNOWN_NODEID;
       localIdIter[currentCrateNum] = UNKNOWN_LOCAL_DEFID;
+      nodeIdToHirMappings[currentCrateNum] = {};
+      locations[currentCrateNum] = {};
     }
 
   return currentCrateNum;
@@ -157,7 +159,7 @@ Mappings::get_next_hir_id (CrateNum crateNum)
 
   auto id = it->second + 1;
   hirIdIter[crateNum] = id;
-  return id++;
+  return id;
 }
 
 LocalDefId
@@ -238,6 +240,7 @@ Mappings::insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item)
   rust_assert (lookup_hir_item (crateNum, id) == nullptr);
 
   hirItemMappings[crateNum][id] = item;
+  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
 }
 
 HIR::Item *
@@ -260,6 +263,8 @@ Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
   rust_assert (lookup_hir_expr (crateNum, id) == nullptr);
 
   hirExprMappings[crateNum][id] = expr;
+  nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
+  insert_location (crateNum, id, expr->get_locus_slow ());
 }
 
 HIR::Expr *
@@ -267,6 +272,29 @@ Mappings::lookup_hir_expr (CrateNum crateNum, HirId id)
 {
   auto it = hirExprMappings.find (crateNum);
   if (it == hirExprMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
+Mappings::insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type)
+{
+  rust_assert (lookup_hir_type (crateNum, id) == nullptr);
+
+  hirTypeMappings[crateNum][id] = type;
+  nodeIdToHirMappings[crateNum][type->get_mappings ().get_nodeid ()] = id;
+}
+
+HIR::Type *
+Mappings::lookup_hir_type (CrateNum crateNum, HirId id)
+{
+  auto it = hirTypeMappings.find (crateNum);
+  if (it == hirTypeMappings.end ())
     return nullptr;
 
   auto iy = it->second.find (id);
@@ -312,6 +340,41 @@ Mappings::walk_local_defids_for_crate (CrateNum crateNum,
       if (!cb (iy->second))
 	return;
     }
+}
+
+bool
+Mappings::lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref)
+{
+  auto it = nodeIdToHirMappings.find (crate);
+  if (it == nodeIdToHirMappings.end ())
+    return false;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return false;
+
+  *ref = iy->second;
+  return true;
+}
+
+void
+Mappings::insert_location (CrateNum crate, HirId id, Location locus)
+{
+  locations[crate][id] = locus;
+}
+
+Location
+Mappings::lookup_location (CrateNum crate, HirId id)
+{
+  auto it = locations.find (crate);
+  if (it == locations.end ())
+    return Location ();
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return Location ();
+
+  return iy->second;
 }
 
 } // namespace Analysis

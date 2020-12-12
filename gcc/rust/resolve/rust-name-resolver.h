@@ -21,6 +21,7 @@
 
 #include "rust-system.h"
 #include "rust-hir-map.h"
+#include "rust-hir-type-check.h"
 
 namespace Rust {
 namespace Resolver {
@@ -54,6 +55,15 @@ public:
 
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
+
+  void iterate_decls (std::function<bool (NodeId)> cb)
+  {
+    for (auto it : decls_within_rib)
+      {
+	if (!cb (it))
+	  return;
+      }
+  }
 
 private:
   CrateNum crate_num;
@@ -174,6 +184,7 @@ private:
   void generate_builtins ();
 
   Analysis::Mappings *mappings;
+  TypeCheckContext *tyctx;
 
   std::vector<AST::TypePath *> builtins;
 

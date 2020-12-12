@@ -319,19 +319,6 @@ public:
     // not having either is not an error
   }
 
-  // Creates an error state self-param.
-  static SelfParam create_error ()
-  {
-    /* HACK: creates a dummy type. Since it's a unique pointer, it should
-     * clean it up, but it still allocates memory, which is not ideal. */
-    return SelfParam (Lifetime (Lifetime::STATIC), false, false,
-		      new QualifiedPathInType (
-			QualifiedPathInType::create_error ()));
-    /* FIXME: is there a reason why I didn't just create a null pointer? Is it
-     * due to error being having both a type and a lifetime? If it is, wouldn't
-     * something like "not has_ref and has lifetime" for error be better? */
-  }
-
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (std::unique_ptr<Type> type, bool is_mut, Location locus)
     : has_ref (false), is_mut (is_mut), lifetime (Lifetime::error ()),
@@ -588,22 +575,6 @@ class Method : public InherentImplItem, public TraitImplItem
   Location locus;
 
 public:
-  // Returns whether the method is in an error state.
-  bool is_error () const
-  {
-    return expr == nullptr || method_name.empty () || self_param.is_error ();
-  }
-
-  // Creates an error state method.
-  static Method create_error ()
-  {
-    return Method ("", FunctionQualifiers (FunctionQualifiers::NONE, true),
-		   std::vector<std::unique_ptr<GenericParam> > (),
-		   SelfParam::create_error (), std::vector<FunctionParam> (),
-		   nullptr, WhereClause::create_empty (), nullptr,
-		   Visibility::create_error (), std::vector<Attribute> ());
-  }
-
   // Returns whether the method has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
 

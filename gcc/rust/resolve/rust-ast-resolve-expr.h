@@ -49,23 +49,24 @@ public:
 
   void visit (AST::ReturnExpr &expr)
   {
-    if (expr.has_return_expr ())
-      ResolveExpr::go (expr.get_expr (), expr.get_node_id ());
+    if (expr.has_returned_expr ())
+      ResolveExpr::go (expr.get_returned_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::CallExpr &expr)
   {
-    ResolveExpr::go (expr.function.get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_function_expr ().get (), expr.get_node_id ());
     expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
       ResolveExpr::go (p, expr.get_node_id ());
       return true;
     });
+    /// resolver->insert_resolved_name(NodeId refId,NodeId defId)
   }
 
   void visit (AST::AssignmentExpr &expr)
   {
-    ResolveExpr::go (expr.get_lhs (), expr.get_node_id ());
-    ResolveExpr::go (expr.get_rhs (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::IdentifierExpr &expr)
@@ -84,8 +85,8 @@ public:
 
   void visit (AST::ArithmeticOrLogicalExpr &expr)
   {
-    ResolveExpr::go (expr.get_lhs (), expr.get_node_id ());
-    ResolveExpr::go (expr.right_expr.get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
 private:

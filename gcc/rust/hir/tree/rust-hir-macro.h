@@ -345,7 +345,8 @@ public:
   MacroInvocation (Analysis::NodeMapping mappings, SimplePath path,
 		   DelimTokenTree token_tree,
 		   std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
+    : TypeNoBounds (mappings),
+      ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       path (std::move (path)), token_tree (std::move (token_tree)),
       locus (locus)
   {}

@@ -26,16 +26,15 @@
 #include "tm.h"
 #include "tm_p.h"
 
+#include "rust-target.h"
+
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-scan.h"
 #include "rust-macro-expand.h"
-#include "rust-compile.h"
-#include "rust-target.h"
-
-// hir passes wip
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
+#include "rust-hir-type-check.h"
 
 extern Linemap *
 rust_get_linemap ();
@@ -531,7 +530,7 @@ Session::parse_file (const char *filename)
     }
 
   // lower AST to HIR
-  HIR::Crate hir = HIR::ASTLowering::Resolve (parsed_crate);
+  HIR::Crate hir = lower_ast (parsed_crate);
   if (options.dump_option == CompileOptions::HIR_DUMP)
     {
       fprintf (stderr, "%s", hir.as_string ().c_str ());
@@ -539,13 +538,13 @@ Session::parse_file (const char *filename)
     }
 
   // type resolve
-  // TODO
+  type_resolution (hir);
 
   if (saw_errors ())
     return;
 
   // do compile
-  Compile::Compilation::Compile (parsed_crate, backend);
+  // Compile::Compilation::Compile (parsed_crate, backend);
 }
 
 // TODO: actually implement method
@@ -775,6 +774,23 @@ Session::resolution (AST::Crate &crate)
   fprintf (stderr, "started name resolution\n");
   Resolver::NameResolution::Resolve (crate);
   fprintf (stderr, "finished name resolution\n");
+}
+
+HIR::Crate
+Session::lower_ast (AST::Crate &crate)
+{
+  fprintf (stderr, "started lowering AST\n");
+  auto hir = HIR::ASTLowering::Resolve (crate);
+  fprintf (stderr, "finished lowering AST\n");
+  return hir;
+}
+
+void
+Session::type_resolution (HIR::Crate &crate)
+{
+  fprintf (stderr, "started type resolution\n");
+  Resolver::TypeResolution::Resolve (crate);
+  fprintf (stderr, "finished type resolution\n");
 }
 
 void

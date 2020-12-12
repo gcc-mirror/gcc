@@ -20,6 +20,7 @@
 #define RUST_HIR_MAP_H
 
 #include "rust-system.h"
+#include "rust-location.h"
 
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
@@ -40,11 +41,11 @@ typedef uint64_t DefId;
 #define DEF_ID_CRATE_MASK 0xFFFFFFFF00000000
 #define DEF_ID_LOCAL_DEF_MASK 0x00000000FFFFFFFF
 
-#define UNKNOWN_CREATENUM ((uint32_t) (-1))
-#define UNKNOWN_NODEID ((uint32_t) (-1))
-#define UNKNOWN_HIRID ((uint32_t) (-1))
-#define UNKNOWN_LOCAL_DEFID ((uint32_t) (-1))
-#define UNKNOWN_DEFID ((uint64_t) (-1))
+#define UNKNOWN_CREATENUM ((uint32_t) (0))
+#define UNKNOWN_NODEID ((uint32_t) (0))
+#define UNKNOWN_HIRID ((uint32_t) (0))
+#define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
+#define UNKNOWN_DEFID ((uint64_t) (0))
 
 namespace Analysis {
 
@@ -86,7 +87,10 @@ public:
 
   NodeId get_next_node_id () { return get_next_node_id (get_current_crate ()); }
   NodeId get_next_node_id (CrateNum crateNum);
+
+  HirId get_next_hir_id () { return get_next_hir_id (get_current_crate ()); }
   HirId get_next_hir_id (CrateNum crateNum);
+
   LocalDefId get_next_localdef_id (CrateNum crateNum);
 
   AST::Crate *get_ast_crate (CrateNum crateNum);
@@ -108,8 +112,20 @@ public:
   void insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (CrateNum crateNum, HirId id);
 
+  void insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type);
+  HIR::Type *lookup_hir_type (CrateNum crateNum, HirId id);
+
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
+
+  bool lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref);
+
+  void insert_location (CrateNum crate, HirId id, Location locus);
+  Location lookup_location (CrateNum crate, HirId id);
+  Location lookup_location (HirId id)
+  {
+    return lookup_location (get_current_crate (), id);
+  }
 
 private:
   Mappings ();
@@ -127,7 +143,11 @@ private:
   std::map<DefId, HIR::Item *> defIdMappings;
   std::map<CrateNum, std::map<LocalDefId, HIR::Item *> > localDefIdMappings;
   std::map<CrateNum, std::map<HirId, HIR::Item *> > hirItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Type *> > hirTypeMappings;
   std::map<CrateNum, std::map<HirId, HIR::Expr *> > hirExprMappings;
+
+  // location info
+  std::map<CrateNum, std::map<NodeId, Location> > locations;
 
   // reverse mappings
   std::map<CrateNum, std::map<NodeId, HirId> > nodeIdToHirMappings;

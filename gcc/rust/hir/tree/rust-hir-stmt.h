@@ -113,6 +113,10 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  HIR::Type *get_type () { return type.get (); }
+
+  HIR::Expr *get_init_expr () { return init_expr.get (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

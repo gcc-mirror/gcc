@@ -968,9 +968,15 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual Analysis::NodeMapping get_mappings () { return mappings; }
+
 protected:
+  Type (Analysis::NodeMapping mappings) : mappings (mappings) {}
+
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
+
+  Analysis::NodeMapping mappings;
 };
 
 // A type without parentheses? - abstract
@@ -984,6 +990,8 @@ public:
   }
 
 protected:
+  TypeNoBounds (Analysis::NodeMapping mappings) : Type (mappings) {}
+
   // Clone function implementation as pure virtual method
   virtual TypeNoBounds *clone_type_no_bounds_impl () const = 0;
 

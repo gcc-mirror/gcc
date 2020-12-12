@@ -591,20 +591,24 @@ public:
   // Creates an error state TypePath.
   static TypePath create_error ()
   {
-    return TypePath (std::vector<std::unique_ptr<TypePathSegment> > (),
+    return TypePath (Analysis::NodeMapping::get_error (),
+		     std::vector<std::unique_ptr<TypePathSegment> > (),
 		     Location ());
   }
 
   // Constructor
-  TypePath (std::vector<std::unique_ptr<TypePathSegment> > segments,
+  TypePath (Analysis::NodeMapping mappings,
+	    std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    Location locus, bool has_opening_scope_resolution = false)
-    : has_opening_scope_resolution (has_opening_scope_resolution),
+    : TypeNoBounds (mappings),
+      has_opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (segments)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : has_opening_scope_resolution (other.has_opening_scope_resolution),
+    : TypeNoBounds (other.mappings),
+      has_opening_scope_resolution (other.has_opening_scope_resolution),
       locus (other.locus)
   {
     segments.reserve (other.segments.size ());
@@ -617,6 +621,7 @@ public:
   {
     has_opening_scope_resolution = other.has_opening_scope_resolution;
     locus = other.locus;
+    mappings = other.mappings;
 
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -793,10 +798,10 @@ protected:
 
 public:
   QualifiedPathInType (
-    QualifiedPathType qual_path_type,
+    Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
     Location locus = Location ())
-    : path_type (std::move (qual_path_type)),
+    : TypeNoBounds (mappings), path_type (std::move (qual_path_type)),
       segments (std::move (path_segments)), locus (locus)
   {}
 
@@ -805,7 +810,7 @@ public:
 
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)
-    : path_type (other.path_type), locus (other.locus)
+    : TypeNoBounds (mappings), path_type (other.path_type), locus (other.locus)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -817,6 +822,7 @@ public:
   {
     path_type = other.path_type;
     locus = other.locus;
+    mappings = other.mappings;
 
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -828,17 +834,6 @@ public:
   // move constructors
   QualifiedPathInType (QualifiedPathInType &&other) = default;
   QualifiedPathInType &operator= (QualifiedPathInType &&other) = default;
-
-  // Returns whether qualified path in type is in an error state.
-  bool is_error () const { return path_type.is_error (); }
-
-  // Creates an error state qualified path in type.
-  static QualifiedPathInType create_error ()
-  {
-    return QualifiedPathInType (
-      QualifiedPathType::create_error (),
-      std::vector<std::unique_ptr<TypePathSegment> > ());
-  }
 
   std::string as_string () const override;
 
