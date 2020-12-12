@@ -691,56 +691,25 @@ package body Sem_Cat is
    -------------------------------------
 
    procedure Set_Categorization_From_Pragmas (N : Node_Id) is
-      P   : constant Node_Id := Parent (N);
-      S   : constant Entity_Id := Current_Scope;
+      P : constant Node_Id := Parent (N);
 
-      procedure Set_Parents (Visibility : Boolean);
-         --  If this is a child instance, the parents are not immediately
-         --  visible during analysis. Make them momentarily visible so that
-         --  the argument of the pragma can be resolved properly, and reset
-         --  afterwards.
+      procedure Make_Parents_Visible_And_Process_Pragmas (Par : Entity_Id);
+      --  Parents might not be immediately visible during analysis. Make
+      --  them momentarily visible so that the argument of the pragma can
+      --  be resolved properly, process pragmas and restore the previous
+      --  visibility.
 
-      -----------------
-      -- Set_Parents --
-      -----------------
+      procedure Process_Categorization_Pragmas;
+      --  Process categorization pragmas, if any
 
-      procedure Set_Parents (Visibility : Boolean) is
-         Par : Entity_Id;
-      begin
-         Par := Scope (S);
-         while Present (Par) and then Par /= Standard_Standard loop
-            Set_Is_Immediately_Visible (Par, Visibility);
-            Par := Scope (Par);
-         end loop;
-      end Set_Parents;
+      ------------------------------------
+      -- Process_Categorization_Pragmas --
+      ------------------------------------
 
-   --  Start of processing for Set_Categorization_From_Pragmas
-
-   begin
-      --  Deal with categorization pragmas in Pragmas of Compilation_Unit.
-      --  The purpose is to set categorization flags before analyzing the
-      --  unit itself, so as to diagnose violations of categorization as
-      --  we process each declaration, even though the pragma appears after
-      --  the unit. This processing is only needed if compilation unit pragmas
-      --  are present.
-      --  Note: This code may be incorrect in the unlikely case a child generic
-      --  unit is instantiated as a child of its (nongeneric) parent, so that
-      --  generic and instance are siblings.
-
-      if Nkind (P) /= N_Compilation_Unit
-         or else No (First (Pragmas_After (Aux_Decls_Node (P))))
-      then
-         return;
-      end if;
-
-      declare
+      procedure Process_Categorization_Pragmas is
          PN : Node_Id;
 
       begin
-         if Is_Child_Unit (S) and then Is_Generic_Instance (S) then
-            Set_Parents (True);
-         end if;
-
          PN := First (Pragmas_After (Aux_Decls_Node (P)));
          while Present (PN) loop
 
@@ -765,11 +734,49 @@ package body Sem_Cat is
 
             Next (PN);
          end loop;
+      end Process_Categorization_Pragmas;
 
-         if Is_Child_Unit (S) and then Is_Generic_Instance (S) then
-            Set_Parents (False);
+      ----------------------------------------------
+      -- Make_Parents_Visible_And_Process_Pragmas --
+      ----------------------------------------------
+
+      procedure Make_Parents_Visible_And_Process_Pragmas (Par : Entity_Id) is
+      begin
+         --  When we reached the Standard scope, then just process pragmas
+
+         if Par = Standard_Standard then
+            Process_Categorization_Pragmas;
+
+         --  Otherwise make the current scope momentarily visible, recurse
+         --  into its enclosing scope, and restore the visibility. This is
+         --  required for child units that are instances of generic parents.
+
+         else
+            declare
+               Save_Is_Immediately_Visible : constant Boolean :=
+                 Is_Immediately_Visible (Par);
+            begin
+               Set_Is_Immediately_Visible (Par);
+               Make_Parents_Visible_And_Process_Pragmas (Scope (Par));
+               Set_Is_Immediately_Visible (Par, Save_Is_Immediately_Visible);
+            end;
          end if;
-      end;
+      end Make_Parents_Visible_And_Process_Pragmas;
+
+   --  Start of processing for Set_Categorization_From_Pragmas
+
+   begin
+      --  Deal with categorization pragmas in Pragmas of Compilation_Unit.
+      --  The purpose is to set categorization flags before analyzing the
+      --  unit itself, so as to diagnose violations of categorization as
+      --  we process each declaration, even though the pragma appears after
+      --  the unit.
+
+      if Nkind (P) /= N_Compilation_Unit then
+         return;
+      end if;
+
+      Make_Parents_Visible_And_Process_Pragmas (Scope (Current_Scope));
    end Set_Categorization_From_Pragmas;
 
    -----------------------------------
