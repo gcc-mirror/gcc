@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/known-headers.h"
 #include "c-family/c-spellcheck.h"
 #include "bitmap.h"
-#include "intl.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -3515,7 +3514,7 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
 
 	  if (level->kind != sk_namespace
 	      && !instantiating_current_function_p ())
-	    /* If this is a locally defined typedef in a function that
+	    /* This is a locally defined typedef in a function that
 	       is not a template instantation, record it to implement
 	       -Wunused-local-typedefs.  */
 	    record_locally_defined_typedef (decl);

@@ -1,3 +1,133 @@
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (map_context_from, map_context_to): Declare.
+	* module.cc (map_context_from, map_context_to): Define.
+	* tree.c (cp_tree_equal): Check map_context_{from,to} for parm
+	context difference.  Allow NON_LVALUE_EXPR and VIEW_CONVERT_EXPR
+	with null types.
+
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_MAIN_FILE): Override.
+	(LANG_HOOKS_PREPROCESS_OPTIONS): Override.
+	(LANG_HOOKS_PREPROCESS_TOKEN): Override.
+	* cp-objcp-common.c (cp_register_dumps): Add module dump.
+	(cp_handle_option): New.
+	* cp-objcp-common.h (cp_handle_option): Declare.
+	(LANG_HOOKS_HANDLE_OPTION): Override.
+	* cp-tree.h (module_dump_id): Declare.
+	* module.cc (module_dump_id): Define.
+	(module_begin_main_file, handle_module_option)
+	(module_preproces_options): Stubs.
+
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (lazy_specializations_p): Stub.
+	* name-lookup.h (append_imported_binding_slot)
+	(mergeable_namespacE_slots, lookup_class_binding)
+	(walk_module_binding, import_module_binding, set_module_binding)
+	(note_pending_specializations, load_pending_specializations)
+	(add_module_decl, add_imported_namespace): Declare.
+	(get_cxx_dialect_name): Declare.
+	(enum WMB_flags): New.
+	* name-lookup.c (append_imported_binding_slot)
+	(mergeable_namespacE_slots, lookup_class_binding)
+	(walk_module_binding, import_module_binding, set_module_binding)
+	(note_pending_specializations, load_pending_specializations)
+	(add_module_decl, add_imported_namespace): New.
+	(get_cxx_dialect_name): Make extern.
+
+2020-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78173
+	* typeck.c (pointer_diff): Use complete_type_or_maybe_complain
+	instead of complete_type_or_else.
+
+2020-12-10  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct type_identity): New.
+	(make_temp_override): New.
+	* decl.c (grokdeclarator): Use it.
+	* except.c (maybe_noexcept_warning): Use it.
+	* parser.c (cp_parser_enum_specifier): Use it.
+	(cp_parser_parameter_declaration_clause): Use it.
+	(cp_parser_gnu_attributes_opt): Use it.
+	(cp_parser_std_attribute): Use it.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (do_nonmember_using_decl): Add INSERT_P parm.
+	Deal with exporting using decls.
+	(finish_nonmember_using_decl): Examine BINDING_VECTOR.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (visible_instantiation_path): Renamed.
+	* module.cc (get_originating_module_decl, lazy_load_binding)
+	(lazy_load_members, visible_instantiation_path): Stubs.
+	* name-lookup.c (STAT_TYPE_VISIBLE_P, STAT_VISIBLE): New.
+	(search_imported_binding_slot, init_global_partition)
+	(get_fixed_binding_slot): New.
+	(name_lookup::process_module_binding): New.
+	(name_lookup::search_namespace_only): Search BINDING_VECTOR.
+	(name_lookup::adl_namespace_fns): Likewise.
+	(name_lookip::search_adl): Search visible instantiation path.
+	(maybe_lazily_declare): Maybe lazy load members.
+	(implicitly_exporT_namespace): New.
+	(maybe_record_mergeable_decl): New.
+	(check_module_override): New.
+	(do_pushdecl): Deal with BINDING_VECTOR, check override.
+	(add_mergeable_namespace_entity): New.
+	(get_namespace_binding): Deal with BINDING_VECTOR.
+	(do_namespace_alias): Call set_originating_module.
+	(lookup_elaborated_type_1): Deal with BINDING_VECTOR.
+	(do_pushtag): Call set_originating_module.
+	(reuse_namespace): New.
+	(make_namespace_finish): Add FROM_IMPORT parm.
+	(push_namespace): Deal with BINDING_VECTOR & namespace reuse.
+	(maybe_save_operator_binding): Save when module CMI in play.
+	* name-lookup.h (add_mergeable_namespace_entity): Declare.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c: Include bitmap.h.
+	(enum binding_slots): New.
+	(maybe_add_fuzzy_binding): Return bool true if found.
+	(consider_binding_level): Add module support.
+	* module.cc (get_import_bitmap): Stub.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (pop_local_binding): Check for IDENTIFIER_ANON_P.
+	(update_binding): Level may be null, don't add namespaces to
+	level.
+	(newbinding_bookkeeping): New, broken out of ...
+	(do_pushdecl): ... here, call it.  Don't push anonymous decls.
+	(pushdecl, add_using_namespace): Correct comments.
+	(do_push_nested_namespace): Remove assert.
+	(make_namespace, make_namespace_finish): New, broken out of ...
+	(push_namespace): ... here.  Call them.  Add namespace to level
+	here.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* error.c (dump_module_suffix): New.
+	(dump_aggr_type, dump_simple_decl, dump_function_name): Call it.
+	* ptree.c (cxx_print_decl): Print module information.
+	* module.cc (module_name, get_importing_module): Stubs.
+
+2020-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (set_class_bindings): Return vector, take signed
+	'extra' parm.
+	* name-lookup.c (maybe_lazily_declare): Break out ...
+	(get_class_binding): .. of here, call it.
+	(find_member_slot): Adjust get_class_bindings call.
+	(set_class_bindings): Allow -ve extra.  Return the vector.
+	(set_identifier_type_value_with_scope): Remove checking assert.
+	(lookup_using_decl): Set decl's context.
+	(do_pushtag): Adjust set_identifier_type_value_with_scope handling.
+
 2020-12-09  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.h (struct cp_token): Add main_source_p field.

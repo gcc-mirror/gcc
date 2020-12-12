@@ -4972,7 +4972,7 @@ build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
 
 /* Produce declarations for all appropriate clones of FN.  If
    UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_METHOD_VEC.  */
+   CLASSTYPE_MEMBER_VEC.  */
 
 void
 clone_cdtor (tree fn, bool update_methods)

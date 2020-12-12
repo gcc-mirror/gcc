@@ -1040,9 +1040,9 @@ configure-host:  \
     maybe-configure-utils \
     maybe-configure-c++tools \
     maybe-configure-gnattools \
-    maybe-configure-gotools \
     maybe-configure-lto-plugin \
     maybe-configure-libcc1 \
+    maybe-configure-gotools \
     maybe-configure-libctf
 .PHONY: configure-target
 configure-target:  \
@@ -1200,11 +1200,11 @@ all-host: maybe-all-libtermcap
 all-host: maybe-all-utils
 all-host: maybe-all-c++tools
 all-host: maybe-all-gnattools
-all-host: maybe-all-gotools
 @if lto-plugin-no-bootstrap
 all-host: maybe-all-lto-plugin
 @endif lto-plugin-no-bootstrap
 all-host: maybe-all-libcc1
+all-host: maybe-all-gotools
 @if libctf-no-bootstrap
 all-host: maybe-all-libctf
 @endif libctf-no-bootstrap
@@ -1310,9 +1310,9 @@ info-host: maybe-info-libtermcap
 info-host: maybe-info-utils
 info-host: maybe-info-c++tools
 info-host: maybe-info-gnattools
-info-host: maybe-info-gotools
 info-host: maybe-info-lto-plugin
 info-host: maybe-info-libcc1
+info-host: maybe-info-gotools
 info-host: maybe-info-libctf
 
 .PHONY: info-target
@@ -1401,9 +1401,9 @@ dvi-host: maybe-dvi-libtermcap
 dvi-host: maybe-dvi-utils
 dvi-host: maybe-dvi-c++tools
 dvi-host: maybe-dvi-gnattools
-dvi-host: maybe-dvi-gotools
 dvi-host: maybe-dvi-lto-plugin
 dvi-host: maybe-dvi-libcc1
+dvi-host: maybe-dvi-gotools
 dvi-host: maybe-dvi-libctf
 
 .PHONY: dvi-target
@@ -1492,9 +1492,9 @@ pdf-host: maybe-pdf-libtermcap
 pdf-host: maybe-pdf-utils
 pdf-host: maybe-pdf-c++tools
 pdf-host: maybe-pdf-gnattools
-pdf-host: maybe-pdf-gotools
 pdf-host: maybe-pdf-lto-plugin
 pdf-host: maybe-pdf-libcc1
+pdf-host: maybe-pdf-gotools
 pdf-host: maybe-pdf-libctf
 
 .PHONY: pdf-target
@@ -1583,9 +1583,9 @@ html-host: maybe-html-libtermcap
 html-host: maybe-html-utils
 html-host: maybe-html-c++tools
 html-host: maybe-html-gnattools
-html-host: maybe-html-gotools
 html-host: maybe-html-lto-plugin
 html-host: maybe-html-libcc1
+html-host: maybe-html-gotools
 html-host: maybe-html-libctf
 
 .PHONY: html-target
@@ -1674,9 +1674,9 @@ TAGS-host: maybe-TAGS-libtermcap
 TAGS-host: maybe-TAGS-utils
 TAGS-host: maybe-TAGS-c++tools
 TAGS-host: maybe-TAGS-gnattools
-TAGS-host: maybe-TAGS-gotools
 TAGS-host: maybe-TAGS-lto-plugin
 TAGS-host: maybe-TAGS-libcc1
+TAGS-host: maybe-TAGS-gotools
 TAGS-host: maybe-TAGS-libctf
 
 .PHONY: TAGS-target
@@ -1765,9 +1765,9 @@ install-info-host: maybe-install-info-libtermcap
 install-info-host: maybe-install-info-utils
 install-info-host: maybe-install-info-c++tools
 install-info-host: maybe-install-info-gnattools
-install-info-host: maybe-install-info-gotools
 install-info-host: maybe-install-info-lto-plugin
 install-info-host: maybe-install-info-libcc1
+install-info-host: maybe-install-info-gotools
 install-info-host: maybe-install-info-libctf
 
 .PHONY: install-info-target
@@ -1856,9 +1856,9 @@ install-pdf-host: maybe-install-pdf-libtermcap
 install-pdf-host: maybe-install-pdf-utils
 install-pdf-host: maybe-install-pdf-c++tools
 install-pdf-host: maybe-install-pdf-gnattools
-install-pdf-host: maybe-install-pdf-gotools
 install-pdf-host: maybe-install-pdf-lto-plugin
 install-pdf-host: maybe-install-pdf-libcc1
+install-pdf-host: maybe-install-pdf-gotools
 install-pdf-host: maybe-install-pdf-libctf
 
 .PHONY: install-pdf-target
@@ -1947,9 +1947,9 @@ install-html-host: maybe-install-html-libtermcap
 install-html-host: maybe-install-html-utils
 install-html-host: maybe-install-html-c++tools
 install-html-host: maybe-install-html-gnattools
-install-html-host: maybe-install-html-gotools
 install-html-host: maybe-install-html-lto-plugin
 install-html-host: maybe-install-html-libcc1
+install-html-host: maybe-install-html-gotools
 install-html-host: maybe-install-html-libctf
 
 .PHONY: install-html-target
@@ -2038,9 +2038,9 @@ installcheck-host: maybe-installcheck-libtermcap
 installcheck-host: maybe-installcheck-utils
 installcheck-host: maybe-installcheck-c++tools
 installcheck-host: maybe-installcheck-gnattools
-installcheck-host: maybe-installcheck-gotools
 installcheck-host: maybe-installcheck-lto-plugin
 installcheck-host: maybe-installcheck-libcc1
+installcheck-host: maybe-installcheck-gotools
 installcheck-host: maybe-installcheck-libctf
 
 .PHONY: installcheck-target
@@ -2129,9 +2129,9 @@ mostlyclean-host: maybe-mostlyclean-libtermcap
 mostlyclean-host: maybe-mostlyclean-utils
 mostlyclean-host: maybe-mostlyclean-c++tools
 mostlyclean-host: maybe-mostlyclean-gnattools
-mostlyclean-host: maybe-mostlyclean-gotools
 mostlyclean-host: maybe-mostlyclean-lto-plugin
 mostlyclean-host: maybe-mostlyclean-libcc1
+mostlyclean-host: maybe-mostlyclean-gotools
 mostlyclean-host: maybe-mostlyclean-libctf
 
 .PHONY: mostlyclean-target
@@ -2220,9 +2220,9 @@ clean-host: maybe-clean-libtermcap
 clean-host: maybe-clean-utils
 clean-host: maybe-clean-c++tools
 clean-host: maybe-clean-gnattools
-clean-host: maybe-clean-gotools
 clean-host: maybe-clean-lto-plugin
 clean-host: maybe-clean-libcc1
+clean-host: maybe-clean-gotools
 clean-host: maybe-clean-libctf
 
 .PHONY: clean-target
@@ -2311,9 +2311,9 @@ distclean-host: maybe-distclean-libtermcap
 distclean-host: maybe-distclean-utils
 distclean-host: maybe-distclean-c++tools
 distclean-host: maybe-distclean-gnattools
-distclean-host: maybe-distclean-gotools
 distclean-host: maybe-distclean-lto-plugin
 distclean-host: maybe-distclean-libcc1
+distclean-host: maybe-distclean-gotools
 distclean-host: maybe-distclean-libctf
 
 .PHONY: distclean-target
@@ -2402,9 +2402,9 @@ maintainer-clean-host: maybe-maintainer-clean-libtermcap
 maintainer-clean-host: maybe-maintainer-clean-utils
 maintainer-clean-host: maybe-maintainer-clean-c++tools
 maintainer-clean-host: maybe-maintainer-clean-gnattools
-maintainer-clean-host: maybe-maintainer-clean-gotools
 maintainer-clean-host: maybe-maintainer-clean-lto-plugin
 maintainer-clean-host: maybe-maintainer-clean-libcc1
+maintainer-clean-host: maybe-maintainer-clean-gotools
 maintainer-clean-host: maybe-maintainer-clean-libctf
 
 .PHONY: maintainer-clean-target
@@ -2549,9 +2549,9 @@ check-host:  \
     maybe-check-utils \
     maybe-check-c++tools \
     maybe-check-gnattools \
-    maybe-check-gotools \
     maybe-check-lto-plugin \
     maybe-check-libcc1 \
+    maybe-check-gotools \
     maybe-check-libctf
 
 .PHONY: check-target
@@ -2687,9 +2687,9 @@ install-host-nogcc:  \
     maybe-install-utils \
     maybe-install-c++tools \
     maybe-install-gnattools \
-    maybe-install-gotools \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
+    maybe-install-gotools \
     maybe-install-libctf
 
 .PHONY: install-host
@@ -2742,9 +2742,9 @@ install-host:  \
     maybe-install-utils \
     maybe-install-c++tools \
     maybe-install-gnattools \
-    maybe-install-gotools \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
+    maybe-install-gotools \
     maybe-install-libctf
 
 .PHONY: install-target
@@ -2853,9 +2853,9 @@ install-strip-host:  \
     maybe-install-strip-utils \
     maybe-install-strip-c++tools \
     maybe-install-strip-gnattools \
-    maybe-install-strip-gotools \
     maybe-install-strip-lto-plugin \
     maybe-install-strip-libcc1 \
+    maybe-install-strip-gotools \
     maybe-install-strip-libctf
 
 .PHONY: install-strip-target
@@ -38995,447 +38995,6 @@ maintainer-clean-gnattools:
 
 
 
-.PHONY: configure-gotools maybe-configure-gotools
-maybe-configure-gotools:
-@if gcc-bootstrap
-configure-gotools: stage_current
-@endif gcc-bootstrap
-@if gotools
-maybe-configure-gotools: configure-gotools
-configure-gotools: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/gotools/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gotools; \
-	$(HOST_EXPORTS)  \
-	echo Configuring in $(HOST_SUBDIR)/gotools; \
-	cd "$(HOST_SUBDIR)/gotools" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/gotools/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=gotools; \
-	$(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif gotools
-
-
-
-
-
-.PHONY: all-gotools maybe-all-gotools
-maybe-all-gotools:
-@if gcc-bootstrap
-all-gotools: stage_current
-@endif gcc-bootstrap
-@if gotools
-TARGET-gotools=all
-maybe-all-gotools: all-gotools
-all-gotools: configure-gotools
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
-		$(TARGET-gotools))
-@endif gotools
-
-
-
-
-.PHONY: check-gotools maybe-check-gotools
-maybe-check-gotools:
-@if gotools
-maybe-check-gotools: check-gotools
-
-check-gotools:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(FLAGS_TO_PASS)  check)
-
-@endif gotools
-
-.PHONY: install-gotools maybe-install-gotools
-maybe-install-gotools:
-@if gotools
-maybe-install-gotools: install-gotools
-
-install-gotools: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install)
-
-@endif gotools
-
-.PHONY: install-strip-gotools maybe-install-strip-gotools
-maybe-install-strip-gotools:
-@if gotools
-maybe-install-strip-gotools: install-strip-gotools
-
-install-strip-gotools: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
-
-@endif gotools
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-gotools info-gotools
-maybe-info-gotools:
-@if gotools
-maybe-info-gotools: info-gotools
-
-info-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-dvi-gotools dvi-gotools
-maybe-dvi-gotools:
-@if gotools
-maybe-dvi-gotools: dvi-gotools
-
-dvi-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          dvi) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-pdf-gotools pdf-gotools
-maybe-pdf-gotools:
-@if gotools
-maybe-pdf-gotools: pdf-gotools
-
-pdf-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-html-gotools html-gotools
-maybe-html-gotools:
-@if gotools
-maybe-html-gotools: html-gotools
-
-html-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-TAGS-gotools TAGS-gotools
-maybe-TAGS-gotools:
-@if gotools
-maybe-TAGS-gotools: TAGS-gotools
-
-TAGS-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-install-info-gotools install-info-gotools
-maybe-install-info-gotools:
-@if gotools
-maybe-install-info-gotools: install-info-gotools
-
-install-info-gotools: \
-    configure-gotools \
-    info-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-info) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-install-pdf-gotools install-pdf-gotools
-maybe-install-pdf-gotools:
-@if gotools
-maybe-install-pdf-gotools: install-pdf-gotools
-
-install-pdf-gotools: \
-    configure-gotools \
-    pdf-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-pdf in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-pdf) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-install-html-gotools install-html-gotools
-maybe-install-html-gotools:
-@if gotools
-maybe-install-html-gotools: install-html-gotools
-
-install-html-gotools: \
-    configure-gotools \
-    html-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-html in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-html) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-installcheck-gotools installcheck-gotools
-maybe-installcheck-gotools:
-@if gotools
-maybe-installcheck-gotools: installcheck-gotools
-
-installcheck-gotools: \
-    configure-gotools 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          installcheck) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-mostlyclean-gotools mostlyclean-gotools
-maybe-mostlyclean-gotools:
-@if gotools
-maybe-mostlyclean-gotools: mostlyclean-gotools
-
-mostlyclean-gotools: 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          mostlyclean) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-clean-gotools clean-gotools
-maybe-clean-gotools:
-@if gotools
-maybe-clean-gotools: clean-gotools
-
-clean-gotools: 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          clean) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-distclean-gotools distclean-gotools
-maybe-distclean-gotools:
-@if gotools
-maybe-distclean-gotools: distclean-gotools
-
-distclean-gotools: 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          distclean) \
-	  || exit 1
-
-@endif gotools
-
-.PHONY: maybe-maintainer-clean-gotools maintainer-clean-gotools
-maybe-maintainer-clean-gotools:
-@if gotools
-maybe-maintainer-clean-gotools: maintainer-clean-gotools
-
-maintainer-clean-gotools: 
-	@: $(MAKE); $(unstage)
-	@[ -f ./gotools/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in gotools"; \
-	(cd $(HOST_SUBDIR)/gotools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          maintainer-clean) \
-	  || exit 1
-
-@endif gotools
-
-
-
 .PHONY: configure-lto-plugin maybe-configure-lto-plugin
 maybe-configure-lto-plugin:
 @if gcc-bootstrap
@@ -40997,6 +40556,447 @@ maintainer-clean-libcc1:
 	  || exit 1
 
 @endif libcc1
+
+
+
+.PHONY: configure-gotools maybe-configure-gotools
+maybe-configure-gotools:
+@if gcc-bootstrap
+configure-gotools: stage_current
+@endif gcc-bootstrap
+@if gotools
+maybe-configure-gotools: configure-gotools
+configure-gotools: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gotools/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gotools; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gotools; \
+	cd "$(HOST_SUBDIR)/gotools" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gotools/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gotools; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif gotools
+
+
+
+
+
+.PHONY: all-gotools maybe-all-gotools
+maybe-all-gotools:
+@if gcc-bootstrap
+all-gotools: stage_current
+@endif gcc-bootstrap
+@if gotools
+TARGET-gotools=all
+maybe-all-gotools: all-gotools
+all-gotools: configure-gotools
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gotools))
+@endif gotools
+
+
+
+
+.PHONY: check-gotools maybe-check-gotools
+maybe-check-gotools:
+@if gotools
+maybe-check-gotools: check-gotools
+
+check-gotools:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif gotools
+
+.PHONY: install-gotools maybe-install-gotools
+maybe-install-gotools:
+@if gotools
+maybe-install-gotools: install-gotools
+
+install-gotools: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gotools
+
+.PHONY: install-strip-gotools maybe-install-strip-gotools
+maybe-install-strip-gotools:
+@if gotools
+maybe-install-strip-gotools: install-strip-gotools
+
+install-strip-gotools: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif gotools
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-gotools info-gotools
+maybe-info-gotools:
+@if gotools
+maybe-info-gotools: info-gotools
+
+info-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-dvi-gotools dvi-gotools
+maybe-dvi-gotools:
+@if gotools
+maybe-dvi-gotools: dvi-gotools
+
+dvi-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-pdf-gotools pdf-gotools
+maybe-pdf-gotools:
+@if gotools
+maybe-pdf-gotools: pdf-gotools
+
+pdf-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-html-gotools html-gotools
+maybe-html-gotools:
+@if gotools
+maybe-html-gotools: html-gotools
+
+html-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-TAGS-gotools TAGS-gotools
+maybe-TAGS-gotools:
+@if gotools
+maybe-TAGS-gotools: TAGS-gotools
+
+TAGS-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-install-info-gotools install-info-gotools
+maybe-install-info-gotools:
+@if gotools
+maybe-install-info-gotools: install-info-gotools
+
+install-info-gotools: \
+    configure-gotools \
+    info-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-install-pdf-gotools install-pdf-gotools
+maybe-install-pdf-gotools:
+@if gotools
+maybe-install-pdf-gotools: install-pdf-gotools
+
+install-pdf-gotools: \
+    configure-gotools \
+    pdf-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-install-html-gotools install-html-gotools
+maybe-install-html-gotools:
+@if gotools
+maybe-install-html-gotools: install-html-gotools
+
+install-html-gotools: \
+    configure-gotools \
+    html-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-installcheck-gotools installcheck-gotools
+maybe-installcheck-gotools:
+@if gotools
+maybe-installcheck-gotools: installcheck-gotools
+
+installcheck-gotools: \
+    configure-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-mostlyclean-gotools mostlyclean-gotools
+maybe-mostlyclean-gotools:
+@if gotools
+maybe-mostlyclean-gotools: mostlyclean-gotools
+
+mostlyclean-gotools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-clean-gotools clean-gotools
+maybe-clean-gotools:
+@if gotools
+maybe-clean-gotools: clean-gotools
+
+clean-gotools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-distclean-gotools distclean-gotools
+maybe-distclean-gotools:
+@if gotools
+maybe-distclean-gotools: distclean-gotools
+
+distclean-gotools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-maintainer-clean-gotools maintainer-clean-gotools
+maybe-maintainer-clean-gotools:
+@if gotools
+maybe-maintainer-clean-gotools: maintainer-clean-gotools
+
+maintainer-clean-gotools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif gotools
 
 
 

@@ -4602,7 +4602,7 @@ class Sink_type : public Type
   { go_unreachable(); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_unreachable(); }
 };
 
@@ -5712,7 +5712,7 @@ class Call_multiple_result_type : public Type
   { go_assert(saw_errors()); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_assert(saw_errors()); }
 
  private:

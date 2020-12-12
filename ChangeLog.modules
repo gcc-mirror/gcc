@@ -1,5 +1,8 @@
 2020-12-11  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 9324f7a25c7
+	c++: Avoid considering some conversion ops
+
 	gcc/cp/
 	* decl2.c (c_parse_final_cleanups): Refactor.
 

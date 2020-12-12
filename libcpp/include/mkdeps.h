@@ -64,10 +64,6 @@ extern void deps_add_module_dep (struct mkdeps *, const char *module);
    dependency entered should be the primary source file.  */
 extern void deps_add_dep (class mkdeps *, const char *);
 
-/* Add a module as a dependency.  */
-extern void deps_add_module (struct mkdeps *, const char *,
-			     const char * = NULL, bool = false);
-
 /* Write out a deps buffer to a specified file.  The last argument
    is the number of columns to word-wrap at (0 means don't wrap).  */
 extern void deps_write (const cpp_reader *, FILE *, unsigned int);

@@ -1,3 +1,163 @@
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/modules.exp: New.
+
+2020-12-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vorr.c: Add vorr tests.
+
+2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pmpyd.c: New test.
+	* gcc.target/arc/tmac-1.c: Update.
+
+2020-12-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98219
+	* gcc.dg/guality/pr98219-1.c: New test.
+	* gcc.dg/guality/pr98219-2.c: Likewise.
+	* gcc.dg/torture/pr98219-1.c: Likewise.
+	* gcc.dg/torture/pr98219-2.c: Likewise.
+	* gcc.target/i386/uintr-2.c: Scan "add[lq] $8, %[er]sp".
+	(uword_t): New.
+	(foo): Add a uword_t argument.
+	(UINTR_hanlder): Likewise.
+	* gcc.target/i386/uintr-3.c: Scan "add[lq] $8, %[er]sp".
+	(uword_t): New.
+	(UINTR_hanlder): Add a uword_t argument.
+	* gcc.target/i386/uintr-4.c (uword_t): New.
+	(UINTR_hanlder): Add a uword_t argument.
+	* gcc.target/i386/uintr-5.c (uword_t): New.
+	(UINTR_hanlder): Add a uword_t argument.
+
+2020-12-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/78173
+	* g++.dg/cpp2a/concepts-pr78173.C: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_softfloat):
+	Improve documentation.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/lob2.c: Use '-march=armv8.1-m.main+fp'.
+	* gcc.target/arm/lob3.c: Skip with '-mfloat-abi=hard'.
+	* gcc.target/arm/lob4.c: Likewise.
+	* gcc.target/arm/lob5.c: Use '-march=armv8.1-m.main+fp'.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98244
+	* gcc.dg/vect/vect-live-6.c: Require vect_condition.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98242
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Require vect_int_mult.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98240
+	* gcc.dg/vect/pr97678.c: Require vect_int_mult and
+	vect_pack_trunc.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98239
+	* gcc.dg/vect/bb-slp-69.c: Require vect_condition.
+
+2020-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98229
+	* gcc.c-torture/compile/pr98229.c: New test.
+
+2020-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98235
+	* gcc.dg/torture/pr98235.c: New testcase.
+
+2020-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98190
+	* gcc.dg/pr98190.c: New test.
+
+2020-12-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/sve/pr97092.c: New test.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98212
+	* gcc.dg/predict-8.c: Adjust expected probability.
+
+2020-12-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/modular6.adb: New test.
+
+2020-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91506
+	* g++.dg/init/array60.C: New test.
+
+2020-12-10  Dennis Zhang  <denzha01@e124712.cambridge.arm.com>
+
+	* gcc.target/arm/simd/mve-vsub_1.c: Fix typo.
+	Remove needless dg-additional-options.
+
+2020-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68451
+	* g++.dg/cpp0x/friend6.C: New test.
+
+2020-12-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vand.c: New test.
+
+2020-12-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98069
+	* gcc.dg/vect/pr98069.c: New file.
+
+2020-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.dg/vect/pr97929.c: New test.
+
+2020-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98211
+	* gcc.dg/pr98211.c: New testcase.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98212
+	* gcc.target/i386/pr98212.c: New test.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98169
+	* gcc.target/i386/pr98169.c: New test.
+
+2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98205
+	* c-c++-common/gomp/doacross-4.c: New test.
+
+2020-12-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-div-1.c: Expect the load to be
+	vectorized.
+
+2020-12-10  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+	* gcc.misc-tests/godump-1.c: Add test case.
+
+2020-12-10  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (go-gc-tests): Recognize errorcheckdir -n,
+	for bug345.go.
+
 2020-12-09  Ian Lance Taylor  <iant@golang.org>
 
 	* go.test/go-test.exp (errchk): Rewrite regexp quoting to use

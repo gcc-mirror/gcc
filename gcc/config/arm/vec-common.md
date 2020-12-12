@@ -177,14 +177,12 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "")
 	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "")
 		 (match_operand:VDQ 2 "neon_inv_logic_op2" "")))]
-  "TARGET_NEON
-   || TARGET_HAVE_MVE"
+  "ARM_HAVE_<MODE>_ARITH"
 )
 
 (define_expand "ior<mode>3"
   [(set (match_operand:VDQ 0 "s_register_operand" "")
 	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "")
 		 (match_operand:VDQ 2 "neon_logic_op2" "")))]
-  "TARGET_NEON
-   || TARGET_HAVE_MVE"
+  "ARM_HAVE_<MODE>_ARITH"
 )

@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "type-utils.h"
 #include "gimplify.h"
-#include "bitmap.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
 #include "target.h"
@@ -14295,7 +14294,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     register_specialization (r, t,
 			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
 			     false, hash);
-  
+
   return r;
 }
 

@@ -1005,7 +1005,6 @@ do_line (cpp_reader *pfile)
 /* Interpret the # 44 "file" [flags] notation, which has slightly
    different syntax and semantics from #line:  Flags are allowed,
    and we never complain about the line number being too big.  */
-
 static void
 do_linemarker (cpp_reader *pfile)
 {

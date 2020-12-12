@@ -368,9 +368,6 @@ struct cpp_buffer
      token from the enclosing buffer is returned.  */
   bool return_at_eof : 1;
 
-  /* Is from main file.  */
-  bool main_file : 1;
-
   /* One for a system header, two for a C system header file that therefore
      needs to be extern "C" protected in C++, and zero otherwise.  */
   unsigned char sysp;

@@ -5062,8 +5062,6 @@ c_parse_final_cleanups (void)
       FOR_EACH_VEC_SAFE_ELT (deferred_fns, i, decl)
 	{
 	  /* Does it need synthesizing?  */
-	  // FiXME: We should synthesize upon first ODR use, that's
-	  // what the std says
 	  if (DECL_DEFAULTED_FN (decl) && ! DECL_INITIAL (decl)
 	      && (! DECL_REALLY_EXTERN (decl) || possibly_inlined_p (decl)))
 	    {
