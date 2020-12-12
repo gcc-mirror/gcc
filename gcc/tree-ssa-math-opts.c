@@ -3457,7 +3457,8 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
    and 0 otherwise.  */
 
 static int
-uaddsub_overflow_check_p (gimple *stmt, gimple *use_stmt, tree maxval)
+uaddsub_overflow_check_p (gimple *stmt, gimple *use_stmt, tree maxval,
+			  tree *other)
 {
   enum tree_code ccode = ERROR_MARK;
   tree crhs1 = NULL_TREE, crhs2 = NULL_TREE;
@@ -3520,6 +3521,13 @@ uaddsub_overflow_check_p (gimple *stmt, gimple *use_stmt, tree maxval)
 	  || (code == PLUS_EXPR && (crhs1 == rhs1 || crhs1 == rhs2)
 	      && crhs2 == lhs))
 	return ccode == GT_EXPR ? 1 : -1;
+      /* r = ~a; b > r or b <= r.  */
+      if (code == BIT_NOT_EXPR && crhs2 == lhs)
+	{
+	  if (other)
+	    *other = crhs1;
+	  return ccode == GT_EXPR ? 1 : -1;
+	}
       break;
     case LT_EXPR:
     case GE_EXPR:
@@ -3531,6 +3539,13 @@ uaddsub_overflow_check_p (gimple *stmt, gimple *use_stmt, tree maxval)
 	  || (code == PLUS_EXPR && crhs1 == lhs
 	      && (crhs2 == rhs1 || crhs2 == rhs2)))
 	return ccode == LT_EXPR ? 1 : -1;
+      /* r = ~a; r < b or r >= b.  */
+      if (code == BIT_NOT_EXPR && crhs1 == lhs)
+	{
+	  if (other)
+	    *other = crhs2;
+	  return ccode == LT_EXPR ? 1 : -1;
+	}
       break;
     default:
       break;
@@ -3560,7 +3575,15 @@ uaddsub_overflow_check_p (gimple *stmt, gimple *use_stmt, tree maxval)
    _9 = REALPART_EXPR <_7>;
    _8 = IMAGPART_EXPR <_8>;
    if (_8)
-   and replace (utype) x with _9.  */
+   and replace (utype) x with _9.
+
+   Also recognize:
+   x = ~z;
+   if (y > x)
+   and replace it with
+   _7 = ADD_OVERFLOW (y, z);
+   _8 = IMAGPART_EXPR <_8>;
+   if (_8)  */
 
 static bool
 match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
@@ -3576,34 +3599,49 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
   gimple *add_stmt = NULL;
   bool add_first = false;
 
-  gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR);
+  gcc_checking_assert (code == PLUS_EXPR
+		       || code == MINUS_EXPR
+		       || code == BIT_NOT_EXPR);
   if (!INTEGRAL_TYPE_P (type)
       || !TYPE_UNSIGNED (type)
       || has_zero_uses (lhs)
-      || (code == MINUS_EXPR
-	  && optab_handler (usubv4_optab,
+      || (code != PLUS_EXPR
+	  && optab_handler (code == MINUS_EXPR ? usubv4_optab : uaddv4_optab,
 			    TYPE_MODE (type)) == CODE_FOR_nothing))
     return false;
 
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
   FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
     {
       use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
 
-      if (uaddsub_overflow_check_p (stmt, use_stmt, NULL_TREE))
-	ovf_use_seen = true;
+      tree other = NULL_TREE;
+      if (uaddsub_overflow_check_p (stmt, use_stmt, NULL_TREE, &other))
+	{
+	  if (code == BIT_NOT_EXPR)
+	    {
+	      gcc_assert (other);
+	      if (TREE_CODE (other) != SSA_NAME)
+		return false;
+	      if (rhs2 == NULL)
+		rhs2 = other;
+	      else if (rhs2 != other)
+		return false;
+	    }
+	  ovf_use_seen = true;
+	}
       else
 	use_seen = true;
       if (ovf_use_seen && use_seen)
 	break;
     }
 
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  tree rhs2 = gimple_assign_rhs2 (stmt);
   tree maxval = NULL_TREE;
   if (!ovf_use_seen
-      || !use_seen
+      || (code == BIT_NOT_EXPR ? use_seen : !use_seen)
       || (code == PLUS_EXPR
 	  && optab_handler (uaddv4_optab,
 			    TYPE_MODE (type)) == CODE_FOR_nothing))
@@ -3664,7 +3702,7 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  if (is_gimple_debug (use_stmt))
 	    continue;
 
-	  if (uaddsub_overflow_check_p (stmt, use_stmt, maxval))
+	  if (uaddsub_overflow_check_p (stmt, use_stmt, maxval, NULL))
 	    {
 	      ovf_use_seen = true;
 	      use_bb = gimple_bb (use_stmt);
@@ -3781,23 +3819,27 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
     }
 
   tree ctype = build_complex_type (type);
-  gcall *g = gimple_build_call_internal (code == PLUS_EXPR
+  gcall *g = gimple_build_call_internal (code != MINUS_EXPR
 					 ? IFN_ADD_OVERFLOW : IFN_SUB_OVERFLOW,
 					 2, rhs1, rhs2);
   tree ctmp = make_ssa_name (ctype);
   gimple_call_set_lhs (g, ctmp);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   tree new_lhs = maxval ? make_ssa_name (type) : lhs;
-  gassign *g2 = gimple_build_assign (new_lhs, REALPART_EXPR,
-				     build1 (REALPART_EXPR, type, ctmp));
-  if (maxval)
+  gassign *g2;
+  if (code != BIT_NOT_EXPR)
     {
-      gsi_insert_before (gsi, g2, GSI_SAME_STMT);
-      if (add_first)
-	*gsi = gsi_for_stmt (stmt);
+      g2 = gimple_build_assign (new_lhs, REALPART_EXPR,
+				build1 (REALPART_EXPR, type, ctmp));
+      if (maxval)
+	{
+	  gsi_insert_before (gsi, g2, GSI_SAME_STMT);
+	  if (add_first)
+	    *gsi = gsi_for_stmt (stmt);
+	}
+      else
+	gsi_replace (gsi, g2, true);
     }
-  else
-    gsi_replace (gsi, g2, true);
   tree ovf = make_ssa_name (type);
   g2 = gimple_build_assign (ovf, IMAGPART_EXPR,
 			    build1 (IMAGPART_EXPR, type, ctmp));
@@ -3808,9 +3850,10 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
       if (is_gimple_debug (use_stmt))
 	continue;
 
-      int ovf_use = uaddsub_overflow_check_p (stmt, use_stmt, maxval);
+      int ovf_use = uaddsub_overflow_check_p (stmt, use_stmt, maxval, NULL);
       if (ovf_use == 0)
 	{
+	  gcc_assert (code != BIT_NOT_EXPR);
 	  if (maxval)
 	    {
 	      tree use_lhs = gimple_assign_lhs (use_stmt);
@@ -3862,6 +3905,12 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gsi2 = gsi_for_stmt (add_stmt);
 	  gsi_replace (&gsi2, g, true);
 	}
+    }
+  else if (code == BIT_NOT_EXPR)
+    {
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (stmt);
+      gsi_remove (&gsi2, true);
+      release_ssa_name (lhs);
     }
   return true;
 }
@@ -4186,6 +4235,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    case MINUS_EXPR:
 	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
 		match_uaddsub_overflow (&gsi, stmt, code);
+	      break;
+
+	    case BIT_NOT_EXPR:
+	      match_uaddsub_overflow (&gsi, stmt, code);
 	      break;
 
 	    case TRUNC_MOD_EXPR:
