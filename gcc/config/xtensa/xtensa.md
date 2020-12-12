@@ -162,11 +162,14 @@
 
 (define_insn "*addx"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			  (match_operand:SI 3 "addsubx_operand" "i"))
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			    (match_operand:SI 3 "addsubx_operand" "i"))
 		 (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_ADDX"
-  "addx%3\t%0, %1, %2"
+{
+  operands[3] = GEN_INT (1 << INTVAL (operands[3]));
+  return "addx%3\t%0, %1, %2";
+}
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
@@ -196,11 +199,14 @@
 
 (define_insn "*subx"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			   (match_operand:SI 3 "addsubx_operand" "i"))
+	(minus:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			     (match_operand:SI 3 "addsubx_operand" "i"))
 		  (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_ADDX"
-  "subx%3\t%0, %1, %2"
+{
+  operands[3] = GEN_INT (1 << INTVAL (operands[3]));
+  return "subx%3\t%0, %1, %2";
+}
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
