@@ -1371,6 +1371,23 @@ ultimate_transparent_alias_target (tree *alias)
   return target;
 }
 
+/* Return true if REGNUM is mentioned in ELIMINABLE_REGS as a from
+   register number.  */
+
+static bool
+eliminable_regno_p (int regnum)
+{
+  static const struct
+  {
+    const int from;
+    const int to;
+  } eliminables[] = ELIMINABLE_REGS;
+  for (size_t i = 0; i < ARRAY_SIZE (eliminables); i++)
+    if (regnum == eliminables[i].from)
+      return true;
+  return false;
+}
+
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
    have static storage duration.  In other words, it should not be an
    automatic variable, including PARM_DECLs.
@@ -1473,6 +1490,15 @@ make_decl_rtl (tree decl)
       else if (!targetm.hard_regno_mode_ok (reg_number, mode))
 	error ("register specified for %q+D isn%'t suitable for data type",
                decl);
+      else if (reg_number != HARD_FRAME_POINTER_REGNUM
+	       && (reg_number == FRAME_POINTER_REGNUM
+#ifdef RETURN_ADDRESS_POINTER_REGNUM
+		   || reg_number == RETURN_ADDRESS_POINTER_REGNUM
+#endif
+		   || reg_number == ARG_POINTER_REGNUM)
+	       && eliminable_regno_p (reg_number))
+	error ("register specified for %q+D is an internal GCC "
+	       "implementation detail", decl);
       /* Now handle properly declared static register variables.  */
       else
 	{
