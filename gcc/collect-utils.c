@@ -127,7 +127,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
       /* Note: we assume argv contains at least one element; this is
          checked above.  */
 
-      if (!save_temps || !atsuffix)
+      if (!save_temps || !atsuffix || !dumppfx)
 	response_file = make_temp_file ("");
       else
 	response_file = concat (dumppfx, atsuffix, NULL);
