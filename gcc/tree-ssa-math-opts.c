@@ -3598,6 +3598,7 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
   gimple *use_stmt;
   gimple *add_stmt = NULL;
   bool add_first = false;
+  gimple *cond_stmt = NULL;
 
   gcc_checking_assert (code == PLUS_EXPR
 		       || code == MINUS_EXPR
@@ -3628,8 +3629,9 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 		return false;
 	      if (rhs2 == NULL)
 		rhs2 = other;
-	      else if (rhs2 != other)
+	      else
 		return false;
+	      cond_stmt = use_stmt;
 	    }
 	  ovf_use_seen = true;
 	}
@@ -3818,6 +3820,9 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	}
     }
 
+  if (code == BIT_NOT_EXPR)
+    *gsi = gsi_for_stmt (cond_stmt);
+
   tree ctype = build_complex_type (type);
   gcall *g = gimple_build_call_internal (code != MINUS_EXPR
 					 ? IFN_ADD_OVERFLOW : IFN_SUB_OVERFLOW,
@@ -3843,7 +3848,10 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
   tree ovf = make_ssa_name (type);
   g2 = gimple_build_assign (ovf, IMAGPART_EXPR,
 			    build1 (IMAGPART_EXPR, type, ctmp));
-  gsi_insert_after (gsi, g2, GSI_NEW_STMT);
+  if (code != BIT_NOT_EXPR)
+    gsi_insert_after (gsi, g2, GSI_NEW_STMT);
+  else
+    gsi_insert_before (gsi, g2, GSI_SAME_STMT);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
     {
@@ -3908,11 +3916,12 @@ match_uaddsub_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
     }
   else if (code == BIT_NOT_EXPR)
     {
-      gimple_stmt_iterator gsi2 = gsi_for_stmt (stmt);
-      gsi_remove (&gsi2, true);
+      *gsi = gsi_for_stmt (stmt);
+      gsi_remove (gsi, true);
       release_ssa_name (lhs);
+      return true;
     }
-  return true;
+  return false;
 }
 
 /* Return true if target has support for divmod.  */
@@ -4238,7 +4247,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case BIT_NOT_EXPR:
-	      match_uaddsub_overflow (&gsi, stmt, code);
+	      if (match_uaddsub_overflow (&gsi, stmt, code))
+		continue;
 	      break;
 
 	    case TRUNC_MOD_EXPR:
