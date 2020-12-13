@@ -1,3 +1,26 @@
+2020-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* gfortran.dg/data_inquiry_ref.f90: New test.
+
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96685
+	* gcc.dg/tree-ssa/pr96685-1.c: New test.
+	* gcc.dg/tree-ssa/pr96685-2.c: New test.
+	* gcc.dg/tree-ssa/pr96685-3.c: New test.
+
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96272
+	* gcc.dg/tree-ssa/pr96272.c: New test.
+
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98183
+	* gcc.dg/gomp/pr98183.c: New test.
+	* gcc.dg/goacc/pr98183.c: New test.
+
 2020-12-11  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/concepts-conv3.C: New test.

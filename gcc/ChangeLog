@@ -1,3 +1,29 @@
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96685
+	* match.pd (~(X - Y) -> ~X + Y): New optimization.
+	(~X + Y -> (Y - X) - 1): Likewise.
+
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96272
+	* tree-ssa-math-opts.c (uaddsub_overflow_check_p): Add OTHER argument.
+	Handle BIT_NOT_EXPR.
+	(match_uaddsub_overflow): Optimize unsigned a > ~b into
+	__imag__ .ADD_OVERFLOW (a, b).
+	(math_opts_dom_walker::after_dom_children): Call match_uaddsub_overflow
+	even for BIT_NOT_EXPR.
+
+2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98183
+	* omp-low.c (lower_omp_target): Don't add OMP_RETURN for
+	data regions.
+	* omp-expand.c (expand_omp_target): Don't try to remove
+	OMP_RETURN for data regions.
+	(build_omp_regions_1, omp_make_gimple_edges): Don't expect
+	OMP_RETURN for data regions.
+
 2020-12-11  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c (cpp_unique_options): Add Mmodules, Mno-modules.
