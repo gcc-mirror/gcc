@@ -2082,7 +2082,6 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
 	{
 	  if (code == MINUS && CONSTANT_P (operands[1]))
 	    {
-	      temp = gen_reg_rtx (DImode);
 	      emit_insn (gen_sbcdi3 (operands[0], const0_rtx, operands[2]));
 	      code = PLUS;
 	      gen_insn = gen_adcdi3;
