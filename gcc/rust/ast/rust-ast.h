@@ -327,7 +327,7 @@ public:
   // does this need visitor if not polymorphic? probably not
 
   // path-to-string comparison operator
-  bool operator== (const std::string &rhs)
+  bool operator== (const std::string &rhs) const
   {
     return !has_opening_scope_resolution && segments.size () == 1
 	   && segments[0].as_string () == rhs;
