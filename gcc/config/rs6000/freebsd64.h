@@ -51,11 +51,10 @@ extern int dot_symbols;
 #define SET_CMODEL(opt) do {} while (0)
 #endif
 
-/* Until now the 970 is the only Processor where FreeBSD 64-bit runs on.  */
 #undef  PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_POWER4
+#define PROCESSOR_DEFAULT PROCESSOR_PPC7450
 #undef  PROCESSOR_DEFAULT64
-#define PROCESSOR_DEFAULT64 PROCESSOR_POWER4
+#define PROCESSOR_DEFAULT64 PROCESSOR_POWER8
 
 /* We don't need to generate entries in .fixup, except when
    -mrelocatable or -mrelocatable-lib is given.  */
