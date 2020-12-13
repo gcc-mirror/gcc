@@ -2816,7 +2816,7 @@
       rtx index = gen_reg_rtx (SImode);
       emit_insn (gen_addsi3 (index,
 			     operands[0],
-			     GEN_INT (-INTVAL (operands[1]))));
+			     gen_int_mode (-INTVAL (operands[1]), SImode)));
       operands[0] = index;
     }
 
