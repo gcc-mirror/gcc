@@ -2042,12 +2042,14 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
     }
   else
     {
-      /* If are adding the same value together, that's really a multiply by 2,
-	 and that's just a left shift of 1.  */
+      /* If we are adding a value to itself, that's really a multiply by 2,
+	 and that's just a left shift by 1.  If subtracting, it's just 0.  */
       if (rtx_equal_p (operands[1], operands[2]))
 	{
-	  gcc_assert (code != MINUS);
-	  emit_insn (gen_ashldi3 (operands[0], operands[1], const1_rtx));
+	  if (code == PLUS)
+	    emit_insn (gen_ashldi3 (operands[0], operands[1], const1_rtx));
+	  else
+	    emit_move_insn (operands[0], const0_rtx);
 	  return;
 	}
 
