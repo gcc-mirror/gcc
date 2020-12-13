@@ -473,9 +473,9 @@ public:
   std::string as_string () const;
 
   // TODO: does this require visitor pattern as not polymorphic?
-
-  // Maybe change to const-reference in future
-  SimplePath get_path () const { return path; }
+  
+  const SimplePath &get_path () const { return path; }
+  SimplePath &get_path () { return path; }
 
   // Call to parse attribute body to meta item syntax.
   void parse_attr_to_meta_item ();

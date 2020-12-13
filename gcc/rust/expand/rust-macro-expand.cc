@@ -3291,6 +3291,25 @@ MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
 	  - derive or legacy derive - "token-based" vs "AST-based"
 	  - else is unreachable
       - derive container macro - unreachable*/
+  
+#if 0
+  // macro_rules macro test code
+  auto rule_def = find_rules_def(invoc->get_path());
+  if (rule_def != nullptr) {
+    ASTFrag expanded = expand_decl_macro(invoc, rule_def);
+    /* could make this a data structure containing vectors of exprs, patterns and types (for regular),
+     * and then stmts and items (for semi). Except what about having an expr, then a type? Hmm. Might
+     * have to do the "unified base type" thing OR just have a simulated union, and then have AST frag
+     * be a vector of these simulated unions. */
+
+    // how would errors be signalled? null fragment? something else?
+    // what about error vs just not having stuff in rules definition yet?
+
+    /* replace macro invocation with ast frag. actually, don't have any context here. maybe attach ast 
+     * frag to macro invocation, and then have a method above get it? Or just return the ast frag from 
+     * this method. */
+  }
+#endif
 }
 
 /* Determines whether any cfg predicate is false and hence item with attributes

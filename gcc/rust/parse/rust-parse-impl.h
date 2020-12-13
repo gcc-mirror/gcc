@@ -8431,6 +8431,8 @@ Parser<ManagedTokenSource>::parse_array_expr (
 	      return nullptr;
 	    }
 
+    skip_token (RIGHT_SQUARE);
+
 	  std::unique_ptr<AST::ArrayElemsCopied> copied_array_elems (
 	    new AST::ArrayElemsCopied (std::move (initial_expr),
 				       std::move (copy_amount)));
@@ -8446,6 +8448,8 @@ Parser<ManagedTokenSource>::parse_array_expr (
 	  exprs.reserve (1);
 	  exprs.push_back (std::move (initial_expr));
 	  exprs.shrink_to_fit ();
+
+    skip_token (RIGHT_SQUARE);
 
 	  std::unique_ptr<AST::ArrayElemsValues> array_elems (
 	    new AST::ArrayElemsValues (std::move (exprs)));
@@ -13709,8 +13713,8 @@ Parser<ManagedTokenSource>::parse_field_access_expr (
   std::vector<AST::Attribute> outer_attrs,
   ParseRestrictions restrictions ATTRIBUTE_UNUSED)
 {
-  // get field name identifier (assume that this is a field access expr and not
-  // say await)
+  /* get field name identifier (assume that this is a field access expr and not
+   * await, for instance) */
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
   Identifier ident = ident_tok->get_str ();
 

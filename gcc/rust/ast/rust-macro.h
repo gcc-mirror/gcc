@@ -318,6 +318,9 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
+  std::vector<MacroRule> &get_macro_rules () { return rules; }
+  const std::vector<MacroRule> &get_macro_rules () const { return rules; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -354,6 +357,9 @@ public:
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () override { path = SimplePath::create_empty (); }
   bool is_marked_for_strip () const override { return path.is_empty (); }
+
+  const SimplePath &get_path () const { return path; }
+  SimplePath &get_path () { return path; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
