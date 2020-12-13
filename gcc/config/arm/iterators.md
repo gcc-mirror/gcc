@@ -1177,10 +1177,39 @@
 
 (define_int_attr rot [(UNSPEC_VCADD90 "90")
 		      (UNSPEC_VCADD270 "270")
+		      (UNSPEC_VCMLS "0")
 		      (UNSPEC_VCMLA "0")
 		      (UNSPEC_VCMLA90 "90")
 		      (UNSPEC_VCMLA180 "180")
 		      (UNSPEC_VCMLA270 "270")])
+
+(define_int_attr mve_rotsplit1 [(UNSPEC_VCMLA "")
+				(UNSPEC_VCMLA180 "")
+				(UNSPEC_VCMUL "")
+				(UNSPEC_VCMUL180 "")
+				(UNSPEC_VCMLS "_rot270")
+				(UNSPEC_VCMLS180 "_rot90")])
+
+(define_int_attr mve_rotsplit2 [(UNSPEC_VCMLA "_rot90")
+				(UNSPEC_VCMLA180 "_rot270")
+				(UNSPEC_VCMUL "_rot90")
+				(UNSPEC_VCMUL180 "_rot270")
+				(UNSPEC_VCMLS "_rot180")
+				(UNSPEC_VCMLS180 "_rot180")])
+
+(define_int_attr mve_rot [(UNSPEC_VCADD90 "_rot90")
+			  (UNSPEC_VCADD270 "_rot270")
+			  (UNSPEC_VCMLA "")
+			  (UNSPEC_VCMLA90 "_rot90")
+			  (UNSPEC_VCMLA180 "_rot180")
+			  (UNSPEC_VCMLA270 "_rot270")
+			  (UNSPEC_VCMUL "")
+			  (UNSPEC_VCMUL90 "_rot90")
+			  (UNSPEC_VCMUL180 "_rot180")
+			  (UNSPEC_VCMUL270 "_rot270")])
+
+(define_int_iterator VCMUL [UNSPEC_VCMUL UNSPEC_VCMUL90
+			    UNSPEC_VCMUL180 UNSPEC_VCMUL270])
 
 (define_int_attr simd32_op [(UNSPEC_QADD8 "qadd8") (UNSPEC_QSUB8 "qsub8")
 			    (UNSPEC_SHADD8 "shadd8") (UNSPEC_SHSUB8 "shsub8")
@@ -1233,9 +1262,8 @@
 		       (VABDQ_M_S "s") (VABDQ_M_U "u") (VABDQ_S "s")
 		       (VABDQ_U "u") (VADDQ_N_S "s") (VADDQ_N_U "u")
 		       (VADDVQ_P_S "s")	(VADDVQ_P_U "u") (VBICQ_S "s") (VBICQ_U "u")
-		       (VBRSRQ_N_S "s") (VBRSRQ_N_U "u") (VCADDQ_ROT270_S "s")
-		       (VCADDQ_ROT270_U "u") (VCADDQ_ROT90_S "s")
-		       (VCMPEQQ_S "s") (VCMPEQQ_U "u") (VCADDQ_ROT90_U "u")
+		       (VBRSRQ_N_S "s") (VBRSRQ_N_U "u")
+		       (VCMPEQQ_S "s") (VCMPEQQ_U "u")
 		       (VCMPEQQ_N_S "s") (VCMPEQQ_N_U "u") (VCMPNEQ_N_S "s")
 		       (VCMPNEQ_N_U "u") (VEORQ_S "s") (VEORQ_U "u")
 		       (VHADDQ_N_S "s") (VHADDQ_N_U "u") (VHADDQ_S "s")
@@ -1502,8 +1530,6 @@
 (define_int_iterator VADDVQ_P [VADDVQ_P_U VADDVQ_P_S])
 (define_int_iterator VBICQ [VBICQ_S VBICQ_U])
 (define_int_iterator VBRSRQ_N [VBRSRQ_N_U VBRSRQ_N_S])
-(define_int_iterator VCADDQ_ROT270 [VCADDQ_ROT270_S VCADDQ_ROT270_U])
-(define_int_iterator VCADDQ_ROT90 [VCADDQ_ROT90_U VCADDQ_ROT90_S])
 (define_int_iterator VCMPEQQ [VCMPEQQ_U VCMPEQQ_S])
 (define_int_iterator VCMPEQQ_N [VCMPEQQ_N_S VCMPEQQ_N_U])
 (define_int_iterator VCMPNEQ_N [VCMPNEQ_N_U VCMPNEQ_N_S])
@@ -1712,3 +1738,11 @@
 (define_int_iterator UQRSHLLQ [UQRSHLL_64 UQRSHLL_48])
 (define_int_iterator SQRSHRLQ [SQRSHRL_64 SQRSHRL_48])
 (define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
+;; Define iterators for VCMLA operations
+(define_int_iterator VCMLA_OP [UNSPEC_VCMLA
+			       UNSPEC_VCMLA180
+			       UNSPEC_VCMLS])
+
+;; Define iterators for VCMLA operations as MUL
+(define_int_iterator VCMUL_OP [UNSPEC_VCMUL
+			       UNSPEC_VCMUL180])
