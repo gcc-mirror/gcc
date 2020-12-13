@@ -29130,6 +29130,8 @@ arm_preferred_simd_mode (scalar_mode mode)
   if (TARGET_NEON)
     switch (mode)
       {
+      case E_HFmode:
+	return TARGET_NEON_VECTORIZE_DOUBLE ? V4HFmode : V8HFmode;
       case E_SFmode:
 	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SFmode : V4SFmode;
       case E_SImode:
