@@ -1235,6 +1235,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 {
   rtx hi[3], lo[3];
   const char *pattern_hi, *pattern_lo;
+  bool push_p;
 
   switch (mode)
     {
@@ -1345,19 +1346,13 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
       return "movq %1,%0";
 
     case E_SImode:
+      push_p = push_operand (operands[0], SImode);
+
       if (symbolic_operand (operands[1], SImode))
-	{
-	  if (push_operand (operands[0], SImode))
-	    return "pushab %a1";
-	  return "movab %a1,%0";
-	}
+	return push_p ? "pushab %a1" : "movab %a1,%0";
 
       if (operands[1] == const0_rtx)
-	{
-	  if (push_operand (operands[0], SImode))
-	    return "pushl %1";
-	  return "clrl %0";
-	}
+	return push_p ? "pushl %1" : "clrl %0";
 
       if (CONST_INT_P (operands[1])
 	  && (unsigned HOST_WIDE_INT) INTVAL (operands[1]) >= 64)
@@ -1383,9 +1378,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	  if (i >= -0x8000 && i < 0)
 	    return "cvtwl %1,%0";
 	}
-      if (push_operand (operands[0], SImode))
-	return "pushl %1";
-      return "movl %1,%0";
+      return push_p ? "pushl %1" : "movl %1,%0";
 
     case E_HImode:
       if (CONST_INT_P (operands[1]))
