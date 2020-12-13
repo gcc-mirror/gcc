@@ -274,8 +274,14 @@ gnu_ld_flag="$with_gnu_ld",
 gnu_ld_flag=no)
 
 case $target in
-    *darwin*) ld64_flag=yes;; # Darwin can only use a ld64-compatible linker.
-    *) ld64_flag=no;;
+    *darwin*)
+	ld64_flag=yes # Darwin can only use a ld64-compatible linker.
+	dsymutil_flag=yes # Darwin uses dsymutil to link debug.
+	;;
+    *)
+	ld64_flag=no
+	dsymutil_flag=no
+	;;
 esac
 
 # With pre-defined ld
@@ -310,6 +316,31 @@ AC_ARG_WITH(demangler-in-ld,
 [AS_HELP_STRING([--with-demangler-in-ld], [try to use demangler in GNU ld])],
 demangler_in_ld="$with_demangler_in_ld",
 demangler_in_ld=yes)
+
+# Allow the user to specify a dsymutil executable (used on Darwin only, so far)
+AC_ARG_WITH(dsymutil,
+[AS_HELP_STRING([--with-dsymutil], [arrange to use the specified dsymutil (full pathname)])],
+DEFAULT_DSYMUTIL="$with_dsymutil")
+
+dsymutil_vers=
+if test x"${DEFAULT_DSYMUTIL+set}" = x"set"; then
+  if test ! -x "$DEFAULT_DSYMUTIL"; then
+    AC_MSG_ERROR([cannot execute: $DEFAULT_DSYMUTIL: check --with-dsymutil or env. var. DEFAULT_DSYMUTIL])
+  else
+    if dsymutil_vers=`$DEFAULT_DSYMUTIL -v /dev/null 2>&1`; then
+      dsymutil_flag=yes
+    fi
+  fi
+  AC_DEFINE_UNQUOTED(DEFAULT_DSYMUTIL,"$DEFAULT_DSYMUTIL",
+	[Define to enable the use of a default debug linker.])
+fi
+
+AC_MSG_CHECKING([whether a default dsymutil was specified])
+if test x"${DEFAULT_DSYMUTIL+set}" = x"set"; then
+  AC_MSG_RESULT([yes ($DEFAULT_DSYMUTIL)])
+else
+  AC_MSG_RESULT(no)
+fi
 
 # ----------------------
 # Find default assembler
@@ -2713,6 +2744,27 @@ if test x$gcc_cv_otool = x; then
 else
 	AC_MSG_RESULT($gcc_cv_otool)
 fi
+
+# Figure out the dsymutil we will use.
+AS_VAR_SET_IF(gcc_cv_dsymutil,, [
+if test -x "$DEFAULT_DSYMUTIL"; then
+    gcc_cv_dsymutil="$DEFAULT_DSYMUTIL"
+elif test -x dsymutil$build_exeext; then
+    gcc_cv_dsymutil=./dsymutil$build_exeext
+elif ( set dummy $DSYMUTIL_FOR_TARGET; test -x $[2] ); then
+    gcc_cv_dsymutil=$DSYMUTIL_FOR_TARGET
+elif ( set dummy $DSYMUTIL; test -x $[2] ); then
+    gcc_cv_dsymutil=$DSYMUTIL
+else
+    AC_PATH_PROG(gcc_cv_dsymutil, $DSYMUTIL_FOR_TARGET)
+fi])
+
+ORIGINAL_DSYMUTIL_FOR_TARGET=$gcc_cv_dsymutil
+AC_SUBST(ORIGINAL_DSYMUTIL_FOR_TARGET)
+case "$ORIGINAL_DSYMUTIL_FOR_TARGET" in
+  ./dsymutil | ./dsymutil$build_exeext) ;;
+  *) AC_CONFIG_FILES(dsymutil:exec-tool.in, [chmod +x dsymutil]) ;;
+esac 
 
 # Figure out what assembler alignment features are present.
 gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,
@@ -5748,6 +5800,88 @@ if test x"$ld64_flag" = x"yes"; then
   AC_DEFINE_UNQUOTED(LD64_HAS_EXPORT_DYNAMIC, $gcc_cv_ld64_export_dynamic,
   [Define to 1 if ld64 supports '-export_dynamic'.])
 fi
+
+if test x"$dsymutil_flag" = x"yes"; then
+
+    # If the user specified a dsymutil path, then we will already have the
+    # version string, otherwise, pick it up.
+    if test x"$gcc_cv_dsymutil" = x; then
+        AC_MSG_WARN([dsymutil is a required tool for this system, but not found])
+        dsymutil_vers="tool unspecified"
+    elif test x"$dsymutil_vers" = x; then
+	dsymutil_vers=`$gcc_cv_dsymutil -v /dev/null 2>&1`
+    fi
+
+    dsymutil_temp=`echo $dsymutil_vers | sed 1q`
+    AC_MSG_CHECKING(dsymutil version "$dsymutil_temp")
+    if echo $dsymutil_temp | grep dwarfutils- > /dev/null; then
+      dsymutil_kind=DWARFUTILS
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*dwarfutils-\([[0-9\.]]*\).*/\1/'`
+    elif echo $dsymutil_temp | grep clang- > /dev/null; then
+      dsymutil_kind=CLANG
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*clang-\([[0-9\.]]*\).*/\1/'`
+    elif echo $dsymutil_temp | grep 'LLVM version ' > /dev/null; then
+      dsymutil_kind=LLVM
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*LLVM\ version\ \([[0-9\.]]*\).*/\1/'`
+    else
+      dsymutil_kind=UNKNOWN
+      dsymutil_vers="0.0"
+    fi
+    dsymutil_major=`expr "$dsymutil_vers" : '\([[0-9]]*\)'`
+    dsymutil_minor=`expr "$dsymutil_vers" : '[[0-9]]*\.\([[0-9]]*\)'`
+    dsymutil_tiny=`expr "$dsymutil_vers" : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+    if test x"${dsymutil_minor}" = x; then
+      dsymutil_minor=0
+    fi
+    if test x"${dsymutil_tiny}" = x; then
+      dsymutil_tiny=0
+    fi
+    AC_DEFINE_UNQUOTED(DSYMUTIL_VERSION, [$dsymutil_kind,${dsymutil_major},${dsymutil_minor},${dsymutil_tiny}],
+        [Define to the dsymutil version.])
+    AC_MSG_RESULT($dsymutil_vers : $dsymutil_kind ${dsymutil_major} ${dsymutil_minor} ${dsymutil_tiny} )
+fi
+
+case $target_os in
+  win32 | pe | cygwin* | mingw32*)
+    AC_MSG_CHECKING(broken PE linker dwarf5 support)
+    gcc_cv_ld_broken_pe_dwarf5=yes
+    if test $in_tree_ld = yes ; then
+      if grep -q '\.debug_loclists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	   $gcc_cv_ld_gld_srcdir/scripttempl/pe*.sc \
+	 && grep -q '\.debug_rnglists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	      $gcc_cv_ld_gld_srcdir/scripttempl/pe*.sc; then
+	gcc_cv_ld_broken_pe_dwarf5=no
+      fi
+    else
+      if $gcc_cv_ld --verbose 2>&1 | grep -q '\.debug_loclists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	 && $gcc_cv_ld --verbose 2>&1 | grep -q '\.debug_rnglists.*BLOCK.*__section_alignment__.*NOLOAD.*:'; then
+	gcc_cv_ld_broken_pe_dwarf5=no
+      fi
+    fi
+    if test x$gcc_cv_ld_broken_pe_dwarf5 = xyes; then
+      AC_DEFINE(HAVE_LD_BROKEN_PE_DWARF5, 1,
+	        [Define if the PE linker has broken DWARF 5 support.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_broken_pe_dwarf5)
+
+    AC_MSG_CHECKING(PE linker --disable-dynamicbase support)
+    gcc_cv_ld_disable_dynamicbase=no
+    if test $in_tree_ld = yes; then
+      if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 36 -o "$gcc_cv_gld_major_version" -gt 2; then \
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    else
+      if $gcc_cv_ld --help 2>&1 | grep -q 'disable\-]dynamicbase' > /dev/null; then
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    fi
+    if test x"$gcc_cv_ld_disable_dynamicbase" = xyes; then
+      AC_DEFINE(HAVE_LD_PE_DISABLE_DYNAMICBASE, 1,
+                [Define if the PE linker supports --disable-dynamicbase option.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_disable_dynamicbase)
+    ;;
+esac
 
 # --------
 # UNSORTED

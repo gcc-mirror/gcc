@@ -2864,6 +2864,11 @@ find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
     return xstrdup (DEFAULT_LINKER);
 #endif
 
+#ifdef DEFAULT_DSYMUTIL
+  if (! strcmp (name, "dsymutil") && access (DEFAULT_DSYMUTIL, mode) == 0)
+    return xstrdup (DEFAULT_DSYMUTIL);
+#endif
+
   /* Determine the filename to execute (special case for absolute paths).  */
 
   if (IS_ABSOLUTE_PATH (name))

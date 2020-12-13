@@ -1041,6 +1041,10 @@ but for the linker.
 Same as @uref{#with-as,,@option{--with-as}}
 but for the linker.
 
+@item --with-dsymutil=@var{pathname}
+Same as @uref{#with-as,,@option{--with-as}}
+but for the debug linker (only used on Darwin platforms so far).
+
 @item --with-stabs
 Specify that stabs debugging
 information should be used instead of whatever format the host normally

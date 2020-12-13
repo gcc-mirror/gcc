@@ -240,8 +240,6 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOCOMPACT_UNWIND \
     "}}}}}}} %<pie %<no-pie %<rdynamic "
 
-#define DSYMUTIL "\ndsymutil"
-
 /* Spec that controls whether the debug linker is run automatically for
    a link step.  This needs to be done if there is a source file on the
    command line which will result in a temporary object (and debug is
