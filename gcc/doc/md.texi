@@ -6154,6 +6154,54 @@ floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{cadd90@var{m}3} instruction pattern
+@item @samp{cadd90@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] - b[i+1];
+      c[i+1] = a[i+1] + b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 90 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cadd270@var{m}3} instruction pattern
+@item @samp{cadd270@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] + b[i+1];
+      c[i+1] = a[i+1] - b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 270 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
 Store into operand 0 one plus the index of the least significant 1-bit

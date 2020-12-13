@@ -133,7 +133,7 @@ _slp_tree::~_slp_tree ()
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
 
-static void
+void
 vect_free_slp_tree (slp_tree node)
 {
   int i;
@@ -177,17 +177,26 @@ vect_free_slp_instance (slp_instance instance)
 /* Create an SLP node for SCALAR_STMTS.  */
 
 slp_tree
+vect_create_new_slp_node (unsigned nops, tree_code code)
+{
+  slp_tree node = new _slp_tree;
+  SLP_TREE_SCALAR_STMTS (node) = vNULL;
+  SLP_TREE_CHILDREN (node).create (nops);
+  SLP_TREE_DEF_TYPE (node) = vect_internal_def;
+  SLP_TREE_CODE (node) = code;
+  return node;
+}
+/* Create an SLP node for SCALAR_STMTS.  */
+
+static slp_tree
 vect_create_new_slp_node (slp_tree node,
 			  vec<stmt_vec_info> scalar_stmts, unsigned nops)
 {
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
-  if (scalar_stmts.exists ())
-    {
-      SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
-      SLP_TREE_LANES (node) = scalar_stmts.length ();
-    }
+  SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
+  SLP_TREE_LANES (node) = scalar_stmts.length ();
   return node;
 }
 
@@ -239,7 +248,7 @@ typedef struct _slp_oprnd_info
 
 /* Allocate operands info for NOPS operands, and GROUP_SIZE def-stmts for each
    operand.  */
-static vec<slp_oprnd_info> 
+static vec<slp_oprnd_info>
 vect_create_oprnd_info (int nops, int group_size)
 {
   int i;
@@ -1136,7 +1145,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    {
 	      if (dump_enabled_p ())
 		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "Build SLP failed: different operation "
 				   "in stmt %G", stmt);
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2219,6 +2228,84 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
   return exact_div (common_multiple (nunits, group_size), group_size);
 }
 
+/* Helper function of vect_match_slp_patterns.
+
+   Attempts to match patterns against the slp tree rooted in REF_NODE using
+   VINFO.  Patterns are matched in post-order traversal.
+
+   If matching is successful the value in REF_NODE is updated and returned, if
+   not then it is returned unchanged.  */
+
+static bool
+vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
+			   slp_tree_to_load_perm_map_t *perm_cache,
+			   hash_set<slp_tree> *visited)
+{
+  unsigned i;
+  slp_tree node = *ref_node;
+  bool found_p = false;
+  if (!node || visited->add (node))
+    return false;
+
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    found_p |= vect_match_slp_patterns_2 (&SLP_TREE_CHILDREN (node)[i],
+					  vinfo, perm_cache, visited);
+
+  for (unsigned x = 0; x < num__slp_patterns; x++)
+    {
+      vect_pattern *pattern = slp_patterns[x] (perm_cache, ref_node);
+      if (pattern)
+	{
+	  pattern->build (vinfo);
+	  delete pattern;
+	  found_p = true;
+	}
+    }
+
+  return found_p;
+}
+
+/* Applies pattern matching to the given SLP tree rooted in REF_NODE using
+   vec_info VINFO.
+
+   The modified tree is returned.  Patterns are tried in order and multiple
+   patterns may match.  */
+
+static bool
+vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
+			 hash_set<slp_tree> *visited,
+			 slp_tree_to_load_perm_map_t *perm_cache,
+			 scalar_stmts_to_slp_tree_map_t * /* bst_map */)
+{
+  DUMP_VECT_SCOPE ("vect_match_slp_patterns");
+  slp_tree *ref_node = &SLP_INSTANCE_TREE (instance);
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Analyzing SLP tree %p for patterns\n",
+		     SLP_INSTANCE_TREE (instance));
+
+  bool found_p
+    = vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, visited);
+
+  if (found_p)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Pattern matched SLP tree\n");
+	  vect_print_slp_graph (MSG_NOTE, vect_location, *ref_node);
+	}
+    }
+
+  return found_p;
+}
+
+/* Analyze an SLP instance starting from a group of grouped stores.  Call
+   vect_build_slp_tree to build a tree of packed stmts if possible.
+   Return FALSE if it's impossible to SLP any stmt in the loop.  */
+
 static bool
 vect_analyze_slp_instance (vec_info *vinfo,
 			   scalar_stmts_to_slp_tree_map_t *bst_map,
@@ -2586,6 +2673,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 {
   unsigned int i;
   stmt_vec_info first_element;
+  slp_instance instance;
 
   DUMP_VECT_SCOPE ("vect_analyze_slp");
 
@@ -2647,6 +2735,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 				   slp_inst_kind_reduc_group, max_tree_size,
 				   &limit);
     }
+
+  hash_set<slp_tree> visited_patterns;
+  slp_tree_to_load_perm_map_t perm_cache;
+  /* See if any patterns can be found in the SLP tree.  */
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (vinfo), i, instance)
+    vect_match_slp_patterns (instance, vinfo, &visited_patterns, &perm_cache,
+			     bst_map);
 
   /* The map keeps a reference on SLP nodes built, release that.  */
   for (scalar_stmts_to_slp_tree_map_t::iterator it = bst_map->begin ();
@@ -3973,7 +4068,7 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
    and return it.  Do not account defs that are marked in LIFE and
    update LIFE according to uses of NODE.  */
 
-static void 
+static void
 vect_bb_slp_scalar_cost (vec_info *vinfo,
 			 slp_tree node, vec<bool, va_heap> *life,
 			 stmt_vector_for_cost *cost_vec,
@@ -3984,7 +4079,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
   slp_tree child;
 
   if (visited.add (node))
-    return; 
+    return;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
@@ -4415,7 +4510,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "Failed to SLP the basic block.\n");
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "not vectorized: failed to find SLP opportunities "
 			   "in basic block.\n");
 	}
@@ -5297,7 +5392,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	  if (!analyze_only)
 	    {
 	      tree mask_vec = NULL_TREE;
-		  
+
 	      if (! noop_p)
 		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
 
