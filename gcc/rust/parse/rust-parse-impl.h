@@ -11509,7 +11509,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 
 	  return std::unique_ptr<AST::StructExprFieldIdentifierValue> (
 	    new AST::StructExprFieldIdentifierValue (std::move (ident),
-						     std::move (expr)));
+						     std::move (expr), t->get_locus ()));
 	}
       else
 	{
@@ -11518,7 +11518,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	  lexer.skip_token ();
 
 	  return std::unique_ptr<AST::StructExprFieldIdentifier> (
-	    new AST::StructExprFieldIdentifier (std::move (ident)));
+	    new AST::StructExprFieldIdentifier (std::move (ident), t->get_locus ()));
 	}
       case INT_LITERAL: {
 	// parse tuple index field
@@ -11542,7 +11542,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	  }
 
 	return std::unique_ptr<AST::StructExprFieldIndexValue> (
-	  new AST::StructExprFieldIndexValue (index, std::move (expr)));
+	  new AST::StructExprFieldIndexValue (index, std::move (expr), t->get_locus ()));
       }
     case DOT_DOT:
       /* this is a struct base and can't be parsed here, so just return nothing
@@ -11551,8 +11551,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
       return nullptr;
     default:
       rust_error_at (t->get_locus (),
-		     "unrecognised token %qs as first token of struct expr "
-		     "field - expected identifier or int literal",
+		     "unrecognised token %qs as first token of struct expr field - "
+         "expected identifier or int literal",
 		     t->get_token_description ());
       return nullptr;
     }

@@ -1566,6 +1566,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  virtual Location get_locus_slow () const = 0;
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
@@ -1575,14 +1577,17 @@ protected:
 class StructExprFieldIdentifier : public StructExprField
 {
   Identifier field_name;
+  Location locus;
 
-  // TODO: should this store location data?
 public:
-  StructExprFieldIdentifier (Identifier field_identifier)
-    : field_name (std::move (field_identifier))
+  StructExprFieldIdentifier (Identifier field_identifier, Location locus)
+    : field_name (std::move (field_identifier)), locus (locus)
   {}
 
   std::string as_string () const override { return field_name; }
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1638,13 +1643,13 @@ public:
 class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 {
   Identifier field_name;
+  Location locus;
 
-  // TODO: should this store location data?
 public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
-				  std::unique_ptr<Expr> field_value)
+				  std::unique_ptr<Expr> field_value, Location locus)
     : StructExprFieldWithVal (std::move (field_value)),
-      field_name (std::move (field_identifier))
+      field_name (std::move (field_identifier)), locus (locus)
   {}
 
   std::string as_string () const override;
@@ -1652,6 +1657,9 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   std::string get_field_name () const { return field_name; }
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1666,12 +1674,12 @@ protected:
 class StructExprFieldIndexValue : public StructExprFieldWithVal
 {
   TupleIndex index;
+  Location locus;
 
-  // TODO: should this store location data?
 public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
-			     std::unique_ptr<Expr> field_value)
-    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index)
+			     std::unique_ptr<Expr> field_value, Location locus)
+    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index), locus (locus)
   {}
 
   std::string as_string () const override;
@@ -1679,6 +1687,9 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   TupleIndex get_index () const { return index; }
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1947,6 +1958,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  virtual Location get_locus_slow () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual EnumExprField *clone_enum_expr_field_impl () const = 0;
@@ -1956,17 +1969,19 @@ protected:
 class EnumExprFieldIdentifier : public EnumExprField
 {
   Identifier field_name;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   EnumExprFieldIdentifier (Identifier field_identifier)
-    : field_name (std::move (field_identifier))
+    : field_name (std::move (field_identifier)), locus (locus)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
 
   std::string as_string () const override { return field_name; }
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1982,8 +1997,6 @@ protected:
 class EnumExprFieldWithVal : public EnumExprField
 {
   std::unique_ptr<Expr> value;
-
-  // TODO: should this store location data?
 
 protected:
   EnumExprFieldWithVal (std::unique_ptr<Expr> field_value)
@@ -2022,19 +2035,21 @@ public:
 class EnumExprFieldIdentifierValue : public EnumExprFieldWithVal
 {
   Identifier field_name;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   EnumExprFieldIdentifierValue (Identifier field_name,
-				std::unique_ptr<Expr> field_value)
+				std::unique_ptr<Expr> field_value, Location locus)
     : EnumExprFieldWithVal (std::move (field_value)),
-      field_name (std::move (field_name))
+      field_name (std::move (field_name)), locus (locus)
   {}
 
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2051,17 +2066,20 @@ class EnumExprFieldIndexValue : public EnumExprFieldWithVal
   TupleIndex index;
   // TODO: implement "with val" as a template with EnumExprField as type param?
 
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   EnumExprFieldIndexValue (TupleIndex field_index,
-			   std::unique_ptr<Expr> field_value)
-    : EnumExprFieldWithVal (std::move (field_value)), index (field_index)
+			   std::unique_ptr<Expr> field_value, Location locus)
+    : EnumExprFieldWithVal (std::move (field_value)), index (field_index), locus (locus)
   {}
 
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2075,9 +2093,7 @@ protected:
 // Struct-like syntax enum variant instance creation AST node
 class EnumExprStruct : public EnumVariantExpr
 {
-  // std::vector<EnumExprField> fields;
   std::vector<std::unique_ptr<EnumExprField> > fields;
-
   Location locus;
 
 public:
