@@ -2066,6 +2066,19 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
       else
 	operands[2] = fixup_mathdi_operand (operands[2], DImode);
 
+      /* If we are adding or subtracting 0, then this is a move.  */
+      if (code == PLUS && operands[1] == const0_rtx)
+	{
+	  temp = operands[2];
+	  operands[2] = operands[1];
+	  operands[1] = temp;
+	}
+      if (operands[2] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+
       /* If we are subtracting not from ourselves [d = a - b], and because the
 	 carry ops are two operand only, we would need to do a move prior to
 	 the subtract.  And if d == b, we would need a temp otherwise
