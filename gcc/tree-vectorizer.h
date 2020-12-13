@@ -114,6 +114,8 @@ typedef hash_map<tree_operand_hash,
   SLP
  ************************************************************************/
 typedef struct _slp_tree *slp_tree;
+typedef vec<std::pair<unsigned, unsigned> > lane_permutation_t;
+typedef vec<unsigned> load_permutation_t;
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
@@ -134,11 +136,11 @@ struct _slp_tree {
 
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
-  vec<unsigned> load_permutation;
+  load_permutation_t load_permutation;
   /* Lane permutation of the operands scalar lanes encoded as pairs
      of { operand number, lane number }.  The number of elements
      denotes the number of output lanes.  */
-  vec<std::pair<unsigned, unsigned> > lane_permutation;
+  lane_permutation_t lane_permutation;
 
   tree vectype;
   /* Vectorized stmt/s.  */
@@ -362,6 +364,7 @@ public:
   ~vec_info ();
 
   stmt_vec_info add_stmt (gimple *);
+  stmt_vec_info add_pattern_stmt (gimple *, stmt_vec_info);
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
@@ -407,7 +410,7 @@ public:
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
-  void set_vinfo_for_stmt (gimple *, stmt_vec_info);
+  void set_vinfo_for_stmt (gimple *, stmt_vec_info, bool = true);
   void free_stmt_vec_infos ();
   void free_stmt_vec_info (stmt_vec_info);
 };
@@ -2005,8 +2008,12 @@ extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 				      vec<tree>, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern bool vect_update_shared_vectype (stmt_vec_info, tree);
+extern slp_tree vect_create_new_slp_node (vec<stmt_vec_info>, unsigned);
 
 /* In tree-vect-patterns.c.  */
+extern void
+vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
+
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
    in the future.  */

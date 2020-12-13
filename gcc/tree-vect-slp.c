@@ -176,15 +176,18 @@ vect_free_slp_instance (slp_instance instance)
 
 /* Create an SLP node for SCALAR_STMTS.  */
 
-static slp_tree
+slp_tree
 vect_create_new_slp_node (slp_tree node,
 			  vec<stmt_vec_info> scalar_stmts, unsigned nops)
 {
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
-  SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
-  SLP_TREE_LANES (node) = scalar_stmts.length ();
+  if (scalar_stmts.exists ())
+    {
+      SLP_TREE_REPRESENTATIVE (node) = scalar_stmts[0];
+      SLP_TREE_LANES (node) = scalar_stmts.length ();
+    }
   return node;
 }
 
