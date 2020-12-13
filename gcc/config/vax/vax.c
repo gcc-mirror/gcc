@@ -1354,7 +1354,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 
       if (operands[1] == const0_rtx)
 	{
-	  if (push_operand (operands[1], SImode))
+	  if (push_operand (operands[0], SImode))
 	    return "pushl %1";
 	  return "clrl %0";
 	}
