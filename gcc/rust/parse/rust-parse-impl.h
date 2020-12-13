@@ -13681,12 +13681,14 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ArrayIndexExpr>
 Parser<ManagedTokenSource>::parse_index_expr (
-  const_TokenPtr tok ATTRIBUTE_UNUSED, std::unique_ptr<AST::Expr> array_expr,
-  std::vector<AST::Attribute> outer_attrs, ParseRestrictions restrictions)
+  const_TokenPtr, std::unique_ptr<AST::Expr> array_expr,
+  std::vector<AST::Attribute> outer_attrs, ParseRestrictions)
 {
   // parse RHS (as tok has already been consumed in parse_expression)
-  std::unique_ptr<AST::Expr> index_expr
-    = parse_expr (LBP_ARRAY_REF, std::vector<AST::Attribute> (), restrictions);
+  /*std::unique_ptr<AST::Expr> index_expr
+    = parse_expr (LBP_ARRAY_REF, std::vector<AST::Attribute> (), restrictions);*/
+  // TODO: conceptually, should treat [] as brackets, so just parse all expr
+  std::unique_ptr<AST::Expr> index_expr = parse_expr ();
   if (index_expr == nullptr)
     return nullptr;
 
