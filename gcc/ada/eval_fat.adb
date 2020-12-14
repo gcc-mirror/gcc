@@ -736,7 +736,7 @@ package body Eval_Fat is
          if Has_Denormals (RT) then
             Exp := Emin;
          else
-            return Scaling (RT, Ureal_1, Emin - 1);
+            return Scaling (RT, Ureal_Half, Emin);
          end if;
       end if;
 
@@ -755,7 +755,7 @@ package body Eval_Fat is
 
       if New_Frac = Frac then
          if New_Frac = Scaling (RT, -Ureal_1, Mantissa - 1) then
-            New_Frac := New_Frac + Scaling (RT, Ureal_1, Uint_Minus_1);
+            New_Frac := New_Frac + Ureal_Half;
          else
             New_Frac := New_Frac + Ureal_1;
          end if;
