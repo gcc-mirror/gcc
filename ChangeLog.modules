@@ -1,5 +1,8 @@
 2020-12-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* diagnostic-core.h (progname): Remove comment.
+
 	Merge trunk 62c5ea52288
 	preprocessor: Deferred macro support
 

@@ -48,7 +48,7 @@ class auto_diagnostic_group
 /* Forward decl.  */
 class diagnostic_metadata; /* See diagnostic-metadata.h.  */
 
-extern const char *progname; /* Basename. */
+extern const char *progname;
 
 extern const char *trim_filename (const char *);
 
