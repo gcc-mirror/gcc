@@ -412,6 +412,9 @@ enable_as_accelerator = @enable_as_accelerator@
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
+CODYLIB = ../libcody/libcody.a
+CODYINC = -I$(srcdir)/../libcody
+
 # Where to find decNumber
 enable_decimal_float = @enable_decimal_float@
 DECNUM = $(srcdir)/../libdecnumber
@@ -982,6 +985,7 @@ SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h \
 PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
+CODYLIB_H = $(srcdir)/../libcody/cody.hh
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
 OPTS_H = $(INPUT_H) $(VEC_H) opts.h $(OBSTACK_H)
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h $(OBSTACK_H)
@@ -1102,7 +1106,7 @@ BUILD_ERRORS = build/errors.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
+	   $(CPPINC) $(CODYINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@
@@ -1714,7 +1718,7 @@ endif
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
 BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
-	$(CPPLIB) $(LIBDECNUMBER)
+	$(CPPLIB) $(CODYLIB) $(LIBDECNUMBER)
 
 # This is defined to "yes" if Tree checking is enabled, which roughly means
 # front-end checking.
