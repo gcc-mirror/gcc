@@ -550,7 +550,7 @@ vec_copy_construct (T *dst, const T *src, unsigned n)
 struct vnull
 {
   template <typename T, typename A, typename L>
-  CONSTEXPR operator vec<T, A, L> () { return vec<T, A, L>(); }
+  CONSTEXPR operator vec<T, A, L> () const { return vec<T, A, L>(); }
 };
 extern vnull vNULL;
 

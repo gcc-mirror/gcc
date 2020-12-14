@@ -361,6 +361,31 @@ show_array_ref (gfc_array_ref * ar)
     }
 
   fputc (')', dumpfile);
+  if (ar->codimen == 0)
+    return;
+
+  /* Show coarray part of the reference, if any.  */
+  fputc ('[',dumpfile);
+  for (i = ar->dimen; i < ar->dimen + ar->codimen; i++)
+    {
+      if (ar->dimen_type[i] == DIMEN_STAR)
+	fputc('*',dumpfile);
+      else if (ar->dimen_type[i] == DIMEN_THIS_IMAGE)
+	fputs("THIS_IMAGE", dumpfile);
+      else
+	{
+	  show_expr (ar->start[i]);
+	  if (ar->end[i])
+	    {
+	      fputc(':', dumpfile);
+	      show_expr (ar->end[i]);
+	    }
+	}
+      if (i != ar->dimen + ar->codimen - 1)
+	fputs (" , ", dumpfile);
+
+    }
+  fputc (']',dumpfile);
 }
 
 
@@ -3634,4 +3659,15 @@ gfc_dump_global_symbols (FILE *f)
     fprintf (f, "empty\n");
   else
     gfc_traverse_gsymbol (gfc_gsym_root, show_global_symbol, (void *) f);
+}
+
+/* Show an array ref.  */
+
+void debug (gfc_array_ref *ar)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_array_ref (ar);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
 }

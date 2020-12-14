@@ -2698,9 +2698,13 @@ again:
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
+	      stmt_vec_info pattern_stmt_info
+		= STMT_VINFO_RELATED_STMT (stmt_info);
+	      if (STMT_VINFO_SLP_VECT_ONLY (pattern_stmt_info))
+		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
+
 	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-	      stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-	      STMT_SLP_TYPE (stmt_info) = loop_vect;
+	      STMT_SLP_TYPE (pattern_stmt_info) = loop_vect;
 	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
 		   !gsi_end_p (pi); gsi_next (&pi))
 		STMT_SLP_TYPE (loop_vinfo->lookup_stmt (gsi_stmt (pi)))

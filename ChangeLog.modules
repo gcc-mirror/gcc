@@ -1,5 +1,8 @@
 2020-12-14  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 62c5ea52288
+	preprocessor: Deferred macro support
+
 	Named pipe support
 	gcc/cp
 	* mapper-client.cc (module_client::open_module): Allow named pipes.

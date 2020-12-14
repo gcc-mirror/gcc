@@ -5281,7 +5281,7 @@ const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);
 
 /* Mark statements that are involved in a pattern.  */
 
-static inline void
+void
 vect_mark_pattern_stmts (vec_info *vinfo,
 			 stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
                          tree pattern_vectype)

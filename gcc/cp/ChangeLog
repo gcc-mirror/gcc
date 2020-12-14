@@ -1,3 +1,27 @@
+2020-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/97600
+	* call.c (build_user_type_conversion_1): Avoid considering
+	conversion functions that return a clearly unsuitable type.
+
+2020-12-11  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (make_binding_vec): Add CXX_MEM_STAT_INFO.
+
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* config-lang.in (gtfiles): Add cp/module.cc.
+	* decl2.c (c_parse_final_cleanups): Add module support.
+	* lambda.c (record_lambda_scope): Call maybe_attach_decl.
+	* module.cc (maybe_attach_decl, lazy_load_specializations): Stubs.
+	(finish_module_procesing): Stub.
+	* pt.c (lookup_template_class_1): Lazy load specializations.
+	(instantiate_template_1): Likewise.
+
+2020-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (c_parse_final_cleanups): Refactor loop.
+
 2020-12-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (map_context_from, map_context_to): Declare.

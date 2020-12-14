@@ -1668,10 +1668,6 @@ noop_move_p (const rtx_insn *insn)
   if (INSN_CODE (insn) == NOOP_MOVE_INSN_CODE)
     return 1;
 
-  /* Insns carrying these notes are useful later on.  */
-  if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
-    return 0;
-
   /* Check the code to be executed for COND_EXEC.  */
   if (GET_CODE (pat) == COND_EXEC)
     pat = COND_EXEC_CODE (pat);
