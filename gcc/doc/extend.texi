@@ -3257,37 +3257,37 @@ as they may return pointers to storage containing pointers to existing
 objects.
 
 Associating a function with a @var{deallocator} helps detect calls to
-mismatched allocation and deallocation functions and diagnose them
-under the control of options such as @option{-Wmismatched-dealloc}.
-To indicate that an allocation function both satisifies the nonaliasing
-property and has a deallocator associated with it, both the plain form
-of the attribute and the one with the @var{deallocator} argument must
-be used.
+mismatched allocation and deallocation functions and diagnose them under
+the control of options such as @option{-Wmismatched-dealloc}.  To indicate
+that an allocation function both satisifies the nonaliasing property and
+has a deallocator associated with it, both the plain form of the attribute
+and the one with the @var{deallocator} argument must be used.  The same
+function can be both an allocator and a deallocator.  Since inlining one
+of the associated functions but not the other could result in apparent
+mismatches, this form of attribute @code{malloc} is not accepted on inline
+functions.  For the same reason, using the attribute prevents both
+the allocation and deallocation functions from being expanded inline.
 
 For example, besides stating that the functions return pointers that do
-not alias any others, the following declarations make the @code{fclose}
-and @code{frepen} functions suitable deallocators for pointers returned
-from all the functions that return them, and the @code{pclose} function
-as the only other suitable deallocator besides @code{freopen} for pointers
-returned from @code{popen}.  The deallocator functions must declared
-before they can be referenced in the attribute.
+not alias any others, the following declarations make @code{fclose}
+a suitable deallocator for pointers returned from all functions except
+@code{popen}, and @code{pclose} as the only suitable deallocator for
+pointers returned from @code{popen}.  The deallocator functions must
+declared before they can be referenced in the attribute.
 
 @smallexample
-int   fclose (FILE*);
-FILE* freopen (const char*, const char*, FILE*);
-int   pclose (FILE*);
+int fclose (FILE*);
+int pclose (FILE*);
 
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fdopen (int);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fopen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fmemopen(void *, size_t, const char *);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
-  FILE* freopen (const char*, const char*, FILE*);
-__attribute__ ((malloc, malloc (pclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (pclose (1))))
   FILE* popen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* tmpfile (void);
 @end smallexample
 

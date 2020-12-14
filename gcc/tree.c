@@ -12610,8 +12610,40 @@ tree_nonartificial_location (tree exp)
     return EXPR_LOCATION (exp);
 }
 
+/* Return the location into which EXP has been inlined.  Analogous
+   to tree_nonartificial_location() above but not limited to artificial
+   functions declared inline.  If SYSTEM_HEADER is true, return
+   the macro expansion point of the location if it's in a system header */
 
-/* These are the hash table functions for the hash table of OPTIMIZATION_NODEq
+location_t
+tree_inlined_location (tree exp, bool system_header /* = true */)
+{
+  location_t loc = UNKNOWN_LOCATION;
+
+  tree block = TREE_BLOCK (exp);
+
+  while (block && TREE_CODE (block) == BLOCK
+	 && BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      tree ao = BLOCK_ABSTRACT_ORIGIN (block);
+      if (TREE_CODE (ao) == FUNCTION_DECL)
+	loc = BLOCK_SOURCE_LOCATION (block);
+      else if (TREE_CODE (ao) != BLOCK)
+	break;
+
+      block = BLOCK_SUPERCONTEXT (block);
+    }
+
+  if (loc == UNKNOWN_LOCATION)
+    loc = EXPR_LOCATION (exp);
+
+  if (system_header)
+    return expansion_point_location_if_in_system_header (loc);
+
+  return loc;
+}
+
+/* These are the hash table functions for the hash table of OPTIMIZATION_NODE
    nodes.  */
 
 /* Return the hash code X, an OPTIMIZATION_NODE or TARGET_OPTION code.  */
@@ -15384,6 +15416,75 @@ verify_type_context (location_t loc, type_context_kind context,
   gcc_assert (TYPE_P (type));
   return (!targetm.verify_type_context
 	  || targetm.verify_type_context (loc, context, type, silent_p));
+}
+
+/* Return that NEW_ASM and DELETE_ASM name a valid pair of new and
+   delete operators.  */
+
+bool
+valid_new_delete_pair_p (tree new_asm, tree delete_asm)
+{
+  const char *new_name = IDENTIFIER_POINTER (new_asm);
+  const char *delete_name = IDENTIFIER_POINTER (delete_asm);
+  unsigned int new_len = IDENTIFIER_LENGTH (new_asm);
+  unsigned int delete_len = IDENTIFIER_LENGTH (delete_asm);
+
+  if (new_len < 5 || delete_len < 6)
+    return false;
+  if (new_name[0] == '_')
+    ++new_name, --new_len;
+  if (new_name[0] == '_')
+    ++new_name, --new_len;
+  if (delete_name[0] == '_')
+    ++delete_name, --delete_len;
+  if (delete_name[0] == '_')
+    ++delete_name, --delete_len;
+  if (new_len < 4 || delete_len < 5)
+    return false;
+  /* *_len is now just the length after initial underscores.  */
+  if (new_name[0] != 'Z' || new_name[1] != 'n')
+    return false;
+  if (delete_name[0] != 'Z' || delete_name[1] != 'd')
+    return false;
+  /* _Znw must match _Zdl, _Zna must match _Zda.  */
+  if ((new_name[2] != 'w' || delete_name[2] != 'l')
+      && (new_name[2] != 'a' || delete_name[2] != 'a'))
+    return false;
+  /* 'j', 'm' and 'y' correspond to size_t.  */
+  if (new_name[3] != 'j' && new_name[3] != 'm' && new_name[3] != 'y')
+    return false;
+  if (delete_name[3] != 'P' || delete_name[4] != 'v')
+    return false;
+  if (new_len == 4
+      || (new_len == 18 && !memcmp (new_name + 4, "RKSt9nothrow_t", 14)))
+    {
+      /* _ZnXY or _ZnXYRKSt9nothrow_t matches
+	 _ZdXPv, _ZdXPvY and _ZdXPvRKSt9nothrow_t.  */
+      if (delete_len == 5)
+	return true;
+      if (delete_len == 6 && delete_name[5] == new_name[3])
+	return true;
+      if (delete_len == 19 && !memcmp (delete_name + 5, "RKSt9nothrow_t", 14))
+	return true;
+    }
+  else if ((new_len == 19 && !memcmp (new_name + 4, "St11align_val_t", 15))
+	   || (new_len == 33
+	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
+    {
+      /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
+	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
+	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
+      if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
+	return true;
+      if (delete_len == 21
+	  && delete_name[5] == new_name[3]
+	  && !memcmp (delete_name + 6, "St11align_val_t", 15))
+	return true;
+      if (delete_len == 34
+	  && !memcmp (delete_name + 5, "St11align_val_tRKSt9nothrow_t", 29))
+	return true;
+    }
+  return false;
 }
 
 #if CHECKING_P
