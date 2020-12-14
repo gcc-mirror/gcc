@@ -130,8 +130,6 @@ package body Debug_A is
 
    procedure Debug_Output_Astring is
       Vbars : constant String := "|||||||||||||||||||||||||";
-      --  Should be constant, removed because of GNAT 1.78 bug ???
-
    begin
       if Debug_A_Depth > Vbars'Length then
          for I in Vbars'Length .. Debug_A_Depth loop
