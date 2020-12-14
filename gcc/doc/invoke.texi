@@ -172,6 +172,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * Spec Files::          How to pass switches to sub-processes.
 * Environment Variables:: Env vars that affect GCC.
 * Precompiled Headers:: Compiling a header once, and using it many times.
+* C++ Modules::		Experimental C++20 module system.
 @end menu
 
 @c man begin OPTIONS
@@ -219,7 +220,13 @@ in the following sections.
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
--fno-implement-inlines  -fms-extensions @gol
+-fno-implement-inlines  @gol
+-fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts @gol
+-fmodule-implicit-inline @gol
+-fno-module-lazy @gol
+-fmodule-mapper=@var{specification} @gol
+-fmodule-version-ignore @gol
+-fms-extensions @gol
 -fnew-inheriting-ctors @gol
 -fnew-ttp-matching @gol
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
@@ -233,15 +240,18 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
+-flang-info-include-translate@r{[}=@var{name}@r{]} @gol
+-flang-info-include-translate-not @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
+-Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
+-Winvalid-imported-macros @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix @gol
 -Wno-mismatched-new-delete -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
@@ -600,7 +610,7 @@ Objective-C and Objective-C++ Dialects}.
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
--M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
+-M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT -Mno-modules @gol
 -no-integrated-cpp  -P  -pthread  -remap @gol
 -traditional  -traditional-cpp  -trigraphs @gol
 -U@var{macro}  -undef  @gol
@@ -1572,7 +1582,7 @@ name suffix).  This option applies to all following input files until
 the next @option{-x} option.  Possible values for @var{language} are:
 @smallexample
 c  c-header  cpp-output
-c++  c++-header  c++-cpp-output
+c++  c++-header  c++-system-header c++-user-header c++-cpp-output
 objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
@@ -3057,6 +3067,52 @@ To save space, do not emit out-of-line copies of inline functions
 controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
+@item -fmodules-ts
+@itemx -fno-modules-ts
+@opindex fmodules-ts
+@opindex fno-modules-ts
+Enable support for C++20 modules (@xref{C++ Modules}).  The
+@option{-fno-modules-ts} is usually not needed, as that is the
+default.  Even though this is a C++20 feature, it is not currently
+implicitly enabled by selecting that standard version.
+
+@item -fmodule-header
+@itemx -fmodule-header=user
+@itemx -fmodule-header=system
+@opindex fmodule-header
+Compile a header file to create an importable header unit.
+
+@item -fmodule-implicit-inline
+@opindex fmodule-implicit-inline
+Member functions defined in their class definitions are not implicitly
+inline for modular code.  This is different to traditional C++
+behavior, for good reasons.  However, it may result in a difficulty
+during code porting.  This option makes such function definitions
+implicitly inline.  It does however generate an ABI incompatibility,
+so you must use it everywhere or nowhere.  (Such definitions outside
+of a named module remain implicitly inline, regardless.)
+
+@item -fno-module-lazy
+@opindex fno-module-lazy
+@opindex fmodule-lazy
+Disable lazy module importing and module mapper creation.
+
+@item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
+@itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<>@r{[}@var{inout}@r{]}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<@var{in}>@var{out}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
+@vindex CXX_MODULE_MAPPER @r{environment variable}
+@opindex fmodule-mapper
+An oracle to query for module name to filename mappings.  If
+unspecified the @env{CXX_MODULE_MAPPER} environment variable is used,
+and if that is unset, an in-process default is provided.
+
+@item -fmodule-only
+@opindex fmodule-only
+Only emit the Compiled Module Interface, inhibiting any object file.
+
 @item -fms-extensions
 @opindex fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
@@ -3304,6 +3360,14 @@ for ISO C++11 onwards (@option{-std=c++11}, ...).
 Do not search for header files in the standard directories specific to
 C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
+
+@item -flang-info-include-translate
+@itemx -flang-info-include-translate-not
+@itemx -flang-info-include-translate=@var{header}
+@opindex flang-info-include-translate
+@opindex flang-info-include-translate-not
+Diagnose include translation events.
+
 @end table
 
 In addition, these warning options have meanings only for C++ programs:
@@ -3460,6 +3524,14 @@ the array, so if a class variable is constructed from a temporary
 the variable declaration statement.
 
 @end itemize
+
+@item -Winvalid-imported-macros
+@opindex Winvalid-imported-macros
+@opindex Wno-invalid-imported-macros
+Verify all imported macro definitions are valid at the end of
+compilation.  This is not enabled by default, as it requires
+additional processing to determine.  It may be useful when preparing
+sets of header-units to ensure consistent macros.
 
 @item -Wno-literal-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
@@ -16966,6 +17038,11 @@ By default, the dump will contain messages about successful
 optimizations (equivalent to @option{-optimized}) together with
 low-level details about the analysis.
 
+@item -fdump-lang
+@opindex fdump-lang
+Dump language-specific information.  The file name is made by appending
+@file{.lang} to the source file name.
+
 @item -fdump-lang-all
 @itemx -fdump-lang-@var{switch}
 @itemx -fdump-lang-@var{switch}-@var{options}
@@ -16985,6 +17062,14 @@ Enable all language-specific dumps.
 @item class
 Dump class hierarchy information.  Virtual table information is emitted
 unless '@option{slim}' is specified.  This option is applicable to C++ only.
+
+@item module
+Dump module information.  Options @option{lineno} (locations),
+@option{graph} (reachability), @option{blocks} (clusters),
+@option{uid} (serialization), @option{alias} (mergeable),
+@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
+(macros) may provide additional information.  This option is
+applicable to C++ only.
 
 @item raw
 Dump the raw internal tree data.  This option is applicable to C++ only.
@@ -32188,7 +32273,7 @@ usage:
 
 @item @code{sanitize}
 The @code{sanitize} spec function takes no arguments.  It returns non-NULL if
-any address, thread or undefined behaviour sanitizers are active.
+any address, thread or undefined behavior sanitizers are active.
 
 @smallexample
 %@{%:sanitize(address):-funwind-tables@}
@@ -32748,3 +32833,343 @@ precompiled header, the actual behavior is a mixture of the
 behavior for the options.  For instance, if you use @option{-g} to
 generate the precompiled header but not when using it, you may or may
 not get debugging information for routines in the precompiled header.
+
+@node C++ Modules
+@section C++ Modules
+@cindex speed of compilation
+
+Modules are a C++ 20 language feature.  As the name suggests, it
+provides a modular compilation system, intending to provide both
+faster builds and better library isolation.  The ``Merging Modules''
+paper @uref{https://wg21.link/p1103}, provides the easiest to read set
+of changes to the standard, although it does not capture later
+changes.  That specification is now part of C++20,
+@uref{git@@github.com:cplusplus/draft.git}, it is considered complete
+(there may be defect reports to come).
+
+@emph{G++'s modules support is not complete.}  Other than bugs, the
+known missing pieces are:
+
+@table @emph
+
+@item Private Module Fragment
+The Private Module Fragment is recognized, but an error is emitted.
+
+@item Partition definition visibility rules
+Entities may be defined in implementation partitions, and those
+definitions are not available outside of the module.  This is not
+implemented, and the definitions are available to extra-module use.
+
+@item Textual merging of reachable GM entities
+Entities may be multiply defined across different header-units.
+These must be de-duplicated, and this is implemented across imports,
+or when an import redefines a textually-defined entity.  However the
+reverse is not implemented---textually redefining an entity that has
+been defined in an imported header-unit.  A redefinition error is
+emitted.
+
+@item Translation-Unit local referencing rules
+Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
+(@uref{https://wg21.link/p2003} add limitations on which entities an
+exported region may reference (for instance, the entities an exported
+template definition may reference).  These are not fully implemented.
+
+@item Language-linkage module attachment
+Declarations with explicit language linkage (@code{extern "C"} or
+@code{extern "C++"}) are attached to the global module, even when in
+the purview of a named module.  This is not implemented.  Such
+declarations will be attached to the module, if any, in which they are
+declared.
+
+@end table
+
+Modular compilation is @emph{not} enabled with just the
+@option{-std=c++20} option.  You must explicitly enable it with the
+@option{-fmodules-ts} option.  It is independent of the language
+version selected, although in pre-C++20 versions, it is of course an
+extension.
+
+No new source file suffixes are required or supported.  If you wish to
+use a non-standard suffix (@xref{Overall Options}), you also need
+to provide a @option{-x c++} option too.@footnote{Some users like to
+distinguish module interface files with a new suffix, such as naming
+the source @code{module.cppm}, which involves
+teaching all tools about the new suffix.  A different scheme, such as
+naming @code{module-m.cpp} would be less invasive.}
+
+Compiling a module interface unit produces an additional output (to
+the assembly or object file), called a Compiled Module Interface
+(CMI).  This encodes the exported declarations of the module.
+Importing a module reads in the CMI.  The import graph is a Directed
+Acyclic Graph (DAG).  You must build imports before the importer.
+
+Header files may themselves be compiled to header units, which are a
+transitional ability aiming at faster compilation.  The
+@option{-fmodule-header} option is used to enable this, and implies
+the @option{-fmodules-ts} option.  These CMIs are named by the fully
+resolved underlying header file, and thus may be a complete pathname
+containing subdirectories.  If the header file is found at an absolute
+pathname, the CMI location is still relative to a CMI root directory.
+
+As header files often have no suffix, you commonly have to specify a
+@option{-x} option to tell the compiler the source is a header file.
+You may use @option{-x c++-header}, @option{-x c++-user-header} or
+@option{-x c++-system-header}.  When used in conjunction with
+@option{-fmodules-ts}, these all imply an appropriate
+@option{-fmodule-header} option.  The latter two variants use the
+user or system include path to search for the file specified.  This
+allows you to, for instance, compile standard library header files as
+header units, without needing to know exactly where they are
+installed.  Specifying the language as one of these variants also
+inhibits output of the object file, as header files have no associated
+object file.
+
+The @option{-fmodule-only} option disables generation of the
+associated object file for compiling a module interface.  Only the CMI
+is generated.  This option is implied when using the
+@option{-fmodule-header} option.
+
+The @option{-flang-info-include-translate} and
+@option{-flang-info-include-translate-not} options notes whether
+include translation occurs or not.  With no argument, the first will
+note all include translation.  The second will note all
+non-translations of include files not known to intentionally be
+textual.  With an argument, queries about include translation of a
+header files with that particular trailing pathname are noted.  You
+may repeat this form to cover several different header files.  This
+option may be helpful in determining whether include translation is
+happening---if it is working correctly, it'll behave as if it wasn't
+there at all.
+
+The @option{-Winvalid-imported-macros} option causes all imported macros
+to be resolved at the end of compilation.  Without this, imported
+macros are only resolved when expanded or (re)defined.  This option
+detects conflicting import definitions for all macros.
+
+@xref{C++ Module Mapper} for details of the @option{-fmodule-mapper}
+family of options.
+
+@menu
+* C++ Module Mapper::       Module Mapper
+* C++ Module Preprocessing::  Module Preprocessing
+* C++ Compiled Module Interface:: Compiled Module Interface
+@end menu
+
+@node C++ Module Mapper
+@subsection Module Mapper
+@cindex C++ Module Mapper
+
+A module mapper provides a server or file that the compiler queries to
+determine the mapping between module names and CMI files.  It is also
+used to build CMIs on demand.  @emph{Mapper functionality is in its
+infancy and is intended for experimentation with build system
+interactions.}
+
+You can specify a mapper with the @option{-fmodule-mapper=@var{val}}
+option or @env{CXX_MODULE_MAPPER} environment variable.  The value may
+have one of the following forms:
+
+@table @gcctabopt
+
+@item @r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
+An optional hostname and a numeric port number to connect to.  If the
+hostname is omitted, the loopback address is used.  If the hostname
+corresponds to multiple IPV6 addresses, these are tried in turn, until
+one is successful.  If your host lacks IPv6, this form is
+non-functional.  If you must use IPv4 use
+@option{-fmodule-mapper='|ncat @var{ipv4host} @var{port}'}.
+
+@item =@var{socket}@r{[}?@var{ident}@r{]}
+A local domain socket.  If your host lacks local domain sockets, this
+form is non-functional.
+
+@item |@var{program}@r{[}?@var{ident}@r{]} @r{[}@var{args...}@r{]}
+A program to spawn, and communicate with on its stdin/stdout streams.
+Your @var{PATH} environment variable is searched for the program.
+Arguments are separated by space characters, (it is not possible for
+one of the arguments delivered to the program to contain a space).  An
+exception is if @var{program} begins with @@.  In that case
+@var{program} (sans @@) is looked for in the compiler's internal
+binary directory.  Thus the sample mapper-server can be specified
+with @code{@@g++-mapper-server}.
+
+@item <>@r{[}?@var{ident}@r{]}
+@item <>@var{inout}@r{[}?@var{ident}@r{]}
+@item <@var{in}>@var{out}@r{[}?@var{ident}@r{]}
+Named pipes or file descriptors to communicate over.  The first form,
+@option{<>}, communicates over stdin and stdout.  The other forms
+allow you to specify a file descriptor or name a pipe.  A numeric value
+is interpreted as a file descriptor, otherwise named pipe is opened.
+The second form specifies a bidirectional pipe and the last form
+allows specifying two independent pipes.  Using file descriptors
+directly in this manner is fragile in general, as it can require the
+cooperation of intermediate processes.  In particular using stdin &
+stdout is fraught with danger as other compiler options might also
+cause the compiler to read stdin or write stdout, and it can have
+unfortunate interactions with signal delivery from the terminal.
+
+@item @var{file}@r{[}?@var{ident}@r{]}
+A mapping file consisting of space-separated module-name, filename
+pairs, one per line.  Only the mappings for the direct imports and any
+module export name need be provided.  If other mappings are provided,
+they override those stored in any imported CMI files.  A repository
+root may be specified in the mapping file by using @samp{$root} as the
+module name in the first active line.
+
+@end table
+
+As shown, an optional @var{ident} may suffix the first word of the
+option, indicated by a @samp{?} prefix.  The value is used in the
+initial handshake with the module server, or to specify a prefix on
+mapping file lines.  In the server case, the main source file name is
+used if no @var{ident} is specified.  In the file case, all non-blank
+lines are significant, unless a value is specified, in which case only
+lines beginning with @var{ident} are significant.  The @var{ident}
+must be separated by whitespace from the module name.  Be aware that
+@samp{<}, @samp{>}, @samp{?}, and @samp{|} characters are often
+significant to the shell, and therefore may need quoting.
+
+The mapper is connected to or loaded lazily, when the first module
+mapping is required.  The networking protocols are only supported on
+hosts that provide networking.  If no mapper is specified a default is
+provided.
+
+A project-specific mapper is expected to be provided by the build
+system that invokes the compiler.  It is not expected that a
+general-purpose server is provided for all compilations.  As such, the
+server will know the build configuration, the compiler it invoked, and
+the environment (such as working directory) in which that is
+operating.  As it may parallelize builds, several compilations may
+connect to the same socket.
+
+The default mapper generates CMI files in a @samp{gcm.cache}
+directory.  CMI files have a @samp{.gcm} suffix.  The module unit name
+is used directly to provide the basename.  Header units construct a
+relative path using the underlying header file name.  If the path is
+already relative, a @samp{,} directory is prepended.  Internal
+@samp{..} components are translated to @samp{,,}.  No attempt is made
+to canonicalize these filenames beyond that done by the preprocessor's
+include search algorithm, as in general it is ambiguous when symbolic
+links are present.
+
+The mapper protocol was published as ``A Module Mapper''
+@uref{https://wg21.link/p1184}.  The implementation is provided by
+@command{libcody}, @uref{https://www.github.com/urnathan/libcody},
+which specifies the canonical protocol definition.  A proof of concept
+server implementation embedded in @command{make} was described in
+''Make Me A Module'', @uref{https://wg21.link/p1602}.
+
+@node C++ Module Preprocessing
+@subsection Module Preprocessing
+@cindex C++ Module Preprocessing
+
+Modules affect preprocessing because of header units and include
+translation.  Some uses of the preprocessor as a separate step either
+do not produce a correct output, or require CMIs to be available.
+
+Header units import macros.  These macros can affect later conditional
+inclusion, which therefore can cascade to differing import sets.  When
+preprocessing, it is necessary to load the CMI.  If a header unit is
+unavailable, the preprocessor issues a warning and continue (when
+not just preprocessing, an error is emitted).  Detecting such imports
+requires preprocessor tokenization of the input stream to phase 4
+(macro expansion).
+
+Include translation converts @code{#include}, @code{#include_next} and
+@code{#import} directives to internal @code{import} declarations.
+Whether a particular directive is translated is controlled by the
+module mapper.  Header unit names are canonicalized during
+preprocessing.
+
+Dependency information can be emitted for macro import, extending the
+functionality of @option{-MD} and @option{-MMD} options.  Detection of
+import declarations also requires phase 4 preprocessing, and thus
+requires full preprocessing (or compilation).
+
+The @option{-M}, @option{-MM} and @option{-E -fdirectives-only} options halt
+preprocessing before phase 4.
+
+The @option{-save-temps} option uses @option{-fdirectives-only} for
+preprocessing, and preserve the macro definitions in the preprocessed
+output.  Usually you also want to use this option when explicitly
+preprocessing a header-unit, or consuming such preprocessed output:
+
+@smallexample
+g++ -fmodules-ts -E -fdirectives-only my-header.hh -o my-header.ii
+g++ -x c++-header -fmodules-ts -fpreprocessed -fdirectives-only my-header.ii
+@end smallexample
+
+@node C++ Compiled Module Interface
+@subsection Compiled Module Interface
+@cindex C++ Compiled Module Interface
+
+CMIs are an additional artifact when compiling named module
+interfaces, partitions or header units.  These are read when
+importing.  CMI contents are implementation-specific, and in GCC's
+case tied to the compiler version.  Consider them a rebuildable cache
+artifact, not a distributable object.
+
+When creating an output CMI, any missing directory components are
+created in a manner that is safe for concurrent builds creating
+multiple, different, CMIs within a common subdirectory tree.
+
+CMI contents are written to a temporary file, which is then atomically
+renamed.  Observers either see old contents (if there is an
+existing file), or complete new contents.  They do not observe the
+CMI during its creation.  This is unlike object file writing, which
+may be observed by an external process.
+
+CMIs are read in lazily, if the host OS provides @code{mmap}
+functionality.  Generally blocks are read when name lookup or template
+instantiation occurs.  To inhibit this, the @option{-fno-module-lazy}
+option may be used.
+
+The @option{--param lazy-modules=@var{n}} parameter controls the limit
+on the number of concurrently open module files during lazy loading.
+Should more modules be imported, an LRU algorithm is used to determine
+which files to close---until that file is needed again.  This limit
+may be exceeded with deep module dependency hierarchies.  With large
+code bases there may be more imports than the process limit of file
+descriptors.  By default, the limit is a few less than the per-process
+file descriptor hard limit, if that is determinable.@footnote{Where
+applicable the soft limit is incremented as needed towards the hard limit.}
+
+GCC CMIs use ELF32 as an architecture-neutral encapsulation mechanism.
+You may use @command{readelf} to inspect them, although section
+contents are largely undecipherable.  There is a section named
+@code{.gnu.c++.README}, which contains human-readable text.  Other
+than the first line, each line consists of @code{@var{tag}: @code{value}}
+tuples.
+
+@smallexample
+> @command{readelf -p.gnu.c++.README gcm.cache/foo.gcm}
+
+String dump of section '.gnu.c++.README':
+  [     0]  GNU C++ primary module interface
+  [    21]  compiler: 11.0.0 20201116 (experimental) [c++-modules revision 20201116-0454]
+  [    6f]  version: 2020/11/16-04:54
+  [    89]  module: foo
+  [    95]  source: c_b.ii
+  [    a4]  dialect: C++20/coroutines
+  [    be]  cwd: /data/users/nathans/modules/obj/x86_64/gcc
+  [    ee]  repository: gcm.cache
+  [   104]  buildtime: 2020/11/16 15:03:21 UTC
+  [   127]  localtime: 2020/11/16 07:03:21 PST
+  [   14a]  export: foo:part1 foo-part1.gcm
+@end smallexample
+
+Amongst other things, this lists the source that was built, C++
+dialect used and imports of the module.@footnote{The precise contents
+of this output may change.} The timestamp is the same value as that
+provided by the @code{__DATE__} & @code{__TIME__} macros, and may be
+explicitly specified with the environment variable
+@code{SOURCE_DATE_EPOCH}.  @xref{Environment Variables} for further
+details.
+
+A set of related CMIs may be copied, provided the relative pathnames
+are preserved.
+
+The @code{.gnu.c++.README} contents do not affect CMI integrity, and
+it may be removed or altered.  The section numbering of the sections
+whose names do not begin with @code{.gnu.c++.}, or are not the string
+section is significant and must not be altered.
