@@ -6223,9 +6223,9 @@ do_namespace_alias (tree alias, tree name_space)
   DECL_NAMESPACE_ALIAS (alias) = name_space;
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
-  pushdecl (alias);
-
   set_originating_module (alias);
+
+  pushdecl (alias);
 
   /* Emit debug info for namespace alias.  */
   if (!building_stmt_list_p ())
