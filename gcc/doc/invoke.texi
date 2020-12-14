@@ -3100,8 +3100,8 @@ Disable lazy module importing and module mapper creation.
 @item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
 @itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
-@itemx -fmodule-mapper=<>@r{[}@var{fdinout}@r{]}@r{[}?@var{ident}@r{]}
-@itemx -fmodule-mapper=<@var{fdin}>@var{fdout}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<>@r{[}@var{inout}@r{]}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<@var{in}>@var{out}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
 @vindex CXX_MODULE_MAPPER @r{environment variable}
 @opindex fmodule-mapper
@@ -32993,17 +32993,19 @@ binary directory.  Thus the sample mapper-server can be specified
 with @code{@@g++-mapper-server}.
 
 @item <>@r{[}?@var{ident}@r{]}
-@item <>@var{fdinout}@r{[}?@var{ident}@r{]}
-@item <@var{fdin}>@var{fdout}@r{[}?@var{ident}@r{]}
-File descriptors to communicate over.  The first form, @option{<>},
-communicates over stdin and stdout.  The second form specifies a
-bidirectional file descriptor and the last form allows specifying two
-independent descriptors.  Using file descriptors directly in this
-manner is fragile in general, as it can require the cooperation of
-intermediate processes.  In particular using stdin & stdout is fraught
-with danger as other compiler options might also cause the compiler to
-read stdin or write stdout, and it can have unfortunate interactions
-with signal delivery from the terminal.
+@item <>@var{inout}@r{[}?@var{ident}@r{]}
+@item <@var{in}>@var{out}@r{[}?@var{ident}@r{]}
+Named pipes or file descriptors to communicate over.  The first form,
+@option{<>}, communicates over stdin and stdout.  The other forms
+allow you to specify a file descriptor or name a pipe.  A numeric value
+is interpreted as a file descriptor, otherwise named pipe is opened.
+The second form specifies a bidirectional pipe and the last form
+allows specifying two independent pipes.  Using file descriptors
+directly in this manner is fragile in general, as it can require the
+cooperation of intermediate processes.  In particular using stdin &
+stdout is fraught with danger as other compiler options might also
+cause the compiler to read stdin or write stdout, and it can have
+unfortunate interactions with signal delivery from the terminal.
 
 @item @var{file}@r{[}?@var{ident}@r{]}
 A mapping file consisting of space-separated module-name, filename

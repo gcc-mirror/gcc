@@ -146,30 +146,59 @@ module_client::open_module_client (location_t loc, const char *o,
 	    case '<':
 	      // <from>to or <>fromto, or <>
 	      {
+		size_t pos = name.find ('>', 1);
+		if (pos == std::string::npos)
+		  pos = name.size ();
+		std::string from (name, 1, pos - 1);
+		std::string to;
+		if (pos != name.size ())
+		  to.append (name, pos + 1, std::string::npos);
+
 		int fd_from = -1, fd_to = -1;
-		char const *ptr = name.c_str ();
-		char *eptr;
-
-		fd_from = strtoul (++ptr, &eptr, 0);
-		if (*eptr == '>')
+		if (from.empty () && to.empty ())
 		  {
-		    ptr = eptr;
-		    fd_to = strtoul (++ptr, &eptr, 0);
-		    if (eptr != ptr && ptr == name.c_str () + 1)
-		      fd_from = fd_to;
+		    fd_from = fileno (stdin);
+		    fd_to = fileno (stdout);
 		  }
-
-		if (*eptr)
-		  errmsg = "parsing";
 		else
 		  {
-		    if (name.size () == 2)
+		    if (!from.empty ())
 		      {
-			fd_from = fileno (stdin);
-			fd_to = fileno (stdout);
+			fd_from = std::stoul (from, &pos, 10);
+			if (pos != from.size ())
+			  {
+			    int dir = to.empty ()
+			      ? O_RDWR | O_CLOEXEC : O_RDONLY | O_CLOEXEC;
+			    fd_from = open (from.c_str (), dir);
+			  }
+			if (to.empty ())
+			  fd_to = fd_from;
 		      }
-		    c = new module_client (fd_from, fd_to);
+
+		    if (!from.empty () && fd_from < 0)
+		      ;
+		    else if (to.empty ())
+		      ;
+		    else
+		      {
+			fd_to = std::stoul (to, &pos, 10);
+			if (pos != to.size ())
+			  {
+			    int dir = from.empty ()
+			      ? O_RDWR | O_CLOEXEC : O_WRONLY | O_CLOEXEC;
+			    fd_to = open (to.c_str (), dir);
+			    if (fd_to < 0)
+			      close (fd_from);
+			  }
+			if (from.empty ())
+			  fd_from = fd_to;
+		      }
 		  }
+
+		if (fd_from < 0 || fd_to < 0)
+		  errmsg = "opening";
+		else
+		  c = new module_client (fd_from, fd_to);
 	      }
 	      break;
 

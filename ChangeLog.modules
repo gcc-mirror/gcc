@@ -1,5 +1,11 @@
 2020-12-14  Nathan Sidwell  <nathan@acm.org>
 
+	Named pipe support
+	gcc/cp
+	* mapper-client.cc (module_client::open_module): Allow named pipes.
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Document.
+
 	libcpp/
 	* include/cpplib.h (struct cpp_macro): Rename imported field.
 	(struct cpp_hashnode): Update deferred doc.
