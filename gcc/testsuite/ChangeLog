@@ -1,3 +1,82 @@
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/push.c: New test.
+
+2020-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98256
+	* gcc.c-torture/compile/pr98256.c: New test.
+
+2020-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92469
+	* gcc.target/i386/pr92469.c: New test.
+	* gcc.target/i386/pr79804.c: Adjust expected diagnostics.
+	* gcc.target/i386/pr88178.c: Expect an error.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/vect-half-floats.c: New test.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache): Fix it.
+	(check_effective_target_vect_complex_add_byte
+	,check_effective_target_vect_complex_add_int
+	,check_effective_target_vect_complex_add_short
+	,check_effective_target_vect_complex_add_long
+	,check_effective_target_vect_complex_add_half
+	,check_effective_target_vect_complex_add_float
+	,check_effective_target_vect_complex_add_double): New.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-byte.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-short.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-byte.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-int.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c: New test.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-short.c: New test.
+	* gcc.dg/vect/complex/complex-add-pattern-template.c: New test.
+	* gcc.dg/vect/complex/complex-add-template.c: New test.
+	* gcc.dg/vect/complex/complex-operations-run.c: New test.
+	* gcc.dg/vect/complex/complex-operations.c: New test.
+	* gcc.dg/vect/complex/complex.exp: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-byte.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-int.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-short.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-byte.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-int.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c: New test.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-short.c: New test.
+
+2020-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/scanasm.exp (scan-symbol-section): Pass args to
+	dg-scan-symbol-section.
+	(scan-assembler-symbol-section): Likewise.
+	(dg-scan-symbol-section): Handle selector from orig_args.
+	Get patterns from orig_args.
+	(parse_section_of_symbols): Fix section_pattern.
+	Strip double quotes from section name.
+	* g++.dg/gomp/tls-5.C: Restrict ir, _ZGR2ir_ scans to tls_native.
+	* gcc.dg/20021029-1.c: Anchor ar symbol.
+	* gcc.dg/darwin-sections.c: Remove obsolete scans for _a, _b in
+	.data.
+
 2020-12-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98022

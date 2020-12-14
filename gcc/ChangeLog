@@ -1,3 +1,209 @@
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_output_int_move): Unify push operation
+	selection.
+
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_output_int_move): Check the correct
+	operand for constant 0 push operation.
+
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_expand_addsub_di_operands): Handle equal
+	input operands with subtraction.
+
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_expand_addsub_di_operands): Handle the
+	addition or subtraction of 0.
+
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_expand_addsub_di_operands): Remove
+	unused register allocation.
+
+2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (casesi): Use `gen_int_mode' rather than
+	`GEN_INT' for the immediate used for lower bound adjustment.
+
+2020-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98256
+	* tree-ssa-math-opts.c (match_uaddsub_overflow): For BIT_NOT_EXPR,
+	only handle a single use, and insert .ADD_OVERFLOW before the
+	comparison rather than after the BIT_NOT_EXPR.  Return true iff
+	it is BIT_NOT_EXPR and it has been removed.
+	(math_opts_dom_walker::after_dom_children) <case BIT_NOT_EXPR>:
+	If match_uaddsub_overflow returned true, continue instead of break.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vcaddq_rot90_u8, __arm_vcaddq_rot270_u8,
+	, __arm_vcaddq_rot90_s8, __arm_vcaddq_rot270_s8,
+	__arm_vcaddq_rot90_u16, __arm_vcaddq_rot270_u16, __arm_vcaddq_rot90_s16,
+	__arm_vcaddq_rot270_s16, __arm_vcaddq_rot90_u32,
+	__arm_vcaddq_rot270_u32, __arm_vcaddq_rot90_s32,
+	__arm_vcaddq_rot270_s32, __arm_vcmulq_rot90_f16,
+	__arm_vcmulq_rot270_f16, __arm_vcmulq_rot180_f16,
+	__arm_vcmulq_f16, __arm_vcaddq_rot90_f16, __arm_vcaddq_rot270_f16,
+	__arm_vcmulq_rot90_f32, __arm_vcmulq_rot270_f32,
+	__arm_vcmulq_rot180_f32, __arm_vcmulq_f32, __arm_vcaddq_rot90_f32,
+	__arm_vcaddq_rot270_f32, __arm_vcmlaq_f16, __arm_vcmlaq_rot180_f16,
+	__arm_vcmlaq_rot270_f16, __arm_vcmlaq_rot90_f16, __arm_vcmlaq_f32,
+	__arm_vcmlaq_rot180_f32, __arm_vcmlaq_rot270_f32,
+	__arm_vcmlaq_rot90_f32): Update builtin calls.
+	* config/arm/arm_mve_builtins.def (vcaddq_rot90_u, vcaddq_rot270_u,
+	vcaddq_rot90_s, vcaddq_rot270_s, vcaddq_rot90_f, vcaddq_rot270_f,
+	vcmulq_f, vcmulq_rot90_f, vcmulq_rot180_f, vcmulq_rot270_f,
+	vcmlaq_f, vcmlaq_rot90_f, vcmlaq_rot180_f, vcmlaq_rot270_f): Removed.
+	(vcaddq_rot90, vcaddq_rot270, vcmulq, vcmulq_rot90, vcmulq_rot180,
+	vcmulq_rot270, vcmlaq, vcmlaq_rot90, vcmlaq_rot180, vcmlaq_rot270):
+	New.
+	* config/arm/constraints.md (Dz): Include MVE.
+	* config/arm/iterators.md (mve_rotsplit1, mve_rotsplit2): New.
+	(rot): Add UNSPEC_VCMLS, UNSPEC_VCMUL and UNSPEC_VCMUL180.
+	(rot_op, rotsplit1, rotsplit2, fcmac1, VCMLA_OP, VCMUL_OP): New.
+	* config/arm/mve.md (VCADDQ_ROT270_S, VCADDQ_ROT90_S, VCADDQ_ROT270_U,
+	VCADDQ_ROT90_U, VCADDQ_ROT270_F, VCADDQ_ROT90_F, VCMULQ_F,
+	VCMULQ_ROT180_F, VCMULQ_ROT270_F, VCMULQ_ROT90_F, VCMLAQ_F,
+	VCMLAQ_ROT180_F, VCMLAQ_ROT90_F, VCMLAQ_ROT270_F, VCADDQ_ROT270_S,
+	VCADDQ_ROT270, VCADDQ_ROT90): Removed.
+	(mve_rot, VCMUL): New.
+	(mve_vcaddq_rot270_<supf><mode, mve_vcaddq_rot90_<supf><mode>,
+	mve_vcaddq_rot270_f<mode>, mve_vcaddq_rot90_f<mode>, mve_vcmulq_f<mode,
+	mve_vcmulq_rot180_f<mode>, mve_vcmulq_rot270_f<mode>,
+	mve_vcmulq_rot90_f<mode>, mve_vcmlaq_f<mode>, mve_vcmlaq_rot180_f<mode>,
+	mve_vcmlaq_rot270_f<mode>, mve_vcmlaq_rot90_f<mode>): Removed.
+	(mve_vcmlaq<mve_rot><mode>, mve_vcmulq<mve_rot><mode>,
+	mve_vcaddq<mve_rot><mode>, cadd<rot><mode>3, mve_vcaddq<mve_rot><mode>):
+	New.
+	(cmul<rot_op><mode>3): Exclude MVE types.
+	* config/arm/unspecs.md (UNSPEC_VCMUL90, UNSPEC_VCMUL270): New.
+	* config/arm/vec-common.md (cadd<rot><mode>3, cmul<rot_op><mode>3,
+	arm_vcmla<rot><mode>, cml<fcmac1><rot_op><mode>4): New.
+	* config/arm/unspecs.md (UNSPEC_VCMUL, UNSPEC_VCMUL180, UNSPEC_VCMLS,
+	UNSPEC_VCMLS180): New.
+	* config/arm/neon.md (cmul<rot_op><mode>3): New.
+
+2020-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/92469
+	* varasm.c (eliminable_regno_p): New function.
+	(make_decl_rtl): Reject asm vars for frame and argp
+	if they are different from hard frame pointer.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vcaddq_rot90_u8, __arm_vcaddq_rot270_u8,
+	, __arm_vcaddq_rot90_s8, __arm_vcaddq_rot270_s8,
+	__arm_vcaddq_rot90_u16, __arm_vcaddq_rot270_u16, __arm_vcaddq_rot90_s16,
+	__arm_vcaddq_rot270_s16, __arm_vcaddq_rot90_u32,
+	__arm_vcaddq_rot270_u32, __arm_vcaddq_rot90_s32,
+	__arm_vcaddq_rot270_s32, __arm_vcmulq_rot90_f16,
+	__arm_vcmulq_rot270_f16, __arm_vcmulq_rot180_f16,
+	__arm_vcmulq_f16, __arm_vcaddq_rot90_f16, __arm_vcaddq_rot270_f16,
+	__arm_vcmulq_rot90_f32, __arm_vcmulq_rot270_f32,
+	__arm_vcmulq_rot180_f32, __arm_vcmulq_f32, __arm_vcaddq_rot90_f32,
+	__arm_vcaddq_rot270_f32, __arm_vcmlaq_f16, __arm_vcmlaq_rot180_f16,
+	__arm_vcmlaq_rot270_f16, __arm_vcmlaq_rot90_f16, __arm_vcmlaq_f32,
+	__arm_vcmlaq_rot180_f32, __arm_vcmlaq_rot270_f32,
+	__arm_vcmlaq_rot90_f32): Update builtin calls.
+	* config/arm/arm_mve_builtins.def (vcaddq_rot90_u, vcaddq_rot270_u,
+	vcaddq_rot90_s, vcaddq_rot270_s, vcaddq_rot90_f, vcaddq_rot270_f,
+	vcmulq_f, vcmulq_rot90_f, vcmulq_rot180_f, vcmulq_rot270_f,
+	vcmlaq_f, vcmlaq_rot90_f, vcmlaq_rot180_f, vcmlaq_rot270_f): Removed.
+	(vcaddq_rot90, vcaddq_rot270, vcmulq, vcmulq_rot90, vcmulq_rot180,
+	vcmulq_rot270, vcmlaq, vcmlaq_rot90, vcmlaq_rot180, vcmlaq_rot270):
+	New.
+	* config/arm/constraints.md (Dz): Include MVE.
+	* config/arm/iterators.md (mve_rotsplit1, mve_rotsplit2): New.
+	(rot): Add UNSPEC_VCMLS, UNSPEC_VCMUL and UNSPEC_VCMUL180.
+	(rot_op, rotsplit1, rotsplit2, fcmac1, VCMLA_OP, VCMUL_OP): New.
+	* config/arm/mve.md (VCADDQ_ROT270_S, VCADDQ_ROT90_S, VCADDQ_ROT270_U,
+	VCADDQ_ROT90_U, VCADDQ_ROT270_F, VCADDQ_ROT90_F, VCMULQ_F,
+	VCMULQ_ROT180_F, VCMULQ_ROT270_F, VCMULQ_ROT90_F, VCMLAQ_F,
+	VCMLAQ_ROT180_F, VCMLAQ_ROT90_F, VCMLAQ_ROT270_F, VCADDQ_ROT270_S,
+	VCADDQ_ROT270, VCADDQ_ROT90): Removed.
+	(mve_rot, VCMUL): New.
+	(mve_vcaddq_rot270_<supf><mode, mve_vcaddq_rot90_<supf><mode>,
+	mve_vcaddq_rot270_f<mode>, mve_vcaddq_rot90_f<mode>, mve_vcmulq_f<mode,
+	mve_vcmulq_rot180_f<mode>, mve_vcmulq_rot270_f<mode>,
+	mve_vcmulq_rot90_f<mode>, mve_vcmlaq_f<mode>, mve_vcmlaq_rot180_f<mode>,
+	mve_vcmlaq_rot270_f<mode>, mve_vcmlaq_rot90_f<mode>): Removed.
+	(mve_vcmlaq<mve_rot><mode>, mve_vcmulq<mve_rot><mode>,
+	mve_vcaddq<mve_rot><mode>, cadd<rot><mode>3, mve_vcaddq<mve_rot><mode>):
+	New.
+	(cmul<rot_op><mode>3): Exclude MVE types.
+	* config/arm/unspecs.md (UNSPEC_VCMUL90, UNSPEC_VCMUL270): New.
+	* config/arm/vec-common.md (cadd<rot><mode>3, cmul<rot_op><mode>3,
+	arm_vcmla<rot><mode>, cml<fcmac1><rot_op><mode>4): New.
+	* config/arm/unspecs.md (UNSPEC_VCMUL, UNSPEC_VCMUL180, UNSPEC_VCMLS,
+	UNSPEC_VCMLS180): New.
+	* config/arm/neon.md (cmul<rot_op><mode>3): New.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_preferred_simd_mode): Add E_HFmode.
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c: New file.
+	* Makefile.in: Add it.
+	* doc/passes.texi: Document it.
+	* internal-fn.def (COMPLEX_ADD_ROT90, COMPLEX_ADD_ROT270): New.
+	* optabs.def (cadd90_optab, cadd270_optab): New.
+	* doc/md.texi: Document them.
+	* tree-vect-loop.c (vect_analyze_loop_2): Add dissolve code.
+	* tree-vect-slp.c:
+	(vect_free_slp_instance, vect_create_new_slp_node): Export.
+	(vect_match_slp_patterns_2, vect_match_slp_patterns): New.
+	(vect_analyze_slp): Use it.
+	* tree-vectorizer.h (vect_free_slp_tree): Export.
+	(enum _complex_operation): Forward declare.
+	(class vect_pattern): New
+
+2020-12-13  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Remove static inline.
+	* tree-vect-slp.c (vect_create_new_slp_node): Remove static and only
+	set smts if valid.
+	* tree-vectorizer.c (vec_info::add_pattern_stmt): New.
+	(vec_info::set_vinfo_for_stmt): Optionally enforce read-only.
+	* tree-vectorizer.h (struct _slp_tree): Use new types.
+	(lane_permutation_t, lane_permutation_t): New.
+	(vect_create_new_slp_node, vect_mark_pattern_stmts): New.
+
+2020-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Commands for use in dg-final, Scan the
+	assembly output, scan-assembler-symbol-section): Document.
+	(scan-symbol-section): Document.
+
+2020-12-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* is-a.h (reinterpret_is_a_helper): New class.
+	(static_is_a_helper): Likewise.
+	(is_a_helper): Inherit from reinterpret_is_a_helper.
+	(is_a_helper<const T *>): New specialization.
+
+2020-12-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* coretypes.h (iterator_range): Move to...
+	* iterator-utils.h: ...this new file.
+
+2020-12-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtlanal.c (noop_move_p): Don't check for REG_EQUAL notes.
+
+2020-12-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vec.h (vnull::operator vec<T, A, L>): Make const.
+
 2020-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/96685
