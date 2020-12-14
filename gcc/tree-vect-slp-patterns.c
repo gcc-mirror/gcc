@@ -240,7 +240,8 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
     {
       complex_load_perm_t res = linear_loads_p (perm_cache, child);
       kind = vect_merge_perms (kind, res.first);
-      if (kind == PERM_UNKNOWN)
+      /* Unknown and Top are not valid on blends as they produce no permute.  */
+      if (kind == PERM_UNKNOWN || kind == PERM_TOP)
 	return retval;
       all_loads.safe_push (res.second);
     }
