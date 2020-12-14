@@ -16423,7 +16423,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
 
   macro->count = count;
   macro->kind = cmk_macro;
-  macro->imported = true;
+  macro->imported_p = true;
 
   macro->fun_like = sec.b ();
   macro->variadic = sec.b ();
@@ -16722,7 +16722,8 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
   if (cpp_user_macro_p (node))
     if (cpp_macro *macro = node->value.macro)
       /* Ignore imported, builtins, command line and forced header macros.  */
-      if (!macro->imported && !macro->lazy && macro->line >= spans.main_start ())
+      if (!macro->imported_p
+	  && !macro->lazy && macro->line >= spans.main_start ())
 	{
 	  gcc_checking_assert (macro->kind == cmk_macro);
 	  /* I don't want to deal with this corner case, that I suspect is
@@ -16919,7 +16920,7 @@ module_state::install_macros ()
 	 deferred macro before this import -- why are you doing
 	 that?  */
       if (cpp_macro *cur = cpp_set_deferred_macro (node))
-	if (!cur->imported)
+	if (!cur->imported_p)
 	  {
 	    macro_import::slot &slot = imp.exported ();
 	    macro_export &exp = get_macro_export (slot);

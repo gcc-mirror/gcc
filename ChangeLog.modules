@@ -1,3 +1,14 @@
+2020-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* include/cpplib.h (struct cpp_macro): Rename imported field.
+	(struct cpp_hashnode): Update deferred doc.
+	* macro.c (_cpp_new_macro): Adjust.
+	(cpp_get_deferred_macro, get_deferred_or_lazy_macro): Assert more.
+	gcc/cp/
+	* module.cc (module_state::read_define): Adjust.
+	(module_state::install_macros): Likewise.
+
 2020-12-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 9324f7a25c7
