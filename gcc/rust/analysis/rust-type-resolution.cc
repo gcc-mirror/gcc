@@ -165,10 +165,10 @@ void
 TypeResolution::visit (AST::IdentifierExpr &ident_expr)
 {
   AST::Type *type = NULL;
-  bool ok = scope.LookupType (ident_expr.ident, &type);
+  bool ok = scope.LookupType (ident_expr.get_ident (), &type);
   if (!ok)
     {
-      rust_error_at (ident_expr.locus, "unknown identifier");
+      rust_error_at (ident_expr.get_locus (), "unknown identifier");
       return;
     }
 
@@ -242,7 +242,7 @@ void
 TypeResolution::visit (AST::LiteralExpr &expr)
 {
   std::string type;
-  switch (expr.literal.get_lit_type ())
+  switch (expr.get_lit_type ())
     {
     case AST::Literal::CHAR:
       type = "char";
@@ -279,8 +279,8 @@ TypeResolution::visit (AST::LiteralExpr &expr)
 
   if (type.empty ())
     {
-      rust_error_at (expr.locus, "unknown literal: %s",
-		     expr.literal.as_string ().c_str ());
+      rust_error_at (expr.get_locus (), "unknown literal: %s",
+		     expr.get_literal ().as_string ().c_str ());
       return;
     }
 
@@ -289,7 +289,7 @@ TypeResolution::visit (AST::LiteralExpr &expr)
   if (ok)
     typeBuffer.push_back (val);
   else
-    rust_error_at (expr.locus, "unknown literal type: %s", type.c_str ());
+    rust_error_at (expr.get_locus (), "unknown literal type: %s", type.c_str ());
 }
 
 void
@@ -325,7 +325,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   expr.visit_lhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine lhs type");
+      rust_error_at (expr.get_locus (), "unable to determine lhs type");
       return;
     }
 
@@ -336,7 +336,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   expr.visit_rhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine rhs type");
+      rust_error_at (expr.get_locus (), "unable to determine rhs type");
       return;
     }
 
@@ -345,7 +345,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  typesAreCompatible (lhsType, rhsType, expr.right_expr->get_locus_slow ());
+  typesAreCompatible (lhsType, rhsType, expr.get_right_expr ()->get_locus_slow ());
 }
 
 void
@@ -368,7 +368,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   expr.visit_lhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine lhs type");
+      rust_error_at (expr.get_locus (), "unable to determine lhs type");
       return;
     }
 
@@ -379,7 +379,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   expr.visit_rhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine rhs type");
+      rust_error_at (expr.get_locus (), "unable to determine rhs type");
       return;
     }
 
@@ -389,7 +389,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
 
   // do the lhsType and the rhsType match
   if (!typesAreCompatible (lhsType, rhsType,
-			   expr.right_expr->get_locus_slow ()))
+			   expr.get_right_expr ()->get_locus_slow ()))
     return;
 
   // is the lhs mutable?
@@ -465,7 +465,7 @@ TypeResolution::visit (AST::ArrayElemsCopied &elems)
 void
 TypeResolution::visit (AST::ArrayExpr &expr)
 {
-  auto elements = expr.get_internal_elements ();
+  auto& elements = expr.get_array_elems ();
 
   auto before = typeBuffer.size ();
   elements->accept_vis (*this);
@@ -526,7 +526,7 @@ TypeResolution::visit (AST::ArrayIndexExpr &expr)
       return;
     }
 
-  typeBuffer.push_back (resolved->get_element_type ());
+  typeBuffer.push_back (resolved->get_elem_type ().get ());
 }
 
 void
@@ -548,15 +548,15 @@ TypeResolution::visit (AST::StructExprFieldIdentifier &field)
 void
 TypeResolution::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  identifierBuffer = &field.field_name;
-  field.value->accept_vis (*this);
+  identifierBuffer = std::unique_ptr<std::string> (new std::string (field.get_field_name ()));
+  field.get_value ()->accept_vis (*this);
 }
 
 void
 TypeResolution::visit (AST::StructExprFieldIndexValue &field)
 {
-  tupleIndexBuffer = &field.index;
-  field.value->accept_vis (*this);
+  tupleIndexBuffer = std::unique_ptr<int> (new int (field.get_index ()));
+  field.get_value ()->accept_vis (*this);
 }
 
 void
@@ -569,7 +569,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       return;
     }
 
-  for (auto &field : expr.fields)
+  for (auto &field : expr.get_fields ())
     {
       identifierBuffer = NULL;
       tupleIndexBuffer = NULL;
@@ -590,9 +590,9 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       if (identifierBuffer != NULL)
 	{
 	  AST::StructField *declField = NULL;
-	  for (auto &df : decl->fields)
+	  for (auto &df : decl->get_fields ())
 	    {
-	      if (identifierBuffer->compare (df.field_name) == 0)
+	      if (identifierBuffer->compare (df.get_field_name ()) == 0)
 		{
 		  declField = &df;
 		  break;
@@ -606,7 +606,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	      return;
 	    }
 
-	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+	  if (!typesAreCompatible (declField->get_field_type ().get (), inferedType,
 				   expr.get_locus_slow ()))
 	    return;
 	}
@@ -614,9 +614,9 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       else if (tupleIndexBuffer != NULL)
 	{
 	  AST::StructField *declField = NULL;
-	  if (*tupleIndexBuffer < decl->fields.size ())
+	  if (*tupleIndexBuffer < decl->get_fields ().size ())
 	    {
-	      declField = &decl->fields[*tupleIndexBuffer];
+	      declField = &decl->get_fields ()[*tupleIndexBuffer];
 	    }
 	  tupleIndexBuffer = NULL;
 
@@ -626,7 +626,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	      return;
 	    }
 
-	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+	  if (!typesAreCompatible (declField->get_field_type ().get (), inferedType,
 				   expr.get_locus_slow ()))
 	    return;
 	}
@@ -686,41 +686,41 @@ void
 TypeResolution::visit (AST::CallExpr &expr)
 {
   // this look up should probably be moved to name resolution
-  auto fndecl = lookupFndecl (expr.function.get ());
+  auto fndecl = lookupFndecl (expr.get_function_expr ().get ());
   if (fndecl == NULL)
     return;
 
   // check num args match
-  if (fndecl->function_params.size () != expr.params.size ())
+  if (fndecl->get_function_params ().size () != expr.get_params ().size ())
     {
       rust_error_at (expr.get_locus_slow (),
 		     "differing number of arguments vs parameters to function");
       return;
     }
 
-  typeBuffer.push_back (fndecl->return_type.get ());
+  typeBuffer.push_back (fndecl->get_return_type ().get ());
   expr.fndeclRef = fndecl;
 
   auto before = typeBuffer.size ();
-  for (auto &item : expr.params)
+  for (auto &item : expr.get_params ())
     item->accept_vis (*this);
 
   auto numInferedParams = typeBuffer.size () - before;
-  if (numInferedParams != expr.params.size ())
+  if (numInferedParams != expr.get_params ().size ())
     {
-      rust_error_at (expr.locus, "Failed to infer all parameters");
+      rust_error_at (expr.get_locus (), "Failed to infer all parameters");
       return;
     }
 
   auto offs = numInferedParams - 1;
-  for (auto it = fndecl->function_params.rbegin ();
-       it != fndecl->function_params.rend (); ++it)
+  for (auto it = fndecl->get_function_params ().rbegin ();
+       it != fndecl->get_function_params ().rend (); ++it)
     {
       AST::Type *argument = typeBuffer.back ();
       typeBuffer.pop_back ();
 
-      if (!typesAreCompatible (it->type.get (), argument,
-			       expr.params[offs]->get_locus_slow ()))
+      if (!typesAreCompatible (it->get_type ().get (), argument,
+			       expr.get_params ()[offs]->get_locus_slow ()))
 	return;
       offs--;
     }
@@ -740,7 +740,7 @@ void
 TypeResolution::visit (AST::BlockExpr &expr)
 {
   scope.Push ();
-  for (auto &stmt : expr.statements)
+  for (auto &stmt : expr.get_statements ())
     {
       stmt->accept_vis (*this);
     }
@@ -780,11 +780,11 @@ TypeResolution::visit (AST::ReturnExpr &expr)
 {
   // Ensure the type of this matches the function
   auto before = typeBuffer.size ();
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_returned_expr ()->accept_vis (*this);
 
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.get_expr ()->get_locus_slow (),
+      rust_error_at (expr.get_returned_expr ()->get_locus_slow (),
 		     "unable to determine type for return expr");
       return;
     }
@@ -796,14 +796,14 @@ TypeResolution::visit (AST::ReturnExpr &expr)
   // this will again have issues with structs before we move to HIR
 
   auto function = scope.CurrentFunction ();
-  if (!function->has_function_return_type ())
+  if (!function->has_return_type ())
     {
       rust_error_at (expr.get_locus (), "return for void function %s",
 		     function->as_string ().c_str ());
       return;
     }
 
-  if (!typesAreCompatible (function->return_type.get (), inferedType,
+  if (!typesAreCompatible (function->get_return_type ().get (), inferedType,
 			   expr.get_locus_slow ()))
     {
       return;
@@ -920,14 +920,14 @@ TypeResolution::visit (AST::Function &function)
 {
   // always emit the function with return type in the event of nil return type
   // its  a marker for a void function
-  scope.InsertType (function.function_name, function.return_type.get ());
-  scope.InsertFunction (function.function_name, &function);
+  scope.InsertType (function.get_function_name (), function.get_return_type ().get ());
+  scope.InsertFunction (function.get_function_name (), &function);
   scope.PushFunction (&function);
   scope.Push ();
 
-  for (auto &param : function.function_params)
+  for (auto &param : function.get_function_params ())
     {
-      if (!isTypeInScope (param.type.get (), param.locus))
+      if (!isTypeInScope (param.get_type ().get (), param.get_locus ()))
 	{
 	  scope.Pop ();
 	  scope.PopFunction ();
@@ -935,10 +935,10 @@ TypeResolution::visit (AST::Function &function)
 	}
 
       auto before = letPatternBuffer.size ();
-      param.param_name->accept_vis (*this);
+      param.get_pattern ()->accept_vis (*this);
       if (letPatternBuffer.size () <= before)
 	{
-	  rust_error_at (param.locus, "failed to analyse parameter name");
+	  rust_error_at (param.get_locus (), "failed to analyse parameter name");
 
 	  scope.Pop ();
 	  scope.PopFunction ();
@@ -947,13 +947,13 @@ TypeResolution::visit (AST::Function &function)
 
       auto paramName = letPatternBuffer.back ();
       letPatternBuffer.pop_back ();
-      scope.InsertType (paramName.variable_ident, param.type.get ());
+      scope.InsertType (paramName.get_ident (), param.get_type ().get ());
     }
 
   // ensure the return type is resolved
-  if (function.has_function_return_type ())
+  if (function.has_return_type ())
     {
-      if (!isTypeInScope (function.return_type.get (), function.locus))
+      if (!isTypeInScope (function.get_return_type ().get (), function.get_locus ()))
 	{
 	  scope.Pop ();
 	  scope.PopFunction ();
@@ -962,7 +962,7 @@ TypeResolution::visit (AST::Function &function)
     }
 
   // walk the expression body
-  for (auto &stmt : function.function_body->statements)
+  for (auto &stmt : function.get_definition ()->get_statements ())
     {
       stmt->accept_vis (*this);
     }
@@ -982,9 +982,9 @@ TypeResolution::visit (AST::TypeAlias &type_alias)
 void
 TypeResolution::visit (AST::StructStruct &struct_item)
 {
-  for (auto &field : struct_item.fields)
+  for (auto &field : struct_item.get_fields ())
     {
-      if (!isTypeInScope (field.field_type.get (),
+      if (!isTypeInScope (field.get_field_type ().get (),
 			  Linemap::unknown_location ()))
 	{
 	  rust_fatal_error (Linemap::unknown_location (),
@@ -993,7 +993,7 @@ TypeResolution::visit (AST::StructStruct &struct_item)
 	}
     }
 
-  scope.InsertStruct (struct_item.struct_name, &struct_item);
+  scope.InsertStruct (struct_item.get_struct_name (), &struct_item);
 }
 
 void
@@ -1177,7 +1177,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
   scope.InsertLocal (stmt.as_string (), &stmt);
   if (!stmt.has_init_expr () && !stmt.has_type ())
     {
-      rust_error_at (stmt.locus,
+      rust_error_at (stmt.get_locus (),
 		     "E0282: type annotations or init expression needed");
       return;
     }
@@ -1186,12 +1186,12 @@ TypeResolution::visit (AST::LetStmt &stmt)
   if (stmt.has_init_expr ())
     {
       auto before = typeBuffer.size ();
-      stmt.init_expr->accept_vis (*this);
+      stmt.get_init_expr ()->accept_vis (*this);
 
       if (typeBuffer.size () <= before)
 	{
 	  rust_error_at (
-	    stmt.init_expr->get_locus_slow (),
+	    stmt.get_init_expr ()->get_locus_slow (),
 	    "unable to determine type for declaration from init expr");
 	  return;
 	}
@@ -1201,7 +1201,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
       if (inferedType == NULL)
 	{
-	  rust_error_at (stmt.init_expr->get_locus_slow (),
+	  rust_error_at (stmt.get_init_expr ()->get_locus_slow (),
 			 "void type found for statement initialisation");
 	  return;
 	}
@@ -1209,8 +1209,8 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
   if (stmt.has_type () && stmt.has_init_expr ())
     {
-      if (!typesAreCompatible (stmt.type.get (), inferedType,
-			       stmt.init_expr->get_locus_slow ()))
+      if (!typesAreCompatible (stmt.get_type ().get (), inferedType,
+			       stmt.get_init_expr ()->get_locus_slow ()))
 	{
 	  return;
 	}
@@ -1218,10 +1218,10 @@ TypeResolution::visit (AST::LetStmt &stmt)
   else if (stmt.has_type ())
     {
       auto before = typeComparisonBuffer.size ();
-      stmt.type->accept_vis (*this);
+      stmt.get_type ()->accept_vis (*this);
       if (typeComparisonBuffer.size () <= before)
 	{
-	  rust_error_at (stmt.locus, "failed to understand type for lhs");
+	  rust_error_at (stmt.get_locus (), "failed to understand type for lhs");
 	  return;
 	}
       auto typeString = typeComparisonBuffer.back ();
@@ -1241,7 +1241,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
       inferedType->accept_vis (*this);
       if (typeComparisonBuffer.size () <= before)
 	{
-	  rust_error_at (stmt.locus, "failed to understand type for lhs");
+	  rust_error_at (stmt.get_locus (), "failed to understand type for lhs");
 	  return;
 	}
       auto typeString = typeComparisonBuffer.back ();
@@ -1250,14 +1250,14 @@ TypeResolution::visit (AST::LetStmt &stmt)
       // AST::Type *val = NULL;
       // if (!scope.LookupType (typeString, &val))
       //   {
-      //     rust_error_at (stmt.locus, "Inferred unknown type: %s",
+      //     rust_error_at (stmt.get_locus (), "Inferred unknown type: %s",
       //   		 inferedType->as_string ().c_str ());
       //     return;
       //   }
     }
   else
     {
-      rust_fatal_error (stmt.locus, "Failed to determine any type for LetStmt");
+      rust_fatal_error (stmt.get_locus (), "Failed to determine any type for LetStmt");
       return;
     }
 
@@ -1268,9 +1268,9 @@ TypeResolution::visit (AST::LetStmt &stmt)
     }
 
   // get all the names part of this declaration and add the types to the scope
-  stmt.variables_pattern->accept_vis (*this);
+  stmt.get_pattern ()->accept_vis (*this);
   for (auto &pattern : letPatternBuffer)
-    scope.InsertType (pattern.variable_ident, inferedType);
+    scope.InsertType (pattern.get_ident (), inferedType);
 
   letPatternBuffer.clear ();
 }
@@ -1278,14 +1278,14 @@ TypeResolution::visit (AST::LetStmt &stmt)
 void
 TypeResolution::visit (AST::ExprStmtWithoutBlock &stmt)
 {
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
 }
 
 void
 TypeResolution::visit (AST::ExprStmtWithBlock &stmt)
 {
   scope.Push ();
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
   auto localMap = scope.PeekLocals ();
   for (auto &[_, value] : localMap)
     {
@@ -1331,7 +1331,7 @@ TypeResolution::visit (AST::ReferenceType &type)
 void
 TypeResolution::visit (AST::ArrayType &type)
 {
-  typeComparisonBuffer.push_back (type.get_element_type ()->as_string ());
+  typeComparisonBuffer.push_back (type.get_elem_type ()->as_string ());
 }
 
 void

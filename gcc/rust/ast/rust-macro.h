@@ -124,7 +124,7 @@ private:
 
 public:
   // Returns whether macro match repetition has separator token.
-  bool has_sep () const { return sep != NULL; }
+  bool has_sep () const { return sep != nullptr; }
 
   MacroMatchRepetition (std::vector<std::unique_ptr<MacroMatch> > matches,
 			MacroRepOp op, std::unique_ptr<MacroRepSep> sep)
@@ -132,9 +132,12 @@ public:
   {}
 
   // Copy constructor with clone
-  MacroMatchRepetition (MacroMatchRepetition const &other)
-    : op (other.op), sep (other.sep->clone_token ())
+  MacroMatchRepetition (MacroMatchRepetition const &other) : op (other.op)
   {
+    // guard to protect from null pointer dereference
+    if (other.sep != nullptr)
+      sep = other.sep->clone_token ();
+
     matches.reserve (other.matches.size ());
     for (const auto &e : other.matches)
       matches.push_back (e->clone_macro_match ());
@@ -144,7 +147,12 @@ public:
   MacroMatchRepetition &operator= (MacroMatchRepetition const &other)
   {
     op = other.op;
-    sep = other.sep->clone_token ();
+
+    // guard to protect from null pointer dereference
+    if (other.sep != nullptr)
+      sep = other.sep->clone_token ();
+    else
+      sep = nullptr;
 
     matches.reserve (other.matches.size ());
     for (const auto &e : other.matches)
@@ -280,8 +288,9 @@ public:
 // A macro rules definition item AST node
 class MacroRulesDefinition : public MacroItem
 {
+  std::vector<Attribute> outer_attrs;
   Identifier rule_name;
-  // MacroRulesDef rules_def; // TODO: inline
+  // MacroRulesDef rules_def;
   // only curly without required semicolon at end
   DelimType delim_type;
   // MacroRules rules;
@@ -295,11 +304,22 @@ public:
   MacroRulesDefinition (Identifier rule_name, DelimType delim_type,
 			std::vector<MacroRule> rules,
 			std::vector<Attribute> outer_attrs, Location locus)
-    : MacroItem (std::move (outer_attrs)), rule_name (std::move (rule_name)),
+    : outer_attrs (std::move (outer_attrs)), rule_name (std::move (rule_name)),
       delim_type (delim_type), rules (std::move (rules)), locus (locus)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if rule name is empty, so base stripping on that.
+  void mark_for_strip () override { rule_name = ""; }
+  bool is_marked_for_strip () const override { return rule_name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  std::vector<MacroRule> &get_macro_rules () { return rules; }
+  const std::vector<MacroRule> &get_macro_rules () const { return rules; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -334,6 +354,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if path is empty, so base stripping on that.
+  void mark_for_strip () override { path = SimplePath::create_empty (); }
+  bool is_marked_for_strip () const override { return path.is_empty (); }
+
+  const SimplePath &get_path () const { return path; }
+  SimplePath &get_path () { return path; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -344,21 +371,7 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_expr_impl () const override
-  {
-    return new MacroInvocation (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   MacroInvocation *clone_expr_without_block_impl () const override
-  {
-    return new MacroInvocation (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocation *clone_type_impl () const override
   {
     return new MacroInvocation (*this);
   }
@@ -572,6 +585,8 @@ protected:
 };
 
 // Object that parses macros from a token stream.
+/* TODO: would "AttributeParser" be a better name? MetaItems are only for
+ * attributes, I believe */
 struct MacroParser
 {
 private:

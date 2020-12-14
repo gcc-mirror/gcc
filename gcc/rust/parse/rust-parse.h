@@ -164,7 +164,8 @@ private:
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params (EndTokenPred is_end_token);
   std::unique_ptr<AST::TypeParam> parse_type_param ();
-  std::vector<AST::FunctionParam> parse_function_params ();
+  template <typename EndTokenPred>
+  std::vector<AST::FunctionParam> parse_function_params (EndTokenPred is_end_token);
   AST::FunctionParam parse_function_param ();
   std::unique_ptr<AST::Type> parse_function_return_type ();
   AST::WhereClause parse_where_clause ();
@@ -230,7 +231,8 @@ private:
   parse_extern_block (AST::Visibility vis,
 		      std::vector<AST::Attribute> outer_attrs);
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
-  AST::NamedFunctionParam parse_named_function_param ();
+  AST::NamedFunctionParam parse_named_function_param (
+    std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> ());
   AST::Method parse_method ();
 
   // Expression-related (Pratt parsed)
@@ -543,7 +545,7 @@ private:
   std::unique_ptr<AST::Type> parse_paren_prefixed_type ();
   std::unique_ptr<AST::TypeNoBounds> parse_paren_prefixed_type_no_bounds ();
   std::unique_ptr<AST::Type> parse_for_prefixed_type ();
-  AST::MaybeNamedParam parse_maybe_named_param ();
+  AST::MaybeNamedParam parse_maybe_named_param (std::vector<AST::Attribute> outer_attrs);
 
   // Statement-related
   std::unique_ptr<AST::Stmt> parse_stmt ();
@@ -573,6 +575,7 @@ private:
   std::unique_ptr<AST::TupleStructItems> parse_tuple_struct_items ();
   AST::StructPatternElements parse_struct_pattern_elems ();
   std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field ();
+  std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field_partial (std::vector<AST::Attribute> outer_attrs);
 
   int left_binding_power (const_TokenPtr token);
 

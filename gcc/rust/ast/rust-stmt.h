@@ -12,6 +12,9 @@ class EmptyStmt : public Stmt
 {
   Location locus;
 
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
+
 public:
   std::string as_string () const override { return std::string (1, ';'); }
 
@@ -20,6 +23,10 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -31,7 +38,6 @@ protected:
  * introduces new name into scope */
 class LetStmt : public Stmt
 {
-public:
   // bool has_outer_attrs;
   std::vector<Attribute> outer_attrs;
 
@@ -45,6 +51,7 @@ public:
 
   Location locus;
 
+public:
   Type *inferedType;
 
   // Returns whether let statement has outer attributes.
@@ -68,20 +75,40 @@ public:
 
   // Copy constructor with clone
   LetStmt (LetStmt const &other)
-    : outer_attrs (other.outer_attrs),
-      variables_pattern (other.variables_pattern->clone_pattern ()),
-      type (other.type->clone_type ()),
-      init_expr (other.init_expr->clone_expr ()), locus (other.locus)
-  {}
+    : outer_attrs (other.outer_attrs), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.variables_pattern != nullptr)
+      variables_pattern = other.variables_pattern->clone_pattern ();
+
+    // guard to prevent null dereference (always required)
+    if (other.init_expr != nullptr)
+      init_expr = other.init_expr->clone_expr ();
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+  }
 
   // Overloaded assignment operator to clone
   LetStmt &operator= (LetStmt const &other)
   {
-    variables_pattern = other.variables_pattern->clone_pattern ();
-    init_expr = other.init_expr->clone_expr ();
-    type = other.type->clone_type ();
     outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.variables_pattern != nullptr)
+      variables_pattern = other.variables_pattern->clone_pattern ();
+    else
+      variables_pattern = nullptr;
+
+    // guard to prevent null dereference (always required)
+    if (other.init_expr != nullptr)
+      init_expr = other.init_expr->clone_expr ();
+    else
+      init_expr = nullptr;
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
@@ -93,6 +120,36 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if pattern is null, so base stripping on that.
+  void mark_for_strip () override { variables_pattern = nullptr; }
+  bool is_marked_for_strip () const override
+  {
+    return variables_pattern == nullptr;
+  }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_init_expr ()
+  {
+    rust_assert (has_init_expr ());
+    return init_expr;
+  }
+
+  std::unique_ptr<Pattern> &get_pattern ()
+  {
+    rust_assert (variables_pattern != nullptr);
+    return variables_pattern;
+  }
+
+  std::unique_ptr<Type> &get_type ()
+  {
+    rust_assert (has_type ());
+    return type;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -119,7 +176,6 @@ protected:
  * difficulties, can only be guaranteed to hold an expression). */
 class ExprStmtWithoutBlock : public ExprStmt
 {
-public:
   // TODO: ensure that this works
   std::unique_ptr<ExprWithoutBlock> expr;
   /* HACK: cannot ensure type safety of ExprWithoutBlock due to Pratt parsing,
@@ -127,6 +183,7 @@ public:
    * or redesign AST. */
   // std::unique_ptr<Expr> expr;
 
+public:
   std::string as_string () const override;
 
   ExprStmtWithoutBlock (std::unique_ptr<ExprWithoutBlock> expr, Location locus)
@@ -137,9 +194,12 @@ public:
   {}*/
 
   // Copy constructor with clone
-  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr_without_block ())
-  {}
+  ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other) : ExprStmt (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr_without_block ();
+  }
   /*ExprStmtWithoutBlock (ExprStmtWithoutBlock const &other)
     : ExprStmt (other), expr (other.expr->clone_expr ())
   {}*/
@@ -148,8 +208,13 @@ public:
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock const &other)
   {
     ExprStmt::operator= (other);
-    expr = other.expr->clone_expr_without_block ();
-    //expr = other.expr->clone_expr ();
+    // expr = other.expr->clone_expr ();
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr_without_block ();
+    else
+      expr = nullptr;
 
     return *this;
   }
@@ -159,6 +224,17 @@ public:
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if expr is null, so base stripping on that.
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ExprWithoutBlock> &get_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -172,9 +248,9 @@ protected:
 // Statement containing an expression with a block
 class ExprStmtWithBlock : public ExprStmt
 {
-public:
   std::unique_ptr<ExprWithBlock> expr;
 
+public:
   std::string as_string () const override;
 
   std::vector<LetStmt *> locals;
@@ -184,15 +260,23 @@ public:
   {}
 
   // Copy constructor with clone
-  ExprStmtWithBlock (ExprStmtWithBlock const &other)
-    : ExprStmt (other), expr (other.expr->clone_expr_with_block ())
-  {}
+  ExprStmtWithBlock (ExprStmtWithBlock const &other) : ExprStmt (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr_with_block ();
+  }
 
   // Overloaded assignment operator to clone
   ExprStmtWithBlock &operator= (ExprStmtWithBlock const &other)
   {
     ExprStmt::operator= (other);
-    expr = other.expr->clone_expr_with_block ();
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr_with_block ();
+    else
+      expr = nullptr;
 
     return *this;
   }
@@ -202,6 +286,17 @@ public:
   ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if expr is null, so base stripping on that.
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ExprWithBlock> &get_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

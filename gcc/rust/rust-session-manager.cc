@@ -344,8 +344,8 @@ Session::enable_dump (std::string arg)
   if (arg == "all")
     {
       rust_error_at (Location (),
-		     "dumping all is not supported as of now. choose %<lex%>, "
-		     "%<parse%>, or %<target_options%>");
+		     "dumping all is not supported as of now. choose %<lex%>, %<parse%>, "
+         "or %<target_options%>");
       return false;
     }
   else if (arg == "lex")
@@ -390,8 +390,8 @@ Session::enable_dump (std::string arg)
   else
     {
       rust_error_at (Location (),
-		     "dump option %qs was unrecognised. choose %<lex%>, "
-		     "%<parse%>, or %<target_options%>",
+		     "dump option %qs was unrecognised. choose %<lex%>, %<parse%>, or "
+         "%<target_options%>",
 		     arg.c_str ());
       return false;
     }
@@ -472,7 +472,6 @@ Session::parse_file (const char *filename)
   if (options.dump_option == CompileOptions::REGISTER_PLUGINS_DUMP)
     {
       // TODO: what do I dump here?
-      return;
     }
 
   // injection pipeline stage
@@ -482,7 +481,6 @@ Session::parse_file (const char *filename)
   if (options.dump_option == CompileOptions::INJECTION_DUMP)
     {
       // TODO: what do I dump here? injected crate names?
-      return;
     }
 
   // expansion pipeline stage
@@ -491,8 +489,10 @@ Session::parse_file (const char *filename)
 
   if (options.dump_option == CompileOptions::EXPANSION_DUMP)
     {
-      // TODO: what do I dump here? expanded macros? AST with expanded macros?
-      return;
+      // dump AST with expanded stuff
+      fprintf (stderr, "BEGIN POST-EXPANSION AST DUMP\n");
+      parser.debug_dump_ast_output (parsed_crate);
+      fprintf (stderr, "END POST-EXPANSION AST DUMP\n");
     }
 
   // resolution pipeline stage
@@ -502,7 +502,6 @@ Session::parse_file (const char *filename)
   if (options.dump_option == CompileOptions::RESOLUTION_DUMP)
     {
       // TODO: what do I dump here? resolved names? AST with resolved names?
-      return;
     }
 
   if (saw_errors ())
@@ -630,8 +629,8 @@ Session::injection (AST::Crate &crate)
    * rustc also has a "quote" macro that is defined differently and is
    * supposedly not stable so eh. */
   /* TODO: actually implement injection of these macros. In particular, derive
-   * macros, cfg, and
-   * test should be prioritised since they seem to be used the most. */
+   * macros, cfg, and test should be prioritised since they seem to be used the
+   * most. */
 
   // crate injection
   std::vector<std::string> names;
@@ -719,7 +718,7 @@ Session::expansion (AST::Crate &crate)
   // create extctxt? from parse session, cfg, and resolver?
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
-  MacroExpander expander (crate, cfg);
+  MacroExpander expander (crate, cfg, *this);
   expander.expand_crate ();
 
   // error reporting - check unused macros, get missing fragment specifiers

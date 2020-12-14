@@ -15,7 +15,7 @@ class MacroInvocation;
 struct ExpansionCfg
 {
   // features?
-  unsigned int recursion_limit; // TODO: determine default recursion limit
+  unsigned int recursion_limit = 50; // TODO: determine default recursion limit
 				// trace macros?
 				// should test?
 				// more default stuff?
@@ -27,7 +27,8 @@ struct MacroExpander
   ExpansionCfg cfg;
   unsigned int expansion_depth = 0;
 
-  MacroExpander (AST::Crate &crate, ExpansionCfg cfg) : cfg (cfg), crate (crate)
+  MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
+    : cfg (cfg), crate (crate), session (session)
   {}
 
   ~MacroExpander () = default;
@@ -40,11 +41,15 @@ struct MacroExpander
   // should this be public or private?
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
+  void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
+  bool fails_cfg (std::vector<AST::Attribute> &attr);
+
   /* TODO: make it extend ASTVisitor so that individual items can be accessed
    * properly? */
 
 private:
   AST::Crate &crate;
+  Session &session;
 };
 } // namespace Rust
 
