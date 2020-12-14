@@ -1267,9 +1267,9 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access type should be handled
-            --  like a variable, as the underlying memory pointed-to can be
-            --  modified. Use Adjusted_Kind to do this adjustment.
+            --  A constant or IN parameter of access-to-variable type should be
+            --  handled like a variable, as the underlying memory pointed-to
+            --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
@@ -1277,7 +1277,7 @@ package body Sem_Prag is
             if Ekind (Item_Id) in E_Constant
                                 | E_Generic_In_Parameter
                                 | E_In_Parameter
-              and then Is_Access_Type (Etype (Item_Id))
+              and then Is_Access_Variable (Etype (Item_Id))
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -1975,7 +1975,7 @@ package body Sem_Prag is
          --  clause as this will lead to misleading errors.
 
          if Has_Extra_Parentheses (Deps) then
-            return;
+            goto Leave;
          end if;
 
          if Present (Component_Associations (Deps)) then
@@ -2066,7 +2066,7 @@ package body Sem_Prag is
 
          else
             Error_Msg_N ("malformed dependency relation", Deps);
-            return;
+            goto Leave;
          end if;
 
       --  The top level dependency relation is malformed. This is a syntax
@@ -12903,30 +12903,31 @@ package body Sem_Prag is
 
          --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
 
-         --  RM_ASSERTION_KIND ::= Assert               |
-         --                        Static_Predicate     |
-         --                        Dynamic_Predicate    |
-         --                        Pre                  |
-         --                        Pre'Class            |
-         --                        Post                 |
-         --                        Post'Class           |
-         --                        Type_Invariant       |
-         --                        Type_Invariant'Class
+         --  RM_ASSERTION_KIND ::= Assert                     |
+         --                        Static_Predicate           |
+         --                        Dynamic_Predicate          |
+         --                        Pre                        |
+         --                        Pre'Class                  |
+         --                        Post                       |
+         --                        Post'Class                 |
+         --                        Type_Invariant             |
+         --                        Type_Invariant'Class       |
+         --                        Default_Initial_Condition
 
-         --  ID_ASSERTION_KIND ::= Assert_And_Cut            |
-         --                        Assume                    |
-         --                        Contract_Cases            |
-         --                        Debug                     |
-         --                        Default_Initial_Condition |
-         --                        Ghost                     |
-         --                        Initial_Condition         |
-         --                        Loop_Invariant            |
-         --                        Loop_Variant              |
-         --                        Postcondition             |
-         --                        Precondition              |
-         --                        Predicate                 |
-         --                        Refined_Post              |
-         --                        Statement_Assertions
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       |
+         --                        Assume               |
+         --                        Contract_Cases       |
+         --                        Debug                |
+         --                        Ghost                |
+         --                        Initial_Condition    |
+         --                        Loop_Invariant       |
+         --                        Loop_Variant         |
+         --                        Postcondition        |
+         --                        Precondition         |
+         --                        Predicate            |
+         --                        Refined_Post         |
+         --                        Statement_Assertions |
+         --                        Subprogram_Variant
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions
@@ -28492,35 +28493,69 @@ package body Sem_Prag is
                         Constit, Encapsulating_State (Constit_Id));
                   end if;
 
-               --  The only other source of legal constituents is the body
-               --  state space of the related package.
-
                else
-                  if Present (Body_States) then
-                     State_Elmt := First_Elmt (Body_States);
-                     while Present (State_Elmt) loop
+                  declare
+                     Pack_Id   : Entity_Id;
+                     Placement : State_Space_Kind;
+                  begin
+                     --  Find where the constituent lives with respect to the
+                     --  state space.
 
-                        --  Consume a valid constituent to signal that it has
-                        --  been encountered.
+                     Find_Placement_In_State_Space
+                       (Item_Id   => Constit_Id,
+                        Placement => Placement,
+                        Pack_Id   => Pack_Id);
 
-                        if Node (State_Elmt) = Constit_Id then
-                           Remove_Elmt (Body_States, State_Elmt);
-                           Collect_Constituent;
-                           return;
+                     --  The constituent is part of the visible state of a
+                     --  private child package, but lacks a Part_Of indicator.
+
+                     if Placement = Visible_State_Space
+                       and then Is_Child_Unit (Pack_Id)
+                       and then not Is_Generic_Unit (Pack_Id)
+                       and then Is_Private_Descendant (Pack_Id)
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("& cannot act as constituent of state %",
+                           Constit, Constit_Id);
+                        Error_Msg_Sloc :=
+                          Sloc (Enclosing_Declaration (Constit_Id));
+                        SPARK_Msg_NE
+                          ("\missing Part_Of indicator # should specify "
+                           & "encapsulator &",
+                           Constit, State_Id);
+
+                     --  The only other source of legal constituents is the
+                     --  body state space of the related package.
+
+                     else
+                        if Present (Body_States) then
+                           State_Elmt := First_Elmt (Body_States);
+                           while Present (State_Elmt) loop
+
+                              --  Consume a valid constituent to signal that it
+                              --  has been encountered.
+
+                              if Node (State_Elmt) = Constit_Id then
+                                 Remove_Elmt (Body_States, State_Elmt);
+                                 Collect_Constituent;
+                                 return;
+                              end if;
+
+                              Next_Elmt (State_Elmt);
+                           end loop;
                         end if;
 
-                        Next_Elmt (State_Elmt);
-                     end loop;
-                  end if;
+                        --  At this point it is known that the constituent is
+                        --  not part of the package hidden state and cannot be
+                        --  used in a refinement (SPARK RM 7.2.2(9)).
 
-                  --  At this point it is known that the constituent is not
-                  --  part of the package hidden state and cannot be used in
-                  --  a refinement (SPARK RM 7.2.2(9)).
-
-                  Error_Msg_Name_1 := Chars (Spec_Id);
-                  SPARK_Msg_NE
-                    ("cannot use & in refinement, constituent is not a hidden "
-                     & "state of package %", Constit, Constit_Id);
+                        Error_Msg_Name_1 := Chars (Spec_Id);
+                        SPARK_Msg_NE
+                          ("cannot use & in refinement, constituent is not a "
+                           & "hidden state of package %", Constit, Constit_Id);
+                     end if;
+                  end;
                end if;
             end Match_Constituent;
 
@@ -28942,6 +28977,20 @@ package body Sem_Prag is
          --  in the refinement clause.
 
          Report_Unused_Constituents (Part_Of_Constits);
+
+         --  Avoid a cascading error reporting a missing refinement by adding a
+         --  dummy constituent.
+
+         if No (Refinement_Constituents (State_Id)) then
+            Set_Refinement_Constituents (State_Id, New_Elmt_List (Any_Id));
+         end if;
+
+         --  At this point the refinement might be dummy, but must be
+         --  well-formed, to prevent cascaded errors.
+
+         pragma Assert (Has_Null_Refinement (State_Id)
+                          xor
+                        Has_Non_Null_Refinement (State_Id));
       end Analyze_Refinement_Clause;
 
       -----------------------------
@@ -30174,13 +30223,23 @@ package body Sem_Prag is
          Formal := First_Entity (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
+
+               --  IN parameters can act as output when the related type is
+               --  access-to-variable.
+
+               if Ekind (Formal) = E_In_Parameter
+                 and then Is_Access_Variable (Etype (Formal))
+               then
+                  Append_New_Elmt (Formal, Subp_Outputs);
+               end if;
+
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
             if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
                Append_New_Elmt (Formal, Subp_Outputs);
 
-               --  Out parameters can act as inputs when the related type is
+               --  OUT parameters can act as inputs when the related type is
                --  tagged, unconstrained array, unconstrained record, or record
                --  with unconstrained components.
 
@@ -30215,7 +30274,7 @@ package body Sem_Prag is
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
       --  Subprogram declaration or stand-alone body case, look for pragmas
-      --  Depends and Global
+      --  Depends and Global.
 
       else
          Depends := Get_Pragma (Spec_Id, Pragma_Depends);

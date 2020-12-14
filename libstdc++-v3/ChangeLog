@@ -1,3 +1,14 @@
+2020-12-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/macros.h (__glibcxx_check_can_increment_range): Replace
+	_GLIBCXX_DEBUG_VERIFY_COND_AT usage with _GLIBCXX_DEBUG_VERIFY_AT_F.
+	(__glibcxx_check_can_decrement_range): Likewise.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc (test03): New.
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: New test.
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc: New test.
+	* testsuite/25_algorithms/equal/constexpr_neg.cc: New test.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc: New test.
+
 2020-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98226

@@ -2923,6 +2923,14 @@ Passes if @var{regex} matches text in the test's demangled assembler output.
 Passes if @var{regex} does not match text in the test's demangled assembler
 output.
 
+@item scan-assembler-symbol-section @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}.  The caller needs to
+allow for @code{USER_LABEL_PREFIX} and different section name conventions.
+
+@item scan-symbol-section @var{filename} @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}in @var{filename}.
+The same caveats as for @code{scan-assembler-symbol-section} apply.
+
 @item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
 Passes if @var{symbol} is defined as a hidden symbol in the test's
 assembly output.

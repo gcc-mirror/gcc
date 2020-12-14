@@ -3848,10 +3848,7 @@ package body Sem_Aggr is
          --  by default, then set flag on the new association to indicate that
          --  the original association was for such a box-initialized component.
 
-         if Resolve_Record_Aggregate.Is_Box_Present
-           and then not Is_Box_Present
-           and then Is_Box_Init_By_Default  -- ???
-         then
+         if Is_Box_Init_By_Default then
             Set_Was_Default_Init_Box_Association (Last (Assoc_List));
          end if;
       end Add_Association;

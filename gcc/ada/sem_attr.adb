@@ -3395,7 +3395,16 @@ package body Sem_Attr is
       -- Ceiling --
       -------------
 
-      when Attribute_Ceiling =>
+      when Attribute_Ceiling
+         | Attribute_Floor
+         | Attribute_Fraction
+         | Attribute_Machine
+         | Attribute_Machine_Rounding
+         | Attribute_Model
+         | Attribute_Rounding
+         | Attribute_Truncation
+         | Attribute_Unbiased_Rounding
+      =>
          Check_Floating_Point_Type_1;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -4057,7 +4066,9 @@ package body Sem_Attr is
       -- First --
       -----------
 
-      when Attribute_First =>
+      when Attribute_First
+         | Attribute_Last
+      =>
          Check_Array_Or_Scalar_Type;
          Bad_Attribute_For_Predicate;
 
@@ -4065,7 +4076,9 @@ package body Sem_Attr is
       -- First_Bit --
       ---------------
 
-      when Attribute_First_Bit =>
+      when Attribute_First_Bit
+         | Attribute_Last_Bit
+      =>
          Check_Component;
          Set_Etype (N, Universal_Integer);
 
@@ -4073,7 +4086,9 @@ package body Sem_Attr is
       -- First_Valid --
       -----------------
 
-      when Attribute_First_Valid =>
+      when Attribute_First_Valid
+         | Attribute_Last_Valid
+      =>
          Check_First_Last_Valid;
          Set_Etype (N, P_Type);
 
@@ -4091,10 +4106,7 @@ package body Sem_Attr is
       -- Floor --
       -----------
 
-      when Attribute_Floor =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------
       -- Fore --
@@ -4108,10 +4120,7 @@ package body Sem_Attr is
       -- Fraction --
       --------------
 
-      when Attribute_Fraction =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       --------------
       -- From_Any --
@@ -4292,25 +4301,19 @@ package body Sem_Attr is
       -- Last --
       ----------
 
-      when Attribute_Last =>
-         Check_Array_Or_Scalar_Type;
-         Bad_Attribute_For_Predicate;
+      --  Shares processing with First attribute
 
       --------------
       -- Last_Bit --
       --------------
 
-      when Attribute_Last_Bit =>
-         Check_Component;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with First_Bit attribute
 
       ----------------
       -- Last_Valid --
       ----------------
 
-      when Attribute_Last_Valid =>
-         Check_First_Last_Valid;
-         Set_Etype (N, P_Type);
+      --  Shares processing with First_Valid attribute
 
       ------------------
       -- Leading_Part --
@@ -4690,10 +4693,7 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
-      when Attribute_Machine =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ------------------
       -- Machine_Emax --
@@ -4741,10 +4741,7 @@ package body Sem_Attr is
       -- Machine_Rounding --
       ----------------------
 
-      when Attribute_Machine_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       --------------------
       -- Machine_Rounds --
@@ -4866,10 +4863,7 @@ package body Sem_Attr is
       -- Model --
       -----------
 
-      when Attribute_Model =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------
       -- Model_Emin --
@@ -5844,10 +5838,7 @@ package body Sem_Attr is
       -- Rounding --
       --------------
 
-      when Attribute_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ---------------
       -- Safe_Emax --
@@ -5962,6 +5953,7 @@ package body Sem_Attr is
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
+         Resolve (E2, Any_Integer);
 
       ------------------
       -- Signed_Zeros --
@@ -6419,10 +6411,7 @@ package body Sem_Attr is
       -- Truncation --
       ----------------
 
-      when Attribute_Truncation =>
-         Check_Floating_Point_Type_1;
-         Resolve (E1, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------
       -- Type_Class --
@@ -6611,10 +6600,7 @@ package body Sem_Attr is
       -- Unbiased_Rounding --
       -----------------------
 
-      when Attribute_Unbiased_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------------
       -- Unchecked_Access --

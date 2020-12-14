@@ -1770,7 +1770,8 @@ package body Ch6 is
    --
    --  EXTENDED_RETURN_STATEMENT ::=
    --    return DEFINING_IDENTIFIER : [aliased] RETURN_SUBTYPE_INDICATION
-   --                                           [:= EXPRESSION] [do
+   --                                           [:= EXPRESSION]
+   --                                           [ASPECT_SPECIFICATION] [do
    --      HANDLED_SEQUENCE_OF_STATEMENTS
    --    end return];
    --
@@ -1916,6 +1917,7 @@ package body Ch6 is
       Ret_Sloc : constant Source_Ptr := Token_Ptr;
       Ret_Strt : constant Column_Number := Start_Column;
       Ret_Node : Node_Id;
+      Decl     : Node_Id;
 
    --  Start of processing for P_Return_Statement
 
@@ -1955,8 +1957,12 @@ package body Ch6 is
             end if;
 
             Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
-            Set_Return_Object_Declarations
-              (Ret_Node, New_List (P_Return_Object_Declaration));
+            Decl := P_Return_Object_Declaration;
+            Set_Return_Object_Declarations (Ret_Node, New_List (Decl));
+
+            if Token = Tok_With then
+               P_Aspect_Specifications (Decl, False);
+            end if;
 
             if Token = Tok_Do then
                Push_Scope_Stack;

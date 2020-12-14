@@ -26,6 +26,7 @@
 // mode as it requires acquiring 2 locks at the same time.
 
 #include <vector>
+#include <memory>
 #include <thread>
 #include <functional>
 #include <testsuite_hooks.h>

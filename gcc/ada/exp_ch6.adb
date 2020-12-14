@@ -8091,6 +8091,7 @@ package body Exp_Ch6 is
 
                if True then
                   Result := Is_Controlled (T)
+                    and then not Is_Generic_Actual_Type (T)
                     and then Present (Enclosing_Subprogram (T))
                     and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
                     and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;

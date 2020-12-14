@@ -3002,9 +3002,9 @@ package body Ch3 is
 
    --  DISCRIMINANT_SPECIFICATION ::=
    --    DEFINING_IDENTIFIER_LIST : [NULL_EXCLUSION] SUBTYPE_MARK
-   --      [:= DEFAULT_EXPRESSION]
+   --      [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATION]
    --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
-   --      [:= DEFAULT_EXPRESSION]
+   --      [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATION]
 
    --  If no known discriminant part is present, then No_List is returned
 
@@ -3097,6 +3097,10 @@ package body Ch3 is
 
                Set_Expression
                  (Specification_Node, Init_Expr_Opt (True));
+
+               if Token = Tok_With then
+                  P_Aspect_Specifications (Specification_Node, False);
+               end if;
 
                if Ident > 1 then
                   Set_Prev_Ids (Specification_Node, True);

@@ -70,7 +70,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  in the RM sense).
 
    OK_Get_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -81,7 +81,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -95,7 +95,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -106,7 +106,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -120,7 +120,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_128 : constant Boolean :=
-     Num'Object_Size <= 128
+     Num'Base'Object_Size <= 128
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
            or else
@@ -131,7 +131,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_128 : constant Boolean :=
-     Num'Object_Size <= 128
+     Num'Base'Object_Size <= 128
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
            or else
@@ -210,7 +210,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -286,7 +286,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put

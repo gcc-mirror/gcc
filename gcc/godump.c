@@ -1155,15 +1155,25 @@ go_output_typedef (class godump_container *container, tree decl)
     {
       void **slot;
       const char *type;
+      tree original_type;
 
       type = IDENTIFIER_POINTER (DECL_NAME (decl));
+      original_type = DECL_ORIGINAL_TYPE (decl);
+
+      /* Suppress typedefs where the type name matches the underlying
+	 struct/union/enum tag. This way we'll emit the struct definition
+	 instead of an invalid recursive type.  */
+      if (TYPE_IDENTIFIER (original_type) != NULL
+	  && IDENTIFIER_POINTER (TYPE_IDENTIFIER (original_type)) == type)
+	return;
+
       /* If type defined already, skip.  */
       slot = htab_find_slot (container->type_hash, type, INSERT);
       if (*slot != NULL)
 	return;
       *slot = CONST_CAST (void *, (const void *) type);
 
-      if (!go_format_type (container, DECL_ORIGINAL_TYPE (decl), true, false,
+      if (!go_format_type (container, original_type, true, false,
 			   NULL, false))
 	{
 	  fprintf (go_dump_file, "// ");
@@ -1187,7 +1197,9 @@ go_output_typedef (class godump_container *container, tree decl)
 
       container->decls_seen.add (decl);
     }
-  else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+  else if ((RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	    || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	   && TYPE_NAME (TREE_TYPE (decl)) != NULL)
     {
        void **slot;
        const char *type;

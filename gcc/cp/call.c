@@ -4025,9 +4025,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
        creating a garbage BASELINK; constructors can't be inherited.  */
     ctors = get_class_binding (totype, complete_ctor_identifier);
 
+  tree to_nonref = non_reference (totype);
   if (MAYBE_CLASS_TYPE_P (fromtype))
     {
-      tree to_nonref = non_reference (totype);
       if (same_type_ignoring_top_level_qualifiers_p (to_nonref, fromtype) ||
 	  (CLASS_TYPE_P (to_nonref) && CLASS_TYPE_P (fromtype)
 	   && DERIVED_FROM_P (to_nonref, fromtype)))
@@ -4110,6 +4110,22 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       tree conversion_path = TREE_PURPOSE (conv_fns);
       struct z_candidate *old_candidates;
+
+      /* If LOOKUP_NO_CONVERSION, don't consider a conversion function that
+	 would need an addional user-defined conversion, i.e. if the return
+	 type differs in class-ness from the desired type.  So we avoid
+	 considering operator bool when calling a copy constructor.
+
+	 This optimization avoids the failure in PR97600, and is allowed by
+	 [temp.inst]/9: "If the function selected by overload resolution can be
+	 determined without instantiating a class template definition, it is
+	 unspecified whether that instantiation actually takes place."	*/
+      tree convtype = non_reference (TREE_TYPE (conv_fns));
+      if ((flags & LOOKUP_NO_CONVERSION)
+	  && !WILDCARD_TYPE_P (convtype)
+	  && (CLASS_TYPE_P (to_nonref)
+	      != CLASS_TYPE_P (convtype)))
+	continue;
 
       /* If we are called to convert to a reference type, we are trying to
 	 find a direct binding, so don't even consider temporaries.  If

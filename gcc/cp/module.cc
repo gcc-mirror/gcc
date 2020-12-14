@@ -155,7 +155,17 @@ set_originating_module (tree, bool)
 }
 
 void
+maybe_attach_decl (tree, tree)
+{
+}
+
+void
 lazy_load_binding (unsigned, tree, tree, binding_slot *)
+{
+}
+
+void
+lazy_load_specializations (tree)
 {
 }
 
@@ -213,6 +223,11 @@ init_modules (cpp_reader *)
 
 void
 maybe_check_all_macros (cpp_reader *)
+{
+}
+
+void
+finish_module_processing (cpp_reader *)
 {
 }
 

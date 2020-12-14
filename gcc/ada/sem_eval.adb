@@ -124,7 +124,7 @@ package body Sem_Eval is
 
    type CV_Cache_Array is array (CV_Range) of CV_Entry;
 
-   CV_Cache : CV_Cache_Array := (others => (Node_High_Bound, Uint_0));
+   CV_Cache : CV_Cache_Array;
    --  This is the actual cache, with entries consisting of node/value pairs,
    --  and the impossible value Node_High_Bound used for unset entries.
 
@@ -4785,7 +4785,7 @@ package body Sem_Eval is
       Static     : Boolean := False;
       Check_Elab : Boolean := False)
    is
-      Typ : constant Entity_Id := Etype (Left);
+      Typ : constant Entity_Id := Base_Type (Etype (Left));
 
       procedure Check_Elab_Call;
       --  Add checks related to calls in elaboration code

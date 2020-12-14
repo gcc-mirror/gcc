@@ -309,6 +309,13 @@ __gnat_backtrace (void **array,
 #define USING_ARM_UNWINDING 1
 #endif
 
+/*---------------------- ARM Linux ------------------------------------ -*/
+#elif (defined (__ARMEL__) && defined (__linux))
+
+#define USE_GCC_UNWINDER
+#define PC_ADJUST -2
+#define USING_ARM_UNWINDING 1
+
 /*---------------------- PPC AIX/PPC Lynx 178/Older Darwin --------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
        (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \

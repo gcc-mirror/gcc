@@ -1538,6 +1538,9 @@ package Sem_Util is
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.
 
+   function In_Generic_Formal_Package (E : Entity_Id) return Boolean;
+   --  Returns True if entity E is inside a generic formal package
+
    function In_Generic_Scope (E : Entity_Id) return Boolean;
    --  Returns True if entity E is inside a generic scope
 

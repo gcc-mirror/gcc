@@ -10,9 +10,7 @@ typedef struct _empty {} e_s;
 /* These should go in .comm */
 char ub;
 e_s ea;
-/* { dg-final { scan-assembler-symbol-section {^_a$} {\.data} } } */
 /* { dg-final { scan-assembler ".comm\[\t \]_ub,1" } } */
-/* { dg-final { scan-assembler-symbol-section {^_b$} {\.data} } } */
 /* { dg-final { scan-assembler ".comm\[\t \]_ea,1" } } */
 
 /* These should go into __DATA,__common */

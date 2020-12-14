@@ -773,6 +773,10 @@ enum tree_index {
   TI_SAT_UDA_TYPE,
   TI_SAT_UTA_TYPE,
 
+  TI_MODULE_HWM,
+  /* Nodes below here change during compilation, and should therefore
+     not be in the C++ module's global tree table.  */
+
   TI_OPTIMIZATION_DEFAULT,
   TI_OPTIMIZATION_CURRENT,
   TI_TARGET_OPTION_DEFAULT,
