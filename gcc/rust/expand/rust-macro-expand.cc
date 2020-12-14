@@ -246,15 +246,15 @@ public:
       expand_where_clause (decl.get_where_clause ());
   }
 
-  void visit (AST::Token &tok) override
+  void visit (AST::Token &) override
   {
     // shouldn't require?
   }
-  void visit (AST::DelimTokenTree &delim_tok_tree) override
+  void visit (AST::DelimTokenTree &) override
   {
     // shouldn't require?
   }
-  void visit (AST::AttrInputMetaItemContainer &input) override
+  void visit (AST::AttrInputMetaItemContainer &) override
   {
     // shouldn't require?
   }
@@ -268,11 +268,11 @@ public:
 	return;
       }
   }
-  void visit (AST::Lifetime &lifetime) override
+  void visit (AST::Lifetime &) override
   {
     // shouldn't require?
   }
-  void visit (AST::LifetimeParam &lifetime_param) override
+  void visit (AST::LifetimeParam &) override
   {
     // supposedly does not require - cfg does nothing
   }
@@ -309,7 +309,7 @@ public:
 	  expand_generic_args (segment.get_generic_args ());
       }
   }
-  void visit (AST::TypePathSegment &segment) override
+  void visit (AST::TypePathSegment &) override
   {
     // shouldn't require
   }
@@ -386,15 +386,15 @@ public:
 	return;
       }
   }
-  void visit (AST::AttrInputLiteral &attr_input) override
+  void visit (AST::AttrInputLiteral &) override
   {
     // shouldn't require?
   }
-  void visit (AST::MetaItemLitExpr &meta_item) override
+  void visit (AST::MetaItemLitExpr &) override
   {
     // shouldn't require?
   }
-  void visit (AST::MetaItemPathLit &meta_item) override
+  void visit (AST::MetaItemPathLit &) override
   {
     // shouldn't require?
   }
@@ -823,7 +823,7 @@ public:
       rust_error_at (struct_name.get_locus (),
 		     "cannot strip path in this position");
   }
-  void visit (AST::StructExprFieldIdentifier &field) override
+  void visit (AST::StructExprFieldIdentifier &) override
   {
     // as no attrs (at moment, at least), no stripping possible
   }
@@ -992,7 +992,7 @@ public:
       rust_error_at (struct_name.get_locus (),
 		     "cannot strip path in this position");
   }
-  void visit (AST::EnumExprFieldIdentifier &field) override
+  void visit (AST::EnumExprFieldIdentifier &) override
   {
     // as no attrs (at moment, at least), no stripping possible
   }
@@ -1375,7 +1375,7 @@ public:
 		     "cannot strip expression in this position - outer "
 		     "attributes not allowed");
   }
-  void visit (AST::RangeFullExpr &expr) override
+  void visit (AST::RangeFullExpr &) override
   {
     // outer attributes never allowed before these, so no stripping
   }
@@ -2001,7 +2001,7 @@ public:
 			 "cannot strip type in this position");
       }
   }
-  void visit (AST::LifetimeWhereClauseItem &item) override
+  void visit (AST::LifetimeWhereClauseItem &) override
   {
     // shouldn't require
   }
@@ -2117,15 +2117,15 @@ public:
 	return;
       }
   }
-  void visit (AST::UseTreeGlob &use_tree) override
+  void visit (AST::UseTreeGlob &) override
   {
     // shouldn't require?
   }
-  void visit (AST::UseTreeList &use_tree) override
+  void visit (AST::UseTreeList &) override
   {
     // shouldn't require?
   }
-  void visit (AST::UseTreeRebind &use_tree) override
+  void visit (AST::UseTreeRebind &) override
   {
     // shouldn't require?
   }
@@ -2760,9 +2760,9 @@ public:
   }
 
   // I don't think it would be possible to strip macros without expansion
-  void visit (AST::MacroMatchFragment &match) override {}
-  void visit (AST::MacroMatchRepetition &match) override {}
-  void visit (AST::MacroMatcher &matcher) override {}
+  void visit (AST::MacroMatchFragment &) override {}
+  void visit (AST::MacroMatchRepetition &) override {}
+  void visit (AST::MacroMatcher &) override {}
   void visit (AST::MacroRulesDefinition &rules_def) override
   {
     // initial strip test based on outer attrs
@@ -2789,14 +2789,14 @@ public:
 
     // TODO: maybe have stripping behaviour for the cfg! macro here?
   }
-  void visit (AST::MetaItemPath &meta_item) override {}
-  void visit (AST::MetaItemSeq &meta_item) override {}
-  void visit (AST::MetaWord &meta_item) override {}
-  void visit (AST::MetaNameValueStr &meta_item) override {}
-  void visit (AST::MetaListPaths &meta_item) override {}
-  void visit (AST::MetaListNameValueStr &meta_item) override {}
+  void visit (AST::MetaItemPath &) override {}
+  void visit (AST::MetaItemSeq &) override {}
+  void visit (AST::MetaWord &) override {}
+  void visit (AST::MetaNameValueStr &) override {}
+  void visit (AST::MetaListPaths &) override {}
+  void visit (AST::MetaListNameValueStr &) override {}
 
-  void visit (AST::LiteralPattern &pattern) override
+  void visit (AST::LiteralPattern &) override
   {
     // not possible
   }
@@ -2812,11 +2812,11 @@ public:
       rust_error_at (sub_pattern->get_locus_slow (),
 		     "cannot strip pattern in this position");
   }
-  void visit (AST::WildcardPattern &pattern) override
+  void visit (AST::WildcardPattern &) override
   {
     // not possible
   }
-  void visit (AST::RangePatternBoundLiteral &bound) override
+  void visit (AST::RangePatternBoundLiteral &) override
   {
     // not possible
   }
@@ -3042,7 +3042,7 @@ public:
       }
   }
 
-  void visit (AST::EmptyStmt &stmt) override
+  void visit (AST::EmptyStmt &) override
   {
     // assuming no outer attributes, so nothing can happen
   }
@@ -3175,7 +3175,7 @@ public:
 			 "cannot strip type in this position");
       }
   }
-  void visit (AST::NeverType &type) override
+  void visit (AST::NeverType &) override
   {
     // no stripping possible
   }
@@ -3222,7 +3222,7 @@ public:
       rust_error_at (elem_type->get_locus_slow (),
 		     "cannot strip type in this position");
   }
-  void visit (AST::InferredType &type) override
+  void visit (AST::InferredType &) override
   {
     // none possible
   }

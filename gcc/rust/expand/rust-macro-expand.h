@@ -15,7 +15,7 @@ class MacroInvocation;
 struct ExpansionCfg
 {
   // features?
-  unsigned int recursion_limit; // TODO: determine default recursion limit
+  unsigned int recursion_limit = 50; // TODO: determine default recursion limit
 				// trace macros?
 				// should test?
 				// more default stuff?

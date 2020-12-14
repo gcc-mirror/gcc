@@ -1972,7 +1972,7 @@ class EnumExprFieldIdentifier : public EnumExprField
   Location locus;
 
 public:
-  EnumExprFieldIdentifier (Identifier field_identifier)
+  EnumExprFieldIdentifier (Identifier field_identifier, Location locus)
     : field_name (std::move (field_identifier)), locus (locus)
   {}
 
