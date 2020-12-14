@@ -293,7 +293,7 @@ public:
   /* Index of source file where the function is defined.  */
   unsigned src;
 
-  /* Vector of line information.  */
+  /* Vector of line information (used only for group functions).  */
   vector<line_info> lines;
 
   /* Next function.  */
@@ -1172,7 +1172,7 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
       vector<function_info *> *fns = src->get_functions_at_location (line_num);
 
       if (fns != NULL)
-	/* Print first group functions that begin on the line.  */
+	/* Print info for all group functions that begin on the line.  */
 	for (vector<function_info *>::iterator it2 = fns->begin ();
 	     it2 != fns->end (); it2++)
 	  {
@@ -1180,6 +1180,7 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 	      last_non_group_fn = *it2;
 
 	    vector<line_info> &lines = (*it2)->lines;
+	    /* The LINES array is allocated only for group functions.  */
 	    for (unsigned i = 0; i < lines.size (); i++)
 	      {
 		line_info *line = &lines[i];
