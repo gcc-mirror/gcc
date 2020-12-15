@@ -14586,7 +14586,7 @@ currently supported on is AArch64.
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
-See @uref{https://github.com/google/kasan/wiki} for more details.
+See @uref{https://github.com/google/kasan} for more details.
 
 @item -fsanitize=hwaddress
 @opindex fsanitize=hwaddress
