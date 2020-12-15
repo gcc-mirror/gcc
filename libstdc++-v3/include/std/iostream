@@ -70,8 +70,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   //@}
 
+#if __has_attribute(__init_priority__)
+# define _GLIBCXX_INIT_PRIO(N) __attribute__((__init_priority__(N)))
+#else
+# define _GLIBCXX_INIT_PRIO(N)
+#endif
+
   // For construction of filebuffers for cout, cin, cerr, clog et. al.
-  static ios_base::Init __ioinit;
+  static ios_base::Init __ioinit _GLIBCXX_INIT_PRIO(90);
+
+#undef _GLIBCXX_INIT_PRIO
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
