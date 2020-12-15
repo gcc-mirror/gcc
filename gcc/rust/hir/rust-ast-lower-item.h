@@ -69,9 +69,16 @@ public:
 	auto translated_type = std::unique_ptr<HIR::Type> (
 	  ASTLoweringType::translate (param.get_type ().get ()));
 
-	function_params.push_back (
-	  HIR::FunctionParam (std::move (translated_pattern),
-			      std::move (translated_type), param.get_locus ()));
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	auto hir_param
+	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
+				std::move (translated_type),
+				param.get_locus ());
+	function_params.push_back (hir_param);
       }
 
     std::unique_ptr<HIR::BlockExpr> function_body
@@ -83,7 +90,7 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated
+    auto fn
       = new HIR::Function (mapping, std::move (function_name),
 			   std::move (qualifiers), std::move (generic_params),
 			   std::move (function_params), std::move (return_type),
@@ -92,9 +99,21 @@ public:
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
+			       fn);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       function.get_locus ());
+
+    // add the mappings for the function params at the end
+    for (auto &param : fn->function_params)
+      {
+	mappings->insert_hir_param (mapping.get_crate_num (),
+				    param.get_mappings ()->get_hirid (),
+				    &param);
+	mappings->insert_location (crate_num, mapping.get_hirid (),
+				   param.get_locus ());
+      }
+
+    translated = fn;
   }
 
   // Helpers

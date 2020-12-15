@@ -44,9 +44,18 @@ public:
     else
       ret_type = TypeCheckType::Resolve (function.return_type.get ());
 
-    std::vector<TyTy::TyBase *> params;
+    std::vector<TyTy::ParamType *> params;
     for (auto &param : function.function_params)
-      params.push_back (TypeCheckType::Resolve (param.type.get ()));
+      {
+	// get the name as well required for later on
+	auto param_type = TypeCheckType::Resolve (param.type.get ());
+	auto param_tyty
+	  = new TyTy::ParamType (param.get_mappings ()->get_hirid (),
+				 param.param_name->as_string (), param_type);
+	params.push_back (param_tyty);
+
+	context->insert_type (param.get_mappings ()->get_hirid (), param_tyty);
+      }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				    params, ret_type);

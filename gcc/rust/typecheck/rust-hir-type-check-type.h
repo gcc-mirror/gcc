@@ -55,6 +55,7 @@ public:
 	return;
       }
 
+    // reverse lookup the hir node from ast node id
     HirId hir_lookup;
     if (context->lookup_type_by_node_id (ref, &hir_lookup))
       {
@@ -63,7 +64,7 @@ public:
 	  return;
       }
 
-    // this might be a struct type reference
+    // this might be a struct type (TyTy::ADT) reference
     // TODO
     printf ("UNREACHABLE %s\n", path.as_string ().c_str ());
     gcc_unreachable ();

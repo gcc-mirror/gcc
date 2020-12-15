@@ -35,11 +35,23 @@ TypeCheckContext::TypeCheckContext () {}
 
 TypeCheckContext::~TypeCheckContext () {}
 
+bool
+TypeCheckContext::lookup_builtin (std::string name, TyTy::TyBase **type)
+{
+  for (auto &builtin : builtins)
+    {
+      if (name.compare (builtin->as_string ()) == 0)
+	{
+	  *type = builtin.get ();
+	  return true;
+	}
+    }
+  return false;
+}
+
 void
 TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type)
 {
-  printf ("inserting builtin: hir %u node %u -> %s\n", id, ref,
-	  type->as_string ().c_str ());
   node_id_refs[ref] = id;
   resolved[id] = type;
   builtins.push_back (std::unique_ptr<TyTy::TyBase> (type));

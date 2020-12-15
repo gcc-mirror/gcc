@@ -305,6 +305,55 @@ Mappings::lookup_hir_type (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *type)
+{
+  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+
+  hirStmtMappings[crateNum][id] = type;
+  nodeIdToHirMappings[crateNum][type->get_mappings ().get_nodeid ()] = id;
+}
+
+HIR::Stmt *
+Mappings::lookup_hir_stmt (CrateNum crateNum, HirId id)
+{
+  auto it = hirStmtMappings.find (crateNum);
+  if (it == hirStmtMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
+Mappings::insert_hir_param (CrateNum crateNum, HirId id,
+			    HIR::FunctionParam *param)
+{
+  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+
+  printf ("inserting param with node id %u hir id: %u\n",
+	  param->get_mappings ()->get_nodeid (), id);
+  hirParamMappings[crateNum][id] = param;
+  nodeIdToHirMappings[crateNum][param->get_mappings ()->get_nodeid ()] = id;
+}
+
+HIR::FunctionParam *
+Mappings::lookup_hir_param (CrateNum crateNum, HirId id)
+{
+  auto it = hirParamMappings.find (crateNum);
+  if (it == hirParamMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				      HIR::Item *item)
 {
@@ -375,6 +424,23 @@ Mappings::lookup_location (CrateNum crate, HirId id)
     return Location ();
 
   return iy->second;
+}
+
+bool
+Mappings::resolve_nodeid_to_stmt (CrateNum crate, NodeId id, HIR::Stmt **stmt)
+{
+  auto it = nodeIdToHirMappings.find (crate);
+  if (it == nodeIdToHirMappings.end ())
+    return false;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return false;
+
+  HirId resolved = iy->second;
+  auto resolved_stmt = lookup_hir_stmt (crate, resolved);
+  *stmt = resolved_stmt;
+  return resolved_stmt != nullptr;
 }
 
 } // namespace Analysis

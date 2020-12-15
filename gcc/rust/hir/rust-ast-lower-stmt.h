@@ -60,6 +60,7 @@ public:
 				       stmt.get_locus ());
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       stmt.get_locus ());
+    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
   void visit (AST::LetStmt &stmt)
@@ -86,6 +87,7 @@ public:
 			  std::move (outer_attrs), stmt.get_locus ());
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       stmt.get_locus ());
+    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
 private:

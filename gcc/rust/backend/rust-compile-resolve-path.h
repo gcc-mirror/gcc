@@ -16,32 +16,37 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_COMPILE_RESOLVE_PATH
+#define RUST_COMPILE_RESOLVE_PATH
+
+#include "rust-compile-base.h"
+#include "rust-compile-tyty.h"
 
 namespace Rust {
 namespace Compile {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class ResolvePath : public HIRCompileBase
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
+  {
+    ResolvePath resolver (ctx);
+    expr->accept_vis (resolver);
+    rust_assert (resolver.resolved != nullptr);
+    return resolver.resolved;
+  }
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
+  virtual ~ResolvePath () {}
+
+  void visit (HIR::PathInExpression &expr);
+
+private:
+  ResolvePath (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
+
+  Bexpression *resolved;
+};
 
 } // namespace Compile
 } // namespace Rust
+
+#endif // RUST_COMPILE_RESOLVE_PATH

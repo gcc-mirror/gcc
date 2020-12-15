@@ -33,6 +33,7 @@ public:
 
   ~TypeCheckContext ();
 
+  bool lookup_builtin (std::string name, TyTy::TyBase **type);
   void insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type);
 
   void insert_type (HirId id, TyTy::TyBase *type);

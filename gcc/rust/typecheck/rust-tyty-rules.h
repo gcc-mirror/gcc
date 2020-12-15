@@ -155,8 +155,8 @@ public:
 
   TyBase *combine (TyBase *other)
   {
-    other->accept_vis (*this);
-    return resolved;
+    // we only case about the base type of a param
+    return base->get_base_type ()->combine (other);
   }
 
 private:

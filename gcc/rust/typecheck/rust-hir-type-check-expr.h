@@ -110,16 +110,25 @@ public:
 	return;
       }
 
+    // these ref_node_ids will resolve to a pattern declaration but we are
+    // interested in the definition that this refers to get the parent id
+    Definition def;
+    if (!resolver->lookup_definition (ref_node_id, &def))
+      {
+	rust_error_at (expr.get_locus (), "unknown reference");
+	return;
+      }
+
     // node back to HIR
     HirId ref;
     if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				       ref_node_id, &ref))
+				       def.parent, &ref))
       {
 	rust_error_at (expr.get_locus (), "reverse lookup failure");
 	return;
       }
 
-    // check if this has a type
+    // the base reference for this name _must_ have a type set
     TyTy::TyBase *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
@@ -138,13 +147,19 @@ public:
   {
     switch (expr.get_lit_type ())
       {
-      case HIR::Literal::LitType::INT:
-	infered = new TyTy::IntType (expr.get_mappings ().get_hirid (),
-				     TyTy::IntType::IntKind::I32);
+	case HIR::Literal::LitType::INT: {
+	  // FIXME:
+	  // assume i32 let the combiner functions figure it out
+	  // this should look at the suffix of the literal value to check
+	  auto ok = context->lookup_builtin ("i32", &infered);
+	  rust_assert (ok);
+	}
 	break;
 
-      case HIR::Literal::LitType::BOOL:
-	infered = new TyTy::BoolType (expr.get_mappings ().get_hirid ());
+	case HIR::Literal::LitType::BOOL: {
+	  auto ok = context->lookup_builtin ("bool", &infered);
+	  rust_assert (ok);
+	}
 	break;
 
       default:

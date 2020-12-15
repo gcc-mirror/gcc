@@ -99,7 +99,7 @@ ParamType::accept_vis (TyVisitor &vis)
 std::string
 ParamType::as_string () const
 {
-  return "(" + type->as_string () + ")";
+  return "(" + identifier + " :" + type->as_string () + ")";
 }
 
 TyBase *

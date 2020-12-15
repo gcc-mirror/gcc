@@ -36,6 +36,11 @@ public:
     stmt->accept_vis (resolver);
   }
 
+  void visit (HIR::ExprStmtWithoutBlock &stmt)
+  {
+    TypeCheckExpr::Resolve (stmt.get_expr ());
+  }
+
   void visit (HIR::LetStmt &stmt)
   {
     TyTy::TyBase *init_expr_ty = nullptr;

@@ -115,6 +115,12 @@ public:
   void insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type);
   HIR::Type *lookup_hir_type (CrateNum crateNum, HirId id);
 
+  void insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *type);
+  HIR::Stmt *lookup_hir_stmt (CrateNum crateNum, HirId id);
+
+  void insert_hir_param (CrateNum crateNum, HirId id, HIR::FunctionParam *type);
+  HIR::FunctionParam *lookup_hir_param (CrateNum crateNum, HirId id);
+
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
 
@@ -125,6 +131,12 @@ public:
   Location lookup_location (HirId id)
   {
     return lookup_location (get_current_crate (), id);
+  }
+
+  bool resolve_nodeid_to_stmt (CrateNum crate, NodeId id, HIR::Stmt **stmt);
+  bool resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt)
+  {
+    return resolve_nodeid_to_stmt (get_current_crate (), id, stmt);
   }
 
 private:
@@ -145,6 +157,8 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::Item *> > hirItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::Type *> > hirTypeMappings;
   std::map<CrateNum, std::map<HirId, HIR::Expr *> > hirExprMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Stmt *> > hirStmtMappings;
+  std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

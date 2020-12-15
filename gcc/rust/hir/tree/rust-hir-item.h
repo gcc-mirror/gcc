@@ -409,17 +409,20 @@ public:
   std::unique_ptr<Type> type;
 
   Location locus;
+  Analysis::NodeMapping mappings;
 
-  FunctionParam (std::unique_ptr<Pattern> param_name,
+  FunctionParam (Analysis::NodeMapping mappings,
+		 std::unique_ptr<Pattern> param_name,
 		 std::unique_ptr<Type> param_type, Location locus)
     : param_name (std::move (param_name)), type (std::move (param_type)),
-      locus (locus)
+      locus (locus), mappings (mappings)
   {}
 
   // Copy constructor uses clone
   FunctionParam (FunctionParam const &other)
     : param_name (other.param_name->clone_pattern ()),
-      type (other.type->clone_type ()), locus (other.locus)
+      type (other.type->clone_type ()), locus (other.locus),
+      mappings (other.mappings)
   {}
 
   // Overload assignment operator to use clone
@@ -428,6 +431,7 @@ public:
     param_name = other.param_name->clone_pattern ();
     type = other.type->clone_type ();
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -436,15 +440,6 @@ public:
   FunctionParam (FunctionParam &&other) = default;
   FunctionParam &operator= (FunctionParam &&other) = default;
 
-  // Returns whether FunctionParam is in an invalid state.
-  bool is_error () const { return param_name == nullptr || type == nullptr; }
-
-  // Creates an error FunctionParam.
-  static FunctionParam create_error ()
-  {
-    return FunctionParam (nullptr, nullptr, Location ());
-  }
-
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
@@ -452,6 +447,8 @@ public:
   Pattern *get_param_name () { return param_name.get (); }
 
   Type *get_type () { return type.get (); }
+
+  Analysis::NodeMapping *get_mappings () { return &mappings; }
 };
 
 // Visibility of item - if the item has it, then it is some form of public
@@ -1190,8 +1187,6 @@ public:
   std::unique_ptr<BlockExpr> function_body;
 
   Location locus;
-
-  std::vector<LetStmt *> locals;
 
   std::string as_string () const override;
 

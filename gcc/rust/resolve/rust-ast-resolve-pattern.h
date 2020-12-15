@@ -78,7 +78,6 @@ public:
 
   void visit (AST::IdentifierPattern &pattern)
   {
-    printf ("declaration for: %s\n", pattern.as_string ().c_str ());
     // if we have a duplicate id this then allows for shadowing correctly
     // as new refs to this decl will match back here so it is ok to overwrite
     resolver->get_name_scope ().insert (pattern.get_ident (),

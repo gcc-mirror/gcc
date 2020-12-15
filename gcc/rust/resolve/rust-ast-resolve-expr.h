@@ -38,7 +38,13 @@ public:
 
   void visit (AST::PathInExpression &expr)
   {
-    if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+    if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+      {
+	rust_error_at (expr.get_locus (), "unknown path %s",
+		       expr.as_string ().c_str ());
+	return;
+      }
+    else
       {
 	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
 	resolver->insert_new_definition (expr.get_node_id (),
@@ -60,7 +66,7 @@ public:
       ResolveExpr::go (p, expr.get_node_id ());
       return true;
     });
-    /// resolver->insert_resolved_name(NodeId refId,NodeId defId)
+    // resolver->insert_resolved_name(NodeId refId,NodeId defId)
   }
 
   void visit (AST::AssignmentExpr &expr)

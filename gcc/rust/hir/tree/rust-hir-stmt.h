@@ -117,6 +117,8 @@ public:
 
   HIR::Expr *get_init_expr () { return init_expr.get (); }
 
+  HIR::Pattern *get_pattern () { return variables_pattern.get (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -173,6 +175,8 @@ public:
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Expr *get_expr () { return expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

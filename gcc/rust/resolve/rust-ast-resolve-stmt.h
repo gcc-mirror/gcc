@@ -39,6 +39,11 @@ public:
 
   ~ResolveStmt () {}
 
+  void visit (AST::ExprStmtWithoutBlock &stmt)
+  {
+    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
+  }
+
   void visit (AST::LetStmt &stmt)
   {
     PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());

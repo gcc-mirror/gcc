@@ -66,6 +66,7 @@ public:
 	rust_error_at (function.locus, "failed to lookup function type");
 	return;
       }
+
     // need to get the return type from this
     ResolveFnType resolve_fn_type (fnType);
     context->push_return_type (resolve_fn_type.go ());

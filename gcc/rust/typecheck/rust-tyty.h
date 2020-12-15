@@ -54,11 +54,11 @@ public:
 
   virtual void accept_vis (TyVisitor &vis) = 0;
 
-  virtual bool is_unit () const { return false; }
-
   virtual std::string as_string () const = 0;
 
   virtual TyBase *combine (TyBase *other) = 0;
+
+  virtual bool is_unit () const { return kind == TypeKind::UNIT; }
 
 protected:
   TyBase (HirId ref, TypeKind kind) : kind (kind), ref (ref) {}
@@ -95,10 +95,32 @@ public:
   TyBase *combine (TyBase *other) override;
 };
 
+class ParamType : public TyBase
+{
+public:
+  ParamType (HirId ref, std::string identifier, TyBase *type)
+    : TyBase (ref, TypeKind::PARAM), identifier (identifier), type (type)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  std::string get_identifier () const { return identifier; }
+
+  TyBase *get_base_type () { return type; }
+
+private:
+  std::string identifier;
+  TyBase *type;
+};
+
 class FnType : public TyBase
 {
 public:
-  FnType (HirId ref, std::vector<TyBase *> params, TyBase *type)
+  FnType (HirId ref, std::vector<ParamType *> params, TyBase *type)
     : TyBase (ref, TypeKind::FNDEF), params (params), type (type)
   {}
 
@@ -112,29 +134,12 @@ public:
 
   size_t num_params () const { return params.size (); }
 
-  TyBase *param_at (size_t idx) { return params[idx]; }
+  ParamType *param_at (size_t idx) { return params[idx]; }
 
   TyBase *get_return_type () { return type; }
 
 private:
-  std::vector<TyBase *> params;
-  TyBase *type;
-};
-
-class ParamType : public TyBase
-{
-public:
-  ParamType (HirId ref, TyBase *type)
-    : TyBase (ref, TypeKind::PARAM), type (type)
-  {}
-
-  void accept_vis (TyVisitor &vis) override;
-
-  std::string as_string () const override;
-
-  TyBase *combine (TyBase *other) override;
-
-private:
+  std::vector<ParamType *> params;
   TyBase *type;
 };
 
