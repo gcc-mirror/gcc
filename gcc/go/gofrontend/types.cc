@@ -8984,8 +8984,11 @@ Interface_type::finalize_methods()
       else if (this->find_method(p->name()) == NULL)
 	this->all_methods_->push_back(*p);
       else
-	go_error_at(p->location(), "duplicate method %qs",
-		 Gogo::message_name(p->name()).c_str());
+	{
+	  go_error_at(p->location(), "duplicate method %qs",
+		      Gogo::message_name(p->name()).c_str());
+	  this->set_is_error();
+	}
     }
 
   std::vector<Named_type*> seen;
@@ -9001,7 +9004,10 @@ Interface_type::finalize_methods()
       if (it == NULL)
 	{
 	  if (!t->is_error())
-	    go_error_at(tl, "interface contains embedded non-interface");
+	    {
+	      go_error_at(tl, "interface contains embedded non-interface");
+	      this->set_is_error();
+	    }
 	  continue;
 	}
       if (it == this)
@@ -9009,6 +9015,7 @@ Interface_type::finalize_methods()
 	  if (!issued_recursive_error)
 	    {
 	      go_error_at(tl, "invalid recursive interface");
+	      this->set_is_error();
 	      issued_recursive_error = true;
 	    }
 	  continue;
@@ -9027,6 +9034,7 @@ Interface_type::finalize_methods()
 	      if (*q == nt)
 		{
 		  go_error_at(tl, "inherited interface loop");
+		  this->set_is_error();
 		  break;
 		}
 	    }
@@ -9049,8 +9057,11 @@ Interface_type::finalize_methods()
 							       q->type(), tl));
 	      else if (!Type::are_identical(q->type(), oldm->type(),
 					    Type::COMPARE_TAGS, NULL))
-		go_error_at(tl, "duplicate method %qs",
-			    Gogo::message_name(q->name()).c_str());
+		{
+		  go_error_at(tl, "duplicate method %qs",
+			      Gogo::message_name(q->name()).c_str());
+		  this->set_is_error();
+		}
 	    }
 	}
 
