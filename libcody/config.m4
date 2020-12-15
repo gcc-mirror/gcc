@@ -173,7 +173,7 @@ AC_SUBST(EXCEPTIONS)])
 AC_DEFUN([NMS_LINK_OPT],
 [AC_MSG_CHECKING([adding $1 to linker])
 ORIG_LDFLAGS="$LDFLAGS"
-LDFLAGS+=" $1"
+LDFLAGS="$LDFLAGS $1"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
 [AC_MSG_RESULT([ok])],
 [LDFLAGS="$ORIG_LDFLAGS"
@@ -229,8 +229,8 @@ elif test "$withval" = "no" ; then
   AC_MSG_RESULT(installed)
 else
   AC_MSG_RESULT(${withval})
-  CPPFLAGS+=" -I${withval}/include"
-  LDFLAGS+=" -L${withval}/lib"
+  CPPFLAGS="$CPPFLAGS -I${withval}/include"
+  LDFLAGS="$LDFLAGS -L${withval}/lib"
 fi,
 AC_MSG_RESULT(installed))])
 

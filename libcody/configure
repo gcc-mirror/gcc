@@ -2639,7 +2639,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking adding -Wl,--no-undefined to linker" >&5
 $as_echo_n "checking adding -Wl,--no-undefined to linker... " >&6; }
 ORIG_LDFLAGS="$LDFLAGS"
-LDFLAGS+=" -Wl,--no-undefined"
+LDFLAGS="$LDFLAGS -Wl,--no-undefined"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
