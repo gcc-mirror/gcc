@@ -163,10 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     requires (!requires { typename _Tp::difference_type; }
 	      && requires(const _Tp& __a, const _Tp& __b)
-	      {
-		requires (!is_void_v<remove_pointer_t<_Tp>>); // PR c++/78173
-		{ __a - __b } -> integral;
-	      })
+	      { { __a - __b } -> integral; })
     struct incrementable_traits<_Tp>
     {
       using difference_type
