@@ -21,6 +21,7 @@ import os
 import re
 
 changelog_locations = {
+    'c++tools',
     'config',
     'contrib',
     'contrib/header-tools',
@@ -51,6 +52,7 @@ changelog_locations = {
     'libatomic',
     'libbacktrace',
     'libcc1',
+    'libcody',
     'libcpp',
     'libcpp/po',
     'libdecnumber',
