@@ -864,8 +864,8 @@ local-distclean:
 	-rm -f texinfo/doc/Makefile texinfo/po/POTFILES
 	-rmdir texinfo/doc texinfo/info texinfo/intl texinfo/lib 2>/dev/null
 	-rmdir texinfo/makeinfo texinfo/po texinfo/util 2>/dev/null
-	-rmdir fastjar gcc gnattools gotools libcc1 libiberty 2>/dev/null
-	-rmdir texinfo zlib 2>/dev/null
+	-rmdir c++tools fastjar gcc gnattools gotools 2>/dev/null
+	-rmdir libcc1 libiberty texinfo zlib 2>/dev/null
 	-find . -name config.cache -exec rm -f {} \; \; 2>/dev/null
 
 local-maintainer-clean:

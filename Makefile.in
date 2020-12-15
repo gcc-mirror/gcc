@@ -1038,6 +1038,7 @@ configure-host:  \
     maybe-configure-tk \
     maybe-configure-libtermcap \
     maybe-configure-utils \
+    maybe-configure-c++tools \
     maybe-configure-gnattools \
     maybe-configure-lto-plugin \
     maybe-configure-libcc1 \
@@ -1197,6 +1198,7 @@ all-host: maybe-all-guile
 all-host: maybe-all-tk
 all-host: maybe-all-libtermcap
 all-host: maybe-all-utils
+all-host: maybe-all-c++tools
 all-host: maybe-all-gnattools
 @if lto-plugin-no-bootstrap
 all-host: maybe-all-lto-plugin
@@ -1306,6 +1308,7 @@ info-host: maybe-info-guile
 info-host: maybe-info-tk
 info-host: maybe-info-libtermcap
 info-host: maybe-info-utils
+info-host: maybe-info-c++tools
 info-host: maybe-info-gnattools
 info-host: maybe-info-lto-plugin
 info-host: maybe-info-libcc1
@@ -1396,6 +1399,7 @@ dvi-host: maybe-dvi-guile
 dvi-host: maybe-dvi-tk
 dvi-host: maybe-dvi-libtermcap
 dvi-host: maybe-dvi-utils
+dvi-host: maybe-dvi-c++tools
 dvi-host: maybe-dvi-gnattools
 dvi-host: maybe-dvi-lto-plugin
 dvi-host: maybe-dvi-libcc1
@@ -1486,6 +1490,7 @@ pdf-host: maybe-pdf-guile
 pdf-host: maybe-pdf-tk
 pdf-host: maybe-pdf-libtermcap
 pdf-host: maybe-pdf-utils
+pdf-host: maybe-pdf-c++tools
 pdf-host: maybe-pdf-gnattools
 pdf-host: maybe-pdf-lto-plugin
 pdf-host: maybe-pdf-libcc1
@@ -1576,6 +1581,7 @@ html-host: maybe-html-guile
 html-host: maybe-html-tk
 html-host: maybe-html-libtermcap
 html-host: maybe-html-utils
+html-host: maybe-html-c++tools
 html-host: maybe-html-gnattools
 html-host: maybe-html-lto-plugin
 html-host: maybe-html-libcc1
@@ -1666,6 +1672,7 @@ TAGS-host: maybe-TAGS-guile
 TAGS-host: maybe-TAGS-tk
 TAGS-host: maybe-TAGS-libtermcap
 TAGS-host: maybe-TAGS-utils
+TAGS-host: maybe-TAGS-c++tools
 TAGS-host: maybe-TAGS-gnattools
 TAGS-host: maybe-TAGS-lto-plugin
 TAGS-host: maybe-TAGS-libcc1
@@ -1756,6 +1763,7 @@ install-info-host: maybe-install-info-guile
 install-info-host: maybe-install-info-tk
 install-info-host: maybe-install-info-libtermcap
 install-info-host: maybe-install-info-utils
+install-info-host: maybe-install-info-c++tools
 install-info-host: maybe-install-info-gnattools
 install-info-host: maybe-install-info-lto-plugin
 install-info-host: maybe-install-info-libcc1
@@ -1846,6 +1854,7 @@ install-pdf-host: maybe-install-pdf-guile
 install-pdf-host: maybe-install-pdf-tk
 install-pdf-host: maybe-install-pdf-libtermcap
 install-pdf-host: maybe-install-pdf-utils
+install-pdf-host: maybe-install-pdf-c++tools
 install-pdf-host: maybe-install-pdf-gnattools
 install-pdf-host: maybe-install-pdf-lto-plugin
 install-pdf-host: maybe-install-pdf-libcc1
@@ -1936,6 +1945,7 @@ install-html-host: maybe-install-html-guile
 install-html-host: maybe-install-html-tk
 install-html-host: maybe-install-html-libtermcap
 install-html-host: maybe-install-html-utils
+install-html-host: maybe-install-html-c++tools
 install-html-host: maybe-install-html-gnattools
 install-html-host: maybe-install-html-lto-plugin
 install-html-host: maybe-install-html-libcc1
@@ -2026,6 +2036,7 @@ installcheck-host: maybe-installcheck-guile
 installcheck-host: maybe-installcheck-tk
 installcheck-host: maybe-installcheck-libtermcap
 installcheck-host: maybe-installcheck-utils
+installcheck-host: maybe-installcheck-c++tools
 installcheck-host: maybe-installcheck-gnattools
 installcheck-host: maybe-installcheck-lto-plugin
 installcheck-host: maybe-installcheck-libcc1
@@ -2116,6 +2127,7 @@ mostlyclean-host: maybe-mostlyclean-guile
 mostlyclean-host: maybe-mostlyclean-tk
 mostlyclean-host: maybe-mostlyclean-libtermcap
 mostlyclean-host: maybe-mostlyclean-utils
+mostlyclean-host: maybe-mostlyclean-c++tools
 mostlyclean-host: maybe-mostlyclean-gnattools
 mostlyclean-host: maybe-mostlyclean-lto-plugin
 mostlyclean-host: maybe-mostlyclean-libcc1
@@ -2206,6 +2218,7 @@ clean-host: maybe-clean-guile
 clean-host: maybe-clean-tk
 clean-host: maybe-clean-libtermcap
 clean-host: maybe-clean-utils
+clean-host: maybe-clean-c++tools
 clean-host: maybe-clean-gnattools
 clean-host: maybe-clean-lto-plugin
 clean-host: maybe-clean-libcc1
@@ -2296,6 +2309,7 @@ distclean-host: maybe-distclean-guile
 distclean-host: maybe-distclean-tk
 distclean-host: maybe-distclean-libtermcap
 distclean-host: maybe-distclean-utils
+distclean-host: maybe-distclean-c++tools
 distclean-host: maybe-distclean-gnattools
 distclean-host: maybe-distclean-lto-plugin
 distclean-host: maybe-distclean-libcc1
@@ -2386,6 +2400,7 @@ maintainer-clean-host: maybe-maintainer-clean-guile
 maintainer-clean-host: maybe-maintainer-clean-tk
 maintainer-clean-host: maybe-maintainer-clean-libtermcap
 maintainer-clean-host: maybe-maintainer-clean-utils
+maintainer-clean-host: maybe-maintainer-clean-c++tools
 maintainer-clean-host: maybe-maintainer-clean-gnattools
 maintainer-clean-host: maybe-maintainer-clean-lto-plugin
 maintainer-clean-host: maybe-maintainer-clean-libcc1
@@ -2463,8 +2478,8 @@ local-distclean:
 	-rm -f texinfo/doc/Makefile texinfo/po/POTFILES
 	-rmdir texinfo/doc texinfo/info texinfo/intl texinfo/lib 2>/dev/null
 	-rmdir texinfo/makeinfo texinfo/po texinfo/util 2>/dev/null
-	-rmdir fastjar gcc gnattools gotools libcc1 libiberty 2>/dev/null
-	-rmdir texinfo zlib 2>/dev/null
+	-rmdir c++tools fastjar gcc gnattools gotools 2>/dev/null
+	-rmdir libcc1 libiberty texinfo zlib 2>/dev/null
 	-find . -name config.cache -exec rm -f {} \; \; 2>/dev/null
 
 local-maintainer-clean:
@@ -2532,6 +2547,7 @@ check-host:  \
     maybe-check-tk \
     maybe-check-libtermcap \
     maybe-check-utils \
+    maybe-check-c++tools \
     maybe-check-gnattools \
     maybe-check-lto-plugin \
     maybe-check-libcc1 \
@@ -2669,6 +2685,7 @@ install-host-nogcc:  \
     maybe-install-tk \
     maybe-install-libtermcap \
     maybe-install-utils \
+    maybe-install-c++tools \
     maybe-install-gnattools \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
@@ -2723,6 +2740,7 @@ install-host:  \
     maybe-install-tk \
     maybe-install-libtermcap \
     maybe-install-utils \
+    maybe-install-c++tools \
     maybe-install-gnattools \
     maybe-install-lto-plugin \
     maybe-install-libcc1 \
@@ -2833,6 +2851,7 @@ install-strip-host:  \
     maybe-install-strip-tk \
     maybe-install-strip-libtermcap \
     maybe-install-strip-utils \
+    maybe-install-strip-c++tools \
     maybe-install-strip-gnattools \
     maybe-install-strip-lto-plugin \
     maybe-install-strip-libcc1 \
@@ -38094,6 +38113,447 @@ maintainer-clean-utils:
 
 
 
+.PHONY: configure-c++tools maybe-configure-c++tools
+maybe-configure-c++tools:
+@if gcc-bootstrap
+configure-c++tools: stage_current
+@endif gcc-bootstrap
+@if c++tools
+maybe-configure-c++tools: configure-c++tools
+configure-c++tools: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/c++tools/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/c++tools; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/c++tools; \
+	cd "$(HOST_SUBDIR)/c++tools" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/c++tools/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=c++tools; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif c++tools
+
+
+
+
+
+.PHONY: all-c++tools maybe-all-c++tools
+maybe-all-c++tools:
+@if gcc-bootstrap
+all-c++tools: stage_current
+@endif gcc-bootstrap
+@if c++tools
+TARGET-c++tools=all
+maybe-all-c++tools: all-c++tools
+all-c++tools: configure-c++tools
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-c++tools))
+@endif c++tools
+
+
+
+
+.PHONY: check-c++tools maybe-check-c++tools
+maybe-check-c++tools:
+@if c++tools
+maybe-check-c++tools: check-c++tools
+
+check-c++tools:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif c++tools
+
+.PHONY: install-c++tools maybe-install-c++tools
+maybe-install-c++tools:
+@if c++tools
+maybe-install-c++tools: install-c++tools
+
+install-c++tools: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif c++tools
+
+.PHONY: install-strip-c++tools maybe-install-strip-c++tools
+maybe-install-strip-c++tools:
+@if c++tools
+maybe-install-strip-c++tools: install-strip-c++tools
+
+install-strip-c++tools: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif c++tools
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-c++tools info-c++tools
+maybe-info-c++tools:
+@if c++tools
+maybe-info-c++tools: info-c++tools
+
+info-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-dvi-c++tools dvi-c++tools
+maybe-dvi-c++tools:
+@if c++tools
+maybe-dvi-c++tools: dvi-c++tools
+
+dvi-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-pdf-c++tools pdf-c++tools
+maybe-pdf-c++tools:
+@if c++tools
+maybe-pdf-c++tools: pdf-c++tools
+
+pdf-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-html-c++tools html-c++tools
+maybe-html-c++tools:
+@if c++tools
+maybe-html-c++tools: html-c++tools
+
+html-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-TAGS-c++tools TAGS-c++tools
+maybe-TAGS-c++tools:
+@if c++tools
+maybe-TAGS-c++tools: TAGS-c++tools
+
+TAGS-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-install-info-c++tools install-info-c++tools
+maybe-install-info-c++tools:
+@if c++tools
+maybe-install-info-c++tools: install-info-c++tools
+
+install-info-c++tools: \
+    configure-c++tools \
+    info-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-install-pdf-c++tools install-pdf-c++tools
+maybe-install-pdf-c++tools:
+@if c++tools
+maybe-install-pdf-c++tools: install-pdf-c++tools
+
+install-pdf-c++tools: \
+    configure-c++tools \
+    pdf-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-install-html-c++tools install-html-c++tools
+maybe-install-html-c++tools:
+@if c++tools
+maybe-install-html-c++tools: install-html-c++tools
+
+install-html-c++tools: \
+    configure-c++tools \
+    html-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-installcheck-c++tools installcheck-c++tools
+maybe-installcheck-c++tools:
+@if c++tools
+maybe-installcheck-c++tools: installcheck-c++tools
+
+installcheck-c++tools: \
+    configure-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-mostlyclean-c++tools mostlyclean-c++tools
+maybe-mostlyclean-c++tools:
+@if c++tools
+maybe-mostlyclean-c++tools: mostlyclean-c++tools
+
+mostlyclean-c++tools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-clean-c++tools clean-c++tools
+maybe-clean-c++tools:
+@if c++tools
+maybe-clean-c++tools: clean-c++tools
+
+clean-c++tools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-distclean-c++tools distclean-c++tools
+maybe-distclean-c++tools:
+@if c++tools
+maybe-distclean-c++tools: distclean-c++tools
+
+distclean-c++tools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-maintainer-clean-c++tools maintainer-clean-c++tools
+maybe-maintainer-clean-c++tools:
+@if c++tools
+maybe-maintainer-clean-c++tools: maintainer-clean-c++tools
+
+maintainer-clean-c++tools: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif c++tools
+
+
+
 .PHONY: configure-gnattools maybe-configure-gnattools
 maybe-configure-gnattools:
 @if gcc-bootstrap
@@ -61184,6 +61644,7 @@ configure-target-libgfortran: maybe-all-target-libbacktrace
 @if gcc-bootstrap
 configure-gnattools: stage_last
 configure-libcc1: stage_last
+configure-c++tools: stage_last
 configure-utils: stage_last
 configure-gdb: stage_last
 configure-gdbserver: stage_last
@@ -61201,6 +61662,7 @@ configure-m4: stage_last
 all-gnattools: maybe-all-target-libstdc++-v3
 configure-libcc1: maybe-configure-gcc
 all-libcc1: maybe-all-gcc
+all-c++tools: maybe-all-gcc
 all-utils: maybe-all-libiberty
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-all-bfd
