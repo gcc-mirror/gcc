@@ -684,7 +684,7 @@ namespace std
 
 #undef _GLIBCXX_HAS_BUILTIN
 
-#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED && __cplusplus >= 201402L
 # define __glibcxx_assert_1(_Condition)		\
     if (__builtin_is_constant_evaluated())	\
      {						\
