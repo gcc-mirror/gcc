@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bad_address = 				EFAULT,
       bad_file_descriptor = 			EBADF,
 
-#ifdef _GLIBCXX_HAVE_EBADMSG
+#ifdef EBADMSG
       bad_message = 				EBADMSG,
 #endif
 
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       function_not_supported = 			ENOSYS,
       host_unreachable = 			EHOSTUNREACH,
 
-#ifdef _GLIBCXX_HAVE_EIDRM
+#ifdef EIDRM
       identifier_removed = 			EIDRM,
 #endif
 
@@ -86,13 +86,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       no_buffer_space = 			ENOBUFS,
       no_child_process = 			ECHILD,
 
-#ifdef _GLIBCXX_HAVE_ENOLINK
+#ifdef ENOLINK
       no_link = 				ENOLINK,
 #endif
 
       no_lock_available = 			ENOLCK,
 
-#ifdef _GLIBCXX_HAVE_ENODATA
+#ifdef ENODATA
       no_message_available = 			ENODATA,
 #endif
 
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       no_protocol_option = 			ENOPROTOOPT,
       no_space_on_device = 			ENOSPC,
 
-#ifdef _GLIBCXX_HAVE_ENOSR
+#ifdef ENOSR
       no_stream_resources = 			ENOSR,
 #endif
 
@@ -111,18 +111,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       not_a_directory = 			ENOTDIR,
       not_a_socket = 				ENOTSOCK,
 
-#ifdef _GLIBCXX_HAVE_ENOSTR
+#ifdef ENOSTR
       not_a_stream = 				ENOSTR,
 #endif
 
       not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
 
-#ifdef _GLIBCXX_HAVE_ENOTSUP
+#ifdef ENOTSUP
       not_supported = 				ENOTSUP,
 #endif
 
-#ifdef _GLIBCXX_HAVE_ECANCELED
+#ifdef ECANCELED
       operation_canceled = 			ECANCELED,
 #endif
 
@@ -131,13 +131,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operation_not_supported = 		EOPNOTSUPP,
       operation_would_block = 			EWOULDBLOCK,
 
-#ifdef _GLIBCXX_HAVE_EOWNERDEAD
+#ifdef EOWNERDEAD
       owner_dead = 				EOWNERDEAD,
 #endif
 
       permission_denied = 			EACCES,
 
-#ifdef _GLIBCXX_HAVE_EPROTO
+#ifdef EPROTO
       protocol_error = 				EPROTO,
 #endif
 
@@ -147,15 +147,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       resource_unavailable_try_again = 		EAGAIN,
       result_out_of_range = 			ERANGE,
 
-#ifdef _GLIBCXX_HAVE_ENOTRECOVERABLE
+#ifdef ENOTRECOVERABLE
       state_not_recoverable = 			ENOTRECOVERABLE,
 #endif
 
-#ifdef _GLIBCXX_HAVE_ETIME
+#ifdef ETIME
       stream_timeout = 				ETIME,
 #endif
 
-#ifdef _GLIBCXX_HAVE_ETXTBSY
+#ifdef ETXTBSY
       text_file_busy = 				ETXTBSY,
 #endif
 
@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       too_many_links = 				EMLINK,
       too_many_symbolic_link_levels = 		ELOOP,
 
-#ifdef _GLIBCXX_HAVE_EOVERFLOW
+#ifdef EOVERFLOW
       value_too_large = 			EOVERFLOW,
 #endif
 

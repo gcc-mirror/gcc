@@ -183,7 +183,6 @@ GLIBCXX_ENABLE_VTABLE_VERIFY([no])
 # Checks for operating systems support that doesn't require linking.
 GLIBCXX_CHECK_STDIO_PROTO
 GLIBCXX_CHECK_MATH11_PROTO
-GLIBCXX_CHECK_SYSTEM_ERROR
 GLIBCXX_CHECK_UCHAR_H
 
 # For the streamoff typedef.
