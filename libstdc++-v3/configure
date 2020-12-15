@@ -16376,7 +16376,7 @@ $as_echo_n "checking for underlying I/O to use... " >&6; }
 if test "${enable_cstdio+set}" = set; then :
   enableval=$enable_cstdio;
       case "$enableval" in
-       stdio) ;;
+       stdio|stdio_posix|stdio_pure) ;;
        *) as_fn_error $? "Unknown argument to enable/disable cstdio" "$LINENO" 5 ;;
 	  	        esac
 
@@ -16386,16 +16386,23 @@ fi
 
 
 
-  # Now that libio has been removed, you can have any color you want as long
-  # as it's black.  This is one big no-op until other packages are added, but
-  # showing the framework never hurts.
+  # The only available I/O model is based on stdio, via basic_file_stdio.
+  # The default "stdio" is actually "stdio + POSIX" because it uses fdopen(3)
+  # to get a file descriptor and then uses read(3) and write(3) with it.
+  # The "stdio_pure" model doesn't use fdopen and only uses FILE* for I/O.
   case ${enable_cstdio} in
-    stdio)
+    stdio*)
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: stdio" >&5
 $as_echo "stdio" >&6; }
+
+      if test "x$enable_cstdio" = "xstdio_pure" ; then
+
+$as_echo "#define _GLIBCXX_USE_STDIO_PURE 1" >>confdefs.h
+
+      fi
       ;;
   esac
 
