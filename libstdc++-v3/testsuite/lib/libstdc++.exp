@@ -1004,6 +1004,11 @@ proc check_v3_target_debug_mode { } {
     }]
 }
 
+# Define "debug-mode" as an effective-target keyword.
+proc check_effective_target_debug-mode { } {
+    return [check_v3_target_debug_mode]
+}
+
 # Return 1 if normal mode is active, 0 otherwise.
 # i.e. neither Debug Mode nor Parallel Mode is active.
 proc check_v3_target_normal_mode { } {
