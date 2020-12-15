@@ -1,3 +1,13 @@
+2020-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98166
+	PR c++/57111
+	PR middle-end/98160
+	* c-attribs.c (maybe_add_noinline): New function.
+	(handle_malloc_attribute): Call it.  Use ATTR_FLAG_INTERNAL.
+	Implicitly add attribute noinline to functions not declared inline
+	and warn on those.
+
 2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-pragma.c (omp_pragmas): Add 'allocate'.

@@ -1,3 +1,111 @@
+2020-12-14  Piotr Kubaj  <pkubaj@FreeBSD.org>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/rs6000/freebsd64.h (PROCESSOR_DEFAULT): Update
+	to PROCESSOR_PPC7450.
+	(PROCESSOR_DEFAULT64): Update to PROCESSOR_POWER8.
+
+2020-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98166
+	PR c++/57111
+	PR middle-end/98160
+	* builtins.c (check_access): Call tree_inlined_location
+	fndecl_alloc_p): Handle BUILT_IN_ALIGNED_ALLOC and
+	BUILT_IN_GOMP_ALLOC.
+	call_dealloc_p): Remove unused function.
+	(new_delete_mismatch_p): Call valid_new_delete_pair_p and rework.
+	(matching_alloc_calls_p): Handle built-in deallocation functions.
+	(warn_dealloc_offset): Corrct the handling of user-defined operators
+	delete.
+	(maybe_emit_free_warning): Avoid assuming expression is a decl.
+	Simplify.
+	* doc/extend.texi (attribute malloc): Update.
+	* tree-ssa-dce.c (valid_new_delete_pair_p): Factor code out into
+	valid_new_delete_pair_p in tree.c.
+	* tree.c (tree_inlined_location): Define new function.
+	(valid_new_delete_pair_p): Define.
+	* tree.h (tree_inlined_location): Declare.
+	(valid_new_delete_pair_p): Declare.
+
+2020-12-14  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc (aarch64*-*-*): Remove --with-{cpu,arch,tune}-32 flags.
+
+2020-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add --with-tune. Support --with-cpu=native.
+	* config/aarch64/aarch64.h (OPTION_DEFAULT_SPECS): Add --with-tune.
+
+2020-12-14  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (output_json_intermediate_file): Update comments.
+
+2020-12-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/98264
+	* tree-vect-slp-patterns.c (linear_loads_p): Exclude TOP permute.
+
+2020-12-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vnegq_f): Use 'neg' instead of unspec.
+	(mve_vnegq_s): Likewise.
+	* config/arm/neon.md (neg<mode>2): Rename into neon_neg<mode>2.
+	(<absneg_str><mode>2): Rename into neon_<absneg_str><mode>2.
+	(neon_v<absneg_str><mode>): Call gen_neon_<absneg_str><mode>2.
+	(vashr<mode>3): Call gen_neon_neg<mode>2.
+	(vlshr<mode>3): Call gen_neon_neg<mode>2.
+	(neon_vneg<mode>): Call gen_neon_neg<mode>2.
+	* config/arm/unspecs.md (VNEGQ_F, VNEGQ_S): Remove.
+	* config/arm/vec-common.md (neg<mode>2): New expander.
+
+2020-12-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (VDQNOTM2): New mode iterator.
+	(supf): Remove VMVNQ_S and VMVNQ_U.
+	(VMVNQ): Remove.
+	* config/arm/mve.md (mve_vmvnq_u<mode>): New entry for vmvn
+	instruction using expression not.
+	(mve_vmvnq_s<mode>): New expander.
+	* config/arm/neon.md (one_cmpl<mode>2): Renamed into
+	one_cmpl<mode>2_neon.
+	* config/arm/unspecs.md (VMVNQ_S, VMVNQ_U): Remove.
+	* config/arm/vec-common.md (one_cmpl<mode>2): New expander.
+
+2020-12-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (supf): Remove VBICQ_S and VBICQ_U.
+	(VBICQ): Remove.
+	* config/arm/mve.md (mve_vbicq_u<mode>): New entry for vbic
+	instruction using expression and not.
+	(mve_vbicq_s<mode>): New expander.
+	(mve_vbicq_f<mode>): Replace use of unspec by 'and not'.
+	* config/arm/unspecs.md (VBICQ_S, VBICQ_U, VBICQ_F): Remove.
+
+2020-12-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (supf): Remove VEORQ_S and VEORQ_U.
+	(VEORQ): Remove.
+	* config/arm/mve.md (mve_veorq_u<mode>): New entry for veor
+	instruction using expression xor.
+	(mve_veorq_s<mode>): New expander.
+	(mve_veorq_f<mode>): Use 'xor' code instead of unspec.
+	* config/arm/neon.md (xor<mode>3): Renamed into xor<mode>3_neon.
+	* config/arm/unspecs.md (VEORQ_S, VEORQ_U, VEORQ_F): Remove.
+	* config/arm/vec-common.md (xor<mode>3): New expander.
+
+2020-12-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add Cortex-A78C core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2020-12-14  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+	* godump.c (go_output_typedef): Suppress typedefs whose name
+	matches the tag of the underlying struct, union, or enum.
+	Output declarations for enums that do not appear in typedefs.
+
 2020-12-13  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/vax/vax.c (vax_output_int_move): Unify push operation

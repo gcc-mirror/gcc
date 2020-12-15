@@ -1,3 +1,11 @@
+2020-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_macro): Add imported_p field.
+	(struct cpp_hashnode): Tweak deferred field documentation.
+	* macro.c (_cpp_new_macro): Clear new field.
+	(cpp_get_deferred_macro, get_deferred_or_lazy_macro): Assert
+	more.
+
 2020-12-10  Jason Merrill  <jason@redhat.com>
 
 	* init.c (cpp_init_builtins): Update __cplusplus for C++20.
