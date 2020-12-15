@@ -1558,6 +1558,17 @@ Gogo::write_globals()
 	  || (no->is_const() && no->const_value()->is_sink()))
         continue;
 
+      // Skip global sink variables with static initializers.  With
+      // non-static initializers we have to evaluate for side effects,
+      // and we wind up initializing a dummy variable.  That is not
+      // ideal but it works and it's a rare case.
+      if (no->is_variable()
+	  && no->var_value()->is_global_sink()
+	  && !no->var_value()->has_pre_init()
+	  && (no->var_value()->init() == NULL
+	      || no->var_value()->init()->is_static_initializer()))
+	continue;
+
       // There is nothing useful we can output for constants which
       // have ideal or non-integral type.
       if (no->is_const())
@@ -7447,7 +7458,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
   : type_(type), init_(init), preinit_(NULL), location_(location),
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
     is_closure_(false), is_receiver_(is_receiver),
-    is_varargs_parameter_(false), is_used_(false),
+    is_varargs_parameter_(false), is_global_sink_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
     seen_(false), init_is_lowered_(false), init_is_flattened_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
