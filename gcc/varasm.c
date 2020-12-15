@@ -297,7 +297,7 @@ get_section (const char *name, unsigned int flags, tree decl,
   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
 					    INSERT);
   flags |= SECTION_NAMED;
-  if (HAVE_GAS_SHF_GNU_RETAIN
+  if (SUPPORTS_SHF_GNU_RETAIN
       && decl != nullptr
       && DECL_P (decl)
       && DECL_PRESERVE_P (decl))
@@ -487,7 +487,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
-	  || (HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
+	  || (SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
@@ -1227,7 +1227,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
     vnode->get_constructor ();
 
   if (DECL_COMMON (decl)
-      && !(HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
+      && !(SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
     {
       /* If the decl has been given an explicit section name, or it resides
 	 in a non-generic address space, then it isn't common, and shouldn't
@@ -7756,7 +7756,7 @@ switch_to_section (section *new_section, tree decl)
 {
   if (in_section == new_section)
     {
-      if (HAVE_GAS_SHF_GNU_RETAIN
+      if (SUPPORTS_SHF_GNU_RETAIN
 	  && (new_section->common.flags & SECTION_NAMED)
 	  && decl != nullptr
 	  && DECL_P (decl)
