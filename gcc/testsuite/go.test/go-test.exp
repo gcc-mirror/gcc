@@ -124,8 +124,7 @@ proc errchk { test opts } {
 	# to
 	#   // { dg-error {string} }
 	# The latter is what go-dg-runtest expects.
-	# Retain an optional trailing */, for syntax/semi6.go.
-	regsub {// (GCCGO_)?ERROR "([^"]*)" *(\*/)?$} $copy_line "// \{ dg-error \{\\2\} \}\\3" out_line
+	regsub {// (GCCGO_)?ERROR "([^"]*)"([^"]*)$} $copy_line "// \{ dg-error \{\\2\} \}\\3" out_line
 
 	puts $fdout $out_line
     }
