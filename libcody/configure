@@ -2632,7 +2632,8 @@ if test "$tools" && test -d "$tools/lib" ; then
   if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
     toollib+="/${os}"
   fi
-  LDFLAGS+=" -L $toollib"
+  ## VAR+=... is not dashing
+  LDFLAGS="$LDFLAGS -L $toollib"
   unset toollib
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking adding -Wl,--no-undefined to linker" >&5

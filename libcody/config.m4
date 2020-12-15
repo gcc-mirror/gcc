@@ -35,7 +35,8 @@ if test "$tools" && test -d "$tools/lib" ; then
   if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
     toollib+="/${os}"
   fi
-  LDFLAGS+=" -L $toollib"
+  ## VAR+=... is not dashing
+  LDFLAGS="$LDFLAGS -L $toollib"
   unset toollib
 fi])
 
