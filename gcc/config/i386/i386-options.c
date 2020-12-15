@@ -2084,17 +2084,6 @@ ix86_option_override_internal (bool main_args_p,
 	    return false;
 	  }
 
-	/* The feature-only micro-architecture levels that use
-	   PTA_NO_TUNE are only defined for the x86-64 psABI.  */
-	if ((processor_alias_table[i].flags & PTA_NO_TUNE) != 0
-	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
-		|| opts->x_ix86_abi != SYSV_ABI))
-	  {
-	    error (G_("%qs architecture level is only defined"
-		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
-	    return false;
-	  }
-
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;
 

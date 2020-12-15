@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mabi=sysv -march=x86-64-v3" } */
 
-/* Verify that the CPU features required by x86-64-v4 are enabled.  */
+/* Verify that the CPU features required by x86-64-v3 are enabled.  */
 
 #ifndef __MMX__
 # error __MMX__ not defined
@@ -12,8 +12,10 @@
 #ifndef __SSE2__
 # error __SSE2__ not defined
 #endif
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
-# error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
+#ifdef __x86_64__
+# ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+#  error __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 not defined
+# endif
 #endif
 #ifndef __LAHF_SAHF__
 # error __LAHF_SAHF__ not defined
