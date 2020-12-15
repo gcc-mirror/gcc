@@ -1,3 +1,12 @@
+2020-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add --with-tune. Support --with-cpu=native.
+	* config/aarch64/aarch64.h (OPTION_DEFAULT_SPECS): Add --with-tune.
+
+2020-12-14  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc (aarch64*-*-*): Remove --with-{cpu,arch,tune}-32 flags.
+
 2020-12-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
