@@ -697,6 +697,11 @@ package body Exp_Ch3 is
 
               and then not GNATprove_Mode
 
+              --  DIC checks for components of controlled types are done later
+              --  (see Exp_Ch7.Make_Deep_Array_Body).
+
+              and then not Is_Controlled (Comp_Type)
+
               and then Present (DIC_Procedure (Comp_Type))
 
               and then not Has_Null_Body (DIC_Procedure (Comp_Type))

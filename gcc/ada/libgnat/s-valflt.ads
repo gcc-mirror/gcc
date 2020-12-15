@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . F A T _ S F L T                       --
+--                       S Y S T E M . V A L _ F L T                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,19 +29,24 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Short_Float.
+--  This package contains routines for scanning real values for floating point
+--  type Float, for use in Text_IO.Float_IO and the Value attribute.
 
-with System.Fat_Gen;
+with Interfaces;
+with System.Val_Real;
 
-package System.Fat_SFlt is
-   pragma Pure;
+package System.Val_Flt is
+   pragma Preelaborate;
 
-   --  Note the only entity from this package that is accessed by Rtsfind
-   --  is the name of the package instantiation. Entities within this package
-   --  (i.e. the individual floating-point attribute routines) are accessed
-   --  by name using selected notation.
+   package Impl is new Val_Real (Float, Interfaces.Unsigned_32);
 
-   package Attr_Short_Float is new System.Fat_Gen (Short_Float);
+   function Scan_Float
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer) return Float
+     renames Impl.Scan_Real;
 
-end System.Fat_SFlt;
+   function Value_Float (Str : String) return Float
+     renames Impl.Value_Real;
+
+end System.Val_Flt;

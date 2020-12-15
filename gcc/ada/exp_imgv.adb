@@ -1008,10 +1008,10 @@ package body Exp_Imgv is
             then
                Vid := RE_Value_Fixed128;
             else
-               Vid := RE_Value_Real;
+               Vid := RE_Value_Long_Long_Float;
             end if;
 
-            if Vid /= RE_Value_Real then
+            if Vid /= RE_Value_Long_Long_Float then
                Append_To (Args,
                  Make_Integer_Literal (Loc, -Norm_Num (Small_Value (Rtyp))));
 
@@ -1031,7 +1031,18 @@ package body Exp_Imgv is
          end;
 
       elsif Is_Floating_Point_Type (Rtyp) then
-         Vid := RE_Value_Real;
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+            Vid := RE_Value_Float;
+
+         elsif Rtyp = Standard_Long_Float then
+            Vid := RE_Value_Long_Float;
+
+         elsif Rtyp = Standard_Long_Long_Float then
+            Vid := RE_Value_Long_Long_Float;
+
+         else
+            raise Program_Error;
+         end if;
 
       --  Only other possibility is user-defined enumeration type
 

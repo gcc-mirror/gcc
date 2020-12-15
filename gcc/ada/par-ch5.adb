@@ -1306,14 +1306,16 @@ package body Ch5 is
       --  syntax rule.
 
       else
-         if Style_Check and then Paren_Count (Cond) > 0 then
-            if Nkind (Cond) not in N_If_Expression
-                                 | N_Case_Expression
+         if Style_Check
+           and then
+             Paren_Count (Cond) >
+               (if Nkind (Cond) in N_Case_Expression
+                                 | N_If_Expression
                                  | N_Quantified_Expression
-              or else Paren_Count (Cond) > 1
-            then
-               Style.Check_Xtra_Parens (First_Sloc (Cond));
-            end if;
+                then 1
+                else 0)
+         then
+            Style.Check_Xtra_Parens (First_Sloc (Cond));
          end if;
 
          --  And return the result
@@ -1712,9 +1714,9 @@ package body Ch5 is
       Set_Discrete_Subtype_Definition
         (Loop_Param_Specification_Node, P_Discrete_Subtype_Definition);
 
-      if Ada_Version >= Ada_2020
-         and then Token = Tok_When
-      then
+      if Token = Tok_When then
+         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+
          Scan; -- past WHEN
          Set_Iterator_Filter
            (Loop_Param_Specification_Node, P_Condition);
@@ -1773,9 +1775,9 @@ package body Ch5 is
 
       Set_Name (Node1, P_Name);
 
-      if Ada_Version >= Ada_2020
-         and then Token = Tok_When
-      then
+      if Token = Tok_When then
+         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+
          Scan; -- past WHEN
          Set_Iterator_Filter
            (Node1, P_Condition);

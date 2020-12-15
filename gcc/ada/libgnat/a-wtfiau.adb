@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Generic_Aux; use Ada.Wide_Text_IO.Generic_Aux;
-with Ada.Wide_Text_IO.Float_Aux;   use Ada.Wide_Text_IO.Float_Aux;
 
 package body Ada.Wide_Text_IO.Fixed_Aux is
 

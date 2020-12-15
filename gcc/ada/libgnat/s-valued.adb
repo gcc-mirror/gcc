@@ -35,7 +35,10 @@ with System.Value_R;
 
 package body System.Value_D is
 
-   package Impl is new Value_R (Uns, Floating => False);
+   pragma Assert (Int'Size <= Uns'Size);
+   --  We need an unsigned type large enough to represent the mantissa
+
+   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Floating => False);
 
    function Integer_to_Decimal
      (Str    : String;

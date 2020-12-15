@@ -3994,9 +3994,11 @@ package body Exp_Util is
           Out_Present         => True,
           Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
 
-      --  The new procedure declaration is inserted immediately after the
-      --  function declaration. The processing in Build_Procedure_Body_Form
-      --  relies on this order.
+      --  The new procedure declaration is inserted before the function
+      --  declaration. The processing in Build_Procedure_Body_Form relies on
+      --  this order. Note that we insert before because in the case of a
+      --  function body with no separate spec, we do not want to insert the
+      --  new spec after the body which will later get rewritten.
 
       Proc_Decl :=
         Make_Subprogram_Declaration (Loc,
@@ -4006,7 +4008,7 @@ package body Exp_Util is
                 Make_Defining_Identifier (Loc, Chars (Subp)),
               Parameter_Specifications => Proc_Formals));
 
-      Insert_After_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
+      Insert_Before_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
 
       --  Entity of procedure must remain invisible so that it does not
       --  overload subsequent references to the original function.
@@ -6477,9 +6479,7 @@ package body Exp_Util is
       Loc : constant Source_Ptr := Sloc (Var);
       Ent : constant Entity_Id  := Entity (Var);
 
-      procedure Process_Current_Value_Condition
-        (N : Node_Id;
-         S : Boolean);
+      procedure Process_Current_Value_Condition (N : Node_Id; S : Boolean);
       --  N is an expression which holds either True (S = True) or False (S =
       --  False) in the condition. This procedure digs out the expression and
       --  if it refers to Ent, sets Op and Val appropriately.
@@ -6540,6 +6540,7 @@ package body Exp_Util is
             --  Recursively process AND and AND THEN branches
 
             Process_Current_Value_Condition (Left_Opnd (Cond), True);
+            pragma Assert (Op'Valid);
 
             if Op /= N_Empty then
                return;
@@ -11798,8 +11799,8 @@ package body Exp_Util is
       --  If this is a packed array component or a selected component with a
       --  nonstandard representation, we cannot generate a reference because
       --  the component may be unaligned, so we must use a renaming and this
-      --  renaming must be handled by the front end, as the back end may balk
-      --  at the nonstandard representation (see Exp_Ch2.Expand_Renaming).
+      --  renaming is handled by the front end, as the back end may balk at
+      --  the nonstandard representation (see Evaluation_Required in Exp_Ch8).
 
       elsif Nkind (Exp) in N_Indexed_Component | N_Selected_Component
         and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
@@ -11813,8 +11814,7 @@ package body Exp_Util is
              Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
              Name                => Relocate_Node (Exp)));
 
-      --  For an expression that denotes a name, we can use a renaming scheme
-      --  that is handled by the back end, instead of the front end as above.
+      --  For an expression that denotes a name, we can use a renaming scheme.
       --  This is needed for correctness in the case of a volatile object of
       --  a nonvolatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
@@ -11836,8 +11836,6 @@ package body Exp_Util is
              Defining_Identifier => Def_Id,
              Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
              Name                => Relocate_Node (Exp)));
-
-         Set_Is_Renaming_Of_Object (Def_Id, False);
 
       --  Avoid generating a variable-sized temporary, by generating the
       --  reference just for the function call. The transformation could be

@@ -2414,10 +2414,16 @@ package body Sem_Elab is
          --  Default_Initial_Condition
 
          elsif Is_Default_Initial_Condition_Proc (Subp_Id) then
-            Output_Verification_Call
-              (Pred    => "Default_Initial_Condition",
-               Id      => First_Formal_Type (Subp_Id),
-               Id_Kind => "type");
+
+            --  Only do output for a normal DIC procedure, since partial DIC
+            --  procedures are subsidiary to those.
+
+            if not Is_Partial_DIC_Procedure (Subp_Id) then
+               Output_Verification_Call
+                 (Pred    => "Default_Initial_Condition",
+                  Id      => First_Formal_Type (Subp_Id),
+                  Id_Kind => "type");
+            end if;
 
          --  Entries
 

@@ -1,3 +1,7 @@
+2020-12-14  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* .dir-locals.el (c-mode): Set 'fill-column' to 80 columns.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

@@ -2198,11 +2198,23 @@ package body Contracts is
          Result  : Entity_Id)
       is
          Loc       : constant Source_Ptr := Sloc (Body_Decl);
+         Last_Decl : Node_Id;
          Params    : List_Id := No_List;
          Proc_Bod  : Node_Id;
          Proc_Decl : Node_Id;
          Proc_Id   : Entity_Id;
          Proc_Spec : Node_Id;
+
+         --  Extra declarations needed to handle interactions between
+         --  postconditions and finalization.
+
+         Postcond_Enabled_Decl : Node_Id;
+         Return_Success_Decl   : Node_Id;
+         Result_Obj_Decl       : Node_Id;
+         Result_Obj_Type_Decl  : Node_Id;
+         Result_Obj_Type       : Entity_Id;
+
+      --  Start of processing for Build_Postconditions_Procedure
 
       begin
          --  Nothing to do if there are no actions to check on exit
@@ -2210,6 +2222,29 @@ package body Contracts is
          if No (Stmts) then
             return;
          end if;
+
+         --  Otherwise, we generate the postcondition procedure and add
+         --  associated objects and conditions used to coordinate postcondition
+         --  evaluation with finalization.
+
+         --  Generate:
+         --
+         --    procedure _postconditions (Return_Exp : Result_Typ);
+         --
+         --    --  Result_Obj_Type created when Result_Type is non-elementary
+         --    [type Result_Obj_Type is access all Result_Typ;]
+         --
+         --    Result_Obj : Result_Obj_Type;
+         --
+         --    Postcond_Enabled            : Boolean := True;
+         --    Return_Success_For_Postcond : Boolean := False;
+         --
+         --    procedure _postconditions (Return_Exp : Result_Typ) is
+         --    begin
+         --       if Postcond_Enabled and then Return_Success_For_Postcond then
+         --          [stmts];
+         --       end if;
+         --    end;
 
          Proc_Id := Make_Defining_Identifier (Loc, Name_uPostconditions);
          Set_Debug_Info_Needed   (Proc_Id);
@@ -2248,12 +2283,14 @@ package body Contracts is
          --  body. This ensures that the body will not cause any premature
          --  freezing, as it may mention types:
 
+         --  Generate:
+         --
          --    procedure Proc (Obj : Array_Typ) is
          --       procedure _postconditions is
          --       begin
          --          ... Obj ...
          --       end _postconditions;
-
+         --
          --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
          --    begin
 
@@ -2265,11 +2302,120 @@ package body Contracts is
          Insert_Before_First_Source_Declaration
            (Proc_Decl, Declarations (Body_Decl));
          Analyze (Proc_Decl);
+         Last_Decl := Proc_Decl;
+
+         --  When Result is present (e.g. the postcondition checks apply to a
+         --  function) we make a local object to capture the result, so, if
+         --  needed, we can call the generated postconditions procedure during
+         --  finalization instead of at the point of return.
+
+         --  Note: The placement of the following declarations before the
+         --  declaration of the body of the postconditions, but after the
+         --  declaration of the postconditions spec is deliberate and required
+         --  since other code within the expander expects them to be located
+         --  here. Perhaps when more space is available in the tree this will
+         --  no longer be necessary ???
+
+         if Present (Result) then
+            --  Elementary result types mean a copy is cheap and preferred over
+            --  using pointers.
+
+            if Is_Elementary_Type (Etype (Result)) then
+               Result_Obj_Type := Etype (Result);
+
+            --  Otherwise, we create a named access type to capture the result
+
+            --  Generate:
+            --
+            --  type Result_Obj_Type is access all [Result_Type];
+
+            else
+               Result_Obj_Type := Make_Temporary (Loc, 'R');
+
+               Result_Obj_Type_Decl :=
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Result_Obj_Type,
+                   Type_Definition     =>
+                     Make_Access_To_Object_Definition (Loc,
+                       All_Present        => True,
+                       Subtype_Indication => New_Occurrence_Of
+                                               (Etype (Result), Loc)));
+               Insert_After_And_Analyze (Proc_Decl, Result_Obj_Type_Decl);
+               Last_Decl := Result_Obj_Type_Decl;
+            end if;
+
+            --  Create the result obj declaration
+
+            --  Generate:
+            --
+            --  Result_Object_For_Postcond : Result_Obj_Type;
+
+            Result_Obj_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier
+                    (Loc, Name_uResult_Object_For_Postcond),
+                Object_Definition   =>
+                  New_Occurrence_Of
+                    (Result_Obj_Type, Loc));
+            Set_No_Initialization (Result_Obj_Decl);
+            Insert_After_And_Analyze (Last_Decl, Result_Obj_Decl);
+            Last_Decl := Result_Obj_Decl;
+         end if;
+
+         --  Build the Postcond_Enabled flag used to delay evaluation of
+         --  postconditions until finalization has been performed when cleanup
+         --  actions are present.
+
+         --  Generate:
+         --
+         --    Postcond_Enabled : Boolean := True;
+
+         Postcond_Enabled_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier
+                 (Loc, Name_uPostcond_Enabled),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_True, Loc));
+         Insert_After_And_Analyze (Last_Decl, Postcond_Enabled_Decl);
+         Last_Decl := Postcond_Enabled_Decl;
+
+         --  Create a flag to indicate that return has been reached
+
+         --  This is necessary for deciding whether to execute _postconditions
+         --  during finalization.
+
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond : Boolean := False;
+
+         Return_Success_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier
+                 (Loc, Name_uReturn_Success_For_Postcond),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc));
+         Insert_After_And_Analyze (Last_Decl, Return_Success_Decl);
+         Last_Decl := Return_Success_Decl;
 
          --  Set an explicit End_Label to override the sloc of the implicit
          --  RETURN statement, and prevent it from inheriting the sloc of one
          --  the postconditions: this would cause confusing debug info to be
          --  produced, interfering with coverage-analysis tools.
+
+         --  Also, wrap the postcondition checks in a conditional which can be
+         --  used to delay their evaluation when clean-up actions are present.
+
+         --  Generate:
+         --
+         --    procedure _postconditions is
+         --    begin
+         --       if Postcond_Enabled and then Return_Success_For_Postcond then
+         --          [Stmts];
+         --       end if;
+         --    end;
 
          Proc_Bod :=
            Make_Subprogram_Body (Loc,
@@ -2278,10 +2424,22 @@ package body Contracts is
              Declarations               => Empty_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts,
-                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
+                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id)),
+                 Statements => New_List (
+                   Make_If_Statement (Loc,
+                     Condition      =>
+                       Make_And_Then (Loc,
+                         Left_Opnd  =>
+                           New_Occurrence_Of
+                             (Defining_Identifier
+                               (Postcond_Enabled_Decl), Loc),
+                         Right_Opnd =>
+                           New_Occurrence_Of
+                             (Defining_Identifier
+                               (Return_Success_Decl), Loc)),
+                      Then_Statements => Stmts))));
+         Insert_After_And_Analyze (Last_Decl, Proc_Bod);
 
-         Insert_After_And_Analyze (Proc_Decl, Proc_Bod);
       end Build_Postconditions_Procedure;
 
       ----------------------------
@@ -3279,6 +3437,81 @@ package body Contracts is
       Freeze_Enclosing_Package_Body;
       Freeze_Contracts;
    end Freeze_Previous_Contracts;
+
+   --------------------------
+   -- Get_Postcond_Enabled --
+   --------------------------
+
+   function Get_Postcond_Enabled (Subp : Entity_Id) return Node_Id is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+          and then Chars (Defining_Identifier (Decl))
+                     = Name_uPostcond_Enabled
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Postcond_Enabled;
+
+   ------------------------------------
+   -- Get_Result_Object_For_Postcond --
+   ------------------------------------
+
+   function Get_Result_Object_For_Postcond
+     (Subp : Entity_Id) return Node_Id
+   is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+           and then Chars (Defining_Identifier (Decl))
+                      = Name_uResult_Object_For_Postcond
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Result_Object_For_Postcond;
+
+   -------------------------------------
+   -- Get_Return_Success_For_Postcond --
+   -------------------------------------
+
+   function Get_Return_Success_For_Postcond (Subp : Entity_Id) return Node_Id
+   is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+          and then Chars (Defining_Identifier (Decl))
+                     = Name_uReturn_Success_For_Postcond
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Return_Success_For_Postcond;
 
    ---------------------------------
    -- Inherit_Subprogram_Contract --

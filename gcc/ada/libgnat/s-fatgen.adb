@@ -29,50 +29,137 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  The implementation here is portable to any IEEE implementation. It does
---  not handle nonbinary radix, and also assumes that model numbers and
---  machine numbers are basically identical, which is not true of all possible
---  floating-point implementations. On a non-IEEE machine, this body must be
---  specialized appropriately, or better still, its generic instantiations
---  should be replaced by efficient machine-specific code.
+--  This implementation is portable to any IEEE implementation. It does not
+--  handle nonbinary radix, and also assumes that model numbers and machine
+--  numbers are basically identical, which is not true of all possible
+--  floating-point implementations.
 
 with Ada.Unchecked_Conversion;
-with System;
-package body System.Fat_Gen is
+with Interfaces;
+with System.Unsigned_Types;
 
-   Float_Radix        : constant T := T (T'Machine_Radix);
-   Radix_To_M_Minus_1 : constant T := Float_Radix ** (T'Machine_Mantissa - 1);
+pragma Warnings (Off, "non-static constant in preelaborated unit");
+--  Every constant is static given our instantiation model
+
+package body System.Fat_Gen is
+   use type Interfaces.Unsigned_64;
 
    pragma Assert (T'Machine_Radix = 2);
    --  This version does not handle radix 16
 
-   --  Constants for Decompose and Scaling
+   Rad : constant T := T (T'Machine_Radix);
+   --  Renaming for the machine radix
 
-   Rad    : constant T := T (T'Machine_Radix);
+   Mantissa : constant Integer := T'Machine_Mantissa;
+   --  Renaming for the machine mantissa
+
    Invrad : constant T := 1.0 / Rad;
+   --  Smallest positive mantissa in the canonical form (RM A.5.3(4))
 
-   subtype Expbits is Integer range 0 .. 6;
-   --  2 ** (2 ** 7) might overflow.  How big can radix-16 exponents get?
+   --  Small : constant T := Rad ** (T'Machine_Emin - 1);
+   --  Smallest positive normalized number
 
-   Log_Power : constant array (Expbits) of Integer := (1, 2, 4, 8, 16, 32, 64);
+   --  Tiny : constant T := Rad ** (T'Machine_Emin - Mantissa);
+   --  Smallest positive denormalized number
 
-   R_Power : constant array (Expbits) of T :=
-     (Rad **  1,
-      Rad **  2,
-      Rad **  4,
-      Rad **  8,
-      Rad ** 16,
-      Rad ** 32,
-      Rad ** 64);
+   Tiny16 : constant Interfaces.Unsigned_16 := 1;
+   Tiny32 : constant Interfaces.Unsigned_32 := 1;
+   Tiny64 : constant Interfaces.Unsigned_64 := 1;
+   Tiny80 : constant array (1 .. 2) of Interfaces.Unsigned_64 :=
+              (1 * Standard'Default_Bit_Order,
+               2**48 * (1 - Standard'Default_Bit_Order));
+   for Tiny80'Alignment use Standard'Maximum_Alignment;
+   --  We cannot use the direct declaration because it cannot be translated
+   --  into C90, as the hexadecimal floating constants were introduced in C99.
+   --  So we work around this by using an overlay of the integer constant.
 
-   R_Neg_Power : constant array (Expbits) of T :=
-     (Invrad **  1,
-      Invrad **  2,
-      Invrad **  4,
-      Invrad **  8,
-      Invrad ** 16,
-      Invrad ** 32,
-      Invrad ** 64);
+   RM1 : constant T := Rad ** (Mantissa - 1);
+   --  Smallest positive member of the large consecutive integers. It is equal
+   --  to the ratio Small / Tiny, which means that multiplying by it normalizes
+   --  any nonzero denormalized number.
+
+   IEEE_Emin : constant Integer := T'Machine_Emin - 1;
+   IEEE_Emax : constant Integer := T'Machine_Emax - 1;
+   --  The mantissa is a fraction with first digit set in Ada whereas it is
+   --  shifted by 1 digit to the left in the IEEE floating-point format.
+
+   subtype IEEE_Erange is Integer range IEEE_Emin - 1 .. IEEE_Emax + 1;
+   --  The IEEE floating-point format extends the machine range by 1 to the
+   --  left for denormalized numbers and 1 to the right for infinities/NaNs.
+
+   IEEE_Ebias : constant Integer := -(IEEE_Emin - 1);
+   --  The exponent is biased such that denormalized numbers have it zero
+
+   --  The implementation uses a representation type Float_Rep that allows
+   --  direct access to exponent and mantissa of the floating point number.
+
+   --  The Float_Rep type is a simple array of Float_Word elements. This
+   --  representation is chosen to make it possible to size the type based
+   --  on a generic parameter. Since the array size is known at compile
+   --  time, efficient code can still be generated. The size of Float_Word
+   --  elements should be large enough to allow accessing the exponent in
+   --  one read, but small enough so that all floating-point object sizes
+   --  are a multiple of Float_Word'Size.
+
+   --  The following conditions must be met for all possible instantiations
+   --  of the attribute package:
+
+   --    - T'Size is an integral multiple of Float_Word'Size
+
+   --    - The exponent and sign are completely contained in a single
+   --      component of Float_Rep, named Most Significant Word (MSW).
+
+   --    - The sign occupies the most significant bit of the MSW and the
+   --      exponent is in the following bits. The exception is 80-bit
+   --      double extended, where they occupy the low 16-bit halfword.
+
+   --  The low-level primitives Copy_Sign, Decompose, Scaling and Valid are
+   --  implemented by accessing the bit pattern of the floating-point number.
+   --  Only the normalization of denormalized numbers, if any, and the gradual
+   --  underflow are left to the hardware, mainly because there is some leeway
+   --  for the hardware implementation in this area: for example, the MSB of
+   --  the mantissa, which is 1 for normalized numbers and 0 for denormalized
+   --  numbers, may or may not be stored by the hardware.
+
+   Siz : constant := (if System.Word_Size > 32 then 32 else System.Word_Size);
+   type Float_Word is mod 2**Siz;
+
+   N : constant Natural := (T'Size + Siz - 1) / Siz;
+   Rep_Last : constant Natural := Natural'Min (N - 1, (Mantissa + 16) / Siz);
+   --  Determine the number of Float_Words needed for representing the
+   --  entire floating-point value. Do not take into account excessive
+   --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
+   --  bits. In general, the exponent field cannot be larger than 15 bits,
+   --  even for 128-bit floating-point types, so the final format size
+   --  won't be larger than Mantissa + 16.
+
+   type Float_Rep is array (Natural range 0 .. N - 1) of Float_Word;
+   pragma Suppress_Initialization (Float_Rep);
+   --  This pragma suppresses the generation of an initialization procedure
+   --  for type Float_Rep when operating in Initialize/Normalize_Scalars mode.
+
+   MSW : constant Natural := Rep_Last * Standard'Default_Bit_Order;
+   --  Finding the location of the Exponent_Word is a bit tricky. In general
+   --  we assume Word_Order = Bit_Order.
+
+   Exp_Factor : constant Float_Word :=
+                  (if Mantissa = 64
+                   then 1
+                   else 2**(Siz - 1) / Float_Word (IEEE_Emax - IEEE_Emin + 3));
+   --  Factor that the extracted exponent needs to be divided by to be in
+   --  range 0 .. IEEE_Emax - IEEE_Emin + 2. The special case is 80-bit
+   --  double extended, where the exponent starts the 3rd float word.
+
+   Exp_Mask : constant Float_Word :=
+                Float_Word (IEEE_Emax - IEEE_Emin + 2) * Exp_Factor;
+   --  Value needed to mask out the exponent field. This assumes that the
+   --  range 0 .. IEEE_Emax - IEEE_Emin + 2 contains 2**N values, for some
+   --  N in Natural.
+
+   Sign_Mask : constant Float_Word :=
+                 (if Mantissa = 64 then 2**15 else 2**(Siz - 1));
+   --  Value needed to mask out the sign field. The special case is 80-bit
+   --  double extended, where the exponent starts the 3rd float word.
 
    -----------------------
    -- Local Subprograms --
@@ -83,11 +170,6 @@ package body System.Fat_Gen is
    --  Both results are signed, with Frac having the sign of XX, and UI has
    --  the sign of the exponent. The absolute value of Frac is in the range
    --  0.0 <= Frac < 1.0. If Frac = 0.0 or -0.0, then Expo is always zero.
-
-   function Gradual_Scaling (Adjustment : UI) return T;
-   --  Like Scaling with a first argument of 1.0, but returns the smallest
-   --  denormal rather than zero when the adjustment is smaller than
-   --  Machine_Emin. Used for Succ and Pred.
 
    --------------
    -- Adjacent --
@@ -138,19 +220,22 @@ package body System.Fat_Gen is
    ---------------
 
    function Copy_Sign (Value, Sign : T) return T is
-      Result : T;
+      S : constant T := T'Machine (Sign);
 
-      function Is_Negative (V : T) return Boolean;
-      pragma Import (Intrinsic, Is_Negative);
+      Rep_S : Float_Rep;
+      for Rep_S'Address use S'Address;
+      --  Rep_S is a view of the Sign parameter
+
+      V : T := T'Machine (Value);
+
+      Rep_V : Float_Rep;
+      for Rep_V'Address use V'Address;
+      --  Rep_V is a view of the Value parameter
 
    begin
-      Result := abs Value;
-
-      if Is_Negative (Sign) then
-         return -Result;
-      else
-         return Result;
-      end if;
+      Rep_V (MSW) :=
+        (Rep_V (MSW) and not Sign_Mask) or (Rep_S (MSW) and Sign_Mask);
+      return V;
    end Copy_Sign;
 
    ---------------
@@ -158,94 +243,53 @@ package body System.Fat_Gen is
    ---------------
 
    procedure Decompose (XX : T; Frac : out T; Expo : out UI) is
-      X : constant T := T'Machine (XX);
+      X : T := T'Machine (XX);
+
+      Rep : Float_Rep;
+      for Rep'Address use X'Address;
+      --  Rep is a view of the input floating-point parameter
+
+      Exp : constant IEEE_Erange :=
+              Integer ((Rep (MSW) and Exp_Mask) / Exp_Factor) - IEEE_Ebias;
+      --  Mask/Shift X to only get bits from the exponent. Then convert biased
+      --  value to final value.
+
+      Minus : constant Boolean := (Rep (MSW) and Sign_Mask) /= 0;
+      --  Mask/Shift X to only get bit from the sign
 
    begin
+      --  The normalized exponent of zero is zero, see RM A.5.3(15)
+
       if X = 0.0 then
-
-         --  The normalized exponent of zero is zero, see RM A.5.2(15)
-
-         Frac := X;
          Expo := 0;
+         Frac := X;
 
-      --  Check for infinities, transfinites, whatnot
+      --  Check for infinities and NaNs
 
-      elsif X > T'Safe_Last then
-         Frac := Invrad;
-         pragma Annotate (CodePeer, Intentional, "dead code",
-                          "Check float range.");
+      elsif Exp = IEEE_Emax + 1 then
          Expo := T'Machine_Emax + 1;
+         Frac := (if Minus then -Invrad else Invrad);
 
-      elsif X < T'Safe_First then
-         Frac := -Invrad;
-         pragma Annotate (CodePeer, Intentional, "dead code",
-                          "Check float range.");
-         Expo := T'Machine_Emax + 2;    -- how many extra negative values?
+      --  Check for nonzero denormalized numbers
+
+      elsif Exp = IEEE_Emin - 1 then
+         --  Normalize by multiplying by Radix ** (Mantissa - 1)
+
+         Decompose (X * RM1, Frac, Expo);
+         Expo := Expo - (Mantissa - 1);
+
+      --  Case of normalized numbers
 
       else
-         --  Case of nonzero finite x. Essentially, we just multiply
-         --  by Rad ** (+-2**N) to reduce the range.
+         --  The Ada exponent is the IEEE exponent plus 1, see above
 
-         declare
-            Ax : T  := abs X;
-            Ex : UI := 0;
+         Expo := Exp + 1;
 
-         --  Ax * Rad ** Ex is invariant
+         --  Set Ada exponent of X to zero, so we end up with the fraction
 
-         begin
-            if Ax >= 1.0 then
-               while Ax >= R_Power (Expbits'Last) loop
-                  Ax := Ax * R_Neg_Power (Expbits'Last);
-                  Ex := Ex + Log_Power (Expbits'Last);
-               end loop;
-
-               --  Ax < Rad ** 64
-
-               for N in reverse Expbits'First .. Expbits'Last - 1 loop
-                  if Ax >= R_Power (N) then
-                     Ax := Ax * R_Neg_Power (N);
-                     Ex := Ex + Log_Power (N);
-                  end if;
-
-                  --  Ax < R_Power (N)
-
-               end loop;
-
-               --  1 <= Ax < Rad
-
-               Ax := Ax * Invrad;
-               Ex := Ex + 1;
-
-            else
-               --  0 < ax < 1
-
-               while Ax < R_Neg_Power (Expbits'Last) loop
-                  Ax := Ax * R_Power (Expbits'Last);
-                  pragma Annotate (CodePeer, Intentional, "dead code",
-                                   "Check float range.");
-                  Ex := Ex - Log_Power (Expbits'Last);
-               end loop;
-               pragma Annotate
-                 (CodePeer, Intentional,
-                  "test always false",
-                  "expected for some instantiations");
-
-               --  Rad ** -64 <= Ax < 1
-
-               for N in reverse Expbits'First .. Expbits'Last - 1 loop
-                  if Ax < R_Neg_Power (N) then
-                     Ax := Ax * R_Power (N);
-                     Ex := Ex - Log_Power (N);
-                  end if;
-
-                  --  R_Neg_Power (N) <= Ax < 1
-
-               end loop;
-            end if;
-
-            Frac := (if X > 0.0 then Ax else -Ax);
-            Expo := Ex;
-         end;
+         Rep (MSW) := (Rep (MSW) and not Exp_Mask) +
+                        Float_Word (IEEE_Ebias - 1) * Exp_Factor;
+         Frac := X;
       end if;
    end Decompose;
 
@@ -291,38 +335,6 @@ package body System.Fat_Gen is
       return X_Frac;
    end Fraction;
 
-   ---------------------
-   -- Gradual_Scaling --
-   ---------------------
-
-   function Gradual_Scaling  (Adjustment : UI) return T is
-      Y  : T;
-      Y1 : T;
-      Ex : UI := Adjustment;
-
-   begin
-      if Adjustment < T'Machine_Emin - 1 then
-         Y  := 2.0 ** T'Machine_Emin;
-         Y1 := Y;
-         Ex := Ex - T'Machine_Emin;
-         while Ex < 0 loop
-            Y := T'Machine (Y / 2.0);
-
-            if Y = 0.0 then
-               return Y1;
-            end if;
-
-            Ex := Ex + 1;
-            Y1 := Y;
-         end loop;
-
-         return Y1;
-
-      else
-         return Scaling (1.0, Adjustment);
-      end if;
-   end Gradual_Scaling;
-
    ------------------
    -- Leading_Part --
    ------------------
@@ -332,7 +344,7 @@ package body System.Fat_Gen is
       Y, Z : T;
 
    begin
-      if Radix_Digits >= T'Machine_Mantissa then
+      if Radix_Digits >= Mantissa then
          return X;
 
       elsif Radix_Digits <= 0 then
@@ -412,6 +424,13 @@ package body System.Fat_Gen is
    ----------
 
    function Pred (X : T) return T is
+      Tiny : constant T;
+      pragma Import (Ada, Tiny);
+      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
+                             elsif T'Size   = 32 then Tiny32'Address
+                             elsif T'Size   = 64 then Tiny64'Address
+                             elsif Mantissa = 64 then Tiny80'Address
+                             else raise Program_Error);
       X_Frac : T;
       X_Exp  : UI;
 
@@ -419,12 +438,11 @@ package body System.Fat_Gen is
       --  Zero has to be treated specially, since its exponent is zero
 
       if X = 0.0 then
-         return -Succ (X);
+         return -Tiny;
 
-      --  Special treatment for most negative number
+      --  Special treatment for largest negative number: raise Constraint_Error
 
       elsif X = T'First then
-
          raise Constraint_Error with "Pred of largest negative number";
 
       --  For infinities, return unchanged
@@ -438,28 +456,33 @@ package body System.Fat_Gen is
 
       --  Subtract from the given number a number equivalent to the value
       --  of its least significant bit. Given that the most significant bit
-      --  represents a value of 1.0 * radix ** (exp - 1), the value we want
-      --  is obtained by shifting this by (mantissa-1) bits to the right,
+      --  represents a value of 1.0 * Radix ** (Exp - 1), the value we want
+      --  is obtained by shifting this by (Mantissa-1) bits to the right,
       --  i.e. decreasing the exponent by that amount.
 
       else
          Decompose (X, X_Frac, X_Exp);
 
-         --  A special case, if the number we had was a positive power of
-         --  two, then we want to subtract half of what we would otherwise
-         --  subtract, since the exponent is going to be reduced.
+         --  For a denormalized number or a normalized number with the lowest
+         --  exponent, just subtract the Tiny.
 
-         --  Note that X_Frac has the same sign as X, so if X_Frac is 0.5,
-         --  then we know that we have a positive number (and hence a
-         --  positive power of 2).
+         if X_Exp <= T'Machine_Emin then
+            return X - Tiny;
 
-         if X_Frac = 0.5 then
-            return X - Gradual_Scaling (X_Exp - T'Machine_Mantissa - 1);
+         --  A special case, if the number we had was a power of two on the
+         --  positive side of zero, then we want to subtract half of what we
+         --  would have subtracted, since the exponent is going to be reduced.
 
-         --  Otherwise the exponent is unchanged
+         --  Note that X_Frac has the same sign as X so, if X_Frac is Invrad,
+         --  then we know that we had a power of two on the positive side.
+
+         elsif X_Frac = Invrad then
+            return X - Scaling (1.0, X_Exp - Mantissa - 1);
+
+         --  Otherwise the adjustment is unchanged
 
          else
-            return X - Gradual_Scaling (X_Exp - T'Machine_Mantissa);
+            return X - Scaling (1.0, X_Exp - Mantissa);
          end if;
       end if;
    end Pred;
@@ -579,70 +602,97 @@ package body System.Fat_Gen is
    -- Scaling --
    -------------
 
-   --  Return x * rad ** adjustment quickly, or quietly underflow to zero,
-   --  or overflow naturally.
-
    function Scaling (X : T; Adjustment : UI) return T is
+      pragma Assert (Mantissa <= 64);
+      --  This implementation handles only 80-bit IEEE Extended or smaller
+
+      package UST renames System.Unsigned_Types;
+      use type UST.Long_Long_Unsigned;
+
+      XX : T := T'Machine (X);
+
+      Rep : Float_Rep;
+      for Rep'Address use XX'Address;
+      --  Rep is a view of the input floating-point parameter
+
+      Exp : constant IEEE_Erange :=
+              Integer ((Rep (MSW) and Exp_Mask) / Exp_Factor) - IEEE_Ebias;
+      --  Mask/Shift X to only get bits from the exponent. Then convert biased
+      --  value to final value.
+
+      Minus : constant Boolean := (Rep (MSW) and Sign_Mask) /= 0;
+      --  Mask/Shift X to only get bit from the sign
+
+      Expi, Expf : IEEE_Erange;
+
    begin
-      if X = 0.0 or else Adjustment = 0 then
+      --  Check for zero, infinities, NaNs as well as no adjustment
+
+      if X = 0.0 or else Exp = IEEE_Emax + 1 or else Adjustment = 0 then
          return X;
-      end if;
 
-      --  Nonzero x essentially, just multiply repeatedly by Rad ** (+-2**n)
+      --  Check for nonzero denormalized numbers
 
-      declare
-         Y  : T  := X;
-         Ex : UI := Adjustment;
+      elsif Exp = IEEE_Emin - 1 then
+         --  Check for zero result to protect the subtraction below
 
-      --  Y * Rad ** Ex is invariant
+         if Adjustment < -(Mantissa - 1) then
+            XX := 0.0;
+            return (if Minus then -XX else XX);
 
-      begin
-         if Ex < 0 then
-            while Ex <= -Log_Power (Expbits'Last) loop
-               Y := Y * R_Neg_Power (Expbits'Last);
-               Ex := Ex + Log_Power (Expbits'Last);
-            end loop;
-
-            --  -64 < Ex <= 0
-
-            for N in reverse Expbits'First .. Expbits'Last - 1 loop
-               if Ex <= -Log_Power (N) then
-                  Y := Y * R_Neg_Power (N);
-                  Ex := Ex + Log_Power (N);
-               end if;
-
-               --  -Log_Power (N) < Ex <= 0
-
-            end loop;
-
-            --  Ex = 0
+         --  Normalize by multiplying by Radix ** (Mantissa - 1)
 
          else
-            --  Ex >= 0
-
-            while Ex >= Log_Power (Expbits'Last) loop
-               Y := Y * R_Power (Expbits'Last);
-               Ex := Ex - Log_Power (Expbits'Last);
-            end loop;
-
-            --  0 <= Ex < 64
-
-            for N in reverse Expbits'First .. Expbits'Last - 1 loop
-               if Ex >= Log_Power (N) then
-                  Y := Y * R_Power (N);
-                  Ex := Ex - Log_Power (N);
-               end if;
-
-               --  0 <= Ex < Log_Power (N)
-
-            end loop;
-
-            --  Ex = 0
-
+            return Scaling (XX * RM1, Adjustment - (Mantissa - 1));
          end if;
 
-         return Y;
-      end;
+      --  Case of normalized numbers
+
+      else
+         --  Check for overflow
+
+         if Adjustment > IEEE_Emax - Exp then
+            XX := 0.0;
+            return (if Minus then -1.0 / XX else 1.0 / XX);
+            pragma Annotate
+              (CodePeer, Intentional, "overflow check", "Infinity produced");
+            pragma Annotate
+              (CodePeer, Intentional, "divide by zero", "Infinity produced");
+
+         --  Check for underflow
+
+         elsif Adjustment < IEEE_Emin - Exp then
+            --  Check for gradual underflow
+
+            if T'Denorm
+              and then Adjustment >= IEEE_Emin - (Mantissa - 1) - Exp
+            then
+               Expf := IEEE_Emin;
+               Expi := Exp + Adjustment - Expf;
+
+            --  Case of zero result
+
+            else
+               XX := 0.0;
+               return (if Minus then -XX else XX);
+            end if;
+
+         --  Case of normalized results
+
+         else
+            Expf := Exp + Adjustment;
+            Expi := 0;
+         end if;
+
+         Rep (MSW) := (Rep (MSW) and not Exp_Mask) +
+                        Float_Word (IEEE_Ebias + Expf) * Exp_Factor;
+
+         if Expi < 0 then
+            XX := XX / T (UST.Long_Long_Unsigned (2) ** (-Expi));
+         end if;
+
+         return XX;
+      end if;
    end Scaling;
 
    ----------
@@ -650,35 +700,26 @@ package body System.Fat_Gen is
    ----------
 
    function Succ (X : T) return T is
+      Tiny : constant T;
+      pragma Import (Ada, Tiny);
+      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
+                             elsif T'Size   = 32 then Tiny32'Address
+                             elsif T'Size   = 64 then Tiny64'Address
+                             elsif Mantissa = 64 then Tiny80'Address
+                             else raise Program_Error);
       X_Frac : T;
       X_Exp  : UI;
-      X1, X2 : T;
 
    begin
       --  Treat zero specially since it has a zero exponent
 
       if X = 0.0 then
-         X1 := 2.0 ** T'Machine_Emin;
+         return Tiny;
 
-         --  Following loop generates smallest denormal
-
-         loop
-            X2 := T'Machine (X1 / 2.0);
-            exit when X2 = 0.0;
-            X1 := X2;
-         end loop;
-
-         return X1;
-
-      --  Special treatment for largest positive number
+      --  Special treatment for largest positive number: raise Constraint_Error
 
       elsif X = T'Last then
-
-         --  If not generating infinities, we raise a constraint error
-
          raise Constraint_Error with "Succ of largest positive number";
-
-         --  Otherwise generate a positive infinity
 
       --  For infinities, return unchanged
 
@@ -689,30 +730,35 @@ package body System.Fat_Gen is
          pragma Annotate (CodePeer, Intentional, "dead code",
                           "Check float range.");
 
-      --  Add to the given number a number equivalent to the value
-      --  of its least significant bit. Given that the most significant bit
-      --  represents a value of 1.0 * radix ** (exp - 1), the value we want
-      --  is obtained by shifting this by (mantissa-1) bits to the right,
+      --  Add to the given number a number equivalent to the value of its
+      --  least significant bit. Given that the most significant bit
+      --  represents a value of 1.0 * Radix ** (Exp - 1), the value we want
+      --  is obtained by shifting this by (Mantissa-1) bits to the right,
       --  i.e. decreasing the exponent by that amount.
 
       else
          Decompose (X, X_Frac, X_Exp);
 
-         --  A special case, if the number we had was a negative power of two,
-         --  then we want to add half of what we would otherwise add, since the
-         --  exponent is going to be reduced.
+         --  For a denormalized number or a normalized number with the lowest
+         --  exponent, just add the Tiny.
 
-         --  Note that X_Frac has the same sign as X, so if X_Frac is -0.5,
-         --  then we know that we have a negative number (and hence a negative
-         --  power of 2).
+         if X_Exp <= T'Machine_Emin then
+            return X + Tiny;
 
-         if X_Frac = -0.5 then
-            return X + Gradual_Scaling (X_Exp - T'Machine_Mantissa - 1);
+         --  A special case, if the number we had was a power of two on the
+         --  negative side of zero, then we want to add half of what we would
+         --  have added, since the exponent is going to be reduced.
 
-         --  Otherwise the exponent is unchanged
+         --  Note that X_Frac has the same sign as X, so if X_Frac is -Invrad,
+         --  then we know that we had a power of two on the negative side.
+
+         elsif X_Frac = -Invrad then
+            return X + Scaling (1.0, X_Exp - Mantissa - 1);
+
+         --  Otherwise the adjustment is unchanged
 
          else
-            return X + Gradual_Scaling (X_Exp - T'Machine_Mantissa);
+            return X + Scaling (1.0, X_Exp - Mantissa);
          end if;
       end if;
    end Succ;
@@ -725,7 +771,7 @@ package body System.Fat_Gen is
 
    --    T'Machine (RM1 + N) - RM1
 
-   --  where N >= 0.0 and RM1 = radix ** (mantissa - 1)
+   --  where N >= 0.0 and RM1 = Radix ** (Mantissa - 1)
 
    --  This works provided that the intermediate result (RM1 + N) does not
    --  have extra precision (which is why we call Machine). When we compute
@@ -742,19 +788,18 @@ package body System.Fat_Gen is
    begin
       Result := abs X;
 
-      if Result >= Radix_To_M_Minus_1 then
+      if Result >= RM1 then
          return T'Machine (X);
 
       else
-         Result :=
-           T'Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
+         Result := T'Machine (RM1 + Result) - RM1;
 
          if Result > abs X then
             Result := Result - 1.0;
          end if;
 
          if X > 0.0 then
-            return  Result;
+            return Result;
 
          elsif X < 0.0 then
             return -Result;
@@ -805,132 +850,37 @@ package body System.Fat_Gen is
    -----------
 
    function Valid (X : not null access T) return Boolean is
-      IEEE_Emin : constant Integer := T'Machine_Emin - 1;
-      IEEE_Emax : constant Integer := T'Machine_Emax - 1;
-
-      IEEE_Bias : constant Integer := -(IEEE_Emin - 1);
-
-      subtype IEEE_Exponent_Range is
-        Integer range IEEE_Emin - 1 .. IEEE_Emax + 1;
-
-      --  The implementation of this floating point attribute uses a
-      --  representation type Float_Rep that allows direct access to the
-      --  exponent and mantissa parts of a floating point number.
-
-      --  The Float_Rep type is an array of Float_Word elements. This
-      --  representation is chosen to make it possible to size the type based
-      --  on a generic parameter. Since the array size is known at compile
-      --  time, efficient code can still be generated. The size of Float_Word
-      --  elements should be large enough to allow accessing the exponent in
-      --  one read, but small enough so that all floating point object sizes
-      --  are a multiple of the Float_Word'Size.
-
-      --  The following conditions must be met for all possible instantiations
-      --  of the attributes package:
-
-      --    - T'Size is an integral multiple of Float_Word'Size
-
-      --    - The exponent and sign are completely contained in a single
-      --      component of Float_Rep, named Most_Significant_Word (MSW).
-
-      --    - The sign occupies the most significant bit of the MSW and the
-      --      exponent is in the following bits. Unused bits (if any) are in
-      --      the least significant part.
-
-      type Float_Word is mod 2**Positive'Min (System.Word_Size, 32);
-      type Rep_Index is range 0 .. 7;
-
-      Rep_Words : constant Positive :=
-                    (T'Size + Float_Word'Size - 1) / Float_Word'Size;
-      Rep_Last  : constant Rep_Index :=
-                    Rep_Index'Min
-                      (Rep_Index (Rep_Words - 1),
-                       (T'Mantissa + 16) / Float_Word'Size);
-      --  Determine the number of Float_Words needed for representing the
-      --  entire floating-point value. Do not take into account excessive
-      --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
-      --  bits. In general, the exponent field cannot be larger than 15 bits,
-      --  even for 128-bit floating-point types, so the final format size
-      --  won't be larger than T'Mantissa + 16.
-
-      type Float_Rep is
-         array (Rep_Index range 0 .. Rep_Index (Rep_Words - 1)) of Float_Word;
-
-      pragma Suppress_Initialization (Float_Rep);
-      --  This pragma suppresses the generation of an initialization procedure
-      --  for type Float_Rep when operating in Initialize/Normalize_Scalars
-      --  mode. This is not just a matter of efficiency, but of functionality,
-      --  since Valid has a pragma Inline_Always, which is not permitted if
-      --  there are nested subprograms present.
-
-      Most_Significant_Word : constant Rep_Index :=
-                                Rep_Last * Standard'Default_Bit_Order;
-      --  Finding the location of the Exponent_Word is a bit tricky. In general
-      --  we assume Word_Order = Bit_Order.
-
-      Exponent_Factor : constant Float_Word :=
-                          2**(Float_Word'Size - 1) /
-                            Float_Word (IEEE_Emax - IEEE_Emin + 3) *
-                              Boolean'Pos (Most_Significant_Word /= 2) +
-                                Boolean'Pos (Most_Significant_Word = 2);
-      --  Factor that the extracted exponent needs to be divided by to be in
-      --  range 0 .. IEEE_Emax - IEEE_Emin + 2. Special case: Exponent_Factor
-      --  is 1 for x86/IA64 double extended (GCC adds unused bits to the type).
-
-      Exponent_Mask : constant Float_Word :=
-                        Float_Word (IEEE_Emax - IEEE_Emin + 2) *
-                          Exponent_Factor;
-      --  Value needed to mask out the exponent field. This assumes that the
-      --  range IEEE_Emin - 1 .. IEEE_Emax + contains 2**N values, for some N
-      --  in Natural.
-
-      function To_Float is new Ada.Unchecked_Conversion (Float_Rep, T);
-
-      type Float_Access is access all T;
+      type Access_T is access all T;
       function To_Address is
-         new Ada.Unchecked_Conversion (Float_Access, System.Address);
+        new Ada.Unchecked_Conversion (Access_T, System.Address);
 
-      XA : constant System.Address := To_Address (Float_Access (X));
+      Rep : Float_Rep;
+      for Rep'Address use To_Address (Access_T (X));
+      --  Rep is a view of the input floating-point parameter. Note that we
+      --  must avoid reading the actual bits of this parameter in float form
+      --  since it may be a signalling NaN.
 
-      R : Float_Rep;
-      pragma Import (Ada, R);
-      for R'Address use XA;
-      --  R is a view of the input floating-point parameter. Note that we
-      --  must avoid copying the actual bits of this parameter in float
-      --  form (since it may be a signalling NaN).
-
-      E  : constant IEEE_Exponent_Range :=
-             Integer ((R (Most_Significant_Word) and Exponent_Mask) /
-                                                        Exponent_Factor)
-               - IEEE_Bias;
-      --  Mask/Shift T to only get bits from the exponent. Then convert biased
-      --  value to integer value.
-
-      SR : Float_Rep;
-      --  Float_Rep representation of significant of X.all
+      Exp : constant IEEE_Erange :=
+              Integer ((Rep (MSW) and Exp_Mask) / Exp_Factor) - IEEE_Ebias;
+      --  Mask/Shift X to only get bits from the exponent. Then convert biased
+      --  value to final value.
 
    begin
-      if T'Denorm then
+      if Exp = IEEE_Emax + 1 then
+         --  This is an infinity or a NaN, i.e. always invalid
 
-         --  All denormalized numbers are valid, so the only invalid numbers
-         --  are overflows and NaNs, both with exponent = Emax + 1.
+         return False;
 
-         return E /= IEEE_Emax + 1;
+      elsif Exp in IEEE_Emin .. IEEE_Emax then
+         --  This is a normalized number, i.e. always valid
 
+         return True;
+
+      else pragma Assert (Exp = IEEE_Emin - 1);
+         --  This is a denormalized number, valid if T'Denorm is True or 0.0
+
+         return T'Denorm or else X.all = 0.0;
       end if;
-
-      --  All denormalized numbers except 0.0 are invalid
-
-      --  Set exponent of X to zero, so we end up with the significand, which
-      --  definitely is a valid number and can be converted back to a float.
-
-      SR := R;
-      SR (Most_Significant_Word) :=
-           (SR (Most_Significant_Word)
-             and not Exponent_Mask) + Float_Word (IEEE_Bias) * Exponent_Factor;
-
-      return (E in IEEE_Emin .. IEEE_Emax) or else
-         ((E = IEEE_Emin - 1) and then abs To_Float (SR) = 1.0);
    end Valid;
 
 end System.Fat_Gen;

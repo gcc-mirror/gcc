@@ -38,6 +38,8 @@ generic
 
    type Uns is mod <>;
 
+   Precision_Limit : Uns;
+
    Floating : Boolean;
 
 package System.Value_R is

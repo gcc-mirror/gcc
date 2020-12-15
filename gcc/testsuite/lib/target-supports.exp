@@ -10744,6 +10744,11 @@ proc check_effective_target_msp430_large {} {
     } ""]
 }
 
+# Return 1 if GCC was configured with --with-tune=cortex-a76
+proc check_effective_target_tune_cortex_a76 { } {
+    return [check_configured_with "with-tune=cortex-a76"]
+}
+
 # Return 1 if the target has an efficient means to encode large initializers
 # in the assembly.
 

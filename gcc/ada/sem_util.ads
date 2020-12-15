@@ -765,6 +765,10 @@ package Sem_Util is
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  unit, if any. If none, then returns Empty.
 
+   function Enclosing_HSS (Stmt : Node_Id) return Node_Id;
+   --  Returns the nearest handled sequence of statements that encloses a given
+   --  statement, or Empty.
+
    function Enclosing_Lib_Unit_Entity
      (E : Entity_Id := Current_Scope) return Entity_Id;
    --  Returns the entity of enclosing library unit node which is the root of
@@ -1537,6 +1541,9 @@ package Sem_Util is
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.
+
+   function In_Generic_Formal_Package (E : Entity_Id) return Boolean;
+   --  Returns True if entity E is inside a generic formal package
 
    function In_Generic_Scope (E : Entity_Id) return Boolean;
    --  Returns True if entity E is inside a generic scope

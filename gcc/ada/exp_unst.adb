@@ -251,13 +251,8 @@ package body Exp_Unst is
    -----------------------
 
    function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
-      Typ : Entity_Id := Etype (E);
-
+      Typ : constant Entity_Id := Get_Fullest_View (Etype (E));
    begin
-      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-         Typ := Full_View (Typ);
-      end if;
-
       return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
    end Needs_Fat_Pointer;
 
@@ -898,6 +893,8 @@ package body Exp_Unst is
                      DT     : Boolean := False;
                      Formal : Node_Id;
                      Subp   : Entity_Id;
+                     F_Type : Entity_Id;
+                     A_Type : Entity_Id;
 
                   begin
                      if Nkind (Name (N)) = N_Explicit_Dereference then
@@ -908,12 +905,16 @@ package body Exp_Unst is
 
                      Actual := First_Actual (N);
                      Formal := First_Formal_With_Extras (Subp);
+
                      while Present (Actual) loop
-                        if Is_Array_Type (Etype (Formal))
-                          and then not Is_Constrained (Etype (Formal))
-                          and then Is_Constrained (Etype (Actual))
+                        F_Type := Get_Fullest_View (Etype (Formal));
+                        A_Type := Get_Fullest_View (Etype (Actual));
+
+                        if Is_Array_Type (F_Type)
+                          and then not Is_Constrained (F_Type)
+                          and then Is_Constrained (A_Type)
                         then
-                           Check_Static_Type (Etype (Actual), Empty, DT);
+                           Check_Static_Type (A_Type, Empty, DT);
                         end if;
 
                         Next_Actual (Actual);

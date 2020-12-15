@@ -14658,7 +14658,7 @@ currently supported on is AArch64.
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
-See @uref{https://github.com/google/kasan/wiki} for more details.
+See @uref{https://github.com/google/kasan} for more details.
 
 @item -fsanitize=hwaddress
 @opindex fsanitize=hwaddress
@@ -29863,8 +29863,9 @@ A generic CPU with 64-bit extensions.
 @itemx x86-64-v3
 @itemx x86-64-v4
 These choices for @var{cpu-type} select the corresponding
-micro-architecture level from the x86-64 psABI.  They are only available
-when compiling for an x86-64 target that uses the System V psABI@.
+micro-architecture level from the x86-64 psABI.  On ABIs other than
+the x86-64 psABI they select the same CPU features as the x86-64 psABI
+documents for the particular micro-architecture level.
 
 Since these @var{cpu-type} values do not have a corresponding
 @option{-mtune} setting, using @option{-march} with these values enables

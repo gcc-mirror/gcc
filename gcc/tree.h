@@ -5278,6 +5278,7 @@ extern tree tree_block (tree);
 extern void tree_set_block (tree, tree);
 extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
+extern location_t tree_inlined_location (tree, bool = true);
 extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, poly_int64, tree);
 extern bool virtual_method_call_p (const_tree, bool = false);
@@ -5355,6 +5356,7 @@ extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 extern bool type_with_interoperable_signedness (const_tree);
 extern bitmap get_nonnull_args (const_tree);
 extern int get_range_pos_neg (tree);
+extern bool valid_new_delete_pair_p (tree, tree);
 
 /* Return simplified tree code of type that is used for canonical type
    merging.  */

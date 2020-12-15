@@ -30,24 +30,43 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Complex_Aux;
-
-with System.WCh_Con; use System.WCh_Con;
-with System.WCh_WtS; use System.WCh_WtS;
-
-with Ada.Unchecked_Conversion;
+with Ada.Wide_Text_IO.Float_Aux;
+with System.Val_Flt;  use System.Val_Flt;
+with System.Val_LFlt; use System.Val_LFlt;
+with System.Val_LLF;  use System.Val_LLF;
+with System.WCh_Con;  use System.WCh_Con;
+with System.WCh_WtS;  use System.WCh_WtS;
 
 package body Ada.Wide_Text_IO.Complex_IO is
 
-   package Aux renames Ada.Wide_Text_IO.Complex_Aux;
+   use Complex_Types;
 
-   subtype LLF is Long_Long_Float;
-   --  Type used for calls to routines in Aux
+   package Scalar_Float is new
+      Ada.Wide_Text_IO.Float_Aux (Float, Scan_Float);
 
-   function TFT is new
-     Ada.Unchecked_Conversion (File_Type, Ada.Wide_Text_IO.File_Type);
-   --  This unchecked conversion is to get around a visibility bug in
-   --  GNAT version 2.04w. It should be possible to simply use the
-   --  subtype declared above and do normal checked conversions.
+   package Scalar_Long_Float is new
+      Ada.Wide_Text_IO.Float_Aux (Long_Float, Scan_Long_Float);
+
+   package Scalar_Long_Long_Float is new
+      Ada.Wide_Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+
+   package Aux_Float is new
+      Ada.Wide_Text_IO.Complex_Aux (Float, Scalar_Float);
+
+   package Aux_Long_Float is new
+      Ada.Wide_Text_IO.Complex_Aux (Long_Float, Scalar_Long_Float);
+
+   package Aux_Long_Long_Float is new
+      Ada.Wide_Text_IO.Complex_Aux (Long_Long_Float, Scalar_Long_Long_Float);
+
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Float is OK, where type Long_Float is OK and where type Long_Long_Float
+   --  is needed. These boolean constants are used to test for this, such that
+   --  only code for the relevant case is included in the instance.
+
+   OK_Float : constant Boolean := Real'Base'Digits <= Float'Digits;
+
+   OK_Long_Float : constant Boolean := Real'Base'Digits <= Long_Float'Digits;
 
    ---------
    -- Get --
@@ -62,7 +81,17 @@ package body Ada.Wide_Text_IO.Complex_IO is
       Imag_Item : Real'Base;
 
    begin
-      Aux.Get (TFT (File), LLF (Real_Item), LLF (Imag_Item), Width);
+      if OK_Float then
+         Aux_Float.Get (File, Float (Real_Item), Float (Imag_Item), Width);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Get
+           (File, Long_Float (Real_Item), Long_Float (Imag_Item), Width);
+      else
+         Aux_Long_Long_Float.Get
+           (File, Long_Long_Float (Real_Item), Long_Long_Float (Imag_Item),
+            Width);
+      end if;
+
       Item := (Real_Item, Imag_Item);
 
    exception
@@ -78,7 +107,7 @@ package body Ada.Wide_Text_IO.Complex_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    ---------
@@ -100,7 +129,17 @@ package body Ada.Wide_Text_IO.Complex_IO is
       --  Aux.Gets will raise Data_Error in any case.
 
    begin
-      Aux.Gets (S, LLF (Real_Item), LLF (Imag_Item), Last);
+      if OK_Float then
+         Aux_Float.Gets (S, Float (Real_Item), Float (Imag_Item), Last);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Gets
+           (S, Long_Float (Real_Item), Long_Float (Imag_Item), Last);
+      else
+         Aux_Long_Long_Float.Gets
+           (S, Long_Long_Float (Real_Item), Long_Long_Float (Imag_Item),
+            Last);
+      end if;
+
       Item := (Real_Item, Imag_Item);
 
    exception
@@ -119,7 +158,18 @@ package body Ada.Wide_Text_IO.Complex_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (TFT (File), LLF (Re (Item)), LLF (Im (Item)), Fore, Aft, Exp);
+      if OK_Float then
+         Aux_Float.Put
+           (File, Float (Re (Item)), Float (Im (Item)), Fore, Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Put
+           (File, Long_Float (Re (Item)), Long_Float (Im (Item)), Fore, Aft,
+            Exp);
+      else
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Re (Item)), Long_Long_Float (Im (Item)),
+            Fore, Aft, Exp);
+      end if;
    end Put;
 
    ---------
@@ -133,7 +183,7 @@ package body Ada.Wide_Text_IO.Complex_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    ---------
@@ -149,7 +199,16 @@ package body Ada.Wide_Text_IO.Complex_IO is
       S : String (To'First .. To'Last);
 
    begin
-      Aux.Puts (S, LLF (Re (Item)), LLF (Im (Item)), Aft, Exp);
+      if OK_Float then
+         Aux_Float.Puts (S, Float (Re (Item)), Float (Im (Item)), Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Puts
+           (S, Long_Float (Re (Item)), Long_Float (Im (Item)), Aft, Exp);
+      else
+         Aux_Long_Long_Float.Puts
+           (S, Long_Long_Float (Re (Item)), Long_Long_Float (Im (Item)),
+            Aft, Exp);
+      end if;
 
       for J in S'Range loop
          To (J) := Wide_Character'Val (Character'Pos (S (J)));

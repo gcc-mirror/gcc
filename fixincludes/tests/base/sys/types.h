@@ -9,6 +9,11 @@
 
 
 
+#if defined( AIX_PHYSADR_T_CHECK )
+typedef struct __physadr_s { random stuff } *	physadr_t;
+#endif  /* AIX_PHYSADR_T_CHECK */
+
+
 #if defined( GNU_TYPES_CHECK )
 #if !defined(_GCC_PTRDIFF_T)
 #define _GCC_PTRDIFF_T

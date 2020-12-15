@@ -51,7 +51,7 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
 
    procedure Get (Item : out Enum) is
    begin
-      Get (Current_Input, Item);
+      Get (Current_In, Item);
    end Get;
 
    procedure Get
@@ -88,7 +88,7 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
       Set   : Type_Set := Default_Setting)
    is
    begin
-      Put (Current_Output, Item, Width, Set);
+      Put (Current_Out, Item, Width, Set);
    end Put;
 
    procedure Put
