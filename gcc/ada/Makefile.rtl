@@ -2992,8 +2992,6 @@ ADA_EXCLUDE_SRCS =\
   s-bbsle3.ads s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads \
   s-bbthre.adb s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb \
   s-bbtime.ads s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
-  s-gcc.adb    s-gcc.ads    s-gccdiv.adb s-gccdiv.ads \
-  s-gccshi.adb s-gccshi.ads \
   s-init.ads   s-init.adb   s-linux.ads  s-macres.ads \
   s-memcom.adb s-memcom.ads s-memmov.adb s-memmov.ads s-memset.adb \
   s-memset.ads s-mufalo.adb s-mufalo.ads s-musplo.adb s-musplo.ads \
