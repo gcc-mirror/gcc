@@ -30,11 +30,11 @@
 
 #include "rust-lex.h"
 #include "rust-parse.h"
-#include "rust-scan.h"
 #include "rust-macro-expand.h"
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
+#include "rust-compile.h"
 
 extern Linemap *
 rust_get_linemap ();
@@ -529,6 +529,9 @@ Session::parse_file (const char *filename)
       // TODO: what do I dump here? resolved names? AST with resolved names?
     }
 
+  if (saw_errors ())
+    return;
+
   // lower AST to HIR
   HIR::Crate hir = lower_ast (parsed_crate);
   if (options.dump_option == CompileOptions::HIR_DUMP)
@@ -537,6 +540,9 @@ Session::parse_file (const char *filename)
       return;
     }
 
+  if (saw_errors ())
+    return;
+
   // type resolve
   type_resolution (hir);
 
@@ -544,7 +550,14 @@ Session::parse_file (const char *filename)
     return;
 
   // do compile
-  // Compile::Compilation::Compile (parsed_crate, backend);
+  Compile::Context ctx (backend);
+  Compile::CompileCrate::Compile (hir, &ctx);
+
+  if (saw_errors ())
+    return;
+
+  // pass to GCC
+  ctx.write_to_backend ();
 }
 
 // TODO: actually implement method

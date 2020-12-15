@@ -69,9 +69,6 @@ GRS_OBJS = \
     rust/rust-parse.o \
     rust/rust-ast-full-test.o \
     rust/rust-session-manager.o \
-    rust/rust-name-resolution.o \
-    rust/rust-type-resolution.o \
-    rust/rust-scan.o \
     rust/rust-compile.o \
     rust/rust-macro-expand.o \
     rust/rust-hir-full-test.o \
@@ -258,11 +255,6 @@ rust/%.o: rust/parse/%.cc
 
 # build rust/ast files in rust folder
 rust/%.o: rust/ast/%.cc
-	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
-	$(POSTCOMPILE)
-
-# build rust/analysis files in rust folder
-rust/%.o: rust/analysis/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
