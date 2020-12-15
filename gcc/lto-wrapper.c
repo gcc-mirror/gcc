@@ -1780,6 +1780,8 @@ cont1:
 	{
 	  char buf[256];
 	  init_num_threads ();
+	  if (nthreads_var == 0)
+	    nthreads_var = 1;
 	  if (verbose)
 	    fprintf (stderr, "LTO parallelism level set to %ld\n",
 		     nthreads_var);
