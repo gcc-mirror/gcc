@@ -25,9 +25,8 @@
 
 (define_predicate "addsubx_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 2
-		    || INTVAL (op) == 4
-		    || INTVAL (op) == 8")))
+       (match_test "INTVAL (op) >= 1
+		    && INTVAL (op) <= 3")))
 
 (define_predicate "arith_operand"
   (ior (and (match_code "const_int")

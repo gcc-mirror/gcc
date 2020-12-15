@@ -1581,6 +1581,12 @@ package body Exp_Prag is
                       Expression => Pref));
                end if;
 
+               --  Mark the temporary as coming from a 'Old reference
+
+               if Present (Temp) then
+                  Set_Stores_Attribute_Old_Prefix (Temp);
+               end if;
+
                --  Ensure that the prefix is valid
 
                if Validity_Checks_On and then Validity_Check_Operands then

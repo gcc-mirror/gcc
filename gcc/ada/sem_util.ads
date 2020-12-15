@@ -765,6 +765,10 @@ package Sem_Util is
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  unit, if any. If none, then returns Empty.
 
+   function Enclosing_HSS (Stmt : Node_Id) return Node_Id;
+   --  Returns the nearest handled sequence of statements that encloses a given
+   --  statement, or Empty.
+
    function Enclosing_Lib_Unit_Entity
      (E : Entity_Id := Current_Scope) return Entity_Id;
    --  Returns the entity of enclosing library unit node which is the root of

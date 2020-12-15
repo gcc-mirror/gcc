@@ -1165,7 +1165,7 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
   json::array *lineso = new json::array ();
   root->set ("lines", lineso);
 
-  function_info *last_non_group_fn = NULL;
+  vector<function_info *> last_non_group_fns;
 
   for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
@@ -1177,7 +1177,7 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 	     it2 != fns->end (); it2++)
 	  {
 	    if (!(*it2)->is_group)
-	      last_non_group_fn = *it2;
+	      last_non_group_fns.push_back (*it2);
 
 	    vector<line_info> &lines = (*it2)->lines;
 	    /* The LINES array is allocated only for group functions.  */
@@ -1191,9 +1191,17 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 
       /* Follow with lines associated with the source file.  */
       if (line_num < src->lines.size ())
-	output_intermediate_json_line (lineso, &src->lines[line_num], line_num,
-				       (last_non_group_fn != NULL
-					? last_non_group_fn->m_name : NULL));
+	{
+	  unsigned size = last_non_group_fns.size ();
+	  function_info *last_fn = size > 0 ? last_non_group_fns[size - 1] : NULL;
+	  const char *fname = last_fn ? last_fn->m_name : NULL;
+	  output_intermediate_json_line (lineso, &src->lines[line_num], line_num,
+					 fname);
+
+	  /* Pop ending function from stack.  */
+	  if (last_fn != NULL && last_fn->end_line == line_num)
+	    last_non_group_fns.pop_back ();
+	}
     }
 }
 

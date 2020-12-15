@@ -50,6 +50,8 @@ package GNAT.Directory_Operations.Iteration is
    --  will pass in the value False on each call to Action. The iterator will
    --  terminate after passing the last matched path to Action or after
    --  returning from a call to Action which sets Quit to True.
+   --  The iterator does not follow symbolic links avoiding possible
+   --  circularities or exploring unrelated directories.
    --  Raises GNAT.Regexp.Error_In_Regexp if File_Pattern is ill formed.
 
    generic

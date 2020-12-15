@@ -1884,9 +1884,7 @@ ix86_option_override_internal (bool main_args_p,
 	     as -mtune=generic.  With native compilers we won't see the
 	     -mtune=native, as it was changed by the driver.  */
       if (!strcmp (opts->x_ix86_tune_string, "native"))
-	{
-	  opts->x_ix86_tune_string = "generic";
-	}
+	opts->x_ix86_tune_string = "generic";
       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
         warning (OPT_Wdeprecated,
 		 main_args_p
@@ -1908,10 +1906,12 @@ ix86_option_override_internal (bool main_args_p,
 
       /* opts->x_ix86_tune_string is set to opts->x_ix86_arch_string
 	 or defaulted.  We need to use a sensible tune option.  */
-      if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
-	{
-	  opts->x_ix86_tune_string = "generic";
-	}
+      if (!strncmp (opts->x_ix86_tune_string, "x86-64", 6)
+	  && (opts->x_ix86_tune_string[6] == '\0'
+	      || (!strcmp (opts->x_ix86_tune_string + 6, "-v2")
+		  || !strcmp (opts->x_ix86_tune_string + 6, "-v3")
+		  || !strcmp (opts->x_ix86_tune_string + 6, "-v4"))))
+	opts->x_ix86_tune_string = "generic";
     }
 
   if (opts->x_ix86_stringop_alg == rep_prefix_8_byte
@@ -2081,17 +2081,6 @@ ix86_option_override_internal (bool main_args_p,
 	  {
 	    error ("CPU you selected does not support x86-64 "
 		   "instruction set");
-	    return false;
-	  }
-
-	/* The feature-only micro-architecture levels that use
-	   PTA_NO_TUNE are only defined for the x86-64 psABI.  */
-	if ((processor_alias_table[i].flags & PTA_NO_TUNE) != 0
-	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
-		|| opts->x_ix86_abi != SYSV_ABI))
-	  {
-	    error (G_("%qs architecture level is only defined"
-		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
 	    return false;
 	  }
 

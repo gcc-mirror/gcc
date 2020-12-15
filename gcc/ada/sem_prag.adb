@@ -21364,16 +21364,11 @@ package body Sem_Prag is
                --  package does not trigger the required initialization of the
                --  run-time library.
 
-               declare
-                  Discard : Entity_Id;
-                  pragma Warnings (Off, Discard);
-               begin
-                  if Restricted_Profile then
-                     Discard := RTE (RE_Activate_Restricted_Tasks);
-                  else
-                     Discard := RTE (RE_Activate_Tasks);
-                  end if;
-               end;
+               if Restricted_Profile then
+                  Discard_Node (RTE (RE_Activate_Restricted_Tasks));
+               else
+                  Discard_Node (RTE (RE_Activate_Tasks));
+               end if;
 
             --  Task or Protected, must be of type Integer
 
@@ -30656,8 +30651,10 @@ package body Sem_Prag is
       --  The pragma appears inside the statements of a subprogram body. This
       --  placement is the result of subprogram contract expansion.
 
-      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
-         return Parent (Context);
+      elsif Is_Statement (Context)
+        and then Present (Enclosing_HSS (Context))
+      then
+         return Parent (Enclosing_HSS (Context));
 
       --  The pragma appears inside the declarative part of a package body
 

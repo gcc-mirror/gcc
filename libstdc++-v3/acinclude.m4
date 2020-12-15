@@ -2868,24 +2868,30 @@ AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
 
 dnl
-dnl Check for which I/O library to use:  stdio, or something specific.
+dnl Check for which I/O library to use:  stdio and POSIX, or pure stdio.
 dnl
-dnl Default is stdio.
+dnl Default is stdio_posix.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
   AC_MSG_CHECKING([for underlying I/O to use])
   GLIBCXX_ENABLE(cstdio,stdio,[[[=PACKAGE]]],
-    [use target-specific I/O package], [permit stdio])
+    [use target-specific I/O package], [permit stdio|stdio_posix|stdio_pure])
 
-  # Now that libio has been removed, you can have any color you want as long
-  # as it's black.  This is one big no-op until other packages are added, but
-  # showing the framework never hurts.
+  # The only available I/O model is based on stdio, via basic_file_stdio.
+  # The default "stdio" is actually "stdio + POSIX" because it uses fdopen(3)
+  # to get a file descriptor and then uses read(3) and write(3) with it.
+  # The "stdio_pure" model doesn't use fdopen and only uses FILE* for I/O.
   case ${enable_cstdio} in
-    stdio)
+    stdio*)
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
       AC_MSG_RESULT(stdio)
+
+      if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
+		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      fi
       ;;
   esac
 

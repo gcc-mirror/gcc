@@ -1,7 +1,7 @@
 /* PR target/78102 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-sse4.2 -msse4.1" } */
-/* { dg-final { scan-assembler-times "pcmpeqq" 3 } } */
+/* { dg-final { scan-assembler-times "pcmpeq" 4 } } */
 
 #include <x86intrin.h>
 

@@ -3994,9 +3994,11 @@ package body Exp_Util is
           Out_Present         => True,
           Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
 
-      --  The new procedure declaration is inserted immediately after the
-      --  function declaration. The processing in Build_Procedure_Body_Form
-      --  relies on this order.
+      --  The new procedure declaration is inserted before the function
+      --  declaration. The processing in Build_Procedure_Body_Form relies on
+      --  this order. Note that we insert before because in the case of a
+      --  function body with no separate spec, we do not want to insert the
+      --  new spec after the body which will later get rewritten.
 
       Proc_Decl :=
         Make_Subprogram_Declaration (Loc,
@@ -4006,7 +4008,7 @@ package body Exp_Util is
                 Make_Defining_Identifier (Loc, Chars (Subp)),
               Parameter_Specifications => Proc_Formals));
 
-      Insert_After_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
+      Insert_Before_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
 
       --  Entity of procedure must remain invisible so that it does not
       --  overload subsequent references to the original function.

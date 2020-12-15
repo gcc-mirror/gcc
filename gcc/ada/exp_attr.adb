@@ -8311,27 +8311,25 @@ package body Exp_Attr is
       --  All we do is use the root type (historically this dealt with
       --  VAX-float .. to be cleaned up further later ???)
 
-      Fat_Type := Rtyp;
+      if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+         Fat_Type := Standard_Float;
+         Fat_Pkg  := RE_Attr_Float;
 
-      if Fat_Type = Standard_Short_Float then
-         Fat_Pkg := RE_Attr_Short_Float;
+      elsif Rtyp = Standard_Long_Float then
+         Fat_Type := Standard_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Float;
 
-      elsif Fat_Type = Standard_Float then
-         Fat_Pkg := RE_Attr_Float;
-
-      elsif Fat_Type = Standard_Long_Float then
-         Fat_Pkg := RE_Attr_Long_Float;
-
-      elsif Fat_Type = Standard_Long_Long_Float then
-         Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Rtyp = Standard_Long_Long_Float then
+         Fat_Type := Standard_Long_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Long_Float;
 
          --  Universal real (which is its own root type) is treated as being
          --  equivalent to Standard.Long_Long_Float, since it is defined to
          --  have the same precision as the longest Float type.
 
-      elsif Fat_Type = Universal_Real then
+      elsif Rtyp = Universal_Real then
          Fat_Type := Standard_Long_Long_Float;
-         Fat_Pkg := RE_Attr_Long_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Long_Float;
 
       else
          raise Program_Error;

@@ -1,3 +1,10 @@
+2020-12-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98204
+	* c-typeck.c (pointer_diff): Do not emit a top-level
+	sanitization.
+	(build_binary_op): Likewise.
+
 2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_allocate): New.

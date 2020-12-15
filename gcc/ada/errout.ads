@@ -902,6 +902,11 @@ package Errout is
    --  overridden interface primitive Iface_Prim) indicating wrong mode of the
    --  first formal (RM 9.4(11.9/3)).
 
+   procedure Error_Msg_Ada_2005_Extension (Extension : String);
+   --  Analogous to Error_Msg_Ada_2012_Feature, but phrase the message using
+   --  "extension" and not "feature". This routine is only used in the parser,
+   --  so the error is always placed at the Token_Ptr.
+
    procedure Error_Msg_Ada_2012_Feature (Feature : String; Loc : Source_Ptr);
    --  If not operating in Ada 2012 mode or higher, posts errors complaining
    --  that Feature is only supported in Ada 2012, with appropriate suggestions

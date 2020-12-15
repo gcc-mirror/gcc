@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // { dg-options "-D_GLIBCXX_ASSERTIONS" }
-// { dg-do run { target c++11  xfail *-*-* } }
+// { dg-do run { target c++14 xfail *-*-* } }
 
 #include <array>
 

@@ -73,12 +73,54 @@ gfc_advance_chain (tree t, int n)
   return t;
 }
 
+static int num_var;
+
+#define MAX_PREFIX_LEN 20
+
+static tree
+create_var_debug_raw (tree type, const char *prefix)
+{
+  /* Space for prefix + "_" + 10-digit-number + \0.  */
+  char name_buf[MAX_PREFIX_LEN + 1 + 10 + 1];
+  tree t;
+  int i;
+
+  if (prefix == NULL)
+    prefix = "gfc";
+  else
+    gcc_assert (strlen (prefix) <= MAX_PREFIX_LEN);
+
+  for (i = 0; prefix[i] != 0; i++)
+    name_buf[i] = gfc_wide_toupper (prefix[i]);
+
+  snprintf (name_buf + i, sizeof (name_buf) - i, "_%d", num_var++);
+
+  t = build_decl (input_location, VAR_DECL, get_identifier (name_buf), type);
+
+  /* We want debug info for it.  */
+  DECL_IGNORED_P (t) = 0;
+  /* It should not be nameless.  */
+  DECL_NAMELESS (t) = 0;
+
+  /* Make the variable writable.  */
+  TREE_READONLY (t) = 0;
+
+  DECL_EXTERNAL (t) = 0;
+  TREE_STATIC (t) = 0;
+  TREE_USED (t) = 1;
+
+  return t;
+}
+
 /* Creates a variable declaration with a given TYPE.  */
 
 tree
 gfc_create_var_np (tree type, const char *prefix)
 {
   tree t;
+
+  if (flag_debug_aux_vars)
+    return create_var_debug_raw (type, prefix);
 
   t = create_tmp_var_raw (type, prefix);
 

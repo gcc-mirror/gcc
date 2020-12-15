@@ -403,6 +403,106 @@ package body Ada.Wide_Wide_Text_IO.Generic_Aux is
    end Load_Integer;
 
    ---------------
+   -- Load_Real --
+   ---------------
+
+   procedure Load_Real
+     (File : File_Type;
+      Buf  : out String;
+      Ptr  : in out Natural)
+   is
+      Loaded   : Boolean;
+
+   begin
+      --  Skip initial blanks and load possible sign
+
+      Load_Skip (File);
+      Load (File, Buf, Ptr, '+', '-');
+
+      --  Case of .nnnn
+
+      Load (File, Buf, Ptr, '.', Loaded);
+
+      if Loaded then
+         Load_Digits (File, Buf, Ptr, Loaded);
+
+         --  Hopeless junk if no digits loaded
+
+         if not Loaded then
+            return;
+         end if;
+
+      --  Otherwise must have digits to start
+
+      else
+         Load_Digits (File, Buf, Ptr, Loaded);
+
+         --  Hopeless junk if no digits loaded
+
+         if not Loaded then
+            return;
+         end if;
+
+         --  Deal with based case. We recognize either the standard '#' or the
+         --  allowed alternative replacement ':' (see RM J.2(3)).
+
+         Load (File, Buf, Ptr, '#', ':', Loaded);
+
+         if Loaded then
+
+            --  Case of nnn#.xxx#
+
+            Load (File, Buf, Ptr, '.', Loaded);
+
+            if Loaded then
+               Load_Extended_Digits (File, Buf, Ptr);
+               Load (File, Buf, Ptr, '#', ':');
+
+            --  Case of nnn#xxx.[xxx]# or nnn#xxx#
+
+            else
+               Load_Extended_Digits (File, Buf, Ptr);
+               Load (File, Buf, Ptr, '.', Loaded);
+
+               if Loaded then
+                  Load_Extended_Digits (File, Buf, Ptr);
+               end if;
+
+               --  As usual, it seems strange to allow mixed base characters,
+               --  but that is what ACVC tests expect, see CE3804M, case (3).
+
+               Load (File, Buf, Ptr, '#', ':');
+            end if;
+
+         --  Case of nnn.[nnn] or nnn
+
+         else
+            --  Prevent the potential processing of '.' in cases where the
+            --  initial digits have a trailing underscore.
+
+            if Buf (Ptr) = '_' then
+               return;
+            end if;
+
+            Load (File, Buf, Ptr, '.', Loaded);
+
+            if Loaded then
+               Load_Digits (File, Buf, Ptr);
+            end if;
+         end if;
+      end if;
+
+      --  Deal with exponent
+
+      Load (File, Buf, Ptr, 'E', 'e', Loaded);
+
+      if Loaded then
+         Load (File, Buf, Ptr, '+', '-');
+         Load_Digits (File, Buf, Ptr);
+      end if;
+   end Load_Real;
+
+   ---------------
    -- Load_Skip --
    ---------------
 

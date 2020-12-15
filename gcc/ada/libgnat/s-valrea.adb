@@ -36,14 +36,21 @@ with System.Value_R;
 
 package body System.Val_Real is
 
-   package Impl is new Value_R (Long_Long_Unsigned, Floating => True);
+   pragma Assert (Num'Machine_Mantissa <= Uns'Size);
+   --  We need an unsigned type large enough to represent the mantissa
+
+   Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
+   --  We use the precision of the floating-point type
+
+   package Impl is new Value_R (Uns, Precision_Limit, Floating => True);
 
    function Integer_to_Real
      (Str   : String;
-      Val   : Long_Long_Unsigned;
+      Val   : Uns;
       Base  : Unsigned;
       Scale : Integer;
-      Minus : Boolean) return Long_Long_Float;
+      Extra : Unsigned;
+      Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
 
    ---------------------
@@ -52,26 +59,44 @@ package body System.Val_Real is
 
    function Integer_to_Real
      (Str   : String;
-      Val   : Long_Long_Unsigned;
+      Val   : Uns;
       Base  : Unsigned;
       Scale : Integer;
-      Minus : Boolean) return Long_Long_Float
+      Extra : Unsigned;
+      Minus : Boolean) return Num
    is
+      pragma Assert (Base in 2 .. 16);
+
       pragma Unsuppress (Range_Check);
 
-      R_Val : Long_Long_Float;
+      R_Val : Num;
+      S     : Integer := Scale;
 
    begin
       --  We call the floating-point processor reset routine so we can be sure
-      --  that the processor is properly set for conversions. This is notably
+      --  that the x87 FPU is properly set for conversions. This is especially
       --  needed on Windows, where calls to the operating system randomly reset
       --  the processor into 64-bit mode.
 
-      System.Float_Control.Reset;
+      if Num'Machine_Mantissa = 64 then
+         System.Float_Control.Reset;
+      end if;
+
+      --  Take into account the extra digit
+
+      R_Val := Num (Val);
+      if Extra > 0 then
+         R_Val := R_Val * Num (Base) + Num (Extra);
+         S := S - 1;
+      end if;
 
       --  Compute the final value
 
-      R_Val := Long_Long_Float (Val) * Long_Long_Float (Base) ** Scale;
+      if S < 0 then
+         R_Val := R_Val / Num (Base) ** (-S);
+      else
+         R_Val := R_Val * Num (Base) ** S;
+      end if;
 
       --  Finally deal with initial minus sign, note that this processing is
       --  done even if Uval is zero, so that -0.0 is correctly interpreted.
@@ -87,38 +112,37 @@ package body System.Val_Real is
    ---------------
 
    function Scan_Real
-      (Str : String;
-       Ptr : not null access Integer;
-       Max : Integer)
-      return Long_Long_Float
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer) return Num
    is
       Base  : Unsigned;
       Scale : Integer;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Long_Long_Unsigned;
+      Val   : Uns;
 
    begin
       Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
    end Scan_Real;
 
    ----------------
    -- Value_Real --
    ----------------
 
-   function Value_Real (Str : String) return Long_Long_Float is
+   function Value_Real (Str : String) return Num is
       Base  : Unsigned;
       Scale : Integer;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Long_Long_Unsigned;
+      Val   : Uns;
 
    begin
       Val := Impl.Value_Raw_Real (Str, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
    end Value_Real;
 
 end System.Val_Real;

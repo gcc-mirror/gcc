@@ -23,39 +23,39 @@ package Ada.Wide_Wide_Text_IO.Complex_IO is
    use Complex_Types;
 
    Default_Fore : Field := 2;
-   Default_Aft  : Field := Real'Digits - 1;
+   Default_Aft  : Field := Complex_Types.Real'Digits - 1;
    Default_Exp  : Field := 3;
 
    procedure Get
      (File  : File_Type;
-      Item  : out Complex;
+      Item  : out Complex_Types.Complex;
       Width : Field := 0);
 
    procedure Get
-     (Item  : out Complex;
+     (Item  : out Complex_Types.Complex;
       Width : Field := 0);
 
    procedure Put
      (File : File_Type;
-      Item : Complex;
+      Item : Complex_Types.Complex;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp);
 
    procedure Put
-     (Item : Complex;
+     (Item : Complex_Types.Complex;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp);
 
    procedure Get
      (From : Wide_Wide_String;
-      Item : out Complex;
+      Item : out Complex_Types.Complex;
       Last : out Positive);
 
    procedure Put
      (To   : out Wide_Wide_String;
-      Item : Complex;
+      Item : Complex_Types.Complex;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp);
 

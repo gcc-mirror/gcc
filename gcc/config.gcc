@@ -4519,10 +4519,8 @@ case "${target}" in
 					case " $x86_64_archs " in
 					*" ${val} "*)
 						# Disallow x86-64-v* for --with-cpu=/--with-tune=
-						# or --with-arch= or --with-arch_32=
-						# It can be only specified in --with-arch_64=
 						case "x$which$val" in
-						xcpu*x86-64-v*|xtune*x86-64-v*|xarchx86-64-v*|xarch_32x86-64-v*)
+						xcpu*x86-64-v*|xtune*x86-64-v*)
 							echo "Unknown CPU given in --with-$which=$val." 1>&2
 							exit 1
 							;;

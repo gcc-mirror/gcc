@@ -43,7 +43,7 @@
 private generic
    type Num is digits <>;
 
-package Ada.Text_IO.Float_IO is
+package Ada.Text_IO.Float_IO with SPARK_Mode => On is
 
    Default_Fore : Field := 2;
    Default_Aft  : Field := Num'Digits - 1;

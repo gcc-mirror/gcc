@@ -1,3 +1,26 @@
+2020-12-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/array/debug/back1_neg.cc: Target c++14 because assertion
+	is disabled in C++11.
+	* testsuite/23_containers/array/debug/front1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator1_neg.cc: Likewise.
+
+2020-12-14  Martin Sebor  <msebor@redhat.com>
+
+	* testsuite/ext/vstring/requirements/exception/basic.cc: Suppress
+	a false positive warning.
+	* testsuite/ext/vstring/requirements/exception/propagation_consistent.cc:
+	  Same.
+
+2020-12-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/array/debug/back2_neg.cc: target c++14 because assertion
+	for constexpr is disabled in C++11.
+	* testsuite/23_containers/array/debug/front2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc: Include <memory>
+	for shared_ptr.
+
 2020-12-12  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/macros.h (__glibcxx_check_can_increment_range): Replace
