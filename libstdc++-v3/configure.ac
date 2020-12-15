@@ -90,7 +90,7 @@ AC_SYS_LARGEFILE
 GLIBCXX_CONFIGURE
 
 # Libtool setup.
-if test "x${with_newlib}" != "xyes"; then
+if test "x${with_newlib}" != "xyes" && test "x${with_avrlibc}" != "xyes"; then
   AC_LIBTOOL_DLOPEN
 fi
 AM_PROG_LIBTOOL

@@ -5899,7 +5899,7 @@ $as_echo "$as_me: OS config directory is $os_include_dir" >&6;}
 
 
 # Libtool setup.
-if test "x${with_newlib}" != "xyes"; then
+if test "x${with_newlib}" != "xyes" && test "x${with_avrlibc}" != "xyes"; then
   enable_dlopen=yes
 
 
