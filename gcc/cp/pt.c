@@ -10805,14 +10805,16 @@ uses_template_parms (tree t)
   return dependent_p;
 }
 
-/* Returns true iff current_function_decl is an incompletely instantiated
+/* Returns true iff we're processing an incompletely instantiated function
    template.  Useful instead of processing_template_decl because the latter
    is set to 0 during instantiate_non_dependent_expr.  */
 
 bool
 in_template_function (void)
 {
-  tree fn = current_function_decl;
+  /* Inspect the less volatile cfun->decl instead of current_function_decl;
+     the latter might get set for e.g. access checking during satisfaction.  */
+  tree fn = cfun ? cfun->decl : NULL_TREE;
   bool ret;
   ++processing_template_decl;
   ret = (fn && DECL_LANG_SPECIFIC (fn)
