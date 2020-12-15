@@ -2054,6 +2054,55 @@ public:
 
     // strip match cases
     auto &match_cases = expr.get_match_cases ();
+    for (auto it = match_cases.begin (); it != match_cases.end ();)
+      {
+	auto &match_case = *it;
+
+	// strip match case based on outer attributes in match arm
+	auto &match_arm = match_case.get_arm ();
+	expander.expand_cfg_attrs (match_arm.get_outer_attrs ());
+	if (expander.fails_cfg (match_arm.get_outer_attrs ()))
+	  {
+	    // strip match case
+	    it = match_cases.erase (it);
+	    continue;
+	  }
+
+	for (auto &pattern : match_arm.get_patterns ())
+	  {
+	    pattern->accept_vis (*this);
+	    if (pattern->is_marked_for_strip ())
+	      rust_error_at (pattern->get_locus_slow (),
+			     "cannot strip pattern in this position");
+	  }
+
+	/* assuming that guard expression cannot be stripped as
+	 * strictly speaking you would have to strip the whole guard to
+	 * make syntactical sense, which you can't do. as such, only
+	 * strip sub-expressions */
+	if (match_arm.has_match_arm_guard ())
+	  {
+	    auto &guard_expr = match_arm.get_guard_expr ();
+	    guard_expr->accept_vis (*this);
+	    if (guard_expr->is_marked_for_strip ())
+	      rust_error_at (guard_expr->get_locus_slow (),
+			     "cannot strip expression in this position - outer "
+			     "attributes not allowed");
+	  }
+
+	// strip sub-expressions from match cases
+	auto &case_expr = match_case.get_expr ();
+	case_expr->accept_vis (*this);
+	if (case_expr->is_marked_for_strip ())
+	  rust_error_at (case_expr->get_locus_slow (),
+			 "cannot strip expression in this position - outer "
+			 "attributes not allowed");
+
+	// increment to next case if haven't continued
+	++it;
+      }
+
+#if 0
     for (int i = 0; i < match_cases.size ();)
       {
 	auto &match_case = match_cases[i];
@@ -2101,6 +2150,7 @@ public:
 	// increment to next case if haven't continued
 	i++;
       }
+#endif
   }
   void visit (AST::AwaitExpr &expr) override
   {
@@ -2864,6 +2914,28 @@ public:
     /* strip function parameters if required - this is specifically
      * allowed by spec */
     auto &params = item.get_function_params ();
+    for (auto it = params.begin (); it != params.end ();)
+      {
+	auto &param = *it;
+
+	auto &param_attrs = param.get_outer_attrs ();
+	expander.expand_cfg_attrs (param_attrs);
+	if (expander.fails_cfg (param_attrs))
+	  {
+	    it = params.erase (it);
+	    continue;
+	  }
+
+	auto &type = param.get_type ();
+	type->accept_vis (*this);
+	if (type->is_marked_for_strip ())
+	  rust_error_at (type->get_locus_slow (),
+			 "cannot strip type in this position");
+
+	// increment if nothing else happens
+	++it;
+      }
+#if 0
     for (int i = 0; i < params.size ();)
       {
 	auto &param = params[i];
@@ -2885,6 +2957,7 @@ public:
 	// increment if nothing else happens
 	i++;
       }
+#endif
     /* NOTE: these are extern function params, which may have different
      * rules and restrictions to "normal" function params. So expansion
      * handled separately. */
@@ -3419,6 +3492,28 @@ public:
 
     // presumably function params can be stripped
     auto &params = type.get_function_params ();
+    for (auto it = params.begin (); it != params.end ();)
+      {
+	auto &param = *it;
+
+	auto &param_attrs = param.get_outer_attrs ();
+	expander.expand_cfg_attrs (param_attrs);
+	if (expander.fails_cfg (param_attrs))
+	  {
+	    it = params.erase (it);
+	    continue;
+	  }
+
+	auto &type = param.get_type ();
+	type->accept_vis (*this);
+	if (type->is_marked_for_strip ())
+	  rust_error_at (type->get_locus_slow (),
+			 "cannot strip type in this position");
+
+	// increment if nothing else happens
+	++it;
+      }
+#if 0
     for (int i = 0; i < params.size ();)
       {
 	auto &param = params[i];
@@ -3440,6 +3535,7 @@ public:
 	// increment if nothing else happens
 	i++;
       }
+#endif
 
     /* TODO: assuming that variadic nature cannot be stripped. If this
      * is not true, then have code here to do so. */
@@ -3574,6 +3670,20 @@ MacroExpander::expand_crate ()
   // expand attributes recursively and strip items if required
   AttrVisitor attr_visitor (*this);
   auto &items = crate.items;
+  for (auto it = items.begin (); it != items.end ();)
+    {
+      auto &item = *it;
+
+      // mark for stripping if required
+      item->accept_vis (attr_visitor);
+
+      if (item->is_marked_for_strip ())
+	it = items.erase (it);
+      else
+	++it;
+    }
+
+#if 0
   for (int i = 0; i < items.size ();)
     {
       auto &item = items[i];
@@ -3586,6 +3696,7 @@ MacroExpander::expand_crate ()
       else
 	i++;
     }
+#endif
   // TODO: should recursive attribute and macro expansion be done in the same
   // transversal? Or in separate ones like currently?
 
