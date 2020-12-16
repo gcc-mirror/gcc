@@ -29,6 +29,10 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE
 #define _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE 1
 
+#pragma GCC system_header
+
+#if __cplusplus >= 201402L
+
 #include <memory>			// align, uses_allocator, __uses_alloc
 #include <experimental/utility>		// pair, experimental::erased_type
 #include <atomic>			// atomic
@@ -528,4 +532,5 @@ namespace pmr {
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+#endif // C++14
 #endif // _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE
