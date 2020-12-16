@@ -1285,7 +1285,11 @@ Optional Features:
   --enable-maintainer-mode
                           enable maintainer mode. Add rules to rebuild
                           configurey bits
-  --enable-checking       enable run-time checking
+  --enable-checking[=LIST]
+                          enable expensive run-time checks. With LIST, enable
+                          only specific categories of checks. Categories are:
+                          yes,no,all,none,release. Flags are: misc,valgrind or
+                          other strings
   --enable-exceptions     enable exceptions & rtti
 
 Optional Packages:
@@ -2708,30 +2712,45 @@ _ACEOF
 
 # Check whether --enable-checking was given.
 if test "${enable_checking+set}" = set; then :
-  enableval=$enable_checking;
+  enableval=$enable_checking; ac_checking_flags="${enableval}"
 else
-  enable_checking="yes"
+
+# Determine the default checks.
+if test x$is_release = x ; then
+  ac_checking_flags=yes
+else
+  ac_checking_flags=release
+fi
 fi
 
-case $enable_checking in #(
-  yes|all|yes,*) :
-    nms_checking=yes ;; #(
-  no|none|release) :
-    nms_checking= ;; #(
-  *) :
-    as_fn_error $? "unknown check \"$enable_checking\"" "$LINENO" 5 ;;
-esac
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking checking" >&5
-$as_echo_n "checking checking... " >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${nms_checking:-no}" >&5
-$as_echo "${nms_checking:-no}" >&6; }
-if test "$nms_checking" = yes ; then
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in release $ac_checking_flags
+do
+	case $check in
+	# these set all the flags to specific states
+	yes|all) ac_checking=1 ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
+	no|none) ac_checking= ; ac_assert_checking= ; ac_valgrind_checking= ;;
+	release) ac_checking= ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
+	# these enable particular checks
+	assert) ac_assert_checking=1 ;;
+	misc) ac_checking=1 ;;
+	valgrind) ac_valgrind_checking=1 ;;
+	# accept
+	*) ;;
+	esac
+done
+IFS="$ac_save_IFS"
 
-cat >>confdefs.h <<_ACEOF
-#define NMS_CHECKING 0${nms_checking:+1}
-_ACEOF
+if test x$ac_checking != x ; then
+
+$as_echo "#define NMS_CHECKING 1" >>confdefs.h
+
+else
+  $as_echo "#define NMS_CHECKING 0" >>confdefs.h
 
 fi
+
+
 # Check whether --enable-exceptions was given.
 if test "${enable_exceptions+set}" = set; then :
   enableval=$enable_exceptions;
