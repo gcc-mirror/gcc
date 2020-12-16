@@ -1,3 +1,13 @@
+2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98277
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Move setting of
+	DECL_INITIAL for manifest constants to ...
+	(get_symbol_decl): ... here.
+
 2020-11-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
