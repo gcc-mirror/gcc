@@ -5714,56 +5714,56 @@ __extension__ extern __inline int8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vneg_s8 (int8x8_t __a)
 {
-  return (int8x8_t)__builtin_neon_vnegv8qi (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vneg_s16 (int16x4_t __a)
 {
-  return (int16x4_t)__builtin_neon_vnegv4hi (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vneg_s32 (int32x2_t __a)
 {
-  return (int32x2_t)__builtin_neon_vnegv2si (__a);
+  return -__a;
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vneg_f32 (float32x2_t __a)
 {
-  return (float32x2_t)__builtin_neon_vnegv2sf (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vnegq_s8 (int8x16_t __a)
 {
-  return (int8x16_t)__builtin_neon_vnegv16qi (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vnegq_s16 (int16x8_t __a)
 {
-  return (int16x8_t)__builtin_neon_vnegv8hi (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vnegq_s32 (int32x4_t __a)
 {
-  return (int32x4_t)__builtin_neon_vnegv4si (__a);
+  return -__a;
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vnegq_f32 (float32x4_t __a)
 {
-  return (float32x4_t)__builtin_neon_vnegv4sf (__a);
+  return -__a;
 }
 
 __extension__ extern __inline int8x8_t
