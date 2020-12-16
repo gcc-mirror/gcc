@@ -13,7 +13,7 @@ status reports from Philip Herron and tast tracking overviews.
 Fetch dependancies for ubuntu:
 
 ```bash
-$ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib
+$ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib dejagnu
 ```
 
 Clone the repository
