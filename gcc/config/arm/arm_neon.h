@@ -6539,28 +6539,28 @@ __extension__ extern __inline int8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_s8 (uint64_t __a)
 {
-  return (int8x8_t)__builtin_neon_vcreatev8qi ((__builtin_neon_di) __a);
+  return (int8x8_t) __a;
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_s16 (uint64_t __a)
 {
-  return (int16x4_t)__builtin_neon_vcreatev4hi ((__builtin_neon_di) __a);
+  return (int16x4_t) __a;
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_s32 (uint64_t __a)
 {
-  return (int32x2_t)__builtin_neon_vcreatev2si ((__builtin_neon_di) __a);
+  return (int32x2_t) __a;
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_s64 (uint64_t __a)
 {
-  return (int64x1_t)__builtin_neon_vcreatedi ((__builtin_neon_di) __a);
+  return (int64x1_t) {__a};
 }
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -6576,49 +6576,49 @@ __extension__ extern __inline float32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_f32 (uint64_t __a)
 {
-  return (float32x2_t)__builtin_neon_vcreatev2sf ((__builtin_neon_di) __a);
+  return (float32x2_t) __a;
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_u8 (uint64_t __a)
 {
-  return (uint8x8_t)__builtin_neon_vcreatev8qi ((__builtin_neon_di) __a);
+  return (uint8x8_t) __a;
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_u16 (uint64_t __a)
 {
-  return (uint16x4_t)__builtin_neon_vcreatev4hi ((__builtin_neon_di) __a);
+  return (uint16x4_t) __a;
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_u32 (uint64_t __a)
 {
-  return (uint32x2_t)__builtin_neon_vcreatev2si ((__builtin_neon_di) __a);
+  return (uint32x2_t) __a;
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_u64 (uint64_t __a)
 {
-  return (uint64x1_t)__builtin_neon_vcreatedi ((__builtin_neon_di) __a);
+  return (uint64x1_t) {__a};
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_p8 (uint64_t __a)
 {
-  return (poly8x8_t)__builtin_neon_vcreatev8qi ((__builtin_neon_di) __a);
+  return (poly8x8_t) __a;
 }
 
 __extension__ extern __inline poly16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_p16 (uint64_t __a)
 {
-  return (poly16x4_t)__builtin_neon_vcreatev4hi ((__builtin_neon_di) __a);
+  return (poly16x4_t) __a;
 }
 
 __extension__ extern __inline int8x8_t
