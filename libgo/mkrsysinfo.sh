@@ -26,6 +26,7 @@ grep -v '^// ' gen-sysinfo.go | \
   grep -v '^type _*locale[_ ]' | \
   grep -v 'in6_addr' | \
   grep -v 'sockaddr_in6' | \
+  egrep -v '^const _*FLT(64|128)_(NORM_)?MAX' | \
   sed -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1timeval\2/g' \
       -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1timespec\2/g' \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1timespec\2/g' \
