@@ -5679,6 +5679,9 @@ case "$target:$tm_file" in
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
+     *le-*-freebsd*)
+     emul_name="-melf64lppc_fbsd"
+      ;;
      *-*-freebsd*)
      emul_name="-melf64ppc_fbsd"
       ;;

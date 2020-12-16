@@ -160,8 +160,8 @@ extern int dot_symbols;
 #define ASM_SPEC64 "-a64"
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
-%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
-%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
+  ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #undef	SUBSUBTARGET_EXTRA_SPECS
 #define SUBSUBTARGET_EXTRA_SPECS					\
@@ -183,9 +183,15 @@ extern int dot_symbols;
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
+#undef  DEFAULT_ASM_ENDIAN
 #define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
-  
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define DEFAULT_ASM_ENDIAN " -mlittle"
+#define LINK_OS_FREEBSD_SPEC64 "-melf64lppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
+#else
+#define DEFAULT_ASM_ENDIAN " -mbig"
 #define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
+#endif
 
 #undef	MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "m64" }

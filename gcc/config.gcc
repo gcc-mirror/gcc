@@ -2618,6 +2618,10 @@ powerpc*-*-freebsd*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	case ${target} in
+	    powerpc*le-*-*)
+		tm_file="${tm_file} rs6000/sysv4le.h" ;;
+	esac
+	case ${target} in
 	     powerpc64*)
 	    	tm_file="${tm_file} rs6000/default64.h rs6000/freebsd64.h"
 		tmake_file="${tmake_file} rs6000/t-freebsd64"
