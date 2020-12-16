@@ -29,7 +29,8 @@ jobs:
                   libmpc-dev \
                   build-essential \
                   gcc-multilib \
-                  g++-multilib
+                  g++-multilib \
+                  dejagnu
 
     - name: Configure
       run: |
