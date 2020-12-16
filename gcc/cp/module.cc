@@ -4153,7 +4153,7 @@ dumper::push (module_state *m)
       /* Create or extend the dump implementor.  */
       unsigned current = dumps ? dumps->stack.length () : 0;
       unsigned count = current ? current * 2 : EXPERIMENT (1, 20);
-      size_t alloc = (offsetof (impl, impl::stack)
+      size_t alloc = (offsetof (impl, stack)
 		      + impl::stack_t::embedded_size (count));
       dumps = XRESIZEVAR (impl, dumps, alloc);
       dumps->stack.embedded_init (count, current);
