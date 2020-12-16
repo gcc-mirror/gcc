@@ -524,6 +524,15 @@ namespace std
 
 #define _GLIBCXX_USE_ALLOCATOR_NEW
 
+#ifdef __SIZEOF_INT128__
+#if ! defined __GLIBCXX_TYPE_INT_N_0 && ! defined __STRICT_ANSI__
+// If __int128 is supported, we expect __GLIBCXX_TYPE_INT_N_0 to be defined
+// unless the compiler is in strict mode. If it's not defined and the strict
+// macro is not defined, something is wrong.
+#warning "__STRICT_ANSI__ seems to have been undefined; this is not supported"
+#endif
+#endif
+
 #else // !__cplusplus
 # define _GLIBCXX_BEGIN_EXTERN_C
 # define _GLIBCXX_END_EXTERN_C

@@ -76,6 +76,7 @@ intl/plural-config.h: intl/plural.y
 intl/configure: intl/configure.ac intl/aclocal.m4
 intl/config.h.in: intl/configure.ac intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
+c++tools/configure: c++tools/configure.ac
 gcc/configure: gcc/configure.ac
 gcc/cstamp-h.in: gcc/configure.ac
 gcc/config.in: gcc/cstamp-h.in
@@ -126,6 +127,7 @@ libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
 libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
 libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
 libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
+libcody/configure: libcody/configure.ac libcody/config.m4
 libcpp/aclocal.m4: libcpp/configure.ac
 libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4

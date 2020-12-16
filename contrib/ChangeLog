@@ -1,3 +1,12 @@
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc_update: Add c++tools & libcody.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc-changelog/git_commit.py (changelog_locations): Add
+	libcody, c++tools.
+
 2020-12-08  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter more cases.

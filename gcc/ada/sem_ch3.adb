@@ -16943,7 +16943,7 @@ package body Sem_Ch3 is
       then
          if Ada_Version = Ada_83 and then Comes_From_Source (Indic) then
             Error_Msg_N
-              ("(Ada 83): premature use of type for derivation", Indic);
+              ("(Ada 83) premature use of type for derivation", Indic);
          end if;
       end if;
 

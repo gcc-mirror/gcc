@@ -4,14 +4,23 @@
 
 #include "cody.hh"
 
+#ifndef __has_builtin
+#define __has_builtin(X) 0
+#endif
+#ifndef __has_include
+#define __has_include(X) 0
+#endif
+
 // C++
-#if __GNUC__ >= 10
+#if __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
 #define CODY_LOC_BUILTIN 1
-#elif !defined (__has_include)
 #elif __has_include (<source_location>)
 #include <source_location>
+#ifdef __cpp_lib_source_location
 #define CODY_LOC_SOURCE 1
 #endif
+#endif
+
 // C
 #include <cstdio>
 
@@ -44,6 +53,8 @@ public:
   }
 
 #if !CODY_LOC_BUILTIN && CODY_LOC_SOURCE
+  using source_location = std::source_location;
+
   constexpr Location (source_location loc = source_location::current ())
     : Location (loc.file (), loc.line ())
   {

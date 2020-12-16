@@ -44,6 +44,27 @@ package body System.Val_Real is
 
    package Impl is new Value_R (Uns, Precision_Limit, Floating => True);
 
+   subtype Base_T is Unsigned range 2 .. 16;
+
+   --  The following tables compute the maximum exponent of the base that can
+   --  fit in the given floating-point format, that is to say the element at
+   --  index N is the largest K such that N**K <= Num'Last.
+
+   Maxexp32 : constant array (Base_T) of Positive :=
+     (2  => 127, 3 => 80,  4 => 63,  5 => 55,  6 => 49,
+      7  => 45,  8 => 42,  9 => 40, 10 => 38, 11 => 37,
+      12 => 35, 13 => 34, 14 => 33, 15 => 32, 16 => 31);
+
+   Maxexp64 : constant array (Base_T) of Positive :=
+     (2  => 1023, 3 => 646,  4 => 511,  5 => 441,  6 => 396,
+      7  => 364,  8 => 341,  9 => 323, 10 => 308, 11 => 296,
+      12 => 285, 13 => 276, 14 => 268, 15 => 262, 16 => 255);
+
+   Maxexp80 : constant array (Base_T) of Positive :=
+     (2  => 16383, 3 => 10337, 4 => 8191,  5 => 7056,  6 => 6338,
+      7  => 5836,  8 => 5461,  9 => 5168, 10 => 4932, 11 => 4736,
+      12 => 4570, 13 => 4427, 14 => 4303, 15 => 4193, 16 => 4095);
+
    function Integer_to_Real
      (Str   : String;
       Val   : Uns;
@@ -69,6 +90,15 @@ package body System.Val_Real is
 
       pragma Unsuppress (Range_Check);
 
+      Maxexp : constant Positive :=
+                 (if    Num'Size = 32             then Maxexp32 (Base)
+                  elsif Num'Size = 64             then Maxexp64 (Base)
+                  elsif Num'Machine_Mantissa = 64 then Maxexp80 (Base)
+                  else  raise Program_Error);
+      --  Maximum exponent of the base that can fit in Num
+
+      B : constant Num := Num (Base);
+
       R_Val : Num;
       S     : Integer := Scale;
 
@@ -86,16 +116,25 @@ package body System.Val_Real is
 
       R_Val := Num (Val);
       if Extra > 0 then
-         R_Val := R_Val * Num (Base) + Num (Extra);
+         R_Val := R_Val * B + Num (Extra);
          S := S - 1;
       end if;
 
-      --  Compute the final value
+      --  Compute the final value. When the exponent is positive, we can do the
+      --  computation directly because, if the exponentiation overflows, then
+      --  the final value overflows as well. But when the exponent is negative,
+      --  we may need to do it in two steps to avoid an artificial underflow.
 
-      if S < 0 then
-         R_Val := R_Val / Num (Base) ** (-S);
-      else
-         R_Val := R_Val * Num (Base) ** S;
+      if S > 0 then
+         R_Val := R_Val * B ** S;
+
+      elsif S < 0 then
+         if S < -Maxexp then
+            R_Val := R_Val / B ** Maxexp;
+            S := S + Maxexp;
+         end if;
+
+         R_Val := R_Val / B ** (-S);
       end if;
 
       --  Finally deal with initial minus sign, note that this processing is

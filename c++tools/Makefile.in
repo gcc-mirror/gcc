@@ -38,7 +38,7 @@ mostlyclean::
 	rm -f $(MAPPER.O)
 
 clean::
-	rm -f c++-mapper-server$(exeext)
+	rm -f g++-mapper-server$(exeext)
 
 distclean::
 	rm -f config.log config.status config.h
@@ -86,10 +86,11 @@ g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
 all::../gcc/g++-mapper-server$(exeext)
 
 ../gcc/g++-mapper-server$(exeext): g++-mapper-server$(exeext)
-	$(INSTALL) -p $< $@
+	$(INSTALL) $< $@
 
 install::
-	$(INSTALL) -p g++-mapper-server$(exeext) $(DESTDIR)$(libexecsubdir)
+	$(SHELL) $(srcdir)/../mkinstalldirs $(DESTDIR)$(libexecsubdir)
+	$(INSTALL) g++-mapper-server$(exeext) $(DESTDIR)$(libexecsubdir)
 
 endif
 

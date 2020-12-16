@@ -387,7 +387,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
--Wtype-limits  -Wundef @gol
+-Wtsan -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
@@ -8020,6 +8020,16 @@ if (p == '\0')
 @end smallexample
 
 Note that the code above is invalid in C++11.
+
+This warning is enabled by default.
+
+@item -Wtsan
+@opindex Wtsan
+@opindex Wno-tsan
+Warn about unsupported features in ThreadSanitizer.
+
+ThreadSanitizer does not support @code{std::atomic_thread_fence} and
+can report false positives.
 
 This warning is enabled by default.
 

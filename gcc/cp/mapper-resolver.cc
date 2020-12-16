@@ -21,6 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Forward to the resolver in c++tools.  */
 
 #include "config.h"
+#if defined (__unix__)
+// Solaris11's socket header used bcopy, which we poison.  cody.hh
+// will include it later under the above check
+#include <sys/socket.h>
+#endif
+
 #define INCLUDE_ALGORITHM
 #include "system.h"
 

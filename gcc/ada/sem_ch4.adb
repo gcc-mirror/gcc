@@ -8088,8 +8088,7 @@ package body Sem_Ch4 is
             --  resolution does not depend on the type of the parameter that
             --  includes the indexing operation.
 
-            elsif Nkind (Parent (Par)) in
-                    N_Function_Call | N_Procedure_Call_Statement
+            elsif Nkind (Parent (Par)) in N_Subprogram_Call
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare

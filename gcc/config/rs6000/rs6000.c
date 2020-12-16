@@ -6806,17 +6806,9 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       /* Force the values into word_mode registers.  */
       for (i = 0; i < n_elts; i++)
 	{
-	  rtx tmp = force_reg (GET_MODE_INNER (mode), XVECEXP (vals, 0, i));
-	  if (TARGET_POWERPC64)
-	    {
-	      op[i] = gen_reg_rtx (DImode);
-	      emit_insn (gen_zero_extendqidi2 (op[i], tmp));
-	    }
-	  else
-	    {
-	      op[i] = gen_reg_rtx (SImode);
-	      emit_insn (gen_zero_extendqisi2 (op[i], tmp));
-	    }
+	  rtx tmp = force_reg (inner_mode, XVECEXP (vals, 0, i));
+	  machine_mode tmode = TARGET_POWERPC64 ? DImode : SImode;
+	  op[i] = simplify_gen_subreg (tmode, tmp, inner_mode, 0);
 	}
 
       /* Take unsigned char big endianness on 64bit as example for below

@@ -2113,6 +2113,20 @@ class Variable
   is_varargs_parameter() const
   { return this->is_varargs_parameter_; }
 
+  // Return whether this is a global sink variable, created only to
+  // run an initializer.
+  bool
+  is_global_sink() const
+  { return this->is_global_sink_; }
+
+  // Record that this is a global sink variable.
+  void
+  set_is_global_sink()
+  {
+    go_assert(this->is_global_);
+    this->is_global_sink_ = true;
+  }
+
   // Whether this variable's address is taken.
   bool
   is_address_taken() const
@@ -2340,6 +2354,9 @@ class Variable
   bool is_receiver_ : 1;
   // Whether this is the varargs parameter of a function.
   bool is_varargs_parameter_ : 1;
+  // Whether this is a global sink variable created to run an
+  // initializer.
+  bool is_global_sink_ : 1;
   // Whether this variable is ever referenced.
   bool is_used_ : 1;
   // Whether something takes the address of this variable.  For a

@@ -2620,7 +2620,10 @@ package body Sem_Ch5 is
       end if;
 
       if Present (Iterator_Filter (N)) then
-         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
+         --  Preanalyze the filter. Expansion will take place when enclosing
+         --  loop is expanded.
+
+         Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -3017,6 +3020,9 @@ package body Sem_Ch5 is
             begin
                Set_Iterator_Specification (Scheme, I_Spec);
                Set_Loop_Parameter_Specification (Scheme, Empty);
+               Set_Iterator_Filter (I_Spec,
+                 Relocate_Node (Iterator_Filter (N)));
+
                Analyze_Iterator_Specification (I_Spec);
 
                --  In a generic context, analyze the original domain of

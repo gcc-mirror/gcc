@@ -66,7 +66,10 @@ ifeq ($(filter -fdebug-prefix-map=%,$(CXXOPTS)),)
 CXXOPTS += -fdebug-prefix-map=${srcdir}/=
 endif
 # Warning options
-CXXOPTS += -W -Wall -Woverloaded-virtual -Wshadow
+CXXOPTS += -W -Wall
+ifeq (no,)
+# just turn off for now
+CXXOPTS += -Woverloaded-virtual -Wshadow
 CXXOPTS += -Wno-invalid-offsetof -Wno-unused-variable
 CXXOPTS += -Wno-missing-field-initializers
 # Diagnostic options, look at controlling terminal so that piping
@@ -76,6 +79,7 @@ ifneq (,$(MLEN))
 CXXOPTS += -fmessage-length=$(MLEN)
 endif
 CXXOPTS += -fdiagnostics-color=always -fno-diagnostics-show-option
+endif
 else
 ifeq ($(notdir $(firstword $(CXX))),clang++)
 CXXOPTS += -fno-stack-protector -fno-threadsafe-statics

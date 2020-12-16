@@ -16169,6 +16169,13 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	      return false;
 	    }
 	}
+
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.allocatable)
+	{
+	  gfc_error ("DATA element %qs at %L cannot have the ALLOCATABLE "
+		     "attribute", ref->u.c.component->name, &e->where);
+	  return false;
+	}
     }
 
   if (e->rank == 0 || has_pointer)

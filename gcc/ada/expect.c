@@ -39,6 +39,7 @@
 #include "system.h"
 #endif
 
+#include "adaint.h"
 #include <sys/types.h>
 
 #ifdef __MINGW32__
@@ -78,7 +79,6 @@
 #include <process.h>
 #include <signal.h>
 #include <io.h>
-#include "adaint.h"
 #include "mingw32.h"
 
 int
@@ -360,7 +360,11 @@ __gnat_pipe (int *fd)
 int
 __gnat_expect_fork (void)
 {
-  return fork ();
+  int pid = fork();
+  if (pid == 0) {
+    __gnat_in_child_after_fork = 1;
+  }
+  return pid;
 }
 
 void

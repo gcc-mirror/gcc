@@ -743,6 +743,13 @@ Lex::next_token()
 		if (Lex::is_unicode_letter(ci))
 		  return this->gather_identifier();
 
+		if (!issued_error && Lex::is_unicode_digit(ci))
+		  {
+		    go_error_at(this->location(),
+				"identifier cannot begin with digit");
+		    issued_error = true;
+		  }
+
 		if (!issued_error)
 		  go_error_at(this->location(),
 			      "invalid character 0x%x in input file",

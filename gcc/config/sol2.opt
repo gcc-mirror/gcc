@@ -28,11 +28,11 @@ Ym,
 Driver Joined
 
 mclear-hwcap
-Target Report
+Target
 Clear hardware capabilities when linking.
 
 mimpure-text
-Target Report
+Target
 Pass -z text to linker.
 
 pthread

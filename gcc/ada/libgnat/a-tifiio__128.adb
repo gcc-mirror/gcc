@@ -164,7 +164,7 @@ with System.Val_Fixed_64;  use System.Val_Fixed_64;
 with System.Val_Fixed_128; use System.Val_Fixed_128;
 with System.Val_LLF;       use System.Val_LLF;
 
-package body Ada.Text_IO.Fixed_IO is
+package body Ada.Text_IO.Fixed_IO with SPARK_Mode => Off is
 
    --  Note: we still use the floating-point I/O routines for types whose small
    --  is not the ratio of two sufficiently small integers. This will result in

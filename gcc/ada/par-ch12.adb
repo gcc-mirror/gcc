@@ -423,12 +423,12 @@ package body Ch12 is
 
    procedure P_Formal_Object_Declarations (Decls : List_Id) is
       Decl_Node        : Node_Id;
-      Ident            : Nat;
+      Ident            : Pos;
       Not_Null_Present : Boolean := False;
-      Num_Idents       : Nat;
+      Num_Idents       : Pos;
       Scan_State       : Saved_Scan_State;
 
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
+      Idents : array (Pos range 1 .. 4096) of Entity_Id;
       --  This array holds the list of defining identifiers. The upper bound
       --  of 4096 is intended to be essentially infinite, and we do not even
       --  bother to check for it being exceeded.

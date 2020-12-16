@@ -1,3 +1,25 @@
+2020-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (in_template_function): Inspect cfun->decl instead of
+	current_function_decl.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc: Replace stubs with implementation.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add mapper-client &
+	mapper-resolver.
+	* mapper-client.h: New.
+	* mapper-client.cc: New.
+	* mapper-resolver.cc: New.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (do_namespace_alias): Set originating module
+	before pushing.
+
 2020-12-11  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/97600

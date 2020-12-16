@@ -64,6 +64,10 @@
 #endif
 #include <ext/alloc_traits.h>
 
+#if !__has_builtin(__builtin_sprintf)
+# include <cstdio>
+#endif
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -310,6 +314,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static void
     log_to_string(std::string& s, const_reference ref)
     {
+#if ! __has_builtin(__builtin_sprintf)
+      __typeof__(&std::sprintf) __builtin_sprintf = &std::sprintf;
+#endif
+
       char buf[40];
       const char tab('\t');
       s += "label: ";
@@ -332,6 +340,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static void
     log_to_string(std::string& s, const std::pair<const void*, size_t>& ref)
     {
+#if ! __has_builtin(__builtin_sprintf)
+      auto __builtin_sprintf = &std::sprintf;
+#endif
+
       char buf[40];
       const char tab('\t');
       s += "label: ";
@@ -564,6 +576,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::tr1::variate_generator<engine_type, distribution_type> gen_t;
       distribution_type distribution(0, 1);
       static gen_t generator(engine(), distribution);
+#endif
+
+#if ! __has_builtin(__builtin_sprintf)
+      __typeof__(&std::sprintf) __builtin_sprintf = &std::sprintf;
 #endif
 
       double random = generator();

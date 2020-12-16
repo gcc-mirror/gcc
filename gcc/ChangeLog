@@ -1,3 +1,58 @@
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96094
+	* match.pd (X / bool_range_Y -> X): New simplification.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/cppopts.texi: Document new cpp opt.
+	* doc/invoke.texi: Add C++20 module option & documentation.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (CODYINC, CODYLIB, CODYLIB_H): New. Use them.
+
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98274
+	* config/i386/i386-options.c (ix86_option_override_internal): Set
+	ix86_tune_string to "generic" even when it wasn't specified and
+	ix86_arch_string is "x86-64-v2", "x86-64-v3" or "x86-64-v4".
+	Remove useless {}s around a single statement.
+
+2020-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR lto/98275
+	* lto-wrapper.c: Do not use -j0 when we are unable to detect
+	number of cores.
+
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-options.c (ix86_option_override_internal): Don't
+	error on -march=x86-64-v[234] with -m32 or -mabi=ms.
+	* config.gcc: Don't reject --with-arch=x86-64-v[234] or
+	--with-arch_32=x86-64-v[234].
+	* doc/invoke.texi (-march=x86-64-v[234]): Document what the option
+	does for other ABIs.
+
+2020-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98273
+	* gcov.c (output_json_intermediate_file): Use stack of nested
+	functions for lines in a source file.  Pop when a function ends.
+
+2020-12-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Instrumentation Options): Update link to
+	KernelAddressSanitizer.
+
+2020-12-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/predicates.md (addsubx_operand): Change accepted
+	values from 2/4/8 to 1..3.
+	* config/xtensa/xtensa.md (*addx, *subx): Change RTL pattern
+	to use 'ashift' instead of 'mult'. Update operands[3] value.
+
 2020-12-14  Piotr Kubaj  <pkubaj@FreeBSD.org>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 

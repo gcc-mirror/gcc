@@ -1,3 +1,68 @@
+2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98108
+	* include/std/iostream (__ioinit): Add init_priority attribute.
+
+2020-12-15  Keith Packard  <keithp@keithp.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CSTDIO): Allow "stdio_pure"
+	option and define _GLIBCXX_USE_PURE_STDIO when it is used. Also
+	add "stdio_posix" option as an alias for "stdio".
+	* config/io/basic_file_stdio.cc [_GLIBCXX_USE_PURE_STDIO]: Only
+	use defined stdio entry points for all I/O operations, without
+	direct calls to underlying POSIX functions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2020-12-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* testsuite/27_io/rvalue_streams.cc: Run the extraction to a char*
+	for C++17 and lower only.
+
+2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/lexicographical_compare/deque_iterators/1.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/ext/pb_ds/regression/tree_map_rand_debug.cc:
+	Increase timeout factor from 2.0 to 3.0.
+	* testsuite/ext/pb_ds/regression/tree_set_rand_debug.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_debug-mode):
+	Define "debug-mode" as an effective-target keyword.
+
+2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__glibcxx_assert_1): Define as empty
+	for C++11.
+
+2020-12-15  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* testsuite/22_locale/locale/cons/5.cc: Add missing directives
+	for required locales.
+
+2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (incrementable_traits<Tp>):
+	Remove workaround for PR c++/78173.
+
+2020-12-15  Vladimir Vishnevsky  <vv.os.swe@gmail.com>
+
+	* configure.ac: Skip AC_LIBTOOL_DLOPEN check if avr-libc is used.
+	* configure: Regenerate.
+
+2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98108
+	* include/std/iostream (__ioinit): Add init_priority attribute.
+
+2020-12-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Update link to Unicode-HOWTO.
+	* doc/html/manual/facets.html: Regenerate.
+
 2020-12-14  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/array/debug/back1_neg.cc: Target c++14 because assertion
