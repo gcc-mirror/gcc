@@ -207,7 +207,6 @@ Classes used:
 
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
-
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -229,6 +228,8 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
+/* This TU doesn't need or want to see the networking.  */
+#define CODY_NETWORKING 0
 #include "mapper-client.h"
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
