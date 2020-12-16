@@ -727,8 +727,23 @@
 	(match_operand:DI 1 "general_operand" ""))]
   ""
 {
-  if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
-    operands[1] = force_const_mem (DImode, operands[1]);
+  if (CONSTANT_P (operands[1]))
+    {
+      /* Split in halves if 64-bit Const-to-Reg moves
+	 because of offering further optimization opportunities.  */
+      if (register_operand (operands[0], DImode))
+	{
+	  rtx first, second;
+
+	  split_double (operands[1], &first, &second);
+	  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), first));
+	  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), second));
+	  DONE;
+	}
+
+      if (!TARGET_CONST16)
+	operands[1] = force_const_mem (DImode, operands[1]);
+    }
 
   if (!register_operand (operands[0], DImode)
       && !register_operand (operands[1], DImode))
