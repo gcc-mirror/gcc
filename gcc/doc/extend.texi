@@ -21102,6 +21102,10 @@ processors.
 Returns the value that is currently set in the @samp{tp} register.
 @end deftypefn
 
+@deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
+Generates the @code{pause} (hint) machine instruction.
+@end deftypefn
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
