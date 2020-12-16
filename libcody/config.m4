@@ -2,6 +2,8 @@
 # Copyright (C) 2020 Nathan Sidwell, nathan@acm.org
 # License: Apache v2.0
 
+# Note: VAR+=... is not dashing, despite its looks
+
 AC_DEFUN([NMS_NOT_IN_SOURCE],
 [if test -e configure ; then
 AC_MSG_ERROR([Do not build in the source tree.  Reasons])
@@ -28,14 +30,13 @@ fi])
 
 AC_DEFUN([NMS_TOOL_DIRS],
 [if test "$tools" && test -d "$tools/include" ; then
-  CXX+=" -I$tools/include"
+  CXX="$CXX -I$tools/include"
 fi
 if test "$tools" && test -d "$tools/lib" ; then
   toollib="$tools/lib"
   if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
-    toollib+="/${os}"
+    toollib="$toollib/${os}"
   fi
-  ## VAR+=... is not dashing
   LDFLAGS="$LDFLAGS -L $toollib"
   unset toollib
 fi])
@@ -86,7 +87,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 ]])],
 [AC_MSG_RESULT([yes])],
 [CXX_ORIG="$CXX"
-CXX+=" -std=c++11"
+CXX="$CXX -std=c++11"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 [#if __cplusplus != 201103
 #error "C++11 is required"
@@ -112,7 +113,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #endif
 ]])],
 [AC_MSG_RESULT([yes])],
-[CXX+=" -std=c++20"
+[CXX="$CXX -std=c++20"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 [#if __cplusplus <= 201703
 #error "C++20 is required"
@@ -248,7 +249,7 @@ if test "${enable_backtrace:-maybe}" != no ; then
     AC_CHECK_HEADERS([demangle.h libiberty/demangle.h],[break])
     # libbfd prevents distribution because of licensing
     AC_CHECK_HEADERS([bfd.h])
-    AC_SEARCH_LIBS([bfd_openr],[bfd],[LIBS+="-lz -liberty -ldl"],,[-lz -liberty -ldl])
+    AC_SEARCH_LIBS([bfd_openr],[bfd],[LIBS="$LIBS -lz -liberty -ldl"],,[-lz -liberty -ldl])
   fi
   if test "$ac_cv_func_backtrace" = yes ; then
     nms_backtrace=yes
@@ -272,8 +273,8 @@ for generated in config.h.in configure ; do
 done
 for dir in . $SUBDIRS
 do
-  CONFIG_FILES+=" $dir/Makesub"
-  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES+=" $dir/tests/Makesub"
+  CONFIG_FILES="$CONFIG_FILES $dir/Makesub"
+  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES="$CONFIG_FILES $dir/tests/Makesub"
 done
 AC_CONFIG_FILES([$CONFIG_FILES])
 AC_SUBST(configure_args,[$ac_configure_args])

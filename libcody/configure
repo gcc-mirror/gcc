@@ -1824,6 +1824,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Copyright (C) 2020 Nathan Sidwell, nathan@acm.org
 # License: Apache v2.0
 
+# Note: VAR+=... is not dashing, despite its looks
+
 
 
 # thanks to Zack Weinberg for fixing this!
@@ -2574,7 +2576,7 @@ if ac_fn_cxx_try_compile "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   CXX_ORIG="$CXX"
-CXX+=" -std=c++11"
+CXX="$CXX -std=c++11"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -2625,14 +2627,13 @@ unset CXX_ORIG
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 if test "$tools" && test -d "$tools/include" ; then
-  CXX+=" -I$tools/include"
+  CXX="$CXX -I$tools/include"
 fi
 if test "$tools" && test -d "$tools/lib" ; then
   toollib="$tools/lib"
   if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
-    toollib+="/${os}"
+    toollib="$toollib/${os}"
   fi
-  ## VAR+=... is not dashing
   LDFLAGS="$LDFLAGS -L $toollib"
   unset toollib
 fi
@@ -2671,8 +2672,8 @@ for generated in config.h.in configure ; do
 done
 for dir in . $SUBDIRS
 do
-  CONFIG_FILES+=" $dir/Makesub"
-  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES+=" $dir/tests/Makesub"
+  CONFIG_FILES="$CONFIG_FILES $dir/Makesub"
+  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES="$CONFIG_FILES $dir/tests/Makesub"
 done
 ac_config_files="$ac_config_files $CONFIG_FILES"
 
