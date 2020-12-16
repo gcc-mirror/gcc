@@ -1,3 +1,11 @@
+2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98277
+	* gdc.dg/pr98277.d: New test.
+
 2020-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_tune_cortex_a76): New
