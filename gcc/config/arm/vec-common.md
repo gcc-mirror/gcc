@@ -205,3 +205,13 @@
 	(neg:VDQWH (match_operand:VDQWH 1 "s_register_operand" "")))]
   "ARM_HAVE_<MODE>_ARITH"
 )
+
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF [(match_operand:VF 1 "register_operand")
+		    (match_operand:VF 2 "register_operand")]
+		   VCADD))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+)
+

@@ -310,7 +310,7 @@
  "@internal
   In ARM/Thumb-2 state a vector of constant zeros."
  (and (match_code "const_vector")
-      (match_test "TARGET_NEON && op == CONST0_RTX (mode)")))
+      (match_test "(TARGET_NEON || TARGET_HAVE_MVE) && op == CONST0_RTX (mode)")))
 
 (define_constraint "Da"
  "@internal

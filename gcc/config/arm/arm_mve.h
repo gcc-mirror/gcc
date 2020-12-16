@@ -3981,14 +3981,16 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_uv16qi (__a, __b);
+  return (uint8x16_t)
+    __builtin_mve_vcaddq_rot90v16qi ((int8x16_t)__a, (int8x16_t)__b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_uv16qi (__a, __b);
+  return (uint8x16_t)
+    __builtin_mve_vcaddq_rot270v16qi ((int8x16_t)__a, (int8x16_t)__b);
 }
 
 __extension__ extern __inline uint8x16_t
@@ -4520,14 +4522,14 @@ __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_sv16qi (__a, __b);
+  return __builtin_mve_vcaddq_rot90v16qi (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_sv16qi (__a, __b);
+  return __builtin_mve_vcaddq_rot270v16qi (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
@@ -4821,14 +4823,16 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_uv8hi (__a, __b);
+  return (uint16x8_t)
+    __builtin_mve_vcaddq_rot90v8hi ((int16x8_t)__a, (int16x8_t)__b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_uv8hi (__a, __b);
+  return (uint16x8_t)
+    __builtin_mve_vcaddq_rot270v8hi ((int16x8_t)__a, (int16x8_t)__b);
 }
 
 __extension__ extern __inline uint16x8_t
@@ -5360,14 +5364,14 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_sv8hi (__a, __b);
+  return __builtin_mve_vcaddq_rot90v8hi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_sv8hi (__a, __b);
+  return __builtin_mve_vcaddq_rot270v8hi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
@@ -5661,14 +5665,16 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_uv4si (__a, __b);
+  return (uint32x4_t)
+    __builtin_mve_vcaddq_rot90v4si ((int32x4_t)__a, (int32x4_t)__b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_uv4si (__a, __b);
+  return (uint32x4_t)
+    __builtin_mve_vcaddq_rot270v4si ((int32x4_t)__a, (int32x4_t)__b);
 }
 
 __extension__ extern __inline uint32x4_t
@@ -6200,14 +6206,14 @@ __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_sv4si (__a, __b);
+  return __builtin_mve_vcaddq_rot90v4si (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_sv4si (__a, __b);
+  return __builtin_mve_vcaddq_rot270v4si (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
@@ -17370,14 +17376,14 @@ __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_f16 (float16x8_t __a, float16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_fv8hf (__a, __b);
+  return __builtin_mve_vcaddq_rot90v8hf (__a, __b);
 }
 
 __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_f16 (float16x8_t __a, float16x8_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_fv8hf (__a, __b);
+  return __builtin_mve_vcaddq_rot270v8hf (__a, __b);
 }
 
 __extension__ extern __inline float16x8_t
@@ -17622,14 +17628,14 @@ __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot90_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot90_fv4sf (__a, __b);
+  return __builtin_mve_vcaddq_rot90v4sf (__a, __b);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcaddq_rot270_f32 (float32x4_t __a, float32x4_t __b)
 {
-  return __builtin_mve_vcaddq_rot270_fv4sf (__a, __b);
+  return __builtin_mve_vcaddq_rot270v4sf (__a, __b);
 }
 
 __extension__ extern __inline float32x4_t
