@@ -1557,21 +1557,22 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
       && get_range_info (index_expr, &min, &max) == VR_RANGE
       && wi::leu_p (max - min, prec - 1))
     {
+      tree index_type = TREE_TYPE (index_expr);
+      minval = fold_convert (index_type, minval);
       wide_int iminval = wi::to_wide (minval);
-      tree minval_type = TREE_TYPE (minval);
-      if (wi::lt_p (min, iminval, TYPE_SIGN (minval_type)))
+      if (wi::lt_p (min, iminval, TYPE_SIGN (index_type)))
 	{
-	  minval = wide_int_to_tree (minval_type, min);
+	  minval = wide_int_to_tree (index_type, min);
 	  for (i = 0; i < count; i++)
 	    test[i].mask = wi::lshift (test[i].mask, iminval - min);
 	}
-      else if (wi::gt_p (min, iminval, TYPE_SIGN (minval_type)))
+      else if (wi::gt_p (min, iminval, TYPE_SIGN (index_type)))
 	{
-	  minval = wide_int_to_tree (minval_type, min);
+	  minval = wide_int_to_tree (index_type, min);
 	  for (i = 0; i < count; i++)
 	    test[i].mask = wi::lrshift (test[i].mask, min - iminval);
 	}
-      maxval = wide_int_to_tree (minval_type, max);
+      maxval = wide_int_to_tree (index_type, max);
       entry_test_needed = false;
     }
   else
