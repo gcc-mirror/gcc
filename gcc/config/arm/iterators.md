@@ -1183,7 +1183,18 @@
 		      (UNSPEC_VCMLA270 "270")])
 
 (define_int_attr mve_rot [(UNSPEC_VCADD90 "_rot90")
-			  (UNSPEC_VCADD270 "_rot270")])
+			  (UNSPEC_VCADD270 "_rot270")
+			  (UNSPEC_VCMLA "")
+			  (UNSPEC_VCMLA90 "_rot90")
+			  (UNSPEC_VCMLA180 "_rot180")
+			  (UNSPEC_VCMLA270 "_rot270")
+			  (UNSPEC_VCMUL "")
+			  (UNSPEC_VCMUL90 "_rot90")
+			  (UNSPEC_VCMUL180 "_rot180")
+			  (UNSPEC_VCMUL270 "_rot270")])
+
+(define_int_iterator VCMUL [UNSPEC_VCMUL UNSPEC_VCMUL90
+			    UNSPEC_VCMUL180 UNSPEC_VCMUL270])
 
 (define_int_attr simd32_op [(UNSPEC_QADD8 "qadd8") (UNSPEC_QSUB8 "qsub8")
 			    (UNSPEC_SHADD8 "shadd8") (UNSPEC_SHSUB8 "shsub8")
