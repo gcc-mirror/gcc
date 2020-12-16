@@ -3575,6 +3575,102 @@ package body Checks is
       --  full view might have discriminants with defaults, so we need the
       --  full view here to retrieve the constraints.
 
+      procedure Make_Discriminant_Constraint_Check
+        (Target_Type : Entity_Id;
+         Expr_Type   : Entity_Id);
+      --  Generate a discriminant check based on the target type and expression
+      --  type for Expr.
+
+      ----------------------------------------
+      -- Make_Discriminant_Constraint_Check --
+      ----------------------------------------
+
+      procedure Make_Discriminant_Constraint_Check
+        (Target_Type : Entity_Id;
+         Expr_Type   : Entity_Id)
+      is
+         Loc         : constant Source_Ptr := Sloc (N);
+         Cond        : Node_Id;
+         Constraint  : Elmt_Id;
+         Discr_Value : Node_Id;
+         Discr       : Entity_Id;
+
+         New_Constraints : constant Elist_Id := New_Elmt_List;
+         Old_Constraints : constant Elist_Id :=
+           Discriminant_Constraint (Expr_Type);
+
+      begin
+         --  Build an actual discriminant constraint list using the stored
+         --  constraint, to verify that the expression of the parent type
+         --  satisfies the constraints imposed by the (unconstrained) derived
+         --  type. This applies to value conversions, not to view conversions
+         --  of tagged types.
+
+         Constraint := First_Elmt (Stored_Constraint (Target_Type));
+         while Present (Constraint) loop
+            Discr_Value := Node (Constraint);
+
+            if Is_Entity_Name (Discr_Value)
+              and then Ekind (Entity (Discr_Value)) = E_Discriminant
+            then
+               Discr := Corresponding_Discriminant (Entity (Discr_Value));
+
+               if Present (Discr)
+                 and then Scope (Discr) = Base_Type (Expr_Type)
+               then
+                  --  Parent is constrained by new discriminant. Obtain
+                  --  Value of original discriminant in expression. If the
+                  --  new discriminant has been used to constrain more than
+                  --  one of the stored discriminants, this will provide the
+                  --  required consistency check.
+
+                  Append_Elmt
+                    (Make_Selected_Component (Loc,
+                       Prefix        =>
+                         Duplicate_Subexpr_No_Checks
+                           (Expr, Name_Req => True),
+                       Selector_Name =>
+                         Make_Identifier (Loc, Chars (Discr))),
+                     New_Constraints);
+
+               else
+                  --  Discriminant of more remote ancestor ???
+
+                  return;
+               end if;
+
+            --  Derived type definition has an explicit value for this
+            --  stored discriminant.
+
+            else
+               Append_Elmt
+                 (Duplicate_Subexpr_No_Checks (Discr_Value),
+                  New_Constraints);
+            end if;
+
+            Next_Elmt (Constraint);
+         end loop;
+
+         --  Use the unconstrained expression type to retrieve the
+         --  discriminants of the parent, and apply momentarily the
+         --  discriminant constraint synthesized above.
+
+         --  Note: We use Expr_Type instead of Target_Type since the number of
+         --  actual discriminants may be different due to the presence of
+         --  stored discriminants and cause Build_Discriminant_Checks to fail.
+
+         Set_Discriminant_Constraint (Expr_Type, New_Constraints);
+         Cond := Build_Discriminant_Checks (Expr, Expr_Type);
+         Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
+
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition => Cond,
+             Reason    => CE_Discriminant_Check_Failed));
+      end Make_Discriminant_Constraint_Check;
+
+   --  Start of processing for Apply_Type_Conversion_Checks
+
    begin
       if Inside_A_Generic then
          return;
@@ -3704,6 +3800,33 @@ package body Checks is
             end if;
          end;
 
+      --  Generate discriminant constraint checks for access types on the
+      --  designated target type's stored constraints.
+
+      --  Do we need to generate subtype predicate checks here as well ???
+
+      elsif Comes_From_Source (N)
+        and then Ekind (Target_Type) = E_General_Access_Type
+
+        --  Check that both of the designated types have known discriminants,
+        --  and that such checks on the target type are not suppressed.
+
+        and then Has_Discriminants (Directly_Designated_Type (Target_Type))
+        and then Has_Discriminants (Directly_Designated_Type (Expr_Type))
+        and then not Discriminant_Checks_Suppressed
+                       (Directly_Designated_Type (Target_Type))
+
+        --  Verify the designated type of the target has stored constraints
+
+        and then Present
+                   (Stored_Constraint (Directly_Designated_Type (Target_Type)))
+      then
+         Make_Discriminant_Constraint_Check
+           (Target_Type => Directly_Designated_Type (Target_Type),
+            Expr_Type   => Directly_Designated_Type (Expr_Type));
+
+      --  Create discriminant checks for the Target_Type's stored constraints
+
       elsif Comes_From_Source (N)
         and then not Discriminant_Checks_Suppressed (Target_Type)
         and then Is_Record_Type (Target_Type)
@@ -3712,83 +3835,7 @@ package body Checks is
         and then not Is_Constrained (Target_Type)
         and then Present (Stored_Constraint (Target_Type))
       then
-         --  An unconstrained derived type may have inherited discriminant.
-         --  Build an actual discriminant constraint list using the stored
-         --  constraint, to verify that the expression of the parent type
-         --  satisfies the constraints imposed by the (unconstrained) derived
-         --  type. This applies to value conversions, not to view conversions
-         --  of tagged types.
-
-         declare
-            Loc         : constant Source_Ptr := Sloc (N);
-            Cond        : Node_Id;
-            Constraint  : Elmt_Id;
-            Discr_Value : Node_Id;
-            Discr       : Entity_Id;
-
-            New_Constraints : constant Elist_Id := New_Elmt_List;
-            Old_Constraints : constant Elist_Id :=
-              Discriminant_Constraint (Expr_Type);
-
-         begin
-            Constraint := First_Elmt (Stored_Constraint (Target_Type));
-            while Present (Constraint) loop
-               Discr_Value := Node (Constraint);
-
-               if Is_Entity_Name (Discr_Value)
-                 and then Ekind (Entity (Discr_Value)) = E_Discriminant
-               then
-                  Discr := Corresponding_Discriminant (Entity (Discr_Value));
-
-                  if Present (Discr)
-                    and then Scope (Discr) = Base_Type (Expr_Type)
-                  then
-                     --  Parent is constrained by new discriminant. Obtain
-                     --  Value of original discriminant in expression. If the
-                     --  new discriminant has been used to constrain more than
-                     --  one of the stored discriminants, this will provide the
-                     --  required consistency check.
-
-                     Append_Elmt
-                       (Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Duplicate_Subexpr_No_Checks
-                              (Expr, Name_Req => True),
-                          Selector_Name =>
-                            Make_Identifier (Loc, Chars (Discr))),
-                        New_Constraints);
-
-                  else
-                     --  Discriminant of more remote ancestor ???
-
-                     return;
-                  end if;
-
-               --  Derived type definition has an explicit value for this
-               --  stored discriminant.
-
-               else
-                  Append_Elmt
-                    (Duplicate_Subexpr_No_Checks (Discr_Value),
-                     New_Constraints);
-               end if;
-
-               Next_Elmt (Constraint);
-            end loop;
-
-            --  Use the unconstrained expression type to retrieve the
-            --  discriminants of the parent, and apply momentarily the
-            --  discriminant constraint synthesized above.
-
-            Set_Discriminant_Constraint (Expr_Type, New_Constraints);
-            Cond := Build_Discriminant_Checks (Expr, Expr_Type);
-            Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
-
-            Insert_Action (N,
-              Make_Raise_Constraint_Error (Loc,
-                Condition => Cond,
-                Reason    => CE_Discriminant_Check_Failed));
-         end;
+         Make_Discriminant_Constraint_Check (Target_Type, Expr_Type);
 
       --  For arrays, checks are set now, but conversions are applied during
       --  expansion, to take into accounts changes of representation. The
