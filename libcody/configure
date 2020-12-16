@@ -2686,6 +2686,14 @@ configure_args=$ac_configure_args
 
 
 
+# Enable expensive internal checks
+is_release=
+if test -d $srcdir/../gcc \
+   && test -f $srcdir/../gcc/DEV-PHASE \
+   && test x"`cat $srcdir/../gcc/DEV-PHASE`" != xexperimental; then
+  is_release=yes
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking bugurl" >&5
 $as_echo_n "checking bugurl... " >&6; }
 
@@ -2727,14 +2735,8 @@ IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 for check in release $ac_checking_flags
 do
 	case $check in
-	# these set all the flags to specific states
-	yes|all) ac_checking=1 ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
-	no|none) ac_checking= ; ac_assert_checking= ; ac_valgrind_checking= ;;
-	release) ac_checking= ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
-	# these enable particular checks
-	assert) ac_assert_checking=1 ;;
-	misc) ac_checking=1 ;;
-	valgrind) ac_valgrind_checking=1 ;;
+	yes|all|misc) ac_checking=1 ;;
+	no|none|release) ac_checking= ;;
 	# accept
 	*) ;;
 	esac

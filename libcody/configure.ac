@@ -23,6 +23,14 @@ NMS_TOOL_DIRS
 NMS_LINK_OPT([-Wl,--no-undefined])
 NMS_CONFIG_FILES([gdbinit dox.cfg])
 
+# Enable expensive internal checks
+is_release=
+if test -d $srcdir/../gcc \
+   && test -f $srcdir/../gcc/DEV-PHASE \
+   && test x"`cat $srcdir/../gcc/DEV-PHASE`" != xexperimental; then
+  is_release=yes
+fi
+
 NMS_BUGURL
 dnl NMS_ENABLE_CHECKING
 dnl cloned from ../libcpp/configure.ac
@@ -43,14 +51,8 @@ IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 for check in release $ac_checking_flags
 do
 	case $check in
-	# these set all the flags to specific states
-	yes|all) ac_checking=1 ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
-	no|none) ac_checking= ; ac_assert_checking= ; ac_valgrind_checking= ;;
-	release) ac_checking= ; ac_assert_checking=1 ; ac_valgrind_checking= ;;
-	# these enable particular checks
-	assert) ac_assert_checking=1 ;;
-	misc) ac_checking=1 ;;
-	valgrind) ac_valgrind_checking=1 ;;
+	yes|all|misc) ac_checking=1 ;;
+	no|none|release) ac_checking= ;;
 	# accept
 	*) ;;
 	esac
