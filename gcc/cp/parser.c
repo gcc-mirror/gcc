@@ -18016,7 +18016,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       if (TREE_CODE (type) == TYPENAME_TYPE)
 	warning (OPT_Wattributes,
 		 "attributes ignored on uninstantiated type");
-      else if (tag_type != enum_type && CLASSTYPE_TEMPLATE_INSTANTIATION (type)
+      else if (tag_type != enum_type
+	       && TREE_CODE (type) != BOUND_TEMPLATE_TEMPLATE_PARM
+	       && CLASSTYPE_TEMPLATE_INSTANTIATION (type)
 	       && ! processing_explicit_instantiation)
 	warning (OPT_Wattributes,
 		 "attributes ignored on template instantiation");
