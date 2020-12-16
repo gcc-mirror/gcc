@@ -3273,32 +3273,34 @@ public:
   };
 
 private:
-  vec<span> spans;
+  vec<span> *spans;
 
 public:
   loc_spans ()
+    /* Do not preallocate spans, as that causes
+       --enable-detailed-mem-stats problems.  */
+    : spans (nullptr)
   {
-    spans.create (20);
   }
   ~loc_spans ()
   {
-    spans.release ();
+    delete spans;
   }
 
 public:
   span &operator[] (unsigned ix)
   {
-    return spans[ix];
+    return (*spans)[ix];
   }
   unsigned length () const
   {
-    return spans.length ();
+    return spans->length ();
   }
 
 public:
   bool init_p () const
   {
-    return spans.length () != 0;
+    return spans != nullptr;
   }
   /* Initializer.  */
   void init (const line_maps *lmaps, const line_map_ordinary *map);
@@ -3321,7 +3323,7 @@ public:
 public:
   location_t main_start () const
   {
-    return spans[SPAN_MAIN].ordinary.first;
+    return (*spans)[SPAN_MAIN].ordinary.first;
   }
 
 public:
@@ -13656,7 +13658,8 @@ void
 loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
 {
   gcc_checking_assert (!init_p ());
-  spans.reserve (20);
+  spans = new vec<span> ();
+  spans->reserve (20);
 
   span interval;
   interval.ordinary.first = 0;
@@ -13668,10 +13671,10 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
     = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
   interval.macro.first = interval.macro.second;
   dump (dumper::LOCATION)
-    && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+    && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans->length (),
 	     interval.ordinary.first, interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
 
   /* A span for command line & forced headers.  */
   interval.ordinary.first = interval.ordinary.second;
@@ -13682,18 +13685,18 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
       interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
     }
   dump (dumper::LOCATION)
-    && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+    && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans->length (),
 	     interval.ordinary.first, interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
   
   /* Start an interval for the main file.  */
   interval.ordinary.first = interval.ordinary.second;
   interval.macro.second = interval.macro.first;
   dump (dumper::LOCATION)
-    && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans.length (),
+    && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans->length (),
 	     interval.ordinary.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
 }
 
 /* Reopen the span, if we want the about-to-be-inserted set of maps to
@@ -13727,9 +13730,9 @@ loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
   interval.ordinary_delta = interval.macro_delta = 0;
   dump (dumper::LOCATION)
     && dump ("Opening span %u ordinary:[%u,... macro:...,%u)",
-	     spans.length (), interval.ordinary.first,
+	     spans->length (), interval.ordinary.first,
 	     interval.macro.second);
-  spans.safe_push (interval);
+  spans->safe_push (interval);
 }
 
 /* Close out the current linemap interval.  The last maps are within
@@ -13738,7 +13741,7 @@ loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
 void
 loc_spans::close ()
 {
-  span &interval = spans.last ();
+  span &interval = spans->last ();
 
   interval.ordinary.second
     = ((line_table->highest_location + (1 << line_table->default_range_bits))
@@ -13746,7 +13749,7 @@ loc_spans::close ()
   interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   dump (dumper::LOCATION)
     && dump ("Closing span %u ordinary:[%u,%u) macro:[%u,%u)",
-	     spans.length () - 1,
+	     spans->length () - 1,
 	     interval.ordinary.first,interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
 }
@@ -13757,12 +13760,12 @@ loc_spans::close ()
 const loc_spans::span *
 loc_spans::ordinary (location_t loc)
 {
-  unsigned len = spans.length ();
+  unsigned len = spans->length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const span &probe = spans[pos + half];
+      const span &probe = (*spans)[pos + half];
       if (loc < probe.ordinary.first)
 	len = half;
       else if (loc < probe.ordinary.second)
@@ -13782,12 +13785,12 @@ loc_spans::ordinary (location_t loc)
 const loc_spans::span *
 loc_spans::macro (location_t loc)
 {
-  unsigned len = spans.length ();
+  unsigned len = spans->length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const span &probe = spans[pos + half];
+      const span &probe = (*spans)[pos + half];
       if (loc >= probe.macro.second)
 	len = half;
       else if (loc >= probe.macro.first)
