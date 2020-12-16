@@ -680,8 +680,12 @@ ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
 baseline_dir
 HWCAP_CFLAGS
+GLIBCXX_LDBL_ALT128_COMPAT_FALSE
+GLIBCXX_LDBL_ALT128_COMPAT_TRUE
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
+LONG_DOUBLE_ALT128_COMPAT_FLAGS
+LONG_DOUBLE_128_FLAGS
 LONG_DOUBLE_COMPAT_FLAGS
 ENABLE_CXX11_ABI_FALSE
 ENABLE_CXX11_ABI_TRUE
@@ -12136,7 +12140,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12139 "configure"
+#line 12143 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12242,7 +12246,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12245 "configure"
+#line 12249 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15934,7 +15938,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15937 "configure"
+#line 15941 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15969,7 +15973,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15972 "configure"
+#line 15976 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16004,7 +16008,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16007 "configure"
+#line 16011 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16040,7 +16044,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16043 "configure"
+#line 16047 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16193,7 +16197,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16196 "configure"
+#line 16200 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16235,7 +16239,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16238 "configure"
+#line 16242 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16269,7 +16273,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16272 "configure"
+#line 16276 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -75695,7 +75699,11 @@ $as_echo "${default_libstdcxx_abi}" >&6; }
 
 
 ac_ldbl_compat=no
+ac_ldbl_alt128_compat=no
+ac_ldbl_ieee128_default=no
 LONG_DOUBLE_COMPAT_FLAGS="-mlong-double-64"
+LONG_DOUBLE_128_FLAGS=
+LONG_DOUBLE_ALT128_COMPAT_FLAGS=
 case "$target" in
   powerpc*-*-linux* | \
   sparc*-*-linux* | \
@@ -75729,10 +75737,100 @@ $as_echo "#define _GLIBCXX_LONG_DOUBLE_COMPAT 1" >>confdefs.h
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
     case "$target" in
       powerpc*-*-linux*)
-	LONG_DOUBLE_COMPAT_FLAGS="$LONG_DOUBLE_COMPAT_FLAGS -mno-gnu-attribute" ;;
+	LONG_DOUBLE_COMPAT_FLAGS="$LONG_DOUBLE_COMPAT_FLAGS -mno-gnu-attribute"
+        # Check for IEEE128 support in libm:
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __frexpieee128 in -lm" >&5
+$as_echo_n "checking for __frexpieee128 in -lm... " >&6; }
+if ${ac_cv_lib_m___frexpieee128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char __frexpieee128 ();
+int
+main ()
+{
+return __frexpieee128 ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m___frexpieee128=yes
+else
+  ac_cv_lib_m___frexpieee128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m___frexpieee128" >&5
+$as_echo "$ac_cv_lib_m___frexpieee128" >&6; }
+if test "x$ac_cv_lib_m___frexpieee128" = xyes; then :
+  ac_ldbl_ieee128_in_libc=yes
+else
+  ac_ldbl_ieee128_in_libc=no
+fi
+
+        if test $ac_ldbl_ieee128_in_libc = yes; then
+          # Determine which long double format is the compiler's default:
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+            #ifndef __LONG_DOUBLE_IEEE128__
+            #error compiler defaults to ibm128
+            #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_ldbl_ieee128_default=yes
+else
+  ac_ldbl_ieee128_default=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+          # Library objects should use default long double format.
+          if test "$ac_ldbl_ieee128_default" = yes; then
+            LONG_DOUBLE_128_FLAGS="-mno-gnu-attribute"
+            # Except for the ones that explicitly use these flags:
+            LONG_DOUBLE_ALT128_COMPAT_FLAGS="-mabi=ibmlongdouble -mno-gnu-attribute -Wno-psabi"
+          else
+            LONG_DOUBLE_128_FLAGS="-mno-gnu-attribute"
+            LONG_DOUBLE_ALT128_COMPAT_FLAGS="-mabi=ieeelongdouble -mno-gnu-attribute -Wno-psabi"
+          fi
+
+$as_echo "#define _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT 1" >>confdefs.h
+
+          port_specific_symbol_files="$port_specific_symbol_files \$(top_srcdir)/config/os/gnu-linux/ldbl-ieee128-extra.ver"
+          ac_ldbl_alt128_compat=yes
+        else
+          ac_ldbl_alt128_compat=no
+        fi
+	;;
     esac
   fi
 esac
+
+
+
 
 
 
@@ -78268,6 +78366,15 @@ else
 fi
 
 
+    if test $ac_ldbl_alt128_compat = yes; then
+  GLIBCXX_LDBL_ALT128_COMPAT_TRUE=
+  GLIBCXX_LDBL_ALT128_COMPAT_FALSE='#'
+else
+  GLIBCXX_LDBL_ALT128_COMPAT_TRUE='#'
+  GLIBCXX_LDBL_ALT128_COMPAT_FALSE=
+fi
+
+
     if test $enable_libstdcxx_filesystem_ts = yes; then
   ENABLE_FILESYSTEM_TS_TRUE=
   ENABLE_FILESYSTEM_TS_FALSE='#'
@@ -78776,6 +78883,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_LDBL_COMPAT_TRUE}" && test -z "${GLIBCXX_LDBL_COMPAT_FALSE}"; then
   as_fn_error $? "conditional \"GLIBCXX_LDBL_COMPAT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${GLIBCXX_LDBL_ALT128_COMPAT_TRUE}" && test -z "${GLIBCXX_LDBL_ALT128_COMPAT_FALSE}"; then
+  as_fn_error $? "conditional \"GLIBCXX_LDBL_ALT128_COMPAT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_FILESYSTEM_TS_TRUE}" && test -z "${ENABLE_FILESYSTEM_TS_FALSE}"; then

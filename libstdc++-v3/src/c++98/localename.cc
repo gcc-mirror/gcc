@@ -171,8 +171,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
-  + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
+const int num_facets = (
+    _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_CXX11_FACETS
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    + _GLIBCXX_NUM_LBDL_ALT128_FACETS
+#endif
+    )
+#ifdef _GLIBCXX_USE_WCHAR_T
+  * 2
+#endif
+  + _GLIBCXX_NUM_UNICODE_FACETS;
 
   // Construct named _Impl.
   locale::_Impl::
@@ -282,6 +290,10 @@ const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
 
 #if _GLIBCXX_USE_DUAL_ABI
         _M_init_extra(&__cloc, &__clocm, __s, __smon);
+#endif
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+	_M_init_extra_ldbl128(false);
 #endif
 
 	locale::facet::_S_destroy_c_locale(__cloc);

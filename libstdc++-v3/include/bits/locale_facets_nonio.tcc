@@ -350,7 +350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
       }
 
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
   template<typename _CharT, typename _InIter>
     _InIter
     money_get<_CharT, _InIter>::
@@ -400,6 +400,22 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	}
       return __beg;
     }
+
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+  template<typename _CharT, typename _InIter>
+    _InIter
+    money_get<_CharT, _InIter>::
+    __do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
+	     ios_base::iostate& __err, __ibm128& __units) const
+    {
+      string __str;
+      __beg = __intl ? _M_extract<true>(__beg, __end, __io, __err, __str)
+	             : _M_extract<false>(__beg, __end, __io, __err, __str);
+      std::__convert_to_v(__str.c_str(), __units, __err, _S_get_c_locale());
+      return __beg;
+    }
+#endif
 
   template<typename _CharT, typename _OutIter>
     template<bool _Intl>
@@ -562,7 +578,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
       }
 
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -616,6 +632,47 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	   const string_type& __digits) const
     { return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits); }
+
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+  template<typename _CharT, typename _OutIter>
+    _OutIter
+    money_put<_CharT, _OutIter>::
+    __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     __ibm128 __units) const
+    {
+      const locale __loc = __io.getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+#if _GLIBCXX_USE_C99_STDIO
+      // First try a buffer perhaps big enough.
+      int __cs_size = 64;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 328. Bad sprintf format modifier in money_put<>::do_put()
+      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					"%.*Lf", 0, __units);
+      // If the buffer was not large enough, try again with the correct size.
+      if (__len >= __cs_size)
+	{
+	  __cs_size = __len + 1;
+	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					"%.*Lf", 0, __units);
+	}
+#else
+      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
+      const int __cs_size =
+	__gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 3;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
+					0, __units);
+#endif
+      string_type __digits(__len, char_type());
+      __ctype.widen(__cs, __cs + __len, &__digits[0]);
+      return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
+	            : _M_insert<false>(__s, __io, __fill, __digits);
+    }
+#endif
 
 _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 

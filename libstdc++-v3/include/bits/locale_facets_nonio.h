@@ -1566,7 +1566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
        */
       // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
       virtual iter_type
       __do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	       ios_base::iostate& __err, double& __units) const;
@@ -1588,8 +1588,16 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	     ios_base::iostate& __err, string_type& __digits) const;
 
       // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+      virtual iter_type
+      __do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
+	       ios_base::iostate& __err, __ibm128& __units) const;
+#endif
+
+      // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
       virtual iter_type
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, long double& __units) const;
@@ -1711,7 +1719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
        */
       // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
       virtual iter_type
       __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	       double __units) const;
@@ -1745,8 +1753,16 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	     const string_type& __digits) const;
 
       // XXX GLIBCXX_ABI Deprecated
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+      virtual iter_type
+      __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	       __ibm128 __units) const;
+#endif
+
+      // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-      && _GLIBCXX_USE_CXX11_ABI == 0
+      && (_GLIBCXX_USE_CXX11_ABI == 0 || defined __LONG_DOUBLE_IEEE128__)
       virtual iter_type
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     long double __units) const;

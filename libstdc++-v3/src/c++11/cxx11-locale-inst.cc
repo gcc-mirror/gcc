@@ -32,8 +32,6 @@
 # error This file should not be compiled for this configuration.
 #endif
 
-#ifndef C
-# define C char
-# define C_is_char
-#endif
+#define C char
+#define C_is_char
 # include "locale-inst.cc"
