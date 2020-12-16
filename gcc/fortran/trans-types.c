@@ -2292,8 +2292,16 @@ gfc_sym_type (gfc_symbol * sym)
 	  if (sym->attr.pointer)
 	    akind = sym->attr.contiguous ? GFC_ARRAY_POINTER_CONT
 					 : GFC_ARRAY_POINTER;
-	  else if (sym->attr.allocatable)
-	    akind = GFC_ARRAY_ALLOCATABLE;
+	  else
+	    {
+	      /* In most cases, we want shared coarrays treated like
+		 allocatable arrays.  FIXME: It might make sense to introduce
+		 GFC_ARRAY_COARRAY later.  */
+	      if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension)
+		akind = GFC_ARRAY_ALLOCATABLE;
+	      else if (sym->attr.allocatable)
+		akind = GFC_ARRAY_ALLOCATABLE;
+	    }
 
 	  /* FIXME: For normal coarrays, we pass a bool to an int here.
 	     Is this really intended?  */
@@ -2760,14 +2768,21 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
          required.  */
       if ((c->attr.dimension || c->attr.codimension) && !c->attr.proc_pointer )
 	{
-	  if (c->attr.pointer || c->attr.allocatable || c->attr.pdt_array)
+	  if (c->attr.pointer || c->attr.allocatable || c->attr.pdt_array
+	      || (flag_coarray == GFC_FCOARRAY_SHARED && c->attr.codimension))
 	    {
 	      enum gfc_array_kind akind;
 	      if (c->attr.pointer)
 		akind = c->attr.contiguous ? GFC_ARRAY_POINTER_CONT
 					   : GFC_ARRAY_POINTER;
 	      else
-		akind = GFC_ARRAY_ALLOCATABLE;
+		{
+		  if (flag_coarray == GFC_FCOARRAY_SHARED && c->attr.codimension)
+		    akind = GFC_ARRAY_ALLOCATABLE;  /* See FIXME in gfc_sym_type.  */
+		  else
+		    akind = GFC_ARRAY_ALLOCATABLE;
+		}
+
 	      /* Pointers to arrays aren't actually pointer types.  The
 	         descriptors are separate, but the data is common.  */
 	      field_type = gfc_build_array_type (field_type, c->as, akind,

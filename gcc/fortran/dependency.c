@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "options.h"
 #include "gfortran.h"
 #include "dependency.h"
 #include "constructor.h"
@@ -2012,6 +2013,15 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 
       if (!lbound_OK || !ubound_OK)
 	return false;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    {
+      for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	{
+	  if (ref->u.ar.dimen_type[i] != DIMEN_STAR)
+	    return false;
+	}
     }
   return true;
 }
