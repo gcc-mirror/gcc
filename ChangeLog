@@ -1,3 +1,18 @@
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.def
+	* Makefile.in
+	* Makefile.tpl
+	* configure
+	* configure.ac
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.def: Add libcody.
+	* configure.ac: Add libcody.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
 2020-12-14  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* .dir-locals.el (c-mode): Set 'fill-column' to 80 columns.

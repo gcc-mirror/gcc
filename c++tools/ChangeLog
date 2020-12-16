@@ -1,3 +1,13 @@
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: New.
+	* config.h.in: New.
+	* configure: New.
+	* configure.ac: New.
+	* resolver.cc: New.
+	* resolver.h: New.
+	* server.cc: New.
+
 
 Copyright (C) 2020 Free Software Foundation, Inc.
 

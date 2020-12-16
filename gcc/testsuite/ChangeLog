@@ -1,3 +1,66 @@
+2020-12-15  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-52830.C: Remove dg-ice.
+
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96094
+	* gcc.dg/tree-ssa/pr96094.c: New test.
+
+2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98277
+	* gdc.dg/pr98277.d: New test.
+
+2020-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-requires23.C: New test.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/mod-decl-0-2a.C: New.
+	* g++.dg/modules/mod-decl-0.C: New.
+	* g++.dg/modules/mod-decl-1.C: New.
+	* g++.dg/modules/mod-decl-2_a.C: New.
+	* g++.dg/modules/mod-decl-2_b.C: New.
+	* g++.dg/modules/mod-decl-2_c.C: New.
+	* g++.dg/modules/mod-decl-3.C: New.
+	* g++.dg/modules/mod-decl-5_a.C: New.
+	* g++.dg/modules/mod-decl-5_b.C: New.
+
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98274
+	* gcc.target/i386/pr98274.c: New test.
+
+2020-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/x86-64-v2.c: Don't expect
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 to be defined with -m32.
+	* gcc.target/i386/x86-64-v2-other.c: New test.
+	* gcc.target/i386/x86-64-v2-msabi.c: New test.
+	* gcc.target/i386/x86-64-v3.c: Fix a comment pasto.  Don't expect
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 to be defined with -m32.
+	* gcc.target/i386/x86-64-v3-other.c: New test.
+	* gcc.target/i386/x86-64-v3-msabi.c: New test.
+	* gcc.target/i386/x86-64-v4.c:Don't expect
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 to be defined with -m32.
+	* gcc.target/i386/x86-64-v4-other.c: New test.
+	* gcc.target/i386/x86-64-v4-msabi.c: New test.
+
+2020-12-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/pr98285.c: New test.
+
+2020-12-15  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (errchk): Retain any characters at the end
+	of the comment.
+
+2020-12-15  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr78102.c: Adjust testcase.
+
 2020-12-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98166

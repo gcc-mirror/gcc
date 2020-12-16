@@ -1,3 +1,463 @@
+2020-12-15  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-sercom__linux.adb (Set): Use cfsetospeed and
+	cfsetispeed to set the baud rate. Clear non-blocking serial port
+	status when blocking is requested.
+
+2020-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valrea.adb (Integer_to_Real): Always use Extra.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch5.adb (P_Condition): Simplify condition for warning
+	about extra parens and make it easier to understand.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.ads (Error_Msg_Ada_2005_Extension): New routine (spec).
+	* errout.adb (Error_Msg_Ada_2005_Extension): New routine (body).
+	* par-ch10.adb: Reuse new routine; correct casing for "LIMITED
+	WITH".
+	* par-ch11.adb: Likewise.
+	* par-ch12.adb: Likewise.
+	* par-ch3.adb: Likewise.
+	* par-ch4.adb: Likewise; replace "box" with "<>".
+	* par-ch6.adb: Likewise.
+	* par-ch9.adb: Likewise; correct casing for "THEN ABORT".
+
+2020-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Minor fix.
+	* gnat_ugn.texi: Regenerate.
+	* libgnat/s-valuer.ads (Precision_Limit): New formal parameter.
+	* libgnat/s-valuer.adb (Precision_Limit): Remove.
+	(Scan_Decimal_Digits): Robustify overflow check.
+	(Scan_Integral_Digits): Likewise.
+	* libgnat/s-valrea.adb: Add assertion on the size of the unsigned
+	type and instantiate System.Value_R with the mantissa limit.
+	(Integer_to_Real): Add Extra parameter and take it into account.
+	(Scan_Real): Pass Extra to Integer_to_Real.
+	(Value_Real): Likewise.
+	* libgnat/s-valued.adb: Add assertion on the size of the unsigned
+	type and instantiate System.Value_R with the mantissa limit.
+	* libgnat/s-valuef.adb: Likewise.
+
+2020-12-15  Justin Squirek  <squirek@adacore.com>
+
+	* contracts.adb, contracts.ads (Build_Postconditions_Procedure):
+	Add declarations for Postcond_Enabled,
+	Result_Object_For_Postcondition, and
+	Return_Success_For_Postcond, and place all postconditions within
+	an if statement to control their execution for interactions when
+	cleanup actions get generated.
+	(Get_Postcond_Enabled): Created to fetch object declared to
+	handle new expansion of postconditions.
+	(Get_Result_Object_For_Postcond): Created to fetch object
+	declared to handle new expansion of postconditions.
+	(Get_Return_Success_For_Postcond): Created to fetch object
+	declared to handle new expansion of postconditions.
+	* einfo.adb, einfo.ads: Modify flag Stores_Attribute_Old_Prefix
+	to apply to constants, variables, and types.
+	* exp_ch6.adb (Add_Return): Add assignment to
+	Return_Success_For_Postcond.
+	(Expand_Non_Function_Return): Add assignment to
+	Return_Success_For_Postcond
+	(Expand_Simple_Function_Return): Add assignment to
+	Result_Object_For_Postcond and Return_Success_For_Postcond.
+	* exp_ch7.adb (Build_Finalization_Master): Mark finalization
+	masters which finalize types created store 'Old objects as
+	storing 'Old objects.
+	(Build_Finalizer): Created to generated a unified and special
+	expansion for finalization when postconditions are present.
+	(Build_Finalizer_Helper): Renamed Build_Finalizer and added
+	parameter to facilitate the creation of separate finalization
+	routines for 'Old objects and general objects.
+	(Create_Finalizer): Add condition for the insertion of the
+	finalizer spec to avoid malformed trees.
+	(Expand_Cleanup_Actions): Move _postconditions and related
+	declarations to the new declarative section.  Fix the loop to
+	properly stop at the subprogram declaration for the
+	postconditions procedure and exclude its body from being moved
+	to the new list of declarations to avoid freezing issues.
+	* exp_prag.adb (Expand_Attributes): Mark temporary created to
+	store 'Old objects as storing a 'Old attribute.
+	* sem_ch6.adb (Find_What_Applies_To): Remove strange exception
+	to postconditions when traversing the scope stack.
+	* sem_prag.adb (Find_Related_Declaration_Or_Body): Use the newly
+	created Enclosing_HSS function to find the HSS for a potentially
+	nested statement.
+	* sem_util.adb, sem_util.ads (Declare_Indirect_Temp): Mark types
+	created to store 'Old objects as storing 'Old attributes.
+	(Enclosing_HSS): Created to find the enclosing handled sequence
+	of statements for a given statement.
+	* snames.ads-tmpl: Add multiple names to aid in the expansion of
+	finalization and to control the evaluation of postconditions.
+	Including _finalization_controller, a new routine to centralize
+	finalization actions and postcondition evaluation.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch5.adb (P_Loop_Parameter_Specification): Complain about
+	missing -gnat2020 switch.
+	(P_Iterator_Specification): Likewise.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Simplify with
+	Append_New.
+
+2020-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Remove s-fatsfl$(objext)
+	and add s-valflt$(objext), s-vallfl$(objext), s-valllf$(objext).
+	* exp_attr.adb (Find_Fat_Info): Merge Short_Float and Float cases.
+	* exp_imgv.adb (Expand_Value_Attribute): Replace RE_Value_Real with
+	RE_Value_Long_Long_Float for fixed-point types and use appropriate
+	base type for floating-point types.
+	* rtsfind.ads (RTU_Id): Remove System_Fat_IEEE_Long_Float,
+	System_Fat_IEEE_Short_Float and System_Val_Real, add System_Val_Flt,
+	System_Val_LFlt and System_Val_LLF.
+	(RE_Id): Remove RE_Attr_IEEE_Long, RE_Fat_IEEE_Long,
+	RE_Attr_IEEE_Short, RE_Fat_IEEE_Short, RE_Attr_Short_Float, add
+	RE_Value_Float, RE_Value_Long_Float, RE_Value_Long_Long_Float,
+	(RE_Unit_Table): Likewise.
+	* libgnat/a-ticoau.ads: Add with clause for Float_Aux and make the
+	package generic.
+	(Get): Change parameter types to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-ticoau.adb: Remove clause and renaming for Float_Aux.
+	(Get): Change parameter types to Num.
+	(Gets): Likewise.
+	(Put): Likewise.
+	(Puts): Likewise.  Add conversion to Long_Long_Float.
+	* libgnat/a-ticoio.adb: Remove with clause for Ada.Text_IO, add with
+	clause for Float_Aux, add with and use clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Instantiate Float_Aux and
+	Complex_Aux on Float, Long_Float, and Long_Long_Float.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.
+	(Get): Call appropriate Gets routine from auxiliary package.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-tideau.adb: Remove with and use clause for Float_Aux.
+	* libgnat/a-tifiau.adb: Likewise.
+	* libgnat/a-tifiio.adb: Add with and use clause for System.Val_LLF.
+	Instantiate Float_Aux on Long_Long_Float.
+	(Get): Adjust call to Get routine from auxiliary package.
+	(Get): Adjust call to Gets routine from auxiliary package.
+	(Put): Adjust call to Put routine from auxiliary package.
+	(Put): Adjust call to Puts routine from auxiliary package.
+	* libgnat/a-tifiio__128.adb: Likewise.
+	(Get): Likewise.
+	(Get): Likewise.
+	(Put): Likewise.
+	(Put): Likewise.
+	* libgnat/a-tiflau.ads: Make the package generic.
+	(Get): Change parameter type to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-tiflau.adb: Remove clauses for System.Val_Real.
+	(Get): Change parameter type to Num and call Scan routine.
+	(Gets): Likewise.
+	(Load_Real): Move to...
+	(Put): Change parameter type and add conversion to Long_Long_Float.
+	(Puts): Likewise.
+	* libgnat/a-tiflio.adb: Add with and use clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Instantiate Float_Aux on Float,
+	Long_Float and Long_Long_Float.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.
+	(Get): Call previous variant.
+	(Get): Call appropriate Gets routine from auxiliary package.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call previous variant.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-tigeau.ads (Load_Real): New procedure.
+	* libgnat/a-tigeau.adb (Load_Real): ...here.
+	* libgnat/a-wtcoau.ads: Add with clause for Float_Aux and make the
+	package generic.
+	(Get): Change parameter types to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-wtcoau.adb: Remove clause and renaming for Float_Aux.
+	(Get): Change parameter types to Num.
+	(Gets): Likewise.
+	(Put): Likewise.
+	(Puts): Likewise.  Add conversion to Long_Long_Float.
+	* libgnat/a-wtcoio.ads: Remove use clause for Complex_Types and use
+	qualified names throughout accordingly.
+	* libgnat/a-wtcoio.adb: Remove clause for Ada.Unchecked_Conversion,
+	add with clause for Float_Aux, add clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Add clause for Complex_Types.
+	Instantiate Float_Aux and Complex_Aux on Float, Long_Float, and
+	Long_Long_Float.  Remove LLF subtype and TFT instantiation.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.
+	(Get): Call appropriate Gets routine from auxiliary package.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-wtdeau.adb: Remove with and use clause for Float_Aux.
+	* libgnat/a-wtfiau.adb: Likewise.
+	* libgnat/a-wtfiio.adb: Add with and use clause for System.Val_LLF.
+	Instantiate Float_Aux on Long_Long_Float.
+	(Get): Adjust call to Get routine from auxiliary package.
+	(Get): Adjust call to Gets routine from auxiliary package.
+	(Put): Adjust call to Put routine from auxiliary package.
+	(Put): Adjust call to Puts routine from auxiliary package.
+	* libgnat/a-wtfiio__128.adb: Likewise.
+	(Get): Likewise.
+	(Get): Likewise.
+	(Put): Likewise.
+	(Put): Likewise.
+	* libgnat/a-wtflau.ads: Make the package generic.
+	(Get): Change parameter type to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-wtflau.adb: Remove clauses for System.Val_Real.
+	(Get): Change parameter type to Num and call Scan routine. Set
+	Ptr parameter lazily.
+	(Gets): Likewise.
+	(Load_Real): Move to...
+	(Put): Change parameter type and add conversion to Long_Long_Float.
+	Bump buffer length to Max_Real_Image_Length.
+	(Puts): Likewise.
+	* libgnat/a-wtflio.adb: Add with and use clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Instantiate Float_Aux on Float,
+	Long_Float and Long_Long_Float.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.  Add
+	pragma Unsuppress (Range_Check) and manual validity check.
+	(Get): Call appropriate Gets routine from auxiliary package. Add
+	pragma Unsuppress (Range_Check) and manual validity check.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-wtgeau.ads (Load_Real): New procedure.
+	* libgnat/a-wtgeau.adb (Load_Real): ...here.
+	* libgnat/a-ztcoau.ads: Add with clause for Float_Aux and make the
+	package generic.
+	(Get): Change parameter types to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-ztcoau.adb: Remove clause and renaming for Float_Aux.
+	(Get): Change parameter types to Num.
+	(Gets): Likewise.
+	(Put): Likewise.
+	(Puts): Likewise.  Add conversion to Long_Long_Float.
+	* libgnat/a-ztcoio.ads: Remove use clause for Complex_Types and use
+	qualified names throughout accordingly.
+	* libgnat/a-ztcoio.adb: Remove clause for Ada.Unchecked_Conversion,
+	add with clause for Float_Aux, add clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Add clause for Complex_Types.
+	Instantiate Float_Aux and Complex_Aux on Float, Long_Float, and
+	Long_Long_Float. Remove LLF subtype and TFT instantiation.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.
+	(Get): Call appropriate Gets routine from auxiliary package.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-ztdeau.adb: Remove with and use clause for Float_Aux.
+	* libgnat/a-ztfiau.adb: Likewise.
+	* libgnat/a-ztfiio.adb: Add with and use clause for System.Val_LLF.
+	Instantiate Float_Aux on Long_Long_Float.
+	(Get): Adjust call to Get routine from auxiliary package.
+	(Get): Adjust call to Gets routine from auxiliary package.
+	(Put): Adjust call to Put routine from auxiliary package.
+	(Put): Adjust call to Puts routine from auxiliary package.
+	* libgnat/a-ztfiio__128.adb: Likewise.
+	(Get): Likewise.
+	(Get): Likewise.
+	(Put): Likewise.
+	(Put): Likewise.
+	* libgnat/a-ztflau.ads: Make the package generic.
+	(Get): Change parameter type to Num.
+	(Put): Likewise.
+	(Gets): Likewise.
+	(Puts): Likewise.
+	* libgnat/a-ztflau.adb: Remove clauses for System.Val_Real.
+	(Get): Change parameter type to Num and call Scan routine. Set
+	Ptr parameter lazily.
+	(Gets): Likewise.
+	(Load_Real): Move to...
+	(Put): Change parameter type and add conversion to Long_Long_Float.
+	Bump buffer length to Max_Real_Image_Length.
+	(Puts): Likewise.
+	* libgnat/a-ztflio.adb: Add with and use clauses for System.Val_Flt,
+	System.Val_LFlt and System.Val_LLF. Instantiate Float_Aux on Float,
+	Long_Float and Long_Long_Float.
+	(OK_Float): New boolean constant.
+	(OK_Long_Float): Likewise.
+	(Get): Call appropriate Get routine from auxiliary package.  Add
+	pragma Unsuppress (Range_Check) and manual validity check.
+	(Get): Call appropriate Gets routine from auxiliary package. Add
+	pragma Unsuppress (Range_Check) and manual validity check.
+	(Put): Call appropriate Put routine from auxiliary package.
+	(Put): Call appropriate Puts routine from auxiliary package.
+	* libgnat/a-ztgeau.ads (Load_Real): New procedure.
+	* libgnat/a-ztgeau.adb (Load_Real): ...here.
+	* libgnat/s-fatsfl.ads: Delete.
+	* libgnat/s-valflt.ads: New package.
+	* libgnat/s-vallfl.ads: Likewise.
+	* libgnat/s-valllf.ads: Likewise.
+	* libgnat/s-valrea.ads: Make generic. Add assertions, defensive
+	code and clarify intent.
+	(Scan_Real): Change parameter type to Num.
+	(Value_Real): Likewise.
+	* libgnat/s-valrea.adb: Instantiate Value_R on Uns.
+	(Integer_to_Real): Change parameter and result to Num.
+	Call Float_Control.Reset only if the mantissa is 64 bits.  Use
+	a divide to compute the final value if the scale is negative.
+	(Scan_Real): Change result to Num.
+	(Value_Real): Likewise.
+	* libgnat/s-valuer.adb: Add assertions, defensive code and
+	clarify intent.
+	(F_Limit): Delete.
+	(I_Limit): Likewise.
+	(Precision_Limit): Always use the integer limit.
+	* libgnat/s-fatgen.adb: Add pragma Annotate.
+
+2020-12-15  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-tiflio.adb: Mark body not in SPARK.
+	* libgnat/a-tiflio.ads: Mark spec in SPARK.
+
+2020-12-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Build_Procedure_Body_Form): Adjust, the
+	declaration of the procedure form is now insert before the
+	original function body rather than after.
+	(Expand_N_Subprogram_Declaration): Deal with private types whose
+	full views are arrays.
+	* exp_unst.adb (Unnest_Subprogram): Deal with private types.
+	(Needs_Fat_Pointer): Code cleanup.
+	* freeze.adb (Freeze_Subprogram): Ditto.
+	* exp_util.adb (Build_Procedure_Form): Insert the procedure form
+	decl before and not after.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Build missing
+	spec when needed for Transform_Function_Array.
+	* sem_util.adb (Get_Fullest_View): Deal with null entity.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Simplify code
+	for aspect Priority.
+	* sem_prag.adb (Analyze_Pragma): Simplify code for pragma
+	Priority.
+
+2020-12-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch7.adb (Reset_Scopes_To_Block_Elab_Proc): Do not crash on
+	a block with no Identifier. Code cleanups.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Reuse existing code for
+	attribute Value when analyzing attributes Wide_Value and
+	Wide_Wide_Value.
+
+2020-12-15  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-diopit.adb (Find): Fix possible infinite recursion
+	in Find iterator.
+	* libgnat/g-diopit.ads (Find): Update comments accordingly.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Callable and Terminated attributes; refactor calls to Set_Etype
+	occurring in both THEN and ELSE branches of an IF statement for
+	attribute Storage_Size.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Wide_Wide_Width, Wide_Width and Width attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Pred and Succ attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Size, Object_Size and Value_Size attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Consistently call
+	Check_Fixed_Point_Type before checking the number of attribute
+	expressions (like it is done for floating point types); reuse
+	Check_Fixed_Point_Type_0.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (Make_Tags): Remove call to UI_To_Int.
+	* sem_attr.adb (Check_Array_Type): Likewise; also, refine type
+	of a local variable.
+	(Analyze_Attribute): Likewise.
+	(Get_Enclosing_Object): Likewise.
+	* sem_util.adb (Get_Enum_Lit_From_Pos): Likewise.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	First_Bit/Last_Bit and Position attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Machine_Radix and Mantissa attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Machine_Overflows and Machine_Rounds attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Large, Small, Safe_Large and Safe_Small attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Epsilon, Model_Epsilon, Model_Small, Safe_First and Safe_Las
+	attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Emax, Machine_Emax, Machine_Emin, Machine_Mantissa, Model_Emin,
+	Model_Mantissa and Safe_Emax attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Denorm and Signed_Zeros attributes.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Adjacent, Copy_Sign and Remainder attributes.
+	(Check_Floating_Point_Type_2): Fix style in comment.
+
+2020-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Merge identical code for
+	Compose, Leading_Part and Scaling attributes.
+
 2020-12-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Resolve second parameter of

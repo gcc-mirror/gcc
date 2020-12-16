@@ -1,3 +1,13 @@
+2020-12-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90207
+	* invoke.texi: Document -fdebug-aux-vars.
+	* lang.opt: Add -fdebug-aux-vars.
+	* trans.c (MAX_PREFIX_LEN): New macro.
+	(create_var_debug_raw): New function.
+	(gfc_create_var_np): Call create_var_debug_raw if
+	flag_debug_aux_vars is set.
+
 2020-12-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_array_ref): Also show coarrays.
