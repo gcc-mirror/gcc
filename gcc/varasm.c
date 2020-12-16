@@ -6791,10 +6791,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
-     part of a COMDAT groups or with SHF_GNU_RETAIN, in which case GAS
-     requires the full declaration every time.  */
+     part of a COMDAT groups or with SHF_GNU_RETAIN or with SHF_LINK_ORDER,
+     in which case GAS requires the full declaration every time.  */
   if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-      && !(flags & SECTION_RETAIN)
+      && !(flags & (SECTION_RETAIN | SECTION_LINK_ORDER))
       && (flags & SECTION_DECLARED))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
