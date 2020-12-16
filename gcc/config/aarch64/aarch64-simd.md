@@ -449,6 +449,14 @@
   [(set_attr "type" "neon_fcadd")]
 )
 
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:VHSDF 0 "register_operand")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")
+		       (match_operand:VHSDF 2 "register_operand")]
+		       FCADD))]
+  "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
+)
+
 (define_insn "aarch64_fcmla<rot><mode>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(plus:VHSDF (match_operand:VHSDF 1 "register_operand" "0")
