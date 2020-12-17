@@ -53,7 +53,7 @@ INSTALL := $(srcdir)/build-aux/install-sh
 # C++ compiler options
 CXXFLAGS := @CXXFLAGS@
 CXXINC := $(filter -I%,@CXX@)
-CXXOPTS := $(CXXFLAGS)
+CXXOPTS := $(CXXFLAGS) @PICFLAG@
 ifeq ($(notdir $(firstword $(CXX))),g++)
 # It's GCC, or pretending to be it -- so it better smell like it!
 # Code generation
