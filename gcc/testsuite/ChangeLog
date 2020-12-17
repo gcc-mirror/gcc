@@ -1,3 +1,7 @@
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr98297.C: New.
+
 2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
