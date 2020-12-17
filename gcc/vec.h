@@ -2138,6 +2138,126 @@ release_vec_vec (vec<vec<T> > &vec)
   vec.release ();
 }
 
+// Provide a subset of the std::span functionality.  (We can't use std::span
+// itself because it's a C++20 feature.)
+//
+// In addition, provide an invalid value that is distinct from all valid
+// sequences (including the empty sequence).  This can be used to return
+// failure without having to use std::optional.
+//
+// There is no operator bool because it would be ambiguous whether it is
+// testing for a valid value or an empty sequence.
+template<typename T>
+class array_slice
+{
+  template<typename OtherT> friend class array_slice;
+
+public:
+  using value_type = T;
+  using iterator = T *;
+  using const_iterator = const T *;
+
+  array_slice () : m_base (nullptr), m_size (0) {}
+
+  template<typename OtherT>
+  array_slice (array_slice<OtherT> other)
+    : m_base (other.m_base), m_size (other.m_size) {}
+
+  array_slice (iterator base, unsigned int size)
+    : m_base (base), m_size (size) {}
+
+  template<size_t N>
+  array_slice (T (&array)[N]) : m_base (array), m_size (N) {}
+
+  template<typename OtherT>
+  array_slice (const vec<OtherT> &v)
+    : m_base (v.address ()), m_size (v.length ()) {}
+
+  iterator begin () { return m_base; }
+  iterator end () { return m_base + m_size; }
+
+  const_iterator begin () const { return m_base; }
+  const_iterator end () const { return m_base + m_size; }
+
+  value_type &front ();
+  value_type &back ();
+  value_type &operator[] (unsigned int i);
+
+  const value_type &front () const;
+  const value_type &back () const;
+  const value_type &operator[] (unsigned int i) const;
+
+  size_t size () const { return m_size; }
+  size_t size_bytes () const { return m_size * sizeof (T); }
+  bool empty () const { return m_size == 0; }
+
+  // An invalid array_slice that represents a failed operation.  This is
+  // distinct from an empty slice, which is a valid result in some contexts.
+  static array_slice invalid () { return { nullptr, ~0U }; }
+
+  // True if the array is valid, false if it is an array like INVALID.
+  bool is_valid () const { return m_base || m_size == 0; }
+
+private:
+  iterator m_base;
+  unsigned int m_size;
+};
+
+template<typename T>
+inline typename array_slice<T>::value_type &
+array_slice<T>::front ()
+{
+  gcc_checking_assert (m_size);
+  return m_base[0];
+}
+
+template<typename T>
+inline const typename array_slice<T>::value_type &
+array_slice<T>::front () const
+{
+  gcc_checking_assert (m_size);
+  return m_base[0];
+}
+
+template<typename T>
+inline typename array_slice<T>::value_type &
+array_slice<T>::back ()
+{
+  gcc_checking_assert (m_size);
+  return m_base[m_size - 1];
+}
+
+template<typename T>
+inline const typename array_slice<T>::value_type &
+array_slice<T>::back () const
+{
+  gcc_checking_assert (m_size);
+  return m_base[m_size - 1];
+}
+
+template<typename T>
+inline typename array_slice<T>::value_type &
+array_slice<T>::operator[] (unsigned int i)
+{
+  gcc_checking_assert (i < m_size);
+  return m_base[i];
+}
+
+template<typename T>
+inline const typename array_slice<T>::value_type &
+array_slice<T>::operator[] (unsigned int i) const
+{
+  gcc_checking_assert (i < m_size);
+  return m_base[i];
+}
+
+template<typename T>
+array_slice<T>
+make_array_slice (T *base, unsigned int size)
+{
+  return array_slice<T> (base, size);
+}
+
 #if (GCC_VERSION >= 3000)
 # pragma GCC poison m_vec m_vecpfx m_vecdata
 #endif
