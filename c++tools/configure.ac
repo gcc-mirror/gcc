@@ -77,6 +77,8 @@ if test $ac_cv_o_cloexec = yes; then
   [Define if O_CLOEXEC supported by fcntl.])
 fi
 
+AC_CHECK_HEADERS(sys/mman.h)
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some

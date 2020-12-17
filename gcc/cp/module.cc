@@ -232,6 +232,10 @@ Classes used:
 #define CODY_NETWORKING 0
 #include "mapper-client.h"
 
+#if 0 // 1 for testing no mmap
+#define MAPPED_READING 0
+#define MAPPED_WRITING 0
+#else
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */
 #define MAPPED_READING 1
@@ -246,11 +250,6 @@ Classes used:
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
 #endif
-#if 0 // for testing
-#undef MAPPED_READING
-#undef MAPPED_WRITING
-#define MAPPED_READING 0
-#define MAPPED_WRITING 0
 #endif
 
 #if !HOST_HAS_O_CLOEXEC
@@ -1657,7 +1656,7 @@ elf_in::read (data *data, unsigned pos, unsigned length)
 #if MAPPED_READING  
   data->buffer = hdr.buffer + pos;
 #else
-  if (::read (fd, data->buffer, data->size) != length)
+  if (::read (fd, data->buffer, data->size) != ssize_t (length))
     {
       set_error (errno);
       shrink (*data);
@@ -2049,7 +2048,7 @@ elf_out::write (const data &buffer)
     /* We should have been aligned during the first allocation.  */
     gcc_checking_assert (!(pos & (SECTION_ALIGN - 1)));
 #else
-  if (::write (fd, buffer.buffer, buffer.pos) != buffer.pos)
+  if (::write (fd, buffer.buffer, buffer.pos) != ssize_t (buffer.pos))
     {
       set_error (errno);
       return 0;
@@ -2064,7 +2063,7 @@ elf_out::write (const data &buffer)
       /* Align the section on disk, should help the necessary copies.
 	 fseeking to extend is non-portable.  */
       static char zero[SECTION_ALIGN];
-      if (::write (fd, &zero, padding) != padding)
+      if (::write (fd, &zero, padding) != ssize_t (padding))
 	set_error (errno);
 #endif
       pos += padding;

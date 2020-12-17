@@ -76,7 +76,6 @@ intl/plural-config.h: intl/plural.y
 intl/configure: intl/configure.ac intl/aclocal.m4
 intl/config.h.in: intl/configure.ac intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
-c++tools/configure: c++tools/configure.ac
 gcc/configure: gcc/configure.ac
 gcc/cstamp-h.in: gcc/configure.ac
 gcc/config.in: gcc/cstamp-h.in
@@ -103,6 +102,9 @@ gcc/testsuite/gcc.dg/cpp/direct2s.c: gcc/testsuite/gcc.dg/cpp/direct2.c
 # lto-plugin
 lto-plugin/configure: lto-plugin/configure.ac lto-plugin/aclocal.m4
 lto-plugin/Makefile.in: lto-plugin/Makefile.am lto-plugin/aclocal.m4
+# tools
+c++tools/configure: c++tools/configure.ac
+c++tools/config.h.in: c++tools/configure.ac
 # And libraries, at last
 libbanshee/configure: libbanshee/configure.ac
 libmudflap/configure: libmudflap/configure.ac
