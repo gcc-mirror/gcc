@@ -221,7 +221,8 @@ extern int default_memory_move_cost (machine_mode, reg_class_t, bool);
 extern int default_register_move_cost (machine_mode, reg_class_t,
 				       reg_class_t);
 extern bool default_slow_unaligned_access (machine_mode, unsigned int);
-extern HOST_WIDE_INT default_estimated_poly_value (poly_int64);
+extern HOST_WIDE_INT default_estimated_poly_value (poly_int64,
+						   poly_value_estimate_kind);
 
 extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    unsigned int,
