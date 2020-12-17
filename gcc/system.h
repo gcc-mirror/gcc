@@ -235,6 +235,9 @@ extern int errno;
 #ifdef INCLUDE_ARRAY
 # include <array>
 #endif
+#ifdef INCLUDE_FUNCTIONAL
+# include <functional>
+#endif
 # include <cstring>
 # include <new>
 # include <utility>
