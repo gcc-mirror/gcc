@@ -3525,6 +3525,7 @@ extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
+extern bool register_asm_p (const_rtx);
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool

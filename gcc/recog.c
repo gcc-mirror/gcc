@@ -408,10 +408,7 @@ verify_changes (int num)
 	       changes[i].old
 	       && REG_P (changes[i].old)
 	       && asm_noperands (PATTERN (object)) > 0
-	       && REG_EXPR (changes[i].old) != NULL_TREE
-	       && HAS_DECL_ASSEMBLER_NAME_P (REG_EXPR (changes[i].old))
-	       && DECL_ASSEMBLER_NAME_SET_P (REG_EXPR (changes[i].old))
-	       && DECL_REGISTER (REG_EXPR (changes[i].old)))
+	       && register_asm_p (changes[i].old))
 	{
 	  /* Don't allow changes of hard register operands to inline
 	     assemblies if they have been defined as register asm ("x").  */

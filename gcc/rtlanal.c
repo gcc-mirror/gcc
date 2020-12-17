@@ -6617,3 +6617,15 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
 	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
 }
+
+/* Return true if X is register asm.  */
+
+bool
+register_asm_p (const_rtx x)
+{
+  return (REG_P (x)
+	  && REG_EXPR (x) != NULL_TREE
+	  && HAS_DECL_ASSEMBLER_NAME_P (REG_EXPR (x))
+	  && DECL_ASSEMBLER_NAME_SET_P (REG_EXPR (x))
+	  && DECL_REGISTER (REG_EXPR (x)));
+}
