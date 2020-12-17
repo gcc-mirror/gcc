@@ -74,7 +74,7 @@ package System.Finalization_Masters is
    for Finalization_Master_Ptr'Storage_Size use 0;
 
    procedure Attach (N : not null FM_Node_Ptr; L : not null FM_Node_Ptr);
-   --  Compiler interface, do not call from withing the run-time. Prepend a
+   --  Compiler interface, do not call from within the run-time. Prepend a
    --  node to a specific finalization master.
 
    procedure Attach_Unprotected
