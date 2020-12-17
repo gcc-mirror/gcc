@@ -699,7 +699,7 @@ package body Erroutc is
       --  For info messages, prefix message with "info: "
 
       elsif E_Msg.Info then
-         Txt := new String'("info: " & Txt.all);
+         Txt := new String'(SGR_Note & "info: " & SGR_Reset & Txt.all);
 
       --  Warning treated as error
 
@@ -709,27 +709,58 @@ package body Erroutc is
       --  [warning-as-error] at the end.
 
          Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-         Txt := new String'("error: " & Txt.all & " [warning-as-error]");
+         Txt := new String'(SGR_Error & "error: " & SGR_Reset
+                            & Txt.all & " [warning-as-error]");
 
       --  Normal warning, prefix with "warning: "
 
       elsif E_Msg.Warn then
-         Txt := new String'("warning: " & Txt.all);
+         Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
 
-      --  No prefix needed for style message, "(style)" is there already
+      --  No prefix needed for style message, "(style)" is there already,
+      --  although not necessarily in first position if -gnatdJ is used.
 
       elsif E_Msg.Style then
-         null;
+         if Txt (Txt'First .. Txt'First + 6) = "(style)" then
+            Txt := new String'(SGR_Warning & "(style)" & SGR_Reset
+                               & Txt (Txt'First + 7 .. Txt'Last));
+         end if;
 
       --  No prefix needed for check message, severity is there already
 
       elsif E_Msg.Check then
-         null;
+
+         --  The message format is "severity: ..."
+         --
+         --  Enclose the severity with an SGR control string if requested
+
+         if Use_SGR_Control then
+            declare
+               Msg   : String renames Text.all;
+               Colon : Natural := 0;
+            begin
+               --  Find first colon
+
+               for J in Msg'Range loop
+                  if Msg (J) = ':' then
+                     Colon := J;
+                     exit;
+                  end if;
+               end loop;
+
+               pragma Assert (Colon > 0);
+
+               Txt := new String'(SGR_Error
+                                  & Msg (Msg'First .. Colon)
+                                  & SGR_Reset
+                                  & Msg (Colon + 1 .. Msg'Last));
+            end;
+         end if;
 
       --  All other cases, add "error: " if unique error tag set
 
       elsif Opt.Unique_Error_Tag then
-         Txt := new String'("error: " & Txt.all);
+         Txt := new String'(SGR_Error & "error: " & SGR_Reset & Txt.all);
       end if;
 
       --  Set error message line length and length of message

@@ -2071,7 +2071,9 @@ package body Errout is
       procedure Write_Max_Errors;
       --  Write message if max errors reached
 
-      procedure Write_Source_Code_Lines (Span : Source_Span);
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String);
       --  Write the source code line corresponding to Span, as follows when
       --  Span in on one line:
       --
@@ -2095,6 +2097,9 @@ package body Errout is
       --       |                             ^ here
       --
       --  where the caret on the line points to location Span.Ptr
+      --
+      --  SGR_Span is the SGR string to start the section of code in the span,
+      --  that should be closed with SGR_Reset.
 
       -------------------------
       -- Write_Error_Summary --
@@ -2290,8 +2295,10 @@ package body Errout is
       -- Write_Source_Code_Lines --
       -----------------------------
 
-      procedure Write_Source_Code_Lines (Span : Source_Span) is
-
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String)
+      is
          function Get_Line_End
            (Buf : Source_Buffer_Ptr;
             Loc : Source_Ptr) return Source_Ptr;
@@ -2490,6 +2497,15 @@ package body Errout is
             --  the gap with first/last lines, otherwise use ... to denote
             --  intermediate lines.
 
+            --  If the span is on one line and not a simple source location,
+            --  color it appropriately.
+
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Span);
+            end if;
+
             declare
                function Do_Write_Line (Cur_Line : Pos) return Boolean is
                   (Cur_Line in Line_Fst | Line | Line_Lst
@@ -2499,7 +2515,7 @@ package body Errout is
                    (Cur_Line = Line + 1 and then Cur_Line = Line_Lst - 1));
             begin
                while Cur_Loc <= Buf'Last
-                 and then Cur_Loc < Lst
+                 and then Cur_Loc <= Lst
                loop
                   if Do_Write_Line (Cur_Line) then
                      Write_Buffer_Char (Buf, Cur_Loc);
@@ -2535,6 +2551,12 @@ package body Errout is
                end loop;
             end;
 
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Reset);
+            end if;
+
             --  Output the rest of the last line of the span
 
             Write_Buffer (Buf, Cur_Loc, Get_Line_End (Buf, Cur_Loc));
@@ -2546,6 +2568,9 @@ package body Errout is
                Write_Str (String'(1 .. Width => ' '));
                Write_Str (" |");
                Write_Str (String'(1 .. Col_Fst - 1 => ' '));
+
+               Write_Str (SGR_Span);
+
                Write_Str (String'(Col_Fst .. Col - 1 => '~'));
                Write_Str ("^");
                Write_Str (String'(Col + 1 .. Col_Lst => '~'));
@@ -2556,6 +2581,8 @@ package body Errout is
                if Col_Fst = Col_Lst then
                   Write_Str (" here");
                end if;
+
+               Write_Str (SGR_Reset);
 
                Write_Eol;
             end if;
@@ -2615,6 +2642,8 @@ package body Errout is
                end if;
 
                if Use_Prefix then
+                  Write_Str (SGR_Locus);
+
                   if Full_Path_Name_For_Brief_Errors then
                      Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
                   else
@@ -2633,6 +2662,8 @@ package body Errout is
 
                   Write_Int (Int (Errors.Table (E).Col));
                   Write_Str (": ");
+
+                  Write_Str (SGR_Reset);
                end if;
 
                Output_Msg_Text (E);
@@ -2652,12 +2683,23 @@ package body Errout is
                           Errors.Table (E).Insertion_Sloc;
                      begin
                         if Loc /= No_Location then
-                           Write_Source_Code_Lines (To_Span (Loc));
+                           Write_Source_Code_Lines
+                             (To_Span (Loc), SGR_Span => SGR_Note);
                         end if;
                      end;
 
                   else
-                     Write_Source_Code_Lines (Errors.Table (E).Sptr);
+                     declare
+                        SGR_Span : constant String :=
+                          (if Errors.Table (E).Info then SGR_Note
+                           elsif Errors.Table (E).Warn
+                             and then not Errors.Table (E).Warn_Err
+                           then SGR_Warning
+                           else SGR_Error);
+                     begin
+                        Write_Source_Code_Lines
+                          (Errors.Table (E).Sptr, SGR_Span);
+                     end;
                   end if;
                end if;
             end if;
