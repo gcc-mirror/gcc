@@ -11515,6 +11515,9 @@ start:
 	  if (!t)
 	    break;
 
+	  if (code->expr1->ts.type == BT_CLASS)
+	   gfc_find_vtab (&code->expr2->ts);
+
 	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
 	     the LHS.  */
 	  if (code->expr1->expr_type == EXPR_FUNCTION
