@@ -59,7 +59,7 @@ The test suite can be invoked via:
 $ make check-rust
 ```
 
-Test cases can be found within gcc/testsuite/rust.test please feel free to contriobute your specific
+Test cases can be found within gcc/testsuite/rust.test please feel free to contribute your specific
 test cases referencing any issues on github.
 
 ## Docker image
