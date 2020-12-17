@@ -6531,7 +6531,7 @@ __extension__ extern __inline poly64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcreate_p64 (uint64_t __a)
 {
-  return (poly64x1_t)__builtin_neon_vcreatedi ((__builtin_neon_di) __a);
+  return (poly64x1_t) __a;
 }
 
 #pragma GCC pop_options
