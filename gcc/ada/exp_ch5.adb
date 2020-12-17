@@ -3788,62 +3788,58 @@ package body Exp_Ch5 is
 
       --     return not (expression);
 
-      --  Only do these optimizations if we are at least at -O1 level and
-      --  do not do them if control flow optimizations are suppressed.
+      --  Do these optimizations only for internally generated code and only
+      --  when -fpreserve-control-flow isn't set, to preserve the original
+      --  source control flow.
 
-      if Optimization_Level > 0
+      if not Comes_From_Source (N)
         and then not Opt.Suppress_Control_Flow_Optimizations
+        and then Nkind (N) = N_If_Statement
+        and then No (Elsif_Parts (N))
+        and then Present (Else_Statements (N))
+        and then List_Length (Then_Statements (N)) = 1
+        and then List_Length (Else_Statements (N)) = 1
       then
-         if Nkind (N) = N_If_Statement
-           and then No (Elsif_Parts (N))
-           and then Present (Else_Statements (N))
-           and then List_Length (Then_Statements (N)) = 1
-           and then List_Length (Else_Statements (N)) = 1
-         then
-            declare
-               Then_Stm : constant Node_Id := First (Then_Statements (N));
-               Else_Stm : constant Node_Id := First (Else_Statements (N));
+         declare
+            Then_Stm : constant Node_Id := First (Then_Statements (N));
+            Else_Stm : constant Node_Id := First (Else_Statements (N));
 
-            begin
-               if Nkind (Then_Stm) = N_Simple_Return_Statement
+            Then_Expr : Node_Id;
+            Else_Expr : Node_Id;
+
+         begin
+            if Nkind (Then_Stm) = N_Simple_Return_Statement
+                 and then
+               Nkind (Else_Stm) = N_Simple_Return_Statement
+            then
+               Then_Expr := Expression (Then_Stm);
+               Else_Expr := Expression (Else_Stm);
+
+               if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
                     and then
-                  Nkind (Else_Stm) = N_Simple_Return_Statement
+                  Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
                then
-                  declare
-                     Then_Expr : constant Node_Id := Expression (Then_Stm);
-                     Else_Expr : constant Node_Id := Expression (Else_Stm);
+                  if Entity (Then_Expr) = Standard_True
+                    and then Entity (Else_Expr) = Standard_False
+                  then
+                     Rewrite (N,
+                       Make_Simple_Return_Statement (Loc,
+                         Expression => Relocate_Node (Condition (N))));
+                     Analyze (N);
 
-                  begin
-                     if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
-                          and then
-                        Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
-                     then
-                        if Entity (Then_Expr) = Standard_True
-                          and then Entity (Else_Expr) = Standard_False
-                        then
-                           Rewrite (N,
-                             Make_Simple_Return_Statement (Loc,
-                               Expression => Relocate_Node (Condition (N))));
-                           Analyze (N);
-                           return;
-
-                        elsif Entity (Then_Expr) = Standard_False
-                          and then Entity (Else_Expr) = Standard_True
-                        then
-                           Rewrite (N,
-                             Make_Simple_Return_Statement (Loc,
-                               Expression =>
-                                 Make_Op_Not (Loc,
-                                   Right_Opnd =>
-                                     Relocate_Node (Condition (N)))));
-                           Analyze (N);
-                           return;
-                        end if;
-                     end if;
-                  end;
+                  elsif Entity (Then_Expr) = Standard_False
+                    and then Entity (Else_Expr) = Standard_True
+                  then
+                     Rewrite (N,
+                       Make_Simple_Return_Statement (Loc,
+                         Expression =>
+                           Make_Op_Not (Loc,
+                             Right_Opnd => Relocate_Node (Condition (N)))));
+                     Analyze (N);
+                  end if;
                end if;
-            end;
-         end if;
+            end if;
+         end;
       end if;
    end Expand_N_If_Statement;
 
