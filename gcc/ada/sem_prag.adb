@@ -466,7 +466,7 @@ package body Sem_Prag is
             if Nkind (Case_Guard) = N_Others_Choice then
                if Others_Seen then
                   Error_Msg_N
-                    ("only one others choice allowed in contract cases",
+                    ("only one OTHERS choice allowed in contract cases",
                      Case_Guard);
                else
                   Others_Seen := True;
@@ -474,7 +474,7 @@ package body Sem_Prag is
 
             elsif Others_Seen then
                Error_Msg_N
-                 ("others must be the last choice in contract cases", N);
+                 ("OTHERS must be the last choice in contract cases", N);
             end if;
 
             --  Preanalyze the case guard and consequence
@@ -8876,7 +8876,7 @@ package body Sem_Prag is
                Error_Pragma ("at least one parameter required for pragma%");
 
             elsif Ekind (Formal) /= E_Out_Parameter then
-               Error_Pragma ("first parameter must have mode out for pragma%");
+               Error_Pragma ("first parameter must have mode OUT for pragma%");
 
             else
                Set_Is_Valued_Procedure (Ent);
@@ -11762,7 +11762,7 @@ package body Sem_Prag is
                   if Nkind (Prop) = N_Others_Choice then
                      if Others_Seen then
                         SPARK_Msg_N
-                          ("only one others choice allowed in option External",
+                          ("only one OTHERS choice allowed in option External",
                            Prop);
                      else
                         Others_Seen := True;
@@ -11770,7 +11770,7 @@ package body Sem_Prag is
 
                   elsif Others_Seen then
                      SPARK_Msg_N
-                       ("others must be the last property in option External",
+                       ("OTHERS must be the last property in option External",
                         Prop);
 
                   --  The only remaining legal options are the four predefined
@@ -30543,11 +30543,11 @@ package body Sem_Prag is
 
          if From_Aspect_Specification (Prag) then
             Error_Msg_N
-              ("aspect % cannot apply to a stand alone expression function",
+              ("aspect % cannot apply to a standalone expression function",
                Prag);
          else
             Error_Msg_N
-              ("pragma % cannot apply to a stand alone expression function",
+              ("pragma % cannot apply to a standalone expression function",
                Prag);
          end if;
       end Expression_Function_Error;

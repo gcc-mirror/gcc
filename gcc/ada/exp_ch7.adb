@@ -6532,7 +6532,7 @@ package body Exp_Ch7 is
 
    begin
       --  Nothing to do if the scope does not manage the secondary stack or
-      --  does not contain meaninful actions for insertion.
+      --  does not contain meaningful actions for insertion.
 
       if not Manage_SS
         and then No (Act_Before)
@@ -6755,22 +6755,6 @@ package body Exp_Ch7 is
          return Empty;
       end if;
    end Make_Adjust_Call;
-
-   ----------------------
-   -- Make_Detach_Call --
-   ----------------------
-
-   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (Obj_Ref);
-
-   begin
-      return
-        Make_Procedure_Call_Statement (Loc,
-          Name                   =>
-            New_Occurrence_Of (RTE (RE_Detach), Loc),
-          Parameter_Associations => New_List (
-            Unchecked_Convert_To (RTE (RE_Root_Controlled_Ptr), Obj_Ref)));
-   end Make_Detach_Call;
 
    ---------------
    -- Make_Call --
@@ -9037,6 +9021,24 @@ package body Exp_Ch7 is
       elsif Is_Tagged_Type (Utyp) then
          Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
 
+      --  Protected types: these also require finalization even though they
+      --  are not marked controlled explicitly.
+
+      elsif Is_Protected_Type (Typ) then
+         --  Protected objects do not need to be finalized on restricted
+         --  runtimes.
+
+         if Restricted_Profile then
+            return Empty;
+
+         --  ??? Only handle the simple case for now. Will not support a record
+         --  or array containing protected objects.
+
+         elsif Is_Simple_Protected_Type (Typ) then
+            Fin_Id := RTE (RE_Finalize_Protection);
+         else
+            raise Program_Error;
+         end if;
       else
          raise Program_Error;
       end if;
@@ -9477,8 +9479,11 @@ package body Exp_Ch7 is
       --  The underlying type may not be present due to a missing full view.
       --  In this case freezing did not take place and there is no suitable
       --  [Deep_]Initialize primitive to call.
+      --  If Typ is protected then no additional processing is needed either.
 
-      if No (Utyp) then
+      if No (Utyp)
+        or else Is_Protected_Type (Typ)
+      then
          return Empty;
       end if;
 
@@ -9500,7 +9505,7 @@ package body Exp_Ch7 is
             and then Present (Alias (Proc))
             and then Is_Trivial_Subprogram (Alias (Proc)))
       then
-         return Make_Null_Statement (Loc);
+         return Empty;
       end if;
 
       --  The object reference may need another conversion depending on the

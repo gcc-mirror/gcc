@@ -3922,6 +3922,13 @@ package body Checks is
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id;
 
+      function Replace_Current_Instance
+        (N : Node_Id) return Traverse_Result;
+      --  Replace a reference to the current instance of the type with the
+      --  corresponding _init formal of the initialization procedure. Note:
+      --  this function relies on us currently being within the initialization
+      --  procedure.
+
       --------------------------------
       -- Aggregate_Discriminant_Val --
       --------------------------------
@@ -3948,6 +3955,26 @@ package body Checks is
 
          raise Program_Error;
       end Aggregate_Discriminant_Val;
+
+      ------------------------------
+      -- Replace_Current_Instance --
+      ------------------------------
+
+      function Replace_Current_Instance
+        (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Etype (N) = Entity (N)
+         then
+            Rewrite (N,
+              New_Occurrence_Of (First_Formal (Current_Subprogram), Loc));
+         end if;
+
+         return OK;
+      end Replace_Current_Instance;
+
+      procedure Search_And_Replace_Current_Instance is new
+        Traverse_Proc (Replace_Current_Instance);
 
    --  Start of processing for Build_Discriminant_Checks
 
@@ -3976,6 +4003,13 @@ package body Checks is
             Dval := New_Occurrence_Of (Discriminal (Entity (Dval)), Loc);
          else
             Dval := Duplicate_Subexpr_No_Checks (Dval);
+         end if;
+
+         --  Replace references to the current instance of the type with the
+         --  corresponding _init formal of the initialization procedure.
+
+         if Within_Init_Proc then
+            Search_And_Replace_Current_Instance (Dval);
          end if;
 
          --  If we have an Unchecked_Union node, we can infer the discriminants
@@ -4386,7 +4420,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "components??",
                      Reason => CE_Null_Not_Allowed);
 
@@ -4394,7 +4428,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "objects??",
                      Reason => CE_Null_Not_Allowed);
 
@@ -4402,7 +4436,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "formals??",
                      Reason => CE_Null_Not_Allowed);
 
@@ -11161,8 +11195,7 @@ package body Checks is
 
    procedure Validity_Check_Range
      (N          : Node_Id;
-      Related_Id : Entity_Id := Empty)
-   is
+      Related_Id : Entity_Id := Empty) is
    begin
       if Validity_Checks_On and Validity_Check_Operands then
          if Nkind (N) = N_Range then
@@ -11178,18 +11211,5 @@ package body Checks is
          end if;
       end if;
    end Validity_Check_Range;
-
-   --------------------------------
-   -- Validity_Checks_Suppressed --
-   --------------------------------
-
-   function Validity_Checks_Suppressed (E : Entity_Id) return Boolean is
-   begin
-      if Present (E) and then Checks_May_Be_Suppressed (E) then
-         return Is_Check_Suppressed (E, Validity_Check);
-      else
-         return Scope_Suppress.Suppress (Validity_Check);
-      end if;
-   end Validity_Checks_Suppressed;
 
 end Checks;

@@ -31,7 +31,7 @@ int __RTL (startwith ("fwprop1")) test_returning_constant (void)
 }
 
 /* Verify that insn 5 is eliminated.  */
-/* { dg-final { scan-rtl-dump "deferring deletion of insn with uid = 5" "fwprop1" } } */
+/* { dg-final { scan-rtl-dump "deleting insn with uid = 5" "fwprop1" } } */
 /* { dg-final { scan-rtl-dump "Deleted 1 trivially dead insns" "fwprop1" } } */
 
 int main (void)

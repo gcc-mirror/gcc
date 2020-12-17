@@ -914,7 +914,7 @@ package body Ch3 is
 
          if Unknown_Dis then
             Error_Msg
-              ("Full type declaration cannot have unknown discriminants",
+              ("full type declaration cannot have unknown discriminants",
                 Discr_Sloc);
          end if;
       end if;
@@ -1051,7 +1051,7 @@ package body Ch3 is
          --  otherwise things are really messed up, so resynchronize.
 
          if Token = Tok_Record then
-            Error_Msg_SC ("anonymous record definitions are not permitted");
+            Error_Msg_SC ("anonymous record definition not permitted");
             Discard_Junk_Node (P_Record_Definition);
             return Error;
 
@@ -1486,11 +1486,8 @@ package body Ch3 is
       --  access_definition
 
       elsif Token = Tok_Renames then
-         if Ada_Version < Ada_2020 then
-            Error_Msg_SC
-              ("object renaming without subtype is an Ada 202x feature");
-            Error_Msg_SC ("\compile with -gnat2020");
-         end if;
+         Error_Msg_Ada_2020_Feature
+           ("object renaming without subtype", Token_Ptr);
 
          Scan; -- past renames
 
@@ -3557,7 +3554,7 @@ package body Ch3 is
             Set_Defining_Identifier (Decl_Node, Idents (Ident));
 
             if Token = Tok_Constant then
-               Error_Msg_SC ("constant components are not permitted");
+               Error_Msg_SC ("constant component not permitted");
                Scan;
             end if;
 
@@ -3598,7 +3595,7 @@ package body Ch3 is
                Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
 
                if Token = Tok_Array then
-                  Error_Msg_SC ("anonymous arrays not allowed as components");
+                  Error_Msg_SC ("anonymous array not allowed as component");
                   raise Error_Resync;
                end if;
 
@@ -4218,7 +4215,7 @@ package body Ch3 is
          if Token = Tok_All then
             if Ada_Version < Ada_2005 then
                Error_Msg_SP
-                 ("ALL is not permitted for anonymous access types");
+                 ("ALL not permitted for anonymous access type");
             end if;
 
             Scan; -- past ALL
@@ -4750,7 +4747,7 @@ package body Ch3 is
          elsif Kind = N_Assignment_Statement then
             Error_Msg
               ("assignment statement not allowed in package spec",
-                 Sloc (Decl));
+               Sloc (Decl));
          end if;
 
          Next (Decl);

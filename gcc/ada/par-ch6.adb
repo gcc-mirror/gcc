@@ -1620,9 +1620,8 @@ package body Ch6 is
          --  the time being.
 
          elsif Token = Tok_With then
-            if Ada_Version < Ada_2020 then
-               Error_Msg_SP ("aspect on formal parameter requires -gnat2020");
-            end if;
+            Error_Msg_Ada_2020_Feature
+              ("aspect on formal parameter", Token_Ptr);
 
             P_Aspect_Specifications (Specification_Node, False);
 

@@ -494,7 +494,7 @@ can_get_prologue (basic_block pro, HARD_REG_SET prologue_clobbered)
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, pro->preds)
-    if (e->flags & (EDGE_COMPLEX | EDGE_CROSSING)
+    if (e->flags & EDGE_COMPLEX
 	&& !dominated_by_p (CDI_DOMINATORS, e->src, pro))
       return false;
 

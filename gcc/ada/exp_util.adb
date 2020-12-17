@@ -60,10 +60,8 @@ with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
 with GNAT.HTable;
@@ -7900,26 +7898,6 @@ package body Exp_Util is
       end if;
    end Integer_Type_For;
 
-   ----------------------------
-   -- Is_All_Null_Statements --
-   ----------------------------
-
-   function Is_All_Null_Statements (L : List_Id) return Boolean is
-      Stm : Node_Id;
-
-   begin
-      Stm := First (L);
-      while Present (Stm) loop
-         if Nkind (Stm) /= N_Null_Statement then
-            return False;
-         end if;
-
-         Next (Stm);
-      end loop;
-
-      return True;
-   end Is_All_Null_Statements;
-
    --------------------------------------------------
    -- Is_Displacement_Of_Object_Or_Function_Result --
    --------------------------------------------------
@@ -9391,25 +9369,6 @@ package body Exp_Util is
          end loop;
       end if;
    end Kill_Dead_Code;
-
-   ------------------------
-   -- Known_Non_Negative --
-   ------------------------
-
-   function Known_Non_Negative (Opnd : Node_Id) return Boolean is
-   begin
-      if Is_OK_Static_Expression (Opnd) and then Expr_Value (Opnd) >= 0 then
-         return True;
-
-      else
-         declare
-            Lo : constant Node_Id := Type_Low_Bound (Etype (Opnd));
-         begin
-            return
-              Is_OK_Static_Expression (Lo) and then Expr_Value (Lo) >= 0;
-         end;
-      end if;
-   end Known_Non_Negative;
 
    -----------------------------
    -- Make_CW_Equivalent_Type --
@@ -10978,20 +10937,6 @@ package body Exp_Util is
 
       return Res;
    end New_Class_Wide_Subtype;
-
-   --------------------------------
-   -- Non_Limited_Designated_Type --
-   ---------------------------------
-
-   function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id is
-      Desig : constant Entity_Id := Designated_Type (T);
-   begin
-      if Has_Non_Limited_View (Desig) then
-         return Non_Limited_View (Desig);
-      else
-         return Desig;
-      end if;
-   end Non_Limited_Designated_Type;
 
    -----------------------------------
    -- OK_To_Do_Constant_Replacement --
@@ -13842,88 +13787,6 @@ package body Exp_Util is
          raise Program_Error;
       end if;
    end Small_Integer_Type_For;
-
-   --------------------------
-   -- Target_Has_Fixed_Ops --
-   --------------------------
-
-   Integer_Sized_Small : Ureal;
-   --  Set to 2.0 ** -(Integer'Size - 1) the first time that this function is
-   --  called (we don't want to compute it more than once).
-
-   Long_Integer_Sized_Small : Ureal;
-   --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this function
-   --  is called (we don't want to compute it more than once)
-
-   First_Time_For_THFO : Boolean := True;
-   --  Set to False after first call (if Fractional_Fixed_Ops_On_Target)
-
-   function Target_Has_Fixed_Ops
-     (Left_Typ   : Entity_Id;
-      Right_Typ  : Entity_Id;
-      Result_Typ : Entity_Id) return Boolean
-   is
-      function Is_Fractional_Type (Typ : Entity_Id) return Boolean;
-      --  Return True if the given type is a fixed-point type with a small
-      --  value equal to 2 ** (-(T'Object_Size - 1)) and whose values have
-      --  an absolute value less than 1.0. This is currently limited to
-      --  fixed-point types that map to Integer or Long_Integer.
-
-      ------------------------
-      -- Is_Fractional_Type --
-      ------------------------
-
-      function Is_Fractional_Type (Typ : Entity_Id) return Boolean is
-      begin
-         if Esize (Typ) = Standard_Integer_Size then
-            return Small_Value (Typ) = Integer_Sized_Small;
-
-         elsif Esize (Typ) = Standard_Long_Integer_Size then
-            return Small_Value (Typ) = Long_Integer_Sized_Small;
-
-         else
-            return False;
-         end if;
-      end Is_Fractional_Type;
-
-   --  Start of processing for Target_Has_Fixed_Ops
-
-   begin
-      --  Return False if Fractional_Fixed_Ops_On_Target is false
-
-      if not Fractional_Fixed_Ops_On_Target then
-         return False;
-      end if;
-
-      --  Here the target has Fractional_Fixed_Ops, if first time, compute
-      --  standard constants used by Is_Fractional_Type.
-
-      if First_Time_For_THFO then
-         First_Time_For_THFO := False;
-
-         Integer_Sized_Small :=
-           UR_From_Components
-             (Num   => Uint_1,
-              Den   => UI_From_Int (Standard_Integer_Size - 1),
-              Rbase => 2);
-
-         Long_Integer_Sized_Small :=
-           UR_From_Components
-             (Num   => Uint_1,
-              Den   => UI_From_Int (Standard_Long_Integer_Size - 1),
-              Rbase => 2);
-      end if;
-
-      --  Return True if target supports fixed-by-fixed multiply/divide for
-      --  fractional fixed-point types (see Is_Fractional_Type) and the operand
-      --  and result types are equivalent fractional types.
-
-      return Is_Fractional_Type (Base_Type (Left_Typ))
-        and then Is_Fractional_Type (Base_Type (Right_Typ))
-        and then Is_Fractional_Type (Base_Type (Result_Typ))
-        and then Esize (Left_Typ) = Esize (Right_Typ)
-        and then Esize (Left_Typ) = Esize (Result_Typ);
-   end Target_Has_Fixed_Ops;
 
    -------------------
    -- Type_Map_Hash --

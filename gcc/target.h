@@ -252,6 +252,13 @@ enum type_context_kind {
   TCTX_CAPTURE_BY_COPY
 };
 
+enum poly_value_estimate_kind
+{
+  POLY_VALUE_MIN,
+  POLY_VALUE_MAX,
+  POLY_VALUE_LIKELY
+};
+
 extern bool verify_type_context (location_t, type_context_kind, const_tree,
 				 bool = false);
 
@@ -272,12 +279,13 @@ extern struct gcc_target targetm;
    provides a rough guess.  */
 
 static inline HOST_WIDE_INT
-estimated_poly_value (poly_int64 x)
+estimated_poly_value (poly_int64 x,
+		      poly_value_estimate_kind kind = POLY_VALUE_LIKELY)
 {
   if (NUM_POLY_INT_COEFFS == 1)
     return x.coeffs[0];
   else
-    return targetm.estimated_poly_value (x);
+    return targetm.estimated_poly_value (x, kind);
 }
 
 #ifdef GCC_TM_H

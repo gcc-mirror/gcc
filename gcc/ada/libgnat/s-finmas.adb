@@ -119,20 +119,6 @@ package body System.Finalization_Masters is
       Finalize_Address_Table.Remove (Obj);
    end Delete_Finalize_Address_Unprotected;
 
-   ------------
-   -- Detach --
-   ------------
-
-   procedure Detach (N : not null FM_Node_Ptr) is
-   begin
-      Lock_Task.all;
-      Detach_Unprotected (N);
-      Unlock_Task.all;
-
-      --  Note: No need to unlock in case of an exception because the above
-      --  code can never raise one.
-   end Detach;
-
    ------------------------
    -- Detach_Unprotected --
    ------------------------

@@ -425,8 +425,28 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // GLIBCXX_ABI Deprecated
 // Define if compatibility should be provided for -mlong-double-64.
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
+// Define if compatibility should be provided for alternative 128-bit long
+// double formats.
+#undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 
-// Inline namespace for long double 128 mode.
+// Inline namespaces for long double 128 modes.
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+  && defined __LONG_DOUBLE_IEEE128__
+namespace std
+{
+  // Namespaces for 128-bit IEEE long double format on 64-bit POWER LE.
+  inline namespace __gnu_cxx_ieee128 { }
+  inline namespace __gnu_cxx11_ieee128 { }
+}
+# define _GLIBCXX_NAMESPACE_LDBL __gnu_cxx_ieee128::
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL namespace __gnu_cxx_ieee128 {
+# define _GLIBCXX_END_NAMESPACE_LDBL }
+# define _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 __gnu_cxx11_ieee128::
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 namespace __gnu_cxx11_ieee128 {
+# define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 }
+
+#else // _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && IEEE128
+
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
 namespace std
 {
@@ -440,6 +460,7 @@ namespace std
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL
 # define _GLIBCXX_END_NAMESPACE_LDBL
 #endif
+
 #if _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_NAMESPACE_CXX11
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -449,6 +470,8 @@ namespace std
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_BEGIN_NAMESPACE_LDBL
 # define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_END_NAMESPACE_LDBL
 #endif
+
+#endif // _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && IEEE128
 
 // Debug Mode implies checking assertions.
 #if defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_ASSERTIONS)
@@ -657,9 +680,12 @@ namespace std
 # define __cpp_lib_char8_t 201907L
 #endif
 
-/* Define if __float128 is supported on this host. */
+/* Define if __float128 is supported on this host.  */
 #if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
-#define _GLIBCXX_USE_FLOAT128
+/* For powerpc64 don't use __float128 when it's the same type as long double. */
+# if !(defined(_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT) && defined(__LONG_DOUBLE_IEEE128__))
+#  define _GLIBCXX_USE_FLOAT128
+# endif
 #endif
 
 #ifdef __has_builtin

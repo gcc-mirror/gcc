@@ -330,6 +330,7 @@ package Sem_Eval is
    procedure Eval_Op_Not                 (N : Node_Id);
    procedure Eval_Real_Literal           (N : Node_Id);
    procedure Eval_Relational_Op          (N : Node_Id);
+   procedure Eval_Selected_Component     (N : Node_Id);
    procedure Eval_Shift                  (N : Node_Id);
    procedure Eval_Short_Circuit          (N : Node_Id);
    procedure Eval_Slice                  (N : Node_Id);
@@ -386,6 +387,10 @@ package Sem_Eval is
    --  known at compile time but not static, then the result is not static.
    --  The call has no effect if Raises_Constraint_Error (N) is True, since
    --  there is no point in folding if we have an error.
+
+   procedure Fold (N : Node_Id);
+   --  Rewrite N with the relevant value if Compile_Time_Known_Value (N) is
+   --  True, otherwise a no-op.
 
    function Is_In_Range
      (N            : Node_Id;

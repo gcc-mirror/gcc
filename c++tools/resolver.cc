@@ -28,9 +28,35 @@ along with GCC; see the file COPYING3.  If not see
 // OS
 #include <fcntl.h>
 #include <unistd.h>
+#if 0 // 1 for testing no mmap
+#define MAPPED_READING 0
+#else
+#ifdef IN_GCC
+#if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
+#define MAPPED_READING 1
+#else
+#define MAPPED_READING 0
+#endif
+#else
+#ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
+#define MAPPED_READING 1
+#else
+#define MAPPED_READING 0
+#endif
+#endif
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if !defined (IN_GCC) && !MAPPED_READING
+#define xmalloc(X) malloc(X)
+#endif
+
+#if !HOST_HAS_O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -81,11 +107,20 @@ module_resolver::read_tuple_file (int fd, char const *prefix, bool force)
   if (!stat.st_size)
     return 0;
 
+  void *buffer = nullptr;
+#if MAPPED_READING
   // Just map the file, we're gonna read all of it, so no need for
   // line buffering
-  void *buffer = mmap (nullptr, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  buffer = mmap (nullptr, stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (buffer == MAP_FAILED)
     return -errno;
+#else
+  buffer = xmalloc (stat.st_size);
+  if (!buffer)
+    return -errno;
+  if (read (fd, buffer, stat.st_size) != stat.st_size)
+    return -errno;
+#endif
 
   size_t prefix_len = prefix ? strlen (prefix) : 0;
   unsigned lineno = 0;
@@ -144,7 +179,11 @@ module_resolver::read_tuple_file (int fd, char const *prefix, bool force)
 	}
     }
 
+#if MAPPED_READING
   munmap (buffer, stat.st_size);
+#else
+  free (buffer);
+#endif
 
   return 0;
 }

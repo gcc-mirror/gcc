@@ -5,24 +5,31 @@
 # commit messages.
 
 GITROOT=${GITROOT:-"/git/gcc.git"}
+if [ -z "$TMPDIR" ]; then
+  if [ -d /sourceware/snapshot-tmp/gcc ]; then
+    TMPDIR=/sourceware/snapshot-tmp/gcc
+  else
+    TMPDIR=/tmp
+  fi
+fi
 
-# Run this from /tmp.
-export GITROOT
+# Run this from $TMPDIR.
+export GITROOT TMPDIR
 BASEDIR=`mktemp -d`
 cd "$BASEDIR"
 
 GIT=${GIT:-/usr/local/bin/git}
 
 # Assume all will go well.
-SUBDIR=$BASEDIR/gcc
+SUBDIR="$BASEDIR/gcc"
 ${GIT} clone -q -b master "$GITROOT" "$SUBDIR"
 
-cp -a $SUBDIR/contrib/gcc-changelog $BASEDIR/gcc-changelog
+cp -a "$SUBDIR"/contrib/gcc-changelog "$BASEDIR"/gcc-changelog
 cd "$SUBDIR"
 python3 ../gcc-changelog/git_update_version.py -p
 RESULT=$?
 
-cd /tmp
+cd "$TMPDIR"
 
-/bin/rm -rf $BASEDIR
+/bin/rm -rf "$BASEDIR"
 exit $RESULT

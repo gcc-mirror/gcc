@@ -752,8 +752,7 @@ package body Ch9 is
 
          if Is_Overriding or else Not_Overriding then
             if Ada_Version < Ada_2005 then
-               Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
-               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+               Error_Msg_Ada_2005_Extension ("overriding indicator");
 
             elsif Token = Tok_Entry then
                Decl := P_Entry_Declaration;
@@ -904,7 +903,7 @@ package body Ch9 is
             Resync_Past_Semicolon;
 
          elsif Token in Token_Class_Declk then
-            Error_Msg_SC ("this declaration not allowed in protected body");
+            Error_Msg_SC ("declaration not allowed in protected body");
             Resync_Past_Semicolon;
 
          else
@@ -962,9 +961,7 @@ package body Ch9 is
 
       if Is_Overriding or else Not_Overriding then
          if Ada_Version < Ada_2005 then
-            Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-
+            Error_Msg_Ada_2005_Extension ("overriding indicator");
          elsif Token /= Tok_Entry then
             Error_Msg_SC -- CODEFIX
               ("ENTRY expected!");

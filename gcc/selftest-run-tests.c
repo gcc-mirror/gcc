@@ -79,6 +79,7 @@ selftest::run_tests ()
   optinfo_emit_json_cc_tests ();
   opt_problem_cc_tests ();
   ordered_hash_map_tests_cc_tests ();
+  splay_tree_cc_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();

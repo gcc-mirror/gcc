@@ -26,6 +26,7 @@
 with Atree;  use Atree;
 with Einfo;  use Einfo;
 with Nlists; use Nlists;
+with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
 with Uintp;  use Uintp;
@@ -430,34 +431,6 @@ package body Sem_Aux is
       return Empty;
    end First_Tag_Component;
 
-   ---------------------
-   -- Get_Binary_Nkind --
-   ---------------------
-
-   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind is
-   begin
-      case Chars (Op) is
-         when Name_Op_Add      => return N_Op_Add;
-         when Name_Op_Concat   => return N_Op_Concat;
-         when Name_Op_Expon    => return N_Op_Expon;
-         when Name_Op_Subtract => return N_Op_Subtract;
-         when Name_Op_Mod      => return N_Op_Mod;
-         when Name_Op_Multiply => return N_Op_Multiply;
-         when Name_Op_Divide   => return N_Op_Divide;
-         when Name_Op_Rem      => return N_Op_Rem;
-         when Name_Op_And      => return N_Op_And;
-         when Name_Op_Eq       => return N_Op_Eq;
-         when Name_Op_Ge       => return N_Op_Ge;
-         when Name_Op_Gt       => return N_Op_Gt;
-         when Name_Op_Le       => return N_Op_Le;
-         when Name_Op_Lt       => return N_Op_Lt;
-         when Name_Op_Ne       => return N_Op_Ne;
-         when Name_Op_Or       => return N_Op_Or;
-         when Name_Op_Xor      => return N_Op_Xor;
-         when others           => raise Program_Error;
-      end case;
-   end Get_Binary_Nkind;
-
    -----------------------
    -- Get_Called_Entity --
    -----------------------
@@ -655,21 +628,6 @@ package body Sem_Aux is
 
       return Empty;
    end Get_Rep_Pragma;
-
-   ---------------------
-   -- Get_Unary_Nkind --
-   ---------------------
-
-   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind is
-   begin
-      case Chars (Op) is
-         when Name_Op_Abs      => return N_Op_Abs;
-         when Name_Op_Subtract => return N_Op_Minus;
-         when Name_Op_Not      => return N_Op_Not;
-         when Name_Op_Add      => return N_Op_Plus;
-         when others           => raise Program_Error;
-      end case;
-   end Get_Unary_Nkind;
 
    ---------------------------------
    -- Has_External_Tag_Rep_Clause --
@@ -1288,19 +1246,6 @@ package body Sem_Aux is
       end if;
    end Is_Limited_View;
 
-   ----------------------------
-   -- Is_Protected_Operation --
-   ----------------------------
-
-   function Is_Protected_Operation (E : Entity_Id) return Boolean is
-   begin
-      return
-        Is_Entry (E)
-          or else (Is_Subprogram (E)
-                    and then Nkind (Parent (Unit_Declaration_Node (E))) =
-                               N_Protected_Definition);
-   end Is_Protected_Operation;
-
    -------------------------------
    -- Is_Record_Or_Limited_Type --
    -------------------------------
@@ -1414,33 +1359,6 @@ package body Sem_Aux is
       return Empty;
    end Next_Tag_Component;
 
-   -----------------------
-   -- Number_Components --
-   -----------------------
-
-   function Number_Components (Typ : Entity_Id) return Nat is
-      N    : Nat := 0;
-      Comp : Entity_Id;
-
-   begin
-      --  We do not call Einfo.First_Component_Or_Discriminant, as this
-      --  function does not skip completely hidden discriminants, which we
-      --  want to skip here.
-
-      if Has_Discriminants (Typ) then
-         Comp := First_Discriminant (Typ);
-      else
-         Comp := First_Component (Typ);
-      end if;
-
-      while Present (Comp) loop
-         N := N + 1;
-         Next_Component_Or_Discriminant (Comp);
-      end loop;
-
-      return N;
-   end Number_Components;
-
    --------------------------
    -- Number_Discriminants --
    --------------------------
@@ -1477,38 +1395,6 @@ package body Sem_Aux is
                                  and then not Is_Constrained (Typ))
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
-
-   ------------------
-   -- Package_Body --
-   ------------------
-
-   function Package_Body (E : Entity_Id) return Node_Id is
-      N : Node_Id;
-
-   begin
-      if Ekind (E) = E_Package_Body then
-         N := Parent (E);
-
-         if Nkind (N) = N_Defining_Program_Unit_Name then
-            N := Parent (N);
-         end if;
-
-      else
-         N := Package_Spec (E);
-
-         if Present (Corresponding_Body (N)) then
-            N := Parent (Corresponding_Body (N));
-
-            if Nkind (N) = N_Defining_Program_Unit_Name then
-               N := Parent (N);
-            end if;
-         else
-            N := Empty;
-         end if;
-      end if;
-
-      return N;
-   end Package_Body;
 
    ------------------
    -- Package_Spec --

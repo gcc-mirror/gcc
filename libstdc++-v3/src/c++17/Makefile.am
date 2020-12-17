@@ -61,6 +61,13 @@ vpath % $(top_srcdir)/src/c++17
 
 libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
 
+if GLIBCXX_LDBL_ALT128_COMPAT
+floating_from_chars.lo: floating_from_chars.cc
+	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_from_chars.o: floating_from_chars.cc
+	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+endif
+
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after

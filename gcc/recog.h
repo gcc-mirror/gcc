@@ -82,12 +82,113 @@ alternative_class (const operand_alternative *alt, int i)
   return alt[i].matches >= 0 ? alt[alt[i].matches].cl : alt[i].cl;
 }
 
+/* A class for substituting one rtx for another within an instruction,
+   or for recursively simplifying the instruction as-is.  Derived classes
+   can record or filter certain decisions.  */
+
+class insn_propagation : public simplify_context
+{
+public:
+  /* Assignments for RESULT_FLAGS.
+
+     UNSIMPLIFIED is true if a substitution has been made inside an rtx
+     X and if neither X nor its parent expressions could be simplified.
+
+     FIRST_SPARE_RESULT is the first flag available for derived classes.  */
+  static const uint16_t UNSIMPLIFIED = 1U << 0;
+  static const uint16_t FIRST_SPARE_RESULT = 1U << 1;
+
+  insn_propagation (rtx_insn *);
+  insn_propagation (rtx_insn *, rtx, rtx, bool = true);
+  bool apply_to_pattern (rtx *);
+  bool apply_to_rvalue (rtx *);
+
+  /* Return true if we should accept a substitution into the address of
+     memory expression MEM.  Undoing changes OLD_NUM_CHANGES and up restores
+     MEM's original address.  */
+  virtual bool check_mem (int /*old_num_changes*/,
+			  rtx /*mem*/) { return true; }
+
+  /* Note that we've simplified OLD_RTX into NEW_RTX.  When substituting,
+     this only happens if a substitution occured within OLD_RTX.
+     Undoing OLD_NUM_CHANGES and up will restore the old form of OLD_RTX.
+     OLD_RESULT_FLAGS is the value that RESULT_FLAGS had before processing
+     OLD_RTX.  */
+  virtual void note_simplification (int /*old_num_changes*/,
+				    uint16_t /*old_result_flags*/,
+				    rtx /*old_rtx*/, rtx /*new_rtx*/) {}
+
+private:
+  bool apply_to_mem_1 (rtx);
+  bool apply_to_lvalue_1 (rtx);
+  bool apply_to_rvalue_1 (rtx *);
+  bool apply_to_pattern_1 (rtx *);
+
+public:
+  /* The instruction that we are simplifying or propagating into.  */
+  rtx_insn *insn;
+
+  /* If FROM is nonnull, we're replacing FROM with TO, otherwise we're
+     just doing a recursive simplification.  */
+  rtx from;
+  rtx to;
+
+  /* The number of times that we have replaced FROM with TO.  */
+  unsigned int num_replacements;
+
+  /* A bitmask of flags that describe the result of the simplificiation;
+     see above for details.  */
+  uint16_t result_flags : 16;
+
+  /* True if we should unshare TO when making the next substitution,
+     false if we can use TO itself.  */
+  uint16_t should_unshare : 1;
+
+  /* True if we should call check_mem after substituting into a memory.  */
+  uint16_t should_check_mems : 1;
+
+  /* True if we should call note_simplification after each simplification.  */
+  uint16_t should_note_simplifications : 1;
+
+  /* For future expansion.  */
+  uint16_t spare : 13;
+
+  /* Gives the reason that a substitution failed, for debug purposes.  */
+  const char *failure_reason;
+};
+
+/* Try to replace FROM with TO in INSN.  SHARED_P is true if TO is shared
+   with other instructions, false if INSN can use TO directly.  */
+
+inline insn_propagation::insn_propagation (rtx_insn *insn, rtx from, rtx to,
+					   bool shared_p)
+  : insn (insn),
+    from (from),
+    to (to),
+    num_replacements (0),
+    result_flags (0),
+    should_unshare (shared_p),
+    should_check_mems (false),
+    should_note_simplifications (false),
+    spare (0),
+    failure_reason (nullptr)
+{
+}
+
+/* Try to simplify INSN without performing a substitution.  */
+
+inline insn_propagation::insn_propagation (rtx_insn *insn)
+  : insn_propagation (insn, NULL_RTX, NULL_RTX)
+{
+}
+
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
 extern int check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
+extern bool validate_change_xveclen (rtx, rtx *, int, bool);
 extern bool canonicalize_change_group (rtx_insn *insn, rtx x);
 extern int insn_invalid_p (rtx_insn *, bool);
 extern int verify_changes (int);
@@ -95,6 +196,8 @@ extern void confirm_change_group (void);
 extern int apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
+extern void temporarily_undo_changes (int);
+extern void redo_changes (int);
 extern int constrain_operands (int, alternative_mask);
 extern int constrain_operands_cached (rtx_insn *, int);
 extern int memory_address_addr_space_p (machine_mode, rtx, addr_space_t);
@@ -400,6 +503,57 @@ alternative_mask get_preferred_alternatives (rtx_insn *, basic_block);
 bool check_bool_attrs (rtx_insn *);
 
 void recog_init ();
+
+/* This RAII class can help to undo tentative insn changes on failure.
+   When an object of the class goes out of scope, it undoes all group
+   changes that have been made via the validate_change machinery and
+   not yet confirmed via confirm_change_group.
+
+   For example:
+
+      insn_change_watermark watermark;
+      validate_change (..., true); // A
+      ...
+      if (test)
+	// Undoes change A.
+	return false;
+      ...
+      validate_change (..., true); // B
+      ...
+      if (test)
+	// Undoes changes A and B.
+	return false;
+      ...
+      confirm_change_group ();
+
+   Code that wants to avoid this behavior can use keep ():
+
+      insn_change_watermark watermark;
+      validate_change (..., true); // A
+      ...
+      if (test)
+	// Undoes change A.
+	return false;
+      ...
+      watermark.keep ();
+      validate_change (..., true); // B
+      ...
+      if (test)
+	// Undoes change B, but not A.
+	return false;
+      ...
+      confirm_change_group ();  */
+class insn_change_watermark
+{
+public:
+  insn_change_watermark () : m_old_num_changes (num_validated_changes ()) {}
+  ~insn_change_watermark () { cancel_changes (m_old_num_changes); }
+  void keep () { m_old_num_changes = num_validated_changes (); }
+
+private:
+  int m_old_num_changes;
+};
+
 #endif
 
 #endif /* GCC_RECOG_H */

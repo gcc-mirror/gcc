@@ -1,3 +1,30 @@
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cody.hh: Allow user to set CODY_NETWORKING.
+
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Compute is_release.
+	(NMS_ENABLE_CHECKING): Simplify but not computing ac_assert_checking
+	and ac_valgrind_checking the code doesn't use.
+	* configure: Regenerated.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* internal.hh: Define fallback macros for __has_builtin and
+	__has_include. Use __has_builtin for __builtin_FILE and
+	__builtin_LINE. Define alias for std::source_location.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Use libcpp's enable-checking code.
+	* configure: Rebuilt.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Replace V+="..." with V="$V..."
+	* configure: Rebuilt.
+
 2020-12-15  Marek Polacek  <polacek@redhat.com>
 
 	* buffer.cc (MessageBuffer::Lex): Remove unused variable.

@@ -1,3 +1,420 @@
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fwprop.c: Rewrite to use the RTL SSA framework.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* configure.ac: Add rtl-ssa to the list of dependence directories.
+	* configure: Regenerate.
+	* Makefile.in (rtl-ssa-warn): New variable.
+	(OBJS): Add the rtl-ssa object files.
+	* emit-rtl.h (rtl_data::ssa): New field.
+	* rtl-ssa.h: New file.
+	* system.h: Include <functional> when INCLUDE_FUNCTIONAL is defined.
+	* rtl-ssa/access-utils.h: Likewise.
+	* rtl-ssa/accesses.h: New file.
+	* rtl-ssa/accesses.cc: Likewise.
+	* rtl-ssa/blocks.h: New file.
+	* rtl-ssa/blocks.cc: Likewise.
+	* rtl-ssa/change-utils.h: Likewise.
+	* rtl-ssa/changes.h: New file.
+	* rtl-ssa/changes.cc: Likewise.
+	* rtl-ssa/functions.h: New file.
+	* rtl-ssa/functions.cc: Likewise.
+	* rtl-ssa/insn-utils.h: Likewise.
+	* rtl-ssa/insns.h: New file.
+	* rtl-ssa/insns.cc: Likewise.
+	* rtl-ssa/internals.inl: Likewise.
+	* rtl-ssa/is-a.inl: Likewise.
+	* rtl-ssa/member-fns.inl: Likewise.
+	* rtl-ssa/movement.h: Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/rtl.texi (RTL SSA): New node.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (simple_regno_set): Declare.
+	* rtlanal.c (simple_regno_set): New function.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtlanal.h: New file.
+	(MEM_REGNO): New constant.
+	(rtx_obj_flags): New namespace.
+	(rtx_obj_reference, rtx_properties): New classes.
+	(growing_rtx_properties, vec_rtx_properties_base): Likewise.
+	(vec_rtx_properties): New alias.
+	* rtlanal.c: Include it.
+	(rtx_properties::try_to_add_reg): New function.
+	(rtx_properties::try_to_add_dest): Likewise.
+	(rtx_properties::try_to_add_src): Likewise.
+	(rtx_properties::try_to_add_pattern): Likewise.
+	(rtx_properties::try_to_add_insn): Likewise.
+	(vec_rtx_properties_base::grow): Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (insn_change_watermark): New class.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (insn_propagation): New class.
+	* recog.c (insn_propagation::apply_to_mem_1): New function.
+	(insn_propagation::apply_to_rvalue_1): Likewise.
+	(insn_propagation::apply_to_lvalue_1): Likewise.
+	(insn_propagation::apply_to_pattern_1): Likewise.
+	(insn_propagation::apply_to_pattern): Likewise.
+	(insn_propagation::apply_to_rvalue): Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (temporarily_undo_changes, redo_changes): Declare.
+	* recog.c (temporarily_undone_changes): New variable.
+	(validate_change_1, confirm_change_group): Check that it's zero.
+	(cancel_changes): Likewise.
+	(swap_change, temporarily_undo_changes): New functions.
+	(redo_changes): Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (validate_change_xveclen): Declare.
+	* recog.c (change_t::old_len): New field.
+	(validate_change_1): Add a new_len parameter.  Conditionally
+	replace the XVECLEN of an rtx, avoiding single-element PARALLELs.
+	(validate_change_xveclen): New function.
+	(cancel_changes): Undo changes made by validate_change_xveclen.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (simplify_context): New class.
+	(simplify_unary_operation, simplify_binary_operation): Use it.
+	(simplify_ternary_operation, simplify_relational_operation): Likewise.
+	(simplify_subreg, simplify_gen_unary, simplify_gen_binary): Likewise.
+	(simplify_gen_ternary, simplify_gen_relational): Likewise.
+	(simplify_gen_subreg, lowpart_subreg): Likewise.
+	* simplify-rtx.c (simplify_gen_binary): Turn into a member function
+	of simplify_context.
+	(simplify_gen_unary, simplify_gen_ternary, simplify_gen_relational)
+	(simplify_truncation, simplify_unary_operation): Likewise.
+	(simplify_unary_operation_1, simplify_byte_swapping_operation)
+	(simplify_associative_operation, simplify_logical_relational_operation)
+	(simplify_binary_operation, simplify_binary_operation_series)
+	(simplify_distributive_operation, simplify_plus_minus): Likewise.
+	(simplify_relational_operation, simplify_relational_operation_1)
+	(simplify_cond_clz_ctz, simplify_merge_mask): Likewise.
+	(simplify_ternary_operation, simplify_subreg, simplify_gen_subreg)
+	(lowpart_subreg): Likewise.
+	(simplify_binary_operation_1): Likewise.  Test mem_depth when
+	deciding whether the ASHIFT or MULT form is canonical.
+	(simplify_merge_mask): Use simplify_context.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (register_asm_p): Declare.
+	* recog.c (verify_changes): Split out the test for whether
+	a hard register is a register asm to...
+	* rtlanal.c (register_asm_p): ...this new function.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* print-rtl.h (print_insn_with_notes): Declare.
+	* print-rtl.c (print_insn_with_notes): Make non-static
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgrtl.h (update_cfg_for_uncondjump): Declare.
+	* combine.c (update_cfg_for_uncondjump): Move to...
+	* cfgrtl.c: ...here.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vec.h (array_slice): New class.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Add splay-tree-utils.o.
+	* system.h: Include <array> when INCLUDE_ARRAY is defined.
+	* selftest.h (splay_tree_cc_tests): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Run splay_tree_cc_tests.
+	* splay-tree-utils.h: New file.
+	* splay-tree-utils.tcc: Likewise.
+	* splay-tree-utils.cc: Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mux-utils.h: New file.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* obstack-utils.h: New file.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* iterator-utils.h (derived_iterator): New class.
+	(const_derived_container, wrapper_iterator): Likewise.
+	(list_iterator): Likewise.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h (global_reg_set): Declare.
+	* reginfo.c (global_reg_set): New variable.
+	(init_reg_sets_1, globalize_reg): Update it when globalizing
+	registers.
+
+2020-12-16  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	* config.gcc (powerpc*le-*-freebsd*): Add.
+	* configure.ac (powerpc*le-*-freebsd*): Ditto.
+	* configure: Regenerate.
+	* config/rs6000/freebsd64.h (ASM_SPEC_COMMON): Use ENDIAN_SELECT.
+	(DEFAULT_ASM_ENDIAN): Add little endian support.
+	(LINK_OS_FREEBSD_SPEC64): Ditto.
+
+2020-12-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.c (xtensa_emit_move_sequence): Try to
+	replace 'l32r' with 'movi' + 'slli' when optimizing for size.
+	* config/xtensa/xtensa.md (movdi): Split loading DI mode constant
+	into register pair into two loads of SI mode constants.
+
+2020-12-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vcmulq_rot90_f16):
+	(__arm_vcmulq_rot270_f16, _arm_vcmulq_rot180_f16, __arm_vcmulq_f16,
+	__arm_vcmulq_rot90_f32, __arm_vcmulq_rot270_f32,
+	__arm_vcmulq_rot180_f32, __arm_vcmulq_f32, __arm_vcmlaq_f16,
+	__arm_vcmlaq_rot180_f16, __arm_vcmlaq_rot270_f16,
+	__arm_vcmlaq_rot90_f16, __arm_vcmlaq_f32, __arm_vcmlaq_rot180_f32,
+	__arm_vcmlaq_rot270_f32, __arm_vcmlaq_rot90_f32): Update builtin calls.
+	* config/arm/arm_mve_builtins.def (vcmulq_f, vcmulq_rot90_f,
+	vcmulq_rot180_f, vcmulq_rot270_f, vcmlaq_f, vcmlaq_rot90_f,
+	vcmlaq_rot180_f, vcmlaq_rot270_f): Removed.
+	(vcmulq, vcmulq_rot90, vcmulq_rot180, vcmulq_rot270, vcmlaq,
+	vcmlaq_rot90, vcmlaq_rot180, vcmlaq_rot270): New.
+	* config/arm/iterators.md (mve_rot): Add UNSPEC_VCMLA, UNSPEC_VCMLA90,
+	UNSPEC_VCMLA180, UNSPEC_VCMLA270, UNSPEC_VCMUL, UNSPEC_VCMUL90,
+	UNSPEC_VCMUL180, UNSPEC_VCMUL270.
+	(VCMUL): New.
+	* config/arm/mve.md (mve_vcmulq_f<mode, mve_vcmulq_rot180_f<mode>,
+	mve_vcmulq_rot270_f<mode>, mve_vcmulq_rot90_f<mode>, mve_vcmlaq_f<mode>,
+	mve_vcmlaq_rot180_f<mode>, mve_vcmlaq_rot270_f<mode>,
+	mve_vcmlaq_rot90_f<mode>): Removed.
+	(mve_vcmlaq<mve_rot><mode>, mve_vcmulq<mve_rot><mode>,
+	mve_vcaddq<mve_rot><mode>, cadd<rot><mode>3, mve_vcaddq<mve_rot><mode>):
+	New.
+	* config/arm/unspecs.md (UNSPEC_VCMUL90, UNSPEC_VCMUL270, UNSPEC_VCMUL,
+	UNSPEC_VCMUL180): New.
+	(VCMULQ_F, VCMULQ_ROT180_F, VCMULQ_ROT270_F, VCMULQ_ROT90_F,
+	VCMLAQ_F, VCMLAQ_ROT180_F, VCMLAQ_ROT90_F, VCMLAQ_ROT270_F): Removed.
+
+2020-12-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vcaddq_rot90_u8, __arm_vcaddq_rot270_u8,
+	__arm_vcaddq_rot90_s8, __arm_vcaddq_rot270_s8,
+	__arm_vcaddq_rot90_u16, __arm_vcaddq_rot270_u16,
+	__arm_vcaddq_rot90_s16, __arm_vcaddq_rot270_s16,
+	__arm_vcaddq_rot90_u32, __arm_vcaddq_rot270_u32,
+	__arm_vcaddq_rot90_s32, __arm_vcaddq_rot270_s32,
+	__arm_vcaddq_rot90_f16, __arm_vcaddq_rot270_f16,
+	__arm_vcaddq_rot90_f32, __arm_vcaddq_rot270_f32):  Update builtin calls.
+	* config/arm/arm_mve_builtins.def (vcaddq_rot90_u, vcaddq_rot270_u,
+	vcaddq_rot90_s, vcaddq_rot270_s, vcaddq_rot90_f, vcaddq_rot270_f):
+	Removed.
+	(vcaddq_rot90, vcaddq_rot270): New.
+	* config/arm/constraints.md (Dz): Include MVE.
+	* config/arm/iterators.md (mve_rot): New.
+	(supf): Remove VCADDQ_ROT270_S, VCADDQ_ROT270_U, VCADDQ_ROT90_S,
+	VCADDQ_ROT90_U.
+	(VCADDQ_ROT270, VCADDQ_ROT90): Removed.
+	* config/arm/mve.md (mve_vcaddq_rot270_<supf><mode,
+	mve_vcaddq_rot90_<supf><mode>, mve_vcaddq_rot270_f<mode>,
+	mve_vcaddq_rot90_f<mode>): Removed.
+	(mve_vcaddq<mve_rot><mode>, mve_vcaddq<mve_rot><mode>): New.
+	* config/arm/unspecs.md (VCADDQ_ROT270_S, VCADDQ_ROT90_S,
+	VCADDQ_ROT270_U, VCADDQ_ROT90_U, VCADDQ_ROT270_F,
+	VCADDQ_ROT90_F): Removed.
+	* config/arm/vec-common.md (cadd<rot><mode>3): New.
+
+2020-12-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (cadd<rot><mode>3): New.
+	* config/aarch64/iterators.md (SVE2_INT_CADD_OP): New.
+	* config/aarch64/aarch64-sve.md (cadd<rot><mode>3): New.
+	* config/aarch64/aarch64-sve2.md (cadd<rot><mode>3): New.
+
+2020-12-16  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/mma.md (*movxo, mma_<vvi4i4i8>, mma_<avvi4i4i8>,
+	mma_<vvi4i4i2>, mma_<avvi4i4i2>, mma_<vvi4i4>, mma_<avvi4i4>,
+	mma_<pvi4i2>, mma_<apvi4i2>, mma_<vvi4i4i4>, mma_<avvi4i4i4>):
+	Remove explicit setting of length attribute.
+
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (default_elf_asm_named_section): Always force
+	section flags even for sections with SECTION_LINK_ORDER flag.
+
+2020-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98146
+	* defaults.h (SUPPORTS_SHF_GNU_RETAIN): New.
+	* varasm.c (get_section): Replace HAVE_GAS_SHF_GNU_RETAIN with
+	SUPPORTS_SHF_GNU_RETAIN.
+	(resolve_unique_section): Likewise.
+	(get_variable_section): Likewise.
+	(switch_to_section): Likewise.
+
+2020-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98146
+	* varasm.c (switch_to_section): Warn when a symbol without used
+	attribute and a symbol with used attribute are placed in the
+	section with the same name.
+
+2020-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98146
+	* output.h (switch_to_section): Add a tree argument, default to
+	nullptr.
+	* varasm.c (get_section): If the SECTION_RETAIN bit doesn't match,
+	return and switch to a new section later.
+	(assemble_start_function): Pass decl to switch_to_section.
+	(assemble_variable): Likewise.
+	(switch_to_section): If the SECTION_RETAIN bit doesn't match,
+	switch to a new section.
+
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96239
+	* gimple-ssa-store-merging.c (find_bswap_or_nop): Handle a vector
+	CONSTRUCTOR.
+	(bswap_replace): Likewise.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Remove usage of Report.
+	* config/aarch64/aarch64.opt: Ditto.
+	* config/alpha/alpha.opt: Ditto.
+	* config/arc/arc.opt: Ditto.
+	* config/arm/arm.opt: Ditto.
+	* config/avr/avr.opt: Ditto.
+	* config/bfin/bfin.opt: Ditto.
+	* config/bpf/bpf.opt: Ditto.
+	* config/c6x/c6x.opt: Ditto.
+	* config/cr16/cr16.opt: Ditto.
+	* config/cris/cris.opt: Ditto.
+	* config/cris/elf.opt: Ditto.
+	* config/csky/csky.opt: Ditto.
+	* config/darwin.opt: Ditto.
+	* config/fr30/fr30.opt: Ditto.
+	* config/frv/frv.opt: Ditto.
+	* config/ft32/ft32.opt: Ditto.
+	* config/gcn/gcn.opt: Ditto.
+	* config/i386/cygming.opt: Ditto.
+	* config/i386/i386.opt: Ditto.
+	* config/ia64/ia64.opt: Ditto.
+	* config/ia64/ilp32.opt: Ditto.
+	* config/linux-android.opt: Ditto.
+	* config/linux.opt: Ditto.
+	* config/lm32/lm32.opt: Ditto.
+	* config/m32r/m32r.opt: Ditto.
+	* config/m68k/m68k.opt: Ditto.
+	* config/mcore/mcore.opt: Ditto.
+	* config/microblaze/microblaze.opt: Ditto.
+	* config/mips/mips.opt: Ditto.
+	* config/mmix/mmix.opt: Ditto.
+	* config/mn10300/mn10300.opt: Ditto.
+	* config/moxie/moxie.opt: Ditto.
+	* config/msp430/msp430.opt: Ditto.
+	* config/nds32/nds32.opt: Ditto.
+	* config/nios2/elf.opt: Ditto.
+	* config/nios2/nios2.opt: Ditto.
+	* config/nvptx/nvptx.opt: Ditto.
+	* config/pa/pa.opt: Ditto.
+	* config/pdp11/pdp11.opt: Ditto.
+	* config/pru/pru.opt: Ditto.
+	* config/riscv/riscv.opt: Ditto.
+	* config/rl78/rl78.opt: Ditto.
+	* config/rs6000/aix64.opt: Ditto.
+	* config/rs6000/linux64.opt: Ditto.
+	* config/rs6000/rs6000.opt: Ditto.
+	* config/rs6000/sysv4.opt: Ditto.
+	* config/rx/elf.opt: Ditto.
+	* config/rx/rx.opt: Ditto.
+	* config/s390/s390.opt: Ditto.
+	* config/s390/tpf.opt: Ditto.
+	* config/sh/sh.opt: Ditto.
+	* config/sol2.opt: Ditto.
+	* config/sparc/long-double-switch.opt: Ditto.
+	* config/sparc/sparc.opt: Ditto.
+	* config/tilegx/tilegx.opt: Ditto.
+	* config/tilepro/tilepro.opt: Ditto.
+	* config/v850/v850.opt: Ditto.
+	* config/visium/visium.opt: Ditto.
+	* config/vms/vms.opt: Ditto.
+	* config/vxworks.opt: Ditto.
+	* config/xtensa/xtensa.opt: Ditto.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* doc/options.texi: Remove Report keyword.
+	* opt-functions.awk: Print error when Report keyword
+	is used.
+	* optc-gen.awk: Do not handle Report keyword.
+	* opts.h (struct cl_option): Remove cl_report bitfield flag.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/97868
+	* common.opt: Add new warning -Wtsan.
+	* doc/invoke.texi: Likewise.
+	* tsan.c (instrument_builtin_call): Warn users about unsupported
+	std::atomic_thread_fence.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/98271
+	PR rtl-optimization/98276
+	PR tree-optimization/98279
+	* opts-common.c (set_option): Do not allow overflow for integer
+	arguments.
+
+2020-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/98272
+	* tree-switch-conversion.c (bit_test_cluster::emit): When finding
+	out whether the entry test can be merged in the bit test, do the
+	computation using the type of the index expression.
+
+2020-12-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
+	paradoxical subreg instead of zero_extend for QI/HI promotion.
+
+2020-12-16  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h: Replace calls to __builtin_vcgt* by
+	<, > operators in vclt and vcgt intrinsics respectively.
+	* config/arm/arm_neon_builtins.def: Remove entry for
+	vcgt and vcgtu.
+
+2020-12-16  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h: Replace calls to __builtin_vneg* by - operator
+	in vneg intrinsics.
+	* config/arm/arm_neon_builtins.def: Remove entry for vneg.
+
+2020-12-16  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h: Replace calls to __builtin_vcreate*
+	in vcreate intrinsics.
+	* config/arm/arm_neon_builtins.def: Remove entry for vcreate.
+
 2020-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/96094

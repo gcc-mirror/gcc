@@ -256,6 +256,7 @@ extern void selftest_c_tests ();
 extern void simplify_rtx_c_tests ();
 extern void spellcheck_c_tests ();
 extern void spellcheck_tree_c_tests ();
+extern void splay_tree_cc_tests ();
 extern void sreal_c_tests ();
 extern void store_merging_c_tests ();
 extern void tree_c_tests ();

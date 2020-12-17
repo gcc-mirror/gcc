@@ -32,6 +32,8 @@ ACX_NONCANONICAL_TARGET
 
 AC_CANONICAL_SYSTEM
 AC_PROG_INSTALL
+test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
+AC_SUBST(INSTALL_PROGRAM)
 
 AC_PROG_CXX
 MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
@@ -74,6 +76,8 @@ if test $ac_cv_o_cloexec = yes; then
   AC_DEFINE(HOST_HAS_O_CLOEXEC, 1,
   [Define if O_CLOEXEC supported by fcntl.])
 fi
+
+AC_CHECK_HEADERS(sys/mman.h)
 
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
@@ -203,6 +207,9 @@ if test $ac_cv_inet_ntop = yes; then
   AC_DEFINE(HAVE_INET_NTOP, 1,
   [Define if inet_ntop provided.])
 fi
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])

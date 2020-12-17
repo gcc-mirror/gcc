@@ -126,10 +126,6 @@ package Validsw is
    -- Subprograms --
    -----------------
 
-   procedure Set_Default_Validity_Check_Options;
-   --  This procedure is called to set the default validity checking options
-   --  that apply if no Validity_Check switches or pragma is given.
-
    procedure Set_Validity_Check_Options
      (Options  : String;
       OK       : out Boolean;
@@ -146,19 +142,12 @@ package Validsw is
    procedure Set_Validity_Check_Options (Options : String);
    --  Like the above procedure, except that the call is simply ignored if
    --  there are any error conditions, this is for example appropriate for
-   --  calls where the string is known to be valid, e.g. because it was
-   --  obtained by Save_Validity_Check_Options.
+   --  calls where the string is known to be valid.
 
    procedure Reset_Validity_Check_Options;
    --  Sets all validity check options to off
 
    subtype Validity_Check_Options is String (1 .. 16);
    --  Long enough string to hold all options from Save call below
-
-   procedure Save_Validity_Check_Options
-     (Options : out Validity_Check_Options);
-   --  Sets Options to represent current selection of options. This
-   --  set can be restored by first calling Reset_Validity_Check_Options,
-   --  and then calling Set_Validity_Check_Options with the Options string.
 
 end Validsw;

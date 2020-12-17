@@ -790,13 +790,13 @@ package body Sem_Ch9 is
          if Kind /= E_Block and then Kind /= E_Loop
            and then not Is_Entry (Task_Nam)
          then
-            Error_Msg_N ("enclosing body of accept must be a task", N);
+            Error_Msg_N ("enclosing body of ACCEPT must be a task", N);
             return;
          end if;
       end loop;
 
       if Ekind (Etype (Task_Nam)) /= E_Task_Type then
-         Error_Msg_N ("invalid context for accept statement",  N);
+         Error_Msg_N ("invalid context for ACCEPT statement",  N);
          return;
       end if;
 
@@ -844,7 +844,7 @@ package body Sem_Ch9 is
       end loop;
 
       if Entry_Nam = Any_Id then
-         Error_Msg_N ("no entry declaration matches accept statement",  N);
+         Error_Msg_N ("no entry declaration matches ACCEPT statement",  N);
          return;
       else
          Set_Entity (Nam, Entry_Nam);
@@ -882,7 +882,7 @@ package body Sem_Ch9 is
 
          if Entry_Nam = Scope_Stack.Table (J).Entity then
             Error_Msg_N
-              ("duplicate accept statement for same entry (RM 9.5.2 (15))", N);
+              ("duplicate ACCEPT statement for same entry (RM 9.5.2 (15))", N);
 
             --  Do not continue analysis of accept statement, to prevent
             --  cascaded errors.
@@ -904,8 +904,8 @@ package body Sem_Ch9 is
 
                when N_Asynchronous_Select =>
                   Error_Msg_N
-                    ("accept statements are not allowed within an "
-                     & "asynchronous select inner to the enclosing task body",
+                    ("ACCEPT statement not allowed within an "
+                     & "asynchronous SELECT inner to the enclosing task body",
                      N);
                   exit;
 
@@ -2671,7 +2671,7 @@ package body Sem_Ch9 is
                               if Entity (EDN1) = Ent then
                                  Error_Msg_Sloc := Sloc (Stm1);
                                  Error_Msg_N
-                                   ("accept duplicates one on line#??", Stm);
+                                   ("ACCEPT duplicates one on line#??", Stm);
                                  exit;
                               end if;
                            end if;
@@ -2691,16 +2691,16 @@ package body Sem_Ch9 is
       Check_Potentially_Blocking_Operation (N);
 
       if Terminate_Present and Delay_Present then
-         Error_Msg_N ("at most one of terminate or delay alternative", N);
+         Error_Msg_N ("at most one of TERMINATE or DELAY alternative", N);
 
       elsif not Accept_Present then
          Error_Msg_N
-           ("select must contain at least one accept alternative", N);
+           ("SELECT must contain at least one ACCEPT alternative", N);
       end if;
 
       if Present (Else_Statements (N)) then
          if Terminate_Present or Delay_Present then
-            Error_Msg_N ("else part not allowed with other alternatives", N);
+            Error_Msg_N ("ELSE part not allowed with other alternatives", N);
          end if;
 
          Analyze_Statements (Else_Statements (N));

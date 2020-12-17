@@ -1,3 +1,14 @@
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98047
+	* c-typeck.c (build_modify_expr): Drop qualifiers.
+
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98260
+	* c-parser.c (c_parser_expression): Look into
+	nop expression when marking expressions as read.
+
 2020-12-14  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/98204

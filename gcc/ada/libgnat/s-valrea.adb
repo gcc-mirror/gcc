@@ -34,15 +34,26 @@ with System.Unsigned_Types; use System.Unsigned_Types;
 with System.Val_Util;       use System.Val_Util;
 with System.Value_R;
 
+pragma Warnings (Off, "non-static constant in preelaborated unit");
+--  Every constant is static given our instantiation model
+
 package body System.Val_Real is
 
    pragma Assert (Num'Machine_Mantissa <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
-   --  We use the precision of the floating-point type
+   Need_Extra : constant Boolean := Num'Machine_Mantissa > Uns'Size - 4;
+   --  If the mantissa of the floating-point type is almost as large as the
+   --  unsigned type, we do not have enough space for an extra digit in the
+   --  unsigned type so we handle the extra digit separately, at the cost of
+   --  a potential roundoff error.
 
-   package Impl is new Value_R (Uns, Precision_Limit, Floating => True);
+   Precision_Limit : constant Uns :=
+     (if Need_Extra then 2**Num'Machine_Mantissa - 1 else 2**Uns'Size - 1);
+   --  If we handle the extra digit separately, we use the precision of the
+   --  floating-point type so that the conversion is exact.
+
+   package Impl is new Value_R (Uns, Precision_Limit, Round => Need_Extra);
 
    subtype Base_T is Unsigned range 2 .. 16;
 
@@ -88,6 +99,8 @@ package body System.Val_Real is
    is
       pragma Assert (Base in 2 .. 16);
 
+      pragma Assert (Num'Machine_Radix = 2);
+
       pragma Unsuppress (Range_Check);
 
       Maxexp : constant Positive :=
@@ -112,29 +125,98 @@ package body System.Val_Real is
          System.Float_Control.Reset;
       end if;
 
-      --  Take into account the extra digit
+      --  Do the conversion
 
       R_Val := Num (Val);
-      if Extra > 0 then
+
+      --  Take into account the extra digit, if need be. In this case, the
+      --  three operands are exact, so using an FMA would be ideal.
+
+      if Need_Extra and then Extra > 0 then
          R_Val := R_Val * B + Num (Extra);
          S := S - 1;
       end if;
 
-      --  Compute the final value. When the exponent is positive, we can do the
-      --  computation directly because, if the exponentiation overflows, then
-      --  the final value overflows as well. But when the exponent is negative,
-      --  we may need to do it in two steps to avoid an artificial underflow.
+      --  Compute the final value
 
-      if S > 0 then
-         R_Val := R_Val * B ** S;
+      if R_Val /= 0.0 and then S /= 0 then
+         case Base is
+            --  If the base is a power of two, we use the efficient Scaling
+            --  attribute with an overflow check, if it is not 2, to catch
+            --  ludicrous exponents that would result in an infinity or zero.
 
-      elsif S < 0 then
-         if S < -Maxexp then
-            R_Val := R_Val / B ** Maxexp;
-            S := S + Maxexp;
-         end if;
+            when 2 =>
+               R_Val := Num'Scaling (R_Val, S);
 
-         R_Val := R_Val / B ** (-S);
+            when 4 =>
+               if Integer'First / 2 <= S and then S <= Integer'Last / 2 then
+                  S := S * 2;
+               end if;
+
+               R_Val := Num'Scaling (R_Val, S);
+
+            when 8 =>
+               if Integer'First / 3 <= S and then S <= Integer'Last / 3 then
+                  S := S * 3;
+               end if;
+
+               R_Val := Num'Scaling (R_Val, S);
+
+            when 16 =>
+               if Integer'First / 4 <= S and then S <= Integer'Last / 4 then
+                  S := S * 4;
+               end if;
+
+               R_Val := Num'Scaling (R_Val, S);
+
+            --  If the base is 10, we use a table of powers for accuracy's sake
+
+            when 10 =>
+               declare
+                  Powten : constant array (0 .. Maxpow) of Num;
+                  pragma Import (Ada, Powten);
+                  for Powten'Address use Powten_Address;
+
+               begin
+                  if S > 0 then
+                     while S > Maxpow loop
+                        R_Val := R_Val * Powten (Maxpow);
+                        S := S - Maxpow;
+                     end loop;
+
+                     R_Val := R_Val * Powten (S);
+
+                  else
+                     while S < -Maxpow loop
+                        R_Val := R_Val / Powten (Maxpow);
+                        S := S + Maxpow;
+                     end loop;
+
+                     R_Val := R_Val / Powten (-S);
+                  end if;
+               end;
+
+            --  Implementation for other bases with exponentiation
+
+            --  When the exponent is positive, we can do the computation
+            --  directly because, if the exponentiation overflows, then
+            --  the final value overflows as well. But when the exponent
+            --  is negative, we may need to do it in two steps to avoid
+            --  an artificial underflow.
+
+            when others =>
+               if S > 0 then
+                  R_Val := R_Val * B ** S;
+
+               else
+                  if S < -Maxexp then
+                     R_Val := R_Val / B ** Maxexp;
+                     S := S + Maxexp;
+                  end if;
+
+                  R_Val := R_Val / B ** (-S);
+               end if;
+         end case;
       end if;
 
       --  Finally deal with initial minus sign, note that this processing is

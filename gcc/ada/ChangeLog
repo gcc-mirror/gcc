@@ -1,3 +1,121 @@
+2020-12-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.ads, ali.adb, bindo-writers.adb, lib-writ.adb (Scope):
+	Renamed to IS_Scope.
+
+2020-12-16  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strfix.ads: Add postconditions and contract cases to
+	subprograms.
+
+2020-12-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If iterator
+	filter is present, preanalyze filter without expansion.
+	(Analyze_Loop_Parameter_Specification): When
+	loop_Parameter_Specification is rewritten as
+	Iterator_Specification, transfer Iterator_Filter if present.
+
+2020-12-16  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-objrea.ads (Object_Arch): Add ARM enum
+	* libgnat/s-objrea.adb (Initialize): Add EM_ARM case.
+	(Read_Address): Add ARM case to 32bit read.
+	* Makefile.rtl: Add trasym units to the runtime for armhf-linux.
+
+2020-12-16  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-expect.adb (Non_Blocking_Spawn): Deallocate elements
+	on Arg_List after calling Set_Up_Child_Communications.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch3.adb (P_Modular_Type_Definition): Remove colon from
+	error message.
+	* sem_ch11.adb (Check_Duplication): Likewise.
+	* sem_ch3.adb (Derived_Type_Declaration): Likewise.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch12.adb (P_Formal_Object_Declarations): Refine types to
+	Pos.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* impunit.adb (Not_Impl_Defined_Unit): Fix typo in iteration
+	over Non_Imp_File_Names_12 array.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb, sem_warn.adb: Simplify membership test.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb, exp_util.adb, sem_ch4.adb, sem_disp.adb,
+	sem_elab.adb: Simplify membership test.
+
+2020-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-powtab.ads (Maxpow): Use explicit formula in comment.
+
+2020-12-16  Philippe Gil  <gil@adacore.com>
+
+	* libgnarl/s-tporft.adb (Register_Foreign_Thread): Set
+	Global_Task_Lock_Nesting before using allocator.
+
+2020-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valrea.adb (Maxexp32): New constant array.
+	(Maxexp64): Likewise.
+	(Maxexp80): Likewise.
+	(Integer_to_Real): New local constants Maxexp and B.
+	When the exponent is too negative, do the divison in two steps.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Test_Case): Change integer to float literals.
+	* gnat_rm.texi: Regenerate.
+
+2020-12-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add a codefix
+	for extra parentheses around aspect Annotate expression; reject
+	"(null record)" aggregate and extra parentheses around aspect
+	Test_Case expression.
+	* sem_prag.adb (Analyze_Pragma): Reject "null", "(null record)"
+	and extra parentheses around pragma Contract_Cases; likewise for
+	pragma Subprogram_Variant.
+
+2020-12-16  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.h (__gnat_in_child_after_fork): New flag to express
+	child process side after fork call.
+	* adaint.c (__gnat_portable_spawn): Set flag
+	__gnat_in_child_after_fork.
+	* expect.c (__gnat_expect_fork): Set __gnat_in_child_after_fork
+	to one on child side.
+	* libgnat/memtrack.adb
+	(In_Child_After_Fork): Flag to disable memory tracking.
+	(Allow_Trace): New routine defining if memory should be tracked.
+	(Alloc, Realloc, Free): Use Allow_Trace in "if" condition
+	instead of First_Call.
+
+2020-12-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-tifiio.adb: Mark body not in SPARK.
+	* libgnat/a-tifiio.ads: Mark spec in SPARK.
+	* libgnat/a-tifiio__128.adb: Mark body not in SPARK.
+
+2020-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Decimal_Digits): Tweak overflow test.
+	(Scan_Integral_Digits): Likewise.
+
+2020-12-16  Pascal Obry  <obry@adacore.com>
+
+	* s-oscons-tmplt.c: Add some OS constants.
+
 2020-12-15  Pascal Obry  <obry@adacore.com>
 
 	* libgnat/g-sercom__linux.adb (Set): Use cfsetospeed and
