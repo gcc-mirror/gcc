@@ -503,6 +503,57 @@ alternative_mask get_preferred_alternatives (rtx_insn *, basic_block);
 bool check_bool_attrs (rtx_insn *);
 
 void recog_init ();
+
+/* This RAII class can help to undo tentative insn changes on failure.
+   When an object of the class goes out of scope, it undoes all group
+   changes that have been made via the validate_change machinery and
+   not yet confirmed via confirm_change_group.
+
+   For example:
+
+      insn_change_watermark watermark;
+      validate_change (..., true); // A
+      ...
+      if (test)
+	// Undoes change A.
+	return false;
+      ...
+      validate_change (..., true); // B
+      ...
+      if (test)
+	// Undoes changes A and B.
+	return false;
+      ...
+      confirm_change_group ();
+
+   Code that wants to avoid this behavior can use keep ():
+
+      insn_change_watermark watermark;
+      validate_change (..., true); // A
+      ...
+      if (test)
+	// Undoes change A.
+	return false;
+      ...
+      watermark.keep ();
+      validate_change (..., true); // B
+      ...
+      if (test)
+	// Undoes change B, but not A.
+	return false;
+      ...
+      confirm_change_group ();  */
+class insn_change_watermark
+{
+public:
+  insn_change_watermark () : m_old_num_changes (num_validated_changes ()) {}
+  ~insn_change_watermark () { cancel_changes (m_old_num_changes); }
+  void keep () { m_old_num_changes = num_validated_changes (); }
+
+private:
+  int m_old_num_changes;
+};
+
 #endif
 
 #endif /* GCC_RECOG_H */
