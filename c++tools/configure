@@ -585,6 +585,7 @@ ac_unique_file="c++tools"
 ac_unique_file="server.cc"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 ac_ct_CC
 CFLAGS
 CC
@@ -658,6 +659,7 @@ ac_user_opts='
 enable_option_checking
 enable_c___tools
 enable_maintainer_mode
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1286,6 +1288,12 @@ Optional Features:
   --enable-maintainer-mode
                           enable maintainer mode. Add rules to rebuild
                           configurey bits
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -3556,6 +3564,21 @@ if test $ac_cv_inet_ntop = yes; then
 $as_echo "#define HAVE_INET_NTOP 1" >>confdefs.h
 
 fi
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
+      fi
+
+fi
+
+
+
 
 ac_config_headers="$ac_config_headers config.h"
 
