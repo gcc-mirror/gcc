@@ -3851,9 +3851,12 @@ default_new_address_profitable_p)
 DEFHOOK
 (estimated_poly_value,
  "Return an estimate of the runtime value of @var{val}, for use in\n\
-things like cost calculations or profiling frequencies.  The default\n\
+things like cost calculations or profiling frequencies.  @var{kind} is used\n\
+to ask for the minimum, maximum, and likely estimates of the value through\n\
+the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and\n\
+@code{POLY_VALUE_LIKELY} values.  The default\n\
 implementation returns the lowest possible value of @var{val}.",
- HOST_WIDE_INT, (poly_int64 val),
+ HOST_WIDE_INT, (poly_int64 val, poly_value_estimate_kind kind),
  default_estimated_poly_value)
 
 /* Permit speculative instructions in delay slots during delayed-branch 
