@@ -91,6 +91,9 @@ static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
    and are also considered fixed.  */
 char global_regs[FIRST_PSEUDO_REGISTER];
 
+/* The set of global registers.  */
+HARD_REG_SET global_reg_set;
+
 /* Declaration for the global register. */
 tree global_regs_decl[FIRST_PSEUDO_REGISTER];
 
@@ -390,6 +393,7 @@ init_reg_sets_1 (void)
 	{
 	  fixed_regs[i] = call_used_regs[i] = 1;
 	  SET_HARD_REG_BIT (fixed_reg_set, i);
+	  SET_HARD_REG_BIT (global_reg_set, i);
 	}
     }
 
@@ -724,6 +728,7 @@ globalize_reg (tree decl, int i)
 
   global_regs[i] = 1;
   global_regs_decl[i] = decl;
+  SET_HARD_REG_BIT (global_reg_set, i);
 
   /* If we're globalizing the frame pointer, we need to set the
      appropriate regs_invalidated_by_call bit, even if it's already
