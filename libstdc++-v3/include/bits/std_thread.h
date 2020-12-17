@@ -38,6 +38,7 @@
 #include <exception>		// std::terminate
 #include <iosfwd>		// std::basic_ostream
 #include <tuple>		// std::tuple
+#include <bits/functional_hash.h> // std::hash
 #include <bits/invoke.h>	// std::__invoke
 #include <bits/refwrap.h>       // not required, but helpful to users
 #include <bits/unique_ptr.h>	// std::unique_ptr
@@ -287,6 +288,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // N.B. other comparison operators are defined in <thread>
+
+  // DR 889.
+  /// std::hash specialization for thread::id.
+  template<>
+    struct hash<thread::id>
+    : public __hash_base<size_t, thread::id>
+    {
+      size_t
+      operator()(const thread::id& __id) const noexcept
+      { return std::_Hash_impl::hash(__id._M_thread); }
+    };
 
   namespace this_thread
   {

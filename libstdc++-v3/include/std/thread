@@ -43,7 +43,6 @@
 #endif
 
 #include <bits/std_thread.h> // std::thread, get_id, yield
-#include <bits/functional_hash.h> // std::hash
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR
@@ -93,17 +92,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator>=(thread::id __x, thread::id __y) noexcept
   { return !(__x < __y); }
 #endif // __cpp_lib_three_way_comparison
-
-  // DR 889.
-  /// std::hash specialization for thread::id.
-  template<>
-    struct hash<thread::id>
-    : public __hash_base<size_t, thread::id>
-    {
-      size_t
-      operator()(const thread::id& __id) const noexcept
-      { return std::_Hash_impl::hash(__id._M_thread); }
-    };
 
   template<class _CharT, class _Traits>
     inline basic_ostream<_CharT, _Traits>&
