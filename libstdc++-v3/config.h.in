@@ -69,65 +69,8 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define if EBADMSG exists. */
-#undef HAVE_EBADMSG
-
-/* Define if ECANCELED exists. */
-#undef HAVE_ECANCELED
-
-/* Define if ECHILD exists. */
-#undef HAVE_ECHILD
-
-/* Define if EIDRM exists. */
-#undef HAVE_EIDRM
-
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
-
-/* Define if ENODATA exists. */
-#undef HAVE_ENODATA
-
-/* Define if ENOLINK exists. */
-#undef HAVE_ENOLINK
-
-/* Define if ENOSPC exists. */
-#undef HAVE_ENOSPC
-
-/* Define if ENOSR exists. */
-#undef HAVE_ENOSR
-
-/* Define if ENOSTR exists. */
-#undef HAVE_ENOSTR
-
-/* Define if ENOTRECOVERABLE exists. */
-#undef HAVE_ENOTRECOVERABLE
-
-/* Define if ENOTSUP exists. */
-#undef HAVE_ENOTSUP
-
-/* Define if EOVERFLOW exists. */
-#undef HAVE_EOVERFLOW
-
-/* Define if EOWNERDEAD exists. */
-#undef HAVE_EOWNERDEAD
-
-/* Define if EPERM exists. */
-#undef HAVE_EPERM
-
-/* Define if EPROTO exists. */
-#undef HAVE_EPROTO
-
-/* Define if ETIME exists. */
-#undef HAVE_ETIME
-
-/* Define if ETIMEDOUT exists. */
-#undef HAVE_ETIMEDOUT
-
-/* Define if ETXTBSY exists. */
-#undef HAVE_ETXTBSY
-
-/* Define if EWOULDBLOCK exists. */
-#undef HAVE_EWOULDBLOCK
 
 /* Define to 1 if GCC 4.6 supported std::exception_ptr for the target */
 #undef HAVE_EXCEPTION_PTR_SINCE_GCC46
