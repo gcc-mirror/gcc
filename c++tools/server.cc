@@ -213,7 +213,8 @@ static void ATTRIBUTE_NORETURN ATTRIBUTE_COLD
 crash_signal (int sig)
 {
   signal (sig, SIG_DFL);
-  internal_error ("signal %s", strsignal (sig));
+  // strsignal is not portable :(
+  internal_error ("signal %d", sig);
 }
 
 /* A fatal error of some kind.  */
