@@ -997,6 +997,386 @@ validate_simplify_insn (rtx_insn *insn)
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
 
+/* Try to process the address of memory expression MEM.  Return true on
+   success; leave the caller to clean up on failure.  */
+
+bool
+insn_propagation::apply_to_mem_1 (rtx mem)
+{
+  auto old_num_changes = num_validated_changes ();
+  mem_depth += 1;
+  bool res = apply_to_rvalue_1 (&XEXP (mem, 0));
+  mem_depth -= 1;
+  if (!res)
+    return false;
+
+  if (old_num_changes != num_validated_changes ()
+      && should_check_mems
+      && !check_mem (old_num_changes, mem))
+    return false;
+
+  return true;
+}
+
+/* Try to process the rvalue expression at *LOC.  Return true on success;
+   leave the caller to clean up on failure.  */
+
+bool
+insn_propagation::apply_to_rvalue_1 (rtx *loc)
+{
+  rtx x = *loc;
+  enum rtx_code code = GET_CODE (x);
+  machine_mode mode = GET_MODE (x);
+
+  auto old_num_changes = num_validated_changes ();
+  if (from && GET_CODE (x) == GET_CODE (from) && rtx_equal_p (x, from))
+    {
+      /* Don't replace register asms in asm statements; we mustn't
+	 change the user's register allocation.  */
+      if (REG_P (x)
+	  && HARD_REGISTER_P (x)
+	  && register_asm_p (x)
+	  && asm_noperands (PATTERN (insn)) > 0)
+	return false;
+
+      if (should_unshare)
+	validate_unshare_change (insn, loc, to, 1);
+      else
+	validate_change (insn, loc, to, 1);
+      if (mem_depth && !REG_P (to) && !CONSTANT_P (to))
+	{
+	  /* We're substituting into an address, but TO will have the
+	     form expected outside an address.  Canonicalize it if
+	     necessary.  */
+	  insn_propagation subprop (insn);
+	  subprop.mem_depth += 1;
+	  if (!subprop.apply_to_rvalue (loc))
+	    gcc_unreachable ();
+	  if (should_unshare
+	      && num_validated_changes () != old_num_changes + 1)
+	    {
+	      /* TO is owned by someone else, so create a copy and
+		 return TO to its original form.  */
+	      rtx to = copy_rtx (*loc);
+	      cancel_changes (old_num_changes);
+	      validate_change (insn, loc, to, 1);
+	    }
+	}
+      num_replacements += 1;
+      should_unshare = true;
+      result_flags |= UNSIMPLIFIED;
+      return true;
+    }
+
+  /* Recursively apply the substitution and see if we can simplify
+     the result.  This specifically shouldn't use simplify_gen_* for
+     speculative simplifications, since we want to avoid generating new
+     expressions where possible.  */
+  auto old_result_flags = result_flags;
+  rtx newx = NULL_RTX;
+  bool recurse_p = false;
+  switch (GET_RTX_CLASS (code))
+    {
+    case RTX_UNARY:
+      {
+	machine_mode op0_mode = GET_MODE (XEXP (x, 0));
+	if (!apply_to_rvalue_1 (&XEXP (x, 0)))
+	  return false;
+	if (from && old_num_changes == num_validated_changes ())
+	  return true;
+
+	newx = simplify_unary_operation (code, mode, XEXP (x, 0), op0_mode);
+	break;
+      }
+
+    case RTX_BIN_ARITH:
+    case RTX_COMM_ARITH:
+      {
+	if (!apply_to_rvalue_1 (&XEXP (x, 0))
+	    || !apply_to_rvalue_1 (&XEXP (x, 1)))
+	  return false;
+	if (from && old_num_changes == num_validated_changes ())
+	  return true;
+
+	if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
+	    && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
+	  newx = simplify_gen_binary (code, mode, XEXP (x, 1), XEXP (x, 0));
+	else
+	  newx = simplify_binary_operation (code, mode,
+					    XEXP (x, 0), XEXP (x, 1));
+	break;
+      }
+
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
+      {
+	machine_mode op_mode = (GET_MODE (XEXP (x, 0)) != VOIDmode
+				? GET_MODE (XEXP (x, 0))
+				: GET_MODE (XEXP (x, 1)));
+	if (!apply_to_rvalue_1 (&XEXP (x, 0))
+	    || !apply_to_rvalue_1 (&XEXP (x, 1)))
+	  return false;
+	if (from && old_num_changes == num_validated_changes ())
+	  return true;
+
+	newx = simplify_relational_operation (code, mode, op_mode,
+					      XEXP (x, 0), XEXP (x, 1));
+	break;
+      }
+
+    case RTX_TERNARY:
+    case RTX_BITFIELD_OPS:
+      {
+	machine_mode op0_mode = GET_MODE (XEXP (x, 0));
+	if (!apply_to_rvalue_1 (&XEXP (x, 0))
+	    || !apply_to_rvalue_1 (&XEXP (x, 1))
+	    || !apply_to_rvalue_1 (&XEXP (x, 2)))
+	  return false;
+	if (from && old_num_changes == num_validated_changes ())
+	  return true;
+
+	newx = simplify_ternary_operation (code, mode, op0_mode,
+					   XEXP (x, 0), XEXP (x, 1),
+					   XEXP (x, 2));
+	break;
+      }
+
+    case RTX_EXTRA:
+      if (code == SUBREG)
+	{
+	  machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+	  if (!apply_to_rvalue_1 (&SUBREG_REG (x)))
+	    return false;
+	  if (from && old_num_changes == num_validated_changes ())
+	    return true;
+
+	  rtx inner = SUBREG_REG (x);
+	  newx = simplify_subreg (mode, inner, inner_mode, SUBREG_BYTE (x));
+	  /* Reject the same cases that simplify_gen_subreg would.  */
+	  if (!newx
+	      && (GET_CODE (inner) == SUBREG
+		  || GET_CODE (inner) == CONCAT
+		  || GET_MODE (inner) == VOIDmode
+		  || !validate_subreg (mode, inner_mode,
+				       inner, SUBREG_BYTE (x))))
+	    {
+	      failure_reason = "would create an invalid subreg";
+	      return false;
+	    }
+	  break;
+	}
+      else
+	recurse_p = true;
+      break;
+
+    case RTX_OBJ:
+      if (code == LO_SUM)
+	{
+	  if (!apply_to_rvalue_1 (&XEXP (x, 0))
+	      || !apply_to_rvalue_1 (&XEXP (x, 1)))
+	    return false;
+	  if (from && old_num_changes == num_validated_changes ())
+	    return true;
+
+	  /* (lo_sum (high x) y) -> y where x and y have the same base.  */
+	  rtx op0 = XEXP (x, 0);
+	  rtx op1 = XEXP (x, 1);
+	  if (GET_CODE (op0) == HIGH)
+	    {
+	      rtx base0, base1, offset0, offset1;
+	      split_const (XEXP (op0, 0), &base0, &offset0);
+	      split_const (op1, &base1, &offset1);
+	      if (rtx_equal_p (base0, base1))
+		newx = op1;
+	    }
+	}
+      else if (code == REG)
+	{
+	  if (from && REG_P (from) && reg_overlap_mentioned_p (x, from))
+	    {
+	      failure_reason = "inexact register overlap";
+	      return false;
+	    }
+	}
+      else if (code == MEM)
+	return apply_to_mem_1 (x);
+      else
+	recurse_p = true;
+      break;
+
+    case RTX_CONST_OBJ:
+      break;
+
+    case RTX_AUTOINC:
+      if (from && reg_overlap_mentioned_p (XEXP (x, 0), from))
+	{
+	  failure_reason = "is subject to autoinc";
+	  return false;
+	}
+      recurse_p = true;
+      break;
+
+    case RTX_MATCH:
+    case RTX_INSN:
+      gcc_unreachable ();
+    }
+
+  if (recurse_p)
+    {
+      const char *fmt = GET_RTX_FORMAT (code);
+      for (int i = 0; fmt[i]; i++)
+	switch (fmt[i])
+	  {
+	  case 'E':
+	    for (int j = 0; j < XVECLEN (x, i); j++)
+	      if (!apply_to_rvalue_1 (&XVECEXP (x, i, j)))
+		return false;
+	    break;
+
+	  case 'e':
+	    if (XEXP (x, i) && !apply_to_rvalue_1 (&XEXP (x, i)))
+	      return false;
+	    break;
+	  }
+    }
+  else if (newx && !rtx_equal_p (x, newx))
+    {
+      /* All substitutions made by OLD_NUM_CHANGES onwards have been
+	 simplified.  */
+      result_flags = ((result_flags & ~UNSIMPLIFIED)
+		      | (old_result_flags & UNSIMPLIFIED));
+
+      if (should_note_simplifications)
+	note_simplification (old_num_changes, old_result_flags, x, newx);
+
+      /* There's no longer any point unsharing the substitutions made
+	 for subexpressions, since we'll just copy this one instead.  */
+      bool unshare = false;
+      for (int i = old_num_changes; i < num_changes; ++i)
+	{
+	  unshare |= changes[i].unshare;
+	  changes[i].unshare = false;
+	}
+      if (unshare)
+	validate_unshare_change (insn, loc, newx, 1);
+      else
+	validate_change (insn, loc, newx, 1);
+    }
+
+  return true;
+}
+
+/* Try to process the lvalue expression at *LOC.  Return true on success;
+   leave the caller to clean up on failure.  */
+
+bool
+insn_propagation::apply_to_lvalue_1 (rtx dest)
+{
+  rtx old_dest = dest;
+  while (GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == STRICT_LOW_PART)
+    {
+      if (GET_CODE (dest) == ZERO_EXTRACT
+	  && (!apply_to_rvalue_1 (&XEXP (dest, 1))
+	      || !apply_to_rvalue_1 (&XEXP (dest, 2))))
+	return false;
+      dest = XEXP (dest, 0);
+    }
+
+  if (MEM_P (dest))
+    return apply_to_mem_1 (dest);
+
+  /* Check whether the substitution is safe in the presence of this lvalue.  */
+  if (!from
+      || dest == old_dest
+      || !REG_P (dest)
+      || !reg_overlap_mentioned_p (dest, from))
+    return true;
+
+  if (SUBREG_P (old_dest)
+      && SUBREG_REG (old_dest) == dest
+      && !read_modify_subreg_p (old_dest))
+    return true;
+
+  failure_reason = "is part of a read-write destination";
+  return false;
+}
+
+/* Try to process the instruction pattern at *LOC.  Return true on success;
+   leave the caller to clean up on failure.  */
+
+bool
+insn_propagation::apply_to_pattern_1 (rtx *loc)
+{
+  rtx body = *loc;
+  switch (GET_CODE (body))
+    {
+    case COND_EXEC:
+      return (apply_to_rvalue_1 (&COND_EXEC_TEST (body))
+	      && apply_to_pattern_1 (&COND_EXEC_CODE (body)));
+
+    case PARALLEL:
+      {
+	int last = XVECLEN (body, 0) - 1;
+	for (int i = 0; i < last; ++i)
+	  if (!apply_to_pattern_1 (&XVECEXP (body, 0, i)))
+	    return false;
+	return apply_to_pattern_1 (&XVECEXP (body, 0, last));
+      }
+
+    case ASM_OPERANDS:
+      for (int i = 0, len = ASM_OPERANDS_INPUT_LENGTH (body); i < len; ++i)
+	if (!apply_to_rvalue_1 (&ASM_OPERANDS_INPUT (body, i)))
+	  return false;
+      return true;
+
+    case CLOBBER:
+      return apply_to_lvalue_1 (XEXP (body, 0));
+
+    case SET:
+      return (apply_to_lvalue_1 (SET_DEST (body))
+	      && apply_to_rvalue_1 (&SET_SRC (body)));
+
+    default:
+      /* All the other possibilities never store and can use a normal
+	 rtx walk.  This includes:
+
+	 - USE
+	 - TRAP_IF
+	 - PREFETCH
+	 - UNSPEC
+	 - UNSPEC_VOLATILE.  */
+      return apply_to_rvalue_1 (loc);
+    }
+}
+
+/* Apply this insn_propagation object's simplification or substitution
+   to the instruction pattern at LOC.  */
+
+bool
+insn_propagation::apply_to_pattern (rtx *loc)
+{
+  unsigned int num_changes = num_validated_changes ();
+  bool res = apply_to_pattern_1 (loc);
+  if (!res)
+    cancel_changes (num_changes);
+  return res;
+}
+
+/* Apply this insn_propagation object's simplification or substitution
+   to the rvalue expression at LOC.  */
+
+bool
+insn_propagation::apply_to_rvalue (rtx *loc)
+{
+  unsigned int num_changes = num_validated_changes ();
+  bool res = apply_to_rvalue_1 (loc);
+  if (!res)
+    cancel_changes (num_changes);
+  return res;
+}
+
 /* Check whether INSN matches a specific alternative of an .md pattern.  */
 
 bool
