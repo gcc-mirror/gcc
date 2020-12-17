@@ -74,7 +74,8 @@ std::once_flag::_M_finish(bool returning) noexcept
     }
   else
     {
-      int prev = __atomic_exchange_n(&_M_once, newval, __ATOMIC_RELEASE);
+      int prev [[maybe_unused]]
+	= __atomic_exchange_n(&_M_once, newval, __ATOMIC_RELEASE);
       __glibcxx_assert(prev & _Bits::_Active);
       // Wake any other threads waiting for this execution to finish.
       constexpr int futex_wake = 129; // FUTEX_WAKE_PRIVATE
