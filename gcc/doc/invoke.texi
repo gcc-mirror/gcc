@@ -32891,6 +32891,13 @@ the purview of a named module.  This is not implemented.  Such
 declarations will be attached to the module, if any, in which they are
 declared.
 
+@item Standard Library Header Units
+The Standard Library is not provided as importable header units.  If
+you want to import such units, you must explicitly build them first.
+If you do not do this with care, you may have multiple declarations,
+which the module machinery must merge---compiler resource usage can be
+affected by how you partition header files into header units.
+
 @end table
 
 Modular compilation is @emph{not} enabled with just the
