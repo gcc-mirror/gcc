@@ -1,3 +1,7 @@
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr98297.C: New.
+
 2020-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_tune_cortex_a76): New
