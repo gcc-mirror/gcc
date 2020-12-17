@@ -232,6 +232,9 @@ extern int errno;
 #ifdef INCLUDE_VECTOR
 # include <vector>
 #endif
+#ifdef INCLUDE_ARRAY
+# include <array>
+#endif
 # include <cstring>
 # include <new>
 # include <utility>
