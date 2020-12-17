@@ -276,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Note: the _GLIBCXX_REQUIRE_POSIX_SEMAPHORE macro can be used to force the
 // use of Posix semaphores (sem_t). Doing so however, alters the ABI.
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX && !_GLIBCXX_REQUIRE_POSIX_SEMAPHORE
+#if defined _GLIBCXX_HAVE_LINUX_FUTEX && !_GLIBCXX_REQUIRE_POSIX_SEMAPHORE
   // Use futex if available and didn't force use of POSIX
   using __fast_semaphore = __atomic_semaphore<__detail::__platform_wait_t>;
 #elif _GLIBCXX_HAVE_POSIX_SEMAPHORE
