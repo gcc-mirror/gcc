@@ -23,7 +23,7 @@ namespace rtl_ssa {
 inline resource_info
 full_register (unsigned int regno)
 {
-  return { reg_raw_mode[regno], regno };
+  return { GET_MODE (regno_reg_rtx[regno]), regno };
 }
 
 // Return true if sorted array ACCESSES includes an access to hard registers.
