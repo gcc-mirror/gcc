@@ -96,6 +96,8 @@ extern void confirm_change_group (void);
 extern int apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
+extern void temporarily_undo_changes (int);
+extern void redo_changes (int);
 extern int constrain_operands (int, alternative_mask);
 extern int constrain_operands_cached (rtx_insn *, int);
 extern int memory_address_addr_space_p (machine_mode, rtx, addr_space_t);

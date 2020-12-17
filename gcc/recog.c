@@ -193,6 +193,7 @@ static change_t *changes;
 static int changes_allocated;
 
 static int num_changes = 0;
+static int temporarily_undone_changes = 0;
 
 /* Validate a proposed change to OBJECT.  LOC is the location in the rtl
    at which NEW_RTX will be placed.  If NEW_LEN is >= 0, XVECLEN (NEW_RTX, 0)
@@ -218,6 +219,7 @@ static bool
 validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group,
 		   bool unshare, int new_len = -1)
 {
+  gcc_assert (temporarily_undone_changes == 0);
   rtx old = *loc;
 
   /* Single-element parallels aren't valid and won't match anything.
@@ -506,6 +508,7 @@ confirm_change_group (void)
   int i;
   rtx last_object = NULL;
 
+  gcc_assert (temporarily_undone_changes == 0);
   for (i = 0; i < num_changes; i++)
     {
       rtx object = changes[i].object;
@@ -561,6 +564,7 @@ num_validated_changes (void)
 void
 cancel_changes (int num)
 {
+  gcc_assert (temporarily_undone_changes == 0);
   int i;
 
   /* Back out all the changes.  Do this in the opposite order in which
@@ -575,6 +579,50 @@ cancel_changes (int num)
 	INSN_CODE (changes[i].object) = changes[i].old_code;
     }
   num_changes = num;
+}
+
+/* Swap the status of change NUM from being applied to not being applied,
+   or vice versa.  */
+
+static void
+swap_change (int num)
+{
+  if (changes[num].old_len >= 0)
+    std::swap (XVECLEN (*changes[num].loc, 0), changes[num].old_len);
+  else
+    std::swap (*changes[num].loc, changes[num].old);
+  if (changes[num].object && !MEM_P (changes[num].object))
+    std::swap (INSN_CODE (changes[num].object), changes[num].old_code);
+}
+
+/* Temporarily undo all the changes numbered NUM and up, with a view
+   to reapplying them later.  The next call to the changes machinery
+   must be:
+
+      redo_changes (NUM)
+
+   otherwise things will end up in an invalid state.  */
+
+void
+temporarily_undo_changes (int num)
+{
+  gcc_assert (temporarily_undone_changes == 0 && num <= num_changes);
+  for (int i = num_changes - 1; i >= num; i--)
+    swap_change (i);
+  temporarily_undone_changes = num_changes - num;
+}
+
+/* Redo the changes that were temporarily undone by:
+
+      temporarily_undo_changes (NUM).  */
+
+void
+redo_changes (int num)
+{
+  gcc_assert (temporarily_undone_changes == num_changes - num);
+  for (int i = num; i < num_changes; ++i)
+    swap_change (i);
+  temporarily_undone_changes = 0;
 }
 
 /* Reduce conditional compilation elsewhere.  */
