@@ -6227,6 +6227,28 @@ allocate_get_initializer (gfc_code * code, gfc_expr * expr)
   return NULL;
 }
 
+/* Helper function - return true if a coarray is allcoated via this
+   statement.  */
+
+static bool
+coarray_alloc_p (gfc_code *code)
+{
+  if (code == NULL || code->op != EXEC_ALLOCATE)
+    return false;
+
+  for (gfc_alloc *al = code->ext.alloc.list; al != NULL; al = al->next)
+    {
+      gfc_ref *ref, *last;
+      for (ref = al->expr->ref, last = ref; ref; last = ref, ref = ref->next)
+	;
+
+      ref = last;
+      if (ref && ref->type == REF_ARRAY && ref->u.ar.codimen)
+	return true;
+    }
+  return false;
+}
+
 /* Translate the ALLOCATE statement.  */
 
 tree
@@ -7235,6 +7257,12 @@ gfc_trans_allocate (gfc_code * code)
 				 zero_size);
       gfc_add_expr_to_block (&post, tmp);
     }
+  else if (flag_coarray == GFC_FCOARRAY_SHARED && coarray_alloc_p (code))
+    {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_sync_all,
+				 1, null_pointer_node);
+      gfc_add_expr_to_block (&post, tmp);
+    }
 
   gfc_add_block_to_block (&block, &se.post);
   gfc_add_block_to_block (&block, &post);
@@ -7542,6 +7570,14 @@ gfc_trans_deallocate (gfc_code *code)
       gfc_conv_expr_lhs (&se, code->expr1);
       tmp = convert (TREE_TYPE (se.expr), stat);
       gfc_add_modify (&block, se.expr, tmp);
+    }
+
+  if (is_shared_coarray)
+    {
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_sync_all,
+				 1, null_pointer_node);
+      gfc_add_expr_to_block (&block, tmp);
+
     }
 
   return gfc_finish_block (&block);
