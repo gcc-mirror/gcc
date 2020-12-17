@@ -51,8 +51,8 @@
 #include "rtlanal.h"
 
 // Provides the global crtl->ssa.
-#include "tm_p.h"
 #include "memmodel.h"
+#include "tm_p.h"
 #include "emit-rtl.h"
 
 // The rtl-ssa files themselves.
