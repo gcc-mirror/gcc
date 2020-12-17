@@ -88,6 +88,7 @@ extern int check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
+extern bool validate_change_xveclen (rtx, rtx *, int, bool);
 extern bool canonicalize_change_group (rtx_insn *insn, rtx x);
 extern int insn_invalid_p (rtx_insn *, bool);
 extern int verify_changes (int);

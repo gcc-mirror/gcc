@@ -183,6 +183,7 @@ struct change_t
 {
   rtx object;
   int old_code;
+  int old_len;
   bool unshare;
   rtx *loc;
   rtx old;
@@ -194,8 +195,10 @@ static int changes_allocated;
 static int num_changes = 0;
 
 /* Validate a proposed change to OBJECT.  LOC is the location in the rtl
-   at which NEW_RTX will be placed.  If OBJECT is zero, no validation is done,
-   the change is simply made.
+   at which NEW_RTX will be placed.  If NEW_LEN is >= 0, XVECLEN (NEW_RTX, 0)
+   will also be changed to NEW_LEN, which is no greater than the current
+   XVECLEN.  If OBJECT is zero, no validation is done, the change is
+   simply made.
 
    Two types of objects are supported:  If OBJECT is a MEM, memory_address_p
    will be called with the address and mode as parameters.  If OBJECT is
@@ -212,14 +215,25 @@ static int num_changes = 0;
    Otherwise, perform the change and return 1.  */
 
 static bool
-validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group, bool unshare)
+validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group,
+		   bool unshare, int new_len = -1)
 {
   rtx old = *loc;
 
-  if (old == new_rtx || rtx_equal_p (old, new_rtx))
+  /* Single-element parallels aren't valid and won't match anything.
+     Replace them with the single element.  */
+  if (new_len == 1 && GET_CODE (new_rtx) == PARALLEL)
+    {
+      new_rtx = XVECEXP (new_rtx, 0, 0);
+      new_len = -1;
+    }
+
+  if ((old == new_rtx || rtx_equal_p (old, new_rtx))
+      && (new_len < 0 || XVECLEN (new_rtx, 0) == new_len))
     return 1;
 
-  gcc_assert (in_group != 0 || num_changes == 0);
+  gcc_assert ((in_group != 0 || num_changes == 0)
+	      && (new_len < 0 || new_rtx == *loc));
 
   *loc = new_rtx;
 
@@ -239,7 +253,11 @@ validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group, bool unshar
   changes[num_changes].object = object;
   changes[num_changes].loc = loc;
   changes[num_changes].old = old;
+  changes[num_changes].old_len = (new_len >= 0 ? XVECLEN (new_rtx, 0) : -1);
   changes[num_changes].unshare = unshare;
+
+  if (new_len >= 0)
+    XVECLEN (new_rtx, 0) = new_len;
 
   if (object && !MEM_P (object))
     {
@@ -278,6 +296,14 @@ validate_unshare_change (rtx object, rtx *loc, rtx new_rtx, bool in_group)
   return validate_change_1 (object, loc, new_rtx, in_group, true);
 }
 
+/* Change XVECLEN (*LOC, 0) to NEW_LEN.  OBJECT, IN_GROUP and the return
+   value are as for validate_change_1.  */
+
+bool
+validate_change_xveclen (rtx object, rtx *loc, int new_len, bool in_group)
+{
+  return validate_change_1 (object, loc, *loc, in_group, false, new_len);
+}
 
 /* Keep X canonicalized if some changes have made it non-canonical; only
    modifies the operands of X, not (for example) its code.  Simplifications
@@ -541,7 +567,10 @@ cancel_changes (int num)
      they were made.  */
   for (i = num_changes - 1; i >= num; i--)
     {
-      *changes[i].loc = changes[i].old;
+      if (changes[i].old_len >= 0)
+	XVECLEN (*changes[i].loc, 0) = changes[i].old_len;
+      else
+	*changes[i].loc = changes[i].old;
       if (changes[i].object && !MEM_P (changes[i].object))
 	INSN_CODE (changes[i].object) = changes[i].old_code;
     }
