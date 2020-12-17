@@ -1455,6 +1455,39 @@ set_of (const_rtx pat, const_rtx insn)
   return data.found;
 }
 
+/* Check whether instruction pattern PAT contains a SET with the following
+   properties:
+
+   - the SET is executed unconditionally;
+   - the destination of the SET is write-only rather than read-write; and
+   - either:
+     - the destination of the SET is a REG that contains REGNO; or
+     - the destination of the SET is a SUBREG of such a REG.
+
+   If PAT does have a SET like that, return the set, otherwise return null.
+
+   This is intended to be an alternative to single_set for passes that
+   can handle patterns with multiple_sets.  */
+rtx
+simple_regno_set (rtx pat, unsigned int regno)
+{
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int last = XVECLEN (pat, 0) - 1;
+      for (int i = 0; i < last; ++i)
+	if (rtx set = simple_regno_set (XVECEXP (pat, 0, i), regno))
+	  return set;
+
+      pat = XVECEXP (pat, 0, last);
+    }
+
+  if (GET_CODE (pat) == SET
+      && covers_regno_no_parallel_p (SET_DEST (pat), regno))
+    return pat;
+
+  return nullptr;
+}
+
 /* Add all hard register in X to *PSET.  */
 void
 find_all_hard_regs (const_rtx x, HARD_REG_SET *pset)
