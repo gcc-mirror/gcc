@@ -1307,9 +1307,14 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 
   /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the
      image control statements SYNC IMAGES and SYNC ALL.  */
-  if (flag_coarray == GFC_FCOARRAY_LIB || flag_coarray == GFC_FCOARRAY_SHARED)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tmp = gfc_trans_memory_barrier ();
+      gfc_add_expr_to_block (&se.pre, tmp);
+    }
+  else if (flag_coarray == GFC_FCOARRAY_SHARED)
+    {
+      tmp = gfc_trans_memory_barrier_fence ();
       gfc_add_expr_to_block (&se.pre, tmp);
     }
 
@@ -1332,8 +1337,16 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	    stat = gfc_build_addr_expr (NULL, stat);
 
 	  if(type == EXEC_SYNC_MEMORY)
-	    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_memory,
-				       3, stat, errmsg, errmsglen);
+	    {
+	      /* For shared coarrays, there is no need for a memory
+		 fence here because that is emitted anyway below.  */
+	      if (flag_coarray != GFC_FCOARRAY_SHARED)
+		tmp = build_call_expr_loc (input_location,
+					   gfor_fndecl_caf_sync_memory,
+					   3, stat, errmsg, errmsglen);
+	      else
+		tmp = NULL_TREE;
+	    }
 	  else
 	    {
 	      if (flag_coarray == GFC_FCOARRAY_LIB)
@@ -1343,8 +1356,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 		tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_sync_all,
 					   1, stat);
 	    }
-
-	  gfc_add_expr_to_block (&se.pre, tmp);
+	  if (tmp != NULL_TREE)
+	    gfc_add_expr_to_block (&se.pre, tmp);
 	}
       else
 	{

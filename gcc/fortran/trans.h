@@ -504,6 +504,7 @@ void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 /* Insert a memory barrier into the code.  */
 
 tree gfc_trans_memory_barrier (void);
+tree gfc_trans_memory_barrier_fence (void);
 
 /* trans-expr.c */
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);

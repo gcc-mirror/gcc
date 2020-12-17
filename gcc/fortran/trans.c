@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-const.h"
 #include "diagnostic-core.h"
+#include "memmodel.h"   /* For MEMMODEL_ enums.  */
 
 /* Naming convention for backend interface code:
 
@@ -49,6 +50,7 @@ const char gfc_msg_fault[] = N_("Array reference out of bounds");
 const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
 /* Insert a memory barrier into the code.  */
+
 tree
 gfc_trans_memory_barrier (void)
 {
@@ -62,6 +64,20 @@ gfc_trans_memory_barrier (void)
 
   return tmp;
 }
+
+/* Same as above, but do it by calling
+   __builtin_atomic_thread_fence.  */
+
+tree
+gfc_trans_memory_barrier_fence (void)
+{
+  tree call, mode;
+  call = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+  mode = build_int_cst (integer_type_node, MEMMODEL_ACQ_REL);
+  call = build_call_expr_loc (input_location, call, 1, mode);
+  return call;
+}
+
 
 /* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
    parser works in gfortran, loc->lb->location contains only the line number
