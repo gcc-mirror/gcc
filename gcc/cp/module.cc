@@ -2718,7 +2718,7 @@ uintset<T>::hash::add (typename uintset<T>::hash::key_t key, T value)
 	{
 	  unsigned n = set->num * 2;
 	  size_t new_size = (offsetof (uintset, values)
-			     + sizeof (uintset::values) * n);
+			     + sizeof (uintset (0u).values) * n);
 	  uintset *new_set = new (::operator new (new_size)) uintset (set);
 	  delete set;
 	  set = new_set;
@@ -2743,7 +2743,7 @@ uintset<T>::hash::create (typename uintset<T>::hash::key_t key, unsigned num,
     p2alloc++;
 
   size_t new_size = (offsetof (uintset, values)
-		     + (sizeof (uintset::values) << p2alloc));
+		     + (sizeof (uintset (0u).values) << p2alloc));
   uintset *set = new (::operator new (new_size)) uintset (key);
   set->allocp2 = p2alloc;
   set->num = num;
