@@ -1,3 +1,8 @@
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_git: Put BASEDIR into /sourceware/snapshot-tmp/gcc
+	if it exist.
+
 2020-05-29  Martin Liska  <mliska@suse.cz>
 
 	* bugzilla-close-candidate.py: Fix sorting of branches.

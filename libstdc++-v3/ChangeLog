@@ -1,3 +1,137 @@
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* config/abi/pre/gnu.ver: Make patterns less greedy.
+	* config/os/gnu-linux/ldbl-ieee128-extra.ver: New file with patterns
+	for IEEE128 long double symbols.
+	* configure: Regenerate.
+	* configure.ac: Enable alternative 128-bit long double format on
+	powerpc64*-*-linux*.
+	* doc/Makefile.in: Regenerate.
+	* fragment.am: Regenerate.
+	* include/Makefile.am: Set _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Define inline namespace for new long
+	double symbols. Don't define _GLIBCXX_USE_FLOAT128 when it's the
+	same type as long double.
+	* include/bits/locale_classes.h [_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT]
+	(locale::_Impl::_M_init_extra_ldbl128): Declare new member function.
+	* include/bits/locale_facets.h (_GLIBCXX_NUM_FACETS): Simplify by
+	only counting narrow character facets.
+	(_GLIBCXX_NUM_CXX11_FACETS): Likewise.
+	(_GLIBCXX_NUM_LBDL_ALT128_FACETS): New.
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT] (num_get::__do_get): Define
+	vtable placeholder for __ibm128 long double type.
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(num_get::__do_get): Declare vtable placeholder for __ibm128 long
+	double type.
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(num_put::__do_put): Likewise.
+	* include/bits/locale_facets.tcc
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(num_get::__do_get, num_put::__do_put): Define.
+	* include/bits/locale_facets_nonio.h
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(money_get::__do_get): Declare vtable placeholder for __ibm128 long
+	double type.
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(money_put::__do_put): Likewise.
+	* include/bits/locale_facets_nonio.tcc
+	[_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __LONG_DOUBLE_IEEE128__]
+	(money_get::__do_get, money_put::__do_put): Define.
+	* include/ext/numeric_traits.h [_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT]
+	(__numeric_traits<__ibm128>, __numeric_traits<__ieee128>): Define.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.am: Add compatibility-ldbl-alt128.cc and
+	compatibility-ldbl-alt128-cxx11.cc sources and recipes for objects.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/compatibility-ldbl-alt128-cxx11.cc: New file defining
+	symbols using the old 128-bit long double format, for the cxx11 ABI.
+	* src/c++11/compatibility-ldbl-alt128.cc: Likewise, for the
+	gcc4-compatible ABI.
+	* src/c++11/compatibility-ldbl-facets-aliases.h: New header for long
+	double compat aliases.
+	* src/c++11/cow-locale_init.cc: Add comment.
+	* src/c++11/cxx11-locale-inst.cc: Define C and C_is_char
+	unconditionally.
+	* src/c++11/cxx11-wlocale-inst.cc: Add sanity check. Include
+	locale-inst.cc directly, not via cxx11-locale-inst.cc.
+	* src/c++11/locale-inst-monetary.h: New header for monetary
+	category instantiations.
+	* src/c++11/locale-inst-numeric.h: New header for numeric category
+	instantiations.
+	* src/c++11/locale-inst.cc: Include new headers for monetary,
+	numeric, and long double definitions.
+	* src/c++11/wlocale-inst.cc: Remove long double compat aliases that
+	are defined in new header now.
+	* src/c++17/Makefile.am: Use -mabi=ibmlongdouble for
+	floating_from_chars.cc.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/floating_from_chars.cc (from_chars_impl): Add
+	if-constexpr branch for __ieee128.
+	(from_chars): Overload for __ieee128.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/locale_init.cc (num_facets): Adjust calculation.
+	(locale::_Impl::_Impl(size_t)): Call _M_init_extra_ldbl128.
+	* src/c++98/localename.cc (num_facets): Adjust calculation.
+	(locale::_Impl::_Impl(const char*, size_t)): Call
+	_M_init_extra_ldbl128.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/util/testsuite_abi.cc: Add new symbol versions.
+	Allow new symbols to be added to GLIBCXX_IEEE128_3.4.29 and
+	CXXABI_IEEE128_1.3.13 too.
+	* testsuite/26_numerics/complex/abi_tag.cc: Add u9__ieee128 to
+	regex matching expected symbols.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility: Use __has_builtin without checking if
+	it's defined.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config: Warn if __STRICT_ANSI__ state is
+	inconsistent with __GLIBCXX_TYPE_INT_N_0.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96083
+	* include/ext/throw_allocator.h: Use __has_builtin to check for
+	__builtin_sprintf support, and use std::sprtinf if necessary.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98319
+	* include/experimental/random: Only define contents for C++14
+	and later.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/utility: Likewise.
+	* testsuite/experimental/feat-lib-fund.cc: Include all LFTS
+	headers that are present. Allow test to run for all modes.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/46447
+	* testsuite/performance/29_atomics/atomic_flag.cc: New test.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93151
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Remove.
+	* configure.ac: Regenerate.
+	* config/os/generic/error_constants.h: Test POSIX errno macros
+	directly, instead of corresponding _GLIBCXX_HAVE_EXXX macros.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/93151.cc: New
+	test.
+
 2020-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Revert:

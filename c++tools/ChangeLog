@@ -1,3 +1,18 @@
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (INSTALL): Replace with ...
+	(INSTALL_PROGRAM): ... this.
+	(INSTALL_STRIP_PROGRAM): New.
+	(install-strip): New target.
+	(install): Use INSTALL_PROGRAM.
+	* configure.ac: Add INSTALL_PROGRAM.
+	* configure: Regenerated.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (install): Do not use -p, use mkinstalldirs.
+	(clean): Fix typo.
+
 2020-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in: New.
