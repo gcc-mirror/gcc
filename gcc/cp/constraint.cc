@@ -2374,35 +2374,82 @@ tsubst_parameter_mapping (tree map, tree args, tsubst_flags_t complain, tree in_
                         Constraint satisfaction
 ---------------------------------------------------------------------------*/
 
-/* Hash functions for satisfaction entries.  */
+/* A counter incremented by note_failed_type_completion_for_satisfaction().
+   It's used by the satisfaction caches in order to flag "potentially unstable"
+   satisfaction results.  */
+
+static unsigned failed_type_completion_count;
+
+/* Called whenever a type completion failure occurs that definitely affects
+   the semantics of the program, by e.g. inducing substitution failure.  */
+
+void
+note_failed_type_completion_for_satisfaction (tree type)
+{
+  gcc_checking_assert (!COMPLETE_TYPE_P (type));
+  if (CLASS_TYPE_P (type)
+      && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+    /* After instantiation, a class template specialization that's
+       incomplete will remain incomplete, so for our purposes we can
+       ignore this completion failure event.  */;
+  else
+    ++failed_type_completion_count;
+}
+
+/* Hash functions and data types for satisfaction cache entries.  */
 
 struct GTY((for_user)) sat_entry
 {
-  tree constr;
+  /* The relevant ATOMIC_CONSTR.  */
+  tree atom;
+
+  /* The relevant template arguments.  */
   tree args;
+
+  /* The result of satisfaction of ATOM+ARGS.
+     This is either boolean_true_node, boolean_false_node or error_mark_node,
+     where error_mark_node indicates ill-formed satisfaction.
+     It's set to NULL_TREE while computing satisfaction of ATOM+ARGS for
+     the first time.  */
   tree result;
+
+  /* The value of input_location when satisfaction of ATOM+ARGS was first
+     performed.  */
+  location_t location;
+
+  /* True if this satisfaction result is flagged as "potentially unstable",
+     i.e. the result might change at different points in the program if
+     recomputed from scratch (which would be ill-formed).  This flag controls
+     whether to recompute a cached satisfaction result from scratch even when
+     evaluating quietly.  */
+  bool maybe_unstable;
+
+  /* True if we want to diagnose the above instability when it's detected.
+     We don't always want to do so, in order to avoid emitting duplicate
+     diagnostics in some cases.  */
+  bool diagnose_instability;
 };
 
 struct sat_hasher : ggc_ptr_hash<sat_entry>
 {
   static hashval_t hash (sat_entry *e)
   {
-    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e->constr))
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e->atom))
       {
 	/* Atoms with instantiated mappings are built during satisfaction.
 	   They live only inside the sat_cache, and we build one to query
 	   the cache with each time we instantiate a mapping.  */
 	gcc_assert (!e->args);
-	return hash_atomic_constraint (e->constr);
+	return hash_atomic_constraint (e->atom);
       }
 
     /* Atoms with uninstantiated mappings are built during normalization.
        Since normalize_atom caches the atoms it returns, we can assume
        pointer-based identity for fast hashing and comparison.  Even if this
        assumption is violated, that's okay, we'll just get a cache miss.  */
-    hashval_t value = htab_hash_pointer (e->constr);
+    hashval_t value = htab_hash_pointer (e->atom);
 
-    if (tree map = ATOMIC_CONSTR_MAP (e->constr))
+    if (tree map = ATOMIC_CONSTR_MAP (e->atom))
       /* Only the parameters that are used in the targets of the mapping
 	 affect the satisfaction value of the atom.  So we consider only
 	 the arguments for these parameters, and ignore the rest.  */
@@ -2421,21 +2468,21 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 
   static bool equal (sat_entry *e1, sat_entry *e2)
   {
-    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr)
-	!= ATOMIC_CONSTR_MAP_INSTANTIATED_P (e2->constr))
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->atom)
+	!= ATOMIC_CONSTR_MAP_INSTANTIATED_P (e2->atom))
       return false;
 
     /* See sat_hasher::hash.  */
-    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr))
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->atom))
       {
 	gcc_assert (!e1->args && !e2->args);
-	return atomic_constraints_identical_p (e1->constr, e2->constr);
+	return atomic_constraints_identical_p (e1->atom, e2->atom);
       }
 
-    if (e1->constr != e2->constr)
+    if (e1->atom != e2->atom)
       return false;
 
-    if (tree map = ATOMIC_CONSTR_MAP (e1->constr))
+    if (tree map = ATOMIC_CONSTR_MAP (e1->atom))
       for (tree target_parms = TREE_TYPE (map);
 	   target_parms;
 	   target_parms = TREE_CHAIN (target_parms))
@@ -2458,58 +2505,145 @@ static GTY((deletable)) hash_table<sat_hasher> *sat_cache;
 /* Cache the result of constraint_satisfaction_value.  */
 static GTY((deletable)) hash_map<tree, tree> *decl_satisfied_cache;
 
-static tree
-get_satisfaction (tree constr, tree args)
-{
-  if (!sat_cache)
-    return NULL_TREE;
-  sat_entry elt = { constr, args, NULL_TREE };
-  sat_entry* found = sat_cache->find (&elt);
-  if (found)
-    return found->result;
-  else
-    return NULL_TREE;
-}
-
-static void
-save_satisfaction (tree constr, tree args, tree result)
-{
-  if (!sat_cache)
-    sat_cache = hash_table<sat_hasher>::create_ggc (31);
-  sat_entry elt = {constr, args, result};
-  sat_entry** slot = sat_cache->find_slot (&elt, INSERT);
-  sat_entry* entry = ggc_alloc<sat_entry> ();
-  *entry = elt;
-  *slot = entry;
-}
-
-/* A tool to help manage satisfaction caching in satisfy_constraint_r.
-   Note the cache is only used when not diagnosing errors.  */
+/* A tool used by satisfy_atom to help manage satisfaction caching and to
+   diagnose "unstable" satisfaction values.  We insert into the cache only
+   when performing satisfaction quietly.  */
 
 struct satisfaction_cache
 {
-  satisfaction_cache (tree constr, tree args, tsubst_flags_t complain)
-    : constr(constr), args(args), complain(complain)
-  { }
+  satisfaction_cache (tree, tree, sat_info);
+  tree get ();
+  tree save (tree);
 
-  tree get ()
-  {
-    if (complain == tf_none)
-      return get_satisfaction (constr, args);
-    return NULL_TREE;
-  }
-
-  tree save (tree result)
-  {
-    if (complain == tf_none)
-      save_satisfaction (constr, args, result);
-    return result;
-  }
-
-  tree constr;
-  tree args;
-  tsubst_flags_t complain;
+  sat_entry *entry;
+  sat_info info;
+  unsigned ftc_count;
 };
+
+/* Constructor for the satisfaction_cache class.  We're performing satisfaction
+   of ATOM+ARGS according to INFO.  */
+
+satisfaction_cache
+::satisfaction_cache (tree atom, tree args, sat_info info)
+  : entry(nullptr), info(info), ftc_count(failed_type_completion_count)
+{
+  if (!sat_cache)
+    sat_cache = hash_table<sat_hasher>::create_ggc (31);
+
+  /* When noisy, we query the satisfaction cache in order to diagnose
+     "unstable" satisfaction values.  */
+  if (info.noisy ())
+    {
+      /* When noisy, constraints have been re-normalized, and that breaks the
+	 pointer-based identity assumption of sat_cache (for atoms with
+	 uninstantiated mappings).  So undo this re-normalization by looking in
+	 the atom_cache for the corresponding atom that was used during quiet
+	 satisfaction.  */
+      if (!ATOMIC_CONSTR_MAP_INSTANTIATED_P (atom))
+	{
+	  if (tree found = atom_cache->find (atom))
+	    atom = found;
+	  else
+	    /* The lookup should always succeed, but if it fails then let's
+	       just leave 'entry' empty, effectively disabling the cache.  */
+	    return;
+	}
+    }
+
+  /* Look up or create the corresponding satisfaction entry.  */
+  sat_entry elt;
+  elt.atom = atom;
+  elt.args = args;
+  sat_entry **slot = sat_cache->find_slot (&elt, INSERT);
+  if (*slot)
+    entry = *slot;
+  else if (info.quiet ())
+    {
+      entry = ggc_alloc<sat_entry> ();
+      entry->atom = atom;
+      entry->args = args;
+      entry->result = NULL_TREE;
+      entry->location = input_location;
+      entry->maybe_unstable = false;
+      entry->diagnose_instability = false;
+      if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (atom))
+	/* We always want to diagnose instability of an atom with an
+	   instantiated parameter mapping.  For atoms with an uninstantiated
+	   mapping, we set this flag (in satisfy_atom) only if substitution
+	   into its mapping previously failed.  */
+	entry->diagnose_instability = true;
+      *slot = entry;
+    }
+  else
+    /* We shouldn't get here, but if we do, let's just leave 'entry'
+       empty, effectively disabling the cache.  */
+    return;
+}
+
+/* Returns the cached satisfaction result if we have one and we're not
+   recomputing the satisfaction result from scratch.  Otherwise returns
+   NULL_TREE.  */
+
+tree
+satisfaction_cache::get ()
+{
+  if (!entry)
+    return NULL_TREE;
+
+  if (info.noisy () || entry->maybe_unstable)
+    /* We're recomputing the satisfaction result from scratch.  */
+    return NULL_TREE;
+  else
+    return entry->result;
+}
+
+/* RESULT is the computed satisfaction result.  If RESULT differs from the
+   previously cached result, this routine issues an appropriate error.
+   Otherwise, when evaluating quietly, updates the cache appropriately.  */
+
+tree
+satisfaction_cache::save (tree result)
+{
+  if (!entry)
+    return result;
+
+  if (entry->result && result != entry->result)
+    {
+      if (info.quiet ())
+	/* Return error_mark_node to force satisfaction to get replayed
+	   noisily.  */
+	return error_mark_node;
+      else
+	{
+	  if (entry->diagnose_instability)
+	    {
+	      auto_diagnostic_group d;
+	      error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (entry->atom)),
+			"satisfaction value of atomic constraint %qE changed "
+			"from %qE to %qE", entry->atom, entry->result, result);
+	      inform (entry->location,
+		      "satisfaction value first evaluated to %qE from here",
+		      entry->result);
+	    }
+	  /* For sake of error recovery, allow this latest satisfaction result
+	     to prevail.  */
+	  entry->result = result;
+	  return result;
+	}
+    }
+
+  if (info.quiet ())
+    {
+      entry->result = result;
+      /* We heuristically flag this satisfaction result as potentially unstable
+	 iff during its computation, completion of a type failed.  Note that
+	 this may also clear the flag if the result turned out to be
+	 independent of the previously detected type completion failure.  */
+      entry->maybe_unstable = (ftc_count != failed_type_completion_count);
+    }
+
+  return result;
+}
 
 static int satisfying_constraint = 0;
 
@@ -2722,7 +2856,7 @@ static void diagnose_atomic_constraint (tree, tree, tree, subst_info);
 static tree
 satisfy_atom (tree t, tree args, sat_info info)
 {
-  satisfaction_cache cache (t, args, info.complain);
+  satisfaction_cache cache (t, args, info);
   if (tree r = cache.get ())
     return r;
 
@@ -2742,6 +2876,11 @@ satisfy_atom (tree t, tree args, sat_info info)
 	 not satisfied.  Replay the substitution.  */
       if (info.diagnose_unsatisfaction_p ())
 	tsubst_parameter_mapping (ATOMIC_CONSTR_MAP (t), args, info);
+      if (info.quiet ())
+	/* Since instantiation of the parameter mapping failed, we
+	   want to diagnose potential instability of this satisfaction
+	   result.  */
+	cache.entry->diagnose_instability = true;
       return cache.save (boolean_false_node);
     }
 
@@ -2753,9 +2892,12 @@ satisfy_atom (tree t, tree args, sat_info info)
   ATOMIC_CONSTR_MAP (t) = map;
   gcc_assert (!ATOMIC_CONSTR_MAP_INSTANTIATED_P (t));
   ATOMIC_CONSTR_MAP_INSTANTIATED_P (t) = true;
-  satisfaction_cache inst_cache (t, /*args=*/NULL_TREE, info.complain);
+  satisfaction_cache inst_cache (t, /*args=*/NULL_TREE, info);
   if (tree r = inst_cache.get ())
-    return cache.save (r);
+    {
+      cache.entry->location = inst_cache.entry->location;
+      return cache.save (r);
+    }
 
   /* Rebuild the argument vector from the parameter mapping.  */
   args = get_mapped_args (map);
@@ -2946,6 +3088,8 @@ satisfy_declaration_constraints (tree t, sat_info info)
       norm = normalize_nontemplate_requirements (t, info.noisy ());
     }
 
+  unsigned ftc_count = failed_type_completion_count;
+
   tree result = boolean_true_node;
   if (norm)
     {
@@ -2957,7 +3101,20 @@ satisfy_declaration_constraints (tree t, sat_info info)
       pop_tinst_level ();
     }
 
-  if (info.quiet ())
+  /* True if this satisfaction is (heuristically) potentially unstable, i.e.
+     if its result may depend on where in the program it was performed.  */
+  bool maybe_unstable_satisfaction = false;
+
+  if (ftc_count != failed_type_completion_count)
+    /* Type completion failure occurred during satisfaction.  The satisfaction
+       result may (or may not) materially depend on the completeness of a type,
+       so we consider it potentially unstable.   */
+    maybe_unstable_satisfaction = true;
+
+  if (maybe_unstable_satisfaction)
+    /* Don't cache potentially unstable satisfaction, to allow satisfy_atom
+       to check the stability the next time around.  */;
+  else if (info.quiet ())
     hash_map_safe_put<hm_ggc> (decl_satisfied_cache, saved_t, result);
 
   return result;

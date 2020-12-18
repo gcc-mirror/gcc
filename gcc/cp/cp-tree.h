@@ -8128,6 +8128,8 @@ extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
 
+extern void note_failed_type_completion_for_satisfaction (tree);
+
 /* A structural hasher for ATOMIC_CONSTRs.  */
 
 struct atom_hasher : default_hash_traits<tree>

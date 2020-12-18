@@ -16002,13 +16002,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	       But, such constructs have already been resolved by this
 	       point, so here CTX really should have complete type, unless
 	       it's a partial instantiation.  */
-	    ctx = complete_type (ctx);
-	    if (!COMPLETE_TYPE_P (ctx))
-	      {
-		if (complain & tf_error)
-		  cxx_incomplete_type_error (NULL_TREE, ctx);
-		return error_mark_node;
-	      }
+	    if (!complete_type_or_maybe_complain (ctx, NULL_TREE, complain))
+	      return error_mark_node;
 	  }
 
 	f = make_typename_type (ctx, f, typename_type,
