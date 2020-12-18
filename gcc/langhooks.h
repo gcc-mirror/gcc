@@ -299,6 +299,16 @@ struct lang_hooks_for_decls
   /* Return true if DECL is a scalar variable (for the purpose of
      implicit firstprivatization).  */
   bool (*omp_scalar_p) (tree decl);
+
+  /* Return a pointer to the tree representing the initializer
+     expression for the non-local variable DECL.  Return NULL if
+     DECL is not initialized.  */
+  tree *(*omp_get_decl_init) (tree decl);
+
+  /* Free any extra memory used to hold initializer information for
+     variable declarations.  omp_get_decl_init must not be called
+     after calling this.  */
+  void (*omp_finish_decl_inits) (void);
 };
 
 /* Language hooks related to LTO serialization.  */

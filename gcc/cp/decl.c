@@ -146,6 +146,10 @@ tree static_aggregates;
 /* Like static_aggregates, but for thread_local variables.  */
 tree tls_aggregates;
 
+/* A hash-map mapping from variable decls to the dynamic initializer for
+   the decl.  This is currently only used by OpenMP.  */
+decl_tree_map *dynamic_initializers;
+
 /* -- end of C++ */
 
 /* A node for the integer constant 2.  */
