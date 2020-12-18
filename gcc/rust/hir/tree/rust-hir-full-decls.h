@@ -16,14 +16,13 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_AST_FULL_DECLS_H
-#define RUST_AST_FULL_DECLS_H
-
-// Forward declarations for all AST classes. Useful for not having to include
+#ifndef RUST_HIR_FULL_DECLS_H
+#define RUST_HIR_FULL_DECLS_H
+// Forward declarations for all HIR classes. Useful for not having to include
 // all definitions.
 
 namespace Rust {
-namespace AST {
+namespace HIR {
 // rust-ast.h
 class AttrInput;
 class TokenTree;
@@ -280,7 +279,7 @@ class SliceType;
 class InferredType;
 struct MaybeNamedParam;
 class BareFunctionType;
-} // namespace AST
+} // namespace HIR
 } // namespace Rust
 
 #endif

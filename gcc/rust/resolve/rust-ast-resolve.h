@@ -16,32 +16,35 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_AST_RESOLVE_H
+#define RUST_AST_RESOLVE_H
+
+#include "rust-name-resolver.h"
+#include "rust-ast-full.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
-namespace Compile {
+namespace Resolver {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class NameResolution
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  static void Resolve (AST::Crate &crate);
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
+  static NameResolution *get ();
 
-} // namespace Compile
+  ~NameResolution () {}
+
+private:
+  void go (AST::Crate &crate);
+
+  NameResolution ();
+
+  Resolver *resolver;
+  Analysis::Mappings *mappings;
+};
+
+} // namespace Resolver
 } // namespace Rust
+
+#endif // RUST_AST_RESOLVE_H

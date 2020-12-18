@@ -16,32 +16,27 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_TYTY_VISITOR
+#define RUST_TYTY_VISITOR
+
+#include "rust-tyty.h"
 
 namespace Rust {
-namespace Compile {
+namespace TyTy {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class TyVisitor
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  virtual void visit (UnitType &type) {}
+  virtual void visit (InferType &type) {}
+  virtual void visit (FnType &type) {}
+  virtual void visit (ParamType &type) {}
+  virtual void visit (BoolType &type) {}
+  virtual void visit (IntType &type) {}
+  virtual void visit (UintType &type) {}
+};
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
-
-} // namespace Compile
+} // namespace TyTy
 } // namespace Rust
+
+#endif // RUST_TYTY_VISITOR

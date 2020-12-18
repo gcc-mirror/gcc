@@ -1,11 +1,29 @@
-#ifndef RUST_AST_PATTERN_H
-#define RUST_AST_PATTERN_H
+// Copyright (C) 2020 Free Software Foundation, Inc.
 
-#include "rust-ast.h"
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
+#ifndef RUST_HIR_PATTERN_H
+#define RUST_HIR_PATTERN_H
+
+#include "rust-hir.h"
 
 namespace Rust {
-namespace AST {
-// Literal pattern AST node (comparing to a literal)
+namespace HIR {
+// Literal pattern HIR node (comparing to a literal)
 class LiteralPattern : public Pattern
 {
   Literal lit;
@@ -34,9 +52,8 @@ public:
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -47,9 +64,10 @@ protected:
   }
 };
 
-// Identifier pattern AST node (bind value matched to a variable)
+// Identifier pattern HIR node (bind value matched to a variable)
 class IdentifierPattern : public Pattern
 {
+public:
   Identifier variable_ident;
   bool is_ref;
   bool is_mut;
@@ -59,7 +77,6 @@ class IdentifierPattern : public Pattern
 
   Location locus;
 
-public:
   std::string as_string () const;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
@@ -69,8 +86,8 @@ public:
   IdentifierPattern (Identifier ident, Location locus, bool is_ref = false,
 		     bool is_mut = false,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
-    : Pattern (), variable_ident (std::move (ident)), is_ref (is_ref),
-      is_mut (is_mut), to_bind (std::move (to_bind)), locus (locus)
+    : variable_ident (std::move (ident)), is_ref (is_ref), is_mut (is_mut),
+      to_bind (std::move (to_bind)), locus (locus)
   {}
 
   // Copy constructor with clone
@@ -78,9 +95,7 @@ public:
     : variable_ident (other.variable_ident), is_ref (other.is_ref),
       is_mut (other.is_mut), locus (other.locus)
   {
-    node_id = other.node_id;
     // fix to get prevent null pointer dereference
-
     if (other.to_bind != nullptr)
       to_bind = other.to_bind->clone_pattern ();
   }
@@ -92,13 +107,10 @@ public:
     is_ref = other.is_ref;
     is_mut = other.is_mut;
     locus = other.locus;
-    node_id = other.node_id;
 
-    // fix to prevent null pointer dereference
+    // fix to get prevent null pointer dereference
     if (other.to_bind != nullptr)
       to_bind = other.to_bind->clone_pattern ();
-    else
-      to_bind = nullptr;
 
     return *this;
   }
@@ -108,21 +120,8 @@ public:
   IdentifierPattern &operator= (IdentifierPattern &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_pattern_to_bind ()
-  {
-    rust_assert (has_pattern_to_bind ());
-    return to_bind;
-  }
-
-  Identifier get_ident () const { return variable_ident; }
-
-  bool get_is_mut () const { return is_mut; }
-  bool get_is_ref () const { return is_ref; }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -133,7 +132,7 @@ protected:
   }
 };
 
-// AST node for using the '_' wildcard "match any value" pattern
+// HIR node for using the '_' wildcard "match any value" pattern
 class WildcardPattern : public Pattern
 {
   Location locus;
@@ -144,9 +143,8 @@ public:
   WildcardPattern (Location locus) : locus (locus) {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -172,7 +170,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // pure virtual as RangePatternBound is abstract
@@ -202,7 +200,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -228,11 +226,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: this mutable getter seems kinda dodgy
-  PathInExpression &get_path () { return path; }
-  const PathInExpression &get_path () const { return path; }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -260,11 +254,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: this mutable getter seems kinda dodgy
-  QualifiedPathInExpression &get_qualified_path () { return path; }
-  const QualifiedPathInExpression &get_qualified_path () const { return path; }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -275,7 +265,7 @@ protected:
   }
 };
 
-// AST node for matching within a certain range (range pattern)
+// HIR node for matching within a certain range (range pattern)
 class RangePattern : public Pattern
 {
   std::unique_ptr<RangePatternBound> lower;
@@ -321,22 +311,8 @@ public:
   RangePattern &operator= (RangePattern &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: is this better? or is a "vis_bound" better?
-  std::unique_ptr<RangePatternBound> &get_lower_bound ()
-  {
-    rust_assert (lower != nullptr);
-    return lower;
-  }
-
-  std::unique_ptr<RangePatternBound> &get_upper_bound ()
-  {
-    rust_assert (upper != nullptr);
-    return upper;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -347,7 +323,7 @@ protected:
   }
 };
 
-// AST node for pattern based on dereferencing the pointers given
+// HIR node for pattern based on dereferencing the pointers given
 class ReferencePattern : public Pattern
 {
   bool has_two_amps;
@@ -385,17 +361,7 @@ public:
   ReferencePattern (ReferencePattern &&other) = default;
   ReferencePattern &operator= (ReferencePattern &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_referenced_pattern ()
-  {
-    rust_assert (pattern != nullptr);
-    return pattern;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -406,7 +372,6 @@ protected:
   }
 };
 
-#if 0
 // aka StructPatternEtCetera; potential element in struct pattern
 struct StructPatternEtc
 {
@@ -426,7 +391,6 @@ public:
     return StructPatternEtc (std::vector<Attribute> ());
   }
 };
-#endif
 
 // Base class for a single field in a struct pattern - abstract
 class StructPatternField
@@ -448,14 +412,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   StructPatternField (std::vector<Attribute> outer_attribs, Location locus)
@@ -483,26 +440,18 @@ public:
 
   // Copy constructor requires clone
   StructPatternFieldTuplePat (StructPatternFieldTuplePat const &other)
-    : StructPatternField (other), index (other.index)
-  {
-    // guard to prevent null dereference (only required if error state)
-    if (other.tuple_pattern != nullptr)
-      tuple_pattern = other.tuple_pattern->clone_pattern ();
-  }
+    : StructPatternField (other), index (other.index),
+      tuple_pattern (other.tuple_pattern->clone_pattern ())
+  {}
 
   // Overload assignment operator to perform clone
   StructPatternFieldTuplePat &
   operator= (StructPatternFieldTuplePat const &other)
   {
     StructPatternField::operator= (other);
+    tuple_pattern = other.tuple_pattern->clone_pattern ();
     index = other.index;
     // outer_attrs = other.outer_attrs;
-
-    // guard to prevent null dereference (only required if error state)
-    if (other.tuple_pattern != nullptr)
-      tuple_pattern = other.tuple_pattern->clone_pattern ();
-    else
-      tuple_pattern = nullptr;
 
     return *this;
   }
@@ -514,21 +463,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // based on idea of tuple pattern no longer existing
-  void mark_for_strip () override { tuple_pattern = nullptr; }
-  bool is_marked_for_strip () const override
-  {
-    return tuple_pattern == nullptr;
-  }
-
-  // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_index_pattern ()
-  {
-    rust_assert (tuple_pattern != nullptr);
-    return tuple_pattern;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -556,12 +491,9 @@ public:
 
   // Copy constructor requires clone
   StructPatternFieldIdentPat (StructPatternFieldIdentPat const &other)
-    : StructPatternField (other), ident (other.ident)
-  {
-    // guard to prevent null dereference (only required if error state)
-    if (other.ident_pattern != nullptr)
-      ident_pattern = other.ident_pattern->clone_pattern ();
-  }
+    : StructPatternField (other), ident (other.ident),
+      ident_pattern (other.ident_pattern->clone_pattern ())
+  {}
 
   // Overload assignment operator to clone
   StructPatternFieldIdentPat &
@@ -569,13 +501,8 @@ public:
   {
     StructPatternField::operator= (other);
     ident = other.ident;
+    ident_pattern = other.ident_pattern->clone_pattern ();
     // outer_attrs = other.outer_attrs;
-
-    // guard to prevent null dereference (only required if error state)
-    if (other.ident_pattern != nullptr)
-      ident_pattern = other.ident_pattern->clone_pattern ();
-    else
-      ident_pattern = nullptr;
 
     return *this;
   }
@@ -587,21 +514,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // based on idea of identifier pattern no longer existing
-  void mark_for_strip () override { ident_pattern = nullptr; }
-  bool is_marked_for_strip () const override
-  {
-    return ident_pattern == nullptr;
-  }
-
-  // TODO: is this better? Or is a "vis_pattern" better?
-  std::unique_ptr<Pattern> &get_ident_pattern ()
-  {
-    rust_assert (ident_pattern != nullptr);
-    return ident_pattern;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -628,11 +541,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // based on idea of identifier no longer existing
-  void mark_for_strip () override { ident = {}; }
-  bool is_marked_for_strip () const override { return ident.empty (); }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -651,8 +560,7 @@ private:
   std::vector<std::unique_ptr<StructPatternField> > fields;
 
   bool has_struct_pattern_etc;
-  std::vector<Attribute> struct_pattern_etc_attrs;
-  // StructPatternEtc etc;
+  StructPatternEtc etc;
 
   // must have at least one of the two and maybe both
 
@@ -669,27 +577,24 @@ public:
     return !has_struct_pattern_fields () && !has_struct_pattern_etc;
   }
 
-  bool has_etc () const { return has_struct_pattern_etc; }
-
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField> > fields,
-    std::vector<Attribute> etc_attrs)
+    StructPatternEtc etc)
     : fields (std::move (fields)), has_struct_pattern_etc (true),
-      struct_pattern_etc_attrs (std::move (etc_attrs))
+      etc (std::move (etc))
   {}
 
   // Constructor for StructPatternElements with no StructPatternEtc
   StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField> > fields)
     : fields (std::move (fields)), has_struct_pattern_etc (false),
-      struct_pattern_etc_attrs ()
+      etc (StructPatternEtc::create_empty ())
   {}
 
   // Copy constructor with vector clone
   StructPatternElements (StructPatternElements const &other)
-    : has_struct_pattern_etc (other.has_struct_pattern_etc),
-      struct_pattern_etc_attrs (other.struct_pattern_etc_attrs)
+    : has_struct_pattern_etc (other.has_struct_pattern_etc), etc (other.etc)
   {
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
@@ -699,7 +604,7 @@ public:
   // Overloaded assignment operator with vector clone
   StructPatternElements &operator= (StructPatternElements const &other)
   {
-    struct_pattern_etc_attrs = other.struct_pattern_etc_attrs;
+    etc = other.etc;
     has_struct_pattern_etc = other.has_struct_pattern_etc;
 
     fields.reserve (other.fields.size ());
@@ -721,37 +626,9 @@ public:
   }
 
   std::string as_string () const;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<StructPatternField> > &
-  get_struct_pattern_fields ()
-  {
-    return fields;
-  }
-  const std::vector<std::unique_ptr<StructPatternField> > &
-  get_struct_pattern_fields () const
-  {
-    return fields;
-  }
-
-  std::vector<Attribute> &get_etc_outer_attrs ()
-  {
-    return struct_pattern_etc_attrs;
-  }
-  const std::vector<Attribute> &get_etc_outer_attrs () const
-  {
-    return struct_pattern_etc_attrs;
-  }
-
-  void strip_etc ()
-  {
-    has_struct_pattern_etc = false;
-    struct_pattern_etc_attrs.clear ();
-    struct_pattern_etc_attrs.shrink_to_fit ();
-  }
 };
 
-// Struct pattern AST node representation
+// Struct pattern HIR node representation
 class StructPattern : public Pattern
 {
   PathInExpression path;
@@ -779,19 +656,8 @@ public:
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
   Location get_locus () const { return path.get_locus (); }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  StructPatternElements &get_struct_pattern_elems () { return elems; }
-  const StructPatternElements &get_struct_pattern_elems () const
-  {
-    return elems;
-  }
-
-  PathInExpression &get_path () { return path; }
-  const PathInExpression &get_path () const { return path; }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -818,7 +684,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // pure virtual clone implementation
@@ -860,14 +726,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
-  {
-    return patterns;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -923,27 +782,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
-  {
-    return lower_patterns;
-  }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
-  {
-    return lower_patterns;
-  }
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
-  {
-    return upper_patterns;
-  }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
-  {
-    return upper_patterns;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -954,7 +793,7 @@ protected:
   }
 };
 
-// AST node representing a tuple struct pattern
+// HIR node representing a tuple struct pattern
 class TupleStructPattern : public Pattern
 {
   PathInExpression path;
@@ -966,32 +805,21 @@ class TupleStructPattern : public Pattern
 public:
   std::string as_string () const override;
 
-  // Returns whether the pattern has tuple struct items.
-  bool has_items () const { return items != nullptr; }
-
   TupleStructPattern (PathInExpression tuple_struct_path,
 		      std::unique_ptr<TupleStructItems> items)
     : path (std::move (tuple_struct_path)), items (std::move (items))
   {}
 
   // Copy constructor required to clone
-  TupleStructPattern (TupleStructPattern const &other) : path (other.path)
-  {
-    // guard to protect from null dereference
-    if (other.items != nullptr)
-      items = other.items->clone_tuple_struct_items ();
-  }
+  TupleStructPattern (TupleStructPattern const &other)
+    : path (other.path), items (other.items->clone_tuple_struct_items ())
+  {}
 
   // Operator overload assignment operator to clone
   TupleStructPattern &operator= (TupleStructPattern const &other)
   {
     path = other.path;
-
-    // guard to protect from null dereference
-    if (other.items != nullptr)
-      items = other.items->clone_tuple_struct_items ();
-    else
-      items = nullptr;
+    items = other.items->clone_tuple_struct_items ();
 
     return *this;
   }
@@ -1001,19 +829,8 @@ public:
   TupleStructPattern &operator= (TupleStructPattern &&other) = default;
 
   Location get_locus () const { return path.get_locus (); }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<TupleStructItems> &get_items ()
-  {
-    rust_assert (has_items ());
-    return items;
-  }
-
-  PathInExpression &get_path () { return path; }
-  const PathInExpression &get_path () const { return path; }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1041,7 +858,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1118,14 +935,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
-  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
-  {
-    return patterns;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1183,27 +993,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
-  {
-    return lower_patterns;
-  }
-  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
-  {
-    return lower_patterns;
-  }
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
-  {
-    return upper_patterns;
-  }
-  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
-  {
-    return upper_patterns;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1214,11 +1004,12 @@ protected:
   }
 };
 
-// AST node representing a tuple pattern
+// HIR node representing a tuple pattern
 class TuplePattern : public Pattern
 {
   // bool has_tuple_pattern_items;
   std::unique_ptr<TuplePatternItems> items;
+
   Location locus;
 
 public:
@@ -1232,38 +1023,22 @@ public:
   {}
 
   // Copy constructor requires clone
-  TuplePattern (TuplePattern const &other) : locus (other.locus)
-  {
-    // guard to prevent null dereference
-    if (other.items != nullptr)
-      items = other.items->clone_tuple_pattern_items ();
-  }
+  TuplePattern (TuplePattern const &other)
+    : items (other.items->clone_tuple_pattern_items ()), locus (other.locus)
+  {}
 
   // Overload assignment operator to clone
   TuplePattern &operator= (TuplePattern const &other)
   {
+    items = other.items->clone_tuple_pattern_items ();
     locus = other.locus;
-
-    // guard to prevent null dereference
-    if (other.items != nullptr)
-      items = other.items->clone_tuple_pattern_items ();
-    else
-      items = nullptr;
 
     return *this;
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<TuplePatternItems> &get_items ()
-  {
-    rust_assert (has_tuple_pattern_items ());
-    return items;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1274,7 +1049,7 @@ protected:
   }
 };
 
-// AST node representing a pattern in parentheses, used to control precedence
+// HIR node representing a pattern in parentheses, used to control precedence
 class GroupedPattern : public Pattern
 {
   std::unique_ptr<Pattern> pattern_in_parens;
@@ -1310,16 +1085,8 @@ public:
   GroupedPattern &operator= (GroupedPattern &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::unique_ptr<Pattern> &get_pattern_in_parens ()
-  {
-    rust_assert (pattern_in_parens != nullptr);
-    return pattern_in_parens;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1330,7 +1097,7 @@ protected:
   }
 };
 
-// AST node representing patterns that can match slices and arrays
+// HIR node representing patterns that can match slices and arrays
 class SlicePattern : public Pattern
 {
   std::vector<std::unique_ptr<Pattern> > items;
@@ -1368,16 +1135,8 @@ public:
   SlicePattern &operator= (SlicePattern &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern> > &get_items () { return items; }
-  const std::vector<std::unique_ptr<Pattern> > &get_items () const
-  {
-    return items;
-  }
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1397,7 +1156,7 @@ class QualifiedPathInExpression;
 
 // Replaced with forward decl - defined in rust-macro.h
 class MacroInvocation;
-} // namespace AST
+} // namespace HIR
 } // namespace Rust
 
 #endif

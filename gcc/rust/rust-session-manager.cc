@@ -1,5 +1,23 @@
-#include "rust-session-manager.h"
+// Copyright (C) 2020 Free Software Foundation, Inc.
 
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+// #include "rust-session-manager.h"
+
+#include "rust-session-manager.h"
 #include "rust-diagnostics.h"
 #include "diagnostic.h"
 #include "input.h"
@@ -8,17 +26,15 @@
 #include "tm.h"
 #include "tm_p.h"
 
-#include "rust-lex.h"
-#include "rust-parse.h"
-#include "rust-scan.h"
-#include "rust-name-resolution.h"
-#include "rust-type-resolution.h"
-#include "rust-compile.h"
-#include "rust-macro-expand.h"
-
 #include "rust-target.h"
 
-#include <algorithm>
+#include "rust-lex.h"
+#include "rust-parse.h"
+#include "rust-macro-expand.h"
+#include "rust-ast-resolve.h"
+#include "rust-ast-lower.h"
+#include "rust-hir-type-check.h"
+#include "rust-compile.h"
 
 extern Linemap *
 rust_get_linemap ();
@@ -381,6 +397,10 @@ Session::enable_dump (std::string arg)
       // return false;
       options.dump_option = CompileOptions::TARGET_OPTION_DUMP;
     }
+  else if (arg == "hir")
+    {
+      options.dump_option = CompileOptions::HIR_DUMP;
+    }
   else if (arg == "")
     {
       rust_error_at (Location (), "dump option was not given a name. choose "
@@ -405,6 +425,7 @@ Session::parse_files (int num_files, const char **files)
 {
   for (int i = 0; i < num_files; i++)
     {
+      printf ("Attempting to parse file: %s\n", files[i]);
       parse_file (files[i]);
     }
   /* TODO: should semantic analysis be dealed with here? or per file? for now,
@@ -430,6 +451,10 @@ Session::parse_file (const char *filename)
 
   // generate crate from parser
   auto parsed_crate = parser.parse_crate ();
+
+  // setup the mappings for this AST
+  auto mappings = Analysis::Mappings::get ();
+  mappings->insert_ast_crate (&parsed_crate);
 
   // give a chance to give some debug
   switch (options.dump_option)
@@ -507,8 +532,32 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
+  // lower AST to HIR
+  HIR::Crate hir = lower_ast (parsed_crate);
+  if (options.dump_option == CompileOptions::HIR_DUMP)
+    {
+      fprintf (stderr, "%s", hir.as_string ().c_str ());
+      return;
+    }
+
+  if (saw_errors ())
+    return;
+
+  // type resolve
+  type_resolution (hir);
+
+  if (saw_errors ())
+    return;
+
   // do compile
-  Compile::Compilation::Compile (parsed_crate, backend);
+  Compile::Context ctx (backend);
+  Compile::CompileCrate::Compile (hir, &ctx);
+
+  if (saw_errors ())
+    return;
+
+  // pass to GCC
+  ctx.write_to_backend ();
 }
 
 // TODO: actually implement method
@@ -736,11 +785,25 @@ void
 Session::resolution (AST::Crate &crate)
 {
   fprintf (stderr, "started name resolution\n");
-  Analysis::TopLevelScan toplevel (crate);
-  // Name resolution must be in front of type resolution
-  Analysis::NameResolution::Resolve (crate, toplevel);
-  Analysis::TypeResolution::Resolve (crate, toplevel);
+  Resolver::NameResolution::Resolve (crate);
   fprintf (stderr, "finished name resolution\n");
+}
+
+HIR::Crate
+Session::lower_ast (AST::Crate &crate)
+{
+  fprintf (stderr, "started lowering AST\n");
+  auto hir = HIR::ASTLowering::Resolve (crate);
+  fprintf (stderr, "finished lowering AST\n");
+  return hir;
+}
+
+void
+Session::type_resolution (HIR::Crate &crate)
+{
+  fprintf (stderr, "started type resolution\n");
+  Resolver::TypeResolution::Resolve (crate);
+  fprintf (stderr, "finished type resolution\n");
 }
 
 void

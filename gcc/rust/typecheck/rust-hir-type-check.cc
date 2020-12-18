@@ -16,32 +16,23 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#include "rust-hir-type-check.h"
+#include "rust-hir-full.h"
+#include "rust-hir-type-check-toplevel.h"
+#include "rust-hir-type-check-item.h"
 
 namespace Rust {
-namespace Compile {
-
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
+namespace Resolver {
 
 void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
-{
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
-
-void
-CompileCrate::go ()
+TypeResolution::Resolve (HIR::Crate &crate)
 {
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
+    TypeCheckTopLevel::Resolve (it->get ());
+
+  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
+    TypeCheckItem::Resolve (it->get ());
 }
 
-} // namespace Compile
+} // namespace Resolver
 } // namespace Rust

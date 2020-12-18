@@ -1,6 +1,24 @@
+// Copyright (C) 2020 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+// #include "rust-session-manager.h"
+
 #ifndef RUST_SESSION_MANAGER_H
 #define RUST_SESSION_MANAGER_H
-// Session manager - controls compiler session.
 
 #include "config.h"
 #include "system.h"
@@ -11,18 +29,16 @@
 #include "rust-linemap.h"
 #include "rust-backend.h"
 
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <utility>
-
 namespace Rust {
 // parser forward decl
 template <typename ManagedTokenSource> class Parser;
 class Lexer;
 // crate forward decl
 namespace AST {
+struct Crate;
+}
+// crate forward decl
+namespace HIR {
 struct Crate;
 }
 
@@ -32,7 +48,7 @@ struct TargetOptions
 {
   /* TODO: maybe make private and access through helpers to allow changes to
    * impl */
-  std::unordered_map<std::string, std::unordered_set<std::string>> features;
+  std::unordered_map<std::string, std::unordered_set<std::string> > features;
 
 public:
   // Returns whether a key is defined in the feature set.
@@ -160,6 +176,7 @@ struct CompileOptions
     EXPANSION_DUMP,
     RESOLUTION_DUMP,
     TARGET_OPTION_DUMP,
+    HIR_DUMP,
     // TODO: add more?
   } dump_option;
 
@@ -227,6 +244,11 @@ private:
    * Performs name resolution and type resolution, maybe complete gated
    * feature checking, maybe create buffered lints in future. */
   void resolution (AST::Crate &crate);
+  /* This lowers the AST down to HIR and assigns all mappings from AST
+   * NodeIds back to HirIds */
+  HIR::Crate lower_ast (AST::Crate &crate);
+  /* This adds the type resolution process */
+  void type_resolution (HIR::Crate &crate);
 };
 } // namespace Rust
 

@@ -16,32 +16,39 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_AST_RESOLVE_TOPLEVEL_H
+#define RUST_AST_RESOLVE_TOPLEVEL_H
+
+#include "rust-ast-resolve-base.h"
+#include "rust-ast-full.h"
 
 namespace Rust {
-namespace Compile {
+namespace Resolver {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class ResolveTopLevel : public ResolverBase
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  static void go (AST::Item *item)
+  {
+    ResolveTopLevel resolver;
+    item->accept_vis (resolver);
+  };
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
+  ~ResolveTopLevel () {}
 
-} // namespace Compile
+  void visit (AST::Function &function)
+  {
+    // function_names are simple std::String identifiers so this can be a
+    // NodeId mapping to the Function node
+    resolver->get_name_scope ().insert (function.get_function_name (),
+					function.get_node_id ());
+  }
+
+private:
+  ResolveTopLevel () : ResolverBase (UNKNOWN_NODEID) {}
+};
+
+} // namespace Resolver
 } // namespace Rust
+
+#endif // RUST_AST_RESOLVE_TOPLEVEL_H

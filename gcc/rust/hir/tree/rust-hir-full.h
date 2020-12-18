@@ -16,32 +16,17 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_HIR_FULL_H
+#define RUST_HIR_FULL_H
 
-namespace Rust {
-namespace Compile {
+// Use as a fast way of including all aspects of the HIR (i.e. all headers)
+#include "rust-hir.h"
+#include "rust-hir-expr.h"
+#include "rust-hir-item.h"
+#include "rust-hir-path.h"
+#include "rust-hir-pattern.h"
+#include "rust-hir-stmt.h"
+#include "rust-hir-type.h"
+#include "rust-hir-macro.h"
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
-{
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
-
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
-
-} // namespace Compile
-} // namespace Rust
+#endif // RUST_HIR_FULL_H

@@ -1,6 +1,7 @@
 ![C/C++ CI](https://github.com/philberty/gccrs/workflows/C/C++%20CI/badge.svg)
 ![Docker Build](https://img.shields.io/docker/cloud/build/philberty/gccrs)
 ![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://gcc-rust.zulipchat.com/)
 # GCC Rust
 
 This is a full alternative implementaion of the Rust language ontop of GCC.
@@ -12,7 +13,7 @@ status reports from Philip Herron and tast tracking overviews.
 Fetch dependancies for ubuntu:
 
 ```bash
-$ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib
+$ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib dejagnu
 ```
 
 Clone the repository
@@ -58,7 +59,7 @@ The test suite can be invoked via:
 $ make check-rust
 ```
 
-Test cases can be found within gcc/testsuite/rust.test please feel free to contriobute your specific
+Test cases can be found within gcc/testsuite/rust.test please feel free to contribute your specific
 test cases referencing any issues on github.
 
 ## Docker image

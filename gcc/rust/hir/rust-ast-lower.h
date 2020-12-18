@@ -16,32 +16,31 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_HIR_LOWER
+#define RUST_HIR_LOWER
+
+#include "rust-system.h"
+#include "rust-ast-full.h"
+#include "rust-ast-visitor.h"
+#include "rust-hir-full.h"
 
 namespace Rust {
-namespace Compile {
+namespace HIR {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class ASTLowering
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  static HIR::Crate Resolve (AST::Crate &astCrate);
+  ~ASTLowering ();
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
+private:
+  ASTLowering (AST::Crate &astCrate);
+  HIR::Crate go ();
 
-} // namespace Compile
+  AST::Crate &astCrate;
+};
+
+} // namespace HIR
 } // namespace Rust
+
+#endif // RUST_HIR_LOWER

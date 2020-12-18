@@ -16,28 +16,21 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_AST_BASE_H
-#define RUST_AST_BASE_H
-// Base for AST used in gccrs, basically required by all specific ast things
+#ifndef RUST_HIR_BASE_H
+#define RUST_HIR_BASE_H
 
 #include "rust-system.h"
-#include "rust-hir-map.h"
-
-// gccrs imports
-// required for AST::Token
 #include "rust-token.h"
 #include "rust-location.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
-// TODO: remove typedefs and make actual types for these
 typedef std::string Identifier;
 typedef int TupleIndex;
 
-struct Session;
-
-namespace AST {
+namespace HIR {
 // foward decl: ast visitor
-class ASTVisitor;
+class HIRVisitor;
 
 // Delimiter types - used in macros and whatever.
 enum DelimType
@@ -47,33 +40,29 @@ enum DelimType
   CURLY
 };
 
-// Base AST node object - TODO is this really required or useful? Where to draw
-// line?
-/*class Node {
-  public:
-    // Gets node's Location.
-    Location get_locus() const {
-	return loc;
-    }
+// Attribute body - abstract base class
+class AttrInput
+{
+public:
+  virtual ~AttrInput () {}
 
-    // Sets node's Location.
-    void set_locus(Location loc_) {
-	loc = loc_;
-    }
+  // Unique pointer custom clone function
+  std::unique_ptr<AttrInput> clone_attr_input () const
+  {
+    return std::unique_ptr<AttrInput> (clone_attr_input_impl ());
+  }
 
-    // Get node output as a string. Pure virtual.
-    virtual std::string as_string() const = 0;
+  virtual std::string as_string () const = 0;
 
-    virtual ~Node() {}
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
-    // TODO: constructor including Location? Make all derived classes have
-Location?
+  // Parse attribute input to meta item, if possible
+  virtual AttrInput *parse_to_meta_item () const { return nullptr; }
 
-  private:
-    // The node's location.
-    Location loc;
-};*/
-// decided to not have node as a "node" would never need to be stored
+protected:
+  // pure virtual clone implementation
+  virtual AttrInput *clone_attr_input_impl () const = 0;
+};
 
 // forward decl for use in token tree method
 class Token;
@@ -92,7 +81,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
   /* Converts token tree to a flat token stream. Tokens must be pointer to avoid
    * mutual dependency with Token. */
@@ -117,7 +106,7 @@ public:
     return std::unique_ptr<MacroMatch> (clone_macro_match_impl ());
   }
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // pure virtual clone implementation
@@ -203,7 +192,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
   // Return copy of itself but in token stream form.
   std::vector<std::unique_ptr<Token> > to_token_stream () const override;
@@ -264,6 +253,84 @@ public:
 
   // Returns whether literal is in an invalid state.
   bool is_error () const { return value_as_string == ""; }
+};
+
+// A token tree with delimiters
+class DelimTokenTree : public TokenTree, public AttrInput
+{
+  DelimType delim_type;
+  std::vector<std::unique_ptr<TokenTree> > token_trees;
+  Location locus;
+
+protected:
+  DelimTokenTree *clone_delim_tok_tree_impl () const
+  {
+    return new DelimTokenTree (*this);
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_attr_input_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_token_tree_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+public:
+  DelimTokenTree (DelimType delim_type,
+		  std::vector<std::unique_ptr<TokenTree> > token_trees
+		  = std::vector<std::unique_ptr<TokenTree> > (),
+		  Location locus = Location ())
+    : delim_type (delim_type), token_trees (std::move (token_trees)),
+      locus (locus)
+  {}
+
+  // Copy constructor with vector clone
+  DelimTokenTree (DelimTokenTree const &other)
+    : delim_type (other.delim_type), locus (other.locus)
+  {
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+  }
+
+  // overloaded assignment operator with vector clone
+  DelimTokenTree &operator= (DelimTokenTree const &other)
+  {
+    delim_type = other.delim_type;
+    locus = other.locus;
+
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+
+    return *this;
+  }
+
+  // move constructors
+  DelimTokenTree (DelimTokenTree &&other) = default;
+  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
+
+  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
+
+  std::string as_string () const override;
+
+  void accept_vis (HIRVisitor &vis) override;
+
+  AttrInput *parse_to_meta_item () const override;
+
+  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
+
+  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
+  {
+    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
+  }
 };
 
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
@@ -344,7 +411,7 @@ public:
   // does this need visitor if not polymorphic? probably not
 
   // path-to-string comparison operator
-  bool operator== (const std::string &rhs) const
+  bool operator== (const std::string &rhs)
   {
     return !has_opening_scope_resolution && segments.size () == 1
 	   && segments[0].as_string () == rhs;
@@ -356,17 +423,14 @@ public:
    * TODO have checks? */
   static SimplePath from_str (std::string str)
   {
-    std::vector<AST::SimplePathSegment> single_segments
-      = {AST::SimplePathSegment (std::move (str))};
+    std::vector<HIR::SimplePathSegment> single_segments
+      = {HIR::SimplePathSegment (std::move (str))};
     return SimplePath (std::move (single_segments));
   }
 };
 
-// forward decl for Attribute
-class AttrInput;
-
 // aka Attr
-// Attribute AST representation
+// Attribute HIR representation
 struct Attribute
 {
 private:
@@ -393,17 +457,15 @@ public:
   ~Attribute () = default;
 
   // Copy constructor must deep copy attr_input as unique pointer
-  /*Attribute (Attribute const &other) : path (other.path), locus (other.locus)
+  Attribute (Attribute const &other) : path (other.path), locus (other.locus)
   {
     // guard to protect from null pointer dereference
     if (other.attr_input != nullptr)
       attr_input = other.attr_input->clone_attr_input ();
-  }*/
-  // no point in being defined inline as requires virtual call anyway
-  Attribute (const Attribute &other);
+  }
 
   // overload assignment operator to use custom clone method
-  /*Attribute &operator= (Attribute const &other)
+  Attribute &operator= (Attribute const &other)
   {
     path = other.path;
     locus = other.locus;
@@ -412,9 +474,7 @@ public:
       attr_input = other.attr_input->clone_attr_input ();
 
     return *this;
-  }*/
-  // no point in being defined inline as requires virtual call anyway
-  Attribute &operator= (const Attribute &other);
+  }
 
   // default move semantics
   Attribute (Attribute &&other) = default;
@@ -491,17 +551,11 @@ public:
 
   // TODO: does this require visitor pattern as not polymorphic?
 
-  const SimplePath &get_path () const { return path; }
-  SimplePath &get_path () { return path; }
+  // Maybe change to const-reference in future
+  SimplePath get_path () const { return path; }
 
   // Call to parse attribute body to meta item syntax.
   void parse_attr_to_meta_item ();
-
-  /* Determines whether cfg predicate is true and item with attribute should not
-   * be stripped. */
-  bool check_cfg_predicate (const Session &session);
-
-  std::vector<Attribute> separate_cfg_attrs ();
 
 protected:
   // not virtual as currently no subclasses of Attribute, but could be in future
@@ -510,122 +564,6 @@ protected:
     return new Attribute (*this);
   }
 };
-
-// Attribute body - abstract base class
-class AttrInput
-{
-public:
-  virtual ~AttrInput () {}
-
-  // Unique pointer custom clone function
-  std::unique_ptr<AttrInput> clone_attr_input () const
-  {
-    return std::unique_ptr<AttrInput> (clone_attr_input_impl ());
-  }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual bool check_cfg_predicate (const Session &session) const = 0;
-
-  // Parse attribute input to meta item, if possible
-  virtual AttrInput *parse_to_meta_item () const { return nullptr; }
-
-  virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
-
-protected:
-  // pure virtual clone implementation
-  virtual AttrInput *clone_attr_input_impl () const = 0;
-};
-
-// A token tree with delimiters
-class DelimTokenTree : public TokenTree, public AttrInput
-{
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
-  Location locus;
-
-protected:
-  DelimTokenTree *clone_delim_tok_tree_impl () const
-  {
-    return new DelimTokenTree (*this);
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_attr_input_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_token_tree_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-public:
-  DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree> > token_trees
-		  = std::vector<std::unique_ptr<TokenTree> > (),
-		  Location locus = Location ())
-    : delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}
-
-  // Copy constructor with vector clone
-  DelimTokenTree (DelimTokenTree const &other)
-    : delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // overloaded assignment operator with vector clone
-  DelimTokenTree &operator= (DelimTokenTree const &other)
-  {
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  // move constructors
-  DelimTokenTree (DelimTokenTree &&other) = default;
-  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
-
-  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool check_cfg_predicate (const Session &) const override
-  {
-    // this should never be called - should be converted first
-    return false;
-  }
-
-  AttrInput *parse_to_meta_item () const override;
-
-  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
-
-  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
-  {
-    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
-  }
-};
-
-/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
- * be defined */
-class AttrInputLiteral;
 
 // Forward decl - defined in rust-macro.h
 class MetaNameValueStr;
@@ -648,7 +586,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
   /* HACK: used to simplify parsing - creates a copy of that type, or returns
    * null */
@@ -664,8 +602,6 @@ public:
   }
 
   virtual Attribute to_attribute () const { return Attribute::create_empty (); }
-
-  virtual bool check_cfg_predicate (const Session &session) const = 0;
 };
 
 // Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
@@ -688,9 +624,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool check_cfg_predicate (const Session &session) const override;
+  void accept_vis (HIRVisitor &vis) override;
 
   // Clones this object.
   std::unique_ptr<AttrInputMetaItemContainer>
@@ -699,8 +633,6 @@ public:
     return std::unique_ptr<AttrInputMetaItemContainer> (
       clone_attr_input_meta_item_container_impl ());
   }
-
-  std::vector<Attribute> separate_cfg_attrs () const override;
 
 protected:
   // Use covariance to implement clone function as returning this type
@@ -777,28 +709,30 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
   /* HACK: slow way of getting location from base expression through virtual
    * methods. */
   virtual Location get_locus_slow () const { return Location (); }
 
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
-  NodeId get_node_id () const { return node_id; }
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
 protected:
-  Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  Stmt (Analysis::NodeMapping mappings) : mappings (std::move (mappings)) {}
 
   // Clone function implementation as pure virtual method
   virtual Stmt *clone_stmt_impl () const = 0;
 
-  NodeId node_id;
+  Analysis::NodeMapping mappings;
 };
 
-// Rust "item" AST node (declaration of top-level/module-level allowed stuff)
+// Rust "item" HIR node (declaration of top-level/module-level allowed stuff)
 class Item : public Stmt
 {
+  std::vector<Attribute> outer_attrs;
+
+  // TODO: should outer attrs be defined here or in each derived class?
+
 public:
   // Unique pointer custom clone function
   std::unique_ptr<Item> clone_item () const
@@ -806,37 +740,45 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
-  std::string as_string () const = 0;
+  std::string as_string () const;
 
   /* Adds crate names to the vector passed by reference, if it can
-   * (polymorphism). TODO: remove, unused. */
+   * (polymorphism). */
   virtual void
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
 
+  virtual void accept_vis (HIRVisitor &vis ATTRIBUTE_UNUSED) {}
+
 protected:
+  // Constructor
+  Item (Analysis::NodeMapping mappings,
+	std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+    : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attribs))
+  {}
+
   // Clone function implementation as pure virtual method
   virtual Item *clone_item_impl () const = 0;
 
   /* Save having to specify two clone methods in derived classes by making
    * statement clone return item clone. Hopefully won't affect performance too
    * much. */
-  Item *clone_stmt_impl () const final override { return clone_item_impl (); }
+  Item *clone_stmt_impl () const override { return clone_item_impl (); }
 };
 
 // forward decl of ExprWithoutBlock
 class ExprWithoutBlock;
 
-// Base expression AST node - abstract
+// Base expression HIR node - abstract
 class Expr
 {
   // TODO: move outer attribute data to derived classes?
   std::vector<Attribute> outer_attrs;
 
+  Analysis::NodeMapping mappings;
+
 public:
-  // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
   // Unique pointer custom clone function
   std::unique_ptr<Expr> clone_expr () const
@@ -865,18 +807,15 @@ public:
   // HACK: strictly not needed, but faster than full downcast clone
   virtual bool is_expr_without_block () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
-
-  virtual NodeId get_node_id () const { return node_id; }
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
 protected:
   // Constructor
-  Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : outer_attrs (std::move (outer_attribs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  Expr (Analysis::NodeMapping mappings,
+	std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+    : outer_attrs (std::move (outer_attribs)), mappings (std::move (mappings))
   {}
 
   // Clone function implementation as pure virtual method
@@ -888,18 +827,17 @@ protected:
   {
     outer_attrs = std::move (outer_attrs_to_set);
   }
-
-  NodeId node_id;
 };
 
-// AST node for an expression without an accompanying block - abstract
+// HIR node for an expression without an accompanying block - abstract
 class ExprWithoutBlock : public Expr
 {
 protected:
   // Constructor
-  ExprWithoutBlock (std::vector<Attribute> outer_attribs
+  ExprWithoutBlock (Analysis::NodeMapping mappings,
+		    std::vector<Attribute> outer_attribs
 		    = std::vector<Attribute> ())
-    : Expr (std::move (outer_attribs))
+    : Expr (std::move (mappings), std::move (outer_attribs))
   {}
 
   // pure virtual clone implementation
@@ -908,7 +846,7 @@ protected:
   /* Save having to specify two clone methods in derived classes by making expr
    * clone return exprwithoutblock clone. Hopefully won't affect performance too
    * much. */
-  ExprWithoutBlock *clone_expr_impl () const final override
+  ExprWithoutBlock *clone_expr_impl () const override
   {
     return clone_expr_without_block_impl ();
   }
@@ -937,14 +875,16 @@ public:
 class IdentifierExpr : public ExprWithoutBlock
 {
   Identifier ident;
-  Location locus;
 
 public:
-  IdentifierExpr (Identifier ident, Location locus = Location (),
+  Location locus;
+
+  IdentifierExpr (Analysis::NodeMapping mappings, Identifier ident,
+		  Location locus = Location (),
 		  std::vector<Attribute> outer_attrs
 		  = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attrs)), ident (std::move (ident)),
-      locus (locus)
+    : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
+      ident (std::move (ident)), locus (locus)
   {}
 
   std::string as_string () const override { return ident; }
@@ -952,19 +892,13 @@ public:
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
 
-  Identifier get_ident () const { return ident; }
-
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
   // Clones this object.
   std::unique_ptr<IdentifierExpr> clone_identifier_expr () const
   {
     return std::unique_ptr<IdentifierExpr> (clone_identifier_expr_impl ());
   }
-
-  // "Error state" if ident is empty, so base stripping on this.
-  void mark_for_strip () override { ident = {}; }
-  bool is_marked_for_strip () const override { return ident.empty (); }
 
 protected:
   // Clone method implementation
@@ -977,9 +911,12 @@ protected:
   {
     return new IdentifierExpr (*this);
   }
+
+  IdentifierExpr (IdentifierExpr const &other) = default;
+  IdentifierExpr &operator= (IdentifierExpr const &other) = default;
 };
 
-// Pattern base AST node
+// Pattern base HIR node
 class Pattern
 {
 public:
@@ -995,31 +932,17 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  // as only one kind of pattern can be stripped, have default of nothing
-  virtual void mark_for_strip () {}
-  virtual bool is_marked_for_strip () const { return false; }
-
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const = 0;
-
-  virtual NodeId get_node_id () const { return node_id; }
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // Clone pattern implementation as pure virtual method
   virtual Pattern *clone_pattern_impl () const = 0;
-
-  Pattern () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
-
-  NodeId node_id;
 };
 
 // forward decl for Type
 class TraitBound;
 
-// Base class for types as represented in AST - abstract
+// Base class for types as represented in HIR - abstract
 class Type
 {
 public:
@@ -1036,27 +959,24 @@ public:
 
   /* HACK: convert to trait bound. Virtual method overriden by classes that
    * enable this. */
-  virtual TraitBound *to_trait_bound (bool) const { return nullptr; }
+  virtual TraitBound *to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const
+  {
+    return nullptr;
+  }
   /* as pointer, shouldn't require definition beforehand, only forward
    * declaration. */
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  // as only two kinds of types can be stripped, have default of nothing
-  virtual void mark_for_strip () {}
-  virtual bool is_marked_for_strip () const { return false; }
-
-  virtual Location get_locus_slow () const = 0;
-
-  NodeId get_node_id () const { return node_id; }
+  virtual Analysis::NodeMapping get_mappings () { return mappings; }
 
 protected:
-  Type () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  Type (Analysis::NodeMapping mappings) : mappings (mappings) {}
 
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
 
-  NodeId node_id;
+  Analysis::NodeMapping mappings;
 };
 
 // A type without parentheses? - abstract
@@ -1070,18 +990,18 @@ public:
   }
 
 protected:
+  TypeNoBounds (Analysis::NodeMapping mappings) : Type (mappings) {}
+
   // Clone function implementation as pure virtual method
   virtual TypeNoBounds *clone_type_no_bounds_impl () const = 0;
 
   /* Save having to specify two clone methods in derived classes by making type
    * clone return typenobounds clone. Hopefully won't affect performance too
    * much. */
-  TypeNoBounds *clone_type_impl () const final override
+  TypeNoBounds *clone_type_impl () const override
   {
     return clone_type_no_bounds_impl ();
   }
-
-  TypeNoBounds () : Type () {}
 };
 
 /* Abstract base class representing a type param bound - Lifetime and TraitBound
@@ -1099,7 +1019,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1135,7 +1055,7 @@ public:
   {}
 
   // Creates an "error" lifetime.
-  static Lifetime error () { return Lifetime (NAMED, ""); }
+  static Lifetime error () { return Lifetime (NAMED, std::string ("")); }
 
   // Returns true if the lifetime is in an error state.
   bool is_error () const
@@ -1145,7 +1065,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1156,7 +1076,7 @@ protected:
   }
 };
 
-/* Base generic parameter in AST. Abstract - can be represented by a Lifetime or
+/* Base generic parameter in HIR. Abstract - can be represented by a Lifetime or
  * Type param */
 class GenericParam
 {
@@ -1171,7 +1091,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1244,7 +1164,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (ASTVisitor &vis) override;
+  void accept_vis (HIRVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1255,17 +1175,16 @@ protected:
   }
 };
 
-// A macro item AST node - potentially abstract base class
+// A macro item HIR node - potentially abstract base class
 class MacroItem : public Item
 {
   /*public:
   std::string as_string() const;*/
-  // std::vector<Attribute> outer_attrs;
-
 protected:
-  /*MacroItem (std::vector<Attribute> outer_attribs)
-    : outer_attrs (std::move (outer_attribs))
-  {}*/
+  MacroItem (Analysis::NodeMapping mappings,
+	     std::vector<Attribute> outer_attribs)
+    : Item (std::move (mappings), std::move (outer_attribs))
+  {}
 };
 
 // Item used in trait declarations - abstract base class
@@ -1278,11 +1197,20 @@ class TraitItem
   // NOTE: all children should have outer attributes
 
 protected:
+  // Constructor
+  /*TraitItem(std::vector<Attribute> outer_attrs = std::vector<Attribute>())
+    : outer_attrs(std::move(outer_attrs)) {}*/
+
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
 
 public:
   virtual ~TraitItem () {}
+
+  // Returns whether TraitItem has outer attributes.
+  /*bool has_outer_attrs() const {
+      return !outer_attrs.empty();
+  }*/
 
   // Unique pointer custom clone function
   std::unique_ptr<TraitItem> clone_trait_item () const
@@ -1292,10 +1220,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl
@@ -1317,10 +1242,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 };
 
 // Abstract base class for items used in a trait impl
@@ -1340,101 +1262,66 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
 };
 
-// Abstract base class for an item used inside an extern block
-class ExternalItem
-{
-public:
-  virtual ~ExternalItem () {}
-
-  // Unique pointer custom clone function
-  std::unique_ptr<ExternalItem> clone_external_item () const
-  {
-    return std::unique_ptr<ExternalItem> (clone_external_item_impl ());
-  }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual void mark_for_strip () = 0;
-  virtual bool is_marked_for_strip () const = 0;
-
-protected:
-  // Clone function implementation as pure virtual method
-  virtual ExternalItem *clone_external_item_impl () const = 0;
-};
-
-/* Data structure to store the data used in macro invocations and macro 
- * invocations with semicolons. */
-struct MacroInvocData
-{
-private:
-  SimplePath path;
-  DelimTokenTree token_tree;
-
-public:
-  std::string as_string () const;
-
-  MacroInvocData (SimplePath path, DelimTokenTree token_tree) 
-    : path (std::move (path)), token_tree (std::move (token_tree)) {}
-  
-  // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const { return path.is_empty (); }
-};
-
-/* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
+/* A macro invocation item (or statement) HIR node (i.e. semi-coloned macro
  * invocation) */
 class MacroInvocationSemi : public MacroItem,
 			    public TraitItem,
 			    public InherentImplItem,
-			    public TraitImplItem,
-			    public ExternalItem
+			    public TraitImplItem
 {
-  std::vector<Attribute> outer_attrs;
-#if 0
   SimplePath path;
   // all delim types except curly must have invocation end with a semicolon
   DelimType delim_type;
   std::vector<std::unique_ptr<TokenTree> > token_trees;
-#endif
-  MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  /*MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
+  MacroInvocationSemi (Analysis::NodeMapping mappings, SimplePath macro_path,
+		       DelimType delim_type,
 		       std::vector<std::unique_ptr<TokenTree> > token_trees,
 		       std::vector<Attribute> outer_attribs, Location locus)
-    : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
-      delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}*/
-  MacroInvocationSemi (MacroInvocData invoc_data, 
-            std::vector<Attribute> outer_attrs, Location locus) 
-    : outer_attrs (std::move (outer_attrs)), invoc_data (std::move (invoc_data)),
-      locus (locus) {}
+    : MacroItem (std::move (mappings), std::move (outer_attribs)),
+      path (std::move (macro_path)), delim_type (delim_type),
+      token_trees (std::move (token_trees)), locus (locus)
+  {}
+  /* TODO: possible issue with Item and TraitItem hierarchies both having outer
+   * attributes
+   * - storage inefficiency at least.
+   * Best current idea is to make Item preferred and have TraitItem get virtual
+   * functions for attributes or something. Or just redo the "composition"
+   * approach, but then this prevents polymorphism and would entail redoing
+   * quite a bit of the parser. */
 
-  /*
+  // Move constructors
+  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
+  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
+
+  void accept_vis (HIRVisitor &vis) override;
+
+  // Clones this macro invocation semi.
+  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
+  {
+    return std::unique_ptr<MacroInvocationSemi> (
+      clone_macro_invocation_semi_impl ());
+  }
+
+protected:
   // Copy constructor with vector clone
   MacroInvocationSemi (MacroInvocationSemi const &other)
     : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), outer_attrs (other.outer_attrs), path (other.path),
-      delim_type (other.delim_type), locus (other.locus)
+      TraitImplItem (other), path (other.path), delim_type (other.delim_type),
+      locus (other.locus)
   {
     token_trees.reserve (other.token_trees.size ());
     for (const auto &e : other.token_trees)
       token_trees.push_back (e->clone_token_tree ());
-  }*/
+  }
 
-  /*
   // Overloaded assignment operator to vector clone
   MacroInvocationSemi &operator= (MacroInvocationSemi const &other)
   {
@@ -1442,7 +1329,6 @@ public:
     TraitItem::operator= (other);
     InherentImplItem::operator= (other);
     TraitImplItem::operator= (other);
-    outer_attrs = other.outer_attrs;
     path = other.path;
     delim_type = other.delim_type;
     locus = other.locus;
@@ -1452,36 +1338,8 @@ public:
       token_trees.push_back (e->clone_token_tree ());
 
     return *this;
-  }*/
-
-  /*
-  // Move constructors
-  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
-  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
-  */
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // Clones this macro invocation semi.
-  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
-  {
-    return std::unique_ptr<MacroInvocationSemi> (
-      clone_macro_invocation_semi_impl ());
   }
 
-  /*
-  // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const override { return path.is_empty (); }
-  */
-  void mark_for_strip () override { invoc_data.mark_for_strip (); }
-  bool is_marked_for_strip () const override { return invoc_data.is_marked_for_strip (); }
-
-  // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-
-protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const
   {
     return new MacroInvocationSemi (*this);
@@ -1508,22 +1366,22 @@ protected:
     return clone_macro_invocation_semi_impl ();
   }
 
+  // FIXME: remove if item impl virtual override works properly
+  // Use covariance to implement clone function as returning this object rather
+  // than base
+  /*MacroInvocationSemi* clone_statement_impl() const override {
+      return clone_macro_invocation_semi_impl ();
+  }*/
+
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MacroInvocationSemi *clone_trait_item_impl () const override
   {
     return clone_macro_invocation_semi_impl ();
   }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocationSemi *clone_external_item_impl () const override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
 };
 
-// A crate AST object - holds all the data for a single compilation unit
+// A crate HIR object - holds all the data for a single compilation unit
 struct Crate
 {
   bool has_utf8bom;
@@ -1535,22 +1393,22 @@ struct Crate
    * top-level one)? */
   std::vector<std::unique_ptr<Item> > items;
 
-  NodeId node_id;
+  Analysis::NodeMapping mappings;
 
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items,
-	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false,
-	 bool has_shebang = false)
+	 std::vector<Attribute> inner_attrs, Analysis::NodeMapping mappings,
+	 bool has_utf8bom = false, bool has_shebang = false)
     : has_utf8bom (has_utf8bom), has_shebang (has_shebang),
       inner_attrs (std::move (inner_attrs)), items (std::move (items)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      mappings (mappings)
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
     : has_utf8bom (other.has_utf8bom), has_shebang (other.has_shebang),
-      inner_attrs (other.inner_attrs), node_id (other.node_id)
+      inner_attrs (other.inner_attrs), mappings (other.mappings)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1565,7 +1423,7 @@ public:
     inner_attrs = other.inner_attrs;
     has_shebang = other.has_shebang;
     has_utf8bom = other.has_utf8bom;
-    node_id = other.node_id;
+    mappings = other.mappings;
 
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1581,26 +1439,16 @@ public:
   // Get crate representation as string (e.g. for debugging).
   std::string as_string () const;
 
-  // Delete all crate information, e.g. if fails cfg.
-  void strip_crate ()
-  {
-    inner_attrs.clear ();
-    inner_attrs.shrink_to_fit ();
-
-    items.clear ();
-    items.shrink_to_fit ();
-    // TODO: is this the best way to do this?
-  }
-
-  NodeId get_node_id () const { return node_id; }
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
-// Base path expression AST node - abstract
+// Base path expression HIR node - abstract
 class PathExpr : public ExprWithoutBlock
 {
 protected:
-  PathExpr (std::vector<Attribute> outer_attribs)
-    : ExprWithoutBlock (std::move (outer_attribs))
+  PathExpr (Analysis::NodeMapping mappings,
+	    std::vector<Attribute> outer_attribs)
+    : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs))
   {}
 
 public:
@@ -1613,7 +1461,7 @@ public:
     set_outer_attrs (std::move (outer_attrs));
   }
 };
-} // namespace AST
+} // namespace HIR
 } // namespace Rust
 
 #endif

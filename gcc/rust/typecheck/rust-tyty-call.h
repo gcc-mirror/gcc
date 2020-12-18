@@ -16,32 +16,38 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
+#ifndef RUST_TYTY_CALL
+#define RUST_TYTY_CALL
+
+#include "rust-diagnostics.h"
+#include "rust-hir-full.h"
+#include "rust-tyty-visitor.h"
+#include "rust-tyty.h"
 
 namespace Rust {
-namespace Compile {
+namespace TyTy {
 
-CompileCrate::CompileCrate (HIR::Crate &crate, Context *ctx)
-  : crate (crate), ctx (ctx)
-{}
-
-CompileCrate::~CompileCrate () {}
-
-void
-CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
-
+class TypeCheckCallExpr : private TyVisitor
 {
-  CompileCrate c (crate, ctx);
-  c.go ();
-}
+public:
+  static TyBase *go (TyBase *ref, HIR::CallExpr &call)
+  {
+    TypeCheckCallExpr checker (call);
+    ref->accept_vis (checker);
+    return checker.resolved;
+  }
+  ~TypeCheckCallExpr () {}
 
-void
-CompileCrate::go ()
-{
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
-}
+  void visit (FnType &type) override;
 
-} // namespace Compile
+private:
+  TypeCheckCallExpr (HIR::CallExpr &c) : resolved (nullptr), call (c) {}
+
+  TyBase *resolved;
+  HIR::CallExpr &call;
+};
+
+} // namespace TyTy
 } // namespace Rust
+
+#endif // RUST_TYTY_CALL
