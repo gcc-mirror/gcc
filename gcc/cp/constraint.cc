@@ -2374,26 +2374,51 @@ tsubst_parameter_mapping (tree map, tree args, tsubst_flags_t complain, tree in_
                         Constraint satisfaction
 ---------------------------------------------------------------------------*/
 
-/* A counter incremented by note_failed_type_completion_for_satisfaction().
-   It's used by the satisfaction caches in order to flag "potentially unstable"
-   satisfaction results.  */
+/* True if we are currently satisfying a constraint.  */
 
-static unsigned failed_type_completion_count;
+static bool satisfying_constraint;
 
-/* Called whenever a type completion failure occurs that definitely affects
-   the semantics of the program, by e.g. inducing substitution failure.  */
+/* A vector of incomplete types (and of declarations with undeduced return type),
+   appended to by note_failed_type_completion_for_satisfaction.  The
+   satisfaction caches use this in order to keep track of "potentially unstable"
+   satisfaction results.
+
+   Since references to entries in this vector are stored only in the
+   GC-deletable sat_cache, it's safe to make this deletable as well.  */
+
+static GTY((deletable)) vec<tree, va_gc> *failed_type_completions;
+
+/* Called whenever a type completion (or return type deduction) failure occurs
+   that definitely affects the meaning of the program, by e.g. inducing
+   substitution failure.  */
 
 void
-note_failed_type_completion_for_satisfaction (tree type)
+note_failed_type_completion_for_satisfaction (tree t)
 {
-  gcc_checking_assert (!COMPLETE_TYPE_P (type));
-  if (CLASS_TYPE_P (type)
-      && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    /* After instantiation, a class template specialization that's
-       incomplete will remain incomplete, so for our purposes we can
-       ignore this completion failure event.  */;
-  else
-    ++failed_type_completion_count;
+  if (satisfying_constraint)
+    {
+      gcc_checking_assert ((TYPE_P (t) && !COMPLETE_TYPE_P (t))
+			   || (DECL_P (t) && undeduced_auto_decl (t)));
+      vec_safe_push (failed_type_completions, t);
+    }
+}
+
+/* Returns true if the range [BEGIN, END) of elements within the
+   failed_type_completions vector contains a complete type (or a
+   declaration with a non-placeholder return type).  */
+
+static bool
+some_type_complete_p (int begin, int end)
+{
+  for (int i = begin; i < end; i++)
+    {
+      tree t = (*failed_type_completions)[i];
+      if (TYPE_P (t) && COMPLETE_TYPE_P (t))
+	return true;
+      if (DECL_P (t) && !undeduced_auto_decl (t))
+	return true;
+    }
+  return false;
 }
 
 /* Hash functions and data types for satisfaction cache entries.  */
@@ -2417,12 +2442,10 @@ struct GTY((for_user)) sat_entry
      performed.  */
   location_t location;
 
-  /* True if this satisfaction result is flagged as "potentially unstable",
-     i.e. the result might change at different points in the program if
-     recomputed from scratch (which would be ill-formed).  This flag controls
-     whether to recompute a cached satisfaction result from scratch even when
-     evaluating quietly.  */
-  bool maybe_unstable;
+  /* The range of elements appended to the failed_type_completions vector
+     during computation of this satisfaction result, encoded as a begin/end
+     pair of offsets.  */
+  int ftc_begin, ftc_end;
 
   /* True if we want to diagnose the above instability when it's detected.
      We don't always want to do so, in order to avoid emitting duplicate
@@ -2522,7 +2545,7 @@ struct satisfaction_cache
 
   sat_entry *entry;
   sat_info info;
-  unsigned ftc_count;
+  int ftc_begin;
 };
 
 /* Constructor for the satisfaction_cache class.  We're performing satisfaction
@@ -2530,7 +2553,7 @@ struct satisfaction_cache
 
 satisfaction_cache
 ::satisfaction_cache (tree atom, tree args, sat_info info)
-  : entry(nullptr), info(info), ftc_count(failed_type_completion_count)
+  : entry(nullptr), info(info), ftc_begin(-1)
 {
   if (!sat_cache)
     sat_cache = hash_table<sat_hasher>::create_ggc (31);
@@ -2569,7 +2592,7 @@ satisfaction_cache
       entry->args = args;
       entry->result = NULL_TREE;
       entry->location = input_location;
-      entry->maybe_unstable = false;
+      entry->ftc_begin = entry->ftc_end = -1;
       entry->diagnose_instability = false;
       if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (atom))
 	/* We always want to diagnose instability of an atom with an
@@ -2607,10 +2630,16 @@ satisfaction_cache::get ()
       return error_mark_node;
     }
 
-  if (info.noisy () || entry->maybe_unstable || !entry->result)
+  /* This satisfaction result is "potentially unstable" if a type for which
+     type completion failed during its earlier computation is now complete.  */
+  bool maybe_unstable = some_type_complete_p (entry->ftc_begin,
+					      entry->ftc_end);
+
+  if (info.noisy () || maybe_unstable || !entry->result)
     {
       /* We're computing the satisfaction result from scratch.  */
       entry->evaluating = true;
+      ftc_begin = vec_safe_length (failed_type_completions);
       return NULL_TREE;
     }
   else
@@ -2658,30 +2687,14 @@ satisfaction_cache::save (tree result)
   if (info.quiet ())
     {
       entry->result = result;
-      /* We heuristically flag this satisfaction result as potentially unstable
-	 iff during its computation, completion of a type failed.  Note that
-	 this may also clear the flag if the result turned out to be
-	 independent of the previously detected type completion failure.  */
-      entry->maybe_unstable = (ftc_count != failed_type_completion_count);
+      /* Store into this entry the list of relevant failed type completions
+	 that occurred during (re)computation of the satisfaction result.  */
+      gcc_checking_assert (ftc_begin != -1);
+      entry->ftc_begin = ftc_begin;
+      entry->ftc_end = vec_safe_length (failed_type_completions);
     }
 
   return result;
-}
-
-static int satisfying_constraint = 0;
-
-/* Returns true if we are currently satisfying a constraint.
-
-   This is used to guard against recursive calls to evaluate_concept_check
-   during template argument substitution.
-
-   TODO: Do we need this now that we fully normalize prior to evaluation?
-   I think not. */
-
-bool
-satisfying_constraint_p ()
-{
-  return satisfying_constraint;
 }
 
 /* Substitute ARGS into constraint-expression T during instantiation of
@@ -3003,6 +3016,8 @@ satisfy_constraint (tree t, tree args, sat_info info)
 {
   auto_timevar time (TV_CONSTRAINT_SAT);
 
+  auto ovr = make_temp_override (satisfying_constraint, true);
+
   /* Turn off template processing. Constraint satisfaction only applies
      to non-dependent terms, so we want to ensure full checking here.  */
   processing_template_decl_sentinel proc (true);
@@ -3111,7 +3126,7 @@ satisfy_declaration_constraints (tree t, sat_info info)
       norm = normalize_nontemplate_requirements (t, info.noisy ());
     }
 
-  unsigned ftc_count = failed_type_completion_count;
+  unsigned ftc_count = vec_safe_length (failed_type_completions);
 
   tree result = boolean_true_node;
   if (norm)
@@ -3127,8 +3142,7 @@ satisfy_declaration_constraints (tree t, sat_info info)
   /* True if this satisfaction is (heuristically) potentially unstable, i.e.
      if its result may depend on where in the program it was performed.  */
   bool maybe_unstable_satisfaction = false;
-
-  if (ftc_count != failed_type_completion_count)
+  if (ftc_count != vec_safe_length (failed_type_completions))
     /* Type completion failure occurred during satisfaction.  The satisfaction
        result may (or may not) materially depend on the completeness of a type,
        so we consider it potentially unstable.   */

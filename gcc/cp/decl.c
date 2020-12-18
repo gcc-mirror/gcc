@@ -17869,6 +17869,7 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)
 	error ("use of %qD before deduction of %<auto%>", decl);
+      note_failed_type_completion_for_satisfaction (decl);
       return false;
     }
   return true;
