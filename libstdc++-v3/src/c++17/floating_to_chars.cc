@@ -1114,8 +1114,8 @@ template<typename T>
 	// Since the output of printf is locale-sensitive, we need to be able
 	// to handle a radix point that's different from '.'.
 	char radix[6] = {'.', '\0', '\0', '\0', '\0', '\0'};
-	if (effective_precision > 0)
 #ifdef RADIXCHAR
+	if (effective_precision > 0)
 	  // ???: Can nl_langinfo() ever return null?
 	  if (const char* const radix_ptr = nl_langinfo(RADIXCHAR))
 	    {
