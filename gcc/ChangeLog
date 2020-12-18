@@ -1,3 +1,72 @@
+2020-12-17  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in: Add Cortex-A78C core.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98347
+	* rtl-ssa/access-utils.h (full_register): Use regno_reg_rtx
+	instead of reg_raw_mode.
+
+2020-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* targhooks.h (default_estimated_poly_value): Updated.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (C++ Modules): Document lack of std
+	library header units.
+
+2020-12-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* target.h (enum poly_value_estimate_kind): Define.
+	(estimated_poly_value): Take an estimate kind argument.
+	* target.def (estimated_poly_value): Update definition for the
+	above.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (estimated_poly_value): Update prototype.
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): Use min, max and
+	likely estimates of VF to pick between vinfos.
+	* config/aarch64/aarch64.c (aarch64_cmp_autovec_modes): Use
+	estimated_poly_value instead of aarch64_estimated_poly_value.
+	(aarch64_estimated_poly_value): Take a kind argument and handle
+	it.
+
+2020-12-17  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vcreate_p64): Remove call to
+	'__builtin_neon_vcreatedi'.
+
+2020-12-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97750
+	* range-op.cc (operator_cast::op1_range): Handle pointers better.
+
+2020-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* rtl-ssa.h: Include memmodel.h before tm_p.h.
+
+2020-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98289
+	* shrink-wrap.c (can_get_prologue): Don't punt on EDGE_CROSSING
+	incoming edges.
+
+2020-12-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* configure.ac: Change --enable-s390-excess-float-precision
+	default behavior for cross compiles with target headers.
+	* configure: Regenerate.
+	* doc/install.texi: Adjust documentation.
+
+2020-12-17  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*ashlsi3_1, *ashlsi3_3x, *ashrsi3_3x)
+	(*lshrsi3_3x): New patterns.
+
 2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* fwprop.c: Rewrite to use the RTL SSA framework.

@@ -51,6 +51,7 @@ endif
 
 sources = \
 	floating_from_chars.cc \
+	floating_to_chars.cc \
 	fs_dir.cc \
 	fs_ops.cc \
 	fs_path.cc \

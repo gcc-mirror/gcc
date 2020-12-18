@@ -1,3 +1,36 @@
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/djgpp/error_constants.h: Test POSIX errno macros
+	directly, instead of corresponding _GLIBCXX_HAVE_EXXX macros.
+	* config/os/mingw32-w64/error_constants.h: Likewise.
+	* config/os/mingw32/error_constants.h: Likewise.
+
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_gthreads_timed):
+	Fix condition for _GTHREAD_USE_MUTEX_TIMEDLOCK test.
+
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/mutex.cc (std::once_flag::_M_finish): Add
+	maybe_unused attribute to variable used in assertion.
+
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98344
+	* include/bits/semaphore_base.h: Fix preprocessor condition.
+
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_thread.h (hash<thread::id>): Move here,
+	from ...
+	* include/std/thread (hash<thread::id>): ... here.
+
+2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* Makefile.in: Regenerate.

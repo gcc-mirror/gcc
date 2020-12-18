@@ -1,3 +1,13 @@
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Add --enable-host-shared.
+	* Makefile.in: Add FLAGPIC.
+	* configure: Regenerated.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* fatal.cc (HCF): Remove nop breakpoint lander.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* cody.hh: Allow user to set CODY_NETWORKING.

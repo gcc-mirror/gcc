@@ -1,3 +1,8 @@
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* gcc_update: Add c++tools/config.h.in.
+
 2020-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc_update: Add c++tools & libcody.
