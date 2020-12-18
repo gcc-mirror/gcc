@@ -127,7 +127,7 @@ package body Sem_Ch11 is
                        and then Comes_From_Source (Id)
                      then
                         Error_Msg_N
-                          ("(Ada 83): duplicate exception choice&", Id);
+                          ("(Ada 83) duplicate exception choice&", Id);
                      end if;
                   end if;
                end if;

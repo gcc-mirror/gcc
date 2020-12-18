@@ -750,9 +750,7 @@ package body Sem_Warn is
          Fstm : constant Node_Id :=
                   Original_Node (First (Statements (Loop_Statement)));
       begin
-         if Nkind (Fstm) = N_Delay_Relative_Statement
-           or else Nkind (Fstm) = N_Delay_Until_Statement
-         then
+         if Nkind (Fstm) in N_Delay_Statement then
             return;
          end if;
       end;

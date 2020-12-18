@@ -119,6 +119,6 @@ test6_nor (vector unsigned short x, vector unsigned short y)
   return *foo;
 }
 
-/* { dg-final { scan-assembler-times {\mxxlor\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxxlor\M} 7 } } */
 /* { dg-final { scan-assembler-times {\mxxlxor\M} 6 } } */
-/* { dg-final { scan-assembler-times {\mxxlnor\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mxxlnor\M} 1 } } */

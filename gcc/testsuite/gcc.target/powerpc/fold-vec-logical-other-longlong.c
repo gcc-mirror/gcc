@@ -102,5 +102,5 @@ test6_nand (vector unsigned long long x, vector unsigned long long y)
   return *foo;
 }
 
+/* { dg-final { scan-assembler-times {\mxxlnand\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mxxlorc\M} 6 } } */
-/* { dg-final { scan-assembler-times {\mxxlnand\M} 6 } } */

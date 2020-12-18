@@ -3491,8 +3491,7 @@ package body Exp_Ch6 is
       --  of the dimension I/O packages.
 
       if Ada_Version >= Ada_2012
-        and then
-           Nkind (Call_Node) in N_Procedure_Call_Statement | N_Function_Call
+        and then Nkind (Call_Node) in N_Subprogram_Call
         and then Present (Parameter_Associations (Call_Node))
       then
          Expand_Put_Call_With_Symbol (Call_Node);
@@ -9343,7 +9342,7 @@ package body Exp_Ch6 is
       Tmp_Id    : Entity_Id;
 
    begin
-      --  No action of the call has already been processed
+      --  No action if the call has already been processed
 
       if Is_Expanded_Build_In_Place_Call (BIP_Func_Call) then
          return;
@@ -10018,7 +10017,7 @@ package body Exp_Ch6 is
    procedure Warn_BIP (Func_Call : Node_Id) is
    begin
       if Debug_Flag_Underscore_BB then
-         Error_Msg_N ("build-in-place function call?", Func_Call);
+         Error_Msg_N ("build-in-place function call??", Func_Call);
       end if;
    end Warn_BIP;
 

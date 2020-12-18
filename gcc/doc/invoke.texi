@@ -387,7 +387,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wno-switch-outside-range  -Wno-switch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
--Wtype-limits  -Wundef @gol
+-Wtsan -Wtype-limits  -Wundef @gol
 -Wuninitialized  -Wunknown-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused @gol
 -Wunused-but-set-parameter  -Wunused-but-set-variable @gol
@@ -8020,6 +8020,16 @@ if (p == '\0')
 @end smallexample
 
 Note that the code above is invalid in C++11.
+
+This warning is enabled by default.
+
+@item -Wtsan
+@opindex Wtsan
+@opindex Wno-tsan
+Warn about unsupported features in ThreadSanitizer.
+
+ThreadSanitizer does not support @code{std::atomic_thread_fence} and
+can report false positives.
 
 This warning is enabled by default.
 
@@ -19979,7 +19989,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
-@samp{cortex-a78}, @samp{cortex-a78ae},
+@samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
@@ -32880,6 +32890,13 @@ Declarations with explicit language linkage (@code{extern "C"} or
 the purview of a named module.  This is not implemented.  Such
 declarations will be attached to the module, if any, in which they are
 declared.
+
+@item Standard Library Header Units
+The Standard Library is not provided as importable header units.  If
+you want to import such units, you must explicitly build them first.
+If you do not do this with care, you may have multiple declarations,
+which the module machinery must merge---compiler resource usage can be
+affected by how you partition header files into header units.
 
 @end table
 

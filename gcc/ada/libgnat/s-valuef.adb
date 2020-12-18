@@ -46,7 +46,8 @@ package body System.Value_F is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Floating => False);
+   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Round => True);
+   --  We use the Extra digit for ordinary fixed-point types
 
    function Integer_To_Fixed
      (Str    : String;

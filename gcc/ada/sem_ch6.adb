@@ -1537,12 +1537,12 @@ package body Sem_Ch6 is
                   --  Can it really happen (extended return???)
 
                   Error_Msg_N
-                    ("aliased only allowed for limited return objects "
+                    ("ALIASED only allowed for limited return objects "
                      & "in Ada 2012??", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N
-                    ("aliased only allowed for limited return objects", N);
+                    ("ALIASED only allowed for limited return objects", N);
                end if;
             end if;
 
@@ -9968,7 +9968,7 @@ package body Sem_Ch6 is
                Error_Msg_Sloc :=
                  Text_Ptr'Max (Sloc (Entity (E1)), Sloc (Entity (E2)));
                Error_Msg_NE
-                 ("Meaning of& differs because of declaration#", E1, E2);
+                 ("meaning of& differs because of declaration#", E1, E2);
             end if;
 
             return Result;

@@ -20,9 +20,10 @@ prefix := @prefix@
 bindir := @bindir@
 libexecdir := @libexecdir@
 target_noncanonical := @target_noncanonical@
-version := $(shell cat $(srcdir)/../gcc/BASE-VER)
-libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(version)
-INSTALL := @INSTALL@
+gcc_version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
+libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
+INSTALL_PROGRAM := @INSTALL_PROGRAM@
+INSTALL_STRIP_PROGRAM := $(srcdir)/../install-sh -c -s
 AUTOCONF := @AUTOCONF@
 AUTOHEADER := @AUTOHEADER@
 CXX := @CXX@
@@ -38,7 +39,7 @@ mostlyclean::
 	rm -f $(MAPPER.O)
 
 clean::
-	rm -f c++-mapper-server$(exeext)
+	rm -f g++-mapper-server$(exeext)
 
 distclean::
 	rm -f config.log config.status config.h
@@ -47,16 +48,23 @@ maintainer-clean::
 
 install::
 
-check:
-installcheck:
-dvi:
-pdf:
-html:
-info:
-install-info:
-install-pdf:
-install-man:
-install-html:
+check::
+installcheck::
+dvi::
+pdf::
+html::
+info::
+install-info::
+install-pdf::
+install-man::
+install-html::
+
+install-strip: override INSTALL_PROGRAM = $(INSTALL_STRIP_PROGRAM)
+ifneq ($(STRIP),)
+install-strip: STRIPPROG = $(STRIP)
+export STRIPPROG
+endif
+install-strip: install
 
 vpath %.cc $(srcdir)
 vpath %.in $(srcdir)
@@ -86,11 +94,11 @@ g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
 all::../gcc/g++-mapper-server$(exeext)
 
 ../gcc/g++-mapper-server$(exeext): g++-mapper-server$(exeext)
-	$(INSTALL) -p $< $@
+	$(INSTALL) $< $@
 
 install::
-	$(INSTALL) -p g++-mapper-server$(exeext) $(DESTDIR)$(libexecsubdir)
-
+	$(SHELL) $(srcdir)/../mkinstalldirs $(DESTDIR)$(libexecsubdir)
+	$(INSTALL_PROGRAM) g++-mapper-server$(exeext) $(DESTDIR)$(libexecsubdir)
 endif
 
 ifneq ($(MAINTAINER),)

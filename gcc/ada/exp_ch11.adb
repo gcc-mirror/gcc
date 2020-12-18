@@ -1864,8 +1864,8 @@ package body Exp_Ch11 is
          then
             return Empty;
 
-            --  Test for handled sequence of statements with at least one
-            --  exception handler which might be the one we are looking for.
+         --  Test for handled sequence of statements with at least one
+         --  exception handler which might be the one we are looking for.
 
          elsif Nkind (P) = N_Handled_Sequence_Of_Statements
            and then Present (Exception_Handlers (P))

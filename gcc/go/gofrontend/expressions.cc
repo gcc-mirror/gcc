@@ -174,7 +174,13 @@ Expression::export_name(Export_function_body* efb, const Named_object* no)
 void
 Expression::unused_value_error()
 {
-  this->report_error(_("value computed is not used"));
+  if (this->type()->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+    }
+  else
+    this->report_error(_("value computed is not used"));
 }
 
 // Note that this expression is an error.  This is called by children
@@ -888,8 +894,7 @@ Type_expression : public Expression
   { }
 
   void
-  do_check_types(Gogo*)
-  { this->report_error(_("invalid use of type")); }
+  do_check_types(Gogo*);
 
   Expression*
   do_copy()
@@ -905,6 +910,18 @@ Type_expression : public Expression
   // The type which we are representing as an expression.
   Type* type_;
 };
+
+void
+Type_expression::do_check_types(Gogo*)
+{
+  if (this->type_->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+    }
+  else
+    this->report_error(_("invalid use of type"));
+}
 
 void
 Type_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const

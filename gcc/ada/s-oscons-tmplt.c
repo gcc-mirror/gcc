@@ -724,6 +724,41 @@ CNU(CRTSCTS, "Output hw flow control")
 #endif
 CNU(CREAD, "Read")
 
+#ifndef ICANON
+# define ICANON -1
+#endif
+CNU(ICANON, "canonical mode")
+
+#ifndef CBAUD
+# define CBAUD -1
+#endif
+CNU(CBAUD, "baud speed mask")
+
+#ifndef ECHO
+# define ECHO -1
+#endif
+CNU(ECHO, "echo input characters")
+
+#ifndef ECHOE
+# define ECHOE -1
+#endif
+CNU(ECHOE, "erase preceding characters")
+
+#ifndef ECHOK
+# define ECHOK -1
+#endif
+CNU(ECHOK, "kill character, erases current line")
+
+#ifndef ECHOCTL
+# define ECHOCTL -1
+#endif
+CNU(ECHOCTL, "echo special characters")
+
+#ifndef ECHONL
+# define ECHONL -1
+#endif
+CNU(ECHONL, "force echo NL character")
+
 #ifndef CS5
 # define CS5 -1
 #endif

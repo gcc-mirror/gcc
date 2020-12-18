@@ -201,6 +201,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __numeric_traits_floating<long double>
     { };
 
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+# if defined __LONG_DOUBLE_IEEE128__
+  // long double is __ieee128, define traits for __ibm128
+  template<>
+    struct __numeric_traits_floating<__ibm128>
+    {
+      static const int __max_digits10 = 33;
+      static const bool __is_signed = true;
+      static const int __digits10 = 31;
+      static const int __max_exponent10 = 308;
+    };
+  template<>
+    struct __numeric_traits<__ibm128>
+    : public __numeric_traits_floating<__ibm128>
+    { };
+# elif defined __LONG_DOUBLE_IBM128__
+  // long double is __ibm128, define traits for __ieee128
+  template<>
+    struct __numeric_traits_floating<__ieee128>
+    {
+      static const int __max_digits10 = 36;
+      static const bool __is_signed = true;
+      static const int __digits10 = 33;
+      static const int __max_exponent10 = 4932;
+    };
+  template<>
+    struct __numeric_traits<__ieee128>
+    : public __numeric_traits_floating<__ieee128>
+    { };
+# endif
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

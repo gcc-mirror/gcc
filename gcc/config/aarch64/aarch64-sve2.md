@@ -1799,6 +1799,16 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+;; unpredicated optab pattern for auto-vectorizer
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
+	  [(match_operand:SVE_FULL_I 1 "register_operand")
+	   (match_operand:SVE_FULL_I 2 "register_operand")]
+	  SVE2_INT_CADD_OP))]
+  "TARGET_SVE2"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Complex ternary operations
 ;; -------------------------------------------------------------------------

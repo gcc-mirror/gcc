@@ -19,6 +19,11 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#if defined (__unix__)
+// Solaris11's socket header used bcopy, which we poison.  cody.hh
+// will include it later under the above check
+#include <sys/socket.h>
+#endif
 #include "system.h"
 
 #include "line-map.h"
@@ -27,6 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 
 #include "../../c++tools/resolver.h"
+
+#if !HOST_HAS_O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
 
 module_client::module_client (pex_obj *p, int fd_from, int fd_to)
   : Client (fd_from, fd_to), pex (p)

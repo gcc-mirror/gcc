@@ -33,12 +33,17 @@
 --  type Float, for use in Text_IO.Float_IO and the Value attribute.
 
 with Interfaces;
+with System.Powten_Flt;
 with System.Val_Real;
 
 package System.Val_Flt is
    pragma Preelaborate;
 
-   package Impl is new Val_Real (Float, Interfaces.Unsigned_32);
+   package Impl is new Val_Real
+     (Float,
+      Interfaces.Unsigned_32,
+      System.Powten_Flt.Maxpow,
+      System.Powten_Flt.Powten'Address);
 
    function Scan_Float
      (Str : String;

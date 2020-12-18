@@ -1,3 +1,88 @@
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cody.hh: Allow user to set CODY_NETWORKING.
+
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Compute is_release.
+	(NMS_ENABLE_CHECKING): Simplify but not computing ac_assert_checking
+	and ac_valgrind_checking the code doesn't use.
+	* configure: Regenerated.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* internal.hh: Define fallback macros for __has_builtin and
+	__has_include. Use __has_builtin for __builtin_FILE and
+	__builtin_LINE. Define alias for std::source_location.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Use libcpp's enable-checking code.
+	* configure: Rebuilt.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Replace V+="..." with V="$V..."
+	* configure: Rebuilt.
+
+2020-12-15  Marek Polacek  <polacek@redhat.com>
+
+	* buffer.cc (MessageBuffer::Lex): Remove unused variable.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: Disable some flags.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Avoid var+=...
+	* configure: Rebuilt
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Avoid non-dash idiom
+	* configure: Rebuilt.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: New.
+	* CMakeLists.txt: New.
+	* CODING.md: New.
+	* CONTRIB.md: New.
+	* LICENSE: New.
+	* LICENSE.gcc: New.
+	* Makefile.in: New.
+	* Makesub.in: New.
+	* README.md: New.
+	* buffer.cc: New.
+	* build-aux/config.guess: New.
+	* build-aux/config.sub: New.
+	* build-aux/install-sh: New.
+	* client.cc: New.
+	* cmake/libcody-config-ix.cmake
+	* cody.hh: New.
+	* config.h.in: New.
+	* config.m4: New.
+	* configure: New.
+	* configure.ac: New.
+	* dox.cfg.in: New.
+	* fatal.cc: New.
+	* gdbinit.in: New.
+	* internal.hh: New.
+	* netclient.cc: New.
+	* netserver.cc: New.
+	* packet.cc: New.
+	* resolver.cc: New.
+	* server.cc: New.
+	* tests/01-serialize/connect.cc: New.
+	* tests/01-serialize/decoder.cc: New.
+	* tests/01-serialize/encoder.cc: New.
+	* tests/02-comms/client-1.cc: New.
+	* tests/02-comms/pivot-1.cc: New.
+	* tests/02-comms/server-1.cc: New.
+	* tests/Makesub.in: New.
+	* tests/jouster: New.
+
 
 Copyright (C) 2020 Free Software Foundation, Inc.
 

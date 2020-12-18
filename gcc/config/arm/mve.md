@@ -962,34 +962,28 @@
 ])
 
 ;;
-;; [vcaddq_rot270_s, vcaddq_rot270_u])
+;; [vcaddq, vcaddq_rot90, vcadd_rot180, vcadd_rot270])
 ;;
-(define_insn "mve_vcaddq_rot270_<supf><mode>"
+(define_insn "mve_vcaddq<mve_rot><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCADDQ_ROT270))
+	 VCADD))
   ]
   "TARGET_HAVE_MVE"
-  "vcadd.i%#<V_sz_elem>	%q0, %q1, %q2, #270"
+  "vcadd.i%#<V_sz_elem>	%q0, %q1, %q2, #<rot>"
   [(set_attr "type" "mve_move")
 ])
 
-;;
-;; [vcaddq_rot90_u, vcaddq_rot90_s])
-;;
-(define_insn "mve_vcaddq_rot90_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCADDQ_ROT90))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcadd.i%#<V_sz_elem>	%q0, %q1, %q2, #90"
-  [(set_attr "type" "mve_move")
-])
+;; Auto vectorizer pattern for int vcadd
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:MVE_2 0 "register_operand")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "register_operand")
+		       (match_operand:MVE_2 2 "register_operand")]
+	  VCADD))]
+  "TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN"
+)
 
 ;;
 ;; [vcmpcsq_n_u])
@@ -2102,32 +2096,17 @@
 ])
 
 ;;
-;; [vcaddq_rot270_f])
+;; [vcaddq, vcaddq_rot90, vcadd_rot180, vcadd_rot270])
 ;;
-(define_insn "mve_vcaddq_rot270_f<mode>"
+(define_insn "mve_vcaddq<mve_rot><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCADDQ_ROT270_F))
+	 VCADD))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcadd.f%#<V_sz_elem>	%q0, %q1, %q2, #270"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcaddq_rot90_f])
-;;
-(define_insn "mve_vcaddq_rot90_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCADDQ_ROT90_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcadd.f%#<V_sz_elem>	%q0, %q1, %q2, #90"
+  "vcadd.f%#<V_sz_elem>	%q0, %q1, %q2, #<rot>"
   [(set_attr "type" "mve_move")
 ])
 
@@ -2312,62 +2291,17 @@
 ])
 
 ;;
-;; [vcmulq_f])
+;; [vcmulq, vcmulq_rot90, vcmulq_rot180, vcmulq_rot270])
 ;;
-(define_insn "mve_vcmulq_f<mode>"
+(define_insn "mve_vcmulq<mve_rot><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
 	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
 		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCMULQ_F))
+	 VCMUL))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmul.f%#<V_sz_elem>	%q0, %q1, %q2, #0"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmulq_rot180_f])
-;;
-(define_insn "mve_vcmulq_rot180_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCMULQ_ROT180_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmul.f%#<V_sz_elem>	%q0, %q1, %q2, #180"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmulq_rot270_f])
-;;
-(define_insn "mve_vcmulq_rot270_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCMULQ_ROT270_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmul.f%#<V_sz_elem>	%q0, %q1, %q2, #270"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmulq_rot90_f])
-;;
-(define_insn "mve_vcmulq_rot90_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "<earlyclobber_32>")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VCMULQ_ROT90_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmul.f%#<V_sz_elem>	%q0, %q1, %q2, #90"
+  "vcmul.f%#<V_sz_elem>	%q0, %q1, %q2, #<rot>"
   [(set_attr "type" "mve_move")
 ])
 
@@ -4139,66 +4073,20 @@
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 ;;
-;; [vcmlaq_f])
+;; [vcmlaq, vcmlaq_rot90, vcmlaq_rot180, vcmlaq_rot270])
 ;;
-(define_insn "mve_vcmlaq_f<mode>"
+(define_insn "mve_vcmlaq<mve_rot><mode>"
   [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")]
-	 VCMLAQ_F))
+   (set (match_operand:MVE_0 0 "s_register_operand" "=w,w")
+	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0,Dz")
+		       (match_operand:MVE_0 2 "s_register_operand" "w,w")
+		       (match_operand:MVE_0 3 "s_register_operand" "w,w")]
+	 VCMLA))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #0"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmlaq_rot180_f])
-;;
-(define_insn "mve_vcmlaq_rot180_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")]
-	 VCMLAQ_ROT180_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #180"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmlaq_rot270_f])
-;;
-(define_insn "mve_vcmlaq_rot270_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")]
-	 VCMLAQ_ROT270_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #270"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmlaq_rot90_f])
-;;
-(define_insn "mve_vcmlaq_rot90_f<mode>"
-  [
-   (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w")]
-	 VCMLAQ_ROT90_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #90"
+  "@
+   vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>
+   vcmul.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>"
   [(set_attr "type" "mve_move")
 ])
 

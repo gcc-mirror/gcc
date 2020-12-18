@@ -102,7 +102,7 @@ package System is
    --  (Priority'First + Priority'Last) / 2
 
    --  However, the default priority given by the OS is not the same thing as
-   --  the Ada value Default_Prioirity (previous examples include VxWorks).
+   --  the Ada value Default_Priority (previous examples include VxWorks).
    --  Therefore, we follow a model based on the full range of LynxOS-178
    --  priorities.
 
@@ -140,8 +140,6 @@ private
    Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
-   Fractional_Fixed_Ops      : constant Boolean := False;
-   Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    Preallocated_Stacks       : constant Boolean := False;

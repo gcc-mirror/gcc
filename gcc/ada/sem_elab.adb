@@ -3744,7 +3744,7 @@ package body Sem_Elab is
 
       Set_Is_Dispatching_Call
         (Marker,
-         Nkind (N) in N_Function_Call | N_Procedure_Call_Statement
+         Nkind (N) in N_Subprogram_Call
            and then Present (Controlling_Argument (N)));
 
       Set_Is_Elaboration_Checks_OK_Node
@@ -19368,7 +19368,7 @@ package body Sem_Elab is
 
    function Is_Call_Of_Generic_Formal (N : Node_Id) return Boolean is
    begin
-      return Nkind (N) in N_Function_Call | N_Procedure_Call_Statement
+      return Nkind (N) in N_Subprogram_Call
 
         --  Always return False if debug flag -gnatd.G is set
 

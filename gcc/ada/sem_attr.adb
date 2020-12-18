@@ -227,9 +227,11 @@ package body Sem_Attr is
    procedure Analyze_Attribute (N : Node_Id) is
       Loc     : constant Source_Ptr   := Sloc (N);
       Aname   : constant Name_Id      := Attribute_Name (N);
-      P       : constant Node_Id      := Prefix (N);
       Exprs   : constant List_Id      := Expressions (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+      P_Old   : constant Node_Id      := Prefix (N);
+
+      P       : Node_Id := P_Old;
       E1      : Node_Id;
       E2      : Node_Id;
 
@@ -782,6 +784,13 @@ package body Sem_Attr is
             Par : Node_Id;
 
          begin
+            --  If N does not come from source, the reference is assumed to be
+            --  valid.
+
+            if not Comes_From_Source (N) then
+               return True;
+            end if;
+
             Par := Parent (N);
             while Present (Par)
               and then
@@ -1032,9 +1041,7 @@ package body Sem_Attr is
                --  expression comes from source, e.g. when a single component
                --  association in an aggregate has a box association.
 
-               elsif Ada_Version >= Ada_2005
-                 and then OK_Self_Reference
-               then
+               elsif Ada_Version >= Ada_2005 and then OK_Self_Reference then
                   null;
 
                --  OK if reference to current instance of a protected object
@@ -1831,7 +1838,7 @@ package body Sem_Attr is
 
          --  Case of an expression
 
-         Resolve (P);
+         Resolve (P_Old);
 
          if Is_Access_Type (P_Type) then
 
@@ -1847,12 +1854,12 @@ package body Sem_Attr is
                Freeze_Before (N, Designated_Type (P_Type));
             end if;
 
-            Rewrite (P,
-              Make_Explicit_Dereference (Sloc (P),
-                Prefix => Relocate_Node (P)));
+            Rewrite (P_Old,
+              Make_Explicit_Dereference (Sloc (P_Old),
+                Prefix => Relocate_Node (P_Old)));
 
-            Analyze_And_Resolve (P);
-            P_Type := Etype (P);
+            Analyze_And_Resolve (P_Old);
+            P_Type := Etype (P_Old);
 
             if P_Type = Any_Type then
                raise Bad_Attribute;
@@ -3097,6 +3104,15 @@ package body Sem_Attr is
          end if;
       end if;
 
+      --  If the prefix was rewritten as a raise node, then rewrite N as a
+      --  raise node, to avoid creating inconsistent trees. We still need to
+      --  perform legality checks on the original tree.
+
+      if Nkind (P) in N_Raise_xxx_Error then
+         Rewrite (N, Relocate_Node (P));
+         P := Original_Node (P_Old);
+      end if;
+
       --  Remaining processing depends on attribute
 
       case Attr_Id is
@@ -3282,7 +3298,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Object_Reference (P) then
-            Error_Attr_P ("prefix for % attribute must be object");
+            Error_Attr_P ("prefix of % attribute must be object");
 
          --  What about the access object cases ???
 
@@ -3693,7 +3709,7 @@ package body Sem_Attr is
                      null;
                   else
                      Error_Attr
-                       ("Attribute % must apply to entry of current task", N);
+                       ("attribute % must apply to entry of current task", N);
                   end if;
                end if;
 
@@ -3705,7 +3721,7 @@ package body Sem_Attr is
                                       | E_Entry_Family
                                       | E_Loop
             then
-               Error_Attr ("Attribute % cannot appear in inner unit", N);
+               Error_Attr ("attribute % cannot appear in inner unit", N);
 
             elsif Ekind (Scope (Ent)) = E_Protected_Type
               and then not Has_Completion (Scope (Ent))
@@ -5662,7 +5678,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type$", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
@@ -5671,7 +5687,7 @@ package body Sem_Attr is
                 N_Iterated_Component_Association
             then
                Error_Msg_N
-                 ("Prefix of reduce must be an iterated component", N);
+                 ("prefix of Reduce must be an iterated component", N);
             end if;
 
             Analyze (E1);
@@ -6244,7 +6260,7 @@ package body Sem_Attr is
          then
             Error_Attr_P
               ("% attribute can only be applied to objects " &
-               "of class - wide type");
+               "of class-wide type");
          end if;
 
          --  The prefix cannot be an incomplete type. However, references to
@@ -6729,7 +6745,7 @@ package body Sem_Attr is
 
                   if Nkind (Expr) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Expr);
+                       ("OTHERS choice not allowed in attribute %", Expr);
 
                   --  Otherwise analyze and resolve all indexes
 
@@ -6776,7 +6792,7 @@ package body Sem_Attr is
 
                   if Nkind (Index) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Index);
+                       ("OTHERS choice not allowed in attribute %", Index);
 
                   --  The index denotes a range of elements
 
@@ -6951,7 +6967,7 @@ package body Sem_Attr is
 
                      elsif Nkind (Comp) = N_Others_Choice then
                         Error_Attr
-                          ("others choice not allowed in attribute %", Comp);
+                          ("OTHERS choice not allowed in attribute %", Comp);
 
                      --  The name of a record component cannot appear in any
                      --  other form.

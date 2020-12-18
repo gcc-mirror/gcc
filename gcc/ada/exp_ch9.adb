@@ -7161,8 +7161,7 @@ package body Exp_Ch9 is
          if Ada_Version >= Ada_2005
            and then
              (No (Original_Node (Ecall))
-               or else Nkind (Original_Node (Ecall)) not in
-                         N_Delay_Relative_Statement | N_Delay_Until_Statement)
+               or else Nkind (Original_Node (Ecall)) not in N_Delay_Statement)
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 

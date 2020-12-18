@@ -355,13 +355,13 @@ package body Ch12 is
          Scan;  --  past OTHERS
 
          if Token /= Tok_Arrow then
-            Error_Msg_BC  ("expect arrow after others");
+            Error_Msg_BC  ("expect `='>` after OTHERS");
          else
             Scan;  --  past arrow
          end if;
 
          if Token /= Tok_Box then
-            Error_Msg_BC ("expect Box after arrow");
+            Error_Msg_BC ("expect `'<'>` after `='>`");
          else
             Scan;  --  past box
          end if;
@@ -423,12 +423,12 @@ package body Ch12 is
 
    procedure P_Formal_Object_Declarations (Decls : List_Id) is
       Decl_Node        : Node_Id;
-      Ident            : Nat;
+      Ident            : Pos;
       Not_Null_Present : Boolean := False;
-      Num_Idents       : Nat;
+      Num_Idents       : Pos;
       Scan_State       : Saved_Scan_State;
 
-      Idents : array (Int range 1 .. 4096) of Entity_Id;
+      Idents : array (Pos range 1 .. 4096) of Entity_Id;
       --  This array holds the list of defining identifiers. The upper bound
       --  of 4096 is intended to be essentially infinite, and we do not even
       --  bother to check for it being exceeded.
@@ -949,20 +949,21 @@ package body Ch12 is
 
       if Token = Tok_With then
 
-         if Ada_Version >= Ada_2020 and not Next_Token_Is (Tok_Private) then
-
+         if Next_Token_Is (Tok_Private) then
+            Scan; -- past WITH
+            Set_Private_Present (Def_Node, True);
+            T_Private;
+         else
             --  Formal type has aspect specifications, parsed later.
             --  Otherwise this is a formal derived type. Note that it may
             --  also include later aspect specifications, as in:
 
-            --    type DT is new T with private with atomic;
+            --    type DT is new T with private with Atomic;
+
+            Error_Msg_Ada_2020_Feature
+              ("formal type with aspect specification", Token_Ptr);
 
             return Def_Node;
-
-         else
-            Scan; -- past WITH
-            Set_Private_Present (Def_Node, True);
-            T_Private;
          end if;
 
       elsif Token = Tok_Tagged then

@@ -17367,8 +17367,6 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
   return word_mode;
 }
 
-static HOST_WIDE_INT aarch64_estimated_poly_value (poly_int64);
-
 /* Compare an SVE mode SVE_M and an Advanced SIMD mode ASIMD_M
    and return whether the SVE mode should be preferred over the
    Advanced SIMD one in aarch64_autovectorize_vector_modes.  */
@@ -17401,8 +17399,8 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
     return maybe_gt (nunits_sve, nunits_asimd);
 
   /* Otherwise estimate the runtime width of the modes involved.  */
-  HOST_WIDE_INT est_sve = aarch64_estimated_poly_value (nunits_sve);
-  HOST_WIDE_INT est_asimd = aarch64_estimated_poly_value (nunits_asimd);
+  HOST_WIDE_INT est_sve = estimated_poly_value (nunits_sve);
+  HOST_WIDE_INT est_asimd = estimated_poly_value (nunits_asimd);
 
   /* Preferring SVE means picking it first unless the Advanced SIMD mode
      is clearly wider.  */
@@ -23195,19 +23193,38 @@ aarch64_speculation_safe_value (machine_mode mode,
 
 /* Implement TARGET_ESTIMATED_POLY_VALUE.
    Look into the tuning structure for an estimate.
-   VAL.coeffs[1] is multiplied by the number of VQ chunks over the initial
-   Advanced SIMD 128 bits.  */
+   KIND specifies the type of requested estimate: min, max or likely.
+   For cores with a known SVE width all three estimates are the same.
+   For generic SVE tuning we want to distinguish the maximum estimate from
+   the minimum and likely ones.
+   The likely estimate is the same as the minimum in that case to give a
+   conservative behavior of auto-vectorizing with SVE when it is a win
+   even for 128-bit SVE.
+   When SVE width information is available VAL.coeffs[1] is multiplied by
+   the number of VQ chunks over the initial Advanced SIMD 128 bits.  */
 
 static HOST_WIDE_INT
-aarch64_estimated_poly_value (poly_int64 val)
+aarch64_estimated_poly_value (poly_int64 val,
+			      poly_value_estimate_kind kind
+				= POLY_VALUE_LIKELY)
 {
   enum aarch64_sve_vector_bits_enum width_source
     = aarch64_tune_params.sve_width;
 
-  /* If we still don't have an estimate, use the default.  */
+  /* If there is no core-specific information then the minimum and likely
+     values are based on 128-bit vectors and the maximum is based on
+     the architectural maximum of 2048 bits.  */
   if (width_source == SVE_SCALABLE)
-    return default_estimated_poly_value (val);
+    switch (kind)
+      {
+      case POLY_VALUE_MIN:
+      case POLY_VALUE_LIKELY:
+	return val.coeffs[0];
+      case POLY_VALUE_MAX:
+	  return val.coeffs[0] + val.coeffs[1] * 15;
+      }
 
+  /* If the core provides width information, use that.  */
   HOST_WIDE_INT over_128 = width_source - 128;
   return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
 }

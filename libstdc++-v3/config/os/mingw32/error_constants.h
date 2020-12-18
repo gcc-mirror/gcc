@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 //    network_reset = 				ENETRESET,
 //    network_unreachable = 			ENETUNREACH,
 //    no_buffer_space = 			ENOBUFS,
-#ifdef _GLIBCXX_HAVE_ECHILD
+#ifdef ECHILD
       no_child_process = 			ECHILD,
 #endif
 //    no_link = 				ENOLINK,
@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 //    no_message_available = 			ENODATA,
 //    no_message = 				ENOMSG,
 //    no_protocol_option = 			ENOPROTOOPT,
-#ifdef _GLIBCXX_HAVE_ENOSPC
+#ifdef ENOSPC
       no_space_on_device = 			ENOSPC,
 #endif
 //    no_stream_resources = 			ENOSR,
@@ -99,16 +99,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 //    not_a_stream = 				ENOSTR,
 //    not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
-#ifdef _GLIBCXX_HAVE_ENOTSUP
+#ifdef ENOTSUP
       not_supported = 				ENOTSUP,
 #endif
 //    operation_canceled = 			ECANCELED,
 //    operation_in_progress = 			EINPROGRESS,
-#ifdef _GLIBCXX_HAVE_EPERM
+#ifdef EPERM
       operation_not_permitted = 		EPERM,
 #endif
 //    operation_not_supported = 		EOPNOTSUPP,
-#ifdef _GLIBCXX_HAVE_EWOULDBLOCK
+#ifdef EWOULDBLOCK
       operation_would_block = 			EWOULDBLOCK,
 #endif
 //    owner_dead = 				EOWNERDEAD,
@@ -122,14 +122,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 //    state_not_recoverable = 			ENOTRECOVERABLE,
 //    stream_timeout = 				ETIME,
 //    text_file_busy = 				ETXTBSY,
-#ifdef _GLIBCXX_HAVE_ETIMEDOUT
+#ifdef ETIMEDOUT
       timed_out = 				ETIMEDOUT,
 #endif
       too_many_files_open_in_system = 		ENFILE,
       too_many_files_open = 			EMFILE,
       too_many_links = 				EMLINK
 //    too_many_symbolic_link_levels = 		ELOOP,
-#ifdef _GLIBCXX_HAVE_EOVERFLOW
+#ifdef EOVERFLOW
 	,
       value_too_large = 			EOVERFLOW
 #endif

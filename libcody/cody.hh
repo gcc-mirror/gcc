@@ -5,6 +5,9 @@
 #ifndef CODY_HH
 #define CODY_HH 1
 
+// If the user specifies this as non-zero, it must be what we expect,
+// generally only good for requesting no networking
+#if !defined (CODY_NETWORKING)
 // Have a known-good list of networking systems
 #if defined (__unix__) || defined (__MACH__)
 #define CODY_NETWORKING 1
@@ -14,6 +17,7 @@
 #if 0  // For testing
 #undef CODY_NETWORKING
 #define CODY_NETWORKING 0
+#endif
 #endif
 
 // C++

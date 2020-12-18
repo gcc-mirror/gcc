@@ -211,6 +211,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.28");
       known_versions.push_back("GLIBCXX_3.4.29");
       known_versions.push_back("GLIBCXX_LDBL_3.4.29");
+      known_versions.push_back("GLIBCXX_IEEE128_3.4.29");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_LDBL_1.3");
       known_versions.push_back("CXXABI_1.3.1");
@@ -226,6 +227,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.11");
       known_versions.push_back("CXXABI_1.3.12");
       known_versions.push_back("CXXABI_1.3.13");
+      known_versions.push_back("CXXABI_IEEE128_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");
     }
@@ -244,9 +246,11 @@ check_version(symbol& test, bool added)
 
       // Check that added symbols are added in the latest pre-release version.
       bool latestp = (test.version_name == "GLIBCXX_3.4.29"
-	  // XXX remove next line when GLIBCXX_3.4.30 is added and baselines
-	  // have been regenerated to include GLIBCXX_LDBL_3.4.29 symbols:
+	  // XXX remove next 3 lines when baselines have been regenerated
+	  // to include {IEEE128,LDBL} symbols:
 		     || test.version_name == "GLIBCXX_LDBL_3.4.29"
+		     || test.version_name == "GLIBCXX_IEEE128_3.4.29"
+		     || test.version_name == "CXXABI_IEEE128_1.3.13"
 		     || test.version_name == "CXXABI_1.3.13"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
@@ -260,7 +264,17 @@ check_version(symbol& test, bool added)
 	  && test.demangled_name.find("std::__cxx11::") != 0)
 	{
 	  if (test.version_name.find("_LDBL_") == std::string::npos
-	      && test.version_name.find("_FLOAT128") == std::string::npos)
+	      && test.version_name.find("_FLOAT128") == std::string::npos
+	      && test.version_name.find("_IEEE128") == std::string::npos)
+	    test.version_status = symbol::incompatible;
+	}
+
+      // Check that IEEE128 long double compatibility symbols demangled as
+      // __ieee128 are put into some _LDBL_IEEE version name.
+      // XXX is this right? might not want *everything* for __ieee128 in here.
+      if (added && test.demangled_name.find("__ieee128") != std::string::npos)
+	{
+	  if (test.version_name.find("_IEEE128") == std::string::npos)
 	    test.version_status = symbol::incompatible;
 	}
 

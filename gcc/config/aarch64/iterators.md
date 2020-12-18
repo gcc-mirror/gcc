@@ -2598,6 +2598,10 @@
 				    UNSPEC_SQRDCMLAH180
 				    UNSPEC_SQRDCMLAH270])
 
+;; Same as SVE2_INT_CADD but exclude the saturating instructions
+(define_int_iterator SVE2_INT_CADD_OP [UNSPEC_CADD90
+				       UNSPEC_CADD270])
+
 (define_int_iterator SVE2_INT_CDOT [UNSPEC_CDOT
 				    UNSPEC_CDOT90
 				    UNSPEC_CDOT180

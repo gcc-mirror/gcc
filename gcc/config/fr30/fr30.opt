@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 msmall-model
-Target Report Mask(SMALL_MODEL)
+Target Mask(SMALL_MODEL)
 Assume small address space.
 
 mno-lsim

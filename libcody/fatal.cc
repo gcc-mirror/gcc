@@ -30,7 +30,8 @@ void (HCF) (char const *msg
 #endif
 	  ) noexcept
 { // HCF - you goofed!
-  __asm__ volatile ("nop");  // HCF - you goofed!
+  // A useful place for a breakpoint to land.
+  //__asm__ volatile ("nop");  // HCF - you goofed!
 
 #if !NMS_CHECKING
   constexpr Location loc (nullptr, 0);

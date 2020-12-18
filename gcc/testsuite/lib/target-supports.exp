@@ -10840,7 +10840,7 @@ proc check_effective_target_R_flag_in_section { } {
 
 	set f [open $src "w"]
 	puts $f "#include \"../../auto-host.h\""
-	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0"
+	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0 || HAVE_INITFINI_ARRAY_SUPPORT == 0"
 	puts $f "# error Assembler does not support 'R' flag in .section directive."
 	puts $f "#endif"
 	close $f

@@ -40,7 +40,7 @@ generic
 
    Precision_Limit : Uns;
 
-   Floating : Boolean;
+   Round : Boolean;
 
 package System.Value_R is
    pragma Preelaborate;

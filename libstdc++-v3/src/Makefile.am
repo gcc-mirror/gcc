@@ -71,6 +71,20 @@ else
 ldbl_compat_sources =
 endif
 
+if GLIBCXX_LDBL_ALT128_COMPAT
+if ENABLE_DUAL_ABI
+ldbl_alt128_compat_cxx11_sources = \
+	compatibility-ldbl-alt128-cxx11.cc
+else
+ldbl_alt128_compat_cxx11_sources =
+endif
+ldbl_alt128_compat_sources = \
+	compatibility-ldbl-alt128.cc \
+	${ldbl_alt128_compat_cxx11_sources}
+else
+ldbl_alt128_compat_sources =
+endif
+
 
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
@@ -87,7 +101,8 @@ cxx11_sources = \
 	compatibility-atomic-c++0x.cc \
 	compatibility-thread-c++0x.cc \
 	compatibility-chrono.cc \
-	compatibility-condvar.cc
+	compatibility-condvar.cc \
+	${ldbl_alt128_compat_sources}
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 
@@ -113,12 +128,36 @@ libstdc___la_LDFLAGS = \
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
-# pass -mlong-double-64.
+# pass -mlong-double-64, and not use -mabi={ieee,ibm}longdouble.
 if GLIBCXX_LDBL_COMPAT
+if GLIBCXX_LDBL_ALT128_COMPAT
+LTCXXCOMPILE64 = \
+  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(LTCXXCOMPILE))
+CXXCOMPILE64 = \
+  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(CXXCOMPILE))
+else
+LTCXXCOMPILE64 = $(LTCXXCOMPILE)
+CXXCOMPILE64 = $(CXXCOMPILE)
+endif
 compatibility-ldbl.lo: compatibility-ldbl.cc
-	$(LTCXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+	$(LTCXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
 compatibility-ldbl.o: compatibility-ldbl.cc
-	$(CXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+	$(CXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+endif
+
+# Use special rules for compatibility-ldbl-alt128.cc compilation, as we need to
+# ensure it is compiled with the correct flag.
+if GLIBCXX_LDBL_ALT128_COMPAT
+compatibility-ldbl-alt128.lo: compatibility-ldbl-alt128.cc
+	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+compatibility-ldbl-alt128.o: compatibility-ldbl-alt128.cc
+	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+if ENABLE_DUAL_ABI
+compatibility-ldbl-alt128-cxx11.lo: compatibility-ldbl-alt128-cxx11.cc
+	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+compatibility-ldbl-alt128-cxx11.o: compatibility-ldbl-alt128-cxx11.cc
+	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+endif
 endif
 
 # Use special rules for C++11 files/objects.

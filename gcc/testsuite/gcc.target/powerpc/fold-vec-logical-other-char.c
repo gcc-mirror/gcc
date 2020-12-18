@@ -104,5 +104,5 @@ test6_nand (vector unsigned char x, vector unsigned char y)
   return *foo;
 }
 
-/* { dg-final { scan-assembler-times {\mxxlnand\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxxlnand\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mxxlorc\M} 6 } } */

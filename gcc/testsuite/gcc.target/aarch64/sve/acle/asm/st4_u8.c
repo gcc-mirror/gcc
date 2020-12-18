@@ -74,7 +74,7 @@ TEST_STORE (st4_u8_28, svuint8x4_t, uint8_t,
 /*
 ** st4_u8_32:
 **	[^{]*
-**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+\]
+**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+, x[0-9]+\]
 **	ret
 */
 TEST_STORE (st4_u8_32, svuint8x4_t, uint8_t,
@@ -135,7 +135,7 @@ TEST_STORE (st4_u8_m32, svuint8x4_t, uint8_t,
 /*
 ** st4_u8_m36:
 **	[^{]*
-**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+\]
+**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+, x[0-9]+\]
 **	ret
 */
 TEST_STORE (st4_u8_m36, svuint8x4_t, uint8_t,
@@ -205,7 +205,7 @@ TEST_STORE (st4_vnum_u8_28, svuint8x4_t, uint8_t,
 /*
 ** st4_vnum_u8_32:
 **	[^{]*
-**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+\]
+**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+, x[0-9]+\]
 **	ret
 */
 TEST_STORE (st4_vnum_u8_32, svuint8x4_t, uint8_t,
@@ -266,7 +266,7 @@ TEST_STORE (st4_vnum_u8_m32, svuint8x4_t, uint8_t,
 /*
 ** st4_vnum_u8_m36:
 **	[^{]*
-**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+\]
+**	st4b	{z0\.b - z3\.b}, p0, \[x[0-9]+, x[0-9]+\]
 **	ret
 */
 TEST_STORE (st4_vnum_u8_m36, svuint8x4_t, uint8_t,

@@ -57,7 +57,7 @@ is
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty        => Empty,
-                            Add_Unnamed  => Append_One);
+                            Add_Unnamed  => Append);
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
@@ -151,9 +151,9 @@ is
    procedure Append
      (Container : in out List;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1);
+      Count     : Count_Type);
 
-   procedure Append_One
+   procedure Append
      (Container : in out List;
       New_Item  : Element_Type);
 

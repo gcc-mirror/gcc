@@ -4538,7 +4538,7 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 					      Type::make_nil_type(), NULL))
     {
       go_error_at(this->val_->location(),
-		  "cannot switch on value whose type that may not be compared");
+		  "cannot switch on value whose type may not be compared");
       return Statement::make_error_statement(loc);
     }
 

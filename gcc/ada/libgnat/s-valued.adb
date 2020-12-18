@@ -38,7 +38,8 @@ package body System.Value_D is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Floating => False);
+   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Round => False);
+   --  We do not use the Extra digit for decimal fixed-point types
 
    function Integer_to_Decimal
      (Str    : String;
@@ -231,6 +232,7 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
+      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 
@@ -248,6 +250,7 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
+      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 

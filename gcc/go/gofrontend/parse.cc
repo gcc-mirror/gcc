@@ -2075,6 +2075,7 @@ Parse::create_dummy_global(Type* type, Expression* init,
   if (type == NULL && init == NULL)
     type = Type::lookup_bool_type();
   Variable* var = new Variable(type, init, true, false, false, location);
+  var->set_is_global_sink();
   static int count;
   char buf[30];
   snprintf(buf, sizeof buf, "_.%d", count);

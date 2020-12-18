@@ -38,6 +38,10 @@ generic
 
    type Uns is mod <>;
 
+   Maxpow : Positive;
+
+   Powten_Address : System.Address;
+
 package System.Val_Real is
    pragma Preelaborate;
 

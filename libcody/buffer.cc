@@ -224,7 +224,6 @@ int MessageBuffer::Lex (std::vector<std::string> &result)
 {
   result.clear ();
 
-  int err = ENOENT;
   if (IsAtEnd ())
     return ENOENT;
 

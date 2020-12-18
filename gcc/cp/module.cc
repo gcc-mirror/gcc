@@ -207,7 +207,6 @@ Classes used:
 
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
-
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -229,8 +228,14 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
+/* This TU doesn't need or want to see the networking.  */
+#define CODY_NETWORKING 0
 #include "mapper-client.h"
 
+#if 0 // 1 for testing no mmap
+#define MAPPED_READING 0
+#define MAPPED_WRITING 0
+#else
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */
 #define MAPPED_READING 1
@@ -245,11 +250,6 @@ Classes used:
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
 #endif
-#if 0 // for testing
-#undef MAPPED_READING
-#undef MAPPED_WRITING
-#define MAPPED_READING 0
-#define MAPPED_WRITING 0
 #endif
 
 #if !HOST_HAS_O_CLOEXEC
@@ -1656,7 +1656,7 @@ elf_in::read (data *data, unsigned pos, unsigned length)
 #if MAPPED_READING  
   data->buffer = hdr.buffer + pos;
 #else
-  if (::read (fd, data->buffer, data->size) != length)
+  if (::read (fd, data->buffer, data->size) != ssize_t (length))
     {
       set_error (errno);
       shrink (*data);
@@ -2048,7 +2048,7 @@ elf_out::write (const data &buffer)
     /* We should have been aligned during the first allocation.  */
     gcc_checking_assert (!(pos & (SECTION_ALIGN - 1)));
 #else
-  if (::write (fd, buffer.buffer, buffer.pos) != buffer.pos)
+  if (::write (fd, buffer.buffer, buffer.pos) != ssize_t (buffer.pos))
     {
       set_error (errno);
       return 0;
@@ -2063,7 +2063,7 @@ elf_out::write (const data &buffer)
       /* Align the section on disk, should help the necessary copies.
 	 fseeking to extend is non-portable.  */
       static char zero[SECTION_ALIGN];
-      if (::write (fd, &zero, padding) != padding)
+      if (::write (fd, &zero, padding) != ssize_t (padding))
 	set_error (errno);
 #endif
       pos += padding;
@@ -2718,7 +2718,7 @@ uintset<T>::hash::add (typename uintset<T>::hash::key_t key, T value)
 	{
 	  unsigned n = set->num * 2;
 	  size_t new_size = (offsetof (uintset, values)
-			     + sizeof (uintset::values) * n);
+			     + sizeof (uintset (0u).values) * n);
 	  uintset *new_set = new (::operator new (new_size)) uintset (set);
 	  delete set;
 	  set = new_set;
@@ -2743,7 +2743,7 @@ uintset<T>::hash::create (typename uintset<T>::hash::key_t key, unsigned num,
     p2alloc++;
 
   size_t new_size = (offsetof (uintset, values)
-		     + (sizeof (uintset::values) << p2alloc));
+		     + (sizeof (uintset (0u).values) << p2alloc));
   uintset *set = new (::operator new (new_size)) uintset (key);
   set->allocp2 = p2alloc;
   set->num = num;
@@ -3273,32 +3273,34 @@ public:
   };
 
 private:
-  vec<span> spans;
+  vec<span> *spans;
 
 public:
   loc_spans ()
+    /* Do not preallocate spans, as that causes
+       --enable-detailed-mem-stats problems.  */
+    : spans (nullptr)
   {
-    spans.create (20);
   }
   ~loc_spans ()
   {
-    spans.release ();
+    delete spans;
   }
 
 public:
   span &operator[] (unsigned ix)
   {
-    return spans[ix];
+    return (*spans)[ix];
   }
   unsigned length () const
   {
-    return spans.length ();
+    return spans->length ();
   }
 
 public:
   bool init_p () const
   {
-    return spans.length () != 0;
+    return spans != nullptr;
   }
   /* Initializer.  */
   void init (const line_maps *lmaps, const line_map_ordinary *map);
@@ -3321,7 +3323,7 @@ public:
 public:
   location_t main_start () const
   {
-    return spans[SPAN_MAIN].ordinary.first;
+    return (*spans)[SPAN_MAIN].ordinary.first;
   }
 
 public:
@@ -4151,7 +4153,7 @@ dumper::push (module_state *m)
       /* Create or extend the dump implementor.  */
       unsigned current = dumps ? dumps->stack.length () : 0;
       unsigned count = current ? current * 2 : EXPERIMENT (1, 20);
-      size_t alloc = (offsetof (impl, impl::stack)
+      size_t alloc = (offsetof (impl, stack)
 		      + impl::stack_t::embedded_size (count));
       dumps = XRESIZEVAR (impl, dumps, alloc);
       dumps->stack.embedded_init (count, current);
@@ -13656,7 +13658,8 @@ void
 loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
 {
   gcc_checking_assert (!init_p ());
-  spans.reserve (20);
+  spans = new vec<span> ();
+  spans->reserve (20);
 
   span interval;
   interval.ordinary.first = 0;
@@ -13668,10 +13671,10 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
     = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
   interval.macro.first = interval.macro.second;
   dump (dumper::LOCATION)
-    && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+    && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans->length (),
 	     interval.ordinary.first, interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
 
   /* A span for command line & forced headers.  */
   interval.ordinary.first = interval.ordinary.second;
@@ -13682,18 +13685,18 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
       interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
     }
   dump (dumper::LOCATION)
-    && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+    && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans->length (),
 	     interval.ordinary.first, interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
   
   /* Start an interval for the main file.  */
   interval.ordinary.first = interval.ordinary.second;
   interval.macro.second = interval.macro.first;
   dump (dumper::LOCATION)
-    && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans.length (),
+    && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans->length (),
 	     interval.ordinary.first, interval.macro.second);
-  spans.quick_push (interval);
+  spans->quick_push (interval);
 }
 
 /* Reopen the span, if we want the about-to-be-inserted set of maps to
@@ -13727,9 +13730,9 @@ loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
   interval.ordinary_delta = interval.macro_delta = 0;
   dump (dumper::LOCATION)
     && dump ("Opening span %u ordinary:[%u,... macro:...,%u)",
-	     spans.length (), interval.ordinary.first,
+	     spans->length (), interval.ordinary.first,
 	     interval.macro.second);
-  spans.safe_push (interval);
+  spans->safe_push (interval);
 }
 
 /* Close out the current linemap interval.  The last maps are within
@@ -13738,7 +13741,7 @@ loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
 void
 loc_spans::close ()
 {
-  span &interval = spans.last ();
+  span &interval = spans->last ();
 
   interval.ordinary.second
     = ((line_table->highest_location + (1 << line_table->default_range_bits))
@@ -13746,7 +13749,7 @@ loc_spans::close ()
   interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   dump (dumper::LOCATION)
     && dump ("Closing span %u ordinary:[%u,%u) macro:[%u,%u)",
-	     spans.length () - 1,
+	     spans->length () - 1,
 	     interval.ordinary.first,interval.ordinary.second,
 	     interval.macro.first, interval.macro.second);
 }
@@ -13757,12 +13760,12 @@ loc_spans::close ()
 const loc_spans::span *
 loc_spans::ordinary (location_t loc)
 {
-  unsigned len = spans.length ();
+  unsigned len = spans->length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const span &probe = spans[pos + half];
+      const span &probe = (*spans)[pos + half];
       if (loc < probe.ordinary.first)
 	len = half;
       else if (loc < probe.ordinary.second)
@@ -13782,12 +13785,12 @@ loc_spans::ordinary (location_t loc)
 const loc_spans::span *
 loc_spans::macro (location_t loc)
 {
-  unsigned len = spans.length ();
+  unsigned len = spans->length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const span &probe = spans[pos + half];
+      const span &probe = (*spans)[pos + half];
       if (loc >= probe.macro.second)
 	len = half;
       else if (loc >= probe.macro.first)

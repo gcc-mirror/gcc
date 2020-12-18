@@ -1181,6 +1181,12 @@ package body GNAT.Expect is
          Set_Up_Child_Communications
            (Descriptor, Pipe1, Pipe2, Pipe3, Command_With_Path.all,
             C_Arg_List'Address);
+
+         --  On Windows systems we need to release memory taken for Arg_List
+
+         for A of Arg_List loop
+            Free (A);
+         end loop;
       end if;
 
       Free (Command_With_Path);

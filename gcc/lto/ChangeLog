@@ -1,3 +1,7 @@
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* lang.opt: Remove usage of Report.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

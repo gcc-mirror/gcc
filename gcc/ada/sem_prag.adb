@@ -466,7 +466,7 @@ package body Sem_Prag is
             if Nkind (Case_Guard) = N_Others_Choice then
                if Others_Seen then
                   Error_Msg_N
-                    ("only one others choice allowed in contract cases",
+                    ("only one OTHERS choice allowed in contract cases",
                      Case_Guard);
                else
                   Others_Seen := True;
@@ -474,7 +474,7 @@ package body Sem_Prag is
 
             elsif Others_Seen then
                Error_Msg_N
-                 ("others must be the last choice in contract cases", N);
+                 ("OTHERS must be the last choice in contract cases", N);
             end if;
 
             --  Preanalyze the case guard and consequence
@@ -545,15 +545,30 @@ package body Sem_Prag is
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser or the analysis of the
-      --  pragma failed to produce an aggregate.
+      --  pragma failed to produce an aggregate, e.g. when the contract is
+      --  "null" or a "(null record)".
 
-      pragma Assert (Nkind (CCases) = N_Aggregate);
+      pragma Assert
+        (if Nkind (CCases) = N_Aggregate
+         then Null_Record_Present (CCases)
+           xor (Present (Component_Associations (CCases))
+                  or
+                Present (Expressions (CCases)))
+         else Nkind (CCases) = N_Null);
 
       --  Only CASE_GUARD => CONSEQUENCE clauses are allowed
 
-      if Present (Component_Associations (CCases))
+      if Nkind (CCases) = N_Aggregate
+        and then Present (Component_Associations (CCases))
         and then No (Expressions (CCases))
       then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (CCases) /= 0 then
+            Error_Msg -- CODEFIX
+              ("redundant parentheses", First_Sloc (CCases));
+         end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -8861,7 +8876,7 @@ package body Sem_Prag is
                Error_Pragma ("at least one parameter required for pragma%");
 
             elsif Ekind (Formal) /= E_Out_Parameter then
-               Error_Pragma ("first parameter must have mode out for pragma%");
+               Error_Pragma ("first parameter must have mode OUT for pragma%");
 
             else
                Set_Is_Valued_Procedure (Ent);
@@ -11747,7 +11762,7 @@ package body Sem_Prag is
                   if Nkind (Prop) = N_Others_Choice then
                      if Others_Seen then
                         SPARK_Msg_N
-                          ("only one others choice allowed in option External",
+                          ("only one OTHERS choice allowed in option External",
                            Prop);
                      else
                         Others_Seen := True;
@@ -11755,7 +11770,7 @@ package body Sem_Prag is
 
                   elsif Others_Seen then
                      SPARK_Msg_N
-                       ("others must be the last property in option External",
+                       ("OTHERS must be the last property in option External",
                         Prop);
 
                   --  The only remaining legal options are the four predefined
@@ -29170,15 +29185,30 @@ package body Sem_Prag is
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser of the analysis of the
-      --  pragma failed to produce an aggregate.
+      --  pragma failed to produce an aggregate, e.g. when the contract is
+      --  "null" or a "(null record)".
 
-      pragma Assert (Nkind (Variants) = N_Aggregate);
+      pragma Assert
+        (if Nkind (Variants) = N_Aggregate
+         then Null_Record_Present (Variants)
+           xor (Present (Component_Associations (Variants))
+                  or
+                Present (Expressions (Variants)))
+         else Nkind (Variants) = N_Null);
 
       --  Only "change_direction => discrete_expression" clauses are allowed
 
-      if Present (Component_Associations (Variants))
+      if Nkind (Variants) = N_Aggregate
+        and then Present (Component_Associations (Variants))
         and then No (Expressions (Variants))
       then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (Variants) /= 0 then
+            Error_Msg -- CODEFIX
+              ("redundant parentheses", First_Sloc (Variants));
+         end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -30513,11 +30543,11 @@ package body Sem_Prag is
 
          if From_Aspect_Specification (Prag) then
             Error_Msg_N
-              ("aspect % cannot apply to a stand alone expression function",
+              ("aspect % cannot apply to a standalone expression function",
                Prag);
          else
             Error_Msg_N
-              ("pragma % cannot apply to a stand alone expression function",
+              ("pragma % cannot apply to a standalone expression function",
                Prag);
          end if;
       end Expression_Function_Error;

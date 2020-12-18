@@ -591,6 +591,7 @@ ALOY
 DOXYGEN
 AR
 EXCEPTIONS
+PICFLAG
 CONFIG_FILES
 SUBDIRS
 configure_args
@@ -658,6 +659,7 @@ enable_maintainer_mode
 with_compiler
 with_bugurl
 enable_checking
+enable_host_shared
 enable_exceptions
 '
       ac_precious_vars='build_alias
@@ -1285,7 +1287,12 @@ Optional Features:
   --enable-maintainer-mode
                           enable maintainer mode. Add rules to rebuild
                           configurey bits
-  --enable-checking       enable run-time checking
+  --enable-checking[=LIST]
+                          enable expensive run-time checks. With LIST, enable
+                          only specific categories of checks. Categories are:
+                          yes,no,all,none,release. Flags are: misc,valgrind or
+                          other strings
+  --enable-host-shared    build host code as shared libraries
   --enable-exceptions     enable exceptions & rtti
 
 Optional Packages:
@@ -1823,6 +1830,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Nathan's Common Config -*- mode:autoconf -*-
 # Copyright (C) 2020 Nathan Sidwell, nathan@acm.org
 # License: Apache v2.0
+
+# Note: VAR+=... is not dashing, despite its looks
 
 
 
@@ -2574,7 +2583,7 @@ if ac_fn_cxx_try_compile "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   CXX_ORIG="$CXX"
-CXX+=" -std=c++11"
+CXX="$CXX -std=c++11"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -2625,20 +2634,20 @@ unset CXX_ORIG
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 if test "$tools" && test -d "$tools/include" ; then
-  CXX+=" -I$tools/include"
+  CXX="$CXX -I$tools/include"
 fi
 if test "$tools" && test -d "$tools/lib" ; then
   toollib="$tools/lib"
   if os=$(CXX -print-multi-os-directory 2>/dev/null) ; then
-    toollib+="/${os}"
+    toollib="$toollib/${os}"
   fi
-  LDFLAGS+=" -L $toollib"
+  LDFLAGS="$LDFLAGS -L $toollib"
   unset toollib
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking adding -Wl,--no-undefined to linker" >&5
 $as_echo_n "checking adding -Wl,--no-undefined to linker... " >&6; }
 ORIG_LDFLAGS="$LDFLAGS"
-LDFLAGS+=" -Wl,--no-undefined"
+LDFLAGS="$LDFLAGS -Wl,--no-undefined"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -2670,8 +2679,8 @@ for generated in config.h.in configure ; do
 done
 for dir in . $SUBDIRS
 do
-  CONFIG_FILES+=" $dir/Makesub"
-  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES+=" $dir/tests/Makesub"
+  CONFIG_FILES="$CONFIG_FILES $dir/Makesub"
+  test -f ${srcdir}/$dir/tests/Makesub.in && CONFIG_FILES="$CONFIG_FILES $dir/tests/Makesub"
 done
 ac_config_files="$ac_config_files $CONFIG_FILES"
 
@@ -2679,6 +2688,14 @@ configure_args=$ac_configure_args
 
 
 
+
+# Enable expensive internal checks
+is_release=
+if test -d $srcdir/../gcc \
+   && test -f $srcdir/../gcc/DEV-PHASE \
+   && test x"`cat $srcdir/../gcc/DEV-PHASE`" != xexperimental; then
+  is_release=yes
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking bugurl" >&5
 $as_echo_n "checking bugurl... " >&6; }
@@ -2706,30 +2723,48 @@ _ACEOF
 
 # Check whether --enable-checking was given.
 if test "${enable_checking+set}" = set; then :
-  enableval=$enable_checking;
+  enableval=$enable_checking; ac_checking_flags="${enableval}"
 else
-  enable_checking="yes"
+
+# Determine the default checks.
+if test x$is_release = x ; then
+  ac_checking_flags=yes
+else
+  ac_checking_flags=release
+fi
 fi
 
-case $enable_checking in #(
-  yes|all|yes,*) :
-    nms_checking=yes ;; #(
-  no|none|release) :
-    nms_checking= ;; #(
-  *) :
-    as_fn_error $? "unknown check \"$enable_checking\"" "$LINENO" 5 ;;
-esac
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking checking" >&5
-$as_echo_n "checking checking... " >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${nms_checking:-no}" >&5
-$as_echo "${nms_checking:-no}" >&6; }
-if test "$nms_checking" = yes ; then
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in release $ac_checking_flags
+do
+	case $check in
+	yes|all|misc) ac_checking=1 ;;
+	no|none|release) ac_checking= ;;
+	# accept
+	*) ;;
+	esac
+done
+IFS="$ac_save_IFS"
 
-cat >>confdefs.h <<_ACEOF
-#define NMS_CHECKING 0${nms_checking:+1}
-_ACEOF
+if test x$ac_checking != x ; then
+
+$as_echo "#define NMS_CHECKING 1" >>confdefs.h
+
+else
+  $as_echo "#define NMS_CHECKING 0" >>confdefs.h
 
 fi
+
+# Enable --enable-host-shared.
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PICFLAG=-fPIC
+else
+  PICFLAG=
+fi
+
+
+
 # Check whether --enable-exceptions was given.
 if test "${enable_exceptions+set}" = set; then :
   enableval=$enable_exceptions;

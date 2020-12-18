@@ -348,11 +348,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* But not for 0 / 0 so that we can get the proper warnings and errors.  */
   (if (!integer_zerop (@1))
    @0))
-  /* X / -1 is -X.  */
+ /* X / -1 is -X.  */
  (simplify
-   (div @0 integer_minus_onep@1)
-   (if (!TYPE_UNSIGNED (type))
-    (negate @0)))
+  (div @0 integer_minus_onep@1)
+  (if (!TYPE_UNSIGNED (type))
+   (negate @0)))
+ /* X / bool_range_Y is X.  */ 
+ (simplify
+  (div @0 SSA_NAME@1)
+  (if (INTEGRAL_TYPE_P (type) && ssa_name_has_boolean_range (@1))
+   @0))
  /* X / X is one.  */
  (simplify
   (div @0 @0)

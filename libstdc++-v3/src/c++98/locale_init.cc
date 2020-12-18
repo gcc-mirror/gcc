@@ -57,8 +57,16 @@ _GLIBCXX_LOC_ID(_ZNSt8messagesIwE2idE);
 
 namespace
 {
-  const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
-    + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
+  const int num_facets = (
+      _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_CXX11_FACETS
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+      + _GLIBCXX_NUM_LBDL_ALT128_FACETS
+#endif
+      )
+#ifdef _GLIBCXX_USE_WCHAR_T
+    * 2
+#endif
+    + _GLIBCXX_NUM_UNICODE_FACETS;
 
   __gnu_cxx::__mutex&
   get_locale_mutex()
@@ -559,6 +567,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif
 
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    _M_init_extra_ldbl128(true);
+#endif
+
 #if _GLIBCXX_USE_DUAL_ABI
     facet* extra[] = { __npc, __mpcf, __mpct
 # ifdef  _GLIBCXX_USE_WCHAR_T
@@ -566,6 +578,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # endif
     };
 
+    // This call must be after creating all facets, as it sets caches.
     _M_init_extra(extra);
 #endif
 

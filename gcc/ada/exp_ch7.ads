@@ -175,13 +175,6 @@ package Exp_Ch7 is
    --  only the components (if any) are adjusted. Return Empty if Adjust or
    --  Deep_Adjust is not available, possibly due to previous errors.
 
-   function Make_Detach_Call (Obj_Ref : Node_Id) return Node_Id;
-   --  Create a call to unhook an object from an arbitrary list. Obj_Ref is the
-   --  object. Generate the following:
-   --
-   --    Ada.Finalization.Heap_Management.Detach
-   --      (System.Finalization_Root.Root_Controlled_Ptr (Obj_Ref));
-
    function Make_Final_Call
      (Obj_Ref   : Node_Id;
       Typ       : Entity_Id;

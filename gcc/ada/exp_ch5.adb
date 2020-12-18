@@ -1623,14 +1623,27 @@ package body Exp_Ch5 is
             CI : constant List_Id := Component_Items (CL);
             VP : constant Node_Id := Variant_Part (CL);
 
-            Alts   : List_Id;
-            DC     : Node_Id;
-            DCH    : List_Id;
-            Expr   : Node_Id;
-            Result : List_Id;
-            V      : Node_Id;
+            Constrained_Typ : Entity_Id;
+            Alts            : List_Id;
+            DC              : Node_Id;
+            DCH             : List_Id;
+            Expr            : Node_Id;
+            Result          : List_Id;
+            V               : Node_Id;
 
          begin
+            --  Try to find a constrained type to extract discriminant values
+            --  from, so that the case statement built below gets an
+            --  opportunity to be folded by Expand_N_Case_Statement.
+
+            if U_U or else Is_Constrained (Etype (Rhs)) then
+               Constrained_Typ := Etype (Rhs);
+            elsif Is_Constrained (Etype (Expression (N))) then
+               Constrained_Typ := Etype (Expression (N));
+            else
+               Constrained_Typ := Empty;
+            end if;
+
             Result := Make_Field_Assigns (CI);
 
             if Present (VP) then
@@ -1652,17 +1665,12 @@ package body Exp_Ch5 is
                   Next_Non_Pragma (V);
                end loop;
 
-               --  If we have an Unchecked_Union, use the value of the inferred
-               --  discriminant of the variant part expression as the switch
-               --  for the case statement. The case statement may later be
-               --  folded.
-
-               if U_U then
+               if Present (Constrained_Typ) then
                   Expr :=
                     New_Copy (Get_Discriminant_Value (
                       Entity (Name (VP)),
-                      Etype (Rhs),
-                      Discriminant_Constraint (Etype (Rhs))));
+                      Constrained_Typ,
+                      Discriminant_Constraint (Constrained_Typ)));
                else
                   Expr :=
                     Make_Selected_Component (Loc,
@@ -1786,9 +1794,10 @@ package body Exp_Ch5 is
       --  Start of processing for Expand_Assign_Record
 
       begin
-         --  Note that we use the base types for this processing. This results
-         --  in some extra work in the constrained case, but the change of
-         --  representation case is so unusual that it is not worth the effort.
+         --  Note that we need to use the base types for this processing in
+         --  order to retrieve the Type_Definition. In the constrained case,
+         --  we filter out the non relevant fields in
+         --  Make_Component_List_Assign.
 
          --  First copy the discriminants. This is done unconditionally. It
          --  is required in the unconstrained left side case, and also in the
@@ -1824,7 +1833,7 @@ package body Exp_Ch5 is
                      CF := F;
                   end if;
 
-                  if Is_Unchecked_Union (Base_Type (R_Typ)) then
+                  if Is_Unchecked_Union (R_Typ) then
 
                      --  Within an initialization procedure this is the
                      --  assignment to an unchecked union component, in which
@@ -1916,8 +1925,8 @@ package body Exp_Ch5 is
                Insert_Actions (N,
                  Make_Component_List_Assign (Component_List (RDef), True));
             else
-               Insert_Actions
-                 (N, Make_Component_List_Assign (Component_List (RDef)));
+               Insert_Actions (N,
+                 Make_Component_List_Assign (Component_List (RDef)));
             end if;
 
             Rewrite (N, Make_Null_Statement (Loc));
@@ -4681,6 +4690,16 @@ package body Exp_Ch5 is
             New_Id  : Entity_Id;
 
          begin
+            --  If Discrete_Subtype_Definition has been rewritten as an
+            --  N_Raise_xxx_Error, rewrite the whole loop as a raise node to
+            --  avoid confusing the code generator down the line.
+
+            if Nkind (Discrete_Subtype_Definition (LPS)) in N_Raise_xxx_Error
+            then
+               Rewrite (N, Discrete_Subtype_Definition (LPS));
+               return;
+            end if;
+
             if Present (Iterator_Filter (LPS)) then
                pragma Assert (Ada_Version >= Ada_2020);
                Set_Statements (N,

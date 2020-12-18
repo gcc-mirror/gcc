@@ -11896,6 +11896,9 @@ start:
 	  if (!t)
 	    break;
 
+	  if (code->expr1->ts.type == BT_CLASS)
+	   gfc_find_vtab (&code->expr2->ts);
+
 	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
 	     the LHS.  */
 	  if (code->expr1->expr_type == EXPR_FUNCTION
@@ -16168,6 +16171,13 @@ check_data_variable (gfc_data_variable *var, locus *where)
 			 "initial-data-target", where);
 	      return false;
 	    }
+	}
+
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.allocatable)
+	{
+	  gfc_error ("DATA element %qs at %L cannot have the ALLOCATABLE "
+		     "attribute", ref->u.c.component->name, &e->where);
+	  return false;
 	}
     }
 

@@ -44,6 +44,14 @@
 # include <xlocale.h>
 #endif
 
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+#ifndef __LONG_DOUBLE_IBM128__
+#error "floating_from_chars.cc must be compiled with -mabi=ibmlongdouble"
+#endif
+// strtold for __ieee128
+extern "C" __ieee128 __strtoieee128(const char*, char**);
+#endif
+
 #if _GLIBCXX_HAVE_USELOCALE
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -316,6 +324,10 @@ namespace
 	  tmpval = std::strtod(str, &endptr);
 	else if constexpr (is_same_v<T, long double>)
 	  tmpval = std::strtold(str, &endptr);
+# ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+	else if constexpr (is_same_v<T, __ieee128>)
+	  tmpval = __strtoieee128(str, &endptr);
+# endif
 #else
 	tmpval = std::strtod(str, &endptr);
 #endif
@@ -332,7 +344,7 @@ namespace
 	const ptrdiff_t n = endptr - str;
 	if (conv_errno == ERANGE) [[unlikely]]
 	  {
-	    if (isinf(tmpval)) // overflow
+	    if (__builtin_isinf(tmpval)) // overflow
 	      ec = errc::result_out_of_range;
 	    else // underflow (LWG 3081 wants to set value = tmpval here)
 	      ec = errc::result_out_of_range;
@@ -469,11 +481,35 @@ from_chars(const char* first, const char* last, long double& value,
 }
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
+// Make std::from_chars for 64-bit long double an alias for the overload
+// for double.
 extern "C" from_chars_result
 _ZSt10from_charsPKcS0_ReSt12chars_format(const char* first, const char* last,
 					 long double& value,
 					 chars_format fmt) noexcept
 __attribute__((alias ("_ZSt10from_charsPKcS0_RdSt12chars_format")));
+#endif
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+from_chars_result
+from_chars(const char* first, const char* last, __ieee128& value,
+	   chars_format fmt) noexcept
+{
+  buffer_resource mr;
+  pmr::string buf(&mr);
+  size_t len = 0;
+  errc ec = errc::invalid_argument;
+  __try
+    {
+      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
+	len = from_chars_impl(pat, value, ec);
+    }
+  __catch (const std::bad_alloc&)
+    {
+      fmt = chars_format{};
+    }
+  return make_result(first, len, fmt, ec);
+}
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

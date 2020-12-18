@@ -682,7 +682,7 @@ GLIBCXX_3.4 {
     _ZNSt12__basic_fileIcED*;
 
     # std::__convert_to_v
-    _ZSt14__convert_to_vI[^g]*;
+    _ZSt14__convert_to_vI[^gU]*;
 
     # __gnu_cxx::stdio_sync_filebuf
     _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
@@ -931,7 +931,7 @@ GLIBCXX_3.4 {
     _ZGVNSt8time_putI[cw]*;
     _ZGVNSt9money_getI[cw]*;
     _ZGVNSt9money_putI[cw]*;
-    _ZGVNSt1[^07]*;
+    _ZGVNSt1[^079]*;
     _ZGVNSt10moneypunctI[cw]Lb[01]*;
 
     # exception constructors taking std::string

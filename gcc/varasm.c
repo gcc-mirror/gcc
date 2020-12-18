@@ -281,7 +281,12 @@ get_noswitch_section (unsigned int flags, noswitch_section_callback callback)
 
 /* Return the named section structure associated with NAME.  Create
    a new section with the given fields if no such structure exists.
-   When NOT_EXISTING, then fail if the section already exists.  */
+   When NOT_EXISTING, then fail if the section already exists.  Return
+   the existing section if the SECTION_RETAIN bit doesn't match.  Set
+   the SECTION_WRITE | SECTION_RELRO bits on the the existing section
+   if one of the section flags is SECTION_WRITE | SECTION_RELRO and the
+   other has none of these flags in named sections and either the section
+   hasn't been declared yet or has been declared as writable.  */
 
 section *
 get_section (const char *name, unsigned int flags, tree decl,
@@ -292,7 +297,7 @@ get_section (const char *name, unsigned int flags, tree decl,
   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
 					    INSERT);
   flags |= SECTION_NAMED;
-  if (HAVE_GAS_SHF_GNU_RETAIN
+  if (SUPPORTS_SHF_GNU_RETAIN
       && decl != nullptr
       && DECL_P (decl)
       && DECL_PRESERVE_P (decl))
@@ -343,6 +348,11 @@ get_section (const char *name, unsigned int flags, tree decl,
 	      sect->common.flags |= (SECTION_WRITE | SECTION_RELRO);
 	      return sect;
 	    }
+	  /* If the SECTION_RETAIN bit doesn't match, return and switch
+	     to a new section later.  */
+	  if ((sect->common.flags & SECTION_RETAIN)
+	      != (flags & SECTION_RETAIN))
+	    return sect;
 	  /* Sanity check user variables for flag changes.  */
 	  if (sect->named.decl != NULL
 	      && DECL_P (sect->named.decl)
@@ -477,7 +487,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
-	  || (HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
+	  || (SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
@@ -1217,7 +1227,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
     vnode->get_constructor ();
 
   if (DECL_COMMON (decl)
-      && !(HAVE_GAS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
+      && !(SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
     {
       /* If the decl has been given an explicit section name, or it resides
 	 in a non-generic address space, then it isn't common, and shouldn't
@@ -1879,7 +1889,7 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Switch to the correct text section for the start of the function.  */
 
-  switch_to_section (function_section (decl));
+  switch_to_section (function_section (decl), decl);
   if (crtl->has_bb_partition && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
@@ -2375,7 +2385,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
 	handle_vtv_comdat_section (sect, decl);
       else
-	switch_to_section (sect);
+	switch_to_section (sect, decl);
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_variable_contents (decl, name, dont_output_data,
@@ -6781,10 +6791,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
-     part of a COMDAT groups or with SHF_GNU_RETAIN, in which case GAS
-     requires the full declaration every time.  */
+     part of a COMDAT groups or with SHF_GNU_RETAIN or with SHF_LINK_ORDER,
+     in which case GAS requires the full declaration every time.  */
   if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-      && !(flags & SECTION_RETAIN)
+      && !(flags & (SECTION_RETAIN | SECTION_LINK_ORDER))
       && (flags & SECTION_DECLARED))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
@@ -7742,10 +7752,44 @@ output_section_asm_op (const void *directive)
    the current section is NEW_SECTION.  */
 
 void
-switch_to_section (section *new_section)
+switch_to_section (section *new_section, tree decl)
 {
   if (in_section == new_section)
-    return;
+    {
+      if (SUPPORTS_SHF_GNU_RETAIN
+	  && (new_section->common.flags & SECTION_NAMED)
+	  && decl != nullptr
+	  && DECL_P (decl)
+	  && (!!DECL_PRESERVE_P (decl)
+	      != !!(new_section->common.flags & SECTION_RETAIN)))
+	{
+	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
+	     section.  */
+	  tree used_decl, no_used_decl;
+
+	  if (DECL_PRESERVE_P (decl))
+	    {
+	      new_section->common.flags |= SECTION_RETAIN;
+	      used_decl = decl;
+	      no_used_decl = new_section->named.decl;
+	    }
+	  else
+	    {
+	      new_section->common.flags &= ~(SECTION_RETAIN
+					     | SECTION_DECLARED);
+	      used_decl = new_section->named.decl;
+	      no_used_decl = decl;
+	    }
+	  warning (OPT_Wattributes,
+		   "%+qD without %<used%> attribute and %qD with "
+		   "%<used%> attribute are placed in a section with "
+		   "the same name", no_used_decl, used_decl);
+	  inform (DECL_SOURCE_LOCATION (used_decl),
+		  "%qD was declared here", used_decl);
+	}
+      else
+	return;
+    }
 
   if (new_section->common.flags & SECTION_FORGET)
     in_section = NULL;

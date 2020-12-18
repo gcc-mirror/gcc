@@ -712,7 +712,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-pooglo$(objext) \
   s-pooloc$(objext) \
   s-poosiz$(objext) \
-  s-powtab$(objext) \
+  s-powflt$(objext) \
+  s-powlfl$(objext) \
+  s-powllf$(objext) \
   s-purexc$(objext) \
   s-putima$(objext) \
   s-rannum$(objext) \
@@ -2381,12 +2383,14 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-arm
   THREADSLIB = -lpthread

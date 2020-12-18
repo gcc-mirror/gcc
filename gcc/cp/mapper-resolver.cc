@@ -24,4 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_ALGORITHM
 #include "system.h"
 
+// We don't want or need to be aware of networking
+#define CODY_NETWORKING 0
 #include "../../c++tools/resolver.cc"

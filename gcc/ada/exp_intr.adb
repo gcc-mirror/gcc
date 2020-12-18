@@ -29,7 +29,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Expander; use Expander;
 with Exp_Atag; use Exp_Atag;
-with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
@@ -857,7 +856,7 @@ package body Exp_Intr is
    ---------------------------
 
    procedure Expand_Unc_Conversion (N : Node_Id; E : Entity_Id) is
-      Func : constant Entity_Id  := Entity (Name (N));
+      Func : constant Entity_Id := Entity (Name (N));
       Conv : Node_Id;
       Ftyp : Entity_Id;
       Ttyp : Entity_Id;
@@ -908,12 +907,7 @@ package body Exp_Intr is
       end if;
 
       Rewrite (N, Unchecked_Convert_To (Ttyp, Conv));
-      Set_Etype (N, Ttyp);
-      Set_Analyzed (N);
-
-      if Nkind (N) = N_Unchecked_Type_Conversion then
-         Expand_N_Unchecked_Type_Conversion (N);
-      end if;
+      Analyze_And_Resolve (N, Ttyp);
    end Expand_Unc_Conversion;
 
    -----------------------------
