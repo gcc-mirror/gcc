@@ -977,7 +977,7 @@ template<typename T>
 	// fd.exponent contain all of the information needed to format the
 	// number in fixed notation "as if by std::printf" (with precision
 	// equal to -fd.exponent).
-	const int whole_digits = max(mantissa_length + fd.exponent, 1);
+	const int whole_digits = max<int>(mantissa_length + fd.exponent, 1);
 	const int expected_output_length
 	  = fd.sign + whole_digits + strlen(".") + -fd.exponent;
 	if (last - first < expected_output_length)
