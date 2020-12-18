@@ -2562,6 +2562,16 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       *total = riscv_extend_cost (XEXP (x, 0), GET_CODE (x) == ZERO_EXTEND);
       return false;
 
+    case BSWAP:
+      if (TARGET_ZBB)
+	{
+	  /* RISC-V only defines rev8 for XLEN, so we will need an extra
+	     shift-right instruction for smaller modes. */
+	  *total = COSTS_N_INSNS (mode == word_mode ? 1 : 2);
+	  return true;
+	}
+      return false;
+
     case FLOAT:
     case UNSIGNED_FLOAT:
     case FIX:
