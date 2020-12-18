@@ -5682,7 +5682,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply Reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type&", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
