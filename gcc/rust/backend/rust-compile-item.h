@@ -48,11 +48,7 @@ public:
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
-	  {
-	    printf ("returning early the function [%s] is completed!\n",
-		    function.as_string ().c_str ());
-	    return;
-	  }
+	  return;
       }
 
     TyTy::TyBase *fnType;
@@ -123,9 +119,12 @@ public:
       return true;
     });
 
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    HIR::BlockExpr *function_body = function.function_body.get ();
+    bool toplevel_item
+      = function.get_mappings ().get_local_defid () != UNKNOWN_LOCAL_DEFID;
+    Bblock *enclosing_scope
+      = toplevel_item ? NULL : ctx->peek_enclosing_scope ();
 
+    HIR::BlockExpr *function_body = function.function_body.get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
