@@ -1358,13 +1358,9 @@ TypeAlias::as_string () const
 
   str += "\n Where clause: ";
   if (!has_where_clause ())
-    {
       str += "none";
-    }
   else
-    {
       str += where_clause.as_string ();
-    }
 
   str += "\n Type: " + existing_type->as_string ();
 
@@ -1383,6 +1379,9 @@ MacroInvocationSemi::as_string () const
 	str += attr.as_string () + "\n";
     }
 
+  str += invoc_data.as_string ();
+
+#if 0
   str += "\n" + path.as_string () + "!";
 
   std::string tok_trees;
@@ -1414,6 +1413,7 @@ MacroInvocationSemi::as_string () const
 
       tok_trees += get_string_in_delims (s, delim_type);
     }
+#endif
 
   return str;
 }
@@ -1520,8 +1520,15 @@ MacroRulesDefinition::as_string () const
 std::string
 MacroInvocation::as_string () const
 {
-  return "MacroInvocation: " + path.as_string () + "!"
-	 + token_tree.as_string ();
+  /*return "MacroInvocation: " + path.as_string () + "!"
+	 + token_tree.as_string ();*/
+  return "MacroInvocation: " + invoc_data.as_string ();
+}
+
+std::string
+MacroInvocData::as_string () const
+{
+  return path.as_string () + "!" + token_tree.as_string ();
 }
 
 std::string

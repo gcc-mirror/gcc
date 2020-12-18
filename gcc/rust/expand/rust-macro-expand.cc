@@ -3553,6 +3553,12 @@ public:
   }
 };
 
+AST::Literal 
+MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
+{
+  return AST::Literal::create_error ();
+}
+
 void
 MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
 {

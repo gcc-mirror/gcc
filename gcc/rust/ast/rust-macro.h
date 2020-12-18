@@ -336,30 +336,32 @@ class MacroInvocation : public TypeNoBounds,
 			public Pattern,
 			public ExprWithoutBlock
 {
-  SimplePath path;
-  DelimTokenTree token_tree;
+  /*SimplePath path;
+  DelimTokenTree token_tree;*/
+  MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  MacroInvocation (SimplePath path, DelimTokenTree token_tree,
+  /*MacroInvocation (SimplePath path, DelimTokenTree token_tree,
 		   std::vector<Attribute> outer_attrs, Location locus)
     : ExprWithoutBlock (std::move (outer_attrs)), path (std::move (path)),
       token_tree (std::move (token_tree)), locus (locus)
-  {}
-
+  {}*/
+  MacroInvocation (MacroInvocData invoc_data, 
+        std::vector<Attribute> outer_attrs, Location locus) 
+    : ExprWithoutBlock (std::move (outer_attrs)), 
+      invoc_data (std::move (invoc_data)), locus (locus) {}
+ 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const override { return path.is_empty (); }
-
-  const SimplePath &get_path () const { return path; }
-  SimplePath &get_path () { return path; }
+  void mark_for_strip () override { invoc_data.mark_for_strip (); }
+  bool is_marked_for_strip () const override { return invoc_data.is_marked_for_strip (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

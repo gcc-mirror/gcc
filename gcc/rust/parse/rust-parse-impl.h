@@ -1514,6 +1514,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 		     t->get_token_description ());
       return nullptr;
     }
+  Location tok_tree_locus = t->get_locus ();
   lexer.skip_token ();
 
   // parse actual token trees
@@ -1538,6 +1539,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 
       t = lexer.peek_token ();
     }
+  
+  AST::DelimTokenTree delim_tok_tree (delim_type, std::move (token_trees), tok_tree_locus);
+  AST::MacroInvocData invoc_data (std::move (path), std::move (delim_tok_tree));
 
   // parse end delimiters
   t = lexer.peek_token ();
@@ -1553,8 +1557,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	    {
 	      // as this is the end, allow recovery (probably) - may change
 	      return std::unique_ptr<AST::MacroInvocationSemi> (
-		new AST::MacroInvocationSemi (std::move (path), delim_type,
-					      std::move (token_trees),
+		new AST::MacroInvocationSemi (std::move (invoc_data), 
 					      std::move (outer_attrs),
 					      macro_locus));
 	    }
@@ -1567,8 +1570,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	       lexer.peek_token ()->get_token_description ());
 
       return std::unique_ptr<AST::MacroInvocationSemi> (
-	new AST::MacroInvocationSemi (std::move (path), delim_type,
-				      std::move (token_trees),
+	new AST::MacroInvocationSemi (std::move (invoc_data), 
 				      std::move (outer_attrs), macro_locus));
     }
   else
@@ -1616,8 +1618,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation (
   Location macro_locus = macro_path.get_locus ();
 
   return std::unique_ptr<AST::MacroInvocation> (
-    new AST::MacroInvocation (std::move (macro_path),
-			      std::move (delim_tok_tree),
+    new AST::MacroInvocation (AST::MacroInvocData (std::move (macro_path),
+			      std::move (delim_tok_tree)),
 			      std::move (outer_attrs), macro_locus));
 }
 
@@ -8826,10 +8828,8 @@ Parser<ManagedTokenSource>::parse_type ()
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
 	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (std::move (macro_path),
-					  std::move (tok_tree),
-					  std::vector<AST::Attribute> (),
-					  locus));
+		new AST::MacroInvocation (AST::MacroInvocData (std::move (macro_path),
+					  std::move (tok_tree)), {}, locus));
 	    }
 	    case PLUS: {
 	      // type param bounds
@@ -9629,10 +9629,8 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
 	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (std::move (macro_path),
-					  std::move (tok_tree),
-					  std::vector<AST::Attribute> (),
-					  locus));
+		new AST::MacroInvocation (AST::MacroInvocData (std::move (macro_path),
+					  std::move (tok_tree)), {}, locus));
 	    }
 	    case PLUS: {
 	      // type param bounds - not allowed, here for error message
@@ -11397,25 +11395,24 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	     * fixed up via HACKs in semantic analysis (by checking whether it
 	     * is the last elem in the vector). */
 
+      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
+						tok_tree_loc);
+      AST::MacroInvocData invoc_data (std::move (macro_path), std::move (delim_tok_tree));
+
 	    if (lexer.peek_token ()->get_id () == SEMICOLON)
 	      {
 		lexer.skip_token ();
 
 		std::unique_ptr<AST::MacroInvocationSemi> stmt (
-		  new AST::MacroInvocationSemi (std::move (macro_path), type,
-						std::move (token_trees),
+		  new AST::MacroInvocationSemi (std::move (invoc_data),
 						std::move (outer_attrs),
 						stmt_or_expr_loc));
 		return ExprOrStmt (std::move (stmt));
 	      }
 
 	    // otherwise, create macro invocation
-	    AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-						tok_tree_loc);
-
 	    std::unique_ptr<AST::MacroInvocation> expr (
-	      new AST::MacroInvocation (std::move (macro_path),
-					std::move (delim_tok_tree),
+	      new AST::MacroInvocation (std::move (invoc_data),
 					std::move (outer_attrs),
 					stmt_or_expr_loc));
 	    return ExprOrStmt (std::move (expr));
@@ -11424,8 +11421,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	  {
 	    // tokens don't match opening delimiters, so produce error
 	    rust_error_at (t2->get_locus (),
-			   "unexpected token %qs - expecting closing "
-			   "delimiter %qs (for a "
+			   "unexpected token %qs - expecting closing delimiter %qs (for a "
 			   "macro invocation)",
 			   t2->get_token_description (),
 			   (type == AST::PARENS
@@ -11697,25 +11693,24 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
        * HACKs in semantic analysis (by checking whether it is the last elem in
        * the vector). */
 
+      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
+					  tok_tree_loc);
+      AST::MacroInvocData invoc_data (std::move (macro_path), std::move (delim_tok_tree));
+
       if (lexer.peek_token ()->get_id () == SEMICOLON)
 	{
 	  lexer.skip_token ();
 
 	  std::unique_ptr<AST::MacroInvocationSemi> stmt (
-	    new AST::MacroInvocationSemi (std::move (macro_path), type,
-					  std::move (token_trees),
+	    new AST::MacroInvocationSemi (std::move (invoc_data), 
 					  std::move (outer_attrs),
 					  macro_locus));
 	  return ExprOrStmt (std::move (stmt));
 	}
 
       // otherwise, create macro invocation
-      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-					  tok_tree_loc);
-
       std::unique_ptr<AST::MacroInvocation> expr (
-	new AST::MacroInvocation (std::move (macro_path),
-				  std::move (delim_tok_tree),
+	new AST::MacroInvocation (std::move (invoc_data),
 				  std::move (outer_attrs), macro_locus));
       return ExprOrStmt (std::move (expr));
     }
@@ -13926,7 +13921,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
   Location macro_locus = converted_path.get_locus ();
 
   return std::unique_ptr<AST::MacroInvocation> (
-    new AST::MacroInvocation (std::move (converted_path), std::move (tok_tree),
+    new AST::MacroInvocation (AST::MacroInvocData (std::move (converted_path), std::move (tok_tree)),
 			      std::move (outer_attrs), macro_locus));
 }
 

@@ -1329,6 +1329,25 @@ protected:
   virtual ExternalItem *clone_external_item_impl () const = 0;
 };
 
+/* Data structure to store the data used in macro invocations and macro 
+ * invocations with semicolons. */
+struct MacroInvocData
+{
+private:
+  SimplePath path;
+  DelimTokenTree token_tree;
+
+public:
+  std::string as_string () const;
+
+  MacroInvocData (SimplePath path, DelimTokenTree token_tree) 
+    : path (std::move (path)), token_tree (std::move (token_tree)) {}
+  
+  // Invalid if path is empty, so base stripping on that.
+  void mark_for_strip () { path = SimplePath::create_empty (); }
+  bool is_marked_for_strip () const { return path.is_empty (); }
+};
+
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
  * invocation) */
 class MacroInvocationSemi : public MacroItem,
@@ -1338,23 +1357,31 @@ class MacroInvocationSemi : public MacroItem,
 			    public ExternalItem
 {
   std::vector<Attribute> outer_attrs;
+#if 0
   SimplePath path;
   // all delim types except curly must have invocation end with a semicolon
   DelimType delim_type;
   std::vector<std::unique_ptr<TokenTree> > token_trees;
+#endif
+  MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
+  /*MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
 		       std::vector<std::unique_ptr<TokenTree> > token_trees,
 		       std::vector<Attribute> outer_attribs, Location locus)
     : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
       delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
-  {}
+  {}*/
+  MacroInvocationSemi (MacroInvocData invoc_data, 
+            std::vector<Attribute> outer_attrs, Location locus) 
+    : outer_attrs (std::move (outer_attrs)), invoc_data (std::move (invoc_data)),
+      locus (locus) {}
 
+  /*
   // Copy constructor with vector clone
   MacroInvocationSemi (MacroInvocationSemi const &other)
     : MacroItem (other), TraitItem (other), InherentImplItem (other),
@@ -1364,8 +1391,9 @@ public:
     token_trees.reserve (other.token_trees.size ());
     for (const auto &e : other.token_trees)
       token_trees.push_back (e->clone_token_tree ());
-  }
+  }*/
 
+  /*
   // Overloaded assignment operator to vector clone
   MacroInvocationSemi &operator= (MacroInvocationSemi const &other)
   {
@@ -1383,11 +1411,13 @@ public:
       token_trees.push_back (e->clone_token_tree ());
 
     return *this;
-  }
+  }*/
 
+  /*
   // Move constructors
   MacroInvocationSemi (MacroInvocationSemi &&other) = default;
   MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
+  */
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1398,9 +1428,13 @@ public:
       clone_macro_invocation_semi_impl ());
   }
 
+  /*
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () override { path = SimplePath::create_empty (); }
   bool is_marked_for_strip () const override { return path.is_empty (); }
+  */
+  void mark_for_strip () override { invoc_data.mark_for_strip (); }
+  bool is_marked_for_strip () const override { return invoc_data.is_marked_for_strip (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }

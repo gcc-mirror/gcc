@@ -44,8 +44,8 @@ struct MacroExpander
   void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
   bool fails_cfg (std::vector<AST::Attribute> &attr);
 
-  /* TODO: make it extend ASTVisitor so that individual items can be accessed
-   * properly? */
+  // Expand the data of a cfg! macro.
+  AST::Literal expand_cfg_macro (AST::MacroInvocData &invoc);
 
 private:
   AST::Crate &crate;
