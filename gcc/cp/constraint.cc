@@ -2428,6 +2428,11 @@ struct GTY((for_user)) sat_entry
      We don't always want to do so, in order to avoid emitting duplicate
      diagnostics in some cases.  */
   bool diagnose_instability;
+
+  /* True if we're in the middle of computing this satisfaction result.
+     Used during both quiet and noisy satisfaction to detect self-recursive
+     satisfaction.  */
+  bool evaluating;
 };
 
 struct sat_hasher : ggc_ptr_hash<sat_entry>
@@ -2572,6 +2577,7 @@ satisfaction_cache
 	   mapping, we set this flag (in satisfy_atom) only if substitution
 	   into its mapping previously failed.  */
 	entry->diagnose_instability = true;
+      entry->evaluating = false;
       *slot = entry;
     }
   else
@@ -2590,9 +2596,23 @@ satisfaction_cache::get ()
   if (!entry)
     return NULL_TREE;
 
-  if (info.noisy () || entry->maybe_unstable)
-    /* We're recomputing the satisfaction result from scratch.  */
-    return NULL_TREE;
+  if (entry->evaluating)
+    {
+      /* If we get here, it means satisfaction is self-recursive.  */
+      gcc_checking_assert (!entry->result);
+      if (info.noisy ())
+	error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (entry->atom)),
+		  "satisfaction of atomic constraint %qE depends on itself",
+		  entry->atom);
+      return error_mark_node;
+    }
+
+  if (info.noisy () || entry->maybe_unstable || !entry->result)
+    {
+      /* We're computing the satisfaction result from scratch.  */
+      entry->evaluating = true;
+      return NULL_TREE;
+    }
   else
     return entry->result;
 }
@@ -2606,6 +2626,9 @@ satisfaction_cache::save (tree result)
 {
   if (!entry)
     return result;
+
+  gcc_checking_assert (entry->evaluating);
+  entry->evaluating = false;
 
   if (entry->result && result != entry->result)
     {
@@ -2856,17 +2879,17 @@ static void diagnose_atomic_constraint (tree, tree, tree, subst_info);
 static tree
 satisfy_atom (tree t, tree args, sat_info info)
 {
+  /* In case there is a diagnostic, we want to establish the context
+     prior to printing errors.  If no errors occur, this context is
+     removed before returning.  */
+  diagnosing_failed_constraint failure (t, args, info.noisy ());
+
   satisfaction_cache cache (t, args, info);
   if (tree r = cache.get ())
     return r;
 
   /* Perform substitution quietly.  */
   subst_info quiet (tf_none, NULL_TREE);
-
-  /* In case there is a diagnostic, we want to establish the context
-     prior to printing errors.  If no errors occur, this context is
-     removed before returning.  */
-  diagnosing_failed_constraint failure (t, args, info.noisy ());
 
   /* Instantiate the parameter mapping.  */
   tree map = tsubst_parameter_mapping (ATOMIC_CONSTR_MAP (t), args, quiet);
