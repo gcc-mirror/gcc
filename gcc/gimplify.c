@@ -211,6 +211,7 @@ struct gimplify_omp_ctx
   bool distribute;
   bool target_firstprivatize_array_bases;
   bool add_safelen1;
+  bool has_depend;
   int defaultmap[4];
 };
 
@@ -8886,6 +8887,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      remove = true;
 	      break;
 	    }
+	  if (code == OMP_TASK)
+	    ctx->has_depend = true;
 	  break;
 
 	case OMP_CLAUSE_TO:
@@ -9503,6 +9506,11 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	    return 0;
 	}
       code = OMP_CLAUSE_SHARED;
+      /* Don't optimize shared into firstprivate for read-only vars
+	 on tasks with depend clause, we shouldn't try to copy them
+	 until the dependencies are satisfied.  */
+      if (gimplify_omp_ctxp->has_depend)
+	flags |= GOVD_WRITTEN;
     }
   else if (flags & GOVD_PRIVATE)
     code = OMP_CLAUSE_PRIVATE;
@@ -9750,6 +9758,10 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		  OMP_CLAUSE_SET_CODE (c, OMP_CLAUSE_PRIVATE);
 		  OMP_CLAUSE_PRIVATE_DEBUG (c) = 1;
 		}
+              if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		  && ctx->has_depend
+		  && DECL_P (decl))
+		n->value |= GOVD_WRITTEN;
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
 		  && (n->value & GOVD_WRITTEN) == 0
 		  && DECL_P (decl)
