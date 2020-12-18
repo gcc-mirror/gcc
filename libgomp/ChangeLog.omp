@@ -1,6 +1,13 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/task-6.c: New test.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-01-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config/rtems/sem.h (gomp_sem_getcount): New function.

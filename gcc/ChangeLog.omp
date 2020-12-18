@@ -1,6 +1,17 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add has_depend member.
+	(gimplify_scan_omp_clauses): Set it to true if OMP_CLAUSE_DEPEND
+	appears on OMP_TASK.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Force
+	GOVD_WRITTEN on shared variables if task construct has depend clause.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* builtin-types.def
