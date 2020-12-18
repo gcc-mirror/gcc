@@ -33,7 +33,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <langinfo.h>
+#if __has_include(<langinfo.h>)
+# include <langinfo.h> // for nl_langinfo
+#endif
 #include <optional>
 #include <string_view>
 #include <type_traits>
@@ -1113,6 +1115,7 @@ template<typename T>
 	// to handle a radix point that's different from '.'.
 	char radix[6] = {'.', '\0', '\0', '\0', '\0', '\0'};
 	if (effective_precision > 0)
+#ifdef RADIXCHAR
 	  // ???: Can nl_langinfo() ever return null?
 	  if (const char* const radix_ptr = nl_langinfo(RADIXCHAR))
 	    {
@@ -1121,6 +1124,7 @@ template<typename T>
 	      // UTF-8 character) wide.
 	      __glibcxx_assert(radix[4] == '\0');
 	    }
+#endif
 
 	// Compute straightforward upper bounds on the output length.
 	int output_length_upper_bound;
