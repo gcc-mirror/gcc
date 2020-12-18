@@ -1,3 +1,14 @@
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98340
+	* module.cc (uintset<T>::hash::add): Use uintset (0u).MEMBER,
+	rather than uintset::MEMBER.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* module.cc: Fix ::read, ::write result signedness comparisons.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* mapper-resolver.cc: Remove early include of

@@ -1,3 +1,36 @@
+2020-12-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97750.c: New.
+
+2020-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98289
+	* gcc.target/i386/pr98289.c: New test.
+	* gcc.dg/torture/pr98289.c: New test.
+
+2020-12-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/debug15.adb: Remove fragile testcase.
+
+2020-12-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/interface6.adb, gnat.dg/not_null.adb,
+	gnat.dg/protected_func.adb: Adjust error messages.
+
+2020-12-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92587
+	* gfortran.dg/finalize_37.f90: New test.
+
+2020-12-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98307
+	* gfortran.dg/forall_19.f90: New test.
+
+2020-12-17  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/shifts.c: New test.
+
 2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/rtl/x86_64/test-return-const.c.before-fwprop.c: Don't
