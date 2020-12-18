@@ -37,42 +37,9 @@ static char* s(uint128_t v) {
 
 #define ONE ((uint128_t) 1)
 
-#define FLOAT_MANTISSA_BITS 23
-#define FLOAT_EXPONENT_BITS 8
-
-struct floating_decimal_128 float_to_fd128(float f) {
-  uint32_t bits = 0;
-  memcpy(&bits, &f, sizeof(float));
-  return generic_binary_to_decimal(bits, FLOAT_MANTISSA_BITS, FLOAT_EXPONENT_BITS, false);
-}
-
-#define DOUBLE_MANTISSA_BITS 52
-#define DOUBLE_EXPONENT_BITS 11
-
-struct floating_decimal_128 double_to_fd128(double d) {
-  uint64_t bits = 0;
-  memcpy(&bits, &d, sizeof(double));
-  return generic_binary_to_decimal(bits, DOUBLE_MANTISSA_BITS, DOUBLE_EXPONENT_BITS, false);
-}
-
-#define LONG_DOUBLE_MANTISSA_BITS 64
-#define LONG_DOUBLE_EXPONENT_BITS 15
-
-struct floating_decimal_128 long_double_to_fd128(long double d) {
-  uint128_t bits = 0;
-  memcpy(&bits, &d, sizeof(long double));
-#ifdef RYU_DEBUG
-  // For some odd reason, this ends up with noise in the top 48 bits. We can
-  // clear out those bits with the following line; this is not required, the
-  // conversion routine should ignore those bits, but the debug output can be
-  // confusing if they aren't 0s.
-  bits &= (ONE << 80) - 1;
-#endif
-  return generic_binary_to_decimal(bits, LONG_DOUBLE_MANTISSA_BITS, LONG_DOUBLE_EXPONENT_BITS, true);
-}
-
 struct floating_decimal_128 generic_binary_to_decimal(
-    const uint128_t bits, const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit) {
+    const uint128_t ieeeMantissa, const uint32_t ieeeExponent, const bool ieeeSign,
+    const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit) {
 #ifdef RYU_DEBUG
   printf("IN=");
   for (int32_t bit = 127; bit >= 0; --bit) {
@@ -82,9 +49,6 @@ struct floating_decimal_128 generic_binary_to_decimal(
 #endif
 
   const uint32_t bias = (1u << (exponentBits - 1)) - 1;
-  const bool ieeeSign = ((bits >> (mantissaBits + exponentBits)) & 1) != 0;
-  const uint128_t ieeeMantissa = bits & ((ONE << mantissaBits) - 1);
-  const uint32_t ieeeExponent = (uint32_t) ((bits >> mantissaBits) & ((ONE << exponentBits) - 1u));
 
   if (ieeeExponent == 0 && ieeeMantissa == 0) {
     struct floating_decimal_128 fd;
@@ -320,14 +284,17 @@ int generic_to_chars(const struct floating_decimal_128 v, char* const result) {
   }
 
   // Print the exponent.
-  result[index++] = 'E';
+  result[index++] = 'e';
   int32_t exp = v.exponent + olength - 1;
   if (exp < 0) {
     result[index++] = '-';
     exp = -exp;
-  }
+  } else
+    result[index++] = '+';
 
   uint32_t elength = decimalLength(exp);
+  if (elength == 1)
+    ++elength;
   for (uint32_t i = 0; i < elength; ++i) {
     const uint32_t c = exp % 10;
     exp /= 10;

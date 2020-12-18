@@ -18,18 +18,14 @@
 #define RYU_F2S_INTRINSICS_H
 
 // Defines RYU_32_BIT_PLATFORM if applicable.
-#include "ryu/common.h"
 
 #if defined(RYU_FLOAT_FULL_TABLE)
 
-#include "ryu/f2s_full_table.h"
 
 #else
 
 #if defined(RYU_OPTIMIZE_SIZE)
-#include "ryu/d2s_small_table.h"
 #else
-#include "ryu/d2s_full_table.h"
 #endif
 #define FLOAT_POW5_INV_BITCOUNT (DOUBLE_POW5_INV_BITCOUNT - 64)
 #define FLOAT_POW5_BITCOUNT (DOUBLE_POW5_BITCOUNT - 64)

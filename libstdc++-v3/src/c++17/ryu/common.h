@@ -17,9 +17,6 @@
 #ifndef RYU_COMMON_H
 #define RYU_COMMON_H
 
-#include <assert.h>
-#include <stdint.h>
-#include <string.h>
 
 #if defined(_M_IX86) || defined(_M_ARM)
 #define RYU_32_BIT_PLATFORM
@@ -81,22 +78,6 @@ static inline uint32_t log10Pow5(const int32_t e) {
   assert(e >= 0);
   assert(e <= 2620);
   return (((uint32_t) e) * 732923) >> 20;
-}
-
-static inline int copy_special_str(char * const result, const bool sign, const bool exponent, const bool mantissa) {
-  if (mantissa) {
-    memcpy(result, "NaN", 3);
-    return 3;
-  }
-  if (sign) {
-    result[0] = '-';
-  }
-  if (exponent) {
-    memcpy(result + sign, "Infinity", 8);
-    return sign + 8;
-  }
-  memcpy(result + sign, "0E0", 3);
-  return sign + 3;
 }
 
 static inline uint32_t float_to_bits(const float f) {

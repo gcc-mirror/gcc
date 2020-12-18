@@ -27,28 +27,15 @@
 //     size by about 10x (only one case, and only double) at the cost of some
 //     performance. Currently requires MSVC intrinsics.
 
-#include "ryu/ryu.h"
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 #ifdef RYU_DEBUG
-#include <inttypes.h>
-#include <stdio.h>
 #endif
 
-#include "ryu/common.h"
-#include "ryu/digit_table.h"
-#include "ryu/d2s_intrinsics.h"
 
 // Include either the small or the full lookup tables depending on the mode.
 #if defined(RYU_OPTIMIZE_SIZE)
-#include "ryu/d2s_small_table.h"
 #else
-#include "ryu/d2s_full_table.h"
 #endif
 
 #define DOUBLE_MANTISSA_BITS 52
@@ -86,9 +73,10 @@ typedef struct floating_decimal_64 {
   // Decimal exponent's range is -324 to 308
   // inclusive, and can fit in a short if needed.
   int32_t exponent;
+  bool sign;
 } floating_decimal_64;
 
-static inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent) {
+static inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_t ieeeExponent, const bool ieeeSign) {
   int32_t e2;
   uint64_t m2;
   if (ieeeExponent == 0) {
@@ -308,13 +296,14 @@ static inline floating_decimal_64 d2d(const uint64_t ieeeMantissa, const uint32_
   floating_decimal_64 fd;
   fd.exponent = exp;
   fd.mantissa = output;
+  fd.sign = ieeeSign;
   return fd;
 }
 
-static inline int to_chars(const floating_decimal_64 v, const bool sign, char* const result) {
+static inline int to_chars(const floating_decimal_64 v, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
-  if (sign) {
+  if (v.sign) {
     result[index++] = '-';
   }
 
@@ -397,29 +386,28 @@ static inline int to_chars(const floating_decimal_64 v, const bool sign, char* c
   }
 
   // Print the exponent.
-  result[index++] = 'E';
+  result[index++] = 'e';
   int32_t exp = v.exponent + (int32_t) olength - 1;
   if (exp < 0) {
     result[index++] = '-';
     exp = -exp;
-  }
+  } else
+    result[index++] = '+';
 
   if (exp >= 100) {
     const int32_t c = exp % 10;
     memcpy(result + index, DIGIT_TABLE + 2 * (exp / 10), 2);
     result[index + 2] = (char) ('0' + c);
     index += 3;
-  } else if (exp >= 10) {
+  } else {
     memcpy(result + index, DIGIT_TABLE + 2 * exp, 2);
     index += 2;
-  } else {
-    result[index++] = (char) ('0' + exp);
   }
 
   return index;
 }
 
-static inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent,
+static inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t ieeeExponent, const bool ieeeSign,
   floating_decimal_64* const v) {
   const uint64_t m2 = (1ull << DOUBLE_MANTISSA_BITS) | ieeeMantissa;
   const int32_t e2 = (int32_t) ieeeExponent - DOUBLE_BIAS - DOUBLE_MANTISSA_BITS;
@@ -448,10 +436,11 @@ static inline bool d2d_small_int(const uint64_t ieeeMantissa, const uint32_t iee
   // Note: since 2^53 < 10^16, there is no need to adjust decimalLength17().
   v->mantissa = m2 >> -e2;
   v->exponent = 0;
+  v->sign = ieeeSign;
   return true;
 }
 
-int d2s_buffered_n(double f, char* result) {
+floating_decimal_64 floating_to_fd64(double f) {
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
   const uint64_t bits = double_to_bits(f);
 
@@ -469,11 +458,11 @@ int d2s_buffered_n(double f, char* result) {
   const uint32_t ieeeExponent = (uint32_t) ((bits >> DOUBLE_MANTISSA_BITS) & ((1u << DOUBLE_EXPONENT_BITS) - 1));
   // Case distinction; exit early for the easy cases.
   if (ieeeExponent == ((1u << DOUBLE_EXPONENT_BITS) - 1u) || (ieeeExponent == 0 && ieeeMantissa == 0)) {
-    return copy_special_str(result, ieeeSign, ieeeExponent, ieeeMantissa);
+    __builtin_abort();
   }
 
   floating_decimal_64 v;
-  const bool isSmallInt = d2d_small_int(ieeeMantissa, ieeeExponent, &v);
+  const bool isSmallInt = d2d_small_int(ieeeMantissa, ieeeExponent, ieeeSign, &v);
   if (isSmallInt) {
     // For small integers in the range [1, 2^53), v.mantissa might contain trailing (decimal) zeros.
     // For scientific notation we need to move these zeros into the exponent.
@@ -489,21 +478,8 @@ int d2s_buffered_n(double f, char* result) {
       ++v.exponent;
     }
   } else {
-    v = d2d(ieeeMantissa, ieeeExponent);
+    v = d2d(ieeeMantissa, ieeeExponent, ieeeSign);
   }
 
-  return to_chars(v, ieeeSign, result);
-}
-
-void d2s_buffered(double f, char* result) {
-  const int index = d2s_buffered_n(f, result);
-
-  // Terminate the string.
-  result[index] = '\0';
-}
-
-char* d2s(double f) {
-  char* const result = (char*) malloc(25);
-  d2s_buffered(f, result);
-  return result;
+  return v;
 }

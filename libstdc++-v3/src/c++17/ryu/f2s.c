@@ -18,22 +18,11 @@
 // Runtime compiler options:
 // -DRYU_DEBUG Generate verbose debugging output to stdout.
 
-#include "ryu/ryu.h"
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
 
 #ifdef RYU_DEBUG
-#include <stdio.h>
 #endif
 
-#include "ryu/common.h"
-#include "ryu/f2s_intrinsics.h"
-#include "ryu/digit_table.h"
 
 #define FLOAT_MANTISSA_BITS 23
 #define FLOAT_EXPONENT_BITS 8
@@ -45,9 +34,10 @@ typedef struct floating_decimal_32 {
   // Decimal exponent's range is -45 to 38
   // inclusive, and can fit in a short if needed.
   int32_t exponent;
+  bool sign;
 } floating_decimal_32;
 
-static inline floating_decimal_32 f2d(const uint32_t ieeeMantissa, const uint32_t ieeeExponent) {
+static inline floating_decimal_32 f2d(const uint32_t ieeeMantissa, const uint32_t ieeeExponent, const bool ieeeSign) {
   int32_t e2;
   uint32_t m2;
   if (ieeeExponent == 0) {
@@ -224,13 +214,14 @@ static inline floating_decimal_32 f2d(const uint32_t ieeeMantissa, const uint32_
   floating_decimal_32 fd;
   fd.exponent = exp;
   fd.mantissa = output;
+  fd.sign = ieeeSign;
   return fd;
 }
 
-static inline int to_chars(const floating_decimal_32 v, const bool sign, char* const result) {
+static inline int to_chars(const floating_decimal_32 v, char* const result) {
   // Step 5: Print the decimal representation.
   int index = 0;
-  if (sign) {
+  if (v.sign) {
     result[index++] = '-';
   }
 
@@ -288,24 +279,22 @@ static inline int to_chars(const floating_decimal_32 v, const bool sign, char* c
   }
 
   // Print the exponent.
-  result[index++] = 'E';
+  result[index++] = 'e';
   int32_t exp = v.exponent + (int32_t) olength - 1;
   if (exp < 0) {
     result[index++] = '-';
     exp = -exp;
+  } else {
+    result[index++] = '+';
   }
 
-  if (exp >= 10) {
-    memcpy(result + index, DIGIT_TABLE + 2 * exp, 2);
-    index += 2;
-  } else {
-    result[index++] = (char) ('0' + exp);
-  }
+  memcpy(result + index, DIGIT_TABLE + 2 * exp, 2);
+  index += 2;
 
   return index;
 }
 
-int f2s_buffered_n(float f, char* result) {
+floating_decimal_32 floating_to_fd32(float f) {
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
   const uint32_t bits = float_to_bits(f);
 
@@ -324,22 +313,9 @@ int f2s_buffered_n(float f, char* result) {
 
   // Case distinction; exit early for the easy cases.
   if (ieeeExponent == ((1u << FLOAT_EXPONENT_BITS) - 1u) || (ieeeExponent == 0 && ieeeMantissa == 0)) {
-    return copy_special_str(result, ieeeSign, ieeeExponent, ieeeMantissa);
+    __builtin_abort();
   }
 
-  const floating_decimal_32 v = f2d(ieeeMantissa, ieeeExponent);
-  return to_chars(v, ieeeSign, result);
-}
-
-void f2s_buffered(float f, char* result) {
-  const int index = f2s_buffered_n(f, result);
-
-  // Terminate the string.
-  result[index] = '\0';
-}
-
-char* f2s(float f) {
-  char* const result = (char*) malloc(16);
-  f2s_buffered(f, result);
-  return result;
+  const floating_decimal_32 v = f2d(ieeeMantissa, ieeeExponent, ieeeSign);
+  return v;
 }

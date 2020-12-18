@@ -23,23 +23,11 @@
 //
 // -DRYU_AVOID_UINT128 Avoid using uint128_t. Slower, depending on your compiler.
 
-#include "ryu/ryu.h"
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 #ifdef RYU_DEBUG
-#include <inttypes.h>
-#include <stdio.h>
 #endif
 
-#include "ryu/common.h"
-#include "ryu/digit_table.h"
-#include "ryu/d2fixed_full_table.h"
-#include "ryu/d2s_intrinsics.h"
 
 #define DOUBLE_MANTISSA_BITS 52
 #define DOUBLE_EXPONENT_BITS 11
@@ -328,33 +316,6 @@ static inline uint32_t lengthForIndex(const uint32_t idx) {
   return (log10Pow2(16 * (int32_t) idx) + 1 + 16 + 8) / 9;
 }
 
-static inline int copy_special_str_printf(char* const result, const bool sign, const uint64_t mantissa) {
-#if defined(_MSC_VER)
-  // TODO: Check that -nan is expected output on Windows.
-  if (sign) {
-    result[0] = '-';
-  }
-  if (mantissa) {
-    if (mantissa < (1ull << (DOUBLE_MANTISSA_BITS - 1))) {
-      memcpy(result + sign, "nan(snan)", 9);
-      return sign + 9;
-    }
-    memcpy(result + sign, "nan", 3);
-    return sign + 3;
-  }
-#else
-  if (mantissa) {
-    memcpy(result, "nan", 3);
-    return 3;
-  }
-  if (sign) {
-    result[0] = '-';
-  }
-#endif
-  memcpy(result + sign, "Infinity", 8);
-  return sign + 8;
-}
-
 int d2fixed_buffered_n(double d, uint32_t precision, char* result) {
   const uint64_t bits = double_to_bits(d);
 #ifdef RYU_DEBUG
@@ -372,20 +333,10 @@ int d2fixed_buffered_n(double d, uint32_t precision, char* result) {
 
   // Case distinction; exit early for the easy cases.
   if (ieeeExponent == ((1u << DOUBLE_EXPONENT_BITS) - 1u)) {
-    return copy_special_str_printf(result, ieeeSign, ieeeMantissa);
+    __builtin_abort();
   }
   if (ieeeExponent == 0 && ieeeMantissa == 0) {
-    int index = 0;
-    if (ieeeSign) {
-      result[index++] = '-';
-    }
-    result[index++] = '0';
-    if (precision > 0) {
-      result[index++] = '.';
-      memset(result + index, '0', precision);
-      index += precision;
-    }
-    return index;
+    __builtin_abort();
   }
 
   int32_t e2;
@@ -549,21 +500,9 @@ int d2fixed_buffered_n(double d, uint32_t precision, char* result) {
   return index;
 }
 
-void d2fixed_buffered(double d, uint32_t precision, char* result) {
-  const int len = d2fixed_buffered_n(d, precision, result);
-  result[len] = '\0';
-}
-
-char* d2fixed(double d, uint32_t precision) {
-  char* const buffer = (char*)malloc(2000);
-  const int index = d2fixed_buffered_n(d, precision, buffer);
-  buffer[index] = '\0';
-  return buffer;
-}
 
 
-
-int d2exp_buffered_n(double d, uint32_t precision, char* result) {
+int d2exp_buffered_n(double d, uint32_t precision, char* result, int* exp_out) {
   const uint64_t bits = double_to_bits(d);
 #ifdef RYU_DEBUG
   printf("IN=");
@@ -580,22 +519,10 @@ int d2exp_buffered_n(double d, uint32_t precision, char* result) {
 
   // Case distinction; exit early for the easy cases.
   if (ieeeExponent == ((1u << DOUBLE_EXPONENT_BITS) - 1u)) {
-    return copy_special_str_printf(result, ieeeSign, ieeeMantissa);
+    __builtin_abort();
   }
   if (ieeeExponent == 0 && ieeeMantissa == 0) {
-    int index = 0;
-    if (ieeeSign) {
-      result[index++] = '-';
-    }
-    result[index++] = '0';
-    if (precision > 0) {
-      result[index++] = '.';
-      memset(result + index, '0', precision);
-      index += precision;
-    }
-    memcpy(result + index, "e+00", 4);
-    index += 4;
-    return index;
+    __builtin_abort();
   }
 
   int32_t e2;
@@ -785,6 +712,9 @@ int d2exp_buffered_n(double d, uint32_t precision, char* result) {
       }
     }
   }
+  if (exp_out) {
+    *exp_out = exp;
+  }
   result[index++] = 'e';
   if (exp < 0) {
     result[index++] = '-';
@@ -804,16 +734,4 @@ int d2exp_buffered_n(double d, uint32_t precision, char* result) {
   }
 
   return index;
-}
-
-void d2exp_buffered(double d, uint32_t precision, char* result) {
-  const int len = d2exp_buffered_n(d, precision, result);
-  result[len] = '\0';
-}
-
-char* d2exp(double d, uint32_t precision) {
-  char* const buffer = (char*)malloc(2000);
-  const int index = d2exp_buffered_n(d, precision, buffer);
-  buffer[index] = '\0';
-  return buffer;
 }
