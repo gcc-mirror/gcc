@@ -106,7 +106,7 @@ LIBS="$LIBS $libcc1_cv_lib_sockets"
 
 case "$host" in
   *-*-darwin*) darwin_dynamic_lookup=yes ;;
-  *) darwin_dynamic_lookup= ;;
+  *) darwin_dynamic_lookup=no ;;
 esac
 AM_CONDITIONAL(DARWIN_DYNAMIC_LOOKUP, test $darwin_dynamic_lookup = yes)
 
