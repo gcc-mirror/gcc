@@ -205,9 +205,13 @@ public:
 
   virtual ~TyTyResolveCompile () {}
 
-  void visit (TyTy::FnType &type) { gcc_unreachable (); }
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::BoolType &type)
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::BoolType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
@@ -215,7 +219,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::IntType &type)
+  void visit (TyTy::IntType &type) override
   {
     printf ("type [%s] has ref: %u\n", type.as_string ().c_str (),
 	    type.get_ref ());
@@ -226,7 +230,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::UintType &type)
+  void visit (TyTy::UintType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);

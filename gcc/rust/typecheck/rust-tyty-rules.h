@@ -105,6 +105,23 @@ public:
     return resolved;
   }
 
+  // we are an inference variable so this means we can take the other as the
+  // type
+  virtual void visit (BoolType &type) override
+  {
+    resolved = new BoolType (type.get_ref ());
+  }
+
+  virtual void visit (IntType &type) override
+  {
+    resolved = new IntType (type.get_ref (), type.get_kind ());
+  }
+
+  virtual void visit (UintType &type) override
+  {
+    resolved = new UintType (type.get_ref (), type.get_kind ());
+  }
+
 private:
   InferType *base;
   TyBase *resolved;

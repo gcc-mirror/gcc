@@ -41,6 +41,7 @@ public:
   {
     mappings[ident] = id;
     decls_within_rib.insert (id);
+    references[id] = {};
   }
 
   bool lookup_name (std::string ident, NodeId *id)
@@ -65,11 +66,30 @@ public:
       }
   }
 
+  void iterate_references_for_def (NodeId def, std::function<bool (NodeId)> cb)
+  {
+    auto it = references.find (def);
+    if (it == references.end ())
+      return;
+
+    for (auto ref : it->second)
+      {
+	if (!cb (ref))
+	  return;
+      }
+  }
+
+  void append_reference_for_def (NodeId def, NodeId ref)
+  {
+    references[def].insert (ref);
+  }
+
 private:
   CrateNum crate_num;
   NodeId node_id;
   std::map<std::string, NodeId> mappings;
   std::set<NodeId> decls_within_rib;
+  std::map<NodeId, std::set<NodeId> > references;
 };
 
 class Scope
@@ -135,8 +155,8 @@ private:
 //
 // if parent is UNKNOWN_NODEID then this is a root declaration
 // say the var_decl hasa node_id=4;
-// the parent could be a BLOCK_Expr node_id but lets make it UNKNOWN_NODE_ID so
-// we know when it terminates
+// the parent could be a BLOCK_Expr node_id but lets make it UNKNOWN_NODE_ID
+// so we know when it terminates
 struct Definition
 {
   NodeId node;
@@ -211,9 +231,6 @@ private:
   // we need two namespaces one for names and ones for types
   std::map<NodeId, NodeId> resolved_names;
   std::map<NodeId, NodeId> resolved_types;
-
-  std::map<NodeId, std::set<NodeId> > nameDefNodeIdToRibs;
-  std::map<NodeId, std::set<NodeId> > typeDefNodeIdToRibs;
 };
 
 } // namespace Resolver

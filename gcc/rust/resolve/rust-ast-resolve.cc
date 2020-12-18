@@ -168,6 +168,7 @@ Resolver::insert_resolved_name (NodeId refId, NodeId defId)
   rust_assert (it == resolved_names.end ());
 
   resolved_names[refId] = defId;
+  get_name_scope ().peek ()->append_reference_for_def (defId, refId);
 }
 
 bool
@@ -188,6 +189,7 @@ Resolver::insert_resolved_type (NodeId refId, NodeId defId)
   rust_assert (it == resolved_types.end ());
 
   resolved_types[refId] = defId;
+  get_type_scope ().peek ()->append_reference_for_def (defId, refId);
 }
 
 bool

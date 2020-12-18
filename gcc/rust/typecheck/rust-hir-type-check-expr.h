@@ -94,6 +94,9 @@ public:
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     infered = lhs->combine (rhs);
+    // need to overrite the lhs type with this combination
+    context->insert_type (expr.get_lhs ()->get_mappings ().get_hirid (),
+			  infered);
   }
 
   void visit (HIR::IdentifierExpr &expr)
