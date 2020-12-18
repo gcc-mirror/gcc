@@ -3,6 +3,14 @@
 	Backport from mainline
 	2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* g++.dg/gomp/declare-target-3.C: Only check .offload_var_table
+	entries if offloading is enabled.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* g++.dg/gomp/declare-target-3.C: New.
 
 2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
