@@ -11005,7 +11005,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   /* Make sure there is a vtable and, in particular, a _copy for the
      rhs type.  */
-  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+  if (lhs->ts.type == BT_CLASS && rhs->ts.type != BT_CLASS)
     gfc_find_vtab (&rhs->ts);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
