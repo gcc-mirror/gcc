@@ -1,3 +1,17 @@
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* cp-lang.c (cxx_get_decl_init): New.
+	(cxx_omp_finish_decl_inits): New.
+	(LANG_HOOKS_GET_DECL_INIT): New.
+	(LANG_HOOKS_OMP_FINISH_DECL_INITS): New.
+	* cp-tree.h (dynamic_initializers): New.
+	* decl.c (dynamic_initializers): New.
+	* decl2.c (c_parse_final_cleanups): Add initializer entries
+	from vars to dynamic_initializers.
+
 2020-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

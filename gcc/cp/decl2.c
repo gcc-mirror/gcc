@@ -4927,6 +4927,13 @@ c_parse_final_cleanups (void)
 
       if (vars)
 	{
+	  if (flag_openmp)
+	    /* Add initializer information from VARS into
+	       DYNAMIC_INITIALIZERS.  */
+	    for (t = vars; t; t = TREE_CHAIN (t))
+	      hash_map_safe_put<hm_ggc> (dynamic_initializers,
+					 TREE_VALUE (t), TREE_PURPOSE (t));
+
 	  /* We need to start a new initialization function each time
 	     through the loop.  That's because we need to know which
 	     vtables have been referenced, and TREE_SYMBOL_REFERENCED
