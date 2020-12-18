@@ -946,13 +946,13 @@ template<typename T>
 	    // digit, and carefully compute and write the last digit
 	    // ourselves.
 	    char buffer[expected_output_length+1];
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	    const int saved_rounding_mode = fegetround();
 	    if (saved_rounding_mode != FE_TONEAREST)
 	      fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
 #endif
 	    const int output_length = sprintf(buffer, "%.0Lf", value);
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	    if (saved_rounding_mode != FE_TONEAREST)
 	      fesetround(saved_rounding_mode);
 #endif
@@ -1139,14 +1139,14 @@ template<typename T>
 
 	// Do the sprintf into the local buffer.
 	char buffer[output_length_upper_bound+1];
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	const int saved_rounding_mode = fegetround();
 	if (saved_rounding_mode != FE_TONEAREST)
 	  fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
 #endif
 	int output_length
 	  = sprintf(buffer, output_specifier, effective_precision, value);
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	if (saved_rounding_mode != FE_TONEAREST)
 	  fesetround(saved_rounding_mode);
 #endif

@@ -307,7 +307,7 @@ namespace
       {
 	locale_t orig = ::uselocale(loc);
 
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	const int rounding = std::fegetround();
 	if (rounding != FE_TONEAREST)
 	  std::fesetround(FE_TONEAREST);
@@ -333,7 +333,7 @@ namespace
 #endif
 	const int conv_errno = std::__exchange(errno, save_errno);
 
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
 	if (rounding != FE_TONEAREST)
 	  std::fesetround(rounding);
 #endif
