@@ -2253,9 +2253,6 @@ package body Exp_Ch4 is
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base
 
-      Check : constant Overflow_Mode_Type := Overflow_Check_Mode;
-      --  Current overflow checking mode
-
       procedure Set_True;
       procedure Set_False;
       --  These procedures rewrite N with an occurrence of Standard_True or
@@ -2284,17 +2281,6 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Compare_Minimize_Eliminate_Overflow
 
    begin
-      --  Nothing to do unless we have a comparison operator with operands
-      --  that are signed integer types, and we are operating in either
-      --  MINIMIZED or ELIMINATED overflow checking mode.
-
-      if Nkind (N) not in N_Op_Compare
-        or else Check not in Minimized_Or_Eliminated
-        or else not Is_Signed_Integer_Type (Etype (Left_Opnd (N)))
-      then
-         return;
-      end if;
-
       --  OK, this is the case we are interested in. First step is to process
       --  our operands using the Minimize_Eliminate circuitry which applies
       --  this processing to the two operand subtrees.
@@ -6425,8 +6411,7 @@ package body Exp_Ch4 is
       --  type, then expand with a separate procedure. Note the use of the
       --  flag No_Minimize_Eliminate to prevent infinite recursion.
 
-      if Overflow_Check_Mode in Minimized_Or_Eliminated
-        and then Is_Signed_Integer_Type (Ltyp)
+      if Minimized_Eliminated_Overflow_Check (Left_Opnd  (N))
         and then not No_Minimize_Eliminate (N)
       then
          Expand_Membership_Minimize_Eliminate_Overflow (N);
@@ -8343,7 +8328,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Left_Opnd (N)) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Eq then
          return;
@@ -9201,7 +9188,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Ge then
          return;
@@ -9250,7 +9239,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Gt then
          return;
@@ -9299,7 +9290,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Le then
          return;
@@ -9348,7 +9341,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Lt then
          return;
@@ -9942,7 +9937,9 @@ package body Exp_Ch4 is
          --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if
          --  means we no longer have a /= operation, we are all done.
 
-         Expand_Compare_Minimize_Eliminate_Overflow (N);
+         if Minimized_Eliminated_Overflow_Check (Left_Opnd (N)) then
+            Expand_Compare_Minimize_Eliminate_Overflow (N);
+         end if;
 
          if Nkind (N) /= N_Op_Ne then
             return;
@@ -14114,9 +14111,15 @@ package body Exp_Ch4 is
 
    function Minimized_Eliminated_Overflow_Check (N : Node_Id) return Boolean is
    begin
+      --  The MINIMIZED mode operates in Long_Long_Integer so we cannot use it
+      --  if the type of the expression is already larger.
+
       return
         Is_Signed_Integer_Type (Etype (N))
-          and then Overflow_Check_Mode in Minimized_Or_Eliminated;
+          and then Overflow_Check_Mode in Minimized_Or_Eliminated
+          and then not (Overflow_Check_Mode = Minimized
+                         and then
+                        Esize (Etype (N)) > Standard_Long_Long_Integer_Size);
    end Minimized_Eliminated_Overflow_Check;
 
    ----------------------------
