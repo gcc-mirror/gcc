@@ -1632,9 +1632,15 @@ d_unqualified_name (struct d_info *di)
     ret = d_source_name (di);
   else if (IS_LOWER (peek))
     {
+      int was_expr = di->is_expression;
       if (peek == 'o' && d_peek_next_char (di) == 'n')
-	d_advance (di, 2);
+	{
+	  d_advance (di, 2);
+	  /* Treat cv as naming a conversion operator.  */
+	  di->is_expression = 0;
+	}
       ret = d_operator_name (di);
+      di->is_expression = was_expr;
       if (ret != NULL && ret->type == DEMANGLE_COMPONENT_OPERATOR)
 	{
 	  di->expansion += sizeof "operator" + ret->u.s_operator.op->len - 2;
