@@ -485,6 +485,11 @@ gfc_post_options (const char **pfilename)
     gfc_fatal_error ("Maximum subrecord length cannot exceed %d",
 		     MAX_SUBRECORD_LENGTH);
 
+  /* For now, we always want to debug auxiliary variables we create
+     for shared coarrays.  */
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    flag_debug_aux_vars = 1;
+
   gfc_cpp_post_options ();
 
   if (gfc_option.allow_std & GFC_STD_F2008)

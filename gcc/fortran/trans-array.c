@@ -2940,6 +2940,28 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
       gfc_add_loop_ss_code (nested_loop, nested_loop->ss, subscript, where);
 }
 
+/* Add stride from rank beg to end - 1.  */
+
+static tree
+cas_add_strides (tree expr, tree desc, int beg, int end)
+{
+  int i;
+  tree tmp, stride, lbound;
+  tmp = gfc_index_zero_node;
+  for (i = beg; i < end; i++)
+    {
+      stride = gfc_conv_array_stride (desc, i);
+      lbound = gfc_conv_array_lbound (desc, i);
+      tmp =
+	fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE(tmp), tmp,
+			 fold_build2_loc (input_location, MULT_EXPR,
+					  TREE_TYPE (stride), stride, lbound));
+    }
+  return fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE(expr),
+			  expr, tmp);
+}
+
+
 /* If the full offset is needed, this function calculates the new offset via
 
      new_offset = offset
@@ -2947,9 +2969,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	+ sum (stride[i]*lbound[i]) over remaining codim.  */
 
 static tree
-cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar, bool add_lbound)
+cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
+			   bool correct_full_offset)
 {
   tree tmp;
+
   /* Calculate the actual offset.  */
   /* tmp = _gfortran_cas_coarray_this_image (0).  */
   tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_this_image,
@@ -2960,7 +2984,7 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar, bool add_l
 			 build_int_cst (TREE_TYPE (tmp), 1));
 
   /* tmp = _gfortran_cas_coarray_this_image (0) - 1 + lbound[first_codim] */
-  if (add_lbound)
+  if (correct_full_offset)
     tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (tmp), tmp,
 			   gfc_conv_array_lbound(desc, ar->dimen));
 
@@ -2968,6 +2992,10 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar, bool add_l
    * stride(first_codim).  */
   tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
 			 gfc_conv_array_stride (desc, ar->dimen), tmp);
+
+  if (correct_full_offset)
+    tmp = cas_add_strides (tmp, desc, ar->as->rank + 1,
+			   ar->as->rank + ar->as->corank);
 
   return fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (offset),
 			  offset, tmp);

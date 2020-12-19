@@ -7606,16 +7606,33 @@ gfc_expr_to_initialize (gfc_expr *e)
     if (ref->type == REF_ARRAY && ref->next == NULL)
       {
 	if (ref->u.ar.dimen == 0
-	    && ref->u.ar.as && ref->u.ar.as->corank)
+	    && ref->u.ar.as && ref->u.ar.as->corank
+	    && flag_coarray != GFC_FCOARRAY_SHARED)
 	  return result;
 
 	ref->u.ar.type = AR_FULL;
 
 	for (i = 0; i < ref->u.ar.dimen; i++)
-	  ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
-
+	  {
+	    gfc_free_expr (ref->u.ar.start[i]);
+	    gfc_free_expr (ref->u.ar.end[i]);
+	    gfc_free_expr (ref->u.ar.stride[i]);
+	    ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
+	  }
 	break;
       }
+
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    {
+      for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	{
+	  gfc_free_expr (ref->u.ar.start[i]);
+	  gfc_free_expr (ref->u.ar.end[i]);
+	  gfc_free_expr (ref->u.ar.stride[i]);
+	  ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
+	  ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
+	}
+    }
 
   gfc_free_shape (&result->shape, result->rank);
 
