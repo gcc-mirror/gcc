@@ -149,9 +149,22 @@ darwin_find_version_from_kernel (void)
   if (*version_p++ != '.')
     goto parse_failed;
 
-  /* Darwin20 sees a transition to macOS 11.  */
+  /* Darwin20 sees a transition to macOS 11.  In this, it seems that the
+     mapping to macOS minor version is now shifted to the kernel minor
+     version - 1 (at least for the initial releases).  At this stage, we
+     don't know what macOS version will correspond to Darwin21.  */
   if (major_vers >= 20)
-    asprintf (&new_flag, "11.%02d.00", major_vers - 20);
+    {
+      int minor_vers = *version_p++ - '0';
+      if (ISDIGIT (*version_p))
+	minor_vers = minor_vers * 10 + (*version_p++ - '0');
+      if (*version_p++ != '.')
+	goto parse_failed;
+      if (minor_vers > 0)
+	minor_vers -= 1; /* Kernel 20.3 => macOS 11.2.  */
+      /* It's not yet clear whether patch level will be considered.  */
+      asprintf (&new_flag, "11.%02d.00", minor_vers);
+    }
   else if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
        support three-component system versions.
