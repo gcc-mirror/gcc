@@ -1,3 +1,86 @@
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* cp-lang.c (cxx_get_decl_init): New.
+	(cxx_omp_finish_decl_inits): New.
+	(LANG_HOOKS_GET_DECL_INIT): New.
+	(LANG_HOOKS_OMP_FINISH_DECL_INITS): New.
+	* cp-tree.h (dynamic_initializers): New.
+	* decl.c (dynamic_initializers): New.
+	* decl2.c (c_parse_final_cleanups): Add initializer entries
+	from vars to dynamic_initializers.
+
+2020-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (O_CLOEXEC, O_BINARY): Add window's support.
+	(elf_in::defrost, module_state::do_import)
+	(finish_module_processing): Use O_BINARY.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98343
+	* cp-gimplify.c (source_location_table_entry_hash::pch_nx): Override
+	static member functions from ggc_remove.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (satisfying_constraint): Move up definition
+	and give it bool type.
+	(failed_type_completion_count): Replace with ...
+	(failed_type_completions): ... this.
+	(note_failed_type_completion_for_satisfaction): Append the
+	supplied argument to failed_type_completions.
+	(some_type_complete_p): Define.
+	(sat_entry::maybe_unstable): Replace with ...
+	(sat_entry::ftc_begin, sat_entry::ftc_end): ... these.
+	(satisfaction_cache::ftc_count): Replace with ...
+	(satisfaction_cache::ftc_begin): ... this.
+	(satisfaction_cache::satisfaction_cache): Adjust accordingly.
+	(satisfaction_cache::get): Adjust accordingly, using
+	some_type_complete_p.
+	(satisfaction_cache::save): Adjust accordingly.
+	(satisfying_constraint_p): Remove unused function.
+	(satisfy_constraint): Set satisfying_constraint.
+	(satisfy_declaration_constraints): Likewise.
+	* decl.c (require_deduced_type): Call
+	note_failed_type_completion_for_satisfaction.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (sat_entry::evaluating): New member.
+	(satisfaction_cache::get): If entry->evaluating, diagnose
+	self-recursive satisfaction.  Otherwise, set entry->evaluating
+	if we're not reusing a cached satisfaction result.
+	(satisfaction_cache::save): Clear entry->evaluating.
+	(satisfy_atom): Set up diagnosing_failed_constraint before the
+	first call to get().
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (failed_type_completion_count): New.
+	(note_failed_type_completion_for_satisfaction): New.
+	(sat_entry::constr): Rename to ...
+	(sat_entry::atom): ... this.
+	(sat_entry::location): New member.
+	(sat_entry::maybe_unstable): New member.
+	(sat_entry::diagnose_instability): New member.
+	(struct sat_hasher): Adjust after the above renaming.
+	(get_satisfaction, save_satisfaction): Remove.
+	(satisfaction_cache): Rewrite completely.
+	(satisfy_atom): When instantiation of the parameter mapping
+	fails, set diagnose_instability.  Propagate location from
+	inst_cache.entry to cache.entry if the secondary lookup
+	succeeded.
+	(satisfy_declaration_constraints): When
+	failed_type_completion_count differs before and after
+	satisfaction, then don't cache the satisfaction result.
+	* cp-tree.h (note_failed_type_completion_for_satisfaction):
+	Declare.
+	* pt.c (tsubst) <case TYPENAME_TYPE>: Use
+	complete_type_or_maybe_complain instead of open-coding it.
+	* typeck.c (complete_type_or_maybe_complain): Call
+	note_failed_type_completion_for_satisfaction when type
+	completion fails.
+
 2020-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98340

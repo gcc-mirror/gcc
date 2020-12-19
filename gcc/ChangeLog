@@ -1,3 +1,45 @@
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add has_depend member.
+	(gimplify_scan_omp_clauses): Set it to true if OMP_CLAUSE_DEPEND
+	appears on OMP_TASK.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Force
+	GOVD_WRITTEN on shared variables if task construct has depend clause.
+
+2020-12-18  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/98177
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_same_sized_vectype to obtain index type.
+	(vectorizable_reduction): Likewise.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* langhooks-def.h (lhd_get_decl_init): New.
+	(lhd_finish_decl_inits): New.
+	(LANG_HOOKS_GET_DECL_INIT): New.
+	(LANG_HOOKS_OMP_FINISH_DECL_INITS): New.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_GET_DECL_INIT and
+	LANG_HOOKS_OMP_FINISH_DECL_INITS.
+	* langhooks.c (lhd_omp_get_decl_init): New.
+	(lhd_omp_finish_decl_inits): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_get_decl_init
+	and omp_finish_decl_inits.
+	* omp-offload.c (omp_discover_declare_target_var_r): Use
+	get_decl_init langhook in place of DECL_INITIAL.  Call
+	omp_finish_decl_inits langhook at end of function.
+
+2020-12-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_simd_mode): Use
+	aarch64_full_sve_mode and aarch64_vq_mode directly, instead of
+	going via aarch64_simd_container_mode.
+
+2020-12-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/iterators.md (rot): Add UNSPEC_VCMUL, UNSPEC_VCMUL90,
+	UNSPEC_VCMUL180, UNSPEC_VCMUL270.
+
 2020-12-17  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	* config/arm/arm-cpus.in: Add Cortex-A78C core.

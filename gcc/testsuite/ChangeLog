@@ -1,3 +1,60 @@
+2020-12-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97750.c: Remove check for warning.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* g++.dg/gomp/declare-target-3.C: Only check .offload_var_table
+	entries if offloading is enabled.
+
+2020-12-18  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/98177
+	* g++.target/aarch64/sve/pr98177-1.C: New test.
+	* g++.target/aarch64/sve/pr98177-2.C: New test.
+	* gcc.target/aarch64/sve/pr98177-1.c: New test.
+	* gcc.target/aarch64/sve/pr98177-2.c: New test.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* g++.dg/gomp/declare-target-3.C: New.
+
+2020-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	PR fortran/96012
+	* gfortran.dg/dependency_60.f90: New test.
+	* gfortran.dg/class_allocate_25.f90: New test.
+	* gfortran.dg/class_assign_4.f90: New test.
+	* gfortran.dg/unlimited_polymorphic_32.f03: New test.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98343
+	* g++.dg/pch/pr98343.C: New test.
+	* g++.dg/pch/pr98343.Hs: New file.
+
+2020-12-18  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (go-set-goos): New procedure.
+	(go-gc-match): New procedure.
+	(go-gc-tests): Call go-set-goos.  Use go-gc-match to handle +build
+	lines.  Look for +build lines beyond first line of file.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96840
+	* g++.dg/cpp2a/concepts-pr88395.C: Adjust to expect the
+	self-recursive satisfaction to get directly diagnosed.
+	* g++.dg/cpp2a/concepts-recursive-sat2.C: Likewise.
+	* g++.dg/cpp2a/concepts-recursive-sat4.C: New test.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-complete1.C: New test.
+	* g++.dg/cpp2a/concepts-complete2.C: New test.
+	* g++.dg/cpp2a/concepts-complete3.C: New test.
+
 2020-12-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr97750.c: New.

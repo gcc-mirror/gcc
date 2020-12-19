@@ -1,3 +1,67 @@
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98377
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_precision):
+	Fix mistake.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98370
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_shortest):
+	Provide explicit template arguments to the call to std::max.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98374
+	* src/c++17/floating_to_chars.cc: Guard include of <langinfo.h>
+	with __has_include.
+	(__floating_to_chars_precision) [!defined(RADIXCHAR)]: Don't
+	attempt to obtain the radix character of the current locale,
+	just assume it's '.'.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (from_chars_impl)
+	[!defined(FE_TONEAREST)]: Don't adjust the rounding mode.
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_precision):
+	Likewise.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/to_chars/double.cc: New test, consisting of
+	testcases imported from the MSVC STL testsuite.
+	* testsuite/20_util/to_chars/float.cc: Likewise.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add new exports.
+	* include/std/charconv (to_chars): Declare the floating-point
+	overloads for float, double and long double.
+	* src/c++17/Makefile.am (sources): Add floating_to_chars.cc.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/floating_to_chars.cc: New file.
+	(to_chars): Define for float, double and long double.
+	* testsuite/20_util/to_chars/long_double.cc: New test.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/common.h, src/c++17/ryu/d2fixed.c,
+	src/c++17/ryu/d2fixed_full_table.h, src/c++17/ryu/d2s.c,
+	src/c++17/ryu/d2s_intrinsics.h, src/c++17/ryu/f2s.c,
+	src/c++17/ryu/f2s_intrinsics.h, src/c++17/ryu/generic_128.c:
+	Apply local modifications.
+
+2020-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/MERGE: New file.
+	* src/c++17/ryu/common.h, src/c++17/ryu/d2fixed.c,
+	src/c++17/ryu/d2fixed_full_table.h, src/c++17/ryu/d2s.c,
+	src/c++17/ryu/d2s_full_table.h, src/c++17/ryu/d2s_intrinsics.h,
+	src/c++17/ryu/digit_table.h, src/c++17/ryu/f2s.c,
+	src/c++17/ryu/f2s_intrinsics.h, src/c++17/ryu/generic_128.c,
+	src/c++17/ryu/generic_128.h, src/c++17/ryu/ryu_generic_128.h:
+	Import these files from the Ryu library.
+
 2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/os/djgpp/error_constants.h: Test POSIX errno macros
