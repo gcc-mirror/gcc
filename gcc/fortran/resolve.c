@@ -7619,20 +7619,20 @@ gfc_expr_to_initialize (gfc_expr *e)
 	    gfc_free_expr (ref->u.ar.stride[i]);
 	    ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
 	  }
+
+	if (flag_coarray == GFC_FCOARRAY_SHARED)
+	  for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen;
+	       i++)
+	    {
+	      gfc_free_expr (ref->u.ar.start[i]);
+	      gfc_free_expr (ref->u.ar.end[i]);
+	      gfc_free_expr (ref->u.ar.stride[i]);
+	      ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i]
+		= NULL;
+	      ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
+	    }
 	break;
       }
-
-  if (flag_coarray == GFC_FCOARRAY_SHARED)
-    {
-      for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
-	{
-	  gfc_free_expr (ref->u.ar.start[i]);
-	  gfc_free_expr (ref->u.ar.end[i]);
-	  gfc_free_expr (ref->u.ar.stride[i]);
-	  ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
-	  ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
-	}
-    }
 
   gfc_free_shape (&result->shape, result->rank);
 

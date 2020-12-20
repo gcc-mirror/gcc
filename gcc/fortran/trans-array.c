@@ -6184,8 +6184,11 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   if (coarray && flag_coarray == GFC_FCOARRAY_SHARED)
     {
-      tree elem_size
-	    = size_in_bytes (gfc_get_element_type (TREE_TYPE(se->expr)));
+      tree elem_size;
+      if (expr3_elem_size != NULL_TREE)
+	elem_size = expr3_elem_size;
+      else
+	elem_size = size_in_bytes (gfc_get_element_type (TREE_TYPE(se->expr)));
       int alloc_type
 	     = gfc_cas_get_allocation_type (expr->symtree->n.sym);
       gfc_allocate_shared_coarray (&elseblock, se->expr, elem_size,
