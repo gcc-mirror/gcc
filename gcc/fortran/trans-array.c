@@ -3716,7 +3716,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   int eff_dimen;
 
   need_impl_this_image =
-      ar->dimen_type[ar->dimen + ar->codimen - 1] == DIMEN_THIS_IMAGE;
+    ar->dimen_type[ar->dimen + ar->codimen - 1] == DIMEN_THIS_IMAGE;
 
   if (flag_coarray == GFC_FCOARRAY_SHARED
       && !need_impl_this_image)
@@ -3865,7 +3865,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       add_to_offset (&cst_offset, &offset, tmp);
     }
 
-  if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image
+      && !se->no_impl_this_image)
     {
       tree off;
       tree co_stride = gfc_conv_array_stride (decl, eff_dimen + 1);

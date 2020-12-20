@@ -98,6 +98,11 @@ typedef struct gfc_se
      arrays in gfc_conv_expr_descriptor.  */
   unsigned use_offset:1;
 
+  /* For shared coarrays, do not add the offset for the implied
+     this_image().  */
+
+  unsigned no_impl_this_image:1;
+
   unsigned want_coarray:1;
 
   /* Scalarization parameters.  */
