@@ -1,3 +1,19 @@
+2020-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98366
+	* gcc.c-torture/execute/pr98366.c: New test.
+
+2020-12-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98067
+	* gdc.dg/debug/debug.exp: New test.
+	* gdc.dg/debug/dwarf2/dwarf2.exp: New test.
+	* gdc.dg/debug/dwarf2/imports/pr98067.d: New test.
+	* gdc.dg/debug/dwarf2/langdw2.d: New test.
+	* gdc.dg/debug/dwarf2/langdw3.d: New test.
+	* gdc.dg/debug/dwarf2/pr98067.d: New test.
+	* gdc.dg/debug/trivial.d: New test.
+
 2020-12-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr97750.c: Remove check for warning.

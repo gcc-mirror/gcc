@@ -1,3 +1,28 @@
+2020-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98366
+	* fold-const.c (native_encode_initializer): Don't try to
+	memset more than total_bytes with off == -1 even if len is large.
+	Handle flexible array member initializers if off == -1 and mask is
+	NULL.
+	* expr.c (convert_to_bytes): Remove.
+	(constant_byte_string): Use native_encode_initializer instead of
+	convert_to_bytes.  Remove extraneous semicolon.  Punt on various
+	corner-cases the APIs don't handle, like sizes > INT_MAX,
+	BITS_PER_UNIT != 8, CHAR_BIT != 8.
+
+2020-12-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98067
+	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Handle
+	  CONST_DECL only if is_fortran, is_ada, or is_dlang.
+
+2020-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98378
+	* gimple-ssa-store-merging.c (find_bswap_or_nop): Punt if CONSTRUCTOR
+	has no elements.
+
 2020-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (struct gimplify_omp_ctx): Add has_depend member.
