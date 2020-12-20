@@ -156,6 +156,63 @@ public:
       = new HIR::IdentifierExpr (mapping, expr.as_string (), expr.get_locus ());
   }
 
+  void visit (AST::ArrayExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+    std::vector<HIR::Attribute> inner_attribs;
+
+    expr.get_array_elems ()->accept_vis (*this);
+    rust_assert (translated_array_elems != nullptr);
+    HIR::ArrayElems *elems = translated_array_elems;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::ArrayExpr (mapping, std::unique_ptr<HIR::ArrayElems> (elems),
+			    inner_attribs, outer_attribs, expr.get_locus ());
+  }
+
+  void visit (AST::ArrayIndexExpr &expr)
+  {
+    std::vector<Attribute> outer_attribs;
+    HIR::Expr *array_expr
+      = ASTLoweringExpr::translate (expr.get_array_expr ().get ());
+    HIR::Expr *array_index_expr
+      = ASTLoweringExpr::translate (expr.get_index_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::ArrayIndexExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (array_expr),
+				 std::unique_ptr<HIR::Expr> (array_index_expr),
+				 outer_attribs, expr.get_locus ());
+  }
+
+  void visit (AST::ArrayElemsValues &elems)
+  {
+    std::vector<std::unique_ptr<HIR::Expr> > elements;
+    elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
+      HIR::Expr *translated_elem = ASTLoweringExpr::translate (elem);
+      elements.push_back (std::unique_ptr<HIR::Expr> (translated_elem));
+      return true;
+    });
+
+    translated_array_elems = new HIR::ArrayElemsValues (std::move (elements));
+  }
+
+  void visit (AST::ArrayElemsCopied &elems)
+  {
+    // TODO
+    gcc_unreachable ();
+  }
+
   void visit (AST::LiteralExpr &expr)
   {
     HIR::Literal::LitType type = HIR::Literal::LitType::CHAR;
@@ -324,9 +381,10 @@ public:
   }
 
 private:
-  ASTLoweringExpr () : translated (nullptr) {}
+  ASTLoweringExpr () : translated (nullptr), translated_array_elems (nullptr) {}
 
   HIR::Expr *translated;
+  HIR::ArrayElems *translated_array_elems;
 };
 
 } // namespace HIR

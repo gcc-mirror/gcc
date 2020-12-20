@@ -23,6 +23,8 @@
 #include <mpfr.h>
 #include <mpc.h>
 
+#include "rust-location.h"
+#include "rust-linemap.h"
 #include "operator.h"
 
 extern bool

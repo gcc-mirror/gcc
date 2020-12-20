@@ -23,6 +23,7 @@
 #include "rust-hir-full.h"
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
+#include "rust-tyty-resolver.h"
 
 namespace Rust {
 namespace Resolver {
@@ -219,10 +220,63 @@ public:
 
   void visit (HIR::BlockExpr &expr);
 
+  void visit (HIR::ArrayIndexExpr &expr)
+  {
+    // check the index
+    TyTy::IntType size_ty (expr.get_index_expr ()->get_mappings ().get_hirid (),
+			   TyTy::IntType::I32);
+    auto resolved
+      = size_ty.combine (TypeCheckExpr::Resolve (expr.get_index_expr ()));
+    context->insert_type (expr.get_index_expr ()->get_mappings ().get_hirid (),
+			  resolved);
+
+    expr.get_array_expr ()->accept_vis (*this);
+    rust_assert (infered != nullptr);
+    printf ("Resolved array-index 1  [%u] -> %s\n",
+	    expr.get_mappings ().get_hirid (), infered->as_string ().c_str ());
+    // extract the element type out now from the base type
+    infered = TyTyExtractorArray::ExtractElementTypeFromArray (infered);
+
+    printf ("Resolved array-index 2  [%u] -> %s\n",
+	    expr.get_mappings ().get_hirid (), infered->as_string ().c_str ());
+    printf ("array-expr node [%u]\n",
+	    expr.get_array_expr ()->get_mappings ().get_hirid ());
+  }
+
+  void visit (HIR::ArrayExpr &expr)
+  {
+    HIR::ArrayElems *elements = expr.get_internal_elements ();
+    size_t num_elems = elements->get_num_elements ();
+
+    elements->accept_vis (*this);
+    rust_assert (infered_array_elems != nullptr);
+
+    infered = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), num_elems,
+				   infered_array_elems);
+  }
+
+  void visit (HIR::ArrayElemsValues &elems)
+  {
+    std::vector<TyTy::TyBase *> types;
+    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
+      types.push_back (TypeCheckExpr::Resolve (e));
+      return true;
+    });
+
+    infered_array_elems = types[0];
+    for (size_t i = 1; i < types.size (); i++)
+      {
+	infered_array_elems = infered_array_elems->combine (types.at (i));
+      }
+  }
+
 private:
-  TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
+  TypeCheckExpr ()
+    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr)
+  {}
 
   TyTy::TyBase *infered;
+  TyTy::TyBase *infered_array_elems;
 };
 
 } // namespace Resolver

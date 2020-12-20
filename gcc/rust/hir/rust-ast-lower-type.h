@@ -21,6 +21,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-diagnostics.h"
+#include "rust-ast-lower-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -73,6 +74,27 @@ public:
       = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
 			   path.get_locus (),
 			   path.has_opening_scope_resolution_op ());
+    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+  }
+
+  void visit (AST::ArrayType &type)
+  {
+    HIR::Type *translated_type
+      = ASTLoweringType::translate (type.get_elem_type ().get ());
+    HIR::Expr *array_size
+      = ASTLoweringExpr::translate (type.get_size_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::ArrayType (mapping,
+			    std::unique_ptr<HIR::Type> (translated_type),
+			    std::unique_ptr<HIR::Expr> (array_size),
+			    type.get_locus ());
     mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
 			       translated);
   }

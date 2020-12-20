@@ -42,7 +42,7 @@ public:
 
   ~ResolveType () {}
 
-  virtual void visit (AST::TypePath &path)
+  void visit (AST::TypePath &path)
   {
     // this will need changed to handle mod/crate/use globs and look
     // at the segments in granularity
@@ -54,6 +54,11 @@ public:
 					 Definition{path.get_node_id (),
 						    parent});
       }
+  }
+
+  void visit (AST::ArrayType &type)
+  {
+    type.get_elem_type ()->accept_vis (*this);
   }
 
 private:
