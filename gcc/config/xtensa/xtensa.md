@@ -469,6 +469,27 @@
 })
 
 
+;; Byte swap.
+
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=&a")
+	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  "!optimize_size"
+  "ssai\t8\;srli\t%0, %1, 16\;src\t%0, %0, %1\;src\t%0, %0, %0\;src\t%0, %1, %0"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"15")])
+
+(define_insn "bswapdi2"
+  [(set (match_operand:DI 0 "register_operand" "=&a")
+	(bswap:DI (match_operand:DI 1 "register_operand" "r")))]
+  "!optimize_size"
+  "ssai\t8\;srli\t%0, %D1, 16\;src\t%0, %0, %D1\;src\t%0, %0, %0\;src\t%0, %D1, %0\;srli\t%D0, %1, 16\;src\t%D0, %D0, %1\;src\t%D0, %D0, %D0\;src\t%D0, %1, %D0"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"27")])
+
+
 ;; Negation and one's complement.
 
 (define_insn "negsi2"
