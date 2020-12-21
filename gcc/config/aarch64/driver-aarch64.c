@@ -27,8 +27,7 @@
 #include "tm.h"
 
 /* Defined in common/config/aarch64/aarch64-common.c.  */
-std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
-							unsigned long);
+std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
 
 struct aarch64_arch_extension
 {
