@@ -1223,8 +1223,9 @@ aarch64_init_memtag_builtins (void)
     = aarch64_general_add_builtin ("__builtin_aarch64_memtag_"#N, \
 				   T, AARCH64_MEMTAG_BUILTIN_##F); \
   aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_##F - \
-			      AARCH64_MEMTAG_BUILTIN_START - 1] = \
-				{T, CODE_FOR_##I};
+			      AARCH64_MEMTAG_BUILTIN_START - 1].ftype = T; \
+  aarch64_memtag_builtin_data[AARCH64_MEMTAG_BUILTIN_##F - \
+			      AARCH64_MEMTAG_BUILTIN_START - 1].icode = CODE_FOR_##I;
 
   fntype = build_function_type_list (ptr_type_node, ptr_type_node,
 				     uint64_type_node, NULL);
