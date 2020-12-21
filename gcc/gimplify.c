@@ -4497,7 +4497,11 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
     gimplify_init_ctor_eval (cref, CONSTRUCTOR_ELTS (value),
 			     pre_p, cleared);
   else
-    gimplify_seq_add_stmt (pre_p, gimple_build_assign (cref, value));
+    {
+      if (gimplify_expr (&value, pre_p, NULL, is_gimple_val, fb_rvalue)
+	  != GS_ERROR)
+	gimplify_seq_add_stmt (pre_p, gimple_build_assign (cref, value));
+    }
 
   /* We exit the loop when the index var is equal to the upper bound.  */
   gimplify_seq_add_stmt (pre_p,
