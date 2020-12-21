@@ -146,7 +146,13 @@ void MessageBuffer::Append (char c)
 
 void MessageBuffer::AppendInteger (unsigned u)
 {
-  std::string v (std::to_string (u));
+  // Sigh, even though std::to_string is C++11, we support building on
+  // gcc 4.8, which is a C++11 compiler lacking std::to_string.  so
+  // have something horrible.
+  std::string v (20, 0);
+  size_t len = snprintf (const_cast<char *> (v.data ()), v.size (), "%u", u);
+  v.erase (len);
+
   AppendWord (v);
 }
 
