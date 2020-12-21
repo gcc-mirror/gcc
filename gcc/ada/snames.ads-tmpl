@@ -1333,7 +1333,6 @@ package Snames is
    Name_Import_Address                   : constant Name_Id := N + $;
    Name_Import_Largest_Value             : constant Name_Id := N + $;
    Name_Import_Value                     : constant Name_Id := N + $;
-   Name_Is_Negative                      : constant Name_Id := N + $;
    Name_Line                             : constant Name_Id := N + $;
    Name_Rotate_Left                      : constant Name_Id := N + $;
    Name_Rotate_Right                     : constant Name_Id := N + $;

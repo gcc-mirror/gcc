@@ -63,7 +63,7 @@ package System.Img_Real is
 
    procedure Set_Image_Real
      (V    : Long_Long_Float;
-      S    : out String;
+      S    : in out String;
       P    : in out Natural;
       Fore : Natural;
       Aft  : Natural;

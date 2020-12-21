@@ -48,9 +48,6 @@ package System.Unsigned_Types is
    type Long_Long_Unsigned      is mod 2 ** Long_Long_Integer'Size;
    type Long_Long_Long_Unsigned is mod Max_Binary_Modulus;
 
-   type Float_Unsigned          is mod 2 ** Float'Size;
-   --  Used in the implementation of Is_Negative intrinsic (see Exp_Intr)
-
    type Packed_Byte is mod 2 ** 8;
    for Packed_Byte'Size use 8;
    pragma Universal_Aliasing (Packed_Byte);

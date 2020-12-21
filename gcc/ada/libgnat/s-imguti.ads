@@ -58,4 +58,19 @@ package System.Img_Util is
    --  may destroy the value in Digs, which is why Digs is in-out (this happens
    --  if rounding is required).
 
+   type Floating_Invalid_Value is (Minus_Infinity, Infinity, Not_A_Number);
+
+   procedure Set_Floating_Invalid_Value
+     (V    : Floating_Invalid_Value;
+      S    : out String;
+      P    : in out Natural;
+      Fore : Natural;
+      Aft  : Natural;
+      Exp  : Natural);
+   --  Sets the image of a floating-point invalid value, starting at S (P + 1),
+   --  updating P to point to the last character stored. The caller promises
+   --  that the buffer is large enough and therefore no check is made for it.
+   --  Constraint_Error will not necessarily be raised if the requirement is
+   --  violated since it is valid to compile this unit with checks off.
+
 end System.Img_Util;
