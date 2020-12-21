@@ -122,6 +122,10 @@ struct d_info
   /* Non-zero if we are parsing the type operand of a conversion
      operator, but not when in an expression.  */
   int is_conversion;
+  /*  1: using new unresolved-name grammar.
+     -1: using new unresolved-name grammar and saw an unresolved-name.
+      0: using old unresolved-name grammar.  */
+  int unresolved_name_state;
   /* If DMGL_NO_RECURSE_LIMIT is not active then this is set to
      the current recursion level.  */
   unsigned int recursion_level;
