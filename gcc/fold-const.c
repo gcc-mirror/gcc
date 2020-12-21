@@ -8280,9 +8280,9 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		    return 0;
 		  if (pos + fieldsize > total_bytes)
 		    {
-		      if (ptr != NULL && total_bytes - o < len)
-			memset (ptr + (total_bytes - o),
-				'\0', MIN (pos + fieldsize - o, len));
+		      if (ptr != NULL && total_bytes < len)
+			memset (ptr + total_bytes, '\0',
+				MIN (pos + fieldsize, len) - total_bytes);
 		      total_bytes = pos + fieldsize;
 		    }
 		}
