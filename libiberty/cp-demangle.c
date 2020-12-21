@@ -3476,10 +3476,22 @@ d_expression_1 (struct d_info *di)
 	      right = d_exprlist (di, 'E');
 	    else if (!strcmp (code, "dt") || !strcmp (code, "pt"))
 	      {
-		right = d_unqualified_name (di);
-		if (d_peek_char (di) == 'I')
-		  right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
-				       right, d_template_args (di));
+		peek = d_peek_char (di);
+		/* These codes start a qualified name.  */
+		if ((peek == 'g' && d_peek_next_char (di) == 's')
+		    || (peek == 's' && d_peek_next_char (di) == 'r'))
+		  right = d_expression_1 (di);
+		else
+		  {
+		    /* Otherwise it's an unqualified name.  We use
+		       d_unqualified_name rather than d_expression_1 here for
+		       old mangled names that didn't add 'on' before operator
+		       names.  */
+		    right = d_unqualified_name (di);
+		    if (d_peek_char (di) == 'I')
+		      right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
+					   right, d_template_args (di));
+		  }
 	      }
 	    else
 	      right = d_expression_1 (di);

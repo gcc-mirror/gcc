@@ -1482,3 +1482,6 @@ void g<A>(S<&A::operator int>)
 
 _Z1jI1AEDTcldtfp_oncvPT_EES1_
 decltype (({parm#1}.(operator A*))()) j<A>(A)
+
+_Z1fI1AEDtdtfp_srT_1xES1_
+decltype ({parm#1}.A::x) f<A>(A)
