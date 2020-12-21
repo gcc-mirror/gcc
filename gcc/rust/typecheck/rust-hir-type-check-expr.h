@@ -232,15 +232,9 @@ public:
 
     expr.get_array_expr ()->accept_vis (*this);
     rust_assert (infered != nullptr);
-    printf ("Resolved array-index 1  [%u] -> %s\n",
-	    expr.get_mappings ().get_hirid (), infered->as_string ().c_str ());
+
     // extract the element type out now from the base type
     infered = TyTyExtractorArray::ExtractElementTypeFromArray (infered);
-
-    printf ("Resolved array-index 2  [%u] -> %s\n",
-	    expr.get_mappings ().get_hirid (), infered->as_string ().c_str ());
-    printf ("array-expr node [%u]\n",
-	    expr.get_array_expr ()->get_mappings ().get_hirid ());
   }
 
   void visit (HIR::ArrayExpr &expr)
@@ -268,6 +262,11 @@ public:
       {
 	infered_array_elems = infered_array_elems->combine (types.at (i));
       }
+  }
+
+  void visit (HIR::ArrayElemsCopied &elems)
+  {
+    infered_array_elems = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
   }
 
 private:

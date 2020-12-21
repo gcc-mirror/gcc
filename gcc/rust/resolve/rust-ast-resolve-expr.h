@@ -150,8 +150,8 @@ public:
 
   void visit (AST::ArrayElemsCopied &elems)
   {
-    // TODO
-    gcc_unreachable ();
+    ResolveExpr::go (elems.get_num_copies ().get (), elems.get_node_id ());
+    ResolveExpr::go (elems.get_elem_to_copy ().get (), elems.get_node_id ());
   }
 
 private:

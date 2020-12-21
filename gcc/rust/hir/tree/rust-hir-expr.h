@@ -980,21 +980,25 @@ class ArrayElemsCopied : public ArrayElems
 {
   std::unique_ptr<Expr> elem_to_copy;
   std::unique_ptr<Expr> num_copies;
+  size_t folded_copy_amount;
 
   // TODO: should this store location data?
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
-		    std::unique_ptr<Expr> copy_amount)
+		    std::unique_ptr<Expr> copy_amount,
+		    size_t folded_copy_amount)
     : elem_to_copy (std::move (copied_elem)),
-      num_copies (std::move (copy_amount))
+      num_copies (std::move (copy_amount)),
+      folded_copy_amount (folded_copy_amount)
   {}
 
   // Copy constructor required due to unique_ptr - uses custom clone
   ArrayElemsCopied (ArrayElemsCopied const &other)
     : elem_to_copy (other.elem_to_copy->clone_expr ()),
-      num_copies (other.num_copies->clone_expr ())
+      num_copies (other.num_copies->clone_expr ()),
+      folded_copy_amount (other.folded_copy_amount)
   {}
 
   // Overloaded assignment operator for deep copying
@@ -1002,6 +1006,7 @@ public:
   {
     elem_to_copy = other.elem_to_copy->clone_expr ();
     num_copies = other.num_copies->clone_expr ();
+    folded_copy_amount = other.folded_copy_amount;
 
     return *this;
   }
@@ -1014,7 +1019,9 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  size_t get_num_elements () const override { return 0; }
+  size_t get_num_elements () const override { return folded_copy_amount; }
+
+  Expr *get_elem_to_copy () { return elem_to_copy.get (); }
 
 protected:
   ArrayElemsCopied *clone_array_elems_impl () const override

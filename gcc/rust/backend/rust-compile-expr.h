@@ -211,6 +211,15 @@ public:
     });
   }
 
+  void visit (HIR::ArrayElemsCopied &elems)
+  {
+    Bexpression *translated_expr
+      = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
+
+    for (size_t i = 0; i < elems.get_num_elements (); ++i)
+      constructor.push_back (translated_expr);
+  }
+
   void visit (HIR::ArithmeticOrLogicalExpr &expr)
   {
     Operator op;

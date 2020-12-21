@@ -26,6 +26,42 @@
 namespace Rust {
 namespace HIR {
 
+class ArrayCapacityConstant : public ASTLoweringBase
+{
+public:
+  static bool fold (AST::Expr *expr, size_t *folded_result)
+  {
+    ArrayCapacityConstant folder;
+    expr->accept_vis (folder);
+    *folded_result = folder.result;
+    return folder.ok;
+  }
+
+  virtual ~ArrayCapacityConstant () {}
+
+  void visit (AST::LiteralExpr &expr)
+  {
+    switch (expr.get_lit_type ())
+      {
+	case AST::Literal::LitType::INT: {
+	  ok = true;
+	  std::stringstream ss (expr.as_string ());
+	  ss >> result;
+	}
+	break;
+
+      default:
+	return;
+      }
+  }
+
+private:
+  ArrayCapacityConstant () : ok (false), result (-1) {}
+
+  bool ok;
+  size_t result;
+}; // namespace Resolver
+
 class ASTLoweringExpr : public ASTLoweringBase
 {
 public:
@@ -209,8 +245,23 @@ public:
 
   void visit (AST::ArrayElemsCopied &elems)
   {
-    // TODO
-    gcc_unreachable ();
+    HIR::Expr *element
+      = ASTLoweringExpr::translate (elems.get_elem_to_copy ().get ());
+    HIR::Expr *num_copies
+      = ASTLoweringExpr::translate (elems.get_num_copies ().get ());
+
+    size_t folded;
+    if (!ArrayCapacityConstant::fold (elems.get_num_copies ().get (), &folded))
+      {
+	rust_fatal_error (elems.get_num_copies ()->get_locus_slow (),
+			  "failed to fold capacity constant");
+	return;
+      }
+
+    translated_array_elems
+      = new HIR::ArrayElemsCopied (std::unique_ptr<HIR::Expr> (element),
+				   std::unique_ptr<HIR::Expr> (num_copies),
+				   folded);
   }
 
   void visit (AST::LiteralExpr &expr)
