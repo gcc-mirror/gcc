@@ -2634,7 +2634,7 @@ package body Sem_Prag is
                   Context := Anonymous_Object (Context);
                end if;
 
-               if (Is_Subprogram (Context)
+               if (Is_Subprogram_Or_Entry (Context)
                      or else Ekind (Context) = E_Task_Type
                      or else Is_Single_Task_Object (Context))
                  and then
@@ -2659,7 +2659,7 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
 
-                     if Is_Subprogram (Context) then
+                     if Is_Subprogram_Or_Entry (Context) then
                         SPARK_Msg_NE
                           (Fix_Msg (Subp_Id, "\item already appears as input "
                            & "of subprogram &"), Item, Context);
