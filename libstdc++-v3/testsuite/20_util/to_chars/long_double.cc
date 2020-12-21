@@ -19,6 +19,7 @@
 // hexadecimal floating-point literals.
 // { dg-do run { target c++17 } }
 // { dg-xfail-run-if "Ryu needs __int128" { large_long_double && { ! int128 } } }
+// { dg-require-effective-target ieee-floats }
 
 #include <charconv>
 
