@@ -60,7 +60,6 @@ TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type)
 void
 TypeCheckContext::insert_type (HirId id, TyTy::TyBase *type)
 {
-  rust_assert (resolved.find (id) == resolved.end ());
   rust_assert (type != nullptr);
   resolved[id] = type;
 }

@@ -36,10 +36,6 @@ ResolvePath::visit (HIR::PathInExpression &expr)
       return;
     }
 
-  printf ("PATHIN have ast node id %u ref %u for expr [%s]\n",
-	  expr.get_mappings ().get_nodeid (), ref_node_id,
-	  expr.as_string ().c_str ());
-
   HirId ref;
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
@@ -52,9 +48,6 @@ ResolvePath::visit (HIR::PathInExpression &expr)
   Bfunction *fn;
   if (!ctx->lookup_function_decl (ref, &fn))
     {
-      printf (
-	"path failed to lookup function attempting to forward resolve!\n");
-
       // this might fail because its a forward decl so we can attempt to
       // resolve it now
       HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (

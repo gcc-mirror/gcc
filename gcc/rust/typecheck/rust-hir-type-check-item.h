@@ -24,6 +24,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-stmt.h"
 #include "rust-tyty-visitor.h"
+#include "rust-tyty-resolver.h"
 
 namespace Rust {
 namespace Resolver {
@@ -77,6 +78,19 @@ public:
       TypeCheckStmt::Resolve (s);
       return true;
     });
+
+    // now that the stmts have been resolved we must resolve the block of locals
+    // and make sure the variables have been resolved
+    auto body_mappings = function.function_body->get_mappings ();
+    Rib *rib = nullptr;
+    if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
+      {
+	rust_fatal_error (function.get_locus (),
+			  "failed to lookup locals per block");
+	return;
+      }
+
+    TyTyResolver::Resolve (rib, mappings, resolver, context);
 
     context->pop_return_type ();
   }
