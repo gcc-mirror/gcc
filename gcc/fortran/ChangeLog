@@ -1,3 +1,8 @@
+2020-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* trans.c (create_var_debug_raw): Set DECL_ARTIFICIAL
+	on variables.
+
 2020-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83118

@@ -1,3 +1,13 @@
+2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.md (bswapsi2, bswapdi2): New patterns.
+
+2020-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/98400
+	* doc/invoke.texi (-mbackchain): Fix a typo - -mmo-backchain ->
+	-mno-backchain.
+
 2020-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/98366
