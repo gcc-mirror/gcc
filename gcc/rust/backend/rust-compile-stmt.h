@@ -38,6 +38,18 @@ public:
 
   virtual ~CompileStmt () {}
 
+  void visit (HIR::ExprStmtWithBlock &stmt)
+  {
+    ok = true;
+    auto translated = CompileExpr::Compile (stmt.get_expr (), ctx);
+
+    // these can be null
+    if (translated == nullptr)
+      return;
+
+    gcc_unreachable ();
+  }
+
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
     ok = true;

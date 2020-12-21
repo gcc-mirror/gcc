@@ -23,6 +23,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
+#include "rust-ast-lower-block.h"
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 
@@ -45,6 +46,24 @@ public:
   }
 
   virtual ~ASTLoweringStmt () {}
+
+  void visit (AST::ExprStmtWithBlock &stmt)
+  {
+    HIR::ExprWithBlock *expr
+      = ASTLoweringExprWithBlock::translate (stmt.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    translated
+      = new HIR::ExprStmtWithBlock (mapping,
+				    std::unique_ptr<HIR::ExprWithBlock> (expr),
+				    stmt.get_locus ());
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       stmt.get_locus ());
+    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
+  }
 
   void visit (AST::ExprStmtWithoutBlock &stmt)
   {

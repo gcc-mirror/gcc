@@ -36,6 +36,11 @@ public:
     stmt->accept_vis (resolver);
   }
 
+  void visit (HIR::ExprStmtWithBlock &stmt)
+  {
+    TypeCheckExpr::Resolve (stmt.get_expr ());
+  }
+
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
     TypeCheckExpr::Resolve (stmt.get_expr ());

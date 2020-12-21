@@ -179,6 +179,46 @@ public:
     infered = lhs->combine (rhs);
   }
 
+  void visit (HIR::ComparisonExpr &expr)
+  {
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+
+    infered = lhs->combine (rhs);
+    // FIXME this will need to turn into bool
+  }
+
+  void visit (HIR::LazyBooleanExpr &expr)
+  {
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+
+    infered = lhs->combine (rhs);
+    // FIXME this will need to turn into bool
+  }
+
+  void visit (HIR::IfExpr &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+  }
+
+  void visit (HIR::IfExprConseqElse &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+    TypeCheckExpr::Resolve (expr.get_else_block ());
+  }
+
+  void visit (HIR::IfExprConseqIf &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+    TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
+  }
+
+  void visit (HIR::BlockExpr &expr);
+
 private:
   TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
 

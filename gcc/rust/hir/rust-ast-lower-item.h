@@ -25,6 +25,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-stmt.h"
 #include "rust-ast-lower-pattern.h"
+#include "rust-ast-lower-block.h"
 
 namespace Rust {
 namespace HIR {
@@ -83,7 +84,7 @@ public:
 
     std::unique_ptr<HIR::BlockExpr> function_body
       = std::unique_ptr<HIR::BlockExpr> (
-	translate (function.get_definition ().get ()));
+	ASTLoweringBlock::translate (function.get_definition ().get ()));
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
@@ -114,33 +115,6 @@ public:
       }
 
     translated = fn;
-  }
-
-  // Helpers
-
-  HIR::BlockExpr *translate (AST::BlockExpr *function_body)
-  {
-    std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
-    std::unique_ptr<HIR::ExprWithoutBlock> block_expr;
-    std::vector<HIR::Attribute> inner_attribs;
-    std::vector<HIR::Attribute> outer_attribs;
-
-    function_body->iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
-      auto translated_stmt = ASTLoweringStmt::translate (s);
-      block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
-      return true;
-    });
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, function_body->get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-
-    return new HIR::BlockExpr (mapping, std::move (block_stmts),
-			       std::move (block_expr),
-			       std::move (inner_attribs),
-			       std::move (outer_attribs),
-			       function_body->get_locus ());
   }
 
 private:

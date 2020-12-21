@@ -550,6 +550,8 @@ public:
     return right_expr;
   }
 
+  ExprType get_kind () { return expr_type; }
+
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
 protected:
@@ -627,6 +629,8 @@ public:
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
+
+  ExprType get_kind () { return expr_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

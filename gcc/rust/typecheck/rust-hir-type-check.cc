@@ -20,6 +20,7 @@
 #include "rust-hir-full.h"
 #include "rust-hir-type-check-toplevel.h"
 #include "rust-hir-type-check-item.h"
+#include "rust-hir-type-check-expr.h"
 
 namespace Rust {
 namespace Resolver {
@@ -32,6 +33,16 @@ TypeResolution::Resolve (HIR::Crate &crate)
 
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckItem::Resolve (it->get ());
+}
+
+// RUST_HIR_TYPE_CHECK_EXPR
+void
+TypeCheckExpr::visit (HIR::BlockExpr &expr)
+{
+  expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
+    TypeCheckStmt::Resolve (s);
+    return true;
+  });
 }
 
 } // namespace Resolver

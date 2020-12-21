@@ -22,6 +22,7 @@
 #include "rust-compile-base.h"
 #include "rust-compile-tyty.h"
 #include "rust-compile-resolve-path.h"
+#include "rust-compile-block.h"
 
 namespace Rust {
 namespace Compile {
@@ -271,6 +272,31 @@ public:
 
     translated = ctx->get_backend ()->binary_expression (op, lhs, rhs,
 							 expr.get_locus ());
+  }
+
+  void visit (HIR::IfExpr &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::IfExprConseqElse &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::IfExprConseqIf &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::BlockExpr &expr)
+  {
+    auto code_block = CompileBlock::compile (&expr, ctx);
+    auto block_stmt = ctx->get_backend ()->block_statement (code_block);
+    ctx->add_statement (block_stmt);
   }
 
 private:

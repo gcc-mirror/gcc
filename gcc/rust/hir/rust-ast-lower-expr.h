@@ -20,8 +20,8 @@
 #define RUST_AST_LOWER_EXPR
 
 #include "rust-diagnostics.h"
-
 #include "rust-ast-lower-base.h"
+#include "rust-ast-lower-block.h"
 
 namespace Rust {
 namespace HIR {
@@ -33,18 +33,41 @@ public:
   {
     ASTLoweringExpr resolver;
     expr->accept_vis (resolver);
-    if (resolver.translated != nullptr)
+    if (resolver.translated == nullptr)
       {
-	resolver.mappings->insert_hir_expr (
-	  resolver.translated->get_mappings ().get_crate_num (),
-	  resolver.translated->get_mappings ().get_hirid (),
-	  resolver.translated);
+	rust_fatal_error (expr->get_locus_slow (), "Failed to lower expr: [%s]",
+			  expr->as_string ().c_str ());
+	return nullptr;
       }
+
+    resolver.mappings->insert_hir_expr (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (), resolver.translated);
 
     return resolver.translated;
   }
 
   virtual ~ASTLoweringExpr () {}
+
+  void visit (AST::IfExpr &expr)
+  {
+    translated = ASTLoweringIfBlock::translate (&expr);
+  }
+
+  void visit (AST::IfExprConseqElse &expr)
+  {
+    translated = ASTLoweringIfBlock::translate (&expr);
+  }
+
+  void visit (AST::IfExprConseqIf &expr)
+  {
+    translated = ASTLoweringIfBlock::translate (&expr);
+  }
+
+  void visit (AST::BlockExpr &expr)
+  {
+    translated = ASTLoweringBlock::translate (&expr);
+  }
 
   void visit (AST::PathInExpression &expr)
   {
@@ -228,6 +251,76 @@ public:
 					  std::unique_ptr<HIR::Expr> (lhs),
 					  std::unique_ptr<HIR::Expr> (rhs),
 					  kind, expr.get_locus ());
+  }
+
+  void visit (AST::ComparisonExpr &expr)
+  {
+    HIR::ComparisonExpr::ExprType kind;
+    switch (expr.get_kind ())
+      {
+      case AST::ComparisonExpr::ExprType::EQUAL:
+	kind = HIR::ComparisonExpr::ExprType::EQUAL;
+	break;
+      case AST::ComparisonExpr::ExprType::NOT_EQUAL:
+	kind = HIR::ComparisonExpr::ExprType::NOT_EQUAL;
+	break;
+      case AST::ComparisonExpr::ExprType::GREATER_THAN:
+	kind = HIR::ComparisonExpr::ExprType::GREATER_THAN;
+	break;
+      case AST::ComparisonExpr::ExprType::LESS_THAN:
+	kind = HIR::ComparisonExpr::ExprType::LESS_THAN;
+	break;
+      case AST::ComparisonExpr::ExprType::GREATER_OR_EQUAL:
+	kind = HIR::ComparisonExpr::ExprType::GREATER_OR_EQUAL;
+	break;
+      case AST::ComparisonExpr::ExprType::LESS_OR_EQUAL:
+	kind = HIR::ComparisonExpr::ExprType::LESS_OR_EQUAL;
+	break;
+      }
+
+    HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
+    rust_assert (lhs != nullptr);
+    HIR::Expr *rhs = ASTLoweringExpr::translate (expr.get_right_expr ().get ());
+    rust_assert (rhs != nullptr);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::ComparisonExpr (mapping, std::unique_ptr<HIR::Expr> (lhs),
+				 std::unique_ptr<HIR::Expr> (rhs), kind,
+				 expr.get_locus ());
+  }
+
+  void visit (AST::LazyBooleanExpr &expr)
+  {
+    HIR::LazyBooleanExpr::ExprType kind;
+    switch (expr.get_kind ())
+      {
+      case AST::LazyBooleanExpr::ExprType::LOGICAL_AND:
+	kind = HIR::LazyBooleanExpr::ExprType::LOGICAL_AND;
+	break;
+      case AST::LazyBooleanExpr::ExprType::LOGICAL_OR:
+	kind = HIR::LazyBooleanExpr::ExprType::LOGICAL_OR;
+	break;
+      }
+
+    HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
+    rust_assert (lhs != nullptr);
+    HIR::Expr *rhs = ASTLoweringExpr::translate (expr.get_right_expr ().get ());
+    rust_assert (rhs != nullptr);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::LazyBooleanExpr (mapping, std::unique_ptr<HIR::Expr> (lhs),
+				  std::unique_ptr<HIR::Expr> (rhs), kind,
+				  expr.get_locus ());
   }
 
 private:

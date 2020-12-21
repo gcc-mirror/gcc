@@ -538,6 +538,8 @@ public:
   Expr *get_lhs () { return main_or_left_expr.get (); }
   Expr *get_rhs () { return right_expr.get (); }
 
+  ExprType get_kind () { return expr_type; }
+
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
 protected:
@@ -3647,6 +3649,8 @@ public:
 
   void vis_else_block (HIRVisitor &vis) { else_block->accept_vis (vis); }
 
+  BlockExpr *get_else_block () { return else_block.get (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3714,6 +3718,8 @@ public:
   {
     conseq_if_expr->accept_vis (vis);
   }
+
+  IfExpr *get_conseq_if_expr () { return conseq_if_expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -95,6 +95,40 @@ public:
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::ComparisonExpr &expr)
+  {
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::LazyBooleanExpr &expr)
+  {
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::IfExpr &expr)
+  {
+    ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::IfExprConseqElse &expr)
+  {
+    ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_else_block ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::IfExprConseqIf &expr)
+  {
+    ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_conseq_if_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::BlockExpr &expr);
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };
