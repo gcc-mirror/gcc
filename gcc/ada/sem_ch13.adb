@@ -9976,11 +9976,23 @@ package body Sem_Ch13 is
    --  Start of processing for Build_Predicate_Functions
 
    begin
-      --  Return if already built or if type does not have predicates
+      --  Return if already built, if type does not have predicates,
+      --  or if type is a constructed subtype that will inherit a
+      --  predicate function from its ancestor. In a generic context
+      --  the predicated parent may not have a predicate function yet
+      --  but we don't want to build a new one for the subtype. This can
+      --  happen in an instance body which is nested within a generic
+      --  unit, in which case Within_A_Generic may be false, SId is
+      --  Empty, but uses of Typ will receive a predicate check in a
+      --  context where expansion and tests are enabled.
 
       SId := Predicate_Function (Typ);
       if not Has_Predicates (Typ)
         or else (Present (SId) and then Has_Completion (SId))
+        or else
+          (Is_Itype (Typ)
+           and then not Comes_From_Source (Typ)
+           and then Present (Predicated_Parent (Typ)))
       then
          return;
 
