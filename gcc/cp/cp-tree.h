@@ -5631,6 +5631,10 @@ extern GTY(()) tree static_aggregates;
 /* Likewise, for thread local storage.  */
 extern GTY(()) tree tls_aggregates;
 
+/* A hash-map mapping from variable decls to the dynamic initializer for
+   the decl.  This is currently only used by OpenMP.  */
+extern GTY(()) decl_tree_map *dynamic_initializers;
+
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 
 /* These are uses as bits in flags passed to various functions to
@@ -8127,6 +8131,8 @@ extern bool atomic_constraints_identical_p	(tree, tree);
 extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
+
+extern void note_failed_type_completion_for_satisfaction (tree);
 
 /* A structural hasher for ATOMIC_CONSTRs.  */
 

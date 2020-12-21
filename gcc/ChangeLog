@@ -1,3 +1,149 @@
+2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.md (bswapsi2, bswapdi2): New patterns.
+
+2020-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/98400
+	* doc/invoke.texi (-mbackchain): Fix a typo - -mmo-backchain ->
+	-mno-backchain.
+
+2020-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98366
+	* fold-const.c (native_encode_initializer): Don't try to
+	memset more than total_bytes with off == -1 even if len is large.
+	Handle flexible array member initializers if off == -1 and mask is
+	NULL.
+	* expr.c (convert_to_bytes): Remove.
+	(constant_byte_string): Use native_encode_initializer instead of
+	convert_to_bytes.  Remove extraneous semicolon.  Punt on various
+	corner-cases the APIs don't handle, like sizes > INT_MAX,
+	BITS_PER_UNIT != 8, CHAR_BIT != 8.
+
+2020-12-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98067
+	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Handle
+	  CONST_DECL only if is_fortran, is_ada, or is_dlang.
+
+2020-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98378
+	* gimple-ssa-store-merging.c (find_bswap_or_nop): Punt if CONSTRUCTOR
+	has no elements.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add has_depend member.
+	(gimplify_scan_omp_clauses): Set it to true if OMP_CLAUSE_DEPEND
+	appears on OMP_TASK.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Force
+	GOVD_WRITTEN on shared variables if task construct has depend clause.
+
+2020-12-18  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/98177
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	get_same_sized_vectype to obtain index type.
+	(vectorizable_reduction): Likewise.
+
+2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* langhooks-def.h (lhd_get_decl_init): New.
+	(lhd_finish_decl_inits): New.
+	(LANG_HOOKS_GET_DECL_INIT): New.
+	(LANG_HOOKS_OMP_FINISH_DECL_INITS): New.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_GET_DECL_INIT and
+	LANG_HOOKS_OMP_FINISH_DECL_INITS.
+	* langhooks.c (lhd_omp_get_decl_init): New.
+	(lhd_omp_finish_decl_inits): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_get_decl_init
+	and omp_finish_decl_inits.
+	* omp-offload.c (omp_discover_declare_target_var_r): Use
+	get_decl_init langhook in place of DECL_INITIAL.  Call
+	omp_finish_decl_inits langhook at end of function.
+
+2020-12-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_simd_mode): Use
+	aarch64_full_sve_mode and aarch64_vq_mode directly, instead of
+	going via aarch64_simd_container_mode.
+
+2020-12-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/iterators.md (rot): Add UNSPEC_VCMUL, UNSPEC_VCMUL90,
+	UNSPEC_VCMUL180, UNSPEC_VCMUL270.
+
+2020-12-17  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in: Add Cortex-A78C core.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98347
+	* rtl-ssa/access-utils.h (full_register): Use regno_reg_rtx
+	instead of reg_raw_mode.
+
+2020-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* targhooks.h (default_estimated_poly_value): Updated.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (C++ Modules): Document lack of std
+	library header units.
+
+2020-12-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* target.h (enum poly_value_estimate_kind): Define.
+	(estimated_poly_value): Take an estimate kind argument.
+	* target.def (estimated_poly_value): Update definition for the
+	above.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (estimated_poly_value): Update prototype.
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): Use min, max and
+	likely estimates of VF to pick between vinfos.
+	* config/aarch64/aarch64.c (aarch64_cmp_autovec_modes): Use
+	estimated_poly_value instead of aarch64_estimated_poly_value.
+	(aarch64_estimated_poly_value): Take a kind argument and handle
+	it.
+
+2020-12-17  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vcreate_p64): Remove call to
+	'__builtin_neon_vcreatedi'.
+
+2020-12-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97750
+	* range-op.cc (operator_cast::op1_range): Handle pointers better.
+
+2020-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* rtl-ssa.h: Include memmodel.h before tm_p.h.
+
+2020-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98289
+	* shrink-wrap.c (can_get_prologue): Don't punt on EDGE_CROSSING
+	incoming edges.
+
+2020-12-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* configure.ac: Change --enable-s390-excess-float-precision
+	default behavior for cross compiles with target headers.
+	* configure: Regenerate.
+	* doc/install.texi: Adjust documentation.
+
+2020-12-17  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*ashlsi3_1, *ashlsi3_3x, *ashrsi3_3x)
+	(*lshrsi3_3x): New patterns.
+
 2020-12-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* fwprop.c: Rewrite to use the RTL SSA framework.

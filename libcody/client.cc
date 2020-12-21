@@ -6,6 +6,7 @@
 #include "internal.hh"
 // C
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 
 // Client code

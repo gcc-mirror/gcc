@@ -1,3 +1,24 @@
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* server.cc (crash_signal): Don't use strsignal.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* configure.ac: Check for sys/mman.h.
+	* resolver.cc: Don't assume mmap, O_CLOEXEC are available.  Use
+	xmalloc.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2020-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.in (version): Remove variable.
+	(gcc_version): New variable.
+	(libexecsubdir): Use $(gcc_version) instead of $(version).
+	* configure: Regenerated.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (INSTALL): Replace with ...

@@ -252,8 +252,22 @@ Classes used:
 #endif
 #endif
 
-#if !HOST_HAS_O_CLOEXEC
+/* Some open(2) flag differences, what a colourful world it is!  */
+#if defined (O_CLOEXEC)
+// OK
+#elif defined (_O_NOINHERIT)
+/* Windows' _O_NOINHERIT matches O_CLOEXEC flag */
+#define O_CLOEXEC _O_NOINHERIT
+#else
 #define O_CLOEXEC 0
+#endif
+#if defined (O_BINARY)
+// Ok?
+#elif defined (_O_BINARY)
+/* Windows' open(2) call defaults to text!  */
+#define O_BINARY _O_BINARY
+#else
+#define O_BINARY 0
 #endif
 
 static inline cpp_hashnode *cpp_node (tree id)
@@ -1596,7 +1610,7 @@ elf_in::defrost (const char *name)
   gcc_checking_assert (is_frozen ());
   struct stat stat;
 
-  fd = open (name, O_RDONLY | O_CLOEXEC);
+  fd = open (name, O_RDONLY | O_CLOEXEC | O_BINARY);
   if (fd < 0 || fstat (fd, &stat) < 0)
     set_error (errno);
   else
@@ -4679,6 +4693,7 @@ create_dirs (char *path)
 	char sep = *base;
 	*base = 0;
 	int failed = mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO);
+	dump () && dump ("Mkdir ('%s') errno:=%u", path, failed ? errno : 0);
 	*base = sep;
 	if (failed
 	    /* Maybe racing with another creator (of a *different*
@@ -18569,7 +18584,7 @@ module_state::do_import (cpp_reader *reader, bool outermost)
     {
       const char *file = maybe_add_cmi_prefix (filename);
       dump () && dump ("CMI is %s", file);
-      fd = open (file, O_RDONLY | O_CLOEXEC);
+      fd = open (file, O_RDONLY | O_CLOEXEC | O_BINARY);
       e = errno;
     }
 
@@ -19705,7 +19720,8 @@ finish_module_processing (cpp_reader *reader)
 	  if (!errorcount)
 	    for (unsigned again = 2; ; again--)
 	      {
-		fd = open (tmp_name, O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
+		fd = open (tmp_name,
+			   O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC | O_BINARY,
 			   S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 		e = errno;
 		if (fd >= 0 || !again || e != ENOENT)
@@ -19730,8 +19746,17 @@ finish_module_processing (cpp_reader *reader)
 	      input_location = loc;
 	    }
 	  if (to.end ())
-	    if (rename (tmp_name, path))
-	      to.set_error (errno);
+	    {
+	      /* Some OS's do not replace NEWNAME if it already
+		 exists.  This'll have a race condition in erroneous
+		 concurrent builds.  */
+	      unlink (path);
+	      if (rename (tmp_name, path))
+		{
+		  dump () && dump ("Rename ('%s','%s') errno=%u", errno);
+		  to.set_error (errno);
+		}
+	    }
 
 	  if (to.get_error ())
 	    {

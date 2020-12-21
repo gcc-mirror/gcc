@@ -1,9 +1,9 @@
 // { dg-do compile { target c++20 } }
 
 template <class T, class U>
-concept Concept2 = requires (T t, U u)
+concept Concept2 = requires (T t, U u) // { dg-error "depends on itself" }
 {
-    t += u; // { dg-error "template instantiation depth" }
+    t += u;
 };
 
 template <class T>
@@ -17,7 +17,5 @@ struct S
 
 constexpr S operator * (S a, S b)
 {
-    return a += b;
+    return a += b; // { dg-error "no match" }
 }
-
-// { dg-prune-output "compilation terminated" }

@@ -2,6 +2,7 @@ LIB1ASMSRC = xtensa/lib1funcs.S
 LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3 _udivsi3 _umodsi3 \
 	_umulsidi3 _clz _clzsi2 _ctzsi2 _ffssi2 \
 	_ashldi3 _ashrdi3 _lshrdi3 \
+	_bswapsi2 _bswapdi2 \
 	_negsf2 _addsubsf3 _mulsf3 _divsf3 _cmpsf2 _fixsfsi _fixsfdi \
 	_fixunssfsi _fixunssfdi _floatsisf _floatunsisf \
 	_sqrtf _recipsf2 _rsqrtsf2 \

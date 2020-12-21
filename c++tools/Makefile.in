@@ -29,7 +29,7 @@ AUTOHEADER := @AUTOHEADER@
 CXX := @CXX@
 CXXFLAGS := @CXXFLAGS@
 CXXOPTS := $(CXXFLAGS) -fno-exceptions -fno-rtti
-EXEEXT := @EXEEXT@
+exeext := @EXEEXT@
 LIBIBERTY := ../libiberty/libiberty.a
 VERSION.O := ../gcc/version.o
 

@@ -231,6 +231,8 @@ struct gimplify_omp_ctx
   bool target_firstprivatize_array_bases;
   bool add_safelen1;
   bool order_concurrent;
+  bool has_depend;
+  bool in_for_exprs;
   int defaultmap[4];
 };
 
@@ -780,7 +782,7 @@ gimple_add_tmp_var (tree tmp)
       if (gimplify_omp_ctxp)
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-	  int flag = GOVD_LOCAL;
+	  int flag = GOVD_LOCAL | GOVD_SEEN;
 	  while (ctx
 		 && (ctx->region_type == ORT_WORKSHARE
 		     || ctx->region_type == ORT_TASKGROUP
@@ -793,14 +795,16 @@ gimple_add_tmp_var (tree tmp)
 		{
 		  if (TREE_CODE (DECL_SIZE_UNIT (tmp)) != INTEGER_CST)
 		    ctx->add_safelen1 = true;
-		  else
+		  else if (ctx->in_for_exprs)
 		    flag = GOVD_PRIVATE;
+		  else
+		    flag = GOVD_PRIVATE | GOVD_SEEN;
 		  break;
 		}
 	      ctx = ctx->outer_context;
 	    }
 	  if (ctx)
-	    omp_add_variable (ctx, tmp, flag | GOVD_SEEN);
+	    omp_add_variable (ctx, tmp, flag);
 	}
     }
   else if (cfun)
@@ -7616,6 +7620,14 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       goto do_outer;
     }
 
+  /* Don't mark as GOVD_SEEN addressable temporaries seen only in simd
+     lb, b or incr expressions, those shouldn't be turned into simd arrays.  */
+  if (ctx->region_type == ORT_SIMD
+      && ctx->in_for_exprs
+      && ((n->value & (GOVD_PRIVATE | GOVD_SEEN | GOVD_EXPLICIT))
+	  == GOVD_PRIVATE))
+    flags &= ~GOVD_SEEN;
+
   if ((n->value & (GOVD_SEEN | GOVD_LOCAL)) == 0
       && (flags & (GOVD_SEEN | GOVD_LOCAL)) == GOVD_SEEN
       && DECL_SIZE (decl))
@@ -9497,6 +9509,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      remove = true;
 	      break;
 	    }
+	  if (code == OMP_TASK)
+	    ctx->has_depend = true;
 	  break;
 
 	case OMP_CLAUSE_TO:
@@ -10207,6 +10221,11 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	    return 0;
 	}
       code = OMP_CLAUSE_SHARED;
+      /* Don't optimize shared into firstprivate for read-only vars
+	 on tasks with depend clause, we shouldn't try to copy them
+	 until the dependencies are satisfied.  */
+      if (gimplify_omp_ctxp->has_depend)
+	flags |= GOVD_WRITTEN;
     }
   else if (flags & GOVD_PRIVATE)
     code = OMP_CLAUSE_PRIVATE;
@@ -10494,6 +10513,10 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		  OMP_CLAUSE_SET_CODE (c, OMP_CLAUSE_PRIVATE);
 		  OMP_CLAUSE_PRIVATE_DEBUG (c) = 1;
 		}
+              if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		  && ctx->has_depend
+		  && DECL_P (decl))
+		n->value |= GOVD_WRITTEN;
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
 		  && (n->value & GOVD_WRITTEN) == 0
 		  && DECL_P (decl)
@@ -12068,6 +12091,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       else
 	var = decl;
 
+      gimplify_omp_ctxp->in_for_exprs = true;
       if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
 	{
 	  tree lb = TREE_OPERAND (t, 1);
@@ -12080,6 +12104,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       else
 	tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
 			      is_gimple_val, fb_rvalue, false);
+      gimplify_omp_ctxp->in_for_exprs = false;
       ret = MIN (ret, tret);
       if (ret == GS_ERROR)
 	return ret;
@@ -12089,6 +12114,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       gcc_assert (COMPARISON_CLASS_P (t));
       gcc_assert (TREE_OPERAND (t, 0) == decl);
 
+      gimplify_omp_ctxp->in_for_exprs = true;
       if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
 	{
 	  tree ub = TREE_OPERAND (t, 1);
@@ -12101,6 +12127,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       else
 	tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
 			      is_gimple_val, fb_rvalue, false);
+      gimplify_omp_ctxp->in_for_exprs = false;
       ret = MIN (ret, tret);
 
       /* Handle OMP_FOR_INCR.  */
@@ -12166,6 +12193,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      gcc_unreachable ();
 	    }
 
+	  gimplify_omp_ctxp->in_for_exprs = true;
 	  tret = gimplify_expr (&TREE_OPERAND (t, 1), &for_pre_body, NULL,
 				is_gimple_val, fb_rvalue, false);
 	  ret = MIN (ret, tret);
@@ -12187,6 +12215,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  ret = MIN (ret, tret);
 		}
 	    }
+	  gimplify_omp_ctxp->in_for_exprs = false;
 	  break;
 
 	default:

@@ -5278,8 +5278,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       tree scalar_type_unsigned = make_unsigned_type (scalar_precision);
-      tree vectype_unsigned = build_vector_type
-	(scalar_type_unsigned, TYPE_VECTOR_SUBPARTS (vectype));
+      tree vectype_unsigned = get_same_sized_vectype (scalar_type_unsigned,
+						vectype);
 
       /* First we need to create a vector (ZERO_VEC) of zeros and another
 	 vector (MAX_INDEX_VEC) filled with the last matching index, which we
@@ -6942,8 +6942,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       cr_index_scalar_type = make_unsigned_type (scalar_precision);
-      cr_index_vector_type = build_vector_type (cr_index_scalar_type,
-						nunits_out);
+      cr_index_vector_type = get_same_sized_vectype (cr_index_scalar_type,
+						vectype_out);
 
       if (direct_internal_fn_supported_p (IFN_REDUC_MAX, cr_index_vector_type,
 					  OPTIMIZE_FOR_SPEED))

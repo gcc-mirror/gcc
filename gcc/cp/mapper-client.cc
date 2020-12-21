@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 // will include it later under the above check
 #include <sys/socket.h>
 #endif
+#define INCLUDE_STRING
+#define INCLUDE_VECTOR
 #include "system.h"
 
 #include "line-map.h"
@@ -171,14 +173,18 @@ module_client::open_module_client (location_t loc, const char *o,
 		  }
 		else
 		  {
+		    char *ptr;
 		    if (!from.empty ())
 		      {
-			fd_from = std::stoul (from, &pos, 10);
-			if (pos != from.size ())
+			/* Sadly str::stoul is not portable.  */
+			const char *cstr = from.c_str ();
+			fd_from = strtoul (cstr, &ptr, 10);
+			if (*ptr)
 			  {
+			    /* Not a number -- a named pipe.  */
 			    int dir = to.empty ()
 			      ? O_RDWR | O_CLOEXEC : O_RDONLY | O_CLOEXEC;
-			    fd_from = open (from.c_str (), dir);
+			    fd_from = open (cstr, dir);
 			  }
 			if (to.empty ())
 			  fd_to = fd_from;
@@ -190,12 +196,14 @@ module_client::open_module_client (location_t loc, const char *o,
 		      ;
 		    else
 		      {
-			fd_to = std::stoul (to, &pos, 10);
-			if (pos != to.size ())
+			const char *cstr = to.c_str ();
+			fd_to = strtoul (cstr, &ptr, 10);
+			if (*ptr)
 			  {
+			    /* Not a number, a named pipe.  */
 			    int dir = from.empty ()
 			      ? O_RDWR | O_CLOEXEC : O_WRONLY | O_CLOEXEC;
-			    fd_to = open (to.c_str (), dir);
+			    fd_to = open (cstr, dir);
 			    if (fd_to < 0)
 			      close (fd_from);
 			  }

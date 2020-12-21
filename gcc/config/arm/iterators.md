@@ -1177,6 +1177,10 @@
 
 (define_int_attr rot [(UNSPEC_VCADD90 "90")
 		      (UNSPEC_VCADD270 "270")
+		      (UNSPEC_VCMUL "0")
+		      (UNSPEC_VCMUL90 "90")
+		      (UNSPEC_VCMUL180 "180")
+		      (UNSPEC_VCMUL270 "270")
 		      (UNSPEC_VCMLA "0")
 		      (UNSPEC_VCMLA90 "90")
 		      (UNSPEC_VCMLA180 "180")

@@ -28172,7 +28172,7 @@ the backchain is placed into the topmost word of the 96/160 byte register
 save area.
 
 In general, code compiled with @option{-mbackchain} is call-compatible with
-code compiled with @option{-mmo-backchain}; however, use of the backchain
+code compiled with @option{-mno-backchain}; however, use of the backchain
 for debugging purposes usually requires that the whole binary is built with
 @option{-mbackchain}.  Note that the combination of @option{-mbackchain},
 @option{-mpacked-stack} and @option{-mhard-float} is not supported.  In order

@@ -1,3 +1,10 @@
+2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/lib1funcs.S (__bswapsi2, __bswapdi2): New
+	functions.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _bswapsi2 and
+	_bswapdi2.
+
 2020-12-08  Ian Lance Taylor  <iant@golang.org>
 
 	* generic-morestack-thread.c (free_segments): Block signals during

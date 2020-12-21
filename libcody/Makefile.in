@@ -48,6 +48,7 @@ SHELL := $(shell which zsh 2>/dev/null >/dev/null && echo zsh \
 # We have to place the -I paths last, so that building will see -I paths to us
 CXX := $(filter-out -I%,@CXX@)
 AR := @AR@
+RANLIB := @RANLIB@
 INSTALL := $(srcdir)/build-aux/install-sh
 
 # C++ compiler options

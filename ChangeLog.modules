@@ -1,5 +1,7 @@
 2020-12-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk e798f081925
+
 	gcc/cp/
 	* module.cc (has_definition): Check VAR_DECL's LANG_SPECIFIC.
 	gcc/testsuite/
