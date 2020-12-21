@@ -8908,11 +8908,10 @@ Channel_type::select_case_type()
       Type* uint16_type = Type::lookup_integer_type("uint16");
       Type* int64_type = Type::lookup_integer_type("int64");
       scase_type =
-	Type::make_builtin_struct_type(4,
+	Type::make_builtin_struct_type(3,
 				       "c", unsafe_pointer_type,
 				       "elem", unsafe_pointer_type,
-				       "kind", uint16_type,
-				       "releasetime", int64_type);
+				       "kind", uint16_type);
       scase_type->set_is_struct_incomparable();
     }
   return scase_type;
