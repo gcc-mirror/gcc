@@ -87,7 +87,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_sem._M_try_acquire_until(__atime); }
     };
 
- using binary_semaphore = std::counting_semaphore<1>;
+  using binary_semaphore = std::counting_semaphore<1>;
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // __cpp_lib_atomic_wait

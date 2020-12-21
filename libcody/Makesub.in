@@ -19,6 +19,7 @@ all:: libcody.a
 
 libcody.a: $(LIBCODY.O)
 	$(AR) -cr $@ $^
+	$(RANLIB) $@
 
 clean::
 	rm -f $(LIBCODY.O) $(LIBCODY.O:.o=.d)

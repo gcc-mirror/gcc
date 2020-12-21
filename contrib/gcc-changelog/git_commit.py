@@ -299,6 +299,14 @@ class GitCommit:
                                      'separately from normal commits'))
             return
 
+        # check for an encoded utf-8 filename
+        hint = 'git config --global core.quotepath false'
+        for modified, _ in self.info.modified_files:
+            if modified.startswith('"') or modified.endswith('"'):
+                self.errors.append(Error('Quoted UTF8 filename, please set: '
+                                         f'"{hint}"', modified))
+                return
+
         all_are_ignored = (len(project_files) + len(ignored_files)
                            == len(self.info.modified_files))
         self.parse_lines(all_are_ignored)

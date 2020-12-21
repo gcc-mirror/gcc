@@ -40,6 +40,10 @@
 #include <string_view>
 #include <type_traits>
 
+// This implementation crucially assumes float/double have the
+// IEEE binary32/binary64 formats.
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+
 // Determine the binary format of 'long double'.
 
 // We support the binary64, float80 (i.e. x86 80-bit extended precision),
@@ -109,8 +113,6 @@ namespace
   template<>
     struct floating_type_traits<float>
     {
-      // We (and Ryu) assume float has the IEEE binary32 format.
-      static_assert(__FLT_MANT_DIG__ == 24);
       static constexpr int mantissa_bits = 23;
       static constexpr int exponent_bits = 8;
       static constexpr bool has_implicit_leading_bit = true;
@@ -124,8 +126,6 @@ namespace
   template<>
     struct floating_type_traits<double>
     {
-      // We (and Ryu) assume double has the IEEE binary64 format.
-      static_assert(__DBL_MANT_DIG__ == 53);
       static constexpr int mantissa_bits = 52;
       static constexpr int exponent_bits = 11;
       static constexpr bool has_implicit_leading_bit = true;
@@ -1565,3 +1565,5 @@ _ZSt8to_charsPcS_eSt12chars_formati(char* first, char* last, double value,
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#endif // _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64

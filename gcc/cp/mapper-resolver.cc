@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Forward to the resolver in c++tools.  */
 
 #include "config.h"
+#define INCLUDE_STRING
+#define INCLUDE_VECTOR
 #define INCLUDE_ALGORITHM
 #include "system.h"
 

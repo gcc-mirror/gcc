@@ -97,6 +97,9 @@ create_var_debug_raw (tree type, const char *prefix)
 
   t = build_decl (input_location, VAR_DECL, get_identifier (name_buf), type);
 
+  /* Not setting this causes some regressions.  */
+  DECL_ARTIFICIAL (t) = 1;
+
   /* We want debug info for it.  */
   DECL_IGNORED_P (t) = 0;
   /* It should not be nameless.  */

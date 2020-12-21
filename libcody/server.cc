@@ -8,6 +8,7 @@
 #include <tuple>
 // C
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 
 // Server code

@@ -4693,6 +4693,7 @@ create_dirs (char *path)
 	char sep = *base;
 	*base = 0;
 	int failed = mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO);
+	dump () && dump ("Mkdir ('%s') errno:=%u", path, failed ? errno : 0);
 	*base = sep;
 	if (failed
 	    /* Maybe racing with another creator (of a *different*
@@ -19744,8 +19745,17 @@ finish_module_processing (cpp_reader *reader)
 	      input_location = loc;
 	    }
 	  if (to.end ())
-	    if (rename (tmp_name, path))
-	      to.set_error (errno);
+	    {
+	      /* Some OS's do not replace NEWNAME if it already
+		 exists.  This'll have a race condition in erroneous
+		 concurrent builds.  */
+	      unlink (path);
+	      if (rename (tmp_name, path))
+		{
+		  dump () && dump ("Rename ('%s','%s') errno=%u", errno);
+		  to.set_error (errno);
+		}
+	    }
 
 	  if (to.get_error ())
 	    {

@@ -26705,6 +26705,13 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	      gen_type_die_for_member (type, decl,
 				       get_context_die (TYPE_CONTEXT (type)));
 	    }
+	  if (TREE_CODE (decl) == CONST_DECL)
+	    {
+	      /* Individual enumerators of an enum type do not get output here
+		 (see gen_decl_die), so we cannot call force_decl_die.  */
+	      if (!is_fortran () && !is_ada () && !is_dlang ())
+		return;
+	    }
 	  if (TREE_CODE (decl) == NAMELIST_DECL)
 	    at_import_die = gen_namelist_decl (DECL_NAME (decl),
 					 get_context_die (DECL_CONTEXT (decl)),

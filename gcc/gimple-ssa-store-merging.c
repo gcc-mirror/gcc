@@ -873,6 +873,8 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
       if (sz != 16 && sz != 32 && sz != 64)
 	return NULL;
       tree rhs = gimple_assign_rhs1 (stmt);
+      if (CONSTRUCTOR_NELTS (rhs) == 0)
+	return NULL;
       tree eltype = TREE_TYPE (TREE_TYPE (rhs));
       unsigned HOST_WIDE_INT eltsz
 	= int_size_in_bytes (eltype) * BITS_PER_UNIT;

@@ -1323,6 +1323,14 @@ proc check_effective_target_futex { } {
     }]
 }
 
+# Return 1 if float and double have the IEEE binary32 and binary64 formats.
+proc check_effective_target_ieee-floats { } {
+    return [check_v3_target_prop_cached et_ieee_floats {
+	set cond "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64"
+	return [v3_check_preprocessor_condition ieee_floats $cond]
+    }]
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

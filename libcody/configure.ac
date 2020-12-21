@@ -76,6 +76,7 @@ AC_SUBST(PICFLAG)
 NMS_ENABLE_EXCEPTIONS
 
 AC_CONFIG_HEADERS([config.h])
+AC_PROG_RANLIB
 AC_CHECK_TOOL([AR],[ar])
 AC_CHECK_PROG([DOXYGEN],[doxygen],[doxygen],[: NOTdoxygen])
 AC_CHECK_PROG([ALOY],[aloy],[aloy],[: Joust testsuite missing])

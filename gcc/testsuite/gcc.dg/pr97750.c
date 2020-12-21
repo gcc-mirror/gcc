@@ -14,8 +14,8 @@ void CopyFromUswc(long src_pitch) {
   for (; CopyFromUswc_height;) {
     unsigned unaligned = (long)CopyFromUswc_src;
     if (unaligned)
-      CopyPlane(&dst[unaligned]);  /* { dg-warning "may be used uninitialized" } */
+      CopyPlane(&dst[unaligned]);  
     CopyFromUswc_src += src_pitch;
   }
 }
-
+/* { dg-prune-output "-Wmaybe-uninitialized" } */
