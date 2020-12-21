@@ -9998,7 +9998,7 @@ package body Sem_Ch13 is
 
         --  Do not generate predicate bodies within a generic unit. The
         --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit. However, if a statc
+        --  no role if not within an executable unit. However, if a static
         --  predicate is present it must be processed for legality checks
         --  such as case coverage in an expression.
 
@@ -14914,7 +14914,7 @@ package body Sem_Ch13 is
             Find_Direct_Name (N);
             Set_Entity (N, Empty);
 
-         --  The name is component association needs no resolution.
+         --  The name is component association needs no resolution
 
          elsif Nkind (N) = N_Component_Association then
             Dummy := Resolve_Name (Expression (N));
@@ -14936,10 +14936,6 @@ package body Sem_Ch13 is
    --  Start of processing for Resolve_Aspect_Expressions
 
    begin
-      if No (ASN) then
-         return;
-      end if;
-
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
             declare
@@ -14976,16 +14972,12 @@ package body Sem_Ch13 is
                      --  discriminants of the type.
 
                      if No (Predicate_Function (E)) then
-                        declare
-                           FDecl : constant Node_Id :=
-                                     Build_Predicate_Function_Declaration (E);
-                           pragma Unreferenced (FDecl);
+                        Discard_Node
+                          (Build_Predicate_Function_Declaration (E));
 
-                        begin
-                           Push_Type (E);
-                           Resolve_Aspect_Expression (Expr);
-                           Pop_Type (E);
-                        end;
+                        Push_Type (E);
+                        Resolve_Aspect_Expression (Expr);
+                        Pop_Type (E);
                      end if;
 
                   when Pre_Post_Aspects =>
