@@ -395,3 +395,7 @@ class TestGccChangelog(unittest.TestCase):
         err = email.errors[0]
         assert err.message == "pattern doesn't match any changed files"
         assert err.line == 'libstdc++-v3/testsuite/28_regex_not-existing/'
+
+    def test_unicode_chars_in_filename(self):
+        email = self.from_patch_glob('0001-Add-horse.patch')
+        assert not email.errors
