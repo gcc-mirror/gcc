@@ -235,10 +235,10 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 		nextp  **sudog
 	)
 
-loop:
 	// pass 1 - look for something already waiting
 	var casi int
 	var cas *scase
+	var caseSuccess bool
 	var caseReleaseTime int64 = -1
 	var recvOK bool
 	for _, casei := range pollorder {
@@ -335,6 +335,7 @@ loop:
 	// We singly-linked up the SudoGs in lock order.
 	casi = -1
 	cas = nil
+	caseSuccess = false
 	sglist = gp.waiting
 	// Clear all elem before unlinking from gp.waiting.
 	for sg1 := gp.waiting; sg1 != nil; sg1 = sg1.waitlink {
@@ -350,6 +351,7 @@ loop:
 			// sg has already been dequeued by the G that woke us up.
 			casi = int(casei)
 			cas = k
+			caseSuccess = sglist.success
 			if sglist.releasetime > 0 {
 				caseReleaseTime = sglist.releasetime
 			}
@@ -368,16 +370,7 @@ loop:
 	}
 
 	if cas == nil {
-		// We can wake up with gp.param == nil (so cas == nil)
-		// when a channel involved in the select has been closed.
-		// It is easiest to loop and re-run the operation;
-		// we'll see that it's now closed.
-		// Maybe some day we can signal the close explicitly,
-		// but we'd have to distinguish close-on-reader from close-on-writer.
-		// It's easiest not to duplicate the code and just recheck above.
-		// We know that something closed, and things never un-close,
-		// so we won't block again.
-		goto loop
+		throw("selectgo: bad wakeup")
 	}
 
 	c = cas.c
@@ -387,7 +380,9 @@ loop:
 	}
 
 	if cas.kind == caseRecv {
-		recvOK = true
+		recvOK = caseSuccess
+	} else if cas.kind == caseSend && !caseSuccess {
+		goto sclose
 	}
 
 	selunlock(scases, lockorder)
