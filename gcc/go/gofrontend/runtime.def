@@ -195,8 +195,8 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 // Run a select, returning the index of the selected clause and
 // whether that channel received a value.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
-	       R2(INT, BOOL))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo",
+	       P5(POINTER, POINTER, INT, INT, BOOL), R2(INT, BOOL))
 
 // Non-blocking send a value on a channel, used for two-case select
 // statement with a default case.

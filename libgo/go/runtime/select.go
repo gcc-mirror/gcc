@@ -18,23 +18,12 @@ import (
 
 const debugSelect = false
 
-// scase.kind values.
-// Known to compiler.
-// Changes here must also be made in src/cmd/compile/internal/gc/select.go's walkselectcases.
-const (
-	caseNil = iota
-	caseRecv
-	caseSend
-	caseDefault
-)
-
 // Select case descriptor.
 // Known to compiler.
 // Changes here must also be made in src/cmd/internal/gc/select.go's scasetype.
 type scase struct {
 	c    *hchan         // chan
 	elem unsafe.Pointer // data element
-	kind uint16
 }
 
 func sellock(scases []scase, lockorder []uint16) {
@@ -121,7 +110,7 @@ func block() {
 // ordinal position of its respective select{recv,send,default} call.
 // Also, if the chosen scase was a receive operation, it reports whether
 // a value was received.
-func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
+func selectgo(cas0 *scase, order0 *uint16, nsends, nrecvs int, block bool) (int, bool) {
 	if debugSelect {
 		print("select: cas0=", cas0, "\n")
 	}
@@ -131,6 +120,7 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 	cas1 := (*[1 << 16]scase)(unsafe.Pointer(cas0))
 	order1 := (*[1 << 17]uint16)(unsafe.Pointer(order0))
 
+	ncases := nsends + nrecvs
 	scases := cas1[:ncases:ncases]
 	pollorder := order1[:ncases:ncases]
 	lockorder := order1[ncases:][:ncases:ncases]
@@ -154,16 +144,12 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 	}
 
 	// generate permuted order
-	dfli := -1
 	norder := 0
 	for i := range scases {
 		cas := &scases[i]
 
 		// Omit cases without channels from the poll and lock orders.
 		if cas.c == nil {
-			if cas.kind == caseDefault {
-				dfli = i
-			}
 			cas.elem = nil // allow GC
 			continue
 		}
@@ -246,8 +232,7 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 		cas = &scases[casi]
 		c = cas.c
 
-		switch cas.kind {
-		case caseRecv:
+		if casi >= nsends {
 			sg = c.sendq.dequeue()
 			if sg != nil {
 				goto recv
@@ -258,8 +243,7 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 			if c.closed != 0 {
 				goto rclose
 			}
-
-		case caseSend:
+		} else {
 			if c.closed != 0 {
 				goto sclose
 			}
@@ -273,9 +257,9 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 		}
 	}
 
-	if dfli >= 0 {
+	if !block {
 		selunlock(scases, lockorder)
-		casi = dfli
+		casi = -1
 		goto retc
 	}
 
@@ -304,12 +288,10 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 		*nextp = sg
 		nextp = &sg.waitlink
 
-		switch cas.kind {
-		case caseRecv:
-			c.recvq.enqueue(sg)
-
-		case caseSend:
+		if casi < nsends {
 			c.sendq.enqueue(sg)
+		} else {
+			c.recvq.enqueue(sg)
 		}
 	}
 
@@ -357,7 +339,7 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 			}
 		} else {
 			c = k.c
-			if k.kind == caseSend {
+			if int(casei) < nsends {
 				c.sendq.dequeueSudoG(sglist)
 			} else {
 				c.recvq.dequeueSudoG(sglist)
@@ -376,13 +358,15 @@ func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool) {
 	c = cas.c
 
 	if debugSelect {
-		print("wait-return: cas0=", cas0, " c=", c, " cas=", cas, " kind=", cas.kind, "\n")
+		print("wait-return: cas0=", cas0, " c=", c, " cas=", cas, " send=", casi < nsends, "\n")
 	}
 
-	if cas.kind == caseRecv {
+	if casi < nsends {
+		if !caseSuccess {
+			goto sclose
+		}
+	} else {
 		recvOK = caseSuccess
-	} else if cas.kind == caseSend && !caseSuccess {
-		goto sclose
 	}
 
 	selunlock(scases, lockorder)
@@ -451,7 +435,7 @@ retc:
 
 	// Check preemption, since unlike gc we don't check on every call.
 	// A test case for this one is BenchmarkPingPongHog in proc_test.go.
-	if dfli >= 0 && getg().preempt {
+	if block && getg().preempt {
 		checkPreempt()
 	}
 
@@ -492,20 +476,49 @@ func reflect_rselect(cases []runtimeSelect) (int, bool) {
 		block()
 	}
 	sel := make([]scase, len(cases))
-	order := make([]uint16, 2*len(cases))
-	for i := range cases {
-		rc := &cases[i]
+	orig := make([]int, len(cases))
+	nsends, nrecvs := 0, 0
+	dflt := -1
+	for i, rc := range cases {
+		var j int
 		switch rc.dir {
 		case selectDefault:
-			sel[i] = scase{kind: caseDefault}
+			dflt = i
+			continue
 		case selectSend:
-			sel[i] = scase{kind: caseSend, c: rc.ch, elem: rc.val}
+			j = nsends
+			nsends++
 		case selectRecv:
-			sel[i] = scase{kind: caseRecv, c: rc.ch, elem: rc.val}
+			nrecvs++
+			j = len(cases) - nrecvs
 		}
+
+		sel[j] = scase{c: rc.ch, elem: rc.val}
+		orig[j] = i
 	}
 
-	return selectgo(&sel[0], &order[0], len(cases))
+	// Only a default case.
+	if nsends+nrecvs == 0 {
+		return dflt, false
+	}
+
+	// Compact sel and orig if necessary.
+	if nsends+nrecvs < len(cases) {
+		copy(sel[nsends:], sel[len(cases)-nrecvs:])
+		copy(orig[nsends:], orig[len(cases)-nrecvs:])
+	}
+
+	order := make([]uint16, 2*(nsends+nrecvs))
+
+	chosen, recvOK := selectgo(&sel[0], &order[0], nsends, nrecvs, dflt == -1)
+
+	// Translate chosen back to caller's ordering.
+	if chosen < 0 {
+		chosen = dflt
+	} else {
+		chosen = orig[chosen]
+	}
+	return chosen, recvOK
 }
 
 func (q *waitq) dequeueSudoG(sgp *sudog) {
