@@ -42,9 +42,12 @@ struct MacroExpander
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
   void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
-  bool fails_cfg (std::vector<AST::Attribute> &attr);
+  bool fails_cfg (const std::vector<AST::Attribute> &attr) const;
+  bool fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const;
 
   // Expand the data of a cfg! macro.
+  void parse_macro_to_meta_item (AST::MacroInvocData &invoc);
+  // Get the literal representation of a cfg! macro.
   AST::Literal expand_cfg_macro (AST::MacroInvocData &invoc);
 
 private:

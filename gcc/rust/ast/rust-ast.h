@@ -362,6 +362,11 @@ public:
   }
 };
 
+// path-to-string inverse comparison operator
+inline bool operator!= (const SimplePath& lhs, const std::string &rhs) {
+  return !(lhs == rhs);
+}
+
 // forward decl for Attribute
 class AttrInput;
 
@@ -392,27 +397,9 @@ public:
   // default destructor
   ~Attribute () = default;
 
-  // Copy constructor must deep copy attr_input as unique pointer
-  /*Attribute (Attribute const &other) : path (other.path), locus (other.locus)
-  {
-    // guard to protect from null pointer dereference
-    if (other.attr_input != nullptr)
-      attr_input = other.attr_input->clone_attr_input ();
-  }*/
   // no point in being defined inline as requires virtual call anyway
   Attribute (const Attribute &other);
 
-  // overload assignment operator to use custom clone method
-  /*Attribute &operator= (Attribute const &other)
-  {
-    path = other.path;
-    locus = other.locus;
-    // guard to protect from null pointer dereference
-    if (other.attr_input != nullptr)
-      attr_input = other.attr_input->clone_attr_input ();
-
-    return *this;
-  }*/
   // no point in being defined inline as requires virtual call anyway
   Attribute &operator= (const Attribute &other);
 
@@ -489,7 +476,7 @@ public:
 
   std::string as_string () const;
 
-  // TODO: does this require visitor pattern as not polymorphic?
+  // no visitor pattern as not currently polymorphic
 
   const SimplePath &get_path () const { return path; }
   SimplePath &get_path () { return path; }
@@ -498,10 +485,15 @@ public:
   void parse_attr_to_meta_item ();
 
   /* Determines whether cfg predicate is true and item with attribute should not
-   * be stripped. */
-  bool check_cfg_predicate (const Session &session);
+   * be stripped. Attribute body must already be parsed to meta item. */
+  bool check_cfg_predicate (const Session &session) const;
 
-  std::vector<Attribute> separate_cfg_attrs ();
+  // Returns whether body has been parsed to meta item form or not.
+  bool is_parsed_to_meta_item () const;
+
+  /* Returns any attributes generated from cfg_attr attributes. Attribute body
+   * must already be parsed to meta item. */
+  std::vector<Attribute> separate_cfg_attrs () const;
 
 protected:
   // not virtual as currently no subclasses of Attribute, but could be in future
@@ -534,9 +526,125 @@ public:
 
   virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
 
+  // Returns whether attr input has been parsed to meta item syntax.
+  virtual bool is_meta_item () const = 0;
+
 protected:
   // pure virtual clone implementation
   virtual AttrInput *clone_attr_input_impl () const = 0;
+};
+
+// Forward decl - defined in rust-macro.h
+class MetaNameValueStr;
+
+// abstract base meta item inner class
+class MetaItemInner
+{
+protected:
+  // pure virtual as MetaItemInner
+  virtual MetaItemInner *clone_meta_item_inner_impl () const = 0;
+
+public:
+  // Unique pointer custom clone function
+  std::unique_ptr<MetaItemInner> clone_meta_item_inner () const
+  {
+    return std::unique_ptr<MetaItemInner> (clone_meta_item_inner_impl ());
+  }
+
+  virtual ~MetaItemInner () {}
+
+  virtual std::string as_string () const = 0;
+
+  virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  /* HACK: used to simplify parsing - creates a copy of that type, or returns
+   * null */
+  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const
+  {
+    return nullptr;
+  }
+
+  // HACK: used to simplify parsing - same thing
+  virtual SimplePath to_path_item () const
+  {
+    return SimplePath::create_empty ();
+  }
+
+  virtual Attribute to_attribute () const { return Attribute::create_empty (); }
+
+  virtual bool check_cfg_predicate (const Session &session) const = 0;
+};
+
+// Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
+class AttrInputMetaItemContainer : public AttrInput
+{
+  std::vector<std::unique_ptr<MetaItemInner> > items;
+
+public:
+  AttrInputMetaItemContainer (
+    std::vector<std::unique_ptr<MetaItemInner> > items)
+    : items (std::move (items))
+  {}
+
+  // copy constructor with vector clone
+  AttrInputMetaItemContainer (const AttrInputMetaItemContainer &other)
+  {
+    items.reserve (other.items.size ());
+    for (const auto &e : other.items)
+      items.push_back (e->clone_meta_item_inner ());
+  }
+
+  // copy assignment operator with vector clone
+  AttrInputMetaItemContainer &
+  operator= (const AttrInputMetaItemContainer &other)
+  {
+    AttrInput::operator= (other);
+
+    items.reserve (other.items.size ());
+    for (const auto &e : other.items)
+      items.push_back (e->clone_meta_item_inner ());
+
+    return *this;
+  }
+
+  // default move constructors
+  AttrInputMetaItemContainer (AttrInputMetaItemContainer &&other) = default;
+  AttrInputMetaItemContainer &operator= (AttrInputMetaItemContainer &&other)
+    = default;
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  bool check_cfg_predicate (const Session &session) const override;
+
+  // Clones this object.
+  std::unique_ptr<AttrInputMetaItemContainer>
+  clone_attr_input_meta_item_container () const
+  {
+    return std::unique_ptr<AttrInputMetaItemContainer> (
+      clone_attr_input_meta_item_container_impl ());
+  }
+
+  std::vector<Attribute> separate_cfg_attrs () const override;
+
+  bool is_meta_item () const override { return true; }
+
+  // TODO: this mutable getter seems dodgy
+  std::vector<std::unique_ptr<MetaItemInner> > &get_items () { return items; }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_items () const { return items; }
+
+protected:
+  // Use covariance to implement clone function as returning this type
+  AttrInputMetaItemContainer *clone_attr_input_impl () const override
+  {
+    return clone_attr_input_meta_item_container_impl ();
+  }
+
+  AttrInputMetaItemContainer *clone_attr_input_meta_item_container_impl () const
+  {
+    return new AttrInputMetaItemContainer (*this);
+  }
 };
 
 // A token tree with delimiters
@@ -613,7 +721,7 @@ public:
     return false;
   }
 
-  AttrInput *parse_to_meta_item () const override;
+  AttrInputMetaItemContainer *parse_to_meta_item () const override;
 
   std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
@@ -621,120 +729,13 @@ public:
   {
     return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
   }
+
+  bool is_meta_item () const override { return false; }
 };
 
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
  * be defined */
 class AttrInputLiteral;
-
-// Forward decl - defined in rust-macro.h
-class MetaNameValueStr;
-
-// abstract base meta item inner class
-class MetaItemInner
-{
-protected:
-  // pure virtual as MetaItemInner
-  virtual MetaItemInner *clone_meta_item_inner_impl () const = 0;
-
-public:
-  // Unique pointer custom clone function
-  std::unique_ptr<MetaItemInner> clone_meta_item_inner () const
-  {
-    return std::unique_ptr<MetaItemInner> (clone_meta_item_inner_impl ());
-  }
-
-  virtual ~MetaItemInner () {}
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  /* HACK: used to simplify parsing - creates a copy of that type, or returns
-   * null */
-  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const
-  {
-    return nullptr;
-  }
-
-  // HACK: used to simplify parsing - same thing
-  virtual SimplePath to_path_item () const
-  {
-    return SimplePath::create_empty ();
-  }
-
-  virtual Attribute to_attribute () const { return Attribute::create_empty (); }
-
-  virtual bool check_cfg_predicate (const Session &session) const = 0;
-};
-
-// Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
-class AttrInputMetaItemContainer : public AttrInput
-{
-  std::vector<std::unique_ptr<MetaItemInner> > items;
-
-public:
-  AttrInputMetaItemContainer (
-    std::vector<std::unique_ptr<MetaItemInner> > items)
-    : items (std::move (items))
-  {}
-
-  // no destructor definition required
-
-  // default move constructors
-  AttrInputMetaItemContainer (AttrInputMetaItemContainer &&other) = default;
-  AttrInputMetaItemContainer &operator= (AttrInputMetaItemContainer &&other)
-    = default;
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool check_cfg_predicate (const Session &session) const override;
-
-  // Clones this object.
-  std::unique_ptr<AttrInputMetaItemContainer>
-  clone_attr_input_meta_item_container () const
-  {
-    return std::unique_ptr<AttrInputMetaItemContainer> (
-      clone_attr_input_meta_item_container_impl ());
-  }
-
-  std::vector<Attribute> separate_cfg_attrs () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  AttrInputMetaItemContainer *clone_attr_input_impl () const override
-  {
-    return clone_attr_input_meta_item_container_impl ();
-  }
-
-  AttrInputMetaItemContainer *clone_attr_input_meta_item_container_impl () const
-  {
-    return new AttrInputMetaItemContainer (*this);
-  }
-
-  // copy constructor with vector clone
-  AttrInputMetaItemContainer (const AttrInputMetaItemContainer &other)
-  {
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_meta_item_inner ());
-  }
-
-  // copy assignment operator with vector clone
-  AttrInputMetaItemContainer &
-  operator= (const AttrInputMetaItemContainer &other)
-  {
-    AttrInput::operator= (other);
-
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_meta_item_inner ());
-
-    return *this;
-  }
-};
 
 // abstract base meta item class
 class MetaItem : public MetaItemInner
@@ -1378,15 +1379,64 @@ private:
   SimplePath path;
   DelimTokenTree token_tree;
 
+  // One way of parsing the macro. Probably not applicable for all macros.
+  std::vector<std::unique_ptr<MetaItemInner> > parsed_items;
+  bool parsed_to_meta_item = false;
+
 public:
   std::string as_string () const;
 
   MacroInvocData (SimplePath path, DelimTokenTree token_tree) 
     : path (std::move (path)), token_tree (std::move (token_tree)) {}
   
+  // Copy constructor with vector clone
+  MacroInvocData (const MacroInvocData &other) : path (other.path), token_tree (other.token_tree), parsed_to_meta_item (other.parsed_to_meta_item) {
+    parsed_items.reserve (other.parsed_items.size ());
+    for (const auto &e : other.parsed_items)
+      parsed_items.push_back (e->clone_meta_item_inner ());
+  }
+
+  // Copy assignment operator with vector clone
+  MacroInvocData &operator= (const MacroInvocData &other)
+  {
+    path = other.path;
+    token_tree = other.token_tree;
+    parsed_to_meta_item = other.parsed_to_meta_item;
+
+    parsed_items.reserve (other.parsed_items.size ());
+    for (const auto &e : other.parsed_items)
+      parsed_items.push_back (e->clone_meta_item_inner ());
+
+    return *this;
+  }
+
+  // Move constructors
+  MacroInvocData (MacroInvocData &&other) = default;
+  MacroInvocData &operator= (MacroInvocData &&other) = default;
+  
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () { path = SimplePath::create_empty (); }
   bool is_marked_for_strip () const { return path.is_empty (); }
+
+  // Returns whether the macro has been parsed already.
+  bool is_parsed () const { return parsed_to_meta_item; }
+  // TODO: update on other ways of parsing it
+
+  // TODO: this mutable getter seems kinda dodgy
+  DelimTokenTree &get_delim_tok_tree () { return token_tree; }
+  const DelimTokenTree &get_delim_tok_tree () const { return token_tree; }
+
+  // TODO: this mutable getter seems kinda dodgy
+  SimplePath &get_path () { return path; }
+  const SimplePath &get_path () const { return path; }
+
+  void set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items) 
+  { 
+    parsed_items = std::move (new_items); 
+  }
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () { return parsed_items; }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () const { return parsed_items; }
 };
 
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro

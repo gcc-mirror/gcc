@@ -22,7 +22,7 @@ public:
 
 	auto &field_attrs = field.get_outer_attrs ();
 	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg (field_attrs))
+	if (expander.fails_cfg_with_expand (field_attrs))
 	  {
 	    it = fields.erase (it);
 	    continue;
@@ -39,14 +39,14 @@ public:
 	++it;
       }
 
-    #if 0
+#if 0
     for (int i = 0; i < fields.size ();)
       {
 	auto &field = fields[i];
 
 	auto &field_attrs = field.get_outer_attrs ();
 	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg (field_attrs))
+	if (expander.fails_cfg_with_expand (field_attrs))
 	  {
 	    fields.erase (fields.begin () + i);
 	    continue;
@@ -62,7 +62,7 @@ public:
 	// if nothing else happens, increment
 	i++;
       }
-      #endif
+#endif
   }
 
   void expand_tuple_fields (std::vector<AST::TupleField> &fields)
@@ -73,7 +73,7 @@ public:
 
 	auto &field_attrs = field.get_outer_attrs ();
 	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg (field_attrs))
+	if (expander.fails_cfg_with_expand (field_attrs))
 	  {
 	    it = fields.erase (it);
 	    continue;
@@ -90,14 +90,14 @@ public:
 	++it;
       }
 
-    #if 0
+#if 0
     for (int i = 0; i < fields.size ();)
       {
 	auto &field = fields[i];
 
 	auto &field_attrs = field.get_outer_attrs ();
 	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg (field_attrs))
+	if (expander.fails_cfg_with_expand (field_attrs))
 	  {
 	    fields.erase (fields.begin () + i);
 	    continue;
@@ -113,7 +113,7 @@ public:
 	// if nothing else happens, increment
 	i++;
       }
-      #endif
+#endif
   }
 
   void expand_function_params (std::vector<AST::FunctionParam> &params)
@@ -124,7 +124,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    it = params.erase (it);
 	    continue;
@@ -147,14 +147,14 @@ public:
 	++it;
       }
 
-    #if 0
+#if 0
     for (int i = 0; i < params.size ();)
       {
 	auto &param = params[i];
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    params.erase (params.begin () + i);
 	    continue;
@@ -176,7 +176,7 @@ public:
 	// increment
 	i++;
       }
-      #endif
+#endif
   }
 
   void expand_generic_args (AST::GenericArgs &args)
@@ -229,7 +229,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    it = params.erase (it);
 	    continue;
@@ -254,14 +254,14 @@ public:
 	++it;
       }
 
-    #if 0
+#if 0
     for (int i = 0; i < params.size ();)
       {
 	auto &param = params[i];
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    params.erase (params.begin () + i);
 	    continue;
@@ -285,7 +285,7 @@ public:
 	// increment if found nothing else so far
 	i++;
       }
-    #endif
+#endif
   }
 
   void expand_self_param (AST::SelfParam &self_param)
@@ -359,9 +359,8 @@ public:
     if (decl.has_where_clause ())
       expand_where_clause (decl.get_where_clause ());
   }
-  
-  template <typename T>
-  void expand_pointer_allow_strip (T &values) 
+
+  template <typename T> void expand_pointer_allow_strip (T &values)
   {
     for (auto it = values.begin (); it != values.end ();)
       {
@@ -393,7 +392,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (ident_expr.get_outer_attrs ());
-    if (expander.fails_cfg (ident_expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (ident_expr.get_outer_attrs ()))
       {
 	ident_expr.mark_for_strip ();
 	return;
@@ -411,7 +410,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
-    if (expander.fails_cfg (macro_invoc.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
       {
 	macro_invoc.mark_for_strip ();
 	return;
@@ -428,7 +427,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (path.get_outer_attrs ());
-    if (expander.fails_cfg (path.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (path.get_outer_attrs ()))
       {
 	path.mark_for_strip ();
 	return;
@@ -484,7 +483,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (path.get_outer_attrs ());
-    if (expander.fails_cfg (path.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (path.get_outer_attrs ()))
       {
 	path.mark_for_strip ();
 	return;
@@ -511,7 +510,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -533,7 +532,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -553,7 +552,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -573,7 +572,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -593,7 +592,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -751,7 +750,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -760,7 +759,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -824,7 +823,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -833,7 +832,7 @@ public:
     /* strip test based on inner attrs - spec says there are separate
      * inner attributes, not just outer attributes of inner exprs */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -851,7 +850,7 @@ public:
      * having expansion code anyway. TODO */
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -881,7 +880,7 @@ public:
 
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -890,7 +889,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -920,7 +919,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -940,7 +939,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -949,7 +948,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -992,7 +991,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1001,7 +1000,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1040,7 +1039,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1049,7 +1048,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1076,7 +1075,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1085,7 +1084,7 @@ public:
     /* strip test based on inner attrs - spec says these are inner
      * attributes, not outer attributes of inner expr */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1122,7 +1121,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1165,7 +1164,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1194,7 +1193,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1244,7 +1243,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1284,7 +1283,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1328,7 +1327,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1348,7 +1347,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1370,7 +1369,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1379,7 +1378,7 @@ public:
     /* strip test based on inner attrs - spec says there are inner
      * attributes, not just outer attributes of inner stmts */
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1419,7 +1418,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1448,7 +1447,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1458,7 +1457,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1581,7 +1580,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1611,7 +1610,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1629,7 +1628,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1647,7 +1646,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1673,7 +1672,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1707,7 +1706,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1740,7 +1739,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1766,7 +1765,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1800,7 +1799,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1834,7 +1833,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1869,7 +1868,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1903,7 +1902,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1945,7 +1944,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -1987,7 +1986,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -2030,7 +2029,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -2038,7 +2037,7 @@ public:
 
     // inner attr strip test
     expander.expand_cfg_attrs (expr.get_inner_attrs ());
-    if (expander.fails_cfg (expr.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -2061,7 +2060,7 @@ public:
 	// strip match case based on outer attributes in match arm
 	auto &match_arm = match_case.get_arm ();
 	expander.expand_cfg_attrs (match_arm.get_outer_attrs ());
-	if (expander.fails_cfg (match_arm.get_outer_attrs ()))
+	if (expander.fails_cfg_with_expand (match_arm.get_outer_attrs ()))
 	  {
 	    // strip match case
 	    it = match_cases.erase (it);
@@ -2110,7 +2109,7 @@ public:
 	// strip match case based on outer attributes in match arm
 	auto &match_arm = match_case.get_arm ();
 	expander.expand_cfg_attrs (match_arm.get_outer_attrs ());
-	if (expander.fails_cfg (match_arm.get_outer_attrs ()))
+	if (expander.fails_cfg_with_expand (match_arm.get_outer_attrs ()))
 	  {
 	    // strip match case
 	    match_cases.erase (match_cases.begin () + i);
@@ -2156,7 +2155,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -2175,7 +2174,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
-    if (expander.fails_cfg (expr.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
 	return;
@@ -2232,7 +2231,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (method.get_outer_attrs ());
-    if (expander.fails_cfg (method.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (method.get_outer_attrs ()))
       {
 	method.mark_for_strip ();
 	return;
@@ -2277,7 +2276,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (module.get_outer_attrs ());
-    if (expander.fails_cfg (module.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (module.get_outer_attrs ()))
       {
 	module.mark_for_strip ();
 	return;
@@ -2285,7 +2284,7 @@ public:
 
     // strip test based on inner attrs
     expander.expand_cfg_attrs (module.get_inner_attrs ());
-    if (expander.fails_cfg (module.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (module.get_inner_attrs ()))
       {
 	module.mark_for_strip ();
 	return;
@@ -2314,7 +2313,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (module.get_outer_attrs ());
-    if (expander.fails_cfg (module.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (module.get_outer_attrs ()))
       {
 	module.mark_for_strip ();
 	return;
@@ -2324,7 +2323,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (crate.get_outer_attrs ());
-    if (expander.fails_cfg (crate.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (crate.get_outer_attrs ()))
       {
 	crate.mark_for_strip ();
 	return;
@@ -2346,7 +2345,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (use_decl.get_outer_attrs ());
-    if (expander.fails_cfg (use_decl.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (use_decl.get_outer_attrs ()))
       {
 	use_decl.mark_for_strip ();
 	return;
@@ -2356,7 +2355,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (function.get_outer_attrs ());
-    if (expander.fails_cfg (function.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (function.get_outer_attrs ()))
       {
 	function.mark_for_strip ();
 	return;
@@ -2396,7 +2395,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (type_alias.get_outer_attrs ());
-    if (expander.fails_cfg (type_alias.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (type_alias.get_outer_attrs ()))
       {
 	type_alias.mark_for_strip ();
 	return;
@@ -2419,7 +2418,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (struct_item.get_outer_attrs ());
-    if (expander.fails_cfg (struct_item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (struct_item.get_outer_attrs ()))
       {
 	struct_item.mark_for_strip ();
 	return;
@@ -2440,7 +2439,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (tuple_struct.get_outer_attrs ());
-    if (expander.fails_cfg (tuple_struct.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (tuple_struct.get_outer_attrs ()))
       {
 	tuple_struct.mark_for_strip ();
 	return;
@@ -2461,7 +2460,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2471,7 +2470,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2485,7 +2484,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2499,7 +2498,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2519,7 +2518,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (enum_item.get_outer_attrs ());
-    if (expander.fails_cfg (enum_item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (enum_item.get_outer_attrs ()))
       {
 	enum_item.mark_for_strip ();
 	return;
@@ -2556,7 +2555,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (union_item.get_outer_attrs ());
-    if (expander.fails_cfg (union_item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (union_item.get_outer_attrs ()))
       {
 	union_item.mark_for_strip ();
 	return;
@@ -2577,7 +2576,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (const_item.get_outer_attrs ());
-    if (expander.fails_cfg (const_item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (const_item.get_outer_attrs ()))
       {
 	const_item.mark_for_strip ();
 	return;
@@ -2604,7 +2603,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (static_item.get_outer_attrs ());
-    if (expander.fails_cfg (static_item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (static_item.get_outer_attrs ()))
       {
 	static_item.mark_for_strip ();
 	return;
@@ -2631,7 +2630,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2656,7 +2655,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2681,7 +2680,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2711,7 +2710,7 @@ public:
   {
     // initial test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2728,7 +2727,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (trait.get_outer_attrs ());
-    if (expander.fails_cfg (trait.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (trait.get_outer_attrs ()))
       {
 	trait.mark_for_strip ();
 	return;
@@ -2736,7 +2735,7 @@ public:
 
     // strip test based on inner attrs
     expander.expand_cfg_attrs (trait.get_inner_attrs ());
-    if (expander.fails_cfg (trait.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (trait.get_inner_attrs ()))
       {
 	trait.mark_for_strip ();
 	return;
@@ -2779,7 +2778,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (impl.get_outer_attrs ());
-    if (expander.fails_cfg (impl.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (impl.get_outer_attrs ()))
       {
 	impl.mark_for_strip ();
 	return;
@@ -2787,7 +2786,7 @@ public:
 
     // strip test based on inner attrs
     expander.expand_cfg_attrs (impl.get_inner_attrs ());
-    if (expander.fails_cfg (impl.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (impl.get_inner_attrs ()))
       {
 	impl.mark_for_strip ();
 	return;
@@ -2829,7 +2828,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (impl.get_outer_attrs ());
-    if (expander.fails_cfg (impl.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (impl.get_outer_attrs ()))
       {
 	impl.mark_for_strip ();
 	return;
@@ -2837,7 +2836,7 @@ public:
 
     // strip test based on inner attrs
     expander.expand_cfg_attrs (impl.get_inner_attrs ());
-    if (expander.fails_cfg (impl.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (impl.get_inner_attrs ()))
       {
 	impl.mark_for_strip ();
 	return;
@@ -2885,7 +2884,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2901,7 +2900,7 @@ public:
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (item.get_outer_attrs ());
-    if (expander.fails_cfg (item.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
       {
 	item.mark_for_strip ();
 	return;
@@ -2920,7 +2919,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    it = params.erase (it);
 	    continue;
@@ -2942,7 +2941,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    params.erase (params.begin () + i);
 	    continue;
@@ -2981,7 +2980,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (block.get_outer_attrs ());
-    if (expander.fails_cfg (block.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (block.get_outer_attrs ()))
       {
 	block.mark_for_strip ();
 	return;
@@ -2989,7 +2988,7 @@ public:
 
     // strip test based on inner attrs
     expander.expand_cfg_attrs (block.get_inner_attrs ());
-    if (expander.fails_cfg (block.get_inner_attrs ()))
+    if (expander.fails_cfg_with_expand (block.get_inner_attrs ()))
       {
 	block.mark_for_strip ();
 	return;
@@ -3023,7 +3022,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (rules_def.get_outer_attrs ());
-    if (expander.fails_cfg (rules_def.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (rules_def.get_outer_attrs ()))
       {
 	rules_def.mark_for_strip ();
 	return;
@@ -3035,7 +3034,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
-    if (expander.fails_cfg (macro_invoc.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
       {
 	macro_invoc.mark_for_strip ();
 	return;
@@ -3110,7 +3109,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (field.get_outer_attrs ());
-    if (expander.fails_cfg (field.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
       {
 	field.mark_for_strip ();
 	return;
@@ -3127,7 +3126,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (field.get_outer_attrs ());
-    if (expander.fails_cfg (field.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
       {
 	field.mark_for_strip ();
 	return;
@@ -3144,7 +3143,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (field.get_outer_attrs ());
-    if (expander.fails_cfg (field.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
       {
 	field.mark_for_strip ();
 	return;
@@ -3187,7 +3186,7 @@ public:
     if (elems.has_etc ())
       {
 	expander.expand_cfg_attrs (elems.get_etc_outer_attrs ());
-	if (expander.fails_cfg (elems.get_etc_outer_attrs ()))
+	if (expander.fails_cfg_with_expand (elems.get_etc_outer_attrs ()))
 	  elems.strip_etc ();
       }
   }
@@ -3310,7 +3309,7 @@ public:
   {
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (stmt.get_outer_attrs ());
-    if (expander.fails_cfg (stmt.get_outer_attrs ()))
+    if (expander.fails_cfg_with_expand (stmt.get_outer_attrs ()))
       {
 	stmt.mark_for_strip ();
 	return;
@@ -3498,7 +3497,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    it = params.erase (it);
 	    continue;
@@ -3520,7 +3519,7 @@ public:
 
 	auto &param_attrs = param.get_outer_attrs ();
 	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg (param_attrs))
+	if (expander.fails_cfg_with_expand (param_attrs))
 	  {
 	    params.erase (params.begin () + i);
 	    continue;
@@ -3553,10 +3552,46 @@ public:
   }
 };
 
-AST::Literal 
+void
+MacroExpander::parse_macro_to_meta_item (AST::MacroInvocData &invoc)
+{
+  // only parse if not already parsed
+  if (invoc.is_parsed ())
+    return;
+
+  std::unique_ptr<AST::AttrInputMetaItemContainer> converted_input (
+    invoc.get_delim_tok_tree ().parse_to_meta_item ());
+  
+  if (converted_input == nullptr) 
+  {
+    fprintf (stderr, "DEBUG: failed to parse macro to meta item\n");
+    // TODO: do something now? is this an actual error?
+  } 
+  else
+  {
+    std::vector<std::unique_ptr<AST::MetaItemInner> > meta_items (std::move (converted_input->get_items ()));
+    invoc.set_meta_item_output (std::move (meta_items));
+  }
+}
+
+AST::Literal
 MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
 {
-  return AST::Literal::create_error ();
+  // only allow on cfg macros
+  if (invoc.get_path () != "cfg")
+    return AST::Literal::create_error ();
+
+  parse_macro_to_meta_item (invoc);
+
+  // TODO: assuming that cfg! macros can only have one meta item inner, like cfg attributes
+  if (invoc.get_meta_items ().size () != 1) 
+    return AST::Literal::create_error ();
+  
+  bool result = invoc.get_meta_items ()[0]->check_cfg_predicate (session);
+  if (result)
+    return AST::Literal ("true", AST::Literal::BOOL);
+  else 
+    return AST::Literal ("false", AST::Literal::BOOL);
 }
 
 void
@@ -3580,7 +3615,7 @@ MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
 	  - derive or legacy derive - "token-based" vs "AST-based"
 	  - else is unreachable
       - derive container macro - unreachable*/
-  
+
 #if 0
   // macro_rules macro test code
   auto rule_def = find_rules_def(invoc->get_path());
@@ -3602,14 +3637,33 @@ MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
 }
 
 /* Determines whether any cfg predicate is false and hence item with attributes
- * should be stripped.  */
+ * should be stripped. Note that attributes must be expanded before calling. */
 bool
-MacroExpander::fails_cfg (std::vector<AST::Attribute> &attrs)
+MacroExpander::fails_cfg (const std::vector<AST::Attribute> &attrs) const
 {
-  for (auto &attr : attrs)
+  for (const auto &attr : attrs)
     {
       if (attr.get_path () == "cfg" && !attr.check_cfg_predicate (session))
 	return true;
+    }
+  return false;
+}
+
+/* Determines whether any cfg predicate is false and hence item with attributes
+ * should be stripped. Will expand attributes as well. */
+bool
+MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
+{
+  for (auto &attr : attrs)
+    {
+      if (attr.get_path () == "cfg")
+	{
+	  if (!attr.is_parsed_to_meta_item ())
+	    attr.parse_attr_to_meta_item ();
+
+	  if (!attr.check_cfg_predicate (session))
+	    return true;
+	}
     }
   return false;
 }
@@ -3623,6 +3677,9 @@ MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
       auto &attr = attrs[i];
       if (attr.get_path () == "cfg_attr")
 	{
+	  if (!attr.is_parsed_to_meta_item ())
+	    attr.parse_attr_to_meta_item ();
+
 	  if (attr.check_cfg_predicate (session))
 	    {
 	      // split off cfg_attr
@@ -3665,7 +3722,7 @@ MacroExpander::expand_crate ()
   // expand crate cfg_attr attributes
   expand_cfg_attrs (crate.inner_attrs);
 
-  if (fails_cfg (crate.inner_attrs))
+  if (fails_cfg_with_expand (crate.inner_attrs))
     {
       // basically, delete whole crate
       crate.strip_crate ();

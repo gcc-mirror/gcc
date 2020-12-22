@@ -121,6 +121,8 @@ public:
    * cfg */
   bool check_cfg_predicate (const Session &) const override { return false; }
 
+  bool is_meta_item () const override { return false; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

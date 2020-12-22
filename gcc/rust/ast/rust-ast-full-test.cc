@@ -4628,8 +4628,8 @@ ModuleBodied::add_crate_name (std::vector<std::string> &names) const
 void
 Attribute::parse_attr_to_meta_item ()
 {
-  // only parse if has attribute input
-  if (!has_attr_input ())
+  // only parse if has attribute input and not already parsed
+  if (!has_attr_input () || is_parsed_to_meta_item ())
     return;
 
   std::unique_ptr<AttrInput> converted_input (
@@ -4639,7 +4639,7 @@ Attribute::parse_attr_to_meta_item ()
     attr_input = std::move (converted_input);
 }
 
-AttrInput *
+AttrInputMetaItemContainer *
 DelimTokenTree::parse_to_meta_item () const
 {
   // must have token trees
@@ -5391,32 +5391,38 @@ AttrInputMetaItemContainer::separate_cfg_attrs () const
 }
 
 bool
-Attribute::check_cfg_predicate (const Session &session)
+Attribute::check_cfg_predicate (const Session &session) const
 {
   /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
    * cfg_attr path */
   if (!has_attr_input ()
       || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
     return false;
-
-  // TODO: maybe replace with storing a "has been parsed" variable?
-  parse_attr_to_meta_item ();
-  // can't be const because of this anyway
+  
+  // assume that it has already been parsed
+  if (!is_parsed_to_meta_item ())
+    return false;
 
   return attr_input->check_cfg_predicate (session);
 }
 
 std::vector<Attribute>
-Attribute::separate_cfg_attrs ()
+Attribute::separate_cfg_attrs () const
 {
   if (!has_attr_input () || path.as_string () != "cfg_attr")
     return {};
 
-  // TODO: maybe replace with storing a "has been parsed" variable?
-  parse_attr_to_meta_item ();
-  // can't be const because of this anyway
+  // assume that it has already been parsed
+  if (!is_parsed_to_meta_item ())
+    return {};
 
   return attr_input->separate_cfg_attrs ();
+}
+
+bool 
+Attribute::is_parsed_to_meta_item () const 
+{ 
+  return has_attr_input () && attr_input->is_meta_item (); 
 }
 
 /* Visitor implementations - these are short but inlining can't happen anyway
