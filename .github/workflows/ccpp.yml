@@ -44,5 +44,9 @@ jobs:
     - name: Build
       run: |
            cd gccrs-build; \
-           make; \
+           make
+
+    - name: Test
+      run: |
+           cd gccrs-build; \
            make check-rust
