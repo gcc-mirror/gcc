@@ -2634,13 +2634,9 @@ package body Sem_Prag is
                   Context := Anonymous_Object (Context);
                end if;
 
-               if (Is_Subprogram_Or_Entry (Context)
-                     or else Ekind (Context) = E_Task_Type
-                     or else Is_Single_Task_Object (Context))
-                 and then
-                  (Present (Get_Pragma (Context, Pragma_Global))
-                     or else
-                   Present (Get_Pragma (Context, Pragma_Refined_Global)))
+               if Is_Subprogram_Or_Entry (Context)
+                 or else Ekind (Context) = E_Task_Type
+                 or else Is_Single_Task_Object (Context)
                then
                   Collect_Subprogram_Inputs_Outputs
                     (Subp_Id      => Context,
@@ -2649,8 +2645,8 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram or task unit (SPARK
-                  --  RM 6.1.4(13)).
+                  --  an Input or a formal parameter of mode IN in an enclosing
+                  --  subprogram or task unit (SPARK RM 6.1.4(13)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
