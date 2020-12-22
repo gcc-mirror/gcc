@@ -18,6 +18,8 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(include "common.md")
+
 (define_predicate "s_register_operand"
   (match_code "reg,subreg")
 {

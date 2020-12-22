@@ -11889,7 +11889,8 @@ xscale_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
 	 instruction we depend on is another ALU instruction, then we may
 	 have to account for an additional stall.  */
       if (shift_opnum != 0
-	  && (attr_type == TYPE_ALU_SHIFT_IMM
+	  && (attr_type == TYPE_ALU_SHIFT_IMM_LSL_1TO4
+	      || attr_type == TYPE_ALU_SHIFT_IMM_OTHER
 	      || attr_type == TYPE_ALUS_SHIFT_IMM
 	      || attr_type == TYPE_LOGIC_SHIFT_IMM
 	      || attr_type == TYPE_LOGICS_SHIFT_IMM

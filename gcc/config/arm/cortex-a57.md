@@ -313,7 +313,7 @@
 (define_insn_reservation "cortex_a57_alu_shift" 3
   (and (eq_attr "tune" "cortexa57")
        (eq_attr "type" "bfm,\
-			alu_shift_imm,alus_shift_imm,\
+			alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
 			crc,logic_shift_imm,logics_shift_imm,\
 			mov_shift,mvn_shift"))
   "ca57_mx")

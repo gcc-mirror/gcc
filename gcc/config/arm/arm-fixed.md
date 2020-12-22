@@ -482,7 +482,7 @@
   "ssat%?\\t%0, #16, %2%S1"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "1")
-   (set_attr "type" "alu_shift_imm")])
+   (set_attr "autodetect_type" "alu_shift_operator1")])
 
 (define_insn "arm_usatsihi"
   [(set (match_operand:HI 0 "s_register_operand" "=r")
