@@ -1,3 +1,32 @@
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98353
+	* gimplify.c (gimplify_init_ctor_eval_range): Gimplify value before
+	storing it into cref.
+
+2020-12-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_find_version_from_kernel):
+	Compute the minor OS version from the minor kernel version.
+
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98407
+	* fold-const.c (native_encode_initializer): When handling flexible
+	array members, fix up computation of length for memset.  Also remove
+	" - o" as o is always guaranteed to be 0 in this code path.
+
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98383
+	* gimplify.c (struct gimplify_omp_ctx): Add in_for_exprs flag.
+	(gimple_add_tmp_var): For addressable temporaries appearing in
+	simd lb, b or incr expressions, don't add a private clause unless
+	it is seen also outside of those expressions in the simd body.
+	(omp_notice_variable): Likewise.
+	(gimplify_omp_for): Set and reset in_for_exprs around gimplification
+	of lb, b or incr expressions.
+
 2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.md (bswapsi2, bswapdi2): New patterns.

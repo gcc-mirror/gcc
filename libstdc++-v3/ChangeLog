@@ -1,3 +1,23 @@
+2020-12-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_FLOAT_IS_IEEE_BINARY_32):
+	Define this macro.
+	(_GLIBCXX_DOUBLE_IS_IEEE_BINARY_64): Likewise.
+	* include/std/charconv (to_chars): Use these macros to
+	conditionally hide the overloads for floating-point types.
+	* src/c++17/floating_to_chars.cc: Use the macros to
+	conditionally disable this file.
+	(floating_type_traits<float>): Remove redundant static assert.
+	(floating_type_traits<double>): Likewise.
+	* testsuite/20_util/to_chars/double.cc: Run this test only on
+	ieee-floats effective targets.
+	* testsuite/20_util/to_chars/float.cc: Likewise.
+	* testsuite/20_util/to_chars/long_double.cc: Likewise.
+	* testsuite/lib/libstdc++.exp
+	(check_effective_target_ieee-floats): Define new proc for
+	detecting whether float and double have the IEEE binary32 and
+	binary64 formats.
+
 2020-12-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/semaphore: Fix indentation.
