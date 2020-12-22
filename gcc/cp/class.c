@@ -494,8 +494,6 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     target_type = ptr_target_type;
 
-  expr = build1 (NOP_EXPR, ptr_target_type, expr);
-
   if (!integer_zerop (offset))
     {
       offset = fold_convert (sizetype, offset);
@@ -505,6 +503,8 @@ build_base_path (enum tree_code code,
     }
   else
     null_test = NULL;
+
+  expr = build1 (NOP_EXPR, ptr_target_type, expr);
 
  indout:
   if (!want_pointer)
@@ -659,6 +659,33 @@ convert_to_base_statically (tree expr, tree base)
   return expr;
 }
 
+/* True IFF EXPR is a reference to an empty base class "subobject", as built in
+   convert_to_base_statically.  We look for the result of the fold_convert
+   call, a NOP_EXPR from one pointer type to another, where the target is an
+   empty base of the original type.  */
+
+bool
+is_empty_base_ref (tree expr)
+{
+  if (TREE_CODE (expr) == INDIRECT_REF)
+    expr = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (expr) != NOP_EXPR)
+    return false;
+  tree type = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (type))
+    return false;
+  type = TREE_TYPE (type);
+  if (!is_empty_class (type))
+    return false;
+  STRIP_NOPS (expr);
+  tree fromtype = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (fromtype))
+    return false;
+  fromtype = TREE_TYPE (fromtype);
+  return (CLASS_TYPE_P (fromtype)
+	  && !same_type_ignoring_top_level_qualifiers_p (fromtype, type)
+	  && DERIVED_FROM_P (type, fromtype));
+}
 
 tree
 build_vfield_ref (tree datum, tree type)
