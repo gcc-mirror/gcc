@@ -2650,7 +2650,7 @@ package body Sem_Prag is
 
                   --  The item is classified as In_Out or Output but appears as
                   --  an Input in an enclosing subprogram or task unit (SPARK
-                  --  RM 6.1.4(12)).
+                  --  RM 6.1.4(13)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
