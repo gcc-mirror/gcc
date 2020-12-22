@@ -4491,7 +4491,7 @@ Parse::switch_stat(Label* label)
 
   bool saw_simple_stat = false;
   Expression* switch_val = NULL;
-  bool saw_send_stmt;
+  bool saw_send_stmt = false;
   Type_switch type_switch;
   bool have_type_switch_block = false;
   if (this->simple_stat_may_start_here())
@@ -5326,7 +5326,7 @@ Parse::for_stat(Label* label)
 	{
 	  // We might be looking at a Condition, an InitStat, or a
 	  // RangeClause.
-	  bool saw_send_stmt;
+	  bool saw_send_stmt = false;
 	  cond = this->simple_stat(false, &saw_send_stmt, &range_clause, NULL);
 	  if (!this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    {
