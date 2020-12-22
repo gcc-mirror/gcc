@@ -37,8 +37,6 @@ with System.Val_LLF;  use System.Val_LLF;
 with System.WCh_Con;  use System.WCh_Con;
 with System.WCh_WtS;  use System.WCh_WtS;
 
-with Ada.Unchecked_Conversion;
-
 package body Ada.Wide_Wide_Text_IO.Complex_IO is
 
    use Complex_Types;
