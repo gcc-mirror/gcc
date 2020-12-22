@@ -14329,6 +14329,17 @@ package body Sem_Util is
             when N_Function_Call =>
                if not In_Function_Call then
                   In_Function_Call := True;
+
+                  --  When the function return type has implicit dereference
+                  --  specified we know it cannot directly contribute to the
+                  --  return value.
+
+                  if Present (Etype (Par))
+                    and then Has_Implicit_Dereference
+                               (Get_Full_View (Etype (Par)))
+                  then
+                     return False;
+                  end if;
                else
                   return False;
                end if;
