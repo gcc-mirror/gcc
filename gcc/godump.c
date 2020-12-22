@@ -1159,6 +1159,8 @@ go_output_typedef (class godump_container *container, tree decl)
 
       type = IDENTIFIER_POINTER (DECL_NAME (decl));
       original_type = DECL_ORIGINAL_TYPE (decl);
+      if (original_type == NULL_TREE)
+	original_type = TREE_TYPE (decl);
 
       /* Suppress typedefs where the type name matches the underlying
 	 struct/union/enum tag. This way we'll emit the struct definition
