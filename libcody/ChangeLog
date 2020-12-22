@@ -1,3 +1,29 @@
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98412
+	* client.cc: Include cstdlib.
+	* server.cc: Include cstdlib.
+
+2020-12-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* netserver.cc: Include <netinet/in.h>.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (RANLIB): New var.
+	* Makesub.in (libcody.a): Apply RANLIB.
+	* configure.ac: Call AC_PROG_RANLIB.
+	* configure: Rebuilt.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* buffer.cc (MessageBuffer::AppendInteger): Workaround
+	to_string's non-ubiquity.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* netclient.cc: Add netinet.h.
+
 2020-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* configure.ac: Add --enable-host-shared.

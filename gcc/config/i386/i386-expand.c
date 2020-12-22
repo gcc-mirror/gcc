@@ -16352,12 +16352,14 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
         if (!isless (xa, TWO52))
           return x;
 	x2 = (double)(long)x;
+
      Compensate.  Floor:
 	if (x2 > x)
 	  x2 -= 1;
      Compensate.  Ceil:
 	if (x2 < x)
 	  x2 += 1;
+
 	if (HONOR_SIGNED_ZEROS (mode))
 	  return copysign (x2, x);
 	return x2;
@@ -16392,10 +16394,15 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
   emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
   tmp = expand_simple_binop (mode, do_floor ? MINUS : PLUS,
 			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
-  emit_move_insn (res, tmp);
-
   if (HONOR_SIGNED_ZEROS (mode))
-    ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
+    {
+      /* Remove the sign with FE_DOWNWARD, where x - x = -0.0.  */
+      if (do_floor && flag_rounding_math)
+	tmp = ix86_expand_sse_fabs (tmp, NULL);
+
+      ix86_sse_copysign_to_positive (tmp, tmp, res, mask);
+    }
+  emit_move_insn (res, tmp);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -16415,12 +16422,14 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
           return x;
         xa = xa + TWO52 - TWO52;
         x2 = copysign (xa, x);
+
      Compensate.  Floor:
         if (x2 > x)
           x2 -= 1;
      Compensate.  Ceil:
         if (x2 < x)
           x2 += 1;
+
 	if (HONOR_SIGNED_ZEROS (mode))
 	  x2 = copysign (x2, x);
 	return x2;
@@ -16457,8 +16466,14 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
   tmp = expand_simple_binop (mode, do_floor ? MINUS : PLUS,
 			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
-  if (!do_floor && HONOR_SIGNED_ZEROS (mode))
-    ix86_sse_copysign_to_positive (tmp, tmp, res, mask);
+  if (HONOR_SIGNED_ZEROS (mode))
+    {
+      /* Remove the sign with FE_DOWNWARD, where x - x = -0.0.  */
+      if (do_floor && flag_rounding_math)
+	tmp = ix86_expand_sse_fabs (tmp, NULL);
+
+      ix86_sse_copysign_to_positive (tmp, tmp, res, mask);
+    }
   emit_move_insn (res, tmp);
 
   emit_label (label);

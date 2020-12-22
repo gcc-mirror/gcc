@@ -1,3 +1,8 @@
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR other/98409
+	* Makefile.in: Fix exeext variable case.
+
 2020-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* server.cc (crash_signal): Don't use strsignal.

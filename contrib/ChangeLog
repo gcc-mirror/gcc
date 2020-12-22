@@ -1,3 +1,15 @@
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add new error for quoted
+	filenames.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Test it.
+
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR bootstrap/98300

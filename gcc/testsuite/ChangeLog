@@ -1,3 +1,18 @@
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98353
+	* g++.dg/opt/pr98353.C: New test.
+
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98407
+	* gcc.c-torture/compile/pr98407.c: New test.
+
+2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98383
+	* g++.dg/gomp/pr98383.C: New test.
+
 2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* gcc.target/xtensa/bswap.c: New test.

@@ -1,3 +1,15 @@
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (create_dirs): Add logging.
+	(finish_module_processing): Unlink before rename.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98412
+	* mapper-client.cc: INCLUDE_STRING, INCLUDE_VECTOR.
+	(module_client::open_module_client): Avoid std::stoul.
+	* mapper-resolver.cc: INCLUDE_STRING, INCLUDE_VECTOR.
+
 2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* cp-lang.c (cxx_get_decl_init): New.
