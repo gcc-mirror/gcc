@@ -87,12 +87,18 @@ public:
 
       auto resolved_tyty = resolved_type;
       for (auto it : gathered_types)
-	resolved_tyty = resolved_tyty->combine (it);
+	{
+	  auto combined = resolved_tyty->combine (it);
+	  if (combined == nullptr)
+	    break;
+
+	  resolved_tyty = combined;
+	}
 
       // something is not inferred we need to look at all references now
       if (resolved_tyty == nullptr || resolved_tyty->is_unit ())
 	{
-	  rust_error_at (decl->get_locus_slow (), "failed to resolve type");
+	  rust_fatal_error (decl->get_locus_slow (), "failed to resolve type");
 	  return false;
 	}
 
