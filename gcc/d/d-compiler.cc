@@ -133,7 +133,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 
       cst = native_interpret_expr (vectype, buffer, len);
 
-      Expression *e = d_eval_constant_expression (cst);
+      Expression *e = d_eval_constant_expression (expr->loc, cst);
       gcc_assert (e != NULL && e->op == TOKvector);
 
       return e->isVectorExp ()->e1;
@@ -143,7 +143,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       /* Normal interpret cast.  */
       cst = native_interpret_expr (build_ctype (type), buffer, len);
 
-      Expression *e = d_eval_constant_expression (cst);
+      Expression *e = d_eval_constant_expression (expr->loc, cst);
       gcc_assert (e != NULL);
 
       return e;
