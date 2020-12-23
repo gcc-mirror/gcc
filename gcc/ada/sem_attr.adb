@@ -2302,16 +2302,12 @@ package body Sem_Attr is
                T : constant Entity_Id   := Etype (Entity (P));
 
             begin
-               if K in Subprogram_Kind
-                 or else K in Task_Kind
-                 or else K in Protected_Kind
-                 or else K = E_Package
-                 or else K in Generic_Unit_Kind
-                 or else (K = E_Variable
-                            and then
-                              (Is_Task_Type (T)
-                                 or else
-                               Is_Protected_Type (T)))
+               if K in Concurrent_Kind
+                     | Entry_Kind
+                     | Generic_Unit_Kind
+                     | Subprogram_Kind
+                     | E_Package
+                 or else (K = E_Variable and then Is_Concurrent_Type (T))
                then
                   return;
                end if;
