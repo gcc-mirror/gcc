@@ -13400,6 +13400,8 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
     return false;
 
   tree dealloc_decl = get_callee_fndecl (exp);
+  if (!dealloc_decl)
+    return false;
 
   if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
       && !DECL_IS_REPLACEABLE_OPERATOR (dealloc_decl))
@@ -13413,7 +13415,7 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
 	  if (is_gimple_call (def_stmt))
 	    {
 	      tree alloc_decl = gimple_call_fndecl (def_stmt);
-	      if (!DECL_IS_OPERATOR_NEW_P (alloc_decl))
+	      if (!alloc_decl || !DECL_IS_OPERATOR_NEW_P (alloc_decl))
 		return false;
 	    }
 	}
