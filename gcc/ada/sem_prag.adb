@@ -10934,10 +10934,6 @@ package body Sem_Prag is
             end if;
          end if;
 
-         if Warn_On_Export_Import and then Is_Type (E) then
-            Error_Msg_NE ("exporting a type has no effect?x?", Arg, E);
-         end if;
-
          if Warn_On_Export_Import and Inside_A_Generic then
             Error_Msg_NE
               ("all instances of& will have the same external name?x?",
