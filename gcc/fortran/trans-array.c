@@ -3865,8 +3865,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       add_to_offset (&cst_offset, &offset, tmp);
     }
 
-  if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image
-      && !se->no_impl_this_image)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image)
     {
       tree off;
       tree co_stride = gfc_conv_array_stride (decl, eff_dimen + 1);
@@ -3932,6 +3931,15 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	}
       else
 	decl = NULL_TREE;
+    }
+
+  /* Early return - only taken for ALLOCATED for shared coarrays.
+     FIXME - this could probably be done more elegantly.  */
+  if (se->address_only)
+    {
+      se->expr = build_array_ref (se->expr, build_int_cst (TREE_TYPE (offset), 0),
+				  decl, se->class_vptr);
+      return;
     }
 
   se->expr = build_array_ref (se->expr, offset, decl, se->class_vptr);
@@ -5975,15 +5983,41 @@ gfc_cas_get_allocation_type (gfc_symbol * sym)
 }
 
 void
-gfc_allocate_shared_coarray (stmtblock_t *b, tree decl, tree size, int corank,
-			    int alloc_type)
+gfc_allocate_shared_coarray (stmtblock_t *b, tree decl, tree size, int rank,
+			     int corank, int alloc_type, tree status,
+			     tree errmsg, tree errlen, bool calc_offset)
 {
+  tree st, err, elen;
+
+  if (status == NULL_TREE)
+    st = null_pointer_node;
+  else
+    st = gfc_build_addr_expr (NULL, status);
+
+  err = errmsg == NULL_TREE ? null_pointer_node : errmsg;
+  elen = errlen == NULL_TREE ? build_int_cst (gfc_charlen_type_node, 0) : errlen;
   gfc_add_expr_to_block (b,
 	build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_allocate,
-			    4, gfc_build_addr_expr (pvoid_type_node, decl),
-			    size, build_int_cst (integer_type_node, corank),
-			    build_int_cst (integer_type_node, alloc_type)));
-
+			     7, gfc_build_addr_expr (pvoid_type_node, decl),
+			     size, build_int_cst (integer_type_node, corank),
+			     build_int_cst (integer_type_node, alloc_type),
+			     st, err, elen));
+  if (calc_offset)
+    {
+      int i;
+      tree offset, stride, lbound, mult;
+      offset = build_int_cst (gfc_array_index_type, 0);
+      for (i = 0; i < rank + corank; i++)
+	{
+	  stride = gfc_conv_array_stride (decl, i);
+	  lbound = gfc_conv_array_lbound (decl, i);
+	  mult = fold_build2_loc (input_location, MULT_EXPR,
+				  gfc_array_index_type, stride, lbound);
+	  offset = fold_build2_loc (input_location, MINUS_EXPR,
+				    gfc_array_index_type, offset, mult);
+	}
+      gfc_conv_descriptor_offset_set (b, decl, offset);
+    }
 }
 
 /* Initializes the descriptor and generates a call to _gfor_allocate.  Does
@@ -6193,7 +6227,9 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
       int alloc_type
 	     = gfc_cas_get_allocation_type (expr->symtree->n.sym);
       gfc_allocate_shared_coarray (&elseblock, se->expr, elem_size,
-				   ref->u.ar.as->corank, alloc_type);
+				   ref->u.ar.as->rank, ref->u.ar.as->corank,
+				   alloc_type, status, errmsg, errlen,
+				   true);
     }
   /* The allocatable variant takes the old pointer as first argument.  */
   else if (allocatable)

@@ -31,7 +31,8 @@ enum gfc_coarray_allocation_type {
 
 int gfc_cas_get_allocation_type (gfc_symbol *);
 
-void gfc_allocate_shared_coarray (stmtblock_t *, tree, tree, int, int);
+void gfc_allocate_shared_coarray (stmtblock_t *, tree, tree, int, int, int,
+				  tree, tree, tree, bool);
 
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,

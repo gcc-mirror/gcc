@@ -8832,7 +8832,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 	{
 	  /* Allocatable scalar.  */
 	  arg1se.want_pointer = 1;
-	  arg1se.no_impl_this_image = 1;
+	  arg1se.address_only = 1;
 	  gfc_conv_expr (&arg1se, arg1->expr);
 	  tmp = arg1se.expr;
 	}

@@ -44,7 +44,8 @@ enum gfc_coarray_allocation_type
   GFC_NCA_EVENT_COARRAY,
 };
 
-void cas_coarray_alloc (gfc_array_void *, int, int, int);
+void cas_coarray_alloc (gfc_array_void *, size_t, int, int, int *,
+			char *, size_t);
 export_proto (cas_coarray_alloc);
 
 void cas_coarray_free (gfc_array_void *, int);
@@ -85,8 +86,8 @@ void cas_collsub_broadcast_scalar (void *restrict, size_t, int, int *, char *,
 export_proto (cas_collsub_broadcast_scalar);
 
 void
-cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
-		   int alloc_type)
+cas_coarray_alloc (gfc_array_void *desc, size_t elem_size, int corank,
+		   int alloc_type, int *status, char *errmsg, size_t errmsg_len)
 {
   int i, last_rank_index;
   int num_coarray_elems, num_elems; /* Excludes the last dimension, because it
@@ -98,6 +99,7 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
   ensure_initialization (); /* This function might be the first one to be
 			       called, if it is called in a constructor.  */
 
+  STAT_ERRMSG_ENTRY_CHECK (status, errmsg, errmsg_len);
   if (alloc_type == GFC_NCA_LOCK_COARRAY)
     elem_size = sizeof (pthread_mutex_t);
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)

@@ -4118,9 +4118,15 @@ gfc_build_builtin_function_decls (void)
 	 get_identifier (PREFIX("cas_master")), ". r ", integer_type_node, 1,
 	build_pointer_type (build_function_type_list (void_type_node, NULL_TREE)));
       gfor_fndecl_cas_coarray_allocate = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("cas_coarray_alloc")), ". . R R R ", integer_type_node, 4,
-	pvoid_type_node, integer_type_node, integer_type_node, integer_type_node,
-	NULL_TREE);
+	 get_identifier (PREFIX("cas_coarray_alloc")), ". . R R R W W . ", integer_type_node, 7,
+	 pvoid_type_node,	/* desc.  */
+	 size_type_node,	/* elem_size.  */
+	 integer_type_node,	/* corank.  */
+	 integer_type_node,	/* alloc_type.  */
+	 pvoid_type_node,	/* stat.  */
+	 pvoid_type_node,	/* errmsg.  */
+	 gfc_charlen_type_node, /* errmsg_len.  */
+	 NULL_TREE);
       gfor_fndecl_cas_coarray_free = gfc_build_library_function_decl_with_spec (
 	 get_identifier (PREFIX("cas_coarray_free")), ". . R ", integer_type_node, 2,
 	 pvoid_type_node, /* Pointer to the descriptor to be deallocated.  */
@@ -4689,10 +4695,13 @@ gfc_trans_shared_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol *
 			   init, &overflow,
 			   NULL_TREE, &nelems, NULL,
 			   NULL_TREE, true, NULL, &element_size);
-      gfc_conv_descriptor_offset_set (init, decl, offset);
       elem_size = size_in_bytes (gfc_get_element_type (TREE_TYPE(decl)));
-      gfc_allocate_shared_coarray (init, decl, elem_size, sym->as->corank,
-				  alloc_type);
+      gfc_allocate_shared_coarray (init, decl, elem_size, sym->as->rank,
+				   sym->as->corank, alloc_type, null_pointer_node,
+				   null_pointer_node,
+				   build_int_cst (gfc_charlen_type_node, 0),
+				   false);
+      gfc_conv_descriptor_offset_set (init, decl, offset);
     }
 
   if (cleanup)
