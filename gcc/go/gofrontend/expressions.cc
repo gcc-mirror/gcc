@@ -5334,7 +5334,6 @@ Unary_expression::do_get_backend(Translate_context* context)
       {
         go_assert(this->expr_->type()->points_to() != NULL);
 
-        bool known_valid = false;
         Type* ptype = this->expr_->type()->points_to();
         Btype* pbtype = ptype->get_backend(gogo);
         switch (this->requires_nil_check(gogo))
@@ -5375,14 +5374,12 @@ Unary_expression::do_get_backend(Translate_context* context)
                                                                 compare,
                                                                 bcrash, ubexpr,
                                                                 loc);
-                known_valid = true;
                 break;
               }
             case NIL_CHECK_DEFAULT:
               go_unreachable();
           }
-        ret = gogo->backend()->indirect_expression(pbtype, bexpr,
-                                                   known_valid, loc);
+        ret = gogo->backend()->indirect_expression(pbtype, bexpr, false, loc);
       }
       break;
 
@@ -13339,7 +13336,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
 
 	  Type* ele_type = this->array_->type()->array_type()->element_type();
 	  Btype* ele_btype = ele_type->get_backend(gogo);
-	  ret = gogo->backend()->indirect_expression(ele_btype, ptr, true, loc);
+	  ret = gogo->backend()->indirect_expression(ele_btype, ptr, false,
+						     loc);
 	}
       return ret;
     }
@@ -13679,7 +13677,7 @@ String_index_expression::do_get_backend(Translate_context* context)
     {
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
-      return gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
+      return gogo->backend()->indirect_expression(ubtype, ptr, false, loc);
     }
 
   Expression* end = NULL;
