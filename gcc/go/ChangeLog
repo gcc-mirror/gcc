@@ -1,3 +1,9 @@
+2020-12-22  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/98402
+	* go-lang.c (go_langhook_init): Force MPFR exponent range to be
+	large enough to support Go constants.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911
