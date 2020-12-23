@@ -4,4 +4,4 @@
 // PR 18095: ICE
 // Origin: Volker Reichelt <reichelt@gcc.gnu.org>
 
-struct A // { dg-error "-:expected" "" { target *-*-* } .+1 }
+struct A // { dg-error "9:expected" }

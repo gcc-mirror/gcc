@@ -10,4 +10,4 @@ void bar (void);
 
 void test (void);
 // { message "12: to match this '.'" "" { target *-*-* } open_extern_c }
-/* { dg-error "-:expected '.' at end of input" "" { target *-*-* } .+1 } */
+/* { dg-error "18:expected '.' at end of input" "" { target *-*-* } .-2 } */

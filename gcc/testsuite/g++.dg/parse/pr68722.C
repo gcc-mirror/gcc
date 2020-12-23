@@ -6,4 +6,3 @@ class A {
   A _M_ios_locale ios_base(ios_base &) template <_Traits> class basic_ios {  // { dg-error "" }
     basic_ios basic_ios = operator= // { dg-error "" }
 // { dg-prune-output "file ends in default argument" }
-// { dg-error "-:expected" "" { target *-*-* } .+1 }

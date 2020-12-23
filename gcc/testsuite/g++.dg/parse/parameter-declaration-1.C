@@ -3,5 +3,5 @@
 // { dg-do compile }
 
 struct {
-  a(void = 0; a(0), a(0) // { dg-error "" }
-// { dg-error "-:expected" "" { target *-*-* } .+1 }
+  a(void = 0; a(0), a(0) // { dg-error "invalid|cannot|before|forbid|member" }
+// { dg-error "25:end of input" "" { target *-*-* } .-1 }

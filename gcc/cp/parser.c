@@ -666,6 +666,16 @@ cp_lexer_new_main (void)
                       + lexer->buffer->length ()
 		      - 1;
 
+  if (lexer->buffer->length () != 1)
+    {
+      /* Set the EOF token's location to be the just after the previous
+         token's range.  That way 'at-eof' diagnostics point at something
+	 meaninful.  */
+      auto range = get_range_from_loc (line_table, tok[-1].location);
+      tok[0].location
+	= linemap_position_for_loc_and_offset (line_table, range.m_finish, 1);
+    }
+
   if (filter)
     module_token_cdtor (parse_in, filter);
 
