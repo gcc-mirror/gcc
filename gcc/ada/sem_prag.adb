@@ -14725,6 +14725,8 @@ package body Sem_Prag is
                end if;
 
                if Nkind (N) = N_Aggregate
+                 and then not Null_Record_Present (N)
+                 and then No (Component_Associations (N))
                  and then List_Length (Expressions (N)) = 3
                then
                   Expr := First (Expressions (N));
@@ -14746,7 +14748,7 @@ package body Sem_Prag is
             Shared_Memory    : Node_Id;
             Stream           : Node_Id;
 
-            --  Start of processing for CUDA_Execute
+         --  Start of processing for CUDA_Execute
 
          begin
             GNAT_Pragma;
@@ -14755,7 +14757,7 @@ package body Sem_Prag is
 
             Analyze_And_Resolve (Kernel_Call);
             if Nkind (Kernel_Call) /= N_Function_Call
-               or else Etype (Kernel_Call) /= Standard_Void_Type
+              or else Etype (Kernel_Call) /= Standard_Void_Type
             then
                --  In `pragma CUDA_Execute (Kernel_Call (...), ...)`,
                --  GNAT sees Kernel_Call as an N_Function_Call since
@@ -14796,7 +14798,7 @@ package body Sem_Prag is
          -- CUDA_Global --
          -----------------
 
-         --  pragma CUDA_Global (IDENTIFIER);
+         --  pragma CUDA_Global ([Entity =>] IDENTIFIER);
 
          when Pragma_CUDA_Global => CUDA_Global : declare
             Arg_Node    : Node_Id;
@@ -14804,8 +14806,7 @@ package body Sem_Prag is
             Pack_Id     : Entity_Id;
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (1);
+            Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
 
