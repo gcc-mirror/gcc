@@ -286,7 +286,7 @@ Visibility::as_string () const
     case NONE:
       return std::string ("pub");
     case CRATE:
-      return std::string ("ub(crate)");
+      return std::string ("pub(crate)");
     case SELF:
       return std::string ("pub(self)");
     case SUPER:
