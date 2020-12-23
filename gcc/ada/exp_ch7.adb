@@ -3795,7 +3795,9 @@ package body Exp_Ch7 is
       --       --  Perform postcondition checks after general finalization, but
       --       --  before finalization of 'Old related objects.
       --
-      --       if not Raised_Finalization_Exception then
+      --       if not Raised_Finalization_Exception
+      --         and then Return_Success_For_Postcond
+      --       then
       --          begin
       --             --  Re-enable postconditions and check them
       --
@@ -3973,7 +3975,9 @@ package body Exp_Ch7 is
 
          --  Generate:
          --
-         --    if not Raised_Finalization_Exception then
+         --    if not Raised_Finalization_Exception
+         --      and then Return_Success_For_Postcond
+         --    then
          --       begin
          --          Postcond_Enabled := True;
          --          _postconditions [(Result_Obj_For_Postcond[.all])];
@@ -3988,10 +3992,15 @@ package body Exp_Ch7 is
          Append_To (Fin_Controller_Stmts,
            Make_If_Statement (Loc,
              Condition       =>
-               Make_Op_Not (Loc,
+               Make_And_Then (Loc,
+                 Left_Opnd  =>
+                   Make_Op_Not (Loc,
+                     Right_Opnd =>
+                       New_Occurrence_Of
+                         (Raised_Finalization_Exception_Id, Loc)),
                  Right_Opnd =>
                    New_Occurrence_Of
-                     (Raised_Finalization_Exception_Id, Loc)),
+                     (Get_Return_Success_For_Postcond (Def_Ent), Loc)),
              Then_Statements => New_List (
                Make_Block_Statement (Loc,
                  Handled_Statement_Sequence =>
