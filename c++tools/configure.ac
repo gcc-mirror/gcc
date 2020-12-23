@@ -66,6 +66,13 @@ AC_MSG_RESULT([$maintainer_mode])
 test "$maintainer_mode" = yes && MAINTAINER=yes
 AC_SUBST(MAINTAINER)
 
+# Check whether --enable-default-pie was given.
+AC_ARG_ENABLE(default-pie,
+[AS_HELP_STRING([--enable-default-pie],
+		  [enable Position Independent Executable as default])],
+[PIEFLAG=-fPIE], [PIEFLAG=])
+AC_SUBST([PIEFLAG])
+
 # Check if O_CLOEXEC is defined by fcntl
 AC_CACHE_CHECK(for O_CLOEXEC, ac_cv_o_cloexec, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
