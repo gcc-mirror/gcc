@@ -363,8 +363,6 @@ Node::op_format() const
 		  op << "append";
 		  break;
 
-		case Runtime::SLICECOPY:
-		case Runtime::SLICESTRINGCOPY:
 		case Runtime::TYPEDSLICECOPY:
 		  op << "copy";
 		  break;

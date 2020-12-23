@@ -242,14 +242,6 @@ DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
-// Copy.
-DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy",
-	       P5(POINTER, INT, POINTER, INT, UINTPTR), R1(INT))
-
-// Copy from string.
-DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy",
-	       P3(POINTER, INT, STRING), R1(INT))
-
 // Copy of value containing pointers.
 DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
 	       P5(TYPE, POINTER, INT, POINTER, INT), R1(INT))
