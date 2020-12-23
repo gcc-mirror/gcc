@@ -5097,6 +5097,8 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
     x = TREE_OPERAND (x, 0);
 
   tree type = TREE_TYPE (x);
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
 
    if (TREE_CODE (x) != INTEGER_CST
       && TREE_CODE (x) != SSA_NAME)
@@ -13398,6 +13400,7 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
     return false;
 
   tree dealloc_decl = get_callee_fndecl (exp);
+
   if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
       && !DECL_IS_REPLACEABLE_OPERATOR (dealloc_decl))
     {
