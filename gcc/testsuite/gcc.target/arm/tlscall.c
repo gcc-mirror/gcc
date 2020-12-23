@@ -2,6 +2,7 @@
 
 /* { dg-do assemble } */
 /* { dg-options "-O2 -fPIC -mtls-dialect=gnu2" } */
+/* { dg-require-effective-target fpic } */
 /* { dg-skip-if "FDPIC does not support gnu2 TLS dialect" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 /* { dg-skip-if "-mpure-code and -fPIC incompatible" { *-*-* } { "-mpure-code" } } */
 
