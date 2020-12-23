@@ -6921,7 +6921,7 @@ package body Sem_Prag is
                         Set_Is_Overloaded (Name, False);
                      else
                         Error_Pragma_Arg
-                          ("ambiguous handler name for pragma% ", Arg);
+                          ("ambiguous handler name for pragma%", Arg);
                      end if;
                   end if;
 

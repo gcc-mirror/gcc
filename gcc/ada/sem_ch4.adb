@@ -4419,7 +4419,7 @@ package body Sem_Ch4 is
          --  If result is Any_Type, then we did not find a compatible pair
 
          if Etype (N) = Any_Type then
-            Error_Msg_N ("incompatible types in range ", N);
+            Error_Msg_N ("incompatible types in range", N);
          end if;
       end if;
 

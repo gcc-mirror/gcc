@@ -4337,8 +4337,8 @@ package body Sem_Ch5 is
                         Error_Msg_N
                           ("ambiguous bounds in range of iteration", R_Copy);
                         Error_Msg_N ("\possible interpretations:", R_Copy);
-                        Error_Msg_NE ("\\} ", R_Copy, Found);
-                        Error_Msg_NE ("\\} ", R_Copy, It.Typ);
+                        Error_Msg_NE ("\\}", R_Copy, Found);
+                        Error_Msg_NE ("\\}", R_Copy, It.Typ);
                         exit;
                      end if;
                   end if;

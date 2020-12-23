@@ -4743,7 +4743,7 @@ package body Sem_Aggr is
          then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
-               & "has unknown discriminants ", N, Typ);
+               & "has unknown discriminants", N, Typ);
          end if;
 
          if Has_Unknown_Discriminants (Typ)

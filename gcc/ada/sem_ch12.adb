@@ -4283,7 +4283,7 @@ package body Sem_Ch12 is
         and then Chars (Act_Decl_Id) = Chars (Prefix (Gen_Id))
       then
          Error_Msg_N
-           ("& is hidden within declaration of instance ", Prefix (Gen_Id));
+           ("& is hidden within declaration of instance", Prefix (Gen_Id));
       end if;
 
       Set_Entity (Gen_Id, Gen_Unit);

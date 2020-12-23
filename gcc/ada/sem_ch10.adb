@@ -3832,7 +3832,7 @@ package body Sem_Ch10 is
 
                   if E2 = WEnt then
                      Error_Msg_N
-                       ("unlimited view visible through use clause ", W);
+                       ("unlimited view visible through use clause", W);
                      return;
                   end if;
                end if;

@@ -4500,7 +4500,7 @@ package body Sem_Ch3 is
 
             elsif Is_Class_Wide_Type (T) then
                Error_Msg_N
-                 ("initialization required in class-wide declaration ", N);
+                 ("initialization required in class-wide declaration", N);
 
             else
                Error_Msg_N
@@ -5088,7 +5088,7 @@ package body Sem_Ch3 is
 
       elsif not Is_Tagged_Type (Parent_Type) then
          Error_Msg_N
-           ("parent of type extension must be a tagged type ", Indic);
+           ("parent of type extension must be a tagged type", Indic);
          goto Leave;
 
       elsif Ekind (Parent_Type) in E_Void | E_Incomplete_Type then
@@ -17448,10 +17448,10 @@ package body Sem_Ch3 is
               and then Nkind (N) = N_Private_Type_Declaration
             then
                Error_Msg_NE
-                 ("declaration of private } must be a tagged type ", Id, Prev);
+                 ("declaration of private } must be a tagged type", Id, Prev);
             else
                Error_Msg_NE
-                 ("full declaration of } must be a tagged type ", Id, Prev);
+                 ("full declaration of } must be a tagged type", Id, Prev);
             end if;
 
          else
@@ -17459,10 +17459,10 @@ package body Sem_Ch3 is
               and then Nkind (N) = N_Private_Type_Declaration
             then
                Error_Msg_NE
-                 ("declaration of private } must be a tagged type ", Prev, Id);
+                 ("declaration of private } must be a tagged type", Prev, Id);
             else
                Error_Msg_NE
-                 ("full declaration of } must be a tagged type ", Prev, Id);
+                 ("full declaration of } must be a tagged type", Prev, Id);
             end if;
          end if;
       end Tag_Mismatch;
@@ -19359,7 +19359,7 @@ package body Sem_Ch3 is
 
       else
          if not Is_Entity_Name (N) or else not Is_Type (Entity (N)) then
-            Error_Msg_N ("invalid subtype mark in discrete range ", N);
+            Error_Msg_N ("invalid subtype mark in discrete range", N);
             Set_Etype (N, Any_Integer);
             return;
 

@@ -1862,7 +1862,7 @@ package body Sem_Ch8 is
       Old_S := Find_Renamed_Entity (N, Selector_Name (Nam), New_S);
 
       if Old_S = Any_Id then
-         Error_Msg_N (" no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification",  N);
       else
          if Is_Body then
             Check_Subtype_Conformant (New_S, Old_S, N);
@@ -3577,7 +3577,7 @@ package body Sem_Ch8 is
                end if;
 
                if Original_Subprogram (Old_S) = Rename_Spec then
-                  Error_Msg_N ("unfrozen subprogram cannot rename itself ", N);
+                  Error_Msg_N ("unfrozen subprogram cannot rename itself", N);
                else
                   Check_Formal_Subprogram_Conformance (New_S, Old_S, Spec);
                end if;

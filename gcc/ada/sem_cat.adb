@@ -275,7 +275,7 @@ package body Sem_Cat is
            and then Is_Preelaborated (Depended_Entity)
          then
             Error_Msg_NE
-              ("<<must use private with clause for preelaborated unit& ",
+              ("<<must use private with clause for preelaborated unit&",
                N, Depended_Entity);
 
          --  Subunit case

@@ -4011,7 +4011,7 @@ package body Exp_Disp is
                Error_Msg_NE
                  ("\which is a component of untagged type& in the profile "
                   & "of primitive & of type % that is frozen by the "
-                  & "declaration ", N, Typ);
+                  & "declaration", N, Typ);
             end if;
          end if;
       end Check_Premature_Freezing;

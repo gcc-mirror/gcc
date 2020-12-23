@@ -2233,7 +2233,7 @@ package body Sem_Res is
                   then
                      Is_Remote := False;
                      Error_Msg_N
-                       ("prefix must statically denote a remote subprogram ",
+                       ("prefix must statically denote a remote subprogram",
                         N);
                   end if;
 
