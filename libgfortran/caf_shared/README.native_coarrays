@@ -35,4 +35,4 @@ TODO (the list is probably incomplete):
 - Atomics
 - Events
 - MOVE_ALLOC
-
+- automatic linking of relevant libraries with -fcoarray=shared
