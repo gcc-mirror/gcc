@@ -43,13 +43,13 @@ static const char *
 validate_macosx_version_min (const char *version_str)
 {
   size_t version_len;
-  unsigned long major, minor, tiny = 0;
+  unsigned long major, minor = 0, tiny = 0;
   char *end;
   const char *old_version = version_str;
   bool need_rewrite = false;
 
   version_len = strlen (version_str);
-  if (version_len < 4) /* The minimum would be 10.x  */
+  if (version_len < 2) /* The minimum would be 11  */
     return NULL;
 
   /* Version string must consist of digits and periods only.  */
@@ -63,18 +63,27 @@ validate_macosx_version_min (const char *version_str)
     need_rewrite = true;
 
   major = strtoul (version_str, &end, 10);
-  version_str = end + ((*end == '.') ? 1 : 0);
 
   if (major < 10 || major > 11 ) /* MacOS 10 and 11 are known. */
     return NULL;
 
-  /* Version string components must be present and numeric.  */
-  if (!ISDIGIT (version_str[0]))
+  /* Skip a separating period, if there's one.  */
+  version_str = end + ((*end == '.') ? 1 : 0);
+
+  if (major == 11 && *end != '\0' && !ISDIGIT (version_str[0]))
+     /* For MacOS 11, we allow just the major number, but if the minor is
+	there it must be numeric.  */
+    return NULL;
+  else if (major == 11 && *end == '\0')
+    /* We will rewrite 11 =>  11.0.0.  */
+    need_rewrite = true;
+  else if (major == 10 && (*end == '\0' || !ISDIGIT (version_str[0])))
+    /* Otherwise, minor version components must be present and numeric.  */
     return NULL;
 
   /* If we have one or more leading zeros on a component, then rewrite the
      version string.  */
-  if (version_str[0] == '0' && version_str[1] != '\0'
+  if (*end != '\0' && version_str[0] == '0' && version_str[1] != '\0'
       && version_str[1] != '.')
     need_rewrite = true;
 
@@ -220,7 +229,7 @@ darwin_default_min_version (void)
       const char *checked = validate_macosx_version_min (new_flag);
       if (checked == NULL)
 	{
-	  warning (0, "couldn%'t understand version %s\n", new_flag);
+	  warning (0, "could not understand version %s", new_flag);
 	  return NULL;
 	}
       new_flag = xstrndup (checked, strlen (checked));
