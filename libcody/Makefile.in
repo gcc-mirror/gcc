@@ -100,7 +100,7 @@ endif
 CXXOPTS += $(filter-out -DHAVE_CONFIG_H,@DEFS@) -include config.h
 
 # Linker options
-LDFLAGS := -L. @LDFLAGS@
+LDFLAGS := @LDFLAGS@
 LIBS := @LIBS@
 
 # Per-source & per-directory compile flags (warning: recursive)
