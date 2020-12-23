@@ -3749,8 +3749,8 @@ package body Freeze is
 
                Error_Msg_NE ("?x?type of argument& is unconstrained array",
                   Warn_Node, Formal);
-               Error_Msg_NE ("?x?foreign caller must pass bounds explicitly",
-                  Warn_Node, Formal);
+               Error_Msg_N ("\?x?foreign caller must pass bounds explicitly",
+                  Warn_Node);
                Error_Msg_Qual_Level := 0;
             end if;
 

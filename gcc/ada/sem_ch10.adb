@@ -1561,9 +1561,9 @@ package body Sem_Ch10 is
                                  Error_Msg_N
                                    ("simultaneous visibility of limited and "
                                     & "unlimited views not allowed", Item);
-                                 Error_Msg_NE
+                                 Error_Msg_N
                                    ("\unlimited view visible through context "
-                                    & "clause #", Item, It);
+                                    & "clause #", Item);
                                  exit;
 
                               elsif Nkind (Unit_Name) = N_Identifier then

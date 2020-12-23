@@ -2037,8 +2037,8 @@ package body Sem_Ch5 is
             then
                null;
             else
-               Error_Msg_NE
-                 ("container type does not support reverse iteration", N, Typ);
+               Error_Msg_N
+                 ("container type does not support reverse iteration", N);
             end if;
          end if;
       end Check_Reverse_Iteration;

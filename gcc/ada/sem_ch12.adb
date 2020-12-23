@@ -13828,9 +13828,9 @@ package body Sem_Ch12 is
                Actual_Discr := First_Discriminant (Act_T);
                while Formal_Discr /= Empty loop
                   if Actual_Discr = Empty then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("discriminants on actual do not match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 
@@ -13851,18 +13851,18 @@ package body Sem_Ch12 is
                   elsif Base_Type (Formal_Subt) /=
                           Base_Type (Etype (Actual_Discr))
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("types of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
 
                   elsif not Subtypes_Statically_Match
                               (Formal_Subt, Etype (Actual_Discr))
                     and then Ada_Version >= Ada_95
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("subtypes of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 
