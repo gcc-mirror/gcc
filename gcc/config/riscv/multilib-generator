@@ -57,7 +57,7 @@ def arch_canonicalize(arch):
   proc = subprocess.Popen([sys.executable, arch_can_script, arch],
                           stdout=subprocess.PIPE)
   out, err = proc.communicate()
-  return out.strip()
+  return out.decode().strip()
 
 #
 # Handle expansion operation.
