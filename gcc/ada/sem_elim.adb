@@ -783,7 +783,7 @@ package body Sem_Elim is
         and then Is_Concurrent_Record_Type (Etype (First_Entity (E)))
       then
          Error_Msg_NE
-           ("cannot reference eliminated protected subprogram", N, E);
+           ("cannot reference eliminated protected subprogram&", N, E);
 
       --  Otherwise should not fall through, entry should be in table
 

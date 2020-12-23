@@ -5031,7 +5031,7 @@ package body Sem_Aggr is
 
          if Present (Get_Value (Component, Component_Associations (N))) then
             Error_Msg_NE
-              ("more than one value supplied for Component &", N, Component);
+              ("more than one value supplied for component &", N, Component);
          end if;
 
          Next (Positional_Expr);

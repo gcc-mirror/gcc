@@ -1777,7 +1777,7 @@ package body Sem_Ch3 is
                      elsif not Comes_From_Source (Prim) then
                         Error_Msg_NE
                           ("&inherits non-conforming preconditions and must "
-                           & "be overridden (RM 6.1.1 (10-16)",
+                           & "be overridden (RM 6.1.1 (10-16))",
                            Parent (Tagged_Type), Prim);
                      end if;
                   end if;
