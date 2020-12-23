@@ -11374,7 +11374,8 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
-      if (DECL_TEMPLATE_INFO (decl)
+      if (DECL_LANG_SPECIFIC (decl)
+	  && DECL_TEMPLATE_INFO (decl)
 	  && DECL_USE_TEMPLATE (decl) < 2)
 	return DECL_INITIAL (decl);
       else

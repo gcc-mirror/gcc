@@ -1,3 +1,24 @@
+2020-12-22  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (has_definition): Check DECL_LANG_SPECIFIC.
+
+2020-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/93480
+	* method.c (common_comparison_type): If comps[i] is a TREE_LIST,
+	use its TREE_VALUE instead.
+	(build_comparison_op): Handle array members.
+
+2020-12-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* module.cc (INCLUDE_STRING): Define.
+	(INCLUDE_VECTOR): Ditto.
+
+2020-12-22  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_member_name): Add assert.
+	(write_expression): Add asserts.
+
 2020-12-21  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (create_dirs): Add logging.
