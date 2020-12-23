@@ -106,6 +106,10 @@ func block() {
 // Both reside on the goroutine's stack (regardless of any escaping in
 // selectgo).
 //
+// For race detector builds, pc0 points to an array of type
+// [ncases]uintptr (also on the stack); for other builds, it's set to
+// nil.
+//
 // selectgo returns the index of the chosen scase, which matches the
 // ordinal position of its respective select{recv,send,default} call.
 // Also, if the chosen scase was a receive operation, it reports whether
@@ -124,6 +128,7 @@ func selectgo(cas0 *scase, order0 *uint16, nsends, nrecvs int, block bool) (int,
 	scases := cas1[:ncases:ncases]
 	pollorder := order1[:ncases:ncases]
 	lockorder := order1[ncases:][:ncases:ncases]
+	// NOTE: pollorder/lockorder's underlying array was not zero-initialized by compiler.
 
 	var t0 int64
 	if blockprofilerate > 0 {

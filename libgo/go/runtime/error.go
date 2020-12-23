@@ -118,6 +118,26 @@ func NewErrorCString(s uintptr, ret *interface{}) {
 	*ret = errorCString{s}
 }
 
+type errorAddressString struct {
+	msg  string  // error message
+	addr uintptr // memory address where the error occurred
+}
+
+func (e errorAddressString) RuntimeError() {}
+
+func (e errorAddressString) Error() string {
+	return "runtime error: " + e.msg
+}
+
+// Addr returns the memory address where a fault occurred.
+// The address provided is best-effort.
+// The veracity of the result may depend on the platform.
+// Errors providing this method will only be returned as
+// a result of using runtime/debug.SetPanicOnFault.
+func (e errorAddressString) Addr() uintptr {
+	return e.addr
+}
+
 // plainError represents a runtime error described a string without
 // the prefix "runtime error: " after invoking errorString.Error().
 // See Issue #14965.

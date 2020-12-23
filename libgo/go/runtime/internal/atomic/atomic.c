@@ -6,6 +6,10 @@
 
 #include "runtime.h"
 
+extern void panicUnaligned(void)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.panicUnaligned")
+  __attribute__ ((noreturn));
+
 uint32_t Load (uint32_t *ptr)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Load")
   __attribute__ ((no_split_stack));
@@ -44,7 +48,7 @@ uint64_t
 Load64 (uint64_t *ptr)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
@@ -54,6 +58,28 @@ uint32_t LoadAcq (uint32_t *ptr)
 
 uint32_t
 LoadAcq (uint32_t *ptr)
+{
+  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+}
+
+uint64_t LoadAcq64 (uint64_t *ptr)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.LoadAcq64")
+  __attribute__ ((no_split_stack));
+
+uint64_t
+LoadAcq64 (uint64_t *ptr)
+{
+  if (((uintptr_t) ptr & 7) != 0)
+    panicUnaligned ();
+  return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
+}
+
+uintptr_t LoadAcquintptr (uintptr_t *ptr)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.LoadAcquintptr")
+  __attribute__ ((no_split_stack));
+
+uintptr_t
+LoadAcquintptr (uintptr_t *ptr)
 {
   return __atomic_load_n (ptr, __ATOMIC_ACQUIRE);
 }
@@ -86,7 +112,7 @@ int64_t
 Loadint64 (int64_t *ptr)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_load_n (ptr, __ATOMIC_SEQ_CST);
 }
 
@@ -108,7 +134,7 @@ uint64_t
 Xadd64 (uint64_t *ptr, int64_t delta)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_add_fetch (ptr, (uint64_t) delta, __ATOMIC_SEQ_CST);
 }
 
@@ -130,7 +156,7 @@ int64_t
 Xaddint64 (int64_t *ptr, int64_t delta)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_add_fetch (ptr, delta, __ATOMIC_SEQ_CST);
 }
 
@@ -152,7 +178,7 @@ uint64_t
 Xchg64 (uint64_t *ptr, uint64_t new)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_exchange_n (ptr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -186,6 +212,26 @@ Or8 (uint8_t *ptr, uint8_t val)
   __atomic_or_fetch (ptr, val, __ATOMIC_SEQ_CST);
 }
 
+void And (uint32_t *ptr, uint32_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.And")
+  __attribute__ ((no_split_stack));
+
+void
+And (uint32_t *ptr, uint32_t val)
+{
+  __atomic_and_fetch (ptr, val, __ATOMIC_SEQ_CST);
+}
+
+void Or (uint32_t *ptr, uint32_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Or")
+  __attribute__ ((no_split_stack));
+
+void
+Or (uint32_t *ptr, uint32_t val)
+{
+  __atomic_or_fetch (ptr, val, __ATOMIC_SEQ_CST);
+}
+
 _Bool Cas (uint32_t *ptr, uint32_t old, uint32_t new)
   __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.Cas")
   __attribute__ ((no_split_stack));
@@ -204,7 +250,7 @@ _Bool
 Cas64 (uint64_t *ptr, uint64_t old, uint64_t new)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_compare_exchange_n (ptr, &old, new, false, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED);
 }
 
@@ -266,7 +312,7 @@ void
 Store64 (uint64_t *ptr, uint64_t val)
 {
   if (((uintptr_t) ptr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   __atomic_store_n (ptr, val, __ATOMIC_SEQ_CST);
 }
 
@@ -276,6 +322,28 @@ void StoreRel (uint32_t *ptr, uint32_t val)
 
 void
 StoreRel (uint32_t *ptr, uint32_t val)
+{
+  __atomic_store_n (ptr, val, __ATOMIC_RELEASE);
+}
+
+void StoreRel64 (uint64_t *ptr, uint64_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.StoreRel64")
+  __attribute__ ((no_split_stack));
+
+void
+StoreRel64 (uint64_t *ptr, uint64_t val)
+{
+  if (((uintptr_t) ptr & 7) != 0)
+    panicUnaligned ();
+  __atomic_store_n (ptr, val, __ATOMIC_RELEASE);
+}
+
+void StoreReluintptr (uintptr_t *ptr, uintptr_t val)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.StoreReluintptr")
+  __attribute__ ((no_split_stack));
+
+void
+StoreReluintptr (uintptr_t *ptr, uintptr_t val)
 {
   __atomic_store_n (ptr, val, __ATOMIC_RELEASE);
 }

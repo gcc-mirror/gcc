@@ -154,17 +154,6 @@ func TestRequestWithoutRemotePort(t *testing.T) {
 	}
 }
 
-type countingWriter int
-
-func (c *countingWriter) Write(p []byte) (int, error) {
-	*c += countingWriter(len(p))
-	return len(p), nil
-}
-func (c *countingWriter) WriteString(p string) (int, error) {
-	*c += countingWriter(len(p))
-	return len(p), nil
-}
-
 func TestResponse(t *testing.T) {
 	var tests = []struct {
 		name   string

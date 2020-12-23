@@ -39,8 +39,8 @@ func (bigEndian) Uint64(b []byte) uint64 {
 		uint64(b[3])<<32 | uint64(b[2])<<40 | uint64(b[1])<<48 | uint64(b[0])<<56
 }
 
-// hostByteOrder returns binary.LittleEndian on little-endian machines and
-// binary.BigEndian on big-endian machines.
+// hostByteOrder returns littleEndian on little-endian machines and
+// bigEndian on big-endian machines.
 func hostByteOrder() byteOrder {
 	switch runtime.GOARCH {
 	case "386", "amd64", "amd64p32",
