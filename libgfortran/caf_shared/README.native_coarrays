@@ -27,3 +27,12 @@ To compile a program to run with native coarrays, compile with -fcoarray=shared
 -lcaf_shared -lrt (I've not yet figured out how to automagically link against
 the library if -fcoarray=shared is specified).
 
+TODO (the list is probably incomplete):
+
+- make STAT and ERRMSG work for ALLOCATE, DEALLOCATE, SYNC and locks
+- Teams
+- Types containing allocatable components in coarrays
+- Atomics
+- Events
+- MOVE_ALLOC
+
