@@ -1,3 +1,27 @@
+2020-12-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98160
+	* builtins.c (warn_dealloc_offset): Avoid assuming calls are made
+	through declared functions and not pointers.
+
+2020-12-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98413
+	* builtins.c (get_offset_range): Avoid non-integers/-pointers.
+
+2020-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): Allow
+	MACOSX_DEPLOYMENT_TARGET=11.
+	(darwin_default_min_version): Adjust warning spelling to avoid
+	an apostrophe.
+
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386-expand.c (ix86_expand_truncdf_32):
+	Remove the sign of the intermediate value for flag_rounding_math.
+
 2020-12-22  Qian Jianhua  <qianjh@cn.fujitsu.com>
 
 	* config/arm/types.md (define_attr "autodetect_type"): New.

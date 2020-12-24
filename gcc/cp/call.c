@@ -8426,6 +8426,10 @@ call_copy_ctor (tree a, tsubst_flags_t complain)
 bool
 unsafe_return_slot_p (tree t)
 {
+  /* Check empty bases separately, they don't have fields.  */
+  if (is_empty_base_ref (t))
+    return true;
+
   STRIP_NOPS (t);
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);

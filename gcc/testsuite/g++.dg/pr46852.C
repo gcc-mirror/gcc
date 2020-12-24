@@ -5,4 +5,3 @@ template
 <
 class
 { // { dg-error "" }
-// { dg-error "-:" "" { target *-*-* } .+1 }

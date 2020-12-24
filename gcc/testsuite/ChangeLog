@@ -1,3 +1,100 @@
+2020-12-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98160
+	* g++.dg/warn/pr98160.C: New test.
+
+2020-12-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98413
+	* g++.dg/warn/pr98413.C: New test.
+
+2020-12-23  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.target/arm/data-rel-1.c: Require "fpic" support.
+	* gcc.target/arm/data-rel-2.c: Likewise.
+	* gcc.target/arm/data-rel-3.c: Ditto.
+	* gcc.target/arm/pr44788.c: Ditto.
+	* gcc.target/arm/pr52006.c: Ditto.
+	* gcc.target/arm/pr59858.c: Ditto.
+	* gcc.target/arm/tlscall.c: Ditto.
+	* gcc.target/arm/require-pic-register-loc.c: Ditto.
+	Adjust line numbers.
+
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/96045
+	* g++.dg/diagnostic/pr96045-1.C: New.
+	* g++.dg/diagnostic/pr96045-2.C: New.
+	* g++.dg/diagnostic/pr96045-3.C: New.
+	* c-c++-common/goacc/pr79428-1.c: Adjust EOF diagnostic location.
+	* c-c++-common/gomp/pr79428-2.c: Likewise
+	* c-c++-common/raw-string-6.c: Likewise
+	* g++.dg/cpp0x/decltype63.C: Likewise
+	* g++.dg/cpp0x/gen-attrs-64.C: Likewise
+	* g++.dg/cpp0x/pr68726.C: Likewise
+	* g++.dg/cpp0x/pr78341.C: Likewise
+	* g++.dg/cpp1y/pr65202.C: Likewise
+	* g++.dg/cpp1y/pr65340.C: Likewise
+	* g++.dg/cpp1y/pr68578.C: Likewise
+	* g++.dg/cpp1z/class-deduction44.C: Likewise
+	* g++.dg/diagnostic/unclosed-extern-c.C: Likewise
+	* g++.dg/diagnostic/unclosed-function.C: Likewise
+	* g++.dg/diagnostic/unclosed-namespace.C: Likewise
+	* g++.dg/diagnostic/unclosed-struct.C: Likewise
+	* g++.dg/ext/pr84598.C: Likewise
+	* g++.dg/other/switch4.C: Likewise
+	* g++.dg/parse/attr4.C: Likewise
+	* g++.dg/parse/cond4.C: Likewise
+	* g++.dg/parse/crash10.C: Likewise
+	* g++.dg/parse/crash18.C: Likewise
+	* g++.dg/parse/crash27.C: Likewise
+	* g++.dg/parse/crash34.C: Likewise
+	* g++.dg/parse/crash35.C: Likewise
+	* g++.dg/parse/crash52.C: Likewise
+	* g++.dg/parse/crash59.C: Likewise
+	* g++.dg/parse/crash61.C: Likewise
+	* g++.dg/parse/crash67.C: Likewise
+	* g++.dg/parse/error14.C: Likewise
+	* g++.dg/parse/error56.C: Likewise
+	* g++.dg/parse/invalid1.C: Likewise
+	* g++.dg/parse/parameter-declaration-1.C: Likewise
+	* g++.dg/parse/parser-pr28152-2.C: Likewise
+	* g++.dg/parse/parser-pr28152.C: Likewise
+	* g++.dg/parse/pr68722.C: Likewise
+	* g++.dg/parse/pr96258.C: Likewise
+	* g++.dg/pr46852.C: Likewise
+	* g++.dg/pr46868.C: Likewise
+	* g++.dg/template/crash115.C: Likewise
+	* g++.dg/template/crash43.C: Likewise
+	* g++.dg/template/crash90.C: Likewise
+	* g++.dg/template/error-recovery1.C: Likewise
+	* g++.dg/template/error57.C: Likewise
+	* g++.old-deja/g++.other/crash31.C: Likewise
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97597
+	* g++.dg/init/empty3.C: New test.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-overflow3.C: Use INT_MAX.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98332
+	* g++.dg/cpp0x/constexpr-overflow3.C: New test.
+
+2020-12-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98427
+	* gdc.dg/pr98427.d: New test.
+
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793-1.c: New test.
+
 2020-12-22  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/modules/access-1_a.C: New.: New.

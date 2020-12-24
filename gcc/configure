@@ -675,6 +675,8 @@ host_xm_defines
 host_xm_include_list
 host_xm_file_list
 host_exeext
+gcc_gxx_libcxx_include_dir_add_sysroot
+gcc_gxx_libcxx_include_dir
 gcc_gxx_include_dir_add_sysroot
 gcc_gxx_include_dir
 gcc_config_arguments
@@ -937,6 +939,7 @@ with_native_system_header_dir
 with_build_sysroot
 with_sysroot
 with_gxx_include_dir
+with_gxx_libcxx_include_dir
 with_cpp_install_dir
 enable_generated_files_in_srcdir
 with_gnu_ld
@@ -1801,6 +1804,8 @@ Optional Packages:
   --with-sysroot[=DIR]    search for usr/lib, usr/include, et al, within DIR
   --with-gxx-include-dir=DIR
                           specifies directory to put g++ header files
+  --with-gxx-libcxx-include-dir=DIR
+                          specifies directory to find libc++ header files
   --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR
                           (relative to PREFIX) as well as PREFIX/bin
@@ -3728,6 +3733,52 @@ elif test "${with_sysroot+set}" = set; then
   if test "${gcc_gxx_without_sysroot}"; then
     gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
+  fi
+fi
+
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+
+# Check whether --with-gxx-libcxx-include-dir was given.
+if test "${with_gxx_libcxx_include_dir+set}" = set; then :
+  withval=$with_gxx_libcxx_include_dir; case "${withval}" in
+yes)	as_fn_error $? "bad value ${withval} given for libc++ include directory" "$LINENO" 5 ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac
+fi
+
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+
+$as_echo "#define ENABLE_STDLIB_OPTION 1" >>confdefs.h
+
+else
+  $as_echo "#define ENABLE_STDLIB_OPTION 0" >>confdefs.h
+
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
   fi
 fi
 
@@ -19188,7 +19239,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19189 "configure"
+#line 19240 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19294,7 +19345,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19295 "configure"
+#line 19346 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31113,6 +31164,8 @@ fi
 
 
 # Substitute configuration variables
+
+
 
 
 

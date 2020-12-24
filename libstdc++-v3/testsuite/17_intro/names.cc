@@ -211,4 +211,45 @@
 #undef ptr
 #endif
 
+#ifdef __VXWORKS__
+
+#include <_vxworks-versions.h>
+
+// Some VxWorks 6 or 7 headers are using those.
+
+// private/objLibP.h
+#undef u
+
+// arch/ppc/ffs/ArchLib.h
+#undef i
+#undef j
+
+// math.h
+#undef x
+#undef y
+
+// stdio.h
+#undef ptr
+
+// VxWorks >= 7 specificities
+
+#if _VXWORKS_MAJOR_GE(7)
+
+// regs.h regs structure has a field 'r'
+#undef r
+
+#ifndef __RTP__
+// in bootLib.h, bootParamCheck has parameters x, a-f
+#undef a
+#undef b
+#undef c
+#undef d
+#undef e
+#undef f
+#endif // __RTP__
+
+#endif // VxWorks Major >= 7
+
+#endif // __VXWORKS__
+
 #include <bits/stdc++.h>

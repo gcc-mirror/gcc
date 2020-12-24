@@ -187,7 +187,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (NULLPTR_TYPE_P (type))
     init = build_int_cst (type, 0);
   else if (SCALAR_TYPE_P (type))
-    init = fold (convert (type, integer_zero_node));
+    init = build_zero_cst (type);
   else if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
     {
       tree field;

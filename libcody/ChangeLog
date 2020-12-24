@@ -1,3 +1,15 @@
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LDFLAGS): Drop -L..
+	* tests/01-serialize/connect.cc: Delete.
+	* tests/01-serialize/decoder.cc: Delete.
+	* tests/01-serialize/encoder.cc: Delete.
+	* tests/02-comms/client-1.cc: Delete.
+	* tests/02-comms/pivot-1.cc: Delete.
+	* tests/02-comms/server-1.cc: Delete.
+	* tests/Makesub.in: Delete.
+	* tests/jouster: Delete.
+
 2020-12-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR bootstrap/98412

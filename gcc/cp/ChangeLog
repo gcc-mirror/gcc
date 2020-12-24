@@ -1,3 +1,28 @@
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/96045
+	* parser.c (cp_lexer_new_main): Adjust EOF token location.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97597
+	* class.c (is_empty_base_ref): New.
+	(build_base_path): Add NOP_EXPR after offset.
+	* cp-tree.h (is_empty_base_ref): Declare it.
+	* call.c (unsafe_return_slot_p): Call it.
+
+2020-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98353
+	* init.c (build_zero_init_1): Use build_zero_cst for SCALAR_TYPE_P
+	zero initializers.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98332
+	* constexpr.c (unshare_constructor): Check for NULL.
+	(cxx_eval_vec_init_1): Always exit early if non-constant.
+
 2020-12-22  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (has_definition): Check DECL_LANG_SPECIFIC.
