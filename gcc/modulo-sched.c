@@ -211,8 +211,6 @@ static int sms_order_nodes (ddg_ptr, int, int *, int *);
 static void set_node_sched_params (ddg_ptr);
 static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
 static void permute_partial_schedule (partial_schedule_ptr, rtx_insn *);
-static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
-                                    rtx, rtx);
 static int calculate_stage_count (partial_schedule_ptr, int);
 static void calculate_must_precede_follow (ddg_node_ptr, int, int,
 					   int, int, sbitmap, sbitmap, sbitmap);
@@ -392,10 +390,13 @@ doloop_register_get (rtx_insn *head, rtx_insn *tail)
    this constant.  Otherwise return 0.  */
 static rtx_insn *
 const_iteration_count (rtx count_reg, basic_block pre_header,
-		       int64_t * count)
+		       int64_t *count, bool* adjust_inplace)
 {
   rtx_insn *insn;
   rtx_insn *head, *tail;
+
+  *adjust_inplace = false;
+  bool read_after = false;
 
   if (! pre_header)
     return NULL;
@@ -403,18 +404,25 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
   get_ebb_head_tail (pre_header, pre_header, &head, &tail);
 
   for (insn = tail; insn != PREV_INSN (head); insn = PREV_INSN (insn))
-    if (NONDEBUG_INSN_P (insn) && single_set (insn) &&
-	rtx_equal_p (count_reg, SET_DEST (single_set (insn))))
+    if (single_set (insn) && rtx_equal_p (count_reg,
+					  SET_DEST (single_set (insn))))
       {
 	rtx pat = single_set (insn);
 
 	if (CONST_INT_P (SET_SRC (pat)))
 	  {
 	    *count = INTVAL (SET_SRC (pat));
+	    *adjust_inplace = !read_after;
 	    return insn;
 	  }
 
 	return NULL;
+      }
+    else if (NONDEBUG_INSN_P (insn) && reg_mentioned_p (count_reg, insn))
+      {
+	read_after = true;
+	if (reg_set_p (count_reg, insn))
+	   break;
       }
 
   return NULL;
@@ -1125,7 +1133,7 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 /* Generate the instructions (including reg_moves) for prolog & epilog.  */
 static void
 generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
-                        rtx count_reg, rtx count_init)
+			rtx count_reg, bool adjust_init)
 {
   int i;
   int last_stage = PS_STAGE_COUNT (ps) - 1;
@@ -1134,12 +1142,12 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   /* Generate the prolog, inserting its insns on the loop-entry edge.  */
   start_sequence ();
 
-  if (!count_init)
+  if (adjust_init)
     {
       /* Generate instructions at the beginning of the prolog to
-         adjust the loop count by STAGE_COUNT.  If loop count is constant
-         (count_init), this constant is adjusted by STAGE_COUNT in
-         generate_prolog_epilog function.  */
+	 adjust the loop count by STAGE_COUNT.  If loop count is constant
+	 and it not used anywhere in prologue, this constant is adjusted by
+	 STAGE_COUNT outside of generate_prolog_epilog function.  */
       rtx sub_reg = NULL_RTX;
 
       sub_reg = expand_simple_binop (GET_MODE (count_reg), MINUS, count_reg,
@@ -1534,7 +1542,8 @@ sms_schedule (void)
       rtx_insn *count_init;
       int mii, rec_mii, stage_count, min_cycle;
       int64_t loop_count = 0;
-      bool opt_sc_p;
+      bool opt_sc_p, adjust_inplace = false;
+      basic_block pre_header;
 
       if (! (g = g_arr[loop->num]))
         continue;
@@ -1579,18 +1588,12 @@ sms_schedule (void)
 	}
 
 
-      /* In case of th loop have doloop register it gets special
-	 handling.  */
-      count_init = NULL;
-      if ((count_reg = doloop_register_get (head, tail)))
-	{
-	  basic_block pre_header;
-
-	  pre_header = loop_preheader_edge (loop)->src;
-	  count_init = const_iteration_count (count_reg, pre_header,
-					      &loop_count);
-	}
+      count_reg = doloop_register_get (head, tail);
       gcc_assert (count_reg);
+
+      pre_header = loop_preheader_edge (loop)->src;
+      count_init = const_iteration_count (count_reg, pre_header, &loop_count,
+					  &adjust_inplace);
 
       if (dump_file && count_init)
         {
@@ -1711,9 +1714,20 @@ sms_schedule (void)
 	      print_partial_schedule (ps, dump_file);
 	    }
  
-          /* case the BCT count is not known , Do loop-versioning */
-	  if (count_reg && ! count_init)
+	  if (count_init)
+	    {
+	       if (adjust_inplace)
+		{
+		  /* When possible, set new iteration count of loop kernel in
+		     place.  Otherwise, generate_prolog_epilog creates an insn
+		     to adjust.  */
+		  SET_SRC (single_set (count_init)) = GEN_INT (loop_count
+							    - stage_count + 1);
+		}
+	    }
+	  else
             {
+	      /* case the BCT count is not known , Do loop-versioning */
 	      rtx comp_rtx = gen_rtx_GT (VOIDmode, count_reg,
 					 gen_int_mode (stage_count,
 						       GET_MODE (count_reg)));
@@ -1723,12 +1737,7 @@ sms_schedule (void)
 	      loop_version (loop, comp_rtx, &condition_bb,
 	  		    prob, prob.invert (),
 			    prob, prob.invert (), true);
-	     }
-
-	  /* Set new iteration count of loop kernel.  */
-          if (count_reg && count_init)
-	    SET_SRC (single_set (count_init)) = GEN_INT (loop_count
-						     - stage_count + 1);
+	    }
 
 	  /* Now apply the scheduled kernel to the RTL of the loop.  */
 	  permute_partial_schedule (ps, g->closing_branch->first_note);
@@ -1745,7 +1754,7 @@ sms_schedule (void)
 	  if (dump_file)
 	    print_node_sched_params (dump_file, g->num_nodes, ps);
 	  /* Generate prolog and epilog.  */
-          generate_prolog_epilog (ps, loop, count_reg, count_init);
+	  generate_prolog_epilog (ps, loop, count_reg, !adjust_inplace);
 	  break;
 	}
 
