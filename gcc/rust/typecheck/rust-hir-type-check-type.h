@@ -87,7 +87,8 @@ public:
     if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
 					 &ref))
       {
-	rust_error_at (path.get_locus (), "Type was not resolved");
+	rust_fatal_error (path.get_locus (),
+			  "Failed to resolve node id to HIR");
 	return;
       }
 

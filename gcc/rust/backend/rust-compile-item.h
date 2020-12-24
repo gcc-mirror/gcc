@@ -23,6 +23,7 @@
 #include "rust-compile-tyty.h"
 #include "rust-compile-var-decl.h"
 #include "rust-compile-stmt.h"
+#include "rust-compile-expr.h"
 
 namespace Rust {
 namespace Compile {
@@ -37,6 +38,24 @@ public:
   }
 
   virtual ~CompileItem () {}
+
+  void visit (HIR::ConstantItem &constant)
+  {
+    TyTy::TyBase *resolved_type = nullptr;
+    bool ok
+      = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
+					&resolved_type);
+    rust_assert (ok);
+
+    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+
+    Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
+      type, constant.get_identifier (), value, constant.get_locus ());
+
+    ctx->push_const (const_expr);
+    ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+  }
 
   void visit (HIR::Function &function)
   {

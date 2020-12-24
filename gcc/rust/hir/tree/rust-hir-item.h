@@ -2055,6 +2055,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Type *get_type () { return type.get (); }
+
+  Expr *get_expr () { return const_expr.get (); }
+
+  std::string get_identifier () { return identifier; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

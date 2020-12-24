@@ -105,6 +105,11 @@ public:
 	return;
       }
 
+    // this could be a constant reference
+    if (ctx->lookup_const_decl (ref, &translated))
+      return;
+
+    // must be an identifier
     Bvariable *var = nullptr;
     if (!ctx->lookup_var_decl (ref, &var))
       {

@@ -36,6 +36,15 @@ public:
 
   ~ResolveTopLevel () {}
 
+  void visit (AST::ConstantItem &constant)
+  {
+    resolver->get_name_scope ().insert (constant.get_identifier (),
+					constant.get_node_id ());
+    resolver->insert_new_definition (constant.get_node_id (),
+				     Definition{constant.get_node_id (),
+						constant.get_node_id ()});
+  }
+
   void visit (AST::Function &function)
   {
     // function_names are simple std::String identifiers so this can be a

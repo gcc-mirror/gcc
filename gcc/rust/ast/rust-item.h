@@ -2531,6 +2531,8 @@ public:
     return type;
   }
 
+  std::string get_identifier () const { return identifier; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

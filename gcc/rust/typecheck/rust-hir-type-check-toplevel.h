@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-expr.h"
 #include "rust-tyty.h"
 
 namespace Rust {
@@ -34,6 +35,15 @@ public:
   {
     TypeCheckTopLevel resolver;
     item->accept_vis (resolver);
+  }
+
+  void visit (HIR::ConstantItem &constant)
+  {
+    TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
+    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+
+    context->insert_type (constant.get_mappings ().get_hirid (),
+			  type->combine (expr_type));
   }
 
   void visit (HIR::Function &function)

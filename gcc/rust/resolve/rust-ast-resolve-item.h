@@ -39,6 +39,12 @@ public:
 
   ~ResolveItem () {}
 
+  void visit (AST::ConstantItem &constant)
+  {
+    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+  }
+
   void visit (AST::Function &function)
   {
     if (function.has_return_type ())

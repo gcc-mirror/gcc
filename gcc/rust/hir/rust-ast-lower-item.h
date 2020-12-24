@@ -24,6 +24,7 @@
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-stmt.h"
+#include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
 
@@ -41,6 +42,31 @@ public:
   }
 
   virtual ~ASTLoweringItem () {}
+
+  void visit (AST::ConstantItem &constant)
+  {
+    std::vector<HIR::Attribute> outer_attrs;
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
+					vis, std::unique_ptr<HIR::Type> (type),
+					std::unique_ptr<HIR::Expr> (expr),
+					outer_attrs, constant.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       constant.get_locus ());
+  }
 
   void visit (AST::Function &function)
   {
