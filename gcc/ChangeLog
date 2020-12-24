@@ -1,3 +1,16 @@
+2020-12-23  Piotr Kubaj  <pkubaj@FreeBSD.org>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/rs6000/freebsd64.h (PROCESSOR_DEFAULT): Update
+	to PROCESSOR_PPC7450.
+	(PROCESSOR_DEFAULT64): Update to PROCESSOR_POWER8.
+
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386-expand.c (ix86_expand_truncdf_32):
+	Remove the sign of the intermediate value for flag_rounding_math.
+
 2020-12-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793

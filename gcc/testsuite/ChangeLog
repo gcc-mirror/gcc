@@ -1,3 +1,21 @@
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98332
+	* g++.dg/cpp0x/constexpr-overflow3.C: New test.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90254
+	PR c++/93711
+	* g++.dg/cpp1z/aggr-base10.C: New test.
+	* g++.dg/cpp2a/no_unique_address7.C: New test.
+	* g++.dg/cpp2a/no_unique_address7a.C: New test.
+
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793-1.c: New test.
+
 2020-12-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793

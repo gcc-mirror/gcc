@@ -1,3 +1,20 @@
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98332
+	* constexpr.c (unshare_constructor): Check for NULL.
+	(cxx_eval_vec_init_1): Always exit early if non-constant.
+
+2020-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90254
+	PR c++/93711
+	* cp-tree.h (unsafe_return_slot_p): Declare.
+	* call.c (is_base_field_ref): Rename to unsafe_return_slot_p.
+	(build_over_call): Check unsafe_return_slot_p.
+	(build_special_member_call): Likewise.
+	* init.c (expand_default_init): Likewise.
+	* typeck2.c (split_nonconstant_init_1): Likewise.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.c (cp_parser_elaborated_type_specifier): Test
