@@ -1,3 +1,10 @@
+2020-12-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98427
+	* types.cc (TypeVisitor::visit (TypeStruct *)): Set TYPE_MODE of all
+	non-trivial types as BLKmode.
+	(TypeVisitor::visit (TypeClass *)): Likewise.
+
 2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98277

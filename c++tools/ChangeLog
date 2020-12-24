@@ -1,3 +1,10 @@
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98324
+	* Makefile.in: Add FLAGPIE.
+	* configure.ac: Add --enable-default-pie support.
+	* configure: Rebuilt.
+
 2020-12-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR other/98409

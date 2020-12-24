@@ -1,3 +1,7 @@
+2020-12-23  Olivier Hainque  <hainque@adacore.com>
+
+	* testsuite/17_intro/names.cc: Account for VxWorks headers.
+
 2020-12-21  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_FLOAT_IS_IEEE_BINARY_32):
