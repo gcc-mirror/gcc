@@ -1,3 +1,10 @@
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386.c (ix86_expand_floorceil):
+	Remove the sign of the intermediate value for flag_rounding_math.
+	(ix86_expand_floorceildf_32): Ditto.
+
 2020-12-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add --with-tune. Support --with-cpu=native.

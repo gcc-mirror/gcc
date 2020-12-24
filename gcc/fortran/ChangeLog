@@ -1,3 +1,12 @@
+2020-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-12-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98307
+	* trans-stmt.c (check_forall_dependencies): Extend dependency
+	check to allocatable components of derived types.
+
 2020-12-11  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

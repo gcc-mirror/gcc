@@ -1,3 +1,16 @@
+2020-12-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-12-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98307
+	* gfortran.dg/forall_19.f90: New test.
+
+2020-12-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793.c: New test.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/pr98297.C: New.
