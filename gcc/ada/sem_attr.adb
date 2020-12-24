@@ -2298,16 +2298,15 @@ package body Sem_Attr is
       begin
          if Is_Entity_Name (P) then
             declare
-               K : constant Entity_Kind := Ekind (Entity (P));
-               T : constant Entity_Id   := Etype (Entity (P));
-
+               E : constant Entity_Id := Entity (P);
             begin
-               if K in Concurrent_Kind
-                     | Entry_Kind
-                     | Generic_Unit_Kind
-                     | Subprogram_Kind
-                     | E_Package
-                 or else (K = E_Variable and then Is_Concurrent_Type (T))
+               if Ekind (E) in E_Protected_Type
+                             | E_Task_Type
+                             | Entry_Kind
+                             | Generic_Unit_Kind
+                             | Subprogram_Kind
+                             | E_Package
+                 or else Is_Single_Concurrent_Object (E)
                then
                   return;
                end if;
