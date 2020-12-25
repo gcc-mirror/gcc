@@ -1,3 +1,11 @@
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* intrinsics/execute_command_line.c (environ): Use
+	_NSGetEnviron to get the environment pointer on Darwin.
+
 2020-10-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
