@@ -2,6 +2,7 @@
 #define RUST_MACRO_EXPAND_H
 
 #include "rust-ast.h"
+#include "rust-macro.h"
 
 // Provides objects and method prototypes for macro expansion
 

@@ -591,22 +591,11 @@ protected:
 };
 
 /* A "tagged union" describing a single AST node. Due to technical difficulties
- * with unions, had to use raw pointers. */
+ * with unions, this is actually a struct and so wastes space. FIXME */
+/*
 struct SingleASTNode
 {
   public:
-    union {
-      std::unique_ptr<Expr> expr;
-      std::unique_ptr<Stmt> stmt;
-      std::unique_ptr<Item> item;
-      std::unique_ptr<Type> type;
-      std::unique_ptr<Pattern> pattern;
-      std::unique_ptr<TraitItem> trait_item;
-      std::unique_ptr<InherentImplItem> inherent_impl_item;
-      std::unique_ptr<TraitImplItem> trait_impl_item;
-      std::unique_ptr<ExternalItem> external_item;
-    };
-
     enum tag_types {
       EXPR,
       STMT,
@@ -656,6 +645,7 @@ struct SingleASTNode
 
     }
 
+    // destructor definition is required
     ~SingleASTNode () {
       switch (tag) {
         case EXPR:
@@ -695,6 +685,39 @@ struct SingleASTNode
   private:
     tag_types tag;
 
+    union {
+      std::unique_ptr<Expr> expr;
+      std::unique_ptr<Stmt> stmt;
+      std::unique_ptr<Item> item;
+      std::unique_ptr<Type> type;
+      std::unique_ptr<Pattern> pattern;
+      std::unique_ptr<TraitItem> trait_item;
+      std::unique_ptr<InherentImplItem> inherent_impl_item;
+      std::unique_ptr<TraitImplItem> trait_impl_item;
+      std::unique_ptr<ExternalItem> external_item;
+    };
+};
+*/
+struct SingleASTNode {
+      std::unique_ptr<Expr> expr;
+      std::unique_ptr<Stmt> stmt;
+      std::unique_ptr<Item> item;
+      std::unique_ptr<Type> type;
+      std::unique_ptr<Pattern> pattern;
+      std::unique_ptr<TraitItem> trait_item;
+      std::unique_ptr<InherentImplItem> inherent_impl_item;
+      std::unique_ptr<TraitImplItem> trait_impl_item;
+      std::unique_ptr<ExternalItem> external_item;
+
+    SingleASTNode (std::unique_ptr<Expr> expr) : expr (std::move (expr)) {}
+    SingleASTNode (std::unique_ptr<Stmt> stmt) : stmt (std::move (stmt)) {}
+    SingleASTNode (std::unique_ptr<Item> item) : item (std::move (item)) {}
+    SingleASTNode (std::unique_ptr<Type> type) : type (std::move (type)) {}
+    SingleASTNode (std::unique_ptr<Pattern> pattern) : pattern (std::move (pattern)) {}
+    SingleASTNode (std::unique_ptr<TraitItem> trait_item) : trait_item (std::move (trait_item)) {}
+    SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item) : inherent_impl_item (std::move (inherent_impl_item)) {}
+    SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item) : trait_impl_item (std::move (trait_impl_item)) {}
+    SingleASTNode (std::unique_ptr<ExternalItem> external_item) : external_item (std::move (external_item)) {}
 };
 
 /* Basically, a "fragment" that can be incorporated into the AST, created as 
