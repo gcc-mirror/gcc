@@ -1,3 +1,23 @@
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac: Add gxx-libcxx-include-dir handled
+	in the same way as the regular cxx header directory.
+	* Makefile.in: Regenerated.
+	* config.in: Likewise.
+	* configure: Likewise.
+	* cppdefault.c: Pick up libc++ headers if the option
+	is enabled.
+	* cppdefault.h (struct default_include): Amend comments
+	to reflect the extended use of the cplusplus field.
+	* incpath.c (add_standard_paths): Allow for multiple
+	c++ header include path variants.
+	* doc/invoke.texi: Document the -stdlib= option.
+
+2020-12-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator (arch_canonicalize): Call
+	decode for the subprocess return value.
+
 2020-12-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98160

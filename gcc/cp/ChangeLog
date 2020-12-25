@@ -1,3 +1,11 @@
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++spec.c (LIBCXX, LIBCXX_PROFILE, LIBCXX_STATIC): New.
+	(LIBCXXABI, LIBCXXABI_PROFILE, LIBCXXABI_STATIC): New.
+	(enum stdcxxlib_kind): New.
+	(lang_specific_driver): Allow selection amongst multiple
+	c++ runtime libraries.
+
 2020-12-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/96045
