@@ -7703,12 +7703,14 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	  return se.expr;
 
 	case BT_CHARACTER:
-	  {
-	    tree ctor = gfc_conv_string_init (ts->u.cl->backend_decl,expr);
-	    TREE_STATIC (ctor) = 1;
-	    return ctor;
-	  }
+	  if (expr->expr_type == EXPR_CONSTANT)
+	    {
+	      tree ctor = gfc_conv_string_init (ts->u.cl->backend_decl, expr);
+	      TREE_STATIC (ctor) = 1;
+	      return ctor;
+	    }
 
+	  /* Fallthrough.  */
 	default:
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_constant (&se, expr);

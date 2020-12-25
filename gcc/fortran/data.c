@@ -498,12 +498,11 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	return false;
     }
 
-  if (ref || last_ts->type == BT_CHARACTER)
+  if (ref || (last_ts->type == BT_CHARACTER
+	      && rvalue->expr_type == EXPR_CONSTANT))
     {
       /* An initializer has to be constant.  */
-      if (rvalue->expr_type != EXPR_CONSTANT
-	  || (lvalue->ts.u.cl->length == NULL
-	      && !(ref && ref->u.ss.length != NULL)))
+      if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
     }
