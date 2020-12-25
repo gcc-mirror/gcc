@@ -60,6 +60,13 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (ArrayType &type) override
+  {
+    Location locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
   virtual void visit (BoolType &type) override
   {
     Location locus = mappings->lookup_location (type.get_ref ());
@@ -178,6 +185,45 @@ public:
 
 private:
   ParamType *base;
+  TyBase *resolved;
+};
+
+class ArrayRules : protected BaseRules
+{
+public:
+  ArrayRules (ArrayType *base)
+    : BaseRules (base), base (base), resolved (nullptr)
+  {}
+
+  ~ArrayRules () {}
+
+  TyBase *combine (TyBase *other)
+  {
+    other->accept_vis (*this);
+    return resolved;
+  }
+
+  void visit (ArrayType &type) override
+  {
+    // check base type
+    auto base_resolved = base->get_type ()->combine (type.get_type ());
+    if (base_resolved == nullptr)
+      return;
+
+    // need to check the base types and capacity
+    if (type.get_capacity () != base->get_capacity ())
+      {
+	Location locus = mappings->lookup_location (type.get_ref ());
+	rust_error_at (locus, "mismatch in array capacity");
+	return;
+      }
+
+    resolved
+      = new ArrayType (type.get_ref (), type.get_capacity (), base_resolved);
+  }
+
+private:
+  ArrayType *base;
   TyBase *resolved;
 };
 

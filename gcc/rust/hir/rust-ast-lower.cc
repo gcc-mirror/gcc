@@ -18,6 +18,8 @@
 
 #include "rust-ast-lower.h"
 #include "rust-ast-lower-item.h"
+#include "rust-ast-lower-expr.h"
+#include "rust-ast-lower-block.h"
 
 namespace Rust {
 namespace HIR {
@@ -56,6 +58,95 @@ ASTLowering::go ()
 
   return HIR::Crate (std::move (items), std::move (inner_attrs), mapping,
 		     has_utf8bom, has_shebang);
+}
+
+// rust-ast-lower-block.h
+void
+ASTLoweringBlock::visit (AST::BlockExpr &expr)
+{
+  std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
+  std::unique_ptr<HIR::ExprWithoutBlock> block_expr;
+  std::vector<HIR::Attribute> inner_attribs;
+  std::vector<HIR::Attribute> outer_attribs;
+
+  expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
+    auto translated_stmt = ASTLoweringStmt::translate (s);
+    block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
+    return true;
+  });
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::BlockExpr (mapping, std::move (block_stmts),
+			  std::move (block_expr), std::move (inner_attribs),
+			  std::move (outer_attribs), expr.get_locus ());
+}
+
+void
+ASTLoweringIfBlock::visit (AST::IfExpr &expr)
+{
+  HIR::Expr *condition
+    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+  HIR::BlockExpr *block
+    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::IfExpr (mapping, std::unique_ptr<HIR::Expr> (condition),
+				std::unique_ptr<HIR::BlockExpr> (block),
+				expr.get_locus ());
+}
+
+void
+ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
+{
+  HIR::Expr *condition
+    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+  HIR::BlockExpr *if_block
+    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+  HIR::BlockExpr *else_block
+    = ASTLoweringBlock::translate (expr.get_else_block ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::IfExprConseqElse (mapping,
+				 std::unique_ptr<HIR::Expr> (condition),
+				 std::unique_ptr<HIR::BlockExpr> (if_block),
+				 std::unique_ptr<HIR::BlockExpr> (else_block),
+				 expr.get_locus ());
+}
+
+void
+ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
+{
+  HIR::Expr *condition
+    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+  HIR::BlockExpr *block
+    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+  HIR::IfExpr *conseq_if_expr
+    = ASTLoweringIfBlock::translate (expr.get_conseq_if_expr ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::IfExprConseqIf (mapping, std::unique_ptr<HIR::Expr> (condition),
+			       std::unique_ptr<HIR::BlockExpr> (block),
+			       std::unique_ptr<HIR::IfExpr> (conseq_if_expr),
+			       expr.get_locus ());
 }
 
 } // namespace HIR

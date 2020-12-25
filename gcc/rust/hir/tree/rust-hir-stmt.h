@@ -192,12 +192,10 @@ protected:
 // Statement containing an expression with a block
 class ExprStmtWithBlock : public ExprStmt
 {
-public:
   std::unique_ptr<ExprWithBlock> expr;
 
+public:
   std::string as_string () const override;
-
-  std::vector<LetStmt *> locals;
 
   ExprStmtWithBlock (Analysis::NodeMapping mappings,
 		     std::unique_ptr<ExprWithBlock> expr, Location locus)
@@ -223,6 +221,8 @@ public:
   ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  ExprWithBlock *get_expr () { return expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

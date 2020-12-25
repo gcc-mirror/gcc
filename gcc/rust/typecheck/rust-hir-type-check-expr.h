@@ -23,6 +23,7 @@
 #include "rust-hir-full.h"
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
+#include "rust-tyty-resolver.h"
 
 namespace Rust {
 namespace Resolver {
@@ -179,10 +180,102 @@ public:
     infered = lhs->combine (rhs);
   }
 
+  void visit (HIR::ComparisonExpr &expr)
+  {
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+
+    infered = lhs->combine (rhs);
+    // FIXME this will need to turn into bool
+  }
+
+  void visit (HIR::LazyBooleanExpr &expr)
+  {
+    auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
+    auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+
+    infered = lhs->combine (rhs);
+    // FIXME this will need to turn into bool
+  }
+
+  void visit (HIR::IfExpr &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+  }
+
+  void visit (HIR::IfExprConseqElse &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+    TypeCheckExpr::Resolve (expr.get_else_block ());
+  }
+
+  void visit (HIR::IfExprConseqIf &expr)
+  {
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+    TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
+  }
+
+  void visit (HIR::BlockExpr &expr);
+
+  void visit (HIR::ArrayIndexExpr &expr)
+  {
+    // check the index
+    TyTy::IntType size_ty (expr.get_index_expr ()->get_mappings ().get_hirid (),
+			   TyTy::IntType::I32);
+    auto resolved
+      = size_ty.combine (TypeCheckExpr::Resolve (expr.get_index_expr ()));
+    context->insert_type (expr.get_index_expr ()->get_mappings ().get_hirid (),
+			  resolved);
+
+    expr.get_array_expr ()->accept_vis (*this);
+    rust_assert (infered != nullptr);
+
+    // extract the element type out now from the base type
+    infered = TyTyExtractorArray::ExtractElementTypeFromArray (infered);
+  }
+
+  void visit (HIR::ArrayExpr &expr)
+  {
+    HIR::ArrayElems *elements = expr.get_internal_elements ();
+    size_t num_elems = elements->get_num_elements ();
+
+    elements->accept_vis (*this);
+    rust_assert (infered_array_elems != nullptr);
+
+    infered = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), num_elems,
+				   infered_array_elems);
+  }
+
+  void visit (HIR::ArrayElemsValues &elems)
+  {
+    std::vector<TyTy::TyBase *> types;
+    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
+      types.push_back (TypeCheckExpr::Resolve (e));
+      return true;
+    });
+
+    infered_array_elems = types[0];
+    for (size_t i = 1; i < types.size (); i++)
+      {
+	infered_array_elems = infered_array_elems->combine (types.at (i));
+      }
+  }
+
+  void visit (HIR::ArrayElemsCopied &elems)
+  {
+    infered_array_elems = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
+  }
+
 private:
-  TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
+  TypeCheckExpr ()
+    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr)
+  {}
 
   TyTy::TyBase *infered;
+  TyTy::TyBase *infered_array_elems;
 };
 
 } // namespace Resolver

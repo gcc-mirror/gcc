@@ -22,6 +22,7 @@
 #include "rust-compile-base.h"
 #include "rust-compile-tyty.h"
 #include "rust-compile-resolve-path.h"
+#include "rust-compile-block.h"
 
 namespace Rust {
 namespace Compile {
@@ -168,6 +169,57 @@ public:
     ctx->add_statement (assignment);
   }
 
+  void visit (HIR::ArrayIndexExpr &expr)
+  {
+    Bexpression *array = CompileExpr::Compile (expr.get_array_expr (), ctx);
+    Bexpression *index = CompileExpr::Compile (expr.get_index_expr (), ctx);
+    translated
+      = ctx->get_backend ()->array_index_expression (array, index,
+						     expr.get_locus ());
+  }
+
+  void visit (HIR::ArrayExpr &expr)
+  {
+    TyTy::TyBase *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &tyty))
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "did not resolve type for this array expr");
+	return;
+      }
+
+    Btype *array_type = TyTyResolveCompile::compile (ctx, tyty);
+
+    expr.get_internal_elements ()->accept_vis (*this);
+    std::vector<unsigned long> indexes;
+    for (size_t i = 0; i < constructor.size (); i++)
+      indexes.push_back (i);
+
+    translated
+      = ctx->get_backend ()->array_constructor_expression (array_type, indexes,
+							   constructor,
+							   expr.get_locus ());
+  }
+
+  void visit (HIR::ArrayElemsValues &elems)
+  {
+    elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
+      Bexpression *translated_expr = CompileExpr::Compile (e, ctx);
+      constructor.push_back (translated_expr);
+      return true;
+    });
+  }
+
+  void visit (HIR::ArrayElemsCopied &elems)
+  {
+    Bexpression *translated_expr
+      = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
+
+    for (size_t i = 0; i < elems.get_num_elements (); ++i)
+      constructor.push_back (translated_expr);
+  }
+
   void visit (HIR::ArithmeticOrLogicalExpr &expr)
   {
     Operator op;
@@ -273,10 +325,36 @@ public:
 							 expr.get_locus ());
   }
 
+  void visit (HIR::IfExpr &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::IfExprConseqElse &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::IfExprConseqIf &expr)
+  {
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
+    ctx->add_statement (stmt);
+  }
+
+  void visit (HIR::BlockExpr &expr)
+  {
+    auto code_block = CompileBlock::compile (&expr, ctx);
+    auto block_stmt = ctx->get_backend ()->block_statement (code_block);
+    ctx->add_statement (block_stmt);
+  }
+
 private:
   CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 
   Bexpression *translated;
+  std::vector<Bexpression *> constructor;
 };
 
 } // namespace Compile

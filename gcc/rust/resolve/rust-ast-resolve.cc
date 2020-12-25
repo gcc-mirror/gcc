@@ -17,10 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve.h"
-#include "rust-ast-resolve-toplevel.h"
-#include "rust-ast-resolve-item.h"
 #include "rust-ast-full.h"
 #include "rust-tyty.h"
+#include "rust-ast-resolve-toplevel.h"
+#include "rust-ast-resolve-item.h"
+#include "rust-ast-resolve-expr.h"
 
 #define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \
@@ -248,6 +249,26 @@ NameResolution::go (AST::Crate &crate)
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveItem::go (it->get ());
+}
+
+// rust-ast-resolve-expr.h
+
+void
+ResolveExpr::visit (AST::BlockExpr &expr)
+{
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+
+  expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
+    ResolveStmt::go (s, s->get_node_id ());
+    return true;
+  });
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
 }
 
 } // namespace Resolver

@@ -18,6 +18,7 @@
 
 #include "rust-compile.h"
 #include "rust-compile-item.h"
+#include "rust-compile-expr.h"
 
 namespace Rust {
 namespace Compile {
@@ -41,6 +42,114 @@ CompileCrate::go ()
 {
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     CompileItem::compile (it->get (), ctx);
+}
+
+// rust-compile-block.h
+
+void
+CompileBlock::visit (HIR::BlockExpr &expr)
+{
+  fncontext fnctx = ctx->peek_fn ();
+  Bfunction *fndecl = fnctx.fndecl;
+  Location start_location = expr.get_locus ();
+  Location end_location = expr.get_closing_locus ();
+  auto body_mappings = expr.get_mappings ();
+
+  Resolver::Rib *rib = nullptr;
+  if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (), &rib))
+    {
+      rust_fatal_error (expr.get_locus (), "failed to setup locals per block");
+      return;
+    }
+
+  std::vector<Bvariable *> locals;
+  rib->iterate_decls ([&] (NodeId n) mutable -> bool {
+    Resolver::Definition d;
+    bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
+    rust_assert (ok);
+
+    HIR::Stmt *decl = nullptr;
+    ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
+    rust_assert (ok);
+
+    Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
+    locals.push_back (compiled);
+
+    return true;
+  });
+
+  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  Bblock *new_block
+    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+				  start_location, end_location);
+  ctx->push_block (new_block);
+
+  expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
+    CompileStmt::Compile (s, ctx);
+    return true;
+  });
+
+  ctx->pop_block ();
+  translated = new_block;
+}
+
+void
+CompileConditionalBlocks::visit (HIR::IfExpr &expr)
+{
+  fncontext fnctx = ctx->peek_fn ();
+  Bfunction *fndecl = fnctx.fndecl;
+  Bexpression *condition_expr
+    = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
+
+  translated
+    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
+					 NULL, expr.get_locus ());
+}
+
+void
+CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
+{
+  fncontext fnctx = ctx->peek_fn ();
+  Bfunction *fndecl = fnctx.fndecl;
+  Bexpression *condition_expr
+    = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
+  Bblock *else_block = CompileBlock::compile (expr.get_else_block (), ctx);
+
+  translated
+    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
+					 else_block, expr.get_locus ());
+}
+
+void
+CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
+{
+  fncontext fnctx = ctx->peek_fn ();
+  Bfunction *fndecl = fnctx.fndecl;
+  Bexpression *condition_expr
+    = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
+
+  // else block
+  std::vector<Bvariable *> locals;
+  Location start_location = expr.get_conseq_if_expr ()->get_locus ();
+  Location end_location = expr.get_conseq_if_expr ()->get_locus (); // FIXME
+  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  Bblock *else_block
+    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+				  start_location, end_location);
+  ctx->push_block (else_block);
+
+  Bstatement *else_stmt_decl
+    = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx);
+  ctx->add_statement (else_stmt_decl);
+
+  ctx->pop_block ();
+
+  translated
+    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
+					 else_block, expr.get_locus ());
 }
 
 } // namespace Compile

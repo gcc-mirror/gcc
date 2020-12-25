@@ -143,6 +143,28 @@ private:
   TyBase *type;
 };
 
+class ArrayType : public TyBase
+{
+public:
+  ArrayType (HirId ref, size_t capacity, TyBase *type)
+    : TyBase (ref, TypeKind::ARRAY), capacity (capacity), type (type)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  size_t get_capacity () const { return capacity; }
+
+  TyBase *get_type () { return type; }
+
+private:
+  size_t capacity;
+  TyBase *type;
+};
+
 class BoolType : public TyBase
 {
 public:

@@ -25,6 +25,42 @@
 namespace Rust {
 namespace Resolver {
 
+class ArrayCapacityConstant : public TypeCheckBase
+{
+public:
+  static bool fold (HIR::Expr *expr, size_t *folded_result)
+  {
+    ArrayCapacityConstant folder;
+    expr->accept_vis (folder);
+    *folded_result = folder.result;
+    return folder.ok;
+  }
+
+  virtual ~ArrayCapacityConstant () {}
+
+  void visit (HIR::LiteralExpr &expr)
+  {
+    switch (expr.get_lit_type ())
+      {
+	case HIR::Literal::LitType::INT: {
+	  ok = true;
+	  std::stringstream ss (expr.as_string ());
+	  ss >> result;
+	}
+	break;
+
+      default:
+	return;
+      }
+  }
+
+private:
+  ArrayCapacityConstant () : TypeCheckBase (), ok (false), result (-1) {}
+
+  bool ok;
+  size_t result;
+}; // namespace Resolver
+
 class TypeCheckType : public TypeCheckBase
 {
 public:
@@ -40,7 +76,7 @@ public:
     return resolver.translated;
   }
 
-  virtual void visit (HIR::TypePath &path)
+  void visit (HIR::TypePath &path)
   {
     // check if this is already defined or not
     if (context->lookup_type (path.get_mappings ().get_hirid (), &translated))
@@ -68,6 +104,21 @@ public:
     // TODO
     printf ("UNREACHABLE %s\n", path.as_string ().c_str ());
     gcc_unreachable ();
+  }
+
+  void visit (HIR::ArrayType &type)
+  {
+    size_t capacity;
+    if (!ArrayCapacityConstant::fold (type.get_size_expr (), &capacity))
+      {
+	rust_error_at (type.get_size_expr ()->get_locus_slow (),
+		       "non-constant value");
+	return;
+      }
+
+    TyTy::TyBase *base = TypeCheckType::Resolve (type.get_element_type ());
+    translated
+      = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity, base);
   }
 
 private:

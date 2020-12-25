@@ -3,10 +3,16 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://gcc-rust.zulipchat.com/)
 # GCC Rust
+![GCC Rust](logo.png?raw=true "GCC rust Logo")
 
-This is a full alternative implementaion of the Rust language ontop of GCC.
-Please see the accompanying reporting repository: https://github.com/Rust-GCC/Reporting for
-status reports from Philip Herron and tast tracking overviews.
+This is a full alternative implementaion of the Rust language ontop of GCC which the goal
+to become fully upstream with the GNU toolchain.
+
+The origin of this project was a community effort several years ago where Rust was still at version 0.9;
+the language was subject to so much change that it became difficult for a community effort to play catch up.
+Now that the language is in a stable state, it is a good time to create alternative compilers. The developers of
+the project are keen “Rustaceans” with a desire to give back to the Rust community and to learn what GCC is capable
+of when it comes to a modern language.
 
 ## Development Enviroment
 
@@ -38,7 +44,7 @@ Running the compiler itself without make install we can simply invoke the compil
 $ gdb --args ./gcc/rust1 test.rs -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
 
-Invoking the compiler driver we need to:
+To invoking the compiler driver (gccrs) we need to:
 
 ```
 $ make install
@@ -67,6 +73,10 @@ test cases referencing any issues on github.
 There is a docker image hosted over on: 
 
 https://hub.docker.com/repository/docker/philberty/gccrs
+
+```
+$ docker pull philberty/gccrs
+```
 
 Or you can build your own image:
 

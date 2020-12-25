@@ -31,6 +31,7 @@ public:
   virtual void visit (InferType &type) {}
   virtual void visit (FnType &type) {}
   virtual void visit (ParamType &type) {}
+  virtual void visit (ArrayType &type) {}
   virtual void visit (BoolType &type) {}
   virtual void visit (IntType &type) {}
   virtual void visit (UintType &type) {}

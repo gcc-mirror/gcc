@@ -538,6 +538,8 @@ public:
   Expr *get_lhs () { return main_or_left_expr.get (); }
   Expr *get_rhs () { return right_expr.get (); }
 
+  ExprType get_kind () { return expr_type; }
+
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
 protected:
@@ -910,6 +912,8 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual size_t get_num_elements () const = 0;
+
 protected:
   // pure virtual clone implementation
   virtual ArrayElems *clone_array_elems_impl () const = 0;
@@ -953,7 +957,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  size_t get_num_values () const { return values.size (); }
+  size_t get_num_elements () const override { return values.size (); }
 
   void iterate (std::function<bool (Expr *)> cb)
   {
@@ -976,21 +980,25 @@ class ArrayElemsCopied : public ArrayElems
 {
   std::unique_ptr<Expr> elem_to_copy;
   std::unique_ptr<Expr> num_copies;
+  size_t folded_copy_amount;
 
   // TODO: should this store location data?
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
-		    std::unique_ptr<Expr> copy_amount)
+		    std::unique_ptr<Expr> copy_amount,
+		    size_t folded_copy_amount)
     : elem_to_copy (std::move (copied_elem)),
-      num_copies (std::move (copy_amount))
+      num_copies (std::move (copy_amount)),
+      folded_copy_amount (folded_copy_amount)
   {}
 
   // Copy constructor required due to unique_ptr - uses custom clone
   ArrayElemsCopied (ArrayElemsCopied const &other)
     : elem_to_copy (other.elem_to_copy->clone_expr ()),
-      num_copies (other.num_copies->clone_expr ())
+      num_copies (other.num_copies->clone_expr ()),
+      folded_copy_amount (other.folded_copy_amount)
   {}
 
   // Overloaded assignment operator for deep copying
@@ -998,6 +1006,7 @@ public:
   {
     elem_to_copy = other.elem_to_copy->clone_expr ();
     num_copies = other.num_copies->clone_expr ();
+    folded_copy_amount = other.folded_copy_amount;
 
     return *this;
   }
@@ -1009,6 +1018,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  size_t get_num_elements () const override { return folded_copy_amount; }
+
+  Expr *get_elem_to_copy () { return elem_to_copy.get (); }
 
 protected:
   ArrayElemsCopied *clone_array_elems_impl () const override
@@ -1024,10 +1037,6 @@ class ArrayExpr : public ExprWithoutBlock
   std::unique_ptr<ArrayElems> internal_elements;
 
   Location locus;
-
-  // this is a reference to what the inferred type is based on
-  // this init expression
-  Type *inferredType;
 
 public:
   std::string as_string () const override;
@@ -1079,9 +1088,6 @@ public:
   void accept_vis (HIRVisitor &vis) override;
 
   ArrayElems *get_internal_elements () { return internal_elements.get (); };
-
-  Type *get_inferred_type () { return inferredType; }
-  void set_inferred_type (Type *type) { inferredType = type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3647,6 +3653,8 @@ public:
 
   void vis_else_block (HIRVisitor &vis) { else_block->accept_vis (vis); }
 
+  BlockExpr *get_else_block () { return else_block.get (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3714,6 +3722,8 @@ public:
   {
     conseq_if_expr->accept_vis (vis);
   }
+
+  IfExpr *get_conseq_if_expr () { return conseq_if_expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

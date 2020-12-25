@@ -211,6 +211,19 @@ public:
 
   void visit (TyTy::FnType &type) override { gcc_unreachable (); }
 
+  void visit (TyTy::ArrayType &type) override
+  {
+    mpz_t ival;
+    mpz_init_set_ui (ival, type.get_capacity ());
+
+    Btype *capacity_type = ctx->get_backend ()->integer_type (true, 32);
+    Bexpression *length
+      = ctx->get_backend ()->integer_constant_expression (capacity_type, ival);
+
+    Btype *element_type = TyTyResolveCompile::compile (ctx, type.get_type ());
+    translated = ctx->get_backend ()->array_type (element_type, length);
+  }
+
   void visit (TyTy::BoolType &type) override
   {
     ::Btype *compiled_type = nullptr;
@@ -221,9 +234,6 @@ public:
 
   void visit (TyTy::IntType &type) override
   {
-    printf ("type [%s] has ref: %u\n", type.as_string ().c_str (),
-	    type.get_ref ());
-
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
     rust_assert (ok);

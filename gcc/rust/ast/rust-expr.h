@@ -552,6 +552,8 @@ public:
     return right_expr;
   }
 
+  ExprType get_kind () { return expr_type; }
+
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
 protected:
@@ -629,6 +631,8 @@ public:
     rust_assert (right_expr != nullptr);
     return right_expr;
   }
+
+  ExprType get_kind () { return expr_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -950,9 +954,15 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
+  ArrayElems () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
   // pure virtual clone implementation
   virtual ArrayElems *clone_array_elems_impl () const = 0;
+
+  NodeId node_id;
 };
 
 // Value array elements
@@ -964,7 +974,7 @@ class ArrayElemsValues : public ArrayElems
 
 public:
   ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems)
-    : values (std::move (elems))
+    : ArrayElems (), values (std::move (elems))
   {}
 
   // copy constructor with vector clone
@@ -1030,7 +1040,7 @@ public:
   // Constructor requires pointers for polymorphism
   ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
 		    std::unique_ptr<Expr> copy_amount)
-    : elem_to_copy (std::move (copied_elem)),
+    : ArrayElems (), elem_to_copy (std::move (copied_elem)),
       num_copies (std::move (copy_amount))
   {}
 
@@ -1088,10 +1098,6 @@ class ArrayExpr : public ExprWithoutBlock
 
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
-
-  // this is a reference to what the inferred type is based on
-  // this init expression
-  Type *inferredType;
 
 public:
   std::string as_string () const override;
@@ -1156,9 +1162,6 @@ public:
     rust_assert (internal_elements != nullptr);
     return internal_elements;
   }
-
-  Type *get_inferred_type () { return inferredType; }
-  void set_inferred_type (Type *type) { inferredType = type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

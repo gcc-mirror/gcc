@@ -110,6 +110,25 @@ ParamType::combine (TyBase *other)
 }
 
 void
+ArrayType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ArrayType::as_string () const
+{
+  return "[" + type->as_string () + ":" + std::to_string (capacity) + "]";
+}
+
+TyBase *
+ArrayType::combine (TyBase *other)
+{
+  ArrayRules r (this);
+  return r.combine (other);
+}
+
+void
 BoolType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

@@ -260,8 +260,6 @@ Mappings::lookup_hir_item (CrateNum crateNum, HirId id)
 void
 Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
 {
-  rust_assert (lookup_hir_expr (crateNum, id) == nullptr);
-
   hirExprMappings[crateNum][id] = expr;
   nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
   insert_location (crateNum, id, expr->get_locus_slow ());

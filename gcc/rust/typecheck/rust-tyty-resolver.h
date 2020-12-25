@@ -25,6 +25,7 @@
 #include "rust-name-resolver.h"
 #include "rust-hir-type-check.h"
 #include "rust-hir-full.h"
+#include "rust-tyty-visitor.h"
 
 namespace Rust {
 namespace Resolver {
@@ -63,9 +64,25 @@ public:
 	  TyTy::TyBase *resolved = nullptr;
 	  if (!context->lookup_type (hir_node_ref, &resolved))
 	    {
-	      rust_fatal_error (mappings->lookup_location (hir_node_ref),
-				"failed to lookup type for reference");
-	      return false;
+	      // this could be an array/adt type
+	      Definition d;
+	      bool ok = resolver->lookup_definition (ref_node, &d);
+	      rust_assert (ok);
+
+	      ok = mappings->lookup_node_to_hir (mappings->get_current_crate (),
+						 d.parent, &hir_node_ref);
+	      rust_assert (ok);
+
+	      printf ("failed lets try [%u]\n", hir_node_ref);
+
+	      if (!context->lookup_type (hir_node_ref, &resolved))
+		{
+		  rust_fatal_error (
+		    mappings->lookup_location (hir_node_ref),
+		    "failed to lookup type for reference at node [%u]",
+		    hir_node_ref);
+		  return false;
+		}
 	    }
 
 	  gathered_types.push_back (resolved);
@@ -85,14 +102,25 @@ public:
 				 &resolved_type);
       rust_assert (ok);
 
+      if (!resolved_type->is_unit ())
+	{
+	  return true;
+	}
+
       auto resolved_tyty = resolved_type;
       for (auto it : gathered_types)
-	resolved_tyty = resolved_tyty->combine (it);
+	{
+	  auto combined = resolved_tyty->combine (it);
+	  if (combined == nullptr)
+	    break;
+
+	  resolved_tyty = combined;
+	}
 
       // something is not inferred we need to look at all references now
       if (resolved_tyty == nullptr || resolved_tyty->is_unit ())
 	{
-	  rust_error_at (decl->get_locus_slow (), "failed to resolve type");
+	  rust_fatal_error (decl->get_locus_slow (), "failed to resolve type");
 	  return false;
 	}
 
@@ -114,8 +142,28 @@ private:
   TypeCheckContext *context;
 };
 
-} // namespace Resolver
+class TyTyExtractorArray : public TyTy::TyVisitor
+{
+public:
+  static TyTy::TyBase *ExtractElementTypeFromArray (TyTy::TyBase *base)
+  {
+    TyTyExtractorArray e;
+    base->accept_vis (e);
+    rust_assert (e.extracted != nullptr);
+    return e.extracted;
+  }
 
+  virtual ~TyTyExtractorArray () {}
+
+  void visit (TyTy::ArrayType &type) override { extracted = type.get_type (); }
+
+private:
+  TyTyExtractorArray () : extracted (nullptr) {}
+
+  TyTy::TyBase *extracted;
+};
+
+} // namespace Resolver
 } // namespace Rust
 
 #endif // RUST_TYTY_RESOLVER

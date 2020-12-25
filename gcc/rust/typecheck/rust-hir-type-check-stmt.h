@@ -36,6 +36,11 @@ public:
     stmt->accept_vis (resolver);
   }
 
+  void visit (HIR::ExprStmtWithBlock &stmt)
+  {
+    TypeCheckExpr::Resolve (stmt.get_expr ());
+  }
+
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
     TypeCheckExpr::Resolve (stmt.get_expr ());
@@ -54,8 +59,15 @@ public:
     // let x:i32 = 123;
     if (specified_ty != nullptr && init_expr_ty != nullptr)
       {
-	context->insert_type (stmt.get_mappings ().get_hirid (),
-			      specified_ty->combine (init_expr_ty));
+	auto combined = specified_ty->combine (init_expr_ty);
+	if (combined == nullptr)
+	  {
+	    rust_fatal_error (stmt.get_locus (),
+			      "failure in setting up let stmt type");
+	    return;
+	  }
+
+	context->insert_type (stmt.get_mappings ().get_hirid (), combined);
       }
     else
       {
