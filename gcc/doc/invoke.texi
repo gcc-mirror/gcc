@@ -33081,7 +33081,7 @@ links are present.
 
 The mapper protocol was published as ``A Module Mapper''
 @uref{https://wg21.link/p1184}.  The implementation is provided by
-@command{libcody}, @uref{https://www.github.com/urnathan/libcody},
+@command{libcody}, @uref{https://github.com/urnathan/libcody},
 which specifies the canonical protocol definition.  A proof of concept
 server implementation embedded in @command{make} was described in
 ''Make Me A Module'', @uref{https://wg21.link/p1602}.
