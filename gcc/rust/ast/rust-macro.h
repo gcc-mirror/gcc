@@ -349,11 +349,12 @@ public:
     : ExprWithoutBlock (std::move (outer_attrs)), path (std::move (path)),
       token_tree (std::move (token_tree)), locus (locus)
   {}*/
-  MacroInvocation (MacroInvocData invoc_data, 
-        std::vector<Attribute> outer_attrs, Location locus) 
-    : ExprWithoutBlock (std::move (outer_attrs)), 
-      invoc_data (std::move (invoc_data)), locus (locus) {}
- 
+  MacroInvocation (MacroInvocData invoc_data,
+		   std::vector<Attribute> outer_attrs, Location locus)
+    : ExprWithoutBlock (std::move (outer_attrs)),
+      invoc_data (std::move (invoc_data)), locus (locus)
+  {}
+
   Location get_locus () const { return locus; }
   Location get_locus_slow () const final override { return get_locus (); }
 
@@ -361,7 +362,10 @@ public:
 
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () override { invoc_data.mark_for_strip (); }
-  bool is_marked_for_strip () const override { return invoc_data.is_marked_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return invoc_data.is_marked_for_strip ();
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -584,6 +588,133 @@ protected:
   {
     return new MetaListNameValueStr (*this);
   }
+};
+
+/* A "tagged union" describing a single AST node. Due to technical difficulties
+ * with unions, had to use raw pointers. */
+struct SingleASTNode
+{
+  public:
+    union {
+      std::unique_ptr<Expr> expr;
+      std::unique_ptr<Stmt> stmt;
+      std::unique_ptr<Item> item;
+      std::unique_ptr<Type> type;
+      std::unique_ptr<Pattern> pattern;
+      std::unique_ptr<TraitItem> trait_item;
+      std::unique_ptr<InherentImplItem> inherent_impl_item;
+      std::unique_ptr<TraitImplItem> trait_impl_item;
+      std::unique_ptr<ExternalItem> external_item;
+    };
+
+    enum tag_types {
+      EXPR,
+      STMT,
+      ITEM,
+      TYPE,
+      PATTERN,
+      TRAIT_ITEM,
+      INHERENT_IMPL_ITEM,
+      TRAIT_IMPL_ITEM,
+      EXTERNAL_ITEM
+      // TODO: other types like inside macro_rules? 
+    };
+
+    SingleASTNode (std::unique_ptr<Expr> expr) : tag (EXPR), expr (std::move (expr)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<Stmt> stmt) : tag (STMT), stmt (std::move (stmt)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<Item> item) : tag (ITEM), item (std::move (item)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<Type> type) : tag (TYPE), type (std::move (type)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<Pattern> pattern) : tag (PATTERN), pattern (std::move (pattern)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<TraitItem> trait_item) : tag (TRAIT_ITEM), trait_item (std::move (trait_item)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item) : tag (INHERENT_IMPL_ITEM), inherent_impl_item (std::move (inherent_impl_item)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item) : tag (TRAIT_IMPL_ITEM), trait_impl_item (std::move (trait_impl_item)) {
+
+    }
+
+    SingleASTNode (std::unique_ptr<ExternalItem> external_item) : tag (EXTERNAL_ITEM), external_item (std::move (external_item)) {
+
+    }
+
+    ~SingleASTNode () {
+      switch (tag) {
+        case EXPR:
+          expr.~unique_ptr<Expr> ();
+          break;
+        case STMT:
+          stmt.~unique_ptr<Stmt> ();
+          break;
+        case ITEM:
+          item.~unique_ptr<Item> ();
+          break;
+        case TYPE:
+          type.~unique_ptr<Type> ();
+          break;
+        case PATTERN:
+          pattern.~unique_ptr<Pattern> ();
+          break;
+        case TRAIT_ITEM:
+          trait_item.~unique_ptr<TraitItem> ();
+          break;
+        case INHERENT_IMPL_ITEM:
+          inherent_impl_item.~unique_ptr<InherentImplItem> ();
+          break;
+        case TRAIT_IMPL_ITEM:
+          trait_impl_item.~unique_ptr<TraitImplItem> ();
+          break;
+        case EXTERNAL_ITEM:
+          external_item.~unique_ptr<ExternalItem> ();
+          break;
+        default:
+          // should not happen
+          gcc_unreachable ();
+          break;
+      }
+    }
+
+  private:
+    tag_types tag;
+
+};
+
+/* Basically, a "fragment" that can be incorporated into the AST, created as 
+ * a result of macro expansion. Really annoying to work with due to the fact 
+ * that macros can really expand to anything. As such, horrible representation
+ * at the moment. */
+struct ASTFragment
+{
+private:
+  /* basic idea: essentially, a vector of tagged unions of different AST node
+   * types. Now, this could actually be stored without a tagged union if the
+   * different AST node types had a unified parent, but that would create 
+   * issues with the diamond problem or significant performance penalties. So
+   * a tagged union had to be used instead. A vector is used to represent the
+   * ability for a macro to expand to two statements, for instance. */
+
+  std::vector<SingleASTNode> nodes;
+
+public:
+  ASTFragment (std::vector<SingleASTNode> nodes) : nodes (std::move (nodes)) {}
 };
 
 // Object that parses macros from a token stream.

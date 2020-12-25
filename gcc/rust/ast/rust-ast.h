@@ -363,7 +363,9 @@ public:
 };
 
 // path-to-string inverse comparison operator
-inline bool operator!= (const SimplePath& lhs, const std::string &rhs) {
+inline bool
+operator!= (const SimplePath &lhs, const std::string &rhs)
+{
   return !(lhs == rhs);
 }
 
@@ -632,7 +634,10 @@ public:
 
   // TODO: this mutable getter seems dodgy
   std::vector<std::unique_ptr<MetaItemInner> > &get_items () { return items; }
-  const std::vector<std::unique_ptr<MetaItemInner> > &get_items () const { return items; }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_items () const
+  {
+    return items;
+  }
 
 protected:
   // Use covariance to implement clone function as returning this type
@@ -1371,7 +1376,7 @@ protected:
   virtual ExternalItem *clone_external_item_impl () const = 0;
 };
 
-/* Data structure to store the data used in macro invocations and macro 
+/* Data structure to store the data used in macro invocations and macro
  * invocations with semicolons. */
 struct MacroInvocData
 {
@@ -1386,11 +1391,15 @@ private:
 public:
   std::string as_string () const;
 
-  MacroInvocData (SimplePath path, DelimTokenTree token_tree) 
-    : path (std::move (path)), token_tree (std::move (token_tree)) {}
-  
+  MacroInvocData (SimplePath path, DelimTokenTree token_tree)
+    : path (std::move (path)), token_tree (std::move (token_tree))
+  {}
+
   // Copy constructor with vector clone
-  MacroInvocData (const MacroInvocData &other) : path (other.path), token_tree (other.token_tree), parsed_to_meta_item (other.parsed_to_meta_item) {
+  MacroInvocData (const MacroInvocData &other)
+    : path (other.path), token_tree (other.token_tree),
+      parsed_to_meta_item (other.parsed_to_meta_item)
+  {
     parsed_items.reserve (other.parsed_items.size ());
     for (const auto &e : other.parsed_items)
       parsed_items.push_back (e->clone_meta_item_inner ());
@@ -1413,7 +1422,7 @@ public:
   // Move constructors
   MacroInvocData (MacroInvocData &&other) = default;
   MacroInvocData &operator= (MacroInvocData &&other) = default;
-  
+
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () { path = SimplePath::create_empty (); }
   bool is_marked_for_strip () const { return path.is_empty (); }
@@ -1430,13 +1439,20 @@ public:
   SimplePath &get_path () { return path; }
   const SimplePath &get_path () const { return path; }
 
-  void set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items) 
-  { 
-    parsed_items = std::move (new_items); 
+  void
+  set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items)
+  {
+    parsed_items = std::move (new_items);
   }
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () { return parsed_items; }
-  const std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () const { return parsed_items; }
+  std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items ()
+  {
+    return parsed_items;
+  }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () const
+  {
+    return parsed_items;
+  }
 };
 
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
@@ -1467,10 +1483,11 @@ public:
       delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
   {}*/
-  MacroInvocationSemi (MacroInvocData invoc_data, 
-            std::vector<Attribute> outer_attrs, Location locus) 
-    : outer_attrs (std::move (outer_attrs)), invoc_data (std::move (invoc_data)),
-      locus (locus) {}
+  MacroInvocationSemi (MacroInvocData invoc_data,
+		       std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
+      invoc_data (std::move (invoc_data)), locus (locus)
+  {}
 
   /*
   // Copy constructor with vector clone
@@ -1525,7 +1542,10 @@ public:
   bool is_marked_for_strip () const override { return path.is_empty (); }
   */
   void mark_for_strip () override { invoc_data.mark_for_strip (); }
-  bool is_marked_for_strip () const override { return invoc_data.is_marked_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return invoc_data.is_marked_for_strip ();
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }

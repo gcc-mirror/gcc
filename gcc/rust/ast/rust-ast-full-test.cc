@@ -1358,9 +1358,9 @@ TypeAlias::as_string () const
 
   str += "\n Where clause: ";
   if (!has_where_clause ())
-      str += "none";
+    str += "none";
   else
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
 
   str += "\n Type: " + existing_type->as_string ();
 
@@ -5398,7 +5398,7 @@ Attribute::check_cfg_predicate (const Session &session) const
   if (!has_attr_input ()
       || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
     return false;
-  
+
   // assume that it has already been parsed
   if (!is_parsed_to_meta_item ())
     return false;
@@ -5419,10 +5419,10 @@ Attribute::separate_cfg_attrs () const
   return attr_input->separate_cfg_attrs ();
 }
 
-bool 
-Attribute::is_parsed_to_meta_item () const 
-{ 
-  return has_attr_input () && attr_input->is_meta_item (); 
+bool
+Attribute::is_parsed_to_meta_item () const
+{
+  return has_attr_input () && attr_input->is_meta_item ();
 }
 
 /* Visitor implementations - these are short but inlining can't happen anyway

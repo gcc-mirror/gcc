@@ -16,9 +16,9 @@ struct ExpansionCfg
 {
   // features?
   unsigned int recursion_limit = 50; // TODO: determine default recursion limit
-				// trace macros?
-				// should test?
-				// more default stuff?
+				     // trace macros?
+				     // should test?
+				     // more default stuff?
 };
 
 // Object used to store shared data (between functions) for macro expansion.
@@ -40,6 +40,9 @@ struct MacroExpander
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
+
+  // Expands a single declarative macro. 
+  AST::ASTFragment expand_decl_macro (AST::MacroInvocData &invoc, AST::MacroRulesDefinition &rules_def);
 
   void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
   bool fails_cfg (const std::vector<AST::Attribute> &attr) const;
