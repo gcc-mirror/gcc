@@ -443,6 +443,7 @@ tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
 void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
+tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree, tree, bool);

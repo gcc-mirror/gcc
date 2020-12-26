@@ -10299,6 +10299,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree jump_label2;
   tree neq_size;
   tree lbd;
+  tree class_expr2 = NULL_TREE;
   int n;
   int dim;
   gfc_array_spec * as;
@@ -10380,6 +10381,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   else if (expr1->ts.type == BT_CLASS)
     {
       tmp = expr1->rank ? gfc_get_class_from_expr (desc) : NULL_TREE;
+      if (tmp == NULL_TREE)
+	tmp = gfc_get_class_from_gfc_expr (expr1);
+
       if (tmp != NULL_TREE)
 	{
 	  tmp2 = gfc_class_vptr_get (tmp);
@@ -10455,6 +10459,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   else if (expr1->ts.type == BT_CLASS && expr2->ts.type == BT_CLASS)
     {
       tmp = expr2->rank ? gfc_get_class_from_expr (desc2) : NULL_TREE;
+      if (tmp == NULL_TREE && expr2->expr_type == EXPR_VARIABLE)
+	tmp = class_expr2 = gfc_get_class_from_gfc_expr (expr2);
+
       if (tmp != NULL_TREE)
 	tmp = gfc_class_vtab_size_get (tmp);
       else
@@ -10740,6 +10747,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	  tmp2 = gfc_get_class_from_expr (desc2);
 	  tmp2 = gfc_class_vptr_get (tmp2);
 	}
+      else if (expr2->ts.type == BT_CLASS && class_expr2 != NULL_TREE)
+	tmp2 = gfc_class_vptr_get (class_expr2);
       else
 	{
 	  tmp2 = gfc_get_symbol_decl (gfc_find_vtab (&expr2->ts));
