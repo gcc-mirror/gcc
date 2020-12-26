@@ -221,11 +221,14 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   gfc_ref *ref;
   gfc_expr *init;
   gfc_expr *expr = NULL;
+  gfc_expr *rexpr;
   gfc_constructor *con;
   gfc_constructor *last_con;
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
+  const char *msg = "F18(R841): data-implied-do object at %L is neither an "
+		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
@@ -466,21 +469,38 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
 	case REF_INQUIRY:
 
+	  /* After some discussion on clf it was determined that the following
+	     violates F18(R841). If the error is removed, the expected result
+	     is obtained. Leaving the code in place ensures a clean error
+	     recovery.  */
+	  gfc_error (msg, &lvalue->where);
+
 	  /* This breaks with the other reference types in that the output
 	     constructor has to be of type COMPLEX, whereas the lvalue is
 	     of type REAL.  The rvalue is copied to the real or imaginary
-	     part as appropriate.  */
+	     part as appropriate.  In addition, for all except scalar
+	     complex variables, a complex expression has to provided, where
+	     the constructor does not have it, and the expression modified
+	     with a new value for the real or imaginary part.  */
 	  gcc_assert (ref->next == NULL && last_ts->type == BT_COMPLEX);
-	  expr = gfc_copy_expr (rvalue);
-	  if (!gfc_compare_types (&lvalue->ts, &expr->ts))
-	    gfc_convert_type (expr, &lvalue->ts, 0);
+	  rexpr = gfc_copy_expr (rvalue);
+	  if (!gfc_compare_types (&lvalue->ts, &rexpr->ts))
+	    gfc_convert_type (rexpr, &lvalue->ts, 0);
 
-	  if (last_con->expr)
-	    gfc_free_expr (last_con->expr);
-
-	  last_con->expr = gfc_get_constant_expr (BT_COMPLEX,
-						  last_ts->kind,
-						  &lvalue->where);
+	  /* This is the scalar, complex case, where an initializer exists.  */
+	  if (init && ref == lvalue->ref)
+	    expr = symbol->value;
+	  /* Then all cases, where a complex expression does not exist.  */
+	  else if (!last_con || !last_con->expr)
+	    {
+	      expr = gfc_get_constant_expr (BT_COMPLEX, lvalue->ts.kind,
+					    &lvalue->where);
+	      if (last_con)
+		last_con->expr = expr;
+	    }
+	  else
+	    /* Finally, and existing constructor expression to be modified.  */
+	    expr = last_con->expr;
 
 	  /* Rejection of LEN and KIND inquiry references is handled
 	     elsewhere. The error here is added as backup. The assertion
@@ -493,22 +513,25 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 			 &lvalue->where);
 	      goto abort;
 	    case INQUIRY_RE:
-	      mpfr_set (mpc_realref (last_con->expr->value.complex),
-			expr->value.real,
+	      mpfr_set (mpc_realref (expr->value.complex),
+			rexpr->value.real,
 			GFC_RND_MODE);
-	      mpfr_set_ui (mpc_imagref (last_con->expr->value.complex),
-			   0.0, GFC_RND_MODE);
 	      break;
 	    case INQUIRY_IM:
-	      mpfr_set (mpc_imagref (last_con->expr->value.complex),
-			expr->value.real,
+	      mpfr_set (mpc_imagref (expr->value.complex),
+			rexpr->value.real,
 			GFC_RND_MODE);
-	      mpfr_set_ui (mpc_realref (last_con->expr->value.complex),
-			   0.0, GFC_RND_MODE);
 	      break;
 	    }
 
-	  gfc_free_expr (expr);
+	  /* Only the scalar, complex expression needs to be saved as the
+	     symbol value since the last constructor expression is already
+	     provided as the initializer in the code after the reference
+	     cases.  */
+	  if (ref == lvalue->ref)
+	    symbol->value = expr;
+
+	  gfc_free_expr (rexpr);
 	  mpz_clear (offset);
 	  return true;
 
