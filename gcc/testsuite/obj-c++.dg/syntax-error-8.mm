@@ -1,1 +1,1 @@
-@interface A /* { dg-error "-:expected ..end." "" { target *-*-* } .+1 } */
+@interface A /* { dg-error "expected ..end." "" { target *-*-* } .-1 } */
