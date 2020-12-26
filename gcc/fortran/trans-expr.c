@@ -508,8 +508,62 @@ gfc_reset_len (stmtblock_t *block, gfc_expr *expr)
 }
 
 
-/* Obtain the vptr of the last class reference in an expression.
+/* Obtain the last class reference in a gfc_expr. Return NULL_TREE if no class
+   reference is found. Note that it is up to the caller to avoid using this
+   for expressions other than variables.  */
+
+tree
+gfc_get_class_from_gfc_expr (gfc_expr *e)
+{
+  gfc_expr *class_expr;
+  gfc_se cse;
+  class_expr = gfc_find_and_cut_at_last_class_ref (e);
+  if (class_expr == NULL)
+    return NULL_TREE;
+  gfc_init_se (&cse, NULL);
+  gfc_conv_expr (&cse, class_expr);
+  gfc_free_expr (class_expr);
+  return cse.expr;
+}
+
+
+/* Obtain the last class reference in an expression.
    Return NULL_TREE if no class reference is found.  */
+
+tree
+gfc_get_class_from_expr (tree expr)
+{
+  tree tmp;
+  tree type;
+
+  for (tmp = expr; tmp; tmp = TREE_OPERAND (tmp, 0))
+    {
+      if (CONSTANT_CLASS_P (tmp))
+	return NULL_TREE;
+
+      type = TREE_TYPE (tmp);
+      while (type)
+	{
+	  if (GFC_CLASS_TYPE_P (type))
+	    return tmp;
+	  if (type != TYPE_CANONICAL (type))
+	    type = TYPE_CANONICAL (type);
+	  else
+	    type = NULL_TREE;
+	}
+      if (VAR_P (tmp) || TREE_CODE (tmp) == PARM_DECL)
+	break;
+    }
+
+  if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+    tmp = build_fold_indirect_ref_loc (input_location, tmp);
+
+  if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+    return tmp;
+
+  return NULL_TREE;
+}
+
 
 tree
 gfc_get_vptr_from_expr (tree expr)
@@ -10999,11 +11053,24 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   tmp = NULL_TREE;
 
   if (is_poly_assign)
-    tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
-				  use_vptr_copy || (lhs_attr.allocatable
-						     && !lhs_attr.dimension),
-				  !realloc_flag && flag_realloc_lhs
-				  && !lhs_attr.pointer);
+    {
+      tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
+				    use_vptr_copy || (lhs_attr.allocatable
+						      && !lhs_attr.dimension),
+				    !realloc_flag && flag_realloc_lhs
+				    && !lhs_attr.pointer);
+      if (expr2->expr_type == EXPR_FUNCTION
+	  && expr2->ts.type == BT_DERIVED
+	  && expr2->ts.u.derived->attr.alloc_comp)
+	{
+	  tree tmp2 = gfc_deallocate_alloc_comp (expr2->ts.u.derived,
+						 rse.expr, expr2->rank);
+	  if (lss == gfc_ss_terminator)
+	    gfc_add_expr_to_block (&rse.post, tmp2);
+	  else
+	    gfc_add_expr_to_block (&loop.post, tmp2);
+	}
+    }
   else if (flag_coarray == GFC_FCOARRAY_LIB
 	   && lhs_caf_attr.codimension && rhs_caf_attr.codimension
 	   && ((lhs_caf_attr.allocatable && lhs_refs_comp)
