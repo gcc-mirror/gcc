@@ -1,3 +1,14 @@
+2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/messages.xml: Update link to Java docs.
+	* doc/html/manual/facets.html: Ditto.
+
+2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Convert three links
+	to doxygen.nl to https.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
 2020-12-23  Olivier Hainque  <hainque@adacore.com>
 
 	* testsuite/17_intro/names.cc: Account for VxWorks headers.

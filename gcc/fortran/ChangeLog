@@ -1,3 +1,11 @@
+2020-12-25  Harald Anlauf  <anlauf@gmx.de>
+
+	* data.c (gfc_assign_data_value): Restrict use of
+	create_character_initializer to constant initializers.
+	* trans-expr.c (gfc_conv_initializer): Ensure that character
+	initializer is constant, otherwise fall through to get the same
+	error handling as for non-character cases.
+
 2020-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans.c (create_var_debug_raw): Set DECL_ARTIFICIAL
