@@ -1757,7 +1757,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       if (e->ts.type == BT_CLASS)
 	{
 	  /* Go straight to the class data.  */
-	  if (sym2->attr.dummy)
+	  if (sym2->attr.dummy && !sym2->attr.optional)
 	    {
 	      class_decl = DECL_LANG_SPECIFIC (sym2->backend_decl) ?
 			   GFC_DECL_SAVED_DESCRIPTOR (sym2->backend_decl) :
