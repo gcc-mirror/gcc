@@ -1,3 +1,24 @@
+2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* data.c (gfc_assign_data_value): Throw an error for inquiry
+	references. Follow with corrected code that would provide the
+	expected result and provides clean error recovery.
+
+2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Make
+	sure that class expressions are captured for dummy arguments by
+	use of gfc_get_class_from_gfc_expr otherwise the wrong vptr is
+	used.
+	* trans-expr.c (gfc_get_class_from_gfc_expr): New function.
+	(gfc_get_class_from_expr): If a constant expression is
+	encountered, return NULL_TREE;
+	(gfc_trans_assignment_1): Deallocate rhs allocatable components
+	after passing derived type function results to class lhs.
+	* trans.h : Add prototype for gfc_get_class_from_gfc_expr.
+
 2020-12-25  Harald Anlauf  <anlauf@gmx.de>
 
 	* data.c (gfc_assign_data_value): Restrict use of

@@ -1,3 +1,9 @@
+2020-12-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update link to Intel's compatibility
+	with GNU compilers document.
+	* doc/html/manual/abi.html: Regenerate.
+
 2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/messages.xml: Update link to Java docs.
