@@ -28,6 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <pthread.h>
 #include <limits.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define CAS_DEBUG_PR(str, ...) dprintf(2, "Image %d (pid %ld):\t" str "\n", this_image.image_num, (unsigned long) getpid(), ##__VA_ARGS__)
 
 #define PTR_BITS (CHAR_BIT*sizeof(void *))
 

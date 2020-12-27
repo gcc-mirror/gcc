@@ -47,7 +47,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
     if ![runtest_file_p $runtests $test] then {
 	continue
     }
-    set option_list [list { -O2 } ]
+    set option_list [list { -g -O2 } ]
 
     set nshort [file tail [file dirname $test]]/[file tail $test]
     list-module-names $test

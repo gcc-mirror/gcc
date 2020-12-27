@@ -3935,7 +3935,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
   /* Early return - only taken for ALLOCATED for shared coarrays.
      FIXME - this could probably be done more elegantly.  */
-  if (se->address_only)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && ar->codimen && se->address_only)
     {
       se->expr = build_array_ref (se->expr, build_int_cst (TREE_TYPE (offset), 0),
 				  decl, se->class_vptr);
