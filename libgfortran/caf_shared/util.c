@@ -10,11 +10,22 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <errno.h>
 
 /* Shared Memory objects live in their own namspace (usually found under
  * /dev/shm/), so the "/" is needed.  It is for some reason impossible to
- * create a shared memory object without name.  */
+ * create a shared memory object without name.
+ *
+ * Apple, for some reason, only allows 31 characters in memfd names, so we need
+ * to make the name a bit shorter in that case.  */
+#ifndef __APPLE__
 #define MEMOBJ_NAME "/gfortran_coarray_memfd"
+#define CUT_INT(x) (x)
+#else
+#define MEMOBJ_NAME "/gfccas_"
+#define CUT_INT(x) (x % 100000)
+#endif
+
 
 size_t
 alignto (size_t size, size_t align)
@@ -66,8 +77,13 @@ get_shmem_fd (void)
   do
     {
       snprintf (buffer, sizeof (buffer), MEMOBJ_NAME "_%u_%d",
-		(unsigned int)getpid (), id++);
+		(unsigned int)getpid (), CUT_INT(id++));
       fd = shm_open (buffer, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+      if (fd == -1 && errno != EEXIST)
+	{
+	  perror("Failed to create the memfd");
+	  exit(1);
+	}
     }
   while (fd == -1);
   shm_unlink (buffer);
