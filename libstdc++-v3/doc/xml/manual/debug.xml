@@ -245,10 +245,10 @@
   The approach described above is known to work with the following race
   detection tools:
   <link xmlns:xlink="http://www.w3.org/1999/xlink"
-  xlink:href="http://valgrind.org/docs/manual/drd-manual.html">
+  xlink:href="https://valgrind.org/docs/manual/drd-manual.html">
   DRD</link>,
   <link xmlns:xlink="http://www.w3.org/1999/xlink"
-  xlink:href="http://valgrind.org/docs/manual/hg-manual.html">
+  xlink:href="https://valgrind.org/docs/manual/hg-manual.html">
   Helgrind</link>, and
   <link xmlns:xlink="http://www.w3.org/1999/xlink"
   xlink:href="https://github.com/google/sanitizers">
