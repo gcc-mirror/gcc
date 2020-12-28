@@ -16513,13 +16513,15 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
   /* if (!isless (xa, TWO52)) goto label; */
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  /* x = (double)(long)x */
+  /* xa = (double)(long)x */
   xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
   expand_fix (xi, res, 0);
-  expand_float (res, xi, 0);
+  expand_float (xa, xi, 0);
 
   if (HONOR_SIGNED_ZEROS (mode))
-    ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
+    ix86_sse_copysign_to_positive (xa, xa, res, mask);
+
+  emit_move_insn (res, xa);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -16629,7 +16631,7 @@ ix86_expand_round (rtx operand0, rtx operand1)
   expand_float (xa, xi, 0);
 
   /* res = copysign (xa, operand1) */
-  ix86_sse_copysign_to_positive (res, xa, force_reg (mode, operand1), mask);
+  ix86_sse_copysign_to_positive (res, xa, res, mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -16700,7 +16702,7 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
   xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
-  ix86_sse_copysign_to_positive (res, xa2, force_reg (mode, operand1), mask);
+  ix86_sse_copysign_to_positive (res, xa2, res, mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
