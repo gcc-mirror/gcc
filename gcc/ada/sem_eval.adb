@@ -6104,7 +6104,9 @@ package body Sem_Eval is
          --  No message if we are dealing with System.Priority values in
          --  CodePeer mode where the target runtime may have more priorities.
 
-         elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
+         elsif not CodePeer_Mode
+           or else not Is_RTE (Etype (N), RE_Priority)
+         then
             --  Determine if the out-of-range violation constitutes a warning
             --  or an error based on context, according to RM 4.9 (34/3).
 

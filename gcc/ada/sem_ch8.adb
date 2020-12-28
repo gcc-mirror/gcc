@@ -4443,7 +4443,7 @@ package body Sem_Ch8 is
 
       if not Configurable_Run_Time_Mode
         and then not Present (Corresponding_Formal_Spec (N))
-        and then Etype (Nam) /= RTE (RE_AST_Handler)
+        and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
             P : constant Node_Id := Prefix (Nam);
@@ -7508,15 +7508,9 @@ package body Sem_Ch8 is
                   --  dispatch table wrappers. Required to avoid generating
                   --  elaboration code with HI runtimes.
 
-                  elsif RTU_Loaded (Ada_Tags)
-                    and then
-                      ((RTE_Available (RE_Dispatch_Table_Wrapper)
-                         and then Scope (Selector) =
-                                     RTE (RE_Dispatch_Table_Wrapper))
-                        or else
-                          (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                            and then Scope (Selector) =
-                                     RTE (RE_No_Dispatch_Table_Wrapper)))
+                  elsif Is_RTE (Scope (Selector), RE_Dispatch_Table_Wrapper)
+                    or else
+                      Is_RTE (Scope (Selector), RE_No_Dispatch_Table_Wrapper)
                   then
                      C_Etype := Empty;
                   else

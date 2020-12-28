@@ -1140,7 +1140,7 @@ package body Exp_Imgv is
       --  There is a better way, test RTE_Available ???
 
       if No_Run_Time_Mode
-        and then Rtyp = RTE (RE_Integer_Address)
+        and then Is_RTE (Rtyp, RE_Integer_Address)
         and then RTU_Loaded (Ada_Tags)
         and then Cunit_Entity (Current_Sem_Unit)
                    = Body_Entity (RTU_Entity (Ada_Tags))

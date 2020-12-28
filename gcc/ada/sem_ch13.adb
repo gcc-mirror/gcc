@@ -7430,9 +7430,7 @@ package body Sem_Ch13 is
             --    type Q is access Float;
             --    for Q'Storage_Size use T'Storage_Size; -- incorrect
 
-            if RTE_Available (RE_Stack_Bounded_Pool)
-              and then Base_Type (T) = RTE (RE_Stack_Bounded_Pool)
-            then
+            if Is_RTE (Base_Type (T), RE_Stack_Bounded_Pool) then
                Error_Msg_N ("non-shareable internal Pool", Expr);
                return;
             end if;
@@ -7722,7 +7720,7 @@ package body Sem_Ch13 is
 
       if Etype (Expression (N)) = Any_Type then
          return;
-      elsif Etype (Expression (N)) /= RTE (RE_Asm_Insn) then
+      elsif not Is_RTE (Etype (Expression (N)), RE_Asm_Insn) then
          Error_Msg_N ("incorrect type for code statement", N);
          return;
       end if;

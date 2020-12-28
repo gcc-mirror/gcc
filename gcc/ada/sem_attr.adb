@@ -905,9 +905,9 @@ package body Sem_Attr is
             --  a tagged type cleans constant indications from its scope).
 
             elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
-              and then (Etype (Parent (N)) = RTE (RE_Prim_Ptr)
+              and then (Is_RTE (Etype (Parent (N)), RE_Prim_Ptr)
                           or else
-                        Etype (Parent (N)) = RTE (RE_Size_Ptr))
+                        Is_RTE (Etype (Parent (N)), RE_Size_Ptr))
               and then Is_Dispatching_Operation
                          (Directly_Designated_Type (Etype (N)))
             then
@@ -2386,7 +2386,7 @@ package body Sem_Attr is
          --  root type of a class-wide type is the corresponding type (e.g.
          --  X for X'Class, and we really want to go to the root.)
 
-         if Root_Type (Root_Type (Etype (E1))) /= RTE (RE_Sink) then
+         if not Is_RTE (Root_Type (Root_Type (Etype (E1))), RE_Sink) then
             Error_Attr
               ("expected Ada.Strings.Text_Output.Sink''Class", E1);
          end if;
@@ -2556,8 +2556,8 @@ package body Sem_Attr is
          --  X for X'Class, and we really want to go to the root.)
 
          if not Is_Access_Type (Etyp)
-           or else Root_Type (Root_Type (Designated_Type (Etyp))) /=
-                     RTE (RE_Root_Stream_Type)
+           or else not Is_RTE (Root_Type (Root_Type (Designated_Type (Etyp))),
+                               RE_Root_Stream_Type)
          then
             Error_Attr
               ("expected access to Ada.Streams.Root_Stream_Type''Class", E1);
