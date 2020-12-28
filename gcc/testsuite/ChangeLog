@@ -1,3 +1,8 @@
+2020-12-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793-1.c: New test.
+
 2020-12-24  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backported from master:
