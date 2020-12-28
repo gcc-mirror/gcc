@@ -8444,9 +8444,9 @@ package body Exp_Dist is
          is
             Loc : constant Source_Ptr := Sloc (N);
 
-            U_Type : Entity_Id  := Underlying_Type (Typ);
+            U_Type : Entity_Id := Underlying_Type (Typ);
 
-            Fnam    : Entity_Id := Empty;
+            Fnam    : Entity_Id;
             Lib_RE  : RE_Id := RE_Null;
             Result  : Node_Id;
 
@@ -8516,7 +8516,7 @@ package body Exp_Dist is
             --  Integer types
 
             elsif U_Type = RTE (RE_Integer_8) then
-                  Lib_RE := RE_FA_I8;
+               Lib_RE := RE_FA_I8;
 
             elsif U_Type = RTE (RE_Integer_16) then
                Lib_RE := RE_FA_I16;
@@ -9243,7 +9243,7 @@ package body Exp_Dist is
             Typ    : Entity_Id := Etype (N);
             U_Type : Entity_Id;
             C_Type : Entity_Id;
-            Fnam   : Entity_Id := Empty;
+            Fnam   : Entity_Id;
             Lib_RE : RE_Id := RE_Null;
 
          begin
@@ -10101,7 +10101,7 @@ package body Exp_Dist is
             --  The full view, if Typ is private; the completion,
             --  if Typ is incomplete.
 
-            Fnam   : Entity_Id := Empty;
+            Fnam   : Entity_Id;
             Lib_RE : RE_Id := RE_Null;
             Expr   : Node_Id;
 
