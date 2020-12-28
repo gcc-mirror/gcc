@@ -68,7 +68,7 @@ Boston, MA 02110-1301, USA@*
 @page
 
 
-@node Top
+@node Top, Enabling OpenMP
 @top Introduction
 @cindex Introduction
 
