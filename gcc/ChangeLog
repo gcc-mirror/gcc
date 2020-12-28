@@ -1,3 +1,8 @@
+2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/analyzer.texi (Analyzer Internals): Find a new source for
+	the "A Memory Model for Static Analysis of C Programs" paper.
+
 2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (C++ Module Mapper): Fix reference to libcody.

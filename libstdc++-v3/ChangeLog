@@ -1,3 +1,13 @@
+2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update link to Arm ABI.
+	* doc/html/manual/abi.html: Regenerate.
+
+2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/debug.xml: Move Valgrind references to https.
+	* doc/html/manual/debug.html: Regenerate.
+
 2020-12-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Update link to Intel's compatibility

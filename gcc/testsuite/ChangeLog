@@ -1,3 +1,14 @@
+2020-12-27  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/asm-2.c: Use different register for iq2000.
+	* gcc.dg/tree-ssa/asm-3.c: Likewise.
+
+2020-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97694
+	PR fortran/97723
+	* gfortran.dg/select_rank_5.f90: New test.
+
 2020-12-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/96045
