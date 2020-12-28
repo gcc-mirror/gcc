@@ -952,6 +952,11 @@ package body Errout is
    --  Start of processing for Error_Msg_Internal
 
    begin
+      --  Detect common mistake of prefixing or suffing the message with a
+      --  space character.
+
+      pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
+
       if Raise_Exception_On_Error /= 0 then
          raise Error_Msg_Exception;
       end if;
