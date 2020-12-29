@@ -9234,13 +9234,21 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	}
       if (arc_is_uncached_mem_p (operands[1]))
 	{
+	  rtx tmp = operands[0];
+
 	  if (MEM_P (operands[0]))
-	    operands[0] = force_reg (mode, operands[0]);
+	    tmp = gen_reg_rtx (mode);
+
 	  emit_insn (gen_rtx_SET
-		     (operands[0],
+		     (tmp,
 		      gen_rtx_UNSPEC_VOLATILE
 		      (mode, gen_rtvec (1, operands[1]),
 		       VUNSPEC_ARC_LDDI)));
+	  if (MEM_P (operands[0]))
+	    {
+	      operands[1] = tmp;
+	      return false;
+	    }
 	  return true;
 	}
     }
