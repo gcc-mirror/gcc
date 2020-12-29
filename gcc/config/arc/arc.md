@@ -6176,12 +6176,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
-     emit_insn (gen_macd (operands[0], operands[1], operands[2]));
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode)
+       && REGNO (operands[0]) != ACCL_REGNO)
+      emit_insn (gen_macd (operands[0], operands[1], operands[2]));
    else
      {
       emit_insn (gen_mac (operands[1], operands[2]));
-      emit_move_insn (operands[0], acc_reg);
+      if (REGNO (operands[0]) != ACCL_REGNO)
+        emit_move_insn (operands[0], acc_reg);
      }
    DONE;
    }"
@@ -6192,8 +6194,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
 	(plus:DI
 	 (mult:DI
-	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,c,c"))
-	  (sign_extend:DI (match_operand:SI 2 "extend_operand" " c,cI,Cal")))
+	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%0,r,r"))
+	  (sign_extend:DI (match_operand:SI 2 "extend_operand"    "r,rI,Cal")))
 	 (reg:DI ARCV2_ACC)))
    (set (reg:DI ARCV2_ACC)
 	(plus:DI
@@ -6276,12 +6278,14 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
-     emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode)
+       && REGNO (operands[0]) != ACCL_REGNO)
+      emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
    else
      {
       emit_insn (gen_macu (operands[1], operands[2]));
-      emit_move_insn (operands[0], acc_reg);
+      if (REGNO (operands[0]) != ACCL_REGNO)
+        emit_move_insn (operands[0], acc_reg);
      }
    DONE;
    }"
@@ -6292,8 +6296,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:DI 0 "even_register_operand"	       "=Rcr,r,r")
 	(plus:DI
 	 (mult:DI
-	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,c,c"))
-	  (zero_extend:DI (match_operand:SI 2 "extend_operand" " c,cI,i")))
+	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%0,r,r"))
+	  (zero_extend:DI (match_operand:SI 2 "extend_operand"    "r,rI,i")))
 	 (reg:DI ARCV2_ACC)))
    (set (reg:DI ARCV2_ACC)
 	(plus:DI
