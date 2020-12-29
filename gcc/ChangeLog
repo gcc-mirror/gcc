@@ -1,3 +1,41 @@
+2020-12-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (HSAIL): Remove section.
+
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386-expand.c (ix86_expand_rint):
+	Remove the sign of the intermediate value for flag_rounding_math.
+
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_trunc): Use
+	existing temporary register to avoid a call to force_reg.
+
+2020-12-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (optab): New code attr.
+	* config/i386/sse.md (<code>v32qiv32hi2): Rename to ...
+	(<optab>v32qiv32hi2) ... this.
+	(<code>v16qiv16hi2): Likewise.
+	(<code>v8qiv8hi2): Likewise.
+	(<code>v16qiv16si2): Likewise.
+	(<code>v8qiv8si2): Likewise.
+	(<code>v4qiv4si2): Likewise.
+	(<code>v16hiv16si2): Likewise.
+	(<code>v8hiv8si2): Likewise.
+	(<code>v4hiv4si2): Likewise.
+	(<code>v8qiv8di2): Likewise.
+	(<code>v4qiv4di2): Likewise.
+	(<code>v2qiv2di2): Likewise.
+	(<code>v8hiv8di2): Likewise.
+	(<code>v4hiv4di2): Likewise.
+	(<code>v2hiv2di2): Likewise.
+	(<code>v8siv8di2): Likewise.
+	(<code>v4siv4di2): Likewise.
+	(<code>v2siv2di2): Likewise.
+
 2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/analyzer.texi (Analyzer Internals): Find a new source for

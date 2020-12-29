@@ -1,3 +1,14 @@
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793-2.c: New test.
+
+2020-12-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/pr92658-avx2-2.c: New test.
+	* gcc.target/i386/pr92658-avx512bw-2.c: Likewise.
+	* gcc.target/i386/pr92658-sse4-2.c: Likewise.
+
 2020-12-27  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/asm-2.c: Use different register for iq2000.
