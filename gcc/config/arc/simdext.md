@@ -1413,7 +1413,7 @@
        if (TARGET_PLUS_QMACW
            && even_register_operand (operands[0], <MODE>mode)
 	   && even_register_operand (operands[1], <MODE>mode))
-         return \"vadd2\\t%0,%1,0\";
+         return \"vadd2%?\\t%0,%1,0\";
        return \"#\";
 
      case 2:
@@ -1434,7 +1434,7 @@
    DONE;
   }
   [(set_attr "type" "move,multi,load,store")
-   (set_attr "predicable" "yes,no,no,no")
+   (set_attr "predicable" "no,no,no,no")
    (set_attr "iscompact"  "false,false,false,false")
    ])
 

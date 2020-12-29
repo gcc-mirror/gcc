@@ -1341,7 +1341,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     if (TARGET_PLUS_QMACW
 	&& even_register_operand (operands[0], DImode)
 	&& even_register_operand (operands[1], DImode))
-      return \"vadd2\\t%0,%1,0\";
+      return \"vadd2%?\\t%0,%1,0\";
     return \"#\";
 
     case 2:
@@ -1421,7 +1421,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     if (TARGET_PLUS_QMACW
 	&& even_register_operand (operands[0], DFmode)
 	&& even_register_operand (operands[1], DFmode))
-      return \"vadd2\\t%0,%1,0\";
+      return \"vadd2%?\\t%0,%1,0\";
     return \"#\";
 
     case 4:
@@ -1450,7 +1450,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    DONE;
   }
   [(set_attr "type" "move,move,move,move,load,store")
-   (set_attr "predicable" "no,no,yes,yes,no,no")
+   (set_attr "predicable" "no,no,no,yes,no,no")
    ;; ??? The ld/st values could be 16 if it's [reg,bignum].
    (set_attr "length" "4,16,8,16,16,16")])
 
