@@ -2271,6 +2271,7 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
   gfc_ref *ref;
   gfc_typespec *ts;
   mpz_t char_len;
+  gfc_se se;
 
   /* Don't bother if we already know the length is a constant.  */
   if (*len && INTEGER_CST_P (*len))
@@ -2314,6 +2315,19 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	default:
 	 gcc_unreachable ();
 	}
+    }
+
+  /* A last ditch attempt that is sometimes needed for deferred characters.  */
+  if (!ts->u.cl->backend_decl)
+    {
+      gfc_init_se (&se, NULL);
+      if (expr->rank)
+	gfc_conv_expr_descriptor (&se, expr);
+      else
+	gfc_conv_expr (&se, expr);
+      gcc_assert (se.string_length != NULL_TREE);
+      gfc_add_block_to_block (block, &se.pre);
+      ts->u.cl->backend_decl = se.string_length;
     }
 
   *len = ts->u.cl->backend_decl;
