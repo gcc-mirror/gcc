@@ -901,7 +901,7 @@ arc_secondary_reload (bool in_p,
 
 	  /* It is a pseudo that ends in a stack location.  This
 	     procedure only works with the old reload step.  */
-	  if (reg_equiv_mem (REGNO (x)) && !lra_in_progress)
+	  if (!lra_in_progress && reg_equiv_mem (REGNO (x)))
 	    {
 	      /* Get the equivalent address and check the range of the
 		 offset.  */
