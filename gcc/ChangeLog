@@ -1,3 +1,9 @@
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386.c (ix86_expand_rint):
+	Remove the sign of the intermediate value for flag_rounding_math.
+
 2020-12-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793
