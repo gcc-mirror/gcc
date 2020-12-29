@@ -1,3 +1,21 @@
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* config/i386/i386.c (ix86_expand_rint):
+	Remove the sign of the intermediate value for flag_rounding_math.
+
+2020-12-28  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	Backported from master:
+	2020-12-16  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	* config.gcc (powerpc*le-*-freebsd*): Add.
+	* configure.ac (powerpc*le-*-freebsd*): Ditto.
+	* configure: Regenerate.
+	* config/rs6000/freebsd64.h (ASM_SPEC_COMMON): Use ENDIAN_SELECT.
+	(DEFAULT_ASM_ENDIAN): Add little endian support.
+	(LINK_OS_FREEBSD_SPEC64): Ditto.
+
 2020-12-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793
