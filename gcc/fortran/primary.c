@@ -3062,26 +3062,36 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	  continue;
 	}
 
-      /* If it was not found, try the default initializer if there's any;
+      /* If it was not found, apply NULL expression to set the component as
+	 unallocated. Then try the default initializer if there's any;
 	 otherwise, it's an error unless this is a deferred parameter.  */
       if (!comp_iter)
 	{
-	  if (comp->initializer)
+	  /* F2018 7.5.10: If an allocatable component has no corresponding
+	     component-data-source, then that component has an allocation
+	     status of unallocated....  */
+	  if (comp->attr.allocatable
+	      || (comp->ts.type == BT_CLASS
+		  && CLASS_DATA (comp)->attr.allocatable))
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
+				   "allocatable component %qs given in the "
+				   "structure constructor at %C", comp->name))
+		return false;
+	      value = gfc_get_null_expr (&gfc_current_locus);
+	    }
+	  /* ....(Preceeding sentence) If a component with default
+	     initialization has no corresponding component-data-source, then
+	     the default initialization is applied to that component.  */
+	  else if (comp->initializer)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2003, "Structure constructor "
 				   "with missing optional arguments at %C"))
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
 	    }
-	  else if (comp->attr.allocatable
-		   || (comp->ts.type == BT_CLASS
-		       && CLASS_DATA (comp)->attr.allocatable))
-	    {
-	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-				   "allocatable component %qs given in the "
-				   "structure constructor at %C", comp->name))
-		return false;
-	    }
+	  /* Do not trap components such as the string length for deferred
+	     length character components.  */
 	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"
