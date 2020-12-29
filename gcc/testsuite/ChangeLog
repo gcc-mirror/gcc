@@ -1,3 +1,25 @@
+2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/96793
+	* gcc.target/i386/pr96793-2.c: New test.
+
+2020-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96100
+	PR fortran/96101
+	* gfortran.dg/char_length_23.f90: New test.
+
+2020-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR target/96320
+	* gfortran.dg/module_procedure_4.f90 : New test.
+
 2020-12-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
