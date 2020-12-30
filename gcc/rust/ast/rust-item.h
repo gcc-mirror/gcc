@@ -1746,6 +1746,8 @@ public:
     return where_clause;
   }
 
+  Identifier get_identifier () const { return struct_name; }
+
 protected:
   Struct (Identifier struct_name,
 	  std::vector<std::unique_ptr<GenericParam> > generic_params,
@@ -1801,6 +1803,8 @@ private:
   std::unique_ptr<Type> field_type;
 
   // should this store location info?
+
+  NodeId node_id;
 
 public:
   // Returns whether struct field has any outer attributes.
@@ -1877,6 +1881,8 @@ public:
   }
 
   Visibility get_visibility () const { return visibility; }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // Rust struct declaration with true struct type AST node
@@ -1921,6 +1927,15 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<StructField> &get_fields () { return fields; }
   const std::vector<StructField> &get_fields () const { return fields; }
+
+  void iterate (std::function<bool (StructField &)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

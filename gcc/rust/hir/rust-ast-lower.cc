@@ -149,5 +149,22 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
 			       expr.get_locus ());
 }
 
+// rust-ast-lower-struct-field-expr.h
+
+void
+ASTLowerStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
+{
+  HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::StructExprFieldIdentifierValue (
+    mapping, field.get_field_name (), std::unique_ptr<HIR::Expr> (value),
+    field.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust

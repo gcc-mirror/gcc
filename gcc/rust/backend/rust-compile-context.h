@@ -227,6 +227,14 @@ public:
 
   void visit (TyTy::FnType &type) override { gcc_unreachable (); }
 
+  void visit (TyTy::ADTType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
+
   void visit (TyTy::ArrayType &type) override
   {
     mpz_t ival;

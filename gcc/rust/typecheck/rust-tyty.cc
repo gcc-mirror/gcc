@@ -64,6 +64,47 @@ InferType::combine (TyBase *other)
 }
 
 void
+StructFieldType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+StructFieldType::as_string () const
+{
+  return name + ":" + ty->as_string ();
+}
+
+TyBase *
+StructFieldType::combine (TyBase *other)
+{
+  StructFieldTypeRules r (this);
+  return r.combine (other);
+}
+
+void
+ADTType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ADTType::as_string () const
+{
+  std::string fields_buffer;
+  for (auto &field : fields)
+    fields_buffer += field->as_string () + "\n";
+
+  return identifier + "{\n" + fields_buffer + "\n}";
+}
+
+TyBase *
+ADTType::combine (TyBase *other)
+{
+  return nullptr;
+}
+
+void
 FnType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

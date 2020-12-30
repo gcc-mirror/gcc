@@ -271,5 +271,13 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->get_type_scope ().pop ();
 }
 
+// rust-ast-resolve-struct-expr-field.h
+
+void
+ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
+{
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+}
+
 } // namespace Resolver
 } // namespace Rust

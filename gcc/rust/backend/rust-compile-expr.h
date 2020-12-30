@@ -23,6 +23,7 @@
 #include "rust-compile-tyty.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
+#include "rust-compile-struct-field-expr.h"
 
 namespace Rust {
 namespace Compile {
@@ -56,7 +57,7 @@ public:
 
   void visit (HIR::CallExpr &expr)
   {
-    Bexpression *fn = ResolvePath::Compile (expr.get_fnexpr (), ctx);
+    Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
     rust_assert (fn != nullptr);
 
     std::vector<Bexpression *> args;
@@ -353,6 +354,25 @@ public:
     auto code_block = CompileBlock::compile (&expr, ctx);
     auto block_stmt = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (block_stmt);
+  }
+
+  void visit (HIR::StructExprStructFields &struct_expr)
+  {
+    Btype *type
+      = ResolvePathType::Compile (&struct_expr.get_struct_name (), ctx);
+
+    // this assumes all fields are in order from type resolution and if a base
+    // struct was specified those fields are filed via accesors
+    std::vector<Bexpression *> vals;
+    struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
+      Bexpression *expr = CompileStructExprField::Compile (field, ctx);
+      vals.push_back (expr);
+      return true;
+    });
+
+    translated
+      = ctx->get_backend ()->constructor_expression (type, vals,
+						     struct_expr.get_locus ());
   }
 
 private:

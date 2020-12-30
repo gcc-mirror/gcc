@@ -3683,7 +3683,7 @@ StructExprStruct::as_string () const
 {
   std::string str ("StructExprStruct (or subclass): ");
 
-  str += "\n Path: " + get_struct_name ().as_string ();
+  str += "\n Path: " + struct_name.as_string ();
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -3761,7 +3761,7 @@ StructExprStructFields::as_string () const
     }
   else
     {
-      str += struct_base.as_string ();
+      str += struct_base->as_string ();
     }
 
   return str;

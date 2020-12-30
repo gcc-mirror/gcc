@@ -37,6 +37,28 @@ public:
     item->accept_vis (resolver);
   }
 
+  void visit (HIR::StructStruct &struct_decl)
+  {
+    std::vector<TyTy::StructFieldType *> fields;
+    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
+      TyTy::TyBase *field_type
+	= TypeCheckType::Resolve (field.get_field_type ().get ());
+      TyTy::StructFieldType *ty_field
+	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				     field.get_field_name (), field_type);
+      fields.push_back (ty_field);
+      context->insert_type (field.get_mappings ().get_hirid (),
+			    ty_field->get_field_type ());
+      return true;
+    });
+
+    TyTy::TyBase *type
+      = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
+			   struct_decl.get_identifier (), std::move (fields));
+
+    context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
+  }
+
   void visit (HIR::ConstantItem &constant)
   {
     TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());

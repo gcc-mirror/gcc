@@ -36,6 +36,12 @@ public:
 
   ~ResolveTopLevel () {}
 
+  void visit (AST::StructStruct &struct_decl)
+  {
+    resolver->get_type_scope ().insert (struct_decl.get_identifier (),
+					struct_decl.get_node_id ());
+  }
+
   void visit (AST::ConstantItem &constant)
   {
     resolver->get_name_scope ().insert (constant.get_identifier (),

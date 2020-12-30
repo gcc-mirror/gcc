@@ -25,25 +25,42 @@
 namespace Rust {
 namespace Compile {
 
-class ResolvePath : public HIRCompileBase
+class ResolvePathRef : public HIRCompileBase
 {
 public:
   static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
   {
-    ResolvePath resolver (ctx);
+    ResolvePathRef resolver (ctx);
     expr->accept_vis (resolver);
     rust_assert (resolver.resolved != nullptr);
     return resolver.resolved;
   }
 
-  virtual ~ResolvePath () {}
+  void visit (HIR::PathInExpression &expr);
+
+private:
+  ResolvePathRef (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
+
+  Bexpression *resolved;
+};
+
+class ResolvePathType : public HIRCompileBase
+{
+public:
+  static Btype *Compile (HIR::Expr *expr, Context *ctx)
+  {
+    ResolvePathType resolver (ctx);
+    expr->accept_vis (resolver);
+    rust_assert (resolver.resolved != nullptr);
+    return resolver.resolved;
+  }
 
   void visit (HIR::PathInExpression &expr);
 
 private:
-  ResolvePath (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
+  ResolvePathType (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
 
-  Bexpression *resolved;
+  Btype *resolved;
 };
 
 } // namespace Compile

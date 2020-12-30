@@ -134,6 +134,24 @@ private:
   TyBase *resolved;
 };
 
+class StructFieldTypeRules : protected BaseRules
+{
+public:
+  StructFieldTypeRules (StructFieldType *base)
+    : BaseRules (base), base (base), resolved (nullptr)
+  {}
+
+  TyBase *combine (TyBase *other)
+  {
+    other->accept_vis (*this);
+    return resolved;
+  }
+
+private:
+  StructFieldType *base;
+  TyBase *resolved;
+};
+
 class UnitRules : protected BaseRules
 {
 public:

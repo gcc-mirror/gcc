@@ -1571,9 +1571,16 @@ public:
 
   virtual Location get_locus_slow () const = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
+
+  StructExprField () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  NodeId node_id;
 };
 
 // Identifier-only variant of StructExprField AST node
@@ -1584,7 +1591,8 @@ class StructExprFieldIdentifier : public StructExprField
 
 public:
   StructExprFieldIdentifier (Identifier field_identifier, Location locus)
-    : field_name (std::move (field_identifier)), locus (locus)
+    : StructExprField (), field_name (std::move (field_identifier)),
+      locus (locus)
   {}
 
   std::string as_string () const override { return field_name; }
@@ -1611,7 +1619,7 @@ class StructExprFieldWithVal : public StructExprField
 
 protected:
   StructExprFieldWithVal (std::unique_ptr<Expr> field_value)
-    : value (std::move (field_value))
+    : StructExprField (), value (std::move (field_value))
   {}
 
   // Copy constructor requires clone
@@ -1767,6 +1775,15 @@ public:
   const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
   {
     return fields;
+  }
+
+  void iterate (std::function<bool (StructExprField *)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field.get ()))
+	  return;
+      }
   }
 
   StructBase &get_struct_base () { return struct_base; }

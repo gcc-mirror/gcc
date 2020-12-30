@@ -24,6 +24,7 @@
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
 #include "rust-tyty-resolver.h"
+#include "rust-hir-type-check-struct-field.h"
 
 namespace Rust {
 namespace Resolver {
@@ -136,9 +137,8 @@ public:
     TyTy::TyBase *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
-	// FIXME we need to be able to lookup the location info for the
-	// reference here
-	rust_error_at (expr.get_locus (), "consider giving this a type: %s",
+	rust_error_at (mappings->lookup_location (ref),
+		       "consider giving this a type: %s",
 		       expr.as_string ().c_str ());
 	return;
       }
@@ -267,6 +267,11 @@ public:
   void visit (HIR::ArrayElemsCopied &elems)
   {
     infered_array_elems = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
+  }
+
+  void visit (HIR::StructExprStructFields &struct_expr)
+  {
+    infered = TypeCheckStructExpr::Resolve (&struct_expr);
   }
 
 private:

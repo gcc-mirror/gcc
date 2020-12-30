@@ -16,30 +16,37 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_TYTY_VISITOR
-#define RUST_TYTY_VISITOR
+#ifndef RUST_COMPILE_STRUCT_FIELD_EXPR
+#define RUST_COMPILE_STRUCT_FIELD_EXPR
 
-#include "rust-tyty.h"
+#include "rust-compile-base.h"
+#include "rust-compile-tyty.h"
 
 namespace Rust {
-namespace TyTy {
+namespace Compile {
 
-class TyVisitor
+class CompileStructExprField : public HIRCompileBase
 {
 public:
-  virtual void visit (UnitType &type) {}
-  virtual void visit (InferType &type) {}
-  virtual void visit (StructFieldType &type) {}
-  virtual void visit (ADTType &type) {}
-  virtual void visit (FnType &type) {}
-  virtual void visit (ParamType &type) {}
-  virtual void visit (ArrayType &type) {}
-  virtual void visit (BoolType &type) {}
-  virtual void visit (IntType &type) {}
-  virtual void visit (UintType &type) {}
+  static Bexpression *Compile (HIR::StructExprField *field, Context *ctx)
+  {
+    CompileStructExprField compiler (ctx);
+    field->accept_vis (compiler);
+    rust_assert (compiler.translated != nullptr);
+    return compiler.translated;
+  }
+
+  void visit (HIR::StructExprFieldIdentifierValue &field);
+
+private:
+  CompileStructExprField (Context *ctx)
+    : HIRCompileBase (ctx), translated (nullptr)
+  {}
+
+  Bexpression *translated;
 };
 
-} // namespace TyTy
+} // namespace Compile
 } // namespace Rust
 
-#endif // RUST_TYTY_VISITOR
+#endif // RUST_COMPILE_STRUCT_FIELD_EXPR
