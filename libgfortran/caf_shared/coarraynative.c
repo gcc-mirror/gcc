@@ -103,45 +103,63 @@ int
 test_for_cas_errors (int *stat, char *errmsg, size_t errmsg_length)
 {
   size_t errmsg_written_bytes;
-  if (!stat)
-    return 0;
 
   /* This rather strange ordering is mandated by the standard.  */
   if (this_image.m->finished_images)
     {
-      *stat = CAS_STAT_STOPPED_IMAGE;
-      if (errmsg)
+      if (stat)
 	{
-	  errmsg_written_bytes = snprintf (errmsg, errmsg_length,
-					   "Stopped images present (currently "
-					   "%d)",
-					   this_image.m->finished_images);
-	  if (errmsg_written_bytes > errmsg_length - 1)
-	    errmsg_written_bytes = errmsg_length - 1;
+	  *stat = CAS_STAT_STOPPED_IMAGE;
+	  if (errmsg)
+	    {
+	      errmsg_written_bytes
+		= snprintf (errmsg, errmsg_length,
+			    "Stopped images present (currently %d)",
+			    this_image.m->finished_images);
+	      if (errmsg_written_bytes > errmsg_length - 1)
+		errmsg_written_bytes = errmsg_length - 1;
 
-	  memset (errmsg + errmsg_written_bytes, ' ',
-		  errmsg_length - errmsg_written_bytes);
+	      memset (errmsg + errmsg_written_bytes, ' ',
+		      errmsg_length - errmsg_written_bytes);
+	    }
+	}
+      else
+	{
+	  fprintf (stderr, "Stopped images present (currently %d)",
+		   this_image.m->finished_images);
+	  exit(1);
 	}
     }
   else if (this_image.m->has_failed_image)
     {
-      *stat = CAS_STAT_FAILED_IMAGE;
-      if (errmsg)
+      if (stat)
 	{
-	  errmsg_written_bytes = snprintf (errmsg, errmsg_length,
-					   "Failed images present (currently "
-					   "%d)",
-					   this_image.m->has_failed_image);
-	  if (errmsg_written_bytes > errmsg_length - 1)
-	    errmsg_written_bytes = errmsg_length - 1;
+	  *stat = CAS_STAT_FAILED_IMAGE;
+	  if (errmsg)
+	    {
+	      errmsg_written_bytes
+		= snprintf (errmsg, errmsg_length,
+			    "Failed images present (currently %d)",
+			    this_image.m->has_failed_image);
+	      if (errmsg_written_bytes > errmsg_length - 1)
+		errmsg_written_bytes = errmsg_length - 1;
 
-	  memset (errmsg + errmsg_written_bytes, ' ',
-		  errmsg_length - errmsg_written_bytes);
+	      memset (errmsg + errmsg_written_bytes, ' ',
+		      errmsg_length - errmsg_written_bytes);
+	    }
+	}
+      else
+	{
+	  fprintf (stderr, "Failed images present (currently %d)\n",
+		   this_image.m->has_failed_image);
+	  exit(1);
 	}
     }
   else
     {
-      *stat = 0;
+      if (stat)
+	*stat = 0;
+
       return 0;
     }
   return 1;

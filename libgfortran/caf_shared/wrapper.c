@@ -44,9 +44,12 @@ enum gfc_coarray_allocation_type
   GFC_NCA_EVENT_COARRAY,
 };
 
-void cas_coarray_alloc (gfc_array_void *, size_t, int, int, int *,
-			char *, size_t);
+void cas_coarray_alloc (gfc_array_void *, size_t, int, int);
 export_proto (cas_coarray_alloc);
+
+void cas_coarray_alloc_chk (gfc_array_void *, size_t, int, int, int *,
+			    char *, size_t);
+export_proto (cas_coarray_alloc_chk);
 
 void cas_coarray_free (gfc_array_void *, int);
 export_proto (cas_coarray_free);
@@ -85,9 +88,9 @@ void cas_collsub_broadcast_scalar (void *restrict, size_t, int, int *, char *,
 				   size_t);
 export_proto (cas_collsub_broadcast_scalar);
 
-void
-cas_coarray_alloc (gfc_array_void *desc, size_t elem_size, int corank,
-		   int alloc_type, int *status, char *errmsg, size_t errmsg_len)
+static void
+cas_coarray_alloc_work (gfc_array_void *desc, size_t elem_size, int corank,
+			int alloc_type)
 {
   int i, last_rank_index;
   int num_coarray_elems, num_elems; /* Excludes the last dimension, because it
@@ -96,10 +99,6 @@ cas_coarray_alloc (gfc_array_void *desc, size_t elem_size, int corank,
   size_t last_lbound;
   size_t size_in_bytes;
 
-  ensure_initialization (); /* This function might be the first one to be
-			       called, if it is called in a constructor.  */
-
-  STAT_ERRMSG_ENTRY_CHECK (status, errmsg, errmsg_len);
   if (alloc_type == GFC_NCA_LOCK_COARRAY)
     elem_size = sizeof (pthread_mutex_t);
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)
@@ -152,8 +151,53 @@ cas_coarray_alloc (gfc_array_void *desc, size_t elem_size, int corank,
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)
     (void)0; // TODO
   else
-    desc->base_addr
-	= get_memory_by_id (&local->ai, size_in_bytes, (intptr_t)desc);
+    desc->base_addr =
+      get_memory_by_id (&local->ai, size_in_bytes, (intptr_t) desc);
+}
+
+void
+cas_coarray_alloc (gfc_array_void *desc, size_t elem_size, int corank,
+		   int alloc_type)
+{
+  ensure_initialization (); /* This function might be the first one to be
+			       called, if it is called in a constructor.  */
+  cas_coarray_alloc_work (desc, elem_size, corank, alloc_type);
+}
+
+void
+cas_coarray_alloc_chk (gfc_array_void *desc, size_t elem_size, int corank,
+		       int alloc_type, int *status, char *errmsg,
+		       size_t errmsg_len)
+{
+  STAT_ERRMSG_ENTRY_CHECK (status, errmsg, errmsg_len);
+  if (unlikely(GFC_DESCRIPTOR_DATA (desc) != NULL))
+    {
+      if (status == NULL)
+	{
+	  fprintf (stderr,"Image %d: Attempting to allocate already allocated "
+		   "variable at %p %p\n", this_image.image_num + 1, (void *) desc,
+		   desc->base_addr);
+	  exit (1);
+	}
+      else
+	{
+	  *status = LIBERROR_ALLOCATION;
+	  if (errmsg)
+	    {
+	      size_t errmsg_written_bytes;
+	      errmsg_written_bytes
+		= snprintf (errmsg, errmsg_len, "Attempting to allocate already "
+			    "allocated variable");
+	      if (errmsg_written_bytes > errmsg_len - 1)
+		errmsg_written_bytes = errmsg_len - 1;
+	      memset (errmsg + errmsg_written_bytes, ' ',
+		      errmsg_len - errmsg_written_bytes);
+	    }
+	  return;
+	}
+    }
+  cas_coarray_alloc_work (desc, elem_size, corank, alloc_type);
+  sync_all (&local->si);
 }
 
 void

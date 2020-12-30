@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
 bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
-			 tree, tree *, gfc_expr *, tree, bool);
+			 tree, tree *, gfc_expr *, tree, bool, bool *);
 
 enum gfc_coarray_allocation_type {
   GFC_NCA_NORMAL_COARRAY = 1,
@@ -31,8 +31,7 @@ enum gfc_coarray_allocation_type {
 
 int gfc_cas_get_allocation_type (gfc_symbol *);
 
-void gfc_allocate_shared_coarray (stmtblock_t *, tree, tree, int, int, int,
-				  tree, tree, tree, bool);
+void gfc_allocate_shared_coarray (stmtblock_t *, tree, tree, int, int);
 
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,

@@ -109,13 +109,13 @@ internal_proto(error_on_missing_images);
 
 #define STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len) \
 	do { \
-	  if (test_for_cas_errors(stat, errmsg, errmsg_len))\
+	  if (unlikely (test_for_cas_errors(stat, errmsg, errmsg_len)))	\
 	    return;\
   	} while(0)
 
 #define STAT_ERRMSG_ENTRY_CHECK_RET(stat, errmsg, errmsg_len, retval) \
 	do { \
-	  if (test_for_cas_errors(stat, errmsg, errmsg_len))\
+	  if (unlikely(test_for_cas_errors(stat, errmsg, errmsg_len)))	\
 	    return retval;\
   	} while(0)
 

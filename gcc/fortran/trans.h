@@ -906,7 +906,8 @@ extern GTY(()) tree gfor_fndecl_caf_is_present;
 /* Native coarray library function decls.  */
 extern GTY(()) tree gfor_fndecl_cas_this_image;
 extern GTY(()) tree gfor_fndecl_cas_num_images;
-extern GTY(()) tree gfor_fndecl_cas_coarray_allocate;
+extern GTY(()) tree gfor_fndecl_cas_coarray_alloc;
+extern GTY(()) tree gfor_fndecl_cas_coarray_alloc_chk;
 extern GTY(()) tree gfor_fndecl_cas_coarray_free;
 extern GTY(()) tree gfor_fndecl_cas_sync_images;
 extern GTY(()) tree gfor_fndecl_cas_sync_all;

@@ -5982,12 +5982,29 @@ gfc_cas_get_allocation_type (gfc_symbol * sym)
      return GFC_NCA_NORMAL_COARRAY;
 }
 
+/* Allocate a shared coarray from a constructor, without checking.  */
+
 void
-gfc_allocate_shared_coarray (stmtblock_t *b, tree decl, tree size, int rank,
-			     int corank, int alloc_type, tree status,
-			     tree errmsg, tree errlen, bool calc_offset)
+gfc_allocate_shared_coarray (stmtblock_t *b, tree decl, tree size, int corank,
+			     int alloc_type)
+{
+  gfc_add_expr_to_block (b,
+    build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_alloc,
+			 4, gfc_build_addr_expr (pvoid_type_node, decl),
+			 size, build_int_cst (integer_type_node, corank),
+			 build_int_cst (integer_type_node, alloc_type)));
+}
+
+/* Allocate a shared coarray from user space, with checking.  */
+
+void
+allocate_shared_coarray_chk (stmtblock_t *b, tree decl, tree size, int rank,
+				 int corank, int alloc_type, tree status,
+				 tree errmsg, tree errlen)
 {
   tree st, err, elen;
+  int i;
+  tree offset, stride, lbound, mult;
 
   if (status == NULL_TREE)
     st = null_pointer_node;
@@ -5996,28 +6013,25 @@ gfc_allocate_shared_coarray (stmtblock_t *b, tree decl, tree size, int rank,
 
   err = errmsg == NULL_TREE ? null_pointer_node : errmsg;
   elen = errlen == NULL_TREE ? build_int_cst (gfc_charlen_type_node, 0) : errlen;
+
   gfc_add_expr_to_block (b,
-	build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_allocate,
-			     7, gfc_build_addr_expr (pvoid_type_node, decl),
-			     size, build_int_cst (integer_type_node, corank),
-			     build_int_cst (integer_type_node, alloc_type),
-			     st, err, elen));
-  if (calc_offset)
+      build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_alloc_chk,
+			   7, gfc_build_addr_expr (pvoid_type_node, decl),
+			   size, build_int_cst (integer_type_node, corank),
+			   build_int_cst (integer_type_node, alloc_type),
+			   st, err, elen));
+
+  offset = build_int_cst (gfc_array_index_type, 0);
+  for (i = 0; i < rank + corank; i++)
     {
-      int i;
-      tree offset, stride, lbound, mult;
-      offset = build_int_cst (gfc_array_index_type, 0);
-      for (i = 0; i < rank + corank; i++)
-	{
-	  stride = gfc_conv_array_stride (decl, i);
-	  lbound = gfc_conv_array_lbound (decl, i);
-	  mult = fold_build2_loc (input_location, MULT_EXPR,
-				  gfc_array_index_type, stride, lbound);
-	  offset = fold_build2_loc (input_location, MINUS_EXPR,
-				    gfc_array_index_type, offset, mult);
-	}
-      gfc_conv_descriptor_offset_set (b, decl, offset);
+      stride = gfc_conv_array_stride (decl, i);
+      lbound = gfc_conv_array_lbound (decl, i);
+      mult = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			      stride, lbound);
+      offset = fold_build2_loc (input_location, MINUS_EXPR,
+				gfc_array_index_type, offset, mult);
     }
+  gfc_conv_descriptor_offset_set (b, decl, offset);
 }
 
 /* Initializes the descriptor and generates a call to _gfor_allocate.  Does
@@ -6028,7 +6042,7 @@ bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 		    tree errlen, tree label_finish, tree expr3_elem_size,
 		    tree *nelems, gfc_expr *expr3, tree e3_arr_desc,
-		    bool e3_has_nodescriptor)
+		    bool e3_has_nodescriptor, bool *shared_coarray)
 {
   tree tmp;
   tree allocation;
@@ -6162,6 +6176,16 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      expr3_elem_size, nelems, expr3, e3_arr_desc,
 			      e3_has_nodescriptor, expr, &element_size);
 
+  /* Update the array descriptor with the offset and the span.  */
+  if (dimension)
+    {
+      gfc_conv_descriptor_offset_set (&set_descriptor_block, se->expr, offset);
+      tmp = fold_convert (gfc_array_index_type, element_size);
+      gfc_conv_descriptor_span_set (&set_descriptor_block, se->expr, tmp);
+    }
+
+  set_descriptor = gfc_finish_block (&set_descriptor_block);
+
   if (dimension && !(flag_coarray == GFC_FCOARRAY_SHARED && coarray))
     {
       var_overflow = gfc_create_var (integer_type_node, "overflow");
@@ -6224,12 +6248,17 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 	elem_size = expr3_elem_size;
       else
 	elem_size = size_in_bytes (gfc_get_element_type (TREE_TYPE(se->expr)));
+
+      /* Setting the descriptor needs to be done before allocation of the
+	 shared coarray.  */
+      gfc_add_expr_to_block (&elseblock, set_descriptor);
+
       int alloc_type
 	     = gfc_cas_get_allocation_type (expr->symtree->n.sym);
-      gfc_allocate_shared_coarray (&elseblock, se->expr, elem_size,
+      allocate_shared_coarray_chk (&elseblock, se->expr, elem_size,
 				   ref->u.ar.as->rank, ref->u.ar.as->corank,
-				   alloc_type, status, errmsg, errlen,
-				   true);
+				   alloc_type, status, errmsg, errlen);
+      *shared_coarray = true;
     }
   /* The allocatable variant takes the old pointer as first argument.  */
   else if (allocatable)
@@ -6255,40 +6284,27 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   else
     allocation = gfc_finish_block (&elseblock);
 
-
-  /* Update the array descriptor with the offset and the span.  */
-  if (dimension)
-    {
-      gfc_conv_descriptor_offset_set (&set_descriptor_block, se->expr, offset);
-      tmp = fold_convert (gfc_array_index_type, element_size);
-      gfc_conv_descriptor_span_set (&set_descriptor_block, se->expr, tmp);
-    }
-
-  set_descriptor = gfc_finish_block (&set_descriptor_block);
-
-  if (status != NULL_TREE)
+  if (status != NULL_TREE && !(coarray && flag_coarray == GFC_FCOARRAY_SHARED))
     {
       cond = fold_build2_loc (input_location, EQ_EXPR,
-			  logical_type_node, status,
-			  build_int_cst (TREE_TYPE (status), 0));
+			      logical_type_node, status,
+			      build_int_cst (TREE_TYPE (status), 0));
 
       if (not_prev_allocated != NULL_TREE)
 	cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-				logical_type_node, cond, not_prev_allocated);
+				logical_type_node, cond,
+				not_prev_allocated);
 
-      set_descriptor = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				  cond,
-				  set_descriptor,
-				  build_empty_stmt (input_location));
+      set_descriptor = fold_build3_loc (input_location, COND_EXPR,
+					void_type_node, cond,
+					set_descriptor,
+					build_empty_stmt (input_location));
     }
 
   /* For native coarrays, the size must be set before the allocation routine
      can be called.  */
   if (coarray && flag_coarray == GFC_FCOARRAY_SHARED)
-    {
-      gfc_add_expr_to_block (&se->pre, set_descriptor);
-      gfc_add_expr_to_block (&se->pre, allocation);
-    }
+    gfc_add_expr_to_block (&se->pre, allocation);
   else
     {
       gfc_add_expr_to_block (&se->pre, allocation);
@@ -10994,7 +11010,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   /* Although static, derived types with default initializers and
      allocatable components must not be nulled wholesale; instead they
      are treated component by component.  */
-  if (TREE_STATIC (descriptor) && !sym_has_alloc_comp && !has_finalizer)
+  if (TREE_STATIC (descriptor) && !sym_has_alloc_comp && !has_finalizer
+      && !(flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension))
     {
       /* SAVEd variables are not freed on exit.  */
       gfc_trans_static_array_pointer (sym);

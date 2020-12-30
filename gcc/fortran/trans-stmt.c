@@ -1336,7 +1336,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	  if (TREE_TYPE (stat) == integer_type_node)
 	    stat = gfc_build_addr_expr (NULL, stat);
 
-	  if(type == EXEC_SYNC_MEMORY)
+	  if (type == EXEC_SYNC_MEMORY)
 	    {
 	      /* For shared coarrays, there is no need for a memory
 		 fence here because that is emitted anyway below.  */
@@ -6227,28 +6227,6 @@ allocate_get_initializer (gfc_code * code, gfc_expr * expr)
   return NULL;
 }
 
-/* Helper function - return true if a coarray is allcoated via this
-   statement.  */
-
-static bool
-coarray_alloc_p (gfc_code *code)
-{
-  if (code == NULL || code->op != EXEC_ALLOCATE)
-    return false;
-
-  for (gfc_alloc *al = code->ext.alloc.list; al != NULL; al = al->next)
-    {
-      gfc_ref *ref, *last;
-      for (ref = al->expr->ref, last = ref; ref; last = ref, ref = ref->next)
-	;
-
-      ref = last;
-      if (ref && ref->type == REF_ARRAY && ref->u.ar.codimen)
-	return true;
-    }
-  return false;
-}
-
 /* Translate the ALLOCATE statement.  */
 
 tree
@@ -6284,6 +6262,7 @@ gfc_trans_allocate (gfc_code * code)
   gfc_symtree *newsym = NULL;
   symbol_attribute caf_attr;
   gfc_actual_arglist *param_list;
+  bool shared_coarray = false;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -6815,7 +6794,7 @@ gfc_trans_allocate (gfc_code * code)
 			       label_finish, tmp, &nelems,
 			       e3rhs ? e3rhs : code->expr3,
 			       e3_is == E3_DESC ? expr3 : NULL_TREE,
-			       e3_has_nodescriptor))
+			       e3_has_nodescriptor, &shared_coarray))
 	{
 	  /* A scalar or derived type.  First compute the size to
 	     allocate.
@@ -6972,7 +6951,7 @@ gfc_trans_allocate (gfc_code * code)
       gfc_add_block_to_block (&block, &se.pre);
 
       /* Error checking -- Note: ERRMSG only makes sense with STAT.  */
-      if (code->expr1)
+      if (code->expr1 && !shared_coarray)
 	{
 	  tmp = build1_v (GOTO_EXPR, label_errmsg);
 	  parm = fold_build2_loc (input_location, NE_EXPR,
@@ -7193,14 +7172,14 @@ gfc_trans_allocate (gfc_code * code)
       gfc_free_expr (e3rhs);
     }
   /* STAT.  */
-  if (code->expr1)
+  if (code->expr1 && !shared_coarray)
     {
       tmp = build1_v (LABEL_EXPR, label_errmsg);
       gfc_add_expr_to_block (&block, tmp);
     }
 
   /* ERRMSG - only useful if STAT is present.  */
-  if (code->expr1 && code->expr2)
+  if (code->expr1 && code->expr2 && !shared_coarray)
     {
       const char *msg = "Attempt to allocate an allocated object";
       tree slen, dlen, errmsg_str;
@@ -7255,12 +7234,6 @@ gfc_trans_allocate (gfc_code * code)
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
 				 3, null_pointer_node, null_pointer_node,
 				 zero_size);
-      gfc_add_expr_to_block (&post, tmp);
-    }
-  else if (flag_coarray == GFC_FCOARRAY_SHARED && coarray_alloc_p (code))
-    {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_sync_all,
-				 1, null_pointer_node);
       gfc_add_expr_to_block (&post, tmp);
     }
 

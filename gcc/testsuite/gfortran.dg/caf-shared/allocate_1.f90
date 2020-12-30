@@ -5,5 +5,5 @@ program main
   allocate (a[*])
   deallocate (a)
 end program main
-! { dg-final { scan-tree-dump-times "_gfortran_cas_coarray_sync_all" 2 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_cas_coarray_sync_all" 1 "original" } }
 
