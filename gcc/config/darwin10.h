@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_GCC_C_SEQUENCE_SPEC \
 "%{!static:%{!static-libgcc: \
     %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } \
- %{!nostdlib:%:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef.o)} \
   %G %{!nolibc:%L}"
 
 #undef DEF_MIN_OSX_VERSION
