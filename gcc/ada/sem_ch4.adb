@@ -10215,6 +10215,16 @@ package body Sem_Ch4 is
                Report     => True,
                Success    => Success,
                Skip_First => True);
+
+            --  The error may hot have been reported yet for overloaded
+            --  prefixed calls, depending on the non-matching candidate,
+            --  in which case provide a concise error now.
+
+            if Serious_Errors_Detected = 0 then
+               Error_Msg_NE
+                 ("cannot resolve prefixed call to primitive operation of&",
+                   N, Entity (Prefix (N)));
+            end if;
          end if;
 
          --  No need for further errors
