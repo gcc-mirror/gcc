@@ -16099,6 +16099,53 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec:SI
+	  [(not:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand"))]
+          UNSPEC_MOVMSK))]
+  "TARGET_SSE2"
+  [(set (match_dup 2)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0) (match_dup 3))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+  if (GET_MODE_NUNITS (<MODE>mode) == 32)
+    operands[3] = gen_rtx_NOT (SImode, operands[2]);
+  else
+    {
+      operands[3]
+	= gen_int_mode ((HOST_WIDE_INT_1 << GET_MODE_NUNITS (<MODE>mode)) - 1,
+			SImode);
+      operands[3] = gen_rtx_XOR (SImode, operands[2], operands[3]);
+    }
+})
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec:SI
+	  [(subreg:VI1_AVX2 (not (match_operand 1 "register_operand")) 0)]
+          UNSPEC_MOVMSK))]
+  "TARGET_SSE2
+   && GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[1])) == <MODE_SIZE>"
+  [(set (match_dup 2)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0) (match_dup 3))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+  operands[1] = gen_lowpart (<MODE>mode, operands[1]);
+  if (GET_MODE_NUNITS (<MODE>mode) == 32)
+    operands[3] = gen_rtx_NOT (SImode, operands[2]);
+  else
+    {
+      operands[3]
+	= gen_int_mode ((HOST_WIDE_INT_1 << GET_MODE_NUNITS (<MODE>mode)) - 1,
+			SImode);
+      operands[3] = gen_rtx_XOR (SImode, operands[2], operands[3]);
+    }
+})
+
 (define_insn_and_split "*<sse2_avx2>_pmovmskb_lt"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
