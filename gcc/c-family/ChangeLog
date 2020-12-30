@@ -1,3 +1,8 @@
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt: Add -stdlib= option and enumerations for
+	libstdc++ and libc++.
+
 2020-12-16  Martin Liska  <mliska@suse.cz>
 
 	* c.opt: Remove usage of Report.

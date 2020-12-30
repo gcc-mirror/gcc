@@ -588,7 +588,7 @@ extern enum reg_class arc_regno_reg_class[];
    || ((REGNO) == ARG_POINTER_REGNUM)					\
    || ((REGNO) == FRAME_POINTER_REGNUM)					\
    || ((REGNO) == PCL_REG)						\
-   || ((unsigned) reg_renumber[REGNO] < 29)				\
+   || (reg_renumber && ((unsigned) reg_renumber[REGNO] < 29))		\
    || ((unsigned) (REGNO) == (unsigned) arc_tp_regno)			\
    || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59))		\
    || (fixed_regs[REGNO] == 0 && (REGNO) == R30_REG))

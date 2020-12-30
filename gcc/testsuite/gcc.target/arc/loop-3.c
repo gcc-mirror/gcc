@@ -23,5 +23,5 @@ void fn1(void)
   }
 }
 
-/* { dg-final { scan-assembler "bne_s @.L2" } } */
+/* { dg-final { scan-assembler "bne.*@.L2" } } */
 /* { dg-final { scan-assembler-not "add.eq" } } */

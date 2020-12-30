@@ -16099,6 +16099,53 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec:SI
+	  [(not:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand"))]
+          UNSPEC_MOVMSK))]
+  "TARGET_SSE2"
+  [(set (match_dup 2)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0) (match_dup 3))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+  if (GET_MODE_NUNITS (<MODE>mode) == 32)
+    operands[3] = gen_rtx_NOT (SImode, operands[2]);
+  else
+    {
+      operands[3]
+	= gen_int_mode ((HOST_WIDE_INT_1 << GET_MODE_NUNITS (<MODE>mode)) - 1,
+			SImode);
+      operands[3] = gen_rtx_XOR (SImode, operands[2], operands[3]);
+    }
+})
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec:SI
+	  [(subreg:VI1_AVX2 (not (match_operand 1 "register_operand")) 0)]
+          UNSPEC_MOVMSK))]
+  "TARGET_SSE2
+   && GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[1])) == <MODE_SIZE>"
+  [(set (match_dup 2)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0) (match_dup 3))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+  operands[1] = gen_lowpart (<MODE>mode, operands[1]);
+  if (GET_MODE_NUNITS (<MODE>mode) == 32)
+    operands[3] = gen_rtx_NOT (SImode, operands[2]);
+  else
+    {
+      operands[3]
+	= gen_int_mode ((HOST_WIDE_INT_1 << GET_MODE_NUNITS (<MODE>mode)) - 1,
+			SImode);
+      operands[3] = gen_rtx_XOR (SImode, operands[2], operands[3]);
+    }
+})
+
 (define_insn_and_split "*<sse2_avx2>_pmovmskb_lt"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
@@ -17502,7 +17549,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_expand "<code>v16qiv16hi2"
+(define_expand "<optab>v16qiv16hi2"
   [(set (match_operand:V16HI 0 "register_operand")
 	(any_extend:V16HI
 	  (match_operand:V16QI 1 "nonimmediate_operand")))]
@@ -17519,7 +17566,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "<code>v32qiv32hi2"
+(define_expand "<optab>v32qiv32hi2"
   [(set (match_operand:V32HI 0 "register_operand")
 	(any_extend:V32HI
 	  (match_operand:V32QI 1 "nonimmediate_operand")))]
@@ -17574,7 +17621,7 @@
 	(any_extend:V8HI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
 
-(define_expand "<code>v8qiv8hi2"
+(define_expand "<optab>v8qiv8hi2"
   [(set (match_operand:V8HI 0 "register_operand")
 	(any_extend:V8HI
 	  (match_operand:V8QI 1 "nonimmediate_operand")))]
@@ -17598,7 +17645,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "<code>v16qiv16si2"
+(define_expand "<optab>v16qiv16si2"
   [(set (match_operand:V16SI 0 "register_operand")
 	(any_extend:V16SI
 	  (match_operand:V16QI 1 "nonimmediate_operand")))]
@@ -17651,7 +17698,7 @@
 	(any_extend:V8SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
 
-(define_expand "<code>v8qiv8si2"
+(define_expand "<optab>v8qiv8si2"
   [(set (match_operand:V8SI 0 "register_operand")
 	(any_extend:V8SI
 	  (match_operand:V8QI 1 "nonimmediate_operand")))]
@@ -17714,7 +17761,7 @@
 	(any_extend:V4SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
 
-(define_expand "<code>v4qiv4si2"
+(define_expand "<optab>v4qiv4si2"
   [(set (match_operand:V4SI 0 "register_operand")
 	(any_extend:V4SI
 	  (match_operand:V4QI 1 "nonimmediate_operand")))]
@@ -17738,7 +17785,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "<code>v16hiv16si2"
+(define_expand "<optab>v16hiv16si2"
   [(set (match_operand:V16SI 0 "register_operand")
 	(any_extend:V16SI
 	  (match_operand:V16HI 1 "nonimmediate_operand")))]
@@ -17755,7 +17802,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_expand "<code>v8hiv8si2"
+(define_expand "<optab>v8hiv8si2"
   [(set (match_operand:V8SI 0 "register_operand")
 	(any_extend:V8SI
 	  (match_operand:V8HI 1 "nonimmediate_operand")))]
@@ -17806,7 +17853,7 @@
 	(any_extend:V4SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
 
-(define_expand "<code>v4hiv4si2"
+(define_expand "<optab>v4hiv4si2"
   [(set (match_operand:V4SI 0 "register_operand")
 	(any_extend:V4SI
 	  (match_operand:V4HI 1 "nonimmediate_operand")))]
@@ -17864,7 +17911,7 @@
 	(any_extend:V8DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
 
-(define_expand "<code>v8qiv8di2"
+(define_expand "<optab>v8qiv8di2"
   [(set (match_operand:V8DI 0 "register_operand")
 	(any_extend:V8DI
 	  (match_operand:V8QI 1 "nonimmediate_operand")))]
@@ -17925,7 +17972,7 @@
 	(any_extend:V4DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
 
-(define_expand "<code>v4qiv4di2"
+(define_expand "<optab>v4qiv4di2"
   [(set (match_operand:V4DI 0 "register_operand")
 	(any_extend:V4DI
 	  (match_operand:V4QI 1 "nonimmediate_operand")))]
@@ -17953,7 +18000,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_expand "<code>v2qiv2di2"
+(define_expand "<optab>v2qiv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (match_operand:V2QI 1 "register_operand")))]
@@ -17974,7 +18021,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "<code>v8hiv8di2"
+(define_expand "<optab>v8hiv8di2"
   [(set (match_operand:V8DI 0 "register_operand")
 	(any_extend:V8DI
 	  (match_operand:V8HI 1 "nonimmediate_operand")))]
@@ -18023,7 +18070,7 @@
 	(any_extend:V4DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
 
-(define_expand "<code>v4hiv4di2"
+(define_expand "<optab>v4hiv4di2"
   [(set (match_operand:V4DI 0 "register_operand")
 	(any_extend:V4DI
 	  (match_operand:V4HI 1 "nonimmediate_operand")))]
@@ -18084,7 +18131,7 @@
 	(any_extend:V2DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V2HImode, 0);")
 
-(define_expand "<code>v2hiv2di2"
+(define_expand "<optab>v2hiv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (match_operand:V2HI 1 "nonimmediate_operand")))]
@@ -18108,7 +18155,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "<code>v8siv8di2"
+(define_expand "<optab>v8siv8di2"
   [(set (match_operand:V8DI 0 "register_operand" "=v")
 	(any_extend:V8DI
 	  (match_operand:V8SI 1 "nonimmediate_operand" "vm")))]
@@ -18125,7 +18172,7 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "OI")])
 
-(define_expand "<code>v4siv4di2"
+(define_expand "<optab>v4siv4di2"
   [(set (match_operand:V4DI 0 "register_operand" "=v")
 	(any_extend:V4DI
 	    (match_operand:V4SI 1 "nonimmediate_operand" "vm")))]
@@ -18174,7 +18221,7 @@
 	(any_extend:V2DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V2SImode, 0);")
 
-(define_expand "<code>v2siv2di2"
+(define_expand "<optab>v2siv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (match_operand:V2SI 1 "nonimmediate_operand")))]

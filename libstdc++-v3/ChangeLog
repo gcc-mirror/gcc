@@ -1,3 +1,30 @@
+2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update link to Arm ABI.
+	* doc/html/manual/abi.html: Regenerate.
+
+2020-12-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/debug.xml: Move Valgrind references to https.
+	* doc/html/manual/debug.html: Regenerate.
+
+2020-12-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update link to Intel's compatibility
+	with GNU compilers document.
+	* doc/html/manual/abi.html: Regenerate.
+
+2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/messages.xml: Update link to Java docs.
+	* doc/html/manual/facets.html: Ditto.
+
+2020-12-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Convert three links
+	to doxygen.nl to https.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
 2020-12-23  Olivier Hainque  <hainque@adacore.com>
 
 	* testsuite/17_intro/names.cc: Account for VxWorks headers.

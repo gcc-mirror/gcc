@@ -1,3 +1,58 @@
+2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97612
+	* primary.c (build_actual_constructor): Missing allocatable
+	components are set unallocated using EXPR_NULL. Then missing
+	components are tested for a default initializer.
+
+2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93833
+	* trans-array.c (get_array_ctor_var_strlen): If the character
+	length backend_decl cannot be found, convert the expression and
+	use the string length. Clear up some minor white space issues
+	in the rest of the file.
+
+2020-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97694
+	PR fortran/97723
+	* check.c (allocatable_check): Select rank temporaries are
+	permitted even though they are treated as associate variables.
+	* resolve.c (gfc_resolve_code): Break on select rank as well as
+	select type so that the block os resolved.
+	* trans-stmt.c (trans_associate_var): Class associate variables
+	that are optional dummies must use the backend_decl.
+
+2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* data.c (gfc_assign_data_value): Throw an error for inquiry
+	references. Follow with corrected code that would provide the
+	expected result and provides clean error recovery.
+
+2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Make
+	sure that class expressions are captured for dummy arguments by
+	use of gfc_get_class_from_gfc_expr otherwise the wrong vptr is
+	used.
+	* trans-expr.c (gfc_get_class_from_gfc_expr): New function.
+	(gfc_get_class_from_expr): If a constant expression is
+	encountered, return NULL_TREE;
+	(gfc_trans_assignment_1): Deallocate rhs allocatable components
+	after passing derived type function results to class lhs.
+	* trans.h : Add prototype for gfc_get_class_from_gfc_expr.
+
+2020-12-25  Harald Anlauf  <anlauf@gmx.de>
+
+	* data.c (gfc_assign_data_value): Restrict use of
+	create_character_initializer to constant initializers.
+	* trans-expr.c (gfc_conv_initializer): Ensure that character
+	initializer is constant, otherwise fall through to get the same
+	error handling as for non-character cases.
+
 2020-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans.c (create_var_debug_raw): Set DECL_ARTIFICIAL

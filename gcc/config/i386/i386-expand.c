@@ -16214,8 +16214,8 @@ void
 ix86_expand_lround (rtx op0, rtx op1)
 {
   /* C code for the stuff we're doing below:
-       tmp = op1 + copysign (nextafter (0.5, 0.0), op1)
-       return (long)tmp;
+	tmp = op1 + copysign (nextafter (0.5, 0.0), op1)
+	return (long)tmp;
    */
   machine_mode mode = GET_MODE (op1);
   const struct real_format *fmt;
@@ -16246,8 +16246,8 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
 {
   /* C code for the stuff we're doing below (for do_floor):
 	xi = (long)op1;
-        xi -= (double)xi > op1 ? 1 : 0;
-        return xi;
+	xi -= (double)xi > op1 ? 1 : 0;
+	return xi;
    */
   machine_mode fmode = GET_MODE (op1);
   machine_mode imode = GET_MODE (op0);
@@ -16281,10 +16281,12 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
 static rtx
 ix86_gen_TWO52 (machine_mode mode)
 {
+  const struct real_format *fmt;
   REAL_VALUE_TYPE TWO52r;
   rtx TWO52;
 
-  real_ldexp (&TWO52r, &dconst1, mode == DFmode ? 52 : 23);
+  fmt = REAL_MODE_FORMAT (mode);
+  real_2expN (&TWO52r, fmt->p - 1, mode);
   TWO52 = const_double_from_real_value (TWO52r, mode);
   TWO52 = force_reg (mode, TWO52);
 
@@ -16298,41 +16300,45 @@ ix86_expand_rint (rtx operand0, rtx operand1)
 {
   /* C code for the stuff we're doing below:
 	xa = fabs (operand1);
-        if (!isless (xa, 2**52))
+	if (!isless (xa, 2**52))
 	  return operand1;
-        two52 = 2**52;
-        if (flag_rounding_math)
+	two52 = 2**52;
+	if (flag_rounding_math)
 	  {
 	    two52 = copysign (two52, operand1);
 	    xa = operand1;
 	  }
-        xa = xa + two52 - two52;
-        return copysign (xa, operand1);
+	xa = xa + two52 - two52;
+	return copysign (xa, operand1);
    */
   machine_mode mode = GET_MODE (operand0);
-  rtx res, xa, TWO52, two52, mask;
+  rtx res, xa, TWO52, mask;
   rtx_code_label *label;
 
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
 
   /* if (!isless (xa, TWO52)) goto label; */
-  TWO52 = ix86_gen_TWO52 (mode);
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  two52 = TWO52;
   if (flag_rounding_math)
     {
-      two52 = gen_reg_rtx (mode);
-      ix86_sse_copysign_to_positive (two52, TWO52, res, mask);
+      ix86_sse_copysign_to_positive (TWO52, TWO52, res, mask);
       xa = res;
     }
 
-  xa = expand_simple_binop (mode, PLUS, xa, two52, NULL_RTX, 0, OPTAB_DIRECT);
-  xa = expand_simple_binop (mode, MINUS, xa, two52, xa, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+
+  /* Remove the sign with FE_DOWNWARD, where x - x = -0.0.  */
+  if (HONOR_SIGNED_ZEROS (mode) && flag_rounding_math)
+    xa = ix86_expand_sse_fabs (xa, NULL);
 
   ix86_sse_copysign_to_positive (res, xa, res, mask);
 
@@ -16349,8 +16355,8 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
 {
   /* C code for the stuff we expand below.
 	double xa = fabs (x), x2;
-        if (!isless (xa, TWO52))
-          return x;
+	if (!isless (xa, TWO52))
+	  return x;
 	x2 = (double)(long)x;
 
      Compensate.  Floor:
@@ -16372,8 +16378,7 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res = copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16382,7 +16387,7 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
   /* xa = (double)(long)x */
-  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  xi = gen_reg_rtx (int_mode_for_mode (mode).require ());
   expand_fix (xi, res, 0);
   expand_float (xa, xi, 0);
 
@@ -16417,18 +16422,18 @@ void
 ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
 {
   /* C code for the stuff we expand below.
-        double xa = fabs (x), x2;
-        if (!isless (xa, TWO52))
-          return x;
-        xa = xa + TWO52 - TWO52;
-        x2 = copysign (xa, x);
+	double xa = fabs (x), x2;
+	if (!isless (xa, TWO52))
+	  return x;
+	xa = xa + TWO52 - TWO52;
+	x2 = copysign (xa, x);
 
      Compensate.  Floor:
-        if (x2 > x)
-          x2 -= 1;
+	if (x2 > x)
+	  x2 -= 1;
      Compensate.  Ceil:
-        if (x2 < x)
-          x2 += 1;
+	if (x2 < x)
+	  x2 += 1;
 
 	if (HONOR_SIGNED_ZEROS (mode))
 	  x2 = copysign (x2, x);
@@ -16442,8 +16447,7 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res = copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16488,10 +16492,10 @@ void
 ix86_expand_trunc (rtx operand0, rtx operand1)
 {
   /* C code for SSE variant we expand below.
-        double xa = fabs (x), x2;
-        if (!isless (xa, TWO52))
-          return x;
-        x2 = (double)(long)x;
+	double xa = fabs (x), x2;
+	if (!isless (xa, TWO52))
+	  return x;
+	x2 = (double)(long)x;
 	if (HONOR_SIGNED_ZEROS (mode))
 	  return copysign (x2, x);
 	return x2;
@@ -16504,8 +16508,7 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res = copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16513,13 +16516,15 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
   /* if (!isless (xa, TWO52)) goto label; */
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  /* x = (double)(long)x */
-  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  /* xa = (double)(long)x */
+  xi = gen_reg_rtx (int_mode_for_mode (mode).require ());
   expand_fix (xi, res, 0);
-  expand_float (res, xi, 0);
+  expand_float (xa, xi, 0);
 
   if (HONOR_SIGNED_ZEROS (mode))
-    ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
+    ix86_sse_copysign_to_positive (xa, xa, res, mask);
+
+  emit_move_insn (res, xa);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -16538,23 +16543,22 @@ ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
   rtx_code_label *label;
 
   /* C code for SSE variant we expand below.
-        double xa = fabs (x), x2;
-        if (!isless (xa, TWO52))
-          return x;
-        xa2 = xa + TWO52 - TWO52;
+	double xa = fabs (x), x2;
+	if (!isless (xa, TWO52))
+	  return x;
+	xa2 = xa + TWO52 - TWO52;
      Compensate:
-        if (xa2 > xa)
-          xa2 -= 1.0;
-        x2 = copysign (xa2, x);
-        return x2;
+	if (xa2 > xa)
+	  xa2 -= 1.0;
+	x2 = copysign (xa2, x);
+	return x2;
    */
 
   TWO52 = ix86_gen_TWO52 (mode);
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res =copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16575,7 +16579,7 @@ ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
   tmp = expand_simple_binop (mode, MINUS,
 			     xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
   /* Remove the sign with FE_DOWNWARD, where x - x = -0.0.  */
-  if (flag_rounding_math)
+  if (HONOR_SIGNED_ZEROS (mode) && flag_rounding_math)
     tmp = ix86_expand_sse_fabs (tmp, NULL);
 
   /* res = copysign (xa2, operand1) */
@@ -16593,11 +16597,11 @@ void
 ix86_expand_round (rtx operand0, rtx operand1)
 {
   /* C code for the stuff we're doing below:
-        double xa = fabs (x);
-        if (!isless (xa, TWO52))
-          return x;
-        xa = (double)(long)(xa + nextafter (0.5, 0.0));
-        return copysign (xa, x);
+	double xa = fabs (x);
+	if (!isless (xa, TWO52))
+	  return x;
+	xa = (double)(long)(xa + nextafter (0.5, 0.0));
+	return copysign (xa, x);
    */
   machine_mode mode = GET_MODE (operand0);
   rtx res, TWO52, xa, xi, half, mask;
@@ -16607,8 +16611,7 @@ ix86_expand_round (rtx operand0, rtx operand1)
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res = copy_to_reg (operand1);
 
   TWO52 = ix86_gen_TWO52 (mode);
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16624,12 +16627,12 @@ ix86_expand_round (rtx operand0, rtx operand1)
   xa = expand_simple_binop (mode, PLUS, xa, half, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* xa = (double)(int64_t)xa */
-  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  xi = gen_reg_rtx (int_mode_for_mode (mode).require ());
   expand_fix (xi, xa, 0);
   expand_float (xa, xi, 0);
 
   /* res = copysign (xa, operand1) */
-  ix86_sse_copysign_to_positive (res, xa, force_reg (mode, operand1), mask);
+  ix86_sse_copysign_to_positive (res, xa, res, mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -16644,20 +16647,20 @@ void
 ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
 {
   /* C code for the stuff we expand below.
-        double xa = fabs (x), xa2, x2;
-        if (!isless (xa, TWO52))
-          return x;
+	double xa = fabs (x), xa2, x2;
+	if (!isless (xa, TWO52))
+	  return x;
      Using the absolute value and copying back sign makes
      -0.0 -> -0.0 correct.
-        xa2 = xa + TWO52 - TWO52;
+	xa2 = xa + TWO52 - TWO52;
      Compensate.
 	dxa = xa2 - xa;
-        if (dxa <= -0.5)
-          xa2 += 1;
-        else if (dxa > 0.5)
-          xa2 -= 1;
-        x2 = copysign (xa2, x);
-        return x2;
+	if (dxa <= -0.5)
+	  xa2 += 1;
+	else if (dxa > 0.5)
+	  xa2 -= 1;
+	x2 = copysign (xa2, x);
+	return x2;
    */
   machine_mode mode = GET_MODE (operand0);
   rtx xa, xa2, dxa, TWO52, tmp, half, mhalf, one, res, mask;
@@ -16667,8 +16670,7 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
 
   /* Temporary for holding the result, initialized to the input
      operand to ease control flow.  */
-  res = gen_reg_rtx (mode);
-  emit_move_insn (res, operand1);
+  res = copy_to_reg (operand1);
 
   /* xa = abs (operand1) */
   xa = ix86_expand_sse_fabs (res, &mask);
@@ -16700,7 +16702,7 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
   xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
-  ix86_sse_copysign_to_positive (res, xa2, force_reg (mode, operand1), mask);
+  ix86_sse_copysign_to_positive (res, xa2, res, mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
