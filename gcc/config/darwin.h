@@ -230,6 +230,7 @@ extern GTY(()) int darwin_ms_struct;
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
+      %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef.o) \
       %(link_gcc_c_sequence) \
     }}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
@@ -259,10 +260,14 @@ extern GTY(()) int darwin_ms_struct;
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-/* We only want one instance of %G, since libSystem (Darwin's -lc) does not depend
-   on libgcc.  */
+/* Fix PR47558 by linking against libSystem ahead of libgcc. See also
+   PR 80556 and the fallout from this.  */
+
 #undef  LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L}"
+#define LINK_GCC_C_SEQUENCE_SPEC \
+"%{!static:%{!static-libgcc: \
+    %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } \
+  %G %{!nolibc:%L}"
 
 /* ld64 supports a sysroot, it just has a different name and there's no easy
    way to check for it at config time.  */
@@ -1071,6 +1076,9 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 /* The Apple assembler and linker do not support constructor priorities.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
+
+#undef STACK_CHECK_STATIC_BUILTIN
+#define STACK_CHECK_STATIC_BUILTIN 1
 
 /* When building cross-compilers (and native crosses) we shall default to 
    providing an osx-version-min of this unless overridden by the User.
