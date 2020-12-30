@@ -1,3 +1,18 @@
+2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97612
+	* primary.c (build_actual_constructor): Missing allocatable
+	components are set unallocated using EXPR_NULL. Then missing
+	components are tested for a default initializer.
+
+2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93833
+	* trans-array.c (get_array_ctor_var_strlen): If the character
+	length backend_decl cannot be found, convert the expression and
+	use the string length. Clear up some minor white space issues
+	in the rest of the file.
+
 2020-12-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/97694
