@@ -241,12 +241,18 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DSYMUTIL "\ndsymutil"
 
+/* Spec that controls whether the debug linker is run automatically for
+   a link step.  This needs to be done if there is a source file on the
+   command line which will result in a temporary object (and debug is
+   enabled).  */
+
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
-    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \
-    %{gdwarf-2:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
+    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
+    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|\
+      .f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
+    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
@@ -472,21 +478,30 @@ extern GTY(()) int darwin_ms_struct;
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
-/* Default ASM_DEBUG_SPEC.  Darwin's as cannot currently produce dwarf
-   debugging data.  */
-
+#ifdef HAVE_AS_STABS_DIRECTIVE
+/* We only pass a debug option to the assembler if that supports stabs, since
+   dwarf is not uniformly supported in the assemblers.  */
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
-#define ASM_DEBUG_OPTION_SPEC ""
+#else
+#define ASM_DEBUG_SPEC  ""
+#endif
+
+#undef  ASM_DEBUG_OPTION_SPEC
+#define ASM_DEBUG_OPTION_SPEC	""
+
 #define ASM_FINAL_SPEC \
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} %<gsplit-dwarf"
 
-/* We still allow output of STABS if the assembler supports it.  */
+/* We now require C++11 to bootstrap and newer tools than those based on
+   stabs, so require DWARF-2, even if stabs is supported by the assembler.  */
+
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#define DARWIN_PREFER_DWARF
+#define DWARF2_DEBUGGING_INFO 1
+
 #ifdef HAVE_AS_STABS_DIRECTIVE
 #define DBX_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
-
-#define DWARF2_DEBUGGING_INFO 1
 
 #define DEBUG_FRAME_SECTION	  "__DWARF,__debug_frame,regular,debug"
 #define DEBUG_INFO_SECTION	  "__DWARF,__debug_info,regular,debug"

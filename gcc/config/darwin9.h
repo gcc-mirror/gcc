@@ -18,32 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Prefer DWARF2.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#define DARWIN_PREFER_DWARF
-
-/* Since DWARF2 is default, conditions for running dsymutil are different.  */
-#undef DSYMUTIL_SPEC
-#define DSYMUTIL_SPEC \
-   "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %{v} \
-    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -idsym}}}\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|.f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
-    %{g*:%{!gstabs*:%{%:debug-level-gt(0): -dsym}}}}}}}}}}}"
-
-/* Tell collect2 to run dsymutil for us as necessary.  */
-#define COLLECT_RUN_DSYMUTIL 1
-
-/* Only ask as for debug data if the debug style is stabs (since as doesn't
-   yet generate dwarf.)  */
-
-#undef  ASM_DEBUG_SPEC
-#define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{gstabs:--gstabs}}}"
-
-#undef  ASM_DEBUG_OPTION_SPEC
-#define ASM_DEBUG_OPTION_SPEC	""
-
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do {									\
