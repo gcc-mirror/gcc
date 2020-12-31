@@ -16909,7 +16909,8 @@ resolve_symbol (gfc_symbol *sym)
 	   && !class_attr.allocatable && as && as->cotype == AS_DEFERRED)
     {
       gfc_error ("Coarray variable %qs at %L shall not have codimensions with "
-		 "deferred shape", sym->name, &sym->declared_at);
+		 "deferred shape without allocatable", sym->name,
+		 &sym->declared_at);
       return;
     }
   else if (class_attr.codimension && class_attr.allocatable && as

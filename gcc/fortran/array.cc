@@ -1017,6 +1017,9 @@ gfc_compare_array_spec (gfc_array_spec *as1, gfc_array_spec *as2)
   if (as1->type != as2->type)
     return 0;
 
+  if (as1->cotype != as2->cotype)
+    return 0;
+
   if (as1->type == AS_EXPLICIT)
     for (i = 0; i < as1->rank + as1->corank; i++)
       {

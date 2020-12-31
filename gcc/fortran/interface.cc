@@ -518,10 +518,17 @@ compare_components (gfc_component *cmp1, gfc_component *cmp2,
   if (cmp1->attr.dimension != cmp2->attr.dimension)
     return false;
 
+  if (cmp1->attr.codimension != cmp2->attr.codimension)
+    return false;
+
   if (cmp1->attr.allocatable != cmp2->attr.allocatable)
     return false;
 
   if (cmp1->attr.dimension && gfc_compare_array_spec (cmp1->as, cmp2->as) == 0)
+    return false;
+
+  if (cmp1->attr.codimension
+      && gfc_compare_array_spec (cmp1->as, cmp2->as) == 0)
     return false;
 
   if (cmp1->ts.type == BT_CHARACTER && cmp2->ts.type == BT_CHARACTER)

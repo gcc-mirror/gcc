@@ -4047,6 +4047,11 @@ bool gfc_may_be_finalized (gfc_typespec);
 	 && CLASS_DATA (sym) \
 	 && CLASS_DATA (sym)->attr.dimension \
 	 && !CLASS_DATA (sym)->attr.class_pointer)
+#define IS_CLASS_COARRAY_OR_ARRAY(sym) \
+	(sym->ts.type == BT_CLASS && CLASS_DATA (sym) \
+	 && (CLASS_DATA (sym)->attr.dimension \
+	     || CLASS_DATA (sym)->attr.codimension) \
+	 && !CLASS_DATA (sym)->attr.class_pointer)
 #define IS_POINTER(sym) \
 	(sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym) \
 	 ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer)

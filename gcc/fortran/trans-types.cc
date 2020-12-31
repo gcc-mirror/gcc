@@ -1395,7 +1395,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
 {
   symbol_attribute *array_attr;
   gfc_array_spec *as;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
   as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
@@ -1766,7 +1766,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       else
  	tmp = NULL_TREE;
       if (n < as->rank + as->corank - 1)
-      GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
+	GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
     }
 
   if (known_offset)
@@ -2600,6 +2600,53 @@ gfc_get_union_type (gfc_symbol *un)
     return typenode;
 }
 
+bool
+cobounds_match_decl (const gfc_symbol *derived)
+{
+  tree arrtype, tmp;
+  gfc_array_spec *as;
+
+  if (!derived->backend_decl)
+    return false;
+  /* Care only about coarray declarations.  Everything else is ok with us.  */
+  if (!derived->components || strcmp (derived->components->name, "_data") != 0)
+    return true;
+  if (!derived->components->attr.codimension)
+    return true;
+
+  arrtype = TREE_TYPE (TYPE_FIELDS (derived->backend_decl));
+  as = derived->components->as;
+  if (GFC_TYPE_ARRAY_CORANK (arrtype) != as->corank)
+    return false;
+
+  for (int dim = as->rank; dim < as->rank + as->corank; ++dim)
+    {
+      /* Check lower bound.  */
+      tmp = TYPE_LANG_SPECIFIC (arrtype)->lbound[dim];
+      if (!tmp || !INTEGER_CST_P (tmp))
+	return false;
+      if (as->lower[dim]->expr_type != EXPR_CONSTANT
+	  || as->lower[dim]->ts.type != BT_INTEGER)
+	return false;
+      if (*tmp->int_cst.val != mpz_get_si (as->lower[dim]->value.integer))
+	return false;
+
+      /* Check upper bound.  */
+      tmp = TYPE_LANG_SPECIFIC (arrtype)->ubound[dim];
+      if (!tmp && !as->upper[dim])
+	continue;
+
+      if (!tmp || !INTEGER_CST_P (tmp))
+	return false;
+      if (as->upper[dim]->expr_type != EXPR_CONSTANT
+	  || as->upper[dim]->ts.type != BT_INTEGER)
+	return false;
+      if (*tmp->int_cst.val != mpz_get_si (as->upper[dim]->value.integer))
+	return false;
+    }
+
+  return true;
+}
 
 /* Build a tree node for a derived type.  If there are equal
    derived types, with different local names, these are built
@@ -2617,10 +2664,15 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   gfc_component *c;
   gfc_namespace *ns;
   tree tmp;
-  bool coarray_flag;
+  bool coarray_flag, class_coarray_flag;
 
   coarray_flag = flag_coarray == GFC_FCOARRAY_LIB
 		 && derived->module && !derived->attr.vtype;
+  class_coarray_flag = derived->components
+		       && derived->components->ts.type == BT_DERIVED
+		       && strcmp (derived->components->name, "_data") == 0
+		       && derived->components->attr.codimension
+		       && derived->components->as->cotype == AS_EXPLICIT;
 
   gcc_assert (!derived->attr.pdt_template);
 
@@ -2709,13 +2761,14 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 
   /* derived->backend_decl != 0 means we saw it before, but its
      components' backend_decl may have not been built.  */
-  if (derived->backend_decl)
+  if (derived->backend_decl
+      && (!class_coarray_flag || cobounds_match_decl (derived)))
     {
       /* Its components' backend_decl have been built or we are
 	 seeing recursion through the formal arglist of a procedure
 	 pointer component.  */
       if (TYPE_FIELDS (derived->backend_decl))
-        return derived->backend_decl;
+	return derived->backend_decl;
       else if (derived->attr.abstract
 	       && derived->attr.proc_pointer_comp)
 	{
@@ -2797,7 +2850,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
         }
     }
 
-  if (TYPE_FIELDS (derived->backend_decl))
+  if (!class_coarray_flag && TYPE_FIELDS (derived->backend_decl))
     return derived->backend_decl;
 
   /* Build the type member list. Install the newly created RECORD_TYPE
@@ -2904,12 +2957,13 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       DECL_PACKED (field) |= TYPE_PACKED (typenode);
 
       gcc_assert (field);
-      if (!c->backend_decl)
+      /* Overwrite for class array to supply different bounds for different
+	 types.  */
+      if (class_coarray_flag || !c->backend_decl)
 	c->backend_decl = field;
 
-      if (c->attr.pointer && c->attr.dimension
-	  && !(c->ts.type == BT_DERIVED
-	       && strcmp (c->name, "_data") == 0))
+      if (c->attr.pointer && (c->attr.dimension || c->attr.codimension)
+	  && !(c->ts.type == BT_DERIVED && strcmp (c->name, "_data") == 0))
 	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
     }
 

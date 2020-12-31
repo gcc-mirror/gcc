@@ -1016,7 +1016,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   gfc_namespace* procns;
   symbol_attribute *array_attr;
   gfc_array_spec *as;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   type = TREE_TYPE (decl);
   array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
@@ -1134,7 +1134,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	gfc_add_decl_to_function (GFC_TYPE_ARRAY_OFFSET (type));
     }
 
-  if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE
+  if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE && as->rank != 0
       && as->type != AS_ASSUMED_SIZE)
     {
       GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
@@ -1238,7 +1238,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   gfc_packed packed;
   int n;
   bool known_size;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   /* Use the array as and attr.  */
   as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
@@ -1760,7 +1760,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 sym->backend_decl's GFC_DECL_SAVED_DESCRIPTOR.  The caller is then
 	 responsible to extract it from there, when the descriptor is
 	 desired.  */
-      if (IS_CLASS_ARRAY (sym)
+      if (IS_CLASS_COARRAY_OR_ARRAY (sym)
 	  && (!DECL_LANG_SPECIFIC (sym->backend_decl)
 	      || !GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)))
 	{
@@ -1775,10 +1775,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       if (sym->attr.assign && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
 	gfc_add_assign_aux_vars (sym);
 
-      if (sym->ts.type == BT_CLASS && sym->backend_decl)
-	GFC_DECL_CLASS(sym->backend_decl) = 1;
+      if (sym->ts.type == BT_CLASS && sym->backend_decl
+	  && !IS_CLASS_COARRAY_OR_ARRAY (sym))
+	GFC_DECL_CLASS (sym->backend_decl) = 1;
 
-     return sym->backend_decl;
+      return sym->backend_decl;
     }
 
   if (sym->result == sym && sym->attr.assign
@@ -4889,9 +4890,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  TREE_CONSTANT (DECL_INITIAL (sym->backend_decl)) = 1;
 	}
       else if ((sym->attr.dimension || sym->attr.codimension
-	       || (IS_CLASS_ARRAY (sym) && !CLASS_DATA (sym)->attr.allocatable)))
+		|| (IS_CLASS_COARRAY_OR_ARRAY (sym)
+		    && !CLASS_DATA (sym)->attr.allocatable)))
 	{
-	  bool is_classarray = IS_CLASS_ARRAY (sym);
+	  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 	  symbol_attribute *array_attr;
 	  gfc_array_spec *as;
 	  array_type type_of_array;

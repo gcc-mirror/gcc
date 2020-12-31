@@ -1018,7 +1018,10 @@ class_scalar_coarray_to_class (gfc_se *parmse, gfc_expr *e,
 		  fold_convert (TREE_TYPE (ctree), gfc_class_vptr_get (tmp)));
 
   ctree = gfc_class_data_get (var);
-  tmp = gfc_conv_descriptor_data_get (gfc_class_data_get (tmp));
+  tmp = gfc_conv_descriptor_data_get (
+    gfc_class_data_get (GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (tmp)))
+			  ? tmp
+			  : GFC_DECL_SAVED_DESCRIPTOR (tmp)));
   gfc_add_modify (&block, ctree, fold_convert (TREE_TYPE (ctree), tmp));
 
   /* Pass the address of the class object.  */
@@ -3110,7 +3113,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
   bool first_time = true;
 
   sym = expr->symtree->n.sym;
-  is_classarray = IS_CLASS_ARRAY (sym);
+  is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
   ss = se->ss;
   if (ss != NULL)
     {
@@ -3201,11 +3204,24 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       if (sym->ts.type == BT_CLASS
 	  && sym->attr.class_ok
 	  && sym->ts.u.derived->attr.is_class)
-	se->class_container = se->expr;
+	{
+	  if (is_classarray && DECL_LANG_SPECIFIC (se->expr)
+	      && GFC_DECL_SAVED_DESCRIPTOR (se->expr))
+	    se->class_container = GFC_DECL_SAVED_DESCRIPTOR (se->expr);
+	  else
+	    se->class_container = se->expr;
+	}
 
       /* Dereference the expression, where needed.  */
-      se->expr = gfc_maybe_dereference_var (sym, se->expr, se->descriptor_only,
-					    is_classarray);
+      if (se->class_container && CLASS_DATA (sym)->attr.codimension
+	  && !CLASS_DATA (sym)->attr.dimension)
+	se->expr
+	  = gfc_maybe_dereference_var (sym, se->class_container,
+				       se->descriptor_only, is_classarray);
+      else
+	se->expr
+	  = gfc_maybe_dereference_var (sym, se->expr, se->descriptor_only,
+				       is_classarray);
 
       ref = expr->ref;
     }
@@ -3248,11 +3264,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 
 	case REF_COMPONENT:
 	  ts = &ref->u.c.component->ts;
-	  if (first_time && is_classarray && sym->attr.dummy
-	      && se->descriptor_only
-	      && !CLASS_DATA (sym)->attr.allocatable
-	      && !CLASS_DATA (sym)->attr.class_pointer
-	      && CLASS_DATA (sym)->as
+	  if (first_time && IS_CLASS_ARRAY (sym) && sym->attr.dummy
+	      && se->descriptor_only && !CLASS_DATA (sym)->attr.allocatable
+	      && !CLASS_DATA (sym)->attr.class_pointer && CLASS_DATA (sym)->as
 	      && CLASS_DATA (sym)->as->type != AS_ASSUMED_RANK
 	      && strcmp ("_data", ref->u.c.component->name) == 0)
 	    /* Skip the first ref of a _data component, because for class

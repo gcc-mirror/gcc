@@ -6752,7 +6752,7 @@ gfc_trans_array_cobounds (tree type, stmtblock_t * pblock,
   gfc_se se;
   gfc_array_spec *as;
 
-  as = IS_CLASS_ARRAY (sym) ? CLASS_DATA (sym)->as : sym->as;
+  as = IS_CLASS_COARRAY_OR_ARRAY (sym) ? CLASS_DATA (sym)->as : sym->as;
 
   for (dim = as->rank; dim < as->rank + as->corank; dim++)
     {
@@ -6801,7 +6801,7 @@ gfc_trans_array_bounds (tree type, gfc_symbol * sym, tree * poffset,
 
   int dim;
 
-  as = IS_CLASS_ARRAY (sym) ? CLASS_DATA (sym)->as : sym->as;
+  as = IS_CLASS_COARRAY_OR_ARRAY (sym) ? CLASS_DATA (sym)->as : sym->as;
 
   size = gfc_index_one_node;
   offset = gfc_index_zero_node;
@@ -7144,7 +7144,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   int no_repack;
   bool optional_arg;
   gfc_array_spec *as;
-  bool is_classarray = IS_CLASS_ARRAY (sym);
+  bool is_classarray = IS_CLASS_COARRAY_OR_ARRAY (sym);
 
   /* Do nothing for pointer and allocatable arrays.  */
   if ((sym->ts.type != BT_CLASS && sym->attr.pointer)
@@ -7820,6 +7820,51 @@ walk_coarray (gfc_expr *e)
   return ss;
 }
 
+gfc_array_spec *
+get_coarray_as (const gfc_expr *e)
+{
+  gfc_array_spec *as;
+  gfc_symbol *sym = e->symtree->n.sym;
+  gfc_component *comp;
+
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.codimension)
+    as = CLASS_DATA (sym)->as;
+  else if (sym->attr.codimension)
+    as = sym->as;
+  else
+    as = nullptr;
+
+  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+    {
+      switch (ref->type)
+	{
+	case REF_COMPONENT:
+	  comp = ref->u.c.component;
+	  if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.codimension)
+	    as = CLASS_DATA (comp)->as;
+	  else if (comp->ts.type != BT_CLASS && comp->attr.codimension)
+	    as = comp->as;
+	  break;
+
+	case REF_ARRAY:
+	case REF_SUBSTRING:
+	case REF_INQUIRY:
+	  break;
+	}
+    }
+
+  return as;
+}
+
+bool
+is_explicit_coarray (gfc_expr *expr)
+{
+  if (!gfc_is_coarray (expr))
+    return false;
+
+  gfc_array_spec *cas = get_coarray_as (expr);
+  return cas && cas->cotype == AS_EXPLICIT;
+}
 
 /* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
@@ -7933,6 +7978,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	need_tmp = 0;
 
       if (need_tmp)
+	full = 0;
+      else if (is_explicit_coarray (expr))
 	full = 0;
       else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
 	{

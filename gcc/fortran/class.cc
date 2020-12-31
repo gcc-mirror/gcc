@@ -709,8 +709,12 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
      work on the declared type. All array type other than deferred shape or
      assumed rank are added to the function namespace to ensure that they
      are properly distinguished.  */
-  if (attr->dummy && !attr->codimension && (*as)
-      && !((*as)->type == AS_DEFERRED || (*as)->type == AS_ASSUMED_RANK))
+  if (attr->dummy && (*as)
+      && ((!attr->codimension
+	   && !((*as)->type == AS_DEFERRED || (*as)->type == AS_ASSUMED_RANK))
+	  || (attr->codimension
+	      && !((*as)->cotype == AS_DEFERRED
+		   || (*as)->cotype == AS_ASSUMED_RANK))))
     {
       char *sname;
       ns = gfc_current_ns;

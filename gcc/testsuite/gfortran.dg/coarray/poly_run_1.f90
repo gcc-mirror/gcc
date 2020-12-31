@@ -14,7 +14,7 @@ else
 end if
 if (allocated(A)) i = 5
 call s(A)
-!call st(A) ! FIXME
+call st(A) ! FIXME
 
 contains
 
@@ -30,22 +30,21 @@ end subroutine s
 
 subroutine st(x)
   class(t) :: x(:)[4,2:*]
-! FIXME
-!  if (any (lcobound(x) /= [1, 2])) STOP 7
-!  if (lcobound(x, dim=1) /= 1) STOP 8
-!  if (lcobound(x, dim=2) /= 2) STOP 9
-!  if (this_image() == 1) then
-!     if (any (this_image(x) /= lcobound(x))) STOP 10
-!     if (this_image(x, dim=1) /= lcobound(x, dim=1)) STOP 11
-!     if (this_image(x, dim=2) /= lcobound(x, dim=2)) STOP 12
-!  end if
-!  if (num_images() == 1) then
-!     if (any (ucobound(x) /= [4, 2])) STOP 13
-!     if (ucobound(x, dim=1) /= 4) STOP 14
-!     if (ucobound(x, dim=2) /= 2) STOP 15
-!  else
-!    if (ucobound(x,dim=1) /= 4) STOP 16
-!  end if
+  if (any (lcobound(x) /= [1, 2])) STOP 7
+  if (lcobound(x, dim=1) /= 1) STOP 8
+  if (lcobound(x, dim=2) /= 2) STOP 9
+  if (this_image() == 1) then
+     if (any (this_image(x) /= lcobound(x))) STOP 10
+     if (this_image(x, dim=1) /= lcobound(x, dim=1)) STOP 11
+     if (this_image(x, dim=2) /= lcobound(x, dim=2)) STOP 12
+  end if
+  if (num_images() == 1) then
+     if (any (ucobound(x) /= [4, 2])) STOP 13
+     if (ucobound(x, dim=1) /= 4) STOP 14
+     if (ucobound(x, dim=2) /= 2) STOP 15
+  else
+    if (ucobound(x,dim=1) /= 4) STOP 16
+  end if
 end subroutine st
 end
 

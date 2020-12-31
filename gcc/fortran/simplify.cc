@@ -4115,8 +4115,6 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
       goto returnNull;
     }
 
-  result = gfc_get_constant_expr (BT_INTEGER, k, &array->where);
-
   /* Then, we need to know the extent of the given dimension.  */
   if (coarray || (ref->u.ar.type == AR_FULL && !ref->next))
     {
