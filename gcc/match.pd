@@ -1374,6 +1374,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (absu tree_expr_nonnegative_p@0)
  (convert @0))
 
+/* Simplify (-(X < 0) | 1) * X into abs (X).  */
+(simplify
+ (mult:c (bit_ior (negate (convert? (lt @0 integer_zerop))) integer_onep) @0)
+ (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
+  (abs @0)))
+
+/* Similarly (-(X < 0) | 1U) * X into absu (X).  */
+(simplify
+ (mult:c (bit_ior (nop_convert (negate (convert? (lt @0 integer_zerop))))
+		  integer_onep) (nop_convert @0))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (absu @0)))
+
 /* A few cases of fold-const.c negate_expr_p predicate.  */
 (match negate_expr_p
  INTEGER_CST
