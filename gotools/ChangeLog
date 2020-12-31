@@ -1,3 +1,11 @@
+2020-12-30  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-runtime): Don't create check-runtime-dir.
+	(mostlyclean-local): Don't remove check-runtime-dir.
+	(check-go-tool, check-vet): Copy in go.mod and modules.txt.
+	(check-cgo-test, check-carchive-test): Add go.mod file.
+	* Makefile.in: Regenerate.
+
 2020-10-29  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
 	* Makefile.am (check-runtime): Add runtime_linknames.go to

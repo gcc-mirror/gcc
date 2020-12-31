@@ -1,3 +1,9 @@
+2020-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98461
+	* gcc.target/i386/sse2-pr98461.c: New test.
+	* gcc.target/i386/avx2-pr98461.c: New test.
+
 2020-12-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/97612
