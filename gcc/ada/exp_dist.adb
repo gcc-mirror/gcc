@@ -8261,7 +8261,7 @@ package body Exp_Dist is
             with procedure Add_Process_Element
               (Stmts     : List_Id;
                Container : Node_Or_Entity_Id;
-               Counter   : in out Int;
+               Counter   : in out Nat;
                Rec       : Entity_Id;
                Field     : Node_Id);
             --  Rec is the instance of the record type, or Empty.
@@ -8272,7 +8272,7 @@ package body Exp_Dist is
            (Stmts     : List_Id;
             Clist     : Node_Id;
             Container : Node_Or_Entity_Id;
-            Counter   : in out Int);
+            Counter   : in out Nat);
          --  Process component list Clist. Individual fields are passed
          --  to Field_Processing. Each variant part is also processed.
          --  Container is the outer Any (for From_Any/To_Any),
@@ -8286,7 +8286,7 @@ package body Exp_Dist is
            (Stmts     : List_Id;
             Clist     : Node_Id;
             Container : Node_Or_Entity_Id;
-            Counter   : in out Int)
+            Counter   : in out Nat)
          is
             CI : List_Id;
             VP : Node_Id;
@@ -8674,7 +8674,7 @@ package body Exp_Dist is
                      Rdef                      : constant Node_Id :=
                                                    Type_Definition
                                                      (Declaration_Node (Typ));
-                     Component_Counter         : Int := 0;
+                     Component_Counter         : Nat := 0;
 
                      --  The returned object
 
@@ -8685,7 +8685,7 @@ package body Exp_Dist is
                      procedure FA_Rec_Add_Process_Element
                        (Stmts   : List_Id;
                         Any     : Entity_Id;
-                        Counter : in out Int;
+                        Counter : in out Nat;
                         Rec     : Entity_Id;
                         Field   : Node_Id);
 
@@ -8701,7 +8701,7 @@ package body Exp_Dist is
                      procedure FA_Rec_Add_Process_Element
                        (Stmts   : List_Id;
                         Any     : Entity_Id;
-                        Counter : in out Int;
+                        Counter : in out Nat;
                         Rec     : Entity_Id;
                         Field   : Node_Id)
                      is
@@ -8735,7 +8735,7 @@ package body Exp_Dist is
 
                            declare
                               Variant        : Node_Id;
-                              Struct_Counter : Int := 0;
+                              Struct_Counter : Nat := 0;
 
                               Block_Decls : constant List_Id := New_List;
                               Block_Stmts : constant List_Id := New_List;
@@ -9540,13 +9540,13 @@ package body Exp_Dist is
                      Disc     : Entity_Id := Empty;
                      Rdef     : constant Node_Id :=
                                   Type_Definition (Declaration_Node (Typ));
-                     Counter  : Int := 0;
+                     Counter  : Nat := 0;
                      Elements : constant List_Id := New_List;
 
                      procedure TA_Rec_Add_Process_Element
                        (Stmts     : List_Id;
                         Container : Node_Or_Entity_Id;
-                        Counter   : in out Int;
+                        Counter   : in out Nat;
                         Rec       : Entity_Id;
                         Field     : Node_Id);
                      --  Processing routine for traversal below
@@ -9563,7 +9563,7 @@ package body Exp_Dist is
                      procedure TA_Rec_Add_Process_Element
                        (Stmts     : List_Id;
                         Container : Node_Or_Entity_Id;
-                        Counter   : in out Int;
+                        Counter   : in out Nat;
                         Rec       : Entity_Id;
                         Field     : Node_Id)
                      is
@@ -9593,7 +9593,7 @@ package body Exp_Dist is
 
                            Variant_Part : declare
                               Variant        : Node_Id;
-                              Struct_Counter : Int := 0;
+                              Struct_Counter : Nat := 0;
 
                               Block_Decls : constant List_Id := New_List;
                               Block_Stmts : constant List_Id := New_List;
@@ -10396,7 +10396,7 @@ package body Exp_Dist is
             procedure TC_Rec_Add_Process_Element
               (Params  : List_Id;
                Any     : Entity_Id;
-               Counter : in out Int;
+               Counter : in out Nat;
                Rec     : Entity_Id;
                Field   : Node_Id);
 
@@ -10412,7 +10412,7 @@ package body Exp_Dist is
             procedure TC_Rec_Add_Process_Element
               (Params  : List_Id;
                Any     : Entity_Id;
-               Counter : in out Int;
+               Counter : in out Nat;
                Rec     : Entity_Id;
                Field   : Node_Id)
             is
@@ -10451,7 +10451,7 @@ package body Exp_Dist is
                      Default : constant Node_Id :=
                                  Make_Integer_Literal (Loc, -1);
 
-                     Dummy_Counter : Int := 0;
+                     Dummy_Counter : Nat := 0;
 
                      Choice_Index : Int := 0;
                      --  Index of current choice in TypeCode, used to identify

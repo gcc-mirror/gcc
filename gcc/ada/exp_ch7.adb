@@ -8225,7 +8225,7 @@ package body Exp_Ch7 is
          Loc     : constant Source_Ptr := Sloc (Typ);
          Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
-         Counter        : Int := 0;
+         Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
 
          function Process_Component_List_For_Finalize
