@@ -6226,6 +6226,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (single_use (@3))
    (IFN_FMA @0 @1 @2))))
 
+/* CLZ simplifications.  */
+(for clz (CLZ)
+ (for op (eq ne)
+      cmp (lt ge)
+  (simplify
+   (op (clz:s @0) INTEGER_CST@1)
+   (if (integer_zerop (@1))
+    /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
+    (with { tree stype = signed_type_for (TREE_TYPE (@0));
+	    HOST_WIDE_INT val = 0;
+#ifdef CLZ_DEFINED_VALUE_AT_ZERO
+	    /* Punt on hypothetical weird targets.  */
+	    if (CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (@0)),
+					   val) == 2
+		&& val == 0)
+	      stype = NULL_TREE;
+#endif
+	  }
+     (if (stype)
+      (cmp (convert:stype @0) { build_zero_cst (stype); })))
+    /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
+    (with { bool ok = true;
+#ifdef CLZ_DEFINED_VALUE_AT_ZERO
+	    /* Punt on hypothetical weird targets.  */
+	    if (CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (@0)),
+					   val) == 2
+		&& val == TYPE_PRECISION (TREE_TYPE (@0)) - 1)
+	      ok = false;
+#endif
+	  }
+     (if (ok && wi::to_wide (@1) == (TYPE_PRECISION (TREE_TYPE (@0)) - 1))
+      (op @0 { build_one_cst (TREE_TYPE (@0)); })))))))
+
 /* POPCOUNT simplifications.  */
 /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
 (simplify
