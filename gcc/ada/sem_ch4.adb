@@ -10223,7 +10223,7 @@ package body Sem_Ch4 is
             if Serious_Errors_Detected = 0 then
                Error_Msg_NE
                  ("cannot resolve prefixed call to primitive operation of&",
-                   N, Entity (Prefix (N)));
+                   N, Entity (Obj));
             end if;
          end if;
 
