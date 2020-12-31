@@ -18,16 +18,5 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-  do {									\
-    unsigned HOST_WIDE_INT _new_size = (SIZE);				\
-    fprintf ((FILE), "\t.comm ");						\
-    assemble_name ((FILE), (NAME));					\
-    if (_new_size == 0) _new_size = 1;					\
-    fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
-	     _new_size, floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
-  } while (0)
-
 #undef DEF_MIN_OSX_VERSION
 #define DEF_MIN_OSX_VERSION "10.5"
