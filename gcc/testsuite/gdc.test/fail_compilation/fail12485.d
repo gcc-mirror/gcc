@@ -1,11 +1,12 @@
 void dorecursive()
 {
-    recursive([0]);
+    recursive!"ratherLongSymbolNameToHitTheMaximumSymbolLengthEarlierThanTheTemplateRecursionLimit_";
 }
 
-void recursive(R)(R r)
+void recursive(string name)()
 {
-    import std.algorithm;
-    recursive( r.filter!(e=>true) );
+    struct S {} // define type to kick off mangler
+    static if (name.length <= (4 << 20))
+        recursive!(name ~ name);
 }
 
