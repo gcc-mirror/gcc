@@ -3317,7 +3317,9 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 }
 
 /* Optimize x != 0 && y != 0 && z != 0 into (x | y | z) != 0
-   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.  */
+   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.
+   Also, handle x < C && y < C && z < C where C is power of two as
+   (x | y | z) < C.  */
 
 static bool
 optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
@@ -3333,20 +3335,44 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 
   for (i = first; i < length; i++)
     {
+      int idx;
+
       if (ranges[i].exp == NULL_TREE
 	  || TREE_CODE (ranges[i].exp) != SSA_NAME
 	  || !ranges[i].in_p
 	  || TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) <= 1
-	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE
-	  || ranges[i].low == NULL_TREE
-	  || ranges[i].low != ranges[i].high)
+	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE)
 	continue;
 
-      bool zero_p = integer_zerop (ranges[i].low);
-      if (!zero_p && !integer_all_onesp (ranges[i].low))
+      if (ranges[i].low != NULL_TREE
+	  && ranges[i].high != NULL_TREE
+	  && tree_int_cst_equal (ranges[i].low, ranges[i].high))
+	{
+	  idx = !integer_zerop (ranges[i].low);
+	  if (idx && !integer_all_onesp (ranges[i].low))
+	    continue;
+	}
+      else if (ranges[i].high != NULL_TREE
+	       && TREE_CODE (ranges[i].high) == INTEGER_CST)
+	{
+	  wide_int w = wi::to_wide (ranges[i].high);
+	  int prec = TYPE_PRECISION (TREE_TYPE (ranges[i].exp));
+	  int l = wi::clz (w);
+	  idx = 2;
+	  if (l <= 0
+	      || l >= prec
+	      || w != wi::mask (prec - l, false, prec))
+	    continue;
+	  if (!((TYPE_UNSIGNED (TREE_TYPE (ranges[i].exp))
+		 && ranges[i].low == NULL_TREE)
+		|| (ranges[i].low
+		    && integer_zerop (ranges[i].low))))
+	    continue;
+	}
+      else
 	continue;
 
-      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
+      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 3 + idx;
       if (buckets.length () <= b)
 	buckets.safe_grow_cleared (b + 1, true);
       if (chains.length () <= (unsigned) i)
@@ -3359,6 +3385,44 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
     if (i && chains[i - 1])
       {
 	int j, k = i;
+	if ((b % 3) == 2)
+	  {
+	    /* When ranges[X - 1].high + 1 is a power of two,
+	       we need to process the same bucket up to
+	       precision - 1 times, each time split the entries
+	       with the same high bound into one chain and the
+	       rest into another one to be processed later.  */
+	    int this_prev = i;
+	    int other_prev = 0;
+	    for (j = chains[i - 1]; j; j = chains[j - 1])
+	      {
+		if (tree_int_cst_equal (ranges[i - 1].high,
+					ranges[j - 1].high))
+		  {
+		    chains[this_prev - 1] = j;
+		    this_prev = j;
+		  }
+		else if (other_prev == 0)
+		  {
+		    buckets[b] = j;
+		    other_prev = j;
+		  }
+		else
+		  {
+		    chains[other_prev - 1] = j;
+		    other_prev = j;
+		  }
+	      }
+	    chains[this_prev - 1] = 0;
+	    if (other_prev)
+	      chains[other_prev - 1] = 0;
+	    if (chains[i - 1] == 0)
+	      {
+		if (other_prev)
+		  b--;
+		continue;
+	      }
+	  }
 	for (j = chains[i - 1]; j; j = chains[j - 1])
 	  {
 	    gimple *gk = SSA_NAME_DEF_STMT (ranges[k - 1].exp);
@@ -3426,8 +3490,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		exp = gimple_assign_lhs (g);
 	      }
 	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
-				     (b & 1) ? BIT_AND_EXPR : BIT_IOR_EXPR,
-				     op, exp);
+				     (b % 3) == 1
+				     ? BIT_AND_EXPR : BIT_IOR_EXPR, op, exp);
 	    gimple_seq_add_stmt_without_update (&seq, g);
 	    op = gimple_assign_lhs (g);
 	  }
@@ -3435,10 +3499,13 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	if (update_range_test (&ranges[k - 1], NULL, candidates.address (),
 			       candidates.length (), opcode, ops, op,
 			       seq, true, ranges[k - 1].low,
-			       ranges[k - 1].low, strict_overflow_p))
+			       ranges[k - 1].high, strict_overflow_p))
 	  any_changes = true;
 	else
 	  gimple_seq_discard (seq);
+	if ((b % 3) == 2 && buckets[b] != i)
+	  /* There is more work to do for this bucket.  */
+	  b--;
       }
 
   return any_changes;
