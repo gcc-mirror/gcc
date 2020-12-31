@@ -1795,14 +1795,12 @@ package body Rtsfind is
    -------------------------
 
    procedure SPARK_Implicit_Load (E : RE_Id) is
-      Unused : Entity_Id;
-
    begin
       pragma Assert (GNATprove_Mode);
 
       --  Force loading of a predefined unit
 
-      Unused := RTE (E);
+      Discard_Node (RTE (E));
    end SPARK_Implicit_Load;
 
 end Rtsfind;
