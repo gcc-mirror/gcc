@@ -685,17 +685,47 @@ case ${target} in
 *-*-darwin*)
   tmake_file="t-darwin "
   tm_file="${tm_file} darwin.h"
+  darwin_os=`echo ${target} | sed 's/.*darwin\([0-9.]*\).*$/\1/'`
+  darwin_maj=`expr "$darwin_os" : '\([0-9]*\).*'`
+  macos_min=`expr "$darwin_os" : '[0-9]*\.\([0-9]*\).*'`
+  macos_maj=10
+  if test x"${macos_min}" = x; then
+    macos_min=0
+  fi
+  def_ld64=85.2
   case ${target} in
-  *-*-darwin9*)
-    tm_file="${tm_file} darwin9.h"
-    ;;
-  *-*-darwin[1][01]*)
-    tm_file="${tm_file} darwin9.h darwin10.h"
-    ;;
-  *-*-darwin[1][2-9]* | *-*-darwin[2][0-9]*)
-    tm_file="${tm_file} darwin9.h darwin10.h darwin12.h"
-    ;;
+      # Darwin 4 to 19 correspond to macOS 10.0 to 10.15
+      *-*-darwin[4-9]* | *-*-darwin1[0-9]*)
+        macos_min=`expr $darwin_maj - 4`
+        ;;
+      *-*-darwin20*)
+        # Darwin 20 corresponds to macOS 11.
+        macos_maj=11
+        def_ld64=609.0
+        ;;
+      *-*-darwin)
+        case ${cpu_type} in
+          aarch64) macos_maj=11 ;;
+          x86_64) macos_min=6 ;;
+          *)  macos_min=5 ;;
+          esac
+          case ${host} in
+            *-*-darwin*) tm_defines="$tm_defines DARWIN_USE_KERNEL_VERS" ;;
+            *)
+              # If configuring a cross-compiler then we will have set some
+              # default above, but it is probably not what was intended.
+              echo "Warning: Using ${target} is only suitable for Darwin hosts" 1>&2
+              echo "configure with an explicit target version" 1>&2
+              ;;
+          esac
+        ;;
+      *)
+        echo "Error: configuring for an unreleased macOS version ${target}" 1>&2
+        exit 1
+        ;;
   esac
+  tm_defines="$tm_defines DEF_MIN_OSX_VERSION=\\\"${macos_maj}.${macos_min}\\\""
+  tm_defines="$tm_defines DEF_LD64=\\\"${def_ld64}\\\""
   tm_file="${tm_file} ${cpu_type}/darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
   target_gtfiles="$target_gtfiles \$(srcdir)/config/darwin.c"
