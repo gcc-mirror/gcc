@@ -1,3 +1,11 @@
+2020-12-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* encoding.c (_darwin_rs6000_special_round_type_align):
+	Use DFMode in the emulation of the special round type.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.
