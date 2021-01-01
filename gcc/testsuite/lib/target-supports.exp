@@ -326,6 +326,12 @@ proc check_weak_available { } {
 	return 0
     }
 
+    # VxWorks hardly supports it (vx7 RTPs only)
+
+    if { [istarget *-*-vxworks*] } {
+	return 0
+    }
+
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
     # other linkers, so we should try it
 
@@ -2606,6 +2612,11 @@ proc check_function_available { function } {
 # Returns true iff "fork" is available on the target system.
 
 proc check_fork_available {} {
+    if { [istarget *-*-vxworks*] } {
+	# VxWorks doesn't have fork but our way to test can't
+	# tell as we're doing partial links for kernel modules.
+	return 0
+     }    
     return [check_function_available "fork"]
 }
 
@@ -9295,6 +9306,11 @@ proc check_effective_target_gld { } {
 # (LTO) support.
 
 proc check_effective_target_lto { } {
+    if { [istarget *-*-vxworks*] } {
+	# No LTO on VxWorks, with kernel modules
+	# built with partial links
+	return 0
+    }
     if { [istarget nvptx-*-*]
 	 || [istarget amdgcn-*-*] } {
 	return 0;
@@ -9514,6 +9530,11 @@ proc check_effective_target_run_expensive_tests { } {
 # Returns 1 if "mempcpy" is available on the target system.
 
 proc check_effective_target_mempcpy {} {
+    if { [istarget *-*-vxworks*] } {
+	# VxWorks doesn't have mempcpy but our way to test fails
+	# to detect as we're doing partial links for kernel modules.
+	return 0
+     }
     return [check_function_available "mempcpy"]
 }
 
