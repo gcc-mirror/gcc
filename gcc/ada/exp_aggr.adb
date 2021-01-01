@@ -8623,7 +8623,7 @@ package body Exp_Aggr is
       --  Aggregates are not supported for nonstandard rep clauses, since they
       --  may lead to extra padding fields in CCG.
 
-      if Ekind (Etype (N)) in Record_Kind
+      if Is_Record_Type (Etype (N))
         and then Has_Non_Standard_Rep (Etype (N))
       then
          return False;

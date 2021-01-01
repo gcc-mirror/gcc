@@ -10192,7 +10192,7 @@ package body Einfo is
             Write_Eol;
 
          when E_Component =>
-            if Ekind (Scope (Id)) in Record_Kind then
+            if Is_Record_Type (Scope (Id)) then
                Write_Attribute (
                   "   Original_Record_Component   ",
                   Original_Record_Component (Id));
