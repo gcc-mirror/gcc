@@ -4367,6 +4367,10 @@ proc add_options_for_aarch64_sve { flags } {
 # set et_arm_neon_fp16_flags to the best options to add.
 
 proc check_effective_target_arm_fp16_alternative_ok_nocache { } {
+    if { [istarget *-*-vxworks7*] } {
+	# Not supported by the target system.
+	return 0
+    }
     global et_arm_neon_fp16_flags
     set et_arm_neon_fp16_flags ""
     if { [check_effective_target_arm32] } {
