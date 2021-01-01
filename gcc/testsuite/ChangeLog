@@ -1,3 +1,50 @@
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98489
+	PR tree-optimization/56719
+	* gcc.dg/tree-ssa/pr56719.c: Remove semicolon from
+	scan-tree-dump-times regexps.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* gcc.dg/vect/pr98302.c: New test.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94994
+	* gcc.dg/vect/pr94994.c: New test.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98214
+	* gcc.target/aarch64/sve/pr98214.c: New file.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94802
+	* gcc.dg/tree-ssa/pr94802-1.c: New test.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94785
+	* gcc.dg/tree-ssa/pr94785.c: New test.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98474
+	* gcc.c-torture/execute/pr98474.c: New test.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98206
+	* g++.dg/ubsan/align-4.C: New test.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56719
+	* gcc.dg/tree-ssa/pr56719.c: New test.
+
 2020-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/98461

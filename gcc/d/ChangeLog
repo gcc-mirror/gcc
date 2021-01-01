@@ -1,3 +1,7 @@
+2020-12-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 2bd4fc3fe.
+
 2020-12-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-lang.cc (deps_add_target): Handle quoting ':' character.

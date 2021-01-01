@@ -1,3 +1,57 @@
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* tree-vect-patterns.c (vect_determine_precisions_from_users): Make
+	sure that the precision remains greater than the shift count.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94994
+	* tree-vect-data-refs.c (vect_vfa_align): Use dr_alignment.
+
+2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98214
+	* genmodes.c (emit_insn_modes_h): Emit a definition of CONST_MODE_MASK.
+	(emit_mode_mask): Treat mode_mask_array as non-constant if adj_nunits.
+	(emit_mode_adjustments): Update GET_MODE_MASK when updating
+	GET_MODE_NUNITS.
+	* machmode.h (mode_mask_array): Use CONST_MODE_MASK.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94802
+	* match.pd (clz(X) == 0 -> (int)X < 0): New simplification.
+	(clz(X) == (prec-1) -> X == 1): Likewise.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94785
+	* match.pd ((-(X < 0) | 1) * X -> abs (X)): New simplification.
+	((-(X < 0) | 1U) * X -> absu (X)): Likewise.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98474
+	* wide-int.cc (wi::to_mpz): If wide_int has MSB set, but type
+	is unsigned and excess negative, append set bits after len until
+	precision.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98206
+	* fold-const.c: Include asan.h.
+	(fold_unary_loc): Don't optimize (ptr_type) (((ptr_type2) x) p+ y)
+	into ((ptr_type) x) p+ y if sanitizing alignment in GENERIC and
+	ptr_type points to type with higher alignment than ptr_type2.
+
+2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56719
+	* tree-ssa-reassoc.c (optimize_range_tests_cmp_bitwise): Also optimize
+	x < C && y < C && z < C when C is a power of two constant into
+	(x | y | z) < C.
+
 2020-12-30  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove unnecessary clobbers
