@@ -290,7 +290,7 @@ namespace __detail
 
       __node_type* _M_cur;
 
-      _Node_iterator_base() = default;
+      _Node_iterator_base() : _M_cur(nullptr) { }
       _Node_iterator_base(__node_type* __p) noexcept
       : _M_cur(__p) { }
 
@@ -331,8 +331,7 @@ namespace __detail
       using reference = typename std::conditional<__constant_iterators,
 				  const value_type&, value_type&>::type;
 
-      _Node_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_iterator() = default;
 
       explicit
       _Node_iterator(__node_type* __p) noexcept
@@ -379,8 +378,7 @@ namespace __detail
       typedef const value_type*				pointer;
       typedef const value_type&				reference;
 
-      _Node_const_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_const_iterator() = default;
 
       explicit
       _Node_const_iterator(__node_type* __p) noexcept
