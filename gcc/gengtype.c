@@ -1611,7 +1611,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2020 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2021 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
