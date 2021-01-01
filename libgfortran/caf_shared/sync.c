@@ -84,7 +84,7 @@ sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
 
 /* TODO: Maybe check whether synchronizing image is still alive.  */
 void
-sync_table (sync_iface *si, int *images, size_t size)
+sync_table (sync_iface *si, int *images, int size)
 {
 #if defined(DEBUG_NATIVE_COARRAY) && DEBUG_NATIVE_COARRAY
   dprintf (2,
@@ -94,25 +94,48 @@ sync_table (sync_iface *si, int *images, size_t size)
     dprintf (2, "%d ", images[d_i]);
   dprintf (2, "\n");
 #endif
-  size_t i;
+  int i;
   int done;
   int *table = get_locked_table (si);
-  for (i = 0; i < size; i++)
+  if (size > 0)
     {
-      table[images[i] - 1 + local->total_num_images * this_image.image_num]++;
-      pthread_cond_signal (&si->triggers[images[i] - 1]);
-    }
-  for (;;)
-    {
-      done = 1;
       for (i = 0; i < size; i++)
-	done &= si->table[images[i] - 1
-			  + this_image.image_num * local->total_num_images]
-		== si->table[this_image.image_num
-			     + (images[i] - 1) * local->total_num_images];
-      if (done)
-	break;
-      wait_table_cond (si, &si->triggers[this_image.image_num]);
+	{
+	  table[images[i] - 1 + local->total_num_images * this_image.image_num]++;
+	  pthread_cond_signal (&si->triggers[images[i] - 1]);
+	}
+      for (;;)
+	{
+	  done = 1;
+	  for (i = 0; i < size; i++)
+	    done &= si->table[images[i] - 1
+			      + this_image.image_num * local->total_num_images]
+	      == si->table[this_image.image_num
+			   + (images[i] - 1) * local->total_num_images];
+	  if (done)
+	    break;
+	  wait_table_cond (si, &si->triggers[this_image.image_num]);
+	}
+    }
+  else
+    {
+      size = local->total_num_images;
+      for (i = 0; i < size; i++)
+	{
+	  table[i + local->total_num_images * this_image.image_num]++;
+	  pthread_cond_signal (&si->triggers[i]);
+	}
+      for (;;)
+	{
+	  done = 1;
+	  for (i = 0; i < size; i++)
+	    done &= si->table[i + this_image.image_num * local->total_num_images]
+	      == si->table[this_image.image_num
+			   + i * local->total_num_images];
+	  if (done)
+	    break;
+	  wait_table_cond (si, &si->triggers[this_image.image_num]);
+	}
     }
   unlock_table (si);
 }

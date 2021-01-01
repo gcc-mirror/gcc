@@ -63,7 +63,7 @@ export_proto (cas_coarray_num_images);
 void cas_coarray_sync_all (int *);
 export_proto (cas_coarray_sync_all);
 
-void cas_sync_images (size_t, int *, int *, char *, size_t);
+void cas_sync_images (int, int *, int *, char *, size_t);
 export_proto (cas_sync_images);
 
 void cas_lock (void *);
@@ -250,7 +250,7 @@ cas_coarray_sync_all (int *stat)
 }
 
 void
-cas_sync_images (size_t s, int *images, int *stat, char *error,
+cas_sync_images (int s, int *images, int *stat, char *error,
 		 size_t err_size)
 {
   STAT_ERRMSG_ENTRY_CHECK (stat, error, err_size);

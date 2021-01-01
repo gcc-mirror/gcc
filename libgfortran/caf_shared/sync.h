@@ -51,7 +51,7 @@ internal_proto (sync_iface_init);
 void sync_all (sync_iface *);
 internal_proto (sync_all);
 
-void sync_table (sync_iface *, int *, size_t);
+void sync_table (sync_iface *, int *, int);
 internal_proto (sync_table);
 
 #endif
