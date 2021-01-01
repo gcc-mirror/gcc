@@ -929,14 +929,7 @@ package body Switch.C is
                Ptr := Ptr + 1;
                C := Switch_Chars (Ptr);
 
-               if C in '1' .. '5'
-                 or else C = '8'
-                 or else C = '9'
-                 or else C = 'p'
-                 or else C = 'f'
-                 or else C = 'n'
-                 or else C = 'w'
-               then
+               if C in '1' .. '5' | '8' | 'p' | '9' | 'f' | 'n' | 'w' then
                   Identifier_Character_Set := C;
                   Ptr := Ptr + 1;
 

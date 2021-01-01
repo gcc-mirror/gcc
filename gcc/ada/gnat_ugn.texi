@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 11, 2020
+GNAT User's Guide for Native Platforms , Apr 12, 2021
 
 AdaCore
 
@@ -9462,7 +9462,7 @@ For further details see @ref{f,,Elaboration Order Handling in GNAT}.
 
 @item @code{-gnati@emph{c}}
 
-Identifier character set (@code{c} = 1/2/3/4/8/9/p/f/n/w).
+Identifier character set (@code{c} = 1/2/3/4/5/9/p/8/f/n/w).
 For details of the possible selections for @code{c},
 see @ref{31,,Character Set Control}.
 @end table
