@@ -1,4 +1,5 @@
 // { dg-do link }
+// { dg-skip-if "VxWorks dkms use partial link" { vxworks_kernel } }
 // This test should get a linker error for the reference to A<int>::i.
 // { dg-prune-output "ld: symbol" }
 // { dg-message "i" "" { target *-*-* } 0 }
