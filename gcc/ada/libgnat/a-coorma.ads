@@ -61,6 +61,7 @@ is
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
+   pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
