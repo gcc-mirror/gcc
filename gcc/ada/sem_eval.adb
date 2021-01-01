@@ -4363,10 +4363,7 @@ package body Sem_Eval is
          return;
       end if;
 
-      if Etype (Right) = Universal_Integer
-           or else
-         Etype (Right) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (Right)) then
          Otype := Find_Universal_Operator_Type (N);
       end if;
 
@@ -7243,7 +7240,7 @@ package body Sem_Eval is
 
       --  Universal types have no range limits, so always in range
 
-      elsif Typ = Universal_Integer or else Typ = Universal_Real then
+      elsif Is_Universal_Numeric_Type (Typ) then
          return In_Range;
 
       --  Never known if not scalar type. Don't know if this can actually

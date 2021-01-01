@@ -9145,8 +9145,7 @@ package body Exp_Ch4 is
       --  If we are in the right type, we can call runtime routine directly
 
       if Typ = Etyp
-        and then Rtyp /= Universal_Integer
-        and then Rtyp /= Universal_Real
+        and then not Is_Universal_Numeric_Type (Rtyp)
       then
          Rewrite (N,
            Wrap_MA (

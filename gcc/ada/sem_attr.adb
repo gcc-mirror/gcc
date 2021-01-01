@@ -10715,9 +10715,7 @@ package body Sem_Attr is
 
       --  If attribute was universal type, reset to actual type
 
-      if Etype (N) = Universal_Integer
-        or else Etype (N) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (N)) then
          Set_Etype (N, Typ);
       end if;
 

@@ -1853,8 +1853,7 @@ package body Sem_Type is
             begin
                Get_First_Interp (N, I, It);
                while Present (It.Typ) loop
-                  if (It.Typ = Universal_Integer
-                       or else It.Typ = Universal_Real)
+                  if Is_Universal_Numeric_Type (It.Typ)
                     and then (Typ = Any_Type or else Covers (Typ, It.Typ))
                   then
                      return It;
@@ -2284,7 +2283,7 @@ package body Sem_Type is
                --  apply preference rule.
 
                if TR /= Any_Type then
-                  if (T = Universal_Integer or else T = Universal_Real)
+                  if Is_Universal_Numeric_Type (T)
                     and then It.Typ = T
                   then
                      TR := It.Typ;

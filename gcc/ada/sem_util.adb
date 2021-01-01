@@ -29189,9 +29189,7 @@ package body Sem_Util is
       if Nkind (Opnd) = N_Defining_Identifier
         or else not Is_Overloaded (Opnd)
       then
-         if Etype (Opnd) = Universal_Integer
-           or else Etype (Opnd) = Universal_Real
-         then
+         if Is_Universal_Numeric_Type (Etype (Opnd)) then
             return Etype (Opnd);
          else
             return Empty;
@@ -29200,9 +29198,7 @@ package body Sem_Util is
       else
          Get_First_Interp (Opnd, Index, It);
          while Present (It.Typ) loop
-            if It.Typ = Universal_Integer
-              or else It.Typ = Universal_Real
-            then
+            if Is_Universal_Numeric_Type (It.Typ) then
                return It.Typ;
             end if;
 

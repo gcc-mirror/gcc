@@ -4348,8 +4348,7 @@ package body Sem_Ch4 is
               or else
             Covers (T1 => T2, T2 => T1)
          then
-            if T1 = Universal_Integer
-              or else T1 = Universal_Real
+            if Is_Universal_Numeric_Type (T1)
               or else T1 = Any_Character
             then
                Add_One_Interp (N, Base_Type (T2), Base_Type (T2));
@@ -5975,7 +5974,7 @@ package body Sem_Ch4 is
 
       function Specific_Type (T1, T2 : Entity_Id) return Entity_Id is
       begin
-         if T1 = Universal_Integer or else T1 = Universal_Real then
+         if Is_Universal_Numeric_Type (T1) then
             return Base_Type (T2);
          else
             return Base_Type (T1);

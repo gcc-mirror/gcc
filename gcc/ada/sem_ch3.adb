@@ -3569,10 +3569,7 @@ package body Sem_Ch3 is
                if T = Any_Type then
                   T := It.Typ;
 
-               elsif It.Typ = Universal_Real
-                       or else
-                     It.Typ = Universal_Integer
-               then
+               elsif Is_Universal_Numeric_Type (It.Typ) then
                   --  Choose universal interpretation over any other
 
                   T := It.Typ;
