@@ -8800,8 +8800,6 @@ package body Exp_Aggr is
      (N            : Node_Id;
       Default_Size : Nat := 5000) return Nat
    is
-      Typ : constant Entity_Id := Etype (N);
-
       function Use_Small_Size (N : Node_Id) return Boolean;
       --  True if we should return a very small size, which means large
       --  aggregates will be implemented as a loop when possible (potentially
@@ -8810,6 +8808,10 @@ package body Exp_Aggr is
       function Aggr_Context (N : Node_Id) return Node_Id;
       --  Return the context in which the aggregate appears, not counting
       --  qualified expressions and similar.
+
+      ------------------
+      -- Aggr_Context --
+      ------------------
 
       function Aggr_Context (N : Node_Id) return Node_Id is
          Result : Node_Id := Parent (N);
@@ -8827,6 +8829,10 @@ package body Exp_Aggr is
 
          return Result;
       end Aggr_Context;
+
+      --------------------
+      -- Use_Small_Size --
+      --------------------
 
       function Use_Small_Size (N : Node_Id) return Boolean is
          C : constant Node_Id := Aggr_Context (N);
@@ -8858,11 +8864,15 @@ package body Exp_Aggr is
          end case;
       end Use_Small_Size;
 
+      --  Local variables
+
+      Typ : constant Entity_Id := Etype (N);
+
    --  Start of processing for Max_Aggregate_Size
 
    begin
-      --  We use a small limit in CodePeer mode where we favor loops
-      --  instead of thousands of single assignments (from large aggregates).
+      --  We use a small limit in CodePeer mode where we favor loops instead of
+      --  thousands of single assignments (from large aggregates).
 
       --  We also increase the limit to 2**24 (about 16 million) if
       --  Restrictions (No_Elaboration_Code) or Restrictions
