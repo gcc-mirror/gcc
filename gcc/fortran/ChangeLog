@@ -1,3 +1,20 @@
+2021-01-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* class.c (gfc_find_vtab): Add check on attribute is_class.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.c (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* ChangeLog-2020: Rotate ChangeLog.  New file.
+
 
 Copyright (C) 2021 Free Software Foundation, Inc.
 

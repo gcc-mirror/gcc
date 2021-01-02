@@ -1,3 +1,22 @@
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c (print_version): Ditto.
+	* gcov.c (print_version): Ditto.
+	* gcov-tool.c (print_version): Ditto.
+	* gengtype.c (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* ChangeLog-2020: Rotate ChangeLog.  New file.
+
 
 Copyright (C) 2021 Free Software Foundation, Inc.
 

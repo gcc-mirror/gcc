@@ -1,3 +1,7 @@
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

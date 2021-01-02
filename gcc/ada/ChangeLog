@@ -1,3 +1,12 @@
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnat_ugn.texi: Bump @copying's copyright year.
+	* gnat_rm.texi: Likewise.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* ChangeLog-2020: Rotate ChangeLog.  New file.
+
 
 Copyright (C) 2021 Free Software Foundation, Inc.
 

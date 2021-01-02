@@ -1,3 +1,100 @@
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* ChangeLog-2020: Rotate ChangeLog.  New file.
+
+2021-01-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_alternative_ok_nocache):
+	Return zero for *-*-vxworks7r* targets.
+	* gcc.target/arm/aapcs/vfp22.c: Require arm_fp16_alternative_ok.
+	* gcc.target/arm/aapcs/vfp23.c: Likewise.
+	* gcc.target/arm/aapcs/vfp24.c: Likewise.
+	* gcc.target/arm/aapcs/vfp25.c: Likewise.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/init/new26.C: Fix overriding of the delete operator
+	for c++14 profile.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/tls/pr79288.C: Skip on vxworks_kernel (TLS model
+	not supported).
+
+2021-01-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.target/arm/memset-inline-2.c: Add -mno-long-calls to
+	the test's dg-options.
+	* gcc.target/arm/pr78255-2.c: Likewise.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.old-deja/g++.mike/p658.C: Also undefine OK on VxWorks RTP.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/opt/20050511-1.C: Work around UINT32 in vxworks rtp
+	headers too.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.old-deja/g++.pt/const2.C: Skip on vxworks kernel.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/warn/miss-format-1.C: Remove vxworks-specific test
+	directives.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/tree-ssa/copyprop.C: Undefine ERROR if defined.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/other/anon5.C: Skip on vxworks kernel.
+
+2021-01-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gcc.dg/vxworks/initpri1.c: Tigthen VxWorks version check.
+	* gcc.dg/vxworks/initpri2.c: Likewise.
+
+2021-01-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.dg/intmax_t-1.c: Do not expect an error on *-*-vxworks7r*
+	targets.
+
+2021-01-01  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/pthread-init-1.c: Fix the VxWorks xfail filters.
+	* gcc.dg/pthread-init-2.c: Ditto.
+
+2021-01-01  Olivier Hainque  <hainque@adacore.com>
+
+	* lib/target-supports.exp (check_weak_available,
+	check_fork_available, check_effective_target_lto,
+	check_effective_target_mempcpy): Add vxworks filters.
+
+2021-01-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_libcall1.c: Pass an
+	explicit -mno-long-calls.
+	* gcc.target/arm/mve/intrinsics/mve_libcall2.c: Likewise.
+
+2021-01-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.target/arm/no_unique_address_1.C: Add -mno-long-calls.
+	* g++.target/arm/no_unique_address_2.C: Likewise.
+
+2021-01-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/headmerge-1.c: Add -mno-long-calls.
+	* gcc.target/arm/headmerge-2.c: Likewise.
+
+2021-01-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/fp16-aapcs-2.c: Use -mno-long-calls.
+
 
 Copyright (C) 2021 Free Software Foundation, Inc.
 
