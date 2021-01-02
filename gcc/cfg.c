@@ -102,8 +102,7 @@ free_block (basic_block bb)
    bb->succs = NULL;
    vec_free (bb->preds);
    bb->preds = NULL;
-   /* Do not free BB itself yet since we leak pointers to dead statements
-      that points to dead basic blocks.  */
+   ggc_free (bb);
 }
 
 /* Free the memory associated with the CFG in FN.  */
