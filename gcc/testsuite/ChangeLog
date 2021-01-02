@@ -1,3 +1,11 @@
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: Allow for Darwin19 (macOS 10.15)
+	and Darwin20 (macOS 11.0).
+
 2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793

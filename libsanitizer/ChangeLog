@@ -1,3 +1,10 @@
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Allow x86_64 Darwin2x.
+
 2020-08-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sanitizer_common/sanitizer_linux.cpp: Cherry-pick llvm-project

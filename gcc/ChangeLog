@@ -1,3 +1,41 @@
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): Allow
+	MACOSX_DEPLOYMENT_TARGET=11.
+	(darwin_default_min_version): Adjust warning spelling to avoid
+	an apostrophe.
+
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_find_version_from_kernel):
+	Compute the minor OS version from the minor kernel version.
+
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c: Allow for Darwin20 to correspond to macOS 11.
+	* config/darwin-driver.c: Likewise.
+
+2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/host-darwin.c: Align pch_address_space to 16384.
+
+2021-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_init_memtag_builtins): Manually initialize instead
+	of using a C++11 brace-init-list.
+
+2021-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/aarch64/driver-aarch64.c
+	(aarch64_get_extension_string_for_isa_flags): Adjust signature.
+
 2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793
