@@ -5257,6 +5257,7 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   fini_constexpr ();
+  cp_tree_c_finish_parsing ();
   clear_consteval_vfns (consteval_vtables);
 
   /* The entire file is now complete.  If requested, dump everything

@@ -8238,6 +8238,8 @@ struct uid_sensitive_constexpr_evaluation_checker
   bool evaluation_restricted_p () const;
 };
 
+void cp_tree_c_finish_parsing ();
+
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);
 extern void cp_ubsan_instrument_member_accesses (tree *);

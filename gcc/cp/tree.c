@@ -5926,6 +5926,15 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
   return false;
 }
 
+/* Release memory we no longer need after parsing.  */
+void
+cp_tree_c_finish_parsing ()
+{
+  if (previous_class_level)
+    invalidate_class_lookup_cache ();
+  deleted_copy_types = NULL;
+}
+
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree
    node has been accessed improperly.  */
