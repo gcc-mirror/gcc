@@ -1,3 +1,9 @@
+2021-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (cp_tree_c_finish_parsing): Declare.
+	* decl2.c (c_parse_final_cleanups): Call cp_tree_c_finish_parsing.
+	* tree.c (cp_tree_c_finish_parsing): New function.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* ChangeLog-2020: Rotate ChangeLog.  New file.

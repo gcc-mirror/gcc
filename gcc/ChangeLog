@@ -1,3 +1,57 @@
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (MIN_LD64_NO_COAL_SECTS): Adjust.
+	Amend handling for LD64_VERSION fallback defaults.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Compute default version information
+	from the configured target.  Likewise defaults for
+	ld64.
+	* config/darwin10.h: Removed.
+	* config/darwin12.h: Removed.
+	* config/darwin9.h: Removed.
+	* config/rs6000/darwin8.h: Removed.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Delete.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin9.h (STACK_CHECK_STATIC_BUILTIN): Move from here..
+	* config/darwin.h (STACK_CHECK_STATIC_BUILTIN): .. to here.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Move from
+	here...
+	* config/darwin.h (LINK_GCC_C_SEQUENCE_SPEC): ... to here.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Move the spec
+	for the Darwin10 unwinder stub from here ...
+	* config/darwin.h (LINK_COMMAND_SPEC_A): ... to here.
+
+2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DSYMUTIL_SPEC): Default to DWARF
+	(ASM_DEBUG_SPEC):Only define if the assembler supports
+	stabs.
+	(PREFERRED_DEBUGGING_TYPE): Default to DWARF.
+	(DARWIN_PREFER_DWARF): Define.
+	* config/darwin9.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	(DARWIN_PREFER_DWARF): Likewise
+	(DSYMUTIL_SPEC): Likewise.
+	(COLLECT_RUN_DSYMUTIL): Likewise.
+	(ASM_DEBUG_SPEC): Likewise.
+	(ASM_DEBUG_OPTION_SPEC): Likewise.
+
+2021-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (free_block): ggc_free bb.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (process_command): Update copyright notice dates.
