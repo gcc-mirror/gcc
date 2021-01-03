@@ -82,7 +82,6 @@ package body Styleg is
    function Is_White_Space (C : Character) return Boolean;
    pragma Inline (Is_White_Space);
    --  Returns True for space or HT, False otherwise
-   --  What about VT and FF, should they return True ???
 
    procedure Require_Following_Space;
    pragma Inline (Require_Following_Space);
@@ -98,12 +97,13 @@ package body Styleg is
    -- Check_Abs_Or_Not --
    ----------------------
 
-   --  In check token mode (-gnatyt), ABS/NOT must be followed by a space
+   --  In check token mode (-gnatyt), ABS/NOT must be followed by a space or
+   --  a line feed.
 
    procedure Check_Abs_Not is
    begin
       if Style_Check_Tokens then
-         if Source (Scan_Ptr) > ' ' then -- ???
+         if Source (Scan_Ptr) not in ' ' | ASCII.CR | ASCII.LF then
             Error_Space_Required (Scan_Ptr);
          end if;
       end if;
@@ -113,7 +113,7 @@ package body Styleg is
    -- Check_Apostrophe --
    ----------------------
 
-   --  Do not allow space before or after apostrophe -- OR AFTER???
+   --  Do not allow space after apostrophe
 
    procedure Check_Apostrophe is
    begin
