@@ -8,11 +8,11 @@ package generate
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"go/parser"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -160,7 +160,7 @@ func init() {
 	CmdGenerate.Flag.StringVar(&generateRunFlag, "run", "", "")
 }
 
-func runGenerate(cmd *base.Command, args []string) {
+func runGenerate(ctx context.Context, cmd *base.Command, args []string) {
 	load.IgnoreImports = true
 
 	if generateRunFlag != "" {
@@ -175,7 +175,7 @@ func runGenerate(cmd *base.Command, args []string) {
 
 	// Even if the arguments are .go files, this loop suffices.
 	printed := false
-	for _, pkg := range load.PackagesAndErrors(args) {
+	for _, pkg := range load.PackagesAndErrors(ctx, args) {
 		if modload.Enabled() && pkg.Module != nil && !pkg.Module.Main {
 			if !printed {
 				fmt.Fprintf(os.Stderr, "go: not generating in packages in dependency modules\n")
@@ -200,7 +200,7 @@ func runGenerate(cmd *base.Command, args []string) {
 
 // generate runs the generation directives for a single file.
 func generate(absFile string) bool {
-	src, err := ioutil.ReadFile(absFile)
+	src, err := os.ReadFile(absFile)
 	if err != nil {
 		log.Fatalf("generate: %s", err)
 	}

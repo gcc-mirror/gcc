@@ -187,7 +187,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (NULLPTR_TYPE_P (type))
     init = build_int_cst (type, 0);
   else if (SCALAR_TYPE_P (type))
-    init = fold (convert (type, integer_zero_node));
+    init = build_zero_cst (type);
   else if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
     {
       tree field;
@@ -1922,7 +1922,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   in an exception region.  */;
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
-			    flags, complain);
+			    flags, complain | tf_no_cleanup);
 
       if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
 	/* We need to protect the initialization of a catch parm with a
@@ -2957,7 +2957,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       return error_mark_node;
     }
 
-  if (is_std_init_list (elt_type))
+  if (is_std_init_list (elt_type) && !cp_unevaluated_operand)
     warning (OPT_Winit_list_lifetime,
 	     "%<new%> of %<initializer_list%> does not "
 	     "extend the lifetime of the underlying array");
@@ -3766,7 +3766,11 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
 
   /* P1009: Array size deduction in new-expressions.  */
   const bool array_p = TREE_CODE (type) == ARRAY_TYPE;
-  if (*init && (array_p || (nelts && cxx_dialect >= cxx20)))
+  if (*init
+      /* If ARRAY_P, we have to deduce the array bound.  For C++20 paren-init,
+	 we have to process the parenthesized-list.  But don't do it for (),
+	 which is value-initialization, and INIT should stay empty.  */
+      && (array_p || (cxx_dialect >= cxx20 && nelts && !(*init)->is_empty ())))
     {
       /* This means we have 'new T[]()'.  */
       if ((*init)->is_empty ())

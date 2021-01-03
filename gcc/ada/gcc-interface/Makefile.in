@@ -110,7 +110,7 @@ NO_INLINE_ADAFLAGS = -fno-inline
 NO_OMIT_ADAFLAGS = -fno-omit-frame-pointer
 NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
 NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
-GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
+GNATLIBFLAGS = -W -Wall -gnatg -nostdinc
 GNATLIBCFLAGS = -g -O2
 # Pretend that _Unwind_GetIPInfo is available for the target by default.  This
 # should be autodetected during the configuration of libada and passed down to
@@ -216,7 +216,7 @@ endif
 ifneq ($(xmake_file),)
 include $(xmake_file)
 endif
-
+
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../gnat1$(exeext)
@@ -311,7 +311,7 @@ Makefile: ../config.status $(srcdir)/ada/gcc-interface/Makefile.in $(srcdir)/ada
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
-
+
 # Lists of files for various purposes.
 
 GNATLINK_OBJS = gnatlink.o \
@@ -338,7 +338,7 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
 # picks up the right files. For a given target this must be coherent
 # with MULTILIB_DIRNAMES defined in gcc/config/target/t-*.
 
-ifeq ($(strip $(filter-out %x86_64, $(target_cpu))),)
+ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
   ifeq ($(strip $(MULTISUBDIR)),/32)
     target_cpu:=i686
   else
@@ -346,6 +346,11 @@ ifeq ($(strip $(filter-out %x86_64, $(target_cpu))),)
       target_cpu:=x32
     endif
   endif
+endif
+
+# The SuSE PowerPC64/Linux compiler is actually a 32-bit PowerPC compiler
+ifeq ($(strip $(filter-out powerpc64 suse linux%, $(target_cpu) $(target_vendor) $(target_os))),)
+  target_cpu:=powerpc
 endif
 
 # Configuration of host tools

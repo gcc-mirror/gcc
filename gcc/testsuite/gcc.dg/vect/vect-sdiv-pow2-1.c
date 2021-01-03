@@ -62,7 +62,10 @@ main (void)
     {
       int p = power2 (fns[i].po2);
       for (int j = 0; j < N; j++)
-        a[j] = ((p << 4) * j) / (N - 1) - (p << 5);
+	{
+	  a[j] = ((p << 4) * j) / (N - 1) - (p << 5);
+	  asm volatile ("" ::: "memory");
+	}
 
       fns[i].div (b, a, N);
       fns[i].mod (c, a, N);

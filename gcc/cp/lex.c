@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "gcc-rich-location.h"
 #include "cp-name-hint.h"
+#include "langhooks.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -235,6 +236,8 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_coroutines)
     mask |= D_CXX_COROUTINES;
+  if (!flag_modules)
+    mask |= D_CXX_MODULES;
   if (!flag_tm)
     mask |= D_TRANSMEM;
   if (!flag_char8_t)
@@ -378,7 +381,206 @@ interface_strcmp (const char* s)
   return 1;
 }
 
-
+/* We've just read a cpp-token, figure out our next state.  Hey, this
+   is a hand-coded co-routine!  */
+
+struct module_token_filter
+{
+  enum state
+  {
+   idle,
+   module_first,
+   module_cont,
+   module_end,
+  };
+
+  enum state state : 8;
+  bool is_import : 1;
+  bool got_export : 1;
+  bool got_colon : 1;
+  bool want_dot : 1;
+
+  location_t token_loc;
+  cpp_reader *reader;
+  module_state *module;
+  module_state *import;
+
+  module_token_filter (cpp_reader *reader)
+    : state (idle), is_import (false),
+    got_export (false), got_colon (false), want_dot (false),
+    token_loc (UNKNOWN_LOCATION),
+    reader (reader), module (NULL), import (NULL)
+  {
+  };
+
+  /* Process the next token.  Note we cannot see CPP_EOF inside a
+     pragma -- a CPP_PRAGMA_EOL always happens.  */
+  uintptr_t resume (int type, int keyword, tree value, location_t loc)
+  {
+    unsigned res = 0;
+
+    switch (state)
+      {
+      case idle:
+	if (type == CPP_KEYWORD)
+	  switch (keyword)
+	    {
+	    default:
+	      break;
+
+	    case RID__EXPORT:
+	      got_export = true;
+	      res = lang_hooks::PT_begin_pragma;
+	      break;
+
+	    case RID__IMPORT:
+	      is_import = true;
+	      /* FALLTHRU */
+	    case RID__MODULE:
+	      state = module_first;
+	      want_dot = false;
+	      got_colon = false;
+	      token_loc = loc;
+	      import = NULL;
+	      if (!got_export)
+		res = lang_hooks::PT_begin_pragma;
+	      break;
+	    }
+	break;
+
+      case module_first:
+	if (is_import && type == CPP_HEADER_NAME)
+	  {
+	    /* A header name.  The preprocessor will have already
+	       done include searching and canonicalization.  */
+	    state = module_end;
+	    goto header_unit;
+	  }
+	
+	if (type == CPP_PADDING || type == CPP_COMMENT)
+	  break;
+
+	state = module_cont;
+	if (type == CPP_COLON && module)
+	  {
+	    got_colon = true;
+	    import = module;
+	    break;
+	  }
+	/* FALLTHROUGH  */
+
+      case module_cont:
+	switch (type)
+	  {
+	  case CPP_PADDING:
+	  case CPP_COMMENT:
+	    break;
+
+	  default:
+	    /* If we ever need to pay attention to attributes for
+	       header modules, more logic will be needed.  */
+	    state = module_end;
+	    break;
+
+	  case CPP_COLON:
+	    if (got_colon)
+	      state = module_end;
+	    got_colon = true;
+	    /* FALLTHROUGH  */
+	  case CPP_DOT:
+	    if (!want_dot)
+	      state = module_end;
+	    want_dot = false;
+	    break;
+
+	  case CPP_PRAGMA_EOL:
+	    goto module_end;
+
+	  case CPP_NAME:
+	    if (want_dot)
+	      {
+		/* Got name instead of [.:].  */
+		state = module_end;
+		break;
+	      }
+	  header_unit:
+	    import = get_module (value, import, got_colon);
+	    want_dot = true;
+	    break;
+	  }
+	break;
+
+      case module_end:
+	if (type == CPP_PRAGMA_EOL)
+	  {
+	  module_end:;
+	    /* End of the directive, handle the name.  */
+	    if (import)
+	      if (module_state *m
+		  = preprocess_module (import, token_loc, module != NULL,
+				       is_import, got_export, reader))
+		if (!module)
+		  module = m;
+
+	    is_import = got_export = false;
+	    state = idle;
+	  }
+	break;
+      }
+
+    return res;
+  }
+};
+
+/* Initialize or teardown.  */
+
+uintptr_t
+module_token_cdtor (cpp_reader *pfile, uintptr_t data_)
+{
+  if (module_token_filter *filter = reinterpret_cast<module_token_filter *> (data_))
+    {
+      preprocessed_module (pfile);
+      delete filter;
+      data_ = 0;
+    }
+  else if (modules_p ())
+    data_ = reinterpret_cast<uintptr_t > (new module_token_filter (pfile));
+
+  return data_;
+}
+
+uintptr_t
+module_token_lang (int type, int keyword, tree value, location_t loc,
+		   uintptr_t data_)
+{
+  module_token_filter *filter = reinterpret_cast<module_token_filter *> (data_);
+  return filter->resume (type, keyword, value, loc);
+}
+
+uintptr_t
+module_token_pre (cpp_reader *pfile, const cpp_token *tok, uintptr_t data_)
+{
+  if (!tok)
+    return module_token_cdtor (pfile, data_);
+
+  int type = tok->type;
+  int keyword = RID_MAX;
+  tree value = NULL_TREE;
+
+  if (tok->type == CPP_NAME)
+    {
+      value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+      if (IDENTIFIER_KEYWORD_P (value))
+	{
+	  keyword = C_RID_CODE (value);
+	  type = CPP_KEYWORD;
+	}
+    }
+  else if (tok->type == CPP_HEADER_NAME)
+    value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
+
+  return module_token_lang (type, keyword, value, tok->src_loc, data_);
+}
 
 /* Parse a #pragma whose sole argument is a string constant.
    If OPT is true, the argument is optional.  */
@@ -678,7 +880,7 @@ build_lang_decl_loc (location_t loc, enum tree_code code, tree name, tree type)
 /* Maybe add a raw lang_decl to T, a decl.  Return true if it needed
    one.  */
 
-static bool
+bool
 maybe_add_lang_decl_raw (tree t, bool decomp_p)
 {
   size_t size;
@@ -804,6 +1006,12 @@ cxx_dup_lang_specific_decl (tree node)
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
 
+  /* Directly clear some flags that do not apply to the copy
+     (module_purview_p still does).  */
+  ld->u.base.module_entity_p = false;
+  ld->u.base.module_import_p = false;
+  ld->u.base.module_pending_p = false;
+  
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_decl] += 1;
@@ -831,8 +1039,7 @@ copy_lang_type (tree node)
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  struct lang_type *lt
-    = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
+  auto *lt = (struct lang_type *) ggc_internal_alloc (sizeof (struct lang_type));
 
   memcpy (lt, TYPE_LANG_SPECIFIC (node), (sizeof (struct lang_type)));
   TYPE_LANG_SPECIFIC (node) = lt;
@@ -858,15 +1065,15 @@ copy_type (tree type MEM_STAT_DECL)
 
 /* Add a raw lang_type to T, a type, should it need one.  */
 
-static bool
+bool
 maybe_add_lang_type_raw (tree t)
 {
   if (!RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
     return false;
   
-  TYPE_LANG_SPECIFIC (t)
-    = (struct lang_type *) (ggc_internal_cleared_alloc
-			    (sizeof (struct lang_type)));
+  auto *lt = (struct lang_type *) (ggc_internal_cleared_alloc
+				   (sizeof (struct lang_type)));
+  TYPE_LANG_SPECIFIC (t) = lt;
 
   if (GATHER_STATISTICS)
     {

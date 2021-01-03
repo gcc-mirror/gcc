@@ -70,7 +70,7 @@ func TestMemoryProfiler(t *testing.T) {
 		runtime.MemProfileRate = oldRate
 	}()
 
-	// Allocate a meg to ensure that mcache.next_sample is updated to 1.
+	// Allocate a meg to ensure that mcache.nextSample is updated to 1.
 	for i := 0; i < 1024; i++ {
 		memSink = make([]byte, 1024)
 	}
@@ -91,35 +91,35 @@ func TestMemoryProfiler(t *testing.T) {
 		stk    []string
 		legacy string
 	}{{
-		stk: []string{"pprof.allocatePersistent1K", "runtime/pprof.TestMemoryProfiler"},
+		stk: []string{"runtime/pprof.allocatePersistent1K", "runtime/pprof.TestMemoryProfiler"},
 		legacy: fmt.Sprintf(`%v: %v \[%v: %v\] @ 0x[0-9,a-f x]+
-#	0x[0-9,a-f]+	pprof\.allocatePersistent1K\+0x[0-9,a-f]+	.*/mprof_test\.go:47
+#	0x[0-9,a-f]+	runtime/pprof\.allocatePersistent1K\+0x[0-9,a-f]+	.*/mprof_test\.go:47
 #	0x[0-9,a-f]+	runtime/pprof\.TestMemoryProfiler\+0x[0-9,a-f]+	.*/mprof_test\.go:82
 `, 32*memoryProfilerRun, 1024*memoryProfilerRun, 32*memoryProfilerRun, 1024*memoryProfilerRun),
 	}, {
-		stk: []string{"pprof.allocateTransient1M", "runtime/pprof.TestMemoryProfiler"},
+		stk: []string{"runtime/pprof.allocateTransient1M", "runtime/pprof.TestMemoryProfiler"},
 		legacy: fmt.Sprintf(`(0|%v): (0|%v) \[%v: %v\] @ 0x[0-9,a-f x]+
-#	0x[0-9,a-f]+	pprof\.allocateTransient1M\+0x[0-9,a-f]+	.*/mprof_test.go:24
+#	0x[0-9,a-f]+	runtime/pprof\.allocateTransient1M\+0x[0-9,a-f]+	.*/mprof_test.go:24
 #	0x[0-9,a-f]+	runtime/pprof\.TestMemoryProfiler\+0x[0-9,a-f]+	.*/mprof_test.go:79
 `, (1<<10)*memoryProfilerRun, (1<<20)*memoryProfilerRun, (1<<10)*memoryProfilerRun, (1<<20)*memoryProfilerRun),
 	}, {
-		stk: []string{"pprof.allocateTransient2M", "runtime/pprof.TestMemoryProfiler"},
+		stk: []string{"runtime/pprof.allocateTransient2M", "runtime/pprof.TestMemoryProfiler"},
 		// This should start with "0: 0" but gccgo's imprecise
 		// GC means that sometimes the value is not collected.
 		legacy: fmt.Sprintf(`(0|%v): (0|%v) \[%v: %v\] @ 0x[0-9,a-f x]+
-#	0x[0-9,a-f]+	pprof\.allocateTransient2M\+0x[0-9,a-f]+	.*/mprof_test.go:30
+#	0x[0-9,a-f]+	runtime/pprof\.allocateTransient2M\+0x[0-9,a-f]+	.*/mprof_test.go:30
 #	0x[0-9,a-f]+	runtime/pprof\.TestMemoryProfiler\+0x[0-9,a-f]+	.*/mprof_test.go:80
 `, memoryProfilerRun, (2<<20)*memoryProfilerRun, memoryProfilerRun, (2<<20)*memoryProfilerRun),
 	}, {
-		stk: []string{"pprof.allocateTransient2MInline", "runtime/pprof.TestMemoryProfiler"},
+		stk: []string{"runtime/pprof.allocateTransient2MInline", "runtime/pprof.TestMemoryProfiler"},
 		legacy: fmt.Sprintf(`(0|%v): (0|%v) \[%v: %v\] @ 0x[0-9,a-f x]+
-#	0x[0-9,a-f]+	pprof\.allocateTransient2MInline\+0x[0-9,a-f]+	.*/mprof_test.go:34
+#	0x[0-9,a-f]+	runtime/pprof\.allocateTransient2MInline\+0x[0-9,a-f]+	.*/mprof_test.go:34
 #	0x[0-9,a-f]+	runtime/pprof\.TestMemoryProfiler\+0x[0-9,a-f]+	.*/mprof_test.go:81
 `, memoryProfilerRun, (4<<20)*memoryProfilerRun, memoryProfilerRun, (4<<20)*memoryProfilerRun),
 	}, {
-		stk: []string{"pprof.allocateReflectTransient"},
+		stk: []string{"runtime/pprof.allocateReflectTransient"},
 		legacy: fmt.Sprintf(`(0|%v): (0|%v) \[%v: %v\] @( 0x[0-9,a-f]+)+
-#	0x[0-9,a-f]+	pprof\.allocateReflectTransient\+0x[0-9,a-f]+	.*/mprof_test.go:55
+#	0x[0-9,a-f]+	runtime/pprof\.allocateReflectTransient\+0x[0-9,a-f]+	.*/mprof_test.go:55
 `, memoryProfilerRun, (3<<20)*memoryProfilerRun, memoryProfilerRun, (3<<20)*memoryProfilerRun),
 	}}
 

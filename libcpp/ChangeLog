@@ -1,3 +1,241 @@
+2020-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_macro): Add imported_p field.
+	(struct cpp_hashnode): Tweak deferred field documentation.
+	* macro.c (_cpp_new_macro): Clear new field.
+	(cpp_get_deferred_macro, get_deferred_or_lazy_macro): Assert
+	more.
+
+2020-12-10  Jason Merrill  <jason@redhat.com>
+
+	* init.c (cpp_init_builtins): Update __cplusplus for C++20.
+
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* charset.c (init_iconv_desc): Initialize "to" and "from" fields.
+	* directives.c (cpp_get_narrow_charset_name): New function.
+	(cpp_get_wide_charset_name): Likewise.
+	* include/cpplib.h (cpp_get_narrow_charset_name): Prototype.
+	(cpp_get_wide_charset_name): Likewise.
+	* internal.h (cset_converter): Add "to" and "from" fields.
+
+2020-11-27  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/97602
+	* directives.c (strtolinenum): Check for overflow before it
+	occurs.  Correct comment.
+
+2020-11-24  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_hashnode): Add deferred field.
+	(cpp_set_deferred_macro): Define.
+	(cpp_get_deferred_macro): Declare.
+	(cpp_macro_definition): Reformat, add overload.
+	(cpp_macro_definition_location): Deal with deferred macro.
+	(cpp_alloc_token_string, cpp_compare_macro): Declare.
+	* internal.h (_cpp_notify_macro_use): Return bool
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (do_undef): Check macro is not undef before
+	warning.
+	(do_ifdef, do_ifndef): Deal with deferred macro.
+	* expr.c (parse_defined): Likewise.
+	* lex.c (cpp_allocate_token_string): Break out of ...
+	(create_literal): ... here.  Call it.
+	(cpp_maybe_module_directive): Deal with deferred macro.
+	* macro.c (cpp_get_token_1): Deal with deferred macro.
+	(warn_of_redefinition): Deal with deferred macro.
+	(compare_macros): Rename to ...
+	(cpp_compare_macro): ... here.  Make extern.
+	(cpp_get_deferred_macro): New.
+	(_cpp_notify_macro_use): Deal with deferred macro, return bool
+	indicating definedness.
+	(cpp_macro_definition): Deal with deferred macro.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (enum cpp_main_search): New.
+	(struct cpp_options): Add main_search field.
+	(cpp_main_loc): Declare.
+	(cpp_retrofit_as_include): Declare.
+	* internal.h (struct cpp_reader): Add main_loc field.
+	(_cpp_in_main_source_file): Not main if main is a header.
+	* init.c (cpp_read_main_file): Use main_search option to locate
+	main file.  Set main_loc
+	* files.c (cpp_retrofit_as_include): New.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (cpp_in_system_header): Rename to ...
+	(_cpp_in_system_header): ... here.
+	(cpp_in_primary_file): Rename to ...
+	(_cpp_in_main_source_file): ... here.  Compare main_file equality
+	and check main_search value.
+	* lex.c (maybe_va_opt_error, _cpp_lex_direct): Adjust for rename.
+	* macro.c (_cpp_builtin_macro_text): Likewise.
+	(replace_args): Likewise.
+	* directives.c (do_include_next): Likewise.
+	(do_pragma_once, do_pragma_system_header): Likewise.
+	* files.c (struct _cpp_file): Delete main_file field.
+	(pch_open): Check pfile->main_file equality.
+	(make_cpp_file): Drop cpp_reader parm, don't set main_file.
+	(_cpp_find_file): Adjust.
+	(_cpp_stack_file): Check pfile->main_file equality.
+	(struct report_missing_guard_data): Add cpp_reader field.
+	(report_missing_guard): Check pfile->main_file equality.
+	(_cpp_report_missing_guards): Adjust.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_options): Add module_directives
+	option.
+	(NODE_MODULE): New node flag.
+	(struct cpp_hashnode): Make rid-code a bitfield, increase bits in
+	flags and swap with type field.
+	* init.c (post_options): Create module-directive identifier nodes.
+	* internal.h (struct lexer_state): Add directive_file_token &
+	n_modules fields.  Add module node enumerator.
+	* lex.c (cpp_maybe_module_directive): New.
+	(_cpp_lex_token): Call it.
+	(cpp_output_token): Add '"' around CPP_HEADER_NAME token.
+	(do_peek_ident, do_peek_module): New.
+	(cpp_directives_only): Detect module-directive lines.
+	* macro.c (cpp_get_token_1): Deal with directive_file_token
+	triggering.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (struct _cpp_file): Add header_unit field.
+	(_cpp_stack_file): Add header unit support.
+	(cpp_find_header_unit): New.
+	* include/cpplib.h (cpp_find_header_unit): Declare.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_options): Add modules to
+	dep-options.
+	* include/mkdeps.h (deps_add_module_target): Declare.
+	(deps_add_module_dep): Declare.
+	* mkdeps.c (class mkdeps): Add modules, module_name, cmi_name,
+	is_header_unit fields.  Adjust cdtors.
+	(deps_add_module_target, deps_add_module_dep): New.
+	(make_write): Write module dependencies, if enabled.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_callbacks): Add
+	user_deferred_macro & translate_include.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (enum lc_reason): Add LC_MODULE.
+	(MAP_MODULE_P): New.
+	(line_map_new_raw): Declare.
+	(linemap_enter_macro): Move declaration from internal.h
+	(linemap_module_loc, linemap_module_reparent)
+	(linemap_module_restore): Declare.
+	(linemap_lookup_macro_indec): Declare.
+	* internal.h (linemap_enter_macro): Moved to line-map.h.
+	* line-map.c (linemap_new_raw): New, broken out of ...
+	(new_linemap): ... here.  Call it.
+	(LAST_SOURCE_LINE_LOCATION): New.
+	(liemap_module_loc, linemap_module_reparent)
+	(linemap_module_restore): New.
+	(linemap_lookup_macro_index): New, broken out of ...
+	(linemap_macro_map_lookup): ... here.  Call it.
+	(linemap_dump): Add module dump.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/97858
+	* mkdeps.c (munge): Drop varadic args, we only ever use one.
+
+2020-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (cpp_classify_number): Update diagnostic for binary
+	constants for C.  Also diagnose binary constants for
+	-Wc11-c2x-compat.
+	* init.c (lang_defaults): Enable binary constants for GNUC2X and
+	STDC2X.
+
+2020-11-13  Piotr H. Dabrowski  <phd@phd.re>
+
+	PR c++/91318
+	* include/cpplib.h: Added cpp_define_unused(), cpp_define_formatted_unused()
+	* directives.c: Likewise.
+
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add bool argument to
+	has_attribute.
+	(enum cpp_builtin_type): Add BT_HAS_STD_ATTRIBUTE.
+	* init.c (builtin_array): Add __has_c_attribute.
+	(cpp_init_special_builtins): Handle BT_HAS_STD_ATTRIBUTE.
+	* macro.c (_cpp_builtin_macro_text): Handle BT_HAS_STD_ATTRIBUTE.
+	Update call to has_attribute for BT_HAS_ATTRIBUTE.
+	* traditional.c (fun_like_macro): Handle BT_HAS_STD_ATTRIBUTE.
+
+2020-11-12  Nicholas Guriev  <guriev-ns@ya.ru>
+
+	PR pch/86674
+	* files.c (_cpp_find_file): Use CPP_DL_NOTE not CPP_DL_ERROR in call to
+	cpp_error.
+
+2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Regenerated from Unicode 13.0.0 data.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (enum class CPP_time_kind): New.
+	(cpp_get_date): Declare.
+	* internal.h (struct cpp_reader): Replace source_date_epoch with
+	time_stamp and time_stamp_kind.
+	* init.c (cpp_create_reader): Initialize them.
+	* macro.c (_cpp_builtin_macro_text): Use cpp_get_date.
+	(cpp_get_date): Broken out from _cpp_builtin_macro_text and
+	genericized.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (cpp_peek_token): Do not peek past CPP_PRAGMA.
+	(_cpp_lex_direct): Handle EOF in pragma when setting need_line,
+	not when needing a line.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (_cpp_clean_line): Fix DOS off-by-one error.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (cpp_read_main_file): Use cpp_get_deps result.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Include cpplib.h
+	(deps_write): Adjust first parm type.
+	* mkdeps.c: Include internal.h
+	(make_write): Adjust first parm type.  Check phony option
+	directly.
+	(deps_write): Adjust first parm type.
+	* init.c (cpp_read_main_file): Use get_deps.
+	* directives.c (cpp_get_deps): Check option before initializing.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (_cpp_notify_macro_use): Add location parm.
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (_cpp_do_file_change): Check we've not changed file
+	when optimizing a rewind.
+	(do_ifdef): Pass location to _cpp_maybe_notify_macro_use.
+	(do_ifndef): Likewise.  Delete obsolete comment about powerpc.
+	* expr.c (parse_defined): Pass location to
+	_cpp_maybe_notify_macro_use.
+	* macro.c (enter_macro_context): Likewise.
+	(warn_of_redefinition): Break out helper function.  Call it.
+	(compare_macros): New function broken out of warn_of_redefinition.
+	(_cpp_new_macro): Zero all fields.
+	(_cpp_notify_macro_use): Add location parameter.
+
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	* lex.c (_cpp_lex_direct): Do not complete EOF processing when

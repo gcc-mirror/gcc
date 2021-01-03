@@ -9,6 +9,7 @@
    systems that don't have the V2 APis).  XFAILing the run is not useful
    since it will XPASS on the sub-set that works.  */
 /* { dg-skip-if "Incompatible" { *-*-darwin* } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */

@@ -1,3 +1,12 @@
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* bootstrap-hwasan.mk: Disable random frame tags for stack-tagging
+	during bootstrap.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* bootstrap-hwasan.mk: New file.
+
 2020-09-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Sync from binutils-gdb.

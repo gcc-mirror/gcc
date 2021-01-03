@@ -447,8 +447,13 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
   if (show_filenames)
     {
       pp_string (pp, colorize_start (pp_show_color (pp), "diff-filename"));
-      pp_printf (pp, "--- %s\n", m_filename);
-      pp_printf (pp, "+++ %s\n", m_filename);
+      /* Avoid -Wformat-diag in non-diagnostic output.  */
+      pp_string (pp, "--- ");
+      pp_string (pp, m_filename);
+      pp_newline (pp);
+      pp_string (pp, "+++ ");
+      pp_string (pp, m_filename);
+      pp_newline (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
     }
 
@@ -519,8 +524,9 @@ edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
     = get_effective_line_count (old_start_of_hunk, old_end_of_hunk);
 
   pp_string (pp, colorize_start (pp_show_color (pp), "diff-hunk"));
-  pp_printf (pp, "@@ -%i,%i +%i,%i @@\n", old_start_of_hunk, old_num_lines,
-	     new_start_of_hunk, new_num_lines);
+  pp_printf (pp, "%s -%i,%i +%i,%i %s",
+	     "@@", old_start_of_hunk, old_num_lines,
+	     new_start_of_hunk, new_num_lines, "@@\n");
   pp_string (pp, colorize_stop (pp_show_color (pp)));
 
   int line_num = old_start_of_hunk;

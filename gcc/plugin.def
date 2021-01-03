@@ -99,6 +99,10 @@ DEFEVENT (PLUGIN_NEW_PASS)
    as a const char* pointer.  */
 DEFEVENT (PLUGIN_INCLUDE_FILE)
 
+/* Called when -fanalyzer starts. The event data is an
+   ana::plugin_analyzer_init_iface *.  */
+DEFEVENT (PLUGIN_ANALYZER_INIT)
+
 /* When adding a new hard-coded plugin event, don't forget to edit in
    file plugin.c the functions register_callback and
    invoke_plugin_callbacks_full accordingly!  */

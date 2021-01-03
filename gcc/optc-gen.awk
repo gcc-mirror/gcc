@@ -104,6 +104,9 @@ for (i = 0; i < n_opts; i++) {
 	enabledby_negarg = nth_arg(3, enabledby_arg);
         lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg);
     }
+
+    if (flag_set_p("Param", flags[i]) && !(opts[i] ~ "^-param="))
+      print "#error Parameter option name '" opts[i] "' must start with '-param='"
 }
 
 
@@ -329,8 +332,6 @@ for (i = 0; i < n_opts; i++) {
 				  print "#error Ignored option with Warn"
         if (var_name(flags[i]) != "")
 				  print "#error Ignored option with Var"
-        if (flag_set_p("Report", flags[i]))
-				  print "#error Ignored option with Report"
       }
     else if (flag_set_p("Deprecated", flags[i]))
         print "#error Deprecated was replaced with WarnRemoved"
@@ -338,8 +339,6 @@ for (i = 0; i < n_opts; i++) {
 			  alias_data = "NULL, NULL, OPT_SPECIAL_warn_removed"
         if (warn_message != "NULL")
 				  print "#error WarnRemoved option with Warn"
-        if (flag_set_p("Report", flags[i]))
-				  print "#error WarnRemoved option with Report"
       }
 		else
 			alias_data = "NULL, NULL, N_OPTS"
@@ -592,5 +591,29 @@ for (i = 0; i < n_opts; i++) {
 }
 print "}               "
 
+split("", var_seen, ":")
+print "\n#if !defined(GENERATOR_FILE) && defined(ENABLE_PLUGIN)"
+print "DEBUG_VARIABLE const struct cl_var cl_vars[] =\n{"
+
+for (i = 0; i < n_opts; i++) {
+	name = var_name(flags[i]);
+	if (name == "")
+		continue;
+	var_seen[name] = 1;
 }
 
+for (i = 0; i < n_extra_vars; i++) {
+	var = extra_vars[i]
+	sub(" *=.*", "", var)
+	name = var
+	sub("^.*[ *]", "", name)
+	sub("\\[.*\\]$", "", name)
+	if (name in var_seen)
+		continue;
+	print "  { " quote name quote ", offsetof (struct gcc_options, x_" name ") },"
+	var_seen[name] = 1
+}
+
+print "  { NULL, (unsigned short) -1 }\n};\n#endif"
+
+}

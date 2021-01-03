@@ -208,6 +208,13 @@ static void gnu_runtime_01_initialize (void)
   type = build_qualified_type (type, TYPE_QUAL_CONST);
   objc_selector_type = build_pointer_type (type);
 
+  /* SEL typedef.  */
+  type = lang_hooks.decls.pushdecl (build_decl (input_location,
+						TYPE_DECL,
+						objc_selector_name,
+						objc_selector_type));
+  TREE_NO_WARNING (type) = 1;
+
   /* typedef id (*IMP)(id, SEL, ...); */
   ftype = build_varargs_function_type_list (objc_object_type,
 					    objc_object_type,

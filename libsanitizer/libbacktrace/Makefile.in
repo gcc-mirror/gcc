@@ -351,6 +351,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 link_libasan = @link_libasan@
+link_libhwasan = @link_libhwasan@
 link_liblsan = @link_liblsan@
 link_libtsan = @link_libtsan@
 link_libubsan = @link_libubsan@

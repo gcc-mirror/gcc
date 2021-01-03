@@ -3885,6 +3885,8 @@ verify_gimple_assign_binary (gassign *stmt)
         return false;
       }
 
+    case WIDEN_PLUS_EXPR:
+    case WIDEN_MINUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       {
@@ -4005,6 +4007,10 @@ verify_gimple_assign_binary (gassign *stmt)
         return false;
       }
 
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
@@ -7966,14 +7972,19 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 		  && decl_is_tm_clone (fndecl));
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
 
-  if (DECL_ATTRIBUTES (fndecl) != NULL_TREE)
+  tree fntype = TREE_TYPE (fndecl);
+  tree attrs[] = { DECL_ATTRIBUTES (fndecl), TYPE_ATTRIBUTES (fntype) };
+
+  for (int i = 0; i != 2; ++i)
     {
+      if (!attrs[i])
+	continue;
+
       fprintf (file, "__attribute__((");
 
       bool first = true;
       tree chain;
-      for (chain = DECL_ATTRIBUTES (fndecl); chain;
-	   first = false, chain = TREE_CHAIN (chain))
+      for (chain = attrs[i]; chain; first = false, chain = TREE_CHAIN (chain))
 	{
 	  if (!first)
 	    fprintf (file, ", ");
@@ -8026,7 +8037,11 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	}
     }
   else
-    fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
+    {
+      print_generic_expr (file, TREE_TYPE (fntype), dump_flags);
+      fprintf (file, " %s %s(", function_name (fun),
+	       tmclone ? "[tm-clone] " : "");
+    }
 
   arg = DECL_ARGUMENTS (fndecl);
   while (arg)

@@ -286,6 +286,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+/* This determines whether or not we support marking sections with
+   SHF_GNU_RETAIN flag.  Also require .init_array/.fini_array section
+   for constructors and destructors.  */
+#ifndef SUPPORTS_SHF_GNU_RETAIN
+#if HAVE_GAS_SHF_GNU_RETAIN && HAVE_INITFINI_ARRAY_SUPPORT
+#define SUPPORTS_SHF_GNU_RETAIN 1
+#else
+#define SUPPORTS_SHF_GNU_RETAIN 0
+#endif
+#endif
+
 /* This determines whether or not we support link-once semantics.  */
 #ifndef SUPPORTS_ONE_ONLY
 #ifdef MAKE_DECL_ONE_ONLY

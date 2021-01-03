@@ -170,6 +170,22 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return (TYPE_UNSIGNED (type)
 	      ? vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab);
 
+    case VEC_WIDEN_PLUS_LO_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_uaddl_lo_optab : vec_widen_saddl_lo_optab);
+
+    case VEC_WIDEN_PLUS_HI_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_uaddl_hi_optab : vec_widen_saddl_hi_optab);
+
+    case VEC_WIDEN_MINUS_LO_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_usubl_lo_optab : vec_widen_ssubl_lo_optab);
+
+    case VEC_WIDEN_MINUS_HI_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_usubl_hi_optab : vec_widen_ssubl_hi_optab);
+
     case VEC_UNPACK_HI_EXPR:
       return (TYPE_UNSIGNED (type)
 	      ? vec_unpacku_hi_optab : vec_unpacks_hi_optab);
@@ -321,6 +337,35 @@ supportable_convert_operation (enum tree_code code,
   return false;
 }
 
+/* Return true iff vec_cmp_optab/vec_cmpu_optab can handle a vector comparison
+   for code CODE, comparing operands of type VALUE_TYPE and producing a result
+   of type MASK_TYPE.  */
+
+static bool
+vec_cmp_icode_p (tree value_type, tree mask_type, enum tree_code code)
+{
+  enum rtx_code rcode = get_rtx_code_1 (code, TYPE_UNSIGNED (value_type));
+  if (rcode == UNKNOWN)
+    return false;
+
+  return can_vec_cmp_compare_p (rcode, TYPE_MODE (value_type),
+				TYPE_MODE (mask_type));
+}
+
+/* Return true iff vec_cmpeq_optab can handle a vector comparison for code
+   CODE, comparing operands of type VALUE_TYPE and producing a result of type
+   MASK_TYPE.  */
+
+static bool
+vec_cmp_eq_icode_p (tree value_type, tree mask_type, enum tree_code code)
+{
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return false;
+
+  return get_vec_cmp_eq_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type))
+	 != CODE_FOR_nothing;
+}
+
 /* Return TRUE if appropriate vector insn is available
    for vector comparison expr with vector type VALUE_TYPE
    and resulting mask with MASK_TYPE.  */
@@ -328,14 +373,8 @@ supportable_convert_operation (enum tree_code code,
 bool
 expand_vec_cmp_expr_p (tree value_type, tree mask_type, enum tree_code code)
 {
-  if (get_vec_cmp_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type),
-			 TYPE_UNSIGNED (value_type)) != CODE_FOR_nothing)
-    return true;
-  if ((code == EQ_EXPR || code == NE_EXPR)
-      && (get_vec_cmp_eq_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type))
-	  != CODE_FOR_nothing))
-    return true;
-  return false;
+  return vec_cmp_icode_p (value_type, mask_type, code)
+	 || vec_cmp_eq_icode_p (value_type, mask_type, code);
 }
 
 /* Return true iff vcond_optab/vcondu_optab can handle a vector
@@ -345,8 +384,12 @@ expand_vec_cmp_expr_p (tree value_type, tree mask_type, enum tree_code code)
 static bool
 vcond_icode_p (tree value_type, tree cmp_op_type, enum tree_code code)
 {
-  return can_vcond_compare_p (get_rtx_code (code, TYPE_UNSIGNED (cmp_op_type)),
-			      TYPE_MODE (value_type), TYPE_MODE (cmp_op_type));
+  enum rtx_code rcode = get_rtx_code_1 (code, TYPE_UNSIGNED (cmp_op_type));
+  if (rcode == UNKNOWN)
+    return false;
+
+  return can_vcond_compare_p (rcode, TYPE_MODE (value_type),
+			      TYPE_MODE (cmp_op_type));
 }
 
 /* Return true iff vcondeq_optab can handle a vector comparison for code CODE,
@@ -377,8 +420,7 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type, enum tree_code code)
 			       TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing)
     return true;
 
-  if (maybe_ne (GET_MODE_SIZE (value_mode), GET_MODE_SIZE (cmp_op_mode))
-      || maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
+  if (maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
     return false;
 
   if (TREE_CODE_CLASS (code) != tcc_comparison)

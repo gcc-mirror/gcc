@@ -49,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       argument_out_of_domain = 			EDOM,
       bad_address = 				EFAULT,
       bad_file_descriptor = 			EBADF,
-#ifdef _GLIBCXX_HAVE_EBADMSG
+#ifdef EBADMSG
       bad_message = 				EBADMSG,
 #endif
       broken_pipe = 				EPIPE,
@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       filename_too_long = 			ENAMETOOLONG,
       function_not_supported = 			ENOSYS,
       host_unreachable = 			EHOSTUNREACH,
-#ifdef _GLIBCXX_HAVE_EIDRM
+#ifdef EIDRM
       identifier_removed = 			EIDRM,
 #endif
       illegal_byte_sequence = 			EILSEQ,
@@ -82,24 +82,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       network_reset = 				ENETRESET,
       network_unreachable = 			ENETUNREACH,
       no_buffer_space = 			ENOBUFS,
-#ifdef _GLIBCXX_HAVE_ECHILD
+#ifdef ECHILD
       no_child_process = 			ECHILD,
 #endif
-#ifdef _GLIBCXX_HAVE_ENOLINK
+#ifdef ENOLINK
       no_link = 				ENOLINK,
 #endif
       no_lock_available = 			ENOLCK,
-#ifdef _GLIBCXX_HAVE_ENODATA
+#ifdef ENODATA
       no_message_available = 			ENODATA,
 #endif
-#ifdef _GLIBCXX_HAVE_ENOMSG
+#ifdef ENOMSG
       no_message = 				ENOMSG,
 #endif
       no_protocol_option = 			ENOPROTOOPT,
-#ifdef _GLIBCXX_HAVE_ENOSPC
+#ifdef ENOSPC
       no_space_on_device = 			ENOSPC,
 #endif
-#ifdef _GLIBCXX_HAVE_ENOSR
+#ifdef ENOSR
       no_stream_resources = 			ENOSR,
 #endif
       no_such_device_or_address = 		ENXIO,
@@ -108,24 +108,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       no_such_process = 			ESRCH,
       not_a_directory = 			ENOTDIR,
       not_a_socket = 				ENOTSOCK,
-#ifdef _GLIBCXX_HAVE_ENOSTR
+#ifdef ENOSTR
       not_a_stream = 				ENOSTR,
 #endif
       not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
-#ifdef _GLIBCXX_HAVE_ENOTSUP
+#ifdef ENOTSUP
       not_supported = 				ENOTSUP,
 #endif
       operation_canceled = 			ECANCELED,
       operation_in_progress = 			EINPROGRESS,
-#ifdef _GLIBCXX_HAVE_EPERM
+#ifdef EPERM
       operation_not_permitted = 		EPERM,
 #endif
       operation_not_supported = 		EOPNOTSUPP,
-#ifdef _GLIBCXX_HAVE_EWOULDBLOCK
+#ifdef EWOULDBLOCK
       operation_would_block = 			EWOULDBLOCK,
 #endif
-#ifdef _GLIBCXX_HAVE_EOWNERDEAD
+#ifdef EOWNERDEAD
       owner_dead = 				EOWNERDEAD,
 #endif
       permission_denied = 			EACCES,
@@ -135,23 +135,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       resource_deadlock_would_occur = 		EDEADLK,
       resource_unavailable_try_again = 		EAGAIN,
       result_out_of_range = 			ERANGE,
-#ifdef _GLIBCXX_HAVE_ENOTRECOVERABLE
+#ifdef ENOTRECOVERABLE
       state_not_recoverable = 			ENOTRECOVERABLE,
 #endif
-#ifdef _GLIBCXX_HAVE_ETIME
+#ifdef ETIME
       stream_timeout = 				ETIME,
 #endif
-#ifdef _GLIBCXX_HAVE_ETXTBSY
+#ifdef ETXTBSY
       text_file_busy = 				ETXTBSY,
 #endif
-#ifdef _GLIBCXX_HAVE_ETIMEDOUT
+#ifdef ETIMEDOUT
       timed_out = 				ETIMEDOUT,
 #endif
       too_many_files_open_in_system = 		ENFILE,
       too_many_files_open = 			EMFILE,
       too_many_links = 				EMLINK,
       too_many_symbolic_link_levels = 		ELOOP,
-#ifdef _GLIBCXX_HAVE_EOVERFLOW
+#ifdef EOVERFLOW
       value_too_large = 			EOVERFLOW,
 #endif
       wrong_protocol_type = 			EPROTOTYPE

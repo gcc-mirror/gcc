@@ -680,22 +680,6 @@ is_invisiref_parm (const_tree t)
 	  && DECL_BY_REFERENCE (t));
 }
 
-/* Return true if the uid in both int tree maps are equal.  */
-
-bool
-cxx_int_tree_map_hasher::equal (cxx_int_tree_map *a, cxx_int_tree_map *b)
-{
-  return (a->uid == b->uid);
-}
-
-/* Hash a UID in a cxx_int_tree_map.  */
-
-unsigned int
-cxx_int_tree_map_hasher::hash (cxx_int_tree_map *item)
-{
-  return item->uid;
-}
-
 /* A stable comparison routine for use with splay trees and DECLs.  */
 
 static int
@@ -898,7 +882,7 @@ static tree genericize_spaceship (tree expr)
   tree type = TREE_TYPE (expr);
   tree op0 = TREE_OPERAND (expr, 0);
   tree op1 = TREE_OPERAND (expr, 1);
-  return genericize_spaceship (type, op0, op1);
+  return genericize_spaceship (input_location, type, op0, op1);
 }
 
 /* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
@@ -1390,6 +1374,14 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  break;
 	}
 
+      if (tree fndecl = cp_get_callee_fndecl (stmt))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	  {
+	    gcc_assert (source_location_current_p (fndecl));
+	    *stmt_p = cxx_constant_value (stmt);
+	    break;
+	  }
+
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
 				| SANITIZE_ALIGNMENT | SANITIZE_VPTR)))
@@ -1566,6 +1558,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       /* These cases are handled by shared code.  */
       c_genericize_control_stmt (stmt_p, walk_subtrees, data,
 				 cp_genericize_r, cp_walk_subtrees);
+      break;
+
+    case BIT_CAST_EXPR:
+      *stmt_p = build1_loc (EXPR_LOCATION (stmt), VIEW_CONVERT_EXPR,
+			    TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
       break;
 
     default:
@@ -2934,6 +2931,21 @@ struct source_location_table_entry_hash
 	    && ref.uid == 0
 	    && ref.var == NULL_TREE);
   }
+
+  static void
+  pch_nx (source_location_table_entry &p)
+  {
+    extern void gt_pch_nx (source_location_table_entry &);
+    gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (source_location_table_entry &p, gt_pointer_operator op, void *cookie)
+  {
+    extern void gt_pch_nx (source_location_table_entry *, gt_pointer_operator,
+			   void *);
+    gt_pch_nx (&p, op, cookie);
+  }
 };
 
 static GTY(()) hash_table <source_location_table_entry_hash>
@@ -3008,7 +3020,7 @@ fold_builtin_source_location (location_t loc)
 	      const char *name = "";
 
 	      if (current_function_decl)
-		name = cxx_printable_name (current_function_decl, 0);
+		name = cxx_printable_name (current_function_decl, 2);
 
 	      val = build_string_literal (strlen (name) + 1, name);
 	    }

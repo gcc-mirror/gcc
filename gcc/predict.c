@@ -243,7 +243,7 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 static bool
 unlikely_executed_edge_p (edge e)
 {
-  return (e->count () == profile_count::zero ()
+  return (e->src->count == profile_count::zero ()
 	  || e->probability == profile_probability::never ())
 	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
@@ -260,13 +260,15 @@ probably_never_executed_edge_p (struct function *fun, edge e)
 
 /* Return true if function FUN should always be optimized for size.  */
 
-bool
+optimize_size_level
 optimize_function_for_size_p (struct function *fun)
 {
   if (!fun || !fun->decl)
-    return optimize_size;
+    return optimize_size ? OPTIMIZE_SIZE_MAX : OPTIMIZE_SIZE_NO;
   cgraph_node *n = cgraph_node::get (fun->decl);
-  return n && n->optimize_for_size_p ();
+  if (n)
+    return n->optimize_for_size_p ();
+  return OPTIMIZE_SIZE_NO;
 }
 
 /* Return true if function FUN should always be optimized for speed.  */
@@ -289,11 +291,16 @@ function_optimization_type (struct function *fun)
 
 /* Return TRUE if basic block BB should be optimized for size.  */
 
-bool
+optimize_size_level
 optimize_bb_for_size_p (const_basic_block bb)
 {
-  return (optimize_function_for_size_p (cfun)
-	  || (bb && !maybe_hot_bb_p (cfun, bb)));
+  enum optimize_size_level ret = optimize_function_for_size_p (cfun);
+
+  if (bb && ret < OPTIMIZE_SIZE_MAX && bb->count == profile_count::zero ())
+    ret = OPTIMIZE_SIZE_MAX;
+  if (bb && ret < OPTIMIZE_SIZE_BALANCED && !maybe_hot_bb_p (cfun, bb))
+    ret = OPTIMIZE_SIZE_BALANCED;
+  return ret;
 }
 
 /* Return TRUE if basic block BB should be optimized for speed.  */
@@ -316,10 +323,16 @@ bb_optimization_type (const_basic_block bb)
 
 /* Return TRUE if edge E should be optimized for size.  */
 
-bool
+optimize_size_level
 optimize_edge_for_size_p (edge e)
 {
-  return optimize_function_for_size_p (cfun) || !maybe_hot_edge_p (e);
+  enum optimize_size_level ret = optimize_function_for_size_p (cfun);
+
+  if (ret < OPTIMIZE_SIZE_MAX && unlikely_executed_edge_p (e))
+    ret = OPTIMIZE_SIZE_MAX;
+  if (ret < OPTIMIZE_SIZE_BALANCED && !maybe_hot_edge_p (e))
+    ret = OPTIMIZE_SIZE_BALANCED;
+  return ret;
 }
 
 /* Return TRUE if edge E should be optimized for speed.  */
@@ -332,10 +345,13 @@ optimize_edge_for_speed_p (edge e)
 
 /* Return TRUE if the current function is optimized for size.  */
 
-bool
+optimize_size_level
 optimize_insn_for_size_p (void)
 {
-  return optimize_function_for_size_p (cfun) || !crtl->maybe_hot_insn_p;
+  enum optimize_size_level ret = optimize_function_for_size_p (cfun);
+  if (ret < OPTIMIZE_SIZE_BALANCED && !crtl->maybe_hot_insn_p)
+    ret = OPTIMIZE_SIZE_BALANCED;
+  return ret;
 }
 
 /* Return TRUE if the current function is optimized for speed.  */
@@ -348,7 +364,7 @@ optimize_insn_for_speed_p (void)
 
 /* Return TRUE if LOOP should be optimized for size.  */
 
-bool
+optimize_size_level
 optimize_loop_for_size_p (class loop *loop)
 {
   return optimize_bb_for_size_p (loop->header);
@@ -392,10 +408,31 @@ optimize_loop_nest_for_speed_p (class loop *loop)
 
 /* Return TRUE if nest rooted at LOOP should be optimized for size.  */
 
-bool
+optimize_size_level
 optimize_loop_nest_for_size_p (class loop *loop)
 {
-  return !optimize_loop_nest_for_speed_p (loop);
+  enum optimize_size_level ret = optimize_loop_for_size_p (loop);
+  class loop *l = loop;
+
+  l = loop->inner;
+  while (l && l != loop)
+    {
+      if (ret == OPTIMIZE_SIZE_NO)
+	break;
+      ret = MIN (optimize_loop_for_size_p (l), ret);
+      if (l->inner)
+        l = l->inner;
+      else if (l->next)
+        l = l->next;
+      else
+        {
+	  while (l != loop && !l->next)
+	    l = loop_outer (l);
+	  if (l != loop)
+	    l = l->next;
+	}
+    }
+  return ret;
 }
 
 /* Return true if edge E is likely to be well predictable by branch
@@ -2167,7 +2204,7 @@ predict_loops (void)
 	     {
 	       gimple *call_stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt));
 	       if (gimple_code (call_stmt) == GIMPLE_ASSIGN
-		   && gimple_expr_code (call_stmt) == NOP_EXPR
+		   && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (call_stmt))
 		   && TREE_CODE (gimple_assign_rhs1 (call_stmt)) == SSA_NAME)
 		 call_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (call_stmt));
 	       if (gimple_call_internal_p (call_stmt, IFN_BUILTIN_EXPECT)

@@ -894,7 +894,10 @@ propagate (void)
     }
 
   if (ipa_ref_opt_sum_summaries == NULL)
-    ipa_ref_opt_sum_summaries = new ipa_ref_opt_summary_t (symtab);
+    {
+      ipa_ref_opt_sum_summaries = new ipa_ref_opt_summary_t (symtab);
+      ipa_ref_opt_sum_summaries->disable_insertion_hook ();
+    }
 
   /* Cleanup. */
   FOR_EACH_DEFINED_FUNCTION (node)
@@ -1130,6 +1133,7 @@ ipa_reference_read_optimization_summary (void)
 
   gcc_checking_assert (ipa_ref_opt_sum_summaries == NULL);
   ipa_ref_opt_sum_summaries = new ipa_ref_opt_summary_t (symtab);
+  ipa_ref_opt_sum_summaries->disable_insertion_hook ();
   ipa_reference_vars_map = new reference_vars_map_t(257);
   varpool_node_hooks
 	 = symtab->add_varpool_removal_hook (varpool_removal_hook, NULL);

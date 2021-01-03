@@ -1,3 +1,47 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-26  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* io/io.h [HAVE_NEWLOCALE]: Also check for HAVE_FREELOCALE and
+	HAVE_USELOCALE.
+	[HAVE_FREELOCALE && HAVE_NEWLOCALE && HAVE_USELOCALE]
+	(HAVE_POSIX_2008_LOCALE): New macro.
+	(st_parameter_dt) [HAVE_NEWLOCALE]: Check for
+	HAVE_POSIX_2008_LOCALE instead.
+	* io/transfer.c (data_transfer_init_worker, finalize_transfer)
+	[HAVE_USELOCALE]: Check for HAVE_POSIX_2008_LOCALE instead.
+	* io/unit.c [HAVE_NEWLOCALE]: Likewise.
+	(init_units) [HAVE_NEWLOCALE]: Likewise.
+	(close_units) [HAVE_FREELOCALE]: Likewise.
+	* runtime/error.c (gf_strerror) [HAVE_USELOCALE]: Likewise.
+
+2020-11-26  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* libgfortran.h: Use #if rather than #ifdef with
+	__FLT_HAS_INFINITY__, __DBL_HAS_INFINITY__,
+	__LDBL_HAS_INFINITY__, __FLT_HAS_QUIET_NAN__,
+	__DBL_HAS_QUIET_NAN__, and __LDBL_HAS_QUIET_NAN__.
+
+2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* intrinsics/execute_command_line.c (environ): Use
+	_NSGetEnviron to get the environment pointer on Darwin.
+
+2020-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* intrinsics/random.c (SZ_IN_INT_4): Define size of state in int32_t.
+	(SZ_IN_INT_8): Define size of state in int64_t.
+	(SZ): Remove.
+	(random_seed_i4): Use size SZ_IN_INT_4 instead of SZ.
+	(random_seed_i8): Use size SZ_IN_INT_8 instead of SZ.
+
 2020-10-18  Harald Anlauf  <anlauf@gmx.de>
 
 	* m4/matmul_internal.m4: Move check for rank-1 times rank-2 before

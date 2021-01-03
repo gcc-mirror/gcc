@@ -725,9 +725,10 @@ c6x_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
     }
 #ifdef CLEAR_INSN_CACHE
   tramp = XEXP (tramp, 0);
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gnu_clear_cache"),
-		     LCT_NORMAL, VOIDmode, tramp, Pmode,
-		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE), Pmode);
+  maybe_emit_call_builtin___clear_cache (tramp,
+					 plus_constant (Pmode,
+							tramp,
+							TRAMPOLINE_SIZE));
 #endif
 }
 

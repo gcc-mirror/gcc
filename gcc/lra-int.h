@@ -319,9 +319,6 @@ extern struct lra_insn_reg *lra_get_insn_regs (int);
 extern void lra_free_copies (void);
 extern void lra_create_copy (int, int, int);
 extern lra_copy_t lra_get_copy (int);
-extern bool lra_former_scratch_p (int);
-extern bool lra_former_scratch_operand_p (rtx_insn *, int);
-extern void lra_register_new_scratch_op (rtx_insn *, int, int);
 
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;

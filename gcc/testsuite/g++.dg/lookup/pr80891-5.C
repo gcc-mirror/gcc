@@ -14,7 +14,7 @@ template <typename, typename, typename, typename,
 struct B {
   B(A, A, int, int, int, int);
   void m_fn1(SubGraphIsoMapCallback p1) {
-    __normal_iterator __trans_tmp_1();
+    __normal_iterator __trans_tmp_1(); // { dg-warning "empty parentheses" }
     p1(__trans_tmp_1, 0);
   }
 };

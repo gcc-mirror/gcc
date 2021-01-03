@@ -51,7 +51,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     auto stem = p.stem();
     auto ext = p.extension();

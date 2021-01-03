@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mandroid
-Target Report Mask(ANDROID) Var(flag_android) Init(ANDROID_DEFAULT ? OPTION_MASK_ANDROID : 0)
+Target Mask(ANDROID) Var(flag_android) Init(ANDROID_DEFAULT ? OPTION_MASK_ANDROID : 0)
 Generate code for the Android platform.
 
 tno-android-cc

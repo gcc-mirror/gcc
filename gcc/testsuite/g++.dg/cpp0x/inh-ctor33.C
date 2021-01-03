@@ -10,7 +10,7 @@ public:
 class Y : public X { };
 
 class Z : public Y {
-  using X::X; // { dg-error "cannot inherit constructors from indirect base .X." }
+  using X::X; // { dg-error ".X. is not a direct base of .Z." }
 };
 
 int main()

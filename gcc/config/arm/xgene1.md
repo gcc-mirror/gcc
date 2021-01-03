@@ -132,7 +132,7 @@
 
 (define_insn_reservation "xgene1_alu" 1
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "alu_imm,alu_sreg,alu_shift_imm,\
+       (eq_attr "type" "alu_imm,alu_sreg,alu_shift_imm_lsl_1to4,alu_shift_imm_other,\
                         alu_ext,adc_reg,logic_imm,\
                         logic_reg,logic_shift_imm,clz,\
                         rbit,adr,mov_reg,shift_imm,\

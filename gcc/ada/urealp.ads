@@ -106,11 +106,23 @@ package Urealp is
    function Ureal_100 return Ureal;
    --  Returns value 100.0
 
+   function Ureal_2_31 return Ureal;
+   --  Returns value 2.0 ** 31
+
+   function Ureal_2_63 return Ureal;
+   --  Returns value 2.0 ** 63
+
    function Ureal_2_80 return Ureal;
    --  Returns value 2.0 ** 80
 
    function Ureal_2_M_80 return Ureal;
    --  Returns value 2.0 ** (-80)
+
+   function Ureal_2_127 return Ureal;
+   --  Returns value 2.0 ** 127
+
+   function Ureal_2_M_127 return Ureal;
+   --  Returns value 2.0 ** (-127)
 
    function Ureal_2_128 return Ureal;
    --  Returns value 2.0 ** 128
@@ -118,11 +130,23 @@ package Urealp is
    function Ureal_2_M_128 return Ureal;
    --  Returns value 2.0 ** (-128)
 
-   function Ureal_10_36 return Ureal;
-   --  Returns value 10.0 ** 36
+   function Ureal_2_10_18 return Ureal;
+   --  Returns value 2.0 * 10.0 ** 18
 
-   function Ureal_M_10_36 return Ureal;
-   --  Returns value -10.0 ** 36
+   function Ureal_M_2_10_18 return Ureal;
+   --  Returns value -2.0 * 10.0 ** 18
+
+   function Ureal_9_10_36 return Ureal;
+   --  Returns value 9.0 * 10.0 ** 36
+
+   function Ureal_M_9_10_36 return Ureal;
+   --  Returns value -9.0 * 10.0 ** 36
+
+   function Ureal_10_76 return Ureal;
+   --  Returns value 10.0 ** 76
+
+   function Ureal_M_10_76 return Ureal;
+   --  Returns value -10.0 ** 76
 
    -----------------
    -- Subprograms --

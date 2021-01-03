@@ -1,5 +1,5 @@
-/* { dg-do run { target { powerpc*-*-linux* && { lp64 && p9vector_hw } } } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-do run } */
+/* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-O3 -mdejagnu-cpu=power9" } */
 
 /* Verify that we get correct code when we vectorize this SAD loop using

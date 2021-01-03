@@ -939,6 +939,19 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       decl_or_type = type;
     }
 
+  /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
+  if ((OUTGOING_REG_PARM_STACK_SPACE (type)
+       != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
+      || (REG_PARM_STACK_SPACE (decl_or_type)
+	  != REG_PARM_STACK_SPACE (current_function_decl)))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "inconsistent size of stack space"
+				      " allocated for arguments which are"
+				      " passed in registers");
+      return false;
+    }
+
   /* Check that the return value locations are the same.  Like
      if we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
@@ -1410,22 +1423,14 @@ ix86_function_arg_regno_p (int regno)
   enum calling_abi call_abi;
   const int *parm_regs;
 
-  if (!TARGET_64BIT)
-    {
-      if (TARGET_MACHO)
-        return (regno < REGPARM_MAX
-                || (TARGET_SSE && SSE_REGNO_P (regno) && !fixed_regs[regno]));
-      else
-        return (regno < REGPARM_MAX
-	        || (TARGET_MMX && MMX_REGNO_P (regno)
-	  	    && (regno < FIRST_MMX_REG + MMX_REGPARM_MAX))
-	        || (TARGET_SSE && SSE_REGNO_P (regno)
-		    && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
-    }
-
   if (TARGET_SSE && SSE_REGNO_P (regno)
-      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
+      && regno < FIRST_SSE_REG + SSE_REGPARM_MAX)
     return true;
+
+   if (!TARGET_64BIT)
+     return (regno < REGPARM_MAX
+	     || (TARGET_MMX && MMX_REGNO_P (regno)
+		 && regno < FIRST_MMX_REG + MMX_REGPARM_MAX));
 
   /* TODO: The function should depend on current function ABI but
      builtins.c would need updating then. Therefore we use the
@@ -3551,6 +3556,302 @@ ix86_function_value_regno_p (const unsigned int regno)
   return false;
 }
 
+/* Check whether the register REGNO should be zeroed on X86.
+   When ALL_SSE_ZEROED is true, all SSE registers have been zeroed
+   together, no need to zero it again.
+   When NEED_ZERO_MMX is true, MMX registers should be cleared.  */
+
+static bool
+zero_call_used_regno_p (const unsigned int regno,
+			bool all_sse_zeroed,
+			bool need_zero_mmx)
+{
+  return GENERAL_REGNO_P (regno)
+	 || (!all_sse_zeroed && SSE_REGNO_P (regno))
+	 || MASK_REGNO_P (regno)
+	 || (need_zero_mmx && MMX_REGNO_P (regno));
+}
+
+/* Return the machine_mode that is used to zero register REGNO.  */
+
+static machine_mode
+zero_call_used_regno_mode (const unsigned int regno)
+{
+  /* NB: We only need to zero the lower 32 bits for integer registers
+     and the lower 128 bits for vector registers since destination are
+     zero-extended to the full register width.  */
+  if (GENERAL_REGNO_P (regno))
+    return SImode;
+  else if (SSE_REGNO_P (regno))
+    return V4SFmode;
+  else if (MASK_REGNO_P (regno))
+    return HImode;
+  else if (MMX_REGNO_P (regno))
+    return V4HImode;
+  else
+    gcc_unreachable ();
+}
+
+/* Generate a rtx to zero all vector registers together if possible,
+   otherwise, return NULL.  */
+
+static rtx
+zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
+{
+  if (!TARGET_AVX)
+    return NULL;
+
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG)
+	 || (TARGET_64BIT
+	     && (REX_SSE_REGNO_P (regno)
+		 || (TARGET_AVX512F && EXT_REX_SSE_REGNO_P (regno)))))
+	&& !TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+      return NULL;
+
+  return gen_avx_vzeroall ();
+}
+
+/* Generate insns to zero all st registers together.
+   Return true when zeroing instructions are generated.
+   Assume the number of st registers that are zeroed is num_of_st,
+   we will emit the following sequence to zero them together:
+		  fldz;		\
+		  fldz;		\
+		  ...
+		  fldz;		\
+		  fstp %%st(0);	\
+		  fstp %%st(0);	\
+		  ...
+		  fstp %%st(0);
+   i.e., num_of_st fldz followed by num_of_st fstp to clear the stack
+   mark stack slots empty.
+
+   How to compute the num_of_st:
+   There is no direct mapping from stack registers to hard register
+   numbers.  If one stack register needs to be cleared, we don't know
+   where in the stack the value remains.  So, if any stack register
+   needs to be cleared, the whole stack should be cleared.  However,
+   x87 stack registers that hold the return value should be excluded.
+   x87 returns in the top (two for complex values) register, so
+   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.  */
+
+
+static bool
+zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
+{
+
+  /* If the FPU is disabled, no need to zero all st registers.  */
+  if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
+    return false;
+
+  unsigned int num_of_st = 0;
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((STACK_REGNO_P (regno) || MMX_REGNO_P (regno))
+	&& TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+      {
+	num_of_st++;
+	break;
+      }
+
+  if (num_of_st == 0)
+    return false;
+
+  bool return_with_x87 = false;
+  return_with_x87 = (crtl->return_rtx
+		     && (STACK_REG_P (crtl->return_rtx)));
+
+  bool complex_return = false;
+  complex_return = (crtl->return_rtx
+		    && COMPLEX_MODE_P (GET_MODE (crtl->return_rtx)));
+
+  if (return_with_x87)
+    if (complex_return)
+      num_of_st = 6;
+    else
+      num_of_st = 7;
+  else
+    num_of_st = 8;
+
+  rtx st_reg = gen_rtx_REG (XFmode, FIRST_STACK_REG);
+  for (unsigned int i = 0; i < num_of_st; i++)
+    emit_insn (gen_rtx_SET (st_reg, CONST0_RTX (XFmode)));
+
+  for (unsigned int i = 0; i < num_of_st; i++)
+    {
+      rtx insn;
+      insn = emit_insn (gen_rtx_SET (st_reg, st_reg));
+      add_reg_note (insn, REG_DEAD, st_reg);
+    }
+  return true;
+}
+
+
+/* When the routine exit in MMX mode, if any ST register needs
+   to be zeroed, we should clear all MMX registers except the
+   RET_MMX_REGNO that holds the return value.  */
+static bool
+zero_all_mm_registers (HARD_REG_SET need_zeroed_hardregs,
+		       unsigned int ret_mmx_regno)
+{
+  bool need_zero_all_mm = false;
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (STACK_REGNO_P (regno)
+	&& TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+      {
+	need_zero_all_mm = true;
+	break;
+      }
+
+  if (!need_zero_all_mm)
+    return false;
+
+  rtx zero_mmx = NULL_RTX;
+  machine_mode mode = V4HImode;
+  for (unsigned int regno = FIRST_MMX_REG; regno <= LAST_MMX_REG; regno++)
+    if (regno != ret_mmx_regno)
+      {
+	rtx reg = gen_rtx_REG (mode, regno);
+	if (zero_mmx == NULL_RTX)
+	  {
+	    zero_mmx = reg;
+	    emit_insn (gen_rtx_SET (reg, CONST0_RTX (mode)));
+	  }
+	else
+	  emit_move_insn (reg, zero_mmx);
+      }
+  return true;
+}
+
+/* TARGET_ZERO_CALL_USED_REGS.  */
+/* Generate a sequence of instructions that zero registers specified by
+   NEED_ZEROED_HARDREGS.  Return the ZEROED_HARDREGS that are actually
+   zeroed.  */
+static HARD_REG_SET
+ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  HARD_REG_SET zeroed_hardregs;
+  bool all_sse_zeroed = false;
+  bool all_st_zeroed = false;
+  bool all_mm_zeroed = false;
+
+  CLEAR_HARD_REG_SET (zeroed_hardregs);
+
+  /* first, let's see whether we can zero all vector registers together.  */
+  rtx zero_all_vec_insn = zero_all_vector_registers (need_zeroed_hardregs);
+  if (zero_all_vec_insn)
+    {
+      emit_insn (zero_all_vec_insn);
+      all_sse_zeroed = true;
+    }
+
+  /* mm/st registers are shared registers set, we should follow the following
+     rules to clear them:
+			MMX exit mode	      x87 exit mode
+	-------------|----------------------|---------------
+	uses x87 reg | clear all MMX	    | clear all x87
+	uses MMX reg | clear individual MMX | clear all x87
+	x87 + MMX    | clear all MMX	    | clear all x87
+
+     first, we should decide which mode (MMX mode or x87 mode) the function
+     exit with.  */
+
+  bool exit_with_mmx_mode = (crtl->return_rtx
+			     && (MMX_REG_P (crtl->return_rtx)));
+
+  if (!exit_with_mmx_mode)
+    /* x87 exit mode, we should zero all st registers together.  */
+    {
+      all_st_zeroed = zero_all_st_registers (need_zeroed_hardregs);
+      if (all_st_zeroed)
+	SET_HARD_REG_BIT (zeroed_hardregs, FIRST_STACK_REG);
+    }
+  else
+    /* MMX exit mode, check whether we can zero all mm registers.  */
+    {
+      unsigned int exit_mmx_regno = REGNO (crtl->return_rtx);
+      all_mm_zeroed = zero_all_mm_registers (need_zeroed_hardregs,
+					     exit_mmx_regno);
+      if (all_mm_zeroed)
+	for (unsigned int regno = FIRST_MMX_REG; regno <= LAST_MMX_REG; regno++)
+	  if (regno != exit_mmx_regno)
+	    SET_HARD_REG_BIT (zeroed_hardregs, regno);
+    }
+
+  /* Now, generate instructions to zero all the other registers.  */
+
+  rtx zero_gpr = NULL_RTX;
+  rtx zero_vector = NULL_RTX;
+  rtx zero_mask = NULL_RTX;
+  rtx zero_mmx = NULL_RTX;
+
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    {
+      if (!TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+	continue;
+      if (!zero_call_used_regno_p (regno, all_sse_zeroed,
+				   exit_with_mmx_mode && !all_mm_zeroed))
+	continue;
+
+      SET_HARD_REG_BIT (zeroed_hardregs, regno);
+
+      rtx reg, tmp, zero_rtx;
+      machine_mode mode = zero_call_used_regno_mode (regno);
+
+      reg = gen_rtx_REG (mode, regno);
+      zero_rtx = CONST0_RTX (mode);
+
+      if (mode == SImode)
+	if (zero_gpr == NULL_RTX)
+	  {
+	    zero_gpr = reg;
+	    tmp = gen_rtx_SET (reg, zero_rtx);
+	    if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
+	      {
+		rtx clob = gen_rtx_CLOBBER (VOIDmode,
+					    gen_rtx_REG (CCmode,
+							 FLAGS_REG));
+		tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
+							     tmp,
+							     clob));
+	      }
+	    emit_insn (tmp);
+	  }
+	else
+	  emit_move_insn (reg, zero_gpr);
+      else if (mode == V4SFmode)
+	if (zero_vector == NULL_RTX)
+	  {
+	    zero_vector = reg;
+	    tmp = gen_rtx_SET (reg, zero_rtx);
+	    emit_insn (tmp);
+	  }
+	else
+	  emit_move_insn (reg, zero_vector);
+      else if (mode == HImode)
+	if (zero_mask == NULL_RTX)
+	  {
+	    zero_mask = reg;
+	    tmp = gen_rtx_SET (reg, zero_rtx);
+	    emit_insn (tmp);
+	  }
+	else
+	  emit_move_insn (reg, zero_mask);
+      else if (mode == V4HImode)
+	if (zero_mmx == NULL_RTX)
+	  {
+	    zero_mmx = reg;
+	    tmp = gen_rtx_SET (reg, zero_rtx);
+	    emit_insn (tmp);
+	  }
+	else
+	  emit_move_insn (reg, zero_mmx);
+      else
+	gcc_unreachable ();
+    }
+  return zeroed_hardregs;
+}
+
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
@@ -3796,9 +4097,6 @@ ix86_libcall_value (machine_mode mode)
 static bool
 ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-#ifdef SUBTARGET_RETURN_IN_MEMORY
-  return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
-#else
   const machine_mode mode = type_natural_mode (type, NULL, true);
   HOST_WIDE_INT size;
 
@@ -3879,7 +4177,6 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
       return false;
     }
-#endif
 }
 
 
@@ -5197,6 +5494,9 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 ix86_can_use_return_insn_p (void)
 {
+  if (ix86_function_ms_hook_prologue (current_function_decl))
+    return false;
+
   if (ix86_function_naked (current_function_decl))
     return false;
 
@@ -7851,7 +8151,11 @@ ix86_expand_prologue (void)
   rtx static_chain = NULL_RTX;
 
   if (ix86_function_naked (current_function_decl))
-    return;
+    {
+      if (flag_stack_usage_info)
+	current_function_static_stack_size = 0;
+      return;
+    }
 
   ix86_finalize_stack_frame_flags ();
 
@@ -18585,6 +18889,22 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
+/* Return true if a set of DST by the expression SRC should be allowed.
+   This prevents complex sets of likely_spilled hard regs before reload.  */
+
+bool
+ix86_hardreg_mov_ok (rtx dst, rtx src)
+{
+  /* Avoid complex sets of likely_spilled hard registers before reload.  */
+  if (REG_P (dst) && HARD_REGISTER_P (dst)
+      && !REG_P (src) && !MEM_P (src)
+      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
+      && !reload_completed)
+    return false;
+  return true;
+}
+
 /* If we are copying between registers from different register sets
    (e.g. FP and integer), we may need a memory location.
 
@@ -21188,40 +21508,18 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 	  continue;
 	}
 
-      if (dest_mode == DImode && !TARGET_64BIT)
-	dest_mode = SImode;
-
-      if (dest_mode != QImode)
-	{
-	  rtx destqi = gen_reg_rtx (QImode);
-	  emit_insn (gen_rtx_SET (destqi, x));
-
-	  if (TARGET_ZERO_EXTEND_WITH_AND
-	      && optimize_function_for_speed_p (cfun))
-	    {
-	      x = force_reg (dest_mode, const0_rtx);
-
-	      emit_insn (gen_movstrictqi (gen_lowpart (QImode, x), destqi));
-	    }
-	  else
-	    {
-	      x = gen_rtx_ZERO_EXTEND (dest_mode, destqi);
-	      if (dest_mode == GET_MODE (dest)
-		  && !register_operand (dest, GET_MODE (dest)))
-		x = force_reg (dest_mode, x);
-	    }
-	}
-
-      if (dest_mode != GET_MODE (dest))
-	{
-	  rtx tmp = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_rtx_SET (tmp, x));
-	  emit_insn (gen_zero_extendsidi2 (dest, tmp));
-	}
-      else
+      if (dest_mode == QImode)
 	emit_insn (gen_rtx_SET (dest, x));
+      else
+	{
+	  rtx reg = gen_reg_rtx (QImode);
+	  emit_insn (gen_rtx_SET (reg, x));
+
+	  reg = convert_to_mode (dest_mode, reg, 1);
+	  emit_move_insn (dest, reg);
+	}
     }
+
   rtx_insn *seq = get_insns ();
   end_sequence ();
 
@@ -21678,8 +21976,9 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 
       /* Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
-      if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2)
-	   && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
+      if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2
+	   || ix86_tune == PROCESSOR_ZNVER3)
+   	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
@@ -22177,7 +22476,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d", clonei->simdlen);
+		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -22282,7 +22581,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	clonei->simdlen = clonei->vecsize_int;
       else
 	clonei->simdlen = clonei->vecsize_float;
-      clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      clonei->simdlen = clonei->simdlen
+			/ GET_MODE_BITSIZE (TYPE_MODE (base_type));
     }
   else if (clonei->simdlen > 16)
     {
@@ -22304,7 +22604,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported simdlen %d", clonei->simdlen);
+		      "unsupported simdlen %wd",
+		      clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }
@@ -22700,7 +23001,7 @@ ix86_init_libfuncs (void)
    apparently at random.  */
 
 static enum flt_eval_method
-ix86_excess_precision (enum excess_precision_type type)
+ix86_get_excess_precision (enum excess_precision_type type)
 {
   switch (type)
     {
@@ -23226,7 +23527,7 @@ ix86_run_selftests (void)
 #define TARGET_MD_ASM_ADJUST ix86_md_asm_adjust
 
 #undef TARGET_C_EXCESS_PRECISION
-#define TARGET_C_EXCESS_PRECISION ix86_excess_precision
+#define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_SETUP_INCOMING_VARARGS
@@ -23309,6 +23610,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P ix86_function_value_regno_p
+
+#undef TARGET_ZERO_CALL_USED_REGS
+#define TARGET_ZERO_CALL_USED_REGS ix86_zero_call_used_regs
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE ix86_promote_function_mode

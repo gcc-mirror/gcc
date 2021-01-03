@@ -44,15 +44,18 @@ package System.Img_Real is
    --  image for fixed-point types (RM 3.5(34)), where Aft is the value of the
    --  Aft attribute for the fixed-point type. This function is used only for
    --  ordinary fixed point (see package System.Img_Dec for handling of decimal
-   --  fixed-point). The caller guarantees that S is long enough to hold the
+   --  fixed point). The caller guarantees that S is long enough to hold the
    --  result and has a lower bound of 1.
+   --
+   --  Remark: This procedure should NOT be called with V = -0.0 or V = +/-Inf,
+   --          The result is irrelevant.
 
    procedure Image_Floating_Point
      (V    : Long_Long_Float;
       S    : in out String;
       P    : out Natural;
       Digs : Natural);
-   --  Computes fixed_type'Image (V) and returns the result in S (1 .. P)
+   --  Computes float_type'Image (V) and returns the result in S (1 .. P)
    --  updating P on return. The result is computed according to the rules for
    --  image for floating-point types (RM 3.5(33)), where Digs is the value of
    --  the Digits attribute for the floating-point type. The caller guarantees

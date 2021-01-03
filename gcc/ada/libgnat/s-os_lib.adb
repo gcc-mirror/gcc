@@ -1365,6 +1365,21 @@ package body System.OS_Lib is
       S  : Integer;
 
    begin
+      --  Special case Invalid_Time which is handled differently between
+      --  Windows and Linux: Linux will set to 1 second before 1970-01-01
+      --  while Windows will set the time to 1970-01-01 with Second set to -1,
+      --  which is not a valid value.
+
+      if Date = Invalid_Time then
+         Year   := 1969;
+         Month  := 12;
+         Day    := 31;
+         Hour   := 23;
+         Minute := 59;
+         Second := 59;
+         return;
+      end if;
+
       --  Use the global lock because To_GM_Time is not thread safe
 
       Locked_Processing : begin
@@ -1387,7 +1402,15 @@ package body System.OS_Lib is
 
       Year   := Y + 1900;
       Month  := Mo + 1;
-      Day    := D;
+
+      --  May happen if To_GM_Time fails
+
+      if D = 0 then
+         Day := 1;
+      else
+         Day := D;
+      end if;
+
       Hour   := H;
       Minute := Mn;
       Second := S;

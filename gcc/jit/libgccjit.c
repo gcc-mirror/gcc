@@ -96,6 +96,11 @@ struct gcc_jit_timer : public timer
 {
 };
 
+struct gcc_jit_extended_asm : public gcc::jit::recording::extended_asm
+{
+};
+
+
 /**********************************************************************
  Error-handling.
 
@@ -300,13 +305,13 @@ struct gcc_jit_timer : public timer
 
 static void
 jit_error (gcc::jit::recording::context *ctxt,
-	   gcc_jit_location *loc,
+	   gcc::jit::recording::location *loc,
 	   const char *fmt, ...)
   GNU_PRINTF(3, 4);
 
 static void
 jit_error (gcc::jit::recording::context *ctxt,
-	   gcc_jit_location *loc,
+	   gcc::jit::recording::location *loc,
 	   const char *fmt, ...)
 {
   va_list ap;
@@ -3289,4 +3294,183 @@ gcc_jit_version_patchlevel (void)
 {
   version_info vi;
   return vi.patchlevel;
+}
+
+/**********************************************************************
+ Asm support.
+ **********************************************************************/
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::block::add_extended_asm, in
+   jit-recording.c.  */
+
+gcc_jit_extended_asm *
+gcc_jit_block_add_extended_asm (gcc_jit_block *block,
+				gcc_jit_location *loc,
+				const char *asm_template)
+{
+  RETURN_NULL_IF_NOT_VALID_BLOCK (block, loc);
+  gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (asm_template, ctxt, loc, "NULL asm_template");
+
+  return (gcc_jit_extended_asm *)block->add_extended_asm (loc, asm_template);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::block::end_with_extended_asm_goto, in
+   jit-recording.c.  */
+
+gcc_jit_extended_asm *
+gcc_jit_block_end_with_extended_asm_goto (gcc_jit_block *block,
+					  gcc_jit_location *loc,
+					  const char *asm_template,
+					  int num_goto_blocks,
+					  gcc_jit_block **goto_blocks,
+					  gcc_jit_block *fallthrough_block)
+{
+  RETURN_NULL_IF_NOT_VALID_BLOCK (block, loc);
+  gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (asm_template, ctxt, loc, "NULL asm_template");
+  RETURN_NULL_IF_FAIL (num_goto_blocks >= 0, ctxt, loc, "num_goto_blocks < 0");
+  for (int i = 0; i < num_goto_blocks; i++)
+    RETURN_NULL_IF_FAIL_PRINTF1 (goto_blocks[i],
+				 ctxt, loc,
+				 "NULL goto_blocks[%i]", i);
+  /* fallthrough_block can be NULL.  */
+  return (gcc_jit_extended_asm *)block->end_with_extended_asm_goto
+    (loc, asm_template,
+     num_goto_blocks, (gcc::jit::recording::block **)goto_blocks,
+     fallthrough_block);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, this calls the trivial
+   gcc::jit::recording::memento::as_object method (an extended_asm is a
+   memento), in jit-recording.h.  */
+
+gcc_jit_object *
+gcc_jit_extended_asm_as_object (gcc_jit_extended_asm *ext_asm)
+{
+  RETURN_NULL_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+
+  return static_cast <gcc_jit_object *> (ext_asm->as_object ());
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::extended_asm::set_volatile_flag, in
+   jit-recording.c.  */
+
+void
+gcc_jit_extended_asm_set_volatile_flag (gcc_jit_extended_asm *ext_asm,
+					int flag)
+{
+  RETURN_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+  ext_asm->set_volatile_flag (flag);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::extended_asm::set_inline_flag, in
+   jit-recording.c.  */
+
+void
+gcc_jit_extended_asm_set_inline_flag (gcc_jit_extended_asm *ext_asm,
+				      int flag)
+{
+  RETURN_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+  ext_asm->set_inline_flag (flag);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::extended_asm::add_output_operand, in
+   jit-recording.c.  */
+
+void
+gcc_jit_extended_asm_add_output_operand (gcc_jit_extended_asm *ext_asm,
+					 const char *asm_symbolic_name,
+					 const char *constraint,
+					 gcc_jit_lvalue *dest)
+{
+  RETURN_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+  gcc::jit::recording::context *ctxt = ext_asm->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  gcc::jit::recording::location *loc = ext_asm->get_loc ();
+  /* asm_symbolic_name can be NULL.  */
+  RETURN_IF_FAIL (constraint, ctxt, loc, "NULL constraint");
+  RETURN_IF_FAIL (dest, ctxt, loc, "NULL dest");
+  RETURN_IF_FAIL (!ext_asm->is_goto (), ctxt, loc,
+		  "cannot add output operand to asm goto");
+  ext_asm->add_output_operand (asm_symbolic_name, constraint, dest);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::extended_asm::add_input_operand, in
+   jit-recording.c.  */
+
+extern void
+gcc_jit_extended_asm_add_input_operand (gcc_jit_extended_asm *ext_asm,
+					const char *asm_symbolic_name,
+					const char *constraint,
+					gcc_jit_rvalue *src)
+{
+  RETURN_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+  gcc::jit::recording::context *ctxt = ext_asm->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  gcc::jit::recording::location *loc = ext_asm->get_loc ();
+  /* asm_symbolic_name can be NULL.  */
+  RETURN_IF_FAIL (constraint, ctxt, loc, "NULL constraint");
+  RETURN_IF_FAIL (src, ctxt, loc, "NULL src");
+  ext_asm->add_input_operand (asm_symbolic_name, constraint, src);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::extended_asm::add_clobber, in
+   jit-recording.c.  */
+
+void
+gcc_jit_extended_asm_add_clobber (gcc_jit_extended_asm *ext_asm,
+				  const char *victim)
+{
+  RETURN_IF_FAIL (ext_asm, NULL, NULL, "NULL ext_asm");
+  gcc::jit::recording::context *ctxt = ext_asm->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  gcc::jit::recording::location *loc = ext_asm->get_loc ();
+  RETURN_IF_FAIL (victim, ctxt, loc, "NULL victim");
+  ext_asm->add_clobber (victim);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::add_top_level_asm, in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_add_top_level_asm (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   const char *asm_stmts)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL ctxt");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_IF_FAIL (asm_stmts, ctxt, NULL, "NULL asm_stmts");
+  ctxt->add_top_level_asm (loc, asm_stmts);
 }

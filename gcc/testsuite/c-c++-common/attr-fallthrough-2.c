@@ -1,6 +1,6 @@
 /* PR c/7652 */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wextra -Wpedantic -Wno-unused -Wno-implicit-fallthrough" } */
+/* { dg-options "-Wall -Wextra -Wno-unused -Wno-implicit-fallthrough" } */
 
 extern void bar (int);
 void
@@ -34,7 +34,7 @@ fn (int i)
     __attribute__((fallthrough ("x"))); /* { dg-warning "specified with a parameter" } */
   case 7:
     bar (1);
-    __attribute__((fallthrough, fallthrough)); /* { dg-warning "attribute specified multiple times" } */
+    __attribute__((fallthrough, fallthrough)); /* { dg-warning "specified multiple times" } */
   case 8:
     bar (1);
     __attribute__((fallthrough));

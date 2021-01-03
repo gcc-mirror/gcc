@@ -18,6 +18,34 @@ func direntNamlen(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Namlen), unsafe.Sizeof(Dirent{}.Namlen))
 }
 
+//sys	Getdents(fd int, buf []byte) (n int, err error)
+//getdents(fd _C_int, buf *byte, nbytes uintptr) _C_int
+
+func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error) {
+	n, err = Getdents(fd, buf)
+	if err != nil || basep == nil {
+		return
+	}
+
+	var off int64
+	off, err = Seek(fd, 0, 1 /* SEEK_CUR */)
+	if err != nil {
+		*basep = ^uintptr(0)
+		return
+	}
+	*basep = uintptr(off)
+	if unsafe.Sizeof(*basep) == 8 {
+		return
+	}
+	if off>>32 != 0 {
+		// We can't stuff the offset back into a uintptr, so any
+		// future calls would be suspect. Generate an error.
+		// EIO is allowed by getdirentries.
+		err = EIO
+	}
+	return
+}
+
 func sysctlNodes(mib []_C_int) (nodes []Sysctlnode, err error) {
 	var olen uintptr
 

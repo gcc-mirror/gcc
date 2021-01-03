@@ -84,6 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-streamer.h"
 #include "internal-fn.h"
+#include "symtab-clones.h"
+
+static void ipa_sra_summarize_function (cgraph_node *);
 
 /* Bits used to track size of an aggregate in bytes interprocedurally.  */
 #define ISRA_ARG_SIZE_LIMIT_BITS 16
@@ -373,6 +376,7 @@ public:
   virtual void duplicate (cgraph_node *, cgraph_node *,
 			  isra_func_summary *old_sum,
 			  isra_func_summary *new_sum);
+  virtual void insert (cgraph_node *, isra_func_summary *);
 };
 
 /* Hook that is called by summary when a node is duplicated.  */
@@ -425,6 +429,21 @@ ipa_sra_function_summaries::duplicate (cgraph_node *, cgraph_node *,
 /* Pointer to the pass function summary holder.  */
 
 static GTY(()) ipa_sra_function_summaries *func_sums;
+
+/* Hook that is called by summary when new node appears.  */
+
+void
+ipa_sra_function_summaries::insert (cgraph_node *node, isra_func_summary *)
+{
+  if (opt_for_fn (node->decl, flag_ipa_sra))
+    {
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      ipa_sra_summarize_function (node);
+      pop_cfun ();
+    }
+  else
+    func_sums->remove (node);
+}
 
 /* Class to manage call summaries.  */
 
@@ -1461,7 +1480,7 @@ verify_access_tree_1 (gensum_param_access *access, HOST_WIDE_INT parent_offset,
 {
   while (access)
     {
-      gcc_assert (access->offset >= 0 && access->size > 0);
+      gcc_assert (access->offset >= 0 && access->size >= 0);
 
       if (parent_size != 0)
 	{
@@ -2476,79 +2495,6 @@ verify_splitting_accesses (cgraph_node *node, bool certain_must_exist)
 			"have any certain IPA-SRA access",
 			node->dump_name (), pidx);
     }
-}
-
-/* Intraprocedural part of IPA-SRA analysis.  Scan function body of NODE and
-   create a summary structure describing IPA-SRA opportunities and constraints
-   in it.  */
-
-static void
-ipa_sra_summarize_function (cgraph_node *node)
-{
-  if (dump_file)
-    fprintf (dump_file, "Creating summary for %s/%i:\n", node->name (),
-	     node->order);
-  if (!ipa_sra_preliminary_function_checks (node))
-    return;
-  gcc_obstack_init (&gensum_obstack);
-  isra_func_summary *ifs = func_sums->get_create (node);
-  ifs->m_candidate = true;
-  tree ret = TREE_TYPE (TREE_TYPE (node->decl));
-  ifs->m_returns_value = (TREE_CODE (ret) != VOID_TYPE);
-
-  decl2desc = new hash_map<tree, gensum_param_desc *>;
-  unsigned count = 0;
-  for (tree parm = DECL_ARGUMENTS (node->decl); parm; parm = DECL_CHAIN (parm))
-    count++;
-
-  if (count > 0)
-    {
-      auto_vec<gensum_param_desc, 16> param_descriptions (count);
-      param_descriptions.reserve_exact (count);
-      param_descriptions.quick_grow_cleared (count);
-
-      bool cfun_pushed = false;
-      struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
-      if (create_parameter_descriptors (node, &param_descriptions))
-	{
-	  push_cfun (fun);
-	  cfun_pushed = true;
-	  final_bbs = BITMAP_ALLOC (NULL);
-	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
-				      by_ref_count
-				      * last_basic_block_for_fn (fun));
-	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
-	  scan_function (node, fun);
-
-	  if (dump_file)
-	    {
-	      dump_gensum_param_descriptors (dump_file, node->decl,
-					     &param_descriptions);
-	      fprintf (dump_file, "----------------------------------------\n");
-	    }
-	}
-      process_scan_results (node, fun, ifs, &param_descriptions);
-
-      if (cfun_pushed)
-	pop_cfun ();
-      if (bb_dereferences)
-	{
-	  free (bb_dereferences);
-	  bb_dereferences = NULL;
-	  BITMAP_FREE (final_bbs);
-	  final_bbs = NULL;
-	}
-    }
-  isra_analyze_all_outgoing_calls (node);
-
-  delete decl2desc;
-  decl2desc = NULL;
-  obstack_free (&gensum_obstack, NULL);
-  if (dump_file)
-    fprintf (dump_file, "\n\n");
-  if (flag_checking)
-    verify_splitting_accesses (node, false);
-  return;
 }
 
 /* Intraprocedural part of IPA-SRA analysis.  Scan bodies of all functions in
@@ -3741,10 +3687,11 @@ process_isra_node_results (cgraph_node *node,
 
   auto_vec<bool, 16> surviving_params;
   bool check_surviving = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
       check_surviving = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
 
   unsigned param_count = vec_safe_length (ifs->m_parameters);
@@ -3778,7 +3725,8 @@ process_isra_node_results (cgraph_node *node,
     }
 
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
-  if (ipa_param_adjustments *old_adjustments = node->clone.param_adjustments)
+  if (ipa_param_adjustments *old_adjustments
+	 = cinfo ? cinfo->param_adjustments : NULL)
     {
       unsigned old_adj_len = vec_safe_length (old_adjustments->m_adj_params);
       for (unsigned i = 0; i < old_adj_len; i++)
@@ -3839,10 +3787,11 @@ disable_unavailable_parameters (cgraph_node *node, isra_func_summary *ifs)
 
   auto_vec<bool, 16> surviving_params;
   bool check_surviving = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
       check_surviving = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
   bool dumped_first = false;
   for (unsigned i = 0; i < len; i++)
@@ -4101,6 +4050,79 @@ public:
 }; // class pass_ipa_sra
 
 } // anon namespace
+
+/* Intraprocedural part of IPA-SRA analysis.  Scan function body of NODE and
+   create a summary structure describing IPA-SRA opportunities and constraints
+   in it.  */
+
+static void
+ipa_sra_summarize_function (cgraph_node *node)
+{
+  if (dump_file)
+    fprintf (dump_file, "Creating summary for %s/%i:\n", node->name (),
+	     node->order);
+  if (!ipa_sra_preliminary_function_checks (node))
+    return;
+  gcc_obstack_init (&gensum_obstack);
+  isra_func_summary *ifs = func_sums->get_create (node);
+  ifs->m_candidate = true;
+  tree ret = TREE_TYPE (TREE_TYPE (node->decl));
+  ifs->m_returns_value = (TREE_CODE (ret) != VOID_TYPE);
+
+  decl2desc = new hash_map<tree, gensum_param_desc *>;
+  unsigned count = 0;
+  for (tree parm = DECL_ARGUMENTS (node->decl); parm; parm = DECL_CHAIN (parm))
+    count++;
+
+  if (count > 0)
+    {
+      auto_vec<gensum_param_desc, 16> param_descriptions (count);
+      param_descriptions.reserve_exact (count);
+      param_descriptions.quick_grow_cleared (count);
+
+      bool cfun_pushed = false;
+      struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
+      if (create_parameter_descriptors (node, &param_descriptions))
+	{
+	  push_cfun (fun);
+	  cfun_pushed = true;
+	  final_bbs = BITMAP_ALLOC (NULL);
+	  bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
+				      by_ref_count
+				      * last_basic_block_for_fn (fun));
+	  aa_walking_limit = opt_for_fn (node->decl, param_ipa_max_aa_steps);
+	  scan_function (node, fun);
+
+	  if (dump_file)
+	    {
+	      dump_gensum_param_descriptors (dump_file, node->decl,
+					     &param_descriptions);
+	      fprintf (dump_file, "----------------------------------------\n");
+	    }
+	}
+      process_scan_results (node, fun, ifs, &param_descriptions);
+
+      if (cfun_pushed)
+	pop_cfun ();
+      if (bb_dereferences)
+	{
+	  free (bb_dereferences);
+	  bb_dereferences = NULL;
+	  BITMAP_FREE (final_bbs);
+	  final_bbs = NULL;
+	}
+    }
+  isra_analyze_all_outgoing_calls (node);
+
+  delete decl2desc;
+  decl2desc = NULL;
+  obstack_free (&gensum_obstack, NULL);
+  if (dump_file)
+    fprintf (dump_file, "\n\n");
+  if (flag_checking)
+    verify_splitting_accesses (node, false);
+  return;
+}
 
 ipa_opt_pass_d *
 make_pass_ipa_sra (gcc::context *ctxt)

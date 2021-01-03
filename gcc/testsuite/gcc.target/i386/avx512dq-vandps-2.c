@@ -16,8 +16,11 @@ CALC (float *s1, float *s2, float *r)
 
   for (i = 0; i < SIZE; i++)
     {
-      tmp = (*(int *) &s1[i]) & (*(int *) &s2[i]);
-      r[i] = *(float *) &tmp;
+      union U { float f; int i; } u1, u2;
+      u1.f = s1[i];
+      u2.f = s2[i];
+      u1.i &= u2.i;
+      r[i] = u1.f;
     }
 }
 

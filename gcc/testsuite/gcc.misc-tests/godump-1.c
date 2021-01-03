@@ -396,6 +396,15 @@ typedef enum { ET1, ET2 } et_t;
 /* { dg-final { scan-file godump-1.out "(?n)^const _ET1 = 0$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ET2 = 1$" } } */
 
+typedef enum e_t_idem_v1 { ETIV1 } e_t_idem_v1;
+/* { dg-final { scan-file godump-1.out "(?n)^type _e_t_idem_v1 u?int\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^const _ETIV1 = 0$" } } */
+
+typedef enum e_t_idem_v2 e_t_idem_v2;
+enum e_t_idem_v2 { ETIV2 };
+/* { dg-final { scan-file godump-1.out "(?n)^type _e_t_idem_v2 u?int\[0-9\]*$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^const _ETIV2 = 0$" } } */
+
 enum { ETV1, ETV2 } et_v1;
 /* { dg-final { scan-file godump-1.out "(?n)^var _et_v1 u?int\[0-9\]*$" } } */
 /* { dg-final { scan-file godump-1.out "(?n)^const _ETV1 = 0$" } } */
@@ -471,8 +480,18 @@ typedef struct s_undef_t s_undef_t2;
 typedef struct s_fwd *s_fwd_p;
 /* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd_p \\*_s_fwd$" } } */
 
+struct s_fwd v_fwd;
+/* { dg-final { scan-file godump-1.out "(?n)^var _v_fwd _s_fwd" } } */
+
 struct s_fwd { };
 /* { dg-final { scan-file godump-1.out "(?n)^type _s_fwd struct \{ \}$" } } */
+
+typedef struct s_t_idem_v1 {} s_t_idem_v1;
+/* { dg-final { scan-file godump-1.out "(?n)^type _s_t_idem_v1 struct \{ \}$" } } */
+
+typedef struct s_t_idem_v2 s_t_idem_v2;
+struct s_t_idem_v2 { };
+/* { dg-final { scan-file godump-1.out "(?n)^type _s_t_idem_v2 struct \{ \}$" } } */
 
 /*** nested structs ***/
 typedef struct { struct { uint8_t ca[3]; } s; uint32_t i; } tsn;
@@ -752,6 +771,13 @@ typedef union { } tue;
 
 union { } ue;
 /* { dg-final { scan-file godump-1.out "(?n)^var _ue struct \{ \}$" } } */
+
+typedef union u_t_idem_v1 { } u_t_idem_v1;
+/* { dg-final { scan-file godump-1.out "(?n)^type _u_t_idem_v1 struct \{ \}$" } } */
+
+typedef union u_t_idem_v2 u_t_idem_v2;
+union u_t_idem_v2 { };
+/* { dg-final { scan-file godump-1.out "(?n)^type _u_t_idem_v2 struct \{ \}$" } } */
 
 typedef union { uint8_t c; uint64_t l; } tu1;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tu1 struct \{ c uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */

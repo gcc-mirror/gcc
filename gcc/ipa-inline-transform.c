@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
 #include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -231,6 +232,11 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     e->callee->remove_from_same_comdat_group ();
 
   e->callee->inlined_to = inlining_into;
+  if (e->callee->ipa_transforms_to_apply.length ())
+    {
+      e->callee->ipa_transforms_to_apply.release ();
+      e->callee->ipa_transforms_to_apply = vNULL;
+    }
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = next)
@@ -606,7 +612,10 @@ save_inline_function_body (struct cgraph_node *node)
 
   tree prev_body_holder = node->decl;
   if (!ipa_saved_clone_sources)
-    ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+    {
+      ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+      ipa_saved_clone_sources->disable_insertion_hook ();
+    }
   else
     {
       tree *p = ipa_saved_clone_sources->get (node);
@@ -687,6 +696,31 @@ preserve_function_body_p (struct cgraph_node *node)
   return false;
 }
 
+/* tree-inline can not recurse; materialize all function bodie we will need
+   during inlining.  This includes inlined functions, but also called functions
+   with param manipulation because IPA param manipulation attaches debug
+   statements to PARM_DECLs of called clone.  Materialize them if needed.
+
+   FIXME: This is somehwat broken by design because it does not play well
+   with partitioning.  */
+
+static void
+maybe_materialize_called_clones (cgraph_node *node)
+{
+  for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+    {
+      clone_info *info;
+
+      if (!e->inline_failed)
+	maybe_materialize_called_clones (e->callee);
+
+      cgraph_node *callee = cgraph_node::get (e->callee->decl);
+      if (callee->clone_of
+	  && (info = clone_info::get (callee)) && info->param_adjustments)
+	callee->get_untransformed_body ();
+    }
+}
+
 /* Apply inline plan to function.  */
 
 unsigned int
@@ -708,6 +742,7 @@ inline_transform (struct cgraph_node *node)
       if (n->decl != node->decl)
 	n->materialize_clone ();
     }
+  node->clear_stmts_in_references ();
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
@@ -739,6 +774,7 @@ inline_transform (struct cgraph_node *node)
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
     }
 
+  maybe_materialize_called_clones (node);
   for (e = node->callees; e; e = next)
     {
       if (!e->inline_failed)

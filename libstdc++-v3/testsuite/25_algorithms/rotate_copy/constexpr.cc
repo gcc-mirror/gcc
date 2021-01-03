@@ -30,7 +30,7 @@ test()
   const auto outrr = std::rotate_copy(ca0.begin(), ca0.begin() + 6,
 				      ca0.end(), out0.begin());
 
-  return true;
+  return outrr == (out0.begin() + ca0.size()) && out0[3] == 9 && out0[8] == 2;
 }
 
 static_assert(test());

@@ -139,7 +139,8 @@ sbitmap_realloc (sbitmap src, unsigned int n_elms)
 sbitmap *
 sbitmap_vector_alloc (unsigned int n_vecs, unsigned int n_elms)
 {
-  unsigned int i, bytes, offset, elm_bytes, size, amt, vector_bytes;
+  unsigned int i, size;
+  size_t amt, bytes, vector_bytes, elm_bytes, offset;
   sbitmap *bitmap_vector;
 
   size = SBITMAP_SET_SIZE (n_elms);

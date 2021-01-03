@@ -4,7 +4,9 @@
 
 #include <x86gprintrin.h>
 
+typedef unsigned int uword_t __attribute__ ((mode (__word__)));
+
 void
-UINTR_hanlder (struct __uintr_frame *frame)
+UINTR_hanlder (struct __uintr_frame *frame, uword_t uirrv)
 {
 }

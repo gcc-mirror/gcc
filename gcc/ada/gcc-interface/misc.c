@@ -559,7 +559,7 @@ gnat_printable_name (tree decl, int verbosity)
 
   __gnat_decode (coded_name, ada_name, 0);
 
-  if (verbosity == 2 && !DECL_IS_BUILTIN (decl))
+  if (verbosity == 2 && !DECL_IS_UNDECLARED_BUILTIN (decl))
     {
       Set_Identifier_Casing (ada_name, DECL_SOURCE_FILE (decl));
       return ggc_strdup (Name_Buffer);
@@ -628,16 +628,6 @@ gnat_get_fixed_point_type_info (const_tree type,
   /* We expect here only a finite set of pattern.  See fixed-point types
      handling in gnat_to_gnu_entity.  */
 
-  /* Put invalid values when compiler internals cannot represent the scale
-     factor.  */
-  if (scale_factor == integer_zero_node)
-    {
-      info->scale_factor_kind = fixed_point_scale_factor_arbitrary;
-      info->scale_factor.arbitrary.numerator = 0;
-      info->scale_factor.arbitrary.denominator = 0;
-      return true;
-    }
-
   if (TREE_CODE (scale_factor) == RDIV_EXPR)
     {
       tree num = TREE_OPERAND (scale_factor, 0);
@@ -677,8 +667,8 @@ gnat_get_fixed_point_type_info (const_tree type,
 		  && TREE_CODE (den) == INTEGER_CST);
 
       info->scale_factor_kind = fixed_point_scale_factor_arbitrary;
-      info->scale_factor.arbitrary.numerator = tree_to_uhwi (num);
-      info->scale_factor.arbitrary.denominator = tree_to_shwi (den);
+      info->scale_factor.arbitrary.numerator = num;
+      info->scale_factor.arbitrary.denominator = den;
       return true;
     }
 

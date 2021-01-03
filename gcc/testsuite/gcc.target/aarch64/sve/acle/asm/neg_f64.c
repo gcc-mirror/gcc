@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (neg_f64_x_tied1, svfloat64_t,
 
 /*
 ** neg_f64_x_untied:
+**	movprfx	z0, z1
 **	fneg	z0\.d, p0/m, z1\.d
 **	ret
 */

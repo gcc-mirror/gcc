@@ -41,10 +41,16 @@ lto_dump_OBJS = $(LTO_DUMP_OBJS)
 
 # Rules
 
+lto: $(LTO_EXE) $(LTO_DUMP_EXE)
+lto1.serial = $(LTO_EXE)
+lto2.serial = $(LTO_DUMP_EXE)
+
+.PHONY: lto
+
 # These hooks are used by the main GCC Makefile.  Consult that
 # Makefile for documentation.
-lto.all.cross: $(LTO_EXE) $(LTO_DUMP_EXE)
-lto.start.encap: $(LTO_EXE) $(LTO_DUMP_EXE)
+lto.all.cross:
+lto.start.encap:
 lto.rest.encap:
 lto.tags:
 lto.install-common: installdirs
@@ -84,13 +90,17 @@ lto.stagefeedback:
 # Use strict warnings for this front end.
 lto-warn = $(STRICT_WARN)
 
-$(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
+$(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS) $(lto1.prev)
+	@$(call LINK_PROGRESS,$(INDEX.lto1),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
+	@$(call LINK_PROGRESS,$(INDEX.lto1),end)
 
-$(LTO_DUMP_EXE): $(LTO_DUMP_OBJS) $(BACKEND) $(LIBDEPS)
+$(LTO_DUMP_EXE): $(LTO_DUMP_OBJS) $(BACKEND) $(LIBDEPS) $(lto2.prev)
+	@$(call LINK_PROGRESS,$(INDEX.lto2),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(LTO_DUMP_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
+	@$(call LINK_PROGRESS,$(INDEX.lto2),end)
 
 lto/lto-dump.o: $(LTO_OBJS)
 

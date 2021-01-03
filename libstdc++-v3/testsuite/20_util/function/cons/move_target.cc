@@ -25,7 +25,7 @@ struct moveable
   ~moveable() = default;
   // target object must be CopyConstructible,
   // but should not be copied during this test
-  moveable(const moveable& c) { throw "copied"; }
+  moveable(const moveable&) { throw "copied"; }
   moveable& operator=(const moveable&) = delete;
   moveable(moveable&&) { }
 

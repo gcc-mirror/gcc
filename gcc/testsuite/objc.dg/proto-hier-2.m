@@ -1,6 +1,7 @@
 /* Test protocol warning.  */
 /* Contributed by Devang Patel <dpatel@apple.com>.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 

@@ -3,6 +3,8 @@
 
 *link_libasan: @link_libasan@
 
+*link_libhwasan: @link_libhwasan@
+
 *link_libtsan: @link_libtsan@
 
 *link_libubsan: @link_libubsan@

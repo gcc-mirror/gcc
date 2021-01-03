@@ -1144,6 +1144,18 @@
   (match_test "(mode == V16QImode
 		&& (vsx_register_operand (op, mode) || MEM_P (op)))"))
 
+;; Return 1 if this operand is valid for an MMA disassemble insn.
+(define_predicate "mma_disassemble_output_operand"
+  (match_code "reg,subreg,mem")
+{
+  if (SUBREG_P (op))
+    op = SUBREG_REG (op);
+  if (!REG_P (op))
+    return true;
+
+  return vsx_register_operand (op, mode);
+})
+
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"
   (match_code "rotate,ashift,lshiftrt"))

@@ -18,28 +18,37 @@ func getProcID() uint64 {
 	return uint64(lwp_self())
 }
 
-//extern _lwp_self
+//extern-sysinfo _lwp_self
 func lwp_self() int32
 
 //go:noescape
-//extern _lwp_park
+//extern-sysinfo _lwp_park
 func lwp_park(ts int32, rel int32, abstime *timespec, unpark int32, hint, unparkhint unsafe.Pointer) int32
 
 //go:noescape
-//extern _lwp_unpark
+//extern-sysinfo _lwp_unpark
 func lwp_unpark(lwp int32, hint unsafe.Pointer) int32
 
 //go:noescape
-//extern sysctl
+//extern-sysinfo sysctl
 func sysctl(*uint32, uint32, *byte, *uintptr, *byte, uintptr) int32
 
-func getncpu() int32 {
-	mib := [2]uint32{_CTL_HW, _HW_NCPU}
-	out := uint32(0)
+func sysctlInt(mib []uint32) (int32, bool) {
+	var out int32
 	nout := unsafe.Sizeof(out)
-	ret := sysctl(&mib[0], 2, (*byte)(unsafe.Pointer(&out)), &nout, nil, 0)
-	if ret >= 0 {
-		return int32(out)
+	ret := sysctl(&mib[0], uint32(len(mib)), (*byte)(unsafe.Pointer(&out)), &nout, nil, 0)
+	if ret < 0 {
+		return 0, false
+	}
+	return out, true
+}
+
+func getncpu() int32 {
+	if n, ok := sysctlInt([]uint32{_CTL_HW, _HW_NCPUONLINE}); ok {
+		return int32(n)
+	}
+	if n, ok := sysctlInt([]uint32{_CTL_HW, _HW_NCPU}); ok {
+		return int32(n)
 	}
 	return 1
 }

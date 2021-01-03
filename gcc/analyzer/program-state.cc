@@ -131,12 +131,31 @@ extrinsic_state::get_model_manager () const
     return NULL; /* for selftests.  */
 }
 
+/* struct sm_state_map::entry_t.  */
+
+int
+sm_state_map::entry_t::cmp (const entry_t &entry_a, const entry_t &entry_b)
+{
+  gcc_assert (entry_a.m_state);
+  gcc_assert (entry_b.m_state);
+  if (int cmp_state = ((int)entry_a.m_state->get_id ()
+		       - (int)entry_b.m_state->get_id ()))
+    return cmp_state;
+  if (entry_a.m_origin && entry_b.m_origin)
+    return svalue::cmp_ptr (entry_a.m_origin, entry_b.m_origin);
+  if (entry_a.m_origin)
+    return 1;
+  if (entry_b.m_origin)
+    return -1;
+  return 0;
+}
+
 /* class sm_state_map.  */
 
 /* sm_state_map's ctor.  */
 
-sm_state_map::sm_state_map (const state_machine &sm, int sm_idx)
-: m_sm (sm), m_sm_idx (sm_idx), m_map (), m_global_state (sm.get_start_state ())
+sm_state_map::sm_state_map (const state_machine &sm)
+: m_sm (sm), m_map (), m_global_state (sm.get_start_state ())
 {
 }
 
@@ -170,21 +189,29 @@ sm_state_map::print (const region_model *model,
 	pp_newline (pp);
       first = false;
     }
+  auto_vec <const svalue *> keys (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
+    keys.quick_push ((*iter).first);
+  keys.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (keys, i, sval)
     {
       if (multiline)
 	pp_string (pp, "  ");
       else if (!first)
 	pp_string (pp, ", ");
       first = false;
-      const svalue *sval = (*iter).first;
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, simple);
 
-      entry_t e = (*iter).second;
+      entry_t e = *const_cast <map_t &> (m_map).get (sval);
       pp_string (pp, ": ");
       e.m_state->dump_to_pp (pp);
       if (model)
@@ -197,8 +224,11 @@ sm_state_map::print (const region_model *model,
       if (e.m_origin)
 	{
 	  pp_string (pp, " (origin: ");
-	  pp_pointer (pp, e.m_origin);
-	  pp_string (pp, ": ");
+	  if (!flag_dump_noaddr)
+	    {
+	      pp_pointer (pp, e.m_origin);
+	      pp_string (pp, ": ");
+	    }
 	  e.m_origin->dump_to_pp (pp, simple);
 	  if (model)
 	    if (tree rep = model->get_representative_tree (e.m_origin))
@@ -487,6 +517,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 {
   svalue_set svals_to_unset;
 
+  auto_vec<const svalue *> leaked_svals (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
@@ -497,8 +528,18 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 	  svals_to_unset.add (iter_sval);
 	  entry_t e = (*iter).second;
 	  if (!m_sm.can_purge_p (e.m_state))
-	    ctxt->on_state_leak (m_sm, iter_sval, e.m_state);
+	    leaked_svals.quick_push (iter_sval);
 	}
+    }
+
+  leaked_svals.qsort (svalue::cmp_ptr_ptr);
+
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (leaked_svals, i, sval)
+    {
+      entry_t e = *m_map.get (sval);
+      ctxt->on_state_leak (m_sm, sval, e.m_state);
     }
 
   for (svalue_set::iterator iter = svals_to_unset.begin ();
@@ -545,6 +586,44 @@ sm_state_map::on_unknown_change (const svalue *sval,
     impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
 }
 
+/* Comparator for imposing an order on sm_state_map instances.  */
+
+int
+sm_state_map::cmp (const sm_state_map &smap_a, const sm_state_map &smap_b)
+{
+  if (int cmp_count = smap_a.elements () - smap_b.elements ())
+    return cmp_count;
+
+  auto_vec <const svalue *> keys_a (smap_a.elements ());
+  for (map_t::iterator iter = smap_a.begin ();
+       iter != smap_a.end ();
+       ++iter)
+    keys_a.quick_push ((*iter).first);
+  keys_a.qsort (svalue::cmp_ptr_ptr);
+
+  auto_vec <const svalue *> keys_b (smap_b.elements ());
+  for (map_t::iterator iter = smap_b.begin ();
+       iter != smap_b.end ();
+       ++iter)
+    keys_b.quick_push ((*iter).first);
+  keys_b.qsort (svalue::cmp_ptr_ptr);
+
+  unsigned i;
+  const svalue *sval_a;
+  FOR_EACH_VEC_ELT (keys_a, i, sval_a)
+    {
+      const svalue *sval_b = keys_b[i];
+      if (int cmp_sval = svalue::cmp_ptr (sval_a, sval_b))
+	return cmp_sval;
+      const entry_t *e_a = const_cast <map_t &> (smap_a.m_map).get (sval_a);
+      const entry_t *e_b = const_cast <map_t &> (smap_b.m_map).get (sval_b);
+      if (int cmp_entry = entry_t::cmp (*e_a, *e_b))
+	return cmp_entry;
+    }
+
+  return 0;
+}
+
 /* Canonicalize SVAL before getting/setting it within the map.
    Convert all NULL pointers to (void *) to avoid state explosions
    involving all of the various (foo *)NULL vs (bar *)NULL.  */
@@ -577,7 +656,7 @@ program_state::program_state (const extrinsic_state &ext_state)
   const int num_states = ext_state.get_num_checkers ();
   for (int i = 0; i < num_states; i++)
     {
-      sm_state_map *sm = new sm_state_map (ext_state.get_sm (i), i);
+      sm_state_map *sm = new sm_state_map (ext_state.get_sm (i));
       m_checker_states.quick_push (sm);
     }
 }
@@ -916,6 +995,7 @@ program_state::prune_for_point (exploded_graph &eg,
       auto_vec<const decl_region *> ssa_name_regs;
       new_state.m_region_model->get_ssa_name_regions_for_current_frame
 	(&ssa_name_regs);
+      ssa_name_regs.qsort (region::cmp_ptr_ptr);
       unsigned i;
       const decl_region *reg;
       FOR_EACH_VEC_ELT (ssa_name_regs, i, reg)
@@ -1032,18 +1112,26 @@ program_state::validate (const extrinsic_state &ext_state) const
 
 static void
 log_set_of_svalues (logger *logger, const char *name,
-		     const svalue_set &set)
+		    const svalue_set &set)
 {
   logger->log (name);
   logger->inc_indent ();
+  auto_vec<const svalue *> sval_vecs (set.elements ());
   for (svalue_set::iterator iter = set.begin ();
        iter != set.end (); ++iter)
+    sval_vecs.quick_push (*iter);
+  sval_vecs.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (sval_vecs, i, sval)
     {
       logger->start_log_line ();
       pretty_printer *pp = logger->get_printer ();
-      const svalue *sval = (*iter);
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, false);
       logger->end_log_line ();
     }
@@ -1104,6 +1192,7 @@ program_state::detect_leaks (const program_state &src_state,
 			  dest_svalues);
     }
 
+  auto_vec <const svalue *> dead_svals (src_svalues.elements ());
   for (svalue_set::iterator iter = src_svalues.begin ();
        iter != src_svalues.end (); ++iter)
     {
@@ -1111,10 +1200,18 @@ program_state::detect_leaks (const program_state &src_state,
       /* For each sval reachable from SRC_STATE, determine if it is
 	 live in DEST_STATE: either explicitly reachable, or implicitly
 	 live based on the set of explicitly reachable svalues.
-	 Call CTXT->on_svalue_leak on those that have ceased to be live.  */
+	 Record those that have ceased to be live.  */
       if (!sval->live_p (dest_svalues, dest_state.m_region_model))
-	ctxt->on_svalue_leak (sval);
+	dead_svals.quick_push (sval);
     }
+
+  /* Call CTXT->on_svalue_leak on all svals in SRC_STATE  that have ceased
+     to be live, sorting them first to ensure deterministic behavior.  */
+  dead_svals.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (dead_svals, i, sval)
+    ctxt->on_svalue_leak (sval);
 
   /* Purge dead svals from sm-state.  */
   ctxt->on_liveness_change (dest_svalues, dest_state.m_region_model);
@@ -1154,7 +1251,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm, 0);
+    sm_state_map map (*sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
 
@@ -1183,7 +1280,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm, 0);
+    sm_state_map map (*sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
     ASSERT_EQ (map.get_state (y_sval, ext_state), start);
@@ -1206,9 +1303,9 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map0 (*sm, 0);
-    sm_state_map map1 (*sm, 0);
-    sm_state_map map2 (*sm, 0);
+    sm_state_map map0 (*sm);
+    sm_state_map map1 (*sm);
+    sm_state_map map2 (*sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
@@ -1229,9 +1326,9 @@ test_sm_state_map ()
     const state_machine::state_t TEST_STATE_2 = &test_state_2;
     const state_machine::state test_state_3 ("test state 3", 3);
     const state_machine::state_t TEST_STATE_3 = &test_state_3;
-    sm_state_map map0 (*sm, 0);
-    sm_state_map map1 (*sm, 0);
-    sm_state_map map2 (*sm, 0);
+    sm_state_map map0 (*sm);
+    sm_state_map map1 (*sm);
+    sm_state_map map2 (*sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);

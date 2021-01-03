@@ -1,5 +1,6 @@
-/* { dg-do run } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
 /* { dg-require-effective-target ppc_mma_hw } */
 /* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 
@@ -180,6 +181,9 @@ main (int argc, char *argv[])
     printf ("MMA double test fail: %d errors\n",ret);
   else
     printf ("MMA single test success: 0 MMA errors\n");
+#else
+  if (ret)
+    abort();
 #endif
       
   return ret;

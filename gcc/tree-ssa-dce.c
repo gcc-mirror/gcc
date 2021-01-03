@@ -239,6 +239,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    CASE_BUILT_IN_ALLOCA:
 	    case BUILT_IN_STRDUP:
 	    case BUILT_IN_STRNDUP:
+	    case BUILT_IN_GOMP_ALLOC:
 	      return;
 
 	    default:;
@@ -605,6 +606,8 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  case BUILT_IN_CALLOC:
 	  CASE_BUILT_IN_ALLOCA:
 	  case BUILT_IN_FREE:
+	  case BUILT_IN_GOMP_ALLOC:
+	  case BUILT_IN_GOMP_FREE:
 	    return false;
 
 	  default:;
@@ -653,67 +656,7 @@ valid_new_delete_pair_p (gimple *new_call, gimple *delete_call)
 {
   tree new_asm = DECL_ASSEMBLER_NAME (gimple_call_fndecl (new_call));
   tree delete_asm = DECL_ASSEMBLER_NAME (gimple_call_fndecl (delete_call));
-  const char *new_name = IDENTIFIER_POINTER (new_asm);
-  const char *delete_name = IDENTIFIER_POINTER (delete_asm);
-  unsigned int new_len = IDENTIFIER_LENGTH (new_asm);
-  unsigned int delete_len = IDENTIFIER_LENGTH (delete_asm);
-
-  if (new_len < 5 || delete_len < 6)
-    return false;
-  if (new_name[0] == '_')
-    ++new_name, --new_len;
-  if (new_name[0] == '_')
-    ++new_name, --new_len;
-  if (delete_name[0] == '_')
-    ++delete_name, --delete_len;
-  if (delete_name[0] == '_')
-    ++delete_name, --delete_len;
-  if (new_len < 4 || delete_len < 5)
-    return false;
-  /* *_len is now just the length after initial underscores.  */
-  if (new_name[0] != 'Z' || new_name[1] != 'n')
-    return false;
-  if (delete_name[0] != 'Z' || delete_name[1] != 'd')
-    return false;
-  /* _Znw must match _Zdl, _Zna must match _Zda.  */
-  if ((new_name[2] != 'w' || delete_name[2] != 'l')
-      && (new_name[2] != 'a' || delete_name[2] != 'a'))
-    return false;
-  /* 'j', 'm' and 'y' correspond to size_t.  */
-  if (new_name[3] != 'j' && new_name[3] != 'm' && new_name[3] != 'y')
-    return false;
-  if (delete_name[3] != 'P' || delete_name[4] != 'v')
-    return false;
-  if (new_len == 4
-      || (new_len == 18 && !memcmp (new_name + 4, "RKSt9nothrow_t", 14)))
-    {
-      /* _ZnXY or _ZnXYRKSt9nothrow_t matches
-	 _ZdXPv, _ZdXPvY and _ZdXPvRKSt9nothrow_t.  */
-      if (delete_len == 5)
-	return true;
-      if (delete_len == 6 && delete_name[5] == new_name[3])
-	return true;
-      if (delete_len == 19 && !memcmp (delete_name + 5, "RKSt9nothrow_t", 14))
-	return true;
-    }
-  else if ((new_len == 19 && !memcmp (new_name + 4, "St11align_val_t", 15))
-	   || (new_len == 33
-	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
-    {
-      /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
-	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
-	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
-      if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
-	return true;
-      if (delete_len == 21
-	  && delete_name[5] == new_name[3]
-	  && !memcmp (delete_name + 6, "St11align_val_t", 15))
-	return true;
-      if (delete_len == 34
-	  && !memcmp (delete_name + 5, "St11align_val_tRKSt9nothrow_t", 29))
-	return true;
-    }
-  return false;
+  return valid_new_delete_pair_p (new_asm, delete_asm);
 }
 
 /* Propagate necessity using the operands of necessary statements.
@@ -879,7 +822,8 @@ propagate_necessity (bool aggressive)
 	       && gimple_call_from_new_or_delete (as_a <gcall *> (stmt))
 	       && gimple_call_operator_delete_p (as_a <gcall *> (stmt)));
 	  if (is_delete_operator
-	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE)
+	      || gimple_call_builtin_p (stmt, BUILT_IN_GOMP_FREE))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gcall *def_stmt;
@@ -892,27 +836,26 @@ propagate_necessity (bool aggressive)
 		  && ((DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
 		       && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
-			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_GOMP_ALLOC))
 		      || (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (def_callee)
 			  && gimple_call_from_new_or_delete (def_stmt))))
 		{
-		  if (is_delete_operator)
-		    {
-		      if (!valid_new_delete_pair_p (def_stmt, stmt))
-			mark_operand_necessary (gimple_call_arg (stmt, 0));
+		  if (is_delete_operator
+		      && !valid_new_delete_pair_p (def_stmt, stmt))
+		    mark_operand_necessary (gimple_call_arg (stmt, 0));
 
-		      /* Delete operators can have alignment and (or) size
-			 as next arguments.  When being a SSA_NAME, they
-			 must be marked as necessary.  */
-		      if (gimple_call_num_args (stmt) >= 2)
-			for (unsigned i = 1; i < gimple_call_num_args (stmt);
-			     i++)
-			  {
-			    tree arg = gimple_call_arg (stmt, i);
-			    if (TREE_CODE (arg) == SSA_NAME)
-			      mark_operand_necessary (arg);
-			  }
-		    }
+		  /* Delete operators can have alignment and (or) size
+		     as next arguments.  When being a SSA_NAME, they
+		     must be marked as necessary.  Similarly GOMP_free.  */
+		  if (gimple_call_num_args (stmt) >= 2)
+		    for (unsigned i = 1; i < gimple_call_num_args (stmt);
+			 i++)
+		      {
+			tree arg = gimple_call_arg (stmt, i);
+			if (TREE_CODE (arg) == SSA_NAME)
+			  mark_operand_necessary (arg);
+		      }
 
 		  continue;
 		}

@@ -683,8 +683,9 @@ Gogo::write_barrier_variable()
       Location bloc = Linemap::predeclared_location();
 
       Type* bool_type = Type::lookup_bool_type();
-      Array_type* pad_type = Type::make_array_type(this->lookup_global("byte")->type_value(),
-						   Expression::make_integer_ul(3, NULL, bloc));
+      Array_type* pad_type =
+	Type::make_array_type(Type::lookup_integer_type("byte"),
+			      Expression::make_integer_ul(3, NULL, bloc));
       Type* uint64_type = Type::lookup_integer_type("uint64");
       Type* wb_type = Type::make_builtin_struct_type(5,
 						     "enabled", bool_type,

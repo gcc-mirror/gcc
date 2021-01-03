@@ -7,7 +7,7 @@ struct undeclared<int> { }; // { dg-error "not a class template" }
 int
 main ()
 {
-  int foo ();
+  int foo (); // { dg-warning "empty parentheses" }
   int a, b = 10;
   a = foo<; // { dg-error "invalid template-argument-list|invalid" }
   a = foo < b; // { dg-error "invalid template-argument-list|invalid" }

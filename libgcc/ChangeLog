@@ -1,3 +1,116 @@
+2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/lib1funcs.S (__bswapsi2, __bswapdi2): New
+	functions.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _bswapsi2 and
+	_bswapdi2.
+
+2020-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack-thread.c (free_segments): Block signals during
+	thread exit.
+
+2020-12-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR libgcc/97543
+	PR libgcc/97643
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): New make variable.
+	(IBM128_SHARED_OBJS): New make variable.
+	(IBM128_OBJS): New make variable.  Set all objects to use the
+	explicit IBM format, and disable gnu attributes.
+	(IBM128_CFLAGS): New make variable.
+	(gcc_s_compile): Add -mno-gnu-attribute to all shared library
+	modules.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/t-vxworks (LIB2ADD): Drop.
+	* config/t-vxworks7 (LIB2ADD): Likewise.
+	* config/vxcache.c: Remove.
+
+2020-11-30  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (bswapsi2): Make constants unsigned.
+
+2020-11-25  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (absvSI2): Simplify/improve implementation by using
+	builtin_add_overflow.
+	(absvsi2, absvDI2): Likewise.
+
+2020-11-20  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* unwind-dw2-fde-dip.c [__OpenBSD__ || __NetBSD__]
+	(USE_PT_GNU_EH_FRAME): Do not define if !TARGET_DL_ITERATE_PHDR.
+
+2020-11-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/lib2hw_mul.S (mult64_hw): New.
+	(if MUL_32): Use mult64_hw for __muldi3.
+	(if MUL_F5): Use mult64_hw for __muldi3.
+	* config/msp430/lib2mul.c (__muldi3): New.
+	* config/msp430/t-msp430 (LIB2FUNCS_EXCLUDE): Define.
+
+2020-11-17  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/t-ppc64-fp (LIB2ADD): Delete.
+	(LIB2_SIDITI_CONV_FUNCS): Define.
+	* config/rs6000/ppc64-fp.c: Delete file.
+
+2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/lib2hw_mul.S: Omit _hw* suffix from GCC names for
+	hwmult library functions.
+
+2020-11-10  Jeff Law  <law@redhat.com>
+
+	* libgcc2.c: Fix whitespace issues in most recent change.
+
+2020-11-10  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (__addvSI3): Use overflow builtins.
+	(__addvsi3, __addvDI3 ,__subvSI3, __subvsi3): Likewise.
+	(__subvDI3 __mulvSI3, __mulvsi3, __negvSI2): Likewise.
+	(__negvsi2, __negvDI2): Likewise.
+	(__cmpdi2, __ucmpdi2): Adjust implementation to improve
+	generated code.
+	* libgcc2.h (__ucmpdi2): Adjust prototype.
+
+2020-11-03  Pat Bernardi  <bernardi@adacore.com>
+	    Olivier Hainque   <hainque@adacore.com>
+
+	* config.host (aarch64-vxworks7*, tmake_file): Add
+	${cpu_type}/t-lse and t-slibgcc-libgcc.
+
+2020-11-03  Martin Storsjö  <martin@martin.st>
+
+	* unwind-seh.c (_Unwind_Backtrace): Set the ra and cfa pointers
+	before calling the callback.
+
+2020-10-30  Olivier Hainque  <hainque@adacore.com>
+	    Douglas Rupp  <rupp@adacore.com>
+	    Pat Bernardi  <bernardi@adacore.com>
+
+	* config.host: Adjust the ix86/x86_64-wrs-vxworks filters
+	to apply to VxWorks 7 as well.
+
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c: Fix preprocessor logic
+	controlling the definition of VX_ENTER_TLS_DTOR and
+	VX_LEAVE_TLS_DTOR based on a version major check.
+
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Fix name of macro used
+	to condition the inclusion of an actual implementation.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* libgcov.h (gcov_counter_add): Use first static counters
+	as it should help to have malloc wrappers set up.
+
 2020-10-23  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config/gthr-vxworks-thread.c: #include gthr.h before

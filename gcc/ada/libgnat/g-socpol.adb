@@ -368,8 +368,7 @@ package body GNAT.Sockets.Poll is
                Poll_Timeout := Timeout - (Clock - Stamp);
 
                if Poll_Timeout < 0.0 then
-                  Count := 0;
-                  return;
+                  Poll_Timeout := 0.0;
 
                elsif Poll_Timeout > Timeout then
                   --  Clock moved back in time. This should not be happen when

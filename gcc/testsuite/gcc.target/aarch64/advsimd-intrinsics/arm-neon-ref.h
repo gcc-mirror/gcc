@@ -11,6 +11,8 @@ typedef uint16_t hfloat16_t;
 typedef uint32_t hfloat32_t;
 typedef uint64_t hfloat64_t;
 
+typedef uint16_t hbfloat16_t;
+
 extern void abort(void);
 extern void *memset(void *, int, size_t);
 extern void *memcpy(void *, const void *, size_t);
@@ -107,7 +109,7 @@ extern size_t strlen(const char *);
       {									\
 	union fp_operand {						\
 	  uint##W##_t i;						\
-	  float##W##_t f;						\
+	  T##W##_t f;							\
 	} tmp_res, tmp_exp;						\
 	tmp_res.f = VECT_VAR(result, T, W, N)[i];			\
 	tmp_exp.i = VECT_VAR(EXPECTED, h##T, W, N)[i];			\

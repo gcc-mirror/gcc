@@ -1,6 +1,7 @@
 /* Test demangling an Objective-C method.  */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <string.h>
 #include <stdlib.h>

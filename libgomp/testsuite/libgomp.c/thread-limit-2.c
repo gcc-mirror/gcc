@@ -1,9 +1,11 @@
 /* { dg-do run } */
 /* { dg-set-target-env-var OMP_THREAD_LIMIT "9" } */
+/* { dg-additional-options "-Wno-deprecated-declarations" } */
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <omp.h>
+#include "usleep.h"
 
 int
 main ()
@@ -48,7 +50,7 @@ main ()
 	  v = ++cnt;
 	  if (v > 6)
 	    abort ();
-	  usleep (10000);
+	  tgt_usleep (10000);
 	  #pragma omp atomic
 	  --cnt;
 	}

@@ -512,21 +512,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
       /* Check if this is an unlimited polymorphic object carrying a character
 	 payload. In this case, the 'len' field is non-zero.  */
       if (decl && GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
-	{
-	  tmp = gfc_class_len_or_zero_get (decl);
-	  if (!integer_zerop (tmp))
-	    {
-	      tree cond;
-	      tree stype = TREE_TYPE (span);
-	      tmp = fold_convert (stype, tmp);
-	      cond = fold_build2_loc (input_location, EQ_EXPR,
-				      logical_type_node, tmp,
-				      build_int_cst (stype, 0));
-	      tmp = fold_build2 (MULT_EXPR, stype, span, tmp);
-	      span = fold_build3_loc (input_location, COND_EXPR, stype,
-				      cond, span, tmp);
-	    }
-	}
+	span = gfc_resize_class_size_with_len (NULL, decl, span);
     }
   else if (decl)
     span = get_array_span (type, decl);
@@ -1925,7 +1911,7 @@ void
 gfc_set_backend_locus (locus * loc)
 {
   gfc_current_backend_file = loc->lb->file;
-  input_location = loc->lb->location;
+  input_location = gfc_get_location (loc);
 }
 
 
@@ -1935,7 +1921,10 @@ gfc_set_backend_locus (locus * loc)
 void
 gfc_restore_backend_locus (locus * loc)
 {
-  gfc_set_backend_locus (loc);
+  /* This only restores the information captured by gfc_save_backend_locus,
+     intentionally does not use gfc_get_location.  */
+  input_location = loc->lb->location;
+  gfc_current_backend_file = loc->lb->file;
   free (loc->lb);
 }
 

@@ -85,7 +85,12 @@ enum rid
   RID_GETTER, RID_SETTER,
   RID_READONLY, RID_READWRITE,
   RID_ASSIGN, RID_RETAIN, RID_COPY,
-  RID_NONATOMIC,
+  RID_PROPATOMIC, RID_NONATOMIC,
+
+  /* ObjC nullability support keywords that also can appear in the
+     property attribute context.  These values should remain contiguous
+     with the other property attributes.  */
+  RID_NULL_UNSPECIFIED, RID_NULLABLE, RID_NONNULL, RID_NULL_RESETTABLE,
 
   /* C (reserved and imaginary types not implemented, so any use is a
      syntax error) */
@@ -164,7 +169,7 @@ enum rid
   RID_HAS_NOTHROW_COPY,        RID_HAS_TRIVIAL_ASSIGN,
   RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
   RID_HAS_TRIVIAL_DESTRUCTOR,  RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-  RID_HAS_VIRTUAL_DESTRUCTOR,
+  RID_HAS_VIRTUAL_DESTRUCTOR,  RID_BUILTIN_BIT_CAST,
   RID_IS_ABSTRACT,             RID_IS_AGGREGATE,
   RID_IS_BASE_OF,              RID_IS_CLASS,
   RID_IS_EMPTY,                RID_IS_ENUM,
@@ -176,6 +181,7 @@ enum rid
   RID_IS_TRIVIALLY_COPYABLE,
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
   RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
+  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -188,6 +194,9 @@ enum rid
 
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
+
+  /* C++ modules.  */
+  RID__MODULE, RID__IMPORT, RID__EXPORT, /* Internal tokens.  */
 
   /* C++ coroutines */
   RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
@@ -263,7 +272,7 @@ enum rid
   RID_FIRST_PQ = RID_IN,
   RID_LAST_PQ = RID_ONEWAY,
   RID_FIRST_PATTR = RID_GETTER,
-  RID_LAST_PATTR = RID_NONATOMIC
+  RID_LAST_PATTR = RID_NULL_RESETTABLE
 };
 
 #define OBJC_IS_AT_KEYWORD(rid) \
@@ -274,9 +283,11 @@ enum rid
   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
    (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
 
+/* Keywords permitted in an @property attribute context.  */
 #define OBJC_IS_PATTR_KEYWORD(rid) \
-  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
-   (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)
+  ((((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
+     (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)) \
+   || rid == RID_CLASS)
 
 /* OBJC_IS_CXX_KEYWORD recognizes the 'CXX_OBJC' keywords (such as
    'class') which are shared in a subtle way between Objective-C and
@@ -356,13 +367,17 @@ enum c_tree_index
 
     CTI_DEFAULT_FUNCTION_TYPE,
 
+    CTI_NULL,
+
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
     CTI_PRETTY_FUNCTION_NAME_DECL,
     CTI_C99_FUNCTION_NAME_DECL,
-    CTI_SAVED_FUNCTION_NAME_DECLS,
 
-    CTI_NULL,
+    CTI_MODULE_HWM,
+    /* Below here entities change during compilation.  */
+
+    CTI_SAVED_FUNCTION_NAME_DECLS,
 
     CTI_MAX
 };
@@ -437,9 +452,11 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
 #define D_CXX20		0x2000  /* In C++, C++20 only.  */
 #define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x8000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
+#define D_CXX_MODULES_FLAGS (D_CXXONLY | D_CXX_MODULES)
 #define D_CXX_COROUTINES_FLAGS (D_CXXONLY | D_CXX_COROUTINES)
 
 /* The reserved keyword table.  */
@@ -1039,7 +1056,7 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
 			      enum cpp_warning_reason, rich_location *,
 			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
-extern int c_common_has_attribute (cpp_reader *);
+extern int c_common_has_attribute (cpp_reader *, bool);
 extern int c_common_has_builtin (cpp_reader *);
 
 extern bool parse_optimize_options (tree, bool);
@@ -1221,6 +1238,7 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);
+extern void c_omp_adjust_map_clauses (tree, bool);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree
@@ -1361,7 +1379,7 @@ extern void warn_tautological_cmp (const op_location_t &, enum tree_code,
 				   tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
-extern bool warn_if_unused_value (const_tree, location_t);
+extern bool warn_if_unused_value (const_tree, location_t, bool = false);
 extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,

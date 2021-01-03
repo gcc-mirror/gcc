@@ -21,6 +21,12 @@
 
 #include <set>
 
+#if __cplusplus >= 201103L
+# define NOTHROW(X) noexcept(X)
+#else
+# define NOTHROW(X)
+#endif
+
 namespace std {
   template <class Key, class Compare, class Allocator>
     class set;
@@ -51,7 +57,8 @@ namespace std {
 
   template <class Key, class Compare, class Allocator>
     void swap(set<Key,Compare,Allocator>& x,
-              set<Key,Compare,Allocator>& y);
+              set<Key,Compare,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 
   template <class Key, class Compare, class Allocator>
     class multiset;
@@ -82,5 +89,6 @@ namespace std {
 
   template <class Key, class Compare, class Allocator>
     void swap(multiset<Key,Compare,Allocator>& x,
-              multiset<Key,Compare,Allocator>& y);
+              multiset<Key,Compare,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 }

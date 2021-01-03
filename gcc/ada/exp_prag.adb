@@ -425,7 +425,12 @@ package body Exp_Prag is
 
       --  Generate the appropriate if statement. Note that we consider this to
       --  be an explicit conditional in the source, not an implicit if, so we
-      --  do not call Make_Implicit_If_Statement.
+      --  do not call Make_Implicit_If_Statement. Note also that we wrap the
+      --  raise statement in a block statement so that, if the condition is
+      --  evaluated at compile time to False, then the rewriting of the if
+      --  statement will not involve the raise but the block statement, and
+      --  thus not leave a dangling reference to the raise statement in the
+      --  Local_Raise_Statements list of the handler.
 
       --  Case where we generate a direct raise
 
@@ -438,8 +443,14 @@ package body Exp_Prag is
            Make_If_Statement (Loc,
              Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
              Then_Statements => New_List (
-               Make_Raise_Statement (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
+               Make_Block_Statement (Loc,
+                 Handled_Statement_Sequence =>
+                   Make_Handled_Sequence_Of_Statements (Loc,
+                     Statements => New_List (
+                       Make_Raise_Statement (Loc,
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Assert_Failure),
+                                                                   Loc))))))));
 
       --  Case where we call the procedure
 
@@ -778,16 +789,23 @@ package body Exp_Prag is
       is
          Copy  : Entity_Id;
          Param : Node_Id;
+         Expr  : Node_Id;
       begin
          Param := First (Params);
          while Present (Param) loop
             Copy := Make_Temporary (Loc, 'C');
 
+            if Nkind (Param) = N_Parameter_Association then
+               Expr := Explicit_Actual_Parameter (Param);
+            else
+               Expr := Param;
+            end if;
+
             Append_To (Decls,
                Make_Object_Declaration (Loc,
                  Defining_Identifier => Copy,
-                 Object_Definition   => New_Occurrence_Of (Etype (Param), Loc),
-                 Expression          => New_Copy_Tree (Param)));
+                 Object_Definition   => New_Occurrence_Of (Etype (Expr), Loc),
+                 Expression          => New_Copy_Tree (Expr)));
 
             Append_Elmt (Copy, Copies);
             Next (Param);
@@ -1561,6 +1579,12 @@ package body Exp_Prag is
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Temp, Loc),
                       Expression => Pref));
+               end if;
+
+               --  Mark the temporary as coming from a 'Old reference
+
+               if Present (Temp) then
+                  Set_Stores_Attribute_Old_Prefix (Temp);
                end if;
 
                --  Ensure that the prefix is valid

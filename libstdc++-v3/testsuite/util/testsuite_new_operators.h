@@ -65,6 +65,11 @@ void operator delete(void* p) throw()
     std::free(p);
 }
 
+#if __cpp_sized_deallocation
+void operator delete(void* p, std::size_t) throw()
+{ ::operator delete(p); }
+#endif
+
 void operator delete(void* p, const std::nothrow_t&) throw()
 {
   if (p)

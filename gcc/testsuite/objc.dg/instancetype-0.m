@@ -6,6 +6,9 @@
 extern id class_createInstance (id, int);
 extern id class_getSuperclass (id);
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyObject
 {
   Class isa;

@@ -97,6 +97,7 @@ static basic_block rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (FILE *, basic_block, int, dump_flags_t);
 static int rtl_verify_flow_info_1 (void);
 static void rtl_make_forwarder_block (edge);
+static bool rtl_bb_info_initialized_p (basic_block bb);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -2149,7 +2150,8 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
       putc ('\n', outf);
     }
 
-  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK)
+  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK
+      && rtl_bb_info_initialized_p (bb))
     {
       rtx_insn *last = BB_END (bb);
       if (last)
@@ -3415,6 +3417,53 @@ fixup_abnormal_edges (void)
     }
 
   return inserted;
+}
+
+/* Delete the unconditional jump INSN and adjust the CFG correspondingly.
+   Note that the INSN should be deleted *after* removing dead edges, so
+   that the kept edge is the fallthrough edge for a (set (pc) (pc))
+   but not for a (set (pc) (label_ref FOO)).  */
+
+void
+update_cfg_for_uncondjump (rtx_insn *insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  gcc_assert (BB_END (bb) == insn);
+
+  purge_dead_edges (bb);
+
+  if (current_ir_type () != IR_RTL_CFGLAYOUT)
+    {
+      if (!find_fallthru_edge (bb->succs))
+	{
+	  auto barrier = next_nonnote_nondebug_insn (insn);
+	  if (!barrier || !BARRIER_P (barrier))
+	    emit_barrier_after (insn);
+	}
+      return;
+    }
+
+  delete_insn (insn);
+  if (EDGE_COUNT (bb->succs) == 1)
+    {
+      rtx_insn *insn;
+
+      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+
+      /* Remove barriers from the footer if there are any.  */
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
+	if (BARRIER_P (insn))
+	  {
+	    if (PREV_INSN (insn))
+	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	    else
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
+	    if (NEXT_INSN (insn))
+	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	  }
+	else if (LABEL_P (insn))
+	  break;
+    }
 }
 
 /* Cut the insns from FIRST to LAST out of the insns stream.  */
@@ -4860,7 +4909,8 @@ rtl_block_empty_p (basic_block bb)
     return true;
 
   FOR_BB_INSNS (bb, insn)
-    if (NONDEBUG_INSN_P (insn) && !any_uncondjump_p (insn))
+    if (NONDEBUG_INSN_P (insn)
+	&& (!any_uncondjump_p (insn) || !onlyjump_p (insn)))
       return false;
 
   return true;
@@ -5133,6 +5183,12 @@ init_rtl_bb_info (basic_block bb)
   gcc_assert (!bb->il.x.rtl);
   bb->il.x.head_ = NULL;
   bb->il.x.rtl = ggc_cleared_alloc<rtl_bb_info> ();
+}
+
+static bool
+rtl_bb_info_initialized_p (basic_block bb)
+{
+  return bb->il.x.rtl;
 }
 
 /* Returns true if it is possible to remove edge E by redirecting

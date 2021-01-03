@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-gthreads "" }
 
 // Copyright (C) 2008-2020 Free Software Foundation, Inc.
 //
@@ -20,8 +19,17 @@
 
 
 #include <mutex>
+#include <testsuite_common_types.h>
 
 void test01()
 {
+  static_assert( std::is_default_constructible<std::once_flag>::value, "");
+
   std::once_flag once_flag;
+}
+
+void test02()
+{
+  __gnu_test::constexpr_default_constructible test;
+  test.operator()<std::once_flag>();
 }

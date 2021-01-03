@@ -6,12 +6,14 @@
 /* { dg-final { scan-tree-dump-not "nextafter" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "nexttoward" "optimized" } } */
 
+#ifndef _NEXT_AFTER_2
 float nextafterf (float, float);
 double nextafter (double, double);
 long double nextafterl (long double, long double);
 float nexttowardf (float, long double);
 double nexttoward (double, long double);
 long double nexttowardl (long double, long double);
+#endif
 
 #define CHECK(x) if (!(x)) __builtin_abort ()
 

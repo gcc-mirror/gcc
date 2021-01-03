@@ -1,3 +1,37 @@
+2020-12-22  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/98402
+	* go-lang.c (go_langhook_init): Force MPFR exponent range to be
+	large enough to support Go constants.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (go.serial): Change from goal to a variable.
+	(.PHONY): Drop go.serial and go.prev.
+	(go1$(exeext)): Depend on $(go.serial) rather than go.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (go.serial): New goal.
+	(.PHONY): Add go.serial go.prev.
+	(go1$(exeext)): Depend on go.prev.  Call LINK_PROGRESS.
+
+2020-11-11  Alan Modra  <amodra@gmail.com>
+
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Cast NULL to
+	avoid ambiguous overloaded call.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+
+2020-11-04  Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (go_langhook_post_options): Disable
+	-fipa-icf-functions if it was not explicitly enabled.
+
 2020-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* go-gcc.cc (Gcc_backend::function): Adjust

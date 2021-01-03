@@ -1,6 +1,7 @@
 /* Test that we don't ICE when issuing a -Wselector warning.  */
 /* { dg-options "-Wselector" } */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 

@@ -6,7 +6,7 @@
 
 struct S { float f, g; };
 
-__attribute__((noinline, noclone)) void
+__attribute__((noipa)) void
 foo (struct S *p)
 {
   struct S s1, s2;			/* { dg-final { gdb-test pr59776.c:17 "s1.f" "5.0" } } */

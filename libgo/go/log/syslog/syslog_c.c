@@ -12,7 +12,7 @@
    can't represent a C varargs function in Go.  */
 
 void syslog_c(intgo, const char*)
-  __asm__ (GOSYM_PREFIX "log..z2fsyslog.syslog_c");
+  __asm__ (GOSYM_PREFIX "log_1syslog.syslog__c");
 
 void
 syslog_c (intgo priority, const char *msg)

@@ -62,6 +62,30 @@ Enable asan stack protection.
 Common Joined UInteger Var(param_asan_use_after_return) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan detection of use-after-return bugs.
 
+-param=hwasan-instrument-stack=
+Common Joined UInteger Var(param_hwasan_instrument_stack) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of statically sized stack-allocated variables.
+
+-param=hwasan-random-frame-tag=
+Common Joined UInteger Var(param_hwasan_random_frame_tag) Init(1) IntegerRange(0, 1) Param Optimization
+Use random base tag for each frame, as opposed to base always zero.
+
+-param=hwasan-instrument-allocas=
+Common Joined UInteger Var(param_hwasan_instrument_allocas) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of allocas/VLAs.
+
+-param=hwasan-instrument-reads=
+Common Joined UInteger Var(param_hwasan_instrument_reads) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of load operations.
+
+-param=hwasan-instrument-writes=
+Common Joined UInteger Var(param_hwasan_instrument_writes) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of store operations.
+
+-param=hwasan-instrument-mem-intrinsics=
+Common Joined UInteger Var(param_hwasan_instrument_mem_intrinsics) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of builtin functions.
+
 -param=avg-loop-niter=
 Common Joined UInteger Var(param_avg_loop_niter) Init(10) IntegerRange(1, 65536) Param Optimization
 Average number of iterations of a loop.
@@ -253,7 +277,7 @@ The size of translation unit that IPA-CP pass considers large.
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
 
--param-ipa-jump-function-lookups=
+-param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
 Maximum number of statements visited during jump function offset discovery.
 
@@ -348,6 +372,10 @@ Maximal stack frame growth due to inlining (in percent).
 -param=large-unit-insns=
 Common Joined UInteger Var(param_large_unit_insns) Optimization Init(10000) Param
 The size of translation unit to be considered large.
+
+-param=lazy-modules=
+C++ Joined UInteger Var(param_lazy_modules) Init(32768) Param
+Maximum number of concurrently open C++ module files when lazy loading.
 
 -param=lim-expensive=
 Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
@@ -855,10 +883,6 @@ The number of prefetches that can run at the same time.
 Common Joined UInteger Var(param_sink_frequency_threshold) Init(75) IntegerRange(0, 100) Param Optimization
 Target block's relative execution frequency (as a percentage) required to sink a statement.
 
--param=slp-max-insns-in-bb=
-Common Joined UInteger Var(param_slp_max_insns_in_bb) Init(1000) Param Optimization
-Maximum number of instructions in basic block to be considered for SLP vectorization.
-
 -param=sms-dfa-history=
 Common Joined UInteger Var(param_sms_dfa_history) IntegerRange(0, 16) Param Optimization
 The number of cycles the swing modulo scheduler considers when checking conflicts using DFA.
@@ -916,20 +940,28 @@ Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) Integer
 The maximum ratio between array size and switch branches for a switch conversion to take place.
 
 -param=modref-max-bases=
-Common Joined UInteger Var(param_modref_max_bases) Init(32)
+Common Joined UInteger Var(param_modref_max_bases) Init(32) Param Optimization
 Maximum number of bases stored in each modref tree.
 
 -param=modref-max-refs=
-Common Joined UInteger Var(param_modref_max_refs) Init(16)
+Common Joined UInteger Var(param_modref_max_refs) Init(16) Param Optimization
 Maximum number of references stored in each modref base.
 
 -param=modref-max-accesses=
-Common Joined UInteger Var(param_modref_max_accesses) Init(16)
+Common Joined UInteger Var(param_modref_max_accesses) Init(16) Param Optimization
 Maximum number of accesse stored in each modref reference.
 
 -param=modref-max-tests=
-Common Joined UInteger Var(param_modref_max_tests) Init(64)
+Common Joined UInteger Var(param_modref_max_tests) Init(64) Param Optimization
 Maximum number of tests performed by modref query.
+
+-param=modref-max-depth=
+Common Joined UInteger Var(param_modref_max_depth) Init(256) Param Optimization
+Maximum depth of DFS walk used by modref escape analysis.
+
+-param=modref-max-escape-points=
+Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
+Maximum number of escape points tracked by modref per SSA-name.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

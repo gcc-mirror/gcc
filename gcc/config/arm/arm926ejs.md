@@ -62,7 +62,7 @@
                        alu_sreg,alus_sreg,logic_reg,logics_reg,\
                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
                        adr,bfm,rev,\
-                       alu_shift_imm,alus_shift_imm,\
+                       alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                        logic_shift_imm,logics_shift_imm,\
                        shift_imm,shift_reg,extend,\
                        mov_imm,mov_reg,mov_shift,\

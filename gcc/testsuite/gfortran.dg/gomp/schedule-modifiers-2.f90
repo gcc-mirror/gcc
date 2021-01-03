@@ -3,16 +3,16 @@
 
 subroutine foo
   integer :: i
-  !$omp do schedule (nonmonotonic: static, 2)	! { dg-error "NONMONOTONIC modifier specified for STATIC schedule kind" }
+  !$omp do schedule (nonmonotonic: static, 2)
   do i = 0, 64
   end do
-  !$omp do schedule (nonmonotonic : static)	! { dg-error "NONMONOTONIC modifier specified for STATIC schedule kind" }
+  !$omp do schedule (nonmonotonic : static)
   do i = 0, 64
   end do
-  !$omp do schedule (nonmonotonic : runtime)	! { dg-error "NONMONOTONIC modifier specified for RUNTIME schedule kind" }
+  !$omp do schedule (nonmonotonic : runtime)
   do i = 0, 64
   end do
-  !$omp do schedule (nonmonotonic : auto)	! { dg-error "NONMONOTONIC modifier specified for AUTO schedule kind" }
+  !$omp do schedule (nonmonotonic : auto)
   do i = 0, 64
   end do
   !$omp do schedule (nonmonotonic : dynamic) ordered	! { dg-error "NONMONOTONIC schedule modifier specified with ORDERED clause" }

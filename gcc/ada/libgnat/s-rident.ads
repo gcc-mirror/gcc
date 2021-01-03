@@ -184,6 +184,8 @@ package System.Rident is
       No_Implicit_Loops,                         -- GNAT
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
+      No_Unrecognized_Aspects,                   -- AI12-0389-1/02
+      No_Unrecognized_Pragmas,                   -- AI12-0389-1/02
       No_Wide_Characters,                        -- GNAT
       Static_Dispatch_Tables,                    -- GNAT
       SPARK_05,                                  -- GNAT

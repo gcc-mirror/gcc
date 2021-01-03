@@ -211,8 +211,6 @@ type_with_linkage_p (const_tree t)
   if (!TYPE_CONTEXT (t))
     return false;
 
-  gcc_checking_assert (TREE_CODE (t) == ENUMERAL_TYPE || TYPE_CXX_ODR_P (t));
-
   return true;
 }
 
@@ -263,6 +261,18 @@ get_odr_name_for_type (tree type)
     return NULL;
 
   return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (type_name));
+}
+
+/* Return true if we are going to do LTO streaming.  */
+
+inline bool
+lto_streaming_expected_p ()
+{
+  /* Compilation before LTO stremaing.  */
+  if (flag_lto && !in_lto_p && symtab->state < IPA_SSA_AFTER_INLINING)
+    return true;
+  /* WPA or incremental link.  */
+  return (flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO);
 }
 
 #endif  /* GCC_IPA_UTILS_H  */

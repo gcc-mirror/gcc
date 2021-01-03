@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
+#include "stmt.h"
 
 #include <pthread.h>
 
@@ -85,6 +86,18 @@ namespace jit {
 /**********************************************************************
  Playback.
  **********************************************************************/
+
+/* Build a STRING_CST tree for STR, or return NULL if it is NULL.
+   The TREE_TYPE is not initialized.  */
+
+static tree
+build_string (const char *str)
+{
+  if (str)
+    return ::build_string (strlen (str), str);
+  else
+    return NULL_TREE;
+}
 
 /* The constructor for gcc::jit::playback::context.  */
 
@@ -774,7 +787,7 @@ new_string_literal (const char *value)
   tree a_type = build_array_type (char_type_node, i_type);
   /* build_string len parameter must include NUL terminator when
      building C strings.  */
-  tree t_str = build_string (len + 1, value);
+  tree t_str = ::build_string (len + 1, value);
   TREE_TYPE (t_str) = a_type;
 
   /* Convert to (const char*), loosely based on
@@ -819,6 +832,18 @@ as_truth_value (tree expr, location *loc)
     set_tree_location (expr, loc);
 
   return expr;
+}
+
+/* Add a "top-level" basic asm statement (i.e. one outside of any functions)
+   containing ASM_STMTS.
+
+   Compare with c_parser_asm_definition.  */
+
+void
+playback::context::add_top_level_asm (const char *asm_stmts)
+{
+  tree asm_str = build_string (asm_stmts);
+  symtab->finalize_toplevel_asm (asm_str);
 }
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
@@ -1895,6 +1920,104 @@ add_switch (location *loc,
   if (loc)
     set_tree_location (switch_stmt, loc);
   add_stmt (switch_stmt);
+}
+
+/* Convert OPERANDS to a tree-based chain suitable for creating an
+   extended asm stmt.
+   Compare with c_parser_asm_operands.  */
+
+static tree
+build_operand_chain (const auto_vec <playback::asm_operand> *operands)
+{
+  tree result = NULL_TREE;
+  unsigned i;
+  playback::asm_operand *asm_op;
+  FOR_EACH_VEC_ELT (*operands, i, asm_op)
+    {
+      tree name = build_string (asm_op->m_asm_symbolic_name);
+      tree str = build_string (asm_op->m_constraint);
+      tree value = asm_op->m_expr;
+      result = chainon (result,
+			build_tree_list (build_tree_list (name, str),
+					 value));
+    }
+  return result;
+}
+
+/* Convert CLOBBERS to a tree-based list suitable for creating an
+   extended asm stmt.
+   Compare with c_parser_asm_clobbers.  */
+
+static tree
+build_clobbers (const auto_vec <const char *> *clobbers)
+{
+  tree list = NULL_TREE;
+  unsigned i;
+  const char *clobber;
+  FOR_EACH_VEC_ELT (*clobbers, i, clobber)
+    {
+      tree str = build_string (clobber);
+      list = tree_cons (NULL_TREE, str, list);
+    }
+  return list;
+}
+
+/* Convert BLOCKS to a tree-based list suitable for creating an
+   extended asm stmt.
+   Compare with c_parser_asm_goto_operands.  */
+
+static tree
+build_goto_operands (const auto_vec <playback::block *> *blocks)
+{
+  tree list = NULL_TREE;
+  unsigned i;
+  playback::block *b;
+  FOR_EACH_VEC_ELT (*blocks, i, b)
+    {
+      tree label = b->as_label_decl ();
+      tree name = build_string (IDENTIFIER_POINTER (DECL_NAME (label)));
+      TREE_USED (label) = 1;
+      list = tree_cons (name, label, list);
+    }
+  return nreverse (list);
+}
+
+/* Add an extended asm statement to this block.
+
+   Compare with c_parser_asm_statement (in c/c-parser.c)
+   and build_asm_expr (in c/c-typeck.c).  */
+
+void
+playback::block::add_extended_asm (location *loc,
+				   const char *asm_template,
+				   bool is_volatile,
+				   bool is_inline,
+				   const auto_vec <asm_operand> *outputs,
+				   const auto_vec <asm_operand> *inputs,
+				   const auto_vec <const char *> *clobbers,
+				   const auto_vec <block *> *goto_blocks)
+{
+  tree t_string = build_string (asm_template);
+  tree t_outputs = build_operand_chain (outputs);
+  tree t_inputs = build_operand_chain (inputs);
+  tree t_clobbers = build_clobbers (clobbers);
+  tree t_labels = build_goto_operands (goto_blocks);
+  t_string
+    = resolve_asm_operand_names (t_string, t_outputs, t_inputs, t_labels);
+  tree asm_stmt
+    = build5 (ASM_EXPR, void_type_node,
+	      t_string, t_outputs, t_inputs, t_clobbers, t_labels);
+
+  /* asm statements without outputs, including simple ones, are treated
+     as volatile.  */
+  ASM_VOLATILE_P (asm_stmt) = (outputs->length () == 0);
+  ASM_INPUT_P (asm_stmt) = 0; /* extended asm stmts are not "simple".  */
+  ASM_INLINE_P (asm_stmt) = is_inline;
+  if (is_volatile)
+    ASM_VOLATILE_P (asm_stmt) = 1;
+  if (loc)
+    set_tree_location (asm_stmt, loc);
+  add_stmt (asm_stmt);
 }
 
 /* Constructor for gcc::jit::playback::block.  */

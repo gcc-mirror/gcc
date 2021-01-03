@@ -50,7 +50,7 @@ template_and_param_regex = re.compile(r'<[^<>]*>')
 bugzilla_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/bug?id=%s&' \
                'include_fields=summary'
 
-function_extensions = set(['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def'])
+function_extensions = {'.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def'}
 
 help_message = """\
 Generate ChangeLog template for PATCH.
@@ -111,8 +111,8 @@ def sort_changelog_files(changed_file):
 def get_pr_titles(prs):
     output = ''
     for pr in prs:
-        id = pr.split('/')[-1]
-        r = requests.get(bugzilla_url % id)
+        pr_id = pr.split('/')[-1]
+        r = requests.get(bugzilla_url % pr_id)
         bugs = r.json()['bugs']
         if len(bugs) == 1:
             output += '%s - %s\n' % (pr, bugs[0]['summary'])
@@ -242,8 +242,7 @@ if __name__ == '__main__':
     if args.input == '-':
         args.input = None
 
-    input = open(args.input) if args.input else sys.stdin
-    data = input.read()
+    data = open(args.input) if args.input else sys.stdin
     output = generate_changelog(data, args.no_functions,
                                 args.fill_up_bug_titles)
     if args.changelog:

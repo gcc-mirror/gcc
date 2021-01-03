@@ -24,6 +24,7 @@
 
 
 #define _GLIBCXX_THREAD_ABI_COMPAT 1
+#include <memory> // include this first so <thread> can use shared_ptr
 #include <thread>
 #include <system_error>
 #include <cerrno>
@@ -34,7 +35,8 @@
 #  include <unistd.h>
 # elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
 #  include <windows.h>
-# else
+# elif defined _GLIBCXX_NO_SLEEP && defined _GLIBCXX_HAS_GTHREADS
+// We expect to be able to sleep for targets that support multiple threads:
 #  error "No sleep function known for this target"
 # endif
 #endif
@@ -132,6 +134,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   thread::_M_start_thread(_State_ptr state, void (*)())
   {
+    if (!__gthread_active_p())
+      {
+#if __cpp_exceptions
+	throw system_error(make_error_code(errc::operation_not_permitted),
+			   "Enable multithreading to use std::thread");
+#else
+	__builtin_abort();
+#endif
+      }
+
     const int err = __gthread_create(&_M_id._M_thread,
 				     &execute_native_thread_routine,
 				     state.get());
@@ -185,6 +197,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // _GLIBCXX_HAS_GTHREADS
 
+#ifndef _GLIBCXX_NO_SLEEP
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -241,3 +254,4 @@ namespace this_thread
 }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+#endif // ! NO_SLEEP

@@ -25,7 +25,12 @@
 #include <bits/c++config.h>
 #include "eh_atomics.h"
 
+#if ! _GLIBCXX_INLINE_VERSION
+// This macro causes exception_ptr to declare an older API (with corresponding
+// definitions in this file) and to mark some inline functions as "used" so
+// that definitions will be emitted in this translation unit.
 #define _GLIBCXX_EH_PTR_COMPAT
+#endif
 
 #include <exception>
 #include <bits/exception_ptr.h>
@@ -60,6 +65,8 @@ static_assert( adjptr<__cxa_exception>()
 	       " consistent with __cxa_exception::adjustedPtr" );
 #endif
 }
+
+// Define non-inline functions.
 
 std::__exception_ptr::exception_ptr::exception_ptr(void* obj) noexcept
 : _M_exception_object(obj)  { _M_addref(); }
@@ -129,19 +136,6 @@ std::__exception_ptr::exception_ptr::__cxa_exception_type() const noexcept
   __cxa_exception *eh = __get_exception_header_from_obj (_M_exception_object);
   return eh->exceptionType;
 }
-
-// Retained for compatibility with CXXABI_1.3.12.
-bool
-std::__exception_ptr::operator==(const exception_ptr& lhs,
-				 const exception_ptr& rhs) noexcept
-{ return lhs._M_exception_object == rhs._M_exception_object; }
-
-// Retained for compatibility with CXXABI_1.3.12.
-bool
-std::__exception_ptr::operator!=(const exception_ptr& lhs,
-				 const exception_ptr& rhs) noexcept
-{ return !(lhs == rhs); }
-
 
 std::exception_ptr
 std::current_exception() noexcept

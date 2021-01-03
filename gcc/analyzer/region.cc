@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
+#include "analyzer/region.h"
 #include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
@@ -517,10 +518,11 @@ region::region (complexity c, unsigned id, const region *parent, tree type)
   gcc_assert (type == NULL_TREE || TYPE_P (type));
 }
 
-/* Comparator for regions, using their IDs to order them.  */
+/* Comparator for use by vec<const region *>::qsort,
+   using their IDs to order them.  */
 
 int
-region::cmp_ptrs (const void *p1, const void *p2)
+region::cmp_ptr_ptr (const void *p1, const void *p2)
 {
   const region * const *reg1 = (const region * const *)p1;
   const region * const *reg2 = (const region * const *)p2;
@@ -824,6 +826,16 @@ root_region::dump_to_pp (pretty_printer *pp, bool simple) const
 
 /* class symbolic_region : public map_region.  */
 
+/* symbolic_region's ctor.  */
+
+symbolic_region::symbolic_region (unsigned id, region *parent,
+				  const svalue *sval_ptr)
+: region (complexity::from_pair (parent, sval_ptr), id, parent,
+	  TREE_TYPE (sval_ptr->get_type ())),
+  m_sval_ptr (sval_ptr)
+{
+}
+
 /* Implementation of region::accept vfunc for symbolic_region.  */
 
 void
@@ -937,6 +949,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
   tree init = DECL_INITIAL (m_decl);
   if (!init)
     {
+      /* If we have an "extern" decl then there may be an initializer in
+	 another TU.  */
+      if (DECL_EXTERNAL (m_decl))
+	return NULL;
+
       /* Implicit initialization to zero; use a compound_svalue for it.
 	 Doing so requires that we have a concrete binding for this region,
 	 which can fail if we have a region with unknown size
@@ -1129,9 +1146,12 @@ string_region::dump_to_pp (pretty_printer *pp, bool simple) const
     {
       pp_string (pp, "string_region(");
       dump_tree (pp, m_string_cst);
-      pp_string (pp, " (");
-      pp_pointer (pp, m_string_cst);
-      pp_string (pp, "))");
+      if (!flag_dump_noaddr)
+	{
+	  pp_string (pp, " (");
+	  pp_pointer (pp, m_string_cst);
+	  pp_string (pp, "))");
+	}
     }
 }
 

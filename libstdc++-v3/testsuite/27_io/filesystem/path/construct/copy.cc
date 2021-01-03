@@ -28,7 +28,7 @@ using std::filesystem::path;
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path copy = p;
     __gnu_test::compare_paths(p, copy);
@@ -38,7 +38,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path copy = p;
     path move = std::move(copy);

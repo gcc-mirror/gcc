@@ -1517,6 +1517,13 @@ Alphabetical List of All Switches
   an exception because ``Self(Obj)`` produces an anonymous object which does
   not share the memory location of ``Obj``.
 
+.. index:: -gnateb  (gcc)
+
+:switch:`-gnateb`
+  Store configuration files by their basename in ALI files. This switch is
+  used for instance by gprbuild for distributed builds in order to prevent
+  issues where machine-specific absolute paths could end up being stored in
+  ALI files.
 
 .. index:: -gnatec  (gcc)
 
@@ -3337,7 +3344,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.K`
   *Suppress warnings on redefinition of names in standard.*
 
-  This switch activates warnings for declarations that declare a name that
+  This switch disables warnings for declarations that declare a name that
   is defined in package Standard.
 
 
@@ -4807,7 +4814,8 @@ checks to be performed. The following checks are defined:
 
   All keywords must be in lower case (with the exception of keywords
   such as ``digits`` used as attribute names to which this check
-  does not apply).
+  does not apply). A single error is reported for each line breaking
+  this rule even if multiple casing issues exist on a same line.
 
 
 .. index:: -gnatyl (gcc)
@@ -6703,6 +6711,9 @@ be presented in subsequent sections.
   Use the target-independent XDR protocol for stream oriented attributes
   instead of the default implementation which is based on direct binary
   representations and is therefore target-and endianness-dependent.
+  However it does not support 128-bit integer types and the exception
+  ``Ada.IO_Exceptions.Device_Error`` is raised if any attempt is made
+  at streaming 128-bit integer types with it.
 
 
   .. index:: -Xnnn  (gnatbind)

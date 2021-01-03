@@ -1062,7 +1062,7 @@ _cpp_clean_line (cpp_reader *pfile)
       d = (uchar *) s;
 
       /* Handle DOS line endings.  */
-      if (*s == '\r' && s != buffer->rlimit && s[1] == '\n')
+      if (*s == '\r' && s + 1 != buffer->rlimit && s[1] == '\n')
 	s++;
     }
 
@@ -1370,7 +1370,7 @@ maybe_va_opt_error (cpp_reader *pfile)
     {
       /* __VA_OPT__ should not be accepted at all, but allow it in
 	 system headers.  */
-      if (!cpp_in_system_header (pfile))
+      if (!_cpp_in_system_header (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "__VA_OPT__ is not available until C++20");
     }
@@ -1577,13 +1577,20 @@ static void
 create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		unsigned int len, enum cpp_ttype type)
 {
-  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
-
-  memcpy (dest, base, len);
-  dest[len] = '\0';
   token->type = type;
   token->val.str.len = len;
-  token->val.str.text = dest;
+  token->val.str.text = cpp_alloc_token_string (pfile, base, len);
+}
+
+const uchar *
+cpp_alloc_token_string (cpp_reader *pfile,
+			const unsigned char *ptr, unsigned len)
+{
+  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
+
+  dest[len] = 0;
+  memcpy (dest, ptr, len);
+  return dest;
 }
 
 /* A pair of raw buffer pointers.  The currently open one is [1], the
@@ -2554,6 +2561,15 @@ cpp_peek_token (cpp_reader *pfile, int index)
 	  index--;
 	  break;
 	}
+      else if (peektok->type == CPP_PRAGMA)
+	{
+	  /* Don't peek past a pragma.  */
+	  if (peektok == &pfile->directive_result)
+	    /* Save the pragma in the buffer.  */
+	    *pfile->cur_token++ = *peektok;
+	  index--;
+	  break;
+	}
     }
   while (index--);
 
@@ -2606,6 +2622,151 @@ _cpp_temp_token (cpp_reader *pfile)
   return result;
 }
 
+/* We're at the beginning of a logical line (so not in
+  directives-mode) and RESULT is a CPP_NAME with NODE_MODULE set.  See
+  if we should enter deferred_pragma mode to tokenize the rest of the
+  line as a module control-line.  */
+
+static void
+cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
+{
+  unsigned backup = 0; /* Tokens we peeked.  */
+  cpp_hashnode *node = result->val.node.node;
+  cpp_token *peek = result;
+  cpp_token *keyword = peek;
+  cpp_hashnode *(&n_modules)[spec_nodes::M_HWM][2] = pfile->spec_nodes.n_modules;
+  int header_count = 0;
+
+  /* Make sure the incoming state is as we expect it.  This way we
+     can restore it using constants.  */
+  gcc_checking_assert (!pfile->state.in_deferred_pragma
+		       && !pfile->state.skipping
+		       && !pfile->state.parsing_args
+		       && !pfile->state.angled_headers
+		       && (pfile->state.save_comments
+			   == !CPP_OPTION (pfile, discard_comments)));
+
+  /* Enter directives mode sufficiently for peeking.  We don't have
+     to actually set in_directive.  */
+  pfile->state.in_deferred_pragma = true;
+
+  /* These two fields are needed to process tokenization in deferred
+     pragma mode.  They are not used outside deferred pragma mode or
+     directives mode.  */
+  pfile->state.pragma_allow_expansion = true;
+  pfile->directive_line = result->src_loc;
+
+  /* Saving comments is incompatible with directives mode.   */
+  pfile->state.save_comments = 0;
+
+  if (node == n_modules[spec_nodes::M_EXPORT][0])
+    {
+      peek = _cpp_lex_direct (pfile);
+      keyword = peek;
+      backup++;
+      if (keyword->type != CPP_NAME)
+	goto not_module;
+      node = keyword->val.node.node;
+      if (!(node->flags & NODE_MODULE))
+	goto not_module;
+    }
+
+  if (node == n_modules[spec_nodes::M__IMPORT][0])
+    /* __import  */
+    header_count = backup + 2 + 16;
+  else if (node == n_modules[spec_nodes::M_IMPORT][0])
+    /* import  */
+    header_count = backup + 2 + (CPP_OPTION (pfile, preprocessed) ? 16 : 0);
+  else if (node == n_modules[spec_nodes::M_MODULE][0])
+    ; /* module  */
+  else
+    goto not_module;
+
+  /* We've seen [export] {module|import|__import}.  Check the next token.  */
+  if (header_count)
+    /* After '{,__}import' a header name may appear.  */
+    pfile->state.angled_headers = true;
+  peek = _cpp_lex_direct (pfile);
+  backup++;
+
+  /* ... import followed by identifier, ':', '<' or
+     header-name preprocessing tokens, or module
+     followed by cpp-identifier, ':' or ';' preprocessing
+     tokens.  C++ keywords are not yet relevant.  */
+  if (peek->type == CPP_NAME
+      || peek->type == CPP_COLON
+      ||  (header_count
+	   ? (peek->type == CPP_LESS
+	      || (peek->type == CPP_STRING && peek->val.str.text[0] != 'R')
+	      || peek->type == CPP_HEADER_NAME)
+	   : peek->type == CPP_SEMICOLON))
+    {
+      pfile->state.pragma_allow_expansion = !CPP_OPTION (pfile, preprocessed);
+      if (!pfile->state.pragma_allow_expansion)
+	pfile->state.prevent_expansion++;
+
+      if (!header_count && linemap_included_from
+	  (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)))
+	cpp_error_with_line (pfile, CPP_DL_ERROR, keyword->src_loc, 0,
+			     "module control-line cannot be in included file");
+
+      /* The first one or two tokens cannot be macro names.  */
+      for (int ix = backup; ix--;)
+	{
+	  cpp_token *tok = ix ? keyword : result;
+	  cpp_hashnode *node = tok->val.node.node;
+
+	  /* Don't attempt to expand the token.  */
+	  tok->flags |= NO_EXPAND;
+	  if (_cpp_defined_macro_p (node)
+	      && _cpp_maybe_notify_macro_use (pfile, node, tok->src_loc)
+	      && !cpp_fun_like_macro_p (node))
+	    cpp_error_with_line (pfile, CPP_DL_ERROR, tok->src_loc, 0, 
+				 "module control-line \"%s\" cannot be"
+				 " an object-like macro",
+				 NODE_NAME (node));
+	}
+
+      /* Map to underbar variants.  */
+      keyword->val.node.node = n_modules[header_count
+					 ? spec_nodes::M_IMPORT
+					 : spec_nodes::M_MODULE][1];
+      if (backup != 1)
+	result->val.node.node = n_modules[spec_nodes::M_EXPORT][1];
+
+      /* Maybe tell the tokenizer we expect a header-name down the
+	 road.  */
+      pfile->state.directive_file_token = header_count;
+    }
+  else
+    {
+    not_module:
+      /* Drop out of directive mode.  */
+      /* We aaserted save_comments had this value upon entry.  */
+      pfile->state.save_comments
+	= !CPP_OPTION (pfile, discard_comments);
+      pfile->state.in_deferred_pragma = false;
+      /* Do not let this remain on.  */
+      pfile->state.angled_headers = false;
+    }
+
+  /* In either case we want to backup the peeked tokens.  */
+  if (backup)
+    {
+      /* If we saw EOL, we should drop it, because this isn't a module
+	 control-line after all.  */
+      bool eol = peek->type == CPP_PRAGMA_EOL;
+      if (!eol || backup > 1)
+	{
+	  /* Put put the peeked tokens back  */
+	  _cpp_backup_tokens_direct (pfile, backup);
+	  /* But if the last one was an EOL, forget it.  */
+	  if (eol)
+	    pfile->lookaheads--;
+	}
+    }
+}
+
 /* Lex a token into RESULT (external interface).  Takes care of issues
    like directive handling, token lookahead, multiple include
    optimization and skipping.  */
@@ -2654,6 +2815,21 @@ _cpp_lex_token (cpp_reader *pfile)
 	    }
 	  else if (pfile->state.in_deferred_pragma)
 	    result = &pfile->directive_result;
+	  else if (result->type == CPP_NAME
+		   && (result->val.node.node->flags & NODE_MODULE)
+		   && !pfile->state.skipping
+		   /* Unlike regular directives, we do not deal with
+		      tokenizing module directives as macro arguments.
+		      That's not permitted.  */
+		   && !pfile->state.parsing_args)
+	    {
+	      /* P1857.  Before macro expansion, At start of logical
+		 line ... */
+	      /* We don't have to consider lookaheads at this point.  */
+	      gcc_checking_assert (!pfile->lookaheads);
+
+	      cpp_maybe_module_directive (pfile, result);
+	    }
 
 	  if (pfile->cb.line_change && !pfile->state.skipping)
 	    pfile->cb.line_change (pfile, result, pfile->state.parsing_args);
@@ -2757,14 +2933,7 @@ _cpp_lex_direct (cpp_reader *pfile)
   buffer = pfile->buffer;
   if (buffer->need_line)
     {
-      if (pfile->state.in_deferred_pragma)
-	{
-	  result->type = CPP_PRAGMA_EOL;
-	  pfile->state.in_deferred_pragma = false;
-	  if (!pfile->state.pragma_allow_expansion)
-	    pfile->state.prevent_expansion--;
-	  return result;
-	}
+      gcc_assert (!pfile->state.in_deferred_pragma);
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;
@@ -2829,6 +2998,19 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      && !CPP_OPTION (pfile, traditional)))
 	CPP_INCREMENT_LINE (pfile, 0);
       buffer->need_line = true;
+      if (pfile->state.in_deferred_pragma)
+	{
+	  /* Produce the PRAGMA_EOL on this line.  File reading
+	     ensures there is always a \n at end of the buffer, thus
+	     in a deferred pragma we always see CPP_PRAGMA_EOL before
+	     any CPP_EOF.  */
+	  result->type = CPP_PRAGMA_EOL;
+	  result->flags &= ~PREV_WHITE;
+	  pfile->state.in_deferred_pragma = false;
+	  if (!pfile->state.pragma_allow_expansion)
+	    pfile->state.prevent_expansion--;
+	  return result;
+	}
       goto fresh_line;
 
     case '0': case '1': case '2': case '3': case '4':
@@ -2919,7 +3101,7 @@ _cpp_lex_direct (cpp_reader *pfile)
       else if (c == '/' && ! CPP_OPTION (pfile, traditional))
 	{
 	  /* Don't warn for system headers.  */
-	  if (cpp_in_system_header (pfile))
+	  if (_cpp_in_system_header (pfile))
 	    ;
 	  /* Warn about comments if pedantically GNUC89, and not
 	     in system headers.  */
@@ -3446,7 +3628,11 @@ cpp_output_token (const cpp_token *token, FILE *fp)
       break;
 
     case SPELL_LITERAL:
+      if (token->type == CPP_HEADER_NAME)
+	fputc ('"', fp);
       fwrite (token->val.str.text, 1, token->val.str.len, fp);
+      if (token->type == CPP_HEADER_NAME)
+	fputc ('"', fp);
       break;
 
     case SPELL_NONE:
@@ -3932,6 +4118,188 @@ do_peek_prev (const unsigned char *peek, const unsigned char *bound)
     return peek;
 }
 
+/* If PEEK[-1] is identifier MATCH, scan past it and trailing white
+   space.  Otherwise return NULL.  */
+
+static const unsigned char *
+do_peek_ident (const char *match, const unsigned char *peek,
+	       const unsigned char *limit)
+{
+  for (; *++match; peek++)
+    if (*peek != *match)
+      {
+	peek = do_peek_next (peek, limit);
+	if (*peek != *match)
+	  return NULL;
+      }
+
+  /* Must now not be looking at an identifier char.  */
+  peek = do_peek_next (peek, limit);
+  if (ISIDNUM (*peek))
+    return NULL;
+
+  /* Skip control-line whitespace.  */
+ ws:
+  while (*peek == ' ' || *peek == '\t')
+    peek++;
+  if (__builtin_expect (*peek == '\\', false))
+    {
+      peek = do_peek_backslash (peek, limit);
+      if (*peek != '\\')
+	goto ws;
+    }
+
+  return peek;
+}
+
+/* Are we looking at a module control line starting as PEEK - 1?  */
+
+static bool
+do_peek_module (cpp_reader *pfile, unsigned char c,
+		const unsigned char *peek, const unsigned char *limit)
+{
+  bool import = false;
+
+  if (__builtin_expect (c == 'e', false))
+    {
+      if (!((peek[0] == 'x' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("export", peek, limit))))
+	return false;
+
+      /* export, peek for import or module.  No need to peek __import
+	 here.  */
+      if (peek[0] == 'i')
+	{
+	  if (!((peek[1] == 'm' || peek[1] == '\\')
+		&& (peek = do_peek_ident ("import", peek + 1, limit))))
+	    return false;
+	  import = true;
+	}
+      else if (peek[0] == 'm')
+	{
+	  if (!((peek[1] == 'o' || peek[1] == '\\')
+		&& (peek = do_peek_ident ("module", peek + 1, limit))))
+	    return false;
+	}
+      else
+	return false;
+    }
+  else if (__builtin_expect (c == 'i', false))
+    {
+      if (!((peek[0] == 'm' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("import", peek, limit))))
+	return false;
+      import = true;
+    }
+  else if (__builtin_expect (c == '_', false))
+    {
+      /* Needed for translated includes.   */
+      if (!((peek[0] == '_' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("__import", peek, limit))))
+	return false;
+      import = true;
+    }
+  else if (__builtin_expect (c == 'm', false))
+    {
+      if (!((peek[0] == 'o' || peek[0] == '\\')
+	    && (peek = do_peek_ident ("module", peek, limit))))
+	return false;
+    }
+  else
+    return false;
+
+  /* Peek the next character to see if it's good enough.  We'll be at
+     the first non-whitespace char, including skipping an escaped
+     newline.  */
+  /* ... import followed by identifier, ':', '<' or header-name
+     preprocessing tokens, or module followed by identifier, ':' or
+     ';' preprocessing tokens.  */
+  unsigned char p = *peek++;
+      
+  /* A character literal is ... single quotes, ... optionally preceded
+     by u8, u, U, or L */
+  /* A string-literal is a ... double quotes, optionally prefixed by
+     R, u8, u8R, u, uR, U, UR, L, or LR */
+  if (p == 'u')
+    {
+      peek = do_peek_next (peek, limit);
+      if (*peek == '8')
+	{
+	  peek++;
+	  goto peek_u8;
+	}
+      goto peek_u;
+    }
+  else if (p == 'U' || p == 'L')
+    {
+    peek_u8:
+      peek = do_peek_next (peek, limit);
+    peek_u:
+      if (*peek == '\"' || *peek == '\'')
+	return false;
+
+      if (*peek == 'R')
+	goto peek_R;
+      /* Identifier. Ok.  */
+    }
+  else if (p == 'R')
+    {
+    peek_R:
+      if (CPP_OPTION (pfile, rliterals))
+	{
+	  peek = do_peek_next (peek, limit);
+	  if (*peek == '\"')
+	    return false;
+	}
+      /* Identifier. Ok.  */
+    }
+  else if ('Z' - 'A' == 25
+	   ? ((p >= 'A' && p <= 'Z') || (p >= 'a' && p <= 'z') || p == '_')
+	   : ISIDST (p))
+    {
+      /* Identifier.  Ok. */
+    }
+  else if (p == '<')
+    {
+      /* Maybe angle header, ok for import.  Reject
+	 '<=', '<<' digraph:'<:'.  */
+      if (!import)
+	return false;
+      peek = do_peek_next (peek, limit);
+      if (*peek == '=' || *peek == '<'
+	  || (*peek == ':' && CPP_OPTION (pfile, digraphs)))
+	return false;
+    }
+  else if (p == ';')
+    {
+      /* SEMICOLON, ok for module.  */
+      if (import)
+	return false;
+    }
+  else if (p == '"')
+    {
+      /* STRING, ok for import.  */
+      if (!import)
+	return false;
+    }
+  else if (p == ':')
+    {
+      /* Maybe COLON, ok.  Reject '::', digraph:':>'.  */
+      peek = do_peek_next (peek, limit);
+      if (*peek == ':' || (*peek == '>' && CPP_OPTION (pfile, digraphs)))
+	return false;
+    }
+  else
+    /* FIXME: Detect a unicode character, excluding those not
+       permitted as the initial character. [lex.name]/1.  I presume
+       we need to check the \[uU] spellings, and directly using
+       Unicode in say UTF8 form?  Or perhaps we do the phase-1
+       conversion of UTF8 to universal-character-names?  */
+    return false;
+
+  return true;
+}
+
 /* Directives-only scanning.  Somewhat more relaxed than correct
    parsing -- some ill-formed programs will not be rejected.  */
 
@@ -3940,6 +4308,8 @@ cpp_directive_only_process (cpp_reader *pfile,
 			    void *data,
 			    void (*cb) (cpp_reader *, CPP_DO_task, void *, ...))
 {
+  bool module_p = CPP_OPTION (pfile, module_directives);
+
   do
     {
     restart:
@@ -4330,6 +4700,51 @@ cpp_directive_only_process (cpp_reader *pfile,
 		raw = false;
 		lwm = pos - 1;
 	      }
+	      goto dflt;
+
+	    case '_':
+	    case 'e':
+	    case 'i':
+	    case 'm':
+	      if (bol && module_p && !pfile->state.skipping
+		  && do_peek_module (pfile, c, pos, limit))
+		{
+		  /* We've seen the start of a module control line.
+		     Start up the tokenizer.  */
+		  pos--; /* Backup over the first character.  */
+
+		  /* Backup over whitespace to start of line.  */
+		  while (pos > line_start
+			 && (pos[-1] == ' ' || pos[-1] == '\t'))
+		    pos--;
+
+		  if (pos > base)
+		    cb (pfile, CPP_DO_print, data, line_count, base, pos - base);
+
+		  /* Prep things for directive handling. */
+		  buffer->next_line = pos;
+		  buffer->need_line = true;
+
+		  /* Now get tokens until the PRAGMA_EOL.  */
+		  do
+		    {
+		      location_t spelling;
+		      const cpp_token *tok
+			= cpp_get_token_with_location (pfile, &spelling);
+
+		      gcc_assert (pfile->state.in_deferred_pragma
+				  || tok->type == CPP_PRAGMA_EOL);
+		      cb (pfile, CPP_DO_token, data, tok, spelling);
+		    }
+		  while (pfile->state.in_deferred_pragma);
+
+		  if (pfile->buffer->next_line < pfile->buffer->rlimit)
+		    cb (pfile, CPP_DO_location, data,
+			pfile->line_table->highest_line);
+
+		  pfile->mi_valid = false;
+		  goto restart;
+		}
 	      goto dflt;
 
 	    default:

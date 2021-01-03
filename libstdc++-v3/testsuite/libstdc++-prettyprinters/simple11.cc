@@ -120,6 +120,37 @@ main()
   vb.erase(vb.begin());
 // { dg-final { regexp-test vb {std::(__debug::)?vector<bool> of length 5, capacity 128 = \\{true, true, false, false, true\\}} } }
 
+  std::vector<bool>::iterator vbIt = vb.begin();
+// { dg-final { note-test vbIt {true} } }
+  std::vector<bool>::iterator vbIt2 = ++vbIt;
+// { dg-final { note-test vbIt2 {true} } }
+  std::vector<bool>::iterator vbIt3 = ++vbIt;
+// { dg-final { note-test vbIt3 {false} } }
+  std::vector<bool>::iterator vbIt4 = ++vbIt;
+// { dg-final { note-test vbIt4 {false} } }
+  std::vector<bool>::iterator vbIt5 = ++vbIt;
+// { dg-final { note-test vbIt5 {true} } }
+
+  std::vector<bool>::const_iterator vbcIt = vb.cbegin();
+// { dg-final { note-test vbcIt {true} } }
+
+  std::vector<bool>::iterator vbIt0;
+// { dg-final { note-test vbIt0 {non-dereferenceable iterator for std::vector<bool>} } }
+
+  std::_Bit_reference br = *vb.begin();
+// { dg-final { note-test br {true} } }
+  std::_Bit_reference br2 = *vbIt2;
+// { dg-final { note-test br2 {true} } }
+  std::_Bit_reference br3 = *vbIt3;
+// { dg-final { note-test br3 {false} } }
+  std::_Bit_reference br4 = *vbIt4;
+// { dg-final { note-test br4 {false} } }
+  std::_Bit_reference br5 = *vbIt5;
+// { dg-final { note-test br5 {true} } }
+
+ std::_Bit_reference br0;
+// { dg-final { note-test br0 {invalid std::_Bit_reference} } }
+
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);
   sll.push_front(47);

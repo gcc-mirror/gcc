@@ -1,6 +1,7 @@
 --  { dg-do run }
 
 with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 procedure Multfixed is
    Z : constant := 4387648782261400837.0;
@@ -18,7 +19,7 @@ begin
    raise Program_Error;
 exception
    when Exc : Constraint_Error =>
-      if Exception_Message (Exc) /= "System.Arith_64.Impl.Raise_Error: Double arithmetic overflow" then
+      if Count (Exception_Message (Exc), "overflow") = 0 then
          raise Program_Error;
       end if;
 end Multfixed;

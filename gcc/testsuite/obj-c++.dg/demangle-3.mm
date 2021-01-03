@@ -1,6 +1,7 @@
 /* Test demangling an Objective-C method in error messages.  */
 /* { dg-do compile } */
 /* { dg-additional-options "-Wno-return-type" } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 

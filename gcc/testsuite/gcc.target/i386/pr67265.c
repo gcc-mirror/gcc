@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-stack-check "" } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O -fstack-check -fPIC" } */
 
 int a, b, c, d, e;

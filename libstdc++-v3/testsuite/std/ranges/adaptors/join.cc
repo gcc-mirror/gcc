@@ -138,6 +138,17 @@ test07()
   static_assert( std::same_as<std::ranges::range_value_t<V>, int> );
 }
 
+void
+test08()
+{
+  // LWG 3500. join_view::iterator::operator->() is bogus
+  struct X { int a; };
+  ranges::single_view<ranges::single_view<X>> s{std::in_place, std::in_place, 5};
+  auto v = s | views::join;
+  auto i = v.begin();
+  VERIFY( i->a == 5 );
+}
+
 int
 main()
 {
@@ -148,4 +159,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }

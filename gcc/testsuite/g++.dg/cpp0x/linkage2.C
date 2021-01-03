@@ -29,5 +29,5 @@ void f() {
   ba.g(a);              // OK
   ba.h(a);              // error, B<T>::h never defined
   i(ba, a);             // OK
-  e1+e2+e3;
+  e1+e2+e3; // { dg-warning "arithmetic between different enumeration types" "" { target c++20 } }
 }

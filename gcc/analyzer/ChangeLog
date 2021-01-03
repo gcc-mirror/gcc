@@ -1,3 +1,232 @@
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-pass.cc: Include "analyzer/analyzer.h" for the
+	declaration of sorry_no_analyzer; include "tree.h" and
+	"function.h" as these are needed by it.
+
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-pass.cc (pass_analyzer::execute): Move sorry call to...
+	(sorry_no_analyzer): New.
+	* analyzer.h (class state_machine): New forward decl.
+	(class logger): New forward decl.
+	(class plugin_analyzer_init_iface): New.
+	(sorry_no_analyzer): New decl.
+	* checker-path.cc (checker_path::fixup_locations): New.
+	* checker-path.h (checker_event::set_location): New.
+	(checker_path::fixup_locations): New decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Call
+	checker_path::fixup_locations, and call fixup_location
+	on the primary location.
+	* engine.cc: Include "plugin.h".
+	(class plugin_analyzer_init_impl): New.
+	(impl_run_checkers): Invoke PLUGIN_ANALYZER_INIT callbacks.
+	* pending-diagnostic.h (pending_diagnostic::fixup_location): New
+	vfunc.
+
+2020-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97893
+	* sm-malloc.cc (null_deref::emit): Use CWE-476 rather than
+	CWE-690, as this isn't due to an unchecked return value.
+	(null_arg::emit): Likewise.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h (checker_event::get_id_ptr): New.
+	* diagnostic-manager.cc (path_builder::path_builder): Add "sd"
+	param and use it to initialize new field "m_sd".
+	(path_builder::get_pending_diagnostic): New.
+	(path_builder::m_sd): New field.
+	(diagnostic_manager::emit_saved_diagnostic): Pass sd to
+	path_builder ctor.
+	(diagnostic_manager::add_events_for_superedge): Call new
+	maybe_add_custom_events_for_superedge vfunc.
+	* engine.cc (stale_jmp_buf::stale_jmp_buf): Add "setjmp_point"
+	param and use it to initialize new field "m_setjmp_point".
+	Initialize new field "m_stack_pop_event".
+	(stale_jmp_buf::maybe_add_custom_events_for_superedge): New vfunc
+	implementation.
+	(stale_jmp_buf::describe_final_event): New vfunc implementation.
+	(stale_jmp_buf::m_setjmp_point): New field.
+	(stale_jmp_buf::m_stack_pop_event): New field.
+	(exploded_node::on_longjmp): Pass setjmp_point to stale_jmp_buf
+	ctor.
+	* pending-diagnostic.h
+	(pending_diagnostic::maybe_add_custom_events_for_superedge): New
+	vfunc.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/97424
+	* analyzer.opt (Wanalyzer-shift-count-negative): New.
+	(Wanalyzer-shift-count-overflow): New.
+	* region-model.cc (class shift_count_negative_diagnostic): New.
+	(class shift_count_overflow_diagnostic): New.
+	(region_model::get_gassign_result): Complain about shift counts that
+	are negative or are >= the operand's type's width.
+
+2020-11-10  Martin Liska  <mliska@suse.cz>
+
+	* constraint-manager.cc (constraint_manager::merge): Remove
+	unused code.
+	* constraint-manager.h: Likewise.
+	* program-state.cc (sm_state_map::sm_state_map): Likewise.
+	(program_state::program_state): Likewise.
+	(test_sm_state_map): Likewise.
+	* program-state.h: Likewise.
+	* region-model-reachability.cc (reachable_regions::reachable_regions): Likewise.
+	* region-model-reachability.h: Likewise.
+	* region-model.cc (region_model::handle_unrecognized_call): Likewise.
+	(region_model::get_reachable_svalues): Likewise.
+	(region_model::can_merge_with_p): Likewise.
+
+2020-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97668
+	* svalue.cc (cmp_cst): Handle COMPLEX_CST.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::on_liveness_change): Sort the
+	leaking svalues before calling on_state_leak.
+	(program_state::detect_leaks): Likewise when calling
+	on_svalue_leak.
+	* region-model-reachability.cc
+	(reachable_regions::mark_escaped_clusters): Likewise when
+	calling on_escaped_function.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97608
+	* region-model-reachability.cc (reachable_regions::handle_sval):
+	Operands of reachable reversible operations are reachable.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class state_machine): New forward decl.
+	(class logger): Likewise.
+	(class visitor): Likewise.
+	* complexity.cc: New file, taken from svalue.cc.
+	* complexity.h: New file, taken from region-model.h.
+	* region-model.h: Include "analyzer/svalue.h" and
+	"analyzer/region.h".  Move struct complexity to complexity.h.
+	Move svalue, its subclasses and supporting decls to svalue.h.
+	Move region, its subclasses and supporting decls to region.h.
+	* region.cc: Include "analyzer/region.h".
+	(symbolic_region::symbolic_region): Move here from region-model.h.
+	* region.h: New file, based on material from region-model.h.
+	* svalue.cc: Include "analyzer/svalue.h".
+	(complexity::complexity): Move to complexity.cc.
+	(complexity::from_pair): Likewise.
+	* svalue.h: New file, based on material from region-model.h.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::print): Guard the printing of
+	the origin pointer with !flag_dump_noaddr.
+	* region.cc (string_region::dump_to_pp): Likewise for
+	m_string_cst.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97568
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Move check that !DECL_EXTERNAL from here to...
+	* region.cc (decl_region::get_svalue_for_initializer): ...here,
+	using it to reject zero initialization.
+
+2020-10-27  Markus Böck  <markus.boeck02@gmail.com>
+
+	PR analyzer/96608
+	* store.h (hash): Cast to intptr_t instead of long
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* constraint-manager.cc (svalue_cmp_by_ptr): Delete.
+	(equiv_class::canonicalize): Use svalue::cmp_ptr_ptr instead.
+	(equiv_class_cmp): Eliminate pointer comparison.
+	* diagnostic-manager.cc (dedupe_key::comparator): If they are at
+	the same location, also compare epath ength and pending_diagnostic
+	kind.
+	* engine.cc (readability_comparator): If two path_vars have the
+	same readability, then impose an arbitrary ordering on them.
+	(worklist::key_t::cmp): If two points have the same plan ordering,
+	continue the comparison.  Call sm_state_map::cmp rather than
+	comparing hash values.
+	* program-state.cc (sm_state_map::entry_t::cmp): New.
+	(sm_state_map::cmp): New.
+	* program-state.h (sm_state_map::entry_t::cmp): New decl.
+	(sm_state_map::elements): New.
+	(sm_state_map::cmp): New.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (setjmp_record::cmp): New.
+	(supernode_cluster::dump_dot): Avoid embedding pointer in cluster
+	name.
+	(supernode_cluster::cmp_ptr_ptr): New.
+	(function_call_string_cluster::dump_dot): Avoid embedding pointer
+	in cluster name.  Sort m_map when dumping child clusters.
+	(function_call_string_cluster::cmp_ptr_ptr): New.
+	(root_cluster::dump_dot): Sort m_map when dumping child clusters.
+	* program-point.cc (function_point::cmp): New.
+	(function_point::cmp_ptr): New.
+	* program-point.h (function_point::cmp): New decl.
+	(function_point::cmp_ptr): New decl.
+	* program-state.cc (sm_state_map::print): Sort the values.  Guard
+	the printing of pointers with !flag_dump_noaddr.
+	(program_state::prune_for_point): Sort the regions.
+	(log_set_of_svalues): Sort the values.  Guard the printing of
+	pointers with !flag_dump_noaddr.
+	* region-model-manager.cc (log_uniq_map): Sort the values.
+	* region-model-reachability.cc (dump_set): New function template.
+	(reachable_regions::dump_to_pp): Use it.
+	* region-model.h (svalue::cmp_ptr): New decl.
+	(svalue::cmp_ptr_ptr): New decl.
+	(setjmp_record::cmp): New decl.
+	(placeholder_svalue::get_name): New accessor.
+	(widening_svalue::get_point): New accessor.
+	(compound_svalue::get_map): New accessor.
+	(conjured_svalue::get_stmt): New accessor.
+	(conjured_svalue::get_id_region): New accessor.
+	(region::cmp_ptrs): Rename to...
+	(region::cmp_ptr_ptr): ...this.
+	* region.cc (region::cmp_ptrs): Rename to...
+	(region::cmp_ptr_ptr): ...this.
+	* state-purge.cc
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Sort
+	m_points_needing_name when dumping.
+	* store.cc (concrete_binding::cmp_ptr_ptr): New.
+	(symbolic_binding::cmp_ptr_ptr): New.
+	(binding_map::cmp): New.
+	(get_sorted_parent_regions): Update for renaming of
+	region::cmp_ptrs to region::cmp_ptr_ptr.
+	(store::dump_to_pp): Likewise.
+	(store::to_json): Likewise.
+	(store::can_merge_p): Sort the base regions before considering
+	them.
+	* store.h (concrete_binding::cmp_ptr_ptr): New decl.
+	(symbolic_binding::cmp_ptr_ptr): New decl.
+	(binding_map::cmp): New decl.
+	* supergraph.cc (supergraph::supergraph): Assign UIDs to the
+	gimple stmts.
+	* svalue.cc (cmp_cst): New.
+	(svalue::cmp_ptr): New.
+	(svalue::cmp_ptr_ptr): New.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::get_or_create_node): Fix off-by-one
+	when imposing param_analyzer_max_enodes_per_program_point limit.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_representative_path_var):
+	Implement case RK_LABEL.
+	* region-model.h (label_region::get_label): New accessor.
+
 2020-10-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97514

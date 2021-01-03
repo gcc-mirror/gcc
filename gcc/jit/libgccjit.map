@@ -192,3 +192,16 @@ LIBGCCJIT_ABI_14 {
   global:
     gcc_jit_global_set_initializer;
 } LIBGCCJIT_ABI_13;
+
+LIBGCCJIT_ABI_15 {
+  global:
+    gcc_jit_block_add_extended_asm;
+    gcc_jit_block_end_with_extended_asm_goto;
+    gcc_jit_extended_asm_as_object;
+    gcc_jit_extended_asm_set_volatile_flag;
+    gcc_jit_extended_asm_set_inline_flag;
+    gcc_jit_extended_asm_add_output_operand;
+    gcc_jit_extended_asm_add_input_operand;
+    gcc_jit_extended_asm_add_clobber;
+    gcc_jit_context_add_top_level_asm;
+} LIBGCCJIT_ABI_14;

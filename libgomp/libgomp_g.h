@@ -357,6 +357,11 @@ extern void GOMP_teams (unsigned int, unsigned int);
 extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
 			    unsigned);
 
+/* allocator.c */
+
+extern void *GOMP_alloc (size_t, size_t, uintptr_t);
+extern void GOMP_free (void *, uintptr_t);
+
 /* oacc-async.c */
 
 extern void GOACC_wait (int, int, ...);

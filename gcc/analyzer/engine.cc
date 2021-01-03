@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
 #include <zlib.h>
+#include "plugin.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -147,6 +148,17 @@ void
 impl_region_model_context::on_escaped_function (tree fndecl)
 {
   m_eg->on_escaped_function (fndecl);
+}
+
+/* struct setjmp_record.  */
+
+int
+setjmp_record::cmp (const setjmp_record &rec1, const setjmp_record &rec2)
+{
+  if (int cmp_enode = rec1.m_enode->m_index - rec2.m_enode->m_index)
+    return cmp_enode;
+  gcc_assert (&rec1 == &rec2);
+  return 0;
 }
 
 /* class setjmp_svalue : public svalue.  */
@@ -505,6 +517,29 @@ readability_comparator (const void *p1, const void *p2)
      this also favors locals over globals.  */
   if (int cmp = pv2.m_stack_depth - pv1.m_stack_depth)
     return cmp;
+
+  /* Otherwise, if they have the same readability, then impose an
+     arbitrary deterministic ordering on them.  */
+
+  if (int cmp = TREE_CODE (pv1.m_tree) - TREE_CODE (pv2.m_tree))
+    return cmp;
+
+  switch (TREE_CODE (pv1.m_tree))
+    {
+    default:
+      break;
+    case SSA_NAME:
+      if (int cmp = (SSA_NAME_VERSION (pv1.m_tree)
+		     - SSA_NAME_VERSION (pv2.m_tree)))
+	return cmp;
+      break;
+    case PARM_DECL:
+    case VAR_DECL:
+    case RESULT_DECL:
+      if (int cmp = DECL_UID (pv1.m_tree) - DECL_UID (pv2.m_tree))
+	return cmp;
+      break;
+    }
 
   /* TODO: We ought to find ways of sorting such cases.  */
   return 0;
@@ -1243,8 +1278,10 @@ valid_longjmp_stack_p (const program_point &longjmp_point,
 class stale_jmp_buf : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
-  stale_jmp_buf (const gcall *setjmp_call, const gcall *longjmp_call)
-  : m_setjmp_call (setjmp_call), m_longjmp_call (longjmp_call)
+  stale_jmp_buf (const gcall *setjmp_call, const gcall *longjmp_call,
+		 const program_point &setjmp_point)
+  : m_setjmp_call (setjmp_call), m_longjmp_call (longjmp_call),
+    m_setjmp_point (setjmp_point), m_stack_pop_event (NULL)
   {}
 
   bool emit (rich_location *richloc) FINAL OVERRIDE
@@ -1265,9 +1302,56 @@ public:
 	    && m_longjmp_call == other.m_longjmp_call);
   }
 
+  bool
+  maybe_add_custom_events_for_superedge (const exploded_edge &eedge,
+					 checker_path *emission_path)
+    FINAL OVERRIDE
+  {
+    /* Detect exactly when the stack first becomes invalid,
+       and issue an event then.  */
+    if (m_stack_pop_event)
+      return false;
+    const exploded_node *src_node = eedge.m_src;
+    const program_point &src_point = src_node->get_point ();
+    const exploded_node *dst_node = eedge.m_dest;
+    const program_point &dst_point = dst_node->get_point ();
+    if (valid_longjmp_stack_p (src_point, m_setjmp_point)
+	&& !valid_longjmp_stack_p (dst_point, m_setjmp_point))
+      {
+	/* Compare with diagnostic_manager::add_events_for_superedge.  */
+	const int src_stack_depth = src_point.get_stack_depth ();
+	m_stack_pop_event = new custom_event
+	  (src_point.get_location (),
+	   src_point.get_fndecl (),
+	   src_stack_depth,
+	   "stack frame is popped here, invalidating saved environment");
+	emission_path->add_event (m_stack_pop_event);
+	return false;
+      }
+    return false;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev)
+  {
+    if (m_stack_pop_event)
+      return ev.formatted_print
+	("%qs called after enclosing function of %qs returned at %@",
+	 get_user_facing_name (m_longjmp_call),
+	 get_user_facing_name (m_setjmp_call),
+	 m_stack_pop_event->get_id_ptr ());
+    else
+      return ev.formatted_print
+	("%qs called after enclosing function of %qs has returned",
+	 get_user_facing_name (m_longjmp_call),
+	 get_user_facing_name (m_setjmp_call));;
+  }
+
+
 private:
   const gcall *m_setjmp_call;
   const gcall *m_longjmp_call;
+  program_point m_setjmp_point;
+  custom_event *m_stack_pop_event;
 };
 
 /* Handle LONGJMP_CALL, a call to longjmp or siglongjmp.
@@ -1310,7 +1394,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
   /* Verify that the setjmp's call_stack hasn't been popped.  */
   if (!valid_longjmp_stack_p (longjmp_point, setjmp_point))
     {
-      ctxt->warn (new stale_jmp_buf (setjmp_call, longjmp_call));
+      ctxt->warn (new stale_jmp_buf (setjmp_call, longjmp_call, setjmp_point));
       return;
     }
 
@@ -1813,8 +1897,9 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
       && point_b.get_function () != NULL
       && point_a.get_function () != point_b.get_function ())
     {
-      return ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
-						point_b.get_function ());
+      if (int cmp = ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
+						       point_b.get_function ()))
+	return cmp;
     }
 
   /* First, order by SCC.  */
@@ -1865,20 +1950,15 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
   const program_state &state_b = kb.m_enode->get_state ();
 
   /* Sort by sm-state, so that identical sm-states are grouped
-     together in the worklist.
-     For now, sort by the hash value (might not be deterministic).  */
+     together in the worklist.  */
   for (unsigned sm_idx = 0; sm_idx < state_a.m_checker_states.length ();
        ++sm_idx)
     {
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      hashval_t hash_a = smap_a->hash ();
-      hashval_t hash_b = smap_b->hash ();
-      if (hash_a < hash_b)
-	return -1;
-      else if (hash_a > hash_b)
-	return 1;
+      if (int smap_cmp = sm_state_map::cmp (*smap_a, *smap_b))
+	return smap_cmp;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
@@ -2100,7 +2180,7 @@ exploded_graph::get_or_create_node (const program_point &point,
   /* Impose a limit on the number of enodes per program point, and
      simply stop if we exceed it.  */
   if ((int)per_point_data->m_enodes.length ()
-      > param_analyzer_max_enodes_per_program_point)
+      >= param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
       point.print (&pp, format (false));
@@ -3506,8 +3586,7 @@ public:
 
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const FINAL OVERRIDE
   {
-    gv->println ("subgraph \"cluster_supernode_%p\" {",
-		 (const void *)this);
+    gv->println ("subgraph \"cluster_supernode_%i\" {", m_supernode->m_index);
     gv->indent ();
     gv->println ("style=\"dashed\";");
     gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
@@ -3527,6 +3606,17 @@ public:
   void add_node (exploded_node *en) FINAL OVERRIDE
   {
     m_enodes.safe_push (en);
+  }
+
+  /* Comparator for use by auto_vec<supernode_cluster *>::qsort.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const supernode_cluster *c1
+      = *(const supernode_cluster * const *)p1;
+    const supernode_cluster *c2
+      = *(const supernode_cluster * const *)p2;
+    return c1->m_supernode->m_index - c2->m_supernode->m_index;
   }
 
 private:
@@ -3555,7 +3645,8 @@ public:
   {
     const char *funcname = function_name (m_fun);
 
-    gv->println ("subgraph \"cluster_function_%p\" {", (const void *)this);
+    gv->println ("subgraph \"cluster_function_%s\" {",
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (m_fun->decl)));
     gv->indent ();
     gv->write_indent ();
     gv->print ("label=\"call string: ");
@@ -3563,10 +3654,19 @@ public:
     gv->print (" function: %s \";", funcname);
     gv->print ("\n");
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<supernode_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (supernode_cluster::cmp_ptr_ptr);
+
+    unsigned i;
+    supernode_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
 
     /* Terminate subgraph.  */
     gv->outdent ();
@@ -3586,6 +3686,21 @@ public:
 	m_map.put (supernode, child);
 	child->add_node (en);
       }
+  }
+
+  /* Comparator for use by auto_vec<function_call_string_cluster *>.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const function_call_string_cluster *c1
+      = *(const function_call_string_cluster * const *)p1;
+    const function_call_string_cluster *c2
+      = *(const function_call_string_cluster * const *)p2;
+    if (int cmp_names
+	= strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c1->m_fun->decl)),
+		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c2->m_fun->decl))))
+      return cmp_names;
+    return call_string::cmp (c1->m_cs, c2->m_cs);
   }
 
 private:
@@ -3680,10 +3795,18 @@ public:
     FOR_EACH_VEC_ELT (m_functionless_enodes, i, enode)
       enode->dump_dot (gv, args);
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<function_call_string_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (function_call_string_cluster::cmp_ptr_ptr);
+
+    function_call_string_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
   }
 
   void add_node (exploded_node *en) FINAL OVERRIDE
@@ -4516,6 +4639,33 @@ dump_analyzer_json (const supergraph &sg,
   free (filename);
 }
 
+/* Concrete subclass of plugin_analyzer_init_iface, allowing plugins
+   to register new state machines.  */
+
+class plugin_analyzer_init_impl : public plugin_analyzer_init_iface
+{
+public:
+  plugin_analyzer_init_impl (auto_delete_vec <state_machine> *checkers,
+			     logger *logger)
+  : m_checkers (checkers),
+    m_logger (logger)
+  {}
+
+  void register_state_machine (state_machine *sm) FINAL OVERRIDE
+  {
+    m_checkers->safe_push (sm);
+  }
+
+  logger *get_logger () const FINAL OVERRIDE
+  {
+    return m_logger;
+  }
+
+private:
+  auto_delete_vec <state_machine> *m_checkers;
+  logger *m_logger;
+};
+
 /* Run the analysis "engine".  */
 
 void
@@ -4560,6 +4710,9 @@ impl_run_checkers (logger *logger)
 
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
+
+  plugin_analyzer_init_impl data (&checkers, logger);
+  invoke_plugin_callbacks (PLUGIN_ANALYZER_INIT, &data);
 
   if (logger)
     {

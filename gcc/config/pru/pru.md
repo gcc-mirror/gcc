@@ -51,6 +51,10 @@
 
 ;; Enumeration of UNSPECs.
 
+(define_c_enum "unspec" [
+  UNSPEC_LMBD
+])
+
 (define_c_enum "unspecv" [
   UNSPECV_DELAY_CYCLES_START
   UNSPECV_DELAY_CYCLES_END
@@ -60,6 +64,8 @@
 
   UNSPECV_LOOP_BEGIN
   UNSPECV_LOOP_END
+
+  UNSPECV_HALT
 
   UNSPECV_BLOCKAGE
 ])
@@ -1020,3 +1026,37 @@
   ""
   "nop\\t# Loop end guard"
   [(set_attr "type" "alu")])
+
+;; HALT instruction.
+(define_insn "pru_halt"
+  [(unspec_volatile [(const_int 0)] UNSPECV_HALT)]
+  ""
+  "halt"
+  [(set_attr "type" "control")])
+
+;; Count Leading Zeros implemented using LMBD.
+;; LMBD returns 32 if bit value is not present, and we subtract 31 to get CLZ.
+;; Hence we get a defined value -1 for CLZ_DEFINED_VALUE_AT_ZERO.
+(define_expand "clz<mode>2"
+  [(set (match_operand:QISI 0 "register_operand")
+	(clz:QISI (match_operand:QISI 1 "register_operand")))]
+  ""
+{
+  rtx dst = operands[0];
+  rtx src = operands[1];
+  rtx tmpval = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_pru_lmbd (<MODE>mode, tmpval, src, const1_rtx));
+  emit_insn (gen_sub3_insn (dst, GEN_INT (31), tmpval));
+  DONE;
+})
+
+;; Left Most Bit Detect operation, which maps to a single instruction.
+(define_expand "@pru_lmbd<mode>"
+  [(set (match_operand:QISI 0 "register_operand")
+	(unspec:QISI
+	  [(match_operand:QISI 1 "register_operand")
+	   (match_operand:QISI 2 "reg_or_ubyte_operand")]
+	  UNSPEC_LMBD))]
+  ""
+  "")

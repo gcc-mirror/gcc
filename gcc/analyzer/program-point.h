@@ -138,6 +138,9 @@ public:
 				     const function_point &point_b);
   static int cmp_within_supernode (const function_point &point_a,
 				   const function_point &point_b);
+  static int cmp (const function_point &point_a,
+		  const function_point &point_b);
+  static int cmp_ptr (const void *p1, const void *p2);
 
   /* For before_stmt, go to next stmt.  */
   void next_stmt ();

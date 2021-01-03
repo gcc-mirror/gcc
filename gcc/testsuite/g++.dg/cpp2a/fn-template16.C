@@ -7,7 +7,7 @@ struct undeclared<int> { }; // { dg-error "not a class template" }
 int
 main ()
 {
-  int foo ();
+  int foo (); // { dg-warning "empty parentheses" }
   int foo (int);
   int foo (int, int);
   int a, b = 10;

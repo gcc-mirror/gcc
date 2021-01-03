@@ -222,7 +222,7 @@ package body Bindo.Writers is
          Write_Eol;
 
          Write_Str  ("      Scope = ");
-         Write_Name (Scope (IS_Id));
+         Write_Name (IS_Scope (IS_Id));
          Write_Eol;
       end Write_Invocation_Signature;
 

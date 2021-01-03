@@ -46,6 +46,7 @@ namespace gccjit
      class lvalue;
        class param;
     class case_;
+    class extended_asm;
   class timer;
   class auto_time;
 
@@ -316,6 +317,9 @@ namespace gccjit
 		    rvalue max_value,
 		    block dest_block);
 
+    void add_top_level_asm (const char *asm_stmts,
+			    location loc = location ());
+
   private:
     gcc_jit_context *m_inner_ctxt;
   };
@@ -449,6 +453,13 @@ namespace gccjit
 			  block default_block,
 			  std::vector <case_> cases,
 			  location loc = location ());
+
+    extended_asm add_extended_asm (const std::string &asm_template,
+				   location loc = location ());
+    extended_asm end_with_extended_asm_goto (const std::string &asm_template,
+					     std::vector<block> goto_blocks,
+					     block *fallthrough_block,
+					     location loc = location ());
   };
 
   class rvalue : public object
@@ -507,6 +518,40 @@ namespace gccjit
     case_ (gcc_jit_case *inner);
 
     gcc_jit_case *get_inner_case () const;
+  };
+
+  class extended_asm : public object
+  {
+  public:
+    extended_asm ();
+    extended_asm (gcc_jit_extended_asm *inner);
+
+    extended_asm &
+    set_volatile_flag (bool flag);
+
+    extended_asm &
+    set_inline_flag (bool flag);
+
+    extended_asm&
+    add_output_operand (const std::string &asm_symbolic_name,
+			const std::string &constraint,
+			gccjit::lvalue dest);
+    extended_asm&
+    add_output_operand (const std::string &constraint,
+			gccjit::lvalue dest);
+
+    extended_asm&
+    add_input_operand (const std::string &asm_symbolic_name,
+		       const std::string &constraint,
+		       gccjit::rvalue src);
+    extended_asm&
+    add_input_operand (const std::string &constraint,
+		       gccjit::rvalue src);
+
+    extended_asm&
+    add_clobber (const std::string &victim);
+
+    gcc_jit_extended_asm *get_inner_extended_asm () const;
   };
 
   /* Overloaded operators, for those who want the most terse API
@@ -1259,6 +1304,14 @@ context::new_case (rvalue min_value,
 					  dest_block.get_inner_block ()));
 }
 
+inline void
+context::add_top_level_asm (const char *asm_stmts, location loc)
+{
+  gcc_jit_context_add_top_level_asm (m_inner_ctxt,
+				     loc.get_inner_location (),
+				     asm_stmts);
+}
+
 // class object
 inline context
 object::get_context () const
@@ -1554,6 +1607,37 @@ block::end_with_switch (rvalue expr,
 				 as_array_of_ptrs);
 }
 
+inline extended_asm
+block::add_extended_asm (const std::string &asm_template,
+			 location loc)
+{
+  return gcc_jit_block_add_extended_asm (get_inner_block (),
+					 loc.get_inner_location (),
+					 asm_template.c_str ());
+}
+
+inline extended_asm
+block::end_with_extended_asm_goto (const std::string &asm_template,
+				   std::vector<block> goto_blocks,
+				   block *fallthrough_block,
+				   location loc)
+{
+  /* Treat std::vector as an array, relying on it not being resized: */
+  block *as_array_of_wrappers = &goto_blocks[0];
+
+  /* Treat the array as being of the underlying pointers, relying on
+     the wrapper type being such a pointer internally.  */
+  gcc_jit_block **as_array_of_ptrs =
+    reinterpret_cast<gcc_jit_block **> (as_array_of_wrappers);
+  return gcc_jit_block_end_with_extended_asm_goto
+    (get_inner_block (),
+     loc.get_inner_location (),
+     asm_template.c_str (),
+     goto_blocks.size (),
+     as_array_of_ptrs,
+     fallthrough_block ? fallthrough_block->get_inner_block () : NULL);
+}
+
 inline rvalue
 block::add_call (function other,
 		 location loc)
@@ -1765,6 +1849,92 @@ case_::get_inner_case () const
 {
   /* Manual downcast: */
   return reinterpret_cast<gcc_jit_case *> (get_inner_object ());
+}
+
+// class extended_asm : public object
+inline extended_asm::extended_asm () : object () {}
+inline extended_asm::extended_asm (gcc_jit_extended_asm *inner)
+  : object (gcc_jit_extended_asm_as_object (inner))
+{
+}
+
+inline extended_asm&
+extended_asm::set_volatile_flag (bool flag)
+{
+  gcc_jit_extended_asm_set_volatile_flag (get_inner_extended_asm (), flag);
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::set_inline_flag (bool flag)
+{
+  gcc_jit_extended_asm_set_inline_flag (get_inner_extended_asm (), flag);
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::add_output_operand (const std::string &asm_symbolic_name,
+				  const std::string &constraint,
+				  gccjit::lvalue dest)
+{
+  gcc_jit_extended_asm_add_output_operand
+    (get_inner_extended_asm (),
+     asm_symbolic_name.c_str (),
+     constraint.c_str (),
+     dest.get_inner_lvalue ());
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::add_output_operand (const std::string &constraint,
+				  gccjit::lvalue dest)
+{
+  gcc_jit_extended_asm_add_output_operand
+    (get_inner_extended_asm (),
+     NULL, /* asm_symbolic_name */
+     constraint.c_str (),
+     dest.get_inner_lvalue ());
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::add_input_operand (const std::string &asm_symbolic_name,
+				 const std::string &constraint,
+				 gccjit::rvalue src)
+{
+  gcc_jit_extended_asm_add_input_operand
+    (get_inner_extended_asm (),
+     asm_symbolic_name.c_str (),
+     constraint.c_str (),
+     src.get_inner_rvalue ());
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::add_input_operand (const std::string &constraint,
+				 gccjit::rvalue src)
+{
+  gcc_jit_extended_asm_add_input_operand
+    (get_inner_extended_asm (),
+     NULL, /* asm_symbolic_name */
+     constraint.c_str (),
+     src.get_inner_rvalue ());
+  return *this;
+}
+
+inline extended_asm&
+extended_asm::add_clobber (const std::string &victim)
+{
+  gcc_jit_extended_asm_add_clobber (get_inner_extended_asm (),
+				    victim.c_str ());
+  return *this;
+}
+
+inline gcc_jit_extended_asm *
+extended_asm::get_inner_extended_asm () const
+{
+  /* Manual downcast: */
+  return reinterpret_cast<gcc_jit_extended_asm *> (get_inner_object ());
 }
 
 /* Overloaded operators.  */

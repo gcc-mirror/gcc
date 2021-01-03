@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 @interface foo
 - (void) test;

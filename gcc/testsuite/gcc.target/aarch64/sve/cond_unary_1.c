@@ -54,6 +54,4 @@ TEST_ALL (DEF_LOOP)
 
 /* { dg-final { scan-assembler-not {\tmov\tz} } } */
 /* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
-/* XFAILed because the ?: gets canonicalized so that the operation is in
-   the false arm.  */
-/* { dg-final { scan-assembler-not {\tsel\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tsel\t} } } */

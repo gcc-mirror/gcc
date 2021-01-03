@@ -731,7 +731,54 @@ make_pass_late_compilation (gcc::context *ctxt)
   return new pass_late_compilation (ctxt);
 }
 
+/* Pre-SLP scalar cleanup, it has several cleanup passes like FRE, DSE.  */
 
+namespace {
+
+const pass_data pass_data_pre_slp_scalar_cleanup =
+{
+  GIMPLE_PASS, /* type */
+  "*pre_slp_scalar_cleanup", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_SCALAR_CLEANUP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_pre_slp_scalar_cleanup : public gimple_opt_pass
+{
+public:
+  pass_pre_slp_scalar_cleanup (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_pre_slp_scalar_cleanup, ctxt)
+  {
+  }
+
+  virtual bool
+  gate (function *fun)
+  {
+    return flag_tree_slp_vectorize
+	   && (fun->pending_TODOs & PENDING_TODO_force_next_scalar_cleanup);
+  }
+
+  virtual unsigned int
+  execute (function *fun)
+  {
+    fun->pending_TODOs &= ~PENDING_TODO_force_next_scalar_cleanup;
+    return 0;
+  }
+
+}; // class pass_pre_slp_scalar_cleanup
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_pre_slp_scalar_cleanup (gcc::context *ctxt)
+{
+  return new pass_pre_slp_scalar_cleanup (ctxt);
+}
 
 /* Set the static pass number of pass PASS to ID and record that
    in the mapping from static pass number to pass.  */
@@ -1790,6 +1837,9 @@ emergency_dump_function ()
   fnotice (stderr, "dump file: %s\n", dump_file_name);
   fprintf (dump_file, "\n\n\nEMERGENCY DUMP:\n\n");
   execute_function_dump (cfun, current_pass);
+
+  if (symtab && current_pass->type == IPA_PASS)
+    symtab->dump (dump_file);
 }
 
 static struct profile_record *profile_record;
@@ -2566,7 +2616,8 @@ execute_one_pass (opt_pass *pass)
     {
       struct cgraph_node *node;
       FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-	node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
+	if (!node->inlined_to)
+	  node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
     }
   else if (dump_file)
     do_per_function (execute_function_dump, pass);
@@ -2730,7 +2781,8 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (node->definition && node->need_lto_streaming)
+      if ((node->definition || node->declare_variant_alt)
+	  && node->need_lto_streaming)
 	{
 	  if (gimple_has_body_p (node->decl))
 	    lto_prepare_function_for_streaming (node);

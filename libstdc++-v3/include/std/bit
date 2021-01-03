@@ -49,6 +49,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#if __cplusplus > 201703l && __has_builtin(__builtin_bit_cast)
+#define __cpp_lib_bit_cast 201806L
+
+  /// Create a value of type `To` from the bits of `from`.
+  template<typename _To, typename _From>
+    constexpr _To
+    bit_cast(const _From& __from) noexcept
+    {
+      return __builtin_bit_cast(_To, __from);
+    }
+#endif
+
   /// @cond undoc
 
   template<typename _Tp>
@@ -129,8 +141,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countl_zero<_Tp>((_Tp)~__x);
     }
 
@@ -172,8 +182,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countr_zero((_Tp)~__x);
     }
 
@@ -183,9 +191,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
-
-      if (__x == 0)
-        return 0;
 
       constexpr auto _Nd_ull = __int_traits<unsigned long long>::__digits;
       constexpr auto _Nd_ul = __int_traits<unsigned long>::__digits;

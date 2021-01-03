@@ -43,6 +43,7 @@ template class DT<int>;
 namespace N
 {
   int i;
+  enum bob {Q};
 }
 
 void

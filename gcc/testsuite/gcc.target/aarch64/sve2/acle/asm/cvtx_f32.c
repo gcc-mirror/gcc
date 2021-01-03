@@ -64,6 +64,7 @@ TEST_DUAL_Z_REV (cvtx_f32_f64_x_tied1, svfloat32_t, svfloat64_t,
 
 /*
 ** cvtx_f32_f64_x_untied:
+**	movprfx	z0, z4
 **	fcvtx	z0\.s, p0/m, z4\.d
 **	ret
 */

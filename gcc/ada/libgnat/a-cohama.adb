@@ -336,6 +336,8 @@ is
 
       Free (Position.Node);
       Position.Container := null;
+      Position.Position := No_Element.Position;
+      pragma Assert (Position = No_Element);
    end Delete;
 
    -------------

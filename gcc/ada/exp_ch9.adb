@@ -7061,7 +7061,6 @@ package body Exp_Ch9 is
       Enqueue_Call      : Node_Id;
       Formals           : List_Id;
       Hdle              : List_Id;
-      Handler_Stmt      : Node_Id;
       Index             : Node_Id;
       Lim_Typ_Stmts     : List_Id;
       N_Orig            : Node_Id;
@@ -7162,8 +7161,7 @@ package body Exp_Ch9 is
          if Ada_Version >= Ada_2005
            and then
              (No (Original_Node (Ecall))
-               or else Nkind (Original_Node (Ecall)) not in
-                         N_Delay_Relative_Statement | N_Delay_Until_Statement)
+               or else Nkind (Original_Node (Ecall)) not in N_Delay_Statement)
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 
@@ -7737,16 +7735,6 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
-         --  Aborts are not deferred at beginning of exception handlers in
-         --  ZCX mode.
-
-         if ZCX_Exceptions then
-            Handler_Stmt := Make_Null_Statement (Loc);
-
-         else
-            Handler_Stmt := Build_Runtime_Call (Loc, RE_Abort_Undefer);
-         end if;
-
          Stmts := New_List (
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
@@ -7763,11 +7751,11 @@ package body Exp_Ch9 is
                    Make_Implicit_Exception_Handler (Loc,
 
                --  when Abort_Signal =>
-               --     Abort_Undefer.all;
+               --     null;
 
                      Exception_Choices =>
                        New_List (New_Occurrence_Of (Stand.Abort_Signal, Loc)),
-                     Statements => New_List (Handler_Stmt))))),
+                     Statements => New_List (Make_Null_Statement (Loc)))))),
 
          --  if not Cancelled (Bnn) then
          --     triggered statements
@@ -10579,13 +10567,12 @@ package body Exp_Ch9 is
       Extract_Entry (N, Concval, Ename, Index);
       Conc_Typ := Etype (Concval);
 
-      --  Examine the scope stack in order to find nearest enclosing protected
-      --  or task type. This will constitute our invocation source.
+      --  Examine the scope stack in order to find nearest enclosing concurrent
+      --  type. This will constitute our invocation source.
 
       Old_Typ := Current_Scope;
       while Present (Old_Typ)
-        and then not Is_Protected_Type (Old_Typ)
-        and then not Is_Task_Type (Old_Typ)
+        and then not Is_Concurrent_Type (Old_Typ)
       loop
          Old_Typ := Scope (Old_Typ);
       end loop;

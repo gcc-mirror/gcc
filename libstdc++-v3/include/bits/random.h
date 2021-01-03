@@ -1099,7 +1099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * Produces random numbers by combining random numbers from some base
-   * engine to produce random numbers with a specifies number of bits @p __w.
+   * engine to produce random numbers with a specified number of bits @p __w.
    */
   template<typename _RandomNumberEngine, size_t __w, typename _UIntType>
     class independent_bits_engine
@@ -1316,9 +1316,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   /**
-   * @brief Produces random numbers by combining random numbers from some
-   * base engine to produce random numbers with a specifies number of bits
-   * @p __k.
+   * @brief Produces random numbers by reordering random numbers from some
+   * base engine.
+   *
+   * The values from the base engine are stored in a sequence of size @p __k
+   * and shuffled by an algorithm that depends on those values.
    */
   template<typename _RandomNumberEngine, size_t __k>
     class shuffle_order_engine

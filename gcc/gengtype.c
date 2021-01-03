@@ -1727,6 +1727,7 @@ open_base_files (void)
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
       "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-general.h",
       "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h", "symtab-thunks.h",
+      "symtab-clones.h",
       NULL
     };
     const char *const *ifp;
@@ -5199,6 +5200,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("widest_int", &pos));
       POS_HERE (do_scalar_typedef ("int64_t", &pos));
       POS_HERE (do_scalar_typedef ("poly_int64", &pos));
+      POS_HERE (do_scalar_typedef ("poly_uint64", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

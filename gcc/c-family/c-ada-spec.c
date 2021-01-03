@@ -713,7 +713,7 @@ collect_ada_nodes (tree t, const char *source_file)
      in the context of bindings) and namespaces (we do not handle them properly
      yet).  */
   for (n = t; n; n = TREE_CHAIN (n))
-    if (!DECL_IS_BUILTIN (n)
+    if (!DECL_IS_UNDECLARED_BUILTIN (n)
 	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump_count++;
@@ -723,7 +723,7 @@ collect_ada_nodes (tree t, const char *source_file)
 
   /* Store the relevant nodes.  */
   for (n = t; n; n = TREE_CHAIN (n))
-    if (!DECL_IS_BUILTIN (n)
+    if (!DECL_IS_UNDECLARED_BUILTIN (n)
 	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump[i++] = n;
@@ -2321,7 +2321,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       return 0;
 
     case TYPE_DECL:
-      if (DECL_IS_BUILTIN (node))
+      if (DECL_IS_UNDECLARED_BUILTIN (node))
 	{
 	  /* Don't print the declaration of built-in types.  */
 	  if (name_only)
@@ -2444,7 +2444,7 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
       return;
     }
 
-  if (DECL_IS_BUILTIN (decl) || TREE_VISITED (decl))
+  if (DECL_IS_UNDECLARED_BUILTIN (decl) || TREE_VISITED (decl))
     return;
 
   /* Forward declarations are only needed within a given file.  */
@@ -2598,16 +2598,6 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
 
       pp_string (buffer, " is ");
       dump_ada_structure (buffer, field_type, t, true, spc);
-
-      pp_string (buffer, "with Convention => C_Pass_By_Copy");
-
-      if (TREE_CODE (field_type) == UNION_TYPE)
-	{
-	  pp_comma (buffer);
-	  newline_and_indent (buffer, spc + 5);
-	  pp_string (buffer, "Unchecked_Union => True");
-	}
-
       pp_semicolon (buffer);
       newline_and_indent (buffer, spc);
       break;
@@ -3318,10 +3308,7 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
   newline_and_indent (buffer, spc);
 
   /* We disregard the methods for anonymous nested types.  */
-  if (nested)
-    return;
-
-  if (has_nontrivial_methods (node))
+  if (has_nontrivial_methods (node) && !nested)
     {
       pp_string (buffer, "with Import => True,");
       newline_and_indent (buffer, spc + 5);
@@ -3339,11 +3326,19 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
 
   if (bitfield_used)
     {
+      char buf[32];
       pp_comma (buffer);
       newline_and_indent (buffer, spc + 5);
       pp_string (buffer, "Pack => True");
+      pp_comma (buffer);
+      newline_and_indent (buffer, spc + 5);
+      sprintf (buf, "Alignment => %d", TYPE_ALIGN (node) / BITS_PER_UNIT);
+      pp_string (buffer, buf);
       bitfield_used = false;
     }
+
+  if (nested)
+    return;
 
   need_semicolon = !dump_ada_methods (buffer, node, spc);
 

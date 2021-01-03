@@ -1260,9 +1260,6 @@ print_rtx_insn_vec (FILE *file, const vec<rtx_insn *> &vec)
    It is also possible to obtain a string for a single pattern as a string
    pointer, via str_pattern_slim, but this usage is discouraged.  */
 
-/* For insns we print patterns, and for some patterns we print insns...  */
-static void print_insn_with_notes (pretty_printer *, const rtx_insn *);
-
 /* This recognizes rtx'en classified as expressions.  These are always
    represent some action on values or results of other expression, that
    may be stored in objects representing values.  */
@@ -2011,7 +2008,7 @@ print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
 /* Pretty-print a slim dump of X (an insn) to PP, including any register
    note attached to the instruction.  */
 
-static void
+void
 print_insn_with_notes (pretty_printer *pp, const rtx_insn *x)
 {
   pp_string (pp, print_rtx_head);
@@ -2139,7 +2136,7 @@ extern void debug_bb_slim (basic_block);
 DEBUG_FUNCTION void
 debug_bb_slim (basic_block bb)
 {
-  dump_bb (stderr, bb, 0, TDF_SLIM | TDF_BLOCKS);
+  debug_bb (bb, TDF_SLIM | TDF_BLOCKS);
 }
 
 extern void debug_bb_n_slim (int);

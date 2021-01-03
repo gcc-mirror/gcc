@@ -10,6 +10,8 @@
 #include "config.h"
 
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
@@ -177,6 +179,9 @@
 #if defined(HAVE_PORT_H)
 #include <port.h>
 #endif
+#if defined(HAVE_LWP_H)
+#include <lwp.h>
+#endif
 
 #ifdef USE_LIBFFI
 #include "ffi.h"
@@ -332,6 +337,9 @@ enum {
 #endif
 #ifdef BIOCVERSION
   BIOCVERSION_val = BIOCVERSION,
+#endif
+#ifdef SO_RCVTIMEO
+  SO_RCVTIMEO_val = SO_RCVTIMEO,
 #endif
 };
 

@@ -30,16 +30,35 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Wide_Text_IO.Decimal_Aux;
-
+with System.Img_Decimal_32;  use System.Img_Decimal_32;
+with System.Img_Decimal_64;  use System.Img_Decimal_64;
+with System.Val_Decimal_32;  use System.Val_Decimal_32;
+with System.Val_Decimal_64;  use System.Val_Decimal_64;
 with System.WCh_Con; use System.WCh_Con;
 with System.WCh_WtS; use System.WCh_WtS;
 
 package body Ada.Wide_Wide_Text_IO.Decimal_IO is
 
-   subtype TFT is Ada.Wide_Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
+   subtype Int32 is Interfaces.Integer_32;
+   subtype Int64 is Interfaces.Integer_64;
 
-   package Aux renames Ada.Wide_Wide_Text_IO.Decimal_Aux;
+   package Aux32 is new
+     Ada.Wide_Wide_Text_IO.Decimal_Aux
+       (Int32,
+        Scan_Decimal32,
+        Set_Image_Decimal32);
+
+   package Aux64 is new
+     Ada.Wide_Wide_Text_IO.Decimal_Aux
+       (Int64,
+        Scan_Decimal64,
+        Set_Image_Decimal64);
+
+   Need64 : constant Boolean := Num'Size > 32;
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Int32 is acceptable and where type Int64 is needed. This Boolean is used
+   --  to test for these cases and since it is a constant, only code for the
+   --  relevant case will be included in the instance.
 
    Scale : constant Integer := Num'Scale;
 
@@ -52,12 +71,15 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       Item  : out Num;
       Width : Field := 0)
    is
+      pragma Unsuppress (Range_Check);
+
    begin
-      if Num'Size > Integer'Size then
-         Item := Num'Fixed_Value (Aux.Get_LLD (TFT (File), Width, Scale));
+      if Need64 then
+         Item := Num'Fixed_Value (Aux64.Get (File, Width, Scale));
       else
-         Item := Num'Fixed_Value (Aux.Get_Dec (TFT (File), Width, Scale));
+         Item := Num'Fixed_Value (Aux32.Get (File, Width, Scale));
       end if;
+
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -67,7 +89,7 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -75,6 +97,8 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       Item : out Num;
       Last : out Positive)
    is
+      pragma Unsuppress (Range_Check);
+
       S : constant String := Wide_Wide_String_To_String (From, WCEM_Upper);
       --  String on which we do the actual conversion. Note that the method
       --  used for wide character encoding is irrelevant, since if there is
@@ -82,16 +106,10 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       --  Aux.Gets will raise Data_Error in any case.
 
    begin
-      if Num'Size > Integer'Size then
-         --  Item := Num'Fixed_Value
-         --  should write above, but gets assert error ???
-         Item := Num
-                   (Aux.Gets_LLD (S, Last'Unrestricted_Access, Scale));
+      if Need64 then
+         Item := Num'Fixed_Value (Aux64.Gets (S, Last, Scale));
       else
-         --  Item := Num'Fixed_Value
-         --  should write above, but gets assert error ???
-         Item := Num
-                   (Aux.Gets_Dec (S, Last'Unrestricted_Access, Scale));
+         Item := Num'Fixed_Value (Aux32.Gets (S, Last, Scale));
       end if;
 
    exception
@@ -110,18 +128,12 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      if Num'Size > Integer'Size then
-         Aux.Put_LLD
---           (TFT (File), Long_Long_Integer'Integer_Value (Item),
---  ???
-           (TFT (File), Long_Long_Integer (Item),
-            Fore, Aft, Exp, Scale);
+      if Need64 then
+         Aux64.Put
+           (File, Int64'Integer_Value (Item), Fore, Aft, Exp, Scale);
       else
-         Aux.Put_Dec
---           (TFT (File), Integer'Integer_Value (Item), Fore, Aft, Exp, Scale);
---  ???
-           (TFT (File), Integer (Item), Fore, Aft, Exp, Scale);
-
+         Aux32.Put
+           (File, Int32'Integer_Value (Item), Fore, Aft, Exp, Scale);
       end if;
    end Put;
 
@@ -132,7 +144,7 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
@@ -144,16 +156,10 @@ package body Ada.Wide_Wide_Text_IO.Decimal_IO is
       S : String (To'First .. To'Last);
 
    begin
-      if Num'Size > Integer'Size then
---       Aux.Puts_LLD
---         (S, Long_Long_Integer'Integer_Value (Item), Aft, Exp, Scale);
---  ???
-         Aux.Puts_LLD
-           (S, Long_Long_Integer (Item), Aft, Exp, Scale);
+      if Need64 then
+         Aux64.Puts (S, Int64'Integer_Value (Item), Aft, Exp, Scale);
       else
---       Aux.Puts_Dec (S, Integer'Integer_Value (Item), Aft, Exp, Scale);
---  ???
-         Aux.Puts_Dec (S, Integer (Item), Aft, Exp, Scale);
+         Aux32.Puts (S, Int32'Integer_Value (Item), Aft, Exp, Scale);
       end if;
 
       for J in S'Range loop

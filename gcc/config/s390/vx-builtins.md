@@ -76,7 +76,7 @@
 (define_insn "vec_gather_element<mode>"
   [(set (match_operand:V_HW_32_64                     0 "register_operand"  "=v")
 	(unspec:V_HW_32_64 [(match_operand:V_HW_32_64 1 "register_operand"   "0")
-			    (match_operand:<tointvec> 2 "register_operand"   "v")
+			    (match_operand:<TOINTVEC> 2 "register_operand"   "v")
 			    (match_operand:BLK        3 "memory_operand"     "R")
 			    (match_operand:QI         4 "const_mask_operand" "C")]
 			   UNSPEC_VEC_GATHER))]
@@ -477,7 +477,7 @@
 (define_insn "vec_scatter_element<mode>_<non_vec_int>"
   [(set (mem:<non_vec>
 	 (plus:<non_vec_int> (unspec:<non_vec_int>
-			      [(match_operand:<tointvec> 1 "register_operand"   "v")
+			      [(match_operand:<TOINTVEC> 1 "register_operand"   "v")
 			       (match_operand:QI         3 "const_mask_operand" "C")]
 			      UNSPEC_VEC_EXTRACT)
 			     (match_operand:DI           2 "address_operand"   "ZQ")))
@@ -492,7 +492,7 @@
 ; multiplexing here in the expander.
 (define_expand "vec_scatter_element<V_HW_32_64:mode>"
   [(match_operand:V_HW_32_64 0 "register_operand" "")
-   (match_operand:<tointvec> 1 "register_operand" "")
+   (match_operand:<TOINTVEC> 1 "register_operand" "")
    (match_operand 2 "address_operand" "")
    (match_operand:QI 3 "const_mask_operand" "")]
   "TARGET_VX"
@@ -813,8 +813,8 @@
 })
 
 (define_expand "vec_cmp<fpcmp:code><mode>"
-  [(set (match_operand:<tointvec>              0 "register_operand" "=v")
-	(fpcmp:<tointvec> (match_operand:VF_HW 1 "register_operand"  "v")
+  [(set (match_operand:<TOINTVEC>              0 "register_operand" "=v")
+	(fpcmp:<TOINTVEC> (match_operand:VF_HW 1 "register_operand"  "v")
 		       (match_operand:VF_HW 2 "register_operand"  "v")))]
   "TARGET_VX"
 {
@@ -1050,7 +1050,7 @@
 (define_expand "vec_slb<mode>"
   [(set (match_operand:V_HW 0 "register_operand"                     "")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
-		      (match_operand:<tointvec> 2 "register_operand" "")]
+		      (match_operand:<TOINTVEC> 2 "register_operand" "")]
 		     UNSPEC_VEC_SLB))]
   "TARGET_VX"
 {
@@ -1121,7 +1121,7 @@
 (define_insn "vec_srab<mode>"
   [(set (match_operand:V_HW 0 "register_operand"                    "=v")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "v")
-		      (match_operand:<tointvec> 2 "register_operand" "v")]
+		      (match_operand:<TOINTVEC> 2 "register_operand" "v")]
 		     UNSPEC_VEC_SRAB))]
   "TARGET_VX"
   "vsrab\t%v0,%v1,%v2"
@@ -1146,7 +1146,7 @@
 (define_expand "vec_srb<mode>"
   [(set (match_operand:V_HW 0 "register_operand"                     "")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
-		      (match_operand:<tointvec> 2 "register_operand" "")]
+		      (match_operand:<TOINTVEC> 2 "register_operand" "")]
 		     UNSPEC_VEC_SRLB))]
   "TARGET_VX"
 {
@@ -1229,7 +1229,7 @@
 (define_expand "vec_test_mask_int<mode>"
   [(set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_operand:V_HW 1 "register_operand" "")
-		       (match_operand:<tointvec> 2 "register_operand" "")]
+		       (match_operand:<TOINTVEC> 2 "register_operand" "")]
 		      UNSPEC_VEC_TEST_MASK))
    (set (match_operand:SI 0 "register_operand" "")
 	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
@@ -1238,7 +1238,7 @@
 (define_insn "*vec_test_mask<mode>"
   [(set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_operand:V_HW 0 "register_operand" "v")
-		       (match_operand:<tointvec> 1 "register_operand" "v")]
+		       (match_operand:<TOINTVEC> 1 "register_operand" "v")]
 		      UNSPEC_VEC_TEST_MASK))]
   "TARGET_VX"
   "vtm\t%v0,%v1"
@@ -1940,24 +1940,24 @@
 ; These ignore the vector result and only want CC stored to an int
 ; pointer.
 
-; vftcisb, vftcidb
+; vftcisb, vftcidb, wftcixb
 (define_insn "*vftci<mode>_cconly"
   [(set (reg:CCRAW CC_REGNUM)
-	(unspec:CCRAW [(match_operand:VECF_HW 1 "register_operand")
-		       (match_operand:HI      2 "const_int_operand")]
+	(unspec:CCRAW [(match_operand:VF_HW 1 "register_operand"  "v")
+		       (match_operand:HI    2 "const_int_operand" "J")]
 		      UNSPEC_VEC_VFTCICC))
-   (clobber (match_scratch:<tointvec> 0))]
+   (clobber (match_scratch:<TOINTVEC> 0 "=v"))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")"
-  "vftci<sdx>b\t%v0,%v1,%x2"
+  "<vw>ftci<sdx>b\t%v0,%v1,%x2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vftci<mode>_intcconly"
   [(parallel
     [(set (reg:CCRAW CC_REGNUM)
-	  (unspec:CCRAW [(match_operand:VECF_HW 0 "register_operand")
-			 (match_operand:HI      1 "const_int_operand")]
+	  (unspec:CCRAW [(match_operand:VF_HW 0 "register_operand")
+			 (match_operand:HI    1 "const_int_operand")]
 			UNSPEC_VEC_VFTCICC))
-     (clobber (scratch:<tointvec>))])
+     (clobber (scratch:<TOINTVEC>))])
    (set (match_operand:SI 2 "register_operand" "")
 	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[1]), 'J', \"J\")")
@@ -1965,27 +1965,27 @@
 ; vec_fp_test_data_class wants the result vector and the CC stored to
 ; an int pointer.
 
-; vftcisb, vftcidb
-(define_insn "*vftci<mode>"
-  [(set (match_operand:VECF_HW                  0 "register_operand"  "=v")
-	(unspec:VECF_HW [(match_operand:VECF_HW 1 "register_operand"   "v")
-			 (match_operand:HI      2 "const_int_operand"  "J")]
-			UNSPEC_VEC_VFTCI))
+; vftcisb, vftcidb, wftcixb
+(define_insn "vftci<mode>"
+  [(set (match_operand:VF_HW                0 "register_operand"  "=v")
+	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"   "v")
+		       (match_operand:HI    2 "const_int_operand"  "J")]
+		      UNSPEC_VEC_VFTCI))
    (set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_dup 1) (match_dup 2)] UNSPEC_VEC_VFTCICC))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")"
-  "vftci<sdx>b\t%v0,%v1,%x2"
+  "<vw>ftci<sdx>b\t%v0,%v1,%x2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vftci<mode>_intcc"
   [(parallel
-    [(set (match_operand:VECF_HW                  0 "register_operand")
-	  (unspec:VECF_HW [(match_operand:VECF_HW 1 "register_operand")
-			   (match_operand:HI      2 "const_int_operand")]
-			  UNSPEC_VEC_VFTCI))
+    [(set (match_operand:VF_HW                0 "register_operand")
+	  (unspec:VF_HW [(match_operand:VF_HW 1 "register_operand")
+			 (match_operand:HI    2 "const_int_operand")]
+			UNSPEC_VEC_VFTCI))
      (set (reg:CCRAW CC_REGNUM)
 	  (unspec:CCRAW [(match_dup 1) (match_dup 2)] UNSPEC_VEC_VFTCICC))])
-   (set (match_operand:SI 3 "memory_operand" "")
+   (set (match_operand:SI                     3 "nonimmediate_operand")
 	(unspec:SI [(reg:CCRAW CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operands[2]), 'J', \"J\")")
 
@@ -2083,7 +2083,7 @@
   [(set (reg:VFCMP CC_REGNUM)
 	(compare:VFCMP (match_operand:VF_HW 0 "register_operand" "v")
 		       (match_operand:VF_HW 1 "register_operand" "v")))
-   (clobber (match_scratch:<tointvec> 2 "=v"))]
+   (clobber (match_scratch:<TOINTVEC> 2 "=v"))]
   "TARGET_VX"
   "<vw>fc<asm_fcmp><sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
@@ -2094,8 +2094,8 @@
     [(set (reg:CCVEQ CC_REGNUM)
 	  (compare:CCVEQ (match_operand:VF_HW 1 "register_operand"  "v")
 			 (match_operand:VF_HW 2 "register_operand"  "v")))
-     (set (match_operand:<tointvec> 0 "register_operand" "=v")
-	  (eq:<tointvec> (match_dup 1) (match_dup 2)))])
+     (set (match_operand:<TOINTVEC> 0 "register_operand" "=v")
+	  (eq:<TOINTVEC> (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVEQ CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
@@ -2105,8 +2105,8 @@
     [(set (reg:CCVFH CC_REGNUM)
 	  (compare:CCVFH (match_operand:VF_HW 1 "register_operand"  "v")
 			 (match_operand:VF_HW 2 "register_operand"  "v")))
-     (set (match_operand:<tointvec> 0 "register_operand" "=v")
-	  (gt:<tointvec> (match_dup 1) (match_dup 2)))])
+     (set (match_operand:<TOINTVEC> 0 "register_operand" "=v")
+	  (gt:<TOINTVEC> (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVIH CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
@@ -2116,8 +2116,8 @@
     [(set (reg:CCVFHE CC_REGNUM)
 	  (compare:CCVFHE (match_operand:VF_HW 1 "register_operand"  "v")
 			  (match_operand:VF_HW 2 "register_operand"  "v")))
-     (set (match_operand:<tointvec> 0 "register_operand" "=v")
-	  (ge:<tointvec> (match_dup 1) (match_dup 2)))])
+     (set (match_operand:<TOINTVEC> 0 "register_operand" "=v")
+	  (ge:<TOINTVEC> (match_dup 1) (match_dup 2)))])
    (set (match_operand:SI 3 "memory_operand" "")
 	(unspec:SI [(reg:CCVFHE CC_REGNUM)] UNSPEC_CC_TO_INT))]
   "TARGET_VX")
@@ -2131,8 +2131,8 @@
   [(set (reg:CCVEQ CC_REGNUM)
 	(compare:CCVEQ (match_operand:VF_HW 0 "register_operand"  "v")
 		       (match_operand:VF_HW 1 "register_operand"  "v")))
-   (set (match_operand:<tointvec>              2 "register_operand" "=v")
-	(eq:<tointvec> (match_dup 0) (match_dup 1)))]
+   (set (match_operand:<TOINTVEC>              2 "register_operand" "=v")
+	(eq:<TOINTVEC> (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
   "<vw>fce<sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
@@ -2142,8 +2142,8 @@
   [(set (reg:CCVFH CC_REGNUM)
 	(compare:CCVFH (match_operand:VF_HW 0 "register_operand"  "v")
 		       (match_operand:VF_HW 1 "register_operand"  "v")))
-   (set (match_operand:<tointvec>              2 "register_operand" "=v")
-	(gt:<tointvec> (match_dup 0) (match_dup 1)))]
+   (set (match_operand:<TOINTVEC>              2 "register_operand" "=v")
+	(gt:<TOINTVEC> (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
   "<vw>fch<sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
@@ -2153,8 +2153,8 @@
   [(set (reg:CCVFHE CC_REGNUM)
 	(compare:CCVFHE (match_operand:VF_HW 0 "register_operand"  "v")
 			(match_operand:VF_HW 1 "register_operand"  "v")))
-   (set (match_operand:<tointvec>            2 "register_operand" "=v")
-	(ge:<tointvec> (match_dup 0) (match_dup 1)))]
+   (set (match_operand:<TOINTVEC>            2 "register_operand" "=v")
+	(ge:<TOINTVEC> (match_dup 0) (match_dup 1)))]
   "TARGET_VX"
   "<vw>fche<sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])

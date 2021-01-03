@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "case-cfn-macros.h"
+#include "tree-ssa-reassoc.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -188,15 +189,6 @@ static struct
   int pows_created;
 } reassociate_stats;
 
-/* Operator, rank pair.  */
-struct operand_entry
-{
-  unsigned int rank;
-  unsigned int id;
-  tree op;
-  unsigned int count;
-  gimple *stmt_to_insert;
-};
 
 static object_allocator<operand_entry> operand_entry_pool
   ("operand entry pool");
@@ -226,7 +218,7 @@ static bool reassoc_stmt_dominates_stmt_p (gimple *, gimple *);
 /* Wrapper around gsi_remove, which adjusts gimple_uid of debug stmts
    possibly added by gsi_remove.  */
 
-bool
+static bool
 reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -425,41 +417,43 @@ get_rank (tree e)
       long rank;
       tree op;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (e))
-	return find_operand_rank (e);
-
-      stmt = SSA_NAME_DEF_STMT (e);
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	return phi_rank (stmt);
-
-      if (!is_gimple_assign (stmt))
-	return bb_rank[gimple_bb (stmt)->index];
-
       /* If we already have a rank for this expression, use that.  */
       rank = find_operand_rank (e);
       if (rank != -1)
 	return rank;
 
-      /* Otherwise, find the maximum rank for the operands.  As an
-	 exception, remove the bias from loop-carried phis when propagating
-	 the rank so that dependent operations are not also biased.  */
-      /* Simply walk over all SSA uses - this takes advatage of the
-         fact that non-SSA operands are is_gimple_min_invariant and
-	 thus have rank 0.  */
-      rank = 0;
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	rank = propagate_rank (rank, op);
+      stmt = SSA_NAME_DEF_STMT (e);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	rank = phi_rank (stmt);
+
+      else if (!is_gimple_assign (stmt))
+	rank = bb_rank[gimple_bb (stmt)->index];
+
+      else
+	{
+	  /* Otherwise, find the maximum rank for the operands.  As an
+	     exception, remove the bias from loop-carried phis when propagating
+	     the rank so that dependent operations are not also biased.  */
+	  /* Simply walk over all SSA uses - this takes advatage of the
+	     fact that non-SSA operands are is_gimple_min_invariant and
+	     thus have rank 0.  */
+	  rank = 0;
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	    rank = propagate_rank (rank, op);
+
+	  rank += 1;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Rank for ");
 	  print_generic_expr (dump_file, e);
-	  fprintf (dump_file, " is %ld\n", (rank + 1));
+	  fprintf (dump_file, " is %ld\n", rank);
 	}
 
       /* Note the rank in the hashtable so we don't recompute it.  */
-      insert_operand_rank (e, (rank + 1));
-      return (rank + 1);
+      insert_operand_rank (e, rank);
+      return rank;
     }
 
   /* Constants, globals, etc., are rank 0 */
@@ -2406,18 +2400,7 @@ optimize_ops_list (enum tree_code opcode,
    For more information see comments above fold_test_range in fold-const.c,
    this implementation is for GIMPLE.  */
 
-struct range_entry
-{
-  tree exp;
-  tree low;
-  tree high;
-  bool in_p;
-  bool strict_overflow_p;
-  unsigned int idx, next;
-};
 
-void dump_range_entry (FILE *file, struct range_entry *r);
-void debug_range_entry (struct range_entry *r);
 
 /* Dump the range entry R to FILE, skipping its expression if SKIP_EXP.  */
 
@@ -2447,7 +2430,7 @@ debug_range_entry (struct range_entry *r)
    an SSA_NAME and STMT argument is ignored, otherwise STMT
    argument should be a GIMPLE_COND.  */
 
-static void
+void
 init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 {
   int in_p;
@@ -3334,7 +3317,9 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 }
 
 /* Optimize x != 0 && y != 0 && z != 0 into (x | y | z) != 0
-   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.  */
+   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.
+   Also, handle x < C && y < C && z < C where C is power of two as
+   (x | y | z) < C.  */
 
 static bool
 optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
@@ -3350,20 +3335,44 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 
   for (i = first; i < length; i++)
     {
+      int idx;
+
       if (ranges[i].exp == NULL_TREE
 	  || TREE_CODE (ranges[i].exp) != SSA_NAME
 	  || !ranges[i].in_p
 	  || TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) <= 1
-	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE
-	  || ranges[i].low == NULL_TREE
-	  || ranges[i].low != ranges[i].high)
+	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE)
 	continue;
 
-      bool zero_p = integer_zerop (ranges[i].low);
-      if (!zero_p && !integer_all_onesp (ranges[i].low))
+      if (ranges[i].low != NULL_TREE
+	  && ranges[i].high != NULL_TREE
+	  && tree_int_cst_equal (ranges[i].low, ranges[i].high))
+	{
+	  idx = !integer_zerop (ranges[i].low);
+	  if (idx && !integer_all_onesp (ranges[i].low))
+	    continue;
+	}
+      else if (ranges[i].high != NULL_TREE
+	       && TREE_CODE (ranges[i].high) == INTEGER_CST)
+	{
+	  wide_int w = wi::to_wide (ranges[i].high);
+	  int prec = TYPE_PRECISION (TREE_TYPE (ranges[i].exp));
+	  int l = wi::clz (w);
+	  idx = 2;
+	  if (l <= 0
+	      || l >= prec
+	      || w != wi::mask (prec - l, false, prec))
+	    continue;
+	  if (!((TYPE_UNSIGNED (TREE_TYPE (ranges[i].exp))
+		 && ranges[i].low == NULL_TREE)
+		|| (ranges[i].low
+		    && integer_zerop (ranges[i].low))))
+	    continue;
+	}
+      else
 	continue;
 
-      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
+      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 3 + idx;
       if (buckets.length () <= b)
 	buckets.safe_grow_cleared (b + 1, true);
       if (chains.length () <= (unsigned) i)
@@ -3376,6 +3385,44 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
     if (i && chains[i - 1])
       {
 	int j, k = i;
+	if ((b % 3) == 2)
+	  {
+	    /* When ranges[X - 1].high + 1 is a power of two,
+	       we need to process the same bucket up to
+	       precision - 1 times, each time split the entries
+	       with the same high bound into one chain and the
+	       rest into another one to be processed later.  */
+	    int this_prev = i;
+	    int other_prev = 0;
+	    for (j = chains[i - 1]; j; j = chains[j - 1])
+	      {
+		if (tree_int_cst_equal (ranges[i - 1].high,
+					ranges[j - 1].high))
+		  {
+		    chains[this_prev - 1] = j;
+		    this_prev = j;
+		  }
+		else if (other_prev == 0)
+		  {
+		    buckets[b] = j;
+		    other_prev = j;
+		  }
+		else
+		  {
+		    chains[other_prev - 1] = j;
+		    other_prev = j;
+		  }
+	      }
+	    chains[this_prev - 1] = 0;
+	    if (other_prev)
+	      chains[other_prev - 1] = 0;
+	    if (chains[i - 1] == 0)
+	      {
+		if (other_prev)
+		  b--;
+		continue;
+	      }
+	  }
 	for (j = chains[i - 1]; j; j = chains[j - 1])
 	  {
 	    gimple *gk = SSA_NAME_DEF_STMT (ranges[k - 1].exp);
@@ -3443,8 +3490,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		exp = gimple_assign_lhs (g);
 	      }
 	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
-				     (b & 1) ? BIT_AND_EXPR : BIT_IOR_EXPR,
-				     op, exp);
+				     (b % 3) == 1
+				     ? BIT_AND_EXPR : BIT_IOR_EXPR, op, exp);
 	    gimple_seq_add_stmt_without_update (&seq, g);
 	    op = gimple_assign_lhs (g);
 	  }
@@ -3452,10 +3499,13 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	if (update_range_test (&ranges[k - 1], NULL, candidates.address (),
 			       candidates.length (), opcode, ops, op,
 			       seq, true, ranges[k - 1].low,
-			       ranges[k - 1].low, strict_overflow_p))
+			       ranges[k - 1].high, strict_overflow_p))
 	  any_changes = true;
 	else
 	  gimple_seq_discard (seq);
+	if ((b % 3) == 2 && buckets[b] != i)
+	  /* There is more work to do for this bucket.  */
+	  b--;
       }
 
   return any_changes;
@@ -4284,7 +4334,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
    range test optimization, all SSA_NAMEs set in the bb are consumed
    in the bb and there are no PHIs.  */
 
-static bool
+bool
 no_side_effect_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;

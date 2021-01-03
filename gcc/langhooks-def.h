@@ -87,6 +87,8 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);
 extern bool lhd_omp_mappable_type (tree);
 extern bool lhd_omp_scalar_p (tree);
+extern tree *lhd_omp_get_decl_init (tree);
+extern void lhd_omp_finish_decl_inits ();
 
 extern const char *lhd_get_substring_location (const substring_loc &,
 					       location_t *out_loc);
@@ -103,6 +105,10 @@ extern void lhd_finalize_early_debug (void);
 #define LANG_HOOKS_INIT_OPTIONS_STRUCT	hook_void_gcc_optionsp
 #define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
+#define LANG_HOOKS_PREPROCESS_MAIN_FILE NULL
+#define LANG_HOOKS_PREPROCESS_OPTIONS NULL
+#define LANG_HOOKS_PREPROCESS_UNDEF NULL
+#define LANG_HOOKS_PREPROCESS_TOKEN NULL
 #define LANG_HOOKS_REGISTER_DUMPS	lhd_register_dumps
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
 #define LANG_HOOKS_HANDLE_OPTION	lhd_handle_option
@@ -261,6 +267,8 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_OMP_CLAUSE_DTOR hook_tree_tree_tree_null
 #define LANG_HOOKS_OMP_FINISH_CLAUSE lhd_omp_finish_clause
 #define LANG_HOOKS_OMP_SCALAR_P lhd_omp_scalar_p
+#define LANG_HOOKS_OMP_GET_DECL_INIT lhd_omp_get_decl_init
+#define LANG_HOOKS_OMP_FINISH_DECL_INITS lhd_omp_finish_decl_inits
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
@@ -289,7 +297,9 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR, \
   LANG_HOOKS_OMP_CLAUSE_DTOR, \
   LANG_HOOKS_OMP_FINISH_CLAUSE, \
-  LANG_HOOKS_OMP_SCALAR_P \
+  LANG_HOOKS_OMP_SCALAR_P, \
+  LANG_HOOKS_OMP_GET_DECL_INIT, \
+  LANG_HOOKS_OMP_FINISH_DECL_INITS \
 }
 
 /* LTO hooks.  */
@@ -317,6 +327,10 @@ extern void lhd_end_section (void);
   LANG_HOOKS_INIT_OPTIONS_STRUCT, \
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_INITIALIZE_DIAGNOSTICS, \
+  LANG_HOOKS_PREPROCESS_MAIN_FILE, \
+  LANG_HOOKS_PREPROCESS_OPTIONS, \
+  LANG_HOOKS_PREPROCESS_UNDEF, \
+  LANG_HOOKS_PREPROCESS_TOKEN, \
   LANG_HOOKS_REGISTER_DUMPS, \
   LANG_HOOKS_COMPLAIN_WRONG_LANG_P, \
   LANG_HOOKS_HANDLE_OPTION, \

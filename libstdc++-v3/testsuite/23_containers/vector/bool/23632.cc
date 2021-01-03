@@ -29,7 +29,8 @@ void test01()
 
   const std::vector<bool>::const_iterator cfu = v.begin();
   if (cfu[0])
-    ;
+  {
+  }
 }
 
 int main()

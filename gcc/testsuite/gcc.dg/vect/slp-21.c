@@ -201,6 +201,16 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect"  { target { vect_strided4 || vect_extract_even_odd } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target  { ! { vect_strided4 || vect_extract_even_odd } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target vect_strided4 } } } */
+/* Some targets can vectorize the second of the three main loops using
+   hybrid SLP.  For 128-bit vectors, the required 4->3 permutations are:
+
+   { 0, 1, 2, 4, 5, 6, 8, 9 }
+   { 2, 4, 5, 6, 8, 9, 10, 12 }
+   { 5, 6, 8, 9, 10, 12, 13, 14 }
+
+   Not all vect_perm targets support that, and it's a bit too specific to have
+   its own effective-target selector, so we just test targets directly.  */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { target { aarch64*-*-* arm*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_strided4 && { ! { aarch64*-*-* arm*-*-* } } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  { target { ! { vect_strided4 } } } } } */
   

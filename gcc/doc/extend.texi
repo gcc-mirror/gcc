@@ -55,7 +55,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Designated Inits::    Labeling elements of initializers.
 * Case Ranges::         `case 1 ... 9' and such.
 * Cast to Union::       Casting to union type from any member of the union.
-* Mixed Declarations::  Mixing declarations and code.
+* Mixed Labels and Declarations::  Mixing declarations, labels and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
 * Variable Attributes:: Specifying attributes of variables.
@@ -2353,15 +2353,17 @@ void hack (union foo);
 hack ((union foo) x);
 @end smallexample
 
-@node Mixed Declarations
-@section Mixed Declarations and Code
+@node Mixed Labels and Declarations
+@section Mixed Declarations, Labels and Code
 @cindex mixed declarations and code
 @cindex declarations, mixed with code
 @cindex code, mixed with declarations
 
 ISO C99 and ISO C++ allow declarations and code to be freely mixed
-within compound statements.  As an extension, GNU C also allows this in
-C90 mode.  For example, you could do:
+within compound statements.  ISO C2X allows labels to be
+placed before declarations and at the end of a compound statement.
+As an extension, GNU C also allows all this in C90 mode.  For example,
+you could do:
 
 @smallexample
 int i;
@@ -3231,20 +3233,63 @@ this reason the attribute is not allowed on types to annotate indirect
 calls.
 
 @item malloc
+@item malloc (@var{deallocator})
+@item malloc (@var{deallocator}, @var{ptr-index})
 @cindex @code{malloc} function attribute
 @cindex functions that behave like malloc
-This tells the compiler that a function is @code{malloc}-like, i.e.,
-that the pointer @var{P} returned by the function cannot alias any
+Attribute @code{malloc} indicates that a function is @code{malloc}-like,
+i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
 pointers to valid objects occur in any storage addressed by @var{P}.
 
-Using this attribute can improve optimization.  Compiler predicts
-that a function with the attribute returns non-null in most cases.
-Functions like
-@code{malloc} and @code{calloc} have this property because they return
-a pointer to uninitialized or zeroed-out storage.  However, functions
-like @code{realloc} do not have this property, as they can return a
-pointer to storage containing pointers.
+Independently, the form of the attribute with one or two arguments
+associates @code{deallocator} as a suitable deallocation function for
+pointers returned from the @code{malloc}-like function.  @var{ptr-index}
+denotes the positional argument to which when the pointer is passed in
+calls to @code{deallocator} has the effect of deallocating it.
+
+Using the attribute with no arguments is designed to improve optimization.
+The compiler predicts that a function with the attribute returns non-null
+in most cases.  Functions like @code{malloc} and @code{calloc} have this
+property because they return a pointer to uninitialized or zeroed-out
+storage.  However, functions like @code{realloc} do not have this property,
+as they may return pointers to storage containing pointers to existing
+objects.
+
+Associating a function with a @var{deallocator} helps detect calls to
+mismatched allocation and deallocation functions and diagnose them under
+the control of options such as @option{-Wmismatched-dealloc}.  To indicate
+that an allocation function both satisifies the nonaliasing property and
+has a deallocator associated with it, both the plain form of the attribute
+and the one with the @var{deallocator} argument must be used.  The same
+function can be both an allocator and a deallocator.  Since inlining one
+of the associated functions but not the other could result in apparent
+mismatches, this form of attribute @code{malloc} is not accepted on inline
+functions.  For the same reason, using the attribute prevents both
+the allocation and deallocation functions from being expanded inline.
+
+For example, besides stating that the functions return pointers that do
+not alias any others, the following declarations make @code{fclose}
+a suitable deallocator for pointers returned from all functions except
+@code{popen}, and @code{pclose} as the only suitable deallocator for
+pointers returned from @code{popen}.  The deallocator functions must
+declared before they can be referenced in the attribute.
+
+@smallexample
+int fclose (FILE*);
+int pclose (FILE*);
+
+__attribute__ ((malloc, malloc (fclose (1))))
+  FILE* fdopen (int);
+__attribute__ ((malloc, malloc (fclose (1))))
+  FILE* fopen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose (1))))
+  FILE* fmemopen(void *, size_t, const char *);
+__attribute__ ((malloc, malloc (pclose (1))))
+  FILE* popen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose (1))))
+  FILE* tmpfile (void);
+@end smallexample
 
 @item no_icf
 @cindex @code{no_icf} function attribute
@@ -3814,6 +3859,14 @@ When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
 
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will also save the function from linker garbage collection.  To support
+this behavior, functions that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
+option), will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
+
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} function attribute
 This attribute affects the linkage of the declaration to which it is attached.
@@ -3996,6 +4049,92 @@ performing a link with relocatable output (i.e.@: @code{ld -r}) on them.
 A declaration to which @code{weakref} is attached and that is associated
 with a named @code{target} must be @code{static}.
 
+@item zero_call_used_regs ("@var{choice}")
+@cindex @code{zero_call_used_regs} function attribute
+
+The @code{zero_call_used_regs} attribute causes the compiler to zero
+a subset of all call-used registers@footnote{A ``call-used'' register
+is a register whose contents can be changed by a function call;
+therefore, a caller cannot assume that the register has the same contents
+on return from the function as it had before calling the function.  Such
+registers are also called ``call-clobbered'', ``caller-saved'', or
+``volatile''.} at function return.
+This is used to increase program security by either mitigating
+Return-Oriented Programming (ROP) attacks or preventing information leakage
+through registers.
+
+In order to satisfy users with different security needs and control the
+run-time overhead at the same time, the @var{choice} parameter provides a
+flexible way to choose the subset of the call-used registers to be zeroed.
+The three basic values of @var{choice} are:
+
+@itemize @bullet
+@item
+@samp{skip} doesn't zero any call-used registers.
+
+@item
+@samp{used} only zeros call-used registers that are used in the function.
+A ``used'' register is one whose content has been set or referenced in
+the function.
+
+@item
+@samp{all} zeros all call-used registers.
+@end itemize
+
+In addition to these three basic choices, it is possible to modify
+@samp{used} or @samp{all} as follows:
+
+@itemize @bullet
+@item
+Adding @samp{-gpr} restricts the zeroing to general-purpose registers.
+
+@item
+Adding @samp{-arg} restricts the zeroing to registers that can sometimes
+be used to pass function arguments.  This includes all argument registers
+defined by the platform's calling conversion, regardless of whether the
+function uses those registers for function arguments or not.
+@end itemize
+
+The modifiers can be used individually or together.  If they are used
+together, they must appear in the order above.
+
+The full list of @var{choice}s is therefore:
+
+@table @code
+@item skip
+doesn't zero any call-used register.
+
+@item used
+only zeros call-used registers that are used in the function.
+
+@item used-gpr
+only zeros call-used general purpose registers that are used in the function.
+
+@item used-arg
+only zeros call-used registers that are used in the function and pass arguments.
+
+@item used-gpr-arg
+only zeros call-used general purpose registers that are used in the function
+and pass arguments.
+
+@item all
+zeros all call-used registers.
+
+@item all-gpr
+zeros all call-used general purpose registers.
+
+@item all-arg
+zeros all call-used registers that pass arguments.
+
+@item all-gpr-arg
+zeros all call-used general purpose registers that pass
+arguments.
+@end table
+
+Of this list, @samp{used-arg}, @samp{used-gpr-arg}, @samp{all-arg},
+and @samp{all-gpr-arg} are mainly used for ROP mitigation.
+
+The default for the attribute is controlled by @option{-fzero-call-used-regs}.
 @end table
 
 @c This is the end of the target-independent attribute table
@@ -6073,9 +6212,10 @@ and for static member methods.
 On 32-bit and 64-bit x86 targets, you can use an ABI attribute
 to indicate which calling convention should be used for a function.  The
 @code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
-while the @code{sysv_abi} attribute tells the compiler to use the ABI
-used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
-when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
+while the @code{sysv_abi} attribute tells the compiler to use the System V
+ELF ABI, which is used on GNU/Linux and other systems.  The default is to use
+the Microsoft ABI when targeting Windows.  On all other systems, the default
+is the System V ELF ABI.
 
 Note, the @code{ms_abi} attribute for Microsoft Windows 64-bit targets currently
 requires the @option{-maccumulate-outgoing-args} option.
@@ -6651,6 +6791,21 @@ Enable/disable the generation of the UINTR instructions.
 @itemx no-hreset
 @cindex @code{target("hreset")} function attribute, x86
 Enable/disable the generation of the HRESET instruction.
+
+@item kl
+@itemx no-kl
+@cindex @code{target("kl")} function attribute, x86
+Enable/disable the generation of the KEYLOCKER instructions.
+
+@item widekl
+@itemx no-widekl
+@cindex @code{target("widekl")} function attribute, x86
+Enable/disable the generation of the WIDEKL instructions.
+
+@item avxvnni
+@itemx no-avxvnni
+@cindex @code{target("avxvnni")} function attribute, x86
+Enable/disable the generation of the AVXVNNI instructions.
 
 @item cld
 @itemx no-cld
@@ -7273,6 +7428,14 @@ When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
 class itself is instantiated.
 
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will also save the variable from linker garbage collection.  To support
+this behavior, variables that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-fdata-sections} option),
+will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
+
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
 This attribute specifies the vector size for the type of the declared
@@ -7322,9 +7485,49 @@ The @code{weak} attribute is described in
 @cindex @code{noinit} variable attribute
 Any data with the @code{noinit} attribute will not be initialized by
 the C runtime startup code, or the program loader.  Not initializing
-data in this way can reduce program startup times.  This attribute is
-specific to ELF targets and relies on the linker to place such data in
-the right location
+data in this way can reduce program startup times.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place sections with the @code{.noinit} prefix in the right
+location.
+
+@item persistent
+@cindex @code{persistent} variable attribute
+Any data with the @code{persistent} attribute will not be initialized by
+the C runtime startup code, but will be initialized by the program
+loader.  This enables the value of the variable to @samp{persist}
+between processor resets.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place the sections with the @code{.persistent} prefix in the
+right location.  Specifically, some type of non-volatile, writeable
+memory is required.
+
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_nullability} variable attribute
+This attribute applies to pointer variables only.  It allows marking the
+pointer with one of four possible values describing the conditions under
+which the pointer might have a @code{nil} value. In most cases, the
+attribute is intended to be an internal representation for property and
+method nullability (specified by language keywords); it is not recommended
+to use it directly.
+
+When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
+known about the conditions in which the pointer might be @code{nil}. Making
+this state specific serves to avoid false positives in diagnostics.
+
+When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
+no meaning if it is @code{nil} and thus the compiler is free to emit
+diagnostics if it can be determined that the value will be @code{nil}.
+
+When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
+be @code{nil} and carry meaning as such.
+
+When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
+the context of property attribute lists) this describes the case in which a
+property setter may take the value @code{nil} (which perhaps causes the
+property to be reset in some manner to a default) but for which the property
+getter will never validly return @code{nil}.
 
 @end table
 
@@ -7719,23 +7922,6 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @subsection MSP430 Variable Attributes
 
 @table @code
-@item noinit
-@cindex @code{noinit} variable attribute, MSP430 
-Any data with the @code{noinit} attribute will not be initialised by
-the C runtime startup code, or the program loader.  Not initialising
-data in this way can reduce program startup times.
-
-@item persistent
-@cindex @code{persistent} variable attribute, MSP430 
-Any variable with the @code{persistent} attribute will not be
-initialised by the C runtime startup code.  Instead its value will be
-set once, when the application is loaded, and then never initialised
-again, even if the processor is reset or the program restarts.
-Persistent data is intended to be placed into FLASH RAM, where its
-value will be retained across resets.  The linker script being used to
-create the application should ensure that persistent data is correctly
-placed.
-
 @item upper
 @itemx either
 @cindex @code{upper} variable attribute, MSP430 
@@ -8415,6 +8601,12 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
+@item objc_root_class @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_root_class} type attribute
+This attribute marks a class as being a root class, and thus allows
+the compiler to elide any warnings about a missing superclass and to
+make additional checks for mandatory methods as needed.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
@@ -8534,7 +8726,8 @@ details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables 
 (@pxref{Variable Attributes}), enumerators (@pxref{Enumerator Attributes}),
 statements (@pxref{Statement Attributes}), and for types
-(@pxref{Type Attributes}).
+(@pxref{Type Attributes}). A label attribute followed
+by a declaration appertains to the label and not the declaration.
 
 This example uses the @code{cold} label attribute to indicate the 
 @code{ErrorHandling} branch is unlikely to be taken and that the
@@ -9430,7 +9623,7 @@ asm @var{asm-qualifiers} ( @var{AssemblerTemplate}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
 asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
-                      : 
+                      : @var{OutputOperands}
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
@@ -9537,7 +9730,7 @@ there is no need for the output variables. Also, the optimizers may move
 code out of loops if they believe that the code will always return the same 
 result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
-that have no output operands, including @code{asm goto} statements, 
+that have no output operands and @code{asm goto} statements, 
 are implicitly volatile.
 
 This i386 code demonstrates a case that does not use (or require) the 
@@ -10396,9 +10589,6 @@ case, consider using the @code{__builtin_unreachable} intrinsic after the
 using the @code{hot} and @code{cold} label attributes (@pxref{Label 
 Attributes}).
 
-An @code{asm goto} statement cannot have outputs.
-This is due to an internal restriction of 
-the compiler: control transfer instructions cannot have outputs. 
 If the assembler code does modify anything, use the @code{"memory"} clobber 
 to force the 
 optimizers to flush all register values to memory and reload them if 
@@ -10406,6 +10596,13 @@ necessary after the @code{asm} statement.
 
 Also note that an @code{asm goto} statement is always implicitly
 considered volatile.
+
+Be careful when you set output operands inside @code{asm goto} only on
+some possible control flow paths.  If you don't set up the output on
+given path and never use it on this path, it is okay.  Otherwise, you
+should use @samp{+} constraint modifier meaning that the operand is
+input and output one.  With this modifier you will have the correct
+values on all possible paths from the @code{asm goto}.
 
 To reference a label in the assembler template,
 prefix it with @samp{%l} (lowercase @samp{L}) followed 
@@ -10449,6 +10646,41 @@ int frob(int x)
   return y;
 error:
   return -1;
+@}
+@end example
+
+The following example shows an @code{asm goto} that uses an output.
+
+@example
+int foo(int count)
+@{
+  asm goto ("dec %0; jb %l[stop]"
+            : "+r" (count)
+            :
+            :
+            : stop);
+  return count;
+stop:
+  return 0;
+@}
+@end example
+
+The following artificial example shows an @code{asm goto} that sets
+up an output only on one path inside the @code{asm goto}.  Usage of
+constraint modifier @code{=} instead of @code{+} would be wrong as
+@code{factor} is used on all paths from the @code{asm goto}.
+
+@example
+int foo(int inp)
+@{
+  int factor = 0;
+  asm goto ("cmp %1, 10; jb %l[lab]; mov 2, %0"
+            : "+r" (factor)
+            : "r" (inp)
+            :
+            : lab);
+lab:
+  return inp * factor; /* return 2 * inp or 0 if inp < 10 */
 @}
 @end example
 
@@ -13388,6 +13620,34 @@ initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_clear_padding (@var{ptr})
+The built-in function @code{__builtin_clear_padding} function clears
+padding bits inside of the object representation of object pointed by
+@var{ptr}, which has to be a pointer.  The value representation of the
+object is not affected.  The type of the object is assumed to be the type
+the pointer points to.  Inside of a union, the only cleared bits are
+bits that are padding bits for all the union members.
+
+This built-in-function is useful if the padding bits of an object might
+have intederminate values and the object representation needs to be
+bitwise compared to some other object, for example for atomic operations.
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
+The @code{__builtin_bit_cast} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::bit_cast} C++ template function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+This built-in function allows reinterpreting the bits of the @var{arg}
+argument as if it had type @var{type}.  @var{type} and the type of the
+@var{arg} argument need to be trivially copyable types with the same size.
+When manifestly constant-evaluated, it performs extra diagnostics required
+for @code{std::bit_cast} and returns a constant expression if @var{arg}
+is a constant expression.  For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
@@ -13769,6 +14029,18 @@ to be a signaling NaN@.  The @code{nans} function is proposed by
 @uref{http://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Decimal32 __builtin_nansd32 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Decimal64 __builtin_nansd64 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Decimal128 __builtin_nansd128 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
+@end deftypefn
+
 @deftypefn {Built-in Function} float __builtin_nansf (const char *str)
 Similar to @code{__builtin_nans}, except the return type is @code{float}.
 @end deftypefn
@@ -13966,6 +14238,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* PRU Built-in Functions::
 * RISC-V Built-in Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
@@ -20161,15 +20434,28 @@ __int128 vec_vsubuqm (__int128, __int128);
 __uint128 vec_vsubuqm (__uint128, __uint128);
 
 vector __int128 __builtin_bcdadd (vector __int128, vector __int128, const int);
+vector unsigned char __builtin_bcdadd (vector unsigned char, vector unsigned char,
+                                       const int);
 int __builtin_bcdadd_lt (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_lt (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdadd_eq (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_eq (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdadd_gt (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_gt (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdadd_ov (vector __int128, vector __int128, const int);
+int __builtin_bcdadd_ov (vector unsigned char, vector unsigned char, const int);
+
 vector __int128 __builtin_bcdsub (vector __int128, vector __int128, const int);
+vector unsigned char __builtin_bcdsub (vector unsigned char, vector unsigned char,
+                                       const int);
 int __builtin_bcdsub_lt (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_lt (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_eq (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_eq (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_gt (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_gt (vector unsigned char, vector unsigned char, const int);
 int __builtin_bcdsub_ov (vector __int128, vector __int128, const int);
+int __builtin_bcdsub_ov (vector unsigned char, vector unsigned char, const int);
 @end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.0
@@ -21733,6 +22019,33 @@ vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 @end smallexample
 
+@node PRU Built-in Functions
+@subsection PRU Built-in Functions
+
+GCC provides a couple of special builtin functions to aid in utilizing
+special PRU instructions.
+
+The built-in functions supported are:
+
+@table @code
+@item __delay_cycles (long long @var{cycles})
+This inserts an instruction sequence that takes exactly @var{cycles}
+cycles (between 0 and 0xffffffff) to complete.  The inserted sequence
+may use jumps, loops, or no-ops, and does not interfere with any other
+instructions.  Note that @var{cycles} must be a compile-time constant
+integer - that is, you must pass a number, not a variable that may be
+optimized to a constant later.  The number of cycles delayed by this
+builtin is exact.
+
+@item __halt (void)
+This inserts a HALT instruction to stop processor execution.
+
+@item unsigned int __lmbd (unsigned int @var{wordval}, unsigned int @var{bitval})
+This inserts LMBD instruction to calculate the left-most bit with value
+@var{bitval} in value @var{wordval}.  Only the least significant bit
+of @var{bitval} is taken into account.
+@end table
+
 @node RISC-V Built-in Functions
 @subsection RISC-V Built-in Functions
 
@@ -22585,6 +22898,12 @@ AMD Family 17h Zen version 1.
 
 @item znver2
 AMD Family 17h Zen version 2.
+
+@item amdfam19h
+AMD Family 19h CPU.
+
+@item znver3
+AMD Family 19h Zen version 3.
 @end table
 
 Here is an example:
@@ -23907,7 +24226,7 @@ void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
 @end smallexample
 
-The following built-in functions are available when @option{-mcet} or
+The following built-in functions are available when
 @option{-mshstk} option is used.  They support shadow stack
 machine instructions from Intel Control-flow Enforcement Technology (CET).
 Each built-in function generates the  machine instruction that is part

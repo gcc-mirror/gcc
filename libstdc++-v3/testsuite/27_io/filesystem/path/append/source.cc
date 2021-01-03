@@ -92,8 +92,8 @@ test02()
 void
 test03()
 {
-  for (const path& p : __gnu_test::test_paths)
-    for (const path& q : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
+    for (const path q : __gnu_test::test_paths)
     {
       test(p, q.c_str());
       if constexpr (!std::is_same_v<path::value_type, char>)

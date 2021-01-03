@@ -73,9 +73,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
+#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
+#include "attr-fnspec.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -181,9 +183,10 @@ static rtx expand_builtin_memory_chk (tree, rtx, machine_mode,
 				      enum built_in_function);
 static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
-static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
+static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
+			       pointer_query *);
 
 unsigned HOST_WIDE_INT target_newline;
 unsigned HOST_WIDE_INT target_percent;
@@ -198,7 +201,8 @@ static void expand_builtin_sync_synchronize (void);
 
 access_ref::access_ref (tree bound /* = NULL_TREE */,
 			bool minaccess /* = false */)
-: ref (), eval ([](tree x){ return x; }), trail1special (true), base0 (true)
+: ref (), eval ([](tree x){ return x; }), deref (), trail1special (true),
+  base0 (true), parmarray ()
 {
   /* Set to valid.  */
   offrng[0] = offrng[1] = 0;
@@ -219,6 +223,181 @@ access_ref::access_ref (tree bound /* = NULL_TREE */,
       bndrng[1] = wi::to_offset (rng[1]);
       bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
     }
+}
+
+/* Return the PHI node REF refers to or null if it doesn't.  */
+
+gphi *
+access_ref::phi () const
+{
+  if (!ref || TREE_CODE (ref) != SSA_NAME)
+    return NULL;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
+  if (gimple_code (def_stmt) != GIMPLE_PHI)
+    return NULL;
+
+  return as_a <gphi *> (def_stmt);
+}
+
+/* Determine and return the largest object to which *THIS.  If *THIS
+   refers to a PHI and PREF is nonnull, fill *PREF with the details
+   of the object determined by compute_objsize(ARG, OSTYPE) for each
+   PHI argument ARG.  */
+
+tree
+access_ref::get_ref (vec<access_ref> *all_refs,
+		     access_ref *pref /* = NULL */,
+		     int ostype /* = 1 */,
+		     ssa_name_limit_t *psnlim /* = NULL */,
+		     pointer_query *qry /* = NULL */) const
+{
+  gphi *phi_stmt = this->phi ();
+  if (!phi_stmt)
+    return ref;
+
+  /* FIXME: Calling get_ref() with a null PSNLIM is dangerous and might
+     cause unbounded recursion.  */
+  ssa_name_limit_t snlim_buf;
+  if (!psnlim)
+    psnlim = &snlim_buf;
+
+  if (!psnlim->visit_phi (ref))
+    return NULL_TREE;
+
+  /* Reflects the range of offsets of all PHI arguments refer to the same
+     object (i.e., have the same REF).  */
+  access_ref same_ref;
+  /* The conservative result of the PHI reflecting the offset and size
+     of the largest PHI argument, regardless of whether or not they all
+     refer to the same object.  */
+  pointer_query empty_qry;
+  if (!qry)
+    qry = &empty_qry;
+
+  access_ref phi_ref;
+  if (pref)
+    {
+      phi_ref = *pref;
+      same_ref = *pref;
+    }
+
+  /* Set if any argument is a function array (or VLA) parameter not
+     declared [static].  */
+  bool parmarray = false;
+  /* The size of the smallest object referenced by the PHI arguments.  */
+  offset_int minsize = 0;
+  const offset_int maxobjsize = wi::to_offset (max_object_size ());
+  /* The offset of the PHI, not reflecting those of its arguments.  */
+  const offset_int orng[2] = { phi_ref.offrng[0], phi_ref.offrng[1] };
+
+  const unsigned nargs = gimple_phi_num_args (phi_stmt);
+  for (unsigned i = 0; i < nargs; ++i)
+    {
+      access_ref phi_arg_ref;
+      tree arg = gimple_phi_arg_def (phi_stmt, i);
+      if (!compute_objsize_r (arg, ostype, &phi_arg_ref, *psnlim, qry)
+	  || phi_arg_ref.sizrng[0] < 0)
+	/* A PHI with all null pointer arguments.  */
+	return NULL_TREE;
+
+      /* Add PREF's offset to that of the argument.  */
+      phi_arg_ref.add_offset (orng[0], orng[1]);
+      if (TREE_CODE (arg) == SSA_NAME)
+	qry->put_ref (arg, phi_arg_ref);
+
+      if (all_refs)
+	all_refs->safe_push (phi_arg_ref);
+
+      const bool arg_known_size = (phi_arg_ref.sizrng[0] != 0
+				   || phi_arg_ref.sizrng[1] != maxobjsize);
+
+      parmarray |= phi_arg_ref.parmarray;
+
+      const bool nullp = integer_zerop (arg) && (i || i + 1 < nargs);
+
+      if (phi_ref.sizrng[0] < 0)
+	{
+	  if (!nullp)
+	    same_ref = phi_arg_ref;
+	  phi_ref = phi_arg_ref;
+	  if (arg_known_size)
+	    minsize = phi_arg_ref.sizrng[0];
+	  continue;
+	}
+
+      const bool phi_known_size = (phi_ref.sizrng[0] != 0
+				   || phi_ref.sizrng[1] != maxobjsize);
+
+      if (phi_known_size && phi_arg_ref.sizrng[0] < minsize)
+	minsize = phi_arg_ref.sizrng[0];
+
+      /* Disregard null pointers in PHIs with two or more arguments.
+	 TODO: Handle this better!  */
+      if (nullp)
+	continue;
+
+      /* Determine the amount of remaining space in the argument.  */
+      offset_int argrem[2];
+      argrem[1] = phi_arg_ref.size_remaining (argrem);
+
+      /* Determine the amount of remaining space computed so far and
+	 if the remaining space in the argument is more use it instead.  */
+      offset_int phirem[2];
+      phirem[1] = phi_ref.size_remaining (phirem);
+
+      if (phi_arg_ref.ref != same_ref.ref)
+	same_ref.ref = NULL_TREE;
+
+      if (phirem[1] < argrem[1]
+	  || (phirem[1] == argrem[1]
+	      && phi_ref.sizrng[1] < phi_arg_ref.sizrng[1]))
+	/* Use the argument with the most space remaining as the result,
+	   or the larger one if the space is equal.  */
+	phi_ref = phi_arg_ref;
+
+      /* Set SAME_REF.OFFRNG to the maximum range of all arguments.  */
+      if (phi_arg_ref.offrng[0] < same_ref.offrng[0])
+	same_ref.offrng[0] = phi_arg_ref.offrng[0];
+      if (same_ref.offrng[1] < phi_arg_ref.offrng[1])
+	same_ref.offrng[1] = phi_arg_ref.offrng[1];
+    }
+
+  if (phi_ref.sizrng[0] < 0)
+    {
+      /* Fail if none of the PHI's arguments resulted in updating PHI_REF
+	 (perhaps because they have all been already visited by prior
+	 recursive calls).  */
+      psnlim->leave_phi (ref);
+      return NULL_TREE;
+    }
+
+  if (!same_ref.ref && same_ref.offrng[0] != 0)
+    /* Clear BASE0 if not all the arguments refer to the same object and
+       if not all their offsets are zero-based.  This allows the final
+       PHI offset to out of bounds for some arguments but not for others
+       (or negative even of all the arguments are BASE0), which is overly
+       permissive.  */
+    phi_ref.base0 = false;
+
+  if (same_ref.ref)
+    phi_ref = same_ref;
+  else
+    {
+      /* Replace the lower bound of the largest argument with the size
+	 of the smallest argument, and set PARMARRAY if any argument
+	 was one.  */
+      phi_ref.sizrng[0] = minsize;
+      phi_ref.parmarray = parmarray;
+    }
+
+  /* Avoid changing *THIS.  */
+  if (pref && pref != this)
+    *pref = phi_ref;
+
+  psnlim->leave_phi (ref);
+
+  return phi_ref.ref;
 }
 
 /* Return the maximum amount of space remaining and if non-null, set
@@ -317,10 +496,15 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
 	  return;
 	}
 
-      offrng[1] = maxoff;
       offset_int absmax = wi::abs (max);
       if (offrng[0] < absmax)
-	offrng[0] += min;
+	{
+	  offrng[0] += min;
+	  /* Cap the lower bound at the upper (set to MAXOFF above)
+	     to avoid inadvertently recreating an inverted range.  */
+	  if (offrng[1] < offrng[0])
+	    offrng[0] = offrng[1];
+	}
       else
 	offrng[0] = 0;
     }
@@ -344,6 +528,210 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
       if (offrng[1] > sizrng[1])
 	offrng[1] = sizrng[1];
     }
+}
+
+/* Set a bit for the PHI in VISITED and return true if it wasn't
+   already set.  */
+
+bool
+ssa_name_limit_t::visit_phi (tree ssa_name)
+{
+  if (!visited)
+    visited = BITMAP_ALLOC (NULL);
+
+  /* Return false if SSA_NAME has already been visited.  */
+  return bitmap_set_bit (visited, SSA_NAME_VERSION (ssa_name));
+}
+
+/* Clear a bit for the PHI in VISITED.  */
+
+void
+ssa_name_limit_t::leave_phi (tree ssa_name)
+{
+  /* Return false if SSA_NAME has already been visited.  */
+  bitmap_clear_bit (visited, SSA_NAME_VERSION (ssa_name));
+}
+
+/* Return false if the SSA_NAME chain length counter has reached
+   the limit, otherwise increment the counter and return true.  */
+
+bool
+ssa_name_limit_t::next ()
+{
+  /* Return a negative value to let caller avoid recursing beyond
+     the specified limit.  */
+  if (ssa_def_max == 0)
+    return false;
+
+  --ssa_def_max;
+  return true;
+}
+
+/* If the SSA_NAME has already been "seen" return a positive value.
+   Otherwise add it to VISITED.  If the SSA_NAME limit has been
+   reached, return a negative value.  Otherwise return zero.  */
+
+int
+ssa_name_limit_t::next_phi (tree ssa_name)
+{
+  {
+    gimple *def_stmt = SSA_NAME_DEF_STMT (ssa_name);
+    /* Return a positive value if the PHI has already been visited.  */
+    if (gimple_code (def_stmt) == GIMPLE_PHI
+	&& !visit_phi (ssa_name))
+      return 1;
+  }
+
+  /* Return a negative value to let caller avoid recursing beyond
+     the specified limit.  */
+  if (ssa_def_max == 0)
+    return -1;
+
+  --ssa_def_max;
+
+  return 0;
+}
+
+ssa_name_limit_t::~ssa_name_limit_t ()
+{
+  if (visited)
+    BITMAP_FREE (visited);
+}
+
+/* Default ctor.  Initialize object with pointers to the range_query
+   and cache_type instances to use or null.  */
+
+pointer_query::pointer_query (range_query *qry /* = NULL */,
+			      cache_type *cache /* = NULL */)
+: rvals (qry), var_cache (cache), hits (), misses (),
+  failures (), depth (), max_depth ()
+{
+  /* No op.  */
+}
+
+/* Return a pointer to the cached access_ref instance for the SSA_NAME
+   PTR if it's there or null otherwise.  */
+
+const access_ref *
+pointer_query::get_ref (tree ptr, int ostype /* = 1 */) const
+{
+  if (!var_cache)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  unsigned version = SSA_NAME_VERSION (ptr);
+  unsigned idx = version << 1 | (ostype & 1);
+  if (var_cache->indices.length () <= idx)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  unsigned cache_idx = var_cache->indices[idx];
+  if (var_cache->access_refs.length () <= cache_idx)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  if (cache_ref.ref)
+    {
+      ++hits;
+      return &cache_ref;
+    }
+
+  ++misses;
+  return NULL;
+}
+
+/* Retrieve the access_ref instance for a variable from the cache if it's
+   there or compute it and insert it into the cache if it's nonnonull.  */
+
+bool
+pointer_query::get_ref (tree ptr, access_ref *pref, int ostype /* = 1 */)
+{
+  const unsigned version
+    = TREE_CODE (ptr) == SSA_NAME ? SSA_NAME_VERSION (ptr) : 0;
+
+  if (var_cache && version)
+    {
+      unsigned idx = version << 1 | (ostype & 1);
+      if (idx < var_cache->indices.length ())
+	{
+	  unsigned cache_idx = var_cache->indices[idx] - 1;
+	  if (cache_idx < var_cache->access_refs.length ()
+	      && var_cache->access_refs[cache_idx].ref)
+	    {
+	      ++hits;
+	      *pref = var_cache->access_refs[cache_idx];
+	      return true;
+	    }
+	}
+
+      ++misses;
+    }
+
+  if (!compute_objsize (ptr, ostype, pref, this))
+    {
+      ++failures;
+      return false;
+    }
+
+  return true;
+}
+
+/* Add a copy of the access_ref REF for the SSA_NAME to the cache if it's
+   nonnull.  */
+
+void
+pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
+{
+  /* Only add populated/valid entries.  */
+  if (!var_cache || !ref.ref || ref.sizrng[0] < 0)
+    return;
+
+  /* Add REF to the two-level cache.  */
+  unsigned version = SSA_NAME_VERSION (ptr);
+  unsigned idx = version << 1 | (ostype & 1);
+
+  /* Grow INDICES if necessary.  An index is valid if it's nonzero.
+     Its value minus one is the index into ACCESS_REFS.  Not all
+     entries are valid.  */
+  if (var_cache->indices.length () <= idx)
+    var_cache->indices.safe_grow_cleared (idx + 1);
+
+  if (!var_cache->indices[idx])
+    var_cache->indices[idx] = var_cache->access_refs.length () + 1;
+
+  /* Grow ACCESS_REF cache if necessary.  An entry is valid if its
+     REF member is nonnull.  All entries except for the last two
+     are valid.  Once nonnull, the REF value must stay unchanged.  */
+  unsigned cache_idx = var_cache->indices[idx];
+  if (var_cache->access_refs.length () <= cache_idx)
+    var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
+
+  access_ref cache_ref = var_cache->access_refs[cache_idx - 1];
+  if (cache_ref.ref)
+  {
+    gcc_checking_assert (cache_ref.ref == ref.ref);
+    return;
+  }
+
+  cache_ref = ref;
+}
+
+/* Flush the cache if it's nonnull.  */
+
+void
+pointer_query::flush_cache ()
+{
+  if (!var_cache)
+    return;
+  var_cache->indices.release ();
+  var_cache->access_refs.release ();
 }
 
 /* Return true if NAME starts with __builtin_ or __sync_.  */
@@ -2221,6 +2609,7 @@ type_to_class (tree type)
     case ARRAY_TYPE:	   return (TYPE_STRING_FLAG (type)
 				   ? string_type_class : array_type_class);
     case LANG_TYPE:	   return lang_type_class;
+    case OPAQUE_TYPE:      return opaque_type_class;
     default:		   return no_type_class;
     }
 }
@@ -3553,28 +3942,42 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 
   if (opt == OPT_Wstringop_overread)
     {
+      bool maybe = pad && pad->src.phi ();
+
       if (tree_int_cst_lt (maxobjsize, bndrng[0]))
 	{
 	  if (bndrng[0] == bndrng[1])
 	    warned = (func
 		      ? warning_at (loc, opt,
-				    "%K%qD specified bound %E "
-				    "exceeds maximum object size %E",
+				    (maybe
+				     ? G_("%K%qD specified bound %E may "
+					  "exceed maximum object size %E")
+				     : G_("%K%qD specified bound %E "
+					  "exceeds maximum object size %E")),
 				    exp, func, bndrng[0], maxobjsize)
 		      : warning_at (loc, opt,
-				    "%Kspecified bound %E "
-				    "exceeds maximum object size %E",
+				    (maybe
+				     ? G_("%Kspecified bound %E may "
+					  "exceed maximum object size %E")
+				     : G_("%Kspecified bound %E "
+					  "exceeds maximum object size %E")),
 				    exp, bndrng[0], maxobjsize));
 	  else
 	    warned = (func
 		      ? warning_at (loc, opt,
-				    "%K%qD specified bound [%E, %E] "
-				    "exceeds maximum object size %E",
+				    (maybe
+				     ? G_("%K%qD specified bound [%E, %E] may "
+					  "exceed maximum object size %E")
+				     : G_("%K%qD specified bound [%E, %E] "
+					  "exceeds maximum object size %E")),
 				    exp, func,
 				    bndrng[0], bndrng[1], maxobjsize)
 		      : warning_at (loc, opt,
-				    "%Kspecified bound [%E, %E] "
-				    "exceeds maximum object size %E",
+				    (maybe
+				     ? G_("%Kspecified bound [%E, %E] may "
+					  "exceed maximum object size %E")
+				     : G_("%Kspecified bound [%E, %E] "
+					  "exceeds maximum object size %E")),
 				    exp, bndrng[0], bndrng[1], maxobjsize));
 	}
       else if (!size || tree_int_cst_le (bndrng[0], size))
@@ -3582,22 +3985,34 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
       else if (tree_int_cst_equal (bndrng[0], bndrng[1]))
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD specified bound %E exceeds "
-				"source size %E",
+				(maybe
+				 ? G_("%K%qD specified bound %E may exceed "
+				      "source size %E")
+				 : G_("%K%qD specified bound %E exceeds "
+				      "source size %E")),
 				exp, func, bndrng[0], size)
 		  : warning_at (loc, opt,
-				"%Kspecified bound %E exceeds "
-				"source size %E",
+				(maybe
+				 ? G_("%Kspecified bound %E may exceed "
+				      "source size %E")
+				 : G_("%Kspecified bound %E exceeds "
+				      "source size %E")),
 				exp, bndrng[0], size));
       else
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD specified bound [%E, %E] exceeds "
-				"source size %E",
+				(maybe
+				 ? G_("%K%qD specified bound [%E, %E] may "
+				      "exceed source size %E")
+				 : G_("%K%qD specified bound [%E, %E] exceeds "
+				      "source size %E")),
 				exp, func, bndrng[0], bndrng[1], size)
 		  : warning_at (loc, opt,
-				"%Kspecified bound [%E, %E] exceeds "
-				"source size %E",
+				(maybe
+				 ? G_("%Kspecified bound [%E, %E] may exceed "
+				      "source size %E")
+				 : G_("%Kspecified bound [%E, %E] exceeds "
+				      "source size %E")),
 				exp, bndrng[0], bndrng[1], size));
       if (warned)
 	{
@@ -3616,28 +4031,41 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
       return warned;
     }
 
+  bool maybe = pad && pad->dst.phi ();
   if (tree_int_cst_lt (maxobjsize, bndrng[0]))
     {
       if (bndrng[0] == bndrng[1])
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD specified size %E "
-				"exceeds maximum object size %E",
+				(maybe
+				 ? G_("%K%qD specified size %E may "
+				      "exceed maximum object size %E")
+				 : G_("%K%qD specified size %E "
+				      "exceeds maximum object size %E")),
 				exp, func, bndrng[0], maxobjsize)
 		  : warning_at (loc, opt,
-				"%Kspecified size %E "
-				"exceeds maximum object size %E",
+				(maybe
+				 ? G_("%Kspecified size %E may exceed "
+				      "maximum object size %E")
+				 : G_("%Kspecified size %E exceeds "
+				      "maximum object size %E")),
 				exp, bndrng[0], maxobjsize));
       else
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD specified size between %E and %E "
-				"exceeds maximum object size %E",
+				(maybe
+				 ? G_("%K%qD specified size between %E and %E "
+				      "may exceed maximum object size %E")
+				 : G_("%K%qD specified size between %E and %E "
+				      "exceeds maximum object size %E")),
 				exp, func,
 				bndrng[0], bndrng[1], maxobjsize)
 		  : warning_at (loc, opt,
-				"%Kspecified size between %E and %E "
-				"exceeds maximum object size %E",
+				(maybe
+				 ? G_("%Kspecified size between %E and %E "
+				      "may exceed maximum object size %E")
+				 : G_("%Kspecified size between %E and %E "
+				      "exceeds maximum object size %E")),
 				exp, bndrng[0], bndrng[1], maxobjsize));
     }
   else if (!size || tree_int_cst_le (bndrng[0], size))
@@ -3645,22 +4073,34 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
   else if (tree_int_cst_equal (bndrng[0], bndrng[1]))
     warned = (func
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%K%qD specified bound %E exceeds "
-			    "destination size %E",
+			    (maybe
+			     ? G_("%K%qD specified bound %E may exceed "
+				  "destination size %E")
+			     : G_("%K%qD specified bound %E exceeds "
+				  "destination size %E")),
 			    exp, func, bndrng[0], size)
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Kspecified bound %E exceeds "
-			    "destination size %E",
+			    (maybe
+			     ? G_("%Kspecified bound %E may exceed "
+				  "destination size %E")
+			     : G_("%Kspecified bound %E exceeds "
+				  "destination size %E")),
 			    exp, bndrng[0], size));
   else
     warned = (func
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%K%qD specified bound [%E, %E] exceeds "
-			    "destination size %E",
+			    (maybe
+			     ? G_("%K%qD specified bound [%E, %E] may exceed "
+				  "destination size %E")
+			     : G_("%K%qD specified bound [%E, %E] exceeds "
+				  "destination size %E")),
 			    exp, func, bndrng[0], bndrng[1], size)
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Kspecified bound [%E, %E] exceeds "
-			    "destination size %E",
+			    (maybe
+			     ? G_("%Kspecified bound [%E, %E] exceeds "
+				  "destination size %E")
+			     : G_("%Kspecified bound [%E, %E] exceeds "
+				  "destination size %E")),
 			    exp, bndrng[0], bndrng[1], size));
 
   if (warned)
@@ -3689,7 +4129,7 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 
 static bool
 warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
-		 tree size, bool write, bool read)
+		 tree size, bool write, bool read, bool maybe)
 {
   bool warned = false;
 
@@ -3698,40 +4138,64 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
       if (tree_int_cst_equal (range[0], range[1]))
 	warned = (func
 		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%K%qD accessing %E byte in a region "
-			       "of size %E",
-			       "%K%qD accessing %E bytes in a region "
-			       "of size %E",
+			       (maybe
+				? G_("%K%qD may access %E byte in a region "
+				     "of size %E")
+				: G_("%K%qD accessing %E byte in a region "
+				     "of size %E")),
+				(maybe
+				 ? G_ ("%K%qD may access %E bytes in a region "
+				       "of size %E")
+				 : G_ ("%K%qD accessing %E bytes in a region "
+				       "of size %E")),
 			       exp, func, range[0], size)
 		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%Kaccessing %E byte in a region "
-			       "of size %E",
-			       "%Kaccessing %E bytes in a region "
-			       "of size %E",
+			       (maybe
+				? G_("%Kmay access %E byte in a region "
+				     "of size %E")
+				: G_("%Kaccessing %E byte in a region "
+				     "of size %E")),
+			       (maybe
+				? G_("%Kmay access %E bytes in a region "
+				     "of size %E")
+				: G_("%Kaccessing %E bytes in a region "
+				     "of size %E")),
 			       exp, range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, opt,
-				  "%K%qD accessing %E or more bytes in "
-				  "a region of size %E",
+				  (maybe
+				   ? G_("%K%qD may access %E or more bytes "
+					"in a region of size %E")
+				   : G_("%K%qD accessing %E or more bytes "
+					"in a region of size %E")),
 				  exp, func, range[0], size)
 		    : warning_at (loc, opt,
-				  "%Kaccessing %E or more bytes in "
-				  "a region of size %E",
+				  (maybe
+				   ? G_("%Kmay access %E or more bytes "
+					"in a region of size %E")
+				   : G_("%Kaccessing %E or more bytes "
+					"in a region of size %E")),
 				  exp, range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD accessing between %E and %E bytes "
-				"in a region of size %E",
+				(maybe
+				 ? G_("%K%qD may access between %E and %E "
+				      "bytes in a region of size %E")
+				 : G_("%K%qD accessing between %E and %E "
+				      "bytes in a region of size %E")),
 				exp, func, range[0], range[1],
 				size)
 		  : warning_at (loc, opt,
-				"%Kaccessing between %E and %E bytes "
-				"in a region of size %E",
+				(maybe
+				 ? G_("%Kmay access between %E and %E bytes "
+				      "in a region of size %E")
+				 : G_("%Kaccessing between %E and %E bytes "
+				      "in a region of size %E")),
 				exp, range[0], range[1],
 				size));
       return warned;
@@ -3742,44 +4206,69 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
       if (tree_int_cst_equal (range[0], range[1]))
 	warned = (func
 		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%K%qD writing %E byte into a region "
-			       "of size %E overflows the destination",
-			       "%K%qD writing %E bytes into a region "
-			       "of size %E overflows the destination",
+			       (maybe
+				? G_("%K%qD may write %E byte into a region "
+				     "of size %E")
+				: G_("%K%qD writing %E byte into a region "
+				     "of size %E overflows the destination")),
+			       (maybe
+				? G_("%K%qD may write %E bytes into a region "
+				     "of size %E")
+				: G_("%K%qD writing %E bytes into a region "
+				     "of size %E overflows the destination")),
 			       exp, func, range[0], size)
 		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
-			       "%Kwriting %E byte into a region "
-			       "of size %E overflows the destination",
-			       "%Kwriting %E bytes into a region "
-			       "of size %E overflows the destination",
+			       (maybe
+				? G_("%Kmay write %E byte into a region "
+				     "of size %E")
+				: G_("%Kwriting %E byte into a region "
+				     "of size %E overflows the destination")),
+			       (maybe
+				? G_("%Kmay write %E bytes into a region "
+				     "of size %E")
+				: G_("%Kwriting %E bytes into a region "
+				     "of size %E overflows the destination")),
 			       exp, range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, opt,
-				  "%K%qD writing %E or more bytes into "
-				  "a region of size %E overflows "
-				  "the destination",
+				  (maybe
+				   ? G_("%K%qD may write %E or more bytes "
+					"into a region of size %E "
+					"the destination")
+				   : G_("%K%qD writing %E or more bytes "
+					"into a region of size %E overflows "
+					"the destination")),
 				  exp, func, range[0], size)
 		    : warning_at (loc, opt,
-				  "%Kwriting %E or more bytes into "
-				  "a region of size %E overflows "
-				  "the destination",
+				  (maybe
+				   ? G_("%Kmay write %E or more bytes into "
+					"a region of size %E")
+				   : G_("%Kwriting %E or more bytes into "
+					"a region of size %E overflows "
+					"the destination")),
 				  exp, range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, opt,
-				"%K%qD writing between %E and %E bytes "
-				"into a region of size %E overflows "
-				"the destination",
+				(maybe
+				 ? G_("%K%qD may write between %E and %E bytes "
+				      "into a region of size %E")
+				 : G_("%K%qD writing between %E and %E bytes "
+				      "into a region of size %E overflows "
+				      "the destination")),
 				exp, func, range[0], range[1],
 				size)
 		  : warning_at (loc, opt,
-				"%Kwriting between %E and %E bytes "
-				"into a region of size %E overflows "
-				"the destination",
+				(maybe
+				 ? G_("%Kmay write between %E and %E bytes "
+				      "into a region of size %E")
+				 : G_("%Kwriting between %E and %E bytes "
+				      "into a region of size %E overflows "
+				      "the destination")),
 				exp, range[0], range[1],
 				size));
       return warned;
@@ -3791,35 +4280,64 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 	warned = (func
 		  ? warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
-			       "%K%qD reading %E byte from a region of size %E",
-			       "%K%qD reading %E bytes from a region of size %E",			       exp, func, range[0], size)
+			       (maybe
+				? G_("%K%qD may reade %E byte from a region "
+				     "of size %E")
+				: G_("%K%qD reading %E byte from a region "
+				     "of size %E")),
+			       (maybe
+				? G_("%K%qD may read %E bytes from a region "
+				     "of size %E")
+				: G_("%K%qD reading %E bytes from a region "
+				     "of size %E")),
+			       exp, func, range[0], size)
 		  : warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
-			       "%Kreading %E byte from a region of size %E",
-			       "%Kreading %E bytes from a region of size %E",
+			       (maybe
+				? G_("%Kmay read %E byte from a region "
+				     "of size %E")
+				: G_("%Kreading %E byte from a region "
+				     "of size %E")),
+			       (maybe
+				? G_("%Kmay read %E bytes from a region "
+				     "of size %E")
+				: G_("%Kreading %E bytes from a region "
+				     "of size %E")),
 			       exp, range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, OPT_Wstringop_overread,
-				  "%K%qD reading %E or more bytes from "
-				  "a region of size %E",
+				  (maybe
+				   ? G_("%K%qD may read %E or more bytes "
+					"from a region of size %E")
+				   : G_("%K%qD reading %E or more bytes "
+					"from a region of size %E")),
 				  exp, func, range[0], size)
 		    : warning_at (loc, OPT_Wstringop_overread,
-				  "%Kreading %E or more bytes from a region "
-				  "of size %E",
+				  (maybe
+				   ? G_("%Kmay read %E or more bytes "
+					"from a region of size %E")
+				   : G_("%Kreading %E or more bytes "
+					"from a region of size %E")),
 				  exp, range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, OPT_Wstringop_overread,
-				"%K%qD reading between %E and %E bytes from "
-				"a region of size %E",
+				(maybe
+				 ? G_("%K%qD may read between %E and %E bytes "
+				      "from a region of size %E")
+				 : G_("%K%qD reading between %E and %E bytes "
+				      "from a region of size %E")),
 				exp, func, range[0], range[1], size)
 		  : warning_at (loc, opt,
-				"%K reading between %E and %E bytes from "
-				"a region of size %E",
+				(maybe
+				 ? G_("%Kmay read between %E and %E bytes "
+				      "from a region of size %E")
+				 : G_("%Kreading between %E and %E bytes "
+				      "from a region of size %E")),
 				exp, range[0], range[1], size));
 
       if (warned)
@@ -3871,14 +4389,47 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
   return warned;
 }
 
-/* Issue an inform message describing the target of an access REF.
+/* Issue one inform message describing each target of an access REF.
    WRITE is set for a write access and clear for a read access.  */
 
-static void
-inform_access (const access_ref &ref, access_mode mode)
+void
+access_ref::inform_access (access_mode mode) const
 {
-  if (!ref.ref)
+  const access_ref &aref = *this;
+  if (!aref.ref)
     return;
+
+  if (aref.phi ())
+    {
+      /* Set MAXREF to refer to the largest object and fill ALL_REFS
+	 with data for all objects referenced by the PHI arguments.  */
+      access_ref maxref;
+      auto_vec<access_ref> all_refs;
+      if (!get_ref (&all_refs, &maxref))
+	return;
+
+      /* Except for MAXREF, the rest of the arguments' offsets need not
+	 reflect one added to the PHI itself.  Determine the latter from
+	 MAXREF on which the result is based.  */
+      const offset_int orng[] =
+	{
+	 offrng[0] - maxref.offrng[0],
+	 wi::smax (offrng[1] - maxref.offrng[1], offrng[0]),
+	};
+
+      /* Add the final PHI's offset to that of each of the arguments
+	 and recurse to issue an inform message for it.  */
+      for (unsigned i = 0; i != all_refs.length (); ++i)
+	{
+	  /* Skip any PHIs; those could lead to infinite recursion.  */
+	  if (all_refs[i].phi ())
+	    continue;
+
+	  all_refs[i].add_offset (orng[0], orng[1]);
+	  all_refs[i].inform_access (mode);
+	}
+      return;
+    }
 
   /* Convert offset range and avoid including a zero range since it
      isn't necessarily meaningful.  */
@@ -3886,13 +4437,13 @@ inform_access (const access_ref &ref, access_mode mode)
   HOST_WIDE_INT diff_max = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
   HOST_WIDE_INT minoff;
   HOST_WIDE_INT maxoff = diff_max;
-  if (wi::fits_shwi_p (ref.offrng[0]))
-    minoff = ref.offrng[0].to_shwi ();
+  if (wi::fits_shwi_p (aref.offrng[0]))
+    minoff = aref.offrng[0].to_shwi ();
   else
-    minoff = ref.offrng[0] < 0 ? diff_min : diff_max;
+    minoff = aref.offrng[0] < 0 ? diff_min : diff_max;
 
-  if (wi::fits_shwi_p (ref.offrng[1]))
-    maxoff = ref.offrng[1].to_shwi ();
+  if (wi::fits_shwi_p (aref.offrng[1]))
+    maxoff = aref.offrng[1].to_shwi ();
 
   if (maxoff <= diff_min || maxoff >= diff_max)
     /* Avoid mentioning an upper bound that's equal to or in excess
@@ -3902,110 +4453,127 @@ inform_access (const access_ref &ref, access_mode mode)
   /* Convert size range and always include it since all sizes are
      meaningful. */
   unsigned long long minsize = 0, maxsize = 0;
-  if (wi::fits_shwi_p (ref.sizrng[0])
-      && wi::fits_shwi_p (ref.sizrng[1]))
+  if (wi::fits_shwi_p (aref.sizrng[0])
+      && wi::fits_shwi_p (aref.sizrng[1]))
     {
-      minsize = ref.sizrng[0].to_shwi ();
-      maxsize = ref.sizrng[1].to_shwi ();
+      minsize = aref.sizrng[0].to_shwi ();
+      maxsize = aref.sizrng[1].to_shwi ();
     }
 
+  /* SIZRNG doesn't necessarily have the same range as the allocation
+     size determined by gimple_call_alloc_size ().  */
   char sizestr[80];
-  location_t loc;
-  tree allocfn = NULL_TREE;
-  if (TREE_CODE (ref.ref) == SSA_NAME)
-    {
-      gimple *stmt = SSA_NAME_DEF_STMT (ref.ref);
-      gcc_assert (is_gimple_call (stmt));
-      loc = gimple_location (stmt);
-      allocfn = gimple_call_fndecl (stmt);
-      if (!allocfn)
-	/* Handle calls through pointers to functions.  */
-	allocfn = gimple_call_fn (stmt);
-
-      /* SIZRNG doesn't necessarily have the same range as the allocation
-	 size determined by gimple_call_alloc_size ().  */
-
-      if (minsize == maxsize)
-	sprintf (sizestr, "%llu", minsize);
-      else
-	sprintf (sizestr, "[%llu, %llu]", minsize, maxsize);
-
-    }
-  else if (DECL_P (ref.ref))
-    loc = DECL_SOURCE_LOCATION (ref.ref);
-  else if (EXPR_P (ref.ref) && EXPR_HAS_LOCATION (ref.ref))
-    loc = EXPR_LOCATION (ref.ref);
+  if (minsize == maxsize)
+    sprintf (sizestr, "%llu", minsize);
   else
+    sprintf (sizestr, "[%llu, %llu]", minsize, maxsize);
+
+  char offstr[80];
+  if (minoff == 0
+      && (maxoff == 0 || aref.sizrng[1] <= maxoff))
+    offstr[0] = '\0';
+  else if (minoff == maxoff)
+    sprintf (offstr, "%lli", (long long) minoff);
+  else
+    sprintf (offstr, "[%lli, %lli]", (long long) minoff, (long long) maxoff);
+
+  location_t loc = UNKNOWN_LOCATION;
+
+  tree ref = this->ref;
+  tree allocfn = NULL_TREE;
+  if (TREE_CODE (ref) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (ref);
+      if (is_gimple_call (stmt))
+	{
+	  loc = gimple_location (stmt);
+	  if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN))
+	    {
+	      /* Strip the SSA_NAME suffix from the variable name and
+		 recreate an identifier with the VLA's original name.  */
+	      ref = gimple_call_lhs (stmt);
+	      ref = SSA_NAME_IDENTIFIER (ref);
+	      const char *id = IDENTIFIER_POINTER (ref);
+	      size_t len = strcspn (id, ".$");
+	      if (!len)
+		len = strlen (id);
+	      ref = get_identifier_with_length (id, len);
+	    }
+	  else
+	    {
+	      /* Except for VLAs, retrieve the allocation function.  */
+	      allocfn = gimple_call_fndecl (stmt);
+	      if (!allocfn)
+		allocfn = gimple_call_fn (stmt);
+	      if (TREE_CODE (allocfn) == SSA_NAME)
+		{
+		  /* For an ALLOC_CALL via a function pointer make a small
+		     effort to determine the destination of the pointer.  */
+		  gimple *def = SSA_NAME_DEF_STMT (allocfn);
+		  if (gimple_assign_single_p (def))
+		    {
+		      tree rhs = gimple_assign_rhs1 (def);
+		      if (DECL_P (rhs))
+			allocfn = rhs;
+		      else if (TREE_CODE (rhs) == COMPONENT_REF)
+			allocfn = TREE_OPERAND (rhs, 1);
+		    }
+		}
+	    }
+	}
+      else if (gimple_nop_p (stmt))
+	/* Handle DECL_PARM below.  */
+	ref = SSA_NAME_VAR (ref);
+    }
+
+  if (DECL_P (ref))
+    loc = DECL_SOURCE_LOCATION (ref);
+  else if (EXPR_P (ref) && EXPR_HAS_LOCATION (ref))
+    loc = EXPR_LOCATION (ref);
+  else if (TREE_CODE (ref) != IDENTIFIER_NODE
+	   && TREE_CODE (ref) != SSA_NAME)
     return;
 
   if (mode == access_read_write || mode == access_write_only)
     {
       if (allocfn == NULL_TREE)
 	{
-	  if (minoff == maxoff)
-	    {
-	      if (minoff == 0)
-		inform (loc, "destination object %qE", ref.ref);
-	      else
-		inform (loc, "at offset %wi into destination object %qE",
-			minoff, ref.ref);
-	    }
+	  if (*offstr)
+	    inform (loc, "at offset %s into destination object %qE of size %s",
+		    offstr, ref, sizestr);
 	  else
-	    inform (loc, "at offset [%wi, %wi] into destination object %qE",
-		    minoff, maxoff, ref.ref);
+	    inform (loc, "destination object %qE of size %s", ref, sizestr);
 	  return;
 	}
 
-      if (minoff == maxoff)
-	{
-	  if (minoff == 0)
-	    inform (loc, "destination object of size %s allocated by %qE",
-		    sizestr, allocfn);
-	  else
-	    inform (loc,
-		    "at offset %wi into destination object of size %s "
-		    "allocated by %qE", minoff, sizestr, allocfn);
-	}
-      else
+      if (*offstr)
 	inform (loc,
-		"at offset [%wi, %wi] into destination object of size %s "
-		"allocated by %qE",
-		minoff, maxoff, sizestr, allocfn);
-
-      return;
-    }
-
-  if (DECL_P (ref.ref))
-    {
-      if (minoff == maxoff)
-	{
-	  if (minoff == 0)
-	    inform (loc, "source object %qD", ref.ref);
-	  else
-	    inform (loc, "at offset %wi into source object %qD",
-		    minoff, ref.ref);
-	}
+		"at offset %s into destination object of size %s "
+		"allocated by %qE", offstr, sizestr, allocfn);
       else
-	inform (loc, "at offset [%wi, %wi] into source object %qD",
-		minoff, maxoff, ref.ref);
-      return;
-    }
-
-  if (minoff == maxoff)
-    {
-      if (minoff == 0)
-	inform (loc, "source object of size %s allocated by %qE",
+	inform (loc, "destination object of size %s allocated by %qE",
 		sizestr, allocfn);
-      else
-	inform (loc,
-		"at offset %wi into source object of size %s "
-		"allocated by %qE", minoff, sizestr, allocfn);
+      return;
     }
-  else
+
+  if (DECL_P (ref))
+    {
+      if (*offstr)
+	inform (loc, "at offset %s into source object %qD of size %s",
+		offstr, ref, sizestr);
+      else
+	inform (loc, "source object %qD of size %s", ref,  sizestr);
+
+      return;
+    }
+
+  if (*offstr)
     inform (loc,
-	    "at offset [%wi, %wi] into source object of size %s "
-	    "allocated by %qE",
-	    minoff, maxoff, sizestr, allocfn);
+	    "at offset %s into source object of size %s allocated by %qE",
+	    offstr, sizestr, allocfn);
+  else
+    inform (loc, "source object of size %s allocated by %qE",
+	    sizestr, allocfn);
 }
 
 /* Helper to set RANGE to the range of BOUND if it's nonnull, bounded
@@ -4170,9 +4738,7 @@ check_access (tree exp, tree dstwrite,
       && TREE_CODE (range[0]) == INTEGER_CST
       && tree_int_cst_lt (maxobjsize, range[0]))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       maybe_warn_for_bound (OPT_Wstringop_overflow_, loc, exp, func, range,
 			    NULL_TREE, pad);
       return false;
@@ -4198,9 +4764,7 @@ check_access (tree exp, tree dstwrite,
 	      || (pad && pad->dst.ref && TREE_NO_WARNING (pad->dst.ref)))
 	    return false;
 
-	  location_t loc = tree_nonartificial_location (exp);
-	  loc = expansion_point_location_if_in_system_header (loc);
-
+	  location_t loc = tree_inlined_location (exp);
 	  bool warned = false;
 	  if (dstwrite == slen && at_least_one)
 	    {
@@ -4225,17 +4789,18 @@ check_access (tree exp, tree dstwrite,
 		= mode == access_read_only || mode == access_read_write;
 	      const bool write
 		= mode == access_write_only || mode == access_read_write;
+	      const bool maybe = pad && pad->dst.parmarray;
 	      warned = warn_for_access (loc, func, exp,
 					OPT_Wstringop_overflow_,
 					range, dstsize,
-					write, read && !builtin);
+					write, read && !builtin, maybe);
 	    }
 
 	  if (warned)
 	    {
 	      TREE_NO_WARNING (exp) = true;
 	      if (pad)
-		inform_access (pad->dst, pad->mode);
+		pad->dst.inform_access (pad->mode);
 	    }
 
 	  /* Return error when an overflow has been detected.  */
@@ -4252,9 +4817,7 @@ check_access (tree exp, tree dstwrite,
 	 PAD is nonnull and BNDRNG is valid.  */
       get_size_range (maxread, range, pad ? pad->src.bndrng : NULL);
 
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       tree size = dstsize;
       if (pad && pad->mode == access_read_only)
 	size = wide_int_to_tree (sizetype, pad->src.sizrng[1]);
@@ -4313,17 +4876,16 @@ check_access (tree exp, tree dstwrite,
 	  || (pad && pad->src.ref && TREE_NO_WARNING (pad->src.ref)))
 	return false;
 
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       const bool read
 	= mode == access_read_only || mode == access_read_write;
+      const bool maybe = pad && pad->dst.parmarray;
       if (warn_for_access (loc, func, exp, OPT_Wstringop_overread, range,
-			   slen, false, read))
+			   slen, false, read, maybe))
 	{
 	  TREE_NO_WARNING (exp) = true;
 	  if (pad)
-	    inform_access (pad->src, access_read_only);
+	    pad->src.inform_access (access_read_only);
 	}
       return false;
     }
@@ -4455,11 +5017,12 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
 /* For an access to an object referenced to by the function parameter PTR
    of pointer type, and set RNG[] to the range of sizes of the object
    obtainedfrom the attribute access specification for the current function.
+   Set STATIC_ARRAY if the array parameter has been declared [static].
    Return the function parameter on success and null otherwise.  */
 
 tree
 gimple_parm_array_size (tree ptr, wide_int rng[2],
-			range_query * /* = NULL */)
+			bool *static_array /* = NULL */)
 {
   /* For a function argument try to determine the byte size of the array
      from the current function declaratation (e.g., attribute access or
@@ -4490,6 +5053,9 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
      ever added).  */
   if (warn_array_parameter < 2 && !access->static_p)
     return NULL_TREE;
+
+  if (static_array)
+    *static_array = access->static_p;
 
   rng[0] = wi::zero (prec);
   rng[1] = wi::uhwi (access->minsize, prec);
@@ -4531,6 +5097,8 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
     x = TREE_OPERAND (x, 0);
 
   tree type = TREE_TYPE (x);
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
 
    if (TREE_CODE (x) != INTEGER_CST
       && TREE_CODE (x) != SSA_NAME)
@@ -4638,6 +5206,84 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
   return NULL_TREE;
 }
 
+/* A helper of compute_objsize() to determine the size from an assignment
+   statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  */
+
+static bool
+handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
+		     ssa_name_limit_t &snlim, pointer_query *qry)
+{
+  tree_code code = gimple_assign_rhs_code (stmt);
+
+  tree ptr = gimple_assign_rhs1 (stmt);
+
+  /* In a valid MAX_/MIN_EXPR both operands must refer to the same array.
+     Determine the size/offset of each and use the one with more or less
+     space remaining, respectively.  If either fails, use the information
+     determined from the other instead, adjusted up or down as appropriate
+     for the expression.  */
+  access_ref aref[2] = { *pref, *pref };
+  if (!compute_objsize_r (ptr, ostype, &aref[0], snlim, qry))
+    {
+      aref[0].base0 = false;
+      aref[0].offrng[0] = aref[0].offrng[1] = 0;
+      aref[0].add_max_offset ();
+      aref[0].set_max_size_range ();
+    }
+
+  ptr = gimple_assign_rhs2 (stmt);
+  if (!compute_objsize_r (ptr, ostype, &aref[1], snlim, qry))
+    {
+      aref[1].base0 = false;
+      aref[1].offrng[0] = aref[1].offrng[1] = 0;
+      aref[1].add_max_offset ();
+      aref[1].set_max_size_range ();
+    }
+
+  if (!aref[0].ref && !aref[1].ref)
+    /* Fail if the identity of neither argument could be determined.  */
+    return false;
+
+  bool i0 = false;
+  if (aref[0].ref && aref[0].base0)
+    {
+      if (aref[1].ref && aref[1].base0)
+	{
+	  /* If the object referenced by both arguments has been determined
+	     set *PREF to the one with more or less space remainng, whichever
+	     is appopriate for CODE.
+	     TODO: Indicate when the objects are distinct so it can be
+	     diagnosed.  */
+	  i0 = code == MAX_EXPR;
+	  const bool i1 = !i0;
+
+	  if (aref[i0].size_remaining () < aref[i1].size_remaining ())
+	    *pref = aref[i1];
+	  else
+	    *pref = aref[i0];
+	  return true;
+	}
+
+      /* If only the object referenced by one of the arguments could be
+	 determined, use it and...  */
+      *pref = aref[0];
+      i0 = true;
+    }
+  else
+    *pref = aref[1];
+
+  const bool i1 = !i0;
+  /* ...see if the offset obtained from the other pointer can be used
+     to tighten up the bound on the offset obtained from the first.  */
+  if ((code == MAX_EXPR && aref[i1].offrng[1] < aref[i0].offrng[0])
+      || (code == MIN_EXPR && aref[i0].offrng[0] < aref[i1].offrng[1]))
+    {
+      pref->offrng[0] = aref[i0].offrng[0];
+      pref->offrng[1] = aref[i0].offrng[1];
+    }
+  return true;
+}
+
 /* Helper to compute the size of the object referenced by the PTR
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).
@@ -4645,7 +5291,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
    if it's unique, otherwise to null, PREF->OFFRNG to the range of
    offsets into it, and PREF->SIZRNG to the range of sizes of
    the object(s).
-   VISITED is used to avoid visiting the same PHI operand multiple
+   SNLIM is used to avoid visiting the same PHI operand multiple
    times, and, when nonnull, RVALS to determine range information.
    Returns true on success, false when a meaningful size (or range)
    cannot be determined.
@@ -4654,14 +5300,17 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
    to influence code generation or optimization.  */
 
 static bool
-compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
-		 range_query *rvals)
+compute_objsize_r (tree ptr, int ostype, access_ref *pref,
+		   ssa_name_limit_t &snlim, pointer_query *qry)
 {
   STRIP_NOPS (ptr);
 
   const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
   if (addr)
-    ptr = TREE_OPERAND (ptr, 0);
+    {
+      --pref->deref;
+      ptr = TREE_OPERAND (ptr, 0);
+    }
 
   if (DECL_P (ptr))
     {
@@ -4687,11 +5336,12 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
     }
 
   const tree_code code = TREE_CODE (ptr);
+  range_query *const rvals = qry ? qry->rvals : NULL;
 
   if (code == BIT_FIELD_REF)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       offset_int off = wi::to_offset (pref->eval (TREE_OPERAND (ptr, 2)));
@@ -4702,6 +5352,10 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
   if (code == COMPONENT_REF)
     {
       tree ref = TREE_OPERAND (ptr, 0);
+      if (TREE_CODE (TREE_TYPE (ref)) == UNION_TYPE)
+	/* In accesses through union types consider the entire unions
+	   rather than just their members.  */
+	ostype = 0;
       tree field = TREE_OPERAND (ptr, 1);
 
       if (ostype == 0)
@@ -4709,7 +5363,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	  /* In OSTYPE zero (for raw memory functions like memcpy), use
 	     the maximum size instead if the identity of the enclosing
 	     object cannot be determined.  */
-	  if (!compute_objsize (ref, ostype, pref, visited, rvals))
+	  if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	    return false;
 
 	  /* Otherwise, use the size of the enclosing object and add
@@ -4719,8 +5373,16 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	    pref->add_offset (wi::to_offset (offset));
 	  else
 	    pref->add_max_offset ();
+
+	  if (!pref->ref)
+	    /* REF may have been already set to an SSA_NAME earlier
+	       to provide better context for diagnostics.  In that case,
+	       leave it unchanged.  */
+	    pref->ref = ref;
 	  return true;
 	}
+
+      pref->ref = field;
 
       if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
 	{
@@ -4729,8 +5391,6 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	  pref->set_max_size_range ();
 	  return true;
 	}
-
-      pref->ref = field;
 
       /* SAM is set for array members that might need special treatment.  */
       special_array_member sam;
@@ -4758,9 +5418,11 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 
   if (code == ARRAY_REF || code == MEM_REF)
     {
+      ++pref->deref;
+
       tree ref = TREE_OPERAND (ptr, 0);
       tree reftype = TREE_TYPE (ref);
-      if (code == ARRAY_REF
+      if (!addr && code == ARRAY_REF
 	  && TREE_CODE (TREE_TYPE (reftype)) == POINTER_TYPE)
 	/* Avoid arrays of pointers.  FIXME: Hande pointers to arrays
 	   of known bound.  */
@@ -4778,7 +5440,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	    return false;
 	}
 
-      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       offset_int orng[2];
@@ -4844,7 +5506,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
   if (code == TARGET_MEM_REF)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       /* TODO: Handle remaining operands.  Until then, add maximum offset.  */
@@ -4871,14 +5533,19 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
   if (code == STRING_CST)
     {
       pref->sizrng[0] = pref->sizrng[1] = TREE_STRING_LENGTH (ptr);
+      pref->ref = ptr;
       return true;
     }
 
   if (code == POINTER_PLUS_EXPR)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
+
+      /* Clear DEREF since the offset is being applied to the target
+	 of the dereference.  */
+      pref->deref = 0;
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
@@ -4892,11 +5559,29 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
   if (code == VIEW_CONVERT_EXPR)
     {
       ptr = TREE_OPERAND (ptr, 0);
-      return compute_objsize (ptr, ostype, pref, visited, rvals);
+      return compute_objsize_r (ptr, ostype, pref, snlim, qry);
     }
 
-  if (TREE_CODE (ptr) == SSA_NAME)
+  if (code == SSA_NAME)
     {
+      if (!snlim.next ())
+	return false;
+
+      /* Only process an SSA_NAME if the recursion limit has not yet
+	 been reached.  */
+      if (qry)
+	{
+	  if (++qry->depth)
+	    qry->max_depth = qry->depth;
+	  if (const access_ref *cache_ref = qry->get_ref (ptr))
+	    {
+	      /* If the pointer is in the cache set *PREF to what it refers
+		 to and return success.  */
+	      *pref = *cache_ref;
+	      return true;
+	    }
+	}
+
       gimple *stmt = SSA_NAME_DEF_STMT (ptr);
       if (is_gimple_call (stmt))
 	{
@@ -4925,7 +5610,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	      offset_int offrng[2];
 	      if (tree ret = gimple_call_return_array (stmt, offrng, rvals))
 		{
-		  if (!compute_objsize (ret, ostype, pref, visited, rvals))
+		  if (!compute_objsize_r (ret, ostype, pref, snlim, qry))
 		    return false;
 
 		  /* Cap OFFRNG[1] to at most the remaining size of
@@ -4947,6 +5632,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 		  pref->ref = ptr;
 		}
 	    }
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
@@ -4956,25 +5642,35 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	     of the array from the current function declaratation
 	     (e.g., attribute access or related).  */
 	  wide_int wr[2];
-	  if (tree ref = gimple_parm_array_size (ptr, wr, rvals))
+	  bool static_array = false;
+	  if (tree ref = gimple_parm_array_size (ptr, wr, &static_array))
 	    {
+	      pref->parmarray = !static_array;
 	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
 	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
 	      pref->ref = ref;
+	      qry->put_ref (ptr, *pref);
 	      return true;
 	    }
 
 	  pref->set_max_size_range ();
 	  pref->base0 = false;
 	  pref->ref = ptr;
-	  if (tree var = SSA_NAME_VAR (ptr))
-	    if (TREE_CODE (var) == PARM_DECL)
-	      pref->ref = var;
-
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
-      /* TODO: Handle PHI.  */
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	{
+	  pref->ref = ptr;
+	  access_ref phi_ref = *pref;
+	  if (!pref->get_ref (NULL, &phi_ref, ostype, &snlim, qry))
+	    return false;
+	  *pref = phi_ref;
+	  pref->ref = ptr;
+	  qry->put_ref (ptr, *pref);
+	  return true;
+	}
 
       if (!is_gimple_assign (stmt))
 	{
@@ -4984,21 +5680,27 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	     PREF->REF to it.  */
 	  pref->base0 = false;
 	  pref->set_max_size_range ();
-	  if (tree var = SSA_NAME_VAR (ptr))
-	    if (TREE_CODE (var) == PARM_DECL)
-	      pref->ref = var;
+	  pref->ref = ptr;
 	  return true;
 	}
 
-      ptr = gimple_assign_rhs1 (stmt);
-
       tree_code code = gimple_assign_rhs_code (stmt);
 
+      if (code == MAX_EXPR || code == MIN_EXPR)
+	{
+	  if (!handle_min_max_size (stmt, ostype, pref, snlim, qry))
+	    return false;
+	  qry->put_ref (ptr, *pref);
+	  return true;
+	}
+
+      tree rhs = gimple_assign_rhs1 (stmt);
+
       if (code == POINTER_PLUS_EXPR
-	  && TREE_CODE (TREE_TYPE (ptr)) == POINTER_TYPE)
+	  && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)
 	{
 	  /* Compute the size of the object first. */
-	  if (!compute_objsize (ptr, ostype, pref, visited, rvals))
+	  if (!compute_objsize_r (rhs, ostype, pref, snlim, qry))
 	    return false;
 
 	  offset_int orng[2];
@@ -5007,22 +5709,30 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	    pref->add_offset (orng[0], orng[1]);
 	  else
 	    pref->add_max_offset ();
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
-      if (code == ADDR_EXPR)
-	return compute_objsize (ptr, ostype, pref, visited, rvals);
+      if (code == ADDR_EXPR
+	  || code == SSA_NAME)
+	return compute_objsize_r (rhs, ostype, pref, snlim, qry);
 
-      /* This could be an assignment from a nonlocal pointer.  Save PTR
-	 to mention in diagnostics but otherwise treat it as a pointer
+      /* (This could also be an assignment from a nonlocal pointer.)  Save
+	 PTR to mention in diagnostics but otherwise treat it as a pointer
 	 to an unknown object.  */
-      pref->ref = ptr;
+      pref->ref = rhs;
+      pref->base0 = false;
+      pref->set_max_size_range ();
+      return true;
     }
 
   /* Assume all other expressions point into an unknown object
      of the maximum valid size.  */
+  pref->ref = ptr;
   pref->base0 = false;
   pref->set_max_size_range ();
+  if (TREE_CODE (ptr) == SSA_NAME)
+    qry->put_ref (ptr, *pref);
   return true;
 }
 
@@ -5033,15 +5743,10 @@ tree
 compute_objsize (tree ptr, int ostype, access_ref *pref,
 		 range_query *rvals /* = NULL */)
 {
-  bitmap visited = NULL;
-
-  bool success
-    = compute_objsize (ptr, ostype, pref, &visited, rvals);
-
-  if (visited)
-    BITMAP_FREE (visited);
-
-  if (!success)
+  pointer_query qry;
+  qry.rvals = rvals;
+  ssa_name_limit_t snlim;
+  if (!compute_objsize_r (ptr, ostype, pref, snlim, &qry))
     return NULL_TREE;
 
   offset_int maxsize = pref->size_remaining ();
@@ -5050,7 +5755,29 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   return wide_int_to_tree (sizetype, maxsize);
 }
 
-/* Transitional wrapper around the above.  The function should be removed
+/* Transitional wrapper.  The function should be removed once callers
+   transition to the pointer_query API.  */
+
+tree
+compute_objsize (tree ptr, int ostype, access_ref *pref, pointer_query *ptr_qry)
+{
+  pointer_query qry;
+  if (ptr_qry)
+    ptr_qry->depth = 0;
+  else
+    ptr_qry = &qry;
+
+  ssa_name_limit_t snlim;
+  if (!compute_objsize_r (ptr, ostype, pref, snlim, ptr_qry))
+    return NULL_TREE;
+
+  offset_int maxsize = pref->size_remaining ();
+  if (pref->base0 && pref->offrng[0] < 0 && pref->offrng[1] >= 0)
+    pref->offrng[0] = 0;
+  return wide_int_to_tree (sizetype, maxsize);
+}
+
+/* Legacy wrapper around the above.  The function should be removed
    once callers transition to one of the two above.  */
 
 tree
@@ -5648,9 +6375,7 @@ check_strncat_sizes (tree exp, tree objsize)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (objsize)
       && tree_int_cst_equal (objsize, maxread))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
 		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxread);
@@ -5723,9 +6448,7 @@ expand_builtin_strncat (tree exp, rtx)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (destsize)
       && tree_int_cst_equal (destsize, maxread))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
 		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxread);
@@ -6307,9 +7030,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
       || !check_nul_terminated_array (exp, arg2, arg3))
     return NULL_RTX;
 
-  location_t loc = tree_nonartificial_location (exp);
-  loc = expansion_point_location_if_in_system_header (loc);
-
+  location_t loc = tree_inlined_location (exp);
   tree len1 = c_strlen (arg1, 1);
   tree len2 = c_strlen (arg2, 1);
 
@@ -7046,26 +7767,64 @@ expand_builtin_copysign (tree exp, rtx target, rtx subtarget)
   return expand_copysign (op0, op1, target);
 }
 
-/* Expand a call to __builtin___clear_cache.  */
+/* Emit a call to __builtin___clear_cache.  */
 
-static rtx
-expand_builtin___clear_cache (tree exp)
+void
+default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 {
-  if (!targetm.code_for_clear_cache)
+  rtx callee = gen_rtx_SYMBOL_REF (Pmode,
+				   BUILTIN_ASM_NAME_PTR
+				   (BUILT_IN_CLEAR_CACHE));
+
+  emit_library_call (callee,
+		     LCT_NORMAL, VOIDmode,
+		     convert_memory_address (ptr_mode, begin), ptr_mode,
+		     convert_memory_address (ptr_mode, end), ptr_mode);
+}
+
+/* Emit a call to __builtin___clear_cache, unless the target specifies
+   it as do-nothing.  This function can be used by trampoline
+   finalizers to duplicate the effects of expanding a call to the
+   clear_cache builtin.  */
+
+void
+maybe_emit_call_builtin___clear_cache (rtx begin, rtx end)
+{
+  if ((GET_MODE (begin) != ptr_mode && GET_MODE (begin) != Pmode)
+      || (GET_MODE (end) != ptr_mode && GET_MODE (end) != Pmode))
     {
-#ifdef CLEAR_INSN_CACHE
-      /* There is no "clear_cache" insn, and __clear_cache() in libgcc
-	 does something.  Just do the default expansion to a call to
-	 __clear_cache().  */
-      return NULL_RTX;
-#else
+      error ("both arguments to %<__builtin___clear_cache%> must be pointers");
+      return;
+    }
+
+  if (targetm.have_clear_cache ())
+    {
+      /* We have a "clear_cache" insn, and it will handle everything.  */
+      class expand_operand ops[2];
+
+      create_address_operand (&ops[0], begin);
+      create_address_operand (&ops[1], end);
+
+      if (maybe_expand_insn (targetm.code_for_clear_cache, 2, ops))
+	return;
+    }
+  else
+    {
+#ifndef CLEAR_INSN_CACHE
       /* There is no "clear_cache" insn, and __clear_cache() in libgcc
 	 does nothing.  There is no need to call it.  Do nothing.  */
-      return const0_rtx;
+      return;
 #endif /* CLEAR_INSN_CACHE */
     }
 
-  /* We have a "clear_cache" insn, and it will handle everything.  */
+  targetm.calls.emit_call_builtin___clear_cache (begin, end);
+}
+
+/* Expand a call to __builtin___clear_cache.  */
+
+static void
+expand_builtin___clear_cache (tree exp)
+{
   tree begin, end;
   rtx begin_rtx, end_rtx;
 
@@ -7075,25 +7834,16 @@ expand_builtin___clear_cache (tree exp)
   if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     {
       error ("both arguments to %<__builtin___clear_cache%> must be pointers");
-      return const0_rtx;
+      return;
     }
 
-  if (targetm.have_clear_cache ())
-    {
-      class expand_operand ops[2];
+  begin = CALL_EXPR_ARG (exp, 0);
+  begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
 
-      begin = CALL_EXPR_ARG (exp, 0);
-      begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
+  end = CALL_EXPR_ARG (exp, 1);
+  end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
 
-      end = CALL_EXPR_ARG (exp, 1);
-      end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
-
-      create_address_operand (&ops[0], begin_rtx);
-      create_address_operand (&ops[1], end_rtx);
-      if (maybe_expand_insn (targetm.code_for_clear_cache, 2, ops))
-	return const0_rtx;
-    }
-  return const0_rtx;
+  maybe_emit_call_builtin___clear_cache (begin_rtx, end_rtx);
 }
 
 /* Given a trampoline address, make sure it satisfies TRAMPOLINE_ALIGNMENT.  */
@@ -8783,6 +9533,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECLE
       && fcode != BUILT_IN_EXECVP
       && fcode != BUILT_IN_EXECVE
+      && fcode != BUILT_IN_CLEAR_CACHE
       && !ALLOCA_FUNCTION_CODE_P (fcode)
       && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
@@ -8972,10 +9723,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return expand_builtin_next_arg ();
 
     case BUILT_IN_CLEAR_CACHE:
-      target = expand_builtin___clear_cache (exp);
-      if (target)
-        return target;
-      break;
+      expand_builtin___clear_cache (exp);
+      return const0_rtx;
 
     case BUILT_IN_CLASSIFY_TYPE:
       return expand_builtin_classify_type (exp);
@@ -9878,11 +10627,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       maybe_emit_sprintf_chk_warning (exp, fcode);
       break;
 
-    case BUILT_IN_FREE:
-      if (warn_free_nonheap_object)
-	maybe_emit_free_warning (exp);
-      break;
-
     case BUILT_IN_THREAD_POINTER:
       return expand_builtin_thread_pointer (exp, target);
 
@@ -10684,9 +11428,10 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
   switch (builtin_index)
     {
     case BUILT_IN_ISINF:
-      if (!HONOR_INFINITIES (arg))
+      if (tree_expr_infinite_p (arg))
+	return omit_one_operand_loc (loc, type, integer_one_node, arg);
+      if (!tree_expr_maybe_infinite_p (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
       return NULL_TREE;
 
     case BUILT_IN_ISINF_SIGN:
@@ -10722,14 +11467,16 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       }
 
     case BUILT_IN_ISFINITE:
-      if (!HONOR_NANS (arg)
-	  && !HONOR_INFINITIES (arg))
+      if (tree_expr_finite_p (arg))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
-
+      if (tree_expr_nan_p (arg) || tree_expr_infinite_p (arg))
+	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
       return NULL_TREE;
 
     case BUILT_IN_ISNAN:
-      if (!HONOR_NANS (arg))
+      if (tree_expr_nan_p (arg))
+	return omit_one_operand_loc (loc, type, integer_one_node, arg);
+      if (!tree_expr_maybe_nan_p (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
       {
@@ -10803,7 +11550,7 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 		     arg, build_real (type, r));
   res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, fp_normal, res);
 
-  if (HONOR_INFINITIES (mode))
+  if (tree_expr_maybe_infinite_p (arg))
     {
       real_inf (&r);
       tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
@@ -10812,7 +11559,7 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 			 fp_infinite, res);
     }
 
-  if (HONOR_NANS (mode))
+  if (tree_expr_maybe_nan_p (arg))
     {
       tmp = fold_build2_loc (loc, ORDERED_EXPR, integer_type_node, arg, arg);
       res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, res, fp_nan);
@@ -10860,12 +11607,15 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 
   if (unordered_code == UNORDERED_EXPR)
     {
-      if (!HONOR_NANS (arg0))
+      if (tree_expr_nan_p (arg0) || tree_expr_nan_p (arg1))
+	return omit_two_operands_loc (loc, type, integer_one_node, arg0, arg1);
+      if (!tree_expr_maybe_nan_p (arg0) && !tree_expr_maybe_nan_p (arg1))
 	return omit_two_operands_loc (loc, type, integer_zero_node, arg0, arg1);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg0, arg1);
     }
 
-  code = HONOR_NANS (arg0) ? unordered_code : ordered_code;
+  code = (tree_expr_maybe_nan_p (arg0) || tree_expr_maybe_nan_p (arg1))
+	 ? unordered_code : ordered_code;
   return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
 }
@@ -12186,30 +12936,662 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 		access_write_only);
 }
 
-/* Emit warning if a free is called with address of a variable.  */
+/* Return true if STMT is a call to an allocation function.  Unless
+   ALL_ALLOC is set, consider only functions that return dynmamically
+   allocated objects.  Otherwise return true even for all forms of
+   alloca (including VLA).  */
 
-static void
+static bool
+fndecl_alloc_p (tree fndecl, bool all_alloc)
+{
+  if (!fndecl)
+    return false;
+
+  /* A call to operator new isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_NEW_P (fndecl))
+    return true;
+
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  return all_alloc;
+	case BUILT_IN_ALIGNED_ALLOC:
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STRDUP:
+	case BUILT_IN_STRNDUP:
+	  return true;
+	default:
+	  break;
+	}
+    }
+
+  /* A function is considered an allocation function if it's declared
+     with attribute malloc with an argument naming its associated
+     deallocation function.  */
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return false;
+
+  for (tree allocs = attrs;
+       (allocs = lookup_attribute ("malloc", allocs));
+       allocs = TREE_CHAIN (allocs))
+    {
+      tree args = TREE_VALUE (allocs);
+      if (!args)
+	continue;
+
+      if (TREE_VALUE (args))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if STMT is a call to an allocation function.  A wrapper
+   around fndecl_alloc_p.  */
+
+static bool
+gimple_call_alloc_p (gimple *stmt, bool all_alloc = false)
+{
+  return fndecl_alloc_p (gimple_call_fndecl (stmt), all_alloc);
+}
+
+/* Return the zero-based number corresponding to the argument being
+   deallocated if STMT is a call to a deallocation function or UINT_MAX
+   if it isn't.  */
+
+static unsigned
+call_dealloc_argno (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  if (!fndecl)
+    return UINT_MAX;
+
+  /* A call to operator delete isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_DELETE_P (fndecl))
+    return 0;
+
+  /* TODO: Handle user-defined functions with attribute malloc?  Handle
+     known non-built-ins like fopen?  */
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_FREE:
+	case BUILT_IN_REALLOC:
+	  return 0;
+	default:
+	  break;
+	}
+      return UINT_MAX;
+    }
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return UINT_MAX;
+
+  for (tree atfree = attrs;
+       (atfree = lookup_attribute ("*dealloc", atfree));
+       atfree = TREE_CHAIN (atfree))
+    {
+      tree alloc = TREE_VALUE (atfree);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      if (!pos)
+	return 0;
+
+      pos = TREE_VALUE (pos);
+      return TREE_INT_CST_LOW (pos) - 1;
+    }
+
+  return UINT_MAX;
+}
+
+/* Return true if DELETE_DECL is an operator delete that's not suitable
+   to call with a pointer returned fron NEW_DECL.  */
+
+static bool
+new_delete_mismatch_p (tree new_decl, tree delete_decl)
+{
+  tree new_name = DECL_ASSEMBLER_NAME (new_decl);
+  tree delete_name = DECL_ASSEMBLER_NAME (delete_decl);
+
+  /* valid_new_delete_pair_p() returns a conservative result.  A true
+     result is reliable but a false result doesn't necessarily mean
+     the operators don't match.  */
+  if (valid_new_delete_pair_p (new_name, delete_name))
+    return false;
+
+  const char *new_str = IDENTIFIER_POINTER (new_name);
+  const char *del_str = IDENTIFIER_POINTER (delete_name);
+
+  if (*new_str != '_')
+    return *new_str != *del_str;
+
+  ++del_str;
+  if (*++new_str != 'Z')
+    return *new_str != *del_str;
+
+  ++del_str;
+  if (*++new_str == 'n')
+    return *del_str != 'd';
+
+  if (*new_str != 'N')
+    return *del_str != 'N';
+
+  /* Handle user-defined member operators below.  */
+  ++new_str;
+  ++del_str;
+
+  do
+    {
+      /* Determine if both operators are members of the same type.
+	 If not, they don't match.  */
+      char *new_end, *del_end;
+      unsigned long nlen = strtoul (new_str, &new_end, 10);
+      unsigned long dlen = strtoul (del_str, &del_end, 10);
+      if (nlen != dlen)
+	return true;
+
+      /* Skip past the name length.   */
+      new_str = new_end;
+      del_str = del_end;
+
+      /* Skip past the names making sure each has the expected length
+	 (it would suggest some sort of a corruption if they didn't).  */
+      while (nlen--)
+	if (!*++new_end)
+	  return true;
+
+      for (nlen = dlen; nlen--; )
+	if (!*++del_end)
+	  return true;
+
+      /* The names have the expected length.  Compare them.  */
+      if (memcmp (new_str, del_str, dlen))
+	return true;
+
+      new_str = new_end;
+      del_str = del_end;
+
+      if (*new_str == 'I')
+	{
+	  /* Template instantiation.  */
+	  do
+	    {
+	      ++new_str;
+	      ++del_str;
+
+	      if (*new_str == 'n')
+		break;
+	      if (*new_str != *del_str)
+		return true;
+	    }
+	  while (*new_str);
+	}
+
+      if (*new_str == 'n')
+	{
+	  if (*del_str != 'd')
+	    return true;
+
+	  ++del_str;
+	  if (*++new_str == 'w' && *del_str != 'l')
+	    return true;
+	  if (*new_str == 'a' && *del_str != 'a')
+	    return true;
+	  ++new_str;
+	  ++del_str;
+	  break;
+	}
+    } while (true);
+
+  if (*new_str != 'E')
+    return *del_str != *new_str;
+
+  ++new_str;
+  ++del_str;
+  if (*new_str != 'j' && *new_str != 'm' && *new_str != 'y')
+    return true;
+  if (*del_str != 'P' || *++del_str != 'v')
+    return true;
+
+  /* Ignore any remaining arguments.  Since both operators are members
+     of the same class, mismatches in those should be detectable and
+     diagnosed by the front end.  */
+  return false;
+}
+
+/* ALLOC_DECL and DEALLOC_DECL are pair of allocation and deallocation
+   functions.  Return true if the latter is suitable to deallocate objects
+   allocated by calls to the former.  */
+
+static bool
+matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
+{
+  /* Set to alloc_kind_t::builtin if ALLOC_DECL is associated with
+     a built-in deallocator.  */
+  enum class alloc_kind_t { none, builtin, user }
+  alloc_dealloc_kind = alloc_kind_t::none;
+
+  if (DECL_IS_OPERATOR_NEW_P (alloc_decl))
+    {
+      if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	/* Return true iff both functions are of the same array or
+	   singleton form and false otherwise.  */
+	return !new_delete_mismatch_p (alloc_decl, dealloc_decl);
+
+      /* Return false for deallocation functions that are known not
+	 to match.  */
+      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
+	  || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	return false;
+      /* Otherwise proceed below to check the deallocation function's
+	 "*dealloc" attributes to look for one that mentions this operator
+	 new.  */
+    }
+  else if (fndecl_built_in_p (alloc_decl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (alloc_decl))
+	{
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  return false;
+
+	case BUILT_IN_ALIGNED_ALLOC:
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_GOMP_ALLOC:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_REALLOC:
+	case BUILT_IN_STRDUP:
+	case BUILT_IN_STRNDUP:
+	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
+	    return false;
+
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
+	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	    return true;
+
+	  alloc_dealloc_kind = alloc_kind_t::builtin;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  /* Set if DEALLOC_DECL both allocates and deallocates.  */
+  alloc_kind_t realloc_kind = alloc_kind_t::none;
+
+  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_NORMAL))
+    {
+      built_in_function dealloc_code = DECL_FUNCTION_CODE (dealloc_decl);
+      if (dealloc_code == BUILT_IN_REALLOC)
+	realloc_kind = alloc_kind_t::builtin;
+
+      for (tree amats = DECL_ATTRIBUTES (alloc_decl);
+	   (amats = lookup_attribute ("malloc", amats));
+	   amats = TREE_CHAIN (amats))
+	{
+	  tree args = TREE_VALUE (amats);
+	  if (!args)
+	    continue;
+
+	  tree fndecl = TREE_VALUE (args);
+	  if (!fndecl || !DECL_P (fndecl))
+	    continue;
+
+	  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+	      && dealloc_code == DECL_FUNCTION_CODE (fndecl))
+	    return true;
+	}
+    }
+
+  const bool alloc_builtin = fndecl_built_in_p (alloc_decl, BUILT_IN_NORMAL);
+  alloc_kind_t realloc_dealloc_kind = alloc_kind_t::none;
+
+  /* If DEALLOC_DECL has an internal "*dealloc" attribute scan the list
+     of its associated allocation functions for ALLOC_DECL.
+     If the corresponding ALLOC_DECL is found they're a matching pair,
+     otherwise they're not.
+     With DDATS set to the Deallocator's *Dealloc ATtributes...  */
+  for (tree ddats = DECL_ATTRIBUTES (dealloc_decl);
+       (ddats = lookup_attribute ("*dealloc", ddats));
+       ddats = TREE_CHAIN (ddats))
+    {
+      tree args = TREE_VALUE (ddats);
+      if (!args)
+	continue;
+
+      tree alloc = TREE_VALUE (args);
+      if (!alloc)
+	continue;
+
+      if (alloc == DECL_NAME (dealloc_decl))
+	realloc_kind = alloc_kind_t::user;
+
+      if (DECL_P (alloc))
+	{
+	  gcc_checking_assert (fndecl_built_in_p (alloc, BUILT_IN_NORMAL));
+
+	  switch (DECL_FUNCTION_CODE (alloc))
+	    {
+	    case BUILT_IN_ALIGNED_ALLOC:
+	    case BUILT_IN_CALLOC:
+	    case BUILT_IN_GOMP_ALLOC:
+	    case BUILT_IN_MALLOC:
+	    case BUILT_IN_REALLOC:
+	    case BUILT_IN_STRDUP:
+	    case BUILT_IN_STRNDUP:
+	      realloc_dealloc_kind = alloc_kind_t::builtin;
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (!alloc_builtin)
+	    continue;
+
+	  if (DECL_FUNCTION_CODE (alloc) != DECL_FUNCTION_CODE (alloc_decl))
+	    continue;
+
+	  return true;
+	}
+
+      if (alloc == DECL_NAME (alloc_decl))
+	return true;
+    }
+
+  if (realloc_kind == alloc_kind_t::none)
+    return false;
+
+  hash_set<tree> common_deallocs;
+  /* Special handling for deallocators.  Iterate over both the allocator's
+     and the reallocator's associated deallocator functions looking for
+     the first one in common.  If one is found, the de/reallocator is
+     a match for the allocator even though the latter isn't directly
+     associated with the former.  This simplifies declarations in system
+     headers.
+     With AMATS set to the Allocator's Malloc ATtributes,
+     and  RMATS set to Reallocator's Malloc ATtributes...  */
+  for (tree amats = DECL_ATTRIBUTES (alloc_decl),
+	 rmats = DECL_ATTRIBUTES (dealloc_decl);
+       (amats = lookup_attribute ("malloc", amats))
+	 || (rmats = lookup_attribute ("malloc", rmats));
+       amats = amats ? TREE_CHAIN (amats) : NULL_TREE,
+	 rmats = rmats ? TREE_CHAIN (rmats) : NULL_TREE)
+    {
+      if (tree args = amats ? TREE_VALUE (amats) : NULL_TREE)
+	if (tree adealloc = TREE_VALUE (args))
+	  {
+	    if (DECL_P (adealloc)
+		&& fndecl_built_in_p (adealloc, BUILT_IN_NORMAL))
+	      {
+		built_in_function fncode = DECL_FUNCTION_CODE (adealloc);
+		if (fncode == BUILT_IN_FREE || fncode == BUILT_IN_REALLOC)
+		  {
+		    if (realloc_kind == alloc_kind_t::builtin)
+		      return true;
+		    alloc_dealloc_kind = alloc_kind_t::builtin;
+		  }
+		continue;
+	      }
+
+	    common_deallocs.add (adealloc);
+	  }
+
+      if (tree args = rmats ? TREE_VALUE (rmats) : NULL_TREE)
+	if (tree ddealloc = TREE_VALUE (args))
+	  {
+	    if (DECL_P (ddealloc)
+		&& fndecl_built_in_p (ddealloc, BUILT_IN_NORMAL))
+	      {
+		built_in_function fncode = DECL_FUNCTION_CODE (ddealloc);
+		if (fncode == BUILT_IN_FREE || fncode == BUILT_IN_REALLOC)
+		  {
+		    if (alloc_dealloc_kind == alloc_kind_t::builtin)
+		      return true;
+		    realloc_dealloc_kind = alloc_kind_t::builtin;
+		  }
+		continue;
+	      }
+
+	    if (common_deallocs.add (ddealloc))
+	      return true;
+	  }
+    }
+
+  /* Succeed only if ALLOC_DECL and the reallocator DEALLOC_DECL share
+     a built-in deallocator.  */
+  return  (alloc_dealloc_kind == alloc_kind_t::builtin
+	   && realloc_dealloc_kind == alloc_kind_t::builtin);
+}
+
+/* Return true if DEALLOC_DECL is a function suitable to deallocate
+   objectes allocated by the ALLOC call.  */
+
+static bool
+matching_alloc_calls_p (gimple *alloc, tree dealloc_decl)
+{
+  tree alloc_decl = gimple_call_fndecl (alloc);
+  if (!alloc_decl)
+    return true;
+
+  return matching_alloc_calls_p (alloc_decl, dealloc_decl);
+}
+
+/* Diagnose a call EXP to deallocate a pointer referenced by AREF if it
+   includes a nonzero offset.  Such a pointer cannot refer to the beginning
+   of an allocated object.  A negative offset may refer to it only if
+   the target pointer is unknown.  */
+
+static bool
+warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
+{
+  if (aref.deref || aref.offrng[0] <= 0 || aref.offrng[1] <= 0)
+    return false;
+
+  tree dealloc_decl = get_callee_fndecl (exp);
+  if (!dealloc_decl)
+    return false;
+
+  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+      && !DECL_IS_REPLACEABLE_OPERATOR (dealloc_decl))
+    {
+      /* A call to a user-defined operator delete with a pointer plus offset
+	 may be valid if it's returned from an unknown function (i.e., one
+	 that's not operator new).  */
+      if (TREE_CODE (aref.ref) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (aref.ref);
+	  if (is_gimple_call (def_stmt))
+	    {
+	      tree alloc_decl = gimple_call_fndecl (def_stmt);
+	      if (!alloc_decl || !DECL_IS_OPERATOR_NEW_P (alloc_decl))
+		return false;
+	    }
+	}
+    }
+
+  char offstr[80];
+  offstr[0] = '\0';
+  if (wi::fits_shwi_p (aref.offrng[0]))
+    {
+      if (aref.offrng[0] == aref.offrng[1]
+	  || !wi::fits_shwi_p (aref.offrng[1]))
+	sprintf (offstr, " %lli",
+		 (long long)aref.offrng[0].to_shwi ());
+      else
+	sprintf (offstr, " [%lli, %lli]",
+		 (long long)aref.offrng[0].to_shwi (),
+		 (long long)aref.offrng[1].to_shwi ());
+    }
+
+  if (!warning_at (loc, OPT_Wfree_nonheap_object,
+		   "%K%qD called on pointer %qE with nonzero offset%s",
+		   exp, dealloc_decl, aref.ref, offstr))
+    return false;
+
+  if (DECL_P (aref.ref))
+    inform (DECL_SOURCE_LOCATION (aref.ref), "declared here");
+  else if (TREE_CODE (aref.ref) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (aref.ref);
+      if (is_gimple_call (def_stmt))
+	{
+	  location_t def_loc = gimple_location (def_stmt);
+	  tree alloc_decl = gimple_call_fndecl (def_stmt);
+	  if (alloc_decl)
+	    inform (def_loc,
+		    "returned from %qD", alloc_decl);
+	  else if (tree alloc_fntype = gimple_call_fntype (def_stmt))
+	    inform (def_loc,
+		    "returned from %qT", alloc_fntype);
+	  else
+	    inform (def_loc,  "obtained here");
+	}
+    }
+
+  return true;
+}
+
+/* Issue a warning if a deallocation function such as free, realloc,
+   or C++ operator delete is called with an argument not returned by
+   a matching allocation function such as malloc or the corresponding
+   form of C++ operatorn new.  */
+
+void
 maybe_emit_free_warning (tree exp)
 {
-  if (call_expr_nargs (exp) != 1)
+  tree fndecl = get_callee_fndecl (exp);
+  if (!fndecl)
     return;
 
-  tree arg = CALL_EXPR_ARG (exp, 0);
-
-  STRIP_NOPS (arg);
-  if (TREE_CODE (arg) != ADDR_EXPR)
+  unsigned argno = call_dealloc_argno (exp);
+  if ((unsigned) call_expr_nargs (exp) <= argno)
     return;
 
-  arg = get_base_address (TREE_OPERAND (arg, 0));
-  if (arg == NULL || INDIRECT_REF_P (arg) || TREE_CODE (arg) == MEM_REF)
+  tree ptr = CALL_EXPR_ARG (exp, argno);
+  if (integer_zerop (ptr))
     return;
 
-  if (SSA_VAR_P (arg))
-    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
-		"%Kattempt to free a non-heap object %qD", exp, arg);
-  else
-    warning_at (tree_nonartificial_location (exp), OPT_Wfree_nonheap_object,
-		"%Kattempt to free a non-heap object", exp);
+  access_ref aref;
+  if (!compute_objsize (ptr, 0, &aref))
+    return;
+
+  tree ref = aref.ref;
+  if (integer_zerop (ref))
+    return;
+
+  tree dealloc_decl = get_callee_fndecl (exp);
+  location_t loc = tree_inlined_location (exp);
+
+  if (DECL_P (ref) || EXPR_P (ref))
+    {
+      /* Diagnose freeing a declared object.  */
+      if (aref.ref_declared ()
+	  && warning_at (loc, OPT_Wfree_nonheap_object,
+			 "%K%qD called on unallocated object %qD",
+			 exp, dealloc_decl, ref))
+	{
+	  loc = (DECL_P (ref)
+		 ? DECL_SOURCE_LOCATION (ref)
+		 : EXPR_LOCATION (ref));
+	  inform (loc, "declared here");
+	  return;
+	}
+
+      /* Diagnose freeing a pointer that includes a positive offset.
+	 Such a pointer cannot refer to the beginning of an allocated
+	 object.  A negative offset may refer to it.  */
+      if (aref.sizrng[0] != aref.sizrng[1]
+	  && warn_dealloc_offset (loc, exp, aref))
+	return;
+    }
+  else if (CONSTANT_CLASS_P (ref))
+    {
+      if (warning_at (loc, OPT_Wfree_nonheap_object,
+		      "%K%qD called on a pointer to an unallocated "
+		      "object %qE", exp, dealloc_decl, ref))
+	{
+	  if (TREE_CODE (ptr) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
+	      if (is_gimple_assign (def_stmt))
+		{
+		  location_t loc = gimple_location (def_stmt);
+		  inform (loc, "assigned here");
+		}
+	    }
+	  return;
+	}
+    }
+  else if (TREE_CODE (ref) == SSA_NAME)
+    {
+      /* Also warn if the pointer argument refers to the result
+	 of an allocation call like alloca or VLA.  */
+      gimple *def_stmt = SSA_NAME_DEF_STMT (ref);
+      if (is_gimple_call (def_stmt))
+	{
+	  bool warned = false;
+	  if (gimple_call_alloc_p (def_stmt))
+	    {
+	      if (matching_alloc_calls_p (def_stmt, dealloc_decl))
+		{
+		  if (warn_dealloc_offset (loc, exp, aref))
+		    return;
+		}
+	      else
+		{
+		  tree alloc_decl = gimple_call_fndecl (def_stmt);
+		  int opt = (DECL_IS_OPERATOR_NEW_P (alloc_decl)
+			     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+			     ? OPT_Wmismatched_new_delete
+			     : OPT_Wmismatched_dealloc);
+		  warned = warning_at (loc, opt,
+				       "%K%qD called on pointer returned "
+				       "from a mismatched allocation "
+				       "function", exp, dealloc_decl);
+		}
+	    }
+	  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_ALLOCA)
+	    	   || gimple_call_builtin_p (def_stmt,
+	    				     BUILT_IN_ALLOCA_WITH_ALIGN))
+	    warned = warning_at (loc, OPT_Wfree_nonheap_object,
+				 "%K%qD called on pointer to "
+				 "an unallocated object",
+				 exp, dealloc_decl);
+	  else if (warn_dealloc_offset (loc, exp, aref))
+	    return;
+
+	  if (warned)
+	    {
+	      tree fndecl = gimple_call_fndecl (def_stmt);
+	      inform (gimple_location (def_stmt),
+		      "returned from %qD", fndecl);
+	      return;
+	    }
+	}
+      else if (gimple_nop_p (def_stmt))
+	{
+	  ref = SSA_NAME_VAR (ref);
+	  /* Diagnose freeing a pointer that includes a positive offset.  */
+	  if (TREE_CODE (ref) == PARM_DECL
+	      && !aref.deref
+	      && aref.sizrng[0] != aref.sizrng[1]
+	      && aref.offrng[0] > 0 && aref.offrng[1] > 0
+	      && warn_dealloc_offset (loc, exp, aref))
+	    return;
+	}
+    }
 }
 
 /* Fold a call to __builtin_object_size with arguments PTR and OST,
@@ -12912,4 +14294,186 @@ access_ref::offset_bounded () const
   tree min = TYPE_MIN_VALUE (ptrdiff_type_node);
   tree max = TYPE_MAX_VALUE (ptrdiff_type_node);
   return wi::to_offset (min) <= offrng[0] && offrng[1] <= wi::to_offset (max);
+}
+
+/* If CALLEE has known side effects, fill in INFO and return true.
+   See tree-ssa-structalias.c:find_func_aliases
+   for the list of builtins we might need to handle here.  */
+
+attr_fnspec
+builtin_fnspec (tree callee)
+{
+  built_in_function code = DECL_FUNCTION_CODE (callee);
+
+  switch (code)
+    {
+      /* All the following functions read memory pointed to by
+	 their second argument and write memory pointed to by first
+	 argument.
+	 strcat/strncat additionally reads memory pointed to by the first
+	 argument.  */
+      case BUILT_IN_STRCAT:
+      case BUILT_IN_STRCAT_CHK:
+	return "1cW 1 ";
+      case BUILT_IN_STRNCAT:
+      case BUILT_IN_STRNCAT_CHK:
+	return "1cW 13";
+      case BUILT_IN_STRCPY:
+      case BUILT_IN_STRCPY_CHK:
+	return "1cO 1 ";
+      case BUILT_IN_STPCPY:
+      case BUILT_IN_STPCPY_CHK:
+	return ".cO 1 ";
+      case BUILT_IN_STRNCPY:
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMMOVE:
+      case BUILT_IN_TM_MEMCPY:
+      case BUILT_IN_TM_MEMMOVE:
+      case BUILT_IN_STRNCPY_CHK:
+      case BUILT_IN_MEMCPY_CHK:
+      case BUILT_IN_MEMMOVE_CHK:
+	return "1cO313";
+      case BUILT_IN_MEMPCPY:
+      case BUILT_IN_MEMPCPY_CHK:
+	return ".cO313";
+      case BUILT_IN_STPNCPY:
+      case BUILT_IN_STPNCPY_CHK:
+	return ".cO313";
+      case BUILT_IN_BCOPY:
+	return ".c23O3";
+      case BUILT_IN_BZERO:
+	return ".cO2";
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_MEMCMP_EQ:
+      case BUILT_IN_BCMP:
+      case BUILT_IN_STRNCMP:
+      case BUILT_IN_STRNCMP_EQ:
+      case BUILT_IN_STRNCASECMP:
+	return ".cR3R3";
+
+      /* The following functions read memory pointed to by their
+	 first argument.  */
+      CASE_BUILT_IN_TM_LOAD (1):
+      CASE_BUILT_IN_TM_LOAD (2):
+      CASE_BUILT_IN_TM_LOAD (4):
+      CASE_BUILT_IN_TM_LOAD (8):
+      CASE_BUILT_IN_TM_LOAD (FLOAT):
+      CASE_BUILT_IN_TM_LOAD (DOUBLE):
+      CASE_BUILT_IN_TM_LOAD (LDOUBLE):
+      CASE_BUILT_IN_TM_LOAD (M64):
+      CASE_BUILT_IN_TM_LOAD (M128):
+      CASE_BUILT_IN_TM_LOAD (M256):
+      case BUILT_IN_TM_LOG:
+      case BUILT_IN_TM_LOG_1:
+      case BUILT_IN_TM_LOG_2:
+      case BUILT_IN_TM_LOG_4:
+      case BUILT_IN_TM_LOG_8:
+      case BUILT_IN_TM_LOG_FLOAT:
+      case BUILT_IN_TM_LOG_DOUBLE:
+      case BUILT_IN_TM_LOG_LDOUBLE:
+      case BUILT_IN_TM_LOG_M64:
+      case BUILT_IN_TM_LOG_M128:
+      case BUILT_IN_TM_LOG_M256:
+	return ".cR ";
+
+      case BUILT_IN_INDEX:
+      case BUILT_IN_RINDEX:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRLEN:
+      case BUILT_IN_STRRCHR:
+	return ".cR ";
+      case BUILT_IN_STRNLEN:
+	return ".cR2";
+
+      /* These read memory pointed to by the first argument.
+	 Allocating memory does not have any side-effects apart from
+	 being the definition point for the pointer.
+	 Unix98 specifies that errno is set on allocation failure.  */
+      case BUILT_IN_STRDUP:
+	return "mCR ";
+      case BUILT_IN_STRNDUP:
+	return "mCR2";
+      /* Allocating memory does not have any side-effects apart from
+	 being the definition point for the pointer.  */
+      case BUILT_IN_MALLOC:
+      case BUILT_IN_ALIGNED_ALLOC:
+      case BUILT_IN_CALLOC:
+      case BUILT_IN_GOMP_ALLOC:
+	return "mC";
+      CASE_BUILT_IN_ALLOCA:
+	return "mc";
+      /* These read memory pointed to by the first argument with size
+	 in the third argument.  */
+      case BUILT_IN_MEMCHR:
+	return ".cR3";
+      /* These read memory pointed to by the first and second arguments.  */
+      case BUILT_IN_STRSTR:
+      case BUILT_IN_STRPBRK:
+      case BUILT_IN_STRCASECMP:
+      case BUILT_IN_STRCSPN:
+      case BUILT_IN_STRSPN:
+      case BUILT_IN_STRCMP:
+      case BUILT_IN_STRCMP_EQ:
+	return ".cR R ";
+      /* Freeing memory kills the pointed-to memory.  More importantly
+	 the call has to serve as a barrier for moving loads and stores
+	 across it.  */
+      case BUILT_IN_STACK_RESTORE:
+      case BUILT_IN_FREE:
+      case BUILT_IN_GOMP_FREE:
+	return ".co ";
+      case BUILT_IN_VA_END:
+	return ".cO ";
+      /* Realloc serves both as allocation point and deallocation point.  */
+      case BUILT_IN_REALLOC:
+	return ".Cw ";
+      case BUILT_IN_GAMMA_R:
+      case BUILT_IN_GAMMAF_R:
+      case BUILT_IN_GAMMAL_R:
+      case BUILT_IN_LGAMMA_R:
+      case BUILT_IN_LGAMMAF_R:
+      case BUILT_IN_LGAMMAL_R:
+	return ".C. Ot";
+      case BUILT_IN_FREXP:
+      case BUILT_IN_FREXPF:
+      case BUILT_IN_FREXPL:
+      case BUILT_IN_MODF:
+      case BUILT_IN_MODFF:
+      case BUILT_IN_MODFL:
+	return ".c. Ot";
+      case BUILT_IN_REMQUO:
+      case BUILT_IN_REMQUOF:
+      case BUILT_IN_REMQUOL:
+	return ".c. . Ot";
+      case BUILT_IN_SINCOS:
+      case BUILT_IN_SINCOSF:
+      case BUILT_IN_SINCOSL:
+	return ".c. OtOt";
+      case BUILT_IN_MEMSET:
+      case BUILT_IN_MEMSET_CHK:
+      case BUILT_IN_TM_MEMSET:
+	return "1cO3";
+      CASE_BUILT_IN_TM_STORE (1):
+      CASE_BUILT_IN_TM_STORE (2):
+      CASE_BUILT_IN_TM_STORE (4):
+      CASE_BUILT_IN_TM_STORE (8):
+      CASE_BUILT_IN_TM_STORE (FLOAT):
+      CASE_BUILT_IN_TM_STORE (DOUBLE):
+      CASE_BUILT_IN_TM_STORE (LDOUBLE):
+      CASE_BUILT_IN_TM_STORE (M64):
+      CASE_BUILT_IN_TM_STORE (M128):
+      CASE_BUILT_IN_TM_STORE (M256):
+	return ".cO ";
+      case BUILT_IN_STACK_SAVE:
+	return ".c";
+      case BUILT_IN_ASSUME_ALIGNED:
+	return "1cX ";
+      /* But posix_memalign stores a pointer into the memory pointed to
+	 by its first argument.  */
+      case BUILT_IN_POSIX_MEMALIGN:
+	return ".cOt";
+
+      default:
+	return "";
+    }
 }

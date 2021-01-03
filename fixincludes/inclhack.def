@@ -720,6 +720,20 @@ fix = {
 		"{ \\\\\n";
 };
 
+
+/* On AIX 'typedef struct {<stuff>} * physadr_t;' needs to give the struct a
+   name for linkage purposes.  Fortunately it is on exactly one
+   line.  */
+fix = {
+    hackname  = aix_physadr_t;
+    mach      = "*-*-aix*";
+    files     = sys/types.h;
+    select    = "typedef[ \t]*struct[ \t]*([{][^}]*[}][ \t]*\\*[ \t]*physadr_t;)";
+    c_fix     = format;
+    c_fix_arg = "typedef struct __physadr_s %1";
+    test_text = "typedef	struct { random stuff } *	physadr_t;";
+};
+
 /*
  *  pthread.h on AIX 4.3.3 tries to define a macro without whitspace
  *  which violates a requirement of ISO C.

@@ -1,3 +1,79 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (objc.serial): Change from goal to a variable.
+	(.PHONY): Drop objc.serial and objc.prev.
+	(cc1obj$(exeext)): Depend on $(objc.serial) rather than objc.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (objc.serial): New goal.
+	(.PHONY): Add objc.serial objc.prev.
+	(cc1obj$(exeext)): Depend on objc.prev.  Call LINK_PROGRESS.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle nullability.
+	(objc_add_property_declaration): Handle nullability attributes.
+	Check that these are applicable to the property type.
+	* objc-act.h (enum objc_property_nullability): New.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* objc-act.c (objc_start_class_interface): Accept the location
+	of the class name, use it in existing diagnostic.
+	(start_class): Accept obj_root_class type attributes.  Warn when
+	the interface for an implementation does not contain a super
+	class (unless the diagnostic is suppressed by the the command
+	line flag or the objc_root_class type attribute).
+
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle class
+	attribute.
+	(objc_add_property_declaration): Likewise.
+	* objc-act.h (PROPERTY_CLASS): Record class attribute state.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle
+	RID_PROPATOMIC.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_compare_types): Handle NSObject type
+	attributes.
+	(objc_type_valid_for_messaging): Likewise.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (start_class): Accept visibility attributes
+	without warning.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): New.
+	(objc_add_property_declaration): Adjust to consume the
+	parser output using a vector of parsed attributes.
+
+2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_non_constant_expr_p): New.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (synth_module_prologue): Get the SEL identifier.
+	* objc-act.h (enum objc_tree_index): Add OCTI_SEL_NAME.
+	(objc_selector_name): New.
+	(SEL_TYPEDEF_NAME): New.
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_01_initialize): Initialize SEL typedef.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_01_initialize): Likewise.
+	* objc-next-runtime-abi-02.c
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.c

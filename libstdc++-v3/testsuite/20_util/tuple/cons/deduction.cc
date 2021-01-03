@@ -124,10 +124,8 @@ test04()
   std::pair<int, unsigned> p;
   std::tuple x = p;
   check_type<std::tuple<int, unsigned>>(x);
-  int y = 42;
   std::tuple x2{p};
   check_type<std::tuple<int, unsigned>>(x2);
-  const int z = 666;
   std::pair<const int, unsigned> p2;
   std::tuple x3{p2};
   check_type<std::tuple<const int, unsigned>>(x3);

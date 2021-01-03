@@ -59,7 +59,7 @@ template <typename av> struct ac : ao<av> { typedef c::e<am::an> aq; };
 template <typename aw, typename i, typename ax> void ay(aw, i, ax) {
   // Not sure if this has been creduced from an initialization of a
   // variable to a block-scope extern function decl
-  au<c::e<ap<typename ak<i>::o>::f> > az2();
+  au<c::e<ap<typename ak<i>::o>::f> > az2(); // { dg-warning "empty parentheses" }
 }
 void v() {
   ad a;

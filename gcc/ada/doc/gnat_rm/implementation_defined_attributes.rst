@@ -483,6 +483,19 @@ otherwise.  The intended use of this attribute is in conjunction with generic
 definitions.  If the attribute is applied to a generic private type, it
 indicates whether or not the corresponding actual type has discriminants.
 
+Attribute Has_Tagged_Values
+===========================
+.. index:: Tagged values, testing for
+
+.. index:: Has_Tagged_Values
+
+The prefix of the ``Has_Tagged_Values`` attribute is a type. The result is a
+Boolean value which is True if the type is a composite type (array or record)
+that is either a tagged type or has a subcomponent that is tagged, and is False
+otherwise. The intended use of this attribute is in conjunction with generic
+definitions. If the attribute is applied to a generic private type, it
+indicates whether or not the corresponding actual type has access values.
+
 Attribute Img
 =============
 .. index:: Img
@@ -804,8 +817,6 @@ and is static.  For non-scalar types, the result is nonstatic.
 
 Attribute Pool_Address
 ======================
-.. index:: Parameters, when passed by reference
-
 .. index:: Pool_Address
 
 ``X'Pool_Address`` for any object ``X`` returns the address
@@ -1128,6 +1139,26 @@ GNAT also allows this attribute to be applied to floating-point types
 for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute when applied to floating-point types.
+
+Attribute Small_Denominator
+===========================
+.. index:: Small
+
+.. index:: Small_Denominator
+
+``typ'Small_Denominator`` for any fixed-point subtype `typ` yields the
+denominator in the representation of ``typ'Small`` as a rational number
+with coprime factors (i.e. as an irreducible fraction).
+
+Attribute Small_Numerator
+=========================
+.. index:: Small
+
+.. index:: Small_Numerator
+
+``typ'Small_Numerator`` for any fixed-point subtype `typ` yields the
+numerator in the representation of ``typ'Small`` as a rational number
+with coprime factors (i.e. as an irreducible fraction).
 
 Attribute Storage_Unit
 ======================

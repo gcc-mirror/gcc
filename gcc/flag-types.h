@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FLAG_TYPES_H
 #define GCC_FLAG_TYPES_H
 
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
+
 enum debug_info_type
 {
   NO_DEBUG,	    /* Write no debug info.  */
@@ -230,12 +232,14 @@ enum scalar_storage_order_kind {
   SSO_LITTLE_ENDIAN
 };
 
-/* Vectorizer cost-model.  */
+/* Vectorizer cost-model.  Except for DEFAULT, the values are ordered from
+   the most conservative to the least conservative.  */
 enum vect_cost_model {
+  VECT_COST_MODEL_VERY_CHEAP = -3,
+  VECT_COST_MODEL_CHEAP = -2,
+  VECT_COST_MODEL_DYNAMIC = -1,
   VECT_COST_MODEL_UNLIMITED = 0,
-  VECT_COST_MODEL_CHEAP = 1,
-  VECT_COST_MODEL_DYNAMIC = 2,
-  VECT_COST_MODEL_DEFAULT = 3
+  VECT_COST_MODEL_DEFAULT = 1
 };
 
 /* Different instrumentation modes.  */
@@ -272,6 +276,9 @@ enum sanitize_code {
   SANITIZE_BUILTIN = 1UL << 25,
   SANITIZE_POINTER_COMPARE = 1UL << 26,
   SANITIZE_POINTER_SUBTRACT = 1UL << 27,
+  SANITIZE_HWADDRESS = 1UL << 28,
+  SANITIZE_USER_HWADDRESS = 1UL << 29,
+  SANITIZE_KERNEL_HWADDRESS = 1UL << 30,
   SANITIZE_SHIFT = SANITIZE_SHIFT_BASE | SANITIZE_SHIFT_EXPONENT,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN
@@ -284,6 +291,24 @@ enum sanitize_code {
   SANITIZE_UNDEFINED_NONDEFAULT = SANITIZE_FLOAT_DIVIDE | SANITIZE_FLOAT_CAST
 				  | SANITIZE_BOUNDS_STRICT
 };
+
+/* Different settings for zeroing subset of registers.  */
+namespace zero_regs_flags {
+  const unsigned int UNSET = 0;
+  const unsigned int SKIP = 1UL << 0;
+  const unsigned int ONLY_USED = 1UL << 1;
+  const unsigned int ONLY_GPR = 1UL << 2;
+  const unsigned int ONLY_ARG = 1UL << 3;
+  const unsigned int ENABLED = 1UL << 4;
+  const unsigned int USED_GPR_ARG = ENABLED | ONLY_USED | ONLY_GPR | ONLY_ARG;
+  const unsigned int USED_GPR = ENABLED | ONLY_USED | ONLY_GPR;
+  const unsigned int USED_ARG = ENABLED | ONLY_USED | ONLY_ARG;
+  const unsigned int USED = ENABLED | ONLY_USED;
+  const unsigned int ALL_GPR_ARG = ENABLED | ONLY_GPR | ONLY_ARG;
+  const unsigned int ALL_GPR = ENABLED | ONLY_GPR;
+  const unsigned int ALL_ARG = ENABLED | ONLY_ARG;
+  const unsigned int ALL = ENABLED;
+}
 
 /* Settings of flag_incremental_link.  */
 enum incremental_link {
@@ -395,5 +420,14 @@ enum evrp_mode
   EVRP_MODE_RVRP_TRACE = EVRP_MODE_RVRP_ONLY | EVRP_MODE_TRACE,
   EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
 };
+
+/* Modes of OpenACC 'kernels' constructs handling.  */
+enum openacc_kernels
+{
+  OPENACC_KERNELS_DECOMPOSE,
+  OPENACC_KERNELS_PARLOOPS
+};
+
+#endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

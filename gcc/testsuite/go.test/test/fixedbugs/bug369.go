@@ -1,11 +1,7 @@
-// $G -N -o slow.$A $D/bug369.dir/pkg.go &&
-// $G -o fast.$A $D/bug369.dir/pkg.go &&
+// +build !nacl,!js,!windows,gc
 // run
 
-// NOTE: This test is not run by 'run.go' and so not run by all.bash.
-// To run this test you must use the ./run shell script.
-
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,50 +10,45 @@
 package main
 
 import (
-	"flag"
+	"fmt"
+	"io/ioutil"
 	"os"
-	"runtime"
-	"testing"
-
-	fast "./fast"
-	slow "./slow"
+	"os/exec"
+	"path/filepath"
 )
 
-var buf = make([]byte, 1048576)
-
-func BenchmarkFastNonASCII(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		fast.NonASCII(buf, 0)
-	}
-}
-
-func BenchmarkSlowNonASCII(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		slow.NonASCII(buf, 0)
-	}
-}
-
 func main() {
-	testing.Init()
-	os.Args = []string{os.Args[0], "-test.benchtime=100ms"}
-	flag.Parse()
+	err := os.Chdir(filepath.Join(".", "fixedbugs", "bug369.dir"))
+	check(err)
 
-	rslow := testing.Benchmark(BenchmarkSlowNonASCII)
-	rfast := testing.Benchmark(BenchmarkFastNonASCII)
-	tslow := rslow.NsPerOp()
-	tfast := rfast.NsPerOp()
+	tmpDir, err := ioutil.TempDir("", "bug369")
+	check(err)
+	defer os.RemoveAll(tmpDir)
 
-	// Optimization should be good for at least 2x, but be forgiving.
-	// On the ARM simulator we see closer to 1.5x.
-	speedup := float64(tslow)/float64(tfast)
-	want := 1.8
-	if runtime.GOARCH == "arm" {
-		want = 1.3
+	tmp := func(name string) string {
+		return filepath.Join(tmpDir, name)
 	}
-	if speedup < want {
-		// TODO(rsc): doesn't work on linux-amd64 or darwin-amd64 builders, nor on
-		// a Lenovo x200 (linux-amd64) laptop.
-		//println("fast:", tfast, "slow:", tslow, "speedup:", speedup, "want:", want)
-		//println("not fast enough")
+
+	run("go", "tool", "compile", "-N", "-o", tmp("slow.o"), "pkg.go")
+	run("go", "tool", "compile", "-o", tmp("fast.o"), "pkg.go")
+	run("go", "tool", "compile", "-D", tmpDir, "-o", tmp("main.o"), "main.go")
+	run("go", "tool", "link", "-o", tmp("a.exe"), tmp("main.o"))
+	run(tmp("a.exe"))
+}
+
+func run(name string, args ...string) {
+	cmd := exec.Command(name, args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(string(out))
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

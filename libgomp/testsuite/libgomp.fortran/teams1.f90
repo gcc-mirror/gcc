@@ -1,3 +1,5 @@
+! { dg-additional-options "-Wno-deprecated-declarations" }
+
 program teams1
   use omp_lib
 !$omp teams thread_limit (2)

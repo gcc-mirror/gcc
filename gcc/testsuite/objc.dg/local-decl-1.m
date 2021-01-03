@@ -1,6 +1,7 @@
 /* Test for hiding of ivars by local variables.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 @interface Sprite {
   int a;

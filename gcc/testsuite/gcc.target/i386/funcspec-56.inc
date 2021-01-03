@@ -76,6 +76,9 @@ extern void test_amx_int8 (void)		__attribute__((__target__("amx-int8")));
 extern void test_amx_bf16 (void)		__attribute__((__target__("amx-bf16")));
 extern void test_uintr (void)			__attribute__((__target__("uintr")));
 extern void test_hreset (void)			__attribute__((__target__("hreset")));
+extern void test_keylocker (void)		__attribute__((__target__("kl")));
+extern void test_widekl (void)			__attribute__((__target__("widekl")));
+extern void test_avxvnni (void)			__attribute__((__target__("avxvnni")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx5124fmaps(void)		__attribute__((__target__("no-avx5124fmaps")));
@@ -153,6 +156,9 @@ extern void test_no_amx_int8 (void)		__attribute__((__target__("no-amx-int8")));
 extern void test_no_amx_bf16 (void)		__attribute__((__target__("no-amx-bf16")));
 extern void test_no_uintr (void)		__attribute__((__target__("no-uintr")));
 extern void test_no_hreset (void)		__attribute__((__target__("no-hreset")));
+extern void test_no_keylocker (void)		__attribute__((__target__("no-kl")));
+extern void test_no_widekl (void)		__attribute__((__target__("no-widekl")));
+extern void test_no_avxvnni (void)		__attribute__((__target__("no-avxvnni")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
@@ -187,6 +193,9 @@ extern void test_arch_barcelona (void)		__attribute__((__target__("arch=barcelon
 extern void test_arch_bdver1 (void)		__attribute__((__target__("arch=bdver1")));
 extern void test_arch_bdver2 (void)		__attribute__((__target__("arch=bdver2")));
 extern void test_arch_bdver3 (void)		__attribute__((__target__("arch=bdver3")));
+extern void test_arch_znver1 (void)             __attribute__((__target__("arch=znver1")));
+extern void test_arch_znver2 (void)             __attribute__((__target__("arch=znver2")));
+extern void test_arch_znver3 (void)             __attribute__((__target__("arch=znver3")));
 
 extern void test_tune_nocona (void)		__attribute__((__target__("tune=nocona")));
 extern void test_tune_core2 (void)		__attribute__((__target__("tune=core2")));
@@ -206,6 +215,9 @@ extern void test_tune_bdver1 (void)		__attribute__((__target__("tune=bdver1")));
 extern void test_tune_bdver2 (void)		__attribute__((__target__("tune=bdver2")));
 extern void test_tune_bdver3 (void)		__attribute__((__target__("tune=bdver3")));
 extern void test_tune_generic (void)		__attribute__((__target__("tune=generic")));
+extern void test_tune_znver1 (void)             __attribute__((__target__("tune=znver1")));
+extern void test_tune_znver2 (void)             __attribute__((__target__("tune=znver2")));
+extern void test_tune_znver3 (void)             __attribute__((__target__("tune=znver3")));
 
 extern void test_fpmath_sse (void)		__attribute__((__target__("sse2,fpmath=sse")));
 extern void test_fpmath_387 (void)		__attribute__((__target__("sse2,fpmath=387")));

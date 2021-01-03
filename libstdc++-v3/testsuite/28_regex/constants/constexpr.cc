@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-timeout-factor 2 }
 //
 // Copyright (C) 2015-2020 Free Software Foundation, Inc.
 //

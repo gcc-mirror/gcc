@@ -112,7 +112,7 @@ AC_DEFUN([DRUNTIME_OS_SOURCES],
 
   druntime_target_posix="no"
   case "$druntime_cv_target_os" in
-    aix*|*bsd*|cygwin*|darwin*|gnu*|linux*|skyos*|*solaris*|sysv*)
+    aix*|*bsd*|cygwin*|darwin*|dragonfly*|gnu*|linux*|skyos*|*solaris*|sysv*)
       druntime_target_posix="yes"
       ;;
   esac

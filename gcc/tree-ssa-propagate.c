@@ -1549,3 +1549,63 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
   else
     gcc_unreachable ();
 }
+
+/* Check exits of each loop in FUN, walk over loop closed PHIs in
+   each exit basic block and propagate degenerate PHIs.  */
+
+unsigned
+clean_up_loop_closed_phi (function *fun)
+{
+  unsigned i;
+  edge e;
+  gphi *phi;
+  tree rhs;
+  tree lhs;
+  gphi_iterator gsi;
+  struct loop *loop;
+
+  /* Avoid possibly quadratic work when scanning for loop exits across
+   all loops of a nest.  */
+  if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
+    return 0;
+
+  /* replace_uses_by might purge dead EH edges and we want it to also
+     remove dominated blocks.  */
+  calculate_dominance_info  (CDI_DOMINATORS);
+
+  /* Walk over loop in function.  */
+  FOR_EACH_LOOP_FN (fun, loop, 0)
+    {
+      /* Check each exit edege of loop.  */
+      auto_vec<edge> exits = get_loop_exit_edges (loop);
+      FOR_EACH_VEC_ELT (exits, i, e)
+	if (single_pred_p (e->dest))
+	  /* Walk over loop-closed PHIs.  */
+	  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);)
+	    {
+	      phi = gsi.phi ();
+	      rhs = gimple_phi_arg_def (phi, 0);
+	      lhs = gimple_phi_result (phi);
+
+	      if (rhs && may_propagate_copy (lhs, rhs))
+		{
+		  /* Dump details.  */
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "  Replacing '");
+		      print_generic_expr (dump_file, lhs, dump_flags);
+		      fprintf (dump_file, "' with '");
+		      print_generic_expr (dump_file, rhs, dump_flags);
+		      fprintf (dump_file, "'\n");
+		    }
+
+		  replace_uses_by (lhs, rhs);
+		  remove_phi_node (&gsi, true);
+		}
+	      else
+		gsi_next (&gsi);
+	    }
+    }
+
+  return 0;
+}

@@ -2089,7 +2089,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
       if (op >= FIRST_NORM_OPTAB && op <= LAST_NORM_OPTAB
 	  && optab_handler (op, TYPE_MODE (TREE_TYPE (type))) != CODE_FOR_nothing)
 	{
-	  tree slhs = make_ssa_name (TREE_TYPE (srhs1));
+	  tree slhs = make_ssa_name (TREE_TYPE (TREE_TYPE (lhs)));
 	  gimple *repl = gimple_build_assign (slhs, code, srhs1, srhs2);
 	  gsi_insert_before (gsi, repl, GSI_SAME_STMT);
 	  gimple_assign_set_rhs_from_tree (gsi,
@@ -2118,6 +2118,10 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
      arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
      calculated in the same way above.  */
   if (code == WIDEN_SUM_EXPR
+      || code == VEC_WIDEN_PLUS_HI_EXPR
+      || code == VEC_WIDEN_PLUS_LO_EXPR
+      || code == VEC_WIDEN_MINUS_HI_EXPR
+      || code == VEC_WIDEN_MINUS_LO_EXPR
       || code == VEC_WIDEN_MULT_HI_EXPR
       || code == VEC_WIDEN_MULT_LO_EXPR
       || code == VEC_WIDEN_MULT_EVEN_EXPR

@@ -72,6 +72,7 @@ enum lc_reason
   LC_RENAME,		/* Other reason for name change.  */
   LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
   LC_ENTER_MACRO,	/* Begin macro expansion.  */
+  LC_MODULE,		/* A (C++) Module.  */
   /* FIXME: add support for stringize and paste.  */
   LC_HWM /* High Water Mark.  */
 };
@@ -439,7 +440,8 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
 
   /* Location from whence this line map was included.  For regular
      #includes, this location will be the last location of a map.  For
-     outermost file, this is 0.  */
+     outermost file, this is 0.  For modules it could be anywhere
+     within a map.  */
   location_t included_from;
 
   /* Size is 20 or 24 bytes, no padding  */
@@ -660,6 +662,15 @@ inline unsigned char
 ORDINARY_MAP_IN_SYSTEM_HEADER_P (const line_map_ordinary *ord_map)
 {
   return ord_map->sysp;
+}
+
+/* TRUE if this line map is for a module (not a source file).  */
+
+inline bool
+MAP_MODULE_P (const line_map *map)
+{
+  return (MAP_ORDINARY_P (map)
+	  && linemap_check_ordinary (map)->reason == LC_MODULE);
 }
 
 /* Get the filename of ordinary map MAP.  */
@@ -1076,6 +1087,9 @@ extern void linemap_check_files_exited (class line_maps *);
 extern location_t linemap_line_start
 (class line_maps *set, linenum_type to_line,  unsigned int max_column_hint);
 
+/* Allocate a raw block of line maps, zero initialized.  */
+extern line_map *line_map_new_raw (line_maps *, bool, unsigned);
+
 /* Add a mapping of logical source line to physical source file and
    line number. This function creates an "ordinary map", which is a
    map that records locations of tokens that are not part of macro
@@ -1093,6 +1107,39 @@ extern const line_map *linemap_add
   (class line_maps *, enum lc_reason, unsigned int sysp,
    const char *to_file, linenum_type to_line);
 
+/* Create a macro map.  A macro map encodes source locations of tokens
+   that are part of a macro replacement-list, at a macro expansion
+   point. See the extensive comments of struct line_map and struct
+   line_map_macro, in line-map.h.
+
+   This map shall be created when the macro is expanded. The map
+   encodes the source location of the expansion point of the macro as
+   well as the "original" source location of each token that is part
+   of the macro replacement-list. If a macro is defined but never
+   expanded, it has no macro map.  SET is the set of maps the macro
+   map should be part of.  MACRO_NODE is the macro which the new macro
+   map should encode source locations for.  EXPANSION is the location
+   of the expansion point of MACRO. For function-like macros
+   invocations, it's best to make it point to the closing parenthesis
+   of the macro, rather than the the location of the first character
+   of the macro.  NUM_TOKENS is the number of tokens that are part of
+   the replacement-list of MACRO.  */
+const line_map_macro *linemap_enter_macro (line_maps *, cpp_hashnode *,
+					   location_t, unsigned int);
+
+/* Create a source location for a module.  The creator must either do
+   this after the TU is tokenized, or deal with saving and restoring
+   map state.  */
+
+extern location_t linemap_module_loc
+  (line_maps *, location_t from, const char *name);
+extern void linemap_module_reparent
+  (line_maps *, location_t loc, location_t new_parent);
+
+/* Restore the linemap state such that the map at LWM-1 continues.  */
+extern void linemap_module_restore
+  (line_maps *, unsigned lwm);
+
 /* Given a logical source location, returns the map which the
    corresponding (source file, line, column) triplet can be deduced
    from. Since the set is built chronologically, the logical lines are
@@ -1101,6 +1148,8 @@ extern const line_map *linemap_add
    function returns NULL.  */
 extern const line_map *linemap_lookup
   (const line_maps *, location_t);
+
+unsigned linemap_lookup_macro_index (const line_maps *, location_t);
 
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */

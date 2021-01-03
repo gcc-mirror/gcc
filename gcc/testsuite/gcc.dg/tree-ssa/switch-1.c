@@ -54,7 +54,7 @@ int foo3 (int x)
   }
 }
 
-/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: JT:0-62" "switchlower1" } } */
+/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: BT:0-62" "switchlower1" } } */
 
 int foo4 (int x)
 {
@@ -77,7 +77,7 @@ int foo4 (int x)
   }
 }
 
-/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: -100 JT:10-62 600-700" "switchlower1" } } */
+/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: -100 BT:10-62 600-700" "switchlower1" } } */
 
 int foo5 (int x)
 {
@@ -107,4 +107,4 @@ int foo5 (int x)
   }
 }
 
-/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: JT:10-62 600-700 JT:1000-1021 111111" "switchlower1" } } */
+/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: BT:10-62 600-700 JT:1000-1021 111111" "switchlower1" } } */

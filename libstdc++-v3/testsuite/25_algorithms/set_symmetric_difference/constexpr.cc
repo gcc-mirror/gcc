@@ -25,17 +25,19 @@ constexpr bool
 test()
 {
   constexpr std::array<int, 12> ca0{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
-  constexpr std::array<int, 12> cas{{3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}};
+  constexpr std::array<int, 12> cas{{4, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13}};
   std::array<int, 24> out0{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
-  const auto outvv = std::set_difference(ca0.begin(), ca0.end(),
-					 cas.begin(), cas.end(), out0.begin());
+  const auto outvv = std::set_symmetric_difference(ca0.begin(), ca0.end(),
+						   cas.begin(), cas.end(),
+						   out0.begin());
 
-  const auto outww = std::set_difference(ca0.begin(), ca0.end(),
-				         cas.begin(), cas.end(),
-				         out0.begin(), std::less<int>());
+  const auto outww = std::set_symmetric_difference(ca0.begin(), ca0.end(),
+						   cas.begin(), cas.end(),
+						   out0.begin(),
+						   std::less<int>());
 
-  return true;
+  return outvv == (out0.begin() + 8) && outww == outvv;
 }
 
 static_assert(test());

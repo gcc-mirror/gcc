@@ -56,11 +56,6 @@ import (
 	"runtime/internal/atomic"
 )
 
-// Keep in sync with cmd/compile/internal/gc/plive.go:go115ReduceLiveness.
-const go115ReduceLiveness = true
-
-const go115RestartSeq = go115ReduceLiveness && true // enable restartable sequences
-
 type suspendGState struct {
 	g *g
 
@@ -360,7 +355,7 @@ func isAsyncSafePoint(gp *g, pc uintptr) (bool, uintptr) {
 	}
 	name := f.Name()
 	if hasPrefix(name, "runtime.") ||
-		hasPrefix(name, "runtime..z2finternal..z2f") ||
+		hasPrefix(name, "runtime_1internal_1") ||
 		hasPrefix(name, "reflect.") {
 		// For now we never async preempt the runtime or
 		// anything closely tied to the runtime. Known issues

@@ -632,6 +632,22 @@ lhd_omp_scalar_p (tree decl)
   return false;
 }
 
+/* Return static initializer for DECL.  */
+
+tree *
+lhd_omp_get_decl_init (tree decl)
+{
+  return &DECL_INITIAL (decl);
+}
+
+/* Free any extra memory used to hold initializer information for
+   variable declarations.  */
+
+void
+lhd_omp_finish_decl_inits (void)
+{
+}
+
 /* Register language specific type size variables as potentially OpenMP
    firstprivate variables.  */
 
@@ -790,7 +806,7 @@ lhd_begin_section (const char *name)
     saved_section = text_section;
 
   /* Create a new section and switch to it.  */
-  section = get_section (name, SECTION_DEBUG | SECTION_EXCLUDE, NULL);
+  section = get_section (name, SECTION_DEBUG | SECTION_EXCLUDE, NULL, true);
   switch_to_section (section);
 }
 

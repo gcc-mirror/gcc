@@ -558,6 +558,33 @@ function_point::cmp_within_supernode (const function_point &point_a,
   return result;
 }
 
+/* Comparator for imposing an order on function_points.  */
+
+int
+function_point::cmp (const function_point &point_a,
+		     const function_point &point_b)
+{
+  int idx_a = point_a.m_supernode ? point_a.m_supernode->m_index : -1;
+  int idx_b = point_b.m_supernode ? point_b.m_supernode->m_index : -1;
+  if (int cmp_idx = idx_a - idx_b)
+    return cmp_idx;
+  gcc_assert (point_a.m_supernode == point_b.m_supernode);
+  if (point_a.m_supernode)
+    return cmp_within_supernode (point_a, point_b);
+  else
+    return 0;
+}
+
+/* Comparator for use by vec<function_point>::qsort.  */
+
+int
+function_point::cmp_ptr (const void *p1, const void *p2)
+{
+  const function_point *fp1 = (const function_point *)p1;
+  const function_point *fp2 = (const function_point *)p2;
+  return cmp (*fp1, *fp2);
+}
+
 /* For PK_BEFORE_STMT, go to next stmt (or to PK_AFTER_SUPERNODE).  */
 
 void

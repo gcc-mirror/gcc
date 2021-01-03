@@ -29,7 +29,7 @@ struct nocopy
 
   struct P { int* first; };
 
-  P operator()(int* f, int* l) const { return {f}; }
+  P operator()(int* f, int*) const { return {f}; }
 };
 
 void

@@ -26,6 +26,7 @@ extern bool ix86_handle_option (struct gcc_options *opts,
 /* Functions in i386.c */
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
+extern bool ix86_function_ms_hook_prologue (const_tree fn);
 extern void ix86_setup_frame_addresses (void);
 extern bool ix86_rip_relative_addr_p (struct ix86_address *parts);
 
@@ -71,6 +72,7 @@ extern int avx_vperm2f128_parallel (rtx par, machine_mode mode);
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);
+extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
@@ -161,6 +163,7 @@ extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
 extern bool ix86_check_no_addr_space (rtx);
 extern void ix86_split_idivmod (machine_mode, rtx[], bool);
+extern bool ix86_hardreg_mov_ok (rtx, rtx);
 
 extern rtx assign_386_stack_local (machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
@@ -242,6 +245,7 @@ extern rtx ix86_rewrite_tls_address (rtx);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
+extern void ix86_expand_vector_set_var (rtx, rtx, rtx);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 

@@ -1,0 +1,2 @@
+# t-multilib-config will generated in build folder by configure script.
+include t-multilib-config

@@ -870,6 +870,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/iostream \
                          include/istream \
                          include/iterator \
+                         include/latch \
                          include/limits \
                          include/list \
                          include/locale \
@@ -887,8 +888,10 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/ratio \
                          include/regex \
                          include/scoped_allocator \
+                         include/semaphore \
                          include/set \
                          include/shared_mutex \
+                         include/source_location \
                          include/span \
                          include/sstream \
                          include/stack \
@@ -897,6 +900,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/streambuf \
                          include/string \
                          include/string_view \
+                         include/syncstream \
                          include/system_error \
                          include/thread \
                          include/tuple \

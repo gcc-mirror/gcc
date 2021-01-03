@@ -35,6 +35,10 @@ func istrue(b bool) {
 
 type T *int
 
+type X int
+
+func (X) x() {}
+
 func main() {
 	var a []int
 	var b map[string]int
@@ -111,7 +115,7 @@ func main() {
 	isfalse(ic != d)
 	isfalse(ie != e)
 
-	// 6g used to let this go through as true.
+	// gc used to let this go through as true.
 	var g uint64 = 123
 	var h int64 = 123
 	var ig interface{} = g
@@ -127,6 +131,44 @@ func main() {
 	if m[c] != 2 {
 		println("m[c] = ", m[c])
 		panic("bad m[c]")
+	}
+
+	// interface comparisons (issue 7207)
+	{
+		type I1 interface {
+			x()
+		}
+		type I2 interface {
+			x()
+		}
+		a1 := I1(X(0))
+		b1 := I1(X(1))
+		a2 := I2(X(0))
+		b2 := I2(X(1))
+		a3 := I1(a2)
+		a4 := I2(a1)
+		var e interface{} = X(0)
+		a5 := e.(I1)
+		a6 := e.(I2)
+		isfalse(a1 == b1)
+		isfalse(a1 == b2)
+		isfalse(a2 == b1)
+		isfalse(a2 == b2)
+		istrue(a1 == a2)
+		istrue(a1 == a3)
+		istrue(a1 == a4)
+		istrue(a1 == a5)
+		istrue(a1 == a6)
+		istrue(a2 == a3)
+		istrue(a2 == a4)
+		istrue(a2 == a5)
+		istrue(a2 == a6)
+		istrue(a3 == a4)
+		istrue(a3 == a5)
+		istrue(a3 == a6)
+		istrue(a4 == a5)
+		istrue(a4 == a6)
+		istrue(a5 == a6)
 	}
 
 	// non-interface comparisons
@@ -385,6 +427,23 @@ func main() {
 		istrue(iz != y)
 		isfalse(ix != z)
 		isfalse(iz != x)
+	}
+
+	// named booleans
+	{
+		type mybool bool
+		var b mybool
+
+		type T struct{ data [20]byte }
+		var x, y T
+		b = x == y
+		istrue(x == y)
+		istrue(bool(b))
+
+		m := make(map[string][10]interface{})
+		b = m["x"] == m["y"]
+		istrue(m["x"] == m["y"])
+		istrue(bool(b))
 	}
 
 	shouldPanic(p1)

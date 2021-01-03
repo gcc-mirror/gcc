@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (rbit_s64_x_tied1, svint64_t,
 
 /*
 ** rbit_s64_x_untied:
+**	movprfx	z0, z1
 **	rbit	z0\.d, p0/m, z1\.d
 **	ret
 */

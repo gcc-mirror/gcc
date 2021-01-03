@@ -12,7 +12,6 @@
 
 /* { dg-final { scan-assembler-times "stxv" 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "lbz" 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times "addi" 3 { target ilp32 } } } */
 
 
 #include <altivec.h>

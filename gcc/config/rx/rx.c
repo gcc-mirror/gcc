@@ -639,6 +639,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
       switch (INTVAL (op))
 	{
 	case CTRLREG_PSW:   fprintf (file, "psw"); break;
+	case CTRLREG_PC:    fprintf (file, "pc"); break;
 	case CTRLREG_USP:   fprintf (file, "usp"); break;
 	case CTRLREG_FPSW:  fprintf (file, "fpsw"); break;
 	case CTRLREG_BPSW:  fprintf (file, "bpsw"); break;
@@ -2473,6 +2474,13 @@ rx_expand_builtin_mvtc (tree exp)
 
   if (! REG_P (arg2))
     arg2 = force_reg (SImode, arg2);
+
+  if (INTVAL (arg1) == 1)
+    {
+      warning (0, "invalid control register for mvtc : %d - using 'psw'",
+	       (int) INTVAL (arg1));
+      arg1 = const0_rtx;
+    }
 
   emit_insn (gen_mvtc (arg1, arg2));
 

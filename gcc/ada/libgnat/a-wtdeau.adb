@@ -30,28 +30,22 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Generic_Aux; use Ada.Wide_Text_IO.Generic_Aux;
-with Ada.Wide_Text_IO.Float_Aux;   use Ada.Wide_Text_IO.Float_Aux;
-
-with System.Img_Dec; use System.Img_Dec;
-with System.Img_LLD; use System.Img_LLD;
-with System.Val_Dec; use System.Val_Dec;
-with System.Val_LLD; use System.Val_LLD;
 
 package body Ada.Wide_Text_IO.Decimal_Aux is
 
-   -------------
-   -- Get_Dec --
-   -------------
+   ---------
+   -- Get --
+   ---------
 
-   function Get_Dec
+   function Get
      (File  : File_Type;
       Width : Field;
-      Scale : Integer) return Integer
+      Scale : Integer) return Int
    is
       Buf  : String (1 .. Field'Last);
       Ptr  : aliased Integer;
       Stop : Integer := 0;
-      Item : Integer;
+      Item : Int;
 
    begin
       if Width /= 0 then
@@ -62,96 +56,42 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
          Ptr := 1;
       end if;
 
-      Item := Scan_Decimal (Buf, Ptr'Access, Stop, Scale);
+      Item := Scan (Buf, Ptr'Access, Stop, Scale);
       Check_End_Of_Field (Buf, Stop, Ptr, Width);
       return Item;
-   end Get_Dec;
+   end Get;
 
-   -------------
-   -- Get_LLD --
-   -------------
+   ----------
+   -- Gets --
+   ----------
 
-   function Get_LLD
-     (File  : File_Type;
-      Width : Field;
-      Scale : Integer) return Long_Long_Integer
-   is
-      Buf  : String (1 .. Field'Last);
-      Ptr  : aliased Integer;
-      Stop : Integer := 0;
-      Item : Long_Long_Integer;
-
-   begin
-      if Width /= 0 then
-         Load_Width (File, Width, Buf, Stop);
-         String_Skip (Buf, Ptr);
-      else
-         Load_Real (File, Buf, Stop);
-         Ptr := 1;
-      end if;
-
-      Item := Scan_Long_Long_Decimal (Buf, Ptr'Access, Stop, Scale);
-      Check_End_Of_Field (Buf, Stop, Ptr, Width);
-      return Item;
-   end Get_LLD;
-
-   --------------
-   -- Gets_Dec --
-   --------------
-
-   function Gets_Dec
+   function Gets
      (From  : String;
-      Last  : not null access Positive;
-      Scale : Integer) return Integer
+      Last  : out Positive;
+      Scale : Integer) return Int
    is
       Pos  : aliased Integer;
-      Item : Integer;
+      Item : Int;
 
    begin
       String_Skip (From, Pos);
-      Item := Scan_Decimal (From, Pos'Access, From'Last, Scale);
-      Last.all := Pos - 1;
+      Item := Scan (From, Pos'Access, From'Last, Scale);
+      Last := Pos - 1;
       return Item;
 
    exception
       when Constraint_Error =>
-         Last.all := Pos - 1;
+         Last := Pos - 1;
          raise Data_Error;
+   end Gets;
 
-   end Gets_Dec;
+   ---------
+   -- Put --
+   ---------
 
-   --------------
-   -- Gets_LLD --
-   --------------
-
-   function Gets_LLD
-     (From  : String;
-      Last  : not null access Positive;
-      Scale : Integer) return Long_Long_Integer
-   is
-      Pos  : aliased Integer;
-      Item : Long_Long_Integer;
-
-   begin
-      String_Skip (From, Pos);
-      Item := Scan_Long_Long_Decimal (From, Pos'Access, From'Last, Scale);
-      Last.all := Pos - 1;
-      return Item;
-
-   exception
-      when Constraint_Error =>
-         Last.all := Pos - 1;
-         raise Data_Error;
-
-   end Gets_LLD;
-
-   -------------
-   -- Put_Dec --
-   -------------
-
-   procedure Put_Dec
+   procedure Put
      (File  : File_Type;
-      Item  : Integer;
+      Item  : Int;
       Fore  : Field;
       Aft   : Field;
       Exp   : Field;
@@ -161,105 +101,51 @@ package body Ada.Wide_Text_IO.Decimal_Aux is
       Ptr : Natural := 0;
 
    begin
-      Set_Image_Decimal (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
+      Set_Image (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
       Put_Item (File, Buf (1 .. Ptr));
-   end Put_Dec;
+   end Put;
 
-   -------------
-   -- Put_LLD --
-   -------------
+   ----------
+   -- Puts --
+   ----------
 
-   procedure Put_LLD
-     (File  : File_Type;
-      Item  : Long_Long_Integer;
-      Fore  : Field;
-      Aft   : Field;
-      Exp   : Field;
-      Scale : Integer)
-   is
-      Buf : String (1 .. Field'Last);
-      Ptr : Natural := 0;
-
-   begin
-      Set_Image_Long_Long_Decimal (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
-      Put_Item (File, Buf (1 .. Ptr));
-   end Put_LLD;
-
-   --------------
-   -- Puts_Dec --
-   --------------
-
-   procedure Puts_Dec
+   procedure Puts
      (To    : out String;
-      Item  : Integer;
+      Item  : Int;
       Aft   : Field;
       Exp   : Field;
       Scale : Integer)
    is
-      Buf  : String (1 .. Field'Last);
+      Buf  : String (1 .. Positive'Max (Field'Last, To'Length));
       Fore : Integer;
       Ptr  : Natural := 0;
 
    begin
-      --  Compute Fore, allowing for Aft digits and the decimal dot
+      --  Compute Fore, allowing for the decimal dot and Aft digits
 
-      Fore := To'Length - Field'Max (1, Aft) - 1;
+      Fore := To'Length - 1 - Field'Max (1, Aft);
 
-      --  Allow for Exp and two more for E+ or E- if exponent present
+      --  Allow for Exp and one more for E if exponent present
 
       if Exp /= 0 then
-         Fore := Fore - 2 - Exp;
+         Fore := Fore - 1 - Field'Max (2, Exp);
       end if;
 
       --  Make sure we have enough room
 
-      if Fore < 1 then
+      if Fore < 1 + Boolean'Pos (Item < 0) then
          raise Layout_Error;
       end if;
 
       --  Do the conversion and check length of result
 
-      Set_Image_Decimal (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
+      Set_Image (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
 
       if Ptr > To'Length then
          raise Layout_Error;
       else
          To := Buf (1 .. Ptr);
       end if;
-   end Puts_Dec;
-
-   --------------
-   -- Puts_LLD --
-   --------------
-
-   procedure Puts_LLD
-     (To    : out String;
-      Item  : Long_Long_Integer;
-      Aft   : Field;
-      Exp   : Field;
-      Scale : Integer)
-   is
-      Buf  : String (1 .. Field'Last);
-      Fore : Integer;
-      Ptr  : Natural := 0;
-
-   begin
-      Fore :=
-        (if Exp = 0
-         then To'Length - 1 - Aft
-         else To'Length - 2 - Aft - Exp);
-
-      if Fore < 1 then
-         raise Layout_Error;
-      end if;
-
-      Set_Image_Long_Long_Decimal (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
-
-      if Ptr > To'Length then
-         raise Layout_Error;
-      else
-         To := Buf (1 .. Ptr);
-      end if;
-   end Puts_LLD;
+   end Puts;
 
 end Ada.Wide_Text_IO.Decimal_Aux;

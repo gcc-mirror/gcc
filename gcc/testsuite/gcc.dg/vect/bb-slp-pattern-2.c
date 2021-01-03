@@ -13,13 +13,13 @@ foo (short * __restrict__ a, int * __restrict__ b, int stride)
   for (i = 0; i < N/stride; i++, a += stride, b += stride)
    {
      a[0] = b[0] ? 1 : 7;
-     a[1] = b[1] ? 2 : 0;
+     a[1] = b[1] ? 2 : 7;
      a[2] = b[2] ? 3 : 0;
-     a[3] = b[3] ? 4 : 0;
+     a[3] = b[3] ? 4 : 7;
      a[4] = b[4] ? 5 : 0;
      a[5] = b[5] ? 6 : 0;
      a[6] = b[6] ? 7 : 0;
-     a[7] = b[7] ? 8 : 0;
+     a[7] = b[7] ? 8 : 7;
    }
 }
 

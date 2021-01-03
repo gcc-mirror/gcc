@@ -1,5 +1,6 @@
 /* Test to make sure that file name does not appear in the binary. */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 

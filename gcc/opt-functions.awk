@@ -166,8 +166,10 @@ function switch_bit_fields (flags)
 	  uinteger_flag \
 	  hwi_flag \
 	  flag_init("ToLower", flags) \
-	  flag_init("Report", flags) \
 	  byte_size_flag
+
+	if (flag_set_p("Report", flags))
+	    print "#error Report option property is dropped"
 
 	sub(", $", "", result)
 	return result

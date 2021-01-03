@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 class temp_slot;
 typedef class temp_slot *temp_slot_p;
 class predefined_function_abi;
+namespace rtl_ssa { class function_info; }
 
 /* Information mainlined about RTL representation of incoming arguments.  */
 struct GTY(()) incoming_args {
@@ -72,6 +73,8 @@ struct GTY(()) rtl_data {
      Other functions (including those called by this function) might use
      different ABIs.  */
   const predefined_function_abi *GTY((skip)) abi;
+
+  rtl_ssa::function_info *GTY((skip)) ssa;
 
   /* For function.c  */
 
@@ -309,6 +312,9 @@ struct GTY(()) rtl_data {
      to eliminable regs (like the frame pointer) are set if an asm
      sets them.  */
   HARD_REG_SET asm_clobbers;
+
+  /* All hard registers that need to be zeroed at the return of the routine.  */
+  HARD_REG_SET must_be_zero_on_return;
 
   /* The highest address seen during shorten_branches.  */
   int max_insn_address;

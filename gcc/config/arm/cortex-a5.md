@@ -70,7 +70,7 @@
 (define_insn_reservation "cortex_a5_alu_shift" 2
   (and (eq_attr "tune" "cortexa5")
        (eq_attr "type" "extend,\
-                        alu_shift_imm,alus_shift_imm,\
+                        alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                         logic_shift_imm,logics_shift_imm,\
                         alu_shift_reg,alus_shift_reg,\
                         logic_shift_reg,logics_shift_reg,\

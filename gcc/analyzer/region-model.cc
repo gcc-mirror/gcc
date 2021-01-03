@@ -363,6 +363,88 @@ private:
   enum poison_kind m_pkind;
 };
 
+/* A subclass of pending_diagnostic for complaining about shifts
+   by negative counts.  */
+
+class shift_count_negative_diagnostic
+: public pending_diagnostic_subclass<shift_count_negative_diagnostic>
+{
+public:
+  shift_count_negative_diagnostic (const gassign *assign, tree count_cst)
+  : m_assign (assign), m_count_cst (count_cst)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "shift_count_negative_diagnostic";
+  }
+
+  bool operator== (const shift_count_negative_diagnostic &other) const
+  {
+    return (m_assign == other.m_assign
+	    && same_tree_p (m_count_cst, other.m_count_cst));
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_negative,
+		       "shift by negative count (%qE)", m_count_cst);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("shift by negative amount here (%qE)", m_count_cst);
+  }
+
+private:
+  const gassign *m_assign;
+  tree m_count_cst;
+};
+
+/* A subclass of pending_diagnostic for complaining about shifts
+   by counts >= the width of the operand type.  */
+
+class shift_count_overflow_diagnostic
+: public pending_diagnostic_subclass<shift_count_overflow_diagnostic>
+{
+public:
+  shift_count_overflow_diagnostic (const gassign *assign,
+				   int operand_precision,
+				   tree count_cst)
+  : m_assign (assign), m_operand_precision (operand_precision),
+    m_count_cst (count_cst)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "shift_count_overflow_diagnostic";
+  }
+
+  bool operator== (const shift_count_overflow_diagnostic &other) const
+  {
+    return (m_assign == other.m_assign
+	    && m_operand_precision == other.m_operand_precision
+	    && same_tree_p (m_count_cst, other.m_count_cst));
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_overflow,
+		       "shift by count (%qE) >= precision of type (%qi)",
+		       m_count_cst, m_operand_precision);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("shift by count %qE here", m_count_cst);
+  }
+
+private:
+  const gassign *m_assign;
+  int m_operand_precision;
+  tree m_count_cst;
+};
+
 /* If ASSIGN is a stmt that can be modelled via
      set_value (lhs_reg, SVALUE, CTXT)
    for some SVALUE, get the SVALUE.
@@ -513,6 +595,26 @@ region_model::get_gassign_result (const gassign *assign,
 
 	const svalue *rhs1_sval = get_rvalue (rhs1, ctxt);
 	const svalue *rhs2_sval = get_rvalue (rhs2, ctxt);
+
+	if (ctxt && (op == LSHIFT_EXPR || op == RSHIFT_EXPR))
+	  {
+	    /* "INT34-C. Do not shift an expression by a negative number of bits
+	       or by greater than or equal to the number of bits that exist in
+	       the operand."  */
+	    if (const tree rhs2_cst = rhs2_sval->maybe_get_constant ())
+	      if (TREE_CODE (rhs2_cst) == INTEGER_CST)
+		{
+		  if (tree_int_cst_sgn (rhs2_cst) < 0)
+		    ctxt->warn (new shift_count_negative_diagnostic
+				  (assign, rhs2_cst));
+		  else if (compare_tree_int (rhs2_cst,
+					     TYPE_PRECISION (TREE_TYPE (rhs1)))
+			   >= 0)
+		    ctxt->warn (new shift_count_overflow_diagnostic
+				  (assign, TYPE_PRECISION (TREE_TYPE (rhs1)),
+				   rhs2_cst));
+		}
+	  }
 
 	const svalue *sval_binop
 	  = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,
@@ -836,7 +938,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
-  reachable_regions reachable_regs (this, m_mgr);
+  reachable_regions reachable_regs (this);
 
   /* Determine the reachable regions and their mutability.  */
   {
@@ -904,7 +1006,7 @@ void
 region_model::get_reachable_svalues (svalue_set *out,
 				     const svalue *extra_sval)
 {
-  reachable_regions reachable_regs (this, m_mgr);
+  reachable_regions reachable_regs (this);
 
   /* Add globals and regions that already escaped in previous
      unknown calls.  */
@@ -1342,8 +1444,7 @@ region_model::get_initial_value_for_global (const region *reg) const
      global decl defined in this TU that hasn't been touched yet, then
      the initial value of REG can be taken from the initialization value
      of the decl.  */
-  if ((called_from_main_p () && !DECL_EXTERNAL (decl))
-      || TREE_READONLY (decl))
+  if (called_from_main_p () || TREE_READONLY (decl))
     {
       /* Attempt to get the initializer value for base_reg.  */
       if (const svalue *base_reg_init
@@ -2192,7 +2293,10 @@ region_model::get_representative_path_var (const region *reg,
 	return path_var (function_reg->get_fndecl (), 0);
       }
     case RK_LABEL:
-      gcc_unreachable (); // TODO
+      {
+	const label_region *label_reg = as_a <const label_region *> (reg);
+	return path_var (label_reg->get_label (), 0);
+      }
 
     case RK_SYMBOLIC:
       {
@@ -2855,8 +2959,7 @@ region_model::can_merge_with_p (const region_model &other_model,
   /* Merge constraints.  */
   constraint_manager::merge (*m_constraints,
 			      *other_model.m_constraints,
-			      out_model->m_constraints,
-			      m);
+			      out_model->m_constraints);
 
   return true;
 }

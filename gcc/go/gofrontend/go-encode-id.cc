@@ -12,8 +12,8 @@
 #include "go-encode-id.h"
 #include "lex.h"
 
-// Return whether the character c is OK to use in the assembler.  We
-// only permit ASCII alphanumeric characters, underscore, and dot.
+// Return whether the character c can appear in a name that we are
+// encoding.  We only permit ASCII alphanumeric characters.
 
 static bool
 char_needs_encoding(char c)
@@ -32,7 +32,6 @@ char_needs_encoding(char c)
     case 'y': case 'z':
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-    case '_': case '.':
       return false;
     default:
       return true;
@@ -52,6 +51,52 @@ go_id_needs_encoding(const std::string& str)
       return true;
   return false;
 }
+
+// Map from characters to the underscore encoding for them.
+
+class Special_char_code
+{
+ public:
+  Special_char_code();
+
+  // Return the simple underscore encoding for C, or 0 if none.
+  char
+  code_for(unsigned int c) const
+  {
+    if (c <= 127)
+      return this->codes_[c];
+    return 0;
+  }
+
+ private:
+  // Encodings for characters.
+  char codes_[128];
+};
+
+// Construct the underscore encoding map.
+
+Special_char_code::Special_char_code()
+{
+  memset(this->codes_, 0, sizeof this->codes_);
+  this->codes_['_'] = '_';
+  this->codes_['.'] = '0';
+  this->codes_['/'] = '1';
+  this->codes_['*'] = '2';
+  this->codes_[','] = '3';
+  this->codes_['{'] = '4';
+  this->codes_['}'] = '5';
+  this->codes_['['] = '6';
+  this->codes_[']'] = '7';
+  this->codes_['('] = '8';
+  this->codes_[')'] = '9';
+  this->codes_['"'] = 'a';
+  this->codes_[' '] = 'b';
+  this->codes_[';'] = 'c';
+}
+
+// The singleton Special_char_code.
+
+static const Special_char_code special_char_code;
 
 // Pull the next UTF-8 character out of P and store it in *PC.  Return
 // the number of bytes read.
@@ -82,10 +127,9 @@ fetch_utf8_char(const char* p, unsigned int* pc)
   return len;
 }
 
-// Encode an identifier using assembler-friendly characters. The encoding is
-// described in detail near the end of the long comment at the start of
-// names.cc. Short version: translate all non-ASCII-alphanumeric characters into
-// ..uXXXX or ..UXXXXXXXX, translate ASCII non-alphanumerics into ".zXX".
+// Encode an identifier using assembler-friendly characters.  The
+// encoding is described in detail near the end of the long comment at
+// the start of names.cc.
 
 std::string
 go_encode_id(const std::string &id)
@@ -96,50 +140,57 @@ go_encode_id(const std::string &id)
       return id;
     }
 
-  // The encoding is only unambiguous if the input string does not
-  // contain ..z, ..u or ..U.
-  go_assert(id.find("..z") == std::string::npos);
-  go_assert(id.find("..u") == std::string::npos);
-  go_assert(id.find("..U") == std::string::npos);
-
   std::string ret;
   const char* p = id.c_str();
   const char* pend = p + id.length();
 
-  // A leading ".0" is a space introduced before a mangled type name
-  // that starts with a 'u' or 'U', to avoid confusion with the
-  // mangling used here.  We don't need a leading ".0", and we don't
-  // want symbols that start with '.', so remove it.
-  if (p[0] == '.' && p[1] == '0')
-    p += 2;
+  // We encode a leading digit, to ensure that no identifier starts
+  // with a digit.
+  if (pend > p && p[0] >= '0' && p[0] <= '9')
+    {
+      char buf[8];
+      snprintf(buf, sizeof buf, "_x%02x", p[0]);
+      ret.append(buf);
+      ++p;
+    }
 
   while (p < pend)
     {
       unsigned int c;
       size_t len = fetch_utf8_char(p, &c);
-      if (len == 1 && !char_needs_encoding(c))
+      if (len == 1)
 	{
-	  ret += c;
+	  if (!char_needs_encoding(c))
+	    ret.push_back(c);
+	  else
+	    {
+	      char code = special_char_code.code_for(c);
+	      if (code != 0)
+		{
+		  ret.push_back('_');
+		  ret.push_back(code);
+		}
+	      else
+		{
+		  char buf[8];
+		  snprintf(buf, sizeof buf, "_x%02x", c);
+		  ret.append(buf);
+		}
+	    }
 	}
       else
 	{
 	  char buf[16];
-          if (len == 1)
-            snprintf(buf, sizeof buf, "..z%02x", c);
-	  else if (c < 0x10000)
-	    snprintf(buf, sizeof buf, "..u%04x", c);
+	  if (c < 0x10000)
+	    snprintf(buf, sizeof buf, "_u%04x", c);
 	  else
-	    snprintf(buf, sizeof buf, "..U%08x", c);
-
-	  // We don't want a symbol to start with '.', so add a prefix
-	  // if needed.
-	  if (ret.empty())
-	    ret += '_';
-
-	  ret += buf;
+	    snprintf(buf, sizeof buf, "_U%08x", c);
+	  ret.append(buf);
 	}
+
       p += len;
     }
+
   return ret;
 }
 
@@ -170,64 +221,116 @@ go_decode_id(const std::string &encoded)
   const char* pend = p + encoded.length();
   const Location loc = Linemap::predeclared_location();
 
-  // Special case for initial "_", in case it was introduced
-  // as a way to prevent encoded symbol starting with ".".
-  if (*p == '_' && (strncmp(p+1, "..u", 3) == 0 || strncmp(p+1, "..U", 3) == 0))
-    p++;
-
   while (p < pend)
     {
-      if (strncmp(p, "..z", 3) == 0)
-        {
-          const char* digits = p+3;
-          if (strlen(digits) < 2)
-            return "";
-          unsigned rune = hex_digits_to_unicode_codepoint(digits, 2);
-          Lex::append_char(rune, true, &ret, loc);
-          p += 5;
-        }
-      else if (strncmp(p, "..u", 3) == 0)
-        {
-          const char* digits = p+3;
-          if (strlen(digits) < 4)
-            return "";
-          unsigned rune = hex_digits_to_unicode_codepoint(digits, 4);
-          Lex::append_char(rune, true, &ret, loc);
-          p += 7;
-        }
-      else if (strncmp(p, "..U", 3) == 0)
-        {
-          const char* digits = p+3;
-          if (strlen(digits) < 8)
-            return "";
-          unsigned rune = hex_digits_to_unicode_codepoint(digits, 8);
-          Lex::append_char(rune, true, &ret, loc);
-          p += 11;
-        }
-      else
-        {
-          ret += *p;
-          p += 1;
-        }
+      if (*p != '_' || p + 1 == pend)
+	{
+	  ret.push_back(*p);
+	  p++;
+	  continue;
+	}
+
+      switch (p[1])
+	{
+	case '_':
+	  ret.push_back('_');
+	  p += 2;
+	  break;
+	case '0':
+	  ret.push_back('.');
+	  p += 2;
+	  break;
+	case '1':
+	  ret.push_back('/');
+	  p += 2;
+	  break;
+	case '2':
+	  ret.push_back('*');
+	  p += 2;
+	  break;
+	case '3':
+	  ret.push_back(',');
+	  p += 2;
+	  break;
+	case '4':
+	  ret.push_back('{');
+	  p += 2;
+	  break;
+	case '5':
+	  ret.push_back('}');
+	  p += 2;
+	  break;
+	case '6':
+	  ret.push_back('[');
+	  p += 2;
+	  break;
+	case '7':
+	  ret.push_back(']');
+	  p += 2;
+	  break;
+	case '8':
+	  ret.push_back('(');
+	  p += 2;
+	  break;
+	case '9':
+	  ret.push_back(')');
+	  p += 2;
+	  break;
+	case 'a':
+	  ret.push_back('"');
+	  p += 2;
+	  break;
+	case 'b':
+	  ret.push_back(' ');
+	  p += 2;
+	  break;
+	case 'c':
+	  ret.push_back(';');
+	  p += 2;
+	  break;
+        case 'x':
+	  {
+	    const char* digits = p + 2;
+	    if (strlen(digits) < 2)
+	      return "";
+	    unsigned int rune = hex_digits_to_unicode_codepoint(digits, 2);
+	    Lex::append_char(rune, true, &ret, loc);
+	    p += 4;
+	  }
+	  break;
+	case 'u':
+	  {
+	    const char* digits = p + 2;
+	    if (strlen(digits) < 4)
+	      return "";
+	    unsigned int rune = hex_digits_to_unicode_codepoint(digits, 4);
+	    Lex::append_char(rune, true, &ret, loc);
+	    p += 6;
+	  }
+	  break;
+	case 'U':
+	  {
+	    const char* digits = p + 2;
+	    if (strlen(digits) < 8)
+	      return "";
+	    unsigned int rune = hex_digits_to_unicode_codepoint(digits, 8);
+	    Lex::append_char(rune, true, &ret, loc);
+	    p += 10;
+	  }
+	  break;
+	default:
+	  return "";
+	}
     }
 
   return ret;
 }
 
-std::string
-go_selectively_encode_id(const std::string &id)
-{
-  if (go_id_needs_encoding(id))
-    return go_encode_id(id);
-  return std::string();
-}
-
 // Encode a struct field tag.  This is only used when we need to
 // create a type descriptor for an anonymous struct type with field
-// tags.  This mangling is applied before go_encode_id.  We skip
-// alphanumerics and underscore, replace every other single byte
-// character with .xNN, and leave larger UTF-8 characters for
-// go_encode_id.
+// tags.  Underscore encoding will be applied to the returned string.
+// The tag will appear between curly braces, so that is all we have to
+// avoid.
 
 std::string
 go_mangle_struct_tag(const std::string& tag)
@@ -241,28 +344,14 @@ go_mangle_struct_tag(const std::string& tag)
       size_t len = fetch_utf8_char(p, &c);
       if (len > 1)
 	ret.append(p, len);
-      else if (!char_needs_encoding(c) && c != '.')
-	ret += c;
+      else if (c != '{' && c != '}' && c != '\\')
+	ret.push_back(c);
       else
 	{
-	  char buf[16];
-	  snprintf(buf, sizeof buf, ".x%02x", c);
-	  ret += buf;
+	  ret.push_back('\\');
+	  ret.push_back(c);
 	}
       p += len;
     }
   return ret;
-}
-
-// Encode a package path.
-
-std::string
-go_mangle_pkgpath(const std::string& pkgpath)
-{
-  std::string s = pkgpath;
-  for (size_t i = s.find('.');
-       i != std::string::npos;
-       i = s.find('.', i + 1))
-    s.replace(i, 1, ".x2e"); // 0x2e is the ASCII encoding for '.'
-  return s;
 }

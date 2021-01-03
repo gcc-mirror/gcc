@@ -6,5 +6,4 @@ namespace bar
 struct foo
 {
   foo();
-};
-// { dg-error "-:expected" "" { target *-*-* } .+1 }
+}; // { dg-error "3:expected"  }

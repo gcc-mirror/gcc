@@ -495,7 +495,8 @@ T floorImpl(T)(const T x) @trusted pure nothrow @nogc
         else
             int pos = 3;
     }
-    else static if (F.realFormat == RealFormat.ieeeExtended)
+    else static if (F.realFormat == RealFormat.ieeeExtended ||
+                    F.realFormat == RealFormat.ieeeExtended53)
     {
         int exp = (y.vu[F.EXPPOS_SHORT] & 0x7fff) - 0x3fff;
 
@@ -542,7 +543,10 @@ T floorImpl(T)(const T x) @trusted pure nothrow @nogc
     }
     else
     {
-        exp = (T.mant_dig - 1) - exp;
+        static if (F.realFormat == RealFormat.ieeeExtended53)
+            exp = (T.mant_dig + 11 - 1) - exp; // mant_dig is really 64
+        else
+            exp = (T.mant_dig - 1) - exp;
 
         // Zero 16 bits at a time.
         while (exp >= 16)
@@ -1079,13 +1083,13 @@ Lret: {}
         real t = tan(x);
 
         //printf("tan(%Lg) = %Lg, should be %Lg\n", x, t, r);
-        if (!isIdentical(r, t)) assert(fabs(r-t) <= .0000001);
+        assert(approxEqual(r, t));
 
         x = -x;
         r = -r;
         t = tan(x);
         //printf("tan(%Lg) = %Lg, should be %Lg\n", x, t, r);
-        if (!isIdentical(r, t) && !(r != r && t != t)) assert(fabs(r-t) <= .0000001);
+        assert(approxEqual(r, t));
     }
     // overflow
     assert(isNaN(tan(real.infinity)));
@@ -1150,7 +1154,7 @@ float asin(float x) @safe pure nothrow @nogc  { return asin(cast(real) x); }
 
 @system unittest
 {
-    assert(equalsDigit(asin(0.5), PI / 6, useDigits));
+    assert(asin(0.5).approxEqual(PI / 6));
 }
 
 /***************
@@ -1379,7 +1383,7 @@ float atan2(float y, float x) @safe pure nothrow @nogc
 
 @system unittest
 {
-    assert(equalsDigit(atan2(1.0L, std.math.sqrt(3.0L)), PI / 6, useDigits));
+    assert(atan2(1.0, sqrt(3.0)).approxEqual(PI / 6));
 }
 
 /***********************************
@@ -1441,7 +1445,7 @@ float sinh(float x) @safe pure nothrow @nogc  { return sinh(cast(real) x); }
 
 @system unittest
 {
-    assert(equalsDigit(sinh(1.0), (E - 1.0 / E) / 2, useDigits));
+    assert(sinh(1.0).approxEqual((E - 1.0 / E) / 2));
 }
 
 /***********************************
@@ -1791,7 +1795,8 @@ real exp(real x) @trusted pure nothrow @nogc
             enum real OF =  7.09782712893383996732E2;  // ln((1-2^-53) * 2^1024)
             enum real UF = -7.451332191019412076235E2; // ln(2^-1075)
         }
-        else static if (F.realFormat == RealFormat.ieeeExtended)
+        else static if (F.realFormat == RealFormat.ieeeExtended ||
+                        F.realFormat == RealFormat.ieeeExtended53)
         {
             // Coefficients for exp(x)
             static immutable real[3] P = [
@@ -1882,7 +1887,7 @@ float exp(float x)  @safe pure nothrow @nogc   { return exp(cast(real) x); }
 
 @system unittest
 {
-    assert(equalsDigit(exp(3.0L), E * E * E, useDigits));
+    assert(exp(3.0).feqrel(E * E * E) > 16);
 }
 
 /**
@@ -2468,7 +2473,8 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
         ctrl.rounding = FloatingPointControl.roundToNearest;
     }
 
-    static if (real.mant_dig == 113)
+    enum realFormat = floatTraits!real.realFormat;
+    static if (realFormat == RealFormat.ieeeQuadruple)
     {
         static immutable real[2][] exptestpoints =
         [ //  x               exp(x)
@@ -2487,7 +2493,8 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
             [-0x1p+30L,       0                                        ], // far underflow
         ];
     }
-    else static if (real.mant_dig == 64) // 80-bit reals
+    else static if (realFormat == RealFormat.ieeeExtended ||
+                    realFormat == RealFormat.ieeeExtended53)
     {
         static immutable real[2][] exptestpoints =
         [ //  x               exp(x)
@@ -2506,7 +2513,7 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
             [-0x1p+30L,       0                            ], // far underflow
         ];
     }
-    else static if (real.mant_dig == 53) // 64-bit reals
+    else static if (realFormat == RealFormat.ieeeDouble)
     {
         static immutable real[2][] exptestpoints =
         [ //  x,             exp(x)
@@ -2527,14 +2534,14 @@ private real exp2Impl(real x) @nogc @trusted pure nothrow
     else
         static assert(0, "No exp() tests for real type!");
 
-    const minEqualDecimalDigits = real.dig - 3;
+    const minEqualMantissaBits = real.mant_dig - 13;
     real x;
     version (IeeeFlagsSupport) IeeeFlags f;
     foreach (ref pair; exptestpoints)
     {
         version (IeeeFlagsSupport) resetIeeeFlags();
         x = exp(pair[0]);
-        assert(equalsDigit(x, pair[1], minEqualDecimalDigits));
+        assert(feqrel(x, pair[1]) >= minEqualMantissaBits);
     }
 
     // Ideally, exp(0) would not set the inexact flag.
@@ -2650,7 +2657,8 @@ if (isFloatingPoint!T)
     alias F = floatTraits!T;
 
     ex = vu[F.EXPPOS_SHORT] & F.EXPMASK;
-    static if (F.realFormat == RealFormat.ieeeExtended)
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53)
     {
         if (ex)
         {   // If exponent is non-zero
@@ -2938,7 +2946,8 @@ if (isFloatingPoint!T)
     y.rv = x;
 
     int ex = y.vu[F.EXPPOS_SHORT] & F.EXPMASK;
-    static if (F.realFormat == RealFormat.ieeeExtended)
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53)
     {
         if (ex)
         {
@@ -3184,6 +3193,7 @@ float ldexp(float n, int exp) @safe pure nothrow @nogc { return ldexp(cast(real)
 @safe pure nothrow @nogc unittest
 {
     static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended ||
+               floatTraits!(real).realFormat == RealFormat.ieeeExtended53 ||
                floatTraits!(real).realFormat == RealFormat.ieeeQuadruple)
     {
         assert(ldexp(1.0L, -16384) == 0x1p-16384L);
@@ -4428,12 +4438,16 @@ long lrint(real x) @trusted pure nothrow @nogc
 
             return sign ? -result : result;
         }
-        else static if (F.realFormat == RealFormat.ieeeExtended)
+        else static if (F.realFormat == RealFormat.ieeeExtended ||
+                        F.realFormat == RealFormat.ieeeExtended53)
         {
             long result;
 
             // Rounding limit when casting from real(80-bit) to ulong.
-            enum real OF = 9.22337203685477580800E18L;
+            static if (F.realFormat == RealFormat.ieeeExtended)
+                enum real OF = 9.22337203685477580800E18L;
+            else
+                enum real OF = 4.50359962737049600000E15L;
 
             ushort* vu = cast(ushort*)(&x);
             uint* vi = cast(uint*)(&x);
@@ -5904,7 +5918,8 @@ bool isSubnormal(X)(X x) @trusted pure nothrow @nogc
         return (e == 0 &&
           ((ps[MANTISSA_LSB]|(ps[MANTISSA_MSB]& 0x0000_FFFF_FFFF_FFFF)) != 0));
     }
-    else static if (F.realFormat == RealFormat.ieeeExtended)
+    else static if (F.realFormat == RealFormat.ieeeExtended ||
+                    F.realFormat == RealFormat.ieeeExtended53)
     {
         ushort* pe = cast(ushort *)&x;
         long*   ps = cast(long *)&x;
@@ -5954,7 +5969,8 @@ if (isFloatingPoint!(X))
         return ((*cast(ulong *)&x) & 0x7FFF_FFFF_FFFF_FFFF)
             == 0x7FF0_0000_0000_0000;
     }
-    else static if (F.realFormat == RealFormat.ieeeExtended)
+    else static if (F.realFormat == RealFormat.ieeeExtended ||
+                    F.realFormat == RealFormat.ieeeExtended53)
     {
         const ushort e = cast(ushort)(F.EXPMASK & (cast(ushort *)&x)[F.EXPPOS_SHORT]);
         const ulong ps = *cast(ulong *)&x;
@@ -6217,7 +6233,8 @@ F sgn(F)(F x) @safe pure nothrow @nogc
 real NaN(ulong payload) @trusted pure nothrow @nogc
 {
     alias F = floatTraits!(real);
-    static if (F.realFormat == RealFormat.ieeeExtended)
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53)
     {
         // real80 (in x86 real format, the implied bit is actually
         // not implied but a real bit which is stored in the real)
@@ -6423,11 +6440,14 @@ real nextUp(real x) @trusted pure nothrow @nogc
         }
         return x;
     }
-    else static if (F.realFormat == RealFormat.ieeeExtended)
+    else static if (F.realFormat == RealFormat.ieeeExtended ||
+                    F.realFormat == RealFormat.ieeeExtended53)
     {
         // For 80-bit reals, the "implied bit" is a nuisance...
         ushort *pe = cast(ushort *)&x;
         ulong  *ps = cast(ulong  *)&x;
+        // EPSILON is 1 for 64-bit, and 2048 for 53-bit precision reals.
+        enum ulong EPSILON = 2UL ^^ (64 - real.mant_dig);
 
         if ((pe[F.EXPPOS_SHORT] & F.EXPMASK) == F.EXPMASK)
         {
@@ -6438,7 +6458,7 @@ real nextUp(real x) @trusted pure nothrow @nogc
         if (pe[F.EXPPOS_SHORT] & 0x8000)
         {
             // Negative number -- need to decrease the significand
-            --*ps;
+            *ps -= EPSILON;
             // Need to mask with 0x7FFF... so subnormals are treated correctly.
             if ((*ps & 0x7FFF_FFFF_FFFF_FFFF) == 0x7FFF_FFFF_FFFF_FFFF)
             {
@@ -6463,7 +6483,7 @@ real nextUp(real x) @trusted pure nothrow @nogc
         {
             // Positive number -- need to increase the significand.
             // Works automatically for positive zero.
-            ++*ps;
+            *ps += EPSILON;
             if ((*ps & 0x7FFF_FFFF_FFFF_FFFF) == 0)
             {
                 // change in exponent
@@ -7228,6 +7248,7 @@ if (isFloatingPoint!(X))
         static assert(F.realFormat == RealFormat.ieeeSingle
                     || F.realFormat == RealFormat.ieeeDouble
                     || F.realFormat == RealFormat.ieeeExtended
+                    || F.realFormat == RealFormat.ieeeExtended53
                     || F.realFormat == RealFormat.ieeeQuadruple);
 
         if (x == y)
@@ -7367,7 +7388,8 @@ body
 
     alias F = floatTraits!(T);
     T u;
-    static if (F.realFormat == RealFormat.ieeeExtended)
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53)
     {
         // There's slight additional complexity because they are actually
         // 79-bit reals...

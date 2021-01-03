@@ -501,3 +501,12 @@
 (define_predicate "pc_or_label_operand"
   (match_code "pc,label_ref"))
 
+(define_predicate "simple_memory_operand"
+  (match_code "mem")
+{
+  if (GET_MODE (op) == mode
+      && (GET_CODE (XEXP (op, 0)) != PRE_DEC
+	  && GET_CODE (XEXP (op, 0)) != POST_INC))
+    return 1;
+  return 0;
+})

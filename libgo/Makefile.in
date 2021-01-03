@@ -224,7 +224,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_3 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
-	syscall/wait.lo $(golangorg_x_net_lif_lo) \
+	syscall/wait.lo os/dir_gccgo_c.lo $(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) log/syslog/syslog_c.lo \
 	runtime/internal/atomic_c.lo sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo $(am__DEPENDENCIES_2)
@@ -240,12 +240,11 @@ am__objects_2 = $(am__objects_1)
 @LIBGO_IS_RTEMS_TRUE@am__objects_3 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
 am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
-	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cdiv.lo \
-	runtime/go-cgo.lo runtime/go-construct-map.lo \
-	runtime/go-ffi.lo runtime/go-fieldtrack.lo \
-	runtime/go-matherr.lo runtime/go-memclr.lo \
-	runtime/go-memequal.lo runtime/go-nanotime.lo \
-	runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cgo.lo \
+	runtime/go-construct-map.lo runtime/go-ffi.lo \
+	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
+	runtime/go-memclr.lo runtime/go-memequal.lo \
+	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
 	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
@@ -892,7 +891,6 @@ runtime_files = \
 	runtime/go-assert.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
-	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
 	runtime/go-ffi.c \
@@ -942,6 +940,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	os/dir_gccgo_c.lo \
 	$(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
@@ -1085,14 +1084,15 @@ CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 math_lo_GOCFLAGS = $(MATH_FLAG)
 math_check_GOCFLAGS = $(MATH_FLAG)
 
-# Add the generated file runtime_sysinfo.go to the runtime package.
-extra_go_files_runtime = runtime_sysinfo.go sigtab.go
+# Add generated files to the runtime package.
+extra_go_files_runtime = runtime_linknames.go runtime_sysinfo.go sigtab.go
 
 # Add generated files to the syscall package.
 extra_go_files_syscall = \
 	libcalls.go \
 	sysinfo.go \
 	syscall_arch.go \
+	syscall_linknames.go \
 	$(syscall_epoll_file)
 
 
@@ -1128,7 +1128,10 @@ extra_go_files_internal_goroot = zstdpkglist.go
 extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
+extra_go_files_os = os_linknames.go
+extra_go_files_os_user = os_user_linknames.go
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_fsys = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
@@ -1142,9 +1145,12 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_str = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_vcs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_internal_buildid = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 @HAVE_STAT_TIMESPEC_FALSE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = 
 
@@ -1340,8 +1346,6 @@ runtime/go-caller.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-callers.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-cdiv.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-cgo.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-construct-map.lo: runtime/$(am__dirstamp) \
@@ -1414,7 +1418,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-assert.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-callers.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-construct-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-context.Plo@am__quote@
@@ -2748,6 +2751,48 @@ s-gccgosizes: Makefile goarch.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh gccgosizes.go.tmp gccgosizes.go
 	$(STAMP) $@
 
+os_linknames.go: s-os_linknames; @true
+s-os_linknames: os-list gen-sysinfo.go $(srcdir)/mklinknames.awk $(srcdir)/go/os/*.go
+	rm -f os_linknames.go.tmp
+	$(AWK) -f $(srcdir)/mklinknames.awk -v package=os `cat os-list` > os_linknames.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh os_linknames.go.tmp os_linknames.go
+	$(STAMP) $@
+
+os-list: s-os-list; @true
+s-os-list: Makefile $(srcdir)/go/os/*.go
+	rm -f os-list.tmp
+	$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/os > os-list.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh os-list.tmp os-list
+	$(STAMP) $@
+
+os_user_linknames.go: s-os_user_linknames; @true
+s-os_user_linknames: os-user-list gen-sysinfo.go $(srcdir)/mklinknames.awk $(srcdir)/go/os/user/*.go
+	rm -f os_user_linknames.go.tmp
+	$(AWK) -f $(srcdir)/mklinknames.awk -v package=user `cat os-user-list` > os_user_linknames.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh os_user_linknames.go.tmp os_user_linknames.go
+	$(STAMP) $@
+
+os-user-list: s-os-user-list; @true
+s-os-user-list: Makefile $(srcdir)/go/os/user/*.go
+	rm -f os-user-list.tmp
+	$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/os/user > os-user-list.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh os-user-list.tmp os-user-list
+	$(STAMP) $@
+
+runtime_linknames.go: s-runtime_linknames; @true
+s-runtime_linknames: runtime-list gen-sysinfo.go $(srcdir)/mklinknames.awk $(srcdir)/go/runtime/*.go
+	rm -f runtime_linknames.go.tmp
+	$(AWK) -f $(srcdir)/mklinknames.awk -v package=runtime `cat runtime-list` > runtime_linknames.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh runtime_linknames.go.tmp runtime_linknames.go
+	$(STAMP) $@
+
+runtime-list: s-runtime-list; @true
+s-runtime-list: Makefile $(srcdir)/go/runtime/*.go
+	rm -f runtime-list.tmp
+	$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/runtime > runtime-list.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh runtime-list.tmp runtime-list
+	$(STAMP) $@
+
 runtime_sysinfo.go: s-runtime_sysinfo; @true
 s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
 	GOARCH=$(GOARCH) GOOS=$(GOOS) $(SHELL) $(srcdir)/mkrsysinfo.sh
@@ -2814,6 +2859,13 @@ s-syscall_arch: Makefile
 	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
 	echo 'const OS = "'$(GOOS)'"' >> syscall_arch.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh syscall_arch.go.tmp syscall_arch.go
+	$(STAMP) $@
+
+syscall_linknames.go: s-syscall_linknames; @true
+s-syscall_linknames: libcalls.go gen-sysinfo.go $(srcdir)/mklinknames.awk
+	rm -f syscall_linknames.go.tmp
+	$(AWK) -v package=syscall -f $(srcdir)/mklinknames.awk libcalls.go > syscall_linknames.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh syscall_linknames.go.tmp syscall_linknames.go
 	$(STAMP) $@
 
 gen-sysinfo.go: s-gen-sysinfo; @true
@@ -2918,6 +2970,8 @@ internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
+os.lo.dep: $(extra_go_files_os)
+os/user.lo.dep: $(extra_go_files_os_user)
 
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
@@ -2959,6 +3013,11 @@ syscall/signame.lo: go/syscall/signame.c runtime.inc
 syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
+
+# An os function is written in C.
+os/dir_gccgo_c.lo: go/os/dir_gccgo_c.c runtime.inc
+	@$(MKDIR_P) os
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/os/dir_gccgo_c.c
 
 # internal/cpu needs some C code.
 internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc

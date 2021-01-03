@@ -1,3 +1,53 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure.tgt: Add dynamic_lookup to EXTRA_CXXFLAGS for
+	Darwin.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* LOCAL_PATCHES: Add one commit.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* Makefile.am: Condition Build hwasan directory.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Set HWASAN_SUPPORTED based on target
+	architecture.
+	* configure.tgt: Likewise.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* Makefile.am:  Build libhwasan.
+	* Makefile.in:  Build libhwasan.
+	* asan/Makefile.in:  Build libhwasan.
+	* configure:  Build libhwasan.
+	* configure.ac:  Build libhwasan.
+	* hwasan/Makefile.am: New file.
+	* hwasan/Makefile.in: New file.
+	* hwasan/libtool-version: New file.
+	* interception/Makefile.in: Build libhwasan.
+	* libbacktrace/Makefile.in: Build libhwasan.
+	* libsanitizer.spec.in: Build libhwasan.
+	* lsan/Makefile.in: Build libhwasan.
+	* sanitizer_common/Makefile.in: Build libhwasan.
+	* tsan/Makefile.in: Build libhwasan.
+	* ubsan/Makefile.in: Build libhwasan.
+
+2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Allow x86_64 Darwin2x.
+
+2020-11-13  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update to the latest commit.
+
 2020-10-19  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Add one commit.

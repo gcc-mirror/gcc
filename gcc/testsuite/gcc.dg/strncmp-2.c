@@ -40,6 +40,7 @@ static void test_driver_strncmp (void (test_strncmp)(const char *, const char *,
     e = lib_memcmp(buf1,p2,sz);
     (*test_memcmp)(buf1,p2,e);
   }
+  mprotect (buf2+pgsz,pgsz,PROT_READ|PROT_WRITE);
   free(buf2);
 }
 

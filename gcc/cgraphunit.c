@@ -1155,6 +1155,8 @@ analyze_functions (bool first_time)
   symtab->state = CONSTRUCTION;
   input_location = UNKNOWN_LOCATION;
 
+  thunk_info::process_early_thunks ();
+
   /* Ugly, but the fixup cannot happen at a time same body alias is created;
      C++ FE is confused about the COMDAT groups being right.  */
   if (symtab->cpp_implicit_aliases_done)
@@ -1600,7 +1602,6 @@ mark_functions_to_output (void)
   FOR_EACH_FUNCTION (node)
     {
       tree decl = node->decl;
-      node->clear_stmts_in_references ();
 
       gcc_assert (!node->process || node->same_comdat_group);
       if (node->process)

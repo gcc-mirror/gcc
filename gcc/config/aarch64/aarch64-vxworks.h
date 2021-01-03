@@ -60,12 +60,14 @@ along with GCC; see the file COPYING3.  If not see
 #undef STACK_CHECK_PROTECT
 #define STACK_CHECK_PROTECT 16384
 
-/* The VxWorks environment on aarch64 is llvm-based only, uses R18 as
-   a TCB pointer.  */
-
+/* The VxWorks environment on aarch64 is llvm-based.  */
 #undef VXWORKS_PERSONALITY
 #define VXWORKS_PERSONALITY "llvm"
 
-#undef  TARGET_OS_USES_R18
-#define TARGET_OS_USES_R18 1
+/* VxWorks uses R18 as a TCB pointer.  We must pick something else as
+   the static chain and R18 needs to be claimed "fixed".  Until we
+   arrange to override the common parts of the port family to
+   acknowledge the latter, configure --with-specs="-ffixed-r18".  */
+#undef  STATIC_CHAIN_REGNUM
+#define STATIC_CHAIN_REGNUM 9
 

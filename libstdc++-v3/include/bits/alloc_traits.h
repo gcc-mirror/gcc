@@ -708,6 +708,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     using _RequireNotAllocator
       = typename enable_if<!__is_allocator<_Alloc>::value, _Alloc>::type;
+
+#if __cpp_concepts >= 201907L
+  template<typename _Alloc>
+    concept __allocator_like = requires (_Alloc& __a) {
+      typename _Alloc::value_type;
+      __a.deallocate(__a.allocate(1u), 1u);
+    };
+#endif
 #endif // C++11
 
   /**

@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 /* Test for CPROP across a DAG. */
 

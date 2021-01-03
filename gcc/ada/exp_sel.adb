@@ -70,27 +70,11 @@ package body Exp_Sel is
    -------------------------------
 
    function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id is
-      Stmt : Node_Id;
-
    begin
-
-      --  With ZCX exceptions, aborts are not defered in handlers. With SJLJ,
-      --  they are deferred at the beginning of Abort_Signal handlers.
-
-      if ZCX_Exceptions then
-         Stmt := Make_Null_Statement (Loc);
-
-      else
-         Stmt :=
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
-             Parameter_Associations => No_List);
-      end if;
-
       return Make_Implicit_Exception_Handler (Loc,
         Exception_Choices =>
           New_List (New_Occurrence_Of (Stand.Abort_Signal, Loc)),
-        Statements        => New_List (Stmt));
+        Statements        => New_List (Make_Null_Statement (Loc)));
    end Build_Abort_Block_Handler;
 
    -------------

@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
+/* { dg-require-effective-target masm_intel } */
 /* { dg-options "-O2 -mamx-tile -masm=intel " } */
 /* { dg-final { scan-assembler "ldtilecfg\[ \\t]"  } } */
 /* { dg-final { scan-assembler "sttilecfg\[ \\t]"  } } */

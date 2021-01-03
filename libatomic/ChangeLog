@@ -1,3 +1,12 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-10-11  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/t-aix: Delete and recreate libatomic before creating

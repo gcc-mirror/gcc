@@ -62,12 +62,6 @@ DEF_GO_RUNTIME(STRINGTOSLICERUNE, "runtime.stringtoslicerune",
 	       P2(POINTER, STRING), R1(SLICE))
 
 
-// Complex division.
-DEF_GO_RUNTIME(COMPLEX64_DIV, "__go_complex64_div",
-	       P2(COMPLEX64, COMPLEX64), R1(COMPLEX64))
-DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
-	       P2(COMPLEX128, COMPLEX128), R1(COMPLEX128))
-
 // Make a slice.
 DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
 	       R1(POINTER))
@@ -83,7 +77,7 @@ DEF_GO_RUNTIME(MAKEMAP64, "runtime.makemap64", P3(TYPE, INT64, POINTER),
 		R1(MAP))
 
 // Make a map with no hint, or a small constant hint.
-DEF_GO_RUNTIME(MAKEMAP_SMALL, "runtime.makemap_small", P0(), R1(MAP))
+DEF_GO_RUNTIME(MAKEMAP_SMALL, "runtime.makemap__small", P0(), R1(MAP))
 
 // Build a map from a composite literal.
 DEF_GO_RUNTIME(CONSTRUCT_MAP, "__go_construct_map",
@@ -95,19 +89,19 @@ DEF_GO_RUNTIME(MAPACCESS1, "runtime.mapaccess1", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
 // Look up a uint32 key in a map.
-DEF_GO_RUNTIME(MAPACCESS1_FAST32, "runtime.mapaccess1_fast32",
+DEF_GO_RUNTIME(MAPACCESS1_FAST32, "runtime.mapaccess1__fast32",
                P3(TYPE, MAP, UINT32), R1(POINTER))
 
 // Look up a uint64 key in a map.
-DEF_GO_RUNTIME(MAPACCESS1_FAST64, "runtime.mapaccess1_fast64",
+DEF_GO_RUNTIME(MAPACCESS1_FAST64, "runtime.mapaccess1__fast64",
                P3(TYPE, MAP, UINT64), R1(POINTER))
 
 // Look up a string key in a map.
-DEF_GO_RUNTIME(MAPACCESS1_FASTSTR, "runtime.mapaccess1_faststr",
+DEF_GO_RUNTIME(MAPACCESS1_FASTSTR, "runtime.mapaccess1__faststr",
                P3(TYPE, MAP, STRING), R1(POINTER))
 
 // Look up a key in a map when the value is large.
-DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1_fat",
+DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1__fat",
 	       P4(TYPE, MAP, POINTER, POINTER), R1(POINTER))
 
 // Look up a key in a map returning the value and whether it is
@@ -117,22 +111,22 @@ DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2", P3(TYPE, MAP, POINTER),
 
 // Look up a uint32 key in a map returning the value and whether
 // it is present.
-DEF_GO_RUNTIME(MAPACCESS2_FAST32, "runtime.mapaccess2_fast32",
+DEF_GO_RUNTIME(MAPACCESS2_FAST32, "runtime.mapaccess2__fast32",
                P3(TYPE, MAP, UINT32), R2(POINTER, BOOL))
 
 // Look up a uint64 key in a map returning the value and whether
 // it is present.
-DEF_GO_RUNTIME(MAPACCESS2_FAST64, "runtime.mapaccess2_fast64",
+DEF_GO_RUNTIME(MAPACCESS2_FAST64, "runtime.mapaccess2__fast64",
                P3(TYPE, MAP, UINT64), R2(POINTER, BOOL))
 
 // Look up a string key in a map returning the value and whether
 // it is present.
-DEF_GO_RUNTIME(MAPACCESS2_FASTSTR, "runtime.mapaccess2_faststr",
+DEF_GO_RUNTIME(MAPACCESS2_FASTSTR, "runtime.mapaccess2__faststr",
                P3(TYPE, MAP, STRING), R2(POINTER, BOOL))
 
 // Look up a key in a map, returning the value and whether it is
 // present, when the value is large.
-DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2_fat",
+DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2__fat",
 	       P4(TYPE, MAP, POINTER, POINTER), R2(POINTER, BOOL))
 
 // Assignment to a key in a map.
@@ -140,38 +134,38 @@ DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
 // Assignment to a uint32 key in a map.
-DEF_GO_RUNTIME(MAPASSIGN_FAST32, "runtime.mapassign_fast32",
+DEF_GO_RUNTIME(MAPASSIGN_FAST32, "runtime.mapassign__fast32",
                P3(TYPE, MAP, UINT32), R1(POINTER))
 
 // Assignment to a uint64 key in a map.
-DEF_GO_RUNTIME(MAPASSIGN_FAST64, "runtime.mapassign_fast64",
+DEF_GO_RUNTIME(MAPASSIGN_FAST64, "runtime.mapassign__fast64",
                P3(TYPE, MAP, UINT64), R1(POINTER))
 
 // Assignment to a 32-bit pointer key in a map.
-DEF_GO_RUNTIME(MAPASSIGN_FAST32PTR, "runtime.mapassign_fast32ptr",
+DEF_GO_RUNTIME(MAPASSIGN_FAST32PTR, "runtime.mapassign__fast32ptr",
                P3(TYPE, MAP, POINTER), R1(POINTER))
 
 // Assignment to a 64-bit pointer key in a map.
-DEF_GO_RUNTIME(MAPASSIGN_FAST64PTR, "runtime.mapassign_fast64ptr",
+DEF_GO_RUNTIME(MAPASSIGN_FAST64PTR, "runtime.mapassign__fast64ptr",
                P3(TYPE, MAP, POINTER), R1(POINTER))
 
 // Assignment to a string key in a map.
-DEF_GO_RUNTIME(MAPASSIGN_FASTSTR, "runtime.mapassign_faststr",
+DEF_GO_RUNTIME(MAPASSIGN_FASTSTR, "runtime.mapassign__faststr",
                P3(TYPE, MAP, STRING), R1(POINTER))
 
 // Delete a key from a map.
 DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P3(TYPE, MAP, POINTER), R0())
 
 // Delete a uint32 key from a map.
-DEF_GO_RUNTIME(MAPDELETE_FAST32, "runtime.mapdelete_fast32",
+DEF_GO_RUNTIME(MAPDELETE_FAST32, "runtime.mapdelete__fast32",
                P3(TYPE, MAP, UINT32), R0())
 
 // Delete a uint64 key from a map.
-DEF_GO_RUNTIME(MAPDELETE_FAST64, "runtime.mapdelete_fast64",
+DEF_GO_RUNTIME(MAPDELETE_FAST64, "runtime.mapdelete__fast64",
                P3(TYPE, MAP, UINT64), R0())
 
 // Delete a string key from a map.
-DEF_GO_RUNTIME(MAPDELETE_FASTSTR, "runtime.mapdelete_faststr",
+DEF_GO_RUNTIME(MAPDELETE_FASTSTR, "runtime.mapdelete__faststr",
                P3(TYPE, MAP, STRING), R0())
 
 // Begin a range over a map.
@@ -201,8 +195,8 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 // Run a select, returning the index of the selected clause and
 // whether that channel received a value.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
-	       R2(INT, BOOL))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo",
+	       P5(POINTER, POINTER, INT, INT, BOOL), R2(INT, BOOL))
 
 // Non-blocking send a value on a channel, used for two-case select
 // statement with a default case.
@@ -248,14 +242,6 @@ DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
-// Copy.
-DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy",
-	       P5(POINTER, INT, POINTER, INT, UINTPTR), R1(INT))
-
-// Copy from string.
-DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy",
-	       P3(POINTER, INT, STRING), R1(INT))
-
 // Copy of value containing pointers.
 DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
 	       P5(TYPE, POINTER, INT, POINTER, INT), R1(INT))
@@ -264,6 +250,11 @@ DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
 DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
                P5(TYPE, POINTER, INT, INT, INT), R1(SLICE))
 
+
+// Check the length and cap passed to make, without making a slice.
+// This is used for apend(s, make([]T, len)...).
+DEF_GO_RUNTIME(CHECK_MAKE_SLICE, "runtime.checkMakeSlice", P3(TYPE, INT, INT),
+	       R1(UINTPTR))
 
 // Register roots (global variables) for the garbage collector.
 DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())

@@ -415,8 +415,8 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
      that we can use to lookup structurally equivalent non-ODR type.
      In case we decide to treat type as unique ODR type we recompute hash based
      on name and let TBAA machinery know about our decision.  */
-  if (RECORD_OR_UNION_TYPE_P (t)
-      && odr_type_p (t) && !odr_type_violation_reported_p (t))
+  if (RECORD_OR_UNION_TYPE_P (t) && odr_type_p (t)
+      && TYPE_CXX_ODR_P (t) && !odr_type_violation_reported_p (t))
     {
       /* Anonymous namespace types never conflict with non-C++ types.  */
       if (type_with_linkage_p (t) && type_in_anonymous_namespace_p (t))
@@ -434,6 +434,7 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
       if (slot && !TYPE_CXX_ODR_P (*(tree *)slot))
 	{
 	  tree nonodr = *(tree *)slot;
+	  gcc_checking_assert (!flag_ltrans);
 	  if (symtab->dump_file)
 	    {
 	      fprintf (symtab->dump_file,
@@ -2592,7 +2593,6 @@ lto_fixup_prevailing_decls (tree t)
 	case TREE_LIST:
 	  LTO_SET_PREVAIL (TREE_VALUE (t));
 	  LTO_SET_PREVAIL (TREE_PURPOSE (t));
-	  LTO_NO_PREVAIL (TREE_PURPOSE (t));
 	  break;
 	default:
 	  gcc_unreachable ();

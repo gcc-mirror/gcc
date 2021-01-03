@@ -137,6 +137,20 @@ enum objc_property_assign_semantics {
 #define PROPERTY_OPTIONAL(DECL) \
   DECL_LANG_FLAG_5 (PROPERTY_DECL_CHECK (DECL))
 
+/* PROPERTY_CLASS can be 0 or 1.  */
+#define PROPERTY_CLASS(DECL) \
+   DECL_LANG_FLAG_6 (PROPERTY_DECL_CHECK (DECL))
+
+/* PROPERTY_NULLABILITY attributes added to the decl attributes.
+   effectively, __attribute__((objc_nullability(kind))),   */
+enum objc_property_nullability {
+  OBJC_PROPERTY_NULL_UNSPECIFIED = 0,
+  OBJC_PROPERTY_NULLABLE,
+  OBJC_PROPERTY_NONNULL,
+  OBJC_PROPERTY_NULL_RESETTABLE,
+  OBJC_PROPERTY_NULL_UNSET
+};
+
 /* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
    expression.  It is normally used for property access, but when
    the Objective-C 2.0 "dot-syntax" (object.component) is used
@@ -371,6 +385,7 @@ enum objc_tree_index
     OCTI_ID_NAME,
     OCTI_INSTANCETYPE_NAME,
     OCTI_CLASS_NAME,
+    OCTI_SEL_NAME,
     OCTI_CNST_STR_ID,
     OCTI_CNST_STR_TYPE,
     OCTI_CNST_STR_GLOB_ID,
@@ -576,6 +591,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_object_name        objc_global_trees[OCTI_ID_NAME]
 #define objc_instancetype_name	objc_global_trees[OCTI_INSTANCETYPE_NAME]
 #define objc_class_name		objc_global_trees[OCTI_CLASS_NAME]
+#define objc_selector_name	objc_global_trees[OCTI_SEL_NAME]
 
 /* Constant string classes.  */
 #define constant_string_id	objc_global_trees[OCTI_CNST_STR_ID]
@@ -614,6 +630,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define OBJECT_TYPEDEF_NAME		"id"
 #define INSTANCE_TYPEDEF_NAME		"instancetype"
 #define CLASS_TYPEDEF_NAME		"Class"
+#define SEL_TYPEDEF_NAME		"SEL"
 
 #define TAG_OBJECT			"objc_object"
 #define TAG_CLASS			"objc_class"

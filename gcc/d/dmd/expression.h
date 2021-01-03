@@ -523,7 +523,7 @@ public:
     static ArrayLiteralExp *create(Loc loc, Expressions *elements);
     Expression *syntaxCopy();
     bool equals(RootObject *o);
-    Expression *getElement(d_size_t i);
+    Expression *getElement(size_t i);
     static Expressions* copyElements(Expression *e1, Expression *e2 = NULL);
     bool isBool(bool result);
     StringExp *toStringExp();

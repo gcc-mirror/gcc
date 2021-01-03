@@ -625,6 +625,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void _M_init_extra(facet**);
     void _M_init_extra(void*, void*, const char*, const char*);
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    void _M_init_extra_ldbl128(bool);
+#endif
   };
 
 

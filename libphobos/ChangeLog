@@ -1,3 +1,63 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87818
+	* configure.tgt: Add x86_64-*-freebsd* and i?86-*-freebsd* as
+	supported targets.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98025
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (DCFG_ENABLE_CET): Substitute.
+	* libdruntime/MERGE: Merge upstream druntime 0fe7974c.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/core/thread.d: Import gcc.config.
+	(class Fiber): Add ucontext_t fields when GNU_Enable_CET is true.
+	* libdruntime/gcc/config.d.in (GNU_Enable_CET): Define.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d37ef985.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_FREEBSD): Add
+	core/sys/freebsd/config.d
+	* libdruntime/Makefile.in: Regenerate.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 38873fe6e.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 5e4492c4.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure.tgt: Add *-*-dragonfly* as a supported target.
+	* configure: Regenerate.
+	* m4/druntime/os.m4 (DRUNTIME_OS_SOURCES): Add dragonfly* as a posix
+	target.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 7948e0967.
+
+2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 2:0.0.
+
+2020-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 58560d51.
+
 2020-10-12  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* libdruntime/config/mips/switchcontext.S [__mips_hard_float]:

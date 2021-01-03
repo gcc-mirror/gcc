@@ -14,7 +14,6 @@ import (
 	"go/token"
 	"go/types"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -200,7 +199,7 @@ func (p *Importer) parseFiles(dir string, filenames []string) ([]*ast.File, erro
 }
 
 func (p *Importer) cgo(bp *build.Package) (*ast.File, error) {
-	tmpdir, err := ioutil.TempDir("", "srcimporter")
+	tmpdir, err := os.MkdirTemp("", "srcimporter")
 	if err != nil {
 		return nil, err
 	}
@@ -262,5 +261,5 @@ func (p *Importer) joinPath(elem ...string) string {
 	return filepath.Join(elem...)
 }
 
-//go:linkname setUsesCgo go/types.srcimporter_setUsesCgo
+//go:linkname setUsesCgo go_1types.srcimporter__setUsesCgo
 func setUsesCgo(conf *types.Config)

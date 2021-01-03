@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero - Fri Dec 14 08:36:00 GMT 2001 */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 #include "../../objc-obj-c++-shared/runtime.h"

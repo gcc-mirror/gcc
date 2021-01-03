@@ -2,6 +2,7 @@
 /* Author: Dimitris Papavasiliou <dpapavas@gmail.com>.  */
 /* { dg-do compile } */
 /* { dg-additional-options "-Wno-shadow-ivar" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 #include <objc/objc.h>
 
 @interface MyClass

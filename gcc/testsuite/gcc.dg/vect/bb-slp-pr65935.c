@@ -60,6 +60,7 @@ int main()
 /* We should also be able to use 2-lane SLP to initialize the real and
    imaginary components in the first loop of main.  */
 /* { dg-final { scan-tree-dump-times "optimized: basic block" 10 "slp1" } } */
-/* We should see the s->phase[dir] operand and only that operand built
+/* We should see the s->phase[dir] operand splatted and no other operand built
    from scalars.  See PR97334.  */
-/* { dg-final { scan-tree-dump-times "Building vector operands from scalars" 1 "slp1" } } */
+/* { dg-final { scan-tree-dump "Using a splat" "slp1" } } */
+/* { dg-final { scan-tree-dump-times "Building vector operands from scalars" 0 "slp1" } } */

@@ -147,19 +147,33 @@ Type                   Representation
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
 
-``Fine_Delta`` is 2**(-63)
+The small is the largest power of two that does not exceed the delta.
 
 *
   "What combinations of small, range, and digits are
   supported for fixed point types.  See 3.5.9(10)."
 
-Any combinations are permitted that do not result in a small less than
-``Fine_Delta`` and do not result in a mantissa larger than 63 bits.
-If the mantissa is larger than 53 bits on machines where Long_Long_Float
-is 64 bits (true of all architectures except x86), then the output from
-Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
-is because floating-point conversions are used to convert fixed point.
+For an ordinary fixed point type, on 32-bit platforms, the small must lie in
+2.0**(-80) .. 2.0**80 and the range in -9.0E+36 .. 9.0E+36; any combination
+is permitted that does not result in a mantissa larger than 63 bits.
 
+On 64-bit platforms, the small must lie in 2.0**(-127) .. 2.0**127 and the
+range in -1.0E+76 .. 1.0E+76; any combination is permitted that does not
+result in a mantissa larger than 63 bits, and any combination is permitted
+that results in a mantissa between 64 and 127 bits if the small is the
+ratio of two integers that lie in 1 .. 2.0**127.
+
+If the small is the ratio of two integers with 64-bit magnitude on 32-bit
+platforms and 128-bit magnitude on 64-bit platforms, which is the case if
+no ``small`` clause is provided, then the operations of the fixed point
+type are entirely implemented by means of integer instructions.  In the
+other cases, some operations, in particular input and output, may be
+implemented by means of floating-point instructions and may be affected
+by accuracy issues on architectures other than x86.
+
+For a decimal fixed point type, on 32-bit platforms, the small must lie in
+1.0E-18 .. 1.0E+18 and the digits in 1 .. 18.  On 64-bit platforms, the
+small must lie in 1.0E-38 .. 1.0E+38 and the digits in 1 .. 38.
 
 *
   "The result of ``Tags.Expanded_Name`` for types declared

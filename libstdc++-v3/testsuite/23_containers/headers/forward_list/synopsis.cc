@@ -49,5 +49,6 @@ namespace std {
 		    const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-    void swap(forward_list<T,Allocator>& x, forward_list<T,Allocator>& y);
+    void swap(forward_list<T,Allocator>& x, forward_list<T,Allocator>& y)
+      noexcept(noexcept(x.swap(y)));
 }

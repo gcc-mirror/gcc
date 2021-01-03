@@ -274,8 +274,7 @@ public:
 
   static void merge (const constraint_manager &cm_a,
 		     const constraint_manager &cm_b,
-		     constraint_manager *out,
-		     const model_merger &merger);
+		     constraint_manager *out);
 
   void for_each_fact (fact_visitor *) const;
 

@@ -31,7 +31,7 @@ test()
   const auto out88 = std::upper_bound(ca0.begin(), ca0.end(), 6,
 				      std::less<int>());
 
-  return true;
+  return out77 == (ca0.begin() + 7) && out88 == out77;
 }
 
 static_assert(test());

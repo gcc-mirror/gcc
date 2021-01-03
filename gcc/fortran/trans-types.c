@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 #include "attribs.h"
+#include "alias.h"
 
 
 #if (GFC_MAX_DIMENSIONS < 10)
@@ -1914,6 +1915,10 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
+  /* Arrays of unknown type must alias with all array descriptors.  */
+  TYPE_TYPELESS_STORAGE (base_type) = 1;
+  TYPE_TYPELESS_STORAGE (fat_type) = 1;
+  gcc_checking_assert (!get_alias_set (base_type) && !get_alias_set (fat_type));
 
   tmp = TYPE_NAME (etype);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
@@ -3035,7 +3040,8 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 }
 
 tree
-gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+		       const char *fnspec)
 {
   tree type;
   vec<tree, va_gc> *typelist = NULL;
@@ -3219,7 +3225,19 @@ arg_type_list_done:
     type = build_varargs_function_type_vec (type, typelist);
   else
     type = build_function_type_vec (type, typelist);
-  type = create_fn_spec (sym, type);
+
+  /* If we were passed an fn spec, add it here, otherwise determine it from
+     the formal arguments.  */
+  if (fnspec)
+    {
+      tree tmp;
+      int spec_len = strlen (fnspec);
+      tmp = build_tree_list (NULL_TREE, build_string (spec_len, fnspec));
+      tmp = tree_cons (get_identifier ("fn spec"), tmp, TYPE_ATTRIBUTES (type));
+      type = build_type_attribute_variant (type, tmp);
+    }
+  else
+    type = create_fn_spec (sym, type);
 
   return type;
 }

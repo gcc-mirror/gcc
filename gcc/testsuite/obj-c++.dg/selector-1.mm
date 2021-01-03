@@ -3,6 +3,7 @@
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 @interface Int1 
 + (int)and_eq:(int)arg1 and:(int)arg2;

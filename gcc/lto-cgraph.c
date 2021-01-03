@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -767,6 +768,9 @@ output_refs (lto_symtab_encoder_t encoder)
 	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_output_declare_variant_alt (ob, cnode, encoder);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -1608,6 +1612,9 @@ input_refs (class lto_input_block *ib,
 	  input_ref (ib, node, nodes);
 	  count--;
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_input_declare_variant_alt (ib, cnode, nodes);
     }
 }
 	    
@@ -1817,9 +1824,10 @@ input_offload_tables (bool do_force_output)
 static int
 output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
-  return ((node->clone_of || node->former_clone_of)
-	  && (node->clone.tree_map
-	      || node->clone.param_adjustments));
+  if (node->clone_of || node->former_clone_of)
+    return true;
+  clone_info *info = clone_info::get (node);
+  return info && (info->tree_map || info->param_adjustments);
 }
 
 /* Output optimization summary for EDGE to OB.  */
@@ -1843,9 +1851,12 @@ output_node_opt_summary (struct output_block *ob,
   /* TODO: Should this code be moved to ipa-param-manipulation?  */
   struct bitpack_d bp;
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, (node->clone.param_adjustments != NULL), 1);
+  clone_info *info = clone_info::get (node);
+  
+  bp_pack_value (&bp, (info && info->param_adjustments != NULL), 1);
   streamer_write_bitpack (&bp);
-  if (ipa_param_adjustments *adjustments = node->clone.param_adjustments)
+  if (ipa_param_adjustments *adjustments
+		 = info ? info->param_adjustments : NULL)
     {
       streamer_write_uhwi (ob, vec_safe_length (adjustments->m_adj_params));
       ipa_adjusted_param *adj;
@@ -1873,17 +1884,18 @@ output_node_opt_summary (struct output_block *ob,
 	}
       streamer_write_hwi (ob, adjustments->m_always_copy_start);
       bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, node->clone.param_adjustments->m_skip_return, 1);
+      bp_pack_value (&bp, info->param_adjustments->m_skip_return, 1);
       streamer_write_bitpack (&bp);
     }
 
-  streamer_write_uhwi (ob, vec_safe_length (node->clone.tree_map));
-  FOR_EACH_VEC_SAFE_ELT (node->clone.tree_map, i, map)
-    {
-      streamer_write_uhwi (ob, map->parm_num);
-      gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
-      stream_write_tree (ob, map->new_tree, true);
-    }
+  streamer_write_uhwi (ob, info ? vec_safe_length (info->tree_map) : 0);
+  if (info)
+    FOR_EACH_VEC_SAFE_ELT (info->tree_map, i, map)
+      {
+	streamer_write_uhwi (ob, map->parm_num);
+	gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
+	stream_write_tree (ob, map->new_tree, true);
+      }
 
   if (lto_symtab_encoder_in_partition_p (encoder, node))
     {
@@ -1953,6 +1965,8 @@ input_node_opt_summary (struct cgraph_node *node,
   struct bitpack_d bp;
   bp = streamer_read_bitpack (ib_main);
   bool have_adjustments = bp_unpack_value (&bp, 1);
+  clone_info *info = clone_info::get_create (node);
+
   if (have_adjustments)
     {
       count = streamer_read_uhwi (ib_main);
@@ -1985,7 +1999,7 @@ input_node_opt_summary (struct cgraph_node *node,
       int always_copy_start = streamer_read_hwi (ib_main);
       bp = streamer_read_bitpack (ib_main);
       bool skip_return = bp_unpack_value (&bp, 1);
-      node->clone.param_adjustments
+      info->param_adjustments
 	= (new (ggc_alloc <ipa_param_adjustments> ())
 	   ipa_param_adjustments (new_params, always_copy_start, skip_return));
     }
@@ -1995,7 +2009,7 @@ input_node_opt_summary (struct cgraph_node *node,
     {
       struct ipa_replace_map *map = ggc_alloc<ipa_replace_map> ();
 
-      vec_safe_push (node->clone.tree_map, map);
+      vec_safe_push (info->tree_map, map);
       map->parm_num = streamer_read_uhwi (ib_main);
       map->new_tree = stream_read_tree (ib_main, data_in);
     }

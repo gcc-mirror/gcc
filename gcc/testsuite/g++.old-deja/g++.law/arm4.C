@@ -20,7 +20,7 @@ int main(void)
 {
   double a = 2.0;
 
-  S x(int (a));
+  S x(int (a)); // { dg-warning "parentheses were disambiguated" }
   if (count > 0)
     { printf ("FAIL\n"); return 1; }
   else

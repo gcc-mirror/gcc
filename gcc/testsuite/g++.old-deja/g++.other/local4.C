@@ -6,6 +6,6 @@ int f (int);
 
 int main ()
 {
-  int f ();
+  int f (); // { dg-warning "empty parentheses" }
   return f ();
 }

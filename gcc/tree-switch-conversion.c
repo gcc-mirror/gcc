@@ -1310,6 +1310,9 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 vec<cluster *>
 bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 {
+  if (!is_enabled ())
+    return clusters.copy ();
+
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
@@ -1508,7 +1511,6 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
   tree minval = get_low ();
   tree maxval = get_high ();
-  tree range = int_const_binop (MINUS_EXPR, maxval, minval);
   unsigned HOST_WIDE_INT bt_range = get_range (minval, maxval);
 
   /* Go through all case labels, and collect the case labels, profile
@@ -1547,11 +1549,39 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
   qsort (test, count, sizeof (*test), case_bit_test::cmp);
 
+  /* If every possible relative value of the index expression is a valid shift
+     amount, then we can merge the entry test in the bit test.  */
+  wide_int min, max;
+  bool entry_test_needed;
+  if (TREE_CODE (index_expr) == SSA_NAME
+      && get_range_info (index_expr, &min, &max) == VR_RANGE
+      && wi::leu_p (max - min, prec - 1))
+    {
+      tree index_type = TREE_TYPE (index_expr);
+      minval = fold_convert (index_type, minval);
+      wide_int iminval = wi::to_wide (minval);
+      if (wi::lt_p (min, iminval, TYPE_SIGN (index_type)))
+	{
+	  minval = wide_int_to_tree (index_type, min);
+	  for (i = 0; i < count; i++)
+	    test[i].mask = wi::lshift (test[i].mask, iminval - min);
+	}
+      else if (wi::gt_p (min, iminval, TYPE_SIGN (index_type)))
+	{
+	  minval = wide_int_to_tree (index_type, min);
+	  for (i = 0; i < count; i++)
+	    test[i].mask = wi::lrshift (test[i].mask, min - iminval);
+	}
+      maxval = wide_int_to_tree (index_type, max);
+      entry_test_needed = false;
+    }
+  else
+    entry_test_needed = true;
+
   /* If all values are in the 0 .. BITS_PER_WORD-1 range, we can get rid of
      the minval subtractions, but it might make the mask constants more
      expensive.  So, compare the costs.  */
-  if (compare_tree_int (minval, 0) > 0
-      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
+  if (compare_tree_int (minval, 0) > 0 && compare_tree_int (maxval, prec) < 0)
     {
       int cost_diff;
       HOST_WIDE_INT m = tree_to_uhwi (minval);
@@ -1574,7 +1604,6 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 	  for (i = 0; i < count; i++)
 	    test[i].mask = wi::lshift (test[i].mask, m);
 	  minval = build_zero_cst (TREE_TYPE (minval));
-	  range = maxval;
 	}
     }
 
@@ -1590,8 +1619,9 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
 
-  if (m_handles_entire_switch)
+  if (m_handles_entire_switch && entry_test_needed)
     {
+      tree range = int_const_binop (MINUS_EXPR, maxval, minval);
       /* if (idx > range) goto default */
       range
 	= force_gimple_operand_gsi (&gsi,
@@ -1605,16 +1635,22 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
       gsi = gsi_last_bb (new_bb);
     }
 
-  /* csui = (1 << (word_mode) idx) */
-  csui = make_ssa_name (word_type_node);
   tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
 		     fold_convert (word_type_node, idx));
-  tmp = force_gimple_operand_gsi (&gsi, tmp,
-				  /*simple=*/false, NULL_TREE,
-				  /*before=*/true, GSI_SAME_STMT);
-  shift_stmt = gimple_build_assign (csui, tmp);
-  gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
-  update_stmt (shift_stmt);
+
+  /* csui = (1 << (word_mode) idx) */
+  if (count > 1)
+    {
+      csui = make_ssa_name (word_type_node);
+      tmp = force_gimple_operand_gsi (&gsi, tmp,
+				     /*simple=*/false, NULL_TREE,
+				     /*before=*/true, GSI_SAME_STMT);
+      shift_stmt = gimple_build_assign (csui, tmp);
+      gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
+      update_stmt (shift_stmt);
+    }
+  else
+    csui = tmp;
 
   profile_probability prob = profile_probability::always ();
 
@@ -1627,10 +1663,10 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
       bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
+      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
 				      /*before=*/true, GSI_SAME_STMT);
-      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
       basic_block new_bb
 	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb, prob);
       gsi = gsi_last_bb (new_bb);
@@ -1740,10 +1776,10 @@ switch_decision_tree::analyze_switch_statement ()
 
   reset_out_edges_aux (m_switch);
 
-  /* Find jump table clusters.  */
-  vec<cluster *> output = jump_table_cluster::find_jump_tables (clusters);
+  /* Find bit-test clusters.  */
+  vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters);
 
-  /* Find bit test clusters.  */
+  /* Find jump table clusters.  */
   vec<cluster *> output2;
   auto_vec<cluster *> tmp;
   output2.create (1);
@@ -1756,7 +1792,7 @@ switch_decision_tree::analyze_switch_statement ()
 	{
 	  if (!tmp.is_empty ())
 	    {
-	      vec<cluster *> n = bit_test_cluster::find_bit_tests (tmp);
+	      vec<cluster *> n = jump_table_cluster::find_jump_tables (tmp);
 	      output2.safe_splice (n);
 	      n.release ();
 	      tmp.truncate (0);
@@ -1770,7 +1806,7 @@ switch_decision_tree::analyze_switch_statement ()
   /* We still can have a temporary vector to test.  */
   if (!tmp.is_empty ())
     {
-      vec<cluster *> n = bit_test_cluster::find_bit_tests (tmp);
+      vec<cluster *> n = jump_table_cluster::find_jump_tables (tmp);
       output2.safe_splice (n);
       n.release ();
     }

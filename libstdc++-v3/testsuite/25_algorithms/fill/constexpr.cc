@@ -27,7 +27,7 @@ test()
   std::array<int, 12> ma0{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
   std::fill(ma0.begin(), ma0.end(), 66);
 
-  return true;
+  return ma0[4] == 66 && ma0[7] == 66;
 }
 
 static_assert(test());

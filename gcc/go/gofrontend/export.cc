@@ -461,7 +461,7 @@ should_export(Named_object* no)
     return false;
 
   // We don't export various special functions.
-  if (Gogo::is_special_name(no->name()))
+  if (Gogo::special_name_pos(no->name()) != std::string::npos)
     return false;
 
   // Methods are exported with the type, not here.
@@ -524,7 +524,11 @@ struct Sort_types
     if (t1->classification() != t2->classification())
       return t1->classification() < t2->classification();
     Gogo* gogo = go_get_gogo();
-    return gogo->type_descriptor_name(t1, NULL).compare(gogo->type_descriptor_name(t2, NULL)) < 0;
+    Backend_name b1;
+    gogo->type_descriptor_backend_name(t1, NULL, &b1);
+    Backend_name b2;
+    gogo->type_descriptor_backend_name(t2, NULL, &b2);
+    return b1.name() < b2.name();
   }
 };
 
@@ -1210,6 +1214,9 @@ Export::write_type_definition(const Type* type, int index)
 	}
       this->write_string(nt->named_object()->name());
       this->write_c_string("\" ");
+
+      if (!nt->in_heap())
+	this->write_c_string("notinheap ");
 
       if (nt->is_alias())
 	this->write_c_string("= ");

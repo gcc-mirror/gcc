@@ -3,6 +3,7 @@
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
 /* { dg-final { scan-assembler-not ".data.rel.ro.local" } } */
+/* { dg-final { scan-assembler-symbol-section {^_?ar} {^\.(const|rodata)|\[RO\]} } } */
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target indirect_jumps } */
 

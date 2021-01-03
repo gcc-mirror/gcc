@@ -694,8 +694,8 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 	 location in that case.  It also happens for AVR if two built-ins
 	 use the same asm name because their libgcc assembler code is the
 	 same, see PR78562.  */
-      if (DECL_IS_BUILTIN (prevailing->decl)
-	  && DECL_IS_BUILTIN (decl))
+      if (DECL_IS_UNDECLARED_BUILTIN (prevailing->decl)
+	  && DECL_IS_UNDECLARED_BUILTIN (decl))
 	continue;
 
       int level = warn_type_compatibility_p (TREE_TYPE (prevailing->decl),
@@ -985,7 +985,7 @@ lto_symtab_merge_symbols (void)
       /* Do the actual merging.  
 	 At this point we invalidate hash translating decls into symtab nodes
 	 because after removing one of duplicate decls the hash is not correcly
-	 updated to the ohter dupliate.  */
+	 updated to the other duplicate.  */
       FOR_EACH_SYMBOL (node)
 	if (lto_symtab_symbol_p (node)
 	    && node->next_sharing_asm_name

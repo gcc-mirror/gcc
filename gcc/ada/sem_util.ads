@@ -765,6 +765,10 @@ package Sem_Util is
    --  Returns the Node_Id associated with the innermost enclosing generic
    --  unit, if any. If none, then returns Empty.
 
+   function Enclosing_HSS (Stmt : Node_Id) return Node_Id;
+   --  Returns the nearest handled sequence of statements that encloses a given
+   --  statement, or Empty.
+
    function Enclosing_Lib_Unit_Entity
      (E : Entity_Id := Current_Scope) return Entity_Id;
    --  Returns the entity of enclosing library unit node which is the root of
@@ -1045,11 +1049,13 @@ package Sem_Util is
    --  be installed on the scope stack to prevent spurious visibility errors.
 
    procedure Gather_Components
-     (Typ           : Entity_Id;
-      Comp_List     : Node_Id;
-      Governed_By   : List_Id;
-      Into          : Elist_Id;
-      Report_Errors : out Boolean);
+     (Typ                   : Entity_Id;
+      Comp_List             : Node_Id;
+      Governed_By           : List_Id;
+      Into                  : Elist_Id;
+      Report_Errors         : out Boolean;
+      Allow_Compile_Time    : Boolean := False;
+      Include_Interface_Tag : Boolean := False);
    --  The purpose of this procedure is to gather the valid components in a
    --  record type according to the values of its discriminants, in order to
    --  validate the components of a record aggregate.
@@ -1071,6 +1077,12 @@ package Sem_Util is
    --
    --    Report_Errors is set to True if the values of the discriminants are
    --     non-static.
+   --
+   --    Allow_Compile_Time if set to True, allows compile time known values in
+   --     Governed_By expressions in addition to static expressions.
+   --
+   --    Include_Interface_Tag if set to True, gather any interface tag
+   --     component, otherwise exclude them.
    --
    --  This procedure is also used when building a record subtype. If the
    --  discriminant constraint of the subtype is static, the components of the
@@ -1503,9 +1515,7 @@ package Sem_Util is
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) that is either
    --  a tagged type or has a subcomponent that is tagged. Returns False for a
-   --  noncomposite type, or if no tagged subcomponents are present. This
-   --  function is used to check if "=" has to be expanded into a bunch
-   --  component comparisons.
+   --  noncomposite type, or if no tagged subcomponents are present.
 
    function Has_Unconstrained_Access_Discriminants
      (Subtyp : Entity_Id) return Boolean;
@@ -1539,6 +1549,12 @@ package Sem_Util is
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
    --  Returns True if node N appears within a pragma that acts as an assertion
    --  expression. See Sem_Prag for the list of qualifying pragmas.
+
+   function In_Check_Node (N : Node_Id) return Boolean;
+   --  Return True if N is part of a N_Raise_xxx_Error node
+
+   function In_Generic_Formal_Package (E : Entity_Id) return Boolean;
+   --  Returns True if entity E is inside a generic formal package
 
    function In_Generic_Scope (E : Entity_Id) return Boolean;
    --  Returns True if entity E is inside a generic scope
@@ -1690,6 +1706,10 @@ package Sem_Util is
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
+
+   function Is_Actual_Out_Or_In_Out_Parameter (N : Node_Id) return Boolean;
+   --  Determines if N is an actual parameter of out or in out mode in a
+   --  subprogram call.
 
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter in a subprogram call
@@ -1879,7 +1899,9 @@ package Sem_Util is
    --  . machine_emax = 2**10
    --  . machine_emin = 3 - machine_emax
 
-   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
+   function Is_Effectively_Volatile
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
    --    * Volatile without No_Caching
@@ -1887,9 +1909,14 @@ package Sem_Util is
    --    * An array type whose component type is effectively volatile
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+   --
+   --  If Ignore_Protected is True, then a protected object/type is treated
+   --  like a non-protected record object/type for computing the result of
+   --  this query.
 
    function Is_Effectively_Volatile_For_Reading
-     (Id : Entity_Id) return Boolean;
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile for reading (SPARK RM 7.1.2). To qualify as such, the entity
    --  must be either
@@ -1901,6 +1928,10 @@ package Sem_Util is
    --      reading
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+   --
+   --  If Ignore_Protected is True, then a protected object/type is treated
+   --  like a non-protected record object/type for computing the result of
+   --  this query.
 
    function Is_Effectively_Volatile_Object
      (N : Node_Id) return Boolean;
@@ -2220,6 +2251,13 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
+   function Is_Static_Discriminant_Component (N : Node_Id) return Boolean;
+   --  Return True if N is guaranteed to a selected component containing a
+   --  statically known discriminant.
+   --  Note that this routine takes a conservative view and may return False
+   --  in some cases where N would match the criteria. In other words this
+   --  routine should be used to simplify or optimize the expanded code.
+
    function Is_Static_Function (Subp : Entity_Id) return Boolean;
    --  Determine whether subprogram Subp denotes a static function,
    --  which is a function with the aspect Static with value True.
@@ -2479,7 +2517,7 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and this requires finalization
+   --  Determine whether type Typ is controlled and thus requires finalization
    --  actions.
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;

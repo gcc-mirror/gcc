@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 #include <objc/objc.h>
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyRootClass
 {
   Class isa;

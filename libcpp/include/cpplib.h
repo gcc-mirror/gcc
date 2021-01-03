@@ -308,6 +308,15 @@ enum cpp_normalize_level {
   normalized_none
 };
 
+enum cpp_main_search 
+{
+  CMS_none,    /* A regular source file.  */
+  CMS_header,  /* Is a directly-specified header file (eg PCH or
+		  header-unit).  */
+  CMS_user,    /* Search the user INCLUDE path.  */
+  CMS_system,  /* Search the system INCLUDE path.  */
+};
+
 /* This structure is nested inside struct cpp_reader, and
    carries all the options visible to the command line.  */
 struct cpp_options
@@ -487,6 +496,9 @@ struct cpp_options
   /* Nonzero for the '::' token.  */
   unsigned char scope;
 
+  /* Nonzero means tokenize C++20 module directives.  */
+  unsigned char module_directives;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -528,6 +540,9 @@ struct cpp_options
        one.  */
     bool phony_targets;
 
+    /* Generate dependency info for modules.  */
+    bool modules;
+
     /* If true, no dependency is generated on the main file.  */
     bool ignore_main_file;
 
@@ -560,6 +575,8 @@ struct cpp_options
 
   /* The maximum depth of the nested #include.  */
   unsigned int max_include_depth;
+
+  cpp_main_search main_search : 8;
 };
 
 /* Diagnostic levels.  To get a diagnostic without associating a
@@ -672,13 +689,16 @@ struct cpp_callbacks
   void (*used) (cpp_reader *, location_t, cpp_hashnode *);
 
   /* Callback to identify whether an attribute exists.  */
-  int (*has_attribute) (cpp_reader *);
+  int (*has_attribute) (cpp_reader *, bool);
 
   /* Callback to determine whether a built-in function is recognized.  */
   int (*has_builtin) (cpp_reader *);
 
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
+
+  /* Callback to handle deferred cpp_macros.  */
+  cpp_macro *(*user_deferred_macro) (cpp_reader *, location_t, cpp_hashnode *);
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
@@ -698,6 +718,11 @@ struct cpp_callbacks
   /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
      expansions.  */
   const char *(*remap_filename) (const char*);
+
+  /* Maybe translate a #include into something else.  Return a
+     cpp_buffer containing the translation if translating.  */
+  char *(*translate_include) (cpp_reader *, line_maps *, location_t,
+			      const char *path);
 };
 
 #ifdef VMS
@@ -801,7 +826,10 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 
-  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+  /* Imported C++20 macro (from a header unit).  */
+  unsigned int imported_p : 1;
+
+  /* 0 bits spare (32-bit). 32 on 64-bit target.  */
 
   union cpp_exp_u
   {
@@ -831,6 +859,7 @@ struct GTY(()) cpp_macro {
 #define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
+#define NODE_MODULE (1 << 8)		/* C++-20 module-related name.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -857,6 +886,7 @@ enum cpp_builtin_type
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute(x)' */
+  BT_HAS_STD_ATTRIBUTE,		/* `__has_c_attribute(x)' */
   BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
   BT_HAS_INCLUDE,		/* `__has_include(x)' */
   BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
@@ -874,7 +904,7 @@ enum cpp_builtin_type
 union GTY(()) _cpp_hashnode_value {
   /* Assert (maybe NULL) */
   cpp_macro * GTY((tag ("NT_VOID"))) answers;
-  /* Macro (never NULL) */
+  /* Macro (maybe NULL) */
   cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
   enum cpp_builtin_type GTY ((tag ("NT_BUILTIN_MACRO"))) builtin;
@@ -888,11 +918,17 @@ struct GTY(()) cpp_hashnode {
   unsigned int directive_index : 7;	/* If is_directive,
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
-  unsigned char rid_code;		/* Rid code - for front ends.  */
+  unsigned int rid_code : 8;		/* Rid code - for front ends.  */
+  unsigned int flags : 9;		/* CPP flags.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
-  unsigned int flags : 8;		/* CPP flags.  */
 
-  /* 6 bits spare (plus another 32 on 64-bit hosts).  */
+  /* 5 bits spare.  */
+
+  /* The deferred cookie is applicable to NT_USER_MACRO or NT_VOID.
+     The latter for when a macro had a prevailing undef.
+     On a 64-bit system there would be 32-bits of padding to the value
+     field.  So placing the deferred index here is not costly.   */
+  unsigned deferred;			/* Deferred cookie  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -971,6 +1007,14 @@ extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
+extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
+					 bool angle_p,  location_t);
+
+/* Call these to get name data about the various compile-time
+   charsets.  */
+extern const char *cpp_get_narrow_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+extern const char *cpp_get_wide_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
@@ -978,6 +1022,10 @@ extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *,
 				       bool injecting = false);
+extern location_t cpp_main_loc (const cpp_reader *);
+
+/* Adjust for the main file to be an include.  */
+extern void cpp_retrofit_as_include (cpp_reader *);
 
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */
@@ -1027,6 +1075,18 @@ inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_MACRO_MASK;
 }
+inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node,
+					  cpp_macro *forced = NULL)
+{
+  cpp_macro *old = node->value.macro;
+
+  node->value.macro = forced;
+  node->type = NT_USER_MACRO;
+  node->flags &= ~NODE_USED;
+
+  return old;
+}
+cpp_macro *cpp_get_deferred_macro (cpp_reader *, cpp_hashnode *, location_t);
 
 /* Returns true if NODE is a function-like user macro.  */
 inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
@@ -1034,12 +1094,23 @@ inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
   return cpp_user_macro_p (node) && node->value.macro->fun_like;
 }
 
-extern const unsigned char *cpp_macro_definition (cpp_reader *,
-						  cpp_hashnode *);
+extern const unsigned char *cpp_macro_definition (cpp_reader *, cpp_hashnode *);
+extern const unsigned char *cpp_macro_definition (cpp_reader *, cpp_hashnode *,
+						  const cpp_macro *);
 inline location_t cpp_macro_definition_location (cpp_hashnode *node)
 {
-  return node->value.macro->line;
+  const cpp_macro *macro = node->value.macro;
+  return macro ? macro->line : 0;
 }
+/* Return an idempotent time stamp (possibly from SOURCE_DATE_EPOCH).  */
+enum class CPP_time_kind 
+{
+  FIXED = -1,	/* Fixed time via source epoch.  */
+  DYNAMIC = -2,	/* Dynamic via time(2).  */
+  UNKNOWN = -3	/* Wibbly wobbly, timey wimey.  */
+};
+extern CPP_time_kind cpp_get_date (cpp_reader *, time_t *);
+
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
@@ -1066,8 +1137,12 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
+extern void cpp_define_unused (cpp_reader *, const char *);
 extern void cpp_define_formatted (cpp_reader *pfile, 
 				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
+extern void cpp_define_formatted_unused (cpp_reader *pfile,
+					 const char *fmt,
+					 ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
@@ -1219,6 +1294,8 @@ extern int cpp_ideq (const cpp_token *, const char *);
 extern void cpp_output_line (cpp_reader *, FILE *);
 extern unsigned char *cpp_output_line_to_string (cpp_reader *,
 						 const unsigned char *);
+extern const unsigned char *cpp_alloc_token_string
+  (cpp_reader *, const unsigned char *, unsigned);
 extern void cpp_output_token (const cpp_token *, FILE *);
 extern const char *cpp_type2name (enum cpp_ttype, unsigned char flags);
 /* Returns the value of an escape sequence, truncated to the correct
@@ -1274,6 +1351,8 @@ extern void cpp_scan_nooutput (cpp_reader *);
 extern int  cpp_sys_macro_p (cpp_reader *);
 extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 					unsigned int);
+extern bool cpp_compare_macros (const cpp_macro *macro1,
+				const cpp_macro *macro2);
 
 /* In files.c */
 extern bool cpp_included (cpp_reader *, const char *);

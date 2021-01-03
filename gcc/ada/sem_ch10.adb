@@ -768,7 +768,7 @@ package body Sem_Ch10 is
             Unum := Get_Cunit_Unit_Number (N);
             Par_Spec_Name := Get_Parent_Spec_Name (Unit_Name (Unum));
 
-            if Par_Spec_Name /= No_Unit_Name then
+            if Present (Par_Spec_Name) then
                Unum :=
                  Load_Unit
                    (Load_Name  => Par_Spec_Name,
@@ -828,6 +828,7 @@ package body Sem_Ch10 is
                      --  of the child unit does not act as spec any longer.
 
                      Set_Acts_As_Spec (N, False);
+                     Move_Aspects (From => Unit_Node, To => Unit (Lib_Unit));
                      Set_Is_Child_Unit (Defining_Entity (Unit_Node));
                      Set_Debug_Info_Needed (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
@@ -6183,34 +6184,35 @@ package body Sem_Ch10 is
             null;
 
          when N_Subprogram_Declaration =>
-            Error_Msg_N ("subprograms not allowed in limited with_clauses", N);
+            Error_Msg_N
+              ("subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Generic_Package_Declaration
             | N_Generic_Subprogram_Declaration
          =>
-            Error_Msg_N ("generics not allowed in limited with_clauses", N);
+            Error_Msg_N ("generic not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Generic_Instantiation =>
             Error_Msg_N
-              ("generic instantiations not allowed in limited with_clauses",
+              ("generic instantiation not allowed in `LIMITED WITH` clause",
                N);
             return;
 
          when N_Generic_Renaming_Declaration =>
             Error_Msg_N
-              ("generic renamings not allowed in limited with_clauses", N);
+              ("generic renaming not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Subprogram_Renaming_Declaration =>
             Error_Msg_N
-              ("renamed subprograms not allowed in limited with_clauses", N);
+              ("renamed subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Package_Renaming_Declaration =>
             Error_Msg_N
-              ("renamed packages not allowed in limited with_clauses", N);
+              ("renamed package not allowed in `LIMITED WITH` clause", N);
             return;
 
          when others =>

@@ -851,17 +851,82 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
 gimple *
 find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
+  tree type_size = TYPE_SIZE_UNIT (gimple_expr_type (stmt));
+  if (!tree_fits_uhwi_p (type_size))
+    return NULL;
+
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number n of bytes to be touched.  We
      increase that number by 2 * (log2(n) + 1) here in order to also
      cover signed -> unsigned conversions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
-  int limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
+  int limit = tree_to_uhwi (type_size);
   limit += 2 * (1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit));
   gimple *ins_stmt = find_bswap_or_nop_1 (stmt, n, limit);
 
   if (!ins_stmt)
-    return NULL;
+    {
+      if (gimple_assign_rhs_code (stmt) != CONSTRUCTOR
+	  || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+	return NULL;
+      unsigned HOST_WIDE_INT sz = tree_to_uhwi (type_size) * BITS_PER_UNIT;
+      if (sz != 16 && sz != 32 && sz != 64)
+	return NULL;
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (CONSTRUCTOR_NELTS (rhs) == 0)
+	return NULL;
+      tree eltype = TREE_TYPE (TREE_TYPE (rhs));
+      unsigned HOST_WIDE_INT eltsz
+	= int_size_in_bytes (eltype) * BITS_PER_UNIT;
+      if (TYPE_PRECISION (eltype) != eltsz)
+	return NULL;
+      constructor_elt *elt;
+      unsigned int i;
+      tree type = build_nonstandard_integer_type (sz, 1);
+      FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (rhs), i, elt)
+	{
+	  if (TREE_CODE (elt->value) != SSA_NAME
+	      || !INTEGRAL_TYPE_P (TREE_TYPE (elt->value)))
+	    return NULL;
+	  struct symbolic_number n1;
+	  gimple *source_stmt
+	    = find_bswap_or_nop_1 (SSA_NAME_DEF_STMT (elt->value), &n1,
+				   limit - 1);
+
+	  if (!source_stmt)
+	    return NULL;
+
+	  n1.type = type;
+	  if (!n1.base_addr)
+	    n1.range = sz / BITS_PER_UNIT;
+
+	  if (i == 0)
+	    {
+	      ins_stmt = source_stmt;
+	      *n = n1;
+	    }
+	  else
+	    {
+	      if (n->vuse != n1.vuse)
+		return NULL;
+
+	      struct symbolic_number n0 = *n;
+
+	      if (!BYTES_BIG_ENDIAN)
+		{
+		  if (!do_shift_rotate (LSHIFT_EXPR, &n1, i * eltsz))
+		    return NULL;
+		}
+	      else if (!do_shift_rotate (LSHIFT_EXPR, &n0, eltsz))
+		return NULL;
+	      ins_stmt
+		= perform_symbolic_merge (ins_stmt, &n0, source_stmt, &n1, n);
+
+	      if (!ins_stmt)
+		return NULL;
+	    }
+	}
+    }
 
   uint64_t cmpxchg, cmpnop;
   find_bswap_or_nop_finalize (n, &cmpxchg, &cmpnop);
@@ -935,11 +1000,18 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 {
   tree src, tmp, tgt = NULL_TREE;
   gimple *bswap_stmt;
+  tree_code conv_code = NOP_EXPR;
 
   gimple *cur_stmt = gsi_stmt (gsi);
   src = n->src;
   if (cur_stmt)
-    tgt = gimple_assign_lhs (cur_stmt);
+    {
+      tgt = gimple_assign_lhs (cur_stmt);
+      if (gimple_assign_rhs_code (cur_stmt) == CONSTRUCTOR
+	  && tgt
+	  && VECTOR_TYPE_P (TREE_TYPE (tgt)))
+	conv_code = VIEW_CONVERT_EXPR;
+    }
 
   /* Need to load the value from memory first.  */
   if (n->base_addr)
@@ -1027,7 +1099,9 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	      load_stmt = gimple_build_assign (val_tmp, val_expr);
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops (&gsi, NOP_EXPR, val_tmp);
+	      if (conv_code == VIEW_CONVERT_EXPR)
+		val_tmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), val_tmp);
+	      gimple_assign_set_rhs_with_ops (&gsi, conv_code, val_tmp);
 	      update_stmt (cur_stmt);
 	    }
 	  else if (cur_stmt)
@@ -1069,7 +1143,9 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	{
 	  if (!is_gimple_val (src))
 	    return NULL_TREE;
-	  g = gimple_build_assign (tgt, NOP_EXPR, src);
+	  if (conv_code == VIEW_CONVERT_EXPR)
+	    src = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), src);
+	  g = gimple_build_assign (tgt, conv_code, src);
 	}
       else if (cur_stmt)
 	g = gimple_build_assign (tgt, src);
@@ -1149,7 +1225,10 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
       gimple *convert_stmt;
 
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
-      convert_stmt = gimple_build_assign (tgt, NOP_EXPR, tmp);
+      tree atmp = tmp;
+      if (conv_code == VIEW_CONVERT_EXPR)
+	atmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), tmp);
+      convert_stmt = gimple_build_assign (tgt, conv_code, atmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
@@ -1254,6 +1333,14 @@ pass_optimize_bswap::execute (function *fun)
 	      /* Fall through.  */
 	    case BIT_IOR_EXPR:
 	      break;
+	    case CONSTRUCTOR:
+	      {
+		tree rhs = gimple_assign_rhs1 (cur_stmt);
+		if (VECTOR_TYPE_P (TREE_TYPE (rhs))
+		    && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (rhs))))
+		  break;
+	      }
+	      continue;
 	    default:
 	      continue;
 	    }
@@ -1446,6 +1533,7 @@ public:
   bool bit_insertion;
   bool string_concatenation;
   bool only_constants;
+  bool consecutive;
   unsigned int first_nonmergeable_order;
   int lp_nr;
 
@@ -1818,6 +1906,7 @@ merged_store_group::merged_store_group (store_immediate_info *info)
   bit_insertion = info->rhs_code == BIT_INSERT_EXPR;
   string_concatenation = info->rhs_code == STRING_CST;
   only_constants = info->rhs_code == INTEGER_CST;
+  consecutive = true;
   first_nonmergeable_order = ~0U;
   lp_nr = info->lp_nr;
   unsigned HOST_WIDE_INT align_bitpos = 0;
@@ -1953,6 +2042,9 @@ merged_store_group::do_merge (store_immediate_info *info)
       first_stmt = stmt;
     }
 
+  if (info->bitpos != start + width)
+    consecutive = false;
+
   /* We need to use extraction if there is any bit-field.  */
   if (info->rhs_code == BIT_INSERT_EXPR)
     {
@@ -1960,12 +2052,16 @@ merged_store_group::do_merge (store_immediate_info *info)
       gcc_assert (!string_concatenation);
     }
 
-  /* We need to use concatenation if there is any string.  */
+  /* We want to use concatenation if there is any string.  */
   if (info->rhs_code == STRING_CST)
     {
       string_concatenation = true;
       gcc_assert (!bit_insertion);
     }
+
+  /* But we cannot use it if we don't have consecutive stores.  */
+  if (!consecutive)
+    string_concatenation = false;
 
   if (info->rhs_code != INTEGER_CST)
     only_constants = false;
@@ -1978,12 +2074,13 @@ merged_store_group::do_merge (store_immediate_info *info)
 void
 merged_store_group::merge_into (store_immediate_info *info)
 {
+  do_merge (info);
+
   /* Make sure we're inserting in the position we think we're inserting.  */
   gcc_assert (info->bitpos >= start + width
 	      && info->bitregion_start <= bitregion_end);
 
   width = info->bitpos + info->bitsize - start;
-  do_merge (info);
 }
 
 /* Merge a store described by INFO into this merged store.
@@ -1993,11 +2090,11 @@ merged_store_group::merge_into (store_immediate_info *info)
 void
 merged_store_group::merge_overlapping (store_immediate_info *info)
 {
+  do_merge (info);
+
   /* If the store extends the size of the group, extend the width.  */
   if (info->bitpos + info->bitsize > start + width)
     width = info->bitpos + info->bitsize - start;
-
-  do_merge (info);
 }
 
 /* Go through all the recorded stores in this group in program order and

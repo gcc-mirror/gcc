@@ -118,14 +118,14 @@ public:
 
 /* A class aggregating all connections and semantic equivalents
    for a given pair of semantic function candidates.  */
-class func_checker : operand_compare
+class func_checker : ao_compare
 {
 public:
   /* Default constructor.  */
   func_checker ():
     m_source_func_decl (NULL_TREE), m_target_func_decl (NULL_TREE),
     m_ignored_source_nodes (NULL), m_ignored_target_nodes (NULL),
-    m_ignore_labels (false)
+    m_ignore_labels (false), m_tbaa (true)
   {
     m_source_ssa_names.create (0);
     m_target_ssa_names.create (0);
@@ -139,6 +139,7 @@ public:
      of declarations that can be skipped.  */
   func_checker (tree source_func_decl, tree target_func_decl,
 		bool ignore_labels = false,
+		bool tbaa = true,
 		hash_set<symtab_node *> *ignored_source_nodes = NULL,
 		hash_set<symtab_node *> *ignored_target_nodes = NULL);
 
@@ -200,14 +201,19 @@ public:
   /* Verification function for declaration trees T1 and T2.  */
   bool compare_decl (const_tree t1, const_tree t2);
 
+  /* Compute hash map MAP that determines loads and stores of STMT.  */
+  enum operand_access_type {OP_MEMORY, OP_NORMAL};
+  typedef hash_set<tree> operand_access_type_map;
+
   /* Function responsible for comparison of various operands T1 and T2.
      If these components, from functions FUNC1 and FUNC2, are equal, true
      is returned.  */
-  bool compare_operand (tree t1, tree t2);
+  bool compare_operand (tree t1, tree t2, operand_access_type type);
 
   /* Compares GIMPLE ASM inputs (or outputs) where we iterate tree chain
      and compare both TREE_PURPOSEs and TREE_VALUEs.  */
-  bool compare_asm_inputs_outputs (tree t1, tree t2);
+  bool compare_asm_inputs_outputs (tree t1, tree t2,
+				   operand_access_type_map *map);
 
   /* Verifies that trees T1 and T2, representing function declarations
      are equivalent from perspective of ICF.  */
@@ -230,7 +236,13 @@ public:
      first parameter of a function.  */
   static bool compatible_types_p (tree t1, tree t2);
 
+  /* Compute hash map determining access types of operands.  */
+  static void classify_operands (const gimple *stmt,
+				 operand_access_type_map *map);
 
+  /* Return access type of a given operand.  */
+  static operand_access_type get_operand_access_type
+		 (operand_access_type_map *map, tree);
 private:
   /* Vector mapping source SSA names to target ones.  */
   vec <int> m_source_ssa_names;
@@ -264,6 +276,9 @@ private:
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
 
+  /* Flag if we should compare type based alias analysis info.  */
+  bool m_tbaa;
+
 public:
   /* Return true if two operands are equal.  The flags fields can be used
      to specify OEP flags described above.  */
@@ -272,6 +287,8 @@ public:
   /* Generate a hash value for an expression.  This can be used iteratively
      by passing a previous result as the HSTATE argument.  */
   virtual void hash_operand (const_tree, inchash::hash &, unsigned flags);
+  void hash_operand (const_tree, inchash::hash &, unsigned flags,
+		     operand_access_type access);
 };
 
 } // ipa_icf_gimple namespace

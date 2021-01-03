@@ -87,7 +87,7 @@ int main()
       fail_after = i;
       f();
       break;
-    } catch (std::bad_alloc) {
+    } catch (const std::bad_alloc&) {
     }
   }
 }

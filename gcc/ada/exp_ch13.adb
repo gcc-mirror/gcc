@@ -582,9 +582,8 @@ package body Exp_Ch13 is
             Install_Visible_Declarations (E_Scope);
          end if;
 
-         if Is_Package_Or_Generic_Package (E_Scope) or else
-            Is_Protected_Type (E_Scope)             or else
-            Is_Task_Type (E_Scope)
+         if Is_Concurrent_Type (E_Scope)
+           or else Is_Package_Or_Generic_Package (E_Scope)
          then
             Install_Private_Declarations (E_Scope);
          end if;

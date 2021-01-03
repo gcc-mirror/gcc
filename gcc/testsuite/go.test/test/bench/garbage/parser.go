@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors.  All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -85,7 +85,7 @@ func main() {
 	var t0 time.Time
 	var numGC uint32
 	var pauseTotalNs uint64
-	pkgroot := runtime.GOROOT() + "/src/pkg/"
+	pkgroot := runtime.GOROOT() + "/src/"
 	for pass := 0; pass < 2; pass++ {
 		// Once the heap is grown to full size, reset counters.
 		// This hides the start-up pauses, which are much smaller

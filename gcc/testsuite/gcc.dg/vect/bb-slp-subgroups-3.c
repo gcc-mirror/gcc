@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_int_mult } */
 /* PR tree-optimization/67682.  */
 
 #include "tree-vect.h"
@@ -38,4 +39,7 @@ main (int argc, char **argv)
 }
 
 /* { dg-final { scan-tree-dump-times "Basic block will be vectorized using SLP" 1 "slp2" } } */
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" } } */
+/* Because we disable the cost model, targets with variable-length
+   vectors can end up vectorizing the store to a[0..7] on its own.
+   With the cost model we do something sensible.  */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { xfail vect_variable_length } } } */

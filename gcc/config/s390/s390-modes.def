@@ -22,8 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 /* 256-bit integer mode is needed for STACK_SAVEAREA_MODE.  */
 INT_MODE (OI, 32);
 
-/* Define TFmode to work around reload problem PR 20927.  */
+/* 128-bit float stored in a VR on z14+ or a FPR pair on older machines.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* 128-bit float stored in a FPR pair.  */
+FLOAT_MODE (FPRX2, 16, ieee_quad_format);
 
 /* Add any extra modes needed to represent the condition code.  */
 

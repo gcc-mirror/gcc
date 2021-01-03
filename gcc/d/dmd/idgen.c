@@ -145,7 +145,6 @@ Msgtable msgtable[] =
     { "C", NULL },
     { "D", NULL },
     { "Windows", NULL },
-    { "Pascal", NULL },
     { "System", NULL },
     { "Objective", NULL },
 
@@ -262,7 +261,7 @@ Msgtable msgtable[] =
     { "aaRehash", "_aaRehash" },
     { "monitorenter", "_d_monitorenter" },
     { "monitorexit", "_d_monitorexit" },
-    { "criticalenter", "_d_criticalenter" },
+    { "criticalenter", "_d_criticalenter2" },
     { "criticalexit", "_d_criticalexit" },
     { "__ArrayEq", NULL },
     { "__ArrayPostblit", NULL },

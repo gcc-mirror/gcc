@@ -1,2 +1,2 @@
 @interface
-/* { dg-error "-:expected identifier" "" { target *-*-* } .+1 } */
+/* { dg-error "expected identifier" "" { target *-*-* } .-1 } */

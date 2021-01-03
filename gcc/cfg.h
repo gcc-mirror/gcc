@@ -82,7 +82,7 @@ struct GTY(()) control_flow_graph {
 
 
 extern void init_flow (function *);
-extern void clear_edges (function *);
+extern void free_cfg (function *);
 extern basic_block alloc_block (void);
 extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);
@@ -108,6 +108,8 @@ extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);
 extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);
+extern void debug_bb (basic_block, dump_flags_t);
+extern basic_block debug_bb_n (int, dump_flags_t);
 extern void dump_bb_info (FILE *, basic_block, int, dump_flags_t, bool, bool);
 extern void brief_dump_cfg (FILE *, dump_flags_t);
 extern void update_bb_profile_for_threading (basic_block, profile_count, edge);

@@ -65,10 +65,9 @@ callback (void *data, uintptr_t pc __attribute__ ((unused)),
 
   if (c->index == 0)
     {
-      /* If there are more frames after the indexed one, and we should
-	 skip this one, then skip it.  */
-      if (c->more
-	  && c->fn.len > 0
+      /* If we should skip the frame we have, then see if we can get
+	 another one.  */
+      if (c->fn.len > 0
 	  && runtime_skipInCallback((const char *) c->fn.str, NULL))
 	return 0;
 

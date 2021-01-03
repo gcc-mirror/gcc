@@ -65,8 +65,11 @@ nested_function_info *
 nested_function_info::get_create (cgraph_node *node)
 {
   if (!nested_function_sum)
-    nested_function_sum = new function_summary <nested_function_info *>
-				 (symtab);
+    {
+      nested_function_sum = new function_summary <nested_function_info *>
+				   (symtab);
+      nested_function_sum->disable_insertion_hook ();
+    }
   return nested_function_sum->get_create (node);
 }
 
@@ -124,6 +127,9 @@ nested_function_info::release ()
 void
 maybe_record_nested_function (cgraph_node *node)
 {
+  /* All nested functions gets lowered during the construction of symtab.  */
+  if (symtab->state > CONSTRUCTION)
+    return;
   if (DECL_CONTEXT (node->decl)
       && TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
     {
@@ -1435,6 +1441,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_NONTEMPORAL:
+	do_decl_clause_no_supp:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -1446,6 +1453,16 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      need_chain = true;
 	    }
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_nonlocal_reference_op
+		(&OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause), &dummy, wi);
+	    }
+	  goto do_decl_clause_no_supp;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
@@ -2197,6 +2214,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_NONTEMPORAL:
+	do_decl_clause_no_supp:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -2214,6 +2232,16 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 		}
 	    }
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_local_reference_op
+		(&OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause), &dummy, wi);
+	    }
+	  goto do_decl_clause_no_supp;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:

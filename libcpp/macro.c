@@ -268,6 +268,8 @@ class vaopt_state {
 
 /* Macro expansion.  */
 
+static cpp_macro *get_deferred_or_lazy_macro (cpp_reader *, cpp_hashnode *,
+					      location_t);
 static int enter_macro_context (cpp_reader *, cpp_hashnode *,
 				const cpp_token *, location_t);
 static int builtin_macro (cpp_reader *, cpp_hashnode *,
@@ -338,8 +340,6 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 /* #define directive parsing and handling.  */
 
 static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
-static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
-				  const cpp_macro *);
 static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
@@ -350,8 +350,6 @@ static void consume_next_token_from_context (cpp_reader *pfile,
 static const cpp_token* cpp_get_token_1 (cpp_reader *, location_t *);
 
 static cpp_hashnode* macro_of_context (cpp_context *context);
-
-static bool in_macro_expansion_p (cpp_reader *pfile);
 
 /* Statistical counter tracking the number of macros that got
    expanded.  */
@@ -586,7 +584,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	 (c) we are not in strictly conforming mode, then it has the
 	 value 0.  (b) and (c) are already checked in cpp_init_builtins.  */
     case BT_STDC:
-      if (cpp_in_system_header (pfile))
+      if (_cpp_in_system_header (pfile))
 	number = 0;
       else
 	number = 1;
@@ -604,29 +602,21 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	     at init time, because time() and localtime() are very
 	     slow on some systems.  */
 	  time_t tt;
-	  struct tm *tb = NULL;
+	  auto kind = cpp_get_date (pfile, &tt);
 
-	  /* Set a reproducible timestamp for __DATE__ and __TIME__ macro
-	     if SOURCE_DATE_EPOCH is defined.  */
-	  if (pfile->source_date_epoch == (time_t) -2
-	      && pfile->cb.get_source_date_epoch != NULL)
-	    pfile->source_date_epoch = pfile->cb.get_source_date_epoch (pfile);
-
-	  if (pfile->source_date_epoch >= (time_t) 0)
-	    tb = gmtime (&pfile->source_date_epoch);
+	  if (kind == CPP_time_kind::UNKNOWN)
+	    {
+	      cpp_errno (pfile, CPP_DL_WARNING,
+			 "could not determine date and time");
+		
+	      pfile->date = UC"\"??? ?? ????\"";
+	      pfile->time = UC"\"??:??:??\"";
+	    }
 	  else
 	    {
-	      /* (time_t) -1 is a legitimate value for "number of seconds
-		 since the Epoch", so we have to do a little dance to
-		 distinguish that from a genuine error.  */
-	      errno = 0;
-	      tt = time (NULL);
-	      if (tt != (time_t)-1 || errno == 0)
-		tb = localtime (&tt);
-	    }
+	      struct tm *tb = (kind == CPP_time_kind::FIXED
+			       ? gmtime : localtime) (&tt);
 
-	  if (tb)
-	    {
 	      pfile->date = _cpp_unaligned_alloc (pfile,
 						  sizeof ("\"Oct 11 1347\""));
 	      sprintf ((char *) pfile->date, "\"%s %2d %4d\"",
@@ -637,14 +627,6 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 						  sizeof ("\"12:34:56\""));
 	      sprintf ((char *) pfile->time, "\"%02d:%02d:%02d\"",
 		       tb->tm_hour, tb->tm_min, tb->tm_sec);
-	    }
-	  else
-	    {
-	      cpp_errno (pfile, CPP_DL_WARNING,
-			 "could not determine date and time");
-		
-	      pfile->date = UC"\"??? ?? ????\"";
-	      pfile->time = UC"\"??:??:??\"";
 	    }
 	}
 
@@ -662,7 +644,11 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
       break;
 
     case BT_HAS_ATTRIBUTE:
-      number = pfile->cb.has_attribute (pfile);
+      number = pfile->cb.has_attribute (pfile, false);
+      break;
+
+    case BT_HAS_STD_ATTRIBUTE:
+      number = pfile->cb.has_attribute (pfile, true);
       break;
 
     case BT_HAS_BUILTIN:
@@ -684,6 +670,51 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     }
 
   return result;      
+}
+
+/* Get an idempotent date.  Either the cached value, the value from
+   source epoch, or failing that, the value from time(2).  Use this
+   during compilation so that every time stamp is the same.  */
+CPP_time_kind
+cpp_get_date (cpp_reader *pfile, time_t *result)
+{
+  if (!pfile->time_stamp_kind)
+    {
+      int kind = 0;
+      if (pfile->cb.get_source_date_epoch)
+	{
+	  /* Try reading the fixed epoch.  */
+	  pfile->time_stamp = pfile->cb.get_source_date_epoch (pfile);
+	  if (pfile->time_stamp != time_t (-1))
+	    kind = int (CPP_time_kind::FIXED);
+	}
+
+      if (!kind)
+	{
+	  /* Pedantically time_t (-1) is a legitimate value for
+	     "number of seconds since the Epoch".  It is a silly
+	     time.   */
+	  errno = 0;
+	  pfile->time_stamp = time (nullptr);
+	  /* Annoyingly a library could legally set errno and return a
+	     valid time!  Bad library!  */
+	  if (pfile->time_stamp == time_t (-1) && errno)
+	    kind = errno;
+	  else
+	    kind = int (CPP_time_kind::DYNAMIC);
+	}
+
+      pfile->time_stamp_kind = kind;
+    }
+
+  *result = pfile->time_stamp;
+  if (pfile->time_stamp_kind >= 0)
+    {
+      errno = pfile->time_stamp_kind;
+      return CPP_time_kind::UNKNOWN;
+    }
+
+  return CPP_time_kind (pfile->time_stamp_kind);
 }
 
 /* Convert builtin macros like __FILE__ to a token and push it on the
@@ -1433,7 +1464,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
       /* Laziness can only affect the expansion tokens of the macro,
 	 not its fun-likeness or parameters.  */
-      _cpp_maybe_notify_macro_use (pfile, node);
+      _cpp_maybe_notify_macro_use (pfile, node, location);
       if (pfile->cb.used)
 	pfile->cb.used (pfile, location, node);
 
@@ -2182,7 +2213,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	      = (const cpp_token **) tokens_buff_last_token_ptr (buff);
 	}
       else if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99)
-	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	       && ! macro->syshdr && ! _cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
@@ -2201,7 +2232,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	}
       else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
 	       && ! CPP_OPTION (pfile, cplusplus)
-	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	       && ! macro->syshdr && ! _cpp_in_system_header (pfile))
 	cpp_warning (pfile, CPP_W_C90_C99_COMPAT,
 		     "invoking macro %s argument %d: "
 		     "empty macro arguments are undefined"
@@ -2843,6 +2874,12 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
       if (node->type == NT_VOID || (result->flags & NO_EXPAND))
 	break;
 
+      if (!(node->flags & NODE_USED)
+	  && node->type == NT_USER_MACRO
+	  && !node->value.macro
+	  && !cpp_get_deferred_macro (pfile, node, result->src_loc))
+	break;
+
       if (!(node->flags & NODE_DISABLED))
 	{
 	  int ret = 0;
@@ -2928,6 +2965,85 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
     }
 
   pfile->about_to_expand_macro_p = saved_about_to_expand_macro;
+
+  if (pfile->state.directive_file_token
+      && !pfile->state.parsing_args
+      && !(result->type == CPP_PADDING || result->type == CPP_COMMENT)
+      && !(15 & --pfile->state.directive_file_token))
+    {
+      /* Do header-name frobbery.  Concatenate < ... > as approprate.
+	 Do header search if needed, and finally drop the outer <> or
+	 "".  */
+      pfile->state.angled_headers = false;
+
+      /* Do angle-header reconstitution.  Then do include searching.
+	 We'll always end up with a ""-quoted header-name in that
+	 case.  If searching finds nothing, we emit a diagnostic and
+	 an empty string.  */
+      size_t len = 0;
+      char *fname = NULL;
+
+      cpp_token *tmp = _cpp_temp_token (pfile);
+      *tmp = *result;
+
+      tmp->type = CPP_HEADER_NAME;
+      bool need_search = !pfile->state.directive_file_token;
+      pfile->state.directive_file_token = 0;
+
+      bool angle = result->type != CPP_STRING;
+      if (result->type == CPP_HEADER_NAME
+	  || (result->type == CPP_STRING && result->val.str.text[0] != 'R'))
+	{
+	  len = result->val.str.len - 2;
+	  fname = XNEWVEC (char, len + 1);
+	  memcpy (fname, result->val.str.text + 1, len);
+	  fname[len] = 0;
+	}
+      else if (result->type == CPP_LESS)
+	fname = _cpp_bracket_include (pfile);
+
+      if (fname)
+	{
+	  /* We have a header-name.  Look it up.  This will emit an
+	     unfound diagnostic.  Canonicalize the found name.  */
+	  const char *found = fname;
+
+	  if (need_search)
+	    {
+	      found = cpp_find_header_unit (pfile, fname, angle, tmp->src_loc);
+	      if (!found)
+		found = "";
+	      len = strlen (found);
+	    }
+	  /* Force a leading './' if it's not absolute.  */
+	  bool dotme = (found[0] == '.' ? !IS_DIR_SEPARATOR (found[1])
+			: found[0] && !IS_ABSOLUTE_PATH (found));
+
+	  if (BUFF_ROOM (pfile->u_buff) < len + 1 + dotme * 2)
+	    _cpp_extend_buff (pfile, &pfile->u_buff, len + 1 + dotme * 2);
+	  unsigned char *buf = BUFF_FRONT (pfile->u_buff);
+	  size_t pos = 0;
+	      
+	  if (dotme)
+	    {
+	      buf[pos++] = '.';
+	      /* Apparently '/' is unconditional.  */
+	      buf[pos++] = '/';
+	    }
+	  memcpy (&buf[pos], found, len);
+	  pos += len;
+	  buf[pos] = 0;
+
+	  tmp->val.str.len = pos;
+	  tmp->val.str.text = buf;
+
+	  tmp->type = CPP_HEADER_NAME;
+	  XDELETEVEC (fname);
+	  
+	  result = tmp;
+	}
+    }
+
   return result;
 }
 
@@ -3102,15 +3218,16 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_CONDITIONAL)
     return false;
 
-  cpp_macro *macro1 = node->value.macro;
-  if (macro1->lazy)
-    {
-      /* We don't want to mark MACRO as used, but do need to finalize
-	 its laziness.  */
-      pfile->cb.user_lazy_macro (pfile, macro1, macro1->lazy - 1);
-      macro1->lazy = 0;
-    }
+  if (cpp_macro *macro1 = get_deferred_or_lazy_macro (pfile, node, macro2->line))
+    return cpp_compare_macros (macro1, macro2);
+  return false;
+}
 
+/* Return TRUE if MACRO1 and MACRO2 differ.  */
+
+bool
+cpp_compare_macros (const cpp_macro *macro1, const cpp_macro *macro2)
+{
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
 
@@ -3579,6 +3696,10 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
   cpp_macro *macro = (cpp_macro *) placement;
 
+  /* Zero init all the fields.  This'll tell the compiler know all the
+     following inits are writing a virgin object.  */
+  memset (macro, 0, offsetof (cpp_macro, exp));
+
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
   macro->lazy = 0;
@@ -3587,6 +3708,7 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
   macro->count = 0;
   macro->fun_like = 0;
+  macro->imported_p = false;
   macro->extra_tokens = 0;
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->buffer && pfile->buffer->sysp != 0;
@@ -3664,39 +3786,72 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
   macro->lazy = num + 1;
 }
 
-/* Notify the use of NODE in a macro-aware context (i.e. expanding it,
-   or testing its existance).  Also applies any lazy definition.  */
+/* NODE is a deferred macro, resolve it, returning the definition
+   (which may be NULL).  */
+cpp_macro *
+cpp_get_deferred_macro (cpp_reader *pfile, cpp_hashnode *node,
+			location_t loc)
+{
+  gcc_checking_assert (node->type == NT_USER_MACRO);
 
-extern void
-_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+  node->value.macro = pfile->cb.user_deferred_macro (pfile, loc, node);
+
+  if (!node->value.macro)
+    node->type = NT_VOID;
+
+  return node->value.macro;
+}
+
+static cpp_macro *
+get_deferred_or_lazy_macro (cpp_reader *pfile, cpp_hashnode *node,
+			    location_t loc)
+{
+  cpp_macro *macro = node->value.macro;
+  if (!macro)
+    {
+      macro = cpp_get_deferred_macro (pfile, node, loc);
+      gcc_checking_assert (!macro || !macro->lazy);
+    }
+  else if (macro->lazy)
+    {
+      pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
+      macro->lazy = 0;
+    }
+
+  return macro;
+}
+
+/* Notify the use of NODE in a macro-aware context (i.e. expanding it,
+   or testing its existance).  Also applies any lazy definition.
+   Return FALSE if the macro isn't really there.  */
+
+extern bool
+_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+		       location_t loc)
 {
   node->flags |= NODE_USED;
   switch (node->type)
     {
     case NT_USER_MACRO:
-      {
-	cpp_macro *macro = node->value.macro;
-	if (macro->lazy)
-	  {
-	    pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
-	    macro->lazy = 0;
-	  }
-      }
+      if (!get_deferred_or_lazy_macro (pfile, node, loc))
+	return false;
       /* FALLTHROUGH.  */
 
     case NT_BUILTIN_MACRO:
       if (pfile->cb.used_define)
-	pfile->cb.used_define (pfile, pfile->directive_line, node);
+	pfile->cb.used_define (pfile, loc, node);
       break;
 
     case NT_VOID:
       if (pfile->cb.used_undef)
-	pfile->cb.used_undef (pfile, pfile->directive_line, node);
+	pfile->cb.used_undef (pfile, loc, node);
       break;
 
     default:
       abort ();
     }
+
+  return true;
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's
@@ -3749,12 +3904,19 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 const unsigned char *
 cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 {
-  unsigned int i, len;
-  unsigned char *buffer;
-
   gcc_checking_assert (cpp_user_macro_p (node));
 
-  const cpp_macro *macro = node->value.macro;
+  if (const cpp_macro *macro = get_deferred_or_lazy_macro (pfile, node, 0))
+    return cpp_macro_definition (pfile, node, macro);
+  return NULL;
+}
+
+const unsigned char *
+cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node,
+		      const cpp_macro *macro)
+{
+  unsigned int i, len;
+  unsigned char *buffer;
 
   /* Calculate length.  */
   len = NODE_LEN (node) * 10 + 2;		/* ' ' and NUL.  */

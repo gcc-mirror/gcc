@@ -451,10 +451,11 @@ package Stand is
    --  universal integer and universal real, it is never used for runtime
    --  calculations).
 
-   Standard_Integer_8  : Entity_Id;
-   Standard_Integer_16 : Entity_Id;
-   Standard_Integer_32 : Entity_Id;
-   Standard_Integer_64 : Entity_Id;
+   Standard_Integer_8   : Entity_Id;
+   Standard_Integer_16  : Entity_Id;
+   Standard_Integer_32  : Entity_Id;
+   Standard_Integer_64  : Entity_Id;
+   Standard_Integer_128 : Entity_Id;
    --  These are signed integer types with the indicated sizes. Used for the
    --  underlying implementation types for fixed-point and enumeration types.
 

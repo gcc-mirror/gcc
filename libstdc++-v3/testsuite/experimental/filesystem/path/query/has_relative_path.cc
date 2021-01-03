@@ -30,7 +30,7 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     VERIFY( p.has_relative_path() == !p.relative_path().empty() );
   }

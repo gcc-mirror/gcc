@@ -305,7 +305,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | ios | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows | zos)
 		tag1=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le | nios2 | ppc | ppc64 | ppc64le | riscv | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -317,7 +317,7 @@ x)
 	    "") ;;
 	    $goarch) ;;
 	    $goos) ;;
-	    aix | android | darwin | dragonfly | freebsd | hurd | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
+	    aix | android | darwin | dragonfly | freebsd | hurd | ios | illumos | js | linux | nacl | netbsd | openbsd | plan9 | solaris | windows | zos)
 		tag2=nonmatchingtag
 		;;
 	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le | nios2 | ppc | ppc64 | ppc64le | riscv | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
@@ -345,7 +345,7 @@ x)
 		    $goos | $goarch | cgo | gccgo | go1.[0-9] | go1.[0-9][0-9])
 			match=true
 			;;
-		    "!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!"go1.[0-9] | "!"go1.[0-9][0-9])
+		    "!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!"go1.[0-9] | "!"go1.1[0-6])
 			;;
 		    *,*)
 			cmatch=true
@@ -353,7 +353,7 @@ x)
 			    case $ctag in
 			    $goos | $goarch | cgo | gccgo | go1.[0-9] | go1.[0-9][0-9])
 				;;
-			    "!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!"go1.[0-9] | "!"go1.[0-9][0-9])
+			    "!"$goos | "!"$goarch | "!cgo" | "!gccgo" | "!"go1.[0-9] | "!"go1.1[0-6])
 				cmatch=false
 				;;
 			    "!"*)
@@ -496,7 +496,8 @@ testname() {
 localname() {
 	# The package main has been renamed to __main__ when imported.
 	# Adjust its uses.
-	echo $1 | sed 's/^main\./__main__./'
+	# Also demangle underscores.
+	echo $1 | sed 's/^main\./__main__./' | sed 's/__/_/'
 }
 
 # Takes a list of tests derived from 'nm' output (whose symbols are mangled)
@@ -504,7 +505,7 @@ localname() {
 # Example:
 #
 #    Original symbol:   foo/bar/leaf.Mumble
-#    Mangled symbol:    foo..z2fbar..z2fleaf.Mumble
+#    Mangled symbol:    foo_1fbar_1leaf.Mumble
 #    Returned:          leaf.Mumble
 #
 symtogo() {
@@ -522,7 +523,7 @@ symtogo() {
     if expr "$tp" : '^type\.\.' >/dev/null 2>&1; then
       continue
     fi
-    s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
+    s=$(echo "$tp" | sed -e 's/_1/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
       continue

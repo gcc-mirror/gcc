@@ -228,6 +228,48 @@ elif test "${with_sysroot+set}" = set; then
   fi
 fi
 
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+AC_ARG_WITH(gxx-libcxx-include-dir,
+[AS_HELP_STRING([--with-gxx-libcxx-include-dir=DIR],
+                [specifies directory to find libc++ header files])],
+[case "${withval}" in
+yes)	AC_MSG_ERROR(bad value ${withval} given for libc++ include directory) ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac])
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 1,
+            [Define if the -stdlib= option should be enabled.])
+else
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 0)
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
+  fi
+fi
+
 AC_ARG_WITH(cpp_install_dir,
 [AC_HELP_STRING([--with-cpp-install-dir=DIR],
                 [install the user visible C preprocessor in DIR
@@ -1102,6 +1144,11 @@ AC_ARG_WITH(multilib-list,
 :,
 with_multilib_list=default)
 
+AC_ARG_WITH(multilib-generator,
+[AS_HELP_STRING([--with-multilib-generator], [Multi-libs configuration string (RISC-V only)])],
+:,
+with_multilib_generator=default)
+
 # -------------------------
 # Checks for other programs
 # -------------------------
@@ -1237,7 +1284,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer
+  for lang in $subdirs c-family common analyzer rtl-ssa
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
@@ -1412,8 +1459,8 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
-	gettimeofday mbstowcs wcswidth mmap setlocale \
-	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2)
+	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
+	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1435,6 +1482,10 @@ fi
 
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(caddr_t, char *)
+AC_CHECK_TYPE(sighander_t,
+  AC_DEFINE(HAVE_SIGHANDLER_T, 1,
+    [Define if <sys/signal.h> defines sighandler_t]),
+    ,signal.h)
 
 GCC_AC_FUNC_MMAP_BLACKLIST
 
@@ -1578,6 +1629,72 @@ return fcntl (1, F_SETLKW, &fl);]])],
 if test $ac_cv_f_setlkw = yes; then
   AC_DEFINE(HOST_HAS_F_SETLKW, 1,
   [Define if F_SETLKW supported by fcntl.])
+fi
+
+# Check if O_CLOEXEC is defined by fcntl
+AC_CACHE_CHECK(for O_CLOEXEC, ac_cv_o_cloexec, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <fcntl.h>]], [[
+return open ("/dev/null", O_RDONLY | O_CLOEXEC);]])],
+[ac_cv_o_cloexec=yes],[ac_cv_o_cloexec=no])])
+if test $ac_cv_o_cloexec = yes; then
+  AC_DEFINE(HOST_HAS_O_CLOEXEC, 1,
+  [Define if O_CLOEXEC supported by fcntl.])
+fi
+
+# C++ Modules would like some networking features to provide the mapping
+# server.  You can still use modules without them though.
+# The following network-related checks could probably do with some
+# Windows and other non-linux defenses and checking.
+
+# Local socket connectivity wants AF_UNIX networking
+# Check for AF_UNIX networking
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>]],[[
+sockaddr_un un;
+un.sun_family = AF_UNSPEC;
+int fd = socket (AF_UNIX, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&un, sizeof (un));]])],
+[ac_cv_af_unix=yes],
+[ac_cv_af_unix=no])])
+if test $ac_cv_af_unix = yes; then
+  AC_DEFINE(HAVE_AF_UNIX, 1,
+  [Define if AF_UNIX supported.])
+fi
+
+# Remote socket connectivity wants AF_INET6 networking
+# Check for AF_INET6 networking
+AC_CACHE_CHECK(for AF_INET6, ac_cv_af_inet6, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>]],[[
+sockaddr_in6 in6;
+in6.sin6_family = AF_UNSPEC;
+struct addrinfo *addrs = 0;
+struct addrinfo hints;
+hints.ai_flags = 0;
+hints.ai_family = AF_INET6;
+hints.ai_socktype = SOCK_STREAM;
+hints.ai_protocol = 0;
+hints.ai_canonname = 0;
+hints.ai_addr = 0;
+hints.ai_next = 0;
+int e = getaddrinfo ("localhost", 0, &hints, &addrs);
+const char *str = gai_strerror (e);
+freeaddrinfo (addrs);
+int fd = socket (AF_INET6, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
+[ac_cv_af_inet6=yes],
+[ac_cv_af_inet6=no])])
+if test $ac_cv_af_inet6 = yes; then
+  AC_DEFINE(HAVE_AF_INET6, 1,
+  [Define if AF_INET6 supported.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
@@ -2802,6 +2919,41 @@ Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [enable_gnu_indirect_function="$default_gnu_indirect_function"])
 
+case "${target}" in
+  riscv*-*-linux*)
+    AC_MSG_CHECKING(linker ifunc IRELATIVE support)
+    cat > conftest.s <<EOF
+	.text
+	.type	foo_resolver, @function
+foo_resolver:
+	ret
+	.size	foo_resolver, .-foo_resolver
+
+	.globl	foo
+	.type	foo, %gnu_indirect_function
+	.set	foo, foo_resolver
+
+	.globl	bar
+	.type	bar, @function
+bar:
+	call	foo
+	ret
+	.size	bar, .-bar
+EOF
+    if test x$gcc_cv_as != x \
+       && test x$gcc_cv_ld != x \
+       && test x$gcc_cv_readelf != x \
+       && $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+       && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+       && $gcc_cv_readelf --relocs --wide conftest \
+	  | grep R_RISCV_IRELATIVE > /dev/null 2>&1; then
+      enable_gnu_indirect_function=yes
+    fi
+    rm -f conftest conftest.o conftest.s
+    AC_MSG_RESULT($enable_gnu_indirect_function)
+    ;;
+esac
+
 gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
 [Define if your system supports gnu indirect functions.])
@@ -2962,34 +3114,38 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 gcc_AC_INITFINI_ARRAY
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
+# Older versions of GAS and some non-GNU assemblers, have a bugs handling
+# these directives, even when they appear to accept them.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
-  [elf,2,11,0],,
+ [elf,2,11,0],,
 [	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:],
-[[# GAS versions before 2.11 do not support uleb128,
-  # despite appearing to.
-  # ??? There exists an elf-specific test that will crash
-  # the assembler.  Perhaps it's better to figure out whether
-  # arbitrary sections are supported and try the test.
-  as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
-  if echo "$as_ver" | grep GNU > /dev/null; then
-    as_vers=`echo $as_ver | sed -n \
-	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
-    as_major=`expr "$as_vers" : '\([0-9]*\)'`
-    as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
-    if test $as_major -eq 2 && test $as_minor -lt 11
-    then :
-    else gcc_cv_as_leb128=yes
-    fi
-  fi]],
-  [AC_DEFINE(HAVE_AS_LEB128, 1,
-    [Define if your assembler supports .sleb128 and .uleb128.])],
-  [AC_DEFINE(HAVE_AS_LEB128, 0,
-    [Define if your assembler supports .sleb128 and .uleb128.])])
+L2:
+	.uleb128 0x8000000000000000
+],
+[[
+if test "x$gcc_cv_objdump" != x; then
+  if $gcc_cv_objdump -s conftest.o 2>/dev/null \
+     | grep '04800a8e 78808080 80808080 808001' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+elif test "x$gcc_cv_otool" != x; then
+  if $gcc_cv_otool -d conftest.o 2>/dev/null \
+     | grep '04 80 0a 8e 78 80 80 80 80 80 80 80 80 80 01' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+else
+  # play safe, assume the assembler is broken.
+  :
+fi
+]],
+ [AC_DEFINE(HAVE_AS_LEB128, 1,
+   [Define if your assembler supports .sleb128 and .uleb128.])],
+ [AC_DEFINE(HAVE_AS_LEB128, 0,
+   [Define if your assembler supports .sleb128 and .uleb128.])])
 
 # Determine if an .eh_frame section is read-only.
 gcc_fn_eh_frame_ro () {
@@ -3215,6 +3371,48 @@ fi
 AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
   [`if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`],
 [Define if your assembler supports specifying the exclude section flag.])
+
+# Test if the assembler supports the section flag 'R' for specifying
+# section with SHF_GNU_RETAIN.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'R', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_shf_gnu_retain=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'R' flag], gcc_cv_as_shf_gnu_retain,
+      [elf,2,36,0], [--fatal-warnings],
+      [.section .foo,"awR",%progbits
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_GNU_RETAIN,
+  [`if test $gcc_cv_as_shf_gnu_retain = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN flag.])
+
+# Test if the assembler supports the section flag 'o' for specifying
+# section with link-order.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'o', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_section_link_order=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'o' flag], gcc_cv_as_section_link_order,
+      [2,35,0], [--fatal-warnings],
+      [.section .foo,"a"
+.byte 0
+.section __patchable_function_entries,"awo",%progbits,.foo
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_LINK_ORDER,
+  [`if test $gcc_cv_as_section_link_order = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports 'o' flag in .section directive.])
 
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
@@ -5071,6 +5269,16 @@ configured with --enable-newlib-nano-formatted-io.])
       [.attribute stack_align,4],,
       [AC_DEFINE(HAVE_AS_RISCV_ATTRIBUTE, 1,
 	  [Define if your assembler supports .attribute.])])
+    gcc_GAS_CHECK_FEATURE([-misa-spec= support],
+      gcc_cv_as_riscv_isa_spec,,
+      [-misa-spec=2.2],,,
+      [AC_DEFINE(HAVE_AS_MISA_SPEC, 1,
+		 [Define if the assembler understands -misa-spec=.])])
+    gcc_GAS_CHECK_FEATURE([-march=rv32i_zifencei support],
+      gcc_cv_as_riscv_march_zifencei,,
+      [-march=rv32i_zifencei],,,
+      [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
+		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
@@ -6108,6 +6316,9 @@ case "$target:$tm_file" in
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
+     *le-*-freebsd*)
+     emul_name="-melf64lppc_fbsd"
+      ;;
      *-*-freebsd*)
      emul_name="-melf64ppc_fbsd"
       ;;
@@ -6626,6 +6837,29 @@ else
 fi
 AC_SUBST(DO_LINK_MUTEX)
 
+dnl Whether to prevent multiple GCC front-ends from linking at the same time
+
+AC_MSG_CHECKING([whether to serialize linking of multiple front-ends])
+  AC_ARG_ENABLE(link-serialization,
+[AS_HELP_STRING([--enable-link-serialization],
+		[avoid linking multiple GCC front-ends at once using make
+		 dependencies to avoid thrashing on the build machine])],
+      do_link_serialization=$enableval,
+      do_link_serialization=no)
+AC_MSG_RESULT($do_link_serialization)
+
+case "$do_link_serialization" in
+  yes)
+    DO_LINK_SERIALIZATION=1;;
+  [[1-9]] | [[1-9]][[0-9]] | [[1-9]][[0-9]][[0-9]])
+    DO_LINK_SERIALIZATION=$do_link_serialization;;
+  no)
+    DO_LINK_SERIALIZATION=;;
+  *)
+    AC_MSG_ERROR(bad value ${do_link_serialization} given for --enable-link-serialization) ;;
+esac
+AC_SUBST(DO_LINK_SERIALIZATION)
+
 # --------------
 # Language hooks
 # --------------
@@ -6786,6 +7020,43 @@ do
 	echo "lang.$t: $x" >> Make-hooks
 done
 
+echo "ifeq (\$(DO_LINK_SERIALIZATION),)" >> Make-hooks
+echo "SERIAL_LIST =" >> Make-hooks
+echo else >> Make-hooks
+lang_cnt=0
+lang_list=
+prev=c
+serialization_languages=c
+for lang in $all_selected_languages
+do
+	test $lang = c && continue
+	if test $lang = lto; then
+		serialization_languages="$serialization_languages lto1 lto2"
+	else
+		serialization_languages="$serialization_languages $lang"
+	fi
+done
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	lang_cnt=`expr $lang_cnt + 1`
+	lang_list=" $prev$lang_list"
+	prev=${lang}
+done
+echo "SERIAL_LIST = \$(wordlist \$(DO_LINK_SERIALIZATION),$lang_cnt,$lang_list)" >> Make-hooks
+echo endif >> Make-hooks
+echo "SERIAL_COUNT = `expr $lang_cnt + 1`" >> Make-hooks
+echo "INDEX.c = 0" >> Make-hooks
+lang_idx=1
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	echo "$lang.prev = \$(if \$(word $lang_cnt,\$(SERIAL_LIST)),\$(\$(word $lang_cnt,\$(SERIAL_LIST)).serial))" >> Make-hooks
+	echo "INDEX.$lang = $lang_idx" >> Make-hooks
+	lang_cnt=`expr $lang_cnt - 1`
+	lang_idx=`expr $lang_idx + 1`
+done
+
 # --------
 # Option include files
 # --------
@@ -6867,6 +7138,8 @@ AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_gxx_include_dir_add_sysroot)
+AC_SUBST(gcc_gxx_libcxx_include_dir)
+AC_SUBST(gcc_gxx_libcxx_include_dir_add_sysroot)
 AC_SUBST(host_exeext)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_include_list)
@@ -7137,6 +7410,73 @@ if test x"$ld_pushpopstate_support" = xyes; then
 	[Define if your linker supports --push-state/--pop-state])
 fi
 AC_MSG_RESULT($ld_pushpopstate_support)
+
+# On s390, float_t has historically been statically defined as double for no
+# good reason. To comply with the C standard in the light of this definition,
+# gcc has evaluated float expressions in double precision when in
+# standards-compatible mode or when given -fexcess-precision=standard. To enable
+# a smooth transition towards the new model used by most architectures, where
+# gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
+# float_t from that, this behavior can be configured with
+# --enable-s390-excess-float-precision. When given as enabled, that flag selects
+# the old model. When omitted, native builds and cross compiles that have target
+# libc headers will detect whether libc clamps float_t to double and in that
+# case maintain the old model. Otherwise, they will default to the new model.
+AC_ARG_ENABLE(s390-excess-float-precision,
+  [AS_HELP_STRING([--enable-s390-excess-float-precision],
+		  [on s390 targets, evaluate float with double precision
+		   when in standards-conforming mode])],
+  [],[enable_s390_excess_float_precision=auto])
+
+case $target in
+  s390*-linux*)
+  if test x"$enable_s390_excess_float_precision" = xauto; then
+    # Can we autodetect the behavior of the target libc?
+    if test "$target" = "$host" -a "$host" = "$build"; then
+      enable_s390_excess_float_precision=autodetect
+    elif test "x$with_headers" != xno; then
+      # cross build. are target headers available?
+      # carefully coerce the build-system compiler to use target headers
+      saved_CXXFLAGS="$CXXFLAGS"
+      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+]])], [enable_s390_excess_float_precision=autodetect], [])
+      CXXFLAGS="$saved_CXXFLAGS"
+    fi
+
+    if test x"$enable_s390_excess_float_precision" = xautodetect; then
+      saved_CXXFLAGS="$CXXFLAGS"
+      if ! test "$target" = "$host" -a "$host" = "$build"; then
+        CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+	unset CROSS_TEST_CXXFLAGS
+      fi
+      AC_CACHE_CHECK([for glibc clamping float_t to double],
+        gcc_cv_float_t_clamped_to_double, [
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#define __FLT_EVAL_METHOD__ 0
+#include <math.h>
+int dummy[sizeof(float_t) == sizeof(double) ? 1 : -1];
+]])],
+          [gcc_cv_float_t_clamped_to_double=yes],
+          [gcc_cv_float_t_clamped_to_double=no])])
+      CXXFLAGS="$saved_CXXFLAGS"
+      enable_s390_excess_float_precision="$gcc_cv_float_t_clamped_to_double"
+    else
+      # no way to detect behavior of target libc, default to new model
+      enable_s390_excess_float_precision=no
+    fi
+  fi
+
+  GCC_TARGET_TEMPLATE(ENABLE_S390_EXCESS_FLOAT_PRECISION)
+  if test x"$enable_s390_excess_float_precision" = xyes; then
+    AC_DEFINE(ENABLE_S390_EXCESS_FLOAT_PRECISION, 1,
+[Define to enable evaluating float expressions with double precision in
+standards-compatible mode on s390 targets.])
+  fi
+  ;;
+esac
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

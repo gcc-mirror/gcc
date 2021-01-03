@@ -3145,6 +3145,35 @@ gcc/ChangeLog:
 	by using Pmode instead of ptr_mode.
 
 Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80 (only part))
+---
+ gcc/asan.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/asan.c b/gcc/asan.c
+index 823eb539993..4ec22162c12 100644
+--- a/gcc/asan.c
++++ b/gcc/asan.c
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.27.0
+
+=== double-cherry-pick.patch ===
+From e1d68582022cfa2b1dc76646724b397ba2739439 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Thu, 11 Jun 2020 09:34:41 +0200
+Subject: [PATCH] asan: fix RTX emission for ilp32
+
+gcc/ChangeLog:
+
+	PR sanitizer/95634
+	* asan.c (asan_emit_stack_protection): Fix emission for ilp32
+	by using Pmode instead of ptr_mode.
+
+Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
 (cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
 ---
  gcc/asan.c | 1 +
@@ -3193,5 +3222,180 @@ index fe18288..313f84d 100644
  
 +
 -- 
+=== 0001-tree-optimization-97633-fix-SLP-scheduling-of-single.patch ===
+From c0bfd9672e19caf08e45afeb4277f848488ced2b Mon Sep 17 00:00:00 2001
+From: Richard Biener <rguenther@suse.de>
+Date: Fri, 30 Oct 2020 09:57:02 +0100
+Subject: [PATCH] tree-optimization/97633 - fix SLP scheduling of single-node
+ cycles
+
+This makes sure to update backedges in single-node cycles.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97633
+	* tree-vect-slp.c (): Update backedges in single-node cycles.
+	Optimize processing of externals.
+
+	* g++.dg/vect/slp-pr97636.cc: New testcase.
+	* gcc.dg/vect/bb-slp-pr97633.c: Likewise.
+---
+ gcc/testsuite/g++.dg/vect/slp-pr97636.cc   |  83 +++++++++++
+ gcc/testsuite/gcc.dg/vect/bb-slp-pr97633.c |  27 ++++
+ gcc/tree-vect-slp.c                        | 162 +++++++++++----------
+ 3 files changed, 198 insertions(+), 74 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+ create mode 100644 gcc/testsuite/gcc.dg/vect/bb-slp-pr97633.c
+
+diff --git a/gcc/testsuite/g++.dg/vect/slp-pr97636.cc b/gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+new file mode 100644
+index 00000000000..012342004f1
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+@@ -0,0 +1 @@
++
+diff --git a/gcc/tree-vect-slp.c b/gcc/tree-vect-slp.c
+index 5d69a98c2a9..714e50697bd 100644
+--- a/gcc/tree-vect-slp.c
++++ b/gcc/tree-vect-slp.c
+@@ -1 +1,2 @@
+ 
++
+-- 
+
 2.7.4
+=== 0001-c-Set-CALL_FROM_NEW_OR_DELETE_P-on-more-calls.patch ===
+From 4f4ced28826ece7b7b76649522ee2a9601a63b90 Mon Sep 17 00:00:00 2001
+From: Jason Merrill <jason@redhat.com>
+Date: Fri, 2 Oct 2020 09:00:49 +0200
+Subject: [PATCH] c++: Set CALL_FROM_NEW_OR_DELETE_P on more calls.
+
+We were failing to set the flag on a delete call in a new expression, in a
+deleting destructor, and in a coroutine.  Fixed by setting it in the
+function that builds the call.
+
+2020-10-02  Jason Merril  <jason@redhat.com>
+
+gcc/cp/ChangeLog:
+	* init.c (build_new_1, build_vec_delete_1, build_delete): Not here.
+	(build_delete):
+
+---
+ gcc/cp/init.c                  |  1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/gcc/cp/init.c b/gcc/cp/init.c
+index e84e985492d..00fff3f7327 100644
+--- a/gcc/cp/init.c
++++ b/gcc/cp/init.c
+@@ -3436,1 +3435,0 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
+-
+-- 
+2.25.1
+
+=== 0001-lto-fix-LTO-debug-sections-copying.patch ===
+From 190c04ba36d9c6c3dce41f12012aa97c6d7f22f5 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 5 Oct 2020 18:03:08 +0200
+Subject: [PATCH] lto: fix LTO debug sections copying.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+libiberty/ChangeLog:
+
+	PR lto/97290
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Use sh_link of a .symtab_shndx section.
+---
+ libiberty/simple-object-elf.c | 1 -
+ 1 file changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/libiberty/simple-object-elf.c b/libiberty/simple-object-elf.c
+index 7c9d492f6a4..37e73348cb7 100644
+--- a/libiberty/simple-object-elf.c
++++ b/libiberty/simple-object-elf.c
+@@ -1191,1 +1191,0 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
+- 
+-- 
+2.25.1
+
+=== 0001-Wildcard-subdirs.patch ===
+From b798205595426c53eb362065f6ed6c320dcc161d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 30 Nov 2020 13:27:51 +0100
+Subject: [PATCH] Fix it.
+
+libstdc++-v3/ChangeLog:
+
+	* testsuite/28_regex/*: Fix them all.
+	* testsuite/28_regex_not-existing/*: Fix them all.
+---
+ contrib/gcc-changelog/git_commit.py          | 1 +
+ libstdc++-v3/testsuite/28_regex/init-list.cc | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/libstdc++-v3/testsuite/28_regex/init-list.cc b/libstdc++-v3/testsuite/28_regex/init-list.cc
+index f51453f019a..d10ecf483f4 100644
+--- a/libstdc++-v3/testsuite/28_regex/init-list.cc
++++ b/libstdc++-v3/testsuite/28_regex/init-list.cc
+@@ -1 +1,2 @@
+ 
++
+--
+2.29.2
+
+=== 0001-Add-horse.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ koníček.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 koníček.txt
+
+diff --git a/koníček.txt b/koníček.txt
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ b/koníček.txt
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+=== 0001-Add-horse2.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ "kon\303\255\304\215ek.txt" | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 "kon\303\255\304\215ek.txt"
+
+diff --git "a/kon\303\255\304\215ek.txt" "b/kon\303\255\304\215ek.txt"
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ "b/kon\303\255\304\215ek.txt"
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+
 

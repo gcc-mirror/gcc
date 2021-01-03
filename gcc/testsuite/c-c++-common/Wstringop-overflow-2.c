@@ -1,7 +1,7 @@
 /* PR middle-end/91458 - inconsistent warning for writing past the end
    of an array member
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -fno-ipa-icf" } */
 
 void sink (void*);
 
@@ -10,7 +10,7 @@ void sink (void*);
 struct Ax
 {
   char n;
-  char a[];                     // { dg-message "declared here" }
+  char a[];                     // { dg-message "destination object" "note" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -91,7 +91,7 @@ void gaxx (void)
 struct A0
 {
   char n;
-  char a[0];                    // { dg-message "declared here" }
+  char a[0];                    // { dg-message "destination object" "note" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -158,7 +158,7 @@ void ga0x (void)
 struct A1
 {
   char n;
-  char a[1];                    // { dg-message "declared here" }
+  char a[1];                    // { dg-message "destination object" "note" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -256,7 +256,7 @@ void ga1x (void)
 struct A1i
 {
   char n;
-  char a[1];                    // { dg-message "declared here" }
+  char a[1];                    // { dg-message "destination object" }
   char x;
 };
 

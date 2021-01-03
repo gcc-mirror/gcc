@@ -1159,188 +1159,16 @@ check_for_binary_op_overflow (range_query *query,
    successful.  */
 
 bool
-vr_values::extract_range_builtin (value_range_equiv *vr, gimple *stmt)
+vr_values::extract_range_from_ubsan_builtin (value_range_equiv *vr, gimple *stmt)
 {
   gcc_assert (is_gimple_call (stmt));
   tree type = gimple_expr_type (stmt);
-  tree arg;
-  int mini, maxi, zerov = 0, prec;
   enum tree_code subcode = ERROR_MARK;
   combined_fn cfn = gimple_call_combined_fn (stmt);
   scalar_int_mode mode;
 
   switch (cfn)
     {
-    case CFN_BUILT_IN_CONSTANT_P:
-      /* Resolve calls to __builtin_constant_p after inlining.  */
-      if (cfun->after_inlining)
-	{
-	  vr->set_zero (type);
-	  vr->equiv_clear ();
-	  return true;
-	}
-      break;
-      /* Both __builtin_ffs* and __builtin_popcount return
-	 [0, prec].  */
-    CASE_CFN_FFS:
-    CASE_CFN_POPCOUNT:
-      arg = gimple_call_arg (stmt, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec;
-      if (TREE_CODE (arg) == SSA_NAME)
-	{
-	  const value_range_equiv *vr0 = get_value_range (arg);
-	  /* If arg is non-zero, then ffs or popcount are non-zero.  */
-	  if (range_includes_zero_p (vr0) == 0)
-	    mini = 1;
-	  /* If some high bits are known to be zero,
-	     we can decrease the maximum.  */
-	  if (vr0->kind () == VR_RANGE
-	      && TREE_CODE (vr0->max ()) == INTEGER_CST
-	      && !operand_less_p (vr0->min (),
-				  build_zero_cst (TREE_TYPE (vr0->min ()))))
-	    maxi = tree_floor_log2 (vr0->max ()) + 1;
-	}
-      goto bitop_builtin;
-      /* __builtin_parity* returns [0, 1].  */
-    CASE_CFN_PARITY:
-      mini = 0;
-      maxi = 1;
-      goto bitop_builtin;
-      /* __builtin_clz* return [0, prec-1], except for
-	 when the argument is 0, but that is undefined behavior.
-	 Always handle __builtin_clz* which can be only written
-	 by user as UB on 0 and so [0, prec-1] range, and the internal-fn
-	 calls depending on how CLZ_DEFINED_VALUE_AT_ZERO is defined.  */
-    CASE_CFN_CLZ:
-      arg = gimple_call_arg (stmt, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec - 1;
-      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-      if (gimple_call_internal_p (stmt))
-	{
-	  if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
-	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
-	    {
-	      /* Handle only the single common value.  */
-	      if (zerov == prec)
-		maxi = prec;
-	      /* Magic value to give up, unless vr0 proves
-		 arg is non-zero.  */
-	      else
-		mini = -2;
-	    }
-	}
-      if (TREE_CODE (arg) == SSA_NAME)
-	{
-	  const value_range_equiv *vr0 = get_value_range (arg);
-	  /* From clz of VR_RANGE minimum we can compute
-	     result maximum.  */
-	  if (vr0->kind () == VR_RANGE
-	      && TREE_CODE (vr0->min ()) == INTEGER_CST
-	      && integer_nonzerop (vr0->min ()))
-	    {
-	      maxi = prec - 1 - tree_floor_log2 (vr0->min ());
-	      if (mini == -2)
-		mini = 0;
-	    }
-	  else if (vr0->kind () == VR_ANTI_RANGE
-		   && integer_zerop (vr0->min ()))
-	    {
-	      maxi = prec - 1;
-	      mini = 0;
-	    }
-	  if (mini == -2)
-	    break;
-	  /* From clz of VR_RANGE maximum we can compute
-	     result minimum.  */
-	  if (vr0->kind () == VR_RANGE
-	      && TREE_CODE (vr0->max ()) == INTEGER_CST)
-	    {
-	      int newmini = prec - 1 - tree_floor_log2 (vr0->max ());
-	      if (newmini == prec)
-		{
-		  if (maxi == prec)
-		    mini = prec;
-		}
-	      else
-		mini = newmini;
-	    }
-	}
-      if (mini == -2)
-	break;
-      goto bitop_builtin;
-      /* __builtin_ctz* return [0, prec-1], except for
-	 when the argument is 0, but that is undefined behavior.
-	 Always handle __builtin_ctz* which can be only written
-	 by user as UB on 0 and so [0, prec-1] range, and the internal-fn
-	 calls depending on how CTZ_DEFINED_VALUE_AT_ZERO is defined.  */
-    CASE_CFN_CTZ:
-      arg = gimple_call_arg (stmt, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec - 1;
-      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-      if (gimple_call_internal_p (stmt))
-	{
-	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
-	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
-	    {
-	      /* Handle only the two common values.  */
-	      if (zerov == -1)
-		mini = -1;
-	      else if (zerov == prec)
-		maxi = prec;
-	      else
-		/* Magic value to give up, unless vr0 proves
-		   arg is non-zero.  */
-		mini = -2;
-	    }
-	}
-      if (TREE_CODE (arg) == SSA_NAME)
-	{
-	  const value_range_equiv *vr0 = get_value_range (arg);
-	  /* If arg is non-zero, then use [0, prec - 1].  */
-	  if ((vr0->kind () == VR_RANGE
-	       && integer_nonzerop (vr0->min ()))
-	      || (vr0->kind () == VR_ANTI_RANGE
-		  && integer_zerop (vr0->min ())))
-	    {
-	      mini = 0;
-	      maxi = prec - 1;
-	    }
-	  /* If some high bits are known to be zero,
-	     we can decrease the result maximum.  */
-	  if (vr0->kind () == VR_RANGE
-	      && TREE_CODE (vr0->max ()) == INTEGER_CST)
-	    {
-	      int newmaxi = tree_floor_log2 (vr0->max ());
-	      if (newmaxi == -1)
-		{
-		  if (mini == -1)
-		    maxi = -1;
-		  else if (maxi == prec)
-		    mini = prec;
-		}
-	      else if (maxi != prec)
-		maxi = newmaxi;
-	    }
-	}
-      if (mini == -2)
-	break;
-      goto bitop_builtin;
-      /* __builtin_clrsb* returns [0, prec-1].  */
-    CASE_CFN_CLRSB:
-      arg = gimple_call_arg (stmt, 0);
-      prec = TYPE_PRECISION (TREE_TYPE (arg));
-      mini = 0;
-      maxi = prec - 1;
-      goto bitop_builtin;
-    bitop_builtin:
-      vr->set (build_int_cst (type, mini), build_int_cst (type, maxi));
-      return true;
     case CFN_UBSAN_CHECK_ADD:
       subcode = PLUS_EXPR;
       break;
@@ -1349,47 +1177,6 @@ vr_values::extract_range_builtin (value_range_equiv *vr, gimple *stmt)
       break;
     case CFN_UBSAN_CHECK_MUL:
       subcode = MULT_EXPR;
-      break;
-    case CFN_GOACC_DIM_SIZE:
-    case CFN_GOACC_DIM_POS:
-      /* Optimizing these two internal functions helps the loop
-	 optimizer eliminate outer comparisons.  Size is [1,N]
-	 and pos is [0,N-1].  */
-      {
-	bool is_pos = cfn == CFN_GOACC_DIM_POS;
-	int axis = oacc_get_ifn_dim_arg (stmt);
-	int size = oacc_get_fn_dim_size (current_function_decl, axis);
-
-	if (!size)
-	  /* If it's dynamic, the backend might know a hardware
-	     limitation.  */
-	  size = targetm.goacc.dim_limit (axis);
-
-	tree type = TREE_TYPE (gimple_call_lhs (stmt));
-	vr->set(build_int_cst (type, is_pos ? 0 : 1),
-		size
-		? build_int_cst (type, size - is_pos) : vrp_val_max (type));
-      }
-      return true;
-    case CFN_BUILT_IN_STRLEN:
-      if (tree lhs = gimple_call_lhs (stmt))
-	if (ptrdiff_type_node
-	    && (TYPE_PRECISION (ptrdiff_type_node)
-		== TYPE_PRECISION (TREE_TYPE (lhs))))
-	  {
-	    tree type = TREE_TYPE (lhs);
-	    tree max = vrp_val_max (ptrdiff_type_node);
-	    wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
-	    tree range_min = build_zero_cst (type);
-	    /* To account for the terminating NUL, the maximum length
-	       is one less than the maximum array size, which in turn
-	       is one  less than PTRDIFF_MAX (or SIZE_MAX where it's
-	       smaller than the former type).
-	       FIXME: Use max_object_size() - 1 here.  */
-	    tree range_max = wide_int_to_tree (type, wmax - 2);
-	    vr->set (range_min, range_max);
-	    return true;
-	  }
       break;
     default:
       break;
@@ -1430,17 +1217,27 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
   bool sop;
   tree type = gimple_expr_type (stmt);
 
-  if (is_gimple_call (stmt) && extract_range_builtin (vr, stmt))
+  if (is_gimple_call (stmt))
     {
-      value_range_equiv tmp;
-      /* Assert that any ranges vr_values::extract_range_builtin gets
-	 are also handled by the ranger counterpart.  */
-      gcc_assert (range_of_builtin_call (*this, tmp, as_a<gcall *> (stmt)));
-#if 0
-      /* Disable this while PR97505 is resolved.  */
-      gcc_assert (tmp.equal_p (*vr, /*ignore_equivs=*/false));
-#endif
-      return;
+      combined_fn cfn = gimple_call_combined_fn (stmt);
+      switch (cfn)
+	{
+	case CFN_UBSAN_CHECK_ADD:
+	case CFN_UBSAN_CHECK_SUB:
+	case CFN_UBSAN_CHECK_MUL:
+	  if (extract_range_from_ubsan_builtin (vr, stmt))
+	    return;
+	  break;
+	default:
+	  if (range_of_builtin_call (*this, *vr, as_a<gcall *> (stmt)))
+	    {
+	      /* The original code nuked equivalences every time a
+		 range was found, so do the same here.  */
+	      vr->equiv_clear ();
+	      return;
+	    }
+	  break;
+	}
     }
   /* Handle extraction of the two results (result of arithmetics and
      a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW

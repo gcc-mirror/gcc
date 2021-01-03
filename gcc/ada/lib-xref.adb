@@ -819,7 +819,7 @@ package body Lib.Xref is
                end if;
 
             --  For the left hand of an assignment case, we do nothing here.
-            --  The processing for Analyze_Assignment_Statement will set the
+            --  The processing for Analyze_Assignment will set the
             --  Referenced_As_LHS flag.
 
             else

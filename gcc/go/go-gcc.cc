@@ -2110,7 +2110,7 @@ Gcc_backend::call_expression(Bfunction*, // containing fcn for call
   if (optimize
       && TREE_CODE(fndecl) == FUNCTION_DECL
       && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
-      && DECL_IS_BUILTIN (fndecl)
+      && DECL_IS_UNDECLARED_BUILTIN (fndecl)
       && nargs > 0
       && ((SCALAR_FLOAT_TYPE_P(rettype)
 	   && SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[0])))
@@ -2756,7 +2756,7 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
   if (symtab_node::get(var_decl)
       && symtab_node::get(var_decl)->implicit_section)
     {
-      set_decl_section_name (var_decl, NULL);
+      set_decl_section_name (var_decl, (const char *) NULL);
       resolve_unique_section (var_decl,
 			      compute_reloc_for_constant (expr_tree),
 			      1);

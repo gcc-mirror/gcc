@@ -474,3 +474,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
+/* ELF support needed only by D front-end.  */
+
+#define TARGET_D_MINFO_SECTION "minfo"
+#define TARGET_D_MINFO_START_NAME "__start_minfo"
+#define TARGET_D_MINFO_END_NAME "__stop_minfo"

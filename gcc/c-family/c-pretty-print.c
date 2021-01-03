@@ -342,6 +342,7 @@ c_pretty_printer::simple_type_specifier (tree t)
       break;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
@@ -662,6 +663,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 
     case IDENTIFIER_NODE:
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:

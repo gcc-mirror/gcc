@@ -11,14 +11,14 @@ import _ "unsafe" // for go:linkname
 // maxstacksize.
 var maxstacksize uintptr = 1 << 20 // enough until runtime.main sets it for real
 
-//go:linkname setMaxStack runtime..z2fdebug.setMaxStack
+//go:linkname setMaxStack runtime_1debug.setMaxStack
 func setMaxStack(in int) (out int) {
 	out = int(maxstacksize)
 	maxstacksize = uintptr(in)
 	return out
 }
 
-//go:linkname setPanicOnFault runtime..z2fdebug.setPanicOnFault
+//go:linkname setPanicOnFault runtime_1debug.setPanicOnFault
 func setPanicOnFault(new bool) (old bool) {
 	_g_ := getg()
 	old = _g_.paniconfault

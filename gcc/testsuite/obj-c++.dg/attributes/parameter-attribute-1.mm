@@ -1,6 +1,7 @@
 /* Test __attribute__((unused)) for an Objective-C method parameter.  */
 /* { dg-do compile } */
 /* { dg-options "-Wunused-parameter" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 

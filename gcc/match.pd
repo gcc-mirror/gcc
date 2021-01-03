@@ -348,11 +348,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   /* But not for 0 / 0 so that we can get the proper warnings and errors.  */
   (if (!integer_zerop (@1))
    @0))
-  /* X / -1 is -X.  */
+ /* X / -1 is -X.  */
  (simplify
-   (div @0 integer_minus_onep@1)
-   (if (!TYPE_UNSIGNED (type))
-    (negate @0)))
+  (div @0 integer_minus_onep@1)
+  (if (!TYPE_UNSIGNED (type))
+   (negate @0)))
+ /* X / bool_range_Y is X.  */ 
+ (simplify
+  (div @0 SSA_NAME@1)
+  (if (INTEGRAL_TYPE_P (type) && ssa_name_has_boolean_range (@1))
+   @0))
  /* X / X is one.  */
  (simplify
   (div @0 @0)
@@ -650,9 +655,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
   (div (mult:c @0 @1) @1)
-  (if (ANY_INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_UNDEFINED (type))
-   @0)))
+  (if (ANY_INTEGRAL_TYPE_P (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type))
+    @0
+#if GIMPLE
+    (with
+     {
+       bool overflowed = true;
+       wide_int wmin0, wmax0, wmin1, wmax1;
+       if (INTEGRAL_TYPE_P (type)
+	   && get_range_info (@0, &wmin0, &wmax0) == VR_RANGE
+	   && get_range_info (@1, &wmin1, &wmax1) == VR_RANGE)
+	 {
+	   /* If the multiplication can't overflow/wrap around, then
+	      it can be optimized too.  */
+	   wi::overflow_type min_ovf, max_ovf;
+	   wi::mul (wmin0, wmin1, TYPE_SIGN (type), &min_ovf);
+	   wi::mul (wmax0, wmax1, TYPE_SIGN (type), &max_ovf);
+	   if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+	     {
+	       wi::mul (wmin0, wmax1, TYPE_SIGN (type), &min_ovf);
+	       wi::mul (wmax0, wmin1, TYPE_SIGN (type), &max_ovf);
+	       if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+		 overflowed = false;
+	     }
+	 }
+     }
+    (if (!overflowed)
+     @0))
+#endif
+   ))))
 
 (for op (negate abs)
  /* Simplify cos(-x) and cos(|x|) -> cos(x).  Similarly for cosh.  */
@@ -901,6 +933,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_not (bit_ior:cs (bit_not @0) @1))
  (bit_and @0 (bit_not @1)))
 
+/* (a ^ b) & ((b ^ c) ^ a) --> (a ^ b) & ~c */
+(simplify
+ (bit_and:c (bit_xor:c@3 @0 @1) (bit_xor:cs (bit_xor:cs @1 @2) @0))
+ (bit_and @3 (bit_not @2)))
+
+/* (a ^ b) | ((b ^ c) ^ a) --> (a ^ b) | c */
+(simplify
+ (bit_ior:c (bit_xor:c@3 @0 @1) (bit_xor:c (bit_xor:c @1 @2) @0))
+ (bit_ior @3 @2))
+
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
 (simplify
@@ -1036,6 +1078,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_not (plus:c (bit_not @0) @1))
  (minus @0 @1))
+
+/* ~(X - Y) -> ~X + Y.  */
+(simplify
+ (bit_not (minus:s @0 @1))
+ (plus (bit_not @0) @1))
+(simplify
+ (bit_not (plus:s @0 INTEGER_CST@1))
+ (if ((INTEGRAL_TYPE_P (type)
+       && TYPE_UNSIGNED (type))
+      || (!TYPE_OVERFLOW_SANITIZED (type)
+	  && may_negate_without_overflow_p (@1)))
+  (plus (bit_not @0) { const_unop (NEGATE_EXPR, type, @1); })))
+
+#if GIMPLE
+/* ~X + Y -> (Y - X) - 1.  */
+(simplify
+ (plus:c (bit_not @0) @1)
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && TYPE_OVERFLOW_WRAPS (type)
+       /* -1 - X is folded to ~X, so we'd recurse endlessly.  */
+       && !integer_all_onesp (@1))
+   (plus (minus @1 @0) { build_minus_one_cst (type); })
+   (if (INTEGRAL_TYPE_P (type)
+	&& TREE_CODE (@1) == INTEGER_CST
+	&& wi::to_wide (@1) != wi::min_value (TYPE_PRECISION (type),
+					      SIGNED))
+    (minus (plus @1 { build_minus_one_cst (type); }) @0))))
+#endif
 
 /* x + (x & 1) -> (x + 1) & ~1 */
 (simplify
@@ -1304,6 +1374,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (absu tree_expr_nonnegative_p@0)
  (convert @0))
 
+/* Simplify (-(X < 0) | 1) * X into abs (X).  */
+(simplify
+ (mult:c (bit_ior (negate (convert? (lt @0 integer_zerop))) integer_onep) @0)
+ (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
+  (abs @0)))
+
+/* Similarly (-(X < 0) | 1U) * X into absu (X).  */
+(simplify
+ (mult:c (bit_ior (nop_convert (negate (convert? (lt @0 integer_zerop))))
+		  integer_onep) (nop_convert @0))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (absu @0)))
+
 /* A few cases of fold-const.c negate_expr_p predicate.  */
 (match negate_expr_p
  INTEGER_CST
@@ -1422,6 +1508,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (bitop:c (rbitop:c (bit_not @0) @1) @0)
   (bitop @0 @1)))
+
+/* ((x | y) & z) | x -> (z & y) | x */
+(simplify
+  (bit_ior:c (bit_and:cs (bit_ior:cs @0 @1) @2) @0)
+  (bit_ior (bit_and @2 @1) @0))
 
 /* (x | CST1) & CST2 -> (x & CST2) | (CST1 & CST2) */
 (simplify
@@ -2841,6 +2932,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (minmax @0 INTEGER_CST@1) INTEGER_CST@2)
   (comb (cmp @0 @2) (cmp @1 @2))))
 
+/* X <= MAX(X, Y) -> true
+   X > MAX(X, Y) -> false 
+   X >= MIN(X, Y) -> true
+   X < MIN(X, Y) -> false */
+(for minmax (min     min     max     max     )
+     cmp    (ge      lt      le      gt      )
+ (simplify
+  (cmp @0 (minmax:c @0 @1))
+  { constant_boolean_node (cmp == GE_EXPR || cmp == LE_EXPR, type); } ))
+
 /* Undo fancy way of writing max/min or other ?: expressions,
    like a - ((a - b) & -(a < b)), in this case into (a < b) ? b : a.
    People normally use ?: and that is what we actually try to optimize.  */
@@ -2890,8 +2991,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize -1 >> x for arithmetic right shifts.  */
 (simplify
  (rshift integer_all_onesp@0 @1)
- (if (!TYPE_UNSIGNED (type)
-      && tree_expr_nonnegative_p (@1))
+ (if (!TYPE_UNSIGNED (type))
   @0))
 
 /* Optimize (x >> c) << c into x & (-1<<c).  */
@@ -2924,6 +3024,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (TYPE_UNSIGNED (type)
       && (wi::ltu_p (wi::to_wide (@1), element_precision (type))))
   (bit_and @0 (rshift { build_minus_one_cst (type); } @1))))
+
+/* Optimize x >> x into 0 */
+(simplify
+ (rshift @0 @0)
+  { build_zero_cst (type); })
 
 (for shiftrotate (lrotate rrotate lshift rshift)
  (simplify
@@ -3105,7 +3210,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (shift (convert?:s (bit_op:s @0 INTEGER_CST@2)) INTEGER_CST@1)
    (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
     (with { tree mask = int_const_binop (shift, fold_convert (type, @2), @1); }
-     (bit_op (shift (convert @0) @1) { mask; }))))))
+     (if (mask)
+      (bit_op (shift (convert @0) @1) { mask; })))))))
 
 /* ~(~X >> Y) -> X >> Y (for arithmetic shift).  */
 (simplify
@@ -3754,6 +3860,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
   (cnd @0 @2 @1)))
+
+/* -(type)!A -> (type)A - 1.  */
+(simplify
+ (negate (convert?:s (logical_inverted_value:s @0)))
+ (if (INTEGRAL_TYPE_P (type)
+      && TREE_CODE (type) != BOOLEAN_TYPE
+      && TYPE_PRECISION (type) > 1
+      && TREE_CODE (@0) == SSA_NAME
+      && ssa_name_has_boolean_range (@0))
+  (plus (convert:type @0) { build_all_ones_cst (type); })))
 
 /* A + (B vcmp C ? 1 : 0) -> A - (B vcmp C ? -1 : 0), since vector comparisons
    return all -1 or all 0 results.  */
@@ -4917,6 +5033,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    { constant_boolean_node (cmp == ORDERED_EXPR || cmp == LTGT_EXPR
 			    ? false : true, type); })))
 
+/* Fold UNORDERED if either operand must be NaN, or neither can be.  */
+(simplify
+  (unordered @0 @1)
+  (switch
+    (if (tree_expr_nan_p (@0) || tree_expr_nan_p (@1))
+	{ constant_boolean_node (true, type); })
+    (if (!tree_expr_maybe_nan_p (@0) && !tree_expr_maybe_nan_p (@1))
+	{ constant_boolean_node (false, type); })))
+
+/* Fold ORDERED if either operand must be NaN, or neither can be.  */
+(simplify
+  (ordered @0 @1)
+  (switch
+    (if (tree_expr_nan_p (@0) || tree_expr_nan_p (@1))
+	{ constant_boolean_node (false, type); })
+    (if (!tree_expr_maybe_nan_p (@0) && !tree_expr_maybe_nan_p (@1))
+	{ constant_boolean_node (true, type); })))
+
 /* bool_var != 0 becomes bool_var.  */
 (simplify
  (ne @0 integer_zerop)
@@ -4940,18 +5074,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
    ADD_OVERFLOW detection in tree-ssa-math-opts.c.
-   A + CST CMP A  ->  A CMP' CST' */
+   CONVERT?(CONVERT?(A) + CST) CMP A  ->  A CMP' CST' */
 (for cmp (lt le ge gt)
      out (gt gt le le)
  (simplify
-  (cmp:c (plus@2 @0 INTEGER_CST@1) @0)
-  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
-       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+  (cmp:c (convert?@3 (plus@2 (convert?@4 @0) INTEGER_CST@1)) @0)
+  (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@2))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@3))
+       && tree_nop_conversion_p (TREE_TYPE (@4), TREE_TYPE (@0))
        && wi::to_wide (@1) != 0
        && single_use (@2))
-   (with { unsigned int prec = TYPE_PRECISION (TREE_TYPE (@0)); }
+   (with {
+     unsigned int prec = TYPE_PRECISION (TREE_TYPE (@0));
+     signop sign = TYPE_SIGN (TREE_TYPE (@0));
+    }
     (out @0 { wide_int_to_tree (TREE_TYPE (@0),
-			        wi::max_value (prec, UNSIGNED)
+			        wi::max_value (prec, sign)
 				- wi::to_wide (@1)); })))))
 
 /* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
@@ -5044,7 +5182,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Simplify sqrt(x) * sqrt(x) -> x.  */
  (simplify
   (mult (SQRT_ALL@1 @0) @1)
-  (if (!HONOR_SNANS (type))
+  (if (!tree_expr_maybe_signaling_nan_p (@0))
    @0))
 
  (for op (plus minus)
@@ -6087,6 +6225,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate (IFN_FNMS@3 @0 @1 @2))
   (if (single_use (@3))
    (IFN_FMA @0 @1 @2))))
+
+/* CLZ simplifications.  */
+(for clz (CLZ)
+ (for op (eq ne)
+      cmp (lt ge)
+  (simplify
+   (op (clz:s @0) INTEGER_CST@1)
+   (if (integer_zerop (@1))
+    /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
+    (with { tree stype = signed_type_for (TREE_TYPE (@0));
+	    HOST_WIDE_INT val = 0;
+#ifdef CLZ_DEFINED_VALUE_AT_ZERO
+	    /* Punt on hypothetical weird targets.  */
+	    if (CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (@0)),
+					   val) == 2
+		&& val == 0)
+	      stype = NULL_TREE;
+#endif
+	  }
+     (if (stype)
+      (cmp (convert:stype @0) { build_zero_cst (stype); })))
+    /* clz(X) == (prec-1) is X == 1 and clz(X) != (prec-1) is X != 1.  */
+    (with { bool ok = true;
+#ifdef CLZ_DEFINED_VALUE_AT_ZERO
+	    /* Punt on hypothetical weird targets.  */
+	    if (CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (@0)),
+					   val) == 2
+		&& val == TYPE_PRECISION (TREE_TYPE (@0)) - 1)
+	      ok = false;
+#endif
+	  }
+     (if (ok && wi::to_wide (@1) == (TYPE_PRECISION (TREE_TYPE (@0)) - 1))
+      (op @0 { build_one_cst (TREE_TYPE (@0)); })))))))
 
 /* POPCOUNT simplifications.  */
 /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */

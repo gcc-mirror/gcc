@@ -106,7 +106,7 @@ extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned,
 extern void get_dynamic_stack_size (rtx *, unsigned, unsigned, HOST_WIDE_INT *);
 
 /* Returns the address of the dynamic stack space without allocating it.  */
-extern rtx get_dynamic_stack_base (poly_int64, unsigned);
+extern rtx get_dynamic_stack_base (poly_int64, unsigned, rtx);
 
 /* Return an rtx doing runtime alignment to REQUIRED_ALIGN on TARGET.  */
 extern rtx align_dynamic_address (rtx, unsigned);

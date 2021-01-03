@@ -30,7 +30,7 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
 #if defined(__MINGW32__) || defined(__MINGW64__)
     if (p.empty())

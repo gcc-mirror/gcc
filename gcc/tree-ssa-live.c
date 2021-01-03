@@ -623,13 +623,43 @@ clear_unused_block_pointer (void)
       {
 	unsigned i;
 	tree b;
-	gimple *stmt = gsi_stmt (gsi);
+	gimple *stmt;
 
+      next:
+	stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt) && !gimple_clobber_p (stmt))
 	  continue;
 	b = gimple_block (stmt);
 	if (b && !TREE_USED (b))
-	  gimple_set_block (stmt, NULL);
+	  {
+	    /* Elide debug marker stmts that have an associated BLOCK from an
+	       inline instance removed with also the outermost scope BLOCK of
+	       said inline instance removed.  If the outermost scope BLOCK of
+	       said inline instance is preserved use that in place of the
+	       removed BLOCK.  That keeps the marker associated to the correct
+	       inline instance (or no inline instance in case it was not from
+	       an inline instance).  */
+	    if (gimple_debug_nonbind_marker_p (stmt)
+		&& BLOCK_ABSTRACT_ORIGIN (b))
+	      {
+		while (TREE_CODE (b) == BLOCK
+		       && !inlined_function_outer_scope_p (b))
+		  b = BLOCK_SUPERCONTEXT (b);
+		if (TREE_CODE (b) == BLOCK)
+		  {
+		    if (TREE_USED (b))
+		      {
+			gimple_set_block (stmt, b);
+			continue;
+		      }
+		    gsi_remove (&gsi, true);
+		    if (gsi_end_p (gsi))
+		      break;
+		    goto next;
+		  }
+	      }
+	    gimple_set_block (stmt, NULL);
+	  }
 	for (i = 0; i < gimple_num_ops (stmt); i++)
 	  walk_tree (gimple_op_ptr (stmt, i), clear_unused_block_pointer_1,
 		     NULL, NULL);

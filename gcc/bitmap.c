@@ -678,6 +678,11 @@ bitmap_list_view (bitmap head)
     }
 
   head->tree_form = false;
+  if (!head->current)
+    {
+      head->current = head->first;
+      head->indx = head->current ? head->current->indx : 0;
+    }
 }
 
 /* Convert bitmap HEAD from linked-list view to splay-tree view.

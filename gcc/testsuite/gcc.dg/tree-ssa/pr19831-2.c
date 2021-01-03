@@ -5,7 +5,7 @@ void test1(void)
 {
   int *p = __builtin_malloc (sizeof (int) * 4);
   *p++ = 4;
-  __builtin_free (p);
+  __builtin_free (p);   // { dg-warning "\\\[-Wfree-nonheap-object" }
 }
 
 /* Undefined.  We can't do anything here.  */

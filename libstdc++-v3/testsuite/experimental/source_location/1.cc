@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++14 } }
 // { dg-require-cstdint "" }
+// { dg-options "-Wno-address" }
 
 #include <experimental/source_location>
 #include <experimental/string_view>
@@ -29,7 +30,7 @@ void
 test01()
 {
   constexpr source_location loc = source_location::current();
-  static_assert( loc.line() == 31 );
+  static_assert( loc.line() == 32 );
   // static_assert( loc.column() == 35 );
   VERIFY( loc.file_name() == __FILE__ );
   VERIFY( loc.function_name() == string_view(__FUNCTION__) );
@@ -51,13 +52,13 @@ struct S {
 void test02()
 {
   S s0;
-  VERIFY( s0.loc.line() == 53 );
+  VERIFY( s0.loc.line() == 54 );
   // static_assert( s0.loc.column() == 7 );
   VERIFY( s0.loc.file_name() == __FILE__ );
   VERIFY( s0.loc.function_name() == string_view(__FUNCTION__) );
 
   S s1(1);
-  VERIFY( s1.loc.line() == 47 );
+  VERIFY( s1.loc.line() == 48 );
   VERIFY( s1.loc.file_name() == __FILE__ );
   VERIFY( s1.loc.function_name() == s1.func );
 }
@@ -75,21 +76,21 @@ source_location g(string_view& func) {
 void test03()
 {
   auto loc = f(); // f's first argument corresponds to this line of code
-  VERIFY( loc.line() == 77 );
+  VERIFY( loc.line() == 78 );
   // static_assert( loc.column() == 16 );
   VERIFY( loc.file_name() == __FILE__ );
   VERIFY( loc.function_name() == string_view(__FUNCTION__) );
 
   source_location c = source_location::current();
   loc = f(c); // f's first argument gets the same values as c, above
-  VERIFY( loc.line() == 83 );
+  VERIFY( loc.line() == 84 );
   // static_assert( loc.column() == 23 );
   VERIFY( loc.file_name() == __FILE__ );
   VERIFY( loc.function_name() == string_view(__FUNCTION__) );
 
   string_view func;
   loc = g(func);
-  VERIFY( loc.line() == 70 );
+  VERIFY( loc.line() == 71 );
   // static_assert( loc.column() == 23 );
   VERIFY( loc.file_name() == __FILE__ );
   VERIFY( loc.function_name() == func );

@@ -673,7 +673,7 @@ show_expr (gfc_expr *p)
 	  break;
 	case INTRINSIC_EQ:
 	case INTRINSIC_EQ_OS:
-	  fputs ("= ", dumpfile);
+	  fputs ("== ", dumpfile);
 	  break;
 	case INTRINSIC_NE:
 	case INTRINSIC_NE_OS:
@@ -1612,7 +1612,11 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_MAP: type = "MAP"; break;
 	  case OMP_LIST_TO: type = "TO"; break;
 	  case OMP_LIST_FROM: type = "FROM"; break;
-	  case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	  case OMP_LIST_REDUCTION:
+	  case OMP_LIST_REDUCTION_INSCAN:
+	  case OMP_LIST_REDUCTION_TASK: type = "REDUCTION"; break;
+	  case OMP_LIST_IN_REDUCTION: type = "IN_REDUCTION"; break;
+	  case OMP_LIST_TASK_REDUCTION: type = "TASK_REDUCTION"; break;
 	  case OMP_LIST_DEVICE_RESIDENT: type = "DEVICE_RESIDENT"; break;
 	  case OMP_LIST_LINK: type = "LINK"; break;
 	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
@@ -1621,10 +1625,16 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_ADDR: type = "USE_DEVICE_ADDR"; break;
 	  case OMP_LIST_NONTEMPORAL: type = "NONTEMPORAL"; break;
+	  case OMP_LIST_SCAN_IN: type = "INCLUSIVE"; break;
+	  case OMP_LIST_SCAN_EX: type = "EXCLUSIVE"; break;
 	  default:
 	    gcc_unreachable ();
 	  }
 	fprintf (dumpfile, " %s(", type);
+	if (list_type == OMP_LIST_REDUCTION_INSCAN)
+	  fputs ("inscan, ", dumpfile);
+	if (list_type == OMP_LIST_REDUCTION_TASK)
+	  fputs ("task, ", dumpfile);
 	show_omp_namelist (list_type, omp_clauses->lists[list_type]);
 	fputc (')', dumpfile);
       }
@@ -1740,6 +1750,36 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->depend_source)
     fputs (" DEPEND(source)", dumpfile);
+  if (omp_clauses->capture)
+    fputs (" CAPTURE", dumpfile);
+  if (omp_clauses->atomic_op != GFC_OMP_ATOMIC_UNSET)
+    {
+      const char *atomic_op;
+      switch (omp_clauses->atomic_op)
+	{
+	case GFC_OMP_ATOMIC_READ: atomic_op = "READ"; break;
+	case GFC_OMP_ATOMIC_WRITE: atomic_op = "WRITE"; break;
+	case GFC_OMP_ATOMIC_UPDATE: atomic_op = "UPDATE"; break;
+	default: gcc_unreachable ();
+	}
+      fputc (' ', dumpfile);
+      fputs (atomic_op, dumpfile);
+    }
+  if (omp_clauses->memorder != OMP_MEMORDER_UNSET)
+    {
+      const char *memorder;
+      switch (omp_clauses->memorder)
+	{
+	case OMP_MEMORDER_ACQ_REL: memorder = "ACQ_REL"; break;
+	case OMP_MEMORDER_ACQUIRE: memorder = "AQUIRE"; break;
+	case OMP_MEMORDER_RELAXED: memorder = "RELAXED"; break;
+	case OMP_MEMORDER_RELEASE: memorder = "RELEASE"; break;
+	case OMP_MEMORDER_SEQ_CST: memorder = "SEQ_CST"; break;
+	default: gcc_unreachable ();
+	}
+      fputc (' ', dumpfile);
+      fputs (memorder, dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -1790,6 +1830,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
     case EXEC_OMP_PARALLEL_SECTIONS: name = "PARALLEL SECTIONS"; break;
     case EXEC_OMP_PARALLEL_WORKSHARE: name = "PARALLEL WORKSHARE"; break;
+    case EXEC_OMP_SCAN: name = "SCAN"; break;
     case EXEC_OMP_SECTIONS: name = "SECTIONS"; break;
     case EXEC_OMP_SIMD: name = "SIMD"; break;
     case EXEC_OMP_SINGLE: name = "SINGLE"; break;
@@ -1860,6 +1901,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SCAN:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
@@ -1905,6 +1947,10 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TASKWAIT:
     case EXEC_OMP_TASKYIELD:
       return;
+    case EXEC_OACC_ATOMIC:
+    case EXEC_OMP_ATOMIC:
+      omp_clauses = c->block ? c->block->ext.omp_clauses : NULL;
+      break;
     default:
       break;
     }
@@ -1916,7 +1962,7 @@ show_omp_node (int level, gfc_code *c)
   if (c->op == EXEC_OACC_CACHE || c->op == EXEC_OACC_UPDATE
       || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA
       || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
-      || c->op == EXEC_OMP_TARGET_EXIT_DATA
+      || c->op == EXEC_OMP_TARGET_EXIT_DATA || c->op == EXEC_OMP_SCAN
       || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -3056,6 +3102,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SCAN:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:

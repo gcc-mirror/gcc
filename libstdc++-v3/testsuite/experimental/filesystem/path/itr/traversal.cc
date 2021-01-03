@@ -69,7 +69,7 @@ test02()
   using reverse_iterator = std::reverse_iterator<path::iterator>;
   std::vector<path> fwd, rev;
 
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     const auto begin = p.begin(), end = p.end();
     fwd.assign(begin, end);

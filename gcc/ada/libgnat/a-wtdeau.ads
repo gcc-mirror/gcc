@@ -29,63 +29,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for Ada.Wide_Text_IO.Decimal_IO
---  that are shared among separate instantiations of this package. The
---  routines in the package are identical semantically to those declared
---  in Wide_Text_IO, except that default values have been supplied by the
---  generic, and the Num parameter has been replaced by Integer or
---  Long_Long_Integer, with an additional Scale parameter giving the
---  value of Num'Scale. In addition the Get routines return the value
---  rather than store it in an Out parameter.
+--  This package contains the implementation for Ada.Wide_Text_IO.Decimal_IO.
+--  Routines in this package are identical semantically to those in Decimal_IO,
+--  except that the default parameters have been removed because they are
+--  supplied explicitly by the calls from within these units, and there is an
+--  additional Scale parameter giving the value of Num'Scale. In addition the
+--  Get routines return the value rather than store it in an Out parameter.
 
-private package Ada.Wide_Text_IO.Decimal_Aux is
+private generic
+   type Int is range <>;
 
-   function Get_Dec
+   with function Scan
+     (Str   : String;
+      Ptr   : not null access Integer;
+      Max   : Integer;
+      Scale : Integer) return Int;
+
+   with procedure Set_Image
+     (V     : Int;
+      S     : in out String;
+      P     : in out Natural;
+      Scale : Integer;
+      Fore  : Natural;
+      Aft   : Natural;
+      Exp   : Natural);
+
+package Ada.Wide_Text_IO.Decimal_Aux is
+
+   function Get
      (File  : File_Type;
       Width : Field;
-      Scale : Integer) return Integer;
+      Scale : Integer) return Int;
 
-   function Get_LLD
+   procedure Put
      (File  : File_Type;
-      Width : Field;
-      Scale : Integer) return Long_Long_Integer;
-
-   function Gets_Dec
-     (From  : String;
-      Last  : not null access Positive;
-      Scale : Integer) return Integer;
-
-   function Gets_LLD
-     (From  : String;
-      Last  : not null access Positive;
-      Scale : Integer) return Long_Long_Integer;
-
-   procedure Put_Dec
-     (File  : File_Type;
-      Item  : Integer;
+      Item  : Int;
       Fore  : Field;
       Aft   : Field;
       Exp   : Field;
       Scale : Integer);
 
-   procedure Put_LLD
-     (File  : File_Type;
-      Item  : Long_Long_Integer;
-      Fore  : Field;
-      Aft   : Field;
-      Exp   : Field;
-      Scale : Integer);
+   function Gets
+     (From  : String;
+      Last  : out Positive;
+      Scale : Integer) return Int;
 
-   procedure Puts_Dec
+   procedure Puts
      (To    : out String;
-      Item  : Integer;
-      Aft   : Field;
-      Exp   : Field;
-      Scale : Integer);
-
-   procedure Puts_LLD
-     (To    : out String;
-      Item  : Long_Long_Integer;
+      Item  : Int;
       Aft   : Field;
       Exp   : Field;
       Scale : Integer);

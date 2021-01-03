@@ -321,6 +321,9 @@ namespace tr1
 	    }
 	}
 
+#if (__cplusplus < 201103L) || _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
         explicit
@@ -328,6 +331,8 @@ namespace tr1
 	: _M_pi(new _Sp_counted_base_impl<_Tp*,
 		_Sp_deleter<_Tp>, _Lp >(__r.get(), _Sp_deleter<_Tp>()))
         { __r.release(); }
+#pragma GCC diagnostic pop
+#endif
 
       // Throw bad_weak_ptr when __r._M_get_use_count() == 0.
       explicit
@@ -583,6 +588,8 @@ namespace tr1
 	}
 
 #if (__cplusplus < 201103L) || _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Tp1>
         explicit
@@ -595,7 +602,7 @@ namespace tr1
 	  _M_refcount = __shared_count<_Lp>(__r);
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
 	}
-
+#pragma GCC diagnostic pop
 #endif
 
       template<typename _Tp1>
@@ -629,6 +636,8 @@ namespace tr1
 	}
 
 #if (__cplusplus < 201103L) || _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Tp1>
         __shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -636,6 +645,7 @@ namespace tr1
 	  __shared_ptr(__r).swap(*this);
 	  return *this;
 	}
+#pragma GCC diagnostic pop
 #endif
 
       void
@@ -1006,10 +1016,13 @@ namespace tr1
 	: __shared_ptr<_Tp>(__r) { }
 
 #if (__cplusplus < 201103L) || _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Tp1>
         explicit
         shared_ptr(std::auto_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
+#pragma GCC diagnostic pop
 #endif
 
       template<typename _Tp1>
@@ -1033,6 +1046,8 @@ namespace tr1
 	}
 
 #if (__cplusplus < 201103L) || _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Tp1>
         shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -1040,6 +1055,7 @@ namespace tr1
 	  this->__shared_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
+#pragma GCC diagnostic pop
 #endif
     };
 

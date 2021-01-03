@@ -21,6 +21,12 @@
 
 #include <map>
 
+#if __cplusplus >= 201103L
+# define NOTHROW(X) noexcept(X)
+#else
+# define NOTHROW(X)
+#endif
+
 namespace std {
   template <class Key, class T, class Compare, class Allocator>
     class map;
@@ -44,7 +50,8 @@ namespace std {
                     const map<Key,T,Compare,Allocator>& y);
   template <class Key, class T, class Compare, class Allocator>
     void swap(map<Key,T,Compare,Allocator>& x,
-              map<Key,T,Compare,Allocator>& y);
+              map<Key,T,Compare,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 
   template <class Key, class T, class Compare, class Allocator>
     class multimap;
@@ -68,5 +75,6 @@ namespace std {
                     const multimap<Key,T,Compare,Allocator>& y);
   template <class Key, class T, class Compare, class Allocator>
     void swap(multimap<Key,T,Compare,Allocator>& x,
-              multimap<Key,T,Compare,Allocator>& y);
+              multimap<Key,T,Compare,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 }

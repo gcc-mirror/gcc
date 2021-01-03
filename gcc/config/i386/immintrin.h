@@ -42,6 +42,8 @@
 
 #include <avxintrin.h>
 
+#include <avxvnniintrin.h>
+
 #include <avx2intrin.h>
 
 #include <avx512fintrin.h>
@@ -117,5 +119,7 @@
 #include <amxbf16intrin.h>
 
 #include <prfchwintrin.h>
+
+#include <keylockerintrin.h>
 
 #endif /* _IMMINTRIN_H_INCLUDED */

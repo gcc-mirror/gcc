@@ -2085,8 +2085,13 @@ pass_linterchange::execute (function *fun)
     }
 
   if (changed_p)
-    scev_reset ();
-  return changed_p ? (TODO_update_ssa_only_virtuals) : 0;
+    {
+      unsigned todo = TODO_update_ssa_only_virtuals;
+      todo |= loop_invariant_motion_in_fun (cfun, false);
+      scev_reset ();
+      return todo;
+    }
+  return 0;
 }
 
 } // anon namespace

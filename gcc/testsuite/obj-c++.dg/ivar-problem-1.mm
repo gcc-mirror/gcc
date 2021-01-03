@@ -1,5 +1,6 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 /* This test checks what happens if there are 16 instance variables.
    In that case, the class was not created correctly.  In this testcase,

@@ -33,6 +33,7 @@ TEST_DUAL_Z (cnt_s16_z, svuint16_t, svint16_t,
 
 /*
 ** cnt_s16_x:
+**	movprfx	z0, z4
 **	cnt	z0\.h, p0/m, z4\.h
 **	ret
 */

@@ -77,6 +77,7 @@
    (UNSPEC_PID_ADDR	   52)
 
    (CTRLREG_PSW		    0)
+   (CTRLREG_PC		    1)
    (CTRLREG_USP		    2)
    (CTRLREG_FPSW	    3)
    (CTRLREG_BPSW	    8)

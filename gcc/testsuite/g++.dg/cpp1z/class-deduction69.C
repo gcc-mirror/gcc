@@ -6,7 +6,7 @@ namespace a {
   template <typename...> using c = b;
 }
 template <typename... d> struct e : a::c<d...> { // { dg-error "incomplete" }
-  using a::c<>::c;		// { dg-prune-output "not a base" }
+  using a::c<>::c;		// { dg-prune-output "not a direct base" }
 };
 template <template <typename> typename f> void g() { f(); }
 void h() { g<e>(); }

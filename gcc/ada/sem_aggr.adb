@@ -452,7 +452,7 @@ package body Sem_Aggr is
          This_Range : constant Node_Id := Aggregate_Bounds (N);
          --  The aggregate range node of this specific sub-aggregate
 
-         This_Low  : constant Node_Id := Low_Bound (Aggregate_Bounds (N));
+         This_Low  : constant Node_Id := Low_Bound  (Aggregate_Bounds (N));
          This_High : constant Node_Id := High_Bound (Aggregate_Bounds (N));
          --  The aggregate bounds of this specific sub-aggregate
 
@@ -785,7 +785,7 @@ package body Sem_Aggr is
    -----------------------
 
    procedure Resolve_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       Aggr_Subtyp : Entity_Id;
       --  The actual aggregate subtype. This is not necessarily the same as Typ
@@ -815,6 +815,8 @@ package body Sem_Aggr is
 
          return False;
       end Within_Aggregate;
+
+   --  Start of processing for Resolve_Aggregate
 
    begin
       --  Ignore junk empty aggregate resulting from parser error
@@ -1588,12 +1590,39 @@ package body Sem_Aggr is
          Index_Typ : Entity_Id)
       is
          Loc : constant Source_Ptr := Sloc (N);
+         Id  : constant Entity_Id  := Defining_Identifier (N);
+
+         -----------------------
+         -- Remove_References --
+         -----------------------
+
+         function Remove_Ref (N : Node_Id) return Traverse_Result;
+         --  Remove references to the entity Id after analysis, so it can be
+         --  properly reanalyzed after construct is expanded into a loop.
+
+         function Remove_Ref (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Identifier
+               and then Present (Entity (N))
+               and then Entity (N) = Id
+            then
+               Set_Entity (N, Empty);
+               Set_Etype (N, Empty);
+            end if;
+            Set_Analyzed (N, False);
+            return OK;
+         end Remove_Ref;
+
+         procedure Remove_References is new Traverse_Proc (Remove_Ref);
+
+         --  Local variables
 
          Choice : Node_Id;
          Dummy  : Boolean;
          Ent    : Entity_Id;
          Expr   : Node_Id;
-         Id     : Entity_Id;
+
+      --  Start of processing for Resolve_Iterated_Component_Association
 
       begin
          --  An element iterator specification cannot appear in
@@ -1646,26 +1675,31 @@ package body Sem_Aggr is
          --  The expression has to be analyzed once the index variable is
          --  directly visible.
 
-         Id := Defining_Identifier (N);
          Enter_Name (Id);
          Set_Etype (Id, Index_Typ);
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
-         --  Analyze a copy of the expression, to verify legality. We use
-         --  a copy because the expression will be analyzed anew when the
-         --  enclosing aggregate is expanded, and the construct is rewritten
-         --  as a loop with a new index variable.
+         --  Analyze  expression without expansion, to verify legality.
+         --  When generating code, we then remove references to the index
+         --  variable, because the expression will be analyzed anew after
+         --  rewritting as a loop with a new index variable; when not
+         --  generating code we leave the analyzed expression as it is.
 
-         Expr := New_Copy_Tree (Expression (N));
-         Set_Parent (Expr, N);
-         Dummy := Resolve_Aggr_Expr (Expr, False);
+         Expr := Expression (N);
+
+         Expander_Mode_Save_And_Set (False);
+         Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
+         Expander_Mode_Restore;
+
+         if Operating_Mode /= Check_Semantics then
+            Remove_References (Expr);
+         end if;
 
          --  An iterated_component_association may appear in a nested
          --  aggregate for a multidimensional structure: preserve the bounds
          --  computed for the expression, as well as the anonymous array
          --  type generated for it; both are needed during array expansion.
-         --  This does not work for more than two levels of nesting. ???
 
          if Nkind (Expr) = N_Aggregate then
             Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
@@ -1836,10 +1870,15 @@ package body Sem_Aggr is
       --  Test for the validity of an others choice if present
 
       if Others_Present and then not Others_Allowed then
-         Error_Msg_N
-           ("OTHERS choice not allowed here",
-            First (Choice_List (First (Component_Associations (N)))));
-         return Failure;
+         declare
+            Others_N : constant Node_Id :=
+              First (Choice_List (First (Component_Associations (N))));
+         begin
+            Error_Msg_N ("OTHERS choice not allowed here", Others_N);
+            Error_Msg_N ("\qualify the aggregate with a constrained subtype "
+                         & "to provide bounds for it", Others_N);
+            return Failure;
+         end;
       end if;
 
       --  Protect against cascaded errors
@@ -2572,7 +2611,7 @@ package body Sem_Aggr is
             --  In order to diagnose the semantic error we create a duplicate
             --  tree to analyze it and perform the check.
 
-            else
+            elsif Nkind (Assoc) /= N_Iterated_Component_Association then
                declare
                   Save_Analysis : constant Boolean := Full_Analysis;
                   Expr          : constant Node_Id :=
@@ -2910,7 +2949,7 @@ package body Sem_Aggr is
                   while Present (Choice) loop
                      Analyze_And_Resolve (Choice, Key_Type);
                      if not Is_Static_Expression (Choice) then
-                        Error_Msg_N ("Choice must be static", Choice);
+                        Error_Msg_N ("choice must be static", Choice);
                      end if;
 
                      Next (Choice);
@@ -2955,7 +2994,7 @@ package body Sem_Aggr is
 
             if Present (Component_Associations (N)) then
                if Present (Expressions (N)) then
-                  Error_Msg_N ("Container aggregate cannot be "
+                  Error_Msg_N ("container aggregate cannot be "
                     & "both positional and named", N);
                   return;
                end if;
@@ -2996,10 +3035,7 @@ package body Sem_Aggr is
       Base : constant Node_Id := Expression (N);
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnat2020", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("delta aggregate", Sloc (N));
 
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);
@@ -3026,6 +3062,7 @@ package body Sem_Aggr is
 
       Assoc  : Node_Id;
       Choice : Node_Id;
+      Expr   : Node_Id;
 
    begin
       Assoc := First (Deltas);
@@ -3035,7 +3072,11 @@ package body Sem_Aggr is
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
 
                else
                   Analyze_And_Resolve (Choice, Index_Type);
@@ -3062,36 +3103,43 @@ package body Sem_Aggr is
                end if;
                Enter_Name (Id);
 
-               Analyze_And_Resolve
-                 (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
+               --  Resolve a copy of the expression, after setting
+               --  its parent properly to preserve its context.
+
+               Expr := New_Copy_Tree (Expression (Assoc));
+               Set_Parent (Expr, Assoc);
+               Analyze_And_Resolve (Expr, Component_Type (Typ));
                End_Scope;
             end;
 
          else
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
+               Analyze (Choice);
+
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
+
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+               then
+                  --  Choice covers a range of values
+
+                  if Base_Type (Entity (Choice)) /=
+                     Base_Type (Index_Type)
+                  then
+                     Error_Msg_NE
+                       ("choice does not match index type of &",
+                        Choice, Typ);
+                  end if;
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
 
                else
-                  Analyze (Choice);
-
-                  if Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
-                  then
-                     --  Choice covers a range of values
-
-                     if Base_Type (Entity (Choice)) /=
-                        Base_Type (Index_Type)
-                     then
-                        Error_Msg_NE
-                          ("choice does mat match index type of",
-                           Choice, Typ);
-                     end if;
-                  else
-                     Resolve (Choice, Index_Type);
-                  end if;
+                  Resolve (Choice, Index_Type);
                end if;
 
                Next (Choice);
@@ -3458,10 +3506,23 @@ package body Sem_Aggr is
 
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
 
-         --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
-         --  must not have unknown discriminants.
+         --  AI05-0115: If the ancestor part is a subtype mark, the ancestor
+         --  must not have unknown discriminants. To catch cases where the
+         --  aggregate occurs at a place where the full view of the ancestor
+         --  type is visible and doesn't have unknown discriminants, but the
+         --  aggregate type was derived from a partial view that has unknown
+         --  discriminants, we check whether the aggregate type has unknown
+         --  discriminants (unknown discriminants were inherited), along
+         --  with checking that the partial view of the ancestor has unknown
+         --  discriminants. (It might be sufficient to replace the entire
+         --  condition with Has_Unknown_Discriminants (Typ), but that might
+         --  miss some cases, not clear, and causes error changes in some tests
+         --  such as class-wide cases, that aren't clearly improvements. ???)
 
-         if Has_Unknown_Discriminants (Entity (A)) then
+         if Has_Unknown_Discriminants (Entity (A))
+           or else (Has_Unknown_Discriminants (Typ)
+                      and then Partial_View_Has_Unknown_Discr (Entity (A)))
+         then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
                  & "has unknown discriminants", N, Typ);
@@ -3651,9 +3712,10 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value.
 
-      Box_Node       : Node_Id := Empty;
-      Is_Box_Present : Boolean := False;
-      Others_Box     : Natural := 0;
+      Box_Node               : Node_Id := Empty;
+      Is_Box_Present         : Boolean := False;
+      Is_Box_Init_By_Default : Boolean := False;
+      Others_Box             : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -3778,6 +3840,14 @@ package body Sem_Aggr is
              Choices     => Choice_List,
              Expression  => Expr,
              Box_Present => Is_Box_Present));
+
+         --  If this association has a box for a component that is initialized
+         --  by default, then set flag on the new association to indicate that
+         --  the original association was for such a box-initialized component.
+
+         if Is_Box_Init_By_Default then
+            Set_Was_Default_Init_Box_Association (Last (Assoc_List));
+         end if;
       end Add_Association;
 
       -----------------------------
@@ -3995,6 +4065,7 @@ package body Sem_Aggr is
 
       begin
          Is_Box_Present := False;
+         Is_Box_Init_By_Default := False;
 
          if No (From) then
             return Empty;
@@ -4990,6 +5061,11 @@ package body Sem_Aggr is
                Ctyp : constant Entity_Id := Etype (Component);
 
             begin
+               --  Initially assume that the box is for a default-initialized
+               --  component and reset to False in cases where that's not true.
+
+               Is_Box_Init_By_Default := True;
+
                --  If there is a default expression for the aggregate, copy
                --  it into a new association. This copy must modify the scopes
                --  of internal types that may be attached to the expression
@@ -5013,6 +5089,11 @@ package body Sem_Aggr is
                  and then Nkind (Parent (Component)) = N_Component_Declaration
                  and then Present (Expression (Parent (Component)))
                then
+                  --  If component declaration has an initialization expression
+                  --  then this is not a case of default initialization.
+
+                  Is_Box_Init_By_Default := False;
+
                   Expr :=
                     New_Copy_Tree_And_Copy_Dimensions
                       (Expression (Parent (Component)),
@@ -5303,7 +5384,7 @@ package body Sem_Aggr is
                     ("OTHERS must represent at least one component", Selectr);
 
                elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
-                  Error_Msg_N ("others choice is redundant?", Box_Node);
+                  Error_Msg_N ("OTHERS choice is redundant?", Box_Node);
                   Error_Msg_N
                     ("\previous choices cover all components?", Box_Node);
                end if;
@@ -5470,7 +5551,7 @@ package body Sem_Aggr is
          --  because the association may be a null array range.
 
          Error_Msg_N
-           ("(Ada 2005) null not allowed in null-excluding component??", Expr);
+           ("(Ada 2005) NULL not allowed in null-excluding component??", Expr);
          Error_Msg_N
            ("\Constraint_Error will be raised at run time??", Expr);
 

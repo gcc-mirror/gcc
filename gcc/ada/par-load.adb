@@ -318,7 +318,7 @@ begin
 
       Spec_Name := Get_Parent_Spec_Name (Unit_Name (Cur_Unum));
 
-      if Spec_Name /= No_Unit_Name then
+      if Present (Spec_Name) then
          Unum :=
            Load_Unit
              (Load_Name  => Spec_Name,

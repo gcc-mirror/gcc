@@ -7241,7 +7241,7 @@ package body Exp_Disp is
       --     is used by Build_Get_Prim_Op_Address to expand dispatching calls
       --     through the primary dispatch table.
 
-      if UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ))) = 0 then
+      if DT_Entry_Count (First_Tag_Component (Typ)) = 0 then
          Analyze_List (Result);
 
       --     Generate:

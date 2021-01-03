@@ -72,6 +72,7 @@ fortran_OBJS = $(F95_OBJS) fortran/gfortranspec.o
 #
 # Define the names for selecting gfortran in LANGUAGES.
 fortran: f951$(exeext)
+fortran.serial = f951$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: fortran
@@ -92,11 +93,12 @@ gfortran-cross$(exeext): gfortran$(exeext)
 	cp gfortran$(exeext) gfortran-cross$(exeext)
 
 # The compiler itself is called f951.
-f951$(exeext): $(F95_OBJS) \
-		$(BACKEND) $(LIBDEPS) attribs.o
+f951$(exeext): $(F95_OBJS) $(BACKEND) $(LIBDEPS) attribs.o $(fortran.prev)
+	@$(call LINK_PROGRESS,$(INDEX.fortran),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(F95_OBJS) $(BACKEND) $(ZLIB) $(LIBS) attribs.o \
 		$(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.fortran),end)
 
 gt-fortran-trans.h    : s-gtype; @true
 #

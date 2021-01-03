@@ -21,18 +21,24 @@
 
 #include <bitset>
 
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW
+#endif
+
 namespace std {
   template <size_t N> class bitset;
 
   // 23.3.5.3 bitset operations:
   template <size_t N>
-    bitset<N> operator&(const bitset<N>&, const bitset<N>&);
+    bitset<N> operator&(const bitset<N>&, const bitset<N>&) NOTHROW;
 
   template <size_t N>
-    bitset<N> operator|(const bitset<N>&, const bitset<N>&);
+    bitset<N> operator|(const bitset<N>&, const bitset<N>&) NOTHROW;
 
   template <size_t N>
-    bitset<N> operator^(const bitset<N>&, const bitset<N>&);
+    bitset<N> operator^(const bitset<N>&, const bitset<N>&) NOTHROW;
 
   template <class charT, class traits, size_t N>
     basic_istream<charT, traits>&

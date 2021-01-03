@@ -137,10 +137,15 @@
 #include <bit>
 #include <compare>
 #include <concepts>
+#if __cpp_impl_coroutine
+# include <coroutine>
+#endif
+#include <latch>
 #include <numbers>
 #include <ranges>
 #include <span>
 #include <stop_token>
-// #include <syncstream>
+#include <semaphore>
+#include <syncstream>
 #include <version>
 #endif

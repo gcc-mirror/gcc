@@ -1,11 +1,12 @@
-/* { dg-do run } */
-/* { dg-require-effective-target power10_hw } */
-/* { dg-options "-mdejagnu-cpu=power10" } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-options "-mdejagnu-cpu=power10 -save-temps" } */
 #include <altivec.h>
 
 #define DEBUG 0
 
-#ifdef DEBUG
+#if DEBUG
 #include <stdio.h>
 #endif
 
@@ -378,7 +379,5 @@ main (int argc, char *argv [])
   return 0;
 }
 
-/* { dg-final { scan-assembler-times {\msldbi\M} 6 } } */
-/* { dg-final { scan-assembler-times {\msrdbi\M} 6 } } */
-
-
+/* { dg-final { scan-assembler-times {\mvsldbi\M} 8 } } */
+/* { dg-final { scan-assembler-times {\mvsrdbi\M} 8 } } */

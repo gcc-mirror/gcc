@@ -25,6 +25,8 @@ struct audrey2hash : std::hash<int>
 
   audrey2hash(int) { }
 
+  audrey2hash(const audrey2hash&) = default;
+
   audrey2hash&
   operator=(const audrey2hash&) { throw "Don't assign the plants"; }
 };

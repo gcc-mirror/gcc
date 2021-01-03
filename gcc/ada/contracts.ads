@@ -188,6 +188,21 @@ package Contracts is
    --  denoted by Body_Decl. In addition, freeze the contract of the nearest
    --  enclosing package body.
 
+   function Get_Postcond_Enabled (Subp : Entity_Id) return Entity_Id;
+   --  Get the defining identifier for a subprogram's Postcond_Enabled
+   --  object created during the expansion of the subprogram's postconditions.
+
+   function Get_Result_Object_For_Postcond (Subp : Entity_Id) return Entity_Id;
+   --  Get the defining identifier for a subprogram's
+   --  Result_Object_For_Postcond object created during the expansion of the
+   --  subprogram's postconditions.
+
+   function Get_Return_Success_For_Postcond
+     (Subp : Entity_Id) return Entity_Id;
+   --  Get the defining identifier for a subprogram's
+   --  Return_Success_For_Postcond object created during the expansion of the
+   --  subprogram's postconditions.
+
    procedure Inherit_Subprogram_Contract
      (Subp      : Entity_Id;
       From_Subp : Entity_Id);

@@ -30,7 +30,7 @@ namespace nu
   constexpr void swap(U& l, U& r) { l.i = r.i = 99; }
 }
 
-constexpr bool check_struct_with_adl_swap(int i)
+constexpr bool check_struct_with_adl_swap(int)
 {
   nu::S s1, s2;
   std::ranges::swap(s1, s2);
@@ -39,7 +39,7 @@ constexpr bool check_struct_with_adl_swap(int i)
 
 static_assert(check_struct_with_adl_swap(1));
 
-constexpr bool check_array_with_adl_swap(int i)
+constexpr bool check_array_with_adl_swap(int)
 {
   nu::S s1[2], s2[2];
   std::ranges::swap(s1, s2);

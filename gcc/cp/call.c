@@ -213,6 +213,7 @@ static conversion *merge_conversion_sequences (conversion *, conversion *);
 static tree build_temp (tree, tree, int, diagnostic_t *, tsubst_flags_t);
 static conversion *build_identity_conv (tree, tree);
 static inline bool conv_binds_to_array_of_unknown_bound (conversion *);
+static bool conv_is_prvalue (conversion *);
 static tree prevent_lifetime_extension (tree);
 
 /* Returns nonzero iff the destructor name specified in NAME matches BASETYPE.
@@ -1963,14 +1964,12 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   return conv;
 }
 
-/* Returns the implicit conversion sequence (see [over.ics]) from type
-   FROM to type TO.  The optional expression EXPR may affect the
-   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
-   true, this conversion is coming from a C-style cast.  */
+/* Most of the implementation of implicit_conversion, with the same
+   parameters.  */
 
 static conversion *
-implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
-		     int flags, tsubst_flags_t complain)
+implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
+		       int flags, tsubst_flags_t complain)
 {
   conversion *conv;
 
@@ -2094,6 +2093,26 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
     }
 
   return NULL;
+}
+
+/* Returns the implicit conversion sequence (see [over.ics]) from type
+   FROM to type TO.  The optional expression EXPR may affect the
+   conversion.  FLAGS are the usual overloading flags.  If C_CAST_P is
+   true, this conversion is coming from a C-style cast.  */
+
+static conversion *
+implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
+		     int flags, tsubst_flags_t complain)
+{
+  conversion *conv = implicit_conversion_1 (to, from, expr, c_cast_p,
+					    flags, complain);
+  if (!conv || conv->bad_p)
+    return conv;
+  if (conv_is_prvalue (conv)
+      && CLASS_TYPE_P (conv->type)
+      && CLASSTYPE_PURE_VIRTUALS (conv->type))
+    conv->bad_p = true;
+  return conv;
 }
 
 /* Like implicit_conversion, but return NULL if the conversion is bad.
@@ -4006,9 +4025,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
        creating a garbage BASELINK; constructors can't be inherited.  */
     ctors = get_class_binding (totype, complete_ctor_identifier);
 
+  tree to_nonref = non_reference (totype);
   if (MAYBE_CLASS_TYPE_P (fromtype))
     {
-      tree to_nonref = non_reference (totype);
       if (same_type_ignoring_top_level_qualifiers_p (to_nonref, fromtype) ||
 	  (CLASS_TYPE_P (to_nonref) && CLASS_TYPE_P (fromtype)
 	   && DERIVED_FROM_P (to_nonref, fromtype)))
@@ -4091,6 +4110,22 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       tree conversion_path = TREE_PURPOSE (conv_fns);
       struct z_candidate *old_candidates;
+
+      /* If LOOKUP_NO_CONVERSION, don't consider a conversion function that
+	 would need an addional user-defined conversion, i.e. if the return
+	 type differs in class-ness from the desired type.  So we avoid
+	 considering operator bool when calling a copy constructor.
+
+	 This optimization avoids the failure in PR97600, and is allowed by
+	 [temp.inst]/9: "If the function selected by overload resolution can be
+	 determined without instantiating a class template definition, it is
+	 unspecified whether that instantiation actually takes place."	*/
+      tree convtype = non_reference (TREE_TYPE (conv_fns));
+      if ((flags & LOOKUP_NO_CONVERSION)
+	  && !WILDCARD_TYPE_P (convtype)
+	  && (CLASS_TYPE_P (to_nonref)
+	      != CLASS_TYPE_P (convtype)))
+	continue;
 
       /* If we are called to convert to a reference type, we are trying to
 	 find a direct binding, so don't even consider temporaries.  If
@@ -5643,17 +5678,40 @@ build_conditional_expr_1 (const op_location_t &loc,
 			"in conditional expression: %qT vs %qT",
 			arg2_type, arg3_type);
         }
-      else if (extra_warnings
+      else if ((complain & tf_warning)
+	       && warn_deprecated_enum_float_conv
+	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
+		    && TREE_CODE (arg3_type) == REAL_TYPE)
+		   || (TREE_CODE (arg2_type) == REAL_TYPE
+		       && TREE_CODE (arg3_type) == ENUMERAL_TYPE)))
+	{
+	  if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
+	    warning_at (loc, OPT_Wdeprecated_enum_float_conversion,
+			"conditional expression between enumeration type "
+			"%qT and floating-point type %qT is deprecated",
+			arg2_type, arg3_type);
+	  else
+	    warning_at (loc, OPT_Wdeprecated_enum_float_conversion,
+			"conditional expression between floating-point "
+			"type %qT and enumeration type %qT is deprecated",
+			arg2_type, arg3_type);
+	}
+      else if ((extra_warnings || warn_enum_conversion)
 	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
 		    && !same_type_p (arg3_type, type_promotes_to (arg2_type)))
 		   || (TREE_CODE (arg3_type) == ENUMERAL_TYPE
 		       && !same_type_p (arg2_type,
 					type_promotes_to (arg3_type)))))
-        {
-          if (complain & tf_warning)
-	    warning_at (loc, OPT_Wextra, "enumerated and non-enumerated "
-			"type in conditional expression");
-        }
+	{
+	  if (complain & tf_warning)
+	    {
+	      enum opt_code opt = (warn_enum_conversion
+				   ? OPT_Wenum_conversion
+				   : OPT_Wextra);
+	      warning_at (loc, opt, "enumerated and "
+			  "non-enumerated type in conditional expression");
+	    }
+	}
 
       arg2 = perform_implicit_conversion (result_type, arg2, complain);
       arg3 = perform_implicit_conversion (result_type, arg3, complain);
@@ -6315,6 +6373,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      print_z_candidates (loc, candidates);
 	    }
 	  result = error_mark_node;
+	  if (overload)
+	    *overload = error_mark_node;
 	}
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL)
 	{
@@ -7384,7 +7444,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (t->kind == ck_identity)
 	    break;
 	}
-      if (!complained)
+      if (!complained && expr != error_mark_node)
 	{
 	  range_label_for_type_mismatch label (TREE_TYPE (expr), totype);
 	  gcc_rich_location richloc (loc, &label);
@@ -8366,6 +8426,10 @@ call_copy_ctor (tree a, tsubst_flags_t complain)
 bool
 unsafe_return_slot_p (tree t)
 {
+  /* Check empty bases separately, they don't have fields.  */
+  if (is_empty_base_ref (t))
+    return true;
+
   STRIP_NOPS (t);
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
@@ -8415,6 +8479,24 @@ unsafe_copy_elision_p (tree target, tree exp)
 	  && !AGGR_INIT_VIA_CTOR_P (init));
 }
 
+/* True IFF the result of the conversion C is a prvalue.  */
+
+static bool
+conv_is_prvalue (conversion *c)
+{
+  if (c->kind == ck_rvalue)
+    return true;
+  if (c->kind == ck_base && c->need_temporary_p)
+    return true;
+  if (c->kind == ck_user && !TYPE_REF_P (c->type))
+    return true;
+  if (c->kind == ck_identity && c->u.expr
+      && TREE_CODE (c->u.expr) == TARGET_EXPR)
+    return true;
+
+  return false;
+}
+
 /* True iff C is a conversion that binds a reference to a prvalue.  */
 
 static bool
@@ -8425,17 +8507,7 @@ conv_binds_ref_to_prvalue (conversion *c)
   if (c->need_temporary_p)
     return true;
 
-  c = next_conversion (c);
-
-  if (c->kind == ck_rvalue)
-    return true;
-  if (c->kind == ck_user && !TYPE_REF_P (c->type))
-    return true;
-  if (c->kind == ck_identity && c->u.expr
-      && TREE_CODE (c->u.expr) == TARGET_EXPR)
-    return true;
-
-  return false;
+  return conv_is_prvalue (next_conversion (c));
 }
 
 /* True iff converting EXPR to a reference type TYPE does not involve
@@ -8488,6 +8560,25 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
   tree clobber = build_clobber (TREE_TYPE (instance));
   return build2 (MODIFY_EXPR, void_type_node,
 		 instance, clobber);
+}
+
+/* Return true if a call to FN with number of arguments NARGS
+   is an immediate invocation.  */
+
+static bool
+immediate_invocation_p (tree fn, int nargs)
+{
+  return (TREE_CODE (fn) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (fn)
+	  && cp_unevaluated_operand == 0
+	  && (current_function_decl == NULL_TREE
+	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	  && (current_binding_level->kind != sk_function_parms
+	      || !current_binding_level->immediate_fn_ctx_p)
+	  /* As an exception, we defer std::source_location::current ()
+	     invocations until genericization because LWG3396 mandates
+	     special behavior for it.  */
+	  && (nargs > 1 || !source_location_current_p (fn)));
 }
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
@@ -8557,13 +8648,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 				   addr, nargs, argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (TREE_CODE (fn) == FUNCTION_DECL
-	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  && (current_binding_level->kind != sk_function_parms
-	      || !current_binding_level->immediate_fn_ctx_p))
+      if (immediate_invocation_p (fn, nargs))
 	{
 	  tree obj_arg = NULL_TREE, exprimm = expr;
 	  if (DECL_CONSTRUCTOR_P (fn))
@@ -9201,13 +9286,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
       tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (TREE_CODE (fndecl) == FUNCTION_DECL
-	  && DECL_IMMEDIATE_FUNCTION_P (fndecl)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  && (current_binding_level->kind != sk_function_parms
-	      || !current_binding_level->immediate_fn_ctx_p))
+      if (immediate_invocation_p (fndecl, nargs))
 	{
 	  tree obj_arg = NULL_TREE;
 	  if (DECL_CONSTRUCTOR_P (fndecl))
@@ -10381,6 +10460,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		free (pretty_name);
 	    }
 	  call = error_mark_node;
+	  if (fn_p)
+	    *fn_p = error_mark_node;
 	}
       else
 	{

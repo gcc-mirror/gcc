@@ -791,7 +791,6 @@ public:
     /* Handle any special support for calling conventions.  */
     switch (t->linkage)
       {
-      case LINKpascal:
       case LINKwindows:
 	/* [attribute/linkage]
 
@@ -965,7 +964,10 @@ public:
     if (!t->sym->isPOD ())
       {
 	for (tree tv = t->ctype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))
-	  TREE_ADDRESSABLE (tv) = 1;
+	  {
+	    TREE_ADDRESSABLE (tv) = 1;
+	    SET_TYPE_MODE (tv, BLKmode);
+	  }
       }
   }
 
@@ -1000,7 +1002,10 @@ public:
 
     /* Classes only live in memory, so always set the TREE_ADDRESSABLE bit.  */
     for (tree tv = basetype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))
-      TREE_ADDRESSABLE (tv) = 1;
+      {
+	TREE_ADDRESSABLE (tv) = 1;
+	SET_TYPE_MODE (tv, BLKmode);
+      }
 
     /* Type is final, there are no derivations.  */
     if (t->sym->storage_class & STCfinal)

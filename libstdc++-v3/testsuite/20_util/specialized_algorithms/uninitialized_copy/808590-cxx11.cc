@@ -31,6 +31,8 @@ struct c
   c(void* o = 0) : m(o) {}
   c(const c &r) : m(r.m) {}
 
+  c& operator=(const c &) = default;
+
   template<class T>
     explicit c(T &o) : m((void*)0xdeadbeef) { }
 };

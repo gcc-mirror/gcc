@@ -18,6 +18,8 @@ typedef __int128_t __attribute__((__vector_size__(16)))	vector_128_t;
 typedef __int128_t					scalar_128_t;
 typedef	unsigned long long				scalar_64_t;
 
+#include <altivec.h>
+
 /* Test whether the peephole works to allow folding a bcdadd, with a
    bcdadd_<test> into a single instruction.  */
 

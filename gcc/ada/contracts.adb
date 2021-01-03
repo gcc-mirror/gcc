@@ -47,6 +47,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -904,9 +905,12 @@ package body Contracts is
 
       --  The following checks are relevant only when SPARK_Mode is on, as
       --  they are not standard Ada legality rules. Internally generated
-      --  temporaries are ignored.
+      --  temporaries are ignored, as well as return objects.
 
-      if SPARK_Mode = On and then Comes_From_Source (Type_Or_Obj_Id) then
+      if SPARK_Mode = On
+        and then Comes_From_Source (Type_Or_Obj_Id)
+        and then not Is_Return_Object (Type_Or_Obj_Id)
+      then
          if Is_Effectively_Volatile (Type_Or_Obj_Id) then
 
             --  The declaration of an effectively volatile object or type must
@@ -1668,6 +1672,12 @@ package body Contracts is
       --  function, Result contains the entity of parameter _Result, to be
       --  used in the creation of procedure _Postconditions.
 
+      procedure Add_Stable_Property_Contracts
+        (Subp_Id : Entity_Id; Class_Present : Boolean);
+      --  Augment postcondition contracts to reflect Stable_Property aspect
+      --  (if Class_Present = False) or Stable_Property'Class aspect (if
+      --  Class_Present = True).
+
       procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id);
       --  Append a node to a list. If there is no list, create a new one. When
       --  the item denotes a pragma, it is added to the list only when it is
@@ -1905,6 +1915,244 @@ package body Contracts is
          end loop;
       end Add_Invariant_And_Predicate_Checks;
 
+      -----------------------------------
+      -- Add_Stable_Property_Contracts --
+      -----------------------------------
+
+      procedure Add_Stable_Property_Contracts
+        (Subp_Id : Entity_Id; Class_Present : Boolean)
+      is
+         Loc         : constant Source_Ptr := Sloc (Subp_Id);
+
+         procedure Insert_Stable_Property_Check
+           (Formal : Entity_Id; Property_Function : Entity_Id);
+         --  Build the pragma for one check and insert it in the tree.
+
+         function Make_Stable_Property_Condition
+           (Formal : Entity_Id; Property_Function : Entity_Id) return Node_Id;
+         --  Builds tree for "Func (Formal) = Func (Formal)'Old" expression.
+
+         function Stable_Properties
+           (Aspect_Bearer : Entity_Id; Negated : out Boolean)
+           return Subprogram_List;
+         --  If no aspect specified, then returns length-zero result.
+         --  Negated indicates that reserved word NOT was specified.
+
+         ----------------------------------
+         -- Insert_Stable_Property_Check --
+         ----------------------------------
+
+         procedure Insert_Stable_Property_Check
+           (Formal : Entity_Id; Property_Function : Entity_Id) is
+
+            Args : constant List_Id :=
+              New_List
+                (Make_Pragma_Argument_Association
+                   (Sloc => Loc,
+                    Expression =>
+                      Make_Stable_Property_Condition
+                         (Formal            => Formal,
+                          Property_Function => Property_Function)),
+                 Make_Pragma_Argument_Association
+                   (Sloc => Loc,
+                    Expression =>
+                      Make_String_Literal
+                        (Sloc => Loc,
+                         Strval =>
+                           "failed stable property check at "
+                           & Build_Location_String (Loc)
+                           & " for parameter "
+                           & To_String (Fully_Qualified_Name_String
+                               (Formal, Append_NUL => False))
+                           & " and property function "
+                           & To_String (Fully_Qualified_Name_String
+                               (Property_Function, Append_NUL => False))
+                        )));
+
+            Prag : constant Node_Id :=
+              Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Loc, Name_Postcondition),
+                Pragma_Argument_Associations => Args,
+                Class_Present                => Class_Present);
+
+            Subp_Decl : Node_Id := Subp_Id;
+         begin
+            --  Enclosing_Declaration may return, for example,
+            --  a N_Procedure_Specification node. Cope with this.
+            loop
+               Subp_Decl := Enclosing_Declaration (Subp_Decl);
+               exit when Is_Declaration (Subp_Decl);
+               Subp_Decl := Parent (Subp_Decl);
+               pragma Assert (Present (Subp_Decl));
+            end loop;
+
+            Insert_After_And_Analyze (Subp_Decl, Prag);
+         end Insert_Stable_Property_Check;
+
+         ------------------------------------
+         -- Make_Stable_Property_Condition --
+         ------------------------------------
+
+         function Make_Stable_Property_Condition
+           (Formal : Entity_Id; Property_Function : Entity_Id) return Node_Id
+         is
+            function Call_Property_Function return Node_Id is
+              (Make_Function_Call
+                 (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (Property_Function, Loc),
+                  Parameter_Associations =>
+                    New_List (New_Occurrence_Of (Formal, Loc))));
+         begin
+            return Make_Op_Eq
+              (Loc,
+               Call_Property_Function,
+               Make_Attribute_Reference
+                 (Loc,
+                  Prefix         => Call_Property_Function,
+                  Attribute_Name => Name_Old));
+         end Make_Stable_Property_Condition;
+
+         -----------------------
+         -- Stable_Properties --
+         -----------------------
+
+         function Stable_Properties
+           (Aspect_Bearer : Entity_Id; Negated : out Boolean)
+           return Subprogram_List
+         is
+            Aspect_Spec : Node_Id :=
+              Find_Value_Of_Aspect
+                (Aspect_Bearer, Aspect_Stable_Properties,
+                 Class_Present => Class_Present);
+         begin
+            --  ??? For a derived type, we wish Find_Value_Of_Aspect
+            --  somehow knew that this aspect is not inherited.
+            --  But it doesn't, so we cope with that here.
+            --
+            --  There are probably issues here with inheritance from
+            --  interface types, where just looking for the one parent type
+            --  isn't enough. But this is far from the only work needed for
+            --  Stable_Properties'Class for interface types.
+
+            if Is_Derived_Type (Aspect_Bearer) then
+               declare
+                  Parent_Type : constant Entity_Id :=
+                    Etype (Base_Type (Aspect_Bearer));
+               begin
+                  if Aspect_Spec =
+                     Find_Value_Of_Aspect
+                       (Parent_Type, Aspect_Stable_Properties,
+                        Class_Present => Class_Present)
+                  then
+                     --  prevent inheritance
+                     Aspect_Spec := Empty;
+                  end if;
+               end;
+            end if;
+
+            if No (Aspect_Spec) then
+               Negated := Aspect_Bearer = Subp_Id;
+               --  This is a little bit subtle.
+               --  We need to assign True in the Subp_Id case in order to
+               --  distinguish between no aspect spec at all vs. an
+               --  explicitly specified "with S_P => []" empty list.
+               --  In both cases Stable_Properties will return a length-0
+               --  array, but the two cases are not equivalent.
+               --  Very roughly speaking the lack of an S_P aspect spec for
+               --  a subprogram would be equivalent to something like
+               --  "with S_P => [not]", where we apply the "not" modifier to
+               --  an empty set of subprograms, if such a construct existed.
+               --  We could just assign True here, but it seems untidy to
+               --  return True in the case of an aspect spec for a type
+               --  (since negation is only allowed for subp S_P aspects).
+
+               return (1 .. 0 => <>);
+            else
+               return Parse_Aspect_Stable_Properties
+                        (Aspect_Spec, Negated => Negated);
+            end if;
+         end Stable_Properties;
+
+         Formal                  : Entity_Id := First_Formal (Subp_Id);
+         Type_Of_Formal          : Entity_Id;
+
+         Subp_Properties_Negated : Boolean;
+         Subp_Properties         : constant Subprogram_List :=
+           Stable_Properties (Subp_Id, Subp_Properties_Negated);
+
+         --  start of processing for Add_Stable_Property_Contracts
+
+      begin
+         if not (Is_Primitive (Subp_Id) and then Comes_From_Source (Subp_Id))
+         then
+            return;
+         end if;
+
+         while Present (Formal) loop
+            Type_Of_Formal := Base_Type (Etype (Formal));
+
+            if not Subp_Properties_Negated then
+
+               for SPF_Id of Subp_Properties loop
+                  if Type_Of_Formal = Base_Type (Etype (First_Formal (SPF_Id)))
+                     and then Scope (Type_Of_Formal) = Scope (Subp_Id)
+                  then
+                     --  ??? Need to filter out checks for SPFs that are
+                     --  mentioned explicitly in the postcondition of
+                     --  Subp_Id.
+
+                     Insert_Stable_Property_Check
+                       (Formal => Formal, Property_Function => SPF_Id);
+                  end if;
+               end loop;
+
+            elsif Scope (Type_Of_Formal) = Scope (Subp_Id) then
+               declare
+                  Ignored : Boolean range False .. False;
+
+                  Typ_Property_Funcs : constant Subprogram_List :=
+                     Stable_Properties (Type_Of_Formal, Negated => Ignored);
+
+                  function Excluded_By_Aspect_Spec_Of_Subp
+                    (SPF_Id : Entity_Id) return Boolean;
+                  --  Examine Subp_Properties to determine whether SPF should
+                  --  be excluded.
+
+                  -------------------------------------
+                  -- Excluded_By_Aspect_Spec_Of_Subp --
+                  -------------------------------------
+
+                  function Excluded_By_Aspect_Spec_Of_Subp
+                    (SPF_Id : Entity_Id) return Boolean is
+                  begin
+                     pragma Assert (Subp_Properties_Negated);
+                     --  Look through renames for equality test here ???
+                     return  (for some F of Subp_Properties => F = SPF_Id);
+                  end Excluded_By_Aspect_Spec_Of_Subp;
+
+                  --  Look through renames for equality test here ???
+                  Subp_Is_Stable_Property_Function : constant Boolean :=
+                    (for some F of Typ_Property_Funcs => F = Subp_Id);
+               begin
+                  if not Subp_Is_Stable_Property_Function then
+                     for SPF_Id of Typ_Property_Funcs loop
+                        if not Excluded_By_Aspect_Spec_Of_Subp (SPF_Id) then
+                           --  ??? Need to filter out checks for SPFs that are
+                           --  mentioned explicitly in the postcondition of
+                           --  Subp_Id.
+                           Insert_Stable_Property_Check
+                             (Formal => Formal, Property_Function => SPF_Id);
+                        end if;
+                     end loop;
+                  end if;
+               end;
+            end if;
+            Next_Formal (Formal);
+         end loop;
+      end Add_Stable_Property_Contracts;
+
       -------------------------
       -- Append_Enabled_Item --
       -------------------------
@@ -1950,11 +2198,23 @@ package body Contracts is
          Result  : Entity_Id)
       is
          Loc       : constant Source_Ptr := Sloc (Body_Decl);
+         Last_Decl : Node_Id;
          Params    : List_Id := No_List;
          Proc_Bod  : Node_Id;
          Proc_Decl : Node_Id;
          Proc_Id   : Entity_Id;
          Proc_Spec : Node_Id;
+
+         --  Extra declarations needed to handle interactions between
+         --  postconditions and finalization.
+
+         Postcond_Enabled_Decl : Node_Id;
+         Return_Success_Decl   : Node_Id;
+         Result_Obj_Decl       : Node_Id;
+         Result_Obj_Type_Decl  : Node_Id;
+         Result_Obj_Type       : Entity_Id;
+
+      --  Start of processing for Build_Postconditions_Procedure
 
       begin
          --  Nothing to do if there are no actions to check on exit
@@ -1962,6 +2222,29 @@ package body Contracts is
          if No (Stmts) then
             return;
          end if;
+
+         --  Otherwise, we generate the postcondition procedure and add
+         --  associated objects and conditions used to coordinate postcondition
+         --  evaluation with finalization.
+
+         --  Generate:
+         --
+         --    procedure _postconditions (Return_Exp : Result_Typ);
+         --
+         --    --  Result_Obj_Type created when Result_Type is non-elementary
+         --    [type Result_Obj_Type is access all Result_Typ;]
+         --
+         --    Result_Obj : Result_Obj_Type;
+         --
+         --    Postcond_Enabled            : Boolean := True;
+         --    Return_Success_For_Postcond : Boolean := False;
+         --
+         --    procedure _postconditions (Return_Exp : Result_Typ) is
+         --    begin
+         --       if Postcond_Enabled and then Return_Success_For_Postcond then
+         --          [stmts];
+         --       end if;
+         --    end;
 
          Proc_Id := Make_Defining_Identifier (Loc, Name_uPostconditions);
          Set_Debug_Info_Needed   (Proc_Id);
@@ -2000,12 +2283,14 @@ package body Contracts is
          --  body. This ensures that the body will not cause any premature
          --  freezing, as it may mention types:
 
+         --  Generate:
+         --
          --    procedure Proc (Obj : Array_Typ) is
          --       procedure _postconditions is
          --       begin
          --          ... Obj ...
          --       end _postconditions;
-
+         --
          --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
          --    begin
 
@@ -2017,11 +2302,120 @@ package body Contracts is
          Insert_Before_First_Source_Declaration
            (Proc_Decl, Declarations (Body_Decl));
          Analyze (Proc_Decl);
+         Last_Decl := Proc_Decl;
+
+         --  When Result is present (e.g. the postcondition checks apply to a
+         --  function) we make a local object to capture the result, so, if
+         --  needed, we can call the generated postconditions procedure during
+         --  finalization instead of at the point of return.
+
+         --  Note: The placement of the following declarations before the
+         --  declaration of the body of the postconditions, but after the
+         --  declaration of the postconditions spec is deliberate and required
+         --  since other code within the expander expects them to be located
+         --  here. Perhaps when more space is available in the tree this will
+         --  no longer be necessary ???
+
+         if Present (Result) then
+            --  Elementary result types mean a copy is cheap and preferred over
+            --  using pointers.
+
+            if Is_Elementary_Type (Etype (Result)) then
+               Result_Obj_Type := Etype (Result);
+
+            --  Otherwise, we create a named access type to capture the result
+
+            --  Generate:
+            --
+            --  type Result_Obj_Type is access all [Result_Type];
+
+            else
+               Result_Obj_Type := Make_Temporary (Loc, 'R');
+
+               Result_Obj_Type_Decl :=
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Result_Obj_Type,
+                   Type_Definition     =>
+                     Make_Access_To_Object_Definition (Loc,
+                       All_Present        => True,
+                       Subtype_Indication => New_Occurrence_Of
+                                               (Etype (Result), Loc)));
+               Insert_After_And_Analyze (Proc_Decl, Result_Obj_Type_Decl);
+               Last_Decl := Result_Obj_Type_Decl;
+            end if;
+
+            --  Create the result obj declaration
+
+            --  Generate:
+            --
+            --  Result_Object_For_Postcond : Result_Obj_Type;
+
+            Result_Obj_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier
+                    (Loc, Name_uResult_Object_For_Postcond),
+                Object_Definition   =>
+                  New_Occurrence_Of
+                    (Result_Obj_Type, Loc));
+            Set_No_Initialization (Result_Obj_Decl);
+            Insert_After_And_Analyze (Last_Decl, Result_Obj_Decl);
+            Last_Decl := Result_Obj_Decl;
+         end if;
+
+         --  Build the Postcond_Enabled flag used to delay evaluation of
+         --  postconditions until finalization has been performed when cleanup
+         --  actions are present.
+
+         --  Generate:
+         --
+         --    Postcond_Enabled : Boolean := True;
+
+         Postcond_Enabled_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier
+                 (Loc, Name_uPostcond_Enabled),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_True, Loc));
+         Insert_After_And_Analyze (Last_Decl, Postcond_Enabled_Decl);
+         Last_Decl := Postcond_Enabled_Decl;
+
+         --  Create a flag to indicate that return has been reached
+
+         --  This is necessary for deciding whether to execute _postconditions
+         --  during finalization.
+
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond : Boolean := False;
+
+         Return_Success_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier
+                 (Loc, Name_uReturn_Success_For_Postcond),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc));
+         Insert_After_And_Analyze (Last_Decl, Return_Success_Decl);
+         Last_Decl := Return_Success_Decl;
 
          --  Set an explicit End_Label to override the sloc of the implicit
          --  RETURN statement, and prevent it from inheriting the sloc of one
          --  the postconditions: this would cause confusing debug info to be
          --  produced, interfering with coverage-analysis tools.
+
+         --  Also, wrap the postcondition checks in a conditional which can be
+         --  used to delay their evaluation when clean-up actions are present.
+
+         --  Generate:
+         --
+         --    procedure _postconditions is
+         --    begin
+         --       if Postcond_Enabled and then Return_Success_For_Postcond then
+         --          [Stmts];
+         --       end if;
+         --    end;
 
          Proc_Bod :=
            Make_Subprogram_Body (Loc,
@@ -2030,10 +2424,22 @@ package body Contracts is
              Declarations               => Empty_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts,
-                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
+                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id)),
+                 Statements => New_List (
+                   Make_If_Statement (Loc,
+                     Condition      =>
+                       Make_And_Then (Loc,
+                         Left_Opnd  =>
+                           New_Occurrence_Of
+                             (Defining_Identifier
+                               (Postcond_Enabled_Decl), Loc),
+                         Right_Opnd =>
+                           New_Occurrence_Of
+                             (Defining_Identifier
+                               (Return_Success_Decl), Loc)),
+                      Then_Statements => Stmts))));
+         Insert_After_And_Analyze (Last_Decl, Proc_Bod);
 
-         Insert_After_And_Analyze (Proc_Decl, Proc_Bod);
       end Build_Postconditions_Procedure;
 
       ----------------------------
@@ -2559,8 +2965,7 @@ package body Contracts is
               Was_Expression_Function (Body_Decl)
                 and then Sloc (Body_Id) /= Sloc (Subp_Id)
                 and then In_Same_Source_Unit (Body_Id, Subp_Id)
-                and then List_Containing (Body_Decl) /=
-                         List_Containing (Subp_Decl);
+                and then not In_Same_List (Body_Decl, Subp_Decl);
 
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
@@ -2794,30 +3199,39 @@ package body Contracts is
       --  Routine _Postconditions holds all contract assertions that must be
       --  verified on exit from the related subprogram.
 
-      --  Step 1: Handle all preconditions. This action must come before the
+      --  Step 1: augment contracts list with postconditions associated with
+      --  Stable_Properties and Stable_Properties'Class aspects. This must
+      --  precede Process_Postconditions.
+
+      for Class_Present in Boolean loop
+         Add_Stable_Property_Contracts
+           (Subp_Id, Class_Present => Class_Present);
+      end loop;
+
+      --  Step 2: Handle all preconditions. This action must come before the
       --  processing of pragma Contract_Cases because the pragma prepends items
       --  to the body declarations.
 
       Process_Preconditions;
 
-      --  Step 2: Handle all postconditions. This action must come before the
+      --  Step 3: Handle all postconditions. This action must come before the
       --  processing of pragma Contract_Cases because the pragma appends items
       --  to list Stmts.
 
       Process_Postconditions (Stmts);
 
-      --  Step 3: Handle pragma Contract_Cases. This action must come before
+      --  Step 4: Handle pragma Contract_Cases. This action must come before
       --  the processing of invariants and predicates because those append
       --  items to list Stmts.
 
       Process_Contract_Cases (Stmts);
 
-      --  Step 4: Apply invariant and predicate checks on a function result and
+      --  Step 5: Apply invariant and predicate checks on a function result and
       --  all formals. The resulting checks are accumulated in list Stmts.
 
       Add_Invariant_And_Predicate_Checks (Subp_Id, Stmts, Result);
 
-      --  Step 5: Construct procedure _Postconditions
+      --  Step 6: Construct procedure _Postconditions
 
       Build_Postconditions_Procedure (Subp_Id, Stmts, Result);
 
@@ -2833,7 +3247,10 @@ package body Contracts is
    procedure Freeze_Previous_Contracts (Body_Decl : Node_Id) is
       function Causes_Contract_Freezing (N : Node_Id) return Boolean;
       pragma Inline (Causes_Contract_Freezing);
-      --  Determine whether arbitrary node N causes contract freezing
+      --  Determine whether arbitrary node N causes contract freezing. This is
+      --  used as an assertion for the current body declaration that caused
+      --  contract freezing, and as a condition to detect body declaration that
+      --  already caused contract freezing before.
 
       procedure Freeze_Contracts;
       pragma Inline (Freeze_Contracts);
@@ -2851,9 +3268,17 @@ package body Contracts is
 
       function Causes_Contract_Freezing (N : Node_Id) return Boolean is
       begin
-         return Nkind (N) in
-           N_Entry_Body      | N_Package_Body         | N_Protected_Body |
-           N_Subprogram_Body | N_Subprogram_Body_Stub | N_Task_Body;
+         --  The following condition matches guards for calls to
+         --  Freeze_Previous_Contracts from routines that analyze various body
+         --  declarations. In particular, it detects expression functions, as
+         --  described in the call from Analyze_Subprogram_Body_Helper.
+
+         return
+           Comes_From_Source (Original_Node (N))
+             and then
+           Nkind (N) in
+             N_Entry_Body      | N_Package_Body         | N_Protected_Body |
+             N_Subprogram_Body | N_Subprogram_Body_Stub | N_Task_Body;
       end Causes_Contract_Freezing;
 
       ----------------------
@@ -3012,6 +3437,81 @@ package body Contracts is
       Freeze_Enclosing_Package_Body;
       Freeze_Contracts;
    end Freeze_Previous_Contracts;
+
+   --------------------------
+   -- Get_Postcond_Enabled --
+   --------------------------
+
+   function Get_Postcond_Enabled (Subp : Entity_Id) return Node_Id is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+          and then Chars (Defining_Identifier (Decl))
+                     = Name_uPostcond_Enabled
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Postcond_Enabled;
+
+   ------------------------------------
+   -- Get_Result_Object_For_Postcond --
+   ------------------------------------
+
+   function Get_Result_Object_For_Postcond
+     (Subp : Entity_Id) return Node_Id
+   is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+           and then Chars (Defining_Identifier (Decl))
+                      = Name_uResult_Object_For_Postcond
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Result_Object_For_Postcond;
+
+   -------------------------------------
+   -- Get_Return_Success_For_Postcond --
+   -------------------------------------
+
+   function Get_Return_Success_For_Postcond (Subp : Entity_Id) return Node_Id
+   is
+      Decl : Node_Id;
+   begin
+      Decl :=
+        Next (Unit_Declaration_Node (Postconditions_Proc (Subp)));
+      while Present (Decl) loop
+
+         if Nkind (Decl) = N_Object_Declaration
+          and then Chars (Defining_Identifier (Decl))
+                     = Name_uReturn_Success_For_Postcond
+         then
+            return Defining_Identifier (Decl);
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      return Empty;
+   end Get_Return_Success_For_Postcond;
 
    ---------------------------------
    -- Inherit_Subprogram_Contract --

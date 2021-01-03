@@ -30,7 +30,7 @@ test()
   const auto outnn = std::remove_copy_if(ca0.begin(), ca0.end(), out0.begin(),
 					 [](int i){ return i == 7; });
 
-  return true;
+  return outnn == out0.begin() + ca0.size() - 1;
 }
 
 static_assert(test());

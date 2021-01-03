@@ -2,4 +2,4 @@
 
 void Dispatcher()
 	 (__builtin_offsetof (ArgsType, largeMsgLen)) // { dg-error "initialize" }
-// { dg-error "-:expected" "" { target *-*-* } .+1 }
+// { dg-error "54:expected" "" { target *-*-* } .-1 }

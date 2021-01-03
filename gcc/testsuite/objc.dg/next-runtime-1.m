@@ -7,6 +7,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-skip-if "" { *-*-* } { "-fobjc-abi-version=1" } { "" } } */
 /* { dg-options "-fobjc-abi-version=0" { target { *-*-darwin* && { ! lp64 } } } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 @interface FooBar
 - (void)boo;

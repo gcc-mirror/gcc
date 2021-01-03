@@ -292,6 +292,9 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sysnb	Setgid(gid int) (err error)
 //setgid(gid Gid_t) _C_int
 
+//sysnb Setegid(uid int) (err error)
+//setegid(uid Uid_t) _C_int
+
 //sysnb Setregid(rgid int, egid int) (err error)
 //setregid(rgid Gid_t, egid Gid_t) _C_int
 
@@ -316,6 +319,9 @@ func Settimeofday(tv *Timeval) (err error) {
 
 //sysnb	Setuid(uid int) (err error)
 //setuid(uid Uid_t) _C_int
+
+//sysnb Seteuid(uid int) (err error)
+//seteuid(uid Uid_t) _C_int
 
 //sys	Symlink(oldpath string, newpath string) (err error)
 //symlink(oldpath *byte, newpath *byte) _C_int

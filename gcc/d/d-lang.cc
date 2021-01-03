@@ -114,26 +114,35 @@ deps_add_target (const char *target, bool quoted)
     }
 
   /* Quote characters in target which are significant to Make.  */
+  unsigned slashes = 0;
+
   for (const char *p = target; *p != '\0'; p++)
     {
       switch (*p)
 	{
+	case '\\':
+	  slashes++;
+	  break;
+
 	case ' ':
 	case '\t':
-	  for (const char *q = p - 1; target <= q && *q == '\\';  q--)
+	  while (slashes--)
 	    obstack_1grow (&buffer, '\\');
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	case '$':
 	  obstack_1grow (&buffer, '$');
-	  break;
+	  goto Ldef;
 
 	case '#':
+	case ':':
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	default:
+	Ldef:
+	  slashes = 0;
 	  break;
 	}
 

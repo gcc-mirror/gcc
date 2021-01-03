@@ -107,7 +107,7 @@ extern void atomic_signal_fence (memory_order);
 #define ATOMIC_POINTER_LOCK_FREE	__GCC_ATOMIC_POINTER_LOCK_FREE
 
 
-/* Note that these macros require __typeof__ and __auto_type to remove
+/* Note that these macros require __auto_type to remove
    _Atomic qualifiers (and const qualifiers, if those are valid on
    macro operands).
    
@@ -122,7 +122,7 @@ extern void atomic_signal_fence (memory_order);
   __extension__								\
   ({									\
     __auto_type __atomic_store_ptr = (PTR);				\
-    __typeof__ (*__atomic_store_ptr) __atomic_store_tmp = (VAL);	\
+    __typeof__ ((void)0, *__atomic_store_ptr) __atomic_store_tmp = (VAL);	\
     __atomic_store (__atomic_store_ptr, &__atomic_store_tmp, (MO));	\
   })
 
@@ -134,7 +134,7 @@ extern void atomic_signal_fence (memory_order);
   __extension__								\
   ({									\
     __auto_type __atomic_load_ptr = (PTR);				\
-    __typeof__ (*__atomic_load_ptr) __atomic_load_tmp;			\
+    __typeof__ ((void)0, *__atomic_load_ptr) __atomic_load_tmp;			\
     __atomic_load (__atomic_load_ptr, &__atomic_load_tmp, (MO));	\
     __atomic_load_tmp;							\
   })
@@ -146,8 +146,8 @@ extern void atomic_signal_fence (memory_order);
   __extension__								\
   ({									\
     __auto_type __atomic_exchange_ptr = (PTR);				\
-    __typeof__ (*__atomic_exchange_ptr) __atomic_exchange_val = (VAL);	\
-    __typeof__ (*__atomic_exchange_ptr) __atomic_exchange_tmp;		\
+    __typeof__ ((void)0, *__atomic_exchange_ptr) __atomic_exchange_val = (VAL);	\
+    __typeof__ ((void)0, *__atomic_exchange_ptr) __atomic_exchange_tmp;		\
     __atomic_exchange (__atomic_exchange_ptr, &__atomic_exchange_val,	\
 		       &__atomic_exchange_tmp, (MO));			\
     __atomic_exchange_tmp;						\
@@ -161,7 +161,7 @@ extern void atomic_signal_fence (memory_order);
   __extension__								\
   ({									\
     __auto_type __atomic_compare_exchange_ptr = (PTR);			\
-    __typeof__ (*__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
+    __typeof__ ((void)0, *__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
       = (DES);								\
     __atomic_compare_exchange (__atomic_compare_exchange_ptr, (VAL),	\
 			       &__atomic_compare_exchange_tmp, 0,	\
@@ -176,7 +176,7 @@ extern void atomic_signal_fence (memory_order);
   __extension__								\
   ({									\
     __auto_type __atomic_compare_exchange_ptr = (PTR);			\
-    __typeof__ (*__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
+    __typeof__ ((void)0, *__atomic_compare_exchange_ptr) __atomic_compare_exchange_tmp \
       = (DES);								\
     __atomic_compare_exchange (__atomic_compare_exchange_ptr, (VAL),	\
 			       &__atomic_compare_exchange_tmp, 1,	\

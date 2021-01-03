@@ -14,5 +14,5 @@ foo (void)
 					    warning.  */
   return 23;
 #endif
-  return 0b1101; /* { dg-warning "binary constants are a GCC extension" } */
+  return 0b1101; /* { dg-warning "binary constants are a C2X feature or GCC extension" } */
 }

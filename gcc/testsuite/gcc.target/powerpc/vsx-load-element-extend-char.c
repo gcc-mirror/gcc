@@ -2,9 +2,11 @@
    Test of vec_xl_sext and vec_xl_zext (load into rightmost
    vector element and zero/sign extend). */
 
-/* { dg-do compile {target power10_ok} } */
-/* { dg-do run {target power10_hw} } */
-/* { dg-options "-mdejagnu-cpu=power10 -O3" } */
+/* { dg-do run { target power10_hw } } */
+/* { dg-do compile { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-require-effective-target int128 } */
+/* { dg-options "-mdejagnu-cpu=power10 -O3 -save-temps" } */
 
 /* At the time of writing, the number of lxvrbx instructions is
    double what we expect because we are generating a 

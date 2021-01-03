@@ -261,7 +261,7 @@ typedef struct {
 } intrin_binding_t;
 
 static bool intrin_profiles_compatible_p (intrin_binding_t *);
-
+
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, return the equivalent GCC tree for that entity (a ..._DECL node)
    and associate the ..._DECL node with the input GNAT defining identifier.
@@ -667,21 +667,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
       /* If we have a constant that we are not defining, get the expression it
 	 was defined to represent.  This is necessary to avoid generating dumb
-	 elaboration code in simple cases, but we may throw it away later if it
+	 elaboration code in simple cases, and we may throw it away later if it
 	 is not a constant.  But do not do it for dispatch tables because they
 	 are only referenced indirectly and we need to have a consistent view
 	 of the exported and of the imported declarations of the tables from
 	 external units for them to be properly merged in LTO mode.  Moreover
-	 simply do not retrieve the expression it if it is an allocator since
+	 simply do not retrieve the expression if it is an allocator because
 	 the designated type might still be dummy at this point.  Note that we
 	 invoke gnat_to_gnu_external and not gnat_to_gnu because the expression
 	 may contain N_Expression_With_Actions nodes and thus declarations of
-	 objects from other units that we need to discard.  */
+	 objects from other units that we need to discard.  Note also that we
+	 need to do it even if we are only annotating types, so as to be able
+	 to validate representation clauses using constants.  */
       if (!definition
 	  && !No_Initialization (gnat_decl)
 	  && !Is_Dispatch_Table_Entity (gnat_entity)
 	  && Present (gnat_temp = Expression (gnat_decl))
-	  && Nkind (gnat_temp) != N_Allocator)
+	  && Nkind (gnat_temp) != N_Allocator
+	  && (Is_Elementary_Type (Etype (gnat_entity)) || !type_annotate_only))
 	gnu_expr = gnat_to_gnu_external (gnat_temp);
 
       /* ... fall through ... */
@@ -1740,24 +1743,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	gnu_type = make_signed_type (esize);
 
-	/* Try to decode the scale factor and to save it for the fixed-point
-	   types debug hook.  */
-
-	/* There are various ways to describe the scale factor, however there
-	   are cases where back-end internals cannot hold it.  In such cases,
-	   we output invalid scale factor for such cases (i.e. the 0/0
-	   rational constant) but we expect GNAT to output GNAT encodings,
-	   then.  Thus, keep this in sync with
-	   Exp_Dbug.Is_Handled_Scale_Factor.  */
-
 	/* When encoded as 1/2**N or 1/10**N, describe the scale factor as a
 	   binary or decimal scale: it is easier to read for humans.  */
 	if (UI_Eq (Numerator (gnat_small_value), Uint_1)
 	    && (Rbase (gnat_small_value) == 2
 		|| Rbase (gnat_small_value) == 10))
 	  {
-	    /* Given RM restrictions on 'Small values, we assume here that
-	       the denominator fits in an int.  */
 	    tree base
 	      = build_int_cst (integer_type_node, Rbase (gnat_small_value));
 	    tree exponent
@@ -1770,29 +1761,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				base, exponent));
 	  }
 
-	/* Default to arbitrary scale factors descriptions.  */
+	/* Use the arbitrary scale factor description.  Note that we support
+	   a Small_Value whose magnitude is larger than 64-bit even on 32-bit
+	   platforms, so we unconditionally use a (dummy) 128-bit type.  */
 	else
 	  {
-	    const Uint num = Norm_Num (gnat_small_value);
-	    const Uint den = Norm_Den (gnat_small_value);
+	    const Uint gnat_num = Norm_Num (gnat_small_value);
+	    const Uint gnat_den = Norm_Den (gnat_small_value);
+	    tree gnu_small_type = make_unsigned_type (128);
+	    tree gnu_num = UI_To_gnu (gnat_num, gnu_small_type);
+	    tree gnu_den = UI_To_gnu (gnat_den, gnu_small_type);
 
-	    if (UI_Is_In_Int_Range (num) && UI_Is_In_Int_Range (den))
-	      {
-		tree gnu_num
-		  = build_int_cst (integer_type_node,
-				   UI_To_Int (Norm_Num (gnat_small_value)));
-		tree gnu_den
-		  = build_int_cst (integer_type_node,
-				   UI_To_Int (Norm_Den (gnat_small_value)));
-		scale_factor = build2 (RDIV_EXPR, integer_type_node,
-				       gnu_num, gnu_den);
-	      }
-	    else
-	      /* If compiler internals cannot represent arbitrary scale
-		 factors, output an invalid scale factor so that debugger
-		 don't try to handle them but so that we still have a type
-		 in the output.  Note that GNAT  */
-	      scale_factor = integer_zero_node;
+	    scale_factor
+	      = build2 (RDIV_EXPR, gnu_small_type, gnu_num, gnu_den);
 	  }
 
 	TYPE_FIXED_POINT_P (gnu_type) = 1;
@@ -6575,7 +6556,7 @@ update_n_elem (tree n_elem, tree min, tree max)
 
   return n_elem;
 }
-
+
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
    be elaborated at the point of its definition, but do nothing else.  */
 
@@ -6632,7 +6613,7 @@ elaborate_entity (Entity_Id gnat_entity)
 
     }
 }
-
+
 /* Prepend to ATTR_LIST an entry for an attribute with provided TYPE,
    NAME, ARGS and ERROR_POINT.  */
 
@@ -6747,7 +6728,7 @@ prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
     if (Nkind (gnat_temp) == N_Pragma)
       prepend_one_attribute_pragma (attr_list, gnat_temp);
 }
-
+
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
    type definition (either a bound or a discriminant value) for GNAT_ENTITY,
    return the GCC tree to use for that expression.  S is the suffix to use
@@ -6954,7 +6935,7 @@ elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition,
   struct er_data er = { gnat_entity, definition, 0 };
   return gnat_rewrite_reference (ref, elaborate_reference_1, &er, init);
 }
-
+
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
 
@@ -7051,7 +7032,7 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 
   return gnu_result;
 }
-
+
 /* Adjust PACKED setting as passed to gnat_to_gnu_field for a field of
    type FIELD_TYPE to be placed in RECORD_TYPE.  Return the result.  */
 
@@ -7464,7 +7445,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
   return gnu_field;
 }
-
+
 /* Return true if at least one member of COMPONENT_LIST needs strict
    alignment.  */
 
@@ -8430,7 +8411,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
   return (gnu_rep_list && !p_gnu_rep_list) || variants_have_rep;
 }
-
+
 /* Given GNU_SIZE, a GCC tree representing a size, return a Uint to be
    placed into an Esize, Component_Bit_Offset, or Component_Size value
    in the GNAT tree.  */
@@ -8798,7 +8779,7 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 	  }
       }
 }
-
+
 /* Scan all fields in GNU_TYPE and return a TREE_LIST where TREE_PURPOSE is
    the FIELD_DECL and TREE_VALUE a TREE_VEC containing the byte position, the
    value to be placed into DECL_OFFSET_ALIGN and the bit position.  The list
@@ -8956,7 +8937,7 @@ build_variant_list (tree gnu_qual_union_type, Node_Id gnat_variant_part,
 
   return gnu_list;
 }
-
+
 /* If SIZE has overflowed, return the maximum valid size, which is the upper
    bound of the signed sizetype in bits, rounded down to ALIGN.  Otherwise
    return SIZE unmodified.  */
@@ -9100,7 +9081,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 
   return size;
 }
-
+
 /* Similarly, but both validate and process a value of RM size.  This routine
    is only called for types.  */
 
@@ -9177,7 +9158,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 	   && !TYPE_FAT_POINTER_P (gnu_type))
     SET_TYPE_ADA_SIZE (gnu_type, size);
 }
-
+
 /* ALIGNMENT is a Uint giving the alignment specified for GNAT_ENTITY,
    a type or object whose present alignment is ALIGN.  If this alignment is
    valid, return it.  Otherwise, give an error and return ALIGN.  */
@@ -9270,7 +9251,7 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
 
   return align;
 }
-
+
 /* Promote the alignment of GNU_TYPE corresponding to GNAT_ENTITY.  Return
    a positive value on success or zero on failure.  */
 
@@ -9317,7 +9298,7 @@ promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
 
   return align;
 }
-
+
 /* Verify that TYPE is something we can implement atomically.  If not, issue
    an error for GNAT_ENTITY.  COMPONENT_P is true if we are being called to
    process a component type.  */
@@ -9385,7 +9366,7 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
     post_error_ne ("atomic access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
 }
-
+
 
 /* Helper for the intrin compatibility checks family.  Evaluate whether
    two types are definitely incompatible.  */
@@ -9540,7 +9521,7 @@ intrin_profiles_compatible_p (intrin_binding_t * inb)
 
   return return_compatible_p && arglists_compatible_p;
 }
-
+
 /* Return a FIELD_DECL node modeled on OLD_FIELD.  FIELD_TYPE is its type
    and RECORD_TYPE is the type of the parent.  If SIZE is nonzero, it is the
    specified size for this field.  POS_LIST is a position list describing
@@ -10154,7 +10135,7 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
       return NULL_TREE;
     }
 }
-
+
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return an
    equivalent type with adjusted size expressions where all occurrences
    of references to F in a PLACEHOLDER_EXPR have been replaced by R.
@@ -10315,7 +10296,7 @@ substitute_in_type (tree t, tree f, tree r)
       return t;
     }
 }
-
+
 /* Return the RM size of GNU_TYPE.  This is the actual number of bits
    needed to represent the object.  */
 
@@ -10344,7 +10325,7 @@ rm_size (tree gnu_type)
   /* For other types, this is just the size.  */
   return TYPE_SIZE (gnu_type);
 }
-
+
 /* Return the name to be used for GNAT_ENTITY.  If a type, create a
    fully-qualified name, possibly with type information encoding.
    Otherwise, return the name.  */
@@ -10372,7 +10353,7 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
 {
   const Entity_Kind kind = Ekind (gnat_entity);
   const bool has_suffix = (suffix != NULL);
-  String_Template temp = {1, has_suffix ? strlen (suffix) : 0};
+  String_Template temp = {1, has_suffix ? (int) strlen (suffix) : 0};
   String_Pointer sp = {suffix, &temp};
 
   Get_External_Name (gnat_entity, has_suffix, sp);

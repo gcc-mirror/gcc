@@ -33,6 +33,7 @@ TEST_DUAL_Z (logb_f32_z, svint32_t, svfloat32_t,
 
 /*
 ** logb_f32_x:
+**	movprfx	z0, z4
 **	flogb	z0\.s, p0/m, z4\.s
 **	ret
 */

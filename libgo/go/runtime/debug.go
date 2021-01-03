@@ -10,9 +10,8 @@ import (
 )
 
 // GOMAXPROCS sets the maximum number of CPUs that can be executing
-// simultaneously and returns the previous setting. If n < 1, it does not
-// change the current setting.
-// The number of logical CPUs on the local machine can be queried with NumCPU.
+// simultaneously and returns the previous setting. It defaults to
+// the value of runtime.NumCPU. If n < 1, it does not change the current setting.
 // This call will go away when the scheduler improves.
 func GOMAXPROCS(n int) int {
 	if GOARCH == "wasm" && n > 1 {
@@ -66,7 +65,7 @@ func NumGoroutine() int {
 // added.
 func Fieldtrack(map[string]bool)
 
-//go:linkname debug_modinfo runtime..z2fdebug.modinfo
+//go:linkname debug_modinfo runtime_1debug.modinfo
 func debug_modinfo() string {
 	return modinfo
 }

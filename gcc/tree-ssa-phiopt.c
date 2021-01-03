@@ -337,7 +337,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	    }
 
 	  /* Do the replacement of conditional if it can be done.  */
-	  if (two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
+	  if (!early_p && two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (!early_p
 		   && conditional_replacement (bb, bb1, e1, e2, phi,
@@ -635,7 +635,6 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (TREE_CODE (lhs) != SSA_NAME
       || !INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-      || TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
       || TREE_CODE (rhs) != INTEGER_CST)
     return false;
 
@@ -648,9 +647,25 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
       return false;
     }
 
+  /* Defer boolean x ? 0 : {1,-1} or x ? {1,-1} : 0 to
+     conditional_replacement.  */
+  if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+      && (integer_zerop (arg0)
+	  || integer_zerop (arg1)
+	  || TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE
+	  || (TYPE_PRECISION (TREE_TYPE (arg0))
+	      <= TYPE_PRECISION (TREE_TYPE (lhs)))))
+    return false;
+
   wide_int min, max;
-  if (get_range_info (lhs, &min, &max) != VR_RANGE
-      || min + 1 != max
+  if (get_range_info (lhs, &min, &max) != VR_RANGE)
+    {
+      int prec = TYPE_PRECISION (TREE_TYPE (lhs));
+      signop sgn = TYPE_SIGN (TREE_TYPE (lhs));
+      min = wi::min_value (prec, sgn);
+      max = wi::max_value (prec, sgn);
+    }
+  if (min + 1 != max
       || (wi::to_wide (rhs) != min
 	  && wi::to_wide (rhs) != max))
     return false;
@@ -752,7 +767,9 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
   tree new_var, new_var2;
-  bool neg;
+  bool neg = false;
+  int shift = 0;
+  tree nonzero_arg;
 
   /* FIXME: Gimplification of complex type is too hard for now.  */
   /* We aren't prepared to handle vectors either (and it is a question
@@ -763,14 +780,22 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 	   || POINTER_TYPE_P (TREE_TYPE (arg1))))
     return false;
 
-  /* The PHI arguments have the constants 0 and 1, or 0 and -1, then
-     convert it to the conditional.  */
-  if ((integer_zerop (arg0) && integer_onep (arg1))
-      || (integer_zerop (arg1) && integer_onep (arg0)))
-    neg = false;
-  else if ((integer_zerop (arg0) && integer_all_onesp (arg1))
-	   || (integer_zerop (arg1) && integer_all_onesp (arg0)))
+  /* The PHI arguments have the constants 0 and 1, or 0 and -1 or
+     0 and (1 << cst), then convert it to the conditional.  */
+  if (integer_zerop (arg0))
+    nonzero_arg = arg1;
+  else if (integer_zerop (arg1))
+    nonzero_arg = arg0;
+  else
+    return false;
+  if (integer_all_onesp (nonzero_arg))
     neg = true;
+  else if (integer_pow2p (nonzero_arg))
+    {
+      shift = tree_log2 (nonzero_arg);
+      if (shift && POINTER_TYPE_P (TREE_TYPE (nonzero_arg)))
+	return false;
+    }
   else
     return false;
 
@@ -782,12 +807,12 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
      falls through into BB.
 
      There is a single PHI node at the join point (BB) and its arguments
-     are constants (0, 1) or (0, -1).
+     are constants (0, 1) or (0, -1) or (0, (1 << shift)).
 
      So, given the condition COND, and the two PHI arguments, we can
      rewrite this PHI into non-branching code:
 
-       dest = (COND) or dest = COND'
+       dest = (COND) or dest = COND' or dest = (COND) << shift
 
      We use the condition as-is if the argument associated with the
      true edge has the value one or the argument associated with the
@@ -821,6 +846,14 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
                                TREE_TYPE (result), cond);
       cond = fold_build1_loc (gimple_location (stmt),
                               NEGATE_EXPR, TREE_TYPE (cond), cond);
+    }
+  else if (shift)
+    {
+      cond = fold_convert_loc (gimple_location (stmt),
+			       TREE_TYPE (result), cond);
+      cond = fold_build2_loc (gimple_location (stmt),
+			      LSHIFT_EXPR, TREE_TYPE (cond), cond,
+			      build_int_cst (integer_type_node, shift));
     }
 
   /* Insert our new statements at the end of conditional block before the

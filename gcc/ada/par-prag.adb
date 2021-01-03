@@ -105,6 +105,9 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --    No_Dependence must be processed at parse time, since otherwise it gets
    --    handled too late.
    --
+   --    No_Unrecognized_Aspects must be processed at parse time, since
+   --    unrecognized aspects are ignored by the parser.
+   --
    --  Note that we don't need to do full error checking for badly formed cases
    --  of restrictions, since these will be caught during semantic analysis.
 
@@ -258,6 +261,12 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Error_Msg_N
                     ("??% restriction is obsolete and ignored, consider " &
                      "using 'S'P'A'R'K_'Mode and gnatprove instead", Arg);
+
+               when Name_No_Unrecognized_Aspects =>
+                  Set_Restriction
+                     (No_Unrecognized_Aspects,
+                      Pragma_Node,
+                      Prag_Id = Pragma_Restriction_Warnings);
 
                when others =>
                   null;

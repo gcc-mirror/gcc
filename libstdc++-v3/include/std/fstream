@@ -44,6 +44,11 @@
 #include <string>             // For std::string overloads.
 #endif
 
+// This can be overridden by the target's os_defines.h
+#ifndef _GLIBCXX_BUFSIZ
+# define _GLIBCXX_BUFSIZ BUFSIZ
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

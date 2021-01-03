@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
+#include "print-tree.h"
+#include "tree-ssa-alias-compare.h"
+#include "builtins.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -738,6 +741,36 @@ ao_ref_alias_set (ao_ref *ref)
   return ref->ref_alias_set;
 }
 
+/* Returns a type satisfying
+   get_deref_alias_set (type) == ao_ref_base_alias_set (REF).  */
+
+tree
+ao_ref_base_alias_ptr_type (ao_ref *ref)
+{
+  tree base_ref;
+
+  if (!ref->ref)
+    return NULL_TREE;
+  base_ref = ref->ref;
+  while (handled_component_p (base_ref))
+    base_ref = TREE_OPERAND (base_ref, 0);
+  tree ret = reference_alias_ptr_type (base_ref);
+  return ret;
+}
+
+/* Returns a type satisfying
+   get_deref_alias_set (type) == ao_ref_alias_set (REF).  */
+
+tree
+ao_ref_alias_ptr_type (ao_ref *ref)
+{
+  if (!ref->ref)
+    return NULL_TREE;
+  tree ret = reference_alias_ptr_type (ref->ref);
+  return ret;
+}
+
+
 /* Init an alias-oracle reference representation from a gimple pointer
    PTR a range specified by OFFSET, SIZE and MAX_SIZE under the assumption
    that RANGE_KNOWN is set.
@@ -1174,7 +1207,7 @@ aliasing_component_refs_p (tree ref1,
 	   struct a {int array1[0]; int array[];};
 	 Such struct has size 0 but accesses to a.array may have non-zero size.
 	 In this case the size of TREE_TYPE (base1) is smaller than
-	 size of TREE_TYPE (TREE_OPERNAD (base1, 0)).
+	 size of TREE_TYPE (TREE_OPERAND (base1, 0)).
 
 	 Because we compare sizes of arrays just by sizes of their elements,
 	 we only need to care about zero sized array fields here.  */
@@ -1949,6 +1982,20 @@ decl_refs_may_alias_p (tree ref1, tree base1,
   return true;     
 }
 
+/* Return true if access with BASE is view converted.
+   Base must not be stripped from inner MEM_REF (&decl)
+   which is done by ao_ref_base and thus one extra walk
+   of handled components is needed.  */
+
+static bool
+view_converted_memref_p (tree base)
+{
+  if (TREE_CODE (base) != MEM_REF && TREE_CODE (base) != TARGET_MEM_REF)
+    return false;
+  return same_type_for_tbaa (TREE_TYPE (base),
+			     TREE_TYPE (TREE_OPERAND (base, 1))) != 1;
+}
+
 /* Return true if an indirect reference based on *PTR1 constrained
    to [OFFSET1, OFFSET1 + MAX_SIZE1) may alias a variable based on BASE2
    constrained to [OFFSET2, OFFSET2 + MAX_SIZE2).  *PTR1 and BASE2 have
@@ -2572,6 +2619,99 @@ modref_may_conflict (const gimple *stmt,
   return false;
 }
 
+/* Check if REF conflicts with call using "fn spec" attribute.
+   If CLOBBER is true we are checking for writes, otherwise check loads.
+
+   Return 0 if there are no conflicts (except for possible function call
+   argument reads), 1 if there are conflicts and -1 if we can not decide by
+   fn spec.  */
+
+static int
+check_fnspec (gcall *call, ao_ref *ref, bool clobber)
+{
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  if (fnspec.known_p ())
+    {
+      if (clobber
+	  ? !fnspec.global_memory_written_p ()
+	  : !fnspec.global_memory_read_p ())
+	{
+	  for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
+	    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, i)))
+		&& (!fnspec.arg_specified_p (i)
+		    || (clobber ? fnspec.arg_maybe_written_p (i)
+			: fnspec.arg_maybe_read_p (i))))
+	      {
+		ao_ref dref;
+		tree size = NULL_TREE;
+		unsigned int size_arg;
+
+		if (!fnspec.arg_specified_p (i))
+		  ;
+		else if (fnspec.arg_max_access_size_given_by_arg_p
+			   (i, &size_arg))
+		  size = gimple_call_arg (call, size_arg);
+		else if (fnspec.arg_access_size_given_by_type_p (i))
+		  {
+		    tree callee = gimple_call_fndecl (call);
+		    tree t = TYPE_ARG_TYPES (TREE_TYPE (callee));
+
+		    for (unsigned int p = 0; p < i; p++)
+		      t = TREE_CHAIN (t);
+		    size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_VALUE (t)));
+		  }
+		ao_ref_init_from_ptr_and_size (&dref,
+					       gimple_call_arg (call, i),
+					       size);
+		if (refs_may_alias_p_1 (&dref, ref, false))
+		  return 1;
+	      }
+	  if (clobber
+	      && fnspec.errno_maybe_written_p ()
+	      && flag_errno_math
+	      && targetm.ref_may_alias_errno (ref))
+	    return 1;
+	  return 0;
+	}
+    }
+
+ /* FIXME: we should handle barriers more consistently, but for now leave the
+    check here.  */
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
+      {
+      /* __sync_* builtins and some OpenMP builtins act as threading
+	 barriers.  */
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+      case BUILT_IN_GOMP_ATOMIC_START:
+      case BUILT_IN_GOMP_ATOMIC_END:
+      case BUILT_IN_GOMP_BARRIER:
+      case BUILT_IN_GOMP_BARRIER_CANCEL:
+      case BUILT_IN_GOMP_TASKWAIT:
+      case BUILT_IN_GOMP_TASKGROUP_END:
+      case BUILT_IN_GOMP_CRITICAL_START:
+      case BUILT_IN_GOMP_CRITICAL_END:
+      case BUILT_IN_GOMP_CRITICAL_NAME_START:
+      case BUILT_IN_GOMP_CRITICAL_NAME_END:
+      case BUILT_IN_GOMP_LOOP_END:
+      case BUILT_IN_GOMP_LOOP_END_CANCEL:
+      case BUILT_IN_GOMP_ORDERED_START:
+      case BUILT_IN_GOMP_ORDERED_END:
+      case BUILT_IN_GOMP_SECTIONS_END:
+      case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
+      case BUILT_IN_GOMP_SINGLE_COPY_START:
+      case BUILT_IN_GOMP_SINGLE_COPY_END:
+	return 1;
+
+      default:
+	return -1;
+      }
+  return -1;
+}
+
 /* If the call CALL may use the memory reference REF return true,
    otherwise return false.  */
 
@@ -2650,222 +2790,13 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       && !is_global_var (base))
     goto process_args;
 
-  /* Handle those builtin functions explicitly that do not act as
-     escape points.  See tree-ssa-structalias.c:find_func_aliases
-     for the list of builtins we might need to handle here.  */
-  if (callee != NULL_TREE
-      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-	/* All the following functions read memory pointed to by
-	   their second argument.  strcat/strncat additionally
-	   reads memory pointed to by the first argument.  */
-	case BUILT_IN_STRCAT:
-	case BUILT_IN_STRNCAT:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	  }
-	  /* FALLTHRU */
-	case BUILT_IN_STRCPY:
-	case BUILT_IN_STRNCPY:
-	case BUILT_IN_MEMCPY:
-	case BUILT_IN_MEMMOVE:
-	case BUILT_IN_MEMPCPY:
-	case BUILT_IN_STPCPY:
-	case BUILT_IN_STPNCPY:
-	case BUILT_IN_TM_MEMCPY:
-	case BUILT_IN_TM_MEMMOVE:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 3)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_STRCAT_CHK:
-	case BUILT_IN_STRNCAT_CHK:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	  }
-	  /* FALLTHRU */
-	case BUILT_IN_STRCPY_CHK:
-	case BUILT_IN_STRNCPY_CHK:
-	case BUILT_IN_MEMCPY_CHK:
-	case BUILT_IN_MEMMOVE_CHK:
-	case BUILT_IN_MEMPCPY_CHK:
-	case BUILT_IN_STPCPY_CHK:
-	case BUILT_IN_STPNCPY_CHK:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 4)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_BCOPY:
-	  {
-	    ao_ref dref;
-	    tree size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-
-	/* The following functions read memory pointed to by their
-	   first argument.  */
-	CASE_BUILT_IN_TM_LOAD (1):
-	CASE_BUILT_IN_TM_LOAD (2):
-	CASE_BUILT_IN_TM_LOAD (4):
-	CASE_BUILT_IN_TM_LOAD (8):
-	CASE_BUILT_IN_TM_LOAD (FLOAT):
-	CASE_BUILT_IN_TM_LOAD (DOUBLE):
-	CASE_BUILT_IN_TM_LOAD (LDOUBLE):
-	CASE_BUILT_IN_TM_LOAD (M64):
-	CASE_BUILT_IN_TM_LOAD (M128):
-	CASE_BUILT_IN_TM_LOAD (M256):
-	case BUILT_IN_TM_LOG:
-	case BUILT_IN_TM_LOG_1:
-	case BUILT_IN_TM_LOG_2:
-	case BUILT_IN_TM_LOG_4:
-	case BUILT_IN_TM_LOG_8:
-	case BUILT_IN_TM_LOG_FLOAT:
-	case BUILT_IN_TM_LOG_DOUBLE:
-	case BUILT_IN_TM_LOG_LDOUBLE:
-	case BUILT_IN_TM_LOG_M64:
-	case BUILT_IN_TM_LOG_M128:
-	case BUILT_IN_TM_LOG_M256:
-	  return ptr_deref_may_alias_ref_p_1 (gimple_call_arg (call, 0), ref);
-
-	/* These read memory pointed to by the first argument.  */
-	case BUILT_IN_STRDUP:
-	case BUILT_IN_STRNDUP:
-	case BUILT_IN_REALLOC:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 2)
-	      size = gimple_call_arg (call, 1);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first argument.  */
-	case BUILT_IN_INDEX:
-	case BUILT_IN_STRCHR:
-	case BUILT_IN_STRRCHR:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first argument with size
-	   in the third argument.  */
-	case BUILT_IN_MEMCHR:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   gimple_call_arg (call, 2));
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first and second arguments.  */
-	case BUILT_IN_STRSTR:
-	case BUILT_IN_STRPBRK:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   NULL_TREE);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-
-	/* The following builtins do not read from memory.  */
-	case BUILT_IN_FREE:
-	case BUILT_IN_MALLOC:
-	case BUILT_IN_POSIX_MEMALIGN:
-	case BUILT_IN_ALIGNED_ALLOC:
-	case BUILT_IN_CALLOC:
-	CASE_BUILT_IN_ALLOCA:
-	case BUILT_IN_STACK_SAVE:
-	case BUILT_IN_STACK_RESTORE:
-	case BUILT_IN_MEMSET:
-	case BUILT_IN_TM_MEMSET:
-	case BUILT_IN_MEMSET_CHK:
-	case BUILT_IN_FREXP:
-	case BUILT_IN_FREXPF:
-	case BUILT_IN_FREXPL:
-	case BUILT_IN_GAMMA_R:
-	case BUILT_IN_GAMMAF_R:
-	case BUILT_IN_GAMMAL_R:
-	case BUILT_IN_LGAMMA_R:
-	case BUILT_IN_LGAMMAF_R:
-	case BUILT_IN_LGAMMAL_R:
-	case BUILT_IN_MODF:
-	case BUILT_IN_MODFF:
-	case BUILT_IN_MODFL:
-	case BUILT_IN_REMQUO:
-	case BUILT_IN_REMQUOF:
-	case BUILT_IN_REMQUOL:
-	case BUILT_IN_SINCOS:
-	case BUILT_IN_SINCOSF:
-	case BUILT_IN_SINCOSL:
-	case BUILT_IN_ASSUME_ALIGNED:
-	case BUILT_IN_VA_END:
-	  return false;
-	/* __sync_* builtins and some OpenMP builtins act as threading
-	   barriers.  */
-#undef DEF_SYNC_BUILTIN
-#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
-#include "sync-builtins.def"
-#undef DEF_SYNC_BUILTIN
-	case BUILT_IN_GOMP_ATOMIC_START:
-	case BUILT_IN_GOMP_ATOMIC_END:
-	case BUILT_IN_GOMP_BARRIER:
-	case BUILT_IN_GOMP_BARRIER_CANCEL:
-	case BUILT_IN_GOMP_TASKWAIT:
-	case BUILT_IN_GOMP_TASKGROUP_END:
-	case BUILT_IN_GOMP_CRITICAL_START:
-	case BUILT_IN_GOMP_CRITICAL_END:
-	case BUILT_IN_GOMP_CRITICAL_NAME_START:
-	case BUILT_IN_GOMP_CRITICAL_NAME_END:
-	case BUILT_IN_GOMP_LOOP_END:
-	case BUILT_IN_GOMP_LOOP_END_CANCEL:
-	case BUILT_IN_GOMP_ORDERED_START:
-	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_SECTIONS_END:
-	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
-	case BUILT_IN_GOMP_SINGLE_COPY_START:
-	case BUILT_IN_GOMP_SINGLE_COPY_END:
-	  return true;
-
-	default:
-	  /* Fallthru to general call handling.  */;
-      }
+  if (int res = check_fnspec (call, ref, false))
+    {
+      if (res == 1)
+	return true;
+    }
+  else
+    goto process_args;
 
   /* Check if base is a global static variable that is not read
      by the function.  */
@@ -3040,7 +2971,9 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	  modref_summary *summary = get_modref_function_summary (node);
 	  if (summary)
 	    {
-	      if (!modref_may_conflict (call, summary->stores, ref, tbaa_p))
+	      if (!modref_may_conflict (call, summary->stores, ref, tbaa_p)
+		  && (!summary->writes_errno
+		      || !targetm.ref_may_alias_errno (ref)))
 		{
 		  alias_stats.modref_clobber_no_alias++;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3104,205 +3037,13 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base, 0)))
     return false;
 
-  /* Handle those builtin functions explicitly that do not act as
-     escape points.  See tree-ssa-structalias.c:find_func_aliases
-     for the list of builtins we might need to handle here.  */
-  if (callee != NULL_TREE
-      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-	/* All the following functions clobber memory pointed to by
-	   their first argument.  */
-	case BUILT_IN_STRCPY:
-	case BUILT_IN_STRNCPY:
-	case BUILT_IN_MEMCPY:
-	case BUILT_IN_MEMMOVE:
-	case BUILT_IN_MEMPCPY:
-	case BUILT_IN_STPCPY:
-	case BUILT_IN_STPNCPY:
-	case BUILT_IN_STRCAT:
-	case BUILT_IN_STRNCAT:
-	case BUILT_IN_MEMSET:
-	case BUILT_IN_TM_MEMSET:
-	CASE_BUILT_IN_TM_STORE (1):
-	CASE_BUILT_IN_TM_STORE (2):
-	CASE_BUILT_IN_TM_STORE (4):
-	CASE_BUILT_IN_TM_STORE (8):
-	CASE_BUILT_IN_TM_STORE (FLOAT):
-	CASE_BUILT_IN_TM_STORE (DOUBLE):
-	CASE_BUILT_IN_TM_STORE (LDOUBLE):
-	CASE_BUILT_IN_TM_STORE (M64):
-	CASE_BUILT_IN_TM_STORE (M128):
-	CASE_BUILT_IN_TM_STORE (M256):
-	case BUILT_IN_TM_MEMCPY:
-	case BUILT_IN_TM_MEMMOVE:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    /* Don't pass in size for strncat, as the maximum size
-	       is strlen (dest) + n + 1 instead of n, resp.
-	       n + 1 at dest + strlen (dest), but strlen (dest) isn't
-	       known.  */
-	    if (gimple_call_num_args (call) == 3
-		&& DECL_FUNCTION_CODE (callee) != BUILT_IN_STRNCAT)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_STRCPY_CHK:
-	case BUILT_IN_STRNCPY_CHK:
-	case BUILT_IN_MEMCPY_CHK:
-	case BUILT_IN_MEMMOVE_CHK:
-	case BUILT_IN_MEMPCPY_CHK:
-	case BUILT_IN_STPCPY_CHK:
-	case BUILT_IN_STPNCPY_CHK:
-	case BUILT_IN_STRCAT_CHK:
-	case BUILT_IN_STRNCAT_CHK:
-	case BUILT_IN_MEMSET_CHK:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    /* Don't pass in size for __strncat_chk, as the maximum size
-	       is strlen (dest) + n + 1 instead of n, resp.
-	       n + 1 at dest + strlen (dest), but strlen (dest) isn't
-	       known.  */
-	    if (gimple_call_num_args (call) == 4
-		&& DECL_FUNCTION_CODE (callee) != BUILT_IN_STRNCAT_CHK)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_BCOPY:
-	  {
-	    ao_ref dref;
-	    tree size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* Allocating memory does not have any side-effects apart from
-	   being the definition point for the pointer.  */
-	case BUILT_IN_MALLOC:
-	case BUILT_IN_ALIGNED_ALLOC:
-	case BUILT_IN_CALLOC:
-	case BUILT_IN_STRDUP:
-	case BUILT_IN_STRNDUP:
-	  /* Unix98 specifies that errno is set on allocation failure.  */
-	  if (flag_errno_math
-	      && targetm.ref_may_alias_errno (ref))
-	    return true;
-	  return false;
-	case BUILT_IN_STACK_SAVE:
-	CASE_BUILT_IN_ALLOCA:
-	case BUILT_IN_ASSUME_ALIGNED:
-	  return false;
-	/* But posix_memalign stores a pointer into the memory pointed to
-	   by its first argument.  */
-	case BUILT_IN_POSIX_MEMALIGN:
-	  {
-	    tree ptrptr = gimple_call_arg (call, 0);
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref, ptrptr,
-					   TYPE_SIZE_UNIT (ptr_type_node));
-	    return (refs_may_alias_p_1 (&dref, ref, false)
-		    || (flag_errno_math
-			&& targetm.ref_may_alias_errno (ref)));
-	  }
-	/* Freeing memory kills the pointed-to memory.  More importantly
-	   the call has to serve as a barrier for moving loads and stores
-	   across it.  */
-	case BUILT_IN_FREE:
-	case BUILT_IN_VA_END:
-	  {
-	    tree ptr = gimple_call_arg (call, 0);
-	    return ptr_deref_may_alias_ref_p_1 (ptr, ref);
-	  }
-	/* Realloc serves both as allocation point and deallocation point.  */
-	case BUILT_IN_REALLOC:
-	  {
-	    tree ptr = gimple_call_arg (call, 0);
-	    /* Unix98 specifies that errno is set on allocation failure.  */
-	    return ((flag_errno_math
-		     && targetm.ref_may_alias_errno (ref))
-		    || ptr_deref_may_alias_ref_p_1 (ptr, ref));
-	  }
-	case BUILT_IN_GAMMA_R:
-	case BUILT_IN_GAMMAF_R:
-	case BUILT_IN_GAMMAL_R:
-	case BUILT_IN_LGAMMA_R:
-	case BUILT_IN_LGAMMAF_R:
-	case BUILT_IN_LGAMMAL_R:
-	  {
-	    tree out = gimple_call_arg (call, 1);
-	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
-	      return true;
-	    if (flag_errno_math)
-	      break;
-	    return false;
-	  }
-	case BUILT_IN_FREXP:
-	case BUILT_IN_FREXPF:
-	case BUILT_IN_FREXPL:
-	case BUILT_IN_MODF:
-	case BUILT_IN_MODFF:
-	case BUILT_IN_MODFL:
-	  {
-	    tree out = gimple_call_arg (call, 1);
-	    return ptr_deref_may_alias_ref_p_1 (out, ref);
-	  }
-	case BUILT_IN_REMQUO:
-	case BUILT_IN_REMQUOF:
-	case BUILT_IN_REMQUOL:
-	  {
-	    tree out = gimple_call_arg (call, 2);
-	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
-	      return true;
-	    if (flag_errno_math)
-	      break;
-	    return false;
-	  }
-	case BUILT_IN_SINCOS:
-	case BUILT_IN_SINCOSF:
-	case BUILT_IN_SINCOSL:
-	  {
-	    tree sin = gimple_call_arg (call, 1);
-	    tree cos = gimple_call_arg (call, 2);
-	    return (ptr_deref_may_alias_ref_p_1 (sin, ref)
-		    || ptr_deref_may_alias_ref_p_1 (cos, ref));
-	  }
-	/* __sync_* builtins and some OpenMP builtins act as threading
-	   barriers.  */
-#undef DEF_SYNC_BUILTIN
-#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
-#include "sync-builtins.def"
-#undef DEF_SYNC_BUILTIN
-	case BUILT_IN_GOMP_ATOMIC_START:
-	case BUILT_IN_GOMP_ATOMIC_END:
-	case BUILT_IN_GOMP_BARRIER:
-	case BUILT_IN_GOMP_BARRIER_CANCEL:
-	case BUILT_IN_GOMP_TASKWAIT:
-	case BUILT_IN_GOMP_TASKGROUP_END:
-	case BUILT_IN_GOMP_CRITICAL_START:
-	case BUILT_IN_GOMP_CRITICAL_END:
-	case BUILT_IN_GOMP_CRITICAL_NAME_START:
-	case BUILT_IN_GOMP_CRITICAL_NAME_END:
-	case BUILT_IN_GOMP_LOOP_END:
-	case BUILT_IN_GOMP_LOOP_END_CANCEL:
-	case BUILT_IN_GOMP_ORDERED_START:
-	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_SECTIONS_END:
-	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
-	case BUILT_IN_GOMP_SINGLE_COPY_START:
-	case BUILT_IN_GOMP_SINGLE_COPY_END:
-	  return true;
-	default:
-	  /* Fallthru to general call handling.  */;
-      }
+  if (int res = check_fnspec (call, ref, true))
+    {
+      if (res == 1)
+	return true;
+    }
+  else
+    return false;
 
   /* Check if base is a global static variable that is not written
      by the function.  */
@@ -4079,6 +3820,8 @@ void
 attr_fnspec::verify ()
 {
   bool err = false;
+  if (!len)
+    return;
 
   /* Check return value specifier.  */
   if (len < return_desc_size)
@@ -4086,14 +3829,22 @@ attr_fnspec::verify ()
   else if ((len - return_desc_size) % arg_desc_size)
     err = true;
   else if ((str[0] < '1' || str[0] > '4')
-	   && str[0] != '.' && str[0] != 'm'
-	   /* FIXME: Fortran trans-decl.c contains multiple wrong fnspec
-	      strings.  The following characters have no meaning.  */
-	   && str[0] != 'R' && str[0] != 'W')
+	   && str[0] != '.' && str[0] != 'm')
     err = true;
 
-  if (str[1] != ' ')
-    err = true;
+  switch (str[1])
+    {
+      case ' ':
+      case 'p':
+      case 'P':
+      case 'c':
+      case 'C':
+	break;
+      default:
+	err = true;
+    }
+  if (err)
+    internal_error ("invalid fn spec attribute \"%s\"", str);
 
   /* Now check all parameters.  */
   for (unsigned int i = 0; arg_specified_p (i); i++)
@@ -4105,16 +3856,360 @@ attr_fnspec::verify ()
 	  case 'X':
 	  case 'r':
 	  case 'R':
+	  case 'o':
+	  case 'O':
 	  case 'w':
 	  case 'W':
 	  case '.':
+	    if ((str[idx + 1] >= '1' && str[idx + 1] <= '9')
+		|| str[idx + 1] == 't')
+	      {
+		if (str[idx] != 'r' && str[idx] != 'R'
+		    && str[idx] != 'w' && str[idx] != 'W'
+		    && str[idx] != 'o' && str[idx] != 'O')
+		  err = true;
+		if (str[idx] != 't'
+		    /* Size specified is scalar, so it should be described
+		       by ". " if specified at all.  */
+		    && (arg_specified_p (str[idx + 1] - '1')
+			&& str[arg_idx (str[idx + 1] - '1')] != '.'))
+		  err = true;
+	      }
+	    else if (str[idx + 1] != ' ')
+	      err = true;
 	    break;
 	  default:
-	    err = true;
+	    if (str[idx] < '1' || str[idx] > '9')
+	      err = true;
 	}
-      if (str[idx + 1] != ' ')
-	err = true;
+      if (err)
+	internal_error ("invalid fn spec attribute \"%s\" arg %i", str, i);
     }
-  if (err)
-    internal_error ("invalid fn spec attribute \"%s\"", str);
+}
+
+/* Return ture if TYPE1 and TYPE2 will always give the same answer
+   when compared wit hother types using same_type_for_tbaa_p.  */
+
+static bool
+types_equal_for_same_type_for_tbaa_p (tree type1, tree type2,
+				      bool lto_streaming_safe)
+{
+  /* We use same_type_for_tbaa_p to match types in the access path.
+     This check is overly conservative.  */
+  type1 = TYPE_MAIN_VARIANT (type1);
+  type2 = TYPE_MAIN_VARIANT (type2);
+
+  if (TYPE_STRUCTURAL_EQUALITY_P (type1)
+      != TYPE_STRUCTURAL_EQUALITY_P (type2))
+    return false;
+  if (TYPE_STRUCTURAL_EQUALITY_P (type1))
+    return true;
+
+  if (lto_streaming_safe)
+    return type1 == type2;
+  else
+    return TYPE_CANONICAL (type1) == TYPE_CANONICAL (type2);
+}
+
+/* Compare REF1 and REF2 and return flags specifying their differences.
+   If LTO_STREAMING_SAFE is true do not use alias sets and canonical
+   types that are going to be recomputed.
+   If TBAA is true also compare TBAA metadata.  */
+
+int
+ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
+			     bool lto_streaming_safe,
+			     bool tbaa)
+{
+  if (TREE_THIS_VOLATILE (ref1->ref) != TREE_THIS_VOLATILE (ref2->ref))
+    return SEMANTICS;
+  tree base1 = ao_ref_base (ref1);
+  tree base2 = ao_ref_base (ref2);
+
+  if (!known_eq (ref1->offset, ref2->offset)
+      || !known_eq (ref1->size, ref2->size)
+      || !known_eq (ref1->max_size, ref2->max_size))
+    return SEMANTICS;
+
+  /* For variable accesses we need to compare actual paths
+     to check that both refs are accessing same address and the access size.  */
+  if (!known_eq (ref1->size, ref1->max_size))
+    {
+      if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (ref1->ref)),
+			    TYPE_SIZE (TREE_TYPE (ref2->ref)), 0))
+	return SEMANTICS;
+      tree r1 = ref1->ref;
+      tree r2 = ref2->ref;
+
+      /* Handle toplevel COMPONENT_REFs of bitfields.
+	 Those are special since they are not allowed in
+	 ADDR_EXPR.  */
+      if (TREE_CODE (r1) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (r1, 1)))
+	{
+	  if (TREE_CODE (r2) != COMPONENT_REF
+	      || !DECL_BIT_FIELD (TREE_OPERAND (r2, 1)))
+	    return SEMANTICS;
+	  tree field1 = TREE_OPERAND (r1, 1);
+	  tree field2 = TREE_OPERAND (r2, 1);
+	  if (!operand_equal_p (DECL_FIELD_OFFSET (field1),
+				DECL_FIELD_OFFSET (field2), 0)
+	      || !operand_equal_p (DECL_FIELD_BIT_OFFSET (field1),
+				   DECL_FIELD_BIT_OFFSET (field2), 0)
+	      || !operand_equal_p (DECL_SIZE (field1), DECL_SIZE (field2), 0)
+	      || !types_compatible_p (TREE_TYPE (r1),
+				      TREE_TYPE (r2)))
+	    return SEMANTICS;
+	  r1 = TREE_OPERAND (r1, 0);
+	  r2 = TREE_OPERAND (r2, 0);
+	}
+      else if (TREE_CODE (r2) == COMPONENT_REF
+	       && DECL_BIT_FIELD (TREE_OPERAND (r2, 1)))
+	return SEMANTICS;
+
+      /* Similarly for bit field refs.  */
+      if (TREE_CODE (r1) == BIT_FIELD_REF)
+	{
+ 	  if (TREE_CODE (r2) != BIT_FIELD_REF
+	      || !operand_equal_p (TREE_OPERAND (r1, 1),
+				   TREE_OPERAND (r2, 1), 0)
+	      || !operand_equal_p (TREE_OPERAND (r1, 2),
+				   TREE_OPERAND (r2, 2), 0)
+	      || !types_compatible_p (TREE_TYPE (r1),
+				      TREE_TYPE (r2)))
+	    return SEMANTICS;
+	  r1 = TREE_OPERAND (r1, 0);
+	  r2 = TREE_OPERAND (r2, 0);
+	}
+      else if (TREE_CODE (r2) == BIT_FIELD_REF)
+	return SEMANTICS;
+
+      /* Now we can compare the address of actual memory access.  */
+      if (!operand_equal_p (r1, r2, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS))
+	return SEMANTICS;
+    }
+  /* For constant accesses we get more matches by comparing offset only.  */
+  else if (!operand_equal_p (base1, base2,
+			     OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS))
+    return SEMANTICS;
+
+  /* We can't simply use get_object_alignment_1 on the full
+     reference as for accesses with variable indexes this reports
+     too conservative alignment.  */
+  unsigned int align1, align2;
+  unsigned HOST_WIDE_INT bitpos1, bitpos2;
+  bool known1 = get_object_alignment_1 (base1, &align1, &bitpos1);
+  bool known2 = get_object_alignment_1 (base2, &align2, &bitpos2);
+  /* ??? For MEMREF get_object_alignment_1 determines aligned from
+     TYPE_ALIGN but still returns false.  This seem to contradict
+     its description.  So compare even if alignment is unknown.   */
+  if (known1 != known2
+      || (bitpos1 != bitpos2 || align1 != align2))
+    return SEMANTICS;
+
+  /* Now we know that accesses are semantically same.  */
+  int flags = 0;
+
+  /* ao_ref_base strips inner MEM_REF [&decl], recover from that here.  */
+  tree rbase1 = ref1->ref;
+  if (rbase1)
+    while (handled_component_p (rbase1))
+      rbase1 = TREE_OPERAND (rbase1, 0);
+  tree rbase2 = ref2->ref;
+  while (handled_component_p (rbase2))
+    rbase2 = TREE_OPERAND (rbase2, 0);
+
+  /* MEM_REFs and TARGET_MEM_REFs record dependence cliques which are used to
+     implement restrict pointers.  MR_DEPENDENCE_CLIQUE 0 means no information.
+     Otherwise we need to match bases and cliques.  */
+  if ((((TREE_CODE (rbase1) == MEM_REF || TREE_CODE (rbase1) == TARGET_MEM_REF)
+	&& MR_DEPENDENCE_CLIQUE (rbase1))
+       || ((TREE_CODE (rbase2) == MEM_REF || TREE_CODE (rbase2) == TARGET_MEM_REF)
+	   && MR_DEPENDENCE_CLIQUE (rbase2)))
+      && (TREE_CODE (rbase1) != TREE_CODE (rbase2)
+	  || MR_DEPENDENCE_CLIQUE (rbase1) != MR_DEPENDENCE_CLIQUE (rbase2)
+	  || (MR_DEPENDENCE_BASE (rbase1) != MR_DEPENDENCE_BASE (rbase2))))
+    flags |= DEPENDENCE_CLIQUE;
+
+  if (!tbaa)
+    return flags;
+
+  /* Alias sets are not stable across LTO sreaming; be conservative here
+     and compare types the alias sets are ultimately based on.  */
+  if (lto_streaming_safe)
+    {
+      tree t1 = ao_ref_alias_ptr_type (ref1);
+      tree t2 = ao_ref_alias_ptr_type (ref2);
+      if (!alias_ptr_types_compatible_p (t1, t2))
+	flags |= REF_ALIAS_SET;
+
+      t1 = ao_ref_base_alias_ptr_type (ref1);
+      t2 = ao_ref_base_alias_ptr_type (ref2);
+      if (!alias_ptr_types_compatible_p (t1, t2))
+	flags |= BASE_ALIAS_SET;
+    }
+  else
+    {
+      if (ao_ref_alias_set (ref1) != ao_ref_alias_set (ref2))
+	flags |= REF_ALIAS_SET;
+      if (ao_ref_base_alias_set (ref1) != ao_ref_base_alias_set (ref2))
+	flags |= BASE_ALIAS_SET;
+    }
+
+  /* Access path is used only on non-view-converted references.  */
+  bool view_converted = view_converted_memref_p (rbase1);
+  if (view_converted_memref_p (rbase2) != view_converted)
+    return flags | ACCESS_PATH;
+  else if (view_converted)
+    return flags;
+
+
+  /* Find start of access paths and look for trailing arrays.  */
+  tree c1 = ref1->ref, c2 = ref2->ref;
+  tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
+  int nskipped1 = 0, nskipped2 = 0;
+  int i = 0;
+
+  for (tree p1 = ref1->ref; handled_component_p (p1); p1 = TREE_OPERAND (p1, 0))
+    {
+      if (component_ref_to_zero_sized_trailing_array_p (p1))
+	end_struct_ref1 = p1;
+      if (ends_tbaa_access_path_p (p1))
+	c1 = p1, nskipped1 = i;
+      i++;
+    }
+  for (tree p2 = ref2->ref; handled_component_p (p2); p2 = TREE_OPERAND (p2, 0))
+    {
+      if (component_ref_to_zero_sized_trailing_array_p (p2))
+	end_struct_ref2 = p2;
+      if (ends_tbaa_access_path_p (p2))
+	c2 = p2, nskipped1 = i;
+      i++;
+    }
+
+  /* For variable accesses we can not rely on offset match bellow.
+     We know that paths are struturally same, so only check that
+     starts of TBAA paths did not diverge.  */
+  if (!known_eq (ref1->size, ref1->max_size)
+      && nskipped1 != nskipped2)
+    return flags | ACCESS_PATH;
+
+  /* Information about trailing refs is used by
+     aliasing_component_refs_p that is applied only if paths
+     has handled components..  */
+  if (!handled_component_p (c1) && !handled_component_p (c2))
+    ;
+  else if ((end_struct_ref1 != NULL) != (end_struct_ref2 != NULL))
+    return flags | ACCESS_PATH;
+  if (end_struct_ref1
+      && TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref1))
+	 != TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref2)))
+    return flags | ACCESS_PATH;
+
+  /* Now compare all handled components of the access path.
+     We have three oracles that cares about access paths:
+       - aliasing_component_refs_p
+       - nonoverlapping_refs_since_match_p
+       - nonoverlapping_component_refs_p
+     We need to match things these oracles compare.
+
+     It is only necessary to check types for compatibility
+     and offsets.  Rest of what oracles compares are actual
+     addresses.  Those are already known to be same:
+       - for constant accesses we check offsets
+       - for variable accesses we already matched
+	 the path lexically with operand_equal_p.  */
+  while (true)
+    {
+      bool comp1 = handled_component_p (c1);
+      bool comp2 = handled_component_p (c2);
+
+      if (comp1 != comp2)
+	return flags | ACCESS_PATH;
+      if (!comp1)
+	break;
+
+      if (TREE_CODE (c1) != TREE_CODE (c2))
+	return flags | ACCESS_PATH;
+
+      /* aliasing_component_refs_p attempts to find type match within
+	 the paths.  For that reason both types needs to be equal
+	 with respect to same_type_for_tbaa_p.  */
+      if (!types_equal_for_same_type_for_tbaa_p (TREE_TYPE (c1),
+						 TREE_TYPE (c2),
+						 lto_streaming_safe))
+	return flags | ACCESS_PATH;
+      if (component_ref_to_zero_sized_trailing_array_p (c1)
+	  != component_ref_to_zero_sized_trailing_array_p (c2))
+	return flags | ACCESS_PATH;
+
+      /* aliasing_matching_component_refs_p compares
+	 offsets within the path.  Other properties are ignored.
+	 Do not bother to verify offsets in variable accesses.  Here we
+	 already compared them by operand_equal_p so they are
+	 structurally same.  */
+      if (!known_eq (ref1->size, ref1->max_size))
+	{
+	  poly_int64 offadj1, sztmc1, msztmc1;
+	  bool reverse1;
+	  get_ref_base_and_extent (c1, &offadj1, &sztmc1, &msztmc1, &reverse1);
+	  poly_int64 offadj2, sztmc2, msztmc2;
+	  bool reverse2;
+	  get_ref_base_and_extent (c2, &offadj2, &sztmc2, &msztmc2, &reverse2);
+	  if (!known_eq (offadj1, offadj2))
+	    return flags | ACCESS_PATH;
+	}
+      c1 = TREE_OPERAND (c1, 0);
+      c2 = TREE_OPERAND (c2, 0);
+    }
+  /* Finally test the access type.  */
+  if (!types_equal_for_same_type_for_tbaa_p (TREE_TYPE (c1),
+					     TREE_TYPE (c2),
+					     lto_streaming_safe))
+    return flags | ACCESS_PATH;
+  return flags;
+}
+
+/* Hash REF to HSTATE.  If LTO_STREAMING_SAFE do not use alias sets
+   and canonical types.  */
+void
+ao_compare::hash_ao_ref (ao_ref *ref, bool lto_streaming_safe, bool tbaa,
+			 inchash::hash &hstate)
+{
+  tree base = ao_ref_base (ref);
+  tree tbase = base;
+
+  if (!known_eq (ref->size, ref->max_size))
+    {
+      tree r = ref->ref;
+      if (TREE_CODE (r) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (r, 1)))
+	{
+	  tree field = TREE_OPERAND (r, 1);
+	  hash_operand (DECL_FIELD_OFFSET (field), hstate, 0);
+	  hash_operand (DECL_FIELD_BIT_OFFSET (field), hstate, 0);
+	  hash_operand (DECL_SIZE (field), hstate, 0);
+	  r = TREE_OPERAND (r, 0);
+	}
+      if (TREE_CODE (r) == BIT_FIELD_REF)
+	{
+	  hash_operand (TREE_OPERAND (r, 1), hstate, 0);
+	  hash_operand (TREE_OPERAND (r, 2), hstate, 0);
+	  r = TREE_OPERAND (r, 0);
+	}
+      hash_operand (TYPE_SIZE (TREE_TYPE (ref->ref)), hstate, 0);
+      hash_operand (r, hstate, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS);
+    }
+  else
+    {
+      hash_operand (tbase, hstate, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS);
+      hstate.add_poly_int (ref->offset);
+      hstate.add_poly_int (ref->size);
+      hstate.add_poly_int (ref->max_size);
+    }
+  if (!lto_streaming_safe && tbaa)
+    {
+      hstate.add_int (ao_ref_alias_set (ref));
+      hstate.add_int (ao_ref_base_alias_set (ref));
+    }
 }

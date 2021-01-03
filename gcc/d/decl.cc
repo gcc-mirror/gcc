@@ -653,31 +653,13 @@ public:
 	return;
       }
 
-    /* Do not store variables we cannot take the address of,
-       but keep the values for purposes of debugging.  */
     if (!d->canTakeAddressOf ())
       {
-	/* Don't know if there is a good way to handle instantiations.  */
-	if (d->isInstantiated ())
-	  return;
-
-	/* Cannot make an expression out of a void initializer.  */
-	if (!d->_init || d->_init->isVoidInitializer ())
-	  return;
-
-	tree decl = get_symbol_decl (d);
-	Expression *ie = initializerToExpression (d->_init);
-
-	/* CONST_DECL was initially intended for enumerals and may be used for
-	   scalars in general, but not for aggregates.  Here a non-constant
-	   value is generated anyway so as the CONST_DECL only serves as a
-	   placeholder for the value, however the DECL itself should never be
-	   referenced in any generated code, or passed to the back-end.  */
+	/* Do not store variables we cannot take the address of,
+	   but keep the values for purposes of debugging.  */
 	if (!d->type->isscalar ())
-	  DECL_INITIAL (decl) = build_expr (ie, false);
-	else
 	  {
-	    DECL_INITIAL (decl) = build_expr (ie, true);
+	    tree decl = get_symbol_decl (d);
 	    d_pushdecl (decl);
 	    rest_of_decl_compilation (decl, 1, 0);
 	  }
@@ -1106,6 +1088,25 @@ get_symbol_decl (Declaration *decl)
 
       if (vd->storage_class & STCextern)
 	DECL_EXTERNAL (decl->csym) = 1;
+
+      /* CONST_DECL was initially intended for enumerals and may be used for
+	 scalars in general, but not for aggregates.  Here a non-constant
+	 value is generated anyway so as the CONST_DECL only serves as a
+	 placeholder for the value, however the DECL itself should never be
+	 referenced in any generated code, or passed to the back-end.  */
+      if (vd->storage_class & STCmanifest)
+	{
+	  /* Cannot make an expression out of a void initializer.  */
+	  if (vd->_init && !vd->_init->isVoidInitializer ())
+	    {
+	      Expression *ie = initializerToExpression (vd->_init);
+
+	      if (!vd->type->isscalar ())
+		DECL_INITIAL (decl->csym) = build_expr (ie, false);
+	      else
+		DECL_INITIAL (decl->csym) = build_expr (ie, true);
+	    }
+	}
     }
 
   /* Set the declaration mangled identifier if static.  */
@@ -1663,7 +1664,7 @@ finish_thunk (tree thunk, tree function)
 	  resolve_unique_section (thunk, 0, flag_function_sections);
 
 	  /* Output the thunk into the same section as function.  */
-	  set_decl_section_name (thunk, DECL_SECTION_NAME (fn));
+	  set_decl_section_name (thunk, fn);
 	  symtab_node::get (thunk)->implicit_section
 	    = symtab_node::get (fn)->implicit_section;
 	}
@@ -1693,26 +1694,6 @@ finish_thunk (tree thunk, tree function)
 
   if (DECL_ONE_ONLY (function))
     thunk_node->add_to_same_comdat_group (funcn);
-
-  /* Target assemble_mi_thunk doesn't work across section boundaries
-     on many targets, instead force thunk to be expanded in gimple.  */
-  if (DECL_EXTERNAL (function))
-    {
-      /* cgraph::expand_thunk writes over current_function_decl, so if this
-	 could ever be in use by the codegen pass, we want to know about it.  */
-      gcc_assert (current_function_decl == NULL_TREE);
-
-      if (!stdarg_p (TREE_TYPE (thunk)))
-	{
-	  thunk_node->create_edge (funcn, NULL, thunk_node->count);
-	  expand_thunk (thunk_node, false, true);
-	}
-
-      /* Tell the back-end to not bother inlining the function, this is
-	 assumed not to work as it could be referencing symbols outside
-	 of the current compilation unit.  */
-      DECL_UNINLINABLE (function) = 1;
-    }
 }
 
 /* Return a thunk to DECL.  Thunks adjust the incoming `this' pointer by OFFSET.
@@ -1789,12 +1770,11 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   DECL_CONTEXT (thunk) = d_decl_context (decl);
 
-  /* Thunks inherit the public access of the function they are targetting.
-     When the function is outside the current compilation unit however, then the
-     thunk must be kept private to not conflict.  */
-  TREE_PUBLIC (thunk) = TREE_PUBLIC (function) && !DECL_EXTERNAL (function);
-
-  DECL_EXTERNAL (thunk) = 0;
+  /* Thunks inherit the public access of the function they are targeting.
+     Thunks are connected to the definitions of the functions, so thunks are
+     not produced for external functions.  */
+  TREE_PUBLIC (thunk) = TREE_PUBLIC (function);
+  DECL_EXTERNAL (thunk) = DECL_EXTERNAL (function);
 
   /* Thunks are always addressable.  */
   TREE_ADDRESSABLE (thunk) = 1;
@@ -1806,18 +1786,31 @@ make_thunk (FuncDeclaration *decl, int offset)
   DECL_COMDAT (thunk) = DECL_COMDAT (function);
   DECL_WEAK (thunk) = DECL_WEAK (function);
 
-  tree target_name = DECL_ASSEMBLER_NAME (function);
-  unsigned identlen = IDENTIFIER_LENGTH (target_name) + 14;
-  const char *ident = XNEWVEC (const char, identlen);
-  snprintf (CONST_CAST (char *, ident), identlen,
-	    "_DT%u%s", offset, IDENTIFIER_POINTER (target_name));
+  /* When the thunk is for an extern C++ function, let C++ do the thunk
+     generation and just reference the symbol as extern, instead of
+     forcing a D local thunk to be emitted.  */
+  const char *ident;
+
+  if (decl->linkage == LINKcpp)
+    ident = target.cpp.thunkMangle (decl, offset);
+  else
+    {
+      tree target_name = DECL_ASSEMBLER_NAME (function);
+      unsigned identlen = IDENTIFIER_LENGTH (target_name) + 14;
+      ident = XNEWVEC (const char, identlen);
+
+      snprintf (CONST_CAST (char *, ident), identlen,
+		"_DTi%u%s", offset, IDENTIFIER_POINTER (target_name));
+    }
 
   DECL_NAME (thunk) = get_identifier (ident);
   SET_DECL_ASSEMBLER_NAME (thunk, DECL_NAME (thunk));
 
   d_keep (thunk);
+  free (CONST_CAST (char *, ident));
 
-  finish_thunk (thunk, function);
+  if (!DECL_EXTERNAL (function))
+    finish_thunk (thunk, function);
 
   /* Add it to the list of thunks associated with the function.  */
   DECL_LANG_THUNKS (thunk) = NULL_TREE;

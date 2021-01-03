@@ -13,7 +13,7 @@ struct cow_t { // { dg-message "pure" }
 
 int main()
 {
-  cow_t cow[2];  // { dg-error "invalid abstract type" }
+  cow_t cow[2];  // { dg-error "abstract" }
   cow[0].f();
   return 0;
 }

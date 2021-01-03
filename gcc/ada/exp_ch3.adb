@@ -671,24 +671,90 @@ package body Exp_Ch3 is
       ------------------------
 
       function Init_One_Dimension (N : Int) return List_Id is
-         Index : Entity_Id;
+         Index       : Entity_Id;
+         DIC_Call    : Node_Id;
+         Result_List : List_Id;
+
+         function Possible_DIC_Call return Node_Id;
+         --  If the component type has Default_Initial_Conditions and a DIC
+         --  procedure that is not an empty body, then builds a call to the
+         --  DIC procedure and returns it.
+
+         -----------------------
+         -- Possible_DIC_Call --
+         -----------------------
+
+         function Possible_DIC_Call return Node_Id is
+         begin
+            --  When the component's type has a Default_Initial_Condition, then
+            --  create a call for the DIC check.
+
+            if Has_DIC (Comp_Type)
+              --  In GNATprove mode, the component DICs are checked by other
+              --  means. They should not be added to the record type DIC
+              --  procedure, so that the procedure can be used to check the
+              --  record type invariants or DICs if any.
+
+              and then not GNATprove_Mode
+
+              --  DIC checks for components of controlled types are done later
+              --  (see Exp_Ch7.Make_Deep_Array_Body).
+
+              and then not Is_Controlled (Comp_Type)
+
+              and then Present (DIC_Procedure (Comp_Type))
+
+              and then not Has_Null_Body (DIC_Procedure (Comp_Type))
+            then
+               return
+                 Build_DIC_Call (Loc,
+                   Make_Indexed_Component (Loc,
+                     Prefix      => Make_Identifier (Loc, Name_uInit),
+                     Expressions => Index_List),
+                   Comp_Type);
+            else
+               return Empty;
+            end if;
+         end Possible_DIC_Call;
+
+      --  Start of processing for Init_One_Dimension
 
       begin
          --  If the component does not need initializing, then there is nothing
          --  to do here, so we return a null body. This occurs when generating
          --  the dummy Init_Proc needed for Initialize_Scalars processing.
+         --  An exception is if component type has a Default_Initial_Condition,
+         --  in which case we generate a call to the type's DIC procedure.
 
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
            and then not Comp_Simple_Init
            and then not Has_Task (Comp_Type)
            and then not Has_Default_Aspect (A_Type)
+           and then (not Has_DIC (Comp_Type)
+                      or else N > Number_Dimensions (A_Type))
          then
-            return New_List (Make_Null_Statement (Loc));
+            DIC_Call := Possible_DIC_Call;
+
+            if Present (DIC_Call) then
+               return New_List (DIC_Call);
+            else
+               return New_List (Make_Null_Statement (Loc));
+            end if;
 
          --  If all dimensions dealt with, we simply initialize the component
+         --  and append a call to component type's DIC procedure when needed.
 
          elsif N > Number_Dimensions (A_Type) then
-            return Init_Component;
+            DIC_Call := Possible_DIC_Call;
+
+            if Present (DIC_Call) then
+               Result_List := Init_Component;
+               Append (DIC_Call, Result_List);
+               return Result_List;
+
+            else
+               return Init_Component;
+            end if;
 
          --  Here we generate the required loop
 
@@ -753,6 +819,7 @@ package body Exp_Ch3 is
       --    3. Tasks are present
       --    4. The type is marked as a public entity
       --    5. The array type has a Default_Component_Value aspect
+      --    6. The array component type has a Default_Initialization_Condition
 
       --  The reason for the public entity test is to deal properly with the
       --  Initialize_Scalars pragma. This pragma can be set in the client and
@@ -771,7 +838,8 @@ package body Exp_Ch3 is
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
                             or else Comp_Simple_Init
                             or else Has_Task (Comp_Type)
-                            or else Has_Default_Aspect (A_Type);
+                            or else Has_Default_Aspect (A_Type)
+                            or else Has_DIC (Comp_Type);
 
       if Has_Default_Init
         or else (not Restriction_Active (No_Initialize_Scalars)
@@ -1945,69 +2013,12 @@ package body Exp_Ch3 is
          Lhs      : Node_Id;
          Res      : List_Id;
 
-         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
-         --  Analysis of the aggregate has replaced discriminants by their
-         --  corresponding discriminals, but these are irrelevant when the
-         --  component has a mutable type and is initialized with an aggregate.
-         --  Instead, they must be replaced by the values supplied in the
-         --  aggregate, that will be assigned during the expansion of the
-         --  assignment.
-
-         -----------------------
-         -- Replace_Discr_Ref --
-         -----------------------
-
-         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
-            Val : Node_Id;
-
-         begin
-            if Is_Entity_Name (N)
-              and then Present (Entity (N))
-              and then Is_Formal (Entity (N))
-              and then Present (Discriminal_Link (Entity (N)))
-            then
-               Val :=
-                 Make_Selected_Component (Default_Loc,
-                   Prefix        => New_Copy_Tree (Lhs),
-                   Selector_Name =>
-                     New_Occurrence_Of
-                       (Discriminal_Link (Entity (N)), Default_Loc));
-
-               if Present (Val) then
-                  Rewrite (N, New_Copy_Tree (Val));
-               end if;
-            end if;
-
-            return OK;
-         end Replace_Discr_Ref;
-
-         procedure Replace_Discriminant_References is
-           new Traverse_Proc (Replace_Discr_Ref);
-
-      --  Start of processing for Build_Assignment
-
       begin
          Lhs :=
            Make_Selected_Component (Default_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
-
-         if Nkind (Exp) = N_Aggregate
-           and then Has_Discriminants (Typ)
-           and then not Is_Constrained (Base_Type (Typ))
-         then
-            --  The aggregate may provide new values for the discriminants
-            --  of the component, and other components may depend on those
-            --  discriminants. Previous analysis of those expressions have
-            --  replaced the discriminants by the formals of the initialization
-            --  procedure for the type, but these are irrelevant in the
-            --  enclosing initialization procedure: those discriminant
-            --  references must be replaced by the values provided in the
-            --  aggregate.
-
-            Replace_Discriminant_References (Exp);
-         end if;
 
          --  Case of an access attribute applied to the current instance.
          --  Replace the reference to the type by a reference to the actual
@@ -3436,6 +3447,38 @@ package body Exp_Ch3 is
 
                else
                   Actions := No_List;
+               end if;
+
+               --  When the component's type has a Default_Initial_Condition,
+               --  and the component is default initialized, then check the
+               --  DIC here.
+
+               if Has_DIC (Typ)
+                 and then not Present (Expression (Decl))
+                 and then Present (DIC_Procedure (Typ))
+                 and then not Has_Null_Body (DIC_Procedure (Typ))
+
+                 --  The DICs of ancestors are checked as part of the type's
+                 --  DIC procedure.
+
+                 and then Chars (Id) /= Name_uParent
+
+                 --  In GNATprove mode, the component DICs are checked by other
+                 --  means. They should not be added to the record type DIC
+                 --  procedure, so that the procedure can be used to check the
+                 --  record type invariants or DICs if any.
+
+                 and then not GNATprove_Mode
+               then
+                  Append_New_To (Actions,
+                     Build_DIC_Call
+                       (Comp_Loc,
+                        Make_Selected_Component (Comp_Loc,
+                          Prefix        =>
+                            Make_Identifier (Comp_Loc, Name_uInit),
+                          Selector_Name =>
+                            New_Occurrence_Of (Id, Comp_Loc)),
+                        Typ));
                end if;
 
                if Present (Checks) then
@@ -7403,12 +7446,12 @@ package body Exp_Ch3 is
 
                --  If we cannot convert the expression into a renaming we must
                --  consider it an internal error because the backend does not
-               --  have support to handle it. Also, when a raise expression is
-               --  encountered we ignore it since it doesn't return a value and
-               --  thus cannot trigger a copy.
+               --  have support to handle it. But avoid crashing on a raise
+               --  expression or conditional expression.
 
-               elsif Nkind (Original_Node (Expr_Q)) /= N_Raise_Expression then
-                  pragma Assert (False);
+               elsif Nkind (Original_Node (Expr_Q)) not in
+                 N_Raise_Expression | N_If_Expression | N_Case_Expression
+               then
                   raise Program_Error;
                end if;
 
@@ -7552,12 +7595,14 @@ package body Exp_Ch3 is
       if Comes_From_Source (Def_Id)
         and then Has_DIC (Typ)
         and then Present (DIC_Procedure (Typ))
+        and then not Has_Null_Body (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
         and then not Is_Imported (Def_Id)
       then
          declare
-            DIC_Call : constant Node_Id := Build_DIC_Call (Loc, Def_Id, Typ);
-
+            DIC_Call : constant Node_Id :=
+                         Build_DIC_Call
+                           (Loc, New_Occurrence_Of (Def_Id, Loc), Typ);
          begin
             if Present (Next_N) then
                Insert_Before_And_Analyze (Next_N, DIC_Call);
@@ -8331,13 +8376,6 @@ package body Exp_Ch3 is
       Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
 
-      --  Generate the [spec and] body of the procedure tasked with the runtime
-      --  verification of pragma Default_Initial_Condition's expression.
-
-      if Has_DIC (Def_Id) then
-         Build_DIC_Procedure_Body (Def_Id, For_Freeze => True);
-      end if;
-
       --  Generate the [spec and] body of the invariant procedure tasked with
       --  the runtime verification of all invariants that pertain to the type.
       --  This includes invariants on the partial and full view, inherited
@@ -8363,14 +8401,24 @@ package body Exp_Ch3 is
       --  subprograms, which may involve local declarations of local
       --  subtypes to which these checks do not apply.
 
-      elsif Has_Invariants (Def_Id) then
-         if not Predicate_Check_In_Scope (Def_Id)
-           or else (Ekind (Current_Scope) = E_Function
-                     and then Is_Predicate_Function (Current_Scope))
-         then
-            null;
-         else
-            Build_Invariant_Procedure_Body (Def_Id);
+      else
+         if Has_Invariants (Def_Id) then
+            if not Predicate_Check_In_Scope (Def_Id)
+              or else (Ekind (Current_Scope) = E_Function
+                        and then Is_Predicate_Function (Current_Scope))
+            then
+               null;
+            else
+               Build_Invariant_Procedure_Body (Def_Id);
+            end if;
+         end if;
+
+         --  Generate the [spec and] body of the procedure tasked with the
+         --  run-time verification of pragma Default_Initial_Condition's
+         --  expression.
+
+         if Has_DIC (Def_Id) then
+            Build_DIC_Procedure_Body (Def_Id);
          end if;
       end if;
 
@@ -8976,13 +9024,13 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized statically "
+                    ("objects of the type cannot be initialized statically "
                      & "by default??", Parent (E));
                end if;
             end if;
 
          else
-            Error_Msg_N ("Object cannot be initialized statically??", E);
+            Error_Msg_N ("object cannot be initialized statically??", E);
          end if;
       end if;
    end Initialization_Warning;

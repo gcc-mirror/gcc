@@ -53,7 +53,7 @@ void
 test02()
 {
   const path p0 = "/a/a/b/b";
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     VERIFY( std::is_eq(p <=> p) );
     VERIFY( (p <=> p0) == (p.compare(p0) <=> 0) );

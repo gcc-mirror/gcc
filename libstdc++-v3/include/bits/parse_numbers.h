@@ -266,7 +266,7 @@ namespace __select_int
   template<unsigned long long _Val, typename _IntType, typename... _Ints>
     struct _Select_int_base<_Val, _IntType, _Ints...>
     : conditional_t<(_Val <= __gnu_cxx::__int_traits<_IntType>::__max),
-		    integral_constant<_IntType, _Val>,
+		    integral_constant<_IntType, (_IntType)_Val>,
 		    _Select_int_base<_Val, _Ints...>>
     { };
 

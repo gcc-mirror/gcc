@@ -261,6 +261,15 @@ Type::is_error_type() const
     }
 }
 
+// Note that this type is an error.  This is called by children when
+// they discover an error during the verify_types pass.
+
+void
+Type::set_is_error()
+{
+  this->classification_ = TYPE_ERROR;
+}
+
 // If this is a pointer type, return the type to which it points.
 // Otherwise, return NULL.
 
@@ -1342,19 +1351,21 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
       Type* td_type = Type::make_type_descriptor_type();
       Btype* td_btype = td_type->get_backend(gogo);
-      std::string name = gogo->type_descriptor_name(this, nt);
-      std::string asm_name(go_selectively_encode_id(name));
+      Backend_name bname;
+      gogo->type_descriptor_backend_name(this, nt, &bname);
       this->type_descriptor_var_ =
-	  gogo->backend()->immutable_struct_reference(name, asm_name,
-						      td_btype,
-						      bloc);
+	gogo->backend()->immutable_struct_reference(bname.name(),
+						    bname.optional_asm_name(),
+						    td_btype,
+						    bloc);
 
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
     }
 
-  std::string var_name = gogo->type_descriptor_name(this, nt);
+  Backend_name bname;
+  gogo->type_descriptor_backend_name(this, nt, &bname);
 
   // Build the contents of the type descriptor.
   Expression* initializer = this->do_type_descriptor(gogo, NULL);
@@ -1366,11 +1377,11 @@ Type::make_type_descriptor_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
-      std::string asm_name(go_selectively_encode_id(var_name));
       this->type_descriptor_var_ =
-	  gogo->backend()->immutable_struct_reference(var_name, asm_name,
-						      initializer_btype,
-						      loc);
+	gogo->backend()->immutable_struct_reference(bname.name(),
+						    bname.optional_asm_name(),
+						    initializer_btype,
+						    loc);
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
@@ -1399,10 +1410,10 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // ensure that type_descriptor_pointer will work if called while
   // converting INITIALIZER.
 
-  std::string asm_name(go_selectively_encode_id(var_name));
   this->type_descriptor_var_ =
-      gogo->backend()->immutable_struct(var_name, asm_name, false, is_common,
-				      initializer_btype, loc);
+    gogo->backend()->immutable_struct(bname.name(), bname.optional_asm_name(),
+				      false, is_common, initializer_btype,
+				      loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
 
@@ -1411,7 +1422,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
   Bexpression* binitializer = initializer->get_backend(&context);
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
-					     var_name, false, is_common,
+					     bname.name(), false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
 
@@ -1924,19 +1935,20 @@ Type::build_hash_function(Gogo* gogo, int64_t size, Function_type* hash_fntype)
       return ins.first->second;
     }
 
-  std::string hash_name = gogo->hash_function_name(type);
+  Backend_name bname;
+  gogo->hash_function_name(type, &bname);
 
   Location bloc = Linemap::predeclared_location();
 
-  Named_object* hash_fn = gogo->declare_package_function(hash_name,
+  Named_object* hash_fn = gogo->declare_package_function(bname.name(),
 							 hash_fntype, bloc);
 
   ins.first->second = hash_fn;
 
   if (gogo->in_global_scope())
-    type->write_hash_function(gogo, size, hash_name, hash_fntype);
+    type->write_hash_function(gogo, size, &bname, hash_fntype);
   else
-    gogo->queue_hash_function(type, size, hash_name, hash_fntype);
+    gogo->queue_hash_function(type, size, &bname, hash_fntype);
 
   return hash_fn;
 }
@@ -1944,8 +1956,7 @@ Type::build_hash_function(Gogo* gogo, int64_t size, Function_type* hash_fntype)
 // Write the hash function for a type that needs it written specially.
 
 void
-Type::write_hash_function(Gogo* gogo, int64_t size,
-			  const std::string& hash_name,
+Type::write_hash_function(Gogo* gogo, int64_t size, const Backend_name* bname,
 			  Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
@@ -1958,8 +1969,9 @@ Type::write_hash_function(Gogo* gogo, int64_t size,
 
   go_assert(this->is_comparable());
 
-  Named_object* hash_fn = gogo->start_function(hash_name, hash_fntype, false,
-					       bloc);
+  Named_object* hash_fn = gogo->start_function(bname->name(), hash_fntype,
+					       false, bloc);
+  hash_fn->func_value()->set_asm_name(bname->asm_name());
   hash_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
@@ -2245,7 +2257,8 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
       return ins.first->second;
     }
 
-  std::string equal_name = gogo->equal_function_name(this, name);
+  Backend_name bname;
+  gogo->equal_function_name(this, name, &bname);
 
   Location bloc = Linemap::predeclared_location();
 
@@ -2255,19 +2268,21 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
   Named_object* equal_fn;
   if (is_defined_elsewhere)
-    equal_fn = Named_object::make_function_declaration(equal_name, package,
+    equal_fn = Named_object::make_function_declaration(bname.name(), package,
 						       equal_fntype, bloc);
   else
-    equal_fn = gogo->declare_package_function(equal_name, equal_fntype, bloc);
+    equal_fn = gogo->declare_package_function(bname.name(), equal_fntype, bloc);
 
   ins.first->second = equal_fn;
 
-  if (!is_defined_elsewhere)
+  if (is_defined_elsewhere)
+    equal_fn->func_declaration_value()->set_asm_name(bname.asm_name());
+  else
     {
       if (gogo->in_global_scope())
-	this->write_equal_function(gogo, name, size, equal_name, equal_fntype);
+	this->write_equal_function(gogo, name, size, &bname, equal_fntype);
       else
-	gogo->queue_equal_function(this, name, size, equal_name, equal_fntype);
+	gogo->queue_equal_function(this, name, size, &bname, equal_fntype);
     }
 
   return equal_fn;
@@ -2278,7 +2293,7 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
 void
 Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
-			   const std::string& equal_name,
+			   const Backend_name* bname,
 			   Function_type* equal_fntype)
 {
   Location bloc = Linemap::predeclared_location();
@@ -2291,8 +2306,9 @@ Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
   go_assert(this->is_comparable());
 
-  Named_object* equal_fn = gogo->start_function(equal_name, equal_fntype,
+  Named_object* equal_fn = gogo->start_function(bname->name(), equal_fntype,
 						false, bloc);
+  equal_fn->func_value()->set_asm_name(bname->asm_name());
   equal_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
@@ -2671,9 +2687,8 @@ Type::make_gc_symbol_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
-      std::string asm_name(go_selectively_encode_id(sym_name));
       this->gc_symbol_var_ =
-          gogo->backend()->implicit_variable_reference(sym_name, asm_name,
+          gogo->backend()->implicit_variable_reference(sym_name, "",
                                                        sym_btype);
       if (phash != NULL)
 	*phash = this->gc_symbol_var_;
@@ -2699,10 +2714,9 @@ Type::make_gc_symbol_var(Gogo* gogo)
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
-  std::string asm_name(go_selectively_encode_id(sym_name));
   this->gc_symbol_var_ =
-      gogo->backend()->implicit_variable(sym_name, asm_name,
-					 sym_btype, false, true, is_common, 0);
+      gogo->backend()->implicit_variable(sym_name, "", sym_btype, false, true,
+					 is_common, 0);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
@@ -2750,7 +2764,7 @@ class Ptrmask
   symname() const;
 
   Expression*
-  constructor(Gogo* gogo) const;
+  constructor() const;
 
  private:
   void
@@ -2876,14 +2890,17 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
     }
 }
 
-// Return a symbol name for this ptrmask. This is used to coalesce identical
-// ptrmasks, which are common. The symbol name must use only characters that are
-// valid in symbols. It's nice if it's short. For smaller ptrmasks, we convert
-// it to a string that uses only 32 characters, avoiding digits and u and U. For
-// longer pointer masks, apply the same process to the SHA1 digest of the bits,
-// so as to avoid pathologically long symbol names (see related Go issues #32083
-// and #11583 for more on this). To avoid collisions between the two encoding
-// schemes, use a prefix ("X") for the SHA form to disambiguate.
+// Return a symbol name for this ptrmask. This is used to coalesce
+// identical ptrmasks, which are common.  The symbol name must use
+// only characters that are valid in symbols.  It's nice if it's
+// short.  For smaller ptrmasks, we convert it to a string that uses
+// only 32 characters.  For longer pointer masks, apply the same
+// process to the SHA1 digest of the bits, so as to avoid
+// pathologically long symbol names (see related Go issues #32083 and
+// #11583 for more on this).  To avoid collisions between the two
+// encoding schemes, use a prefix ("X") for the SHA form to
+// disambiguate.
+
 std::string
 Ptrmask::symname() const
 {
@@ -2911,7 +2928,7 @@ Ptrmask::symname() const
       bits = &shabits;
     }
 
-  const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
+  const char chars[33] = "abcdefghijklmnopqrstuvwxyzABCDEF";
   go_assert(chars[32] == '\0');
   std::string ret(prefix);
   unsigned int b = 0;
@@ -2942,10 +2959,10 @@ Ptrmask::symname() const
 // initialize the runtime ptrmask value.
 
 Expression*
-Ptrmask::constructor(Gogo* gogo) const
+Ptrmask::constructor() const
 {
   Location bloc = Linemap::predeclared_location();
-  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Expression* len = Expression::make_integer_ul(this->bits_.size(), NULL,
 						bloc);
   Array_type* at = Type::make_array_type(byte_type, len);
@@ -2990,14 +3007,13 @@ Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
       return ins.first->second;
     }
 
-  Expression* val = ptrmask.constructor(gogo);
+  Expression* val = ptrmask.constructor();
   Translate_context context(gogo, NULL, NULL, NULL);
   context.set_is_const();
   Bexpression* bval = val->get_backend(&context);
 
-  std::string asm_name(go_selectively_encode_id(sym_name));
   Btype *btype = val->type()->get_backend(gogo);
-  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, asm_name,
+  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, "",
 						      btype, false, true,
 						      true, 0);
   gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, false,
@@ -3030,7 +3046,7 @@ class GCProg
   end();
 
   Expression*
-  constructor(Gogo* gogo) const;
+  constructor() const;
 
  private:
   void
@@ -3341,7 +3357,7 @@ GCProg::end()
 // Return an Expression for the bytes in a GC program.
 
 Expression*
-GCProg::constructor(Gogo* gogo) const
+GCProg::constructor() const
 {
   Location bloc = Linemap::predeclared_location();
 
@@ -3351,7 +3367,7 @@ GCProg::constructor(Gogo* gogo) const
 
   Type* uint32_type = Type::lookup_integer_type("uint32");
 
-  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Expression* len = Expression::make_integer_ul(this->bytes_.size(), NULL,
 						bloc);
   Array_type* at = Type::make_array_type(byte_type, len);
@@ -3398,7 +3414,7 @@ Type::gcprog_constructor(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
 
   go_assert(offset >= ptrdata && offset <= type_size);
 
-  return prog.constructor(gogo);
+  return prog.constructor();
 }
 
 // Return a composite literal for the uncommon type information for
@@ -4125,6 +4141,23 @@ Integer_type::create_abstract_character_type()
   return abstract_type;
 }
 
+// Create an alias to an integer type.  This is used for byte and rune.
+
+Named_type*
+Integer_type::create_integer_type_alias(const char* name,
+					Named_type* real_type)
+{
+  std::string sname(name);
+  Named_object* no = Named_object::make_type(sname, NULL, real_type,
+					     Linemap::predeclared_location());
+  Named_type* nt = no->type_value();
+  nt->set_is_alias();
+  std::pair<Named_integer_types::iterator, bool> ins =
+    Integer_type::named_integer_types.insert(std::make_pair(sname, nt));
+  go_assert(ins.second);
+  return nt;
+}
+
 // Integer type compatibility.
 
 bool
@@ -4200,6 +4233,14 @@ Integer_type*
 Type::make_abstract_character_type()
 {
   return Integer_type::create_abstract_character_type();
+}
+
+// Make an integer type alias.
+
+Named_type*
+Type::make_integer_type_alias(const char* name, Named_type* real_type)
+{
+  return Integer_type::create_integer_type_alias(name, real_type);
 }
 
 // Look up an integer type.
@@ -4450,7 +4491,7 @@ String_type::do_get_backend(Gogo* gogo)
     {
       std::vector<Backend::Btyped_identifier> fields(2);
 
-      Type* b = gogo->lookup_global("byte")->type_value();
+      Type* b = Type::lookup_integer_type("byte");
       Type* pb = Type::make_pointer_type(b);
 
       // We aren't going to get back to this field to finish the
@@ -4561,7 +4602,7 @@ class Sink_type : public Type
   { go_unreachable(); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_unreachable(); }
 };
 
@@ -5671,7 +5712,7 @@ class Call_multiple_result_type : public Type
   { go_assert(saw_errors()); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_assert(saw_errors()); }
 
  private:
@@ -5864,6 +5905,7 @@ Struct_type::do_verify()
 	    {
 	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
+	      this->set_is_error();
 	    }
 	  else if (t->points_to() != NULL
 		   && t->points_to()->interface_type() != NULL)
@@ -5871,6 +5913,7 @@ Struct_type::do_verify()
 	      go_error_at(p->location(),
 		       "embedded type may not be pointer to interface");
 	      p->set_type(Type::make_error_type());
+	      this->set_is_error();
 	    }
 	}
     }
@@ -6048,7 +6091,7 @@ Struct_type::do_hash_might_panic()
 // Return whether this struct type is permitted to be in the heap.
 
 bool
-Struct_type::do_in_heap()
+Struct_type::do_in_heap() const
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
@@ -7229,6 +7272,13 @@ Array_type::verify_length()
   Type_context context(Type::lookup_integer_type("int"), false);
   this->length_->determine_type(&context);
 
+  if (this->length_->is_error_expression()
+      || this->length_->type()->is_error())
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+
   if (!this->length_->is_constant())
     {
       go_error_at(this->length_->location(), "array bound is not constant");
@@ -7303,7 +7353,10 @@ Array_type::do_verify()
   if (this->element_type()->is_error_type())
     return false;
   if (!this->verify_length())
-    this->length_ = Expression::make_error(this->length_->location());
+    {
+      this->length_ = Expression::make_error(this->length_->location());
+      this->set_is_error();
+    }
   return true;
 }
 
@@ -8092,11 +8145,9 @@ Map_type::backend_zero_value(Gogo* gogo)
   Btype* barray_type = gogo->backend()->array_type(buint8_type, blength);
 
   std::string zname = Map_type::zero_value->name();
-  std::string asm_name(go_selectively_encode_id(zname));
   Bvariable* zvar =
-      gogo->backend()->implicit_variable(zname, asm_name,
-                                         barray_type, false, false, true,
-					 Map_type::zero_value_align);
+      gogo->backend()->implicit_variable(zname, "", barray_type, false, false,
+					 true, Map_type::zero_value_align);
   gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
 					      false, false, true, NULL);
   return zvar;
@@ -8120,11 +8171,20 @@ Map_type::do_verify()
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
-    go_error_at(this->location_, "invalid map key type");
+    {
+      go_error_at(this->location_, "invalid map key type");
+      this->set_is_error();
+    }
   if (!this->key_type_->in_heap())
-    go_error_at(this->location_, "go:notinheap map key not allowed");
+    {
+      go_error_at(this->location_, "go:notinheap map key not allowed");
+      this->set_is_error();
+    }
   if (!this->val_type_->in_heap())
-    go_error_at(this->location_, "go:notinheap map value not allowed");
+    {
+      go_error_at(this->location_, "go:notinheap map value not allowed");
+      this->set_is_error();
+    }
   return true;
 }
 
@@ -8655,8 +8715,11 @@ Channel_type::do_verify()
   // We have no location for this error, but this is not something the
   // ordinary user will see.
   if (!this->element_type_->in_heap())
-    go_error_at(Linemap::unknown_location(),
-		"chan of go:notinheap type not allowed");
+    {
+      go_error_at(Linemap::unknown_location(),
+		  "chan of go:notinheap type not allowed");
+      this->set_is_error();
+    }
   return true;
 }
 
@@ -8782,7 +8845,22 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
   if (!this->may_receive_)
     ret->append("<-");
   ret->push_back(' ');
+
+  bool need_paren = false;
+  if (this->may_send_
+      && this->may_receive_
+      && this->element_type_->channel_type() != NULL
+      && this->element_type_->unalias()->named_type() == NULL
+      && !this->element_type_->channel_type()->may_send())
+    {
+      ret->push_back('(');
+      need_paren = true;
+    }
+
   this->append_reflection(this->element_type_, gogo, ret);
+
+  if (need_paren)
+    ret->push_back(')');
 }
 
 // Export.
@@ -8842,14 +8920,10 @@ Channel_type::select_case_type()
     {
       Type* unsafe_pointer_type =
 	Type::make_pointer_type(Type::make_void_type());
-      Type* uint16_type = Type::lookup_integer_type("uint16");
-      Type* int64_type = Type::lookup_integer_type("int64");
       scase_type =
-	Type::make_builtin_struct_type(4,
+	Type::make_builtin_struct_type(2,
 				       "c", unsafe_pointer_type,
-				       "elem", unsafe_pointer_type,
-				       "kind", uint16_type,
-				       "releasetime", int64_type);
+				       "elem", unsafe_pointer_type);
       scase_type->set_is_struct_incomparable();
     }
   return scase_type;
@@ -8921,8 +8995,11 @@ Interface_type::finalize_methods()
       else if (this->find_method(p->name()) == NULL)
 	this->all_methods_->push_back(*p);
       else
-	go_error_at(p->location(), "duplicate method %qs",
-		 Gogo::message_name(p->name()).c_str());
+	{
+	  go_error_at(p->location(), "duplicate method %qs",
+		      Gogo::message_name(p->name()).c_str());
+	  this->set_is_error();
+	}
     }
 
   std::vector<Named_type*> seen;
@@ -8938,7 +9015,10 @@ Interface_type::finalize_methods()
       if (it == NULL)
 	{
 	  if (!t->is_error())
-	    go_error_at(tl, "interface contains embedded non-interface");
+	    {
+	      go_error_at(tl, "interface contains embedded non-interface");
+	      this->set_is_error();
+	    }
 	  continue;
 	}
       if (it == this)
@@ -8946,6 +9026,7 @@ Interface_type::finalize_methods()
 	  if (!issued_recursive_error)
 	    {
 	      go_error_at(tl, "invalid recursive interface");
+	      this->set_is_error();
 	      issued_recursive_error = true;
 	    }
 	  continue;
@@ -8964,6 +9045,7 @@ Interface_type::finalize_methods()
 	      if (*q == nt)
 		{
 		  go_error_at(tl, "inherited interface loop");
+		  this->set_is_error();
 		  break;
 		}
 	    }
@@ -8986,8 +9068,11 @@ Interface_type::finalize_methods()
 							       q->type(), tl));
 	      else if (!Type::are_identical(q->type(), oldm->type(),
 					    Type::COMPARE_TAGS, NULL))
-		go_error_at(tl, "duplicate method %qs",
-			    Gogo::message_name(q->name()).c_str());
+		{
+		  go_error_at(tl, "duplicate method %qs",
+			      Gogo::message_name(q->name()).c_str());
+		  this->set_is_error();
+		}
 	    }
 	}
 
@@ -12014,6 +12099,15 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 		    ambig2.c_str());
       else if (found_pointer_method)
 	go_error_at(location, "method requires a pointer receiver");
+      else if (it != NULL && it->is_empty())
+	go_error_at(location,
+		    "reference to method %qs in interface with no methods",
+		    Gogo::message_name(name).c_str());
+      else if (it == NULL && type->deref()->interface_type() != NULL)
+	go_error_at(location,
+		    ("reference to method %qs in type that is "
+		     "pointer to interface, not interface"),
+		    Gogo::message_name(name).c_str());
       else if (nt == NULL && st == NULL && it == NULL)
 	go_error_at(location,
 		    ("reference to field %qs in object which "

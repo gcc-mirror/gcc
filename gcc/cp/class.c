@@ -1,4 +1,4 @@
-/* Functions related to building classes and their related objects.
+/* Functions related to building -*- C++ -*- classes and their related objects.
    Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -494,8 +494,6 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     target_type = ptr_target_type;
 
-  expr = build1 (NOP_EXPR, ptr_target_type, expr);
-
   if (!integer_zerop (offset))
     {
       offset = fold_convert (sizetype, offset);
@@ -505,6 +503,8 @@ build_base_path (enum tree_code code,
     }
   else
     null_test = NULL;
+
+  expr = build1 (NOP_EXPR, ptr_target_type, expr);
 
  indout:
   if (!want_pointer)
@@ -659,6 +659,33 @@ convert_to_base_statically (tree expr, tree base)
   return expr;
 }
 
+/* True IFF EXPR is a reference to an empty base class "subobject", as built in
+   convert_to_base_statically.  We look for the result of the fold_convert
+   call, a NOP_EXPR from one pointer type to another, where the target is an
+   empty base of the original type.  */
+
+bool
+is_empty_base_ref (tree expr)
+{
+  if (TREE_CODE (expr) == INDIRECT_REF)
+    expr = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (expr) != NOP_EXPR)
+    return false;
+  tree type = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (type))
+    return false;
+  type = TREE_TYPE (type);
+  if (!is_empty_class (type))
+    return false;
+  STRIP_NOPS (expr);
+  tree fromtype = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (fromtype))
+    return false;
+  fromtype = TREE_TYPE (fromtype);
+  return (CLASS_TYPE_P (fromtype)
+	  && !same_type_ignoring_top_level_qualifiers_p (fromtype, type)
+	  && DERIVED_FROM_P (type, fromtype));
+}
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -1322,6 +1349,8 @@ handle_using_decl (tree using_decl, tree t)
       return;
     }
 
+  iloc_sentinel ils (DECL_SOURCE_LOCATION (using_decl));
+
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
     for (ovl_iterator iter (flist); iter; ++iter)
@@ -1329,6 +1358,23 @@ handle_using_decl (tree using_decl, tree t)
 	add_method (t, *iter, true);
 	alter_access (t, *iter, access);
       }
+  else if (USING_DECL_UNRELATED_P (using_decl))
+    {
+      /* C++20 using enum can import non-inherited enumerators into class
+	 scope.  We implement that by making a copy of the CONST_DECL for which
+	 CONST_DECL_USING_P is true.  */
+      gcc_assert (TREE_CODE (decl) == CONST_DECL);
+
+      tree copy = copy_decl (decl);
+      DECL_CONTEXT (copy) = t;
+      DECL_ARTIFICIAL (copy) = true;
+      /* We emitted debug info for the USING_DECL above; make sure we don't
+	 also emit anything for this clone.  */
+      DECL_IGNORED_P (copy) = true;
+      DECL_SOURCE_LOCATION (copy) = DECL_SOURCE_LOCATION (using_decl);
+      finish_member_declaration (copy);
+      DECL_ABSTRACT_ORIGIN (copy) = decl;
+    }
   else
     alter_access (t, decl, access);
 }
@@ -4838,7 +4884,10 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
-  rest_of_decl_compilation (clone, namespace_bindings_p (), at_eof);
+
+  /* Regardless of the current scope, this is a member function, so
+     not at namespace scope.  */
+  rest_of_decl_compilation (clone, /*top_level=*/0, at_eof);
 
   return clone;
 }
@@ -4898,8 +4947,9 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-static unsigned
-build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
+void
+build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
+		    bool update_methods)
 {
   unsigned count = 0;
 
@@ -4935,7 +4985,16 @@ build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
       count += 2;
     }
 
-  return count;
+  /* The original is now an abstract function that is never
+     emitted.  */
+  DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, false);
+      }
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
@@ -4958,17 +5017,7 @@ clone_cdtor (tree fn, bool update_methods)
   bool base_omits_inherited = (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
 			       && base_ctor_omit_inherited_parms (fn));
 
-  unsigned count = build_cdtor_clones (fn, vtt, base_omits_inherited);
-
-  /* Note that this is an abstract function that is never emitted.  */
-  DECL_ABSTRACT_P (fn) = true;
-
-  if (update_methods)
-    for (tree clone = fn; count--;)
-      {
-	clone = DECL_CHAIN (clone);
-	add_method (DECL_CONTEXT (clone), clone, false);
-      }
+  build_cdtor_clones (fn, vtt, base_omits_inherited, update_methods);
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -5055,8 +5104,8 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  /* While constructors can be via a using declaration, at this point
-     we no longer need to know that.  */
+  /* We do not need to propagate the usingness to the clone, at this
+     point that is not needed.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     clone_cdtor (*iter, /*update_methods=*/true);
 
@@ -6737,6 +6786,8 @@ layout_class_type (tree t, tree *virtuals_p)
       TYPE_CONTEXT (base_t) = t;
       DECL_CONTEXT (base_d) = t;
 
+      set_instantiating_module (base_d);
+
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
 	 boundary.  In particular, rli_size_unit_so_far might
@@ -7471,9 +7522,6 @@ finish_struct_1 (tree t)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
-
-  /* Recalculate satisfaction that might depend on completeness.  */
-  clear_satisfaction_cache ();
 
   if (TYPE_TRANSPARENT_AGGR (t))
     {
@@ -8719,6 +8767,7 @@ build_self_reference (void)
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_SELF_REFERENCE_P (decl);
   set_underlying_type (decl);
+  set_instantiating_module (decl);  
 
   if (processing_template_decl)
     decl = push_template_decl (decl);

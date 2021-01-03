@@ -195,14 +195,14 @@ extern const char * const *h8_reg_names;
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 12
+#define FIRST_PSEUDO_REGISTER 13
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS				\
-/* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap fp */	\
-  { 0, 0, 0, 0, 0, 0, 0, 1,  0, 1,  1, 1 }
+/* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap fp cc */	\
+  { 0, 0, 0, 0, 0, 0, 0, 1,  0, 1,  1, 1, 1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -216,11 +216,11 @@ extern const char * const *h8_reg_names;
 
 #define CALL_USED_REGISTERS			\
 /* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap fp */	\
-  { 1, 1, 1, 1, 0, 0, 0, 1,  1, 1,  1, 1 }
+  { 1, 1, 1, 1, 0, 0, 0, 1,  1, 1,  1, 1, 1 }
 
 #define REG_ALLOC_ORDER				\
 /* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap  fp */	\
-  { 2, 3, 0, 1, 4, 5, 6, 8,  7, 9, 10, 11 }
+  { 2, 3, 0, 1, 4, 5, 6, 8,  7, 9, 10, 11, 12 }
 
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register */
@@ -521,6 +521,8 @@ struct cum_arg
 #define MOVE_MAX	4
 #define MAX_MOVE_MAX	4
 
+#define SELECT_CC_MODE(OP, X, Y)       h8300_select_cc_mode (OP, X, Y)
+
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS TARGET_SLOWBYTE
 
@@ -633,7 +635,7 @@ struct cum_arg
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap", "rap", "fp" }
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "sp", "mac", "ap", "rap", "fp", "cc" }
 
 #define ADDITIONAL_REGISTER_NAMES \
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \

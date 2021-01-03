@@ -110,112 +110,108 @@ can_consolidate_events (const diagnostic_event &e1,
   return true;
 }
 
-/* A class for grouing together the events in a diagnostic_path into
+/* A range of consecutive events within a diagnostic_path,
+   all with the same fndecl and stack_depth, and which are suitable
+   to print with a single call to diagnostic_show_locus.  */
+struct event_range
+{
+  event_range (const diagnostic_path *path, unsigned start_idx,
+	       const diagnostic_event &initial_event)
+  : m_path (path),
+    m_initial_event (initial_event),
+    m_fndecl (initial_event.get_fndecl ()),
+    m_stack_depth (initial_event.get_stack_depth ()),
+    m_start_idx (start_idx), m_end_idx (start_idx),
+    m_path_label (path, start_idx),
+    m_richloc (initial_event.get_location (), &m_path_label)
+  {}
+
+  bool maybe_add_event (const diagnostic_event &new_ev, unsigned idx,
+			bool check_rich_locations)
+  {
+    if (!can_consolidate_events (m_initial_event, new_ev,
+				 check_rich_locations))
+      return false;
+    if (check_rich_locations)
+      if (!m_richloc.add_location_if_nearby (new_ev.get_location (),
+					     false, &m_path_label))
+	return false;
+    m_end_idx = idx;
+    return true;
+  }
+
+  /* Print the events in this range to DC, typically as a single
+     call to the printer's diagnostic_show_locus.  */
+
+  void print (diagnostic_context *dc)
+  {
+    location_t initial_loc = m_initial_event.get_location ();
+
+    /* Emit a span indicating the filename (and line/column) if the
+       line has changed relative to the last call to
+       diagnostic_show_locus.  */
+    if (dc->show_caret)
+      {
+	expanded_location exploc
+	  = linemap_client_expand_location_to_spelling_point
+	  (initial_loc, LOCATION_ASPECT_CARET);
+	if (exploc.file != LOCATION_FILE (dc->last_location))
+	  dc->start_span (dc, exploc);
+      }
+
+    /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
+       primary location for an event, diagnostic_show_locus won't print
+       anything.
+
+       In particular the label for the event won't get printed.
+       Fail more gracefully in this case by showing the event
+       index and text, at no particular location.  */
+    if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
+      {
+	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
+	  {
+	    const diagnostic_event &iter_event = m_path->get_event (i);
+	    diagnostic_event_id_t event_id (i);
+	    label_text event_text (iter_event.get_desc (true));
+	    pretty_printer *pp = dc->printer;
+	    pp_printf (pp, " %@: %s", &event_id, event_text.m_buffer);
+	    pp_newline (pp);
+	    event_text.maybe_free ();
+	  }
+	return;
+      }
+
+    /* Call diagnostic_show_locus to show the events using labels.  */
+    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH);
+
+    /* If we have a macro expansion, show the expansion to the user.  */
+    if (linemap_location_from_macro_expansion_p (line_table, initial_loc))
+      {
+	gcc_assert (m_start_idx == m_end_idx);
+	maybe_unwind_expanded_macro_loc (dc, initial_loc);
+      }
+  }
+
+  const diagnostic_path *m_path;
+  const diagnostic_event &m_initial_event;
+  tree m_fndecl;
+  int m_stack_depth;
+  unsigned m_start_idx;
+  unsigned m_end_idx;
+  path_label m_path_label;
+  gcc_rich_location m_richloc;
+};
+
+/* A struct for grouping together the events in a diagnostic_path into
    ranges of events, partitioned by stack frame (i.e. by fndecl and
    stack depth).  */
 
-class path_summary
+struct path_summary
 {
-  /* A range of consecutive events within a diagnostic_path,
-     all with the same fndecl and stack_depth, and which are suitable
-     to print with a single call to diagnostic_show_locus.  */
-  struct event_range
-  {
-    event_range (const diagnostic_path *path, unsigned start_idx,
-		 const diagnostic_event &initial_event)
-    : m_path (path),
-      m_initial_event (initial_event),
-      m_fndecl (initial_event.get_fndecl ()),
-      m_stack_depth (initial_event.get_stack_depth ()),
-      m_start_idx (start_idx), m_end_idx (start_idx),
-      m_path_label (path, start_idx),
-      m_richloc (initial_event.get_location (), &m_path_label)
-    {}
-
-    bool maybe_add_event (const diagnostic_event &new_ev, unsigned idx,
-			  bool check_rich_locations)
-    {
-      if (!can_consolidate_events (m_initial_event, new_ev,
-				   check_rich_locations))
-	return false;
-      if (check_rich_locations)
-	if (!m_richloc.add_location_if_nearby (new_ev.get_location (),
-					       false, &m_path_label))
-	  return false;
-      m_end_idx = idx;
-      return true;
-    }
-
-    /* Print the events in this range to DC, typically as a single
-       call to the printer's diagnostic_show_locus.  */
-
-    void print (diagnostic_context *dc)
-    {
-      location_t initial_loc = m_initial_event.get_location ();
-
-      /* Emit a span indicating the filename (and line/column) if the
-	 line has changed relative to the last call to
-	 diagnostic_show_locus.  */
-      if (dc->show_caret)
-	{
-	  expanded_location exploc
-	    = linemap_client_expand_location_to_spelling_point
-	    (initial_loc, LOCATION_ASPECT_CARET);
-	  if (exploc.file != LOCATION_FILE (dc->last_location))
-	    dc->start_span (dc, exploc);
-	}
-
-      /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
-	 primary location for an event, diagnostic_show_locus won't print
-	 anything.
-
-	 In particular the label for the event won't get printed.
-	 Fail more gracefully in this case by showing the event
-	 index and text, at no particular location.  */
-      if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
-	{
-	  for (unsigned i = m_start_idx; i <= m_end_idx; i++)
-	    {
-	      const diagnostic_event &iter_event = m_path->get_event (i);
-	      diagnostic_event_id_t event_id (i);
-	      label_text event_text (iter_event.get_desc (true));
-	      pretty_printer *pp = dc->printer;
-	      pp_printf (pp, " %@: %s", &event_id, event_text.m_buffer);
-	      pp_newline (pp);
-	      event_text.maybe_free ();
-	    }
-	  return;
-	}
-
-      /* Call diagnostic_show_locus to show the events using labels.  */
-      diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH);
-
-      /* If we have a macro expansion, show the expansion to the user.  */
-      if (linemap_location_from_macro_expansion_p (line_table, initial_loc))
-	{
-	  gcc_assert (m_start_idx == m_end_idx);
-	  maybe_unwind_expanded_macro_loc (dc, initial_loc);
-	}
-    }
-
-    const diagnostic_path *m_path;
-    const diagnostic_event &m_initial_event;
-    tree m_fndecl;
-    int m_stack_depth;
-    unsigned m_start_idx;
-    unsigned m_end_idx;
-    path_label m_path_label;
-    gcc_rich_location m_richloc;
-  };
-
- public:
   path_summary (const diagnostic_path &path, bool check_rich_locations);
-
-  void print (diagnostic_context *dc, bool show_depths) const;
 
   unsigned get_num_ranges () const { return m_ranges.length (); }
 
- private:
   auto_delete_vec <event_range> m_ranges;
 };
 
@@ -265,7 +261,7 @@ print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
     pp_string (pp, n);
 }
 
-/* Print this path_summary to DC, giving an overview of the interprocedural
+/* Print path_summary PS to DC, giving an overview of the interprocedural
    calls and returns.
 
    Print the event descriptions in a nested form, printing the event
@@ -299,7 +295,8 @@ print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
    For events with UNKNOWN_LOCATION, print a summary of each the event.  */
 
 void
-path_summary::print (diagnostic_context *dc, bool show_depths) const
+print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
+			    bool show_depths)
 {
   pretty_printer *pp = dc->printer;
 
@@ -322,13 +319,12 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
   int cur_indent = base_indent;
   unsigned i;
   event_range *range;
-  FOR_EACH_VEC_ELT (m_ranges, i, range)
+  FOR_EACH_VEC_ELT (ps->m_ranges, i, range)
     {
       write_indent (pp, cur_indent);
       if (i > 0)
 	{
-	  const path_summary::event_range *prev_range
-	    = m_ranges[i - 1];
+	  const event_range *prev_range = ps->m_ranges[i - 1];
 	  if (range->m_stack_depth > prev_range->m_stack_depth)
 	    {
 	      /* Show pushed stack frame(s).  */
@@ -384,10 +380,9 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
 	pp_newline (pp);
       }
 
-      if (i < m_ranges.length () - 1)
+      if (i < ps->m_ranges.length () - 1)
 	{
-	  const path_summary::event_range *next_range
-	    = m_ranges[i + 1];
+	  const event_range *next_range = ps->m_ranges[i + 1];
 
 	  if (range->m_stack_depth > next_range->m_stack_depth)
 	    {
@@ -416,7 +411,7 @@ path_summary::print (diagnostic_context *dc, bool show_depths) const
 
 		  write_indent (pp, vbar_for_next_frame);
 		  pp_string (pp, start_line_color);
-		  pp_printf (pp, "|");
+		  pp_character (pp, '|');
 		  pp_string (pp, end_line_color);
 		  pp_newline (pp);
 		}
@@ -481,7 +476,8 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	path_summary summary (*path, true);
 	char *saved_prefix = pp_take_prefix (context->printer);
 	pp_set_prefix (context->printer, NULL);
-	summary.print (context, context->show_path_depths);
+	print_path_summary_as_text (&summary, context,
+				    context->show_path_depths);
 	pp_flush (context->printer);
 	pp_set_prefix (context->printer, saved_prefix);
       }
@@ -523,6 +519,13 @@ default_tree_make_json_for_path (diagnostic_context *context,
 }
 
 #if CHECKING_P
+
+/* Disable warnings about missing quoting in GCC diagnostics for the print
+   calls in the tests below.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 namespace selftest {
 
@@ -569,7 +572,7 @@ test_empty_path (pretty_printer *event_pp)
   ASSERT_EQ (summary.get_num_ranges (), 0);
 
   test_diagnostic_context dc;
-  summary.print (&dc, true);
+  print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ ("",
 		pp_formatted_text (dc.printer));
 }
@@ -593,7 +596,7 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_EQ (summary.get_num_ranges (), 1);
 
   test_diagnostic_context dc;
-  summary.print (&dc, true);
+  print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ ("  `foo': events 1-2 (depth 0)\n"
 		"    |\n"
 		"    | (1): first `free'\n"
@@ -642,7 +645,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
   ASSERT_EQ (summary.get_num_ranges (), 9);
 
   test_diagnostic_context dc;
-  summary.print (&dc, true);
+  print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ
     ("  `test': events 1-2 (depth 0)\n"
      "    |\n"
@@ -724,7 +727,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
   ASSERT_EQ (summary.get_num_ranges (), 5);
 
   test_diagnostic_context dc;
-  summary.print (&dc, true);
+  print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ
     ("  `foo': events 1-2 (depth 0)\n"
      "    |\n"
@@ -776,7 +779,7 @@ test_recursion (pretty_printer *event_pp)
   ASSERT_EQ (summary.get_num_ranges (), 4);
 
   test_diagnostic_context dc;
-  summary.print (&dc, true);
+  print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ
     ("  `factorial': events 1-2 (depth 0)\n"
      "    |\n"
@@ -817,5 +820,9 @@ tree_diagnostic_path_cc_tests ()
 }
 
 } // namespace selftest
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 #endif /* #if CHECKING_P */

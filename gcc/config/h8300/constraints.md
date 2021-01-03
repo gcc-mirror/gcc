@@ -152,7 +152,7 @@
 (define_constraint "R"
   "@internal"
   (and (match_code "const_int")
-       (match_test "!h8300_shift_needs_scratch_p (ival, QImode)")))
+       (match_test "!h8300_shift_needs_scratch_p (ival, QImode, CLOBBER)")))
 
 (define_constraint "C"
   "@internal"
@@ -161,12 +161,12 @@
 (define_constraint "S"
   "@internal"
   (and (match_code "const_int")
-       (match_test "!h8300_shift_needs_scratch_p (ival, HImode)")))
+       (match_test "!h8300_shift_needs_scratch_p (ival, HImode, CLOBBER)")))
 
 (define_constraint "T"
   "@internal"
   (and (match_code "const_int")
-       (match_test "!h8300_shift_needs_scratch_p (ival, SImode)")))
+       (match_test "!h8300_shift_needs_scratch_p (ival, SImode, CLOBBER)")))
 
 (define_constraint "U"
   "An operand valid for a bset destination."

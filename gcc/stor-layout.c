@@ -393,6 +393,9 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_UACCUM:
       return int_mode_for_size (GET_MODE_BITSIZE (mode), 0);
 
+    case MODE_OPAQUE:
+	return opt_scalar_int_mode ();
+
     case MODE_RANDOM:
       if (mode == BLKmode)
 	return opt_scalar_int_mode ();

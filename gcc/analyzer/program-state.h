@@ -96,13 +96,15 @@ public:
       return !(*this == other);
     }
 
+    static int cmp (const entry_t &entry_a, const entry_t &entry_b);
+
     state_machine::state_t m_state;
     const svalue *m_origin;
   };
   typedef hash_map <const svalue *, entry_t> map_t;
   typedef map_t::iterator iterator_t;
 
-  sm_state_map (const state_machine &sm, int m_sm_idx);
+  sm_state_map (const state_machine &sm);
 
   sm_state_map *clone () const;
 
@@ -157,13 +159,15 @@ public:
 
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
+  size_t elements () const { return m_map.elements (); }
+
+  static int cmp (const sm_state_map &smap_a, const sm_state_map &smap_b);
 
   static const svalue *
   canonicalize_svalue (const svalue *sval, const extrinsic_state &ext_state);
 
 private:
   const state_machine &m_sm;
-  int m_sm_idx;
   map_t m_map;
   state_machine::state_t m_global_state;
 };

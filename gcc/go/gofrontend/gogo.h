@@ -57,6 +57,116 @@ class Node;
 // This file declares the basic classes used to hold the internal
 // representation of Go which is built by the parser.
 
+// The name of some backend object.  Backend objects have a
+// user-visible name and an assembler name.  The user visible name
+// might include arbitrary Unicode characters.  The assembler name
+// will not.
+
+class Backend_name
+{
+ public:
+  Backend_name()
+    : prefix_(NULL), components_(), count_(0), suffix_(),
+      is_asm_name_(false), is_non_identifier_(false)
+  {}
+
+  // Set the prefix.  Prefixes are always constant strings.
+  void
+  set_prefix(const char* p)
+  {
+    go_assert(this->prefix_ == NULL && !this->is_asm_name_);
+    this->prefix_ = p;
+  }
+
+  // Set the suffix.
+  void
+  set_suffix(const std::string& s)
+  {
+    go_assert(this->suffix_.empty() && !this->is_asm_name_);
+    this->suffix_ = s;
+  }
+
+  // Append to the suffix.
+  void
+  append_suffix(const std::string& s)
+  {
+    if (this->is_asm_name_)
+      this->components_[0].append(s);
+    else
+      this->suffix_.append(s);
+  }
+
+  // Add a component.
+  void
+  add(const std::string& c)
+  {
+    go_assert(this->count_ < Backend_name::max_components
+	      && !this->is_asm_name_);
+    this->components_[this->count_] = c;
+    ++this->count_;
+  }
+
+  // Set an assembler name specified by the user.  This overrides both
+  // the user-visible name and the assembler name.  No further
+  // encoding is applied.
+  void
+  set_asm_name(const std::string& n)
+  {
+    go_assert(this->prefix_ == NULL
+	      && this->count_ == 0
+	      && this->suffix_.empty()
+	      && !this->is_asm_name_);
+    this->components_[0] = n;
+    this->is_asm_name_ = true;
+  }
+
+  // Whether some component includes some characters that can't appear
+  // in an identifier.
+  bool
+  is_non_identifier() const
+  { return this->is_non_identifier_; }
+
+  // Record that some component includes some character that can't
+  // appear in an identifier.
+  void
+  set_is_non_identifier()
+  { this->is_non_identifier_ = true; }
+
+  // Get the user visible name.
+  std::string
+  name() const;
+
+  // Get the assembler name.  This may be the same as the user visible
+  // name.
+  std::string
+  asm_name() const;
+
+  // Get an optional assembler name: if it would be the same as the
+  // user visible name, this returns the empty string.
+  std::string
+  optional_asm_name() const;
+
+ private:
+  // The maximum number of components.
+  static const int max_components = 4;
+
+  // An optional prefix that does not require encoding.
+  const char *prefix_;
+  // Up to four components.  The name will include these components
+  // separated by dots.  Each component will be underscore-encoded
+  // (see the long comment near the top of names.cc).
+  std::string components_[Backend_name::max_components];
+  // Number of components.
+  int count_;
+  // An optional suffix that does not require encoding.
+  std::string suffix_;
+  // True if components_[0] is an assembler name specified by the user.
+  bool is_asm_name_;
+  // True if some component includes some character that can't
+  // normally appear in an identifier.
+  bool is_non_identifier_;
+};
+
 // An initialization function for an imported package.  This is a
 // magic function which initializes variables and runs the "init"
 // function.
@@ -613,7 +723,7 @@ class Gogo
   // is used when a type-specific hash function is needed when not at
   // top level.
   void
-  queue_hash_function(Type* type, int64_t size, const std::string& hash_name,
+  queue_hash_function(Type* type, int64_t size, Backend_name*,
 		      Function_type* hash_fntype);
 
   // Queue up a type-specific equal function to be written out.  This
@@ -621,8 +731,7 @@ class Gogo
   // top level.
   void
   queue_equal_function(Type* type, Named_type* name, int64_t size,
-		       const std::string& equal_name,
-		       Function_type* equal_fntype);
+		       Backend_name*, Function_type* equal_fntype);
 
   // Write out queued specific type functions.
   void
@@ -869,31 +978,32 @@ class Gogo
   Expression*
   allocate_memory(Type *type, Location);
 
-  // Return the assembler name to use for an exported function, a
-  // method, or a function/method declaration.
-  std::string
-  function_asm_name(const std::string& go_name, const Package*,
-		    const Type* receiver);
+  // Get the backend name to use for an exported function, a method,
+  // or a function/method declaration.
+  void
+  function_backend_name(const std::string& go_name, const Package*,
+			const Type* receiver, Backend_name*);
 
   // Return the name to use for a function descriptor.
-  std::string
-  function_descriptor_name(Named_object*);
+  void
+  function_descriptor_backend_name(Named_object*, Backend_name*);
 
   // Return the name to use for a generated stub method.
   std::string
   stub_method_name(const Package*, const std::string& method_name);
 
-  // Return the name of the hash function for TYPE.
-  std::string
-  hash_function_name(const Type*);
+  // Get the backend name of the hash function for TYPE.
+  void
+  hash_function_name(const Type*, Backend_name*);
 
-  // Return the name of the equal function for TYPE.
-  std::string
-  equal_function_name(const Type*, const Named_type*);
+  // Get the backend name of the equal function for TYPE.
+  void
+  equal_function_name(const Type*, const Named_type*, Backend_name*);
 
-  // Return the assembler name to use for a global variable.
-  std::string
-  global_var_asm_name(const std::string& go_name, const Package*);
+  // Get the backend name to use for a global variable.
+  void
+  global_var_backend_name(const std::string& go_name, const Package*,
+			  Backend_name*);
 
   // Return a name to use for an error case.  This should only be used
   // after reporting an error, and is used to avoid useless knockon
@@ -961,13 +1071,14 @@ class Gogo
   // Return the package path symbol from an init function name, which
   // can be a real init function or a dummy one.
   std::string
-  pkgpath_from_init_fn_name(std::string);
+  pkgpath_symbol_from_init_fn_name(std::string);
 
-  // Return the name for a type descriptor symbol.
-  std::string
-  type_descriptor_name(const Type*, Named_type*);
+  // Get the backend name for a type descriptor symbol.
+  void
+  type_descriptor_backend_name(const Type*, Named_type*, Backend_name*);
 
   // Return the name of the type descriptor list symbol of a package.
+  // The argument is an encoded pkgpath, as with pkgpath_symbol.
   std::string
   type_descriptor_list_symbol(const std::string&);
 
@@ -987,11 +1098,11 @@ class Gogo
   std::string
   interface_method_table_name(Interface_type*, Type*, bool is_pointer);
 
-  // Return whether NAME is a special name that can not be passed to
-  // unpack_hidden_name.  This is needed because various special names
-  // use "..SUFFIX", but unpack_hidden_name just looks for '.'.
-  static bool
-  is_special_name(const std::string& name);
+  // If NAME is a special name used as a Go identifier, return the
+  // position within the string where the special part of the name
+  // occurs.
+  static size_t
+  special_name_pos(const std::string& name);
 
  private:
   // During parsing, we keep a stack of functions.  Each function on
@@ -1056,6 +1167,9 @@ class Gogo
   Named_object*
   write_barrier_variable();
 
+  static bool
+  is_digits(const std::string&);
+
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
 
@@ -1079,15 +1193,15 @@ class Gogo
     Named_type* name;
     int64_t size;
     Specific_type_function_kind kind;
-    std::string fnname;
+    Backend_name bname;
     Function_type* fntype;
 
     Specific_type_function(Type* atype, Named_type* aname, int64_t asize,
 			   Specific_type_function_kind akind,
-			   const std::string& afnname,
+			   Backend_name* abname,
 			   Function_type* afntype)
       : type(atype), name(aname), size(asize), kind(akind),
-	fnname(afnname), fntype(afntype)
+	bname(*abname), fntype(afntype)
     { }
   };
 
@@ -1631,6 +1745,10 @@ class Function
   Bstatement*
   return_value(Gogo*, Named_object*, Location) const;
 
+  // Get the backend name of this function.
+  void
+  backend_name(Gogo*, Named_object*, Backend_name*);
+
   // Get an expression for the variable holding the defer stack.
   Expression*
   defer_stack(Location);
@@ -1872,6 +1990,10 @@ class Function_declaration
   void
   build_backend_descriptor(Gogo*);
 
+  // Get the backend name of this function declaration.
+  void
+  backend_name(Gogo*, Named_object*, Backend_name*);
+
   // Export a function declaration.
   void
   export_func(Export* exp, const Named_object* no) const
@@ -1990,6 +2112,20 @@ class Variable
   bool
   is_varargs_parameter() const
   { return this->is_varargs_parameter_; }
+
+  // Return whether this is a global sink variable, created only to
+  // run an initializer.
+  bool
+  is_global_sink() const
+  { return this->is_global_sink_; }
+
+  // Record that this is a global sink variable.
+  void
+  set_is_global_sink()
+  {
+    go_assert(this->is_global_);
+    this->is_global_sink_ = true;
+  }
 
   // Whether this variable's address is taken.
   bool
@@ -2218,6 +2354,9 @@ class Variable
   bool is_receiver_ : 1;
   // Whether this is the varargs parameter of a function.
   bool is_varargs_parameter_ : 1;
+  // Whether this is a global sink variable created to run an
+  // initializer.
+  bool is_global_sink_ : 1;
   // Whether this variable is ever referenced.
   bool is_used_ : 1;
   // Whether something takes the address of this variable.  For a
@@ -2862,10 +3001,6 @@ class Named_object
   // Convert a variable to the backend representation.
   Bvariable*
   get_backend_variable(Gogo*, Named_object* function);
-
-  // Return the external identifier for this object.
-  std::string
-  get_id(Gogo*);
 
   // Get the backend representation of this object.
   void

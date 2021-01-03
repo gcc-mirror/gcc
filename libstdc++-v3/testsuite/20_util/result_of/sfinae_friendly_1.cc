@@ -379,19 +379,19 @@ static_assert(is_type<std::result_of<ident_functor(const volatile Abstract&)>,
 	      const volatile Abstract&>(), "Error!");
 
 static_assert(!has_type<std::result_of<ident_functor(int(&&)[1])>>(), "Error!");
-static_assert(!has_type<std::result_of<ident_functor(Abstract&&)>>(), "Error!");
+static_assert(is_type<std::result_of<ident_functor(Abstract&&)>,Abstract>(), "Error!");
 static_assert(!has_type<std::result_of<ident_functor(const int(&&)[1])>>(),
 	      "Error!");
-static_assert(!has_type<std::result_of<ident_functor(const Abstract&&)>>(),
+static_assert(is_type<std::result_of<ident_functor(const Abstract&&)>,const Abstract>(),
 	      "Error!");
 static_assert(!has_type<std::result_of<ident_functor_noref(int(&)[1])>>(),
 	      "Error!");
 static_assert(!has_type<std::result_of<ident_functor_noref
 	      (const int(&)[1])>>(), "Error!");
-static_assert(!has_type<std::result_of<ident_functor_noref(Abstract&)>>(),
+static_assert(is_type<std::result_of<ident_functor_noref(Abstract&)>,Abstract>(),
 	      "Error!");
-static_assert(!has_type<std::result_of
-	      <ident_functor_noref(const Abstract&)>>(), "Error!");
+static_assert(is_type<std::result_of
+	      <ident_functor_noref(const Abstract&)>,const Abstract>(), "Error!");
 static_assert(!has_type<std::result_of<ident_functor_noref(void(&)())>>(),
 	      "Error!");
 static_assert(!has_type<std::result_of<ident_functor_noref(void(&&)())>>(),

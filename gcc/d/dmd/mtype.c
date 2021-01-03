@@ -7418,6 +7418,12 @@ void TypeTypeof::resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol
 
     //printf("TypeTypeof::resolve(sc = %p, idents = '%s')\n", sc, toChars());
     //static int nest; if (++nest == 50) *(char*)0=0;
+    if (sc == NULL)
+    {
+        *pt = Type::terror;
+        error(loc, "Invalid scope.");
+        return;
+    }
     if (inuse)
     {
         inuse = 2;

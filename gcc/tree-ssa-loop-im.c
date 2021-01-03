@@ -1622,7 +1622,7 @@ sort_locs_in_loop_postorder_cmp (const void *loc1_, const void *loc2_,
 /* Gathers memory references in loops.  */
 
 static void
-analyze_memory_references (void)
+analyze_memory_references (bool store_motion)
 {
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
@@ -1664,6 +1664,9 @@ analyze_memory_references (void)
     }
 
   free (bbs);
+
+  if (!store_motion)
+    return;
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
@@ -2251,7 +2254,8 @@ sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr, unsigned *at)
 static int
 sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		 vec<seq_entry> &seq, bitmap refs_not_in_seq,
-		 bitmap refs_not_supported, bool forked)
+		 bitmap refs_not_supported, bool forked,
+		 bitmap fully_visited)
 {
   if (!vdef)
     for (gimple_stmt_iterator gsi = gsi_last_bb (bb); !gsi_end_p (gsi);
@@ -2273,7 +2277,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	/* This handles the perfect nest case.  */
 	return sm_seq_valid_bb (loop, single_pred (bb), vdef,
 				seq, refs_not_in_seq, refs_not_supported,
-				forked);
+				forked, fully_visited);
       return 0;
     }
   do
@@ -2311,7 +2315,10 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	    return sm_seq_valid_bb (loop, gimple_phi_arg_edge (phi, 0)->src,
 				    gimple_phi_arg_def (phi, 0), seq,
 				    refs_not_in_seq, refs_not_supported,
-				    false);
+				    false, fully_visited);
+	  if (bitmap_bit_p (fully_visited,
+			    SSA_NAME_VERSION (gimple_phi_result (phi))))
+	    return 1;
 	  auto_vec<seq_entry> first_edge_seq;
 	  auto_bitmap tem_refs_not_in_seq (&lim_bitmap_obstack);
 	  int eret;
@@ -2320,7 +2327,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 				  gimple_phi_arg_def (phi, 0),
 				  first_edge_seq,
 				  tem_refs_not_in_seq, refs_not_supported,
-				  true);
+				  true, fully_visited);
 	  if (eret != 1)
 	    return -1;
 	  /* Simplify our lives by pruning the sequence of !sm_ord.  */
@@ -2335,7 +2342,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	      bitmap_copy (tem_refs_not_in_seq, refs_not_in_seq);
 	      eret = sm_seq_valid_bb (loop, e->src, vuse, edge_seq,
 				      tem_refs_not_in_seq, refs_not_supported,
-				      true);
+				      true, fully_visited);
 	      if (eret != 1)
 		return -1;
 	      /* Simplify our lives by pruning the sequence of !sm_ord.  */
@@ -2416,6 +2423,8 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		  seq[new_idx].from = NULL_TREE;
 		}
 	    }
+	  bitmap_set_bit (fully_visited,
+			  SSA_NAME_VERSION (gimple_phi_result (phi)));
 	  return 1;
 	}
       lim_aux_data *data = get_lim_data (def);
@@ -2491,9 +2500,11 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       seq.create (4);
       auto_bitmap refs_not_in_seq (&lim_bitmap_obstack);
       bitmap_copy (refs_not_in_seq, mem_refs);
+      auto_bitmap fully_visited;
       int res = sm_seq_valid_bb (loop, e->src, NULL_TREE,
 				 seq, refs_not_in_seq,
-				 refs_not_supported, false);
+				 refs_not_supported, false,
+				 fully_visited);
       if (res != 1)
 	{
 	  bitmap_copy (refs_not_supported, mem_refs);
@@ -3010,7 +3021,7 @@ fill_always_executed_in (void)
 /* Compute the global information needed by the loop invariant motion pass.  */
 
 static void
-tree_ssa_lim_initialize (void)
+tree_ssa_lim_initialize (bool store_motion)
 {
   class loop *loop;
   unsigned i;
@@ -3032,8 +3043,12 @@ tree_ssa_lim_initialize (void)
   memory_accesses.refs_loaded_in_loop.quick_grow (number_of_loops (cfun));
   memory_accesses.refs_stored_in_loop.create (number_of_loops (cfun));
   memory_accesses.refs_stored_in_loop.quick_grow (number_of_loops (cfun));
-  memory_accesses.all_refs_stored_in_loop.create (number_of_loops (cfun));
-  memory_accesses.all_refs_stored_in_loop.quick_grow (number_of_loops (cfun));
+  if (store_motion)
+    {
+      memory_accesses.all_refs_stored_in_loop.create (number_of_loops (cfun));
+      memory_accesses.all_refs_stored_in_loop.quick_grow
+						      (number_of_loops (cfun));
+    }
 
   for (i = 0; i < number_of_loops (cfun); i++)
     {
@@ -3041,8 +3056,9 @@ tree_ssa_lim_initialize (void)
 			 &lim_bitmap_obstack);
       bitmap_initialize (&memory_accesses.refs_stored_in_loop[i],
 			 &lim_bitmap_obstack);
-      bitmap_initialize (&memory_accesses.all_refs_stored_in_loop[i],
-			 &lim_bitmap_obstack);
+      if (store_motion)
+	bitmap_initialize (&memory_accesses.all_refs_stored_in_loop[i],
+			   &lim_bitmap_obstack);
     }
 
   memory_accesses.ttae_cache = NULL;
@@ -3089,17 +3105,18 @@ tree_ssa_lim_finalize (void)
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
-   i.e. those that are likely to be win regardless of the register pressure.  */
+   i.e. those that are likely to be win regardless of the register pressure.
+   Only perform store motion if STORE_MOTION is true.  */
 
-static unsigned int
-tree_ssa_lim (function *fun)
+unsigned int
+loop_invariant_motion_in_fun (function *fun, bool store_motion)
 {
   unsigned int todo = 0;
 
-  tree_ssa_lim_initialize ();
+  tree_ssa_lim_initialize (store_motion);
 
   /* Gathers information about memory accesses in the loops.  */
-  analyze_memory_references ();
+  analyze_memory_references (store_motion);
 
   /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
   fill_always_executed_in ();
@@ -3114,7 +3131,8 @@ tree_ssa_lim (function *fun)
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
-  do_store_motion ();
+  if (store_motion)
+    do_store_motion ();
 
   free (rpo);
   rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
@@ -3175,7 +3193,7 @@ pass_lim::execute (function *fun)
 
   if (number_of_loops (fun) <= 1)
     return 0;
-  unsigned int todo = tree_ssa_lim (fun);
+  unsigned int todo = loop_invariant_motion_in_fun (fun, true);
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();

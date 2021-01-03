@@ -1,3 +1,20 @@
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* lang.opt: Remove usage of Report.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (brig.serial): Change from goal to a variable.
+	(.PHONY): Drop brig.serial and brig.prev.
+	(brig1$(exeext)): Depend on $(brig.serial) rather than brig.serial.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (brig.serial): New goal.
+	(.PHONY): Add brig.serial brig.prev.
+	(brig1$(exeext)): Depend on brig.prev.  Call LINK_PROGRESS.
+
 2020-08-03  Martin Jambor  <mjambor@suse.cz>
 
 	* brigfrontend/brig-util.h (hsa_type_packed_p): Declared.

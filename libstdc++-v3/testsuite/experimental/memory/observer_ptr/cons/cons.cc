@@ -44,7 +44,6 @@ void test02()
 
 void test03()
 {
-  int x{};
   observer_ptr<int> a;
   observer_ptr<const int> b{a};
   VERIFY(a == b);

@@ -1,5 +1,6 @@
 /* Test that we get warnings for unrecognized attributes.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 

@@ -473,19 +473,7 @@ package body System.Tasking.Rendezvous is
       pragma Debug
         (Debug.Trace (Self_Id, "Local_Complete_Rendezvous", 'R'));
 
-      if Ex = Ada.Exceptions.Null_Id then
-
-         --  The call came from normal end-of-rendezvous, so abort is not yet
-         --  deferred.
-
-         Initialization.Defer_Abort (Self_Id);
-
-      elsif ZCX_By_Default then
-
-         --  With ZCX, aborts are not automatically deferred in handlers
-
-         Initialization.Defer_Abort (Self_Id);
-      end if;
+      Initialization.Defer_Abort (Self_Id);
 
       --  We need to clean up any accepts which Self may have been serving when
       --  it was aborted.

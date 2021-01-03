@@ -1,3 +1,48 @@
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* lang.opt: Remove usage of Report.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (lto1.serial, lto2.serial): Change from goals to
+	variables.
+	(.PHONY): Drop lto1.serial, lto2.serial, lto1.prev and lto2.prev.
+	($(LTO_EXE)): Depend on $(lto1.serial) rather than lto1.serial.
+	($(LTO_DUMP_EXE)): Depend on $(lto2.serial) rather than lto2.serial.
+
+2020-11-18  Jerry Clcanny  <a837940593@gmail.com>
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Fix typos in comment.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (lto, lto1.serial, lto2.serial): New goals.
+	(.PHONY): Add lto lto1.serial lto1.prev lto2.serial lto2.prev.
+	(lto.all.cross, lto.start.encap): Remove dependencies.
+	($(LTO_EXE)): Depend on lto1.prev.  Call LINK_PROGRESS.
+	($(LTO_DUMP_EXE)): Depend on lto2.prev.  Call LINK_PROGRESS.
+
+2020-11-17  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/97857
+	* lto-common.c (gimple_register_canonical_type_1): Only
+	register types with TYPE_CXX_ODR_P flag; sanity check that no
+	conflict happens at ltrans time.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* lto-symtab.c (lto_symtab_merge_decls_1): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/96680
+	* lto-common.c (lto_fixup_prevailing_decls): Don't use
+	LTO_NO_PREVAIL on TREE_LIST's TREE_PURPOSE.
+	* lto-partition.c (lto_balanced_map): Treat declare_variant_alt
+	nodes like definitions.
+
 2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Update for new thunk

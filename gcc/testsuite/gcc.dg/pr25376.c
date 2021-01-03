@@ -7,3 +7,4 @@ void simple (void)
 }
 
 /* { dg-final { scan-assembler "my_named_section" } } */
+/* { dg-final { scan-assembler-symbol-section {simple$} {^\.?my_named_section|simple\[DS\]|^\"\.opd\"} } } */

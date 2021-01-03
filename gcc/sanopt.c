@@ -776,7 +776,8 @@ sanopt_optimize_walker (basic_block bb, class sanopt_ctx *ctx)
   basic_block son;
   gimple_stmt_iterator gsi;
   sanopt_info *info = (sanopt_info *) bb->aux;
-  bool asan_check_optimize = (flag_sanitize & SANITIZE_ADDRESS) != 0;
+  bool asan_check_optimize
+    = ((flag_sanitize & (SANITIZE_ADDRESS | SANITIZE_HWADDRESS)) != 0);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
     {
@@ -806,6 +807,7 @@ sanopt_optimize_walker (basic_block bb, class sanopt_ctx *ctx)
       if (asan_check_optimize
 	  && gimple_call_builtin_p (stmt, BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT))
 	{
+	  gcc_assert (!hwasan_sanitize_p ());
 	  use_operand_p use;
 	  gimple *use_stmt;
 	  if (single_imm_use (gimple_vdef (stmt), &use, &use_stmt))
@@ -834,6 +836,7 @@ sanopt_optimize_walker (basic_block bb, class sanopt_ctx *ctx)
 	  case IFN_UBSAN_PTR:
 	    remove = maybe_optimize_ubsan_ptr_ifn (ctx, stmt);
 	    break;
+	  case IFN_HWASAN_CHECK:
 	  case IFN_ASAN_CHECK:
 	    if (asan_check_optimize)
 	      remove = maybe_optimize_asan_check_ifn (ctx, stmt);
@@ -1262,6 +1265,10 @@ sanitize_rewrite_addressable_params (function *fun)
 unsigned int
 pass_sanopt::execute (function *fun)
 {
+  /* n.b. ASAN_MARK is used for both HWASAN and ASAN.
+     asan_num_accesses is hence used to count either HWASAN_CHECK or ASAN_CHECK
+     stuff.  This is fine because you can only have one of these active at a
+     time.  */
   basic_block bb;
   int asan_num_accesses = 0;
   bool contains_asan_mark = false;
@@ -1269,10 +1276,10 @@ pass_sanopt::execute (function *fun)
   /* Try to remove redundant checks.  */
   if (optimize
       && (flag_sanitize
-	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT
+	  & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_HWADDRESS
 	     | SANITIZE_ADDRESS | SANITIZE_VPTR | SANITIZE_POINTER_OVERFLOW)))
     asan_num_accesses = sanopt_optimize (fun, &contains_asan_mark);
-  else if (flag_sanitize & SANITIZE_ADDRESS)
+  else if (flag_sanitize & (SANITIZE_ADDRESS | SANITIZE_HWADDRESS))
     {
       gimple_stmt_iterator gsi;
       FOR_EACH_BB_FN (bb, fun)
@@ -1292,7 +1299,7 @@ pass_sanopt::execute (function *fun)
       sanitize_asan_mark_poison ();
     }
 
-  if (asan_sanitize_stack_p ())
+  if (asan_sanitize_stack_p () || hwasan_sanitize_stack_p ())
     sanitize_rewrite_addressable_params (fun);
 
   bool use_calls = param_asan_instrumentation_with_call_threshold < INT_MAX
@@ -1334,6 +1341,9 @@ pass_sanopt::execute (function *fun)
 		case IFN_UBSAN_VPTR:
 		  no_next = ubsan_expand_vptr_ifn (&gsi);
 		  break;
+		case IFN_HWASAN_CHECK:
+		  no_next = hwasan_expand_check_ifn (&gsi, use_calls);
+		  break;
 		case IFN_ASAN_CHECK:
 		  no_next = asan_expand_check_ifn (&gsi, use_calls);
 		  break;
@@ -1344,6 +1354,9 @@ pass_sanopt::execute (function *fun)
 		  no_next = asan_expand_poison_ifn (&gsi,
 						    &need_commit_edge_insert,
 						    shadow_vars_mapping);
+		  break;
+		case IFN_HWASAN_MARK:
+		  no_next = hwasan_expand_mark_ifn (&gsi);
 		  break;
 		default:
 		  break;

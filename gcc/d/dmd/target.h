@@ -19,6 +19,7 @@
 class ClassDeclaration;
 class Dsymbol;
 class Expression;
+class FuncDeclaration;
 class Parameter;
 class Type;
 class TypeTuple;
@@ -28,7 +29,6 @@ struct TargetC
 {
     unsigned longsize;            // size of a C 'long' or 'unsigned long' type
     unsigned long_doublesize;     // size of a C 'long double'
-    unsigned criticalSectionSize; // size of os critical section
 };
 
 struct TargetCPP
@@ -39,6 +39,7 @@ struct TargetCPP
 
     const char *toMangle(Dsymbol *s);
     const char *typeInfoMangle(ClassDeclaration *cd);
+    const char *thunkMangle(FuncDeclaration *fd, int offset);
     const char *typeMangle(Type *t);
     Type *parameterType(Parameter *p);
     bool fundamentalType(const Type *t, bool& isFundamental);
@@ -98,7 +99,6 @@ public:
     // Type sizes and support.
     unsigned alignsize(Type *type);
     unsigned fieldalign(Type *type);
-    unsigned critsecsize();
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
     bool isVectorOpSupported(Type *type, TOK op, Type *t2 = NULL);

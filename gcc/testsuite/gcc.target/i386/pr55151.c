@@ -1,5 +1,6 @@
 /* PR rtl-optimization/55151 */
 /* { dg-do compile  { target { ! ia32 } } } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */
 
 int a, b, c, d, e, f, g, h, i, j, k, l;

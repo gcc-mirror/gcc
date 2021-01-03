@@ -94,6 +94,7 @@ test04()
 
   // forward iterator for population and output iterator for result
   auto res = sample(pop.begin(), pop.end(), samp.begin(), sample_size, rng);
+  VERIFY( res.ptr == (out + sample_size) );
 
   // verify no duplicates
   std::sort(std::begin(out), std::end(out));

@@ -531,7 +531,7 @@ gfc_builtin_function (tree decl)
   return decl;
 }
 
-/* So far we need just these 7 attribute types.  */
+/* So far we need just these 8 attribute types.  */
 #define ATTR_NULL			0
 #define ATTR_LEAF_LIST			(ECF_LEAF)
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
@@ -540,6 +540,8 @@ gfc_builtin_function (tree decl)
 #define ATTR_PURE_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_PURE)
 #define ATTR_NOTHROW_LIST		(ECF_NOTHROW)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
+#define ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST \
+					(ECF_NOTHROW)
 
 static void
 gfc_define_builtin (const char *name, tree type, enum built_in_function code,
@@ -1236,6 +1238,13 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOACC_BUILTIN
 #undef DEF_GOACC_BUILTIN_COMPILER
 #undef DEF_GOMP_BUILTIN
+      tree gomp_alloc = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+      tree two = build_int_cst (integer_type_node, 2);
+      DECL_ATTRIBUTES (gomp_alloc)
+	= tree_cons (get_identifier ("warn_unused_result"), NULL_TREE,
+		     tree_cons (get_identifier ("alloc_size"),
+				build_tree_list (NULL_TREE, two),
+				DECL_ATTRIBUTES (gomp_alloc)));
     }
 
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],

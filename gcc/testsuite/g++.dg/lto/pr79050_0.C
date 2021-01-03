@@ -3,5 +3,5 @@
 
 int main ()
 {
-  auto foo ();
+  extern auto foo ();
 }

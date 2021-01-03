@@ -162,7 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __true_type __type;
     };
 
-# ifdef _GLIBCXX_USE_WCHAR_T
+# ifdef __WCHAR_TYPE__
   template<>
     struct __is_integer<wchar_t>
     {
@@ -363,7 +363,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
-#ifdef _GLIBCXX_USE_WCHAR_T
+#ifdef __WCHAR_TYPE__
   template<>
     struct __is_char<wchar_t>
     {

@@ -13,11 +13,11 @@ import (
 	"unsafe"
 )
 
-//extern kqueue
+//extern-sysinfo kqueue
 func kqueue() int32
 
 //go:noescape
-//extern kevent
+//extern-sysinfo kevent
 func kevent(kq int32, ch *keventt, nch uintptr, ev *keventt, nev uintptr, ts *timespec) int32
 
 var (

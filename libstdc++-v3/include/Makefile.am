@@ -52,6 +52,7 @@ std_headers = \
 	${std_srcdir}/iostream \
 	${std_srcdir}/istream \
 	${std_srcdir}/iterator \
+	${std_srcdir}/latch \
 	${std_srcdir}/limits \
 	${std_srcdir}/list \
 	${std_srcdir}/locale \
@@ -69,10 +70,13 @@ std_headers = \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
 	${std_srcdir}/scoped_allocator \
+	${std_srcdir}/semaphore \
 	${std_srcdir}/set \
 	${std_srcdir}/shared_mutex \
+	${std_srcdir}/source_location \
 	${std_srcdir}/span \
 	${std_srcdir}/sstream \
+	${std_srcdir}/syncstream \
 	${std_srcdir}/stack \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/stop_token \
@@ -102,6 +106,8 @@ bits_headers = \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/atomic_futex.h \
+	${bits_srcdir}/atomic_timed_wait.h \
+	${bits_srcdir}/atomic_wait.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -177,6 +183,7 @@ bits_headers = \
 	${bits_srcdir}/regex_compiler.tcc \
 	${bits_srcdir}/regex_executor.h \
 	${bits_srcdir}/regex_executor.tcc \
+	${bits_srcdir}/semaphore_base.h \
 	${bits_srcdir}/shared_ptr.h \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
@@ -186,6 +193,7 @@ bits_headers = \
 	${bits_srcdir}/std_abs.h \
 	${bits_srcdir}/std_function.h \
 	${bits_srcdir}/std_mutex.h \
+	${bits_srcdir}/std_thread.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_bvector.h \
@@ -855,7 +863,6 @@ endif
 debug_srcdir = ${glibcxx_srcdir}/include/debug
 debug_builddir = ./debug
 debug_headers = \
-	${debug_srcdir}/array \
 	${debug_srcdir}/assertions.h \
 	${debug_srcdir}/bitset \
 	${debug_srcdir}/debug.h \
@@ -1287,6 +1294,10 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
+	ldbl_alt128_compat='s,g,g,' ;\
+	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT[	 ][	 ]*1[	 ]*$$" \
+	${CONFIG_HEADER} > /dev/null 2>&1 \
+	&& ldbl_alt128_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_RELEASE,define _GLIBCXX_RELEASE $$release," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
@@ -1297,6 +1308,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
 	-e "s,define _GLIBCXX_USE_FLOAT128,$$float128," \
 	-e "$$ldbl_compat" \
+	-e "$$ldbl_alt128_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
@@ -1307,6 +1319,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    -e 's/_LARGE_FILES/_GLIBCXX_LARGE_FILES/g' \
 	    -e 's/ICONV_CONST/_GLIBCXX_ICONV_CONST/g' \
 	    -e '/[	 ]_GLIBCXX_LONG_DOUBLE_COMPAT[	 ]/d' \
+	    -e '/[	 ]_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT[	 ]/d' \
 	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "" >> $@ ;\
 	echo "#endif // _GLIBCXX_CXX_CONFIG_H" >> $@

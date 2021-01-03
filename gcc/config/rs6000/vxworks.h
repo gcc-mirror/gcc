@@ -70,6 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 	      builtin_define ("__PPC");		\
 	      builtin_define ("__powerpc");	\
 	    }					\
+						\
+	  /* __ppc isn't emitted by the system compiler \
+	     any more but a few system headers still depend \
+	     on it, as well as on __ppc__.  */	\
+	  builtin_define ("__ppc");		\
+	  builtin_define ("__ppc__");		\
 	}					\
 						\
       /* Asserts for #cpu and #machine.  */	\
@@ -97,18 +103,6 @@ along with GCC; see the file COPYING3.  If not see
     }		\
   while (0)
 
-/* Specific CPU macro definitions expected by the system headers,
-   inferred from -mcpu requests by the user.  Different versions of
-   VxWorks expect different forms of macros, such as
-
-   -D_VX_CPU=_VX_PPC403 on Vx7 and some variants of Vx6,
-   -DCPU=PPC403 on all Vx6 and earlier.  */
-
-#if TARGET_VXWORKS7
-#define VX_CPU_PREFIX "_VX_"
-#else
-#define VX_CPU_PREFIX ""
-#endif
 
 #define VX_CPUDEF(CPUID) \
   ":-D" VX_CPU_PREFIX "CPU=" VX_CPU_PREFIX #CPUID
@@ -127,7 +121,7 @@ along with GCC; see the file COPYING3.  If not see
   VX_MCPU(603, PPC603)   ";"		\
   VX_MCPU(604, PPC604)   ";"		\
   VX_MCPU(860, PPC860)   ";"		\
-  VX_MCPU(e6500, E6500)  ";"		\
+  VX_MCPU(e6500, PPCE6500)  ";"		\
   VX_MCPU(8540, PPC85XX) ";"		\
   VX_MCPU(8548, PPC85XX) ";"		\
   VX_CPUDEF(PPC604)			\

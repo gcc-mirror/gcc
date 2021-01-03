@@ -71,3 +71,13 @@ static_assert(requires (__box<U> a) {
   a.operator->();
   a.has_value();
 });
+
+constexpr bool
+test01()
+{
+  // Verify the default constructor value-initializes the underlying object.
+  __box<int> x;
+  __glibcxx_assert(*x == 0);
+  return true;
+}
+static_assert(test01());

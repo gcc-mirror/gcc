@@ -21,6 +21,12 @@
 
 #include <vector>
 
+#if __cplusplus >= 201103L
+# define NOTHROW(X) noexcept(X)
+#else
+# define NOTHROW(X)
+#endif
+
 namespace std {
   template <class T, class Allocator> class vector;
 
@@ -49,7 +55,8 @@ namespace std {
                     const vector<T,Allocator>& y);
 
   template <class T, class Allocator>
-    void swap(vector<T,Allocator>& x, vector<T,Allocator>& y);
+    void swap(vector<T,Allocator>& x, vector<T,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 
   template <class Allocator> class vector<bool,Allocator>;
 

@@ -221,7 +221,7 @@ public:
   /* Get number of references for this node.  */
   inline unsigned num_references (void)
   {
-    return ref_list.references ? ref_list.references->length () : 0;
+    return ref_list.references.length ();
   }
 
   /* Iterates I-th reference in the list, REF is also set.  */
@@ -263,7 +263,7 @@ public:
     }
 
   /* Return section as string.  */
-  const char * get_section ()
+  const char * get_section () const
     {
       if (!x_section)
 	return NULL;
@@ -322,10 +322,17 @@ public:
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
 
+  /* Like set_section, but copying the section name from another node.  */
+  void set_section (const symtab_node &other);
+
   /* Set section, do not recurse into aliases.
      When one wants to change section of symbol and its aliases,
      use set_section.  */
   void set_section_for_node (const char *section);
+
+  /* Like set_section_for_node, but copying the section name from another
+     node.  */
+  void set_section_for_node (const symtab_node &other);
 
   /* Set initialization priority to PRIORITY.  */
   void set_init_priority (priority_type priority);
@@ -604,7 +611,7 @@ public:
   symtab_node *same_comdat_group;
 
   /* Vectors of referring and referenced entities.  */
-  ipa_ref_list ref_list;
+  ipa_ref_list GTY((skip)) ref_list;
 
   /* Alias target. May be either DECL pointer or ASSEMBLER_NAME pointer
      depending to what was known to frontend on the creation time.
@@ -631,7 +638,7 @@ protected:
 
   /* Remove node from symbol table.  This function is not used directly, but via
      cgraph/varpool node removal routines.  */
-  void unregister (void);
+  void unregister (struct clone_info *);
 
   /* Return the initialization and finalization priority information for
      DECL.  If there is no previous priority information, a freshly
@@ -643,8 +650,9 @@ protected:
 				      void *data,
 				      bool include_overwrite);
 private:
-  /* Worker for set_section.  */
-  static bool set_section (symtab_node *n, void *s);
+  /* Workers for set_section.  */
+  static bool set_section_from_string (symtab_node *n, void *s);
+  static bool set_section_from_node (symtab_node *n, void *o);
 
   /* Worker for symtab_resolve_alias.  */
   static bool set_implicit_section (symtab_node *n, void *);
@@ -689,27 +697,6 @@ struct GTY(()) ipa_replace_map
   tree new_tree;
   /* Parameter number to replace, when old_tree is NULL.  */
   int parm_num;
-};
-
-struct GTY(()) cgraph_clone_info
-{
-  /* Constants discovered by IPA-CP, i.e. which parameter should be replaced
-     with what.  */
-  vec<ipa_replace_map *, va_gc> *tree_map;
-  /* Parameter modification that IPA-SRA decided to perform.  */
-  ipa_param_adjustments *param_adjustments;
-  /* Lists of dummy-decl and offset pairs representing split formal parameters
-     in the caller.  Offsets of all new replacements are enumerated, those
-     coming from the same original parameter have the same dummy decl stored
-     along with them.
-
-     Dummy decls sit in call statement arguments followed by new parameter
-     decls (or their SSA names) in between (caller) clone materialization and
-     call redirection.  Redirection then recognizes the dummy variable and
-     together with the stored offsets can reconstruct what exactly the new
-     parameter decls represent and can leave in place only those that the
-     callee expects.  */
-  vec<ipa_param_performed_split, va_gc> *performed_splits;
 };
 
 enum cgraph_simd_clone_arg_type
@@ -780,17 +767,17 @@ struct GTY(()) cgraph_simd_clone_arg {
 
 struct GTY(()) cgraph_simd_clone {
   /* Number of words in the SIMD lane associated with this clone.  */
-  unsigned int simdlen;
+  poly_uint64 simdlen;
 
   /* Number of annotated function arguments in `args'.  This is
      usually the number of named arguments in FNDECL.  */
   unsigned int nargs;
 
   /* Max hardware vector size in bits for integral vectors.  */
-  unsigned int vecsize_int;
+  poly_uint64 vecsize_int;
 
   /* Max hardware vector size in bits for floating point vectors.  */
-  unsigned int vecsize_float;
+  poly_uint64 vecsize_float;
 
   /* Machine mode of the mask argument(s), if they are to be passed
      as bitmasks in integer argument(s).  VOIDmode if masks are passed
@@ -879,7 +866,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
       clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
       simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
-      inlined_to (NULL), rtl (NULL), clone (),
+      inlined_to (NULL), rtl (NULL),
       count (profile_count::uninitialized ()),
       count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
       unit_id (0), tp_first_run (0), thunk (false),
@@ -970,7 +957,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
-  cgraph_node *find_replacement (void);
+  cgraph_node *find_replacement (struct clone_info *);
 
   /* Create a new cgraph node which is the new version of
      callgraph node.  REDIRECT_CALLERS holds the callers
@@ -1279,7 +1266,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   bool check_calls_comdat_local_p ();
 
   /* Return true if function should be optimized for size.  */
-  bool optimize_for_size_p (void);
+  enum optimize_size_level optimize_for_size_p (void);
 
   /* Dump the callgraph to file F.  */
   static void dump_cgraph (FILE *f);
@@ -1402,14 +1389,13 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Interprocedural passes scheduled to have their transform functions
      applied next time we execute local pass on them.  We maintain it
      per-function in order to allow IPA passes to introduce new functions.  */
-  vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
+  vec<ipa_opt_pass, va_heap, vl_ptr> GTY((skip)) ipa_transforms_to_apply;
 
   /* For inline clones this points to the function they will be
      inlined into.  */
   cgraph_node *inlined_to;
 
   struct cgraph_rtl_info *rtl;
-  cgraph_clone_info clone;
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
@@ -2190,9 +2176,15 @@ struct asmname_hasher : ggc_ptr_hash <symtab_node>
   static bool equal (symtab_node *n, const_tree t);
 };
 
+/* Core summaries maintained about symbols.  */
+
 struct thunk_info;
 template <class T> class function_summary;
 typedef function_summary <thunk_info *> thunk_summary;
+
+struct clone_info;
+template <class T> class function_summary;
+typedef function_summary <clone_info *> clone_summary;
 
 class GTY((tag ("SYMTAB"))) symbol_table
 {
@@ -2210,7 +2202,7 @@ public:
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
-  m_thunks (NULL),
+  m_thunks (NULL), m_clones (NULL),
   m_first_edge_removal_hook (NULL), m_first_cgraph_removal_hook (NULL),
   m_first_edge_duplicated_hook (NULL), m_first_cgraph_duplicated_hook (NULL),
   m_first_cgraph_insertion_hook (NULL), m_first_varpool_insertion_hook (NULL),
@@ -2495,6 +2487,9 @@ public:
   /* Thunk annotations.  */
   thunk_summary *m_thunks;
 
+  /* Virtual clone annotations.  */
+  clone_summary *m_clones;
+
 private:
   /* Allocate a cgraph_edge structure and fill it with data according to the
      parameters of which only CALLEE can be NULL (when creating an indirect
@@ -2689,7 +2684,7 @@ symtab_node::next_defined_symbol (void)
 inline ipa_ref *
 symtab_node::iterate_reference (unsigned i, ipa_ref *&ref)
 {
-  vec_safe_iterate (ref_list.references, i, &ref);
+  ref_list.references.iterate (i, &ref);
 
   return ref;
 }
@@ -3315,15 +3310,17 @@ cgraph_node::mark_force_output (void)
 
 /* Return true if function should be optimized for size.  */
 
-inline bool
+inline enum optimize_size_level
 cgraph_node::optimize_for_size_p (void)
 {
   if (opt_for_fn (decl, optimize_size))
-    return true;
+    return OPTIMIZE_SIZE_MAX;
+  if (count == profile_count::zero ())
+    return OPTIMIZE_SIZE_MAX;
   if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return true;
+    return OPTIMIZE_SIZE_BALANCED;
   else
-    return false;
+    return OPTIMIZE_SIZE_NO;
 }
 
 /* Return symtab_node for NODE or create one if it is not present

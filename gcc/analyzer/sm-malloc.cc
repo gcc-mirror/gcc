@@ -675,9 +675,9 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
+    /* CWE-476: NULL Pointer Dereference.  */
     diagnostic_metadata m;
-    m.add_cwe (690);
+    m.add_cwe (476);
     return warning_meta (rich_loc, m,
 			 OPT_Wanalyzer_null_dereference,
 			 "dereference of NULL %qE", m_arg);
@@ -723,10 +723,10 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
+    /* CWE-476: NULL Pointer Dereference.  */
     auto_diagnostic_group d;
     diagnostic_metadata m;
-    m.add_cwe (690);
+    m.add_cwe (476);
 
     bool warned;
     if (zerop (m_arg))

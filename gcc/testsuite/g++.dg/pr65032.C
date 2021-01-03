@@ -1,4 +1,5 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
+// { dg-require-effective-target fpic }
 // { dg-options "-Os -std=c++11 -fPIC -fstack-protector-strong -fomit-frame-pointer" }
 
 #pragma GCC visibility push(hidden)

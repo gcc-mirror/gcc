@@ -5,52 +5,52 @@ program test
   integer :: i
 
   !$acc parallel
-    !$acc loop gang(5) ! { dg-error "num arguments" }
+    !$acc loop gang(5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
 
-    !$acc loop gang(num:5) ! { dg-error "num arguments" }
+    !$acc loop gang(num:5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
 
-    !$acc loop worker(5) ! { dg-error "num arguments" }
+    !$acc loop worker(5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
 
-    !$acc loop worker(num:5) ! { dg-error "num arguments" }
+    !$acc loop worker(num:5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
 
-    !$acc loop vector(5) ! { dg-error "length arguments" }
+    !$acc loop vector(5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
 
-    !$acc loop vector(length:5) ! { dg-error "length arguments" }
+    !$acc loop vector(length:5) ! { dg-error "argument not permitted" }
     DO i = 1,10
     ENDDO
   !$acc end parallel
 
-  !$acc parallel loop gang(5) ! { dg-error "num arguments" }
+  !$acc parallel loop gang(5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 
-  !$acc parallel loop gang(num:5) ! { dg-error "num arguments" }
+  !$acc parallel loop gang(num:5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 
-  !$acc parallel loop worker(5) ! { dg-error "num arguments" }
+  !$acc parallel loop worker(5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 
-  !$acc parallel loop worker(num:5) ! { dg-error "num arguments" }
+  !$acc parallel loop worker(num:5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 
-  !$acc parallel loop vector(5) ! { dg-error "length arguments" }
+  !$acc parallel loop vector(5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 
-  !$acc parallel loop vector(length:5) ! { dg-error "length arguments" }
+  !$acc parallel loop vector(length:5) ! { dg-error "argument not permitted" }
   DO i = 1,10
   ENDDO
 end

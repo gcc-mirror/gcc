@@ -1895,6 +1895,22 @@ package body Exp_Aggr is
                   Append_To (Stmts, Init_Call);
                end if;
             end if;
+
+            --  If Default_Initial_Condition applies to the component type,
+            --  add a DIC check after the component is default-initialized,
+            --  as well as after an Initialize procedure is called, in the
+            --  case of components of a controlled type. It will be analyzed
+            --  and resolved before the code for initialization of other
+            --  components.
+
+            --  Theoretically this might also be needed for cases where Expr
+            --  is not empty, but a default init still applies, such as for
+            --  Default_Value cases, in which case we won't get here. ???
+
+            if Has_DIC (Ctype) and then Present (DIC_Procedure (Ctype)) then
+               Append_To (Stmts,
+                 Build_DIC_Call (Loc, New_Copy_Tree (Indexed_Comp), Ctype));
+            end if;
          end if;
 
          return Add_Loop_Actions (Stmts);
@@ -2448,18 +2464,30 @@ package body Exp_Aggr is
             Next (Expr);
          end loop;
 
-         --  STEP 2 (b): Generate final loop if an others choice is present
+         --  STEP 2 (b): Generate final loop if an others choice is present.
          --  Here Nb_Elements gives the offset of the last positional element.
 
          if Present (Component_Associations (N)) then
             Assoc := Last (Component_Associations (N));
 
-            --  Ada 2005 (AI-287)
+            if Nkind (Assoc) = N_Iterated_Component_Association then
+               --  Ada 2020: generate a loop to have a proper scope for
+               --  the identifier that typically appears in the expression.
+               --  The lower bound of the loop is the position after all
+               --  previous positional components.
 
-            Append_List (Gen_While (Add (Nb_Elements, To => Aggr_L),
-                                    Aggr_High,
-                                    Get_Assoc_Expr (Assoc)), --  AI-287
-                         To => New_Code);
+               Append_List (Gen_Loop (Add (Nb_Elements + 1, To => Aggr_L),
+                                      Aggr_High,
+                                      Expression (Assoc)),
+                            To => New_Code);
+            else
+               --  Ada 2005 (AI-287)
+
+               Append_List (Gen_While (Add (Nb_Elements, To => Aggr_L),
+                                       Aggr_High,
+                                       Get_Assoc_Expr (Assoc)),
+                            To => New_Code);
+            end if;
          end if;
       end if;
 
@@ -3492,6 +3520,18 @@ package body Exp_Aggr is
                   then
                      Check_Ancestor_Discriminants (Entity (Ancestor));
                   end if;
+
+                  --  If ancestor type has Default_Initialization_Condition,
+                  --  add a DIC check after the ancestor object is initialized
+                  --  by default.
+
+                  if Has_DIC (Entity (Ancestor))
+                    and then Present (DIC_Procedure (Entity (Ancestor)))
+                  then
+                     Append_To (L,
+                       Build_DIC_Call
+                         (Loc, New_Copy_Tree (Ref), Entity (Ancestor)));
+                  end if;
                end if;
 
             --  Handle calls to C++ constructors
@@ -4095,6 +4135,22 @@ package body Exp_Aggr is
                   end;
                end if;
             end;
+         end if;
+
+         --  If the component association was specified with a box and the
+         --  component type has a Default_Initial_Condition, then generate
+         --  a call to the DIC procedure.
+
+         if Has_DIC (Etype (Selector))
+           and then Was_Default_Init_Box_Association (Comp)
+           and then Present (DIC_Procedure (Etype (Selector)))
+         then
+            Append_To (L,
+              Build_DIC_Call (Loc,
+                Make_Selected_Component (Loc,
+                  Prefix        => New_Copy_Tree (Target),
+                  Selector_Name => New_Occurrence_Of (Selector, Loc)),
+                Etype (Selector)));
          end if;
 
          Next (Comp);

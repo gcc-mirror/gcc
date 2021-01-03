@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do run { target c++2a } }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //

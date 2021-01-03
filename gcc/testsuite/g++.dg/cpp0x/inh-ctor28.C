@@ -4,4 +4,4 @@
 struct A {};
 struct B : virtual A {};
 struct C : virtual A {};
-struct D : B,C { using A::A; };	// { dg-error "indirect" }
+struct D : B,C { using A::A; };	// { dg-error "not a direct base" }

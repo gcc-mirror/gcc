@@ -364,6 +364,11 @@ package Opt is
    --  GNAT
    --  Names of configuration pragmas files (given by switches -gnatec)
 
+   Config_Files_Store_Basename : Boolean := False;
+   --  GNAT
+   --  Set True for -gnateb. Tells GNAT that config files should be referred to
+   --  by their basename and their checksums computed in ALI files.
+
    Configurable_Run_Time_Mode : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if the compiler is operating in configurable run-time mode.
@@ -718,6 +723,10 @@ package Opt is
    --  Set to file name to generate full source listing to named file (or if
    --  the name is of the form .xxx, then to name.xxx where name is the source
    --  file name with extension stripped.
+
+   Generate_Asm : Boolean := False;
+   --  GNAT
+   --  True if generating assembly instead of an object file, via the -S switch
 
    Generate_C_Code : Boolean := False;
    --  GNAT, GNATBIND
@@ -1126,7 +1135,7 @@ package Opt is
    --  make it easier to interface with back ends that implement C semantics.
    --  There is a section in Sinfo which describes the transformations made.
 
-   Multiple_Unit_Index : Int := 0;
+   Multiple_Unit_Index : Nat := 0;
    --  GNAT
    --  This is set non-zero if the current unit is being compiled in multiple
    --  unit per file mode, meaning that the current unit is selected from the
@@ -1587,6 +1596,12 @@ package Opt is
    --  GNATBIND
    --  Tolerate time stamp and other consistency errors. If this flag is set to
    --  True (-t), then inconsistencies result in warnings rather than errors.
+
+   Transform_Function_Array : Boolean := False;
+   --  GNAT
+   --  If this switch is set True, then functions returning constrained arrays
+   --  are transformed into a procedure with an out parameter, and all calls
+   --  are updated accordingly.
 
    Treat_Categorization_Errors_As_Warnings : Boolean := False;
    --  Normally categorization errors are true illegalities. If this switch

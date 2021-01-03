@@ -297,27 +297,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // extract the elements in a tuple.
   template<size_t... _Indexes> struct _Index_tuple { };
 
-#ifdef __has_builtin
-# if __has_builtin(__make_integer_seq)
-#  define _GLIBCXX_USE_MAKE_INTEGER_SEQ 1
-# endif
-#endif
-
   // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
   template<size_t _Num>
     struct _Build_index_tuple
     {
-#if _GLIBCXX_USE_MAKE_INTEGER_SEQ
+#if __has_builtin(__make_integer_seq)
       template<typename, size_t... _Indices>
         using _IdxTuple = _Index_tuple<_Indices...>;
 
+      // Clang defines __make_integer_seq for this purpose.
       using __type = __make_integer_seq<_IdxTuple, size_t, _Num>;
 #else
+      // For GCC and other compilers, use __integer_pack instead.
       using __type = _Index_tuple<__integer_pack(_Num)...>;
 #endif
     };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_integer_sequence 201304
 
@@ -332,13 +328,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template make_integer_sequence
   template<typename _Tp, _Tp _Num>
     using make_integer_sequence
-#if _GLIBCXX_USE_MAKE_INTEGER_SEQ
+#if __has_builtin(__make_integer_seq)
       = __make_integer_seq<integer_sequence, _Tp, _Num>;
 #else
       = integer_sequence<_Tp, __integer_pack(_Num)...>;
 #endif
-
-#undef _GLIBCXX_USE_MAKE_INTEGER_SEQ
 
   /// Alias template index_sequence
   template<size_t... _Idx>

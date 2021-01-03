@@ -225,6 +225,10 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
   (SIGNED_FIXED_POINT_MODE_P (MODE)		\
    || UNSIGNED_FIXED_POINT_MODE_P (MODE))
 
+/* Nonzero if MODE is opaque.  */
+#define OPAQUE_MODE_P(MODE)                     \
+    (GET_MODE_CLASS (MODE) == MODE_OPAQUE)
+
 /* Nonzero if CLASS modes can be widened.  */
 #define CLASS_HAS_WIDER_MODES_P(CLASS)         \
   (CLASS == MODE_INT                           \

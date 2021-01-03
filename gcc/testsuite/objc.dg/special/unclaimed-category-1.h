@@ -1,4 +1,5 @@
 /* Contributed by Nicola Pero - Fri Dec 14 08:36:00 GMT 2001 */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test loading unclaimed categories - categories of a class defined
    separately from the class itself.  */

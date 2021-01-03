@@ -8,7 +8,11 @@
 #ifdef __moxie__
 #define REGISTER "8"
 #else
+#ifdef __iq2000__
+#define REGISTER "3"
+#else
 #define REGISTER "0"
+#endif
 #endif
 #endif
 

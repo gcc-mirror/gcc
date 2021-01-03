@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu89" } */
+/* { dg-options "-std=gnu89 -pedantic-errors" } */
 
 w *x; /* { dg-error "unknown type name 'w'" } */
 
@@ -12,6 +12,7 @@ int f1()
   int d, e;
   d * e; /* { dg-bogus "unknown type name 'd'" } */
   g * h; /* { dg-error "unknown type name 'g'" } */
+  /* { dg-error "mixed declarations" "" { target *-*-* } .-1 } */
   g i;   /* { dg-error "unknown type name 'g'" } */
 }
 

@@ -179,23 +179,19 @@ is
    procedure Append
      (Container : in out List;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
    begin
       Insert (Container, No_Element, New_Item, Count);
    end Append;
 
-   ---------------
-   -- Append_One --
-   ---------------
-
-   procedure Append_One
+   procedure Append
      (Container : in out List;
       New_Item  : Element_Type)
    is
    begin
       Insert (Container, No_Element, New_Item, 1);
-   end Append_One;
+   end Append;
 
    ------------
    -- Assign --

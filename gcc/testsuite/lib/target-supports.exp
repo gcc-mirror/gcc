@@ -368,10 +368,22 @@ proc check_weak_override_available { } {
     return [check_weak_available]
 }
 
-# The noinit attribute is only supported by some targets.
+# The "noinit" attribute is only supported by some targets.
 # This proc returns 1 if it's supported, 0 if it's not.
 
 proc check_effective_target_noinit { } {
+    if { [istarget arm*-*-eabi]
+	 || [istarget msp430-*-*] } {
+	return 1
+    }
+
+    return 0
+}
+
+# The "persistent" attribute is only supported by some targets.
+# This proc returns 1 if it's supported, 0 if it's not.
+
+proc check_effective_target_persistent { } {
     if { [istarget arm*-*-eabi]
 	 || [istarget msp430-*-*] } {
 	return 1
@@ -642,7 +654,7 @@ proc check_profiling_available { test_what } {
 	    return 0
 	}
         global srcdir
-	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "true -v >/dev/null"]
+	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "-m8 true -v >/dev/null"]
 	if { [lindex $status 0] != 0 } {
 	    verbose "autofdo not supported because perf does not work"
 	    return 0
@@ -3355,7 +3367,116 @@ proc check_effective_target_vect_int { } {
 	}}]
 }
 
-# Return 1 if the target supports signed int->float conversion 
+# Return 1 if the target supports hardware vectorization of complex additions of
+# byte, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_byte { } {
+    return [check_cached_effective_target_indexed vect_complex_add_byte {
+      expr {
+	 ([check_effective_target_aarch64_sve2]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# short, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_short { } {
+    return [check_cached_effective_target_indexed vect_complex_add_short {
+      expr {
+	 ([check_effective_target_aarch64_sve2]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# int, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_int { } {
+    return [check_cached_effective_target_indexed vect_complex_add_int {
+      expr {
+	 ([check_effective_target_aarch64_sve2]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# long, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_long { } {
+    return [check_cached_effective_target_indexed vect_complex_add_long {
+      expr {
+	 ([check_effective_target_aarch64_sve2]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# half, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_half { } {
+    return [check_cached_effective_target_indexed vect_complex_add_half {
+      expr {
+	 ([check_effective_target_arm_v8_3a_fp16_complex_neon_ok]
+	  && ([check_effective_target_aarch64_little_endian]
+	      || [check_effective_target_arm_little_endian]))
+	 || ([check_effective_target_aarch64_sve2]
+	      && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# float, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_float { } {
+    return [check_cached_effective_target_indexed vect_complex_add_float {
+      expr {
+	 ([check_effective_target_arm_v8_3a_complex_neon_ok]
+	  && ([check_effective_target_aarch64_little_endian]
+	      || [check_effective_target_arm_little_endian]))
+	 || ([check_effective_target_aarch64_sve2]
+	      && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_arm_v8_1m_mve_fp_ok]
+	     && [check_effective_target_arm_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports hardware vectorization of complex additions of
+# double, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_complex_add_double { } {
+    return [check_cached_effective_target_indexed vect_complex_add_double {
+      expr {
+	 ([check_effective_target_aarch64_sve2]
+	      && [check_effective_target_aarch64_little_endian])
+	}}]
+}
+
+# Return 1 if the target supports signed int->float conversion
 #
 
 proc check_effective_target_vect_intfloat_cvt { } {
@@ -5646,8 +5767,8 @@ proc check_effective_target_arm_hf_eabi { } {
     }]
 }
 
-# Return 1 if this is an ARM target that uses the soft float ABI
-# with no floating-point instructions at all (e.g. -mfloat-abi=soft).
+# Return 1 if this is an ARM target uses emulated floating point
+# operations.
 
 proc check_effective_target_arm_softfloat { } {
     return [check_no_compiler_messages arm_softfloat object {
@@ -8461,6 +8582,18 @@ proc check_effective_target_avx2 { } {
     } "-O0 -mavx2" ]
 }
 
+# Return 1 if avxvnni instructions can be compiled.
+proc check_effective_target_avxvnni { } {
+    return [check_no_compiler_messages avxvnni object {
+	typedef int __v8si __attribute__ ((__vector_size__ (32)));
+	__v8si
+	_mm256_dpbusd_epi32 (__v8si __A, __v8si __B, __v8si __C)
+        {
+	   return __builtin_ia32_vpdpbusd_v8si (__A, __B, __C);
+	}
+    } "-mavxvnni" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {
@@ -9693,6 +9826,44 @@ proc check_effective_target_fenv_exceptions {} {
     } [add_options_for_ieee "-std=gnu99"]]
 }
 
+# Return 1 if <fenv.h> is available with all the standard IEEE
+# exceptions and floating-point exceptions are raised by arithmetic
+# operations for decimal floating point.  (If the target requires
+# special options for "inexact" exceptions, those need to be specified
+# in the testcases.)
+
+proc check_effective_target_fenv_exceptions_dfp {} {
+    return [check_runtime fenv_exceptions_dfp {
+	#include <fenv.h>
+	#include <stdlib.h>
+	#ifndef FE_DIVBYZERO
+	# error Missing FE_DIVBYZERO
+	#endif
+	#ifndef FE_INEXACT
+	# error Missing FE_INEXACT
+	#endif
+	#ifndef FE_INVALID
+	# error Missing FE_INVALID
+	#endif
+	#ifndef FE_OVERFLOW
+	# error Missing FE_OVERFLOW
+	#endif
+	#ifndef FE_UNDERFLOW
+	# error Missing FE_UNDERFLOW
+	#endif
+	volatile _Decimal64 a = 0.0DD, r;
+	int
+	main (void)
+	{
+	  r = a / a;
+	  if (fetestexcept (FE_INVALID))
+	    exit (0);
+	  else
+	    abort ();
+	}
+    } [add_options_for_ieee "-std=gnu99"]]
+}
+
 # Return 1 if -fexceptions is supported.
 
 proc check_effective_target_exceptions {} {
@@ -10301,6 +10472,13 @@ proc check_effective_target_inf { } {
     }]
 }
 
+# Return 1 if target supports floating point "infinite" for float.
+proc check_effective_target_inff { } {
+    return [check_no_compiler_messages supports_inff assembly {
+        const float pinf = __builtin_inff ();
+    }]
+}
+
 # Return 1 if the target supports ARMv8.3 Adv.SIMD Complex instructions
 # instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
 # Record the command line options needed.
@@ -10317,13 +10495,13 @@ proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
     # need to be added to the -march option.
     foreach flags {"" "-mfloat-abi=softfp -mfpu=auto" "-mfloat-abi=hard -mfpu=auto"} {
         if { [check_no_compiler_messages_nocache \
-                  arm_v8_3a_complex_neon_ok object {
+                  arm_v8_3a_complex_neon_ok assembly {
             #if !defined (__ARM_FEATURE_COMPLEX)
             #error "__ARM_FEATURE_COMPLEX not defined"
             #endif
         } "$flags -march=armv8.3-a"] } {
             set et_arm_v8_3a_complex_neon_flags "$flags -march=armv8.3-a"
-            return 1
+            return 1;
         }
     }
 
@@ -10343,13 +10521,57 @@ proc add_options_for_arm_v8_3a_complex_neon { flags } {
     return "$flags $et_arm_v8_3a_complex_neon_flags"
 }
 
+# Return 1 if the target supports ARMv8.3 Adv.SIMD + FP16 Complex instructions
+# instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
+    global et_arm_v8_3a_fp16_complex_neon_flags
+    set et_arm_v8_3a_fp16_complex_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+        return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=auto" "-mfloat-abi=hard -mfpu=auto"} {
+        if { [check_no_compiler_messages_nocache \
+                  arm_v8_3a_fp16_complex_neon_ok assembly {
+            #if !defined (__ARM_FEATURE_COMPLEX)
+            #error "__ARM_FEATURE_COMPLEX not defined"
+            #endif
+        } "$flags -march=armv8.3-a+fp16"] } {
+            set et_arm_v8_3a_fp16_complex_neon_flags \
+			"$flags -march=armv8.3-a+fp16"
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok { } {
+    return [check_cached_effective_target arm_v8_3a_fp16_complex_neon_ok \
+                check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache]
+}
+
+proc add_options_for_arm_v8_3a_fp16_complex_neon { flags } {
+    if { ! [check_effective_target_arm_v8_3a_fp16_complex_neon_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_3a_fp16_complex_neon_flags
+    return "$flags $et_arm_v8_3a_fp16_complex_neon_flags"
+}
+
+
 # Return 1 if the target supports executing AdvSIMD instructions from ARMv8.3
 # with the complex instruction extension, 0 otherwise.  The test is valid for
 # ARM and for AArch64.
 
 proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     if { ![check_effective_target_arm_v8_3a_complex_neon_ok] } {
-        return 0;
+        return 1;
     }
     return [check_runtime arm_v8_3a_complex_neon_hw_available {
         #include "arm_neon.h"
@@ -10374,7 +10596,7 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
                : /* No clobbers.  */);
           #endif
 
-          return (results[0] == 8 && results[1] == 24) ? 1 : 0;
+          return (results[0] == 8 && results[1] == 24) ? 0 : 1;
         }
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
@@ -10522,6 +10744,11 @@ proc check_effective_target_msp430_large {} {
     } ""]
 }
 
+# Return 1 if GCC was configured with --with-tune=cortex-a76
+proc check_effective_target_tune_cortex_a76 { } {
+    return [check_configured_with "with-tune=cortex-a76"]
+}
+
 # Return 1 if the target has an efficient means to encode large initializers
 # in the assembly.
 
@@ -10581,4 +10808,95 @@ proc check_effective_target_movdir { } {
 	  __builtin_ia32_movdir64b (d, s);
 	}
     } "-mmovdiri -mmovdir64b" ]
+}
+
+# Return 1 if target is not support address sanitize, 1 otherwise.
+
+proc check_effective_target_no_fsanitize_address {} {
+    if ![check_no_compiler_messages fsanitize_address executable {
+	int main (void) { return 0; }
+    }] {
+	return 1;
+    }
+    return 0;
+}
+
+# Return 1 if this target supports 'R' flag in .section directive, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_R_flag_in_section { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target R_flag_in_section {
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0 || HAVE_INITFINI_ARRAY_SUPPORT == 0"
+	puts $f "# error Assembler does not support 'R' flag in .section directive."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_R_flag_in_section compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj assembly ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_R_flag_in_section testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_R_flag_in_section testfile compilation failed" 2
+	    return 0
+	}
+    }]
+}
+
+# Return 1 if this target supports 'o' flag in .section directive, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_o_flag_in_section { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target o_flag_in_section {
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_GAS_SECTION_LINK_ORDER == 0"
+	puts $f "# error Assembler does not support 'o' flag in .section directive."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_o_flag_in_section compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_o_flag_in_section testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_o_flag_in_section testfile compilation failed" 2
+	    return 0
+	}
+    }]
 }

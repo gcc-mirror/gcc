@@ -23,29 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "c-family/c-common.h"
 
-/* The type of dictionary used to map names to types declared at
-   a given scope.  */
-typedef struct binding_table_s *binding_table;
-typedef struct binding_entry_s *binding_entry;
-
-/* The type of a routine repeatedly called by binding_table_foreach.  */
-typedef void (*bt_foreach_proc) (binding_entry, void *);
-
-struct GTY(()) binding_entry_s {
-  binding_entry chain;
-  tree name;
-  tree type;
-};
-
-/* These macros indicate the initial chains count for binding_table.  */
-#define SCOPE_DEFAULT_HT_SIZE		(1 << 3)
-#define CLASS_SCOPE_HT_SIZE		(1 << 3)
-#define NAMESPACE_ORDINARY_HT_SIZE	(1 << 5)
-#define NAMESPACE_STD_HT_SIZE		(1 << 8)
-#define GLOBAL_SCOPE_HT_SIZE		(1 << 8)
-
-extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
-extern binding_entry binding_table_find (binding_table, tree);
 
 /* The datatype used to implement C++ scope.  */
 struct cp_binding_level;
@@ -91,6 +68,125 @@ struct GTY(()) cxx_saved_binding {
   tree real_type_value;
 };
 
+/* To support lazy module loading, we squirrel away a section number
+   (and a couple of flags) in the binding slot of unloaded bindings.
+   We rely on pointers being aligned and setting the bottom bit to
+   mark a lazy value.  GTY doesn't like an array of union, so we have
+   a containing struct.  */
+
+struct GTY(()) binding_slot {
+  union GTY((desc ("%1.is_lazy ()"))) binding_slot_lazy {
+    tree GTY((tag ("false"))) binding;
+  } u;
+
+  operator tree & ()
+  {
+    gcc_checking_assert (!is_lazy ());
+    return u.binding;
+  }
+  binding_slot &operator= (tree t)
+  {
+    u.binding = t;
+    return *this;
+  }
+  bool is_lazy () const
+  {
+    return bool (uintptr_t (u.binding) & 1);
+  }
+  void set_lazy (unsigned snum)
+  {
+    gcc_checking_assert (!u.binding);
+    u.binding = tree (uintptr_t ((snum << 1) | 1));
+  }
+  void or_lazy (unsigned snum)
+  {
+    gcc_checking_assert (is_lazy ());
+    u.binding = tree (uintptr_t (u.binding) | (snum << 1));
+  }
+  unsigned get_lazy () const
+  {
+    gcc_checking_assert (is_lazy ());
+    return unsigned (uintptr_t (u.binding) >> 1);
+  }
+};
+
+/* Bindings for modules are held in a sparse array.  There is always a
+   current TU slot, others are allocated as needed.  By construction
+   of the importing mechanism we only ever need to append to the
+   array.  Rather than have straight index/slot tuples, we bunch them
+   up for greater packing.
+
+   The cluster representation packs well on a 64-bit system.  */
+
+#define BINDING_VECTOR_SLOTS_PER_CLUSTER 2
+struct binding_index {
+  unsigned short base;
+  unsigned short span;
+};
+
+struct GTY(()) binding_cluster
+{
+  binding_index GTY((skip)) indices[BINDING_VECTOR_SLOTS_PER_CLUSTER];
+  binding_slot slots[BINDING_VECTOR_SLOTS_PER_CLUSTER];
+};
+
+/* These two fields overlay lang flags.  So don't use those.  */
+#define BINDING_VECTOR_ALLOC_CLUSTERS(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.u.dependence_info.clique)
+#define BINDING_VECTOR_NUM_CLUSTERS(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.u.dependence_info.base)
+#define BINDING_VECTOR_CLUSTER_BASE(NODE) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->vec)
+#define BINDING_VECTOR_CLUSTER_LAST(NODE) \
+  (&BINDING_VECTOR_CLUSTER (NODE, BINDING_VECTOR_NUM_CLUSTERS (NODE) - 1))
+#define BINDING_VECTOR_CLUSTER(NODE,IX) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->vec[IX])
+
+struct GTY(()) tree_binding_vec {
+  struct tree_base base;
+  tree name;
+  binding_cluster GTY((length ("%h.base.u.dependence_info.base"))) vec[1];
+};
+
+/* The name of a module vector.  */
+#define BINDING_VECTOR_NAME(NODE) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->name)
+
+/* tree_binding_vec does uses  base.u.dependence_info.base field for
+   length.  It does not have lang_flag etc available!  */
+
+/* These two flags note if a module-vector contains deduplicated
+   bindings (i.e. multiple declarations in different imports).  */
+/* This binding contains duplicate references to a global module
+   entity.  */
+#define BINDING_VECTOR_GLOBAL_DUPS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.static_flag)
+/* This binding contains duplicate references to a partioned module
+   entity.  */
+#define BINDING_VECTOR_PARTITION_DUPS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.volatile_flag)
+
+/* These two flags indicate the provenence of the bindings on this
+   particular vector slot.  We can of course determine this from slot
+   number, but that's a relatively expensive lookup.  This avoids
+   that when iterating.  */
+/* This slot is part of the global module (a header unit).  */
+#define MODULE_BINDING_GLOBAL_P(NODE) \
+  (OVERLOAD_CHECK (NODE)->base.static_flag)
+/* This slot is part of the current module (a partition or primary).  */
+#define MODULE_BINDING_PARTITION_P(NODE)		\
+  (OVERLOAD_CHECK (NODE)->base.volatile_flag)
+
+/* There are specializations of a template keyed to this binding.  */
+#define BINDING_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.public_flag)
+/* The key is in a header unit (not a named module partition or
+   primary).  */
+#define BINDING_VECTOR_PENDING_IS_HEADER_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.protected_flag)
+/* The key is in a named module (primary or partition).  */
+#define BINDING_VECTOR_PENDING_IS_PARTITION_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.private_flag)
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
@@ -361,7 +457,7 @@ extern tree *find_member_slot (tree klass, tree name);
 extern tree *add_member_slot (tree klass, tree name);
 extern void resort_type_member_vec (void *, void *,
 				    gt_pointer_operator, void *);
-extern void set_class_bindings (tree, unsigned extra = 0);
+extern vec<tree, va_gc> *set_class_bindings (tree, int extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
@@ -383,5 +479,35 @@ extern void pop_from_top_level (void);
 extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
 extern void discard_operator_bindings (tree);
+
+/* Lower level interface for modules. */
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+					tree *mvec);
+extern void add_mergeable_namespace_entity (tree *slot, tree decl);
+extern tree lookup_class_binding (tree ctx, tree name);
+extern bool import_module_binding (tree ctx, tree name, unsigned mod,
+				   unsigned snum);
+extern bool set_module_binding (tree ctx, tree name, unsigned mod,
+				int mod_glob_flag,
+				tree value, tree type, tree visible);
+extern void add_module_decl (tree ctx, tree name, tree decl);
+
+enum WMB_Flags
+{
+  WMB_None = 0,
+  WMB_Dups = 1 << 0,
+  WMB_Export = 1 << 1,
+  WMB_Using = 1 << 2,
+  WMB_Hidden = 1 << 3,
+};
+
+extern unsigned walk_module_binding (tree binding, bitmap partitions,
+				     bool (*)(tree decl, WMB_Flags, void *data),
+				     void *data);
+extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
+				    location_t, bool visible_p, bool inline_p);
+extern void note_pending_specializations (tree ns, tree name, bool is_header);
+extern void load_pending_specializations (tree ns, tree name);
+extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

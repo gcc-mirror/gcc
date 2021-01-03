@@ -486,6 +486,12 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Check_Aliasing_Of_Parameters := True;
 
+                  --  -gnateb (config file basenames and checksums in ALI)
+
+                  when 'b' =>
+                     Ptr := Ptr + 1;
+                     Config_Files_Store_Basename := True;
+
                   --  -gnatec (configuration pragmas)
 
                   when 'c' =>

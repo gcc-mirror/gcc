@@ -3,6 +3,7 @@
 ! { dg-set-target-env-var OMP_PROC_BIND "spread,close" }
 ! { dg-set-target-env-var OMP_PLACES "{6,7}:4:-2,!{2,3}" }
 ! { dg-set-target-env-var OMP_NUM_THREADS "2" }
+! { dg-additional-options "-Wno-deprecated-declarations" }
 
   use omp_lib
   integer :: num, i, nump

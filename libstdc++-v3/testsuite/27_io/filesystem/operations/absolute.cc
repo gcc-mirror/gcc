@@ -30,7 +30,7 @@ using std::filesystem::path;
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     std::error_code ec;
     path abs = absolute(p, ec);

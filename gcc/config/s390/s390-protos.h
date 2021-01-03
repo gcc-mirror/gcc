@@ -51,6 +51,7 @@ extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
 extern bool s390_return_addr_from_memory(void);
+extern bool s390_fma_allowed_p (machine_mode);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
 					      struct gcc_options *opts,
@@ -134,6 +135,7 @@ extern void s390_split_access_reg (rtx, rtx *, rtx *);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, machine_mode, unsigned int);
+extern bool s390_const_int_pool_entry_p (rtx, HOST_WIDE_INT *);
 extern int s390_label_align (rtx_insn *);
 extern int s390_agen_dep_p (rtx_insn *, rtx_insn *);
 extern rtx_insn *s390_load_got (void);

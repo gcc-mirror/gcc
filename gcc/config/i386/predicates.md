@@ -1023,6 +1023,12 @@
   return op == const1_rtx || op == constm1_rtx;
 })
 
+;; True for registers, or const_int_operand, used to vec_setm expander.
+(define_predicate "vec_setm_operand"
+  (ior (and (match_operand 0 "register_operand")
+	    (match_test "TARGET_AVX2"))
+       (match_code "const_int")))
+
 ;; True for registers, or 1 or -1.  Used to optimize double-word shifts.
 (define_predicate "reg_or_pm1_operand"
   (ior (match_operand 0 "register_operand")
@@ -1725,4 +1731,122 @@
       break;
     }
   return (i >= 12 && i <= 18);
+})
+
+;; Keylocker specific predicates
+(define_predicate "encodekey128_operation"
+  (match_code "parallel")
+{
+  unsigned i;
+  rtx elt;
+
+  if (XVECLEN (op, 0) != 8)
+    return false;
+
+  for(i = 0; i < 3; i++)
+    {
+      elt = XVECEXP (op, 0, i + 1);
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V2DImode
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
+	  || GET_CODE (SET_SRC (elt)) != UNSPEC_VOLATILE
+	  || GET_MODE (SET_SRC (elt)) != V2DImode
+	  || XVECLEN(SET_SRC (elt), 0) != 1
+	  || XVECEXP(SET_SRC (elt), 0, 0) != const0_rtx)
+	return false;
+    }
+
+  for(i = 4; i < 7; i++)
+    {
+      elt = XVECEXP (op, 0, i);
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V2DImode
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
+	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+	return false;
+    }
+
+  elt = XVECEXP (op, 0, 7);
+  if (GET_CODE (elt) != CLOBBER
+      || GET_MODE (elt) != VOIDmode
+      || GET_CODE (XEXP (elt, 0)) != REG
+      || GET_MODE (XEXP (elt, 0)) != CCmode
+      || REGNO (XEXP (elt, 0)) != FLAGS_REG)
+    return false;
+  return true;
+})
+
+(define_predicate "encodekey256_operation"
+  (match_code "parallel")
+{
+  unsigned i;
+  rtx elt;
+
+  if (XVECLEN (op, 0) != 9)
+    return false;
+
+  elt = SET_SRC (XVECEXP (op, 0, 0));
+  elt = XVECEXP (elt, 0, 2);
+  if (!REG_P (elt)
+      || REGNO(elt) != GET_SSE_REGNO (1))
+    return false;
+
+  for(i = 0; i < 4; i++)
+    {
+      elt = XVECEXP (op, 0, i + 1);
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V2DImode
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
+	  || GET_CODE (SET_SRC (elt)) != UNSPEC_VOLATILE
+	  || GET_MODE (SET_SRC (elt)) != V2DImode
+	  || XVECLEN(SET_SRC (elt), 0) != 1
+	  || XVECEXP(SET_SRC (elt), 0, 0) != const0_rtx)
+	return false;
+    }
+
+  for(i = 4; i < 7; i++)
+    {
+      elt = XVECEXP (op, 0, i + 1);
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V2DImode
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
+	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+	return false;
+    }
+
+  elt = XVECEXP (op, 0, 8);
+  if (GET_CODE (elt) != CLOBBER
+      || GET_MODE (elt) != VOIDmode
+      || GET_CODE (XEXP (elt, 0)) != REG
+      || GET_MODE (XEXP (elt, 0)) != CCmode
+      || REGNO (XEXP (elt, 0)) != FLAGS_REG)
+    return false;
+  return true;
+})
+
+
+(define_predicate "aeswidekl_operation"
+  (match_code "parallel")
+{
+  unsigned i;
+  rtx elt;
+
+  for (i = 0; i < 8; i++)
+    {
+      elt = XVECEXP (op, 0, i + 1);
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V2DImode
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
+	  || GET_CODE (SET_SRC (elt)) != UNSPEC_VOLATILE
+	  || GET_MODE (SET_SRC (elt)) != V2DImode
+	  || XVECLEN (SET_SRC (elt), 0) != 1
+	  || REGNO (XVECEXP (SET_SRC (elt), 0, 0)) != GET_SSE_REGNO (i))
+	return false;
+    }
+  return true;
 })

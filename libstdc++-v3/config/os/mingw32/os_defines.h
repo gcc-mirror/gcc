@@ -78,4 +78,7 @@
 // See libstdc++/59807
 #define _GTHREAD_USE_MUTEX_INIT_FUNC 1
 
+// See libstdc++/94268
+#define _GLIBCXX_BUFSIZ 4096
+
 #endif

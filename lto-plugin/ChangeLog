@@ -1,3 +1,12 @@
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* Makefile.am: Avoid using sanitizer.
+	* Makefile.in: Regenerate.
+
 2020-09-10  Jonathan Yong  <10walls@gmail.com>
 
 	* Makefile.am: drop versioning from libtool completely.

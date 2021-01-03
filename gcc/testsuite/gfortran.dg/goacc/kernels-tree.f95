@@ -1,5 +1,7 @@
 ! { dg-do compile } 
 ! { dg-additional-options "-fdump-tree-original" } 
+! { dg-additional-options "-fopenacc-kernels=decompose" }
+! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
 
 program test
   implicit none
@@ -34,3 +36,6 @@ end program test
 ! { dg-final { scan-tree-dump-times "map\\(alloc:t\\)" 1 "original" } } 
 
 ! { dg-final { scan-tree-dump-times "map\\(force_deviceptr:u\\)" 1 "original" } } 
+
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels if\(D\.[0-9]+\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single num_gangs\(1\) if\(D\.[0-9]+\) async\(-1\)$} 1 "omp_oacc_kernels_decompose" } }

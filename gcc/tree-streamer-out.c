@@ -343,7 +343,11 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
       bp_pack_value (bp, TYPE_FINAL_P (expr), 1);
-      bp_pack_value (bp, TYPE_CXX_ODR_P (expr), 1);
+      /* alias_ptr_types_compatible_p relies on fact that during LTO
+         types do not get refined from WPA time to ltrans.  */
+      bp_pack_value (bp, flag_wpa && TYPE_CANONICAL (expr)
+			 ? TYPE_CXX_ODR_P (TYPE_CANONICAL (expr))
+			 : TYPE_CXX_ODR_P (expr), 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);

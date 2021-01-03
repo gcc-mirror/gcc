@@ -195,7 +195,7 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
   /* Builtin should be successfully evaluated.
      Will only return NULL if we can't convert it.  */
   if (TREE_CONSTANT (result) && TREE_CODE (result) != CALL_EXPR)
-    e = d_eval_constant_expression (result);
+    e = d_eval_constant_expression (loc, result);
 
   return e;
 }

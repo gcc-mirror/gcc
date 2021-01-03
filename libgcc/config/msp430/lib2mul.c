@@ -30,6 +30,58 @@ typedef unsigned int  uint08_type   __attribute__ ((mode (QI)));
 #define C3B(a,b,c) a##b##c
 #define C3(a,b,c) C3B(a,b,c)
 
+#if defined (MUL_NONE) || defined (MUL_16)
+/* __muldi3 must be excluded from libgcc.a to prevent multiple-definition
+   errors for the hwmult configurations that have their own definition.
+   However, for MUL_NONE and MUL_16, the software version is still required, so
+   the necessary preprocessed output from libgcc2.c to compile that
+   software version of __muldi3 is below.  */
+typedef unsigned int USItype __attribute__ ((mode (SI)));
+typedef int DItype __attribute__ ((mode (DI)));
+typedef int SItype __attribute__ ((mode (SI)));
+struct DWstruct {SItype low, high;};
+
+typedef union
+{
+  struct DWstruct s;
+  DItype ll;
+} DWunion;
+
+DItype __muldi3 (DItype u, DItype v);
+
+DItype
+__muldi3 (DItype u, DItype v)
+{
+  const DWunion uu = {.ll = u};
+  const DWunion vv = {.ll = v};
+  /* The next block of code is expanded from the following line:
+     DWunion w = {.ll = __umulsidi3 (uu.s.low, vv.s.low)};  */
+  DWunion w;
+  USItype __x0, __x1, __x2, __x3;
+  USItype __ul, __vl, __uh, __vh;
+  __ul = ((USItype) (uu.s.low) & (((USItype) 1 << ((4 * 8) / 2)) - 1));
+  __uh = ((USItype) (uu.s.low) >> ((4 * 8) / 2));
+  __vl = ((USItype) (vv.s.low) & (((USItype) 1 << ((4 * 8) / 2)) - 1));
+  __vh = ((USItype) (vv.s.low) >> ((4 * 8) / 2));
+  __x0 = (USItype) __ul * __vl;
+  __x1 = (USItype) __ul * __vh;
+  __x2 = (USItype) __uh * __vl;
+  __x3 = (USItype) __uh * __vh;
+  __x1 += ((USItype) (__x0) >> ((4 * 8) / 2));
+  __x1 += __x2;
+  if (__x1 < __x2)
+    __x3 += ((USItype) 1 << ((4 * 8) / 2));
+  (w.s.high) = __x3 + ((USItype) (__x1) >> ((4 * 8) / 2));
+  (w.s.low) = ((USItype) (__x1) & (((USItype) 1 << ((4 * 8) / 2)) - 1))
+    * ((USItype) 1 << ((4 * 8) / 2))
+    + ((USItype) (__x0) & (((USItype) 1 << ((4 * 8) / 2)) - 1));
+
+  w.s.high += ((USItype) uu.s.low * (USItype) vv.s.high
+	       + (USItype) uu.s.high * (USItype) vv.s.low);
+  return w.ll;
+}
+#endif
+
 #if defined MUL_NONE
 
 /* The software multiply library needs __mspabi_mpyll.  */

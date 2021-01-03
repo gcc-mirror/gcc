@@ -24,8 +24,8 @@ struct BitArray
         mem.xfree(ptr);
     }
 
-    d_size_t len;
-    d_size_t *ptr;
+    size_t len;
+    size_t *ptr;
 
 private:
     BitArray(const BitArray&);

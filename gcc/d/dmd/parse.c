@@ -1294,8 +1294,6 @@ LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle, bool *pc
         nextToken();
         if (id == Id::Windows)
             link = LINKwindows;
-        else if (id == Id::Pascal)
-            link = LINKpascal;
         else if (id == Id::D)
             link = LINKd;
         else if (id == Id::C)
@@ -1399,7 +1397,7 @@ LINK Parser::parseLinkage(Identifiers **pidents, CPPMANGLE *pcppmangle, bool *pc
         else
         {
         LinvalidLinkage:
-            error("valid linkage identifiers are D, C, C++, Objective-C, Pascal, Windows, System");
+            error("valid linkage identifiers are D, C, C++, Objective-C, Windows, System");
             link = LINKd;
         }
     }

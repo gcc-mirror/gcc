@@ -161,14 +161,21 @@ class path_builder
 public:
   path_builder (const exploded_graph &eg,
 		const exploded_path &epath,
-		const feasibility_problem *problem)
+		const feasibility_problem *problem,
+		const saved_diagnostic &sd)
   : m_eg (eg),
     m_diag_enode (epath.get_final_enode ()),
+    m_sd (sd),
     m_reachability (eg, m_diag_enode),
     m_feasibility_problem (problem)
   {}
 
   const exploded_node *get_diag_node () const { return m_diag_enode; }
+
+  pending_diagnostic *get_pending_diagnostic () const
+  {
+    return m_sd.m_d;
+  }
 
   bool reachable_from_p (const exploded_node *src_enode) const
   {
@@ -189,6 +196,8 @@ private:
 
   /* The enode where the diagnostic occurs.  */
   const exploded_node *m_diag_enode;
+
+  const saved_diagnostic &m_sd;
 
   /* Precompute all enodes from which the diagnostic is reachable.  */
   enode_reachability m_reachability;
@@ -318,7 +327,15 @@ public:
     location_t loc1 = pk1->get_location ();
     location_t loc2 = pk2->get_location ();
 
-    return linemap_compare_locations (line_table, loc2, loc1);
+    if (int cmp = linemap_compare_locations (line_table, loc2, loc1))
+      return cmp;
+    if (int cmp = ((int)pk1->m_sd.get_epath_length ()
+		   - (int)pk2->m_sd.get_epath_length ()))
+      return cmp;
+    if (int cmp = strcmp (pk1->m_sd.m_d->get_kind (),
+			  pk2->m_sd.m_d->get_kind ()))
+      return cmp;
+    return 0;
   }
 
   const saved_diagnostic &m_sd;
@@ -621,7 +638,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   pretty_printer *pp = global_dc->printer->clone ();
 
   /* Precompute all enodes from which the diagnostic is reachable.  */
-  path_builder pb (eg, epath, sd.get_feasibility_problem ());
+  path_builder pb (eg, epath, sd.get_feasibility_problem (), sd);
 
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
@@ -648,7 +665,14 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d);
 
-  gcc_rich_location rich_loc (get_stmt_location (stmt, sd.m_snode->m_fun));
+  location_t loc = get_stmt_location (stmt, sd.m_snode->m_fun);
+
+  /* Allow the pending_diagnostic to fix up the primary location
+     and any locations for events.  */
+  loc = sd.m_d->fixup_location (loc);
+  emission_path.fixup_locations (sd.m_d);
+
+  gcc_rich_location rich_loc (loc);
   rich_loc.set_path (&emission_path);
 
   auto_diagnostic_group d;
@@ -1166,6 +1190,11 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
   const
 {
   gcc_assert (eedge.m_sedge);
+
+  /* Give diagnostics an opportunity to override this function.  */
+  pending_diagnostic *pd = pb.get_pending_diagnostic ();
+  if (pd->maybe_add_custom_events_for_superedge (eedge, emission_path))
+    return;
 
   /* Don't add events for insignificant edges at verbosity levels below 3.  */
   if (m_verbosity < 3)

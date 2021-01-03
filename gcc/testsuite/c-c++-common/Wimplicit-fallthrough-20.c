@@ -27,13 +27,13 @@ g (int i)
   switch (i)
     {
     case -1:
-      __attribute__((used)); /* { dg-warning "ignored|only attribute" } */
+      __attribute__((used)); /* { dg-warning "empty declaration|ignored" } */
     default:
-      __attribute__((used)); /* { dg-warning "ignored|only attribute" } */
+      __attribute__((used)); /* { dg-warning "empty declaration|ignored" } */
     case 1:
       return 6;
     case 2 ... 4:
-      __attribute__((used)); /* { dg-warning "ignored|only attribute" } */
+      __attribute__((used)); /* { dg-warning "empty declaration|ignored" } */
     case 5:
       return 7;
     }

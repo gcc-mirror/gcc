@@ -2705,6 +2705,8 @@ pru_reorg (void)
 enum pru_builtin
 {
   PRU_BUILTIN_DELAY_CYCLES,
+  PRU_BUILTIN_HALT,
+  PRU_BUILTIN_LMBD,
   PRU_BUILTIN_max
 };
 
@@ -2719,10 +2721,30 @@ pru_init_builtins (void)
     = build_function_type_list (void_type_node,
 				long_long_integer_type_node,
 				NULL);
+  tree uint_ftype_uint_uint
+    = build_function_type_list (unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL);
+
+  tree void_ftype_void
+    = build_function_type_list (void_type_node,
+				void_type_node,
+				NULL);
 
   pru_builtins[PRU_BUILTIN_DELAY_CYCLES]
     = add_builtin_function ("__delay_cycles", void_ftype_longlong,
 			    PRU_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+
+  pru_builtins[PRU_BUILTIN_HALT]
+    = add_builtin_function ("__halt", void_ftype_void,
+			    PRU_BUILTIN_HALT, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+
+  pru_builtins[PRU_BUILTIN_LMBD]
+    = add_builtin_function ("__lmbd", uint_ftype_uint_uint,
+			    PRU_BUILTIN_LMBD, BUILT_IN_MD, NULL,
 			    NULL_TREE);
 }
 
@@ -2734,6 +2756,8 @@ pru_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   switch (code)
     {
     case PRU_BUILTIN_DELAY_CYCLES:
+    case PRU_BUILTIN_HALT:
+    case PRU_BUILTIN_LMBD:
       return pru_builtins[code];
     default:
       return error_mark_node;
@@ -2806,19 +2830,45 @@ pru_expand_delay_cycles (rtx arg)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-pru_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
+pru_expand_builtin (tree exp, rtx target,
 		    rtx subtarget ATTRIBUTE_UNUSED,
-		    machine_mode mode ATTRIBUTE_UNUSED,
+		    machine_mode mode,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-  rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
-  if (fcode == PRU_BUILTIN_DELAY_CYCLES)
-    return pru_expand_delay_cycles (arg1);
+  switch (fcode)
+    {
+    case PRU_BUILTIN_DELAY_CYCLES:
+	{
+	  rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	  return pru_expand_delay_cycles (arg1);
+	}
+      break;
+    case PRU_BUILTIN_HALT:
+	{
+	  emit_insn (gen_pru_halt ());
+	  return NULL_RTX;
+	}
+      break;
+    case PRU_BUILTIN_LMBD:
+	{
+	  rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	  rtx arg2 = expand_normal (CALL_EXPR_ARG (exp, 1));
 
-  internal_error ("bad builtin code");
+	  if (target == NULL_RTX || GET_MODE (target) != mode)
+	    {
+	      target = gen_reg_rtx (mode);
+	    }
+
+	  emit_insn (gen_pru_lmbd (mode, target, arg1, arg2));
+	  return target;
+	}
+      break;
+    default:
+      internal_error ("bad builtin code");
+    }
 
   return NULL_RTX;
 }

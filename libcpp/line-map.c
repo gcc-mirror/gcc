@@ -378,23 +378,21 @@ linemap_check_files_exited (line_maps *set)
 	     ORDINARY_MAP_FILE_NAME (map));
 }
 
-/* Create a new line map in the line map set SET, and return it.
-   REASON is the reason of creating the map. It determines the type
-   of map created (ordinary or macro map). Note that ordinary maps and
-   macro maps are allocated in different memory location.  */
+/* Create NUM zero-initialized maps of type MACRO_P.  */
 
-static struct line_map *
-new_linemap (line_maps *set,  location_t start_location)
+line_map *
+line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
 {
-  bool macro_p = start_location >= LINE_MAP_MAX_LOCATION;
   unsigned num_maps_allocated = LINEMAPS_ALLOCATED (set, macro_p);
   unsigned num_maps_used = LINEMAPS_USED (set, macro_p);
-
-  if (num_maps_used == num_maps_allocated)
+  
+  if (num > num_maps_allocated - num_maps_used)
     {
       /* We need more space!  */
       if (!num_maps_allocated)
 	num_maps_allocated = 128;
+      if (num_maps_allocated < num_maps_used + num)
+	num_maps_allocated = num_maps_used + num;
       num_maps_allocated *= 2;
 
       size_t size_of_a_map;
@@ -436,11 +434,37 @@ new_linemap (line_maps *set,  location_t start_location)
 
   line_map *result = (macro_p ? (line_map *)&set->info_macro.maps[num_maps_used]
 		      : (line_map *)&set->info_ordinary.maps[num_maps_used]);
-  LINEMAPS_USED (set, macro_p)++;
+  LINEMAPS_USED (set, macro_p) += num;
+
+  return result;
+}
+
+/* Create a new line map in the line map set SET, and return it.
+   REASON is the reason of creating the map. It determines the type
+   of map created (ordinary or macro map). Note that ordinary maps and
+   macro maps are allocated in different memory location.  */
+
+static struct line_map *
+new_linemap (line_maps *set, location_t start_location)
+{
+  line_map *result = line_map_new_raw (set,
+				       start_location >= LINE_MAP_MAX_LOCATION,
+				       1);
 
   result->start_location = start_location;
 
   return result;
+}
+
+/* Return the location of the last source line within an ordinary
+   map.  */
+inline location_t
+LAST_SOURCE_LINE_LOCATION (const line_map_ordinary *map)
+{
+  return (((map[1].start_location - 1
+	    - map->start_location)
+	   & ~((1 << map->m_column_and_range_bits) - 1))
+	  + map->start_location);
 }
 
 /* Add a mapping of logical source line to physical source file and
@@ -568,6 +592,56 @@ linemap_add (line_maps *set, enum lc_reason reason,
     }
 
   return map;
+}
+
+/* Create a location for a module NAME imported at FROM.  */
+
+location_t
+linemap_module_loc (line_maps *set, location_t from, const char *name)
+{
+  const line_map_ordinary *map
+    = linemap_check_ordinary (linemap_add (set, LC_MODULE, false, name, 0));
+  const_cast <line_map_ordinary *> (map)->included_from = from;
+
+  location_t loc = linemap_line_start (set, 0, 0);
+
+  return loc;
+}
+
+/* The linemap containing LOC is being reparented to be
+   imported/included from ADOPTOR.  This can happen when an
+   indirectly imported module is then directly imported, or when
+   partitions are involved.  */
+
+void
+linemap_module_reparent (line_maps *set, location_t loc, location_t adoptor)
+{
+  const line_map_ordinary *map = linemap_ordinary_map_lookup (set, loc);
+  const_cast<line_map_ordinary *> (map)->included_from = adoptor;
+}
+
+/* A linemap at LWM-1 was interrupted to insert module locations & imports.
+   Append a new map, continuing the interrupted one.  */
+
+void
+linemap_module_restore (line_maps *set, unsigned lwm)
+{
+  if (lwm && lwm != LINEMAPS_USED (set, false))
+    {
+      const line_map_ordinary *pre_map
+	= linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
+      unsigned src_line = SOURCE_LINE (pre_map,
+				       LAST_SOURCE_LINE_LOCATION (pre_map));
+      location_t inc_at = pre_map->included_from;
+      if (const line_map_ordinary *post_map
+	  = (linemap_check_ordinary
+	     (linemap_add (set, LC_RENAME_VERBATIM,
+			   ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+			   ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
+	/* linemap_add will think we were included from the same as
+	   the preceeding map.  */
+	const_cast <line_map_ordinary *> (post_map)->included_from = inc_at;
+    }
 }
 
 /* Returns TRUE if the line table set tracks token locations across
@@ -1003,14 +1077,25 @@ linemap_macro_map_lookup (const line_maps *set, location_t line)
   if (set == NULL)
     return NULL;
 
+  unsigned ix = linemap_lookup_macro_index (set, line);
+  const struct line_map_macro *result = LINEMAPS_MACRO_MAP_AT (set, ix);
+  linemap_assert (MAP_START_LOCATION (result) <= line);
+
+  return result;
+}
+
+unsigned
+linemap_lookup_macro_index (const line_maps *set, location_t line)
+{
   unsigned mn = LINEMAPS_MACRO_CACHE (set);
   unsigned mx = LINEMAPS_MACRO_USED (set);
   const struct line_map_macro *cached = LINEMAPS_MACRO_MAP_AT (set, mn);
 
   if (line >= MAP_START_LOCATION (cached))
     {
-      if (mn == 0 || line < MAP_START_LOCATION (&cached[-1]))
-	return cached;
+      if (line < (MAP_START_LOCATION (cached)
+		  + MACRO_MAP_NUM_MACRO_TOKENS (cached)))
+	return mn;
       mx = mn - 1;
       mn = 0;
     }
@@ -1025,10 +1110,7 @@ linemap_macro_map_lookup (const line_maps *set, location_t line)
     }
 
   LINEMAPS_MACRO_CACHE (set) = mx;
-  const struct line_map_macro *result = LINEMAPS_MACRO_MAP_AT (set, mx);
-  linemap_assert (MAP_START_LOCATION (result) <= line);
-
-  return result;
+  return mx;
 }
 
 /* Return TRUE if MAP encodes locations coming from a macro
@@ -1747,7 +1829,7 @@ linemap_dump (FILE *stream, class line_maps *set, unsigned ix, bool is_macro)
 {
   const char *const lc_reasons_v[LC_HWM]
       = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
-	  "LC_ENTER_MACRO" };
+	  "LC_ENTER_MACRO", "LC_MODULE" };
   const line_map *map;
   unsigned reason;
 

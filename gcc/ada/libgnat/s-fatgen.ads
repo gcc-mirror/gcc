@@ -31,9 +31,8 @@
 
 --  This generic package provides a target independent implementation of the
 --  floating-point attributes that denote functions. The implementations here
---  are portable, but very slow. The runtime contains a set of instantiations
---  of this package for all predefined floating-point types, and these should
---  be replaced by efficient assembly language code where possible.
+--  should be portable and reasonably efficient. The runtime contains a set of
+--  instantiations of this package for all predefined floating-point types.
 
 generic
     type T is digits <>;
@@ -107,12 +106,12 @@ package System.Fat_Gen is
    --  floating point register).
 
 private
+   pragma Inline (Compose);
+   pragma Inline (Copy_Sign);
+   pragma Inline (Exponent);
+   pragma Inline (Fraction);
    pragma Inline (Machine);
    pragma Inline (Model);
-
-   --  Note: previously the validity checking subprograms (Unaligned_Valid and
-   --  Valid) were also inlined, but this was changed since there were some
-   --  problems with this inlining in optimized mode, and in any case it seems
-   --  better to avoid this inlining (space and robustness considerations).
+   pragma Inline (Valid);
 
 end System.Fat_Gen;

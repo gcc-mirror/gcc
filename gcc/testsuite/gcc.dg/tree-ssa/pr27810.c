@@ -13,5 +13,5 @@ int qqq (int a)
 /* We should not use an extra temporary for the result of the
    function call.  */
 
-/* { dg-final { scan-tree-dump-times "int" 3 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "int" 4 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "int D\\\." 1 "gimple" } } */

@@ -804,13 +804,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr size_t
     shuffle_order_engine<_RandomNumberEngine, __k>::table_size;
 
+  namespace __detail
+  {
+    // Determine whether an integer is representable as double.
+    template<typename _Tp>
+      constexpr bool
+      __representable_as_double(_Tp __x) noexcept
+      {
+	static_assert(numeric_limits<_Tp>::is_integer);
+	static_assert(!numeric_limits<_Tp>::is_signed);
+	// All integers <= 2^53 are representable.
+	return (__x <= (1ull << __DBL_MANT_DIG__))
+	  // Between 2^53 and 2^54 only even numbers are representable.
+	  || (!(__x & 1) && __detail::__representable_as_double(__x >> 1));
+      }
+
+    // Determine whether x+1 is representable as double.
+    template<typename _Tp>
+      constexpr bool
+      __p1_representable_as_double(_Tp __x) noexcept
+      {
+	static_assert(numeric_limits<_Tp>::is_integer);
+	static_assert(!numeric_limits<_Tp>::is_signed);
+	return numeric_limits<_Tp>::digits < __DBL_MANT_DIG__
+	  || (bool(__x + 1u) // return false if x+1 wraps around to zero
+	      && __detail::__representable_as_double(__x + 1u));
+      }
+  }
+
   template<typename _RandomNumberEngine, size_t __k>
     typename shuffle_order_engine<_RandomNumberEngine, __k>::result_type
     shuffle_order_engine<_RandomNumberEngine, __k>::
     operator()()
     {
-      size_t __j = __k * ((_M_y - _M_b.min())
-			  / (_M_b.max() - _M_b.min() + 1.0L));
+      constexpr result_type __range = max() - min();
+      size_t __j = __k;
+      const result_type __y = _M_y - min();
+      // Avoid using slower long double arithmetic if possible.
+      if _GLIBCXX17_CONSTEXPR (__detail::__p1_representable_as_double(__range))
+	__j *= __y / (__range + 1.0);
+      else
+	__j *= __y / (__range + 1.0L);
       _M_y = _M_v[__j];
       _M_v[__j] = _M_b();
 

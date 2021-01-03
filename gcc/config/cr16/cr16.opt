@@ -23,11 +23,11 @@ Target
 Use simulator runtime.
 
 mbit-ops
-Target Report Mask(BIT_OPS)
+Target Mask(BIT_OPS)
 Generate SBIT, CBIT instructions.
 
 mmac
-Target Report Mask(MAC)
+Target Mask(MAC)
 Support multiply accumulate instructions.
 
 mdebug-addr

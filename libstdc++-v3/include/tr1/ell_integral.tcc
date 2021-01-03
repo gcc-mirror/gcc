@@ -78,9 +78,7 @@ namespace tr1
     __ellint_rf(_Tp __x, _Tp __y, _Tp __z)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
-      const _Tp __max = std::numeric_limits<_Tp>::max();
       const _Tp __lolim = _Tp(5) * __min;
-      const _Tp __uplim = __max / _Tp(5);
 
       if (__x < _Tp(0) || __y < _Tp(0) || __z < _Tp(0))
         std::__throw_domain_error(__N("Argument less than zero "
@@ -319,10 +317,8 @@ namespace tr1
     {
       const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
       const _Tp __errtol = std::pow(__eps / _Tp(8), _Tp(1) / _Tp(6));
-      const _Tp __min = std::numeric_limits<_Tp>::min();
       const _Tp __max = std::numeric_limits<_Tp>::max();
       const _Tp __lolim = _Tp(2) / std::pow(__max, _Tp(2) / _Tp(3));
-      const _Tp __uplim = std::pow(_Tp(0.1L) * __errtol / __min, _Tp(2) / _Tp(3));
 
       if (__x < _Tp(0) || __y < _Tp(0))
         std::__throw_domain_error(__N("Argument less than zero "
@@ -498,9 +494,7 @@ namespace tr1
     __ellint_rc(_Tp __x, _Tp __y)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
-      const _Tp __max = std::numeric_limits<_Tp>::max();
       const _Tp __lolim = _Tp(5) * __min;
-      const _Tp __uplim = __max / _Tp(5);
 
       if (__x < _Tp(0) || __y < _Tp(0) || __x + __y < __lolim)
         std::__throw_domain_error(__N("Argument less than zero "
@@ -569,10 +563,7 @@ namespace tr1
     __ellint_rj(_Tp __x, _Tp __y, _Tp __z, _Tp __p)
     {
       const _Tp __min = std::numeric_limits<_Tp>::min();
-      const _Tp __max = std::numeric_limits<_Tp>::max();
       const _Tp __lolim = std::pow(_Tp(5) * __min, _Tp(1)/_Tp(3));
-      const _Tp __uplim = _Tp(0.3L)
-                        * std::pow(_Tp(0.2L) * __max, _Tp(1)/_Tp(3));
 
       if (__x < _Tp(0) || __y < _Tp(0) || __z < _Tp(0))
         std::__throw_domain_error(__N("Argument less than zero "
@@ -599,7 +590,7 @@ namespace tr1
           const _Tp __eps = std::numeric_limits<_Tp>::epsilon();
           const _Tp __errtol = std::pow(__eps / _Tp(8), _Tp(1) / _Tp(6));
 
-          _Tp __lambda, __mu;
+          _Tp __mu;
           _Tp __xndev, __yndev, __zndev, __pndev;
 
           const unsigned int __max_iter = 100;

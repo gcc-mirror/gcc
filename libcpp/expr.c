@@ -812,14 +812,21 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
     cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 			 "imaginary constants are a GCC extension");
-  if (radix == 2
-      && !CPP_OPTION (pfile, binary_constants)
-      && CPP_PEDANTIC (pfile))
-    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			 CPP_OPTION (pfile, cplusplus)
-			 ? N_("binary constants are a C++14 feature "
-			      "or GCC extension")
-			 : N_("binary constants are a GCC extension"));
+  if (radix == 2)
+    {
+      if (!CPP_OPTION (pfile, binary_constants)
+	  && CPP_PEDANTIC (pfile))
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     CPP_OPTION (pfile, cplusplus)
+			     ? N_("binary constants are a C++14 feature "
+				  "or GCC extension")
+			     : N_("binary constants are a C2X feature "
+				  "or GCC extension"));
+      else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+			       virtual_location, 0,
+			       "binary constants are a C2X feature");
+    }
 
   if (radix == 10)
     result |= CPP_N_DECIMAL;
@@ -1061,6 +1068,7 @@ parse_defined (cpp_reader *pfile)
 	}
     }
 
+  bool is_defined = false;
   if (node)
     {
       if ((pfile->context != initial_context
@@ -1068,9 +1076,11 @@ parse_defined (cpp_reader *pfile)
 	  && CPP_OPTION (pfile, warn_expansion_to_defined))
         cpp_pedwarning (pfile, CPP_W_EXPANSION_TO_DEFINED,
 		        "this use of \"defined\" may not be portable");
-
+      is_defined = _cpp_defined_macro_p (node);
+      if (!_cpp_maybe_notify_macro_use (pfile, node, token->src_loc))
+	/* It wasn't a macro after all.  */
+	is_defined = false;
       _cpp_mark_macro_used (node);
-      _cpp_maybe_notify_macro_use (pfile, node);
 
       /* A possible controlling macro of the form #if !defined ().
 	 _cpp_parse_expr checks there was no other junk on the line.  */
@@ -1086,7 +1096,7 @@ parse_defined (cpp_reader *pfile)
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = node && _cpp_defined_macro_p (node);
+  result.low = is_defined;
   return result;
 }
 

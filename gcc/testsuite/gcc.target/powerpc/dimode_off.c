@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O2 -fno-align-functions -fno-asynchronous-unwind-tables -mtraceback=no -save-temps" } */
+/* { dg-options "-O2 -fno-align-functions -fno-asynchronous-unwind-tables -mtraceback=no -mno-prefixed -save-temps" } */
 
 void w1 (void *x, long long y) { *(long long *) (x + 32767) = y; }
 void w2 (void *x, long long y) { *(long long *) (x + 32766) = y; }

@@ -38,6 +38,12 @@ f_data (void)
     for (i = 0; i < N; i++)
       A[i] = -i;
 
+    /* See 'declare-vla-kernels-decompose.c'.  */
+#ifdef KERNELS_DECOMPOSE_ICE_HACK
+    (volatile int *) &i;
+    (volatile int *) &N;
+#endif
+
 # pragma acc kernels
     for (i = 0; i < N; i++)
       A[i] = i;

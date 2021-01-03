@@ -124,7 +124,7 @@ test04()
   // remove write permission on the directory:
   fs::permissions(dir, fs::perms::owner_read|fs::perms::owner_exec);
   n = fs::remove_all(dir, ec);
-  VERIFY( n == -1 );
+  VERIFY( n == std::uintmax_t(-1) );
   VERIFY( ec == std::errc::permission_denied ); // not ENOTEMPTY
 
   try {

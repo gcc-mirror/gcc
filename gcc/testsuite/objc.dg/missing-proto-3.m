@@ -2,7 +2,8 @@
    In addition to not crashing :-), the compiler should properly handle
    valid protocol references, even when they're mixed with invalid ones.  */
 /* { dg-do compile } */
- 
+/* { dg-additional-options "-Wno-objc-root-class" } */
+
 #include <objc/objc.h>
 
 @protocol DefinedProtocol

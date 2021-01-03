@@ -273,7 +273,9 @@
    We still need to define this macro to let middle-end know that aliases are
    supported.
  */
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) do { } while (0)
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) do { (void) (FILE);	\
+						(void) (LABEL1); \
+						(void) (LABEL2); } while (0)
 
 /* Used by rs6000_assemble_integer, among others.  */
 

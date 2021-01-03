@@ -1412,6 +1412,10 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	SET_DEF (def_p, name);
 	register_new_def (DEF_FROM_PTR (def_p), var);
 
+	/* Do not insert debug stmts if the stmt ends the BB.  */
+	if (stmt_ends_bb_p (stmt))
+	  continue;
+	
 	tracked_var = target_for_debug_bind (var);
 	if (tracked_var)
 	  {

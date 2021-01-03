@@ -194,10 +194,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)					\
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
-		     LCT_NORMAL, VOIDmode, TRAMP, Pmode,		\
-		     plus_constant (Pmode, TRAMP, TRAMPOLINE_SIZE), 	\
-		     Pmode);
+  maybe_emit_call_builtin___clear_cache ((TRAMP),			\
+					 plus_constant (Pmode,		\
+							(TRAMP),	\
+							TRAMPOLINE_SIZE))
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an
    inline system call to SYS_cacheflush.  The arguments are as

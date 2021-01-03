@@ -1,3 +1,129 @@
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add new error for quoted
+	filenames.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Test it.
+
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* gcc_update: Add c++tools/config.h.in.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc_update: Add c++tools & libcody.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc-changelog/git_commit.py (changelog_locations): Add
+	libcody, c++tools.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter more cases.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Modernize and filter 2 more
+	patterns.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: use flake8 and add some
+	tweaks to ignore aarch64 params.
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Configure sendemail.to.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Suggest close file for
+	'unchanged file mentioned in a ChangeLog' error.
+	* gcc-changelog/test_email.py: Test it.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow sub-directory wildcard
+	changelog entry. Fix a typo caused by apostrophe escaping.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (wildcard_prefixes): Add libstdc++
+	testsuite directory.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow wildcard pattern only.
+
+2020-11-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Use regex for cherry pick prefix.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-11-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Use revert_regex instead
+	of string prefix.  Convert sets to literals.
+
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Do not call read on an input stream.
+	Fix some flake8 issues.
+
+2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 13.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+	* unicode/from_glibc/unicode_utils.py: Update to latest glibc version.
+	* unicode/from_glibc/utf8_gen.py: Likewise.
+
+2020-11-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add new check.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2020-11-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_repository.py: Set strict=True
+	for parse_git_revisions as a default.
+
+2020-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (item_parenthesis_empty_regex,
+	item_parenthesis_regex): Add.
+	(check_for_empty_description): Use them.
+	* gcc-changelog/test_email.py (test_emptry_entry_desc,
+	test_emptry_entry_desc_2): Add.
+	* gcc-changelog/test_patches.txt: Add two testcases for it.
+
+2020-11-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_email.py: Add unidiff_supports_renaming check.
+
+2020-11-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/setup.cfg: New file.
+
+2020-10-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Handle empty groups in
+	file description.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-09-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* mklog.py: Parse first 10 lines for PR/DR number

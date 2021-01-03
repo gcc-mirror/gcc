@@ -33,6 +33,7 @@
 #include "hdrgen.h"
 #include "id.h"
 #include "attrib.h"
+#include "cond.h"
 #include "tokens.h"
 
 #define IDX_NOTFOUND (0x12345678)               // index is not found
@@ -6088,17 +6089,18 @@ Lerror:
         if (minst && minst->isRoot() && !(inst->minst && inst->minst->isRoot()))
         {
             /* Swap the position of 'inst' and 'this' in the instantiation graph.
-             * Then, the primary instance `inst` will be changed to a root instance.
+             * Then, the primary instance `inst` will be changed to a root instance,
+             * along with all members of `inst` having their scopes updated.
              *
              * Before:
-             *  non-root -> A!() -> B!()[inst] -> C!()
+             *  non-root -> A!() -> B!()[inst] -> C!() { members[non-root] }
              *                      |
              *  root     -> D!() -> B!()[this]
              *
              * After:
              *  non-root -> A!() -> B!()[this]
              *                      |
-             *  root     -> D!() -> B!()[inst] -> C!()
+             *  root     -> D!() -> B!()[inst] -> C!() { members[root] }
              */
             Module *mi = minst;
             TemplateInstance *ti = tinst;
@@ -6106,6 +6108,64 @@ Lerror:
             tinst = inst->tinst;
             inst->minst = mi;
             inst->tinst = ti;
+
+            /* https://issues.dlang.org/show_bug.cgi?id=21299
+               `minst` has been updated on the primary instance `inst` so it is
+               now coming from a root module, however all Dsymbol `inst.members`
+               of the instance still have their `_scope.minst` pointing at the
+               original non-root module. We must now propagate `minst` to all
+               members so that forward referenced dependencies that get
+               instantiated will also be appended to the root module, otherwise
+               there will be undefined references at link-time.  */
+            class InstMemberWalker : public Visitor
+            {
+            public:
+                TemplateInstance *inst;
+
+                InstMemberWalker(TemplateInstance *inst)
+                    : inst(inst) { }
+
+                void visit(Dsymbol *d)
+                {
+                    if (d->_scope)
+                        d->_scope->minst = inst->minst;
+                }
+
+                void visit(ScopeDsymbol *sds)
+                {
+                    if (!sds->members)
+                        return;
+                    for (size_t i = 0; i < sds->members->length; i++)
+                    {
+                        Dsymbol *s = (*sds->members)[i];
+                        s->accept(this);
+                    }
+                    visit((Dsymbol *)sds);
+                }
+
+                void visit(AttribDeclaration *ad)
+                {
+                    Dsymbols *d = ad->include(NULL);
+                    if (!d)
+                        return;
+                    for (size_t i = 0; i < d->length; i++)
+                    {
+                        Dsymbol *s = (*d)[i];
+                        s->accept(this);
+                    }
+                    visit((Dsymbol *)ad);
+                }
+
+                void visit(ConditionalDeclaration *cd)
+                {
+                    if (cd->condition->inc)
+                        visit((AttribDeclaration *)cd);
+                    else
+                        visit((Dsymbol *)cd);
+                }
+            };
+            InstMemberWalker v(inst);
+            inst->accept(&v);
 
             if (minst)  // if inst was not speculative
             {
@@ -7486,122 +7546,12 @@ Dsymbols *TemplateInstance::appendToModuleMember()
 
 Identifier *TemplateInstance::genIdent(Objects *args)
 {
-    TemplateDeclaration *tempdecl = this->tempdecl->isTemplateDeclaration();
-    assert(tempdecl);
-
     //printf("TemplateInstance::genIdent('%s')\n", tempdecl->ident->toChars());
+    assert(args == tiargs);
     OutBuffer buf;
-    const char *id = tempdecl->ident->toChars();
-    if (!members)
-    {
-        // Use "__U" for the symbols declared inside template constraint.
-        buf.printf("__U%llu%s", (ulonglong)strlen(id), id);
-    }
-    else
-        buf.printf("__T%llu%s", (ulonglong)strlen(id), id);
-    size_t nparams = tempdecl->parameters->length - (tempdecl->isVariadic() ? 1 : 0);
-    for (size_t i = 0; i < args->length; i++)
-    {
-        RootObject *o = (*args)[i];
-        Type *ta = isType(o);
-        Expression *ea = isExpression(o);
-        Dsymbol *sa = isDsymbol(o);
-        Tuple *va = isTuple(o);
-        //printf("\to [%d] %p ta %p ea %p sa %p va %p\n", i, o, ta, ea, sa, va);
-        if (i < nparams && (*tempdecl->parameters)[i]->specialization())
-            buf.writeByte('H');     // Bugzilla 6574
-        if (ta)
-        {
-            buf.writeByte('T');
-            if (ta->deco)
-                buf.writestring(ta->deco);
-            else
-            {
-                assert(global.errors);
-            }
-        }
-        else if (ea)
-        {
-            // Don't interpret it yet, it might actually be an alias template parameter.
-            // Only constfold manifest constants, not const/immutable lvalues, see https://issues.dlang.org/show_bug.cgi?id=17339.
-            const bool keepLvalue = true;
-            ea = ea->optimize(WANTvalue, keepLvalue);
-            if (ea->op == TOKvar)
-            {
-                sa = ((VarExp *)ea)->var;
-                ea = NULL;
-                goto Lsa;
-            }
-            if (ea->op == TOKthis)
-            {
-                sa = ((ThisExp *)ea)->var;
-                ea = NULL;
-                goto Lsa;
-            }
-            if (ea->op == TOKfunction)
-            {
-                if (((FuncExp *)ea)->td)
-                    sa = ((FuncExp *)ea)->td;
-                else
-                    sa = ((FuncExp *)ea)->fd;
-                ea = NULL;
-                goto Lsa;
-            }
-            buf.writeByte('V');
-            if (ea->op == TOKtuple)
-            {
-                ea->error("tuple is not a valid template value argument");
-                continue;
-            }
-            // Now that we know it is not an alias, we MUST obtain a value
-            unsigned olderr = global.errors;
-            ea = ea->ctfeInterpret();
-            if (ea->op == TOKerror || olderr != global.errors)
-                continue;
-
-            /* Use deco that matches what it would be for a function parameter
-             */
-            buf.writestring(ea->type->deco);
-            mangleToBuffer(ea, &buf);
-        }
-        else if (sa)
-        {
-          Lsa:
-            buf.writeByte('S');
-            sa = sa->toAlias();
-            Declaration *d = sa->isDeclaration();
-            if (d && (!d->type || !d->type->deco))
-            {
-                error("forward reference of %s %s", d->kind(), d->toChars());
-                continue;
-            }
-
-            OutBuffer bufsa;
-            mangleToBuffer(sa, &bufsa);
-            const char *s = bufsa.extractChars();
-
-            /* Bugzilla 3043: if the first character of s is a digit this
-             * causes ambiguity issues because the digits of the two numbers are adjacent.
-             * Current demanglers resolve this by trying various places to separate the
-             * numbers until one gets a successful demangle.
-             * Unfortunately, fixing this ambiguity will break existing binary
-             * compatibility and the demanglers, so we'll leave it as is.
-             */
-            buf.printf("%u%s", (unsigned)strlen(s), s);
-        }
-        else if (va)
-        {
-            assert(i + 1 == args->length);         // must be last one
-            args = &va->objects;
-            i = -(size_t)1;
-        }
-        else
-            assert(0);
-    }
-    buf.writeByte('Z');
-    id = buf.peekChars();
+    mangleToBuffer(this, &buf);
     //printf("\tgenIdent = %s\n", id);
-    return Identifier::idPool(id);
+    return Identifier::idPool(buf.peekChars());
 }
 
 /*************************************

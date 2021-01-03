@@ -123,123 +123,6 @@ cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
     readonly_error (loc, arg, errstring);
 }
 
-/* Structure that holds information about declarations whose type was
-   incomplete and we could not check whether it was abstract or not.  */
-
-struct GTY((chain_next ("%h.next"), for_user)) pending_abstract_type {
-  /* Declaration which we are checking for abstractness. It is either
-     a DECL node, or an IDENTIFIER_NODE if we do not have a full
-     declaration available.  */
-  tree decl;
-
-  /* Type which will be checked for abstractness.  */
-  tree type;
-
-  /* Kind of use in an unnamed declarator.  */
-  enum abstract_class_use use;
-
-  /* Position of the declaration. This is only needed for IDENTIFIER_NODEs,
-     because DECLs already carry locus information.  */
-  location_t locus;
-
-  /* Link to the next element in list.  */
-  struct pending_abstract_type* next;
-};
-
-struct abstract_type_hasher : ggc_ptr_hash<pending_abstract_type>
-{
-  typedef tree compare_type;
-  static hashval_t hash (pending_abstract_type *);
-  static bool equal (pending_abstract_type *, tree);
-};
-
-/* Compute the hash value of the node VAL. This function is used by the
-   hash table abstract_pending_vars.  */
-
-hashval_t
-abstract_type_hasher::hash (pending_abstract_type *pat)
-{
-  return (hashval_t) TYPE_UID (pat->type);
-}
-
-
-/* Compare node VAL1 with the type VAL2. This function is used by the
-   hash table abstract_pending_vars.  */
-
-bool
-abstract_type_hasher::equal (pending_abstract_type *pat1, tree type2)
-{
-  return (pat1->type == type2);
-}
-
-/* Hash table that maintains pending_abstract_type nodes, for which we still
-   need to check for type abstractness.  The key of the table is the type
-   of the declaration.  */
-static GTY (()) hash_table<abstract_type_hasher> *abstract_pending_vars = NULL;
-
-static int abstract_virtuals_error_sfinae (tree, tree, abstract_class_use, tsubst_flags_t);
-
-/* This function is called after TYPE is completed, and will check if there
-   are pending declarations for which we still need to verify the abstractness
-   of TYPE, and emit a diagnostic (through abstract_virtuals_error) if TYPE
-   turned out to be incomplete.  */
-
-void
-complete_type_check_abstract (tree type)
-{
-  struct pending_abstract_type *pat;
-  location_t cur_loc = input_location;
-
-  gcc_assert (COMPLETE_TYPE_P (type));
-
-  if (!abstract_pending_vars)
-    return;
-
-  /* Retrieve the list of pending declarations for this type.  */
-  pending_abstract_type **slot
-    = abstract_pending_vars->find_slot_with_hash (type, TYPE_UID (type),
-						  NO_INSERT);
-  if (!slot)
-    return;
-  pat = *slot;
-  gcc_assert (pat);
-
-  /* If the type is not abstract, do not do anything.  */
-  if (CLASSTYPE_PURE_VIRTUALS (type))
-    {
-      struct pending_abstract_type *prev = 0, *next;
-
-      /* Reverse the list to emit the errors in top-down order.  */
-      for (; pat; pat = next)
-	{
-	  next = pat->next;
-	  pat->next = prev;
-	  prev = pat;
-	}
-      pat = prev;
-
-      /* Go through the list, and call abstract_virtuals_error for each
-	element: it will issue a diagnostic if the type is abstract.  */
-      while (pat)
-	{
-	  gcc_assert (type == pat->type);
-
-	  /* Tweak input_location so that the diagnostic appears at the correct
-	    location. Notice that this is only needed if the decl is an
-	    IDENTIFIER_NODE.  */
-	  input_location = pat->locus;
-	  abstract_virtuals_error_sfinae (pat->decl, pat->type, pat->use,
-					  tf_warning_or_error);
-	  pat = pat->next;
-	}
-    }
-
-  abstract_pending_vars->clear_slot (slot);
-
-  input_location = cur_loc;
-}
-
-
 /* If TYPE has abstract virtual functions, issue an error about trying
    to create an object of that type.  DECL is the object declared, or
    NULL_TREE if the declaration is unavailable, in which case USE specifies
@@ -251,6 +134,13 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
 				tsubst_flags_t complain)
 {
   vec<tree, va_gc> *pure;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      decl = NULL_TREE;
+      use = ACU_ARRAY;
+      type = strip_array_types (type);
+    }
 
   /* This function applies only to classes. Any other entity can never
      be abstract.  */
@@ -265,38 +155,6 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
   if (!(complain & (tf_error|tf_decltype)))
     complete_type (type);
 #endif
-
-  /* If the type is incomplete, we register it within a hash table,
-     so that we can check again once it is completed. This makes sense
-     only for objects for which we have a declaration or at least a
-     name.  */
-  if (!COMPLETE_TYPE_P (type) && (complain & tf_error))
-    {
-      struct pending_abstract_type *pat;
-
-      gcc_assert (!decl || DECL_P (decl) || identifier_p (decl));
-
-      if (!abstract_pending_vars)
-	abstract_pending_vars
-	  = hash_table<abstract_type_hasher>::create_ggc (31);
-
-      pending_abstract_type **slot
-       	= abstract_pending_vars->find_slot_with_hash (type, TYPE_UID (type),
-						      INSERT);
-
-      pat = ggc_alloc<pending_abstract_type> ();
-      pat->type = type;
-      pat->decl = decl;
-      pat->use = use;
-      pat->locus = ((decl && DECL_P (decl))
-		    ? DECL_SOURCE_LOCATION (decl)
-		    : input_location);
-
-      pat->next = *slot;
-      *slot = pat;
-
-      return 0;
-    }
 
   if (!TYPE_SIZE (type))
     /* TYPE is being defined, and during that time
@@ -886,11 +744,13 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     {
       bool const_init;
       tree oldval = value;
-      value = fold_non_dependent_expr (value, tf_warning_or_error, true, decl);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
 	      && DECL_INITIALIZED_IN_CLASS_P (decl)))
 	{
+	  value = fold_non_dependent_expr (value, tf_warning_or_error,
+					   /*manifestly_const_eval=*/true,
+					   decl);
 	  /* Diagnose a non-constant initializer for constexpr variable or
 	     non-inline in-class-initialized static data member.  */
 	  if (!require_constant_expression (value))
@@ -904,7 +764,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	    value = cxx_constant_init (value, decl);
 	}
       else
-	value = maybe_constant_init (value, decl, true);
+	value = fold_non_dependent_init (value, tf_warning_or_error,
+					 /*manifestly_const_eval=*/true, decl);
       if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
 	/* Poison this CONSTRUCTOR so it can't be copied to another
 	   constexpr variable.  */
@@ -948,13 +809,14 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
   if (value != error_mark_node
+      && !processing_template_decl
       && (TREE_SIDE_EFFECTS (value)
 	  || vla_type_p (type)
 	  || ! reduced_constant_expression_p (value)))
     return split_nonconstant_init (decl, value);
 
   /* DECL may change value; purge caches.  */
-  clear_cv_and_fold_caches (TREE_STATIC (decl));
+  clear_cv_and_fold_caches ();
 
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
      is an automatic variable, the middle end will turn this into a
@@ -1288,6 +1150,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	      || VECTOR_TYPE_P (type)
 	      || code == RECORD_TYPE
 	      || code == UNION_TYPE
+	      || code == OPAQUE_TYPE
 	      || code == COMPLEX_TYPE);
 
   /* "If T is a class type and the initializer list has a single
@@ -2594,6 +2457,3 @@ require_complete_eh_spec_types (tree fntype, tree decl)
 	}
     }
 }
-
-
-#include "gt-cp-typeck2.h"

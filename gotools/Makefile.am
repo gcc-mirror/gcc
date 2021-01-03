@@ -101,7 +101,7 @@ MOSTLYCLEANFILES = \
 
 mostlyclean-local:
 	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
-	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir \
+	rm -rf check-go-dir cgo-test-dir carchive-test-dir \
 	check-vet-dir gocache-test
 
 if NATIVE
@@ -210,6 +210,11 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 	rm -rf check-go-dir cmd_go-testlog
 	$(MKDIR_P) check-go-dir/src/cmd/go
+	cp $(libgosrcdir)/go.mod check-go-dir/src/
+	cp $(cmdsrcdir)/go.mod check-go-dir/src/cmd/
+	$(MKDIR_P) check-go-dir/src/vendor check-go-dir/src/cmd/vendor
+	cp $(libgosrcdir)/vendor/modules.txt check-go-dir/src/vendor/
+	cp $(libgosrcdir)/cmd/vendor/modules.txt check-go-dir/src/cmd/vendor/
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
 	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
@@ -234,21 +239,20 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 # but the runtime tests use the go tool heavily, so testing
 # here too will catch more problems.
 check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
-	rm -rf check-runtime-dir runtime-testlog
-	$(MKDIR_P) check-runtime-dir
+	rm -f runtime-testlog
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
 	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
 	$(CHECK_ENV) \
 	GC="$${GCCGO} -fgo-compiling-runtime"; \
 	export GC; \
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
-	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
+	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
 	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
@@ -256,6 +260,7 @@ check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf cgo-test-dir cgo-testlog
 	$(MKDIR_P) cgo-test-dir/misc/cgo
+	echo 'module misc' > cgo-test-dir/misc/go.mod
 	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	echo "cd cgo-test-dir/misc/cgo/test && $(ECHO_ENV) GOTRACEBACK=2 $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cgo-testlog
@@ -270,6 +275,7 @@ check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 check-carchive-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf carchive-test-dir carchive-testlog
 	$(MKDIR_P) carchive-test-dir/misc/cgo
+	echo 'module misc' > carchive-test-dir/misc/go.mod
 	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > carchive-testlog
@@ -283,6 +289,11 @@ check-carchive-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check
 check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf check-vet-dir cmd_vet-testlog
 	$(MKDIR_P) check-vet-dir/src/cmd/internal check-vet-dir/src/cmd/vendor/golang.org/x
+	cp $(libgosrcdir)/go.mod check-vet-dir/src/
+	cp $(cmdsrcdir)/go.mod check-vet-dir/src/cmd/
+	$(MKDIR_P) check-vet-dir/src/vendor check-vet-dir/src/cmd/vendor
+	cp $(libgosrcdir)/vendor/modules.txt check-vet-dir/src/vendor/
+	cp $(libgosrcdir)/cmd/vendor/modules.txt check-vet-dir/src/cmd/vendor/
 	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
 	cp -r $(cmdsrcdir)/internal/objabi check-vet-dir/src/cmd/internal
 	cp $(libgodir)/objabi.go check-vet-dir/src/cmd/internal/objabi/

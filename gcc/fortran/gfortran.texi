@@ -3639,6 +3639,9 @@ requires an explicit interface.
 
 @itemize
 @item @code{NO_ARG_CHECK} -- disable the type, kind and rank checking
+@item @code{DEPRECATED} -- print a warning when using a such-tagged
+deprecated procedure, variable or parameter; the warning can be suppressed
+with @option{-Wno-deprecated-declarations}.
 @end itemize
 
 
@@ -3863,8 +3866,8 @@ initialization using @code{_gfortran_set_args}.
 Default: enabled.
 @item @var{option}[6] @tab Enables run-time checking.  Possible values
 are (bitwise or-ed): GFC_RTCHECK_BOUNDS (1), GFC_RTCHECK_ARRAY_TEMPS (2),
-GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (16), GFC_RTCHECK_POINTER (32),
-GFC_RTCHECK_BITS (64).
+GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (8), GFC_RTCHECK_POINTER (16),
+GFC_RTCHECK_MEM (32), GFC_RTCHECK_BITS (64).
 Default: disabled.
 @item @var{option}[7] @tab Unused.
 @item @var{option}[8] @tab Show a warning when invoking @code{STOP} and

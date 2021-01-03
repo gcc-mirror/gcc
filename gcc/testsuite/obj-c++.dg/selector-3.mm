@@ -2,6 +2,7 @@
 /* This is the "-fgnu-runtime" variant of objc.dg/selector-1.m.  */
 /* { dg-options "-Wselector -fgnu-runtime" } */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 typedef const struct objc_selector    *SEL;

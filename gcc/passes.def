@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_unused_result);
   NEXT_PASS (pass_diagnose_omp_blocks);
   NEXT_PASS (pass_diagnose_tm_blocks);
+  NEXT_PASS (pass_omp_oacc_kernels_decompose);
   NEXT_PASS (pass_lower_omp);
   NEXT_PASS (pass_lower_cf);
   NEXT_PASS (pass_lower_tm);
@@ -93,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
 	  NEXT_PASS (pass_modref);
 	  NEXT_PASS (pass_tail_recursion);
+	  NEXT_PASS (pass_if_to_switch);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
 	  NEXT_PASS (pass_profile);
@@ -289,11 +291,16 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_vectorize must immediately follow pass_if_conversion.
 	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);
-          PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
+	  PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
 	      NEXT_PASS (pass_dce);
-          POP_INSERT_PASSES ()
-          NEXT_PASS (pass_predcom);
+	  POP_INSERT_PASSES ()
+	  NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);
+	  NEXT_PASS (pass_pre_slp_scalar_cleanup);
+	  PUSH_INSERT_PASSES_WITHIN (pass_pre_slp_scalar_cleanup)
+	      NEXT_PASS (pass_fre, false /* may_iterate */);
+	      NEXT_PASS (pass_dse);
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_slp_vectorize);
 	  NEXT_PASS (pass_loop_prefetch);
 	  /* Run IVOPTs after the last pass that uses data-reference analysis
@@ -491,6 +498,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_late_compilation);
       PUSH_INSERT_PASSES_WITHIN (pass_late_compilation)
+	  NEXT_PASS (pass_zero_call_used_regs);
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_variable_tracking);
 	  NEXT_PASS (pass_free_cfg);

@@ -400,7 +400,7 @@
 (define_mode_iterator SVE_ALL [VNx16QI VNx8QI VNx4QI VNx2QI
 			       VNx8HI VNx4HI VNx2HI
 			       VNx8HF VNx4HF VNx2HF
-			       VNx8BF
+			       VNx8BF VNx4BF VNx2BF
 			       VNx4SI VNx2SI
 			       VNx4SF VNx2SF
 			       VNx2DI
@@ -418,11 +418,13 @@
 				VNx2DI])
 
 ;; SVE modes with 2 or 4 elements.
-(define_mode_iterator SVE_24 [VNx2QI VNx2HI VNx2HF VNx2SI VNx2SF VNx2DI VNx2DF
-			      VNx4QI VNx4HI VNx4HF VNx4SI VNx4SF])
+(define_mode_iterator SVE_24 [VNx2QI VNx2HI VNx2HF VNx2BF VNx2SI VNx2SF
+			      VNx2DI VNx2DF
+			      VNx4QI VNx4HI VNx4HF VNx4BF VNx4SI VNx4SF])
 
 ;; SVE modes with 2 elements.
-(define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2SI VNx2SF VNx2DI VNx2DF])
+(define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2BF
+			     VNx2SI VNx2SF VNx2DI VNx2DF])
 
 ;; SVE integer modes with 2 elements, excluding the widest element.
 (define_mode_iterator SVE_2BHSI [VNx2QI VNx2HI VNx2SI])
@@ -431,7 +433,7 @@
 (define_mode_iterator SVE_2HSDI [VNx2HI VNx2SI VNx2DI])
 
 ;; SVE modes with 4 elements.
-(define_mode_iterator SVE_4 [VNx4QI VNx4HI VNx4HF VNx4SI VNx4SF])
+(define_mode_iterator SVE_4 [VNx4QI VNx4HI VNx4HF VNx4BF VNx4SI VNx4SF])
 
 ;; SVE integer modes with 4 elements, excluding the widest element.
 (define_mode_iterator SVE_4BHI [VNx4QI VNx4HI])
@@ -621,6 +623,7 @@
     UNSPEC_REVB		; Used in aarch64-sve.md.
     UNSPEC_REVH		; Used in aarch64-sve.md.
     UNSPEC_REVW		; Used in aarch64-sve.md.
+    UNSPEC_REVBHW	; Used in aarch64-sve.md.
     UNSPEC_SMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_FMLA		; Used in aarch64-sve.md.
@@ -968,6 +971,16 @@
 			     (VNx4SI "32") (VNx2DI "64")
 			     (VNx8HF "16") (VNx4SF "32") (VNx2DF "64")])
 
+;; The number of bits in a vector container.
+(define_mode_attr container_bits [(VNx16QI "8")
+				  (VNx8HI "16") (VNx8QI "16") (VNx8HF "16")
+				  (VNx8BF "16")
+				  (VNx4SI "32") (VNx4HI "32") (VNx4QI "32")
+				  (VNx4SF "32") (VNx4HF "32") (VNx4BF "32")
+				  (VNx2DI "64") (VNx2SI "64") (VNx2HI "64")
+				  (VNx2QI "64") (VNx2DF "64") (VNx2SF "64")
+				  (VNx2HF "64") (VNx2BF "64")])
+
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
 
@@ -1029,7 +1042,7 @@
 			  (VNx16QI "b") (VNx8QI "b") (VNx4QI "b") (VNx2QI "b")
 			  (VNx8HI "h") (VNx4HI "h") (VNx2HI "h")
 			  (VNx8HF "h") (VNx4HF "h") (VNx2HF "h")
-			  (VNx8BF "h")
+			  (VNx8BF "h") (VNx4BF "h") (VNx2BF "h")
 			  (VNx4SI "s") (VNx2SI "s")
 			  (VNx4SF "s") (VNx2SF "s")
 			  (VNx2DI "d")
@@ -1047,7 +1060,7 @@
 (define_mode_attr Vesize [(VNx16QI "b") (VNx8QI "b") (VNx4QI "b") (VNx2QI "b")
 			  (VNx8HI "h") (VNx4HI "h") (VNx2HI "h")
 			  (VNx8HF "h") (VNx4HF "h") (VNx2HF "h")
-			  (VNx8BF "h")
+			  (VNx8BF "h") (VNx4BF "h") (VNx2BF "h")
 			  (VNx4SI "w") (VNx2SI "w")
 			  (VNx4SF "w") (VNx2SF "w")
 			  (VNx2DI "d")
@@ -1066,11 +1079,22 @@
 (define_mode_attr Vctype [(VNx16QI "b") (VNx8QI "h") (VNx4QI "s") (VNx2QI "d")
 			  (VNx8HI "h") (VNx4HI "s") (VNx2HI "d")
 			  (VNx8HF "h") (VNx4HF "s") (VNx2HF "d")
-			  (VNx8BF "h")
+			  (VNx8BF "h") (VNx4BF "s") (VNx2BF "d")
 			  (VNx4SI "s") (VNx2SI "d")
 			  (VNx4SF "s") (VNx2SF "d")
 			  (VNx2DI "d")
 			  (VNx2DF "d")])
+
+;; The instruction mnemonic suffix for an SVE mode's element container,
+;; i.e. the Vewtype of full SVE modes that have the same number of elements.
+(define_mode_attr Vcwtype [(VNx16QI "b") (VNx8QI "h") (VNx4QI "w") (VNx2QI "d")
+			   (VNx8HI "h") (VNx4HI "w") (VNx2HI "d")
+			   (VNx8HF "h") (VNx4HF "w") (VNx2HF "d")
+			   (VNx8BF "h") (VNx4BF "w") (VNx2BF "d")
+			   (VNx4SI "w") (VNx2SI "d")
+			   (VNx4SF "w") (VNx2SF "d")
+			   (VNx2DI "d")
+			   (VNx2DF "d")])
 
 ;; Vetype is used everywhere in scheduling type and assembly output,
 ;; sometimes they are not the same, for example HF modes on some
@@ -1107,7 +1131,7 @@
 		       (VNx16QI "QI") (VNx8QI "QI") (VNx4QI "QI") (VNx2QI "QI")
 		       (VNx8HI "HI") (VNx4HI "HI") (VNx2HI "HI")
 		       (VNx8HF "HF") (VNx4HF "HF") (VNx2HF "HF")
-		       (VNx8BF "BF")
+		       (VNx8BF "BF") (VNx4BF "BF") (VNx2BF "BF")
 		       (VNx4SI "SI") (VNx2SI "SI")
 		       (VNx4SF "SF") (VNx2SF "SF")
 		       (VNx2DI "DI")
@@ -1127,7 +1151,7 @@
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
 		       (VNx8HF "hf") (VNx4HF "hf") (VNx2HF "hf")
-		       (VNx8BF "bf")
+		       (VNx8BF "bf") (VNx4BF "bf") (VNx2BF "bf")
 		       (VNx4SI "si") (VNx2SI "si")
 		       (VNx4SF "sf") (VNx2SF "sf")
 		       (VNx2DI "di")
@@ -1310,7 +1334,7 @@
 			  (VNx16QI "w") (VNx8QI "w") (VNx4QI "w") (VNx2QI "w")
 			  (VNx8HI "w") (VNx4HI "w") (VNx2HI "w")
 			  (VNx8HF "w") (VNx4HF "w") (VNx2HF "w")
-			  (VNx8BF "w")
+			  (VNx8BF "w") (VNx4BF "w") (VNx2BF "w")
 			  (VNx4SI "w") (VNx2SI "w")
 			  (VNx4SF "w") (VNx2SF "w")
 			  (VNx2DI "x")
@@ -1380,6 +1404,8 @@
 				   (VNx2DI "VNx2DI")
 				   (VNx8HF "VNx8HI") (VNx4HF "VNx4SI")
 				   (VNx2HF "VNx2DI")
+				   (VNx8BF "VNx8HI") (VNx4BF "VNx4SI")
+				   (VNx2BF "VNx2DI")
 				   (VNx4SF "VNx4SI") (VNx2SF "VNx2DI")
 				   (VNx2DF "VNx2DI")])
 
@@ -1392,6 +1418,8 @@
 				   (VNx2DI "vnx2di")
 				   (VNx8HF "vnx8hi") (VNx4HF "vnx4si")
 				   (VNx2HF "vnx2di")
+				   (VNx8BF "vnx8hi") (VNx4BF "vnx4si")
+				   (VNx2BF "vnx2di")
 				   (VNx4SF "vnx4si") (VNx2SF "vnx2di")
 				   (VNx2DF "vnx2di")])
 
@@ -1617,7 +1645,7 @@
 			 (VNx4QI "VNx4BI") (VNx2QI "VNx2BI")
 			 (VNx8HI "VNx8BI") (VNx4HI "VNx4BI") (VNx2HI "VNx2BI")
 			 (VNx8HF "VNx8BI") (VNx4HF "VNx4BI") (VNx2HF "VNx2BI")
-			 (VNx8BF "VNx8BI")
+			 (VNx8BF "VNx8BI") (VNx4BF "VNx4BI") (VNx2BF "VNx2BI")
 			 (VNx4SI "VNx4BI") (VNx2SI "VNx2BI")
 			 (VNx4SF "VNx4BI") (VNx2SF "VNx2BI")
 			 (VNx2DI "VNx2BI")
@@ -1643,7 +1671,7 @@
 			 (VNx4QI "vnx4bi") (VNx2QI "vnx2bi")
 			 (VNx8HI "vnx8bi") (VNx4HI "vnx4bi") (VNx2HI "vnx2bi")
 			 (VNx8HF "vnx8bi") (VNx4HF "vnx4bi") (VNx2HF "vnx2bi")
-			 (VNx8BF "vnx8bi")
+			 (VNx8BF "vnx8bi") (VNx4BF "vnx4bi") (VNx2BF "vnx2bi")
 			 (VNx4SI "vnx4bi") (VNx2SI "vnx2bi")
 			 (VNx4SF "vnx4bi") (VNx2SF "vnx2bi")
 			 (VNx2DI "vnx2bi")
@@ -2569,6 +2597,10 @@
 				    UNSPEC_SQRDCMLAH90
 				    UNSPEC_SQRDCMLAH180
 				    UNSPEC_SQRDCMLAH270])
+
+;; Same as SVE2_INT_CADD but exclude the saturating instructions
+(define_int_iterator SVE2_INT_CADD_OP [UNSPEC_CADD90
+				       UNSPEC_CADD270])
 
 (define_int_iterator SVE2_INT_CDOT [UNSPEC_CDOT
 				    UNSPEC_CDOT90

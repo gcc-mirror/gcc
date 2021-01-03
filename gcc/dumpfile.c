@@ -492,6 +492,14 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, location_t loc)
 static void
 dump_loc (dump_flags_t dump_kind, pretty_printer *pp, location_t loc)
 {
+  /* Disable warnings about missing quoting in GCC diagnostics for
+     the pp_printf calls.  Their format strings aren't used to format
+     diagnostics so don't need to follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
@@ -507,6 +515,10 @@ dump_loc (dump_flags_t dump_kind, pretty_printer *pp, location_t loc)
       for (unsigned i = 0; i < get_dump_scope_depth (); i++)
 	pp_character (pp, ' ');
     }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 }
 
 /* Implementation of dump_context member functions.  */
@@ -1118,8 +1130,12 @@ dump_context::begin_scope (const char *name,
   if (m_test_pp && apply_dump_filter_p (MSG_NOTE, m_test_pp_flags))
     ::dump_loc (MSG_NOTE, m_test_pp, src_loc);
 
+  /* Format multiple consecutive punctuation characters via %s to
+     avoid -Wformat-diag in the pp_printf call below whose output
+     isn't used for diagnostic output.  */
   pretty_printer pp;
-  pp_printf (&pp, "=== %s ===\n", name);
+  pp_printf (&pp, "%s %s %s", "===", name, "===");
+  pp_newline (&pp);
   optinfo_item *item
     = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
 			xstrdup (pp_formatted_text (&pp)));

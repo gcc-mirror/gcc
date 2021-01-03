@@ -1634,7 +1634,7 @@ constraints with multiple alternatives, sometimes one alternative
 requires @samp{&} while others do not.  See, for example, the
 @samp{movdf} insn of the 68000.
 
-A operand which is read by the instruction can be tied to an earlyclobber
+An operand which is read by the instruction can be tied to an earlyclobber
 operand if its only use as an input occurs before the early result is
 written.  Adding alternatives of this form often allows GCC to produce
 better code when only some of the read operands can be affected by the
@@ -5626,6 +5626,28 @@ with N signed/unsigned elements of size S@.  Operand 2 is a constant.  Shift
 the high/low elements of operand 1, and put the N/2 results of size 2*S in the
 output vector (operand 0).
 
+@cindex @code{vec_widen_saddl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_saddl_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_uaddl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_uaddl_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_uaddl_hi_@var{m}}, @samp{vec_widen_uaddl_lo_@var{m}}
+@itemx @samp{vec_widen_saddl_hi_@var{m}}, @samp{vec_widen_saddl_lo_@var{m}}
+Signed/Unsigned widening add long.  Operands 1 and 2 are vectors with N
+signed/unsigned elements of size S@.  Add the high/low elements of 1 and 2
+together, widen the resulting elements and put the N/2 results of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_widen_ssubl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_ssubl_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_usubl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_usubl_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_usubl_hi_@var{m}}, @samp{vec_widen_usubl_lo_@var{m}}
+@itemx @samp{vec_widen_ssubl_hi_@var{m}}, @samp{vec_widen_ssubl_lo_@var{m}}
+Signed/Unsigned widening subtract long.  Operands 1 and 2 are vectors with N
+signed/unsigned elements of size S@.  Subtract the high/low elements of 2 from
+1 and widen the resulting elements. Put the N/2 results of size 2*S in the
+output vector (operand 0).
+
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
 Multiply operands 1 and 2, which have mode @code{HImode}, and store
@@ -6129,6 +6151,54 @@ Equivalent to @samp{op0 = op1 * copysign (1.0, op2)}: store a value with
 the magnitude of operand 1 and the sign of operand 2 into operand 0.
 All operands have mode @var{m}, which is a scalar or vector
 floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cadd90@var{m}3} instruction pattern
+@item @samp{cadd90@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] - b[i+1];
+      c[i+1] = a[i+1] + b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 90 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cadd270@var{m}3} instruction pattern
+@item @samp{cadd270@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] + b[i+1];
+      c[i+1] = a[i+1] - b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 270 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
 
 This pattern is not allowed to @code{FAIL}.
 
@@ -11201,11 +11271,11 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int}
-must have the same rtx format.  @xref{RTL Classes}. Int iterators can appear
-in only those rtx fields that have 'i' as the specifier. This means that
-each @var{int} has to be a constant defined using define_constant or
-define_c_enum.
+@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
+same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
+those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
+means that each @var{int} has to be a constant defined using define_constant
+or define_c_enum.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by

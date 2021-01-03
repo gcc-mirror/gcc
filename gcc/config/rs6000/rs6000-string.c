@@ -2787,7 +2787,7 @@ expand_block_move (rtx operands[], bool might_overlap)
       rtx src, dest;
       bool move_with_length = false;
 
-      /* Use POImode for paired vsx load/store.  Use V2DI for single
+      /* Use OOmode for paired vsx load/store.  Use V2DI for single
 	 unaligned vsx load/store, for consistency with what other
 	 expansions (compare) already do, and so we can use lxvd2x on
 	 p8.  Order is VSX pair unaligned, VSX unaligned, Altivec, VSX
@@ -2799,8 +2799,8 @@ expand_block_move (rtx operands[], bool might_overlap)
 	  && (align >= 256 || !STRICT_ALIGNMENT))
 	{
 	  move_bytes = 32;
-	  mode = POImode;
-	  gen_func.mov = gen_movpoi;
+	  mode = OOmode;
+	  gen_func.mov = gen_movoo;
 	}
       else if (TARGET_POWERPC64 && TARGET_BLOCK_OPS_UNALIGNED_VSX
 	       && VECTOR_MEM_VSX_P (V2DImode)

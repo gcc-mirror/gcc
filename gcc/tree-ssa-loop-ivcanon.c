@@ -1406,6 +1406,9 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 	  bitmap_clear (father_bbs);
 	  bitmap_set_bit (father_bbs, loop_father->header->index);
 	}
+      else if (unroll_outer)
+	/* Trigger scalar cleanup once any outermost loop gets unrolled.  */
+	cfun->pending_TODOs |= PENDING_TODO_force_next_scalar_cleanup;
 
       return true;
     }

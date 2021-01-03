@@ -187,6 +187,25 @@ void test_detach()
   VERIFY(t1FinallyInterrupted.load());
 }
 
+//------------------------------------------------------
+
+void test_move_assignment()
+{
+    std::jthread thread1([]{});
+    std::jthread thread2([]{});
+
+    const auto id2 = thread2.get_id();
+    const auto ssource2 = thread2.get_stop_source();
+
+    thread1 = std::move(thread2);
+
+    VERIFY(thread1.get_id() == id2);
+    VERIFY(thread2.get_id() == std::jthread::id());
+
+    VERIFY(thread1.get_stop_source() == ssource2);
+    VERIFY(!thread2.get_stop_source().stop_possible());
+}
+
 int main()
 {
   std::set_terminate([](){
@@ -197,4 +216,5 @@ int main()
   test_stop_token();
   test_join();
   test_detach();
+  test_move_assignment();
 }

@@ -198,6 +198,7 @@ gfc_free_statement (gfc_code *p)
 	gfc_free_oacc_declare_clauses (p->ext.oacc_declare);
       break;
 
+    case EXEC_OACC_ATOMIC:
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:
@@ -213,6 +214,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_ROUTINE:
+    case EXEC_OMP_ATOMIC:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_CRITICAL:
@@ -229,6 +231,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SCAN:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
@@ -266,8 +269,6 @@ gfc_free_statement (gfc_code *p)
       gfc_free_omp_namelist (p->ext.omp_namelist);
       break;
 
-    case EXEC_OACC_ATOMIC:
-    case EXEC_OMP_ATOMIC:
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_MASTER:
     case EXEC_OMP_END_NOWAIT:

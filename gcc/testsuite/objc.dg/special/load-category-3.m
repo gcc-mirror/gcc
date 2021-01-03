@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, December 2010.  */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* This test is identical to load-category-2, but the classes and
    categories are created in inverted order in the modules, to test

@@ -3,6 +3,7 @@
   (@interface vs. @implementation) checks take the bitfield width into account.  */
 /* Author: Ziemowit Laski   <zlaski@apple.com>  */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 @interface Base {
   int i;

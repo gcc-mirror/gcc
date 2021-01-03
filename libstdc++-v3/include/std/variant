@@ -1512,7 +1512,8 @@ namespace __variant
 		}
 	      __catch (...)
 		{
-		  this->_M_index = variant_npos;
+		  using __index_type = decltype(this->_M_index);
+		  this->_M_index = static_cast<__index_type>(variant_npos);
 		  __throw_exception_again;
 		}
 	    }
@@ -1559,7 +1560,8 @@ namespace __variant
 		}
 	      __catch (...)
 		{
-		  this->_M_index = variant_npos;
+		  using __index_type = decltype(this->_M_index);
+		  this->_M_index = static_cast<__index_type>(variant_npos);
 		  __throw_exception_again;
 		}
 	    }

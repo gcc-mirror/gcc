@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test deprecate attribute with an @interface declaration.  */
 

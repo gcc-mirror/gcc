@@ -32,6 +32,7 @@
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;
+
 with GNAT.OS_Lib;
 with GNAT.Regexp;
 
@@ -49,7 +50,7 @@ package body GNAT.Directory_Operations.Iteration is
    is
       File_Regexp : constant Regexp.Regexp := Regexp.Compile (File_Pattern);
       Index       : Natural := 0;
-      Quit        : Boolean;
+      Quit        : Boolean := False;
 
       procedure Read_Directory (Directory : Dir_Name_Str);
       --  Open Directory and read all entries. This routine is called
@@ -113,6 +114,7 @@ package body GNAT.Directory_Operations.Iteration is
 
                if not (Dir_Entry = "." or else Dir_Entry = "..")
                  and then OS_Lib.Is_Directory (Pathname)
+                 and then not OS_Lib.Is_Symbolic_Link (Pathname)
                then
                   Read_Directory (Pathname);
                   exit when Quit;
@@ -124,7 +126,6 @@ package body GNAT.Directory_Operations.Iteration is
       end Read_Directory;
 
    begin
-      Quit := False;
       Read_Directory (Root_Directory);
    end Find;
 

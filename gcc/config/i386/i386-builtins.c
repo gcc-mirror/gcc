@@ -274,6 +274,10 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
       if (((mask2 == 0 || (mask2 & ix86_isa_flags2) != 0)
 	   && (mask == 0 || (mask & ix86_isa_flags) != 0))
 	  || ((mask & OPTION_MASK_ISA_MMX) != 0 && TARGET_MMX_WITH_SSE)
+	  /* "Unified" builtin used by either AVXVNNI intrinsics or AVX512VNNIVL
+	     non-mask intrinsics should be defined whenever avxvnni
+	     or avx512vnni && avx512vl exist.  */
+	  || (mask2 == OPTION_MASK_ISA2_AVXVNNI)
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
 	{

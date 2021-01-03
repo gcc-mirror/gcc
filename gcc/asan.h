@@ -34,6 +34,25 @@ extern bool asan_expand_mark_ifn (gimple_stmt_iterator *);
 extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
 				    hash_map<tree, tree> &);
 
+extern void hwasan_record_frame_init ();
+extern void hwasan_record_stack_var (rtx, rtx, poly_int64, poly_int64);
+extern void hwasan_emit_prologue ();
+extern rtx_insn *hwasan_emit_untag_frame (rtx, rtx);
+extern rtx hwasan_get_frame_extent ();
+extern rtx hwasan_frame_base ();
+extern void hwasan_maybe_emit_frame_base_init (void);
+extern bool stack_vars_base_reg_p (rtx);
+extern uint8_t hwasan_current_frame_tag ();
+extern void hwasan_increment_frame_tag ();
+extern rtx hwasan_truncate_to_tag_size (rtx, rtx);
+extern void hwasan_finish_file (void);
+extern bool hwasan_sanitize_p (void);
+extern bool hwasan_sanitize_stack_p (void);
+extern bool hwasan_sanitize_allocas_p (void);
+extern bool hwasan_expand_check_ifn (gimple_stmt_iterator *, bool);
+extern bool hwasan_expand_mark_ifn (gimple_stmt_iterator *);
+extern bool gate_hwasan (void);
+
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
 
@@ -74,6 +93,26 @@ extern hash_set <tree> *asan_used_labels;
 #define ASAN_STACK_RETIRED_MAGIC	0x45e0360e
 
 #define ASAN_USE_AFTER_SCOPE_ATTRIBUTE	"use after scope memory"
+
+/* NOTE: The values below and the hooks under targetm.memtag define an ABI and
+   are hard-coded to these values in libhwasan, hence they can't be changed
+   independently here.  */
+/* How many bits are used to store a tag in a pointer.
+   The default version uses the entire top byte of a pointer (i.e. 8 bits).  */
+#define HWASAN_TAG_SIZE targetm.memtag.tag_size ()
+/* Tag Granule of HWASAN shadow stack.
+   This is the size in real memory that each byte in the shadow memory refers
+   to.  I.e. if a variable is X bytes long in memory then its tag in shadow
+   memory will span X / HWASAN_TAG_GRANULE_SIZE bytes.
+   Most variables will need to be aligned to this amount since two variables
+   that are neighbors in memory and share a tag granule would need to share the
+   same tag (the shared tag granule can only store one tag).  */
+#define HWASAN_TAG_GRANULE_SIZE targetm.memtag.granule_size ()
+/* Define the tag for the stack background.
+   This defines what tag the stack pointer will be and hence what tag all
+   variables that are not given special tags are (e.g. spilled registers,
+   and parameters passed on the stack).  */
+#define HWASAN_STACK_BACKGROUND gen_int_mode (0, QImode)
 
 /* Various flags for Asan builtins.  */
 enum asan_check_flags
@@ -145,6 +184,9 @@ extern hash_set<tree> *asan_handled_variables;
 static inline bool
 asan_intercepted_p (enum built_in_function fcode)
 {
+  if (hwasan_sanitize_p ())
+    return false;
+
   return fcode == BUILT_IN_INDEX
 	 || fcode == BUILT_IN_MEMCHR
 	 || fcode == BUILT_IN_MEMCMP
@@ -173,7 +215,8 @@ asan_intercepted_p (enum built_in_function fcode)
 static inline bool
 asan_sanitize_use_after_scope (void)
 {
-  return (flag_sanitize_address_use_after_scope && asan_sanitize_stack_p ());
+  return (flag_sanitize_address_use_after_scope
+	  && (asan_sanitize_stack_p () || hwasan_sanitize_stack_p ()));
 }
 
 /* Return true if DECL should be guarded on the stack.  */

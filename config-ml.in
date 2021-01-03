@@ -499,10 +499,8 @@ cat > Multi.tem <<\EOF
 
 PWD_COMMAND=$${PWDCMD-pwd}
 
-# FIXME: There should be an @-sign in front of the `if'.
-# Leave out until this is tested a bit more.
 multi-do:
-	if [ -z "$(MULTIDIRS)" ]; then \
+	@if [ -z "$(MULTIDIRS)" ]; then \
 	  true; \
 	else \
 	  rootpre=`${PWD_COMMAND}`/; export rootpre; \
@@ -547,10 +545,8 @@ multi-do:
 	  done; \
 	fi
 
-# FIXME: There should be an @-sign in front of the `if'.
-# Leave out until this is tested a bit more.
 multi-clean:
-	if [ -z "$(MULTIDIRS)" ]; then \
+	@if [ -z "$(MULTIDIRS)" ]; then \
 	  true; \
 	else \
 	  lib=`${PWD_COMMAND} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \

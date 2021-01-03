@@ -28,7 +28,7 @@ using __gnu_test::compare_paths;
 void
 test01()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path copy;
     copy = p;
@@ -39,7 +39,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path copy = p;
     path move;

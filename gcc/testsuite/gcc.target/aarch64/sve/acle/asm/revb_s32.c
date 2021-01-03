@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (revb_s32_x_tied1, svint32_t,
 
 /*
 ** revb_s32_x_untied:
+**	movprfx	z0, z1
 **	revb	z0\.s, p0/m, z1\.s
 **	ret
 */

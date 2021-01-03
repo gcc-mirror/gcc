@@ -771,7 +771,7 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
   OSVERSIONINFO version_info;
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
-  int orig_out, orig_in, orig_err;
+  int orig_out, orig_in, orig_err = 0;
   BOOL separate_stderr = !(flags & PEX_STDERR_TO_STDOUT);
 
   /* Ensure we have inheritable descriptors to pass to the child.  */

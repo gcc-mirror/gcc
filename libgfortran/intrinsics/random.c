@@ -723,6 +723,9 @@ arandom_r16 (gfc_array_r16 *x)
 /* Number of elements in master_state array.  */
 #define SZU64 (sizeof (master_state.s) / sizeof (uint64_t))
 
+/* Equivalent number of elements in an array of GFC_INTEGER_{4,8}.  */
+#define SZ_IN_INT_4 (SZU64 * (sizeof (uint64_t) / sizeof (GFC_INTEGER_4)))
+#define SZ_IN_INT_8 (SZU64 * (sizeof (uint64_t) / sizeof (GFC_INTEGER_8)))
 
 /* Keys for scrambling the seed in order to avoid poor seeds.  */
 
@@ -751,14 +754,13 @@ void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   uint64_t seed[SZU64];
-#define SZ (sizeof (master_state.s) / sizeof (GFC_INTEGER_4))
 
   /* Check that we only have one argument present.  */
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
     runtime_error ("RANDOM_SEED should have at most one argument present.");
 
   if (size != NULL)
-    *size = SZ;
+    *size = SZ_IN_INT_4;
 
   prng_state* rs = get_rand_state();
 
@@ -770,7 +772,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ_IN_INT_4)
 	runtime_error ("Array size of GET is too small.");
 
       if (!rs->init)
@@ -780,8 +782,9 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
       scramble_seed (seed, rs->s);
 
       /*  Then copy it back to the user variable.  */
-      for (size_t i = 0; i < SZ ; i++)
-	memcpy (&(get->base_addr[(SZ - 1 - i) * GFC_DESCRIPTOR_STRIDE(get,0)]),
+      for (size_t i = 0; i < SZ_IN_INT_4 ; i++)
+	memcpy (&(get->base_addr[(SZ_IN_INT_4 - 1 - i) *
+				 GFC_DESCRIPTOR_STRIDE(get,0)]),
 		(unsigned char*) seed + i * sizeof(GFC_UINTEGER_4),
                sizeof(GFC_UINTEGER_4));
     }
@@ -805,13 +808,14 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
         runtime_error ("Array rank of PUT is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ)
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ_IN_INT_4)
         runtime_error ("Array size of PUT is too small.");
 
       /*  We copy the seed given by the user.  */
-      for (size_t i = 0; i < SZ; i++)
+      for (size_t i = 0; i < SZ_IN_INT_4; i++)
 	memcpy ((unsigned char*) seed + i * sizeof(GFC_UINTEGER_4),
-		&(put->base_addr[(SZ - 1 - i) * GFC_DESCRIPTOR_STRIDE(put,0)]),
+		&(put->base_addr[(SZ_IN_INT_4 - 1 - i) *
+				 GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof(GFC_UINTEGER_4));
 
       /* We put it after scrambling the bytes, to paper around users who
@@ -823,7 +827,6 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
   __gthread_mutex_unlock (&random_lock);
     }
-#undef SZ
 }
 iexport(random_seed_i4);
 
@@ -837,9 +840,8 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
     runtime_error ("RANDOM_SEED should have at most one argument present.");
 
-#define SZ (sizeof (master_state.s) / sizeof (GFC_INTEGER_8))
   if (size != NULL)
-    *size = SZ;
+    *size = SZ_IN_INT_8;
 
   prng_state* rs = get_rand_state();
 
@@ -851,7 +853,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 	runtime_error ("Array rank of GET is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ)
+      if (GFC_DESCRIPTOR_EXTENT(get,0) < (index_type) SZ_IN_INT_8)
 	runtime_error ("Array size of GET is too small.");
 
       if (!rs->init)
@@ -861,7 +863,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
       scramble_seed (seed, rs->s);
 
       /*  This code now should do correct strides.  */
-      for (size_t i = 0; i < SZ; i++)
+      for (size_t i = 0; i < SZ_IN_INT_8; i++)
 	memcpy (&(get->base_addr[i * GFC_DESCRIPTOR_STRIDE(get,0)]), &seed[i],
 		sizeof (GFC_UINTEGER_8));
     }
@@ -885,11 +887,11 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
         runtime_error ("Array rank of PUT is not 1.");
 
       /* If the array is too small, abort.  */
-      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ)
+      if (GFC_DESCRIPTOR_EXTENT(put,0) < (index_type) SZ_IN_INT_8)
         runtime_error ("Array size of PUT is too small.");
 
       /*  This code now should do correct strides.  */
-      for (size_t i = 0; i < SZ; i++)
+      for (size_t i = 0; i < SZ_IN_INT_8; i++)
 	memcpy (&seed[i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof (GFC_UINTEGER_8));
 

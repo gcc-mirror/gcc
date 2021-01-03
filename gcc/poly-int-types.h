@@ -81,6 +81,14 @@ typedef poly_int<NUM_POLY_INT_COEFFS, widest_int> poly_widest_int;
 #define vector_element_size(SIZE, NELTS) \
   (exact_div (SIZE, NELTS).to_constant ())
 
+/* Return the number of unroll times when a vector that has NELTS1 elements
+   is unrolled to vectors that have NELTS2 elements.
+
+   to_constant () is safe in this situation because the multiples of the
+   NELTS of two vectors are always constant-size scalars.  */
+#define vector_unroll_factor(NELTS1, NELTS2) \
+  (exact_div (NELTS1, NELTS2).to_constant ())
+
 /* Wrapper for poly_int arguments to target macros, so that if a target
    doesn't need polynomial-sized modes, its header file can continue to
    treat the argument as a normal constant.  This should go away once

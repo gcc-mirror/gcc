@@ -64,7 +64,6 @@ package Checks is
    function Range_Checks_Suppressed          (E : Entity_Id) return Boolean;
    function Storage_Checks_Suppressed        (E : Entity_Id) return Boolean;
    function Tag_Checks_Suppressed            (E : Entity_Id) return Boolean;
-   function Validity_Checks_Suppressed       (E : Entity_Id) return Boolean;
    --  These functions check to see if the named check is suppressed, either
    --  by an active scope suppress setting, or because the check has been
    --  specifically suppressed for the given entity. If no entity is relevant
@@ -337,6 +336,21 @@ package Checks is
    --  GNATprove, though we could consider using it more generally in future.
    --  For that to happen, the possibility of arguments of infinite or NaN
    --  value should be taken into account, which is not the case currently.
+
+   procedure Determine_Range_To_Discrete
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Uint;
+      Hi           : out Uint;
+      Fixed_Int    : Boolean := False;
+      Assume_Valid : Boolean := False);
+   --  Similar to Determine_Range, but attempts to return a discrete range even
+   --  if N is not of a discrete type by doing a conversion. The Fixed_Int flag
+   --  if set causes any fixed-point values to be treated as though they were
+   --  discrete values (i.e. the underlying integer value is used), in which
+   --  case no conversion is needed. At the current time, this is used only for
+   --  discrete types, for fixed-point types if Fixed_Int is set, and also for
+   --  floating-point types in GNATprove, see Determine_Range_R above.
 
    procedure Install_Null_Excluding_Check (N : Node_Id);
    --  Determines whether an access node requires a run-time access check and

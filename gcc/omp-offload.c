@@ -196,7 +196,26 @@ omp_declare_target_var_p (tree decl)
 static tree
 omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 {
-  if (TREE_CODE (*tp) == FUNCTION_DECL)
+  if (TREE_CODE (*tp) == CALL_EXPR
+      && CALL_EXPR_FN (*tp)
+      && TREE_CODE (CALL_EXPR_FN (*tp)) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (CALL_EXPR_FN (*tp), 0)) == FUNCTION_DECL
+      && lookup_attribute ("omp declare variant base",
+			   DECL_ATTRIBUTES (TREE_OPERAND (CALL_EXPR_FN (*tp),
+							  0))))
+    {
+      tree fn = TREE_OPERAND (CALL_EXPR_FN (*tp), 0);
+      for (tree attr = DECL_ATTRIBUTES (fn); attr; attr = TREE_CHAIN (attr))
+	{
+	  attr = lookup_attribute ("omp declare variant base", attr);
+	  if (attr == NULL_TREE)
+	    break;
+	  tree purpose = TREE_PURPOSE (TREE_VALUE (attr));
+	  if (TREE_CODE (purpose) == FUNCTION_DECL)
+	    omp_discover_declare_target_tgt_fn_r (&purpose, walk_subtrees, data);
+	}
+    }
+  else if (TREE_CODE (*tp) == FUNCTION_DECL)
     {
       tree decl = *tp;
       tree id = get_identifier ("omp declare target");
@@ -237,7 +256,7 @@ omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 	}
       if (omp_declare_target_fn_p (decl)
 	  || lookup_attribute ("omp declare target host",
-				    DECL_ATTRIBUTES (decl)))
+			       DECL_ATTRIBUTES (decl)))
 	return NULL_TREE;
 
       if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
@@ -296,7 +315,7 @@ omp_discover_declare_target_var_r (tree *tp, int *walk_subtrees, void *data)
 	  DECL_ATTRIBUTES (*tp)
 	    = remove_attribute ("omp declare target link", DECL_ATTRIBUTES (*tp));
 	}
-      if (TREE_STATIC (*tp) && DECL_INITIAL (*tp))
+      if (TREE_STATIC (*tp) && lang_hooks.decls.omp_get_decl_init (*tp))
 	((vec<tree> *) data)->safe_push (*tp);
       DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
       symtab_node *node = symtab_node::get (*tp);
@@ -342,14 +361,15 @@ omp_discover_implicit_declare_target (void)
 		   && DECL_STRUCT_FUNCTION (cgn->decl)->has_omp_target)
 	    worklist.safe_push (cgn->decl);
       }
-  FOR_EACH_STATIC_INITIALIZER (vnode)
-    if (omp_declare_target_var_p (vnode->decl))
+  FOR_EACH_VARIABLE (vnode)
+    if (lang_hooks.decls.omp_get_decl_init (vnode->decl)
+	&& omp_declare_target_var_p (vnode->decl))
       worklist.safe_push (vnode->decl);
   while (!worklist.is_empty ())
     {
       tree decl = worklist.pop ();
       if (VAR_P (decl))
-	walk_tree_without_duplicates (&DECL_INITIAL (decl),
+	walk_tree_without_duplicates (lang_hooks.decls.omp_get_decl_init (decl),
 				      omp_discover_declare_target_var_r,
 				      &worklist);
       else if (omp_declare_target_fn_p (decl))
@@ -361,6 +381,8 @@ omp_discover_implicit_declare_target (void)
 				      omp_discover_declare_target_fn_r,
 				      &worklist);
     }
+
+  lang_hooks.decls.omp_finish_decl_inits ();
 }
 
 
@@ -1743,12 +1765,59 @@ execute_oacc_device_lower ()
       flag_openacc_dims = (char *)&flag_openacc_dims;
     }
 
+  bool is_oacc_parallel
+    = (lookup_attribute ("oacc parallel",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   bool is_oacc_kernels
     = (lookup_attribute ("oacc kernels",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_serial
+    = (lookup_attribute ("oacc serial",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_parallel_kernels_parallelized
+    = (lookup_attribute ("oacc parallel_kernels_parallelized",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_parallel_kernels_gang_single
+    = (lookup_attribute ("oacc parallel_kernels_gang_single",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  int fn_level = oacc_fn_attrib_level (attrs);
+  bool is_oacc_routine = (fn_level >= 0);
+  gcc_checking_assert (is_oacc_parallel
+		       + is_oacc_kernels
+		       + is_oacc_serial
+		       + is_oacc_parallel_kernels_parallelized
+		       + is_oacc_parallel_kernels_gang_single
+		       + is_oacc_routine
+		       == 1);
+
   bool is_oacc_kernels_parallelized
     = (lookup_attribute ("oacc kernels parallelized",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  if (is_oacc_kernels_parallelized)
+    gcc_checking_assert (is_oacc_kernels);
+
+  if (dump_file)
+    {
+      if (is_oacc_parallel)
+	fprintf (dump_file, "Function is OpenACC parallel offload\n");
+      else if (is_oacc_kernels)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 (is_oacc_kernels_parallelized
+		  ? "parallelized" : "unparallelized"));
+      else if (is_oacc_serial)
+	fprintf (dump_file, "Function is OpenACC serial offload\n");
+      else if (is_oacc_parallel_kernels_parallelized)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 "parallel_kernels_parallelized");
+      else if (is_oacc_parallel_kernels_gang_single)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 "parallel_kernels_gang_single");
+      else if (is_oacc_routine)
+	fprintf (dump_file, "Function is OpenACC routine level %d\n",
+		 fn_level);
+      else
+	gcc_unreachable ();
+    }
 
   /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
      kernels, so remove the parallelism dimensions function attributes
@@ -1761,22 +1830,10 @@ execute_oacc_device_lower ()
 
   /* Discover, partition and process the loops.  */
   oacc_loop *loops = oacc_loop_discovery ();
-  int fn_level = oacc_fn_attrib_level (attrs);
 
-  if (dump_file)
-    {
-      if (fn_level >= 0)
-	fprintf (dump_file, "Function is OpenACC routine level %d\n",
-		 fn_level);
-      else if (is_oacc_kernels)
-	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
-		 (is_oacc_kernels_parallelized
-		  ? "parallelized" : "unparallelized"));
-      else
-	fprintf (dump_file, "Function is OpenACC parallel offload\n");
-    }
-
-  unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
+  unsigned outer_mask = 0;
+  if (is_oacc_routine)
+    outer_mask = GOMP_DIM_MASK (fn_level) - 1;
   unsigned used_mask = oacc_loop_partition (loops, outer_mask);
   /* OpenACC kernels constructs are special: they currently don't use the
      generic oacc_loop infrastructure and attribute/dimension processing.  */
@@ -1797,6 +1854,11 @@ execute_oacc_device_lower ()
 	fprintf (dump_file, "%s%d", comma, dims[ix]);
       fprintf (dump_file, "]\n");
     }
+
+  /* Verify that for OpenACC 'kernels' decomposed "gang-single" parts we launch
+     a single gang only.  */
+  if (is_oacc_parallel_kernels_gang_single)
+    gcc_checking_assert (dims[GOMP_DIM_GANG] == 1);
 
   oacc_loop_process (loops);
   if (dump_file)

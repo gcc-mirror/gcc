@@ -160,6 +160,7 @@
    UNSPEC_BCDADD
    UNSPEC_BCDSUB
    UNSPEC_BCD_OVERFLOW
+   UNSPEC_BCDSHIFT
    UNSPEC_VRLMI
    UNSPEC_VRLNM
    UNSPEC_VCFUGED
@@ -4410,12 +4411,13 @@
 (define_int_attr bcd_add_sub [(UNSPEC_BCDADD "add")
 			      (UNSPEC_BCDSUB "sub")])
 
-(define_code_iterator BCD_TEST [eq lt gt unordered])
+(define_code_iterator BCD_TEST [eq lt le gt ge unordered])
+(define_mode_iterator VBCD [V1TI V16QI])
 
-(define_insn "bcd<bcd_add_sub>"
-  [(set (match_operand:V1TI 0 "gpc_reg_operand" "=v")
-	(unspec:V1TI [(match_operand:V1TI 1 "gpc_reg_operand" "v")
-		      (match_operand:V1TI 2 "gpc_reg_operand" "v")
+(define_insn "bcd<bcd_add_sub>_<mode>"
+  [(set (match_operand:VBCD 0 "register_operand" "=v")
+	(unspec:VBCD [(match_operand:VBCD 1 "register_operand" "v")
+		      (match_operand:VBCD 2 "register_operand" "v")
 		      (match_operand:QI 3 "const_0_to_1_operand" "n")]
 		     UNSPEC_BCD_ADD_SUB))
    (clobber (reg:CCFP CR6_REGNO))]
@@ -4428,23 +4430,23 @@
 ;; UNORDERED test on an integer type (like V1TImode) is not defined.  The type
 ;; probably should be one that can go in the VMX (Altivec) registers, so we
 ;; can't use DDmode or DFmode.
-(define_insn "*bcd<bcd_add_sub>_test"
+(define_insn "*bcd<bcd_add_sub>_test_<mode>"
   [(set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
-	 (unspec:V2DF [(match_operand:V1TI 1 "register_operand" "v")
-		       (match_operand:V1TI 2 "register_operand" "v")
+	 (unspec:V2DF [(match_operand:VBCD 1 "register_operand" "v")
+		       (match_operand:VBCD 2 "register_operand" "v")
 		       (match_operand:QI 3 "const_0_to_1_operand" "i")]
 		      UNSPEC_BCD_ADD_SUB)
 	 (match_operand:V2DF 4 "zero_constant" "j")))
-   (clobber (match_scratch:V1TI 0 "=v"))]
+   (clobber (match_scratch:VBCD 0 "=v"))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "*bcd<bcd_add_sub>_test2"
-  [(set (match_operand:V1TI 0 "register_operand" "=v")
-	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "v")
-		      (match_operand:V1TI 2 "register_operand" "v")
+(define_insn "*bcd<bcd_add_sub>_test2_<mode>"
+  [(set (match_operand:VBCD 0 "register_operand" "=v")
+	(unspec:VBCD [(match_operand:VBCD 1 "register_operand" "v")
+		      (match_operand:VBCD 2 "register_operand" "v")
 		      (match_operand:QI 3 "const_0_to_1_operand" "i")]
 		     UNSPEC_BCD_ADD_SUB))
    (set (reg:CCFP CR6_REGNO)
@@ -4540,15 +4542,15 @@
 }
    [(set_attr "type" "vecsimple")])
 
-(define_expand "bcd<bcd_add_sub>_<code>"
+(define_expand "bcd<bcd_add_sub>_<code>_<mode>"
   [(parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
-		    (unspec:V2DF [(match_operand:V1TI 1 "register_operand")
-				  (match_operand:V1TI 2 "register_operand")
+		    (unspec:V2DF [(match_operand:VBCD 1 "register_operand")
+				  (match_operand:VBCD 2 "register_operand")
 				  (match_operand:QI 3 "const_0_to_1_operand")]
 				 UNSPEC_BCD_ADD_SUB)
 		    (match_dup 4)))
-	      (clobber (match_scratch:V1TI 5))])
+	      (clobber (match_scratch:VBCD 5))])
    (set (match_operand:SI 0 "register_operand")
 	(BCD_TEST:SI (reg:CCFP CR6_REGNO)
 		     (const_int 0)))]
@@ -4556,6 +4558,74 @@
 {
   operands[4] = CONST0_RTX (V2DFmode);
 })
+
+(define_insn "*bcdinvalid_<mode>"
+  [(set (reg:CCFP CR6_REGNO)
+	(compare:CCFP
+	 (unspec:V2DF [(match_operand:VBCD 1 "register_operand" "v")]
+		      UNSPEC_BCDADD)
+	 (match_operand:V2DF 2 "zero_constant" "j")))
+   (clobber (match_scratch:VBCD 0 "=v"))]
+  "TARGET_P8_VECTOR"
+  "bcdadd. %0,%1,%1,0"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "bcdinvalid_<mode>"
+  [(parallel [(set (reg:CCFP CR6_REGNO)
+		   (compare:CCFP
+		    (unspec:V2DF [(match_operand:VBCD 1 "register_operand")]
+				 UNSPEC_BCDADD)
+		    (match_dup 2)))
+	      (clobber (match_scratch:VBCD 3))])
+   (set (match_operand:SI 0 "register_operand")
+	(unordered:SI (reg:CCFP CR6_REGNO)
+		      (const_int 0)))]
+  "TARGET_P8_VECTOR"
+{
+  operands[2] = CONST0_RTX (V2DFmode);
+})
+
+(define_insn "bcdshift_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")
+		       (match_operand:QI 3 "const_0_to_1_operand" "n")]
+		     UNSPEC_BCDSHIFT))
+   (clobber (reg:CCFP CR6_REGNO))]
+  "TARGET_P8_VECTOR"
+  "bcds. %0,%1,%2,%3"
+  [(set_attr "type" "vecsimple")])
+
+(define_expand "bcdmul10_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand")]
+		      UNSPEC_BCDSHIFT))
+   (clobber (reg:CCFP CR6_REGNO))]
+  "TARGET_P9_VECTOR"
+{
+  rtx one = gen_reg_rtx (V16QImode);
+
+  emit_insn (gen_altivec_vspltisb (one, const1_rtx));
+  emit_insn (gen_bcdshift_v16qi (operands[0], one, operands[1], const0_rtx));
+
+  DONE;
+})
+
+(define_expand "bcddiv10_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand")]
+		      UNSPEC_BCDSHIFT))
+   (clobber (reg:CCFP CR6_REGNO))]
+  "TARGET_P9_VECTOR"
+{
+  rtx one = gen_reg_rtx (V16QImode);
+
+  emit_insn (gen_altivec_vspltisb (one, constm1_rtx));
+  emit_insn (gen_bcdshift_v16qi (operands[0], one, operands[1], const0_rtx));
+
+  DONE;
+})
+
 
 ;; Peephole2 pattern to combine a bcdadd/bcdsub that calculates the value and
 ;; the bcdadd/bcdsub that tests the value.  The combiner won't work since

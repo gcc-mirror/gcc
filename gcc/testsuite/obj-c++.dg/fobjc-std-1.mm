@@ -1,6 +1,7 @@
 /* Test warnings when using -fobjc-std=objc1.  */
 /* { dg-do compile } */
 /* { dg-options "-fobjc-std=objc1" } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 

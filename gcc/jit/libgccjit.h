@@ -68,6 +68,7 @@ typedef struct gcc_jit_result gcc_jit_result;
 	     +- gcc_jit_lvalue
 		 +- gcc_jit_param
 	 +- gcc_jit_case
+	 +- gcc_jit_extended_asm
 */
 typedef struct gcc_jit_object gcc_jit_object;
 
@@ -137,6 +138,12 @@ typedef struct gcc_jit_param gcc_jit_param;
    values (or an individual integer value) together with an associated
    destination block.  */
 typedef struct gcc_jit_case gcc_jit_case;
+
+/* A gcc_jit_extended_asm represents an assembly language statement,
+   analogous to an extended "asm" statement in GCC's C front-end: a series
+   of low-level instructions inside a function that convert inputs to
+   outputs.  */
+typedef struct gcc_jit_extended_asm gcc_jit_extended_asm;
 
 /* Acquire a JIT-compilation context.  */
 extern gcc_jit_context *
@@ -1504,7 +1511,7 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
 
 #define LIBGCCJIT_HAVE_gcc_jit_version
 
-/* Functions to retrive libgccjit version.
+/* Functions to retrieve libgccjit version.
    Analogous to __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__ in C code.
 
    These API entrypoints were added in LIBGCCJIT_ABI_13; you can test for their
@@ -1517,6 +1524,102 @@ extern int
 gcc_jit_version_minor (void);
 extern int
 gcc_jit_version_patchlevel (void);
+
+/**********************************************************************
+ Asm support.
+ **********************************************************************/
+
+/* Functions for adding inline assembler code, analogous to GCC's
+   "extended asm" syntax.
+
+   See https://gcc.gnu.org/onlinedocs/gcc/Using-Assembly-Language-with-C.html
+
+   These API entrypoints were added in LIBGCCJIT_ABI_15; you can test for their
+   presence using
+     #ifdef LIBGCCJIT_HAVE_ASM_STATEMENTS
+*/
+
+#define LIBGCCJIT_HAVE_ASM_STATEMENTS
+
+/* Create a gcc_jit_extended_asm for an extended asm statement
+   with no control flow (i.e. without the goto qualifier).
+
+   The asm_template parameter  corresponds to the AssemblerTemplate
+   within C's extended asm syntax.  It must be non-NULL.  */
+
+extern gcc_jit_extended_asm *
+gcc_jit_block_add_extended_asm (gcc_jit_block *block,
+				gcc_jit_location *loc,
+				const char *asm_template);
+
+/* Create a gcc_jit_extended_asm for an extended asm statement
+   that may perform jumps, and use it to terminate the given block.
+   This is equivalent to the "goto" qualifier in C's extended asm
+   syntax.  */
+
+extern gcc_jit_extended_asm *
+gcc_jit_block_end_with_extended_asm_goto (gcc_jit_block *block,
+					  gcc_jit_location *loc,
+					  const char *asm_template,
+					  int num_goto_blocks,
+					  gcc_jit_block **goto_blocks,
+					  gcc_jit_block *fallthrough_block);
+
+/* Upcasting from extended asm to object.  */
+
+extern gcc_jit_object *
+gcc_jit_extended_asm_as_object (gcc_jit_extended_asm *ext_asm);
+
+/* Set whether the gcc_jit_extended_asm has side-effects, equivalent to
+   the "volatile" qualifier in C's extended asm syntax.  */
+
+extern void
+gcc_jit_extended_asm_set_volatile_flag (gcc_jit_extended_asm *ext_asm,
+					int flag);
+
+/* Set the equivalent of the "inline" qualifier in C's extended asm
+   syntax.  */
+
+extern void
+gcc_jit_extended_asm_set_inline_flag (gcc_jit_extended_asm *ext_asm,
+				      int flag);
+
+/* Add an output operand to the extended asm statement.
+   "asm_symbolic_name" can be NULL.
+   "constraint" and "dest" must be non-NULL.
+   This function can't be called on an "asm goto" as such instructions
+   can't have outputs  */
+
+extern void
+gcc_jit_extended_asm_add_output_operand (gcc_jit_extended_asm *ext_asm,
+					 const char *asm_symbolic_name,
+					 const char *constraint,
+					 gcc_jit_lvalue *dest);
+
+/* Add an input operand to the extended asm statement.
+   "asm_symbolic_name" can be NULL.
+   "constraint" and "src" must be non-NULL.  */
+
+extern void
+gcc_jit_extended_asm_add_input_operand (gcc_jit_extended_asm *ext_asm,
+					const char *asm_symbolic_name,
+					const char *constraint,
+					gcc_jit_rvalue *src);
+
+/* Add "victim" to the list of registers clobbered by the extended
+   asm statement.  It must be non-NULL.  */
+
+extern void
+gcc_jit_extended_asm_add_clobber (gcc_jit_extended_asm *ext_asm,
+				  const char *victim);
+
+/* Add "asm_stmts", a set of top-level asm statements, analogous to
+   those created by GCC's "basic" asm syntax in C at file scope.  */
+
+extern void
+gcc_jit_context_add_top_level_asm (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   const char *asm_stmts);
 
 #ifdef __cplusplus
 }

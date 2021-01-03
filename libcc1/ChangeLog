@@ -1,3 +1,40 @@
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98380
+	* configure.ac: Set darwin_dynamic_lookup=no instead to empty
+	string.
+	* configure: Regenerated.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* Makefile.am: Add dynamic_lookup to LD flags for Darwin.
+	* configure.ac: Test for Darwin host and set a flag.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* libcp1plugin.cc (plugin_build_unary_expr): Pass true to
+	cxx_sizeof_or_alignof_expr.
+
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* libcp1plugin.cc (plugin_add_static_assert): Pass false to
+	finish_static_assert.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* libcc1plugin.cc (address_rewriter): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	* libcp1plugin.cc (supplement_binding): Likewise.
+
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_add_friend): Set DECL_UNIQUE_FRIEND_P.

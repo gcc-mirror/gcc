@@ -31,12 +31,14 @@ test()
 
   const auto outdd = std::merge(ca0.begin(), ca0.end(),
 				cas.begin(), cas.end(), out0.begin());
+  if (outdd != out0.end())
+    return false;
 
   const auto outee = std::merge(ca0.begin(), ca0.end(),
 				camm.begin(), camm.end(), out0.begin(),
 				[](int i, int j){ return i < j; });
 
-  return true;
+  return outee == (out0.begin() + ca0.size() + camm.size());
 }
 
 static_assert(test());

@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Wstrict-selector-match" } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 

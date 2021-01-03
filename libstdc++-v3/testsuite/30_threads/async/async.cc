@@ -22,6 +22,7 @@
 
 
 #include <future>
+#include <thread>
 #include <testsuite_hooks.h>
 
 using namespace std;

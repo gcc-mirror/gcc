@@ -42,6 +42,7 @@ debug/gosym
 debug/macho
 debug/pe
 debug/plan9obj
+embed
 encoding
 encoding/ascii85
 encoding/asn1
@@ -126,12 +127,14 @@ internal/reflectlite
 internal/singleflight
 internal/syscall/execenv
 internal/syscall/unix
+internal/sysinfo
 internal/testenv
 internal/testlog
 internal/trace
 internal/unsafeheader
 internal/xcoff
 io
+io/fs
 io/ioutil
 log
 log/syslog
@@ -175,6 +178,7 @@ runtime/debug
 runtime/internal/atomic
 runtime/internal/math
 runtime/internal/sys
+runtime/metrics
 runtime/pprof
 runtime/trace
 sort
@@ -184,6 +188,7 @@ sync
 sync/atomic
 syscall
 testing
+testing/fstest
 testing/internal/testdeps
 testing/iotest
 testing/quick

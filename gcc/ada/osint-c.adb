@@ -475,14 +475,14 @@ package body Osint.C is
 
    begin
       --  Make sure that the object file has the expected extension
+      --  Allow for either .o or .c (for C code generation)
 
       if NL <= EL
          or else
-          (Name (NL - EL + Name'First .. Name'Last) /= Ext
+          (not Generate_Asm
+             and then Name (NL - EL + Name'First .. Name'Last) /= Ext
              and then Name (NL - 2 + Name'First .. Name'Last) /= ".o"
-             and then
-               (not Generate_C_Code
-                  or else Name (NL - 2 + Name'First .. Name'Last) /= ".c"))
+             and then Name (NL - 2 + Name'First .. Name'Last) /= ".c")
       then
          Fail ("incorrect object file extension");
       end if;

@@ -1,0 +1,14 @@
+/* Test that large 64-bit constants are loaded with llihf + oilf when lgrl is
+   not available.  */
+
+/* { dg-do compile } */
+/* { dg-options "-O3 -march=z9-109" } */
+
+unsigned long
+magic (void)
+{
+  return 0x3f08c5392f756cd;
+}
+
+/* { dg-final { scan-assembler-times {\n\tllihf\t} 1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\n\toilf\t} 1 { target lp64 } } } */

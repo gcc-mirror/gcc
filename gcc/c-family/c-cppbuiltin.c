@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
 #include "common/common-target.h"
 #include "cppbuiltin.h"
+#include "configargs.h"
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -316,6 +317,16 @@ builtin_define_float_constants (const char *name_prefix,
       sprintf (name, "__FP_FAST_FMA%s", fma_suffix);
       builtin_define_with_int_value (name, 1);
     }
+
+  /* For C2x *_IS_IEC_60559.  0 means the type does not match an IEC
+     60559 format, 1 that it matches a format but not operations and 2
+     that it matches a format and operations (but may not conform to
+     Annex F; we take this as meaning exceptions and rounding modes
+     need not be supported).  */
+  sprintf (name, "__%s_IS_IEC_60559__", name_prefix);
+  builtin_define_with_int_value (name,
+				 (fmt->ieee_bits == 0
+				  ? 0 : (fmt->round_towards_zero ? 1 : 2)));
 }
 
 /* Define __DECx__ constants for TYPE using NAME_PREFIX and SUFFIX. */
@@ -581,41 +592,41 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   /* Other target-independent built-ins determined by command-line
      options.  */
   if (!prev->x_optimize_size && cur->x_optimize_size)
-    cpp_define (pfile, "__OPTIMIZE_SIZE__");
+    cpp_define_unused (pfile, "__OPTIMIZE_SIZE__");
   else if (prev->x_optimize_size && !cur->x_optimize_size)
     cpp_undef (pfile, "__OPTIMIZE_SIZE__");
 
   if (!prev->x_optimize && cur->x_optimize)
-    cpp_define (pfile, "__OPTIMIZE__");
+    cpp_define_unused (pfile, "__OPTIMIZE__");
   else if (prev->x_optimize && !cur->x_optimize)
     cpp_undef (pfile, "__OPTIMIZE__");
 
   prev_fast_math = fast_math_flags_struct_set_p (prev);
   cur_fast_math  = fast_math_flags_struct_set_p (cur);
   if (!prev_fast_math && cur_fast_math)
-    cpp_define (pfile, "__FAST_MATH__");
+    cpp_define_unused (pfile, "__FAST_MATH__");
   else if (prev_fast_math && !cur_fast_math)
     cpp_undef (pfile, "__FAST_MATH__");
 
   if (!prev->x_flag_signaling_nans && cur->x_flag_signaling_nans)
-    cpp_define (pfile, "__SUPPORT_SNAN__");
+    cpp_define_unused (pfile, "__SUPPORT_SNAN__");
   else if (prev->x_flag_signaling_nans && !cur->x_flag_signaling_nans)
     cpp_undef (pfile, "__SUPPORT_SNAN__");
 
   if (!prev->x_flag_errno_math && cur->x_flag_errno_math)
     cpp_undef (pfile, "__NO_MATH_ERRNO__");
   else if (prev->x_flag_errno_math && !cur->x_flag_errno_math)
-    cpp_define (pfile, "__NO_MATH_ERRNO__");
+    cpp_define_unused (pfile, "__NO_MATH_ERRNO__");
 
   if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
-      cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
+      cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=1");
     }
   else if (prev->x_flag_finite_math_only && !cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
-      cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
+      cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=0");
     }
 }
 
@@ -866,6 +877,13 @@ c_cpp_builtins (cpp_reader *pfile)
 
   define_language_independent_builtin_macros (pfile);
 
+  /* encoding definitions used by users and libraries  */
+  builtin_define_with_value ("__GNUC_EXECUTION_CHARSET_NAME",
+    cpp_get_narrow_charset_name (pfile), 1);
+  builtin_define_with_value ("__GNUC_WIDE_EXECUTION_CHARSET_NAME",
+    cpp_get_wide_charset_name (pfile), 1);
+
+
   if (c_dialect_cxx ())
   {
     int major;
@@ -1005,6 +1023,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907L");
 	  cpp_define (pfile, "__cpp_impl_three_way_comparison=201907L");
 	  cpp_define (pfile, "__cpp_aggregate_paren_init=201902L");
+	  cpp_define (pfile, "__cpp_using_enum=201907L");
 	}
       if (flag_concepts)
         {
@@ -1013,6 +1032,10 @@ c_cpp_builtins (cpp_reader *pfile)
           else
             cpp_define (pfile, "__cpp_concepts=201507L");
         }
+      if (flag_modules)
+	/* The std-defined value is 201907L, but I don't think we can
+	   claim victory yet.  201810 is the p1103 date. */
+	cpp_define (pfile, "__cpp_modules=201810L");
       if (flag_coroutines)
 	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
       if (flag_tm)
@@ -1033,6 +1056,12 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806L");
       if (flag_char8_t)
         cpp_define (pfile, "__cpp_char8_t=201811L");
+#ifndef THREAD_MODEL_SPEC
+      /* Targets that define THREAD_MODEL_SPEC need to define
+	 __STDCPP_THREADS__ in their config/XXX/XXX-c.c themselves.  */
+      if (cxx_dialect >= cxx11 && strcmp (thread_model, "single") != 0)
+	cpp_define (pfile, "__STDCPP_THREADS__=1");
+#endif
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

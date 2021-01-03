@@ -2719,7 +2719,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator sys_days() const noexcept
       {
 	auto __d = sys_days{year() / month() / 1};
-	return __d + (weekday() - chrono::weekday(__d) + days{(index()-1)*7});
+	return __d + (weekday() - chrono::weekday(__d)
+		      + days{(static_cast<int>(index())-1)*7});
       }
 
       explicit constexpr

@@ -131,7 +131,9 @@ namespace recording {
       class base_call;
       class function_pointer;
     class statement;
+      class extended_asm;
     class case_;
+  class top_level_asm;
 
   /* End of recording types. */
 }

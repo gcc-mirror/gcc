@@ -585,7 +585,7 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
    (potential) location of the expression.  */
 
 bool
-warn_if_unused_value (const_tree exp, location_t locus)
+warn_if_unused_value (const_tree exp, location_t locus, bool quiet)
 {
  restart:
   if (TREE_USED (exp) || TREE_NO_WARNING (exp))
@@ -633,7 +633,7 @@ warn_if_unused_value (const_tree exp, location_t locus)
       goto restart;
 
     case COMPOUND_EXPR:
-      if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus))
+      if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus, quiet))
 	return true;
       /* Let people do `(foo (), 0)' without a warning.  */
       if (TREE_CONSTANT (TREE_OPERAND (exp, 1)))
@@ -647,6 +647,13 @@ warn_if_unused_value (const_tree exp, location_t locus)
       if (TREE_SIDE_EFFECTS (exp))
 	return false;
       goto warn;
+
+    case COMPLEX_EXPR:
+      /* Warn only if both operands are unused.  */
+      if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus, true)
+	  && warn_if_unused_value (TREE_OPERAND (exp, 1), locus, true))
+	goto warn;
+      return false;
 
     case INDIRECT_REF:
       /* Don't warn about automatic dereferencing of references, since
@@ -671,6 +678,8 @@ warn_if_unused_value (const_tree exp, location_t locus)
 	return false;
 
     warn:
+      if (quiet)
+	return true;
       return warning_at (locus, OPT_Wunused_value, "value computed is not used");
     }
 }
@@ -3365,18 +3374,21 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
   for (tree curp = curparms, newp = newparms; curp;
        curp = TREE_CHAIN (curp), newp = TREE_CHAIN (newp), ++parmpos)
     {
+      if (!newp)
+	/* Bail on invalid redeclarations with fewer arguments.  */
+	return;
+
       /* Only check pointers and C++ references.  */
+      tree curptype = TREE_TYPE (curp);
       tree newptype = TREE_TYPE (newp);
-      if (!POINTER_TYPE_P (newptype))
+      if (!POINTER_TYPE_P (curptype) || !POINTER_TYPE_P (newptype))
 	continue;
 
-      {
-	/* Skip mismatches in __builtin_va_list that is commonly
-	   an array but that in declarations of built-ins decays
-	   to a pointer.  */
-	if (builtin && TREE_TYPE (newptype) == TREE_TYPE (va_list_type_node))
-	  continue;
-      }
+      /* Skip mismatches in __builtin_va_list that is commonly
+	 an array but that in declarations of built-ins decays
+	 to a pointer.  */
+      if (builtin && TREE_TYPE (newptype) == TREE_TYPE (va_list_type_node))
+	continue;
 
       /* Access specs for the argument on the current (previous) and
 	 new (to replace the current) declarations.  Either may be null,
@@ -3419,7 +3431,6 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
       if (origloc == UNKNOWN_LOCATION)
 	origloc = newloc;
 
-      tree curptype = TREE_TYPE (curp);
       const std::string newparmstr = newa->array_as_string (newptype);
       const std::string curparmstr = cura->array_as_string (curptype);
       if (new_vla_p && !cur_vla_p)

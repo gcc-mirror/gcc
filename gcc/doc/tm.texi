@@ -5457,9 +5457,22 @@ Note that the block move need only cover the constant parts of the
 trampoline.  If the target isolates the variable parts of the trampoline
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.
 
-If the target requires any other actions, such as flushing caches or
+If the target requires any other actions, such as flushing caches
+(possibly calling function maybe_emit_call_builtin___clear_cache) or
 enabling stack execution, these actions should be performed after
 initializing the trampoline proper.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE (rtx @var{begin}, rtx @var{end})
+On targets that do not define a @code{clear_cache} insn expander,
+but that define the @code{CLEAR_CACHE_INSN} macro,
+maybe_emit_call_builtin___clear_cache relies on this target hook
+to clear an address range in the instruction cache.
+
+The default implementation calls the @code{__clear_cache} builtin,
+taking the assembler name from the builtin declaration.  Overriding
+definitions may call alternate functions, with alternate calling
+conventions, or emit alternate RTX to perform the job.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_TRAMPOLINE_ADJUST_ADDRESS (rtx @var{addr})
@@ -5490,7 +5503,7 @@ the following macro.
 If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
-@var{end} are both pointer expressions.
+@var{end} are pointer expressions.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -6992,9 +7005,12 @@ delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
 @end deftypefn
 
-@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val}, poly_value_estimate_kind @var{kind})
 Return an estimate of the runtime value of @var{val}, for use in
-things like cost calculations or profiling frequencies.  The default
+things like cost calculations or profiling frequencies.  @var{kind} is used
+to ask for the minimum, maximum, and likely estimates of the value through
+the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and
+@code{POLY_VALUE_LIKELY} values.  The default
 implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 
@@ -7711,13 +7727,14 @@ example, the function @code{foo} would be placed in @code{.text.foo}.
 Whatever the actual target object format, this is often good enough.
 @end deftypefn
 
-@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl})
-Return the readonly data section associated with
-@samp{DECL_SECTION_NAME (@var{decl})}.
+@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl}, bool @var{relocatable})
+Return the readonly data or reloc readonly data section associated with
+@samp{DECL_SECTION_NAME (@var{decl})}. @var{relocatable} selects the latter
+over the former.
 The default version of this function selects @code{.gnu.linkonce.r.name} if
 the function's section is @code{.gnu.linkonce.t.name}, @code{.rodata.name}
-if function is in @code{.text.name}, and the normal readonly-data section
-otherwise.
+or @code{.data.rel.ro.name} if function is in @code{.text.name}, and
+the normal readonly-data or reloc readonly data section otherwise.
 @end deftypefn
 
 @deftypevr {Target Hook} {const char *} TARGET_ASM_MERGEABLE_RODATA_PREFIX
@@ -8076,43 +8093,9 @@ need to override this if your target has special flags that might be
 set via @code{__attribute__}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ASM_RECORD_GCC_SWITCHES (print_switch_type @var{type}, const char *@var{text})
+@deftypefn {Target Hook} void TARGET_ASM_RECORD_GCC_SWITCHES (const char *@var{})
 Provides the target with the ability to record the gcc command line
-switches that have been passed to the compiler, and options that are
-enabled.  The @var{type} argument specifies what is being recorded.
-It can take the following values:
-
-@table @gcctabopt
-@item SWITCH_TYPE_PASSED
-@var{text} is a command line switch that has been set by the user.
-
-@item SWITCH_TYPE_ENABLED
-@var{text} is an option which has been enabled.  This might be as a
-direct result of a command line switch, or because it is enabled by
-default or because it has been enabled as a side effect of a different
-command line switch.  For example, the @option{-O2} switch enables
-various different individual optimization passes.
-
-@item SWITCH_TYPE_DESCRIPTIVE
-@var{text} is either NULL or some descriptive text which should be
-ignored.  If @var{text} is NULL then it is being used to warn the
-target hook that either recording is starting or ending.  The first
-time @var{type} is SWITCH_TYPE_DESCRIPTIVE and @var{text} is NULL, the
-warning is for start up and the second time the warning is for
-wind down.  This feature is to allow the target hook to make any
-necessary preparations before it starts to record switches and to
-perform any necessary tidying up after it has finished recording
-switches.
-
-@item SWITCH_TYPE_LINE_START
-This option can be ignored by this target hook.
-
-@item  SWITCH_TYPE_LINE_END
-This option can be ignored by this target hook.
-@end table
-
-The hook's return value must be zero.  Other return values may be
-supported in the future.
+switches provided as argument.
 
 By default this hook is set to NULL, but an example implementation is
 provided for ELF based targets.  Called @var{elf_record_gcc_switches},
@@ -9560,6 +9543,10 @@ given instruction.  This is only used when @code{TARGET_EXCEPT_UNWIND_INFO}
 returns @code{UI_TARGET}.
 @end deftypefn
 
+@deftypefn {Target Hook} rtx TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT (rtx @var{origsymbol}, bool @var{pubvis})
+If necessary, modify personality and LSDA references to handle indirection.  The original symbol is in @code{origsymbol} and if @code{pubvis} is true  the symbol is visible outside the TU.
+@end deftypefn
+
 @deftypevr {Target Hook} bool TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
 True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
 @end deftypevr
@@ -10817,12 +10804,25 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
-@deftypefn {D Target Hook} unsigned TARGET_D_CRITSEC_SIZE (void)
-Returns the size of the data structure used by the target operating system
-for critical sections and monitors.  For example, on Microsoft Windows this
-would return the @code{sizeof(CRITICAL_SECTION)}, while other platforms that
-implement pthreads would return @code{sizeof(pthread_mutex_t)}.
-@end deftypefn
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
+Contains the name of the section in which module info references should be
+placed.  This section is expected to be bracketed by two symbols to indicate
+the start and end address of the section, so that the runtime library can
+collect all modules for each loaded shared library and executable.  The
+default value of @code{NULL} disables the use of sections altogether.
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_START_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the start address of the module info
+section
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_END_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the end address of the module info
+section
+@end deftypevr
 
 @node Named Address Spaces
 @section Adding support for named address spaces
@@ -12053,6 +12053,18 @@ argument list due to stack realignment.  Return @code{NULL} if no DRAP
 is needed.
 @end deftypefn
 
+@deftypefn {Target Hook} HARD_REG_SET TARGET_ZERO_CALL_USED_REGS (HARD_REG_SET @var{selected_regs})
+This target hook emits instructions to zero the subset of @var{selected_regs}
+that could conceivably contain values that are useful to an attacker.
+Return the set of registers that were actually cleared.
+
+The default implementation uses normal move instructions to zero
+all the registers in @var{selected_regs}.  Define this hook if the
+target has more efficient ways of zeroing certain registers,
+or if you believe that certain registers would never contain
+values that are useful to an attacker.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS (void)
 When optimization is disabled, this hook indicates whether or not
 arguments should be allocated to stack slots.  Normally, GCC allocates
@@ -12085,7 +12097,8 @@ is zero, which disables this optimization.
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_ASAN_SHADOW_OFFSET (void)
 Return the offset bitwise ored into shifted address to get corresponding
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not
-supported by the target.
+supported by the target.  May return 0 if Address Sanitizer is not supported
+by a subtarget.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_MEMMODEL_CHECK (unsigned HOST_WIDE_INT @var{val})
@@ -12210,4 +12223,70 @@ This target hook can be used to generate a target-specific code
 
 @deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
 If selftests are enabled, run any selftests for this target.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_MEMTAG_CAN_TAG_ADDRESSES ()
+True if the backend architecture naturally supports ignoring some region
+of pointers.  This feature means that @option{-fsanitize=hwaddress} can
+work.
+
+At preset, this feature does not support address spaces.  It also requires
+@code{Pmode} to be the same as @code{ptr_mode}.
+@end deftypefn
+
+@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_TAG_SIZE ()
+Return the size of a tag (in bits) for this platform.
+
+The default returns 8.
+@end deftypefn
+
+@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_GRANULE_SIZE ()
+Return the size in real memory that each byte in shadow memory refers to.
+I.e. if a variable is @var{X} bytes long in memory, then this hook should
+return the value @var{Y} such that the tag in shadow memory spans
+@var{X}/@var{Y} bytes.
+
+Most variables will need to be aligned to this amount since two variables
+that are neighbors in memory and share a tag granule would need to share
+the same tag.
+
+The default returns 16.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_INSERT_RANDOM_TAG (rtx @var{untagged}, rtx @var{target})
+Return an RTX representing the value of @var{untagged} but with a
+(possibly) random tag in it.
+Put that value into @var{target} if it is convenient to do so.
+This function is used to generate a tagged base for the current stack frame.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_ADD_TAG (rtx @var{base}, poly_int64 @var{addr_offset}, uint8_t @var{tag_offset})
+Return an RTX that represents the result of adding @var{addr_offset} to
+the address in pointer @var{base} and @var{tag_offset} to the tag in pointer
+@var{base}.
+The resulting RTX must either be a valid memory address or be able to get
+put into an operand with @code{force_operand}.
+
+Unlike other memtag hooks, this must return an expression and not emit any
+RTL.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_SET_TAG (rtx @var{untagged_base}, rtx @var{tag}, rtx @var{target})
+Return an RTX representing @var{untagged_base} but with the tag @var{tag}.
+Try and store this in @var{target} if convenient.
+@var{untagged_base} is required to have a zero tag when this hook is called.
+The default of this hook is to set the top byte of @var{untagged_base} to
+@var{tag}.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_EXTRACT_TAG (rtx @var{tagged_pointer}, rtx @var{target})
+Return an RTX representing the tag stored in @var{tagged_pointer}.
+Store the result in @var{target} if it is convenient.
+The default represents the top byte of the original pointer.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_UNTAGGED_POINTER (rtx @var{tagged_pointer}, rtx @var{target})
+Return an RTX representing @var{tagged_pointer} with its tag set to zero.
+Store the result in @var{target} if convenient.
+The default clears the top byte of the original pointer.
 @end deftypefn

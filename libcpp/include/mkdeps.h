@@ -23,6 +23,8 @@ along with this program; see the file COPYING3.  If not see
 #ifndef LIBCPP_MKDEPS_H
 #define LIBCPP_MKDEPS_H
 
+#include "cpplib.h"
+
 /* This is the data structure used by all the functions in mkdeps.c.
    It's quite straightforward, but should be treated as opaque.  */
 
@@ -49,15 +51,22 @@ extern void deps_add_target (class mkdeps *, const char *, int);
    string as the default target is interpreted as stdin.  */
 extern void deps_add_default_target (class mkdeps *, const char *);
 
+/* Adds a module target.  The module name and cmi name are copied.  */
+extern void deps_add_module_target (struct mkdeps *, const char *module,
+				    const char *cmi, bool is_header);
+
+/* Adds a module dependency.  The module name is copied.  */
+extern void deps_add_module_dep (struct mkdeps *, const char *module);
+
 /* Add a dependency (appears on the right side of the colon) to the
    deps list.  Dependencies will be printed in the order that they
    were entered with this function.  By convention, the first
    dependency entered should be the primary source file.  */
 extern void deps_add_dep (class mkdeps *, const char *);
 
-/* Write out a deps buffer to a specified file.  The third argument
+/* Write out a deps buffer to a specified file.  The last argument
    is the number of columns to word-wrap at (0 means don't wrap).  */
-extern void deps_write (const class mkdeps *, FILE *, bool, unsigned int);
+extern void deps_write (const cpp_reader *, FILE *, unsigned int);
 
 /* Write out a deps buffer to a file, in a form that can be read back
    with deps_restore.  Returns nonzero on error, in which case the

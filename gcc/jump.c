@@ -850,9 +850,17 @@ pc_set (const rtx_insn *insn)
   pat = PATTERN (insn);
 
   /* The set is allowed to appear either as the insn pattern or
-     the first set in a PARALLEL.  */
-  if (GET_CODE (pat) == PARALLEL)
-    pat = XVECEXP (pat, 0, 0);
+     the first set in a PARALLEL, UNSPEC or UNSPEC_VOLATILE.  */
+  switch (GET_CODE (pat))
+    {
+    case PARALLEL:
+    case UNSPEC:
+    case UNSPEC_VOLATILE:
+      pat = XVECEXP (pat, 0, 0);
+      break;
+    default:
+      break;
+    }
   if (GET_CODE (pat) == SET && GET_CODE (SET_DEST (pat)) == PC)
     return pat;
 
@@ -860,7 +868,9 @@ pc_set (const rtx_insn *insn)
 }
 
 /* Return true when insn is an unconditional direct jump,
-   possibly bundled inside a PARALLEL.  */
+   possibly bundled inside a PARALLEL, UNSPEC or UNSPEC_VOLATILE.
+   The instruction may have various other effects so before removing the jump
+   you must verify onlyjump_p.  */
 
 int
 any_uncondjump_p (const rtx_insn *insn)
@@ -876,9 +886,9 @@ any_uncondjump_p (const rtx_insn *insn)
 }
 
 /* Return true when insn is a conditional jump.  This function works for
-   instructions containing PC sets in PARALLELs.  The instruction may have
-   various other effects so before removing the jump you must verify
-   onlyjump_p.
+   instructions containing PC sets in PARALLELs, UNSPECs or UNSPEC_VOLATILEs.
+   The instruction may have various other effects so before removing the jump
+   you must verify onlyjump_p.
 
    Note that unlike condjump_p it returns false for unconditional jumps.  */
 

@@ -446,7 +446,7 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	 it might result in an address reload for some targets.	 In
 	 any case we transform such pseudos not getting hard registers
 	 into scratches back.  */
-      && ! lra_former_scratch_p (i))
+      && ! ira_former_scratch_p (i))
     {
       if (lra_reg_info[i].nrefs == 0
 	  && pseudo_slots[i].mem == NULL && spill_hard_reg[i] == NULL)
@@ -494,7 +494,7 @@ spill_pseudos (void)
   for (i = FIRST_PSEUDO_REGISTER; i < regs_num; i++)
     {
       if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
-	  && ! lra_former_scratch_p (i))
+	  && ! ira_former_scratch_p (i))
 	{
 	  bitmap_set_bit (spilled_pseudos, i);
 	  bitmap_ior_into (changed_insns, &lra_reg_info[i].insn_bitmap);
@@ -578,7 +578,7 @@ lra_need_for_scratch_reg_p (void)
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
-	&& lra_former_scratch_p (i))
+	&& ira_former_scratch_p (i))
       return true;
   return false;
 }
@@ -591,7 +591,7 @@ lra_need_for_spills_p (void)
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
-	&& ! lra_former_scratch_p (i))
+	&& ! ira_former_scratch_p (i))
       return true;
   return false;
 }
@@ -612,7 +612,7 @@ lra_spill (void)
   for (n = 0, i = FIRST_PSEUDO_REGISTER; i < regs_num; i++)
     if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
 	/* We do not want to assign memory for former scratches.  */
-	&& ! lra_former_scratch_p (i))
+	&& ! ira_former_scratch_p (i))
       pseudo_regnos[n++] = i;
   lra_assert (n > 0);
   pseudo_slots = XNEWVEC (struct pseudo_slot, regs_num);
@@ -788,6 +788,14 @@ lra_final_code_change (void)
 	{
 	  rtx pat = PATTERN (insn);
 
+	  if (GET_CODE (pat) == USE && XEXP (pat, 0) == const1_rtx)
+	    {
+	      /* Remove markers to eliminate critical edges for jump insn
+		 output reloads (see code in ira.c::ira).  */
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	      continue;
+	    }
 	  if (GET_CODE (pat) == CLOBBER && LRA_TEMP_CLOBBER_P (pat))
 	    {
 	      /* Remove clobbers temporarily created in LRA.  We don't

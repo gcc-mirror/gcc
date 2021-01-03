@@ -26,9 +26,6 @@
 #include <bits/exception_defines.h>
 #include "new"
 
-using std::new_handler;
-using std::bad_alloc;
-
 extern "C" void *malloc (std::size_t);
 
 _GLIBCXX_WEAK_DEFINITION void *
@@ -43,6 +40,13 @@ operator new (std::size_t sz, const std::nothrow_t&) noexcept
     }
   __catch (...)
     {
+      // N.B. catch (...) means the process will terminate if operator new(sz)
+      // exits with a __forced_unwind exception. The process will print
+      // "FATAL: exception not rethrown" to stderr before exiting.
+      //
+      // If we propagated that exception the process would still terminate
+      // (because this function is noexcept) but with a less informative error:
+      // "terminate called without active exception".
       return nullptr;
     }
 }

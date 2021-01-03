@@ -809,16 +809,15 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   unsigned int option_index = find_opt (option_string + 1, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
     {
-      option_proposer op;
-      const char *hint = op.suggest_option (option_string + 1);
-      if (hint)
-	warning_at (loc, OPT_Wpragmas,
-		    "unknown option after %<#pragma GCC diagnostic%> kind;"
-		    " did you mean %<-%s%>?", hint);
-      else
-	warning_at (loc, OPT_Wpragmas,
-		    "unknown option after %<#pragma GCC diagnostic%> kind");
-
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wpragmas,
+		      "unknown option after %<#pragma GCC diagnostic%> kind"))
+	{
+	  option_proposer op;
+	  const char *hint = op.suggest_option (option_string + 1);
+	  if (hint)
+	    inform (loc, "did you mean %<-%s%>?", hint);
+	}
       return;
     }
   else if (!(cl_options[option_index].flags & CL_WARNING))
@@ -1310,6 +1309,7 @@ static const struct omp_pragma_def oacc_pragmas[] = {
   { "wait", PRAGMA_OACC_WAIT }
 };
 static const struct omp_pragma_def omp_pragmas[] = {
+  { "allocate", PRAGMA_OMP_ALLOCATE },
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
   { "cancel", PRAGMA_OMP_CANCEL },
@@ -1318,7 +1318,6 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "depobj", PRAGMA_OMP_DEPOBJ },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
-  { "master", PRAGMA_OMP_MASTER },
   { "requires", PRAGMA_OMP_REQUIRES },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
@@ -1334,6 +1333,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
   { "loop", PRAGMA_OMP_LOOP },
+  { "master", PRAGMA_OMP_MASTER },
   { "ordered", PRAGMA_OMP_ORDERED },
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "scan", PRAGMA_OMP_SCAN },

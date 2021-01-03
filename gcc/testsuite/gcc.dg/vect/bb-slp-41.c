@@ -10,7 +10,10 @@ foo (int *a, int *b)
     a[i] = b[0] + b[1] + b[i+1] + b[i+2];
 }
 
-void bar (int *a, int *b)
+/* Disable pre-slp FRE to avoid unexpected SLP on the epilogue
+   of the 1st loop.  */
+void __attribute__((optimize("-fno-tree-fre")))
+bar (int *a, int *b)
 {
   int i;
   for (i = 0; i < (ARR_SIZE - 2); ++i)

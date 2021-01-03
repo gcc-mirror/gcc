@@ -402,7 +402,7 @@ extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
 #endif
 
 extern cmp_return_type __cmpdi2 (DWtype, DWtype);
-extern cmp_return_type __ucmpdi2 (DWtype, DWtype);
+extern cmp_return_type __ucmpdi2 (UDWtype, UDWtype);
 
 #if MIN_UNITS_PER_WORD > 1
 extern SItype __bswapsi2 (SItype);

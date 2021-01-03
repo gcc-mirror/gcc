@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -201,16 +202,17 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
       }
 
   tree new_decl;
-  if (node->clone.param_adjustments)
+  clone_info *info = clone_info::get (node);
+  if (info && info->param_adjustments)
     {
       /* We do not need to duplicate this_adjusting thunks if we have removed
 	 this.  */
       if (i->this_adjusting
-	  && !node->clone.param_adjustments->first_param_intact_p ())
+	  && !info->param_adjustments->first_param_intact_p ())
 	return node;
 
       new_decl = copy_node (thunk->decl);
-      ipa_param_body_adjustments body_adj (node->clone.param_adjustments,
+      ipa_param_body_adjustments body_adj (info->param_adjustments,
 					   new_decl);
       body_adj.modify_formal_parameters ();
     }
@@ -237,7 +239,9 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
-  new_thunk->clone.param_adjustments = node->clone.param_adjustments;
+  if (info && info->param_adjustments)
+    clone_info::get_create (new_thunk)->param_adjustments
+	   = info->param_adjustments;
   new_thunk->unit_id = thunk->unit_id;
   new_thunk->merged_comdat = thunk->merged_comdat;
   new_thunk->merged_extern_inline = thunk->merged_extern_inline;
@@ -403,13 +407,16 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;
   new_node->merged_extern_inline = merged_extern_inline;
+  clone_info *info = clone_info::get (this);
 
   if (param_adjustments)
-    new_node->clone.param_adjustments = param_adjustments;
-  else
-    new_node->clone.param_adjustments = clone.param_adjustments;
-  new_node->clone.tree_map = NULL;
-  new_node->clone.performed_splits = vec_safe_copy (clone.performed_splits);
+    clone_info::get_create (new_node)->param_adjustments = param_adjustments;
+  else if (info && info->param_adjustments)
+    clone_info::get_create (new_node)->param_adjustments
+	 = info->param_adjustments;
+  if (info && info->performed_splits)
+    clone_info::get_create (new_node)->performed_splits
+	 = vec_safe_copy (info->performed_splits);
   new_node->split_part = split_part;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
@@ -616,9 +623,10 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
   new_node->ipcp_clone = ipcp_clone;
-  new_node->clone.tree_map = tree_map;
+  if (tree_map)
+    clone_info::get_create (new_node)->tree_map = tree_map;
   if (!implicit_section)
-    new_node->set_section (get_section ());
+    new_node->set_section (*this);
 
   /* Clones of global symbols or symbols with unique names are unique.  */
   if ((TREE_PUBLIC (old_decl)
@@ -640,9 +648,10 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 }
 
 /* callgraph node being removed from symbol table; see if its entry can be
-   replaced by other inline clone.  */
+   replaced by other inline clone. 
+   INFO is clone info to attach to the new root.  */
 cgraph_node *
-cgraph_node::find_replacement (void)
+cgraph_node::find_replacement (clone_info *info)
 {
   cgraph_node *next_inline_clone, *replacement;
 
@@ -682,7 +691,8 @@ cgraph_node::find_replacement (void)
       clones = NULL;
 
       /* Copy clone info.  */
-      next_inline_clone->clone = clone;
+      if (info)
+	*clone_info::get_create (next_inline_clone) = *info;
 
       /* Now place it into clone tree at same level at NODE.  */
       next_inline_clone->clone_of = clone_of;
@@ -1050,7 +1060,7 @@ cgraph_node::create_version_clone_with_body
   new_version_node->local = 1;
   new_version_node->lowered = true;
   if (!implicit_section)
-    new_version_node->set_section (get_section ());
+    new_version_node->set_section (*this);
   /* Clones of global symbols or symbols with unique names are unique.  */
   if ((TREE_PUBLIC (old_decl)
        && !DECL_EXTERNAL (old_decl)
@@ -1087,6 +1097,7 @@ void cgraph_node::remove_from_clone_tree ()
 void
 cgraph_node::materialize_clone ()
 {
+  clone_info *info = clone_info::get (this);
   clone_of->get_untransformed_body ();
   former_clone_of = clone_of->decl;
   if (clone_of->former_clone_of)
@@ -1096,15 +1107,15 @@ cgraph_node::materialize_clone ()
       fprintf (symtab->dump_file, "cloning %s to %s\n",
 	       clone_of->dump_name (),
 	       dump_name ());
-      if (clone.tree_map)
+      if (info && info->tree_map)
         {
 	  fprintf (symtab->dump_file, "    replace map:");
 	  for (unsigned int i = 0;
-	       i < vec_safe_length (clone.tree_map);
+	       i < vec_safe_length (info->tree_map);
 	       i++)
 	    {
 	      ipa_replace_map *replace_info;
-	      replace_info = (*clone.tree_map)[i];
+	      replace_info = (*info->tree_map)[i];
 	      fprintf (symtab->dump_file, "%s %i -> ",
 		       i ? "," : "", replace_info->parm_num);
 	      print_generic_expr (symtab->dump_file,
@@ -1112,12 +1123,14 @@ cgraph_node::materialize_clone ()
 	    }
 	  fprintf (symtab->dump_file, "\n");
 	}
-      if (clone.param_adjustments)
-	clone.param_adjustments->dump (symtab->dump_file);
+      if (info && info->param_adjustments)
+	info->param_adjustments->dump (symtab->dump_file);
     }
+  clear_stmts_in_references ();
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (clone_of->decl, decl,
-			    clone.tree_map, clone.param_adjustments,
+			    info ? info->tree_map : NULL,
+			    info ? info->param_adjustments : NULL,
 			    true, NULL, NULL);
   if (symtab->dump_file)
     {

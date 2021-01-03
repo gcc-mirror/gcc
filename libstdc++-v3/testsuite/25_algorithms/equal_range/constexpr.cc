@@ -28,7 +28,8 @@ test()
 
   const auto outc = std::equal_range(car.begin(), car.end(), 6);
 
-  return true;
+  return outc.first == (car.begin() + 6)
+    && outc.second == (car.begin() + 8);
 }
 
 static_assert(test());

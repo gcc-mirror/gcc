@@ -74,7 +74,7 @@ public:
   void disassociate_from_playback ();
 
   string *
-  new_string (const char *text);
+  new_string (const char *text, bool escaped = false);
 
   location *
   new_location (const char *filename,
@@ -301,6 +301,8 @@ public:
   void set_timer (timer *t) { m_timer = t; }
   timer *get_timer () const { return m_timer; }
 
+  void add_top_level_asm (location *loc, const char *asm_stmts);
+
 private:
   void log_all_options () const;
   void log_str_option (enum gcc_jit_str_option opt) const;
@@ -344,6 +346,7 @@ private:
   auto_vec<compound_type *> m_compound_types;
   auto_vec<global *> m_globals;
   auto_vec<function *> m_functions;
+  auto_vec<top_level_asm *> m_top_level_asms;
 
   type *m_basic_types[NUM_GCC_JIT_TYPES];
   type *m_FILE_type;
@@ -414,7 +417,7 @@ private:
 class string : public memento
 {
 public:
-  string (context *ctxt, const char *text);
+  string (context *ctxt, const char *text, bool escaped);
   ~string ();
 
   const char *c_str () { return m_buffer; }
@@ -431,6 +434,11 @@ private:
 private:
   size_t m_len;
   char *m_buffer;
+
+  /* Flag to track if this string is the result of string::make_debug_string,
+     to avoid infinite recursion when logging all mementos: don't re-escape
+     such strings.  */
+  bool m_escaped;
 };
 
 class location : public memento
@@ -1270,6 +1278,10 @@ public:
   add_comment (location *loc,
 	       const char *text);
 
+  extended_asm *
+  add_extended_asm (location *loc,
+		    const char *asm_template);
+
   statement *
   end_with_conditional (location *loc,
 			rvalue *boolval,
@@ -1290,6 +1302,13 @@ public:
 		   block *default_block,
 		   int num_cases,
 		   case_ **cases);
+
+  extended_asm *
+  end_with_extended_asm_goto (location *loc,
+			      const char *asm_template,
+			      int num_goto_blocks,
+			      block **goto_blocks,
+			      block *fallthrough_block);
 
   playback::block *
   playback_block () const
@@ -2105,6 +2124,207 @@ private:
   rvalue *m_expr;
   block *m_default_block;
   auto_vec <case_ *> m_cases;
+};
+
+class asm_operand : public memento
+{
+public:
+  asm_operand (extended_asm *ext_asm,
+	       string *asm_symbolic_name,
+	       string *constraint);
+
+  const char *get_symbolic_name () const
+  {
+    if (m_asm_symbolic_name)
+      return m_asm_symbolic_name->c_str ();
+    else
+      return NULL;
+  }
+
+  const char *get_constraint () const
+  {
+    return m_constraint->c_str ();
+  }
+
+  virtual void print (pretty_printer *pp) const;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+
+protected:
+  extended_asm *m_ext_asm;
+  string *m_asm_symbolic_name;
+  string *m_constraint;
+};
+
+class output_asm_operand : public asm_operand
+{
+public:
+  output_asm_operand (extended_asm *ext_asm,
+		      string *asm_symbolic_name,
+		      string *constraint,
+		      lvalue *dest)
+  : asm_operand (ext_asm, asm_symbolic_name, constraint),
+    m_dest (dest)
+  {}
+
+  lvalue *get_lvalue () const { return m_dest; }
+
+  void replay_into (replayer *) FINAL OVERRIDE {}
+
+  void print (pretty_printer *pp) const FINAL OVERRIDE;
+
+private:
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  lvalue *m_dest;
+};
+
+class input_asm_operand : public asm_operand
+{
+public:
+  input_asm_operand (extended_asm *ext_asm,
+		     string *asm_symbolic_name,
+		     string *constraint,
+		     rvalue *src)
+  : asm_operand (ext_asm, asm_symbolic_name, constraint),
+    m_src (src)
+  {}
+
+  rvalue *get_rvalue () const { return m_src; }
+
+  void replay_into (replayer *) FINAL OVERRIDE {}
+
+  void print (pretty_printer *pp) const FINAL OVERRIDE;
+
+private:
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  rvalue *m_src;
+};
+
+/* Abstract base class for extended_asm statements.  */
+
+class extended_asm : public statement
+{
+public:
+  extended_asm (block *b,
+		location *loc,
+		string *asm_template)
+  : statement (b, loc),
+    m_asm_template (asm_template),
+    m_is_volatile (false),
+    m_is_inline (false)
+  {}
+
+  void set_volatile_flag (bool flag) { m_is_volatile = flag; }
+  void set_inline_flag (bool flag) { m_is_inline = flag; }
+
+  void add_output_operand (const char *asm_symbolic_name,
+			   const char *constraint,
+			   lvalue *dest);
+  void add_input_operand (const char *asm_symbolic_name,
+			  const char *constraint,
+			  rvalue *src);
+  void add_clobber (const char *victim);
+
+  void replay_into (replayer *r) OVERRIDE;
+
+  string *get_asm_template () const { return m_asm_template; }
+
+  virtual bool is_goto () const = 0;
+  virtual void maybe_print_gotos (pretty_printer *) const = 0;
+
+protected:
+  void write_flags (reproducer &r);
+  void write_clobbers (reproducer &r);
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  virtual void maybe_populate_playback_blocks
+    (auto_vec <playback::block *> *out) = 0;
+
+protected:
+  string *m_asm_template;
+  bool m_is_volatile;
+  bool m_is_inline;
+  auto_vec<output_asm_operand *> m_output_ops;
+  auto_vec<input_asm_operand *> m_input_ops;
+  auto_vec<string *> m_clobbers;
+};
+
+/* An extended_asm that's not a goto, as created by
+   gcc_jit_block_add_extended_asm. */
+
+class extended_asm_simple : public extended_asm
+{
+public:
+  extended_asm_simple (block *b,
+		       location *loc,
+		       string *asm_template)
+  : extended_asm (b, loc, asm_template)
+  {}
+
+  void write_reproducer (reproducer &r) OVERRIDE;
+  bool is_goto () const FINAL OVERRIDE { return false; }
+  void maybe_print_gotos (pretty_printer *) const FINAL OVERRIDE {}
+
+private:
+  void maybe_populate_playback_blocks
+    (auto_vec <playback::block *> *) FINAL OVERRIDE
+  {}
+};
+
+/* An extended_asm that's a asm goto, as created by
+   gcc_jit_block_end_with_extended_asm_goto.  */
+
+class extended_asm_goto : public extended_asm
+{
+public:
+  extended_asm_goto (block *b,
+		     location *loc,
+		     string *asm_template,
+		     int num_goto_blocks,
+		     block **goto_blocks,
+		     block *fallthrough_block);
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) OVERRIDE;
+
+  vec <block *> get_successor_blocks () const FINAL OVERRIDE;
+
+  bool is_goto () const FINAL OVERRIDE { return true; }
+  void maybe_print_gotos (pretty_printer *) const FINAL OVERRIDE;
+
+private:
+  void maybe_populate_playback_blocks
+    (auto_vec <playback::block *> *out) FINAL OVERRIDE;
+
+private:
+  auto_vec <block *> m_goto_blocks;
+  block *m_fallthrough_block;
+};
+
+/* A group of top-level asm statements, as created by
+   gcc_jit_context_add_top_level_asm.  */
+
+class top_level_asm : public memento
+{
+public:
+  top_level_asm (context *ctxt, location *loc, string *asm_stmts);
+
+  void write_to_dump (dump &d) FINAL OVERRIDE;
+
+private:
+  void replay_into (replayer *r) FINAL OVERRIDE;
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  location *m_loc;
+  string *m_asm_stmts;
 };
 
 } // namespace gcc::jit::recording

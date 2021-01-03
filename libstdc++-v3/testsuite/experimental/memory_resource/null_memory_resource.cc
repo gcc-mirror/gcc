@@ -31,7 +31,7 @@ test06()
   memory_resource* r = null_memory_resource();
   bool caught = false;
 
-  void* p = nullptr;
+  void* p __attribute__((unused)) = nullptr;
   try {
     p = r->allocate(1);
   } catch (const std::bad_alloc&) {

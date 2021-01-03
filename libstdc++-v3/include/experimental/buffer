@@ -315,7 +315,7 @@ inline namespace v1
     inline size_t
     buffer_copy(const _MutableBufferSequence& __dest,
 		const _ConstBufferSequence& __source) noexcept
-    { return net::buffer_copy(__dest, __source, size_t{-1}); }
+    { return net::buffer_copy(__dest, __source, size_t(-1)); }
 
 
   // buffer arithmetic:

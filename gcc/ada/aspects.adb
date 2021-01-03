@@ -44,6 +44,7 @@ package body Aspects is
       Aspect_Discard_Names           => True,
       Aspect_Independent_Components  => True,
       Aspect_Iterator_Element        => True,
+      Aspect_Stable_Properties       => True,
       Aspect_Type_Invariant          => True,
       Aspect_Unchecked_Union         => True,
       Aspect_Variable_Indexing       => True,
@@ -185,7 +186,11 @@ package body Aspects is
    -- Find_Aspect --
    -----------------
 
-   function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id is
+   function Find_Aspect
+     (Id            : Entity_Id;
+      A             : Aspect_Id;
+      Class_Present : Boolean := False) return Node_Id
+   is
       Decl  : Node_Id;
       Item  : Node_Id;
       Owner : Entity_Id;
@@ -219,6 +224,7 @@ package body Aspects is
       while Present (Item) loop
          if Nkind (Item) = N_Aspect_Specification
            and then Get_Aspect_Id (Item) = A
+           and then Class_Present = Sinfo.Class_Present (Item)
          then
             return Item;
          end if;
@@ -241,7 +247,9 @@ package body Aspects is
       if Permits_Aspect_Specifications (Decl) then
          Spec := First (Aspect_Specifications (Decl));
          while Present (Spec) loop
-            if Get_Aspect_Id (Spec) = A then
+            if Get_Aspect_Id (Spec) = A
+              and then Class_Present = Sinfo.Class_Present (Spec)
+            then
                return Spec;
             end if;
 
@@ -260,10 +268,12 @@ package body Aspects is
    --------------------------
 
    function Find_Value_Of_Aspect
-     (Id : Entity_Id;
-      A  : Aspect_Id) return Node_Id
+     (Id            : Entity_Id;
+      A             : Aspect_Id;
+      Class_Present : Boolean := False) return Node_Id
    is
-      Spec : constant Node_Id := Find_Aspect (Id, A);
+      Spec : constant Node_Id := Find_Aspect (Id, A,
+                                              Class_Present => Class_Present);
 
    begin
       if Present (Spec) then
@@ -296,9 +306,13 @@ package body Aspects is
    -- Has_Aspect --
    ----------------
 
-   function Has_Aspect (Id : Entity_Id; A : Aspect_Id) return Boolean is
+   function Has_Aspect
+     (Id            : Entity_Id;
+      A             : Aspect_Id;
+      Class_Present : Boolean := False) return Boolean
+   is
    begin
-      return Present (Find_Aspect (Id, A));
+      return Present (Find_Aspect (Id, A, Class_Present => Class_Present));
    end Has_Aspect;
 
    ------------------

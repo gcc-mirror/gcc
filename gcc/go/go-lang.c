@@ -131,6 +131,16 @@ go_langhook_init (void)
      eventually be controllable by a command line option.  */
   mpfr_set_default_prec (256);
 
+  /* If necessary, override GCC's choice of minimum and maximum
+     exponents.  This should only affect GCC middle-end
+     compilation-time, not correctness.  */
+  mpfr_exp_t exp = mpfr_get_emax ();
+  if (exp < (1 << 16) - 1)
+    mpfr_set_emax ((1 << 16) - 1);
+  exp = mpfr_get_emin ();
+  if (exp > - ((1 << 16) - 1))
+    mpfr_set_emin (- ((1 << 16) - 1));
+
   /* Go uses exceptions.  */
   using_eh_for_cleanups ();
 
@@ -305,6 +315,12 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
      See https://gcc.gnu.org/PR91663.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       flag_partial_inlining, 0);
+
+  /* Go programs expect runtime.Callers to give the right answers,
+     which means that we can't combine functions even if they look the
+     same.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_ipa_icf_functions, 0);
 
   /* If the debug info level is still 1, as set in init_options, make
      sure that some debugging type is selected.  */

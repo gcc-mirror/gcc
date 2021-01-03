@@ -1,3 +1,12 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* encoding.c (_darwin_rs6000_special_round_type_align):

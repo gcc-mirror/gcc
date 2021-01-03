@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 2 }
 
 //
 // 2014-11-13  Daniel Kruegler <daniel.kruegler@gmail.com>

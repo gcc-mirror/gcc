@@ -18,6 +18,8 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(include "../arm/common.md")
+
 (define_special_predicate "cc_register"
   (and (match_code "reg")
        (and (match_test "REGNO (op) == CC_REGNUM")

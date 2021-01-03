@@ -69,8 +69,8 @@ test02()
 void
 test03()
 {
-  for (const path& p : __gnu_test::test_paths)
-    for (const path& q : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
+    for (const path q : __gnu_test::test_paths)
       test(p, q);
 }
 

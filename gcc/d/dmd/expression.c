@@ -4340,7 +4340,7 @@ Expression *ArrayLiteralExp::syntaxCopy()
         arraySyntaxCopy(elements));
 }
 
-Expression *ArrayLiteralExp::getElement(d_size_t i)
+Expression *ArrayLiteralExp::getElement(size_t i)
 {
     Expression *el = (*elements)[i];
     if (!el)

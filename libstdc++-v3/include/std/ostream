@@ -776,6 +776,73 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ret_os << __x;
       return __ret_os;
     }
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+  template<typename _CharT, typename _Traits>
+    class __syncbuf_base : public basic_streambuf<_CharT, _Traits>
+    {
+    public:
+      static bool*
+      _S_get(basic_streambuf<_CharT, _Traits>* __buf) noexcept
+      {
+	if (auto __p = dynamic_cast<__syncbuf_base*>(__buf))
+	  return &__p->_M_emit_on_sync;
+	return nullptr;
+      }
+
+    protected:
+      __syncbuf_base(basic_streambuf<_CharT, _Traits>* __w = nullptr)
+      : _M_wrapped(__w)
+      { }
+
+      basic_streambuf<_CharT, _Traits>* _M_wrapped = nullptr;
+      bool _M_emit_on_sync = false;
+      bool _M_needs_sync = false;
+    };
+
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT, _Traits>&
+    emit_on_flush(basic_ostream<_CharT, _Traits>& __os)
+    {
+      if (bool* __flag = __syncbuf_base<_CharT, _Traits>::_S_get(__os.rdbuf()))
+	*__flag = true;
+      return __os;
+    }
+
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT, _Traits>&
+    noemit_on_flush(basic_ostream<_CharT, _Traits>& __os)
+    {
+      if (bool* __flag = __syncbuf_base<_CharT, _Traits>::_S_get(__os.rdbuf()))
+	*__flag = false;
+      return __os;
+    }
+
+  template<typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT, _Traits>&
+    flush_emit(basic_ostream<_CharT, _Traits>& __os)
+    {
+      struct _Restore
+      {
+	~_Restore() { *_M_flag = _M_prev; }
+
+	bool _M_prev = false;
+	bool* _M_flag = &_M_prev;
+      } __restore;
+
+      if (bool* __flag = __syncbuf_base<_CharT, _Traits>::_S_get(__os.rdbuf()))
+	{
+	  __restore._M_prev = *__flag;
+	  __restore._M_flag = __flag;
+	  *__flag = true;
+	}
+
+      __os.flush();
+      return __os;
+    }
+
+#endif // C++20
+
 #endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION

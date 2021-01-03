@@ -326,8 +326,19 @@ package body Sem_Type is
             return False;
 
          elsif Nkind (N) in N_Binary_Op then
-            return Present (Universal_Interpretation (Left_Opnd (N)))
-              and then Present (Universal_Interpretation (Right_Opnd (N)));
+            if Present (Universal_Interpretation (Left_Opnd (N)))
+              and then Present (Universal_Interpretation (Right_Opnd (N)))
+            then
+               return True;
+            elsif Nkind (N) in N_Op_Eq | N_Op_Ne
+              and then
+                (Is_Anonymous_Access_Type (Etype (Left_Opnd (N)))
+                  or else Is_Anonymous_Access_Type (Etype (Right_Opnd (N))))
+            then
+               return True;
+            else
+               return False;
+            end if;
 
          elsif Nkind (N) in N_Unary_Op then
             return Present (Universal_Interpretation (Right_Opnd (N)));
@@ -1156,16 +1167,14 @@ package body Sem_Type is
       --  useless unchecked conversions, and since this can only arise in
       --  (known correct) expanded code, no harm is done.
 
-      elsif Is_Array_Type (T2)
-        and then Is_Packed (T2)
+      elsif Is_Packed_Array (T2)
         and then T1 = Packed_Array_Impl_Type (T2)
       then
          return True;
 
       --  Similarly an array type covers its corresponding packed array type
 
-      elsif Is_Array_Type (T1)
-        and then Is_Packed (T1)
+      elsif Is_Packed_Array (T1)
         and then T2 = Packed_Array_Impl_Type (T1)
       then
          return True;
@@ -1337,6 +1346,13 @@ package body Sem_Type is
       --  The new rules concerning abstract operations create additional need
       --  for special handling of expressions with universal operands, see
       --  comments to Has_Abstract_Interpretation below.
+
+      function Is_User_Defined_Anonymous_Access_Equality
+        (User_Subp, Predef_Subp : Entity_Id) return Boolean;
+      --  Check for Ada 2005, AI-020: If the context involves an anonymous
+      --  access operand, recognize a user-defined equality (User_Subp) with
+      --  the proper signature, declared in the same declarative list as the
+      --  type and not hiding a predefined equality Predef_Subp.
 
       ---------------------------
       -- Inherited_From_Actual --
@@ -1743,6 +1759,37 @@ package body Sem_Type is
          end if;
       end Standard_Operator;
 
+      -----------------------------------------------
+      -- Is_User_Defined_Anonymous_Access_Equality --
+      -----------------------------------------------
+
+      function Is_User_Defined_Anonymous_Access_Equality
+        (User_Subp, Predef_Subp : Entity_Id) return Boolean is
+      begin
+         return Present (User_Subp)
+
+         --  Check for Ada 2005 and use of anonymous access
+
+           and then Ada_Version >= Ada_2005
+           and then Etype (User_Subp) = Standard_Boolean
+           and then Is_Anonymous_Access_Type (Operand_Type)
+
+         --  This check is only relevant if User_Subp is visible and not in
+         --  an instance
+
+           and then (In_Open_Scopes (Scope (User_Subp))
+                      or else Is_Potentially_Use_Visible (User_Subp))
+           and then not In_Instance
+           and then not Hides_Op (User_Subp, Predef_Subp)
+
+         --  Is User_Subp declared in the same declarative list as the type?
+
+           and then
+             In_Same_Declaration_List
+               (Designated_Type (Operand_Type),
+                Unit_Declaration_Node (User_Subp));
+      end Is_User_Defined_Anonymous_Access_Equality;
+
    --  Start of processing for Disambiguate
 
    begin
@@ -1856,17 +1903,41 @@ package body Sem_Type is
                   Arg2 := Next_Actual (Arg1);
                end if;
 
-               if Present (Arg2)
-                 and then Present (Universal_Interpretation (Arg1))
-                 and then Universal_Interpretation (Arg2) =
-                          Universal_Interpretation (Arg1)
-               then
-                  Get_First_Interp (N, I, It);
-                  while Scope (It.Nam) /= Standard_Standard loop
-                     Get_Next_Interp (I, It);
-                  end loop;
+               if Present (Arg2) then
+                  if Ekind (Nam1) = E_Operator then
+                     Predef_Subp := Nam1;
+                     User_Subp   := Nam2;
+                  elsif Ekind (Nam2) = E_Operator then
+                     Predef_Subp := Nam2;
+                     User_Subp   := Nam1;
+                  else
+                     Predef_Subp := Empty;
+                     User_Subp   := Empty;
+                  end if;
 
-                  return It;
+                  --  Take into account universal interpretation as well as
+                  --  universal_access equality, as long as AI05-0020 does not
+                  --  trigger.
+
+                  if (Present (Universal_Interpretation (Arg1))
+                       and then Universal_Interpretation (Arg2) =
+                                Universal_Interpretation (Arg1))
+                    or else
+                      (Nkind (N) in N_Op_Eq | N_Op_Ne
+                        and then (Is_Anonymous_Access_Type (Etype (Arg1))
+                                    or else
+                                  Is_Anonymous_Access_Type (Etype (Arg2)))
+                        and then not
+                          Is_User_Defined_Anonymous_Access_Equality
+                            (User_Subp, Predef_Subp))
+                  then
+                     Get_First_Interp (N, I, It);
+                     while Scope (It.Nam) /= Standard_Standard loop
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                     return It;
+                  end if;
                end if;
             end;
          end if;
@@ -2117,20 +2188,11 @@ package body Sem_Type is
                   return It2;
                end if;
 
-            --  Ada 2005, AI-420: preference rule for "=" on Universal_Access
-            --  states that the operator defined in Standard is not available
-            --  if there is a user-defined equality with the proper signature,
-            --  declared in the same declarative list as the type. The node
-            --  may be an operator or a function call.
+            --  Check for AI05-020
 
             elsif Chars (Nam1) in Name_Op_Eq | Name_Op_Ne
-              and then Ada_Version >= Ada_2005
-              and then Etype (User_Subp) = Standard_Boolean
-              and then Is_Anonymous_Access_Type (Operand_Type)
-              and then
-                In_Same_Declaration_List
-                  (Designated_Type (Operand_Type),
-                   Unit_Declaration_Node (User_Subp))
+              and then Is_User_Defined_Anonymous_Access_Equality
+                         (User_Subp, Predef_Subp)
             then
                if It2.Nam = Predef_Subp then
                   return It1;

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
+#include "version.h"
 #include "flags.h"
 #include "stmt.h"
 #include "expr.h"
@@ -58,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "file-prefix-map.h" /* remap_debug_filename()  */
 #include "alloc-pool.h"
+#include "toplev.h"
+#include "opts.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations.  */
@@ -277,16 +280,28 @@ get_noswitch_section (unsigned int flags, noswitch_section_callback callback)
 }
 
 /* Return the named section structure associated with NAME.  Create
-   a new section with the given fields if no such structure exists.  */
+   a new section with the given fields if no such structure exists.
+   When NOT_EXISTING, then fail if the section already exists.  Return
+   the existing section if the SECTION_RETAIN bit doesn't match.  Set
+   the SECTION_WRITE | SECTION_RELRO bits on the the existing section
+   if one of the section flags is SECTION_WRITE | SECTION_RELRO and the
+   other has none of these flags in named sections and either the section
+   hasn't been declared yet or has been declared as writable.  */
 
 section *
-get_section (const char *name, unsigned int flags, tree decl)
+get_section (const char *name, unsigned int flags, tree decl,
+	     bool not_existing)
 {
   section *sect, **slot;
 
   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
 					    INSERT);
   flags |= SECTION_NAMED;
+  if (SUPPORTS_SHF_GNU_RETAIN
+      && decl != nullptr
+      && DECL_P (decl)
+      && DECL_PRESERVE_P (decl))
+    flags |= SECTION_RETAIN;
   if (*slot == NULL)
     {
       sect = ggc_alloc<section> ();
@@ -297,6 +312,9 @@ get_section (const char *name, unsigned int flags, tree decl)
     }
   else
     {
+      if (not_existing)
+	internal_error ("Section already exists: %qs", name);
+
       sect = *slot;
       /* It is fine if one of the sections has SECTION_NOTYPE as long as
          the other has none of the contrary flags (see the logic at the end
@@ -330,6 +348,11 @@ get_section (const char *name, unsigned int flags, tree decl)
 	      sect->common.flags |= (SECTION_WRITE | SECTION_RELRO);
 	      return sect;
 	    }
+	  /* If the SECTION_RETAIN bit doesn't match, return and switch
+	     to a new section later.  */
+	  if ((sect->common.flags & SECTION_RETAIN)
+	      != (flags & SECTION_RETAIN))
+	    return sect;
 	  /* Sanity check user variables for flag changes.  */
 	  if (sect->named.decl != NULL
 	      && DECL_P (sect->named.decl)
@@ -464,6 +487,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
+	  || (SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
@@ -727,12 +751,26 @@ switch_to_other_text_partition (void)
   switch_to_section (current_function_section ());
 }
 
-/* Return the read-only data section associated with function DECL.  */
+/* Return the read-only or relocated read-only data section
+   associated with function DECL.  */
 
 section *
-default_function_rodata_section (tree decl)
+default_function_rodata_section (tree decl, bool relocatable)
 {
-  if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
+  const char* sname;
+  unsigned int flags;
+
+  flags = 0;
+
+  if (relocatable)
+    {
+      sname = ".data.rel.ro.local";
+      flags = (SECTION_WRITE | SECTION_RELRO);
+    }
+  else
+    sname = ".rodata";
+
+  if (decl && DECL_SECTION_NAME (decl))
     {
       const char *name = DECL_SECTION_NAME (decl);
 
@@ -745,38 +783,56 @@ default_function_rodata_section (tree decl)
 	  dot = strchr (name + 1, '.');
 	  if (!dot)
 	    dot = name;
-	  len = strlen (dot) + 8;
+	  len = strlen (dot) + strlen (sname) + 1;
 	  rname = (char *) alloca (len);
 
-	  strcpy (rname, ".rodata");
+	  strcpy (rname, sname);
 	  strcat (rname, dot);
-	  return get_section (rname, SECTION_LINKONCE, decl);
+	  return get_section (rname, (SECTION_LINKONCE | flags), decl);
 	}
-      /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
+      /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo or
+	 .gnu.linkonce.d.rel.ro.local.foo if the jump table is relocatable.  */
       else if (DECL_COMDAT_GROUP (decl)
 	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
-	  size_t len = strlen (name) + 1;
-	  char *rname = (char *) alloca (len);
+	  size_t len;
+	  char *rname;
 
-	  memcpy (rname, name, len);
-	  rname[14] = 'r';
-	  return get_section (rname, SECTION_LINKONCE, decl);
+	  if (relocatable)
+	    {
+	      len = strlen (name) + strlen (".rel.ro.local") + 1;
+	      rname = (char *) alloca (len);
+
+	      strcpy (rname, ".gnu.linkonce.d.rel.ro.local");
+	      strcat (rname, name + 15);
+	    }
+	  else
+	    {
+	      len = strlen (name) + 1;
+	      rname = (char *) alloca (len);
+
+	      memcpy (rname, name, len);
+	      rname[14] = 'r';
+	    }
+	  return get_section (rname, (SECTION_LINKONCE | flags), decl);
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
 	       && strncmp (name, ".text.", 6) == 0)
 	{
 	  size_t len = strlen (name) + 1;
-	  char *rname = (char *) alloca (len + 2);
+	  char *rname = (char *) alloca (len + strlen (sname) - 5);
 
-	  memcpy (rname, ".rodata", 7);
-	  memcpy (rname + 7, name + 5, len - 5);
-	  return get_section (rname, 0, decl);
+	  memcpy (rname, sname, strlen (sname));
+	  memcpy (rname + strlen (sname), name + 5, len - 5);
+	  return get_section (rname, flags, decl);
 	}
     }
 
-  return readonly_data_section;
+  if (relocatable)
+    return get_section (sname, flags, decl);
+  else
+    return readonly_data_section;
 }
 
 /* Return the read-only data section associated with function DECL
@@ -784,7 +840,7 @@ default_function_rodata_section (tree decl)
    readonly data section.  */
 
 section *
-default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
+default_no_function_rodata_section (tree, bool)
 {
   return readonly_data_section;
 }
@@ -794,7 +850,8 @@ default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
 static const char *
 function_mergeable_rodata_prefix (void)
 {
-  section *s = targetm.asm_out.function_rodata_section (current_function_decl);
+  section *s = targetm.asm_out.function_rodata_section (current_function_decl,
+							false);
   if (SECTION_STYLE (s) == SECTION_NAMED)
     return s->named.name;
   else
@@ -1019,7 +1076,11 @@ bss_initializer_p (const_tree decl, bool named)
 	      || (DECL_INITIAL (decl) == error_mark_node
 	          && !in_lto_p)
 	      || (flag_zero_initialized_in_bss
-	          && initializer_zerop (DECL_INITIAL (decl)))));
+		  && initializer_zerop (DECL_INITIAL (decl))
+		  /* A decl with the "persistent" attribute applied and
+		     explicitly initialized to 0 should not be treated as a BSS
+		     variable.  */
+		  && !DECL_PERSISTENT_P (decl))));
 }
 
 /* Compute the alignment of variable specified by DECL.
@@ -1165,7 +1226,8 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
   if (vnode)
     vnode->get_constructor ();
 
-  if (DECL_COMMON (decl))
+  if (DECL_COMMON (decl)
+      && !(SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
     {
       /* If the decl has been given an explicit section name, or it resides
 	 in a non-generic address space, then it isn't common, and shouldn't
@@ -1203,6 +1265,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 
   if (ADDR_SPACE_GENERIC_P (as)
       && !DECL_THREAD_LOCAL_P (decl)
+      && !DECL_NOINIT_P (decl)
       && !(prefer_noswitch_p && targetm.have_switchable_bss_sections)
       && bss_initializer_p (decl))
     {
@@ -1318,6 +1381,23 @@ ultimate_transparent_alias_target (tree *alias)
   return target;
 }
 
+/* Return true if REGNUM is mentioned in ELIMINABLE_REGS as a from
+   register number.  */
+
+static bool
+eliminable_regno_p (int regnum)
+{
+  static const struct
+  {
+    const int from;
+    const int to;
+  } eliminables[] = ELIMINABLE_REGS;
+  for (size_t i = 0; i < ARRAY_SIZE (eliminables); i++)
+    if (regnum == eliminables[i].from)
+      return true;
+  return false;
+}
+
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
    have static storage duration.  In other words, it should not be an
    automatic variable, including PARM_DECLs.
@@ -1420,6 +1500,15 @@ make_decl_rtl (tree decl)
       else if (!targetm.hard_regno_mode_ok (reg_number, mode))
 	error ("register specified for %q+D isn%'t suitable for data type",
                decl);
+      else if (reg_number != HARD_FRAME_POINTER_REGNUM
+	       && (reg_number == FRAME_POINTER_REGNUM
+#ifdef RETURN_ADDRESS_POINTER_REGNUM
+		   || reg_number == RETURN_ADDRESS_POINTER_REGNUM
+#endif
+		   || reg_number == ARG_POINTER_REGNUM)
+	       && eliminable_regno_p (reg_number))
+	error ("register specified for %q+D is an internal GCC "
+	       "implementation detail", decl);
       /* Now handle properly declared static register variables.  */
       else
 	{
@@ -1800,7 +1889,7 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Switch to the correct text section for the start of the function.  */
 
-  switch_to_section (function_section (decl));
+  switch_to_section (function_section (decl), decl);
   if (crtl->has_bb_partition && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
@@ -2296,7 +2385,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
 	handle_vtv_comdat_section (sect, decl);
       else
-	switch_to_section (sect);
+	switch_to_section (sect, decl);
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_variable_contents (decl, name, dont_output_data,
@@ -6641,6 +6730,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
   if (strcmp (name, ".noinit") == 0)
     flags |= SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
 
+  if (strcmp (name, ".persistent") == 0)
+    flags |= SECTION_WRITE | SECTION_NOTYPE;
+
   /* Various sections have special ELF types that the assembler will
      assign by default based on the name.  They are neither SHT_PROGBITS
      nor SHT_NOBITS, so when changing sections we don't want to print a
@@ -6699,9 +6791,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
-     part of a COMDAT groups, in which case GAS requires the full
-     declaration every time.  */
+     part of a COMDAT groups or with SHF_GNU_RETAIN or with SHF_LINK_ORDER,
+     in which case GAS requires the full declaration every time.  */
   if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+      && !(flags & (SECTION_RETAIN | SECTION_LINK_ORDER))
       && (flags & SECTION_DECLARED))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
@@ -6734,6 +6827,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 	*f++ = TLS_SECTION_ASM_FLAG;
       if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	*f++ = 'G';
+      if (flags & SECTION_RETAIN)
+	*f++ = 'R';
+      if (flags & SECTION_LINK_ORDER)
+	*f++ = 'o';
 #ifdef MACH_DEP_SECTION_ASM_FLAG
       if (flags & SECTION_MACH_DEP)
 	*f++ = MACH_DEP_SECTION_ASM_FLAG;
@@ -6766,6 +6863,14 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 
       if (flags & SECTION_ENTSIZE)
 	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
+      if (flags & SECTION_LINK_ORDER)
+	{
+	  tree id = DECL_ASSEMBLER_NAME (decl);
+	  ultimate_transparent_alias_target (&id);
+	  const char *name = IDENTIFIER_POINTER (id);
+	  name = targetm.strip_name_encoding (name);
+	  fprintf (asm_out_file, ",%s", name);
+	}
       if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
 	{
 	  if (TREE_CODE (decl) == IDENTIFIER_NODE)
@@ -6984,6 +7089,11 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".sdata2";
       break;
     case SECCAT_DATA:
+      if (DECL_P (decl) && DECL_PERSISTENT_P (decl))
+	{
+	  sname = ".persistent";
+	  break;
+	}
       return data_section;
     case SECCAT_DATA_REL:
       sname = ".data.rel";
@@ -7004,13 +7114,11 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
-      if (DECL_P (decl)
-	  && lookup_attribute ("noinit", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
 	{
 	  sname = ".noinit";
 	  break;
 	}
-
       if (bss_section)
 	return bss_section;
       sname = ".bss";
@@ -7056,6 +7164,11 @@ default_unique_section (tree decl, int reloc)
       break;
     case SECCAT_DATA:
       prefix = one_only ? ".d" : ".data";
+      if (DECL_P (decl) && DECL_PERSISTENT_P (decl))
+	{
+	  prefix = one_only ? ".p" : ".persistent";
+	  break;
+	}
       break;
     case SECCAT_DATA_REL:
       prefix = one_only ? ".d.rel" : ".data.rel";
@@ -7073,6 +7186,11 @@ default_unique_section (tree decl, int reloc)
       prefix = one_only ? ".s" : ".sdata";
       break;
     case SECCAT_BSS:
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
+	{
+	  prefix = one_only ? ".n" : ".noinit";
+	  break;
+	}
       prefix = one_only ? ".b" : ".bss";
       break;
     case SECCAT_SBSS:
@@ -7634,10 +7752,44 @@ output_section_asm_op (const void *directive)
    the current section is NEW_SECTION.  */
 
 void
-switch_to_section (section *new_section)
+switch_to_section (section *new_section, tree decl)
 {
   if (in_section == new_section)
-    return;
+    {
+      if (SUPPORTS_SHF_GNU_RETAIN
+	  && (new_section->common.flags & SECTION_NAMED)
+	  && decl != nullptr
+	  && DECL_P (decl)
+	  && (!!DECL_PRESERVE_P (decl)
+	      != !!(new_section->common.flags & SECTION_RETAIN)))
+	{
+	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
+	     section.  */
+	  tree used_decl, no_used_decl;
+
+	  if (DECL_PRESERVE_P (decl))
+	    {
+	      new_section->common.flags |= SECTION_RETAIN;
+	      used_decl = decl;
+	      no_used_decl = new_section->named.decl;
+	    }
+	  else
+	    {
+	      new_section->common.flags &= ~(SECTION_RETAIN
+					     | SECTION_DECLARED);
+	      used_decl = new_section->named.decl;
+	      no_used_decl = decl;
+	    }
+	  warning (OPT_Wattributes,
+		   "%+qD without %<used%> attribute and %qD with "
+		   "%<used%> attribute are placed in a section with "
+		   "the same name", no_used_decl, used_decl);
+	  inform (DECL_SOURCE_LOCATION (used_decl),
+		  "%qD was declared here", used_decl);
+	}
+      else
+	return;
+    }
 
   if (new_section->common.flags & SECTION_FORGET)
     in_section = NULL;
@@ -7975,45 +8127,14 @@ output_object_blocks (void)
    we want to emit NUL strings terminators into the object file we have to use
    ASM_OUTPUT_SKIP.  */
 
-int
-elf_record_gcc_switches (print_switch_type type, const char * name)
+void
+elf_record_gcc_switches (const char *options)
 {
-  switch (type)
-    {
-    case SWITCH_TYPE_PASSED:
-      ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name));
-      ASM_OUTPUT_SKIP (asm_out_file, HOST_WIDE_INT_1U);
-      break;
-
-    case SWITCH_TYPE_DESCRIPTIVE:
-      if (name == NULL)
-	{
-	  /* Distinguish between invocations where name is NULL.  */
-	  static bool started = false;
-
-	  if (!started)
-	    {
-	      section * sec;
-
-	      sec = get_section (targetm.asm_out.record_gcc_switches_section,
-				 SECTION_DEBUG
-				 | SECTION_MERGE
-				 | SECTION_STRINGS
-				 | (SECTION_ENTSIZE & 1),
-				 NULL);
-	      switch_to_section (sec);
-	      started = true;
-	    }
-	}
-
-    default:
-      break;
-    }
-
-  /* The return value is currently ignored by the caller, but must be 0.
-     For -fverbose-asm the return value would be the number of characters
-     emitted into the assembler file.  */
-  return 0;
+  section *sec = get_section (targetm.asm_out.record_gcc_switches_section,
+			      SECTION_DEBUG | SECTION_MERGE
+			      | SECTION_STRINGS | (SECTION_ENTSIZE & 1), NULL);
+  switch_to_section (sec);
+  ASM_OUTPUT_ASCII (asm_out_file, options, strlen (options) + 1);
 }
 
 /* Emit text to declare externally defined symbols. It is needed to

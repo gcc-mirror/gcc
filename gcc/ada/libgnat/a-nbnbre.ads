@@ -120,7 +120,9 @@ is
      Post   => To_String'Result'First = 1,
      Global => null;
 
-   function From_String (Arg : String) return Big_Real
+   function From_String (Arg : String) return Valid_Big_Real
+     with Global => null;
+   function From_String (Numerator, Denominator : String) return Valid_Big_Real
      with Global => null;
 
    function To_Quotient_String (Arg : Big_Real) return String is

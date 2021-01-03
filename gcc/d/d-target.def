@@ -46,15 +46,30 @@ relating to the target operating system.",
  void, (void),
  hook_void_void)
 
-/* The sizeof CRITICAL_SECTION or pthread_mutex_t.  */
-DEFHOOK
-(d_critsec_size,
- "Returns the size of the data structure used by the target operating system\n\
-for critical sections and monitors.  For example, on Microsoft Windows this\n\
-would return the @code{sizeof(CRITICAL_SECTION)}, while other platforms that\n\
-implement pthreads would return @code{sizeof(pthread_mutex_t)}.",
- unsigned, (void),
- hook_uint_void_0)
+/* ModuleInfo section name and brackets.  */
+DEFHOOKPOD
+(d_minfo_section,
+ "Contains the name of the section in which module info references should be\n\
+placed.  This section is expected to be bracketed by two symbols to indicate\n\
+the start and end address of the section, so that the runtime library can\n\
+collect all modules for each loaded shared library and executable.  The\n\
+default value of @code{NULL} disables the use of sections altogether.",
+ const char *, NULL)
+
+DEFHOOKPOD
+(d_minfo_start_name,
+ "If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined\n\
+as the name of the symbol indicating the start address of the module info\n\
+section",
+ const char *, NULL)
+
+/* The name of the ModuleInfo section.  */
+DEFHOOKPOD
+(d_minfo_end_name,
+ "If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined\n\
+as the name of the symbol indicating the end address of the module info\n\
+section",
+ const char *, NULL)
 
 /* Close the 'struct gcc_targetdm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

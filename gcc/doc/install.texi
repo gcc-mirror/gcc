@@ -464,6 +464,9 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @item DejaGnu 1.4.4
 @itemx Expect
 @itemx Tcl
+@c Once Tcl 8.5 or higher is required, remove any obsolete
+@c compatibility workarounds:
+@c     git grep 'compatibility with earlier Tcl releases'
 
 Necessary to run the GCC testsuite; see the section on testing for
 details.
@@ -1252,6 +1255,37 @@ If @option{--with-multilib-list} is not given, then only 32-bit and
 64-bit run-time libraries will be enabled.
 @end table
 
+@item --with-multilib-generator=@var{config}
+Specify what multilibs to build.  @var{config} is a semicolon separated list of
+values, possibly consisting of a single value.  Currently only implemented
+for riscv*-*-elf*.  The accepted values and meanings are given below.
+
+
+Every config is constructed with four components: architecture string, ABI,
+reuse rule with architecture string and reuse rule with sub-extension.
+
+Example 1: Add multi-lib suppport for rv32i with ilp32.
+@smallexample
+rv32i-ilp32--
+@end smallexample
+
+Example 2: Add multi-lib suppport for rv32i with ilp32 and rv32imafd with ilp32.
+@smallexample
+rv32i-ilp32--;rv32imafd-ilp32--
+@end smallexample
+
+Example 3: Add multi-lib suppport for rv32i with ilp32; rv32im with ilp32 and
+rv32ic with ilp32 will reuse this multi-lib set.
+@smallexample
+rv32i-ilp32-rv32im-c
+@end smallexample
+
+Example 4: Add multi-lib suppport for rv64ima with lp64; rv64imaf with lp64,
+rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
+@smallexample
+rv64ima-lp64--f,c,fc
+@end smallexample
+
 @item --with-endian=@var{endians}
 Specify what endians to use.
 Currently only implemented for sh*-*-*.
@@ -1340,7 +1374,7 @@ Specify which cpu variant the compiler should generate code for by default.
 This option is only supported on some targets, including ARC, ARM, i386, M68k,
 PowerPC, and SPARC@.  It is mandatory for ARC@.  The @option{--with-cpu-32} and
 @option{--with-cpu-64} options specify separate default CPUs for
-32-bit and 64-bit modes; these options are only supported for i386,
+32-bit and 64-bit modes; these options are only supported for aarch64, i386,
 x86-64, PowerPC, and SPARC@.
 
 @item --with-schedule=@var{cpu}
@@ -1532,6 +1566,14 @@ will try to guess whether the @code{.init_array} and
 When building GCC, use a mutex to avoid linking the compilers for
 multiple languages at the same time, to avoid thrashing on build
 systems with limited free memory.  The default is not to use such a mutex.
+
+@item --enable-link-serialization
+When building GCC, use make dependencies to serialize linking the compilers for
+multiple languages, to avoid thrashing on build
+systems with limited free memory.  The default is not to add such
+dependencies and thus with parallel make potentially link different
+compilers concurrently.  If the argument is a positive integer, allow
+that number of concurrent link processes for the large binaries.
 
 @item --enable-maintainer-mode
 The build rules that regenerate the Autoconf and Automake output files as
@@ -2217,11 +2259,10 @@ instrumentation, see @option{-fcf-protection} option.  When
 to add @option{-fcf-protection} and, if needed, other target
 specific options to a set of building options.
 
-The option is disabled by default.  When @code{--enable-cet=auto}
-is used, it is enabled on Linux/x86 if target binutils
-supports @code{Intel CET} instructions and disabled otherwise.
-In this case the target libraries are configured to get additional
-@option{-fcf-protection} option.
+@code{--enable-cet=auto} is default.  CET is enabled on Linux/x86 if
+target binutils supports @code{Intel CET} instructions and disabled
+otherwise.  In this case, the target libraries are configured to get
+additional @option{-fcf-protection} option.
 
 @item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
 Generate RISC-V attribute by default, in order to record extra build
@@ -2229,6 +2270,17 @@ information in object.
 
 The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
 target if target binutils supported.
+
+@item --enable-s390-excess-float-precision
+@itemx --disable-s390-excess-float-precision
+On s390(x) targets, enable treatment of float expressions with double precision
+when in standards-compliant mode (e.g., when @code{--std=c99} or
+@code{-fexcess-precision=standard} are given).
+
+For a native build and cross compiles that have target headers, the option's
+default is derived from glibc's behavior. When glibc clamps float_t to double,
+GCC follows and enables the option. For other cross compiles, the default is
+disabled.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2758,6 +2810,15 @@ assumes that the host supports Intel CET (e.g.@: GNU assembler version
 Arranges for the run time of each program started by the GCC driver,
 built in any stage, to be logged to @file{time.log}, in the top level of
 the build tree.
+
+@item @samp{bootstrap-asan}
+Compiles GCC itself using Address Sanitization in order to catch invalid memory
+accesses within the GCC code.
+
+@item @samp{bootstrap-hwasan}
+Compiles GCC itself using HWAddress Sanitization in order to catch invalid
+memory accesses within the GCC code.  This option is only available on AArch64
+systems that are running Linux kernel version 5.4 or later.
 
 @end table
 

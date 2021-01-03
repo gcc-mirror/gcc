@@ -12,10 +12,10 @@ namespace std
   };
   namespace __gnu_cxx
   {
-    template < typename _Alloc > struct __alloc_traits:std::allocator_traits < _Alloc > // { dg-error "within this context" }
+    template < typename _Alloc > struct __alloc_traits:std::allocator_traits < _Alloc >
     {
       typedef std::allocator_traits < _Alloc > _Base_type;
-      using _Base_type::construct;
+      using _Base_type::construct; // { dg-error "within this context" }
     };
     template < typename _Tp, typename _Alloc > struct _Vector_base { typedef typename __gnu_cxx::__alloc_traits < _Alloc >::template rebind < _Tp >::other _Tp_alloc_type; }; // { dg-error "no class template" }
     template < typename _Tp, typename _Alloc = std::allocator < _Tp > >class vector : protected _Vector_base < _Tp, _Alloc > { };

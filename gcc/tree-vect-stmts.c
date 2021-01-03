@@ -1098,39 +1098,15 @@ vect_model_load_cost (vec_info *vinfo,
 	 the first group element not by the first scalar stmt DR.  */
       stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
       /* Record the cost for the permutation.  */
-      unsigned n_perms;
-      unsigned assumed_nunits
-	= vect_nunits_for_cost (STMT_VINFO_VECTYPE (first_stmt_info));
+      unsigned n_perms, n_loads;
       vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-				    vf, true, &n_perms);
+				    vf, true, &n_perms, &n_loads);
       inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
 				       first_stmt_info, 0, vect_body);
+
       /* And adjust the number of loads performed.  This handles
 	 redundancies as well as loads that are later dead.  */
-      auto_sbitmap perm (DR_GROUP_SIZE (first_stmt_info));
-      bitmap_clear (perm);
-      for (unsigned i = 0;
-	   i < SLP_TREE_LOAD_PERMUTATION (slp_node).length (); ++i)
-	bitmap_set_bit (perm, SLP_TREE_LOAD_PERMUTATION (slp_node)[i]);
-      ncopies = 0;
-      bool load_seen = false;
-      for (unsigned i = 0; i < DR_GROUP_SIZE (first_stmt_info); ++i)
-	{
-	  if (i % assumed_nunits == 0)
-	    {
-	      if (load_seen)
-		ncopies++;
-	      load_seen = false;
-	    }
-	  if (bitmap_bit_p (perm, i))
-	    load_seen = true;
-	}
-      if (load_seen)
-	ncopies++;
-      gcc_assert (ncopies
-		  <= (DR_GROUP_SIZE (first_stmt_info)
-		      - DR_GROUP_GAP (first_stmt_info)
-		      + assumed_nunits - 1) / assumed_nunits);
+      ncopies = n_loads;
     }
 
   /* Grouped loads read all elements in the group at once,
@@ -3451,7 +3427,8 @@ vectorizable_call (vec_info *vinfo,
 		{
 		  vec_defs.quick_push (vNULL);
 		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
-						 op, &vec_defs[i]);
+						 op, &vec_defs[i],
+						 vectypes[i]);
 		}
 	      orig_vargs[i] = vargs[i] = vec_defs[i][j];
 	    }
@@ -3731,7 +3708,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   tree op, type;
   tree vec_oprnd0 = NULL_TREE;
   tree vectype;
-  unsigned int nunits;
+  poly_uint64 nunits;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
@@ -3883,8 +3860,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       arginfo.quick_push (thisarginfo);
     }
 
-  unsigned HOST_WIDE_INT vf;
-  if (!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&vf))
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  if (!vf.is_constant ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3902,12 +3879,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	 n = n->simdclone->next_clone)
       {
 	unsigned int this_badness = 0;
-	if (n->simdclone->simdlen > vf
+	unsigned int num_calls;
+	if (!constant_multiple_p (vf, n->simdclone->simdlen, &num_calls)
 	    || n->simdclone->nargs != nargs)
 	  continue;
-	if (n->simdclone->simdlen < vf)
-	  this_badness += (exact_log2 (vf)
-			   - exact_log2 (n->simdclone->simdlen)) * 1024;
+	if (num_calls != 1)
+	  this_badness += exact_log2 (num_calls) * 1024;
 	if (n->simdclone->inbranch)
 	  this_badness += 2048;
 	int target_badness = targetm.simd_clone.usable (n);
@@ -3988,19 +3965,19 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
 							  slp_node);
 	if (arginfo[i].vectype == NULL
-	    || (simd_clone_subparts (arginfo[i].vectype)
-		> bestn->simdclone->simdlen))
+	    || !constant_multiple_p (bestn->simdclone->simdlen,
+				     simd_clone_subparts (arginfo[i].vectype)))
 	  return false;
       }
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
-  ncopies = vf / nunits;
+  ncopies = vector_unroll_factor (vf, nunits);
 
   /* If the function isn't const, only allow it in simd loops where user
      has asserted that at least nunits consecutive iterations can be
      performed using SIMD instructions.  */
-  if ((loop == NULL || (unsigned) loop->safelen < nunits)
+  if ((loop == NULL || maybe_lt ((unsigned) loop->safelen, nunits))
       && gimple_vuse (stmt))
     return false;
 
@@ -4078,7 +4055,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
 	      atype = bestn->simdclone->args[i].vector_type;
-	      o = nunits / simd_clone_subparts (atype);
+	      o = vector_unroll_factor (nunits,
+					simd_clone_subparts (atype));
 	      for (m = j * o; m < (j + 1) * o; m++)
 		{
 		  if (simd_clone_subparts (atype)
@@ -4203,7 +4181,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      ? POINTER_PLUS_EXPR : PLUS_EXPR;
 		  tree type = POINTER_TYPE_P (TREE_TYPE (op))
 			      ? sizetype : TREE_TYPE (op);
-		  widest_int cst
+		  poly_widest_int cst
 		    = wi::mul (bestn->simdclone->args[i].linear_step,
 			       ncopies * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
@@ -4224,7 +4202,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      ? POINTER_PLUS_EXPR : PLUS_EXPR;
 		  tree type = POINTER_TYPE_P (TREE_TYPE (op))
 			      ? sizetype : TREE_TYPE (op);
-		  widest_int cst
+		  poly_widest_int cst
 		    = wi::mul (bestn->simdclone->args[i].linear_step,
 			       j * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
@@ -4250,7 +4228,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       gcall *new_call = gimple_build_call_vec (fndecl, vargs);
       if (vec_dest)
 	{
-	  gcc_assert (ratype || simd_clone_subparts (rtype) == nunits);
+	  gcc_assert (ratype
+		      || known_eq (simd_clone_subparts (rtype), nunits));
 	  if (ratype)
 	    new_temp = create_tmp_var (ratype);
 	  else if (useless_type_conversion_p (vectype, rtype))
@@ -4264,12 +4243,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       if (vec_dest)
 	{
-	  if (simd_clone_subparts (vectype) < nunits)
+	  if (!multiple_p (simd_clone_subparts (vectype), nunits))
 	    {
 	      unsigned int k, l;
 	      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
 	      poly_uint64 bytes = GET_MODE_SIZE (TYPE_MODE (vectype));
-	      k = nunits / simd_clone_subparts (vectype);
+	      k = vector_unroll_factor (nunits,
+					simd_clone_subparts (vectype));
 	      gcc_assert ((k & (k - 1)) == 0);
 	      for (l = 0; l < k; l++)
 		{
@@ -4295,7 +4275,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		vect_clobber_variable (vinfo, stmt_info, gsi, new_temp);
 	      continue;
 	    }
-	  else if (simd_clone_subparts (vectype) > nunits)
+	  else if (!multiple_p (nunits, simd_clone_subparts (vectype)))
 	    {
 	      unsigned int k = (simd_clone_subparts (vectype)
 				/ simd_clone_subparts (rtype));
@@ -4304,7 +4284,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		vec_alloc (ret_ctor_elts, k);
 	      if (ratype)
 		{
-		  unsigned int m, o = nunits / simd_clone_subparts (rtype);
+		  unsigned int m, o;
+		  o = vector_unroll_factor (nunits,
+					    simd_clone_subparts (rtype));
 		  for (m = 0; m < o; m++)
 		    {
 		      tree tem = build4 (ARRAY_REF, rtype, new_temp,
@@ -4589,6 +4571,8 @@ vectorizable_conversion (vec_info *vinfo,
   if (!CONVERT_EXPR_CODE_P (code)
       && code != FIX_TRUNC_EXPR
       && code != FLOAT_EXPR
+      && code != WIDEN_PLUS_EXPR
+      && code != WIDEN_MINUS_EXPR
       && code != WIDEN_MULT_EXPR
       && code != WIDEN_LSHIFT_EXPR)
     return false;
@@ -4634,7 +4618,8 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (op_type == binary_op)
     {
-      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR);
+      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR
+		  || code == WIDEN_PLUS_EXPR || code == WIDEN_MINUS_EXPR);
 
       op1 = gimple_assign_rhs2 (stmt);
       tree vectype1_in;
@@ -4950,8 +4935,9 @@ vectorizable_conversion (vec_info *vinfo,
 			 &vec_oprnds1);
       if (code == WIDEN_LSHIFT_EXPR)
 	{
-	  vec_oprnds1.create (ncopies * ninputs);
-	  for (i = 0; i < ncopies * ninputs; ++i)
+	  int oprnds_size = vec_oprnds0.length ();
+	  vec_oprnds1.create (oprnds_size);
+	  for (i = 0; i < oprnds_size; ++i)
 	    vec_oprnds1.quick_push (op1);
 	}
       /* Arguments are ready.  Create the new vector stmts.  */
@@ -5137,6 +5123,17 @@ vectorizable_assignment (vec_info *vinfo,
 		       GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
     return false;
 
+  if (VECTOR_BOOLEAN_TYPE_P (vectype)
+      && !VECTOR_BOOLEAN_TYPE_P (vectype_in))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't convert between boolean and non "
+			 "boolean vectors %T\n", TREE_TYPE (op));
+
+      return false;
+    }
+
   /* We do not handle bit-precision changes.  */
   if ((CONVERT_EXPR_CODE_P (code)
        || code == VIEW_CONVERT_EXPR)
@@ -5146,12 +5143,7 @@ vectorizable_assignment (vec_info *vinfo,
       /* But a conversion that does not change the bit-pattern is ok.  */
       && !((TYPE_PRECISION (TREE_TYPE (scalar_dest))
 	    > TYPE_PRECISION (TREE_TYPE (op)))
-	   && TYPE_UNSIGNED (TREE_TYPE (op)))
-      /* Conversion between boolean types of different sizes is
-	 a simple assignment in case their vectypes are same
-	 boolean vectors.  */
-      && (!VECTOR_BOOLEAN_TYPE_P (vectype)
-	  || !VECTOR_BOOLEAN_TYPE_P (vectype_in)))
+	   && TYPE_UNSIGNED (TREE_TYPE (op))))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10745,7 +10737,8 @@ vect_analyze_stmt (vec_info *vinfo,
 	      || vectorizable_condition (vinfo, stmt_info,
 					 NULL, NULL, node, cost_vec)
 	      || vectorizable_comparison (vinfo, stmt_info, NULL, NULL, node,
-					  cost_vec));
+					  cost_vec)
+	      || vectorizable_phi (vinfo, stmt_info, NULL, node, cost_vec));
     }
 
   if (!ok)
@@ -10882,6 +10875,11 @@ vect_transform_stmt (vec_info *vinfo,
     case lc_phi_info_type:
       done = vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
 				  stmt_info, &vec_stmt, slp_node);
+      gcc_assert (done);
+      break;
+
+    case phi_info_type:
+      done = vectorizable_phi (vinfo, stmt_info, &vec_stmt, slp_node, NULL);
       gcc_assert (done);
       break;
 
@@ -11545,6 +11543,16 @@ supportable_widening_operation (vec_info *vinfo,
     case WIDEN_LSHIFT_EXPR:
       c1 = VEC_WIDEN_LSHIFT_LO_EXPR;
       c2 = VEC_WIDEN_LSHIFT_HI_EXPR;
+      break;
+
+    case WIDEN_PLUS_EXPR:
+      c1 = VEC_WIDEN_PLUS_LO_EXPR;
+      c2 = VEC_WIDEN_PLUS_HI_EXPR;
+      break;
+
+    case WIDEN_MINUS_EXPR:
+      c1 = VEC_WIDEN_MINUS_LO_EXPR;
+      c2 = VEC_WIDEN_MINUS_HI_EXPR;
       break;
 
     CASE_CONVERT:

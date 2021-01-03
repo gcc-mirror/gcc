@@ -1,5 +1,6 @@
 /* Test parsing of #pragma omp declare simd */
 /* { dg-do compile } */
+/* { dg-options "-std=c17 -fopenmp -pedantic-errors" } */
 
 int
 f1 (int x)
@@ -14,7 +15,7 @@ f1 (int x)
 lab:
     #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
     extern int f5 (int a, int *b, int c);	/* { dg-error "must be followed by function declaration or definition" } */
-    x++;					/* { dg-error "expected expression before" "" { target *-*-* } .-1 } */
+    x++;					/* { dg-error "a label can only be part of a statement and a declaration is not a statement" "" { target *-*-* } .-1 } */
   }
   return x;
 }

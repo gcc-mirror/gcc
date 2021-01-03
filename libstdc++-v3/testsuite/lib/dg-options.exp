@@ -257,13 +257,14 @@ proc add_options_for_net_ts { flags } {
     return $flags
 }
 
-# Add to FLAGS all the target-specific flags to link to libatomic, if required.
+# Add to FLAGS all the target-specific flags to link to libatomic,
+# if required for atomics on pointers and 64-bit types.
 
 proc add_options_for_libatomic { flags } {
     if { [istarget hppa*-*-hpux*]
-	 || [istarget powerpc-ibm-aix*]
-	 || [istarget powerpc*-*-darwin*]
-	 || [istarget riscv*-*-*] } {
+	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
+	 || [istarget riscv*-*-*]
+       } {
 	return "$flags -L../../libatomic/.libs -latomic"
     }
     return $flags

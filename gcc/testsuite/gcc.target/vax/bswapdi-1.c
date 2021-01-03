@@ -1,3 +1,5 @@
+/* { dg-options "" } */
+
 typedef int DItype __attribute__ ((mode (DI)));
 DItype
 __bswapdi2 (DItype u)

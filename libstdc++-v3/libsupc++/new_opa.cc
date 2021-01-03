@@ -26,7 +26,6 @@
 #include <bits/c++config.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <bits/exception_defines.h>
 #include <bit>
 #include "new"
 
@@ -44,6 +43,7 @@ using std::new_handler;
 using std::bad_alloc;
 
 #if ! _GLIBCXX_HOSTED
+using std::size_t;
 extern "C"
 {
 # if _GLIBCXX_HAVE_ALIGNED_ALLOC

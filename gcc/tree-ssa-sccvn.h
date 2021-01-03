@@ -269,11 +269,21 @@ bool vn_nary_op_eq (const_vn_nary_op_t const vno1,
 bool vn_nary_may_trap (vn_nary_op_t);
 bool vn_reference_may_trap (vn_reference_t);
 bool vn_reference_eq (const_vn_reference_t const, const_vn_reference_t const);
+
 unsigned int get_max_value_id (void);
+unsigned int get_max_constant_value_id (void);
 unsigned int get_next_value_id (void);
+unsigned int get_next_constant_value_id (void);
 unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
-bool value_id_constant_p (unsigned int);
+
+/* Return true if V is a value id for a constant.  */
+static inline bool
+value_id_constant_p (unsigned int v)
+{
+  return (int)v < 0;
+}
+
 tree fully_constant_vn_reference_p (vn_reference_t);
 tree vn_nary_simplify (vn_nary_op_t);
 

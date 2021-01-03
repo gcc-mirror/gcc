@@ -491,8 +491,6 @@ void DumpProcessMap() {
 }
 #endif
 
-void PrintModuleMap() { }
-
 void DisableCoreDumperIfNecessary() {
   // Do nothing.
 }
@@ -1139,6 +1137,8 @@ void LogFullErrorReport(const char *buffer) {
   }
 }
 #endif // SANITIZER_WIN_TRACE
+
+void InitializePlatformCommonFlags(CommonFlags *cf) {}
 
 }  // namespace __sanitizer
 

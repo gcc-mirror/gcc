@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 m32
-Target Report RejectNegative
+Target RejectNegative
 Compile with 32 bit longs and pointers, which is the only supported
 behavior and thus the flag is ignored.
 

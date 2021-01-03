@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-ssa.h"
 #include "tree-inline.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-clones.h"
 
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync
@@ -1072,7 +1075,8 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 		  ipa_param_performed_split ps;
 		  ps.dummy_decl = dummy_decl;
 		  ps.unit_offset = apm->unit_offset;
-		  vec_safe_push (m_id->dst_node->clone.performed_splits, ps);
+		  vec_safe_push (clone_info::get_create
+				   (m_id->dst_node)->performed_splits, ps);
 		}
 	      else
 		register_replacement (apm, new_parm);
@@ -1131,11 +1135,11 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	 when they were in fact replaced by a constant.  */
       auto_vec <int, 16> index_mapping;
       bool need_remap = false;
+      clone_info *info = clone_info::get (m_id->src_node);
 
-      if (m_id && m_id->src_node->clone.param_adjustments)
+      if (m_id && info && info->param_adjustments)
 	{
-	  ipa_param_adjustments *prev_adjustments
-	    = m_id->src_node->clone.param_adjustments;
+	  ipa_param_adjustments *prev_adjustments = info->param_adjustments;
 	  prev_adjustments->get_updated_indices (&index_mapping);
 	  need_remap = true;
 	}
@@ -1677,6 +1681,8 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p)
 	    }
 	}
       gcall *new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
+      if (gimple_has_location (stmt))
+	gimple_set_location (new_stmt, gimple_location (stmt));
       gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
       gimple_call_copy_flags (new_stmt, stmt);
       if (tree lhs = gimple_call_lhs (stmt))

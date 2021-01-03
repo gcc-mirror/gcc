@@ -8,6 +8,7 @@
 package runtime
 
 import (
+	"internal/bytealg"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -155,7 +156,7 @@ func showfuncinfo(name string, firstFrame bool) bool {
 	// We want to print those in the traceback.
 	// But unless GOTRACEBACK > 1 (checked below), still skip
 	// internal C functions and cgo-generated functions.
-	if name != "" && !contains(name, ".") && !hasPrefix(name, "__go_") && !hasPrefix(name, "_cgo_") {
+	if name != "" && bytealg.IndexByteString(name, '.') < 0 && !hasPrefix(name, "__go_") && !hasPrefix(name, "_cgo_") {
 		return true
 	}
 
@@ -178,16 +179,16 @@ func showfuncinfo(name string, firstFrame bool) bool {
 		return true
 	}
 
-	return contains(name, ".") && (!hasPrefix(name, "runtime.") || isExportedRuntime(name))
+	return bytealg.IndexByteString(name, '.') >= 0 && (!hasPrefix(name, "runtime.") || isExportedRuntime(name))
 }
 
 // isExportedRuntime reports whether name is an exported runtime function.
 // It is only for runtime functions, so ASCII A-Z is fine. Here also check
 // for mangled functions from runtime/<...>, which will be prefixed with
-// "runtime..z2f".
+// "runtime_1".
 func isExportedRuntime(name string) bool {
 	const n = len("runtime.")
-	if hasPrefix(name, "runtime..z2f") {
+	if hasPrefix(name, "runtime_1") {
 		return true
 	}
 	return len(name) > n && name[:n] == "runtime." && 'A' <= name[n] && name[n] <= 'Z'

@@ -832,8 +832,13 @@ Complex!T sin(T)(Complex!T z)  @safe pure nothrow @nogc
 @safe pure nothrow unittest
 {
     static import std.math;
+    import std.math : feqrel;
     assert(sin(complex(0.0)) == 0.0);
-    assert(sin(complex(2.0L, 0)) == std.math.sin(2.0L));
+    assert(sin(complex(2.0, 0)) == std.math.sin(2.0));
+    auto c1 = sin(complex(2.0L, 0));
+    auto c2 = complex(std.math.sin(2.0L), 0);
+    assert(feqrel(c1.re, c2.re) >= real.mant_dig - 1 &&
+        feqrel(c1.im, c2.im) >= real.mant_dig - 1);
 }
 
 
@@ -849,16 +854,19 @@ Complex!T cos(T)(Complex!T z)  @safe pure nothrow @nogc
 ///
 @safe pure nothrow unittest
 {
-    import std.complex;
-    import std.math;
+    static import std.math;
+    import std.math : feqrel;
     assert(cos(complex(0.0)) == 1.0);
-    assert(cos(complex(1.3L)) == std.math.cos(1.3L));
+    assert(cos(complex(1.3)) == std.math.cos(1.3));
     auto c1 = cos(complex(0, 5.2L));
-    auto c2 = cosh(5.2L);
+    auto c2 = complex(std.math.cosh(5.2L), 0.0L);
     assert(feqrel(c1.re, c2.re) >= real.mant_dig - 1 &&
         feqrel(c1.im, c2.im) >= real.mant_dig - 1);
+    auto c3 = cos(complex(1.3L));
+    auto c4 = complex(std.math.cos(1.3L), 0.0L);
+    assert(feqrel(c3.re, c4.re) >= real.mant_dig - 1 &&
+        feqrel(c3.im, c4.im) >= real.mant_dig - 1);
 }
-
 
 /**
     Params: y = A real number.

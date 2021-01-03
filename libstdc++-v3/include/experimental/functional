@@ -127,7 +127,7 @@ inline namespace fundamentals_v1
       template<typename _RAIter, typename _Unused>
 	__boyer_moore_array_base(_RAIter __pat, size_t __patlen,
 				 _Unused&&, _Pred&& __pred)
-	: _M_bad_char{ _GLIBCXX_STD_C::array<_Tp, _Len>{}, std::move(__pred) }
+	: _M_bad_char{ std::array<_Tp, _Len>{}, std::move(__pred) }
 	{
 	  std::get<0>(_M_bad_char).fill(__patlen);
 	  if (__patlen > 0)
@@ -155,7 +155,7 @@ inline namespace fundamentals_v1
       const _Pred&
       _M_pred() const { return std::get<1>(_M_bad_char); }
 
-      std::tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
+      std::tuple<std::array<_Tp, _Len>, _Pred> _M_bad_char;
     };
 
   // Use __boyer_moore_array_base when pattern consists of narrow characters

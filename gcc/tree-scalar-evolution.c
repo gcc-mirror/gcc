@@ -3043,22 +3043,12 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
   if (integer_zerop (step))
     return false;
 
-  if (TREE_CODE (base) == INTEGER_CST)
-    base_min = base_max = wi::to_wide (base);
-  else if (TREE_CODE (base) == SSA_NAME
-	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
-	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
-    ;
-  else
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (base))
+      || get_range_info (base, &base_min, &base_max) != VR_RANGE)
     return true;
 
-  if (TREE_CODE (step) == INTEGER_CST)
-    step_min = step_max = wi::to_wide (step);
-  else if (TREE_CODE (step) == SSA_NAME
-	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
-	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
-    ;
-  else
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (step))
+      || get_range_info (step, &step_min, &step_max) != VR_RANGE)
     return true;
 
   if (!get_max_loop_iterations (loop, &nit))

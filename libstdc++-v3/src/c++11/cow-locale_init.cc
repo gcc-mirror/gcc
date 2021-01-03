@@ -125,6 +125,7 @@ namespace
     _M_init_facet_unchecked(new (&messages_w) std::messages<wchar_t>(1));
 #endif
 
+    // The caches must be populated last, after creating all facets.
     _M_caches[numpunct<char>::id._M_id()] = __npc;
     _M_caches[moneypunct<char, false>::id._M_id()] = __mpcf;
     _M_caches[moneypunct<char, true>::id._M_id()] = __mpct;

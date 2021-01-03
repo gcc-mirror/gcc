@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "vec.h"
+
+#include "c-common.h" /* for enum rid.  */
 #include "c-objc.h"
 
 tree
@@ -131,6 +134,7 @@ objc_set_method_opt (bool ARG_UNUSED (optional))
 
 void
 objc_start_class_interface (tree ARG_UNUSED (name),
+			    location_t /*name_loc*/,
 			    tree ARG_UNUSED (super),
 			    tree ARG_UNUSED (protos),
 			    tree ARG_UNUSED (attribs))
@@ -314,19 +318,19 @@ objc_get_class_ivars (tree ARG_UNUSED (name))
 void
 objc_add_property_declaration (location_t ARG_UNUSED (location), 
 			       tree ARG_UNUSED (decl),
-			       bool ARG_UNUSED (parsed_property_readonly),
-			       bool ARG_UNUSED (parsed_property_readwrite),
-			       bool ARG_UNUSED (parsed_property_assign),
-			       bool ARG_UNUSED (parsed_property_retain),
-			       bool ARG_UNUSED (parsed_property_copy),
-			       bool ARG_UNUSED (parsed_property_nonatomic),
-			       tree ARG_UNUSED (parsed_property_getter_ident),
-			       tree ARG_UNUSED (parsed_property_setter_ident))
+			       vec<property_attribute_info *>&
+			       /*prop_attr_list*/)
 {
 }
 
 bool
 objc_is_property_ref (tree ARG_UNUSED (node))
+{
+  return 0;
+}
+
+bool
+objc_non_constant_expr_p (tree)
 {
   return 0;
 }
@@ -458,4 +462,9 @@ objc_finish_function (void)
 void
 objc_maybe_warn_exceptions (location_t ARG_UNUSED (loc))
 {
+}
+
+enum objc_property_attribute_kind objc_prop_attr_kind_for_rid (enum rid)
+{
+  return OBJC_PROPERTY_ATTR_UNKNOWN;
 }

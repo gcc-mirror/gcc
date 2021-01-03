@@ -689,12 +689,13 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
-	  bool first = true;
+	  bool first = true, need_inc = true, was_module = MAP_MODULE_P (map);
 	  expanded_location s = {};
 	  do
 	    {
 	      where = linemap_included_from (map);
 	      map = linemap_included_from_linemap (line_table, map);
+	      bool is_module = MAP_MODULE_P (map);
 	      s.file = LINEMAP_FILE (map);
 	      s.line = SOURCE_LINE (map, where);
 	      int col = -1;
@@ -706,14 +707,24 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =
 		{
-		 N_("In file included from"),
+		 NULL,
 		 N_("                 from"),
+		 N_("In file included from"),	/* 2 */
+		 N_("        included from"),
+		 N_("In module"),		/* 4 */
+		 N_("of module"),
+		 N_("In module imported at"),	/* 6 */
+		 N_("imported at"),
 		};
-	      unsigned index = !first;
+
+	      unsigned index = (was_module ? 6 : is_module ? 4
+				: need_inc ? 2 : 0) + !first;
+
 	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
-			   first ? "" : ",\n", _(msgs[index]),
+			   first ? "" : was_module ? ", " : ",\n",
+			   _(msgs[index]),
 			   "locus", s.file, line_col);
-	      first = false;
+	      first = false, need_inc = was_module, was_module = is_module;
 	    }
 	  while (! MAIN_FILE_P (map));
 	  pp_verbatim (context->printer, ":");
@@ -1161,7 +1172,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	return false;
     }
 
-  if (diagnostic->kind != DK_NOTE)
+  if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
     diagnostic_check_max_errors (context);
 
   context->lock++;

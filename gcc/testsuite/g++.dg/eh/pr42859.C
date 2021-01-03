@@ -13,7 +13,7 @@ ptw32_terminate (void)
     catch (int)
     {
     }
-    catch (int)
+    catch (int) // { dg-warning "will be caught by earlier handler" }
     {
     }
   }

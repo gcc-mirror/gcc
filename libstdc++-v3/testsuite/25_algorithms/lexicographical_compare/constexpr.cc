@@ -34,7 +34,7 @@ test()
 						   ca1.begin(), ca1.end(),
 						   std::less<int>());
 
-  return true;
+  return outz && outaa;
 }
 
 static_assert(test());

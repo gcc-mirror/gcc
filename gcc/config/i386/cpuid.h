@@ -25,6 +25,7 @@
 #define _CPUID_H_INCLUDED
 
 /* %eax */
+#define bit_AVXVNNI	(1 << 4)
 #define bit_AVX512BF16	(1 << 5)
 #define bit_HRESET	(1 << 22)
 
@@ -119,6 +120,7 @@
 #define bit_MOVDIR64B	(1 << 28)
 #define bit_ENQCMD	(1 << 29)
 #define bit_CLDEMOTE	(1 << 25)
+#define bit_KL		(1 << 23)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
@@ -145,6 +147,12 @@
 /* PT sub leaf (%eax == 0x14, %ecx == 0) */
 /* %ebx */
 #define bit_PTWRITE	(1 << 4)
+
+/* Keylocker leaf (%eax == 0x19) */
+/* %ebx */
+#define bit_AESKLE	( 1<<0 )
+#define bit_WIDEKL	( 1<<2 )
+
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

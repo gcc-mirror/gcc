@@ -29,7 +29,7 @@ test()
   const auto outll = std::remove_if(ac2.begin(), ac2.end(),
 				    [](int i){ return i == 7; });
 
-  return true;
+  return outll == (ac2.end() - 1) && ac2[7] == 8;
 }
 
 static_assert(test());

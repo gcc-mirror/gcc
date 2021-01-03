@@ -323,8 +323,9 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		  if (cf_protection_option
 		      && cf_protection_option->value == CF_CHECK)
 		    fatal_error (input_location,
-				 "option -fcf-protection with mismatching values"
+				 "option %qs with mismatching values"
 				 " (%s, %s)",
+				 "-fcf-protection",
 				 (*decoded_options)[j].arg, foption->arg);
 		  else
 		    {
@@ -1582,7 +1583,11 @@ run_gcc (unsigned argc, char *argv[])
     {
       const char *jobserver_error = jobserver_active_p ();
       if (jobserver && jobserver_error != NULL)
-	warning (0, jobserver_error);
+	{
+	  warning (0, jobserver_error);
+	  parallel = 0;
+	  jobserver = 0;
+	}
       else if (!jobserver && jobserver_error == NULL)
 	{
 	  parallel = 1;
@@ -1775,6 +1780,8 @@ cont1:
 	{
 	  char buf[256];
 	  init_num_threads ();
+	  if (nthreads_var == 0)
+	    nthreads_var = 1;
 	  if (verbose)
 	    fprintf (stderr, "LTO parallelism level set to %ld\n",
 		     nthreads_var);

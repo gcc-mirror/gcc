@@ -53,7 +53,9 @@ test02()
   VERIFY( x.as_rvalue == true );
 
   char arr[2];
+#if __cplusplus <= 201703L
   std::istringstream("x") >> &arr[0];
+#endif
   std::istringstream("x") >> arr;
 }
 

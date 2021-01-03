@@ -1,6 +1,6 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-pcrel" } */
 /* { dg-final { scan-assembler {ld 2,(24|40)\(1\)} } } */
 
 /* From a linux kernel mis-compile of net/core/skbuff.c.  */

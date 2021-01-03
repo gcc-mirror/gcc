@@ -14,6 +14,8 @@
 /* { dg-final { scan-assembler-not   "stxvw4x" 	      } } */
 /* { dg-final { scan-assembler-not   "stxvd2x" 	      } } */
 
+#include <altivec.h>
+
 typedef __int128_t __attribute__((__vector_size__(16)))	vector_128_t;
 typedef __int128_t					scalar_128_t;
 typedef	unsigned long long				scalar_64_t;

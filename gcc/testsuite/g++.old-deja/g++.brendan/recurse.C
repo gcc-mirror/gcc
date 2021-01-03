@@ -73,7 +73,7 @@ public:
 
 int main()
 {
-  DBpathrec a(), b();
+  DBpathrec a(), b(); // { dg-warning "empty parentheses" }
 
   a = b;// { dg-error "" }  non-lvalue in assignment.*
 }

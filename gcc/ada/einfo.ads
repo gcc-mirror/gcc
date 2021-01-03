@@ -420,8 +420,10 @@ package Einfo is
 --       output of certain warnings.
 
 --    Aft_Value (synthesized)
---       Applies to fixed and decimal types. Computes a universal integer that
---       holds value of the Aft attribute for the type.
+--       Applies to fixed-point types and subtypes. This yields the value of
+--       the Aft attribute for the type, i.e. the number of decimal digits
+--       needed after the decimal point to accommodate the delta of the type,
+--       unless the delta is greater than 0.1, in which case it is 1.
 
 --    Alias (Node18)
 --       Defined in overloadable entities (literals, subprograms, entries) and
@@ -3930,6 +3932,20 @@ package Einfo is
 --       of a single protected/task type, the references are examined as they
 --       must appear only within the type defintion and the corresponding body.
 
+--    Partial_DIC_Procedure (synthesized)
+--       Defined in type entities. Set for a private type and its full view
+--       when the type is subject to pragma Default_Initial_Condition (DIC), or
+--       when the type inherits a DIC pragma from a parent type. Points to the
+--       entity of a procedure that takes a single argument of the given type
+--       and verifies the assertion expression of the DIC pragma at run time.
+--       When present, the Partial_DIC_Procedure of a type only checks DICs
+--       associated with the partial (private) view of the type, and is invoked
+--       by the full DIC_Procedure (which may check additional DICs associated
+--       with the full view).
+
+--       Note: the reason this is marked as a synthesized attribute is that the
+--       way this is stored is as an element of the Subprograms_For_Type field.
+
 --    Partial_Invariant_Procedure (synthesized)
 --       Defined in types and subtypes. Set for private types when one or more
 --       [class-wide] type invariants apply to them. Points to the entity for a
@@ -4115,14 +4131,16 @@ package Einfo is
 --       only for type-related error messages.
 
 --    Related_Expression (Node24)
---       Defined in variables and types. When Set for internally generated
---       entities, it may be used to denote the source expression whose
---       elaboration created the variable declaration. If set, it is used
+--       Defined in variables, types and functions. When Set for internally
+--       generated entities, it may be used to denote the source expression
+--       whose elaboration created the variable declaration. If set, it is used
 --       for generating clearer messages from CodePeer. It is used on source
 --       entities that are variables in iterator specifications, to provide
 --       a link to the container that is the domain of iteration. This allows
 --       for better cross-reference information when the loop modifies elements
 --       of the container, and suppresses spurious warnings.
+--       Finally this node is used on functions specified via the Real_Literal
+--       aspect, to denote the 2-parameter overloading, if found.
 --
 --       Shouldn't it also be used for the same purpose in errout? It seems
 --       odd to have two mechanisms here???
@@ -4261,9 +4279,10 @@ package Einfo is
 --       explicit range).
 
 --    Scale_Value (Uint16)
---       Defined in decimal fixed-point types and subtypes. Contains the scale
---       for the type (i.e. the value of type'Scale = the number of decimal
---       digits after the decimal point).
+--       Defined in decimal fixed-point types and subtypes. This holds the
+--       value of the Scale attribute for the type, i.e. the scale of the type
+--       defined as the integer N such that the delta is equal to 10.0**(-N).
+--       Note that, if Scale_Value is positive, then it is equal to Aft_Value.
 
 --    Scope (Node3)
 --       Defined in all entities. Points to the entity for the scope (block,
@@ -4484,8 +4503,8 @@ package Einfo is
 --       stored discriminants for the record (sub)type.
 
 --    Stores_Attribute_Old_Prefix (Flag270)
---       Defined in constants. Set when the constant has been generated to save
---       the value of attribute 'Old's prefix.
+--       Defined in constants, variables, and types which are created during
+--       expansion in order to save the value of attribute 'Old's prefix.
 
 --    Strict_Alignment (Flag145) [implementation base type only]
 --       Defined in all type entities. Indicates that the type is by-reference
@@ -4591,15 +4610,13 @@ package Einfo is
 --       Applies to scalar types. Returns the tree node (Node_Id) that contains
 --       the high bound of a scalar type. The returned value is literal for a
 --       base type, but may be an expression in the case of scalar type with
---       dynamic bounds. Note that in the case of a fixed point type, the high
---       bound is in units of small, and is an integer.
+--       dynamic bounds.
 
 --    Type_Low_Bound (synthesized)
 --       Applies to scalar types. Returns the tree node (Node_Id) that contains
 --       the low bound of a scalar type. The returned value is literal for a
 --       base type, but may be an expression in the case of scalar type with
---       dynamic bounds. Note that in the case of a fixed point type, the low
---       bound is in units of small, and is an integer.
+--       dynamic bounds.
 
 --    Underlying_Full_View (Node19)
 --       Defined in private subtypes that are the completion of other private
@@ -5818,6 +5835,7 @@ package Einfo is
    --    Is_Full_Access                      (synth)
    --    Is_Controlled                       (synth)
    --    Object_Size_Clause                  (synth)
+   --    Partial_DIC_Procedure               (synth)
    --    Partial_Invariant_Procedure         (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
@@ -6583,6 +6601,7 @@ package Einfo is
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
    --    Is_Null_Init_Proc                   (Flag178)
+   --    Is_Partial_DIC_Procedure            (synth)    (non-generic case only)
    --    Is_Partial_Invariant_Procedure      (Flag292)  (non-generic case only)
    --    Is_Predicate_Function               (Flag255)  (non-generic case only)
    --    Is_Predicate_Function_M             (Flag256)  (non-generic case only)
@@ -7402,6 +7421,7 @@ package Einfo is
    function Is_Packed_Array_Impl_Type           (Id : E) return B;
    function Is_Potentially_Use_Visible          (Id : E) return B;
    function Is_Param_Block_Component_Type       (Id : E) return B;
+   function Is_Partial_DIC_Procedure            (Id : E) return B;
    function Is_Partial_Invariant_Procedure      (Id : E) return B;
    function Is_Predicate_Function               (Id : E) return B;
    function Is_Predicate_Function_M             (Id : E) return B;
@@ -8306,12 +8326,14 @@ package Einfo is
    ---------------------------------------------------
 
    function DIC_Procedure                        (Id : E) return E;
+   function Partial_DIC_Procedure                (Id : E) return E;
    function Invariant_Procedure                  (Id : E) return E;
    function Partial_Invariant_Procedure          (Id : E) return E;
    function Predicate_Function                   (Id : E) return E;
    function Predicate_Function_M                 (Id : E) return E;
 
    procedure Set_DIC_Procedure                   (Id : E; V : E);
+   procedure Set_Partial_DIC_Procedure           (Id : E; V : E);
    procedure Set_Invariant_Procedure             (Id : E; V : E);
    procedure Set_Partial_Invariant_Procedure     (Id : E; V : E);
    procedure Set_Predicate_Function              (Id : E; V : E);

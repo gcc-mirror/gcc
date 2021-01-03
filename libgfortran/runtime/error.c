@@ -272,7 +272,7 @@ gf_strerror (int errnum,
     p = strerror (errnum);
   return p;
 #elif defined(HAVE_STRERROR_R)
-#ifdef HAVE_USELOCALE
+#ifdef HAVE_POSIX_2008_LOCALE
   /* Some targets (Darwin at least) have the POSIX 2008 extended
      locale functions, but not strerror_l.  So reset the per-thread
      locale here.  */

@@ -1141,7 +1141,7 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
-@item @{ dg-require-effective-target @var{keyword} [@{ @var{selector} @}] @}
+@item @{ dg-require-effective-target @var{keyword} [@{ target @var{selector} @}] @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
 If the directive includes the optional @samp{@{ @var{selector} @}}
@@ -1443,6 +1443,10 @@ Target has runtime support for any options added with
 @item inf
 Target supports floating point infinite (@code{inf}) for type
 @code{double}.
+
+@item inff
+Target supports floating point infinite (@code{inf}) for type
+@code{float}.
 @end table
 @subsubsection Fortran-specific attributes
 
@@ -1795,8 +1799,7 @@ variant of the ABI for the ARM Architecture (as selected with
 @code{-mfloat-abi=hard}).
 
 @item arm_softfloat
-ARM target uses the soft-float ABI with no floating-point instructions
-used whatsoever (as selected with @code{-mfloat-abi=soft}).
+ARM target uses emulated floating point operations.
 
 @item arm_hard_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
@@ -2243,6 +2246,9 @@ Target supports compiling @code{avx2} instructions.
 @item avx2_runtime
 Target supports the execution of @code{avx2} instructions.
 
+@item avxvnni
+Target supports the execution of @code{avxvnni} instructions.
+
 @item avx512f
 Target supports compiling @code{avx512f} instructions.
 
@@ -2356,6 +2362,11 @@ Target provides @file{fenv.h} include file.
 Target supports @file{fenv.h} with all the standard IEEE exceptions
 and floating-point exceptions are raised by arithmetic operations.
 
+@item fenv_exceptions_dfp
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations for
+decimal floating point.
+
 @item fileio
 Target offers such file I/O library functions as @code{fopen},
 @code{fclose}, @code{tmpnam}, and @code{remove}.  This is a link-time
@@ -2450,6 +2461,9 @@ Target supports wide characters.
 @subsubsection Other attributes
 
 @table @code
+@item R_flag_in_section
+Target supports the 'R' flag in .section directive in assembly inputs.
+
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
@@ -2533,8 +2547,14 @@ Target supports the @code{noinit} variable attribute.
 @item nonpic
 Target does not generate PIC by default.
 
+@item o_flag_in_section
+Target supports the 'o' flag in .section directive in assembly inputs.
+
 @item offload_gcn
 Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
+
+@item persistent
+Target supports the @code{persistent} variable attribute.
 
 @item pie_enabled
 Target generates PIE by default.
@@ -2902,6 +2922,14 @@ Passes if @var{regex} matches text in the test's demangled assembler output.
 @item scan-assembler-dem-not @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} does not match text in the test's demangled assembler
 output.
+
+@item scan-assembler-symbol-section @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}.  The caller needs to
+allow for @code{USER_LABEL_PREFIX} and different section name conventions.
+
+@item scan-symbol-section @var{filename} @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}in @var{filename}.
+The same caveats as for @code{scan-assembler-symbol-section} apply.
 
 @item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
 Passes if @var{symbol} is defined as a hidden symbol in the test's

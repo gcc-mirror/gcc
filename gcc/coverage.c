@@ -1097,6 +1097,25 @@ build_gcov_exit_decl (void)
   cgraph_build_static_cdtor ('D', dtor, priority);
 }
 
+/* Generate the pointer to the gcov_info_var in a dedicated section.  */
+
+static void
+build_gcov_info_var_registration (tree gcov_info_type)
+{
+  tree var = build_decl (BUILTINS_LOCATION,
+			 VAR_DECL, NULL_TREE,
+			 build_pointer_type (gcov_info_type));
+  TREE_STATIC (var) = 1;
+  TREE_READONLY (var) = 1;
+  char name_buf[32];
+  ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 2);
+  DECL_NAME (var) = get_identifier (name_buf);
+  get_section (profile_info_section, SECTION_UNNAMED, NULL);
+  set_decl_section_name (var, profile_info_section);
+  DECL_INITIAL (var) = build_fold_addr_expr (gcov_info_var);
+  varpool_node::finalize_decl (var);
+}
+
 /* Create the gcov_info types and object.  Generate the constructor
    function to call __gcov_init.  Does not generate the initializer
    for the object.  Returns TRUE if coverage data is being emitted.  */
@@ -1151,8 +1170,13 @@ coverage_obj_init (void)
   ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 0);
   DECL_NAME (gcov_info_var) = get_identifier (name_buf);
 
-  build_init_ctor (gcov_info_type);
-  build_gcov_exit_decl ();
+  if (profile_info_section)
+    build_gcov_info_var_registration (gcov_info_type);
+  else
+    {
+      build_init_ctor (gcov_info_type);
+      build_gcov_exit_decl ();
+    }
 
   return true;
 }

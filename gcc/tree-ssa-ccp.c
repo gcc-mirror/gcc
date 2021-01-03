@@ -1432,13 +1432,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	  else
 	    {
 	      if (wi::neg_p (shift))
-		{
-		  shift = -shift;
-		  if (code == RSHIFT_EXPR)
-		    code = LSHIFT_EXPR;
-		  else
-		    code = RSHIFT_EXPR;
-		}
+		break;
 	      if (code == RSHIFT_EXPR)
 		{
 		  *mask = wi::rshift (wi::ext (r1mask, width, sgn), shift, sgn);
@@ -1796,6 +1790,7 @@ evaluate_stmt (gimple *stmt)
   ccp_lattice_t likelyvalue = likely_value (stmt);
   bool is_constant = false;
   unsigned int align;
+  bool ignore_return_flags = false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1965,25 +1960,13 @@ evaluate_stmt (gimple *stmt)
 	      val.mask = ~((HOST_WIDE_INT) align / BITS_PER_UNIT - 1);
 	      break;
 
-	    /* These builtins return their first argument, unmodified.  */
-	    case BUILT_IN_MEMCPY:
-	    case BUILT_IN_MEMMOVE:
-	    case BUILT_IN_MEMSET:
-	    case BUILT_IN_STRCPY:
-	    case BUILT_IN_STRNCPY:
-	    case BUILT_IN_MEMCPY_CHK:
-	    case BUILT_IN_MEMMOVE_CHK:
-	    case BUILT_IN_MEMSET_CHK:
-	    case BUILT_IN_STRCPY_CHK:
-	    case BUILT_IN_STRNCPY_CHK:
-	      val = get_value_for_expr (gimple_call_arg (stmt, 0), true);
-	      break;
-
 	    case BUILT_IN_ASSUME_ALIGNED:
 	      val = bit_value_assume_aligned (stmt, NULL_TREE, val, false);
+	      ignore_return_flags = true;
 	      break;
 
 	    case BUILT_IN_ALIGNED_ALLOC:
+	    case BUILT_IN_GOMP_ALLOC:
 	      {
 		tree align = get_constant_value (gimple_call_arg (stmt, 0));
 		if (align
@@ -2048,6 +2031,15 @@ evaluate_stmt (gimple *stmt)
 					TYPE_ATTRIBUTES (fntype));
 	      if (attrs)
 		val = bit_value_assume_aligned (stmt, attrs, val, true);
+	    }
+	  int flags = ignore_return_flags
+		      ? 0 : gimple_call_return_flags (as_a <gcall *> (stmt));
+	  if (flags & ERF_RETURNS_ARG
+	      && (flags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (stmt))
+	    {
+	      val = get_value_for_expr
+			 (gimple_call_arg (stmt,
+					   flags & ERF_RETURN_ARG_MASK), true);
 	    }
 	}
       is_constant = (val.lattice_val == CONSTANT);
@@ -3586,7 +3578,7 @@ pass_post_ipa_warn::execute (function *fun)
 		continue;
 
 	      tree fndecl = gimple_call_fndecl (stmt);
-	      if (fndecl && DECL_IS_BUILTIN (fndecl))
+	      if (fndecl && DECL_IS_UNDECLARED_BUILTIN (fndecl))
 		inform (loc, "in a call to built-in function %qD",
 			fndecl);
 	      else if (fndecl)

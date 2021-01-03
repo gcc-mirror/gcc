@@ -2297,7 +2297,7 @@ package body Sem_Ch4 is
                end if;
 
                if Aliased_Present (A) then
-                  Error_Msg_N ("aliased not allowed in declare_expression", A);
+                  Error_Msg_N ("ALIASED not allowed in declare_expression", A);
                end if;
 
                if Constant_Present (A)
@@ -2449,7 +2449,7 @@ package body Sem_Ch4 is
 
             if Etype (N) = Any_Type then
                Error_Msg_N
-                 ("type incompatible with that of `THEN` expression",
+                 ("type incompatible with that of THEN expression",
                   Else_Expr);
                return;
             end if;
@@ -3414,7 +3414,7 @@ package body Sem_Ch4 is
          Success := True;
 
          --  If the prefix of the call is a name, indicate the entity
-         --  being called. If it is not a name,  it is an expression that
+         --  being called. If it is not a name, it is an expression that
          --  denotes an access to subprogram or else an entry or family. In
          --  the latter case, the name is a selected component, and the entity
          --  being called is noted on the selector.
@@ -5455,7 +5455,7 @@ package body Sem_Ch4 is
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
-                        Ent => Prefix_Type, Rep => False);
+                        Ent => Prefix_Type);
 
                      Set_Raises_Constraint_Error (N);
                      return;
@@ -5700,7 +5700,7 @@ package body Sem_Ch4 is
          Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Allocator then
-         Error_Msg_N ("argument of conversion cannot be an allocator", N);
+         Error_Msg_N ("argument of conversion cannot be allocator", N);
          Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_String_Literal then
@@ -5711,8 +5711,8 @@ package body Sem_Ch4 is
          if Ada_Version = Ada_83 then
             Resolve (Expr, Typ);
          else
-            Error_Msg_N ("argument of conversion cannot be character literal",
-              N);
+            Error_Msg_N
+              ("argument of conversion cannot be character literal", N);
             Error_Msg_N ("\use qualified expression instead", N);
          end if;
 
@@ -5721,7 +5721,8 @@ package body Sem_Ch4 is
                                         | Name_Unchecked_Access
                                         | Name_Unrestricted_Access
       then
-         Error_Msg_N ("argument of conversion cannot be access", N);
+         Error_Msg_N
+           ("argument of conversion cannot be access attribute", N);
          Error_Msg_N ("\use qualified expression instead", N);
       end if;
 
@@ -8088,8 +8089,7 @@ package body Sem_Ch4 is
             --  resolution does not depend on the type of the parameter that
             --  includes the indexing operation.
 
-            elsif Nkind (Parent (Par)) in
-                    N_Function_Call | N_Procedure_Call_Statement
+            elsif Nkind (Parent (Par)) in N_Subprogram_Call
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare

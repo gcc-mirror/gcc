@@ -42,7 +42,13 @@ TEST_DUAL_Z_REV (cvtlt_f32_f16_x_tied1, svfloat32_t, svfloat16_t,
 
 /*
 ** cvtlt_f32_f16_x_untied:
-**	fcvtlt	z0\.s, p0/m, z4\.h
+** (
+**	mov	z0\.d, z4\.d
+**	fcvtlt	z0\.s, p0/m, z0\.h
+** |
+**	fcvtlt	z4\.s, p0/m, z4\.h
+**	mov	z0\.d, z4\.d
+** )
 **	ret
 */
 TEST_DUAL_Z (cvtlt_f32_f16_x_untied, svfloat32_t, svfloat16_t,

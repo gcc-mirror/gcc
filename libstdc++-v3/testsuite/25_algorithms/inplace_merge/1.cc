@@ -28,7 +28,7 @@ using std::inplace_merge;
 
 typedef test_container<int, bidirectional_iterator_wrapper> container;
 
-void 
+void
 test1()
 {
   int array[] = { 1 };
@@ -39,7 +39,7 @@ test1()
   inplace_merge(con2.begin(), con2.begin(), con2.end());
 }
 
-void 
+void
 test2()
 {
   int array[] = { 0, 2, 4, 1, 3, 5 };
@@ -86,6 +86,36 @@ test3()
   VERIFY( s[0].b == 0 && s[1].b == 4 && s[2].b == 1 && s[3].b == 5 );
 }
 
+void
+test4()
+{
+  S s[8];
+  for (int pivot_idx = 0; pivot_idx < 8; ++pivot_idx)
+    {
+      int bval = 0;
+      for (int i = 0; i != pivot_idx; ++i)
+	{
+	  s[i].a = i;
+	  s[i].b = bval++;
+	}
+
+      for (int i = pivot_idx; i != 8; ++i)
+	{
+	  s[i].a = i - pivot_idx;
+	  s[i].b = bval++;
+	}
+
+      inplace_merge(s, s + pivot_idx, s + 8);
+
+      for (int i = 1; i < 8; ++i)
+	{
+	  VERIFY( !(s[i] < s[i - 1]) );
+	  if (s[i - 1].a == s[i].a)
+	    VERIFY( s[i - 1].b < s[i].b );
+	}
+    }
+}
+
 int 
 main()
 {
@@ -95,12 +125,15 @@ main()
 
   __gnu_test::set_new_limit(sizeof(S) * 4);
   test3();
+  test4();
 
   __gnu_test::set_new_limit(sizeof(S));
   test3();
+  test4();
 
   __gnu_test::set_new_limit(0);
   test3();
+  test4();
 
   return 0;
 }

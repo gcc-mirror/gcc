@@ -102,13 +102,13 @@ static const struct lang_flags lang_defaults[] =
   /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
   /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
   /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1,   1,     0 },
-  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   1,      1,   1,     1 },
+  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    1,     0,     0,   1,      1,   1,     1 },
   /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
   /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
   /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
   /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
   /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0,   0,     0 },
-  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   1,      0,   1,     1 },
+  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    1,     0,     1,   1,      0,   1,     1 },
   /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1,   1,     0 },
   /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0,   1,     0 },
   /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1,   1,     0 },
@@ -273,8 +273,9 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Do not force token locations by default.  */
   pfile->forced_token_location = 0;
 
-  /* Initialize source_date_epoch to -2 (not yet set).  */
-  pfile->source_date_epoch = (time_t) -2;
+  /* Note the timestamp is unset.  */
+  pfile->time_stamp = time_t (-1);
+  pfile->time_stamp_kind = 0;
 
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
@@ -406,6 +407,7 @@ static const struct builtin_macro builtin_array[] =
      function-like macros in traditional.c:
      fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
+  B("__has_c_attribute", BT_HAS_STD_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   B("__has_include",	 BT_HAS_INCLUDE,   true),
@@ -491,6 +493,7 @@ cpp_init_special_builtins (cpp_reader *pfile)
   for (b = builtin_array; b < builtin_array + n; b++)
     {
       if ((b->value == BT_HAS_ATTRIBUTE
+	   || b->value == BT_HAS_STD_ATTRIBUTE
 	   || b->value == BT_HAS_BUILTIN)
 	  && (CPP_OPTION (pfile, lang) == CLK_ASM
 	      || pfile->cb.has_attribute == NULL))
@@ -539,7 +542,7 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     {
       if (CPP_OPTION (pfile, lang) == CLK_CXX20
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX20)
-	_cpp_define_builtin (pfile, "__cplusplus 201709L");
+	_cpp_define_builtin (pfile, "__cplusplus 202002L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX17
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX17)
 	_cpp_define_builtin (pfile, "__cplusplus 201703L");
@@ -667,18 +670,19 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
-    {
-      if (!pfile->deps)
-	pfile->deps = deps_init ();
-
-      /* Set the default target (if there is none already).  */
-      deps_add_default_target (pfile->deps, fname);
-    }
+  if (mkdeps *deps = cpp_get_deps (pfile))
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (deps, fname);
 
   pfile->main_file
-    = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
-		      _cpp_FFK_NORMAL, 0);
+    = _cpp_find_file (pfile, fname,
+		      CPP_OPTION (pfile, preprocessed) ? &pfile->no_search_path
+		      : CPP_OPTION (pfile, main_search) == CMS_user
+		      ? pfile->quote_include
+		      : CPP_OPTION (pfile, main_search) == CMS_system
+		      ? pfile->bracket_include : &pfile->no_search_path,
+		      /*angle=*/0, _cpp_FFK_NORMAL, 0);
+
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
@@ -700,7 +704,16 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 			     LINEMAP_LINE (last), LINEMAP_SYSP (last));
       }
 
-  return ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
+  auto *map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
+  pfile->main_loc = MAP_START_LOCATION (map);
+
+  return ORDINARY_MAP_FILE_NAME (map);
+}
+
+location_t
+cpp_main_loc (const cpp_reader *pfile)
+{
+  return pfile->main_loc;
 }
 
 /* For preprocessed files, if the very first characters are
@@ -813,9 +826,8 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && deps_stream)
-    deps_write (pfile->deps, deps_stream,
-		CPP_OPTION (pfile, deps.phony_targets), 72);
+  if (deps_stream)
+    deps_write (pfile, deps_stream, 72);
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))
@@ -845,5 +857,28 @@ post_options (cpp_reader *pfile)
     {
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
+    }
+
+  if (CPP_OPTION (pfile, module_directives))
+    {
+      /* These unspellable tokens have a leading space.  */
+      const char *const inits[spec_nodes::M_HWM]
+	= {"export ", "module ", "import ", "__import"};
+
+      for (int ix = 0; ix != spec_nodes::M_HWM; ix++)
+	{
+	  cpp_hashnode *node = cpp_lookup (pfile, UC (inits[ix]),
+					   strlen (inits[ix]));
+
+	  /* Token we pass to the compiler.  */
+	  pfile->spec_nodes.n_modules[ix][1] = node;
+
+	  if (ix != spec_nodes::M__IMPORT)
+	    /* Token we recognize when lexing, drop the trailing ' '.  */
+	    node = cpp_lookup (pfile, NODE_NAME (node), NODE_LEN (node) - 1);
+
+	  node->flags |= NODE_MODULE;
+	  pfile->spec_nodes.n_modules[ix][0] = node;
+	}
     }
 }

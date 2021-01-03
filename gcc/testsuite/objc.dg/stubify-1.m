@@ -5,6 +5,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-Os -mdynamic-no-pic -mmacosx-version-min=10.4 -msymbol-stubs" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;

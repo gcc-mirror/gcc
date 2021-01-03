@@ -1033,13 +1033,19 @@ log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const hash_map<K, T*> &uniq_map)
 {
   logger->log ("  # %s: %li", title, uniq_map.elements ());
-  if (show_objs)
-    for (typename hash_map<K, T*>::iterator iter = uniq_map.begin ();
-	 iter != uniq_map.end (); ++iter)
-      {
-	T *managed_obj = (*iter).second;
-	log_managed_object<T> (logger, managed_obj);
-      }
+  if (!show_objs)
+    return;
+  auto_vec<const T *> vec_objs (uniq_map.elements ());
+  for (typename hash_map<K, T*>::iterator iter = uniq_map.begin ();
+       iter != uniq_map.end (); ++iter)
+    vec_objs.quick_push ((*iter).second);
+
+  vec_objs.qsort (T::cmp_ptr_ptr);
+
+  unsigned i;
+  const T *obj;
+  FOR_EACH_VEC_ELT (vec_objs, i, obj)
+    log_managed_object<T> (logger, obj);
 }
 
 /* Dump the number of objects that were managed by MAP to LOGGER.
@@ -1051,13 +1057,20 @@ log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const consolidation_map<T> &map)
 {
   logger->log ("  # %s: %li", title, map.elements ());
-  if (show_objs)
-    for (typename consolidation_map<T>::iterator iter = map.begin ();
-	 iter != map.end (); ++iter)
-      {
-	T *managed_obj = (*iter).second;
-	log_managed_object<T> (logger, managed_obj);
-      }
+  if (!show_objs)
+    return;
+
+  auto_vec<const T *> vec_objs (map.elements ());
+  for (typename consolidation_map<T>::iterator iter = map.begin ();
+       iter != map.end (); ++iter)
+    vec_objs.quick_push ((*iter).second);
+
+  vec_objs.qsort (T::cmp_ptr_ptr);
+
+  unsigned i;
+  const T *obj;
+  FOR_EACH_VEC_ELT (vec_objs, i, obj)
+    log_managed_object<T> (logger, obj);
 }
 
 /* Dump the number of objects of each class that were managed by this

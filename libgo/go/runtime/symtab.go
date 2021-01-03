@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"internal/bytealg"
 	_ "unsafe" // for go:linkname
 )
 
@@ -119,7 +120,7 @@ func pcInlineCallers(pc uintptr, locbuf *location, max int32) int32
 // runtime_expandFinalInlineFrame expands the final pc in stk to include all
 // "callers" if pc is inline.
 //
-//go:linkname runtime_expandFinalInlineFrame runtime..z2fpprof.runtime_expandFinalInlineFrame
+//go:linkname runtime_expandFinalInlineFrame runtime_1pprof.runtime__expandFinalInlineFrame
 func runtime_expandFinalInlineFrame(stk []uintptr) []uintptr {
 	if len(stk) == 0 {
 		return stk
@@ -210,42 +211,62 @@ func hexDigitsToRune(digits []byte, ndig int) rune {
 	return rune(result)
 }
 
-// Perform an in-place decoding on the input byte slice. This looks
-// for "..z<hex 2 >", "..u<hex x 4>" and "..U<hex x 8>" and overwrites
-// with the encoded bytes corresponding to the unicode in question.
-// Return value is the number of bytes taken by the result.
-
+// decodeIdentifier performs an in-place decoding on the input byte slice.
+// This undoes the compiler underscore mangling.
+// Returns the number of bytes used by the result.
 func decodeIdentifier(bsl []byte) int {
+	underscoreCodes := map[byte]byte{
+		'_': '_',
+		'0': '.',
+		'1': '/',
+		'2': '*',
+		'3': ',',
+		'4': '{',
+		'5': '}',
+		'6': '[',
+		'7': ']',
+		'8': '(',
+		'9': ')',
+		'a': '"',
+		'b': ' ',
+		'c': ';',
+	}
+
 	j := 0
 	for i := 0; i < len(bsl); i++ {
 		b := bsl[i]
-
-		if i+1 < len(bsl) && bsl[i] == '.' && bsl[i+1] == '.' {
-			if i+4 < len(bsl) && bsl[i+2] == 'z' {
-				digits := bsl[i+3:]
-				r := hexDigitsToRune(digits, 2)
-				nc := encoderune(bsl[j:], r)
-				j += nc
-				i += 4
-				continue
-			} else if i+6 < len(bsl) && bsl[i+2] == 'u' {
-				digits := bsl[i+3:]
-				r := hexDigitsToRune(digits, 4)
-				nc := encoderune(bsl[j:], r)
-				j += nc
-				i += 6
-				continue
-			} else if i+10 < len(bsl) && bsl[i+2] == 'U' {
-				digits := bsl[i+3:]
-				r := hexDigitsToRune(digits, 8)
-				nc := encoderune(bsl[j:], r)
-				j += nc
-				i += 10
-				continue
-			}
+		if b != '_' || i+1 >= len(bsl) {
+			bsl[j] = b
+			j++
+			continue
 		}
-		bsl[j] = b
-		j += 1
+
+		if d, ok := underscoreCodes[bsl[i+1]]; ok {
+			i++
+			bsl[j] = d
+			j++
+			continue
+		}
+
+		rlen := 0
+		switch bsl[i+1] {
+		case 'x':
+			rlen = 2
+		case 'u':
+			rlen = 4
+		case 'U':
+			rlen = 8
+		}
+
+		if rlen > 0 && i+1+rlen < len(bsl) {
+			r := hexDigitsToRune(bsl[i+2:], rlen)
+			nc := encoderune(bsl[j:], r)
+			j += nc
+			i += rlen + 1
+		} else {
+			bsl[j] = b
+			j++
+		}
 	}
 	return j
 }
@@ -254,6 +275,11 @@ func decodeIdentifier(bsl []byte) int {
 // as used in the compiler.
 
 func demangleSymbol(s string) string {
+	if bytealg.IndexByteString(s, '.') < 0 {
+		// A symbol with no '.' is not a Go symbol.
+		return s
+	}
+
 	bsl := []byte(s)
 	nchars := decodeIdentifier(bsl)
 	bsl = bsl[:nchars]

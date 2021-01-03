@@ -3375,30 +3375,143 @@ extern rtx_insn *try_split (rtx, rtx_insn *, int);
 extern rtx_insn *split_insns (rtx, rtx_insn *);
 
 /* In simplify-rtx.c  */
+
+/* A class that records the context in which a simplification
+   is being mode.  */
+class simplify_context
+{
+public:
+  rtx simplify_unary_operation (rtx_code, machine_mode, rtx, machine_mode);
+  rtx simplify_binary_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_ternary_operation (rtx_code, machine_mode, machine_mode,
+				  rtx, rtx, rtx);
+  rtx simplify_relational_operation (rtx_code, machine_mode, machine_mode,
+				     rtx, rtx);
+  rtx simplify_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+
+  rtx lowpart_subreg (machine_mode, rtx, machine_mode);
+
+  rtx simplify_merge_mask (rtx, rtx, int);
+
+  rtx simplify_gen_unary (rtx_code, machine_mode, rtx, machine_mode);
+  rtx simplify_gen_binary (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_gen_ternary (rtx_code, machine_mode, machine_mode,
+			    rtx, rtx, rtx);
+  rtx simplify_gen_relational (rtx_code, machine_mode, machine_mode, rtx, rtx);
+  rtx simplify_gen_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+
+  /* Tracks the level of MEM nesting for the value being simplified:
+     0 means the value is not in a MEM, >0 means it is.  This is needed
+     because the canonical representation of multiplication is different
+     inside a MEM than outside.  */
+  unsigned int mem_depth = 0;
+
+private:
+  rtx simplify_truncation (machine_mode, rtx, machine_mode);
+  rtx simplify_byte_swapping_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_associative_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_distributive_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_logical_relational_operation (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_binary_operation_series (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_distribute_over_subregs (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_shift_const_int (rtx_code, machine_mode, rtx, unsigned int);
+  rtx simplify_plus_minus (rtx_code, machine_mode, rtx, rtx);
+  rtx simplify_cond_clz_ctz (rtx, rtx_code, rtx, rtx);
+
+  rtx simplify_unary_operation_1 (rtx_code, machine_mode, rtx);
+  rtx simplify_binary_operation_1 (rtx_code, machine_mode, rtx, rtx, rtx, rtx);
+  rtx simplify_ternary_operation_1 (rtx_code, machine_mode, machine_mode,
+				    rtx, rtx, rtx);
+  rtx simplify_relational_operation_1 (rtx_code, machine_mode, machine_mode,
+				       rtx, rtx);
+};
+
+inline rtx
+simplify_unary_operation (rtx_code code, machine_mode mode, rtx op,
+			  machine_mode op_mode)
+{
+  return simplify_context ().simplify_unary_operation (code, mode, op,
+						       op_mode);
+}
+
+inline rtx
+simplify_binary_operation (rtx_code code, machine_mode mode, rtx op0, rtx op1)
+{
+  return simplify_context ().simplify_binary_operation (code, mode, op0, op1);
+}
+
+inline rtx
+simplify_ternary_operation (rtx_code code, machine_mode mode,
+			    machine_mode op0_mode, rtx op0, rtx op1, rtx op2)
+{
+  return simplify_context ().simplify_ternary_operation (code, mode, op0_mode,
+							 op0, op1, op2);
+}
+
+inline rtx
+simplify_relational_operation (rtx_code code, machine_mode mode,
+			       machine_mode op_mode, rtx op0, rtx op1)
+{
+  return simplify_context ().simplify_relational_operation (code, mode,
+							    op_mode, op0, op1);
+}
+
+inline rtx
+simplify_subreg (machine_mode outermode, rtx op, machine_mode innermode,
+		 poly_uint64 byte)
+{
+  return simplify_context ().simplify_subreg (outermode, op, innermode, byte);
+}
+
+inline rtx
+simplify_gen_unary (rtx_code code, machine_mode mode, rtx op,
+		    machine_mode op_mode)
+{
+  return simplify_context ().simplify_gen_unary (code, mode, op, op_mode);
+}
+
+inline rtx
+simplify_gen_binary (rtx_code code, machine_mode mode, rtx op0, rtx op1)
+{
+  return simplify_context ().simplify_gen_binary (code, mode, op0, op1);
+}
+
+inline rtx
+simplify_gen_ternary (rtx_code code, machine_mode mode, machine_mode op0_mode,
+		      rtx op0, rtx op1, rtx op2)
+{
+  return simplify_context ().simplify_gen_ternary (code, mode, op0_mode,
+						   op0, op1, op2);
+}
+
+inline rtx
+simplify_gen_relational (rtx_code code, machine_mode mode,
+			 machine_mode op_mode, rtx op0, rtx op1)
+{
+  return simplify_context ().simplify_gen_relational (code, mode, op_mode,
+						      op0, op1);
+}
+
+inline rtx
+simplify_gen_subreg (machine_mode outermode, rtx op, machine_mode innermode,
+		     poly_uint64 byte)
+{
+  return simplify_context ().simplify_gen_subreg (outermode, op,
+						  innermode, byte);
+}
+
+inline rtx
+lowpart_subreg (machine_mode outermode, rtx op, machine_mode innermode)
+{
+  return simplify_context ().lowpart_subreg (outermode, op, innermode);
+}
+
 extern rtx simplify_const_unary_operation (enum rtx_code, machine_mode,
 					   rtx, machine_mode);
-extern rtx simplify_unary_operation (enum rtx_code, machine_mode, rtx,
-				     machine_mode);
 extern rtx simplify_const_binary_operation (enum rtx_code, machine_mode,
 					    rtx, rtx);
-extern rtx simplify_binary_operation (enum rtx_code, machine_mode, rtx,
-				      rtx);
-extern rtx simplify_ternary_operation (enum rtx_code, machine_mode,
-				       machine_mode, rtx, rtx, rtx);
 extern rtx simplify_const_relational_operation (enum rtx_code,
 						machine_mode, rtx, rtx);
-extern rtx simplify_relational_operation (enum rtx_code, machine_mode,
-					  machine_mode, rtx, rtx);
-extern rtx simplify_gen_binary (enum rtx_code, machine_mode, rtx, rtx);
-extern rtx simplify_gen_unary (enum rtx_code, machine_mode, rtx,
-			       machine_mode);
-extern rtx simplify_gen_ternary (enum rtx_code, machine_mode,
-				 machine_mode, rtx, rtx, rtx);
-extern rtx simplify_gen_relational (enum rtx_code, machine_mode,
-				    machine_mode, rtx, rtx);
-extern rtx simplify_subreg (machine_mode, rtx, machine_mode, poly_uint64);
-extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode, poly_uint64);
-extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
 				    rtx (*fn) (rtx, const_rtx, void *), void *);
 extern rtx simplify_replace_rtx (rtx, const_rtx, rtx);
@@ -3426,6 +3539,7 @@ extern void set_insn_deleted (rtx_insn *);
 /* Functions in rtlanal.c */
 
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
+extern rtx simple_regno_set (rtx, unsigned int);
 extern bool contains_symbol_ref_p (const_rtx);
 extern bool contains_symbolic_reference_p (const_rtx);
 extern bool contains_constant_pool_address_p (const_rtx);
@@ -3525,6 +3639,7 @@ extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
+extern bool register_asm_p (const_rtx);
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool

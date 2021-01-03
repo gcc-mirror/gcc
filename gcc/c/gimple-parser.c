@@ -1700,6 +1700,8 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
       expr.set_error ();
       break;
     }
+  if (expr.value == error_mark_node)
+    return expr;
   return c_parser_gimple_postfix_expression_after_primary
     (parser, EXPR_LOC_OR_LOC (expr.value, loc), expr);
 }

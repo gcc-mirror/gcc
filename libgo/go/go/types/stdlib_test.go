@@ -11,12 +11,11 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
-	// "go/importer"
+	"go/importer"
 	"go/parser"
 	"go/scanner"
 	"go/token"
 	"internal/testenv"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,25 +26,21 @@ import (
 	. "go/types"
 )
 
-var (
-	pkgCount int // number of packages processed
-	start    time.Time
-
-	// Use the same importer for all std lib tests to
-	// avoid repeated importing of the same packages.
-
-	// importer.Default panics for gccgo
-	// stdLibImporter = importer.Default()
-	stdLibImporter Importer
-)
+// Use the same importer for all std lib tests to
+// avoid repeated importing of the same packages.
+var stdLibImporter = importer.Default()
 
 func TestStdlib(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
 
-	start = time.Now()
-	walkDirs(t, filepath.Join(runtime.GOROOT(), "src"))
+	pkgCount := 0
+	duration := walkPkgDirs(filepath.Join(runtime.GOROOT(), "src"), func(dir string, filenames []string) {
+		typecheck(t, dir, filenames)
+		pkgCount++
+	}, t.Error)
+
 	if testing.Verbose() {
-		fmt.Println(pkgCount, "packages typechecked in", time.Since(start))
+		fmt.Println(pkgCount, "packages typechecked in", duration)
 	}
 }
 
@@ -93,7 +88,7 @@ func firstComment(filename string) string {
 func testTestDir(t *testing.T, path string, ignore ...string) {
 	t.Skip("skipping for gccgo")
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,6 +184,8 @@ func TestStdFixed(t *testing.T) {
 		"issue31747.go",  // go/types does not have constraints on language level (-lang=go1.12) (see #31793)
 		"issue34329.go",  // go/types does not have constraints on language level (-lang=go1.13) (see #31793)
 		"bug251.go",      // issue #34333 which was exposed with fix for #34151
+		"issue42058a.go", // go/types does not have constraints on channel element size
+		"issue42058b.go", // go/types does not have constraints on channel element size
 	)
 }
 
@@ -242,7 +239,6 @@ func typecheck(t *testing.T, path string, filenames []string) {
 	}
 	info := Info{Uses: make(map[*ast.Ident]Object)}
 	conf.Check(path, fset, files, &info)
-	pkgCount++
 
 	// Perform checks of API invariants.
 
@@ -285,39 +281,48 @@ func pkgFilenames(dir string) ([]string, error) {
 	return filenames, nil
 }
 
-// Note: Could use filepath.Walk instead of walkDirs but that wouldn't
-//       necessarily be shorter or clearer after adding the code to
-//       terminate early for -short tests.
+func walkPkgDirs(dir string, pkgh func(dir string, filenames []string), errh func(args ...interface{})) time.Duration {
+	w := walker{time.Now(), 10 * time.Millisecond, pkgh, errh}
+	w.walk(dir)
+	return time.Since(w.start)
+}
 
-func walkDirs(t *testing.T, dir string) {
+type walker struct {
+	start time.Time
+	dmax  time.Duration
+	pkgh  func(dir string, filenames []string)
+	errh  func(args ...interface{})
+}
+
+func (w *walker) walk(dir string) {
 	// limit run time for short tests
-	if testing.Short() && time.Since(start) >= 10*time.Millisecond {
+	if testing.Short() && time.Since(w.start) >= w.dmax {
 		return
 	}
 
-	fis, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
-		t.Error(err)
+		w.errh(err)
 		return
 	}
 
-	// typecheck package in directory
+	// apply pkgh to the files in directory dir
 	// but ignore files directly under $GOROOT/src (might be temporary test files).
 	if dir != filepath.Join(runtime.GOROOT(), "src") {
 		files, err := pkgFilenames(dir)
 		if err != nil {
-			t.Error(err)
+			w.errh(err)
 			return
 		}
 		if files != nil {
-			typecheck(t, dir, files)
+			w.pkgh(dir, files)
 		}
 	}
 
 	// traverse subdirectories, but don't walk into testdata
-	for _, fi := range fis {
-		if fi.IsDir() && fi.Name() != "testdata" {
-			walkDirs(t, filepath.Join(dir, fi.Name()))
+	for _, f := range files {
+		if f.IsDir() && f.Name() != "testdata" {
+			w.walk(filepath.Join(dir, f.Name()))
 		}
 	}
 }

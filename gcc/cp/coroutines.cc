@@ -3756,7 +3756,7 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   /* Copy selected attributes from the original function.  */
   TREE_USED (fn) = TREE_USED (orig);
   if (DECL_SECTION_NAME (orig))
-    set_decl_section_name (fn, DECL_SECTION_NAME (orig));
+    set_decl_section_name (fn, orig);
   /* Copy any alignment that the FE added.  */
   if (DECL_ALIGN (orig))
     SET_DECL_ALIGN (fn, DECL_ALIGN (orig));

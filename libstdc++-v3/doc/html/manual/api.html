@@ -406,6 +406,13 @@ now defaults to zero.
   <code class="classname">std::allocator_traits</code> since C++11 and that should
   be used instead.
 </p><p>
+  The type of the <code class="classname">std::iterator</code> base class of
+  <code class="classname">std::istreambuf_iterator</code> was changed to be
+  consistent for all <code class="option">-std</code> modes.
+  Before GCC 10.1 the base class had one type in C++98 mode and a
+  different type in C++11 and later modes. The type in C++98 mode
+  was changed to be the same as for C++11 and later.
+</p><p>
   Experimental C++2a support improved, with new headers
   <code class="filename">&lt;concepts&gt;</code>,
   <code class="filename">&lt;ranges&gt;</code>,

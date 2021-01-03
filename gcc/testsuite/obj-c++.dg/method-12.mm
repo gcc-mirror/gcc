@@ -3,6 +3,7 @@
 /* { dg-options "-Wstrict-selector-match" } */
 /* { dg-do compile } */
 /* { dg-skip-if "Object interface removed" { *-*-darwin[1-2]* && { lp64 } } { "-fnext-runtime" } { "" } } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/Protocol.h>
 

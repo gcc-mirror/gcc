@@ -580,6 +580,7 @@ test_ranges ()
   function *fun = DECL_STRUCT_FUNCTION (fndecl);
   push_cfun (fun);
   range_tests ();
+  range_op_tests ();
   pop_cfun ();
 }
 

@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "omp-device-properties.h"
 #include "tree-iterator.h"
+#include "data-streamer.h"
+#include "streamer-hooks.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -2337,6 +2339,125 @@ omp_resolve_declare_variant (tree base)
 	  ? TREE_PURPOSE (TREE_VALUE (variant1)) : base);
 }
 
+void
+omp_lto_output_declare_variant_alt (lto_simple_output_block *ob,
+				    cgraph_node *node,
+				    lto_symtab_encoder_t encoder)
+{
+  gcc_assert (node->declare_variant_alt);
+
+  omp_declare_variant_base_entry entry;
+  entry.base = NULL;
+  entry.node = node;
+  entry.variants = NULL;
+  omp_declare_variant_base_entry *entryp
+    = omp_declare_variant_alt->find_with_hash (&entry, DECL_UID (node->decl));
+  gcc_assert (entryp);
+
+  int nbase = lto_symtab_encoder_lookup (encoder, entryp->base);
+  gcc_assert (nbase != LCC_NOT_FOUND);
+  streamer_write_hwi_stream (ob->main_stream, nbase);
+
+  streamer_write_hwi_stream (ob->main_stream, entryp->variants->length ());
+
+  unsigned int i;
+  omp_declare_variant_entry *varentry;
+  FOR_EACH_VEC_SAFE_ELT (entryp->variants, i, varentry)
+    {
+      int nvar = lto_symtab_encoder_lookup (encoder, varentry->variant);
+      gcc_assert (nvar != LCC_NOT_FOUND);
+      streamer_write_hwi_stream (ob->main_stream, nvar);
+
+      for (widest_int *w = &varentry->score; ;
+	   w = &varentry->score_in_declare_simd_clone)
+	{
+	  unsigned len = w->get_len ();
+	  streamer_write_hwi_stream (ob->main_stream, len);
+	  const HOST_WIDE_INT *val = w->get_val ();
+	  for (unsigned j = 0; j < len; j++)
+	    streamer_write_hwi_stream (ob->main_stream, val[j]);
+	  if (w == &varentry->score_in_declare_simd_clone)
+	    break;
+	}
+
+      HOST_WIDE_INT cnt = -1;
+      HOST_WIDE_INT i = varentry->matches ? 1 : 0;
+      for (tree attr = DECL_ATTRIBUTES (entryp->base->decl);
+	   attr; attr = TREE_CHAIN (attr), i += 2)
+	{
+	  attr = lookup_attribute ("omp declare variant base", attr);
+	  if (attr == NULL_TREE)
+	    break;
+
+	  if (varentry->ctx == TREE_VALUE (TREE_VALUE (attr)))
+	    {
+	      cnt = i;
+	      break;
+	    }
+	}
+
+      gcc_assert (cnt != -1);
+      streamer_write_hwi_stream (ob->main_stream, cnt);
+    }
+}
+
+void
+omp_lto_input_declare_variant_alt (lto_input_block *ib, cgraph_node *node,
+				   vec<symtab_node *> nodes)
+{
+  gcc_assert (node->declare_variant_alt);
+  omp_declare_variant_base_entry *entryp
+    = ggc_cleared_alloc<omp_declare_variant_base_entry> ();
+  entryp->base = dyn_cast<cgraph_node *> (nodes[streamer_read_hwi (ib)]);
+  entryp->node = node;
+  unsigned int len = streamer_read_hwi (ib);
+  vec_alloc (entryp->variants, len);
+
+  for (unsigned int i = 0; i < len; i++)
+    {
+      omp_declare_variant_entry varentry;
+      varentry.variant
+	= dyn_cast<cgraph_node *> (nodes[streamer_read_hwi (ib)]);
+      for (widest_int *w = &varentry.score; ;
+	   w = &varentry.score_in_declare_simd_clone)
+	{
+	  unsigned len2 = streamer_read_hwi (ib);
+	  HOST_WIDE_INT arr[WIDE_INT_MAX_ELTS];
+	  gcc_assert (len2 <= WIDE_INT_MAX_ELTS);
+	  for (unsigned int j = 0; j < len2; j++)
+	    arr[j] = streamer_read_hwi (ib);
+	  *w = widest_int::from_array (arr, len2, true);
+	  if (w == &varentry.score_in_declare_simd_clone)
+	    break;
+	}
+
+      HOST_WIDE_INT cnt = streamer_read_hwi (ib);
+      HOST_WIDE_INT j = 0;
+      varentry.ctx = NULL_TREE;
+      varentry.matches = (cnt & 1) ? true : false;
+      cnt &= ~HOST_WIDE_INT_1;
+      for (tree attr = DECL_ATTRIBUTES (entryp->base->decl);
+	   attr; attr = TREE_CHAIN (attr), j += 2)
+	{
+	  attr = lookup_attribute ("omp declare variant base", attr);
+	  if (attr == NULL_TREE)
+	    break;
+
+	  if (cnt == j)
+	    {
+	      varentry.ctx = TREE_VALUE (TREE_VALUE (attr));
+	      break;
+	    }
+	}
+      gcc_assert (varentry.ctx != NULL_TREE);
+      entryp->variants->quick_push (varentry);
+    }
+  if (omp_declare_variant_alt == NULL)
+    omp_declare_variant_alt
+      = hash_table<omp_declare_variant_alt_hasher>::create_ggc (64);
+  *omp_declare_variant_alt->find_slot_with_hash (entryp, DECL_UID (node->decl),
+						 INSERT) = entryp;
+}
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */

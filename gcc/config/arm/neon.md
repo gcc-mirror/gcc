@@ -690,7 +690,7 @@
    (set_attr "predicable" "no")]
 )
 
-(define_insn "ior<mode>3"
+(define_insn "ior<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_logic_op2" "w,Dl")))]
@@ -712,7 +712,7 @@
 ;; corresponds to the canonical form the middle-end expects to use for
 ;; immediate bitwise-ANDs.
 
-(define_insn "and<mode>3"
+(define_insn "and<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_inv_logic_op2" "w,DL")))]
@@ -747,7 +747,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "xor<mode>3"
+(define_insn "xor<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(xor:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
 		 (match_operand:VDQ 2 "s_register_operand" "w")))]
@@ -756,7 +756,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "one_cmpl<mode>2"
+(define_insn "one_cmpl<mode>2_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (not:VDQ (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
@@ -775,7 +775,7 @@
                     (const_string "neon_abs<q>")))]
 )
 
-(define_insn "neg<mode>2"
+(define_insn "neon_neg<mode>2"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
 	(neg:VDQW (match_operand:VDQW 1 "s_register_operand" "w")))]
   "TARGET_NEON"
@@ -786,7 +786,7 @@
                     (const_string "neon_neg<q>")))]
 )
 
-(define_insn "<absneg_str><mode>2"
+(define_insn "neon_<absneg_str><mode>2"
   [(set (match_operand:VH 0 "s_register_operand" "=w")
     (ABSNEG:VH (match_operand:VH 1 "s_register_operand" "w")))]
  "TARGET_NEON_FP16INST"
@@ -800,7 +800,7 @@
    (ABSNEG:VH (match_operand:VH 1 "s_register_operand")))]
  "TARGET_NEON_FP16INST"
 {
-  emit_insn (gen_<absneg_str><mode>2 (operands[0], operands[1]));
+  emit_insn (gen_neon_<absneg_str><mode>2 (operands[0], operands[1]));
   DONE;
 })
 
@@ -952,7 +952,7 @@
   if (s_register_operand (operands[2], <MODE>mode))
     {
       rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
       emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
     }
   else
@@ -969,7 +969,7 @@
   if (s_register_operand (operands[2], <MODE>mode))
     {
       rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
       emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
     }
   else
@@ -2953,7 +2953,7 @@
    (match_operand:VDQW 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  emit_insn (gen_neg<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_neon_neg<mode>2 (operands[0], operands[1]));
   DONE;
 })
 
@@ -3240,7 +3240,7 @@
    (match_operand:VDQIW 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_one_cmpl<mode>2_neon (operands[0], operands[1]));
   DONE;
 })
 

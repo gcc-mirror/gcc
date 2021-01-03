@@ -94,7 +94,7 @@ package SA_Messages is
    --  type invariant checks (specific and class-wide), and checks for
    --  implementation-defined assertions such as Assert_And_Cut, Assume,
    --  Contract_Cases, Default_Initial_Condition, Initial_Condition,
-   --  Loop_Invariant, Loop_Variant, and Refined_Post.
+   --  Loop_Invariant, Loop_Variant, Refined_Post, and Subprogram_Variant.
    --
    --  TBD: it might be nice to distinguish these different kinds of assertions
    --  as is done in SPARK's VC_Kind enumeration type, but any distinction

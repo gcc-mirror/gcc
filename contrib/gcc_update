@@ -102,6 +102,9 @@ gcc/testsuite/gcc.dg/cpp/direct2s.c: gcc/testsuite/gcc.dg/cpp/direct2.c
 # lto-plugin
 lto-plugin/configure: lto-plugin/configure.ac lto-plugin/aclocal.m4
 lto-plugin/Makefile.in: lto-plugin/Makefile.am lto-plugin/aclocal.m4
+# tools
+c++tools/configure: c++tools/configure.ac
+c++tools/config.h.in: c++tools/configure.ac
 # And libraries, at last
 libbanshee/configure: libbanshee/configure.ac
 libmudflap/configure: libmudflap/configure.ac
@@ -126,6 +129,7 @@ libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
 libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
 libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
 libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
+libcody/configure: libcody/configure.ac libcody/config.m4
 libcpp/aclocal.m4: libcpp/configure.ac
 libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4

@@ -13,14 +13,14 @@ void foo (void)
   static char buf4[10], e;
   char *q = buf;
   free (p);
-  free (q);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (buf2);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (&c);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (buf3);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (&d);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (buf4);	      /* { dg-warning "attempt to free a non-heap object" } */
-  free (&e);	      /* { dg-warning "attempt to free a non-heap object" } */
+  free (q);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (buf2);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (&c);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (buf3);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (&d);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (buf4);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (&e);	      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
   free (&r->a);
-  free ("abcd");      /* { dg-warning "attempt to free a non-heap object" } */
-  free (L"abcd");     /* { dg-warning "attempt to free a non-heap object" } */
+  free ("abcd");      /* { dg-warning "\\\[-Wfree-nonheap-object" } */
+  free (L"abcd");     /* { dg-warning "\\\[-Wfree-nonheap-object" } */
 }

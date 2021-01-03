@@ -423,26 +423,12 @@ equiv_class::get_representative () const
   return m_vars[0];
 }
 
-/* Comparator for use by equiv_class::canonicalize.  */
-
-static int
-svalue_cmp_by_ptr (const void *p1, const void *p2)
-{
-  const svalue *sval1 = *(const svalue * const *)p1;
-  const svalue *sval2 = *(const svalue * const *)p2;
-  if (sval1 < sval2)
-    return 1;
-  if (sval1 > sval2)
-    return -1;
-  return 0;
-}
-
 /* Sort the svalues within this equiv_class.  */
 
 void
 equiv_class::canonicalize ()
 {
-  m_vars.qsort (svalue_cmp_by_ptr);
+  m_vars.qsort (svalue::cmp_ptr_ptr);
 }
 
 /* Get a debug string for C_OP.  */
@@ -1693,11 +1679,7 @@ equiv_class_cmp (const void *p1, const void *p2)
   gcc_assert (rep1);
   gcc_assert (rep2);
 
-  if (rep1 < rep2)
-    return 1;
-  if (rep1 > rep2)
-    return -1;
-  return 0;
+  return svalue::cmp_ptr (rep1, rep2);
 }
 
 /* Comparator for use by constraint_manager::canonicalize.
@@ -1808,9 +1790,8 @@ class merger_fact_visitor : public fact_visitor
 {
 public:
   merger_fact_visitor (const constraint_manager *cm_b,
-		       constraint_manager *out,
-		       const model_merger &merger)
-  : m_cm_b (cm_b), m_out (out), m_merger (merger)
+		       constraint_manager *out)
+  : m_cm_b (cm_b), m_out (out)
   {}
 
   void on_fact (const svalue *lhs, enum tree_code code, const svalue *rhs)
@@ -1844,7 +1825,6 @@ public:
 private:
   const constraint_manager *m_cm_b;
   constraint_manager *m_out;
-  const model_merger &m_merger;
 };
 
 /* Use MERGER to merge CM_A and CM_B into *OUT.
@@ -1856,14 +1836,13 @@ private:
 void
 constraint_manager::merge (const constraint_manager &cm_a,
 			   const constraint_manager &cm_b,
-			   constraint_manager *out,
-			   const model_merger &merger)
+			   constraint_manager *out)
 {
   /* Merge the equivalence classes and constraints.
      The easiest way to do this seems to be to enumerate all of the facts
      in cm_a, see which are also true in cm_b,
      and add those to *OUT.  */
-  merger_fact_visitor v (&cm_b, out, merger);
+  merger_fact_visitor v (&cm_b, out);
   cm_a.for_each_fact (&v);
 }
 

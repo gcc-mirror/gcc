@@ -1,3 +1,13 @@
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure.tgt: Add dynamic_lookup to XLDFLAGS for Darwin.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-10-01  Alan Modra  <amodra@gmail.com>
 
 	* config/powerpc/sjlj.S: Support __PCREL__ code.

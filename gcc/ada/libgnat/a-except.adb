@@ -957,11 +957,6 @@ package body Ada.Exceptions is
 
    begin
       Exception_Data.Set_Exception_Msg (X, E, Message);
-
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
       Complete_And_Propagate_Occurrence (X);
    end Raise_Exception_Always;
 
@@ -1041,11 +1036,6 @@ package body Ada.Exceptions is
 
    begin
       Exception_Data.Set_Exception_C_Msg (X, E, M);
-
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
       Complete_Occurrence (X);
       return X;
    end Create_Occurrence_From_Signal_Handler;
@@ -1141,11 +1131,6 @@ package body Ada.Exceptions is
       X : constant EOA := Exception_Propagation.Allocate_Occurrence;
    begin
       Exception_Data.Set_Exception_C_Msg (X, E, F, L, C, M);
-
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
       Complete_And_Propagate_Occurrence (X);
    end Raise_With_Location_And_Msg;
 
@@ -1167,13 +1152,6 @@ package body Ada.Exceptions is
 
       Excep.Msg_Length                  := Ex.Msg_Length;
       Excep.Msg (1 .. Excep.Msg_Length) := Ex.Msg (1 .. Ex.Msg_Length);
-
-      --  The following is a common pattern, should be abstracted
-      --  into a procedure call ???
-
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
 
       Complete_And_Propagate_Occurrence (Excep);
    end Raise_With_Msg;
@@ -1507,10 +1485,6 @@ package body Ada.Exceptions is
       Saved_MO : constant System.Address := Excep.Machine_Occurrence;
 
    begin
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
       Save_Occurrence (Excep.all, Get_Current_Excep.all.all);
       Excep.Machine_Occurrence := Saved_MO;
       Complete_And_Propagate_Occurrence (Excep);
@@ -1556,10 +1530,6 @@ package body Ada.Exceptions is
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
    begin
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
       Reraise_Occurrence_No_Defer (X);
    end Reraise_Occurrence_Always;
 

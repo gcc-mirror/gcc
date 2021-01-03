@@ -41,7 +41,6 @@ static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
-static int can_convert_eh (tree, tree);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -932,11 +931,14 @@ nothrow_libfn_p (const_tree fn)
 /* Returns nonzero if an exception of type FROM will be caught by a
    handler for type TO, as per [except.handle].  */
 
-static int
+static bool
 can_convert_eh (tree to, tree from)
 {
   to = non_reference (to);
   from = non_reference (from);
+
+  if (same_type_ignoring_top_level_qualifiers_p (to, from))
+    return true;
 
   if (TYPE_PTR_P (to) && TYPE_PTR_P (from))
     {
@@ -944,19 +946,19 @@ can_convert_eh (tree to, tree from)
       from = TREE_TYPE (from);
 
       if (! at_least_as_qualified_p (to, from))
-	return 0;
+	return false;
 
       if (VOID_TYPE_P (to))
-	return 1;
+	return true;
 
       /* Else fall through.  */
     }
 
   if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)
       && publicly_uniquely_derived_p (to, from))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Check whether any of the handlers in I are shadowed by another handler
@@ -975,11 +977,11 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
-	  warning_at (EXPR_LOCATION (handler), 0,
-		      "exception of type %qT will be caught",
-		      TREE_TYPE (handler));
-	  warning_at (EXPR_LOCATION (master), 0,
-		      "   by earlier handler for %qT", type);
+	  auto_diagnostic_group d;
+	  if (warning_at (EXPR_LOCATION (handler), OPT_Wexceptions,
+			  "exception of type %qT will be caught by earlier "
+			  "handler", TREE_TYPE (handler)))
+	    inform (EXPR_LOCATION (master), "for type %qT", type);
 	  break;
 	}
     }
@@ -1099,7 +1101,7 @@ maybe_noexcept_warning (tree fn)
       && (!DECL_IN_SYSTEM_HEADER (fn)
 	  || global_dc->dc_warn_system_headers))
     {
-      temp_override<bool> s (global_dc->dc_warn_system_headers, true);
+      auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
       auto_diagnostic_group d;
       if (warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
 		   "because of a call to %qD", fn))

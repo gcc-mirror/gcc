@@ -15,6 +15,6 @@
 
 // We want to match enough here to capture that we deleted an empty
 // constructor store
-// aarch64 and mips will expand to loop to clear because CLEAR_RATIO.
-// { dg-final { scan-tree-dump "Deleted redundant store: .*\.a = {}" "dse1" { xfail { aarch64-*-* mips*-*-* } } } }
+// mips will expand to loop to clear because CLEAR_RATIO.
+// { dg-final { scan-tree-dump "Deleted redundant store: .*\.a = {}" "dse1" { xfail { mips*-*-* } } } }
 

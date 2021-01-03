@@ -743,6 +743,13 @@ Lex::next_token()
 		if (Lex::is_unicode_letter(ci))
 		  return this->gather_identifier();
 
+		if (!issued_error && Lex::is_unicode_digit(ci))
+		  {
+		    go_error_at(this->location(),
+				"identifier cannot begin with digit");
+		    issued_error = true;
+		  }
+
 		if (!issued_error)
 		  go_error_at(this->location(),
 			      "invalid character 0x%x in input file",
@@ -1309,9 +1316,13 @@ Lex::gather_number()
 	}
     }
 
+  mpfr_clear_overflow();
   mpfr_t val;
   int r = mpfr_init_set_str(val, num.c_str(), base, MPFR_RNDN);
   go_assert(r == 0);
+  if (mpfr_overflow_p())
+    go_error_at(this->location(),
+		"floating-point exponent too large to represent");
 
   bool is_imaginary = *p == 'i';
   if (is_imaginary)

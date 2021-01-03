@@ -724,12 +724,12 @@ recording::context::disassociate_from_playback ()
    This creates a fresh copy of the given 0-terminated buffer.  */
 
 recording::string *
-recording::context::new_string (const char *text)
+recording::context::new_string (const char *text, bool escaped)
 {
   if (!text)
     return NULL;
 
-  recording::string *result = new string (this, text);
+  recording::string *result = new string (this, text, escaped);
   record (result);
   return result;
 }
@@ -1578,6 +1578,10 @@ recording::context::dump_to_file (const char *path, bool update_locations)
     {
       fn->write_to_dump (d);
     }
+
+  top_level_asm *tla;
+  FOR_EACH_VEC_ELT (m_top_level_asms, i, tla)
+    tla->write_to_dump (d);
 }
 
 static const char * const
@@ -1904,6 +1908,22 @@ recording::context::get_all_requested_dumps (vec <recording::requested_dump> *ou
   out->splice (m_requested_dumps);
 }
 
+/* Create a recording::top_level_asm instance and add it to this
+   context's list of mementos and to m_top_level_asms.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_add_top_level_asm.  */
+
+void
+recording::context::add_top_level_asm (recording::location *loc,
+				       const char *asm_stmts)
+{
+  recording::top_level_asm *asm_obj
+    = new recording::top_level_asm (this, loc, new_string (asm_stmts));
+  record (asm_obj);
+  m_top_level_asms.safe_push (asm_obj);
+}
+
 /* This is a pre-compilation check for the context (and any parents).
 
    Detect errors within the context, adding errors if any are found.  */
@@ -1954,8 +1974,9 @@ recording::memento::write_to_dump (dump &d)
 /* Constructor for gcc::jit::recording::string::string, allocating a
    copy of the given text using new char[].  */
 
-recording::string::string (context *ctxt, const char *text)
-  : memento (ctxt)
+recording::string::string (context *ctxt, const char *text, bool escaped)
+: memento (ctxt),
+  m_escaped (escaped)
 {
   m_len = strlen (text);
   m_buffer = new char[m_len + 1];
@@ -2005,9 +2026,9 @@ recording::string::from_printf (context *ctxt, const char *fmt, ...)
 recording::string *
 recording::string::make_debug_string ()
 {
-  /* Hack to avoid infinite recursion into strings when logging all
-     mementos: don't re-escape strings:  */
-  if (m_buffer[0] == '"')
+  /* Avoid infinite recursion into strings when logging all mementos:
+     don't re-escape strings:  */
+  if (m_escaped)
     return this;
 
   /* Wrap in quotes and do escaping etc */
@@ -2024,15 +2045,31 @@ recording::string::make_debug_string ()
   for (size_t i = 0; i < m_len ; i++)
     {
       char ch = m_buffer[i];
-      if (ch == '\t' || ch == '\n' || ch == '\\' || ch == '"')
-	APPEND('\\');
-      APPEND(ch);
+      switch (ch)
+	{
+	default:
+	  APPEND(ch);
+	  break;
+	case '\t':
+	  APPEND('\\');
+	  APPEND('t');
+	  break;
+	case '\n':
+	  APPEND('\\');
+	  APPEND('n');
+	  break;
+	case '\\':
+	case '"':
+	  APPEND('\\');
+	  APPEND(ch);
+	  break;
+	}
     }
   APPEND('"'); /* closing quote */
 #undef APPEND
   tmp[len] = '\0'; /* nil termintator */
 
-  string *result = m_ctxt->new_string (tmp);
+  string *result = m_ctxt->new_string (tmp, true);
 
   delete[] tmp;
   return result;
@@ -4001,8 +4038,8 @@ recording::function::dump_to_dot (const char *path)
 
   pretty_printer *pp = &the_pp;
 
-  pp_printf (pp,
-	     "digraph %s {\n", get_debug_string ());
+  pp_printf (pp, "digraph %s", get_debug_string ());
+  pp_string (pp, " {\n");
 
   /* Blocks: */
   {
@@ -4020,7 +4057,7 @@ recording::function::dump_to_dot (const char *path)
       b->dump_edges_to_dot (pp);
   }
 
-  pp_printf (pp, "}\n");
+  pp_string (pp, "}\n");
   pp_flush (pp);
   fclose (fp);
 }
@@ -4189,6 +4226,23 @@ recording::block::add_comment (recording::location *loc,
   return result;
 }
 
+/* Create a recording::extended_asm_simple instance and add it to
+   the block's context's list of mementos, and to the block's
+   list of statements.
+
+   Implements the heart of gcc_jit_block_add_extended_asm.  */
+
+recording::extended_asm *
+recording::block::add_extended_asm (location *loc,
+				    const char *asm_template)
+{
+  extended_asm *result
+    = new extended_asm_simple (this, loc, new_string (asm_template));
+  m_ctxt->record (result);
+  m_statements.safe_push (result);
+  return result;
+}
+
 /* Create a recording::end_with_conditional instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
@@ -4265,6 +4319,30 @@ recording::block::end_with_switch (recording::location *loc,
 				   default_block,
 				   num_cases,
 				   cases);
+  m_ctxt->record (result);
+  m_statements.safe_push (result);
+  m_has_been_terminated = true;
+  return result;
+}
+
+/* Create a recording::extended_asm_goto instance and add it to
+   the block's context's list of mementos, and to the block's
+   list of statements.
+
+   Implements the heart of gcc_jit_block_end_with_extended_asm_goto.  */
+
+
+recording::extended_asm *
+recording::block::end_with_extended_asm_goto (location *loc,
+					      const char *asm_template,
+					      int num_goto_blocks,
+					      block **goto_blocks,
+					      block *fallthrough_block)
+{
+  extended_asm *result
+    = new extended_asm_goto (this, loc, new_string (asm_template),
+			     num_goto_blocks, goto_blocks,
+			     fallthrough_block);
   m_ctxt->record (result);
   m_statements.safe_push (result);
   m_has_been_terminated = true;
@@ -4401,6 +4479,14 @@ recording::block::write_reproducer (reproducer &r)
 	   m_name ? m_name->get_debug_string () : "NULL");
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the pp_printf calls.  Their format strings deliberately don't
+   follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Dump a block in graphviz form into PP, capturing the block name (if
    any) and the statements.  */
 
@@ -4429,7 +4515,7 @@ recording::block::dump_to_dot (pretty_printer *pp)
       pp_write_text_as_dot_label_to_stream (pp, true /*for_record*/);
     }
 
-  pp_printf (pp,
+  pp_string (pp,
 	     "}\"];\n\n");
   pp_flush (pp);
 }
@@ -4448,6 +4534,10 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 	       m_index, succ->m_index);
   successors.release ();
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* The implementation of class gcc::jit::recording::global.  */
 
@@ -6489,6 +6579,459 @@ recording::switch_::write_reproducer (reproducer &r)
 	     r.get_identifier (m_default_block),
 	     m_cases.length (),
 	     cases_id);
+}
+
+/* class asm_operand : public memento.  */
+
+recording::asm_operand::asm_operand (extended_asm *ext_asm,
+				     string *asm_symbolic_name,
+				     string *constraint)
+: memento (ext_asm->get_context ()),
+  m_ext_asm (ext_asm),
+  m_asm_symbolic_name (asm_symbolic_name),
+  m_constraint (constraint)
+{
+}
+
+void
+recording::asm_operand::print (pretty_printer *pp) const
+{
+  if (m_asm_symbolic_name)
+    {
+      pp_character (pp, '[');
+      pp_string (pp, m_asm_symbolic_name->c_str ());
+      pp_character (pp, ']');
+      pp_space (pp);
+    }
+  pp_string (pp, m_constraint->get_debug_string ());
+  /* Subclass will add lvalue/rvalue.  */
+}
+
+recording::string *
+recording::asm_operand::make_debug_string ()
+{
+  pretty_printer pp;
+  print (&pp);
+  return m_ctxt->new_string (pp_formatted_text (&pp), false);
+}
+
+/* class output_asm_operand : public asm_operand.  */
+
+void
+recording::output_asm_operand::write_reproducer (reproducer &r)
+{
+  const char *fmt =
+    "  gcc_jit_extended_asm_add_output_operand (%s, /* gcc_jit_extended_asm *ext_asm */\n"
+    "                                           %s, /* const char *asm_symbolic_name */\n"
+    "                                           %s, /* const char *constraint */\n"
+    "                                           %s); /* gcc_jit_lvalue *dest */\n";
+  r.write (fmt,
+	   r.get_identifier (m_ext_asm),
+	   (m_asm_symbolic_name
+	    ? m_asm_symbolic_name->get_debug_string () : "NULL"),
+	   m_constraint->get_debug_string (),
+	   r.get_identifier (m_dest));
+}
+
+void
+recording::output_asm_operand::print (pretty_printer *pp) const
+{
+  asm_operand::print (pp);
+  pp_string (pp, " (");
+  pp_string (pp, m_dest->get_debug_string ());
+  pp_string (pp, ")");
+}
+
+/* class input_asm_operand : public asm_operand.  */
+
+void
+recording::input_asm_operand::write_reproducer (reproducer &r)
+{
+  const char *fmt =
+    "  gcc_jit_extended_asm_add_input_operand (%s, /* gcc_jit_extended_asm *ext_asm */\n"
+    "                                          %s, /* const char *asm_symbolic_name */\n"
+    "                                          %s, /* const char *constraint */\n"
+    "                                          %s); /* gcc_jit_rvalue *src */\n";
+  r.write (fmt,
+	   r.get_identifier (m_ext_asm),
+	   (m_asm_symbolic_name
+	    ? m_asm_symbolic_name->get_debug_string () : "NULL"),
+	   m_constraint->get_debug_string (),
+	   r.get_identifier_as_rvalue (m_src));
+}
+
+void
+recording::input_asm_operand::print (pretty_printer *pp) const
+{
+  asm_operand::print (pp);
+  pp_string (pp, " (");
+  pp_string (pp, m_src->get_debug_string ());
+  pp_string (pp, ")");
+}
+
+/* The implementation of class gcc::jit::recording::extended_asm.  */
+
+void
+recording::extended_asm::add_output_operand (const char *asm_symbolic_name,
+					     const char *constraint,
+					     lvalue *dest)
+{
+  output_asm_operand *op
+    = new output_asm_operand (this,
+			      new_string (asm_symbolic_name),
+			      new_string (constraint),
+			      dest);
+  m_ctxt->record (op);
+  m_output_ops.safe_push (op);
+}
+
+void
+recording::extended_asm::add_input_operand (const char *asm_symbolic_name,
+					    const char *constraint,
+					    rvalue *src)
+{
+  input_asm_operand *op
+    = new input_asm_operand (this,
+			     new_string (asm_symbolic_name),
+			     new_string (constraint),
+			     src);
+  m_ctxt->record (op);
+  m_input_ops.safe_push (op);
+}
+
+void
+recording::extended_asm::add_clobber (const char *victim)
+{
+  m_clobbers.safe_push (new_string (victim));
+}
+
+/* Implementation of recording::memento::replay_into
+   for recording::extended_asm.  */
+
+void
+recording::extended_asm::replay_into (replayer *r)
+{
+  auto_vec<playback::asm_operand> playback_output_ops;
+  auto_vec<playback::asm_operand> playback_input_ops;
+  auto_vec<const char *> playback_clobbers;
+  auto_vec<playback::block *> playback_goto_blocks;
+
+  /* Populate outputs.  */
+  {
+    output_asm_operand *rec_asm_op;
+    unsigned i;
+    FOR_EACH_VEC_ELT (m_output_ops, i, rec_asm_op)
+      {
+	playback::asm_operand playback_asm_op
+	  (rec_asm_op->get_symbolic_name (),
+	   rec_asm_op->get_constraint (),
+	   rec_asm_op->get_lvalue ()->playback_lvalue ()->as_tree ());
+	playback_output_ops.safe_push (playback_asm_op);
+      }
+  }
+
+  /* Populate inputs.  */
+  {
+    input_asm_operand *rec_asm_op;
+    unsigned i;
+    FOR_EACH_VEC_ELT (m_input_ops, i, rec_asm_op)
+      {
+	playback::asm_operand playback_asm_op
+	  (rec_asm_op->get_symbolic_name (),
+	   rec_asm_op->get_constraint (),
+	   rec_asm_op->get_rvalue ()->playback_rvalue ()->as_tree ());
+	playback_input_ops.safe_push (playback_asm_op);
+      }
+  }
+
+  /* Populate clobbers.  */
+  {
+    string *rec_clobber;
+    unsigned i;
+    FOR_EACH_VEC_ELT (m_clobbers, i, rec_clobber)
+      playback_clobbers.safe_push (rec_clobber->c_str ());
+  }
+
+  /* Populate playback blocks if an "asm goto".  */
+  maybe_populate_playback_blocks (&playback_goto_blocks);
+
+  playback_block (get_block ())
+    ->add_extended_asm (playback_location (r),
+			m_asm_template->c_str (),
+			m_is_volatile, m_is_inline,
+			&playback_output_ops,
+			&playback_input_ops,
+			&playback_clobbers,
+			&playback_goto_blocks);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   an extended_asm "statement".  */
+
+recording::string *
+recording::extended_asm::make_debug_string ()
+{
+  pretty_printer pp;
+  pp_string (&pp, "asm ");
+  if (m_is_volatile)
+    pp_string (&pp, "volatile ");
+  if (m_is_inline)
+    pp_string (&pp, "inline ");
+  if (is_goto ())
+    pp_string (&pp, "goto ");
+  pp_character (&pp, '(');
+  pp_string (&pp, m_asm_template->get_debug_string ());
+  pp_string (&pp, " : ");
+  unsigned i;
+  {
+    output_asm_operand *asm_op;
+    FOR_EACH_VEC_ELT (m_output_ops, i, asm_op)
+      {
+	if (i > 0)
+	  pp_string (&pp, ", ");
+	asm_op->print (&pp);
+      }
+  }
+  pp_string (&pp, " : ");
+  {
+    input_asm_operand *asm_op;
+    FOR_EACH_VEC_ELT (m_input_ops, i, asm_op)
+      {
+	if (i > 0)
+	  pp_string (&pp, ", ");
+	asm_op->print (&pp);
+      }
+  }
+  pp_string (&pp, " : ");
+  string *rec_clobber;
+  FOR_EACH_VEC_ELT (m_clobbers, i, rec_clobber)
+      {
+	if (i > 0)
+	  pp_string (&pp, ", ");
+	pp_string (&pp, rec_clobber->get_debug_string ());
+      }
+  maybe_print_gotos (&pp);
+  pp_character (&pp, ')');
+  return new_string (pp_formatted_text (&pp));
+}
+
+void
+recording::extended_asm::write_flags (reproducer &r)
+{
+  if (m_is_volatile)
+    r.write ("  gcc_jit_extended_asm_set_volatile_flag (%s, 1);\n",
+	     r.get_identifier (this));
+  if (m_is_inline)
+    r.write ("  gcc_jit_extended_asm_set_inline_flag (%s, 1);\n",
+	     r.get_identifier (this));
+}
+
+void
+recording::extended_asm::write_clobbers (reproducer &r)
+{
+  string *clobber;
+  unsigned i;
+  FOR_EACH_VEC_ELT (m_clobbers, i, clobber)
+    r.write ("  gcc_jit_extended_asm_add_clobber (%s, %s);\n",
+	     r.get_identifier (this),
+	     clobber->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   extended_asm_simple.  */
+
+void
+recording::extended_asm_simple::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "extended_asm");
+  r.write ("  gcc_jit_extended_asm *%s =\n"
+	   "    gcc_jit_block_add_extended_asm (%s, /*gcc_jit_block *block */\n"
+	   "                                    %s, /* gcc_jit_location *loc */\n"
+	   "                                    %s); /* const char *asm_template */\n",
+	   id,
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   m_asm_template->get_debug_string ());
+  write_flags (r);
+  write_clobbers (r);
+}
+
+void
+recording::extended_asm::
+maybe_populate_playback_blocks (auto_vec <playback::block *> *)
+{
+  /* Do nothing; not an "asm goto".  */
+}
+
+/* The implementation of class gcc::jit::recording::extended_asm_goto.  */
+
+/* recording::extended_asm_goto's ctor.  */
+
+recording::extended_asm_goto::extended_asm_goto (block *b,
+						 location *loc,
+						 string *asm_template,
+						 int num_goto_blocks,
+						 block **goto_blocks,
+						 block *fallthrough_block)
+: extended_asm (b, loc, asm_template),
+  m_goto_blocks (num_goto_blocks),
+  m_fallthrough_block (fallthrough_block)
+{
+  for (int i = 0; i < num_goto_blocks; i++)
+    m_goto_blocks.quick_push (goto_blocks[i]);
+}
+
+/* Implementation of recording::memento::replay_into
+   for recording::extended_asm_goto.  */
+
+void
+recording::extended_asm_goto::replay_into (replayer *r)
+{
+  /* Chain up to base class impl.  */
+  recording::extended_asm::replay_into (r);
+
+  /* ...and potentially add a goto for the fallthrough.  */
+  if (m_fallthrough_block)
+    playback_block (get_block ())
+      ->add_jump (playback_location (r),
+		  m_fallthrough_block->playback_block ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   extended_asm_goto.  */
+
+void
+recording::extended_asm_goto::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "extended_asm");
+  const char *blocks_id = r.make_tmp_identifier ("blocks_for", this);
+  r.write ("  gcc_jit_block *%s[%i] = {\n",
+	   blocks_id,
+	   m_goto_blocks.length ());
+  int i;
+  block *b;
+  FOR_EACH_VEC_ELT (m_goto_blocks, i, b)
+    r.write ("    %s,\n", r.get_identifier (b));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_extended_asm *%s =\n"
+	   "    gcc_jit_block_end_with_extended_asm_goto (%s, /*gcc_jit_block *block */\n"
+	   "                                              %s, /* gcc_jit_location *loc */\n"
+	   "                                              %s, /* const char *asm_template */\n"
+	   "                                              %i, /* int num_goto_blocks */\n"
+	   "                                              %s, /* gcc_jit_block **goto_blocks */\n"
+	   "                                              %s); /* gcc_jit_block *fallthrough_block */\n",
+	   id,
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   m_asm_template->get_debug_string (),
+	   m_goto_blocks.length (),
+	   blocks_id,
+	   (m_fallthrough_block
+	    ? r.get_identifier (m_fallthrough_block)
+	    : "NULL"));
+  write_flags (r);
+  write_clobbers (r);
+}
+
+/* Override the poisoned default implementation of
+   gcc::jit::recording::statement::get_successor_blocks
+
+   An extended_asm_goto can jump to the m_goto_blocks, and to
+   the (optional) m_fallthrough_block.  */
+
+vec <recording::block *>
+recording::extended_asm_goto::get_successor_blocks () const
+{
+  vec <block *> result;
+  result.create (m_goto_blocks.length () + 1);
+  if (m_fallthrough_block)
+    result.quick_push (m_fallthrough_block);
+  result.splice (m_goto_blocks);
+  return result;
+}
+
+/* Vfunc for use by recording::extended_asm::make_debug_string.  */
+
+void
+recording::extended_asm_goto::maybe_print_gotos (pretty_printer *pp) const
+{
+  pp_string (pp, " : ");
+  unsigned i;
+  block *b;
+  FOR_EACH_VEC_ELT (m_goto_blocks, i, b)
+    {
+      if (i > 0)
+	pp_string (pp, ", ");
+      pp_string (pp, b->get_debug_string ());
+    }
+  /* Non-C syntax here.  */
+  if (m_fallthrough_block)
+    pp_printf (pp, " [fallthrough: %s]",
+	       m_fallthrough_block->get_debug_string ());
+}
+
+/* Vfunc for use by recording::extended_asm::replay_into.  */
+
+void
+recording::extended_asm_goto::
+maybe_populate_playback_blocks (auto_vec <playback::block *> *out)
+{
+  unsigned i;
+  block *b;
+  FOR_EACH_VEC_ELT (m_goto_blocks, i, b)
+    out->safe_push (b->playback_block ());
+}
+
+/* class top_level_asm : public memento.  */
+
+recording::top_level_asm::top_level_asm (context *ctxt,
+					 location *loc,
+					 string *asm_stmts)
+: memento (ctxt),
+  m_loc (loc),
+  m_asm_stmts (asm_stmts)
+{
+}
+
+/* Implementation of recording::memento::replay_into for top-level asm.  */
+
+void
+recording::top_level_asm::replay_into (replayer *r)
+{
+  r->add_top_level_asm (m_asm_stmts->c_str ());
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   top-level asm.  */
+
+recording::string *
+recording::top_level_asm::make_debug_string ()
+{
+  return string::from_printf (m_ctxt, "asm (%s)",
+			      m_asm_stmts->get_debug_string ());
+}
+
+/* Override the default implementation of
+   recording::memento::write_to_dump.
+   Don't indent the string.  */
+
+void
+recording::top_level_asm::write_to_dump (dump &d)
+{
+  d.write ("%s;\n", get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for top-level asm. */
+
+void
+recording::top_level_asm::write_reproducer (reproducer &r)
+{
+  r.write ("  gcc_jit_context_add_top_level_asm (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                     %s, /* gcc_jit_location *loc */\n"
+	   "                                     %s); /* const char *asm_stmts */\n",
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   m_asm_stmts->get_debug_string ());
 }
 
 } // namespace gcc::jit

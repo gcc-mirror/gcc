@@ -230,6 +230,20 @@ wi::to_mpz (const wide_int_ref &x, mpz_t result, signop sgn)
       t[len - 1] = (unsigned HOST_WIDE_INT) v[len - 1] << excess >> excess;
       mpz_import (result, len, -1, sizeof (HOST_WIDE_INT), 0, 0, t);
     }
+  else if (excess < 0 && wi::neg_p (x))
+    {
+      int extra
+	= (-excess + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+      HOST_WIDE_INT *t = XALLOCAVEC (HOST_WIDE_INT, len + extra);
+      for (int i = 0; i < len; i++)
+	t[i] = v[i];
+      for (int i = 0; i < extra; i++)
+	t[len + i] = -1;
+      excess = (-excess) % HOST_BITS_PER_WIDE_INT;
+      if (excess)
+	t[len + extra - 1] = (HOST_WIDE_INT_1U << excess) - 1;
+      mpz_import (result, len + extra, -1, sizeof (HOST_WIDE_INT), 0, 0, t);
+    }
   else
     mpz_import (result, len, -1, sizeof (HOST_WIDE_INT), 0, 0, v);
 }
@@ -702,8 +716,11 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       /* If the bit we just set is at the msb of the block, make sure
 	 that any higher bits are zeros.  */
       if (bit + 1 < precision && subbit == HOST_BITS_PER_WIDE_INT - 1)
-	val[len++] = 0;
-      return len;
+	{
+	  val[len++] = 0;
+	  return len;
+	}
+      return canonize (val, len, precision);
     }
   else
     {

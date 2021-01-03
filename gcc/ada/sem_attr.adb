@@ -227,9 +227,11 @@ package body Sem_Attr is
    procedure Analyze_Attribute (N : Node_Id) is
       Loc     : constant Source_Ptr   := Sloc (N);
       Aname   : constant Name_Id      := Attribute_Name (N);
-      P       : constant Node_Id      := Prefix (N);
       Exprs   : constant List_Id      := Expressions (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+      P_Old   : constant Node_Id      := Prefix (N);
+
+      P       : Node_Id := P_Old;
       E1      : Node_Id;
       E2      : Node_Id;
 
@@ -348,7 +350,7 @@ package body Sem_Attr is
 
       procedure Check_Floating_Point_Type_2;
       --  Verify that prefix of attribute N is a float type and that
-      --  two attribute expressions are present
+      --  two attribute expressions are present.
 
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
@@ -420,9 +422,11 @@ package body Sem_Attr is
       --  no arguments is used when the caller has already generated the
       --  required error messages.
 
-      procedure Error_Attr_P (Msg : String);
+      procedure Error_Attr_P (Msg : String; Msg_Cont : String := "");
       pragma No_Return (Error_Attr_P);
-      --  Like Error_Attr, but error is posted at the start of the prefix
+      --  Like Error_Attr, but error is posted at the start of the prefix. The
+      --  second message Msg_Cont is useful to issue a continuation message
+      --  before raising Bad_Attribute.
 
       procedure Legal_Formal_Attribute;
       --  Common processing for attributes Definite and Has_Discriminants.
@@ -780,6 +784,13 @@ package body Sem_Attr is
             Par : Node_Id;
 
          begin
+            --  If N does not come from source, the reference is assumed to be
+            --  valid.
+
+            if not Comes_From_Source (N) then
+               return True;
+            end if;
+
             Par := Parent (N);
             while Present (Par)
               and then
@@ -1030,9 +1041,7 @@ package body Sem_Attr is
                --  expression comes from source, e.g. when a single component
                --  association in an aggregate has a box association.
 
-               elsif Ada_Version >= Ada_2005
-                 and then OK_Self_Reference
-               then
+               elsif Ada_Version >= Ada_2005 and then OK_Self_Reference then
                   null;
 
                --  OK if reference to current instance of a protected object
@@ -1460,7 +1469,7 @@ package body Sem_Attr is
             if Ada_Version < Ada_2020
               and then not Is_Scalar_Type (Image_Type)
             then
-               Error_Msg_Ada_2020_Feature ("|nonscalar ''Image", Sloc (P));
+               Error_Msg_Ada_2020_Feature ("nonscalar ''Image", Sloc (P));
                Error_Attr;
             end if;
          end Check_Image_Type;
@@ -1654,7 +1663,7 @@ package body Sem_Attr is
       ----------------------
 
       procedure Check_Array_Type is
-         D : Int;
+         D : Pos;
          --  Dimension number for array attributes
 
       begin
@@ -1739,9 +1748,7 @@ package body Sem_Attr is
                  ("expression for dimension must be static!", E1);
                Error_Attr;
 
-            elsif UI_To_Int (Expr_Value (E1)) > D
-              or else UI_To_Int (Expr_Value (E1)) < 1
-            then
+            elsif Expr_Value (E1) > D or else Expr_Value (E1) < 1 then
                Error_Attr ("invalid dimension number for array type", E1);
             end if;
          end if;
@@ -1831,7 +1838,7 @@ package body Sem_Attr is
 
          --  Case of an expression
 
-         Resolve (P);
+         Resolve (P_Old);
 
          if Is_Access_Type (P_Type) then
 
@@ -1847,12 +1854,12 @@ package body Sem_Attr is
                Freeze_Before (N, Designated_Type (P_Type));
             end if;
 
-            Rewrite (P,
-              Make_Explicit_Dereference (Sloc (P),
-                Prefix => Relocate_Node (P)));
+            Rewrite (P_Old,
+              Make_Explicit_Dereference (Sloc (P_Old),
+                Prefix => Relocate_Node (P_Old)));
 
-            Analyze_And_Resolve (P);
-            P_Type := Etype (P);
+            Analyze_And_Resolve (P_Old);
+            P_Type := Etype (P_Old);
 
             if P_Type = Any_Type then
                raise Bad_Attribute;
@@ -2690,10 +2697,13 @@ package body Sem_Attr is
       -- Error_Attr_P --
       ------------------
 
-      procedure Error_Attr_P (Msg : String) is
+      procedure Error_Attr_P (Msg : String; Msg_Cont : String := "") is
       begin
          Error_Msg_Name_1 := Aname;
          Error_Msg_F (Msg, P);
+         if Msg_Cont /= "" then
+            Error_Msg_F (Msg_Cont, P);
+         end if;
          Error_Attr;
       end Error_Attr_P;
 
@@ -2842,7 +2852,10 @@ package body Sem_Attr is
                        and then Attr_Id = Attribute_Old
                      then " or be eligible for conditional evaluation"
                           & " (RM 6.1.1 (27))"
-                     else ""));
+                     else ""),
+                  Msg_Cont =>
+                    "\using pragma Unevaluated_Use_Of_Old (Allow) will make "
+                    & "this legal");
 
             when 'W' =>
                Error_Msg_Name_1 := Aname;
@@ -3091,6 +3104,15 @@ package body Sem_Attr is
          end if;
       end if;
 
+      --  If the prefix was rewritten as a raise node, then rewrite N as a
+      --  raise node, to avoid creating inconsistent trees. We still need to
+      --  perform legality checks on the original tree.
+
+      if Nkind (P) in N_Raise_xxx_Error then
+         Rewrite (N, Relocate_Node (P));
+         P := Original_Node (P_Old);
+      end if;
+
       --  Remaining processing depends on attribute
 
       case Attr_Id is
@@ -3151,7 +3173,10 @@ package body Sem_Attr is
       -- Adjacent --
       --------------
 
-      when Attribute_Adjacent =>
+      when Attribute_Adjacent
+         | Attribute_Copy_Sign
+         | Attribute_Remainder
+      =>
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -3273,7 +3298,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Object_Reference (P) then
-            Error_Attr_P ("prefix for % attribute must be object");
+            Error_Attr_P ("prefix of % attribute must be object");
 
          --  What about the access object cases ???
 
@@ -3342,7 +3367,9 @@ package body Sem_Attr is
       -- Callable --
       --------------
 
-      when Attribute_Callable =>
+      when Attribute_Callable
+         | Attribute_Terminated
+      =>
          Check_E0;
          Set_Etype (N, Standard_Boolean);
          Check_Task_Prefix;
@@ -3387,7 +3414,16 @@ package body Sem_Attr is
       -- Ceiling --
       -------------
 
-      when Attribute_Ceiling =>
+      when Attribute_Ceiling
+         | Attribute_Floor
+         | Attribute_Fraction
+         | Attribute_Machine
+         | Attribute_Machine_Rounding
+         | Attribute_Model
+         | Attribute_Rounding
+         | Attribute_Truncation
+         | Attribute_Unbiased_Rounding
+      =>
          Check_Floating_Point_Type_1;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -3479,7 +3515,10 @@ package body Sem_Attr is
       -- Compose --
       -------------
 
-      when Attribute_Compose =>
+      when Attribute_Compose
+         | Attribute_Leading_Part
+         | Attribute_Scaling
+      =>
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -3597,11 +3636,7 @@ package body Sem_Attr is
       -- Copy_Sign --
       ---------------
 
-      when Attribute_Copy_Sign =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
+      --  Shares processing with Adjacent attribute
 
       -----------
       -- Count --
@@ -3674,7 +3709,7 @@ package body Sem_Attr is
                      null;
                   else
                      Error_Attr
-                       ("Attribute % must apply to entry of current task", N);
+                       ("attribute % must apply to entry of current task", N);
                   end if;
                end if;
 
@@ -3686,7 +3721,7 @@ package body Sem_Attr is
                                       | E_Entry_Family
                                       | E_Loop
             then
-               Error_Attr ("Attribute % cannot appear in inner unit", N);
+               Error_Attr ("attribute % cannot appear in inner unit", N);
 
             elsif Ekind (Scope (Ent)) = E_Protected_Type
               and then not Has_Completion (Scope (Ent))
@@ -3800,7 +3835,9 @@ package body Sem_Attr is
       -- Denorm --
       ------------
 
-      when Attribute_Denorm =>
+      when Attribute_Denorm
+         | Attribute_Signed_Zeros
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Standard_Boolean);
 
@@ -3868,7 +3905,7 @@ package body Sem_Attr is
       -- Elab_Spec --
       ---------------
 
-      --  Shares processing with Elab_Body
+      --  Shares processing with Elab_Body attribute
 
       ----------------
       -- Elaborated --
@@ -3883,7 +3920,14 @@ package body Sem_Attr is
       -- Emax --
       ----------
 
-      when Attribute_Emax =>
+      when Attribute_Emax
+         | Attribute_Machine_Emax
+         | Attribute_Machine_Emin
+         | Attribute_Machine_Mantissa
+         | Attribute_Model_Emin
+         | Attribute_Model_Mantissa
+         | Attribute_Safe_Emax
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Universal_Integer);
 
@@ -3974,7 +4018,12 @@ package body Sem_Attr is
       -- Epsilon --
       -------------
 
-      when Attribute_Epsilon =>
+      when Attribute_Epsilon
+         | Attribute_Model_Epsilon
+         | Attribute_Model_Small
+         | Attribute_Safe_First
+         | Attribute_Safe_Last
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Universal_Real);
 
@@ -4049,7 +4098,9 @@ package body Sem_Attr is
       -- First --
       -----------
 
-      when Attribute_First =>
+      when Attribute_First
+         | Attribute_Last
+      =>
          Check_Array_Or_Scalar_Type;
          Bad_Attribute_For_Predicate;
 
@@ -4057,7 +4108,10 @@ package body Sem_Attr is
       -- First_Bit --
       ---------------
 
-      when Attribute_First_Bit =>
+      when Attribute_First_Bit
+         | Attribute_Last_Bit
+         | Attribute_Position
+      =>
          Check_Component;
          Set_Etype (N, Universal_Integer);
 
@@ -4065,7 +4119,9 @@ package body Sem_Attr is
       -- First_Valid --
       -----------------
 
-      when Attribute_First_Valid =>
+      when Attribute_First_Valid
+         | Attribute_Last_Valid
+      =>
          Check_First_Last_Valid;
          Set_Etype (N, P_Type);
 
@@ -4074,8 +4130,8 @@ package body Sem_Attr is
       -----------------
 
       when Attribute_Fixed_Value =>
-         Check_E1;
          Check_Fixed_Point_Type;
+         Check_E1;
          Resolve (E1, Any_Integer);
          Set_Etype (N, P_Base_Type);
 
@@ -4083,10 +4139,7 @@ package body Sem_Attr is
       -- Floor --
       -----------
 
-      when Attribute_Floor =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------
       -- Fore --
@@ -4100,10 +4153,7 @@ package body Sem_Attr is
       -- Fraction --
       --------------
 
-      when Attribute_Fraction =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       --------------
       -- From_Any --
@@ -4118,7 +4168,9 @@ package body Sem_Attr is
       -- Has_Access_Values --
       -----------------------
 
-      when Attribute_Has_Access_Values =>
+      when Attribute_Has_Access_Values
+         | Attribute_Has_Tagged_Values
+      =>
          Check_Type;
          Check_E0;
          Set_Etype (N, Standard_Boolean);
@@ -4142,10 +4194,7 @@ package body Sem_Attr is
       -- Has_Tagged_Values --
       -----------------------
 
-      when Attribute_Has_Tagged_Values =>
-         Check_Type;
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Has_Access_Values attribute
 
       -----------------------
       -- Has_Discriminants --
@@ -4276,7 +4325,11 @@ package body Sem_Attr is
       -- Large --
       -----------
 
-      when Attribute_Large =>
+      when Attribute_Large
+         | Attribute_Small
+         | Attribute_Safe_Large
+         | Attribute_Safe_Small
+      =>
          Check_E0;
          Check_Real_Type;
          Set_Etype (N, Universal_Real);
@@ -4285,35 +4338,25 @@ package body Sem_Attr is
       -- Last --
       ----------
 
-      when Attribute_Last =>
-         Check_Array_Or_Scalar_Type;
-         Bad_Attribute_For_Predicate;
+      --  Shares processing with First attribute
 
       --------------
       -- Last_Bit --
       --------------
 
-      when Attribute_Last_Bit =>
-         Check_Component;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with First_Bit attribute
 
       ----------------
       -- Last_Valid --
       ----------------
 
-      when Attribute_Last_Valid =>
-         Check_First_Last_Valid;
-         Set_Etype (N, P_Type);
+      --  Shares processing with First_Valid attribute
 
       ------------------
       -- Leading_Part --
       ------------------
 
-      when Attribute_Leading_Part =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, Any_Integer);
+      --  Shares processing with Compose attribute
 
       ------------
       -- Length --
@@ -4375,7 +4418,8 @@ package body Sem_Attr is
             --  within the related loop.
 
             function Declared_Within (Nod : Node_Id) return Boolean;
-            --  Determine whether Nod appears in the subtree of Loop_Decl
+            --  Determine whether Nod appears in the subtree of Loop_Decl but
+            --  not within the subtree of the prefix P itself.
 
             ---------------------
             -- Check_Reference --
@@ -4410,6 +4454,9 @@ package body Sem_Attr is
                while Present (Stmt) loop
                   if Stmt = Loop_Decl then
                      return True;
+
+                  elsif Stmt = P then
+                     return False;
 
                   --  Prevent the search from going too far
 
@@ -4679,40 +4726,33 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
-      when Attribute_Machine =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ------------------
       -- Machine_Emax --
       ------------------
 
-      when Attribute_Machine_Emax =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ------------------
       -- Machine_Emin --
       ------------------
 
-      when Attribute_Machine_Emin =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ----------------------
       -- Machine_Mantissa --
       ----------------------
 
-      when Attribute_Machine_Mantissa =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -----------------------
       -- Machine_Overflows --
       -----------------------
 
-      when Attribute_Machine_Overflows =>
+      when Attribute_Machine_Overflows
+         | Attribute_Machine_Rounds
+      =>
          Check_Real_Type;
          Check_E0;
          Set_Etype (N, Standard_Boolean);
@@ -4721,7 +4761,9 @@ package body Sem_Attr is
       -- Machine_Radix --
       -------------------
 
-      when Attribute_Machine_Radix =>
+      when Attribute_Machine_Radix
+         | Attribute_Mantissa
+      =>
          Check_Real_Type;
          Check_E0;
          Set_Etype (N, Universal_Integer);
@@ -4730,25 +4772,22 @@ package body Sem_Attr is
       -- Machine_Rounding --
       ----------------------
 
-      when Attribute_Machine_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       --------------------
       -- Machine_Rounds --
       --------------------
 
-      when Attribute_Machine_Rounds =>
-         Check_Real_Type;
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Machine_Overflows attribute
 
       ------------------
       -- Machine_Size --
       ------------------
 
-      when Attribute_Machine_Size =>
+      when Attribute_Machine_Size
+         | Attribute_Object_Size
+         | Attribute_Value_Size
+      =>
          Check_E0;
          Check_Type;
          Check_Not_Incomplete_Type;
@@ -4758,10 +4797,7 @@ package body Sem_Attr is
       -- Mantissa --
       --------------
 
-      when Attribute_Mantissa =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Radix attribute
 
       ---------
       -- Max --
@@ -4821,7 +4857,7 @@ package body Sem_Attr is
                Error_Attr;
 
             elsif UI_To_Int (Intval (E1)) > Number_Formals (Entity (P))
-              or else UI_To_Int (Intval (E1)) < 0
+              or else Intval (E1) < 0
             then
                Error_Attr ("invalid parameter number for % attribute", E1);
             end if;
@@ -4855,42 +4891,31 @@ package body Sem_Attr is
       -- Model --
       -----------
 
-      when Attribute_Model =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------
       -- Model_Emin --
       ----------------
 
-      when Attribute_Model_Emin =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -------------------
       -- Model_Epsilon --
       -------------------
 
-      when Attribute_Model_Epsilon =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       --------------------
       -- Model_Mantissa --
       --------------------
 
-      when Attribute_Model_Mantissa =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -----------------
       -- Model_Small --
       -----------------
 
-      when Attribute_Model_Small =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       -------------
       -- Modulus --
@@ -4989,11 +5014,7 @@ package body Sem_Attr is
       -- Object_Size --
       -----------------
 
-      when Attribute_Object_Size =>
-         Check_E0;
-         Check_Type;
-         Check_Not_Incomplete_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Size attribute
 
       ---------
       -- Old --
@@ -5300,23 +5321,23 @@ package body Sem_Attr is
       -- Position --
       --------------
 
-      when Attribute_Position =>
-         Check_Component;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with First_Bit attribute
 
       ----------
       -- Pred --
       ----------
 
-      when Attribute_Pred =>
+      when Attribute_Pred
+         | Attribute_Succ
+      =>
          Check_Scalar_Type;
          Check_E1;
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Since Pred works on the base type, we normally do no check for the
-         --  floating-point case, since the base type is unconstrained. But we
-         --  make an exception in Check_Float_Overflow mode.
+         --  Since Pred/Succ work on the base type, we normally do no check for
+         --  the floating-point case, since the base type is unconstrained. But
+         --  we make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
             if not Range_Checks_Suppressed (P_Base_Type) then
@@ -5657,7 +5678,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type$", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
@@ -5666,7 +5687,7 @@ package body Sem_Attr is
                 N_Iterated_Component_Association
             then
                Error_Msg_N
-                 ("Prefix of reduce must be an iterated component", N);
+                 ("prefix of Reduce must be an iterated component", N);
             end if;
 
             Analyze (E1);
@@ -5706,11 +5727,7 @@ package body Sem_Attr is
       -- Remainder --
       ---------------
 
-      when Attribute_Remainder =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
+      --  Shares processing with Adjacent attribute
 
       ---------------------
       -- Restriction_Set --
@@ -5833,52 +5850,37 @@ package body Sem_Attr is
       -- Rounding --
       --------------
 
-      when Attribute_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ---------------
       -- Safe_Emax --
       ---------------
 
-      when Attribute_Safe_Emax =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ----------------
       -- Safe_First --
       ----------------
 
-      when Attribute_Safe_First =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       ----------------
       -- Safe_Large --
       ----------------
 
-      when Attribute_Safe_Large =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
 
       ---------------
       -- Safe_Last --
       ---------------
 
-      when Attribute_Safe_Last =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       ----------------
       -- Safe_Small --
       ----------------
 
-      when Attribute_Safe_Small =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
 
       --------------------------
       -- Scalar_Storage_Order --
@@ -5947,18 +5949,13 @@ package body Sem_Attr is
       -- Scaling --
       -------------
 
-      when Attribute_Scaling =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Compose attribute
 
       ------------------
       -- Signed_Zeros --
       ------------------
 
-      when Attribute_Signed_Zeros =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Denorm attribute
 
       ----------
       -- Size --
@@ -6048,10 +6045,17 @@ package body Sem_Attr is
       -- Small --
       -----------
 
-      when Attribute_Small =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
+
+      ---------------------------------------
+      -- Small_Denominator/Small_Numerator --
+      ---------------------------------------
+
+      when Attribute_Small_Denominator
+         | Attribute_Small_Numerator
+      =>
+         Check_Fixed_Point_Type_0;
+         Set_Etype (N, Universal_Integer);
 
       ------------------
       -- Storage_Pool --
@@ -6135,6 +6139,8 @@ package body Sem_Attr is
             Check_Restriction (No_Obsolescent_Features, P);
 
          elsif Is_Access_Type (P_Type) then
+            Set_Etype (N, Universal_Integer);
+
             if Ekind (P_Type) = E_Access_Subprogram_Type then
                Error_Attr_P
                  ("cannot use % attribute for access-to-subprogram type");
@@ -6144,7 +6150,6 @@ package body Sem_Attr is
               and then Is_Type (Entity (P))
             then
                Check_Type;
-               Set_Etype (N, Universal_Integer);
 
                --  Validate_Remote_Access_To_Class_Wide_Type for attribute
                --  Storage_Size since this attribute is not defined for
@@ -6157,7 +6162,6 @@ package body Sem_Attr is
 
             else
                Check_Task_Prefix;
-               Set_Etype (N, Universal_Integer);
             end if;
 
          else
@@ -6227,30 +6231,7 @@ package body Sem_Attr is
       -- Succ --
       ----------
 
-      when Attribute_Succ =>
-         Check_Scalar_Type;
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
-
-         --  Since Pred works on the base type, we normally do no check for the
-         --  floating-point case, since the base type is unconstrained. But we
-         --  make an exception in Check_Float_Overflow mode.
-
-         if Is_Floating_Point_Type (P_Type) then
-            if not Range_Checks_Suppressed (P_Base_Type) then
-               Set_Do_Range_Check (E1);
-            end if;
-
-         --  If not modular type, test for overflow check required
-
-         else
-            if not Is_Modular_Integer_Type (P_Type)
-              and then not Range_Checks_Suppressed (P_Base_Type)
-            then
-               Enable_Range_Check (E1);
-            end if;
-         end if;
+      --  Shares processing with Pred attribute
 
       --------------------------------
       -- System_Allocator_Alignment --
@@ -6279,7 +6260,7 @@ package body Sem_Attr is
          then
             Error_Attr_P
               ("% attribute can only be applied to objects " &
-               "of class - wide type");
+               "of class-wide type");
          end if;
 
          --  The prefix cannot be an incomplete type. However, references to
@@ -6331,10 +6312,7 @@ package body Sem_Attr is
       -- Terminated --
       ----------------
 
-      when Attribute_Terminated =>
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
-         Check_Task_Prefix;
+      --  Shares processing with Callable attribute
 
       ----------------
       -- To_Address --
@@ -6397,10 +6375,7 @@ package body Sem_Attr is
       -- Truncation --
       ----------------
 
-      when Attribute_Truncation =>
-         Check_Floating_Point_Type_1;
-         Resolve (E1, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------
       -- Type_Class --
@@ -6589,10 +6564,7 @@ package body Sem_Attr is
       -- Unbiased_Rounding --
       -----------------------
 
-      when Attribute_Unbiased_Rounding =>
-         Check_Floating_Point_Type_1;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------------
       -- Unchecked_Access --
@@ -6632,7 +6604,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Entity_Name (P)
-           or else Ekind (Entity (P)) not in Named_Kind
+           or else not Is_Named_Number (Entity (P))
          then
             Error_Attr_P ("prefix for % attribute must be named number");
 
@@ -6773,7 +6745,7 @@ package body Sem_Attr is
 
                   if Nkind (Expr) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Expr);
+                       ("OTHERS choice not allowed in attribute %", Expr);
 
                   --  Otherwise analyze and resolve all indexes
 
@@ -6820,7 +6792,7 @@ package body Sem_Attr is
 
                   if Nkind (Index) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Index);
+                       ("OTHERS choice not allowed in attribute %", Index);
 
                   --  The index denotes a range of elements
 
@@ -6995,7 +6967,7 @@ package body Sem_Attr is
 
                      elsif Nkind (Comp) = N_Others_Choice then
                         Error_Attr
-                          ("others choice not allowed in attribute %", Comp);
+                          ("OTHERS choice not allowed in attribute %", Comp);
 
                      --  The name of a record component cannot appear in any
                      --  other form.
@@ -7132,7 +7104,10 @@ package body Sem_Attr is
       -- Value --
       -----------
 
-      when Attribute_Value =>
+      when Attribute_Value
+         | Attribute_Wide_Value
+         | Attribute_Wide_Wide_Value
+      =>
          Check_E1;
          Check_Scalar_Type;
 
@@ -7182,11 +7157,7 @@ package body Sem_Attr is
       -- Value_Size --
       ----------------
 
-      when Attribute_Value_Size =>
-         Check_E0;
-         Check_Type;
-         Check_Not_Incomplete_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Size attribute
 
       -------------
       -- Version --
@@ -7222,51 +7193,22 @@ package body Sem_Attr is
       -- Wide_Value --
       ----------------
 
-      when Attribute_Wide_Value =>
-         Check_E1;
-         Check_Scalar_Type;
-
-         --  Set Etype before resolving expression because expansion
-         --  of expression may require enclosing type.
-
-         Set_Etype (N, P_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+      --  Shares processing with Value attribute
 
       ---------------------
       -- Wide_Wide_Value --
       ---------------------
 
-      when Attribute_Wide_Wide_Value =>
-         Check_E1;
-         Check_Scalar_Type;
-
-         --  Set Etype before resolving expression because expansion
-         --  of expression may require enclosing type.
-
-         Set_Etype (N, P_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+      --  Shares processing with Value attribute
 
       ---------------------
       -- Wide_Wide_Width --
       ---------------------
 
-      when Attribute_Wide_Wide_Width =>
+      when Attribute_Wide_Wide_Width
+         | Attribute_Wide_Width
+         | Attribute_Width
+      =>
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -7275,19 +7217,13 @@ package body Sem_Attr is
       -- Wide_Width --
       ----------------
 
-      when Attribute_Wide_Width =>
-         Check_E0;
-         Check_Scalar_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Wide_Wide_Width attribute
 
       -----------
       -- Width --
       -----------
 
-      when Attribute_Width =>
-         Check_E0;
-         Check_Scalar_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Wide_Wide_Width attribute
 
       ---------------
       -- Word_Size --
@@ -7789,7 +7725,7 @@ package body Sem_Attr is
       --  we will do the folding right here (things get confused if we let this
       --  case go through the normal circuitry).
 
-      if Attribute_Name (N) = Name_Img
+      if Id = Attribute_Img
         and then Is_Entity_Name (P)
         and then Is_Enumeration_Type (Etype (Entity (P)))
         and then Is_OK_Static_Expression (P)
@@ -8123,7 +8059,7 @@ package body Sem_Attr is
       --  T'Descriptor_Size is never static, even if T is static.
 
       if Is_Scalar_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Is_Static_Subtype (P_Entity)
         and then Is_Scalar_Type (Etype (N))
         and then
@@ -8147,7 +8083,7 @@ package body Sem_Attr is
 
       if Is_Type (P_Entity)
         and then (Is_Scalar_Type (P_Entity) or Is_Array_Type (P_Entity))
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
       then
          P_Type := P_Entity;
 
@@ -8155,7 +8091,7 @@ package body Sem_Attr is
 
       elsif Ekind (P_Entity) in E_Variable | E_Constant
         and then Is_Array_Type (Etype (P_Entity))
-        and then (not Is_Generic_Type (Etype (P_Entity)))
+        and then not Is_Generic_Type (Etype (P_Entity))
       then
          P_Type := Etype (P_Entity);
 
@@ -8204,7 +8140,7 @@ package body Sem_Attr is
       elsif (Id = Attribute_Size or
              Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Static_RM_Size (P_Entity)
       then
          declare
@@ -8226,7 +8162,7 @@ package body Sem_Attr is
 
       elsif Id = Attribute_Alignment
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Alignment (P_Entity)
       then
          Compile_Time_Known_Attribute (N, Alignment (P_Entity));
@@ -8235,7 +8171,7 @@ package body Sem_Attr is
       --  If this is an access attribute that is known to fail accessibility
       --  check, rewrite accordingly.
 
-      elsif Attribute_Name (N) = Name_Access
+      elsif Id = Attribute_Address
         and then Raises_Constraint_Error (N)
       then
          Rewrite (N,
@@ -9893,6 +9829,20 @@ package body Sem_Attr is
          else
             Fold_Ureal (N, Small_Value (P_Type), True);
          end if;
+
+      -----------------------
+      -- Small_Denominator --
+      -----------------------
+
+      when Attribute_Small_Denominator =>
+         Fold_Uint (N, Norm_Den (Small_Value (P_Type)), True);
+
+      ---------------------
+      -- Small_Numerator --
+      ---------------------
+
+      when Attribute_Small_Numerator =>
+         Fold_Uint (N, Norm_Num (Small_Value (P_Type)), True);
 
       -----------------
       -- Stream_Size --

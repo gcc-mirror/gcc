@@ -1387,8 +1387,10 @@ private:
   /* The shared maximum length of each number.  */
   unsigned char m_max_len;
 
-  /* The current length of each number.  */
-  unsigned char m_len[N];
+  /* The current length of each number.
+     Avoid char array so the whole structure is not a typeless storage
+     that will, in turn, turn off TBAA on gimple, trees and RTL.  */
+  struct {unsigned char len;} m_len[N];
 
   /* The variable-length part of the structure, which always contains
      at least one HWI.  Element I starts at index I * M_MAX_LEN.  */
@@ -1470,7 +1472,7 @@ template <int N>
 inline trailing_wide_int
 trailing_wide_ints <N>::operator [] (unsigned int index)
 {
-  return trailing_wide_int_storage (m_precision, &m_len[index],
+  return trailing_wide_int_storage (m_precision, &m_len[index].len,
 				    &m_val[index * m_max_len]);
 }
 
@@ -1479,7 +1481,7 @@ inline typename trailing_wide_ints <N>::const_reference
 trailing_wide_ints <N>::operator [] (unsigned int index) const
 {
   return wi::storage_ref (&m_val[index * m_max_len],
-			  m_len[index], m_precision);
+			  m_len[index].len, m_precision);
 }
 
 /* Return how many extra bytes need to be added to the end of the structure

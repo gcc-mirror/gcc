@@ -58,6 +58,8 @@ is
      new Ada.Unchecked_Conversion (Unsigned_32, Integer_32);
    function To_Signed is
      new Ada.Unchecked_Conversion (Unsigned_64, Integer_64);
+   function To_Signed is
+     new Ada.Unchecked_Conversion (Unsigned_128, Integer_128);
 
    ------------------
    -- Insert_Image --
@@ -98,12 +100,37 @@ is
       Min : Result_Subtype := Default_Min;
       Max : Result_Subtype := Result_Subtype'Last) return Result_Subtype
    is
-      subtype IntV is Integer_64 range
-        Integer_64'Integer_Value (Min) ..
-        Integer_64'Integer_Value (Max);
-      function R is new Random_Discrete (Integer_64, IntV'First);
    begin
-      return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+      if Result_Subtype'Base'Size > 64 then
+         declare
+            subtype IntV is Integer_128 range
+              Integer_128'Integer_Value (Min) ..
+              Integer_128'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_128, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+
+      elsif Result_Subtype'Base'Size > 32 then
+         declare
+            subtype IntV is Integer_64 range
+              Integer_64'Integer_Value (Min) ..
+              Integer_64'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_64, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+
+      else
+         declare
+            subtype IntV is Integer_32 range
+              Integer_32'Integer_Value (Min) ..
+              Integer_32'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_32, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+      end if;
    end Random_Decimal_Fixed;
 
    ---------------------------
@@ -115,12 +142,37 @@ is
       Min : Result_Subtype := Default_Min;
       Max : Result_Subtype := Result_Subtype'Last) return Result_Subtype
    is
-      subtype IntV is Integer_64 range
-        Integer_64'Integer_Value (Min) ..
-        Integer_64'Integer_Value (Max);
-      function R is new Random_Discrete (Integer_64, IntV'First);
    begin
-      return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+      if Result_Subtype'Base'Size > 64 then
+         declare
+            subtype IntV is Integer_128 range
+              Integer_128'Integer_Value (Min) ..
+              Integer_128'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_128, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+
+      elsif Result_Subtype'Base'Size > 32 then
+         declare
+            subtype IntV is Integer_64 range
+              Integer_64'Integer_Value (Min) ..
+              Integer_64'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_64, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+
+      else
+         declare
+            subtype IntV is Integer_32 range
+              Integer_32'Integer_Value (Min) ..
+              Integer_32'Integer_Value (Max);
+            function R is new Random_Discrete (Integer_32, IntV'First);
+         begin
+            return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+         end;
+      end if;
    end Random_Ordinary_Fixed;
 
    ------------
@@ -147,14 +199,24 @@ is
       return Random (Gen.Rep);
    end Random;
 
-   function Random (Gen : Generator) return Integer_64 is
+   function Random (Gen : Generator) return Interfaces.Unsigned_128 is
    begin
-      return To_Signed (Unsigned_64'(Random (Gen)));
+      return Random (Gen.Rep);
    end Random;
 
    function Random (Gen : Generator) return Integer_32 is
    begin
       return To_Signed (Unsigned_32'(Random (Gen)));
+   end Random;
+
+   function Random (Gen : Generator) return Integer_64 is
+   begin
+      return To_Signed (Unsigned_64'(Random (Gen)));
+   end Random;
+
+   function Random (Gen : Generator) return Integer_128 is
+   begin
+      return To_Signed (Unsigned_128'(Random (Gen)));
    end Random;
 
    function Random (Gen : Generator) return Long_Integer is

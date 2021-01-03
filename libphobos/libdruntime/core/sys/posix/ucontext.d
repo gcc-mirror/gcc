@@ -114,7 +114,7 @@ version (CRuntime_Glibc)
 
             enum NGREG = 23;
 
-            alias c_long            greg_t;
+            alias long              greg_t;
             alias greg_t[NGREG]     gregset_t;
             alias _libc_fpstate*    fpregset_t;
         }
@@ -123,7 +123,7 @@ version (CRuntime_Glibc)
         {
             gregset_t   gregs;
             fpregset_t  fpregs;
-            c_ulong[8]  __reserved1;
+            ulong[8]    __reserved1;
         }
 
         struct ucontext_t
@@ -134,6 +134,7 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
+            ulong[4]        __ssp;
         }
     }
     else version (X86)
@@ -205,6 +206,7 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
+            c_ulong[4]      __ssp;
         }
     }
     else version (HPPA)

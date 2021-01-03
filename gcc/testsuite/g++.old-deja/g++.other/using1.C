@@ -10,9 +10,9 @@ protected:
   friend class D2;
 };
 
-class D : public B { // { dg-error "" } within this context
+class D : public B {
 public:
-  using B::a;
+  using B::a; // { dg-error "" } within this context
   using B::b;
 };
 

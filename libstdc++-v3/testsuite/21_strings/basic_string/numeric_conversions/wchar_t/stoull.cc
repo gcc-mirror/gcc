@@ -37,9 +37,9 @@ test01()
   try
     {
       wstring one;
-      stoull(one);      
+      stoull(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -47,14 +47,14 @@ test01()
     {
     }
   VERIFY( test );
-  
+
   test = false;
   try
     {
       wstring one(L"a");
-      stoull(one);      
+      stoull(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -67,7 +67,7 @@ test01()
   try
     {
       wstring one(L"a");
-      ull1 = stoull(one, 0, 16);      
+      ull1 = stoull(one, 0, 16);
     }
   catch(...)
     {
@@ -80,7 +80,7 @@ test01()
   try
     {
       wstring one(L"78");
-      ull1 = stoull(one, &idx1, 8);      
+      ull1 = stoull(one, &idx1, 8);
     }
   catch(...)
     {
@@ -93,7 +93,7 @@ test01()
   try
     {
       wstring one(L"10112");
-      ull1 = stoull(one, &idx1, 2);      
+      ull1 = stoull(one, &idx1, 2);
     }
   catch(...)
     {
@@ -106,7 +106,7 @@ test01()
   try
     {
       wstring one(L"0XE");
-      ull1 = stoull(one, &idx1, 0);      
+      ull1 = stoull(one, &idx1, 0);
     }
   catch(...)
     {
@@ -122,7 +122,7 @@ test01()
       wstring one(1000, L'9');
       ull1 = stoull(one);
     }
-  catch(std::out_of_range)
+  catch(const std::out_of_range&)
     {
       test = true;
     }

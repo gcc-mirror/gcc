@@ -1,6 +1,7 @@
 /* Reject ivars that use flexible array members.  */
 /* Contributed by Nicola Pero  <nicola.pero@meta-innovation.com> */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef struct
 {

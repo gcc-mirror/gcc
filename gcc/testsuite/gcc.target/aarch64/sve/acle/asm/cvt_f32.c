@@ -319,6 +319,7 @@ TEST_DUAL_Z_REV (cvt_f32_f16_x_tied1, svfloat32_t, svfloat16_t,
 
 /*
 ** cvt_f32_f16_x_untied:
+**	movprfx	z0, z4
 **	fcvt	z0\.s, p0/m, z4\.h
 **	ret
 */
@@ -337,6 +338,7 @@ TEST_DUAL_Z_REV (cvt_f32_f64_x_tied1, svfloat32_t, svfloat64_t,
 
 /*
 ** cvt_f32_f64_x_untied:
+**	movprfx	z0, z4
 **	fcvt	z0\.s, p0/m, z4\.d
 **	ret
 */
@@ -355,6 +357,7 @@ TEST_DUAL_Z_REV (cvt_f32_s32_x_tied1, svfloat32_t, svint32_t,
 
 /*
 ** cvt_f32_s32_x_untied:
+**	movprfx	z0, z4
 **	scvtf	z0\.s, p0/m, z4\.s
 **	ret
 */
@@ -373,6 +376,7 @@ TEST_DUAL_Z_REV (cvt_f32_s64_x_tied1, svfloat32_t, svint64_t,
 
 /*
 ** cvt_f32_s64_x_untied:
+**	movprfx	z0, z4
 **	scvtf	z0\.s, p0/m, z4\.d
 **	ret
 */
@@ -391,6 +395,7 @@ TEST_DUAL_Z_REV (cvt_f32_u32_x_tied1, svfloat32_t, svuint32_t,
 
 /*
 ** cvt_f32_u32_x_untied:
+**	movprfx	z0, z4
 **	ucvtf	z0\.s, p0/m, z4\.s
 **	ret
 */
@@ -409,6 +414,7 @@ TEST_DUAL_Z_REV (cvt_f32_u64_x_tied1, svfloat32_t, svuint64_t,
 
 /*
 ** cvt_f32_u64_x_untied:
+**	movprfx	z0, z4
 **	ucvtf	z0\.s, p0/m, z4\.d
 **	ret
 */

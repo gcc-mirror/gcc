@@ -97,7 +97,15 @@ public:
   virtual bool is_function_entry_p () const  { return false; }
   virtual bool is_return_p () const  { return false; }
 
+  /* For use with %@.  */
+  const diagnostic_event_id_t *get_id_ptr () const
+  {
+    return &m_emission_id;
+  }
+
   void dump (pretty_printer *pp) const;
+
+  void set_location (location_t loc) { m_loc = loc; }
 
  public:
   const enum event_kind m_kind;
@@ -497,6 +505,8 @@ public:
     FOR_EACH_VEC_ELT (m_events, i, e)
       e->prepare_for_emission (this, pd, diagnostic_event_id_t (i));
   }
+
+  void fixup_locations (pending_diagnostic *pd);
 
   void record_setjmp_event (const exploded_node *enode,
 			    diagnostic_event_id_t setjmp_emission_id)

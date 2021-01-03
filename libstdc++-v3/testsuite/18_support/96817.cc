@@ -15,9 +15,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-pthread"  }
-// { dg-do run { target *-*-linux-gnu } }
-// { dg-require-effective-target pthread }
+// { dg-do run }
+// { dg-additional-options "-pthread" { target pthread } }
+
+// Static init cannot detect recursion for gthreads targets without futexes
+// (and the futex case can only detect it if __libc_single_threaded==true).
+// { dg-skip-if "unsupported" { gthreads && { ! futex } } }
 
 // PR libstdc++/96817
 
@@ -38,7 +41,7 @@ int init()
 void clean_terminate() { _Exit(0); }
 
 int
-main (int argc, char **argv)
+main ()
 {
   std::set_terminate(clean_terminate);
   init();

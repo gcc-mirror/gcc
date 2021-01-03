@@ -505,7 +505,7 @@ func reflect_ifaceE2I(inter *interfacetype, e eface, dst *iface) {
 	dst.data = e.data
 }
 
-//go:linkname reflectlite_ifaceE2I internal..z2freflectlite.ifaceE2I
+//go:linkname reflectlite_ifaceE2I internal_1reflectlite.ifaceE2I
 func reflectlite_ifaceE2I(inter *interfacetype, e eface, dst *iface) {
 	t := e._type
 	if t == nil {

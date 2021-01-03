@@ -381,12 +381,11 @@ package Errout is
    --      continuations are being gathered into a single message.
 
    --    Insertion character | (Vertical bar: non-serious error)
-   --      By default, error messages (other than warning messages) are
-   --      considered to be fatal error messages which prevent expansion or
-   --      generation of code in the presence of the -gnatQ switch. If the
-   --      insertion character | appears, the message is considered to be
-   --      non-serious, and does not cause Serious_Errors_Detected to be
-   --      incremented (so expansion is not prevented by such a msg). This
+   --      By default, error messages (but not warning messages) are considered
+   --      to be fatal error messages, which prevent expansion and generation
+   --      of code. If the insertion character | appears, the message is
+   --      considered to be nonserious, and Serious_Errors_Detected is not
+   --      incremented, so expansion is not prevented by such a msg. This
    --      insertion character is ignored in continuation messages.
 
    --    Insertion character ~ (Tilde: insert string)
@@ -902,6 +901,11 @@ package Errout is
    --  Posts an error on protected type entry or subprogram E (referencing its
    --  overridden interface primitive Iface_Prim) indicating wrong mode of the
    --  first formal (RM 9.4(11.9/3)).
+
+   procedure Error_Msg_Ada_2005_Extension (Extension : String);
+   --  Analogous to Error_Msg_Ada_2012_Feature, but phrase the message using
+   --  "extension" and not "feature". This routine is only used in the parser,
+   --  so the error is always placed at the Token_Ptr.
 
    procedure Error_Msg_Ada_2012_Feature (Feature : String; Loc : Source_Ptr);
    --  If not operating in Ada 2012 mode or higher, posts errors complaining

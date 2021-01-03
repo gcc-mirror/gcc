@@ -344,6 +344,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-tideio$(objext) \
   a-tienau$(objext) \
   a-tienio$(objext) \
+  a-tifiau$(objext) \
   a-tifiio$(objext) \
   a-tiflau$(objext) \
   a-tiflio$(objext) \
@@ -371,6 +372,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtedit$(objext) \
   a-wtenau$(objext) \
   a-wtenio$(objext) \
+  a-wtfiau$(objext) \
   a-wtfiio$(objext) \
   a-wtflau$(objext) \
   a-wtflio$(objext) \
@@ -394,6 +396,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ztenau$(objext) \
   a-ztenio$(objext) \
   a-ztexio$(objext) \
+  a-ztfiau$(objext) \
   a-ztfiio$(objext) \
   a-ztflau$(objext) \
   a-ztflio$(objext) \
@@ -483,6 +486,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-speche$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
+  g-spogwa$(objext) \
   g-sptabo$(objext) \
   g-sptain$(objext) \
   g-sptavs$(objext) \
@@ -519,6 +523,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-aomoar$(objext) \
   s-aotase$(objext) \
   s-aridou$(objext) \
+  s-arit32$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
@@ -591,37 +596,47 @@ GNATRTL_NONTASKING_OBJS= \
   s-fatgen$(objext) \
   s-fatlfl$(objext) \
   s-fatllf$(objext) \
-  s-fatsfl$(objext) \
   s-ficobl$(objext) \
   s-filatt$(objext) \
   s-fileio$(objext) \
   s-finmas$(objext) \
   s-finroo$(objext) \
   s-flocon$(objext) \
-  s-fore$(objext)   \
+  s-fode32$(objext) \
+  s-fode64$(objext) \
+  s-fofi32$(objext) \
+  s-fofi64$(objext) \
+  s-fore_d$(objext) \
+  s-fore_f$(objext) \
+  s-forrea$(objext) \
   s-gearop$(objext) \
   s-genbig$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \
   s-imageb$(objext) \
+  s-imaged$(objext) \
+  s-imagef$(objext) \
   s-imagei$(objext) \
   s-imageu$(objext) \
   s-imagew$(objext) \
+  s-imde32$(objext) \
+  s-imde64$(objext) \
   s-imenne$(objext) \
+  s-imfi32$(objext) \
+  s-imfi64$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
   s-imgcha$(objext) \
-  s-imgdec$(objext) \
   s-imgenu$(objext) \
   s-imgint$(objext) \
   s-imgllb$(objext) \
-  s-imglld$(objext) \
   s-imglli$(objext) \
   s-imgllu$(objext) \
   s-imgllw$(objext) \
   s-imgrea$(objext) \
   s-imguns$(objext) \
+  s-imguti$(objext) \
   s-imgwch$(objext) \
   s-imgwiu$(objext) \
   s-io$(objext)     \
@@ -697,7 +712,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-pooglo$(objext) \
   s-pooloc$(objext) \
   s-poosiz$(objext) \
-  s-powtab$(objext) \
+  s-powflt$(objext) \
+  s-powlfl$(objext) \
+  s-powllf$(objext) \
   s-purexc$(objext) \
   s-putima$(objext) \
   s-rannum$(objext) \
@@ -735,14 +752,22 @@ GNATRTL_NONTASKING_OBJS= \
   s-utf_32$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
-  s-valdec$(objext) \
+  s-vade32$(objext) \
+  s-vade64$(objext) \
+  s-vafi32$(objext) \
+  s-vafi64$(objext) \
   s-valenu$(objext) \
+  s-valflt$(objext) \
   s-valint$(objext) \
-  s-vallld$(objext) \
+  s-vallfl$(objext) \
+  s-valllf$(objext) \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valued$(objext) \
+  s-valuef$(objext) \
   s-valuei$(objext) \
+  s-valuer$(objext) \
   s-valueu$(objext) \
   s-valuns$(objext) \
   s-valuti$(objext) \
@@ -884,10 +909,17 @@ TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
 
 GNATRTL_128BIT_PAIRS = \
+  a-decima.ads<libgnat/a-decima__128.ads \
+  a-tideio.adb<libgnat/a-tideio__128.adb \
+  a-tifiio.adb<libgnat/a-tifiio__128.adb \
   a-tiinio.adb<libgnat/a-tiinio__128.adb \
   a-timoio.adb<libgnat/a-timoio__128.adb \
+  a-wtdeio.adb<libgnat/a-wtdeio__128.adb \
+  a-wtfiio.adb<libgnat/a-wtfiio__128.adb \
   a-wtinio.adb<libgnat/a-wtinio__128.adb \
   a-wtmoio.adb<libgnat/a-wtmoio__128.adb \
+  a-ztdeio.adb<libgnat/a-ztdeio__128.adb \
+  a-ztfiio.adb<libgnat/a-ztfiio__128.adb \
   a-ztinio.adb<libgnat/a-ztinio__128.adb \
   a-ztmoio.adb<libgnat/a-ztmoio__128.adb \
   i-cexten.ads<libgnat/i-cexten__128.ads \
@@ -902,6 +934,10 @@ GNATRTL_128BIT_OBJS = \
   s-exnllli$(objext) \
   s-expllli$(objext) \
   s-explllu$(objext) \
+  s-fode128$(objext) \
+  s-fofi128$(objext) \
+  s-imde128$(objext) \
+  s-imfi128$(objext) \
   s-imglllb$(objext) \
   s-imgllli$(objext) \
   s-imglllu$(objext) \
@@ -969,6 +1005,8 @@ GNATRTL_128BIT_OBJS = \
   s-pack125$(objext) \
   s-pack126$(objext) \
   s-pack127$(objext) \
+  s-vade128$(objext) \
+  s-vafi128$(objext) \
   s-valllli$(objext) \
   s-vallllu$(objext) \
   s-widllli$(objext) \
@@ -1135,6 +1173,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
     else
       GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
     endif
+    GCC_SPEC_FILES+=vxworks7-cert-rtp-link.spec
   else
     GCC_SPEC_FILES+=vxworks-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec
@@ -1410,6 +1449,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
 
   ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
     GCC_SPEC_FILES+=vxworks7-$(X86CPU)-rtp-base-link.spec
+    GCC_SPEC_FILES+=vxworks7-cert-rtp-link.spec
   else
     GCC_SPEC_FILES+=vxworks-x86-link.spec
     GCC_SPEC_FILES+=vxworks-cert-x86-link.spec
@@ -1533,6 +1573,9 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
       GCC_SPEC_FILES+=vxworks-smp-arm-link.spec
     endif
   endif
+  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+    GCC_SPEC_FILES+=vxworks7-cert-rtp-link.spec
+  endif
 endif
 
 # ARM android
@@ -1635,8 +1678,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   endif
 
   EH_MECHANISM=-gcc
-  THREADSLIB = -lposix4 -lthread
-  MISCLIB = -lposix4 -lnsl -lsocket
+  MISCLIB = -lnsl -lsocket
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -1689,8 +1731,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
-  THREADSLIB = -lposix4 -lthread
-  MISCLIB = -lposix4 -lnsl -lsocket
+  MISCLIB = -lnsl -lsocket
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -2000,6 +2041,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(tar
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-interr.adb<libgnarl/s-interr__sigaction.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-osinte.adb<libgnarl/s-osinte__hpux-dce.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux-dce.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
@@ -2018,6 +2060,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(tar
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
@@ -2249,6 +2292,7 @@ endif
 ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux__mips.ads \
@@ -2299,7 +2343,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-ppc.ads
 
-  ifeq ($(strip $(filter-out powerpc64,$(target_cpu))),)
+  ifeq ($(strip $(filter-out powerpc64%,$(target_cpu))),)
     ifneq ($(strip $(MULTISUBDIR)),/32)
       LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
@@ -2339,12 +2383,14 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-arm
   THREADSLIB = -lpthread
@@ -2697,6 +2743,7 @@ endif
 ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux__riscv.ads \
@@ -2795,8 +2842,19 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
       $(ATOMICS_BUILTINS_TARGET_PAIRS) \
       system.ads<libgnat/system-darwin-ppc.ads
 
-    ifeq ($(strip $(MULTISUBDIR)),/ppc64)
+    ifeq ($(strip $(filter-out powerpc64,$(target_cpu))),)
+      ifneq ($(strip $(MULTISUBDIR)),/ppc)
+        LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+        EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+      else
+        SO_OPTS += -m32
+      endif
+    else
+      ifeq ($(strip $(MULTISUBDIR)),/ppc64)
         SO_OPTS += -m64
+        LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+        EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+      endif
     endif
   endif
 

@@ -27,6 +27,7 @@ struct A
 {
   A() = default;
   A(const A&) { if (fail) throw fail; }
+  A& operator=(const A&) = default;
 };
 
 void test01()

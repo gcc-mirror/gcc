@@ -1,5 +1,5 @@
 /* { dg-lto-do run } */
-/* { dg-skip-if "" { "*-*-darwin*" && lp64 } } */
+
 extern int printf (char *,...) ;
 
 typedef struct objc_class *Class;
@@ -7,7 +7,7 @@ typedef struct objc_class *Class;
 struct objc_class {
     Class isa;
     /* other stuff... */
-}  ;
+};
 
 @interface myRootObject {
 @public

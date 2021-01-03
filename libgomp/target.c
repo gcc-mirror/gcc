@@ -683,7 +683,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   struct target_mem_desc *tgt
     = gomp_malloc (sizeof (*tgt) + sizeof (tgt->list[0]) * mapnum);
   tgt->list_count = mapnum;
-  tgt->refcount = pragma_kind == GOMP_MAP_VARS_ENTER_DATA ? 0 : 1;
+  tgt->refcount = (pragma_kind & GOMP_MAP_VARS_ENTER_DATA) ? 0 : 1;
   tgt->device_descr = devicep;
   tgt->prev = NULL;
   struct gomp_coalesce_buf cbuf, *cbufp = NULL;
@@ -1020,7 +1020,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       if (not_found_cnt)
 	tgt->array = gomp_malloc (not_found_cnt * sizeof (*tgt->array));
       splay_tree_node array = tgt->array;
-      size_t j, field_tgt_offset = 0, field_tgt_clear = ~(size_t) 0;
+      size_t j, field_tgt_offset = 0, field_tgt_clear = FIELD_TGT_EMPTY;
       uintptr_t field_tgt_base = 0;
 
       for (i = 0; i < mapnum; i++)
@@ -1212,15 +1212,16 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		      /* OpenACC 'attach'/'detach' doesn't affect
 			 structured/dynamic reference counts ('n->refcount',
 			 'n->dynamic_refcount').  */
+
+		      gomp_attach_pointer (devicep, aq, mem_map, n,
+					   (uintptr_t) hostaddrs[i], sizes[i],
+					   cbufp);
 		    }
-		  else
+		  else if ((pragma_kind & GOMP_MAP_VARS_OPENACC) != 0)
 		    {
 		      gomp_mutex_unlock (&devicep->lock);
 		      gomp_fatal ("outer struct not mapped for attach");
 		    }
-		  gomp_attach_pointer (devicep, aq, mem_map, n,
-				       (uintptr_t) hostaddrs[i], sizes[i],
-				       cbufp);
 		  continue;
 		}
 	      default:
@@ -1415,7 +1416,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   /* If the variable from "omp target enter data" map-list was already mapped,
      tgt is not needed.  Otherwise tgt will be freed by gomp_unmap_vars or
      gomp_exit_data.  */
-  if (pragma_kind == GOMP_MAP_VARS_ENTER_DATA && tgt->refcount == 0)
+  if ((pragma_kind & GOMP_MAP_VARS_ENTER_DATA) && tgt->refcount == 0)
     {
       free (tgt);
       tgt = NULL;
@@ -2476,6 +2477,19 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
     }
 
   for (i = 0; i < mapnum; i++)
+    if ((kinds[i] & typemask) == GOMP_MAP_DETACH)
+      {
+	struct splay_tree_key_s cur_node;
+	cur_node.host_start = (uintptr_t) hostaddrs[i];
+	cur_node.host_end = cur_node.host_start + sizeof (void *);
+	splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+
+	if (n)
+	  gomp_detach_pointer (devicep, NULL, n, (uintptr_t) hostaddrs[i],
+			       false, NULL);
+      }
+
+  for (i = 0; i < mapnum; i++)
     {
       struct splay_tree_key_s cur_node;
       unsigned char kind = kinds[i] & typemask;
@@ -2512,7 +2526,9 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 				cur_node.host_end - cur_node.host_start);
 	  if (k->refcount == 0)
 	    gomp_remove_var (devicep, k);
+	  break;
 
+	case GOMP_MAP_DETACH:
 	  break;
 	default:
 	  gomp_mutex_unlock (&devicep->lock);
@@ -2620,6 +2636,14 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	  gomp_map_vars (devicep, j-i, &hostaddrs[i], NULL, &sizes[i],
 			 &kinds[i], true, GOMP_MAP_VARS_ENTER_DATA);
 	  i += j - i - 1;
+	}
+      else if (i + 1 < mapnum && (kinds[i + 1] & 0xff) == GOMP_MAP_ATTACH)
+	{
+	  /* An attach operation must be processed together with the mapped
+	     base-pointer list item.  */
+	  gomp_map_vars (devicep, 2, &hostaddrs[i], NULL, &sizes[i], &kinds[i],
+			 true, GOMP_MAP_VARS_ENTER_DATA);
+	  i += 1;
 	}
       else
 	gomp_map_vars (devicep, 1, &hostaddrs[i], NULL, &sizes[i], &kinds[i],

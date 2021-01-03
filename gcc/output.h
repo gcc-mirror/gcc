@@ -381,7 +381,12 @@ extern void no_asm_to_stream (FILE *);
 #define SECTION_COMMON   0x800000	/* contains common data */
 #define SECTION_RELRO	 0x1000000	/* data is readonly after relocation processing */
 #define SECTION_EXCLUDE  0x2000000	/* discarded by the linker */
-#define SECTION_MACH_DEP 0x4000000	/* subsequent bits reserved for target */
+#define SECTION_RETAIN	 0x4000000	/* retained by the linker.  */
+#define SECTION_LINK_ORDER 0x8000000	/* section needs link-order.  */
+
+/* NB: The maximum SECTION_MACH_DEP is 0x10000000 since AVR needs 4 bits
+   in SECTION_MACH_DEP.  */
+#define SECTION_MACH_DEP 0x10000000	/* subsequent bits reserved for target */
 
 /* This SECTION_STYLE is used for unnamed sections that we can switch
    to using a special assembler directive.  */
@@ -523,7 +528,8 @@ extern GTY(()) bool in_cold_section_p;
 
 extern section *get_unnamed_section (unsigned int, void (*) (const void *),
 				     const void *);
-extern section *get_section (const char *, unsigned int, tree);
+extern section *get_section (const char *, unsigned int, tree,
+			     bool not_existing = false);
 extern section *get_named_section (tree, const char *, int);
 extern section *get_variable_section (tree, bool);
 extern void place_block_symbol (rtx);
@@ -542,7 +548,7 @@ extern void switch_to_other_text_partition (void);
 extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
-extern void switch_to_section (section *);
+extern void switch_to_section (section *, tree = nullptr);
 extern void output_section_asm_op (const void *);
 
 extern void record_tm_clone_pair (tree, tree);
@@ -571,8 +577,8 @@ extern void default_ctor_section_asm_out_constructor (rtx, int);
 extern section *default_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern section *default_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern void default_unique_section (tree, int);
-extern section *default_function_rodata_section (tree);
-extern section *default_no_function_rodata_section (tree);
+extern section *default_function_rodata_section (tree, bool);
+extern section *default_no_function_rodata_section (tree, bool);
 extern section *default_clone_table_section (void);
 extern section *default_select_rtx_section (machine_mode, rtx,
 					    unsigned HOST_WIDE_INT);

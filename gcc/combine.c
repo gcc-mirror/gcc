@@ -2531,42 +2531,6 @@ reg_subword_p (rtx x, rtx reg)
 	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
 }
 
-/* Delete the unconditional jump INSN and adjust the CFG correspondingly.
-   Note that the INSN should be deleted *after* removing dead edges, so
-   that the kept edge is the fallthrough edge for a (set (pc) (pc))
-   but not for a (set (pc) (label_ref FOO)).  */
-
-static void
-update_cfg_for_uncondjump (rtx_insn *insn)
-{
-  basic_block bb = BLOCK_FOR_INSN (insn);
-  gcc_assert (BB_END (bb) == insn);
-
-  purge_dead_edges (bb);
-
-  delete_insn (insn);
-  if (EDGE_COUNT (bb->succs) == 1)
-    {
-      rtx_insn *insn;
-
-      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
-
-      /* Remove barriers from the footer if there are any.  */
-      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
-	if (BARRIER_P (insn))
-	  {
-	    if (PREV_INSN (insn))
-	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-	    else
-	      BB_FOOTER (bb) = NEXT_INSN (insn);
-	    if (NEXT_INSN (insn))
-	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-	  }
-	else if (LABEL_P (insn))
-	  break;
-    }
-}
-
 /* Return whether PAT is a PARALLEL of exactly N register SETs followed
    by an arbitrary number of CLOBBERs.  */
 static bool
@@ -7664,6 +7628,24 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 			     unsignedp, in_dest, in_compare);
       if (new_rtx != 0)
 	return gen_rtx_ASHIFT (mode, new_rtx, XEXP (inner, 1));
+    }
+  else if (GET_CODE (inner) == MULT
+	   && CONST_INT_P (XEXP (inner, 1))
+	   && pos_rtx == 0 && pos == 0)
+    {
+      /* We're extracting the least significant bits of an rtx
+	 (mult X (const_int 2^C)), where LEN > C.  Extract the
+	 least significant (LEN - C) bits of X, giving an rtx
+	 whose mode is MODE, then multiply it by 2^C.  */
+      const HOST_WIDE_INT shift_amt = exact_log2 (INTVAL (XEXP (inner, 1)));
+      if (IN_RANGE (shift_amt, 1, len - 1))
+	{
+	  new_rtx = make_extraction (mode, XEXP (inner, 0),
+				     0, 0, len - shift_amt,
+				     unsignedp, in_dest, in_compare);
+	  if (new_rtx)
+	    return gen_rtx_MULT (mode, new_rtx, XEXP (inner, 1));
+	}
     }
   else if (GET_CODE (inner) == TRUNCATE
 	   /* If trying or potentionally trying to extract

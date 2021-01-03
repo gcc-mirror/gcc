@@ -1,3 +1,203 @@
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98047
+	* c-typeck.c (build_modify_expr): Drop qualifiers.
+
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98260
+	* c-parser.c (c_parser_expression): Look into
+	nop expression when marking expressions as read.
+
+2020-12-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98204
+	* c-typeck.c (pointer_diff): Do not emit a top-level
+	sanitization.
+	(build_binary_op): Likewise.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_allocate): New.
+	(c_parser_omp_construct): Call it.
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/98200
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Return
+	early on error.
+
+2020-12-07  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/97981
+	* c-typeck.c (convert_lvalue_to_rvalue): Move the code
+	that drops qualifiers to the end of the function.
+
+2020-11-26  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/65455
+	PR c/92935
+	* c-parser.c (c_parser_declaration_or_fndef): Remove
+	redundant code to drop qualifiers of _Atomic types for __auto_type.
+	(c_parser_typeof_specifier): Do not drop qualifiers of _Atomic
+	types for __typeof__.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97958
+	* c-parser.c (c_parser_binary_expression): For omp atomic binary
+	expressions, use make_node instead of build2 to avoid checking build2
+	performs.
+
+2020-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/95630
+	* c-typeck.c (build_binary_op): Use pedwarn_c99 with OPT_Wpedantic
+	for comparisons of complete and incomplete pointers.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* c-aux-info.c (gen_type): Support opaque types.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* c-decl.c (start_function): Set ATTR_FLAG_INTERNAL in flags.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (c.serial): Change from goal to a variable.
+	(.PHONY): Drop c.serial.
+
+2020-11-20  Martin Uecker  <muecker@gwdg.de>
+
+	* c-typeck.c (convert_lvalue_to_rvalue): Drop qualifiers.
+
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97860
+	* c-decl.c (get_parm_array_spec): Bail out of nelts is
+	error_operand_p.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (c.serial): New goal.
+	(.PHONY): Add c.serial c.prev.
+	(cc1$(exeext)): Call LINK_PROGRESS.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* c-parser.c (c_parser_asm_statement): Parse outputs for asm
+	goto too.
+	* c-typeck.c (build_asm_expr): Remove an assert checking output
+	absence for asm goto.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Don't clear
+	OMP_CLAUSE_REDUCTION_INSCAN unless reduction_seen == -2.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* c-parser.c (c_parser_objc_class_definition): Pass the
+	location of the class name to the interface declaration.
+
+2020-11-10  Strager Neds  <strager.nds@gmail.com>
+
+	* c-decl.c (merge_decls): Use new overload of
+	set_decl_section_name.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_target_data): Add use of
+	new c_omp_adjust_map_clauses function. Add GOMP_MAP_ATTACH_DETACH as
+	handled map clause kind.
+	(c_parser_omp_target_enter_data): Likewise.
+	(c_parser_omp_target_exit_data): Likewise.
+	(c_parser_omp_target): Likewise.
+	* c-typeck.c (handle_omp_array_sections): Adjust COMPONENT_REF case to
+	use GOMP_MAP_ATTACH_DETACH map kind for C_ORT_OMP region type.
+	(c_finish_omp_clauses): Adjust bitmap checks to allow struct decl and
+	same struct field access to co-exist on OpenMP construct.
+
+2020-11-07  Martin Uecker  <muecker@gwdg.de>
+
+	* c-parser.c (c_parser_label): Implement mixing of labels and code.
+	(c_parser_all_labels): Likewise.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-parser.c (c_parser_objc_at_property_declaration):
+	Improve parsing fidelity. Associate better location info
+	with @property attributes.  Clean up the interface to
+	objc_add_property_declaration ().
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (diagnose_mismatched_decls): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(warn_if_shadowing, implicitly_declare, names_builtin_p)
+	(collect_source_refs): Likewise.
+	* c-typeck.c (inform_declaration, inform_for_arg)
+	(convert_for_assignment): Likewise.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_atomic): Add openacc parameter and update
+	OpenACC matching.
+	(c_parser_omp_construct): Update call.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* c-typeck.c (c_finish_omp_clauses): Look through array reductions to
+	find underlying decl to clear in the aligned_head bitmap.
+
+2020-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (handle_nodiscard_attribute): New.
+	(std_attribute_table): Add nodiscard.
+	* c-parser.c (c_parser_std_attribute): Expect argument to
+	nodiscard attribute to be a string.  Do not special-case ignoring
+	nodiscard.
+	* c-typeck.c (maybe_warn_nodiscard): New.
+	(build_compound_expr, emit_side_effect_warnings): Call
+	maybe_warn_nodiscard.
+	(c_process_expr_stmt, c_finish_stmt_expr): Also call
+	emit_side_effect_warnings if warn_unused_result.
+
+2020-10-29  Asher Gordon  <AsDaGo@posteo.net>
+
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Replace free
+	with XDELETE.
+	(finish_init): Likewise.
+	(pop_init_level): Likewise.
+
+2020-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (store_parm_decls_newstyle): Use pedwarn_c11 not
+	error_at for omitted parameter name.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle allocate.
+	(c_parser_omp_clause_allocate): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ALLOCATE.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK,
+	OMP_TASK_CLAUSE_MASK, OMP_TASKGROUP_CLAUSE_MASK,
+	OMP_DISTRIBUTE_CLAUSE_MASK, OMP_TEAMS_CLAUSE_MASK,
+	OMP_TARGET_CLAUSE_MASK, OMP_TASKLOOP_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ALLOCATE.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_ALLOCATE.
+
+2020-10-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_std_attribute_specifier): Allow duplicate
+	standard attributes.
+
 2020-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91741

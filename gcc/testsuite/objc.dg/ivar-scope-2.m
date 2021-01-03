@@ -4,6 +4,9 @@
 /* { dg-additional-options "-fno-local-ivars" } */
 #include <objc/objc.h>
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyClass
 {
   int someivar;

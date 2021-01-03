@@ -13,5 +13,5 @@ void large_stack() {
 
 /* We use a compare for the stack probe.  There needs to be one inside
    a loop and another for the remaining bytes.  */
-/* { dg-final { scan-assembler-times "cg\t" 2 { target lp64 } } } */
-/* { dg-final { scan-assembler-times "c\t" 2 { target { ! lp64 } } } } */
+/* { dg-final { scan-assembler-times "cg\t" 2 { target s390_zarch } } } */
+/* { dg-final { scan-assembler-times "c\t" 2 { target { ! s390_zarch } } } } */

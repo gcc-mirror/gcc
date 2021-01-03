@@ -72,7 +72,7 @@ const struct _type unsafe_Pointer =
    it to be defined elsewhere.  */
 
 extern const struct ptrtype pointer_unsafe_Pointer
-  __asm__ (GOSYM_PREFIX "type...1unsafe.Pointer");
+  __asm__ (GOSYM_PREFIX "unsafe.Pointer..p");
 
 /* The reflection string.  */
 #define PREFLECTION "*unsafe.Pointer"
@@ -83,7 +83,7 @@ static const String preflection_string =
 };
 
 extern const byte pointer_unsafe_Pointer_gc[]
-  __asm__ (GOSYM_PREFIX "type...1unsafe.Pointer..g");
+  __asm__ (GOSYM_PREFIX "unsafe.Pointer..p..g");
 
 const byte pointer_unsafe_Pointer_gc[] = { 1 };
 

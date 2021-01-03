@@ -368,6 +368,36 @@ section_name_hasher::equal (section_hash_entry *n1, const char *name)
   return n1->name == name || !strcmp (n1->name, name);
 }
 
+/* Bump the reference count on ENTRY so that it is retained.  */
+
+static section_hash_entry *
+retain_section_hash_entry (section_hash_entry *entry)
+{
+  entry->ref_count++;
+  return entry;
+}
+
+/* Drop the reference count on ENTRY and remove it if the reference
+   count drops to zero.  */
+
+static void
+release_section_hash_entry (section_hash_entry *entry)
+{
+  if (entry)
+    {
+      entry->ref_count--;
+      if (!entry->ref_count)
+	{
+	  hashval_t hash = htab_hash_string (entry->name);
+	  section_hash_entry **slot
+	    = symtab->section_hash->find_slot_with_hash (entry->name,
+						 hash, INSERT);
+	  ggc_free (entry);
+	  symtab->section_hash->clear_slot (slot);
+	}
+    }
+}
+
 /* Add node into symbol table.  This function is not used directly, but via
    cgraph/varpool node creation routines.  */
 
@@ -408,10 +438,11 @@ symtab_node::remove_from_same_comdat_group (void)
 }
 
 /* Remove node from symbol table.  This function is not used directly, but via
-   cgraph/varpool node removal routines.  */
+   cgraph/varpool node removal routines.
+   INFO is a clone info to attach to new root of clone tree (if any).  */
 
 void
-symtab_node::unregister (void)
+symtab_node::unregister (clone_info *info)
 {
   remove_all_references ();
   remove_all_referring ();
@@ -430,7 +461,7 @@ symtab_node::unregister (void)
     {
       symtab_node *replacement_node = NULL;
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (this))
-	replacement_node = cnode->find_replacement ();
+	replacement_node = cnode->find_replacement (info);
       decl->decl_with_vis.symtab_node = replacement_node;
     }
   if (!is_a <varpool_node *> (this) || !DECL_HARD_REGISTER (decl))
@@ -591,10 +622,9 @@ symtab_node::create_reference (symtab_node *referred_node,
   gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
 
   list = &ref_list;
-  old_references = vec_safe_address (list->references);
-  vec_safe_grow (list->references, vec_safe_length (list->references) + 1,
-		 true);
-  ref = &list->references->last ();
+  old_references = list->references.address ();
+  list->references.safe_grow (list->references.length () + 1, false);
+  ref = &list->references.last ();
 
   list2 = &referred_node->ref_list;
 
@@ -622,7 +652,7 @@ symtab_node::create_reference (symtab_node *referred_node,
   ref->speculative = 0;
 
   /* If vector was moved in memory, update pointers.  */
-  if (old_references != list->references->address ())
+  if (old_references != list->references.address ())
     {
       int i;
       for (i = 0; iterate_reference(i, ref2); i++)
@@ -752,7 +782,8 @@ symtab_node::remove_stmt_references (gimple *stmt)
       i++;
 }
 
-/* Remove all stmt references in non-speculative references.
+/* Remove all stmt references in non-speculative references in THIS
+   and all clones.
    Those are not maintained during inlining & cloning.
    The exception are speculative references that are updated along
    with callgraph edges associated with them.  */
@@ -770,6 +801,13 @@ symtab_node::clear_stmts_in_references (void)
 	r->lto_stmt_uid = 0;
 	r->speculative_id = 0;
       }
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
+  if (cnode)
+    {
+      if (cnode->clones)
+	for (cnode = cnode->clones; cnode; cnode = cnode->next_sibling_clone)
+	  cnode->clear_stmts_in_references ();
+    }
 }
 
 /* Remove all references in ref list.  */
@@ -777,9 +815,9 @@ symtab_node::clear_stmts_in_references (void)
 void
 symtab_node::remove_all_references (void)
 {
-  while (vec_safe_length (ref_list.references))
-    ref_list.references->last ().remove_reference ();
-  vec_free (ref_list.references);
+  while (ref_list.references.length ())
+    ref_list.references.last ().remove_reference ();
+  ref_list.references.release ();
 }
 
 /* Remove all referring items in ref list.  */
@@ -1476,8 +1514,7 @@ symtab_node::copy_visibility_from (symtab_node *n)
   DECL_DLLIMPORT_P (decl) = DECL_DLLIMPORT_P (n->decl);
   resolution = n->resolution;
   set_comdat_group (n->get_comdat_group ());
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(n->get_section ()), true);
+  set_section (*n);
   externally_visible = n->externally_visible;
   if (!DECL_RTL_SET_P (decl))
     return;
@@ -1602,54 +1639,73 @@ void
 symtab_node::set_section_for_node (const char *section)
 {
   const char *current = get_section ();
-  section_hash_entry **slot;
 
   if (current == section
       || (current && section
 	  && !strcmp (current, section)))
     return;
 
-  if (current)
-    {
-      x_section->ref_count--;
-      if (!x_section->ref_count)
-	{
-	  hashval_t hash = htab_hash_string (x_section->name);
-	  slot = symtab->section_hash->find_slot_with_hash (x_section->name,
-							    hash, INSERT);
-	  ggc_free (x_section);
-	  symtab->section_hash->clear_slot (slot);
-	}
-      x_section = NULL;
-    }
+  release_section_hash_entry (x_section);
   if (!section)
     {
+      x_section = NULL;
       implicit_section = false;
       return;
     }
   if (!symtab->section_hash)
     symtab->section_hash = hash_table<section_name_hasher>::create_ggc (10);
-  slot = symtab->section_hash->find_slot_with_hash (section,
-						    htab_hash_string (section),
-						    INSERT);
+  section_hash_entry **slot = symtab->section_hash->find_slot_with_hash
+    (section, htab_hash_string (section), INSERT);
   if (*slot)
-    x_section = (section_hash_entry *)*slot;
+    x_section = retain_section_hash_entry (*slot);
   else
     {
       int len = strlen (section);
       *slot = x_section = ggc_cleared_alloc<section_hash_entry> ();
+      x_section->ref_count = 1;
       x_section->name = ggc_vec_alloc<char> (len + 1);
       memcpy (x_section->name, section, len + 1);
     }
-  x_section->ref_count++;
 }
 
-/* Worker for set_section.  */
+/* Set the section of node THIS to be the same as the section
+   of node OTHER.  Keep reference counts of the sections
+   up-to-date as needed.  */
+
+void
+symtab_node::set_section_for_node (const symtab_node &other)
+{
+  if (x_section == other.x_section)
+    return;
+  if (get_section () && other.get_section ())
+    gcc_checking_assert (strcmp (get_section (), other.get_section ()) != 0);
+  release_section_hash_entry (x_section);
+  if (other.x_section)
+    x_section = retain_section_hash_entry (other.x_section);
+  else
+    {
+      x_section = NULL;
+      implicit_section = false;
+    }
+}
+
+/* Workers for set_section.  */
 
 bool
-symtab_node::set_section (symtab_node *n, void *s)
+symtab_node::set_section_from_string (symtab_node *n, void *s)
 {
   n->set_section_for_node ((char *)s);
+  return false;
+}
+
+/* Set the section of node N to be the same as the section
+   of node O.  */
+
+bool
+symtab_node::set_section_from_node (symtab_node *n, void *o)
+{
+  const symtab_node &other = *static_cast<const symtab_node *> (o);
+  n->set_section_for_node (other);
   return false;
 }
 
@@ -1660,7 +1716,14 @@ symtab_node::set_section (const char *section)
 {
   gcc_assert (!this->alias || !this->analyzed);
   call_for_symbol_and_aliases
-    (symtab_node::set_section, const_cast<char *>(section), true);
+    (symtab_node::set_section_from_string, const_cast<char *>(section), true);
+}
+
+void
+symtab_node::set_section (const symtab_node &other)
+{
+  call_for_symbol_and_aliases
+    (symtab_node::set_section_from_node, const_cast<symtab_node *>(&other), true);
 }
 
 /* Return the initialization priority.  */
@@ -1765,7 +1828,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
 {
   symtab_node *n;
 
-  gcc_assert (!analyzed && !vec_safe_length (ref_list.references));
+  gcc_assert (!analyzed && !ref_list.references.length ());
 
   /* Never let cycles to creep into the symbol table alias references;
      those will make alias walkers to be infinite.  */
@@ -1806,8 +1869,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
     {
       error ("section of alias %q+D must match section of its target", decl);
     }
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(target->get_section ()), true);
+  set_section (*target);
   if (target->implicit_section)
     call_for_symbol_and_aliases (set_implicit_section, NULL, true);
 
@@ -1998,7 +2060,7 @@ symtab_node::get_partitioning_class (void)
   if (DECL_ABSTRACT_P (decl))
     return SYMBOL_EXTERNAL;
 
-  if (cnode && cnode->inlined_to)
+  if (cnode && (cnode->inlined_to || cnode->declare_variant_alt))
     return SYMBOL_DUPLICATE;
 
   /* Transparent aliases are always duplicated.  */

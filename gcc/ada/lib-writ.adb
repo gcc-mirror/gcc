@@ -837,7 +837,7 @@ package body Lib.Writ is
             --  preprocessing data and definition files, there is no Unit_Name,
             --  check for that first.
 
-            if Unit_Name (J) /= No_Unit_Name
+            if Present (Unit_Name (J))
               and then (With_Flags (J) or else Unit_Name (J) = Pname)
             then
                Num_Withs := Num_Withs + 1;
@@ -1125,9 +1125,7 @@ package body Lib.Writ is
 
             if Nkind (U) = N_Subprogram_Body
               and then Present (Corresponding_Spec (U))
-              and then
-                Ekind (Corresponding_Spec (U)) in E_Generic_Procedure
-                                                | E_Generic_Function
+              and then Is_Generic_Subprogram (Corresponding_Spec (U))
             then
                null;
 
@@ -1478,11 +1476,8 @@ package body Lib.Writ is
             --  Normal case of a unit entry with a source index
 
             if Sind > No_Source_File then
-               --  We never want directory information in ALI files
-               --  ???But back out this change temporarily until
-               --  gprbuild is fixed.
 
-               if False then
+               if Config_Files_Store_Basename then
                   Fname := Strip_Directory (File_Name (Sind));
                else
                   Fname := File_Name (Sind);
@@ -1729,7 +1724,7 @@ package body Lib.Writ is
 
       --  scope
 
-      Write_Info_Name (Scope (IS_Id));
+      Write_Info_Name (IS_Scope (IS_Id));
       Write_Info_Char (' ');
 
       --  line

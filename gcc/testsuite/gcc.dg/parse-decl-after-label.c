@@ -1,6 +1,6 @@
 /* PR 29062 
 { dg-do compile }
-{ dg-options "-fsyntax-only" }
+{ dg-options "-std=c17 -pedantic-errors -fsyntax-only" }
 */
 
 int f(int x)

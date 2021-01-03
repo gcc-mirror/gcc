@@ -117,17 +117,11 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
 
   // "byte" is an alias for "uint8".
   uint8_type->integer_type()->set_is_byte();
-  Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
-						    loc);
-  byte_type->type_value()->set_is_alias();
-  this->add_named_type(byte_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("byte", uint8_type));
 
   // "rune" is an alias for "int32".
   int32_type->integer_type()->set_is_rune();
-  Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
-						    loc);
-  rune_type->type_value()->set_is_alias();
-  this->add_named_type(rune_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("rune", int32_type));
 
   this->add_named_type(Type::make_named_bool_type());
 
@@ -299,7 +293,7 @@ void
 Gogo::set_pkgpath(const std::string& arg)
 {
   go_assert(!this->pkgpath_set_);
-  this->pkgpath_ = go_mangle_pkgpath(arg);
+  this->pkgpath_ = arg;
   this->pkgpath_set_ = true;
   this->pkgpath_from_option_ = true;
 }
@@ -322,32 +316,6 @@ Gogo::set_prefix(const std::string& arg)
   go_assert(!this->prefix_from_option_);
   this->prefix_ = arg;
   this->prefix_from_option_ = true;
-}
-
-// Given a name which may or may not have been hidden, append the
-// appropriate version of the name to the result string. Take care
-// to avoid creating a sequence that will be rejected by go_encode_id
-// (avoid ..u, ..U, ..z).
-void
-Gogo::append_possibly_hidden_name(std::string *result, const std::string& name)
-{
-  // FIXME: This adds in pkgpath twice for hidden symbols, which is
-  // less than ideal.
-  if (!Gogo::is_hidden_name(name))
-    (*result) += name;
-  else
-    {
-      std::string n = ".";
-      std::string pkgpath = Gogo::hidden_name_pkgpath(name);
-      char lastR = result->at(result->length() - 1);
-      char firstP = pkgpath.at(0);
-      if (lastR == '.' && (firstP == 'u' || firstP == 'U' || firstP == 'z'))
-        n = "_.";
-      n.append(pkgpath);
-      n.append(1, '.');
-      n.append(Gogo::unpack_hidden_name(name));
-      (*result) += n;
-    }
 }
 
 // Munge name for use in an error message.
@@ -397,8 +365,7 @@ Gogo::set_package_name(const std::string& package_name,
 	{
 	  if (!this->prefix_from_option_)
 	    this->prefix_ = "go";
-	  this->pkgpath_ = (go_mangle_pkgpath(this->prefix_) + '.'
-			    + package_name);
+	  this->pkgpath_ = this->prefix_ + '.' + package_name;
 	  this->pkgpath_symbol_ = (Gogo::pkgpath_for_symbol(this->prefix_) + '.'
 				   + Gogo::pkgpath_for_symbol(package_name));
 	}
@@ -792,7 +759,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Type* pvt = Type::make_pointer_type(Type::make_void_type());
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* byte_type = this->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Type* pointer_byte_type = Type::make_pointer_type(byte_type);
   Struct_type* root_type =
     Type::make_builtin_struct_type(4,
@@ -997,9 +964,9 @@ Gogo::register_type_descriptors(std::vector<Bstatement*>& init_stmts,
        it != this->imported_init_fns_.end();
        ++it)
     {
-      std::string pkgpath =
-        this->pkgpath_from_init_fn_name((*it)->init_name());
-      list_names.push_back(this->type_descriptor_list_symbol(pkgpath));
+      std::string pkgpath_symbol =
+        this->pkgpath_symbol_from_init_fn_name((*it)->init_name());
+      list_names.push_back(this->type_descriptor_list_symbol(pkgpath_symbol));
     }
   // Add the main package itself.
   list_names.push_back(this->type_descriptor_list_symbol("main"));
@@ -1590,6 +1557,17 @@ Gogo::write_globals()
       if ((no->is_function() && no->func_value()->is_sink())
 	  || (no->is_const() && no->const_value()->is_sink()))
         continue;
+
+      // Skip global sink variables with static initializers.  With
+      // non-static initializers we have to evaluate for side effects,
+      // and we wind up initializing a dummy variable.  That is not
+      // ideal but it works and it's a rare case.
+      if (no->is_variable()
+	  && no->var_value()->is_global_sink()
+	  && !no->var_value()->has_pre_init()
+	  && (no->var_value()->init() == NULL
+	      || no->var_value()->init()->is_static_initializer()))
+	continue;
 
       // There is nothing useful we can output for constants which
       // have ideal or non-integral type.
@@ -2746,8 +2724,7 @@ Gogo::clear_file_scope()
 // parse tree is lowered.
 
 void
-Gogo::queue_hash_function(Type* type, int64_t size,
-			  const std::string& hash_name,
+Gogo::queue_hash_function(Type* type, int64_t size, Backend_name* bname,
 			  Function_type* hash_fntype)
 {
   go_assert(!this->specific_type_functions_are_written_);
@@ -2755,7 +2732,7 @@ Gogo::queue_hash_function(Type* type, int64_t size,
   Specific_type_function::Specific_type_function_kind kind =
     Specific_type_function::SPECIFIC_HASH;
   Specific_type_function* tsf = new Specific_type_function(type, NULL, size,
-							   kind, hash_name,
+							   kind, bname,
 							   hash_fntype);
   this->specific_type_functions_.push_back(tsf);
 }
@@ -2766,15 +2743,14 @@ Gogo::queue_hash_function(Type* type, int64_t size,
 
 void
 Gogo::queue_equal_function(Type* type, Named_type* name, int64_t size,
-			   const std::string& equal_name,
-			   Function_type* equal_fntype)
+			   Backend_name* bname, Function_type* equal_fntype)
 {
   go_assert(!this->specific_type_functions_are_written_);
   go_assert(!this->in_global_scope());
   Specific_type_function::Specific_type_function_kind kind =
     Specific_type_function::SPECIFIC_EQUAL;
   Specific_type_function* tsf = new Specific_type_function(type, name, size,
-							   kind, equal_name,
+							   kind, bname,
 							   equal_fntype);
   this->specific_type_functions_.push_back(tsf);
 }
@@ -2872,11 +2848,11 @@ Gogo::write_specific_type_functions()
       Specific_type_function* tsf = this->specific_type_functions_.back();
       this->specific_type_functions_.pop_back();
       if (tsf->kind == Specific_type_function::SPECIFIC_HASH)
-	tsf->type->write_hash_function(this, tsf->size, tsf->fnname,
+	tsf->type->write_hash_function(this, tsf->size, &tsf->bname,
 				       tsf->fntype);
       else
 	tsf->type->write_equal_function(this, tsf->name, tsf->size,
-					tsf->fnname, tsf->fntype);
+					&tsf->bname, tsf->fntype);
       delete tsf;
     }
   this->specific_type_functions_are_written_ = true;
@@ -3773,7 +3749,7 @@ Check_types_traverse::variable(Named_object* named_object)
           && !var->type()->is_error()
           && (init == NULL || !init->is_error_expression())
           && !Lex::is_invalid_identifier(named_object->name()))
-	go_error_at(var->location(), "%qs declared and not used",
+	go_error_at(var->location(), "%qs declared but not used",
 		    named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;
@@ -6218,6 +6194,56 @@ Function::import_func(Import* imp, std::string* pname,
   return true;
 }
 
+// Get the backend name.
+
+void
+Function::backend_name(Gogo* gogo, Named_object* no, Backend_name *bname)
+{
+  if (!this->asm_name_.empty())
+    bname->set_asm_name(this->asm_name_);
+  else if (no->package() == NULL && no->name() == gogo->get_init_fn_name())
+    {
+      // These names appear in the export data and are used
+      // directly in the assembler code.  If we change this here
+      // we need to change Gogo::init_imports.
+      bname->set_asm_name(no->name());
+    }
+  else if (this->enclosing_ != NULL)
+    {
+      // Rewrite the nested name to use the enclosing function name.
+      // We don't do this earlier because we just store simple names
+      // in a Named_object, not Backend_names.
+
+      // The name was set by nested_function_name, which always
+      // appends ..funcNNN.  We want that to be our suffix.
+      size_t pos = no->name().find("..func");
+      go_assert(pos != std::string::npos);
+
+      Named_object* enclosing = this->enclosing_;
+      while (true)
+	{
+	  Named_object* parent = enclosing->func_value()->enclosing();
+	  if (parent == NULL)
+	    break;
+	  enclosing = parent;
+	}
+
+      Type* rtype = NULL;
+      if (enclosing->func_value()->type()->is_method())
+	rtype = enclosing->func_value()->type()->receiver()->type();
+      gogo->function_backend_name(enclosing->name(), enclosing->package(),
+				  rtype, bname);
+      bname->append_suffix(no->name().substr(pos));
+    }
+  else
+    {
+      Type* rtype = NULL;
+      if (this->type_->is_method())
+	rtype = this->type_->receiver()->type();
+      gogo->function_backend_name(no->name(), no->package(), rtype, bname);
+    }
+}
+
 // Get the backend representation.
 
 Bfunction*
@@ -6226,7 +6252,6 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
   if (this->fndecl_ == NULL)
     {
       unsigned int flags = 0;
-      bool is_init_fn = false;
       if (no->package() != NULL)
 	{
 	  // Functions defined in other packages must be visible.
@@ -6238,10 +6263,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
                && !this->type_->is_method())
 	;
       else if (no->name() == gogo->get_init_fn_name())
-	{
-	  flags |= Backend::function_is_visible;
-	  is_init_fn = true;
-	}
+	flags |= Backend::function_is_visible;
       else if (Gogo::unpack_hidden_name(no->name()) == "main"
                && gogo->is_main_package())
 	flags |= Backend::function_is_visible;
@@ -6255,29 +6277,13 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	    flags |= Backend::function_is_visible;
         }
 
-      Type* rtype = NULL;
-      if (this->type_->is_method())
-	rtype = this->type_->receiver()->type();
-
-      std::string asm_name;
       if (!this->asm_name_.empty())
 	{
-	  asm_name = this->asm_name_;
-
 	  // If an assembler name is explicitly specified, there must
 	  // be some reason to refer to the symbol from a different
 	  // object file.
 	  flags |= Backend::function_is_visible;
 	}
-      else if (is_init_fn)
-	{
-	  // These names appear in the export data and are used
-	  // directly in the assembler code.  If we change this here
-	  // we need to change Gogo::init_imports.
-	  asm_name = no->name();
-	}
-      else
-	asm_name = gogo->function_asm_name(no->name(), no->package(), rtype);
 
       // If an inline body refers to this function, then it
       // needs to be visible in the symbol table.
@@ -6337,11 +6343,34 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	flags |= Backend::function_only_inline;
 
       Btype* functype = this->type_->get_backend_fntype(gogo);
-      this->fndecl_ =
-          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
-				    flags, this->location());
+
+      Backend_name bname;
+      this->backend_name(gogo, no, &bname);
+
+      this->fndecl_ = gogo->backend()->function(functype,
+						bname.name(),
+						bname.optional_asm_name(),
+						flags,
+						this->location());
     }
   return this->fndecl_;
+}
+
+// Get the backend name.
+
+void
+Function_declaration::backend_name(Gogo* gogo, Named_object* no,
+				   Backend_name* bname)
+{
+  if (!this->asm_name_.empty())
+    bname->set_asm_name(this->asm_name_);
+  else
+    {
+      Type* rtype = NULL;
+      if (this->fntype_->is_method())
+	rtype = this->fntype_->receiver()->type();
+      gogo->function_backend_name(no->name(), no->package(), rtype, bname);
+    }
 }
 
 // Get the backend representation.
@@ -6375,21 +6404,16 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 	    flags |= Backend::function_does_not_return;
 	}
 
-      std::string asm_name;
-      if (this->asm_name_.empty())
-	{
-	  Type* rtype = NULL;
-	  if (this->fntype_->is_method())
-	    rtype = this->fntype_->receiver()->type();
-	  asm_name = gogo->function_asm_name(no->name(), no->package(), rtype);
-	}
-      else if (go_id_needs_encoding(no->get_id(gogo)))
-        asm_name = go_encode_id(no->get_id(gogo));
-
       Btype* functype = this->fntype_->get_backend_fntype(gogo);
-      this->fndecl_ =
-          gogo->backend()->function(functype, no->get_id(gogo), asm_name,
-				    flags, this->location());
+
+      Backend_name bname;
+      this->backend_name(gogo, no, &bname);
+
+      this->fndecl_ = gogo->backend()->function(functype,
+						bname.name(),
+						bname.optional_asm_name(),
+						flags,
+						this->location());
     }
 
   return this->fndecl_;
@@ -7434,7 +7458,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
   : type_(type), init_(init), preinit_(NULL), location_(location),
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
     is_closure_(false), is_receiver_(is_receiver),
-    is_varargs_parameter_(false), is_used_(false),
+    is_varargs_parameter_(false), is_global_sink_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
     seen_(false), init_is_lowered_(false), init_is_flattened_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
@@ -7993,7 +8017,6 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	      type = Type::make_pointer_type(type);
 	    }
 
-	  const std::string n = Gogo::unpack_hidden_name(name);
 	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
@@ -8001,19 +8024,14 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	    bvar = Map_type::backend_zero_value(gogo);
 	  else if (this->is_global_)
 	    {
-	      std::string var_name(package != NULL
-				   ? package->package_name()
-				   : gogo->package_name());
-	      var_name.push_back('.');
-	      var_name.append(n);
-
-              std::string asm_name(gogo->global_var_asm_name(name, package));
+	      Backend_name bname;
+	      gogo->global_var_backend_name(name, package, &bname);
 
 	      bool is_hidden = Gogo::is_hidden_name(name);
 	      // Hack to export runtime.writeBarrier.  FIXME.
 	      // This is because go:linkname doesn't work on variables.
 	      if (gogo->compiling_runtime()
-		  && var_name == "runtime.writeBarrier")
+		  && bname.name() == "runtime.writeBarrier")
 		is_hidden = false;
 
 	      // If an inline body refers to this variable, then it
@@ -8028,8 +8046,12 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	      if (package != NULL)
 		is_hidden = false;
 
-	      bvar = backend->global_variable(var_name,
-					      asm_name,
+	      // For some reason asm_name can't be the empty string
+	      // for global_variable, so we call asm_name rather than
+	      // optional_asm_name here.  FIXME.
+
+	      bvar = backend->global_variable(bname.name(),
+					      bname.asm_name(),
 					      btype,
 					      package != NULL,
 					      is_hidden,
@@ -8043,6 +8065,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	    }
 	  else
 	    {
+	      const std::string n = Gogo::unpack_hidden_name(name);
 	      Bfunction* bfunction = function->func_value()->get_decl();
 	      bool is_address_taken = (this->is_non_escaping_address_taken_
 				       && !this->is_in_heap());
@@ -8216,7 +8239,13 @@ Named_constant::get_backend(Gogo* gogo, Named_object* const_no)
       if (type != NULL && type->is_numeric_type())
 	{
 	  Btype* btype = type->get_backend(gogo);
-	  std::string name = const_no->get_id(gogo);
+	  std::string name;
+	  if (const_no->package() == NULL)
+	    name = gogo->pkgpath();
+	  else
+	    name = const_no->package()->pkgpath();
+	  name.push_back('.');
+	  name.append(Gogo::unpack_hidden_name(const_no->name()));
 	  const_decl =
 	    gogo->backend()->named_constant_expression(btype, name,
 						       const_decl, loc);
@@ -8635,54 +8664,6 @@ Named_object::get_backend_variable(Gogo* gogo, Named_object* function)
 							  this->name_);
   else
     go_unreachable();
-}
-
-// Return the external identifier for this object.
-
-std::string
-Named_object::get_id(Gogo* gogo)
-{
-  go_assert(!this->is_variable()
-	    && !this->is_result_variable()
-	    && !this->is_type());
-  std::string decl_name;
-  if (this->is_function_declaration()
-      && !this->func_declaration_value()->asm_name().empty())
-    decl_name = this->func_declaration_value()->asm_name();
-  else
-    {
-      std::string package_name;
-      if (this->package_ == NULL)
-	package_name = gogo->package_name();
-      else
-	package_name = this->package_->package_name();
-
-      // Note that this will be misleading if this is an unexported
-      // method generated for an embedded imported type.  In that case
-      // the unexported method should have the package name of the
-      // package from which it is imported, but we are going to give
-      // it our package name.  Fixing this would require knowing the
-      // package name, but we only know the package path.  It might be
-      // better to use package paths here anyhow.  This doesn't affect
-      // the assembler code, because we always set that name in
-      // Function::get_or_make_decl anyhow.  FIXME.
-
-      decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
-
-      Function_type* fntype;
-      if (this->is_function())
-	fntype = this->func_value()->type();
-      else if (this->is_function_declaration())
-	fntype = this->func_declaration_value()->type();
-      else
-	fntype = NULL;
-      if (fntype != NULL && fntype->is_method())
-	{
-	  decl_name.push_back('.');
-	  decl_name.append(fntype->receiver()->type()->mangled_name(gogo));
-	}
-    }
-  return decl_name;
 }
 
 void

@@ -23,7 +23,7 @@
 
 void test01()
 {
-  int gen();
+  int gen(); // { dg-warning "empty parentheses" }
   int a[2];
   std::generate_n(a, a+2, &gen);
 }

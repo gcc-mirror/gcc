@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/memory_resource>
+#include <cstdint>
 #include <ext/debug_allocator.h>
 #include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>

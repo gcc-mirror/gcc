@@ -946,6 +946,9 @@ typedef struct {
 #define VAR13(T, N, A, B, C, D, E, F, G, H, I, J, K, L, M) \
   VAR12 (T, N, A, B, C, D, E, F, G, H, I, J, K, L) \
   VAR1 (T, N, M)
+#define VAR14(T, N, A, B, C, D, E, F, G, H, I, J, K, L, M, O) \
+  VAR13 (T, N, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR1 (T, N, O)
 
 /* The builtin data can be found in arm_neon_builtins.def, arm_vfp_builtins.def
    and arm_acle_builtins.def.  The entries in arm_neon_builtins.def require

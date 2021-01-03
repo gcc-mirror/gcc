@@ -229,17 +229,18 @@ public:
   gori_map ();
   ~gori_map ();
 
-  bool is_export_p (tree name, basic_block bb);
+  bool is_export_p (tree name, basic_block bb = NULL);
   bool def_chain_in_export_p (tree name, basic_block bb);
+  bitmap exports (basic_block bb);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
 private:
   bitmap_obstack m_bitmaps;
   vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
+  bitmap all_outgoing;		// All outgoing ranges combined. 
   void maybe_add_gori (tree name, basic_block bb);
   void calculate_gori (basic_block bb);
-  bitmap exports (basic_block bb);
 };
 
 
@@ -250,6 +251,7 @@ gori_map::gori_map ()
   m_outgoing.create (0);
   m_outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
   bitmap_obstack_initialize (&m_bitmaps);
+  all_outgoing = BITMAP_ALLOC (&m_bitmaps);
 }
 
 // Free any memory the GORI map allocated.
@@ -276,6 +278,9 @@ gori_map::exports (basic_block bb)
 bool
 gori_map::is_export_p (tree name, basic_block bb)
 {
+  // If no BB is specified, test if it is exported anywhere in the IL.
+  if (!bb)
+    return bitmap_bit_p (all_outgoing, SSA_NAME_VERSION (name));
   return bitmap_bit_p (exports (bb), SSA_NAME_VERSION (name));
 }
 
@@ -342,6 +347,8 @@ gori_map::calculate_gori (basic_block bb)
       name = gimple_range_ssa_p (gimple_switch_index (gs));
       maybe_add_gori (name, gimple_bb (stmt));
     }
+  // Add this bitmap to the aggregate list of all outgoing names.
+  bitmap_ior_into (all_outgoing, m_outgoing[bb->index]);
 }
 
 // Dump the table information for BB to file F.
@@ -438,6 +445,16 @@ gori_compute::gori_compute ()
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
   m_gori_map = new gori_map;
+  unsigned x, lim = last_basic_block_for_fn (cfun);
+  // Calculate outgoing range info upfront.  This will fully populate the
+  // all_outgoing bitmap which will help eliminate processing of names
+  // which never have their ranges adjusted.
+  for (x = 0; x < lim ; x++)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
+      if (bb)
+	m_gori_map->exports (bb);
+    }
 }
 
 // Destruct a gori_compute_object.
@@ -730,8 +747,8 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false, so [20, 255] intersect [0, 5] is the
-	    // union: [0,5][20,255].
+	    // operands are false simlulateously, which means they should
+	    // be intersected.  !(x || y) == !x && !y
 	    r = op1.false_range;
 	    r.intersect (op2.false_range);
 	  }
@@ -804,9 +821,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
 						 tree name,
 						 tree op, bool op_in_chain)
 {
-  if (!op_in_chain)
+  gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
+  basic_block bb = gimple_bb (stmt);
+  if (!op_in_chain || (src_stmt != NULL && bb != gimple_bb (src_stmt)))
     {
-      // If op is not in chain, use its known value.
+      // If op is not in the def chain, or defined in this block,
+      // use its known value on entry to the block.
       expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
       range.false_range = range.true_range;
       return;
@@ -814,14 +834,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
   if (optimize_logical_operands (range, stmt, lhs, name, op))
     return;
 
-  // Calulate ranges for true and false on both sides, since the false
+  // Calculate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
-  if (!compute_operand_range (range.true_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_one, name))
-    expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
-  if (!compute_operand_range (range.false_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_zero, name))
-    expr_range_in_bb (range.false_range, name, gimple_bb (stmt));
+  if (!compute_operand_range (range.true_range, src_stmt, m_bool_one, name))
+    expr_range_in_bb (range.true_range, name, bb);
+  if (!compute_operand_range (range.false_range, src_stmt, m_bool_zero, name))
+    expr_range_in_bb (range.false_range, name, bb);
 }
 
 // Given a logical STMT, calculate true and false for each potential
@@ -968,8 +986,12 @@ gori_compute::compute_operand1_and_operand2_range
 // Return TRUE if a range can be calcalated for NAME on edge E.
 
 bool
-gori_compute::has_edge_range_p (edge e, tree name)
+gori_compute::has_edge_range_p (tree name, edge e)
 {
+  // If no edge is specified, check if NAME is an export on any edge.
+  if (!e)
+    return m_gori_map->is_export_p (name);
+
   return (m_gori_map->is_export_p (name, e->src)
 	  || m_gori_map->def_chain_in_export_p (name, e->src));
 }
@@ -1313,13 +1335,15 @@ gori_compute_cache::cache_stmt (gimple *stmt)
   else if (tree cached_name = m_cache->same_cached_name (op1, op2))
     {
       tf_range op1_range, op2_range;
-      gcc_assert (m_cache->get_range (op1_range, op1, cached_name));
-      gcc_assert (m_cache->get_range (op2_range, op2, cached_name));
-      gcc_assert (logical_combine (r_true_side, code, m_bool_one,
-				   op1_range, op2_range));
-      gcc_assert (logical_combine (r_false_side, code, m_bool_zero,
-				   op1_range, op2_range));
-      m_cache->set_range (lhs, cached_name,
-			  tf_range (r_true_side, r_false_side));
+      bool ok = m_cache->get_range (op1_range, op1, cached_name);
+      ok = ok && m_cache->get_range (op2_range, op2, cached_name);
+      ok = ok && logical_combine (r_true_side, code, m_bool_one,
+				  op1_range, op2_range);
+      ok = ok && logical_combine (r_false_side, code, m_bool_zero,
+				  op1_range, op2_range);
+      gcc_checking_assert (ok);
+      if (ok)
+	m_cache->set_range (lhs, cached_name,
+			    tf_range (r_true_side, r_false_side));
     }
 }

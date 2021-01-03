@@ -581,7 +581,8 @@ general_scalar_chain::compute_convert_gain ()
       else if (GET_CODE (src) == NEG
 	       || GET_CODE (src) == NOT)
 	igain += m * ix86_cost->add - ix86_cost->sse_op - COSTS_N_INSNS (1);
-      else if (GET_CODE (src) == SMAX
+      else if (GET_CODE (src) == ABS
+	       || GET_CODE (src) == SMAX
 	       || GET_CODE (src) == SMIN
 	       || GET_CODE (src) == UMAX
 	       || GET_CODE (src) == UMIN)
@@ -986,13 +987,6 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
   switch (GET_CODE (src))
     {
-    case ASHIFT:
-    case ASHIFTRT:
-    case LSHIFTRT:
-      convert_op (&XEXP (src, 0), insn);
-      PUT_MODE (src, vmode);
-      break;
-
     case PLUS:
     case MINUS:
     case IOR:
@@ -1002,8 +996,14 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
     case SMIN:
     case UMAX:
     case UMIN:
-      convert_op (&XEXP (src, 0), insn);
       convert_op (&XEXP (src, 1), insn);
+      /* FALLTHRU */
+
+    case ABS:
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      convert_op (&XEXP (src, 0), insn);
       PUT_MODE (src, vmode);
       break;
 
@@ -1266,9 +1266,10 @@ pseudo_reg_set (rtx_insn *insn)
     return NULL;
 
   /* Check pseudo register push first. */
+  machine_mode mode = TARGET_64BIT ? TImode : DImode;
   if (REG_P (SET_SRC (set))
       && !HARD_REGISTER_P (SET_SRC (set))
-      && push_operand (SET_DEST (set), GET_MODE (SET_DEST (set))))
+      && push_operand (SET_DEST (set), mode))
     return set;
 
   df_ref ref;
@@ -1411,6 +1412,12 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 
       if (GET_MODE (XEXP (src, 1)) != mode
 	  && !CONST_INT_P (XEXP (src, 1)))
+	return false;
+      break;
+
+    case ABS:
+      if ((mode == DImode && !TARGET_AVX512VL)
+	  || (mode == SImode && !TARGET_SSSE3))
 	return false;
       break;
 

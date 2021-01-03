@@ -42,9 +42,8 @@ subroutine test(variant)
      stop 1
   end if
 
-  ! FIXME: This warning is emitted on the wrong line number.
-  ! { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 52 }
   !$acc serial present(myvar%arr2)
+  ! { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } .-1 }
   do i=1,10
     myvar%arr1(i) = i + variant
     myvar%arr2(i) = i - variant

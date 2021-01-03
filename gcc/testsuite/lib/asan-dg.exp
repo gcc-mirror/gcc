@@ -16,6 +16,9 @@
 
 # Return 1 if compilation with -fsanitize=address is error-free for trivial
 # code, 0 otherwise.
+#
+# NOTE: This should only be used between calls to asan_init and asan_finish.
+# It is therefore defined here rather than in target-supports.exp.
 
 proc check_effective_target_fsanitize_address {} {
     if ![check_no_compiler_messages fsanitize_address executable {
@@ -58,39 +61,43 @@ proc asan_include_flags {} {
 # (originally from g++.exp)
 #
 
-proc asan_link_flags { paths } {
+proc asan_link_flags_1 { paths lib } {
     global srcdir
     global ld_library_path
     global shlib_ext
-    global asan_saved_library_path
+    global ${lib}_saved_library_path
 
     set gccpath ${paths}
     set flags ""
 
     set shlib_ext [get_shlib_extension]
-    set asan_saved_library_path $ld_library_path
+    set ${lib}_saved_library_path $ld_library_path
 
     if { $gccpath != "" } {
-      if { [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.a"]
-	   || [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.${shlib_ext}"] } {
+      if { [file exists "${gccpath}/libsanitizer/${lib}/.libs/lib${lib}.a"]
+	   || [file exists "${gccpath}/libsanitizer/${lib}/.libs/lib${lib}.${shlib_ext}"] } {
 	  append flags " -B${gccpath}/libsanitizer/ "
-	  append flags " -B${gccpath}/libsanitizer/asan/ "
-	  append flags " -L${gccpath}/libsanitizer/asan/.libs "
-	  append ld_library_path ":${gccpath}/libsanitizer/asan/.libs"
+	  append flags " -B${gccpath}/libsanitizer/${lib}/ "
+	  append flags " -L${gccpath}/libsanitizer/${lib}/.libs "
+	  append ld_library_path ":${gccpath}/libsanitizer/${lib}/.libs"
       }
     } else {
       global tool_root_dir
 
-      set libasan [lookfor_file ${tool_root_dir} libasan]
-      if { $libasan != "" } {
-	  append flags "-L${libasan} "
-	  append ld_library_path ":${libasan}"
+      set libdir [lookfor_file ${tool_root_dir} lib${lib}]
+      if { $libdir != "" } {
+	  append flags "-L${libdir} "
+	  append ld_library_path ":${libdir}"
       }
     }
 
     set_ld_library_path_env_vars
 
     return "$flags"
+}
+
+proc asan_link_flags { paths } {
+    return [asan_link_flags_1 $paths asan]
 }
 
 #
@@ -151,8 +158,10 @@ proc asan_finish { args } {
 	    unset TEST_ALWAYS_FLAGS
 	}
     }
-    set ld_library_path $asan_saved_library_path
-    set_ld_library_path_env_vars
+    if [info exists asan_saved_library_path ] {
+	set ld_library_path $asan_saved_library_path
+	set_ld_library_path_env_vars
+    }
     clear_effective_target_cache
 }
 

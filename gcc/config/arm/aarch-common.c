@@ -485,7 +485,7 @@ aarch_accumulator_forwarding (rtx_insn *producer, rtx_insn *consumer)
 	return 0;
     }
 
-  if (GET_CODE (accumulator) == SUBREG)
+  if (SUBREG_P (accumulator))
     accumulator = SUBREG_REG (accumulator);
 
   if (!REG_P (accumulator))

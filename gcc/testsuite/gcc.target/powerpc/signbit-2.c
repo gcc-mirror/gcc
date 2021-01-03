@@ -1,6 +1,6 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target ppc_float128_sw } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2 -mfloat128" } */
 
 int do_signbit_kf (__float128 *a) { return __builtin_signbit (*a); }
@@ -13,5 +13,7 @@ int do_signbit_kf (__float128 *a) { return __builtin_signbit (*a); }
 /* { dg-final { scan-assembler-not   "lxvw4x"   } } */
 /* { dg-final { scan-assembler-not   "lxsd"     } } */
 /* { dg-final { scan-assembler-not   "lxsdx"    } } */
-/* { dg-final { scan-assembler-times "ld"     1 } } */
-/* { dg-final { scan-assembler-times "srdi"   1 } } */
+/* { dg-final { scan-assembler-times "ld"     1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "srdi"   1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lwz"    1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "rlwinm" 1 { target ilp32 } } } */

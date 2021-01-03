@@ -103,7 +103,7 @@ tree
 gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
-  switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
+  switch (gimple_assign_rhs_class (stmt))
     {
     case GIMPLE_TERNARY_RHS:
       t = build3 (gimple_assign_rhs_code (stmt),
@@ -366,17 +366,28 @@ align_local_variable (tree decl, bool really_expand)
   unsigned int align;
 
   if (TREE_CODE (decl) == SSA_NAME)
-    align = TYPE_ALIGN (TREE_TYPE (decl));
-  else
     {
-      align = LOCAL_DECL_ALIGNMENT (decl);
-      /* Don't change DECL_ALIGN when called from estimated_stack_frame_size.
-	 That is done before IPA and could bump alignment based on host
-	 backend even for offloaded code which wants different
-	 LOCAL_DECL_ALIGNMENT.  */
-      if (really_expand)
-	SET_DECL_ALIGN (decl, align);
+      tree type = TREE_TYPE (decl);
+      machine_mode mode = TYPE_MODE (type);
+
+      align = TYPE_ALIGN (type);
+      if (mode != BLKmode
+	  && align < GET_MODE_ALIGNMENT (mode))
+	align = GET_MODE_ALIGNMENT (mode);
     }
+  else
+    align = LOCAL_DECL_ALIGNMENT (decl);
+
+  if (hwasan_sanitize_stack_p ())
+    align = MAX (align, (unsigned) HWASAN_TAG_GRANULE_SIZE * BITS_PER_UNIT);
+
+  if (TREE_CODE (decl) != SSA_NAME && really_expand)
+    /* Don't change DECL_ALIGN when called from estimated_stack_frame_size.
+       That is done before IPA and could bump alignment based on host
+       backend even for offloaded code which wants different
+       LOCAL_DECL_ALIGNMENT.  */
+    SET_DECL_ALIGN (decl, align);
+
   return align / BITS_PER_UNIT;
 }
 
@@ -418,6 +429,14 @@ alloc_stack_frame_space (poly_int64 size, unsigned HOST_WIDE_INT align)
     frame_offset = offset = 0;
 
   return offset;
+}
+
+/* Ensure that the stack is aligned to ALIGN bytes.
+   Return the new frame offset.  */
+static poly_int64
+align_frame_offset (unsigned HOST_WIDE_INT align)
+{
+  return alloc_stack_frame_space (0, align);
 }
 
 /* Accumulate DECL into STACK_VARS.  */
@@ -996,23 +1015,29 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
   gcc_assert (known_eq (offset, trunc_int_for_mode (offset, Pmode)));
 
-  x = plus_constant (Pmode, base, offset);
+  if (hwasan_sanitize_stack_p ())
+    x = targetm.memtag.add_tag (base, offset,
+				hwasan_current_frame_tag ());
+  else
+    x = plus_constant (Pmode, base, offset);
+
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
 		   ? TYPE_MODE (TREE_TYPE (decl))
-		   : DECL_MODE (SSAVAR (decl)), x);
+		   : DECL_MODE (decl), x);
+
+  /* Set alignment we actually gave this decl if it isn't an SSA name.
+     If it is we generate stack slots only accidentally so it isn't as
+     important, we'll simply set the alignment directly on the MEM.  */
+
+  if (stack_vars_base_reg_p (base))
+    offset -= frame_phase;
+  align = known_alignment (offset);
+  align *= BITS_PER_UNIT;
+  if (align == 0 || align > base_align)
+    align = base_align;
 
   if (TREE_CODE (decl) != SSA_NAME)
     {
-      /* Set alignment we actually gave this decl if it isn't an SSA name.
-         If it is we generate stack slots only accidentally so it isn't as
-	 important, we'll simply use the alignment that is already set.  */
-      if (base == virtual_stack_vars_rtx)
-	offset -= frame_phase;
-      align = known_alignment (offset);
-      align *= BITS_PER_UNIT;
-      if (align == 0 || align > base_align)
-	align = base_align;
-
       /* One would think that we could assert that we're not decreasing
 	 alignment here, but (at least) the i386 port does exactly this
 	 via the MINIMUM_ALIGNMENT hook.  */
@@ -1022,6 +1047,8 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
     }
 
   set_rtl (decl, x);
+
+  set_mem_align (x, align);
 }
 
 class stack_vars_data
@@ -1045,13 +1072,13 @@ public:
 /* A subroutine of expand_used_vars.  Give each partition representative
    a unique location within the stack frame.  Update each partition member
    with that location.  */
-
 static void
 expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 {
   size_t si, i, j, n = stack_vars_num;
   poly_uint64 large_size = 0, large_alloc = 0;
   rtx large_base = NULL;
+  rtx large_untagged_base = NULL;
   unsigned large_align = 0;
   bool large_allocation_done = false;
   tree decl;
@@ -1102,7 +1129,7 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
     {
       rtx base;
       unsigned base_align, alignb;
-      poly_int64 offset;
+      poly_int64 offset = 0;
 
       i = stack_vars_sorted[si];
 
@@ -1123,10 +1150,33 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
       if (pred && !pred (i))
 	continue;
 
+      base = (hwasan_sanitize_stack_p ()
+	      ? hwasan_frame_base ()
+	      : virtual_stack_vars_rtx);
       alignb = stack_vars[i].alignb;
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
-	  base = virtual_stack_vars_rtx;
+	  poly_int64 hwasan_orig_offset;
+	  if (hwasan_sanitize_stack_p ())
+	    {
+	      /* There must be no tag granule "shared" between different
+		 objects.  This means that no HWASAN_TAG_GRANULE_SIZE byte
+		 chunk can have more than one object in it.
+
+		 We ensure this by forcing the end of the last bit of data to
+		 be aligned to HWASAN_TAG_GRANULE_SIZE bytes here, and setting
+		 the start of each variable to be aligned to
+		 HWASAN_TAG_GRANULE_SIZE bytes in `align_local_variable`.
+
+		 We can't align just one of the start or end, since there are
+		 untagged things stored on the stack which we do not align to
+		 HWASAN_TAG_GRANULE_SIZE bytes.  If we only aligned the start
+		 or the end of tagged objects then untagged objects could end
+		 up sharing the first granule of a tagged object or sharing the
+		 last granule of a tagged object respectively.  */
+	      hwasan_orig_offset = align_frame_offset (HWASAN_TAG_GRANULE_SIZE);
+	      gcc_assert (stack_vars[i].alignb >= HWASAN_TAG_GRANULE_SIZE);
+	    }
 	  /* ASAN description strings don't yet have a syntax for expressing
 	     polynomial offsets.  */
 	  HOST_WIDE_INT prev_offset;
@@ -1137,7 +1187,7 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 	    {
 	      if (data->asan_vec.is_empty ())
 		{
-		  alloc_stack_frame_space (0, ASAN_RED_ZONE_SIZE);
+		  align_frame_offset (ASAN_RED_ZONE_SIZE);
 		  prev_offset = frame_offset.to_constant ();
 		}
 	      prev_offset = align_base (prev_offset,
@@ -1205,6 +1255,24 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 	    {
 	      offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
 	      base_align = crtl->max_used_stack_slot_alignment;
+
+	      if (hwasan_sanitize_stack_p ())
+		{
+		  /* Align again since the point of this alignment is to handle
+		     the "end" of the object (i.e. smallest address after the
+		     stack object).  For FRAME_GROWS_DOWNWARD that requires
+		     aligning the stack before allocating, but for a frame that
+		     grows upwards that requires aligning the stack after
+		     allocation.
+
+		     Use `frame_offset` to record the offset value rather than
+		     `offset` since the `frame_offset` describes the extent
+		     allocated for this particular variable while `offset`
+		     describes the address that this variable starts at.  */
+		  align_frame_offset (HWASAN_TAG_GRANULE_SIZE);
+		  hwasan_record_stack_var (virtual_stack_vars_rtx, base,
+					   hwasan_orig_offset, frame_offset);
+		}
 	    }
 	}
       else
@@ -1225,14 +1293,33 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 	      loffset = alloc_stack_frame_space
 		(rtx_to_poly_int64 (large_allocsize),
 		 PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
-	      large_base = get_dynamic_stack_base (loffset, large_align);
+	      large_base = get_dynamic_stack_base (loffset, large_align, base);
 	      large_allocation_done = true;
 	    }
-	  gcc_assert (large_base != NULL);
 
+	  gcc_assert (large_base != NULL);
 	  large_alloc = aligned_upper_bound (large_alloc, alignb);
 	  offset = large_alloc;
 	  large_alloc += stack_vars[i].size;
+	  if (hwasan_sanitize_stack_p ())
+	    {
+	      /* An object with a large alignment requirement means that the
+		 alignment requirement is greater than the required alignment
+		 for tags.  */
+	      if (!large_untagged_base)
+		large_untagged_base
+		  = targetm.memtag.untagged_pointer (large_base, NULL_RTX);
+	      /* Ensure the end of the variable is also aligned correctly.  */
+	      poly_int64 align_again
+		= aligned_upper_bound (large_alloc, HWASAN_TAG_GRANULE_SIZE);
+	      /* For large allocations we always allocate a chunk of space
+		 (which is addressed by large_untagged_base/large_base) and
+		 then use positive offsets from that.  Hence the farthest
+		 offset is `align_again` and the nearest offset from the base
+		 is `offset`.  */
+	      hwasan_record_stack_var (large_untagged_base, large_base,
+				       offset, align_again);
+	    }
 
 	  base = large_base;
 	  base_align = large_align;
@@ -1243,9 +1330,10 @@ expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
       for (j = i; j != EOC; j = stack_vars[j].next)
 	{
 	  expand_one_stack_var_at (stack_vars[j].decl,
-				   base, base_align,
-				   offset);
+				   base, base_align, offset);
 	}
+      if (hwasan_sanitize_stack_p ())
+	hwasan_increment_frame_tag ();
     }
 
   gcc_assert (known_eq (large_alloc, large_size));
@@ -1327,21 +1415,46 @@ expand_one_stack_var_1 (tree var)
     {
       tree type = TREE_TYPE (var);
       size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
-      byte_align = TYPE_ALIGN_UNIT (type);
     }
   else
-    {
-      size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
-      byte_align = align_local_variable (var, true);
-    }
+    size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
+
+  byte_align = align_local_variable (var, true);
 
   /* We handle highly aligned variables in expand_stack_vars.  */
   gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);
 
-  offset = alloc_stack_frame_space (size, byte_align);
+  rtx base;
+  if (hwasan_sanitize_stack_p ())
+    {
+      /* Allocate zero bytes to align the stack.  */
+      poly_int64 hwasan_orig_offset
+	= align_frame_offset (HWASAN_TAG_GRANULE_SIZE);
+      offset = alloc_stack_frame_space (size, byte_align);
+      align_frame_offset (HWASAN_TAG_GRANULE_SIZE);
+      base = hwasan_frame_base ();
+      /* Use `frame_offset` to automatically account for machines where the
+	 frame grows upwards.
 
-  expand_one_stack_var_at (var, virtual_stack_vars_rtx,
+	 `offset` will always point to the "start" of the stack object, which
+	 will be the smallest address, for ! FRAME_GROWS_DOWNWARD this is *not*
+	 the "furthest" offset from the base delimiting the current stack
+	 object.  `frame_offset` will always delimit the extent that the frame.
+	 */
+      hwasan_record_stack_var (virtual_stack_vars_rtx, base,
+			       hwasan_orig_offset, frame_offset);
+    }
+  else
+    {
+      offset = alloc_stack_frame_space (size, byte_align);
+      base = virtual_stack_vars_rtx;
+    }
+
+  expand_one_stack_var_at (var, base,
 			   crtl->max_used_stack_slot_alignment, offset);
+
+  if (hwasan_sanitize_stack_p ())
+    hwasan_increment_frame_tag ();
 }
 
 /* Wrapper for expand_one_stack_var_1 that checks SSA_NAMEs are
@@ -1941,6 +2054,8 @@ init_vars_expansion (void)
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
   has_short_buffer = false;
+  if (hwasan_sanitize_stack_p ())
+    hwasan_record_frame_init ();
 }
 
 /* Free up stack variable graph data.  */
@@ -2268,10 +2383,26 @@ expand_used_vars (void)
       expand_stack_vars (NULL, &data);
     }
 
+  if (hwasan_sanitize_stack_p ())
+    hwasan_emit_prologue ();
   if (asan_sanitize_allocas_p () && cfun->calls_alloca)
     var_end_seq = asan_emit_allocas_unpoison (virtual_stack_dynamic_rtx,
 					      virtual_stack_vars_rtx,
 					      var_end_seq);
+  else if (hwasan_sanitize_allocas_p () && cfun->calls_alloca)
+    /* When using out-of-line instrumentation we only want to emit one function
+       call for clearing the tags in a region of shadow stack.  When there are
+       alloca calls in this frame we want to emit a call using the
+       virtual_stack_dynamic_rtx, but when not we use the hwasan_frame_extent
+       rtx we created in expand_stack_vars.  */
+    var_end_seq = hwasan_emit_untag_frame (virtual_stack_dynamic_rtx,
+					   virtual_stack_vars_rtx);
+  else if (hwasan_sanitize_stack_p ())
+    /* If no variables were stored on the stack, `hwasan_get_frame_extent`
+       will return NULL_RTX and hence `hwasan_emit_untag_frame` will return
+       NULL (i.e. an empty sequence).  */
+    var_end_seq = hwasan_emit_untag_frame (hwasan_get_frame_extent (),
+					   virtual_stack_vars_rtx);
 
   fini_vars_expansion ();
 
@@ -3362,20 +3493,21 @@ expand_asm_stmt (gasm *stmt)
 			       ARGVEC CONSTRAINTS OPNAMES))
      If there is more than one, put them inside a PARALLEL.  */
 
-  if (nlabels > 0 && nclobbers == 0)
-    {
-      gcc_assert (noutputs == 0);
-      emit_jump_insn (body);
-    }
-  else if (noutputs == 0 && nclobbers == 0)
+  if (noutputs == 0 && nclobbers == 0)
     {
       /* No output operands: put in a raw ASM_OPERANDS rtx.  */
-      emit_insn (body);
+      if (nlabels > 0)
+	emit_jump_insn (body);
+      else
+	emit_insn (body);
     }
   else if (noutputs == 1 && nclobbers == 0)
     {
       ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
-      emit_insn (gen_rtx_SET (output_rvec[0], body));
+      if (nlabels > 0)
+	emit_jump_insn (gen_rtx_SET (output_rvec[0], body));
+      else 
+	emit_insn (gen_rtx_SET (output_rvec[0], body));
     }
   else
     {
@@ -3452,7 +3584,27 @@ expand_asm_stmt (gasm *stmt)
   if (after_md_seq)
     emit_insn (after_md_seq);
   if (after_rtl_seq)
-    emit_insn (after_rtl_seq);
+    {
+      if (nlabels == 0)
+	emit_insn (after_rtl_seq);
+      else
+	{
+	  edge e;
+	  edge_iterator ei;
+	  
+	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	    {
+	      start_sequence ();
+	      for (rtx_insn *curr = after_rtl_seq;
+		   curr != NULL_RTX;
+		   curr = NEXT_INSN (curr))
+		emit_insn (copy_insn (PATTERN (curr)));
+	      rtx_insn *copy = get_insns ();
+	      end_sequence ();
+	      insert_insn_on_edge (copy, e);
+	    }
+	}
+    }
 
   free_temp_slots ();
   crtl->has_asm_statement = 1;
@@ -3732,11 +3884,10 @@ expand_gimple_stmt_1 (gimple *stmt)
 	   of binary assigns must be a gimple reg.  */
 
 	if (TREE_CODE (lhs) != SSA_NAME
-	    || get_gimple_rhs_class (gimple_expr_code (stmt))
-	       == GIMPLE_SINGLE_RHS)
+	    || gimple_assign_rhs_class (assign_stmt) == GIMPLE_SINGLE_RHS)
 	  {
 	    tree rhs = gimple_assign_rhs1 (assign_stmt);
-	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
+	    gcc_assert (gimple_assign_rhs_class (assign_stmt)
 			== GIMPLE_SINGLE_RHS);
 	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs)
 		/* Do not put locations on possibly shared trees.  */
@@ -5768,7 +5919,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 			  && !target_for_debug_bind (var))
 			goto delink_debug_stmt;
 
-		      if (DECL_P (var))
+		      if (DECL_P (var) && !VECTOR_TYPE_P (TREE_TYPE (var)))
 			mode = DECL_MODE (var);
 		      else
 			mode = TYPE_MODE (TREE_TYPE (var));
@@ -5785,7 +5936,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 
 		      value = gimple_debug_source_bind_get_value (stmt);
 
-		      mode = DECL_MODE (var);
+		      if (!VECTOR_TYPE_P (TREE_TYPE (var)))
+			mode = DECL_MODE (var);
+		      else
+			mode = TYPE_MODE (TREE_TYPE (var));
 
 		      val = gen_rtx_VAR_LOCATION (mode, var, (rtx)value,
 						  VAR_INIT_STATUS_UNINITIALIZED);
@@ -5802,14 +5956,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      else if (gimple_debug_begin_stmt_p (stmt))
 		val = GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT ();
 	      else if (gimple_debug_inline_entry_p (stmt))
-		{
-		  tree block = gimple_block (stmt);
-
-		  if (block)
-		    val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
-		  else
-		    goto delink_debug_stmt;
-		}
+		val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
 	      else
 		gcc_unreachable ();
 
@@ -6403,7 +6550,7 @@ pass_expand::execute (function *fun)
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   insn_locations_init ();
-  if (!DECL_IS_BUILTIN (current_function_decl))
+  if (!DECL_IS_UNDECLARED_BUILTIN (current_function_decl))
     {
       /* Eventually, all FEs should explicitly set function_start_locus.  */
       if (LOCATION_LOCUS (fun->function_start_locus) == UNKNOWN_LOCATION)
@@ -6611,6 +6758,9 @@ pass_expand::execute (function *fun)
 	after = next;
       emit_insn_after (var_ret_seq, after);
     }
+
+  if (hwasan_sanitize_stack_p ())
+    hwasan_maybe_emit_frame_base_init ();
 
   /* Zap the tree EH table.  */
   set_eh_throw_stmt_table (fun, NULL);

@@ -37,6 +37,10 @@
 (define_subst_attr "alu3_zext_op2" "alu3_zext_op2_subst" "_z2" "_noz2")
 (define_subst_attr "alu3_zext"     "alu3_zext_subst"     "_z" "_noz")
 
+(define_subst_attr "lmbd_zext_op1" "lmbd_zext_op1_subst" "_z1" "_noz1")
+(define_subst_attr "lmbd_zext_op2" "lmbd_zext_op2_subst" "_z2" "_noz2")
+(define_subst_attr "lmbd_zext"     "lmbd_zext_subst"     "_z"  "_noz")
+
 (define_subst_attr "bitalu_zext"   "bitalu_zext_subst"   "_z" "_noz")
 
 (define_code_iterator ALUOP3 [plus minus and ior xor umin umax ashift lshiftrt])
@@ -71,6 +75,19 @@
    rsb\\t%0, %2, %u1"
   [(set_attr "type" "alu")])
 
+
+;; Left Most Bit Detect instruction.
+(define_insn "pru_lmbd_impl<EQD:mode><EQS0:mode><EQS1:mode>_<lmbd_zext><lmbd_zext_op1><lmbd_zext_op2>"
+  [(set (match_operand:EQD 0 "register_operand" "=r")
+	(unspec:EQD
+	  [(zero_extend:EQD
+	     (match_operand:EQS0 1 "register_operand" "r"))
+	   (zero_extend:EQD
+	     (match_operand:EQS1 2 "reg_or_ubyte_operand" "r<EQS1:ubyte_constr>"))]
+	  UNSPEC_LMBD))]
+  ""
+  "lmbd\t%0, %1, %2"
+  [(set_attr "type" "alu")])
 
 (define_insn "neg_impl<EQD:mode><EQS0:mode>_<alu2_zext>"
   [(set (match_operand:EQD 0 "register_operand" "=r")
@@ -179,3 +196,37 @@
   [(set (match_dup 0)
 	(ALUOP3:EQD (zero_extend:EQD (match_dup 1))
 		    (match_dup 2)))])
+
+
+(define_subst "lmbd_zext_subst"
+  [(set (match_operand:EQD 0)
+	(unspec:EQD [(zero_extend:EQD (match_operand:EQD 1))
+		     (zero_extend:EQD (match_operand:EQD 2))]
+		    UNSPEC_LMBD))]
+  ""
+  [(set (match_dup 0)
+	(unspec:EQD [(match_dup 1)
+		     (match_dup 2)]
+		    UNSPEC_LMBD))])
+
+(define_subst "lmbd_zext_op1_subst"
+  [(set (match_operand:EQD 0)
+	(unspec:EQD [(zero_extend:EQD (match_operand:EQD 1))
+		     (zero_extend:EQD (match_operand:EQS1 2))]
+		    UNSPEC_LMBD))]
+  ""
+  [(set (match_dup 0)
+	(unspec:EQD [(match_dup 1)
+		     (zero_extend:EQD (match_dup 2))]
+		    UNSPEC_LMBD))])
+
+(define_subst "lmbd_zext_op2_subst"
+  [(set (match_operand:EQD 0)
+	(unspec:EQD [(zero_extend:EQD (match_operand:EQD 1))
+		     (zero_extend:EQD (match_operand:EQD 2))]
+		    UNSPEC_LMBD))]
+  ""
+  [(set (match_dup 0)
+	(unspec:EQD [(zero_extend:EQD (match_dup 1))
+		     (match_dup 2)]
+		    UNSPEC_LMBD))])

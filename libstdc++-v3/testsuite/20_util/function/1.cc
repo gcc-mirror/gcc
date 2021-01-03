@@ -67,7 +67,7 @@ void test01()
       f1(3.14159f);
       VERIFY( false );
     }
-  catch (bad_function_call)
+  catch (const bad_function_call&)
     {
       thrown = true;
     }
