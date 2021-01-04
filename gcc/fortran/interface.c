@@ -1464,6 +1464,19 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
       int i, compval;
       gfc_expr *shape1, *shape2;
 
+      /* Sometimes the ambiguity between deferred shape and assumed shape
+	 does not get resolved in module procedures, where the only explicit
+	 declaration of the dummy is in the interface.  */
+      if (s1->ns->proc_name && s1->ns->proc_name->attr.module_procedure
+	  && s1->as->type == AS_ASSUMED_SHAPE
+	  && s2->as->type == AS_DEFERRED)
+	{
+	  s2->as->type = AS_ASSUMED_SHAPE;
+	  for (i = 0; i < s2->as->rank; i++)
+	    if (s1->as->lower[i] != NULL)
+	      s2->as->lower[i] = gfc_copy_expr (s1->as->lower[i]);
+	}
+
       if (s1->as->type != s2->as->type)
 	{
 	  snprintf (errmsg, err_len, "Shape mismatch in argument '%s'",
@@ -2424,7 +2437,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	       && formal->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE)
 	      || formal->attr.lock_comp))
 
-    	{
+	{
 	  if (where)
 	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy %qs at %L, "
 		       "which is LOCK_TYPE or has a LOCK_TYPE component",
@@ -2439,7 +2452,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	       && formal->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
 	      || formal->attr.event_comp))
 
-    	{
+	{
 	  if (where)
 	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy %qs at %L, "
 		       "which is EVENT_TYPE or has a EVENT_TYPE component",
@@ -3798,7 +3811,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental,
 			      sym->attr.proc == PROC_ST_FUNCTION, where))
     return false;
- 
+
   if (!check_intents (dummy_args, *ap))
     return false;
 
