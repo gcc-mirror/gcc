@@ -1591,6 +1591,9 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
       if (TREE_ADDRESSABLE (type))
 	/* Undo convert_for_arg_passing work here.  */
 	x = convert_from_reference (x);
+      /* Normally we would strip a TARGET_EXPR in an initialization context
+	 such as this, but here we do the elision differently: we keep the
+	 TARGET_EXPR, and use its CONSTRUCTOR as the value of the parm.  */
       arg = cxx_eval_constant_expression (ctx, x, /*lval=*/false,
 					  non_constant_p, overflow_p);
       /* Don't VERIFY_CONSTANT here.  */
@@ -5388,6 +5391,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   if (!preeval)
     {
+      /* We're handling an INIT_EXPR of class type, so the value of the
+	 initializer can depend on the object it's initializing.  */
+
       /* Create a new CONSTRUCTOR in case evaluation of the initializer
 	 wants to modify it.  */
       if (*valp == NULL_TREE)
