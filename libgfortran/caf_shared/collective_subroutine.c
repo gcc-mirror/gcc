@@ -121,7 +121,7 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc,
   for (; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
-  if (!result_image || *result_image == this_image.image_num)
+  if (!result_image || (*result_image - 1 ) == this_image.image_num)
     {
       if (packed)
 	memcpy (GFC_DESCRIPTOR_DATA (desc), buffer, this_image_size_bytes);

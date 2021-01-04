@@ -11217,7 +11217,7 @@ trans_argument (gfc_actual_arglist **curr_al, stmtblock_t *blk,
   if (expr->rank > 0)
     gfc_conv_expr_descriptor (argse, expr);
   else
-    gfc_conv_expr (argse, expr);
+    gfc_conv_expr_reference (argse, expr);
 
   gfc_add_block_to_block (blk, &argse->pre);
   gfc_add_block_to_block (postblk, &argse->post);

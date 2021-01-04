@@ -4187,7 +4187,7 @@ gfc_build_builtin_function_decls (void)
 
       gfor_fndecl_cas_reduce_array = 
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". W r r w w . ",
+	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". w r r w w . ",
 	  void_type_node, 6, pvoid_type_node /* desc.  */,
 	  build_pointer_type (build_function_type_list (void_type_node,
 	      pvoid_type_node, pvoid_type_node, NULL_TREE)) /* assign function.  */,

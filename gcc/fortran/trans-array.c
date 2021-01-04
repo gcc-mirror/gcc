@@ -3120,7 +3120,6 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   gfc_ss_info *ss_info;
   gfc_array_info *info;
   tree tmp;
-  gfc_ref *ref;
 
   ss_info = ss->info;
   info = &ss_info->data.array;
@@ -3172,7 +3171,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 
       if (flag_coarray == GFC_FCOARRAY_SHARED)
 	{
-	  gfc_ref *co_ref = cas_impl_this_image_ref (ref);
+	  gfc_ref *co_ref = cas_impl_this_image_ref (ss_info->expr->ref);
 	  if (co_ref)
 	    tmp = cas_add_this_image_offset (tmp, se.expr, &co_ref->u.ar, true);
 	}
