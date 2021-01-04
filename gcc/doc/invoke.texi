@@ -14672,8 +14672,8 @@ the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
 The option cannot be combined with @option{-fsanitize=thread} or
-@option{-fsanitize=hwaddress}.  Note that the only target this option is
-currently supported on is AArch64.
+@option{-fsanitize=hwaddress}.  Note that the only target
+@option{-fsanitize=hwaddress} is currently supported on is AArch64.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
