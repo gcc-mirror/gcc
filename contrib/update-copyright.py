@@ -683,6 +683,7 @@ class GCCCopyright (Copyright):
 
         self.add_external_author ('ARM')
         self.add_external_author ('AdaCore')
+        self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
         self.add_external_author ('Cavium Networks.')
         self.add_external_author ('Faraday Technology Corp.')
@@ -710,6 +711,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
         self.add_external_author ('The Regents of the University of California.')
+        self.add_external_author ('Ulf Adams')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Toronto.')
         self.add_external_author ('Yoshinori Sato')
