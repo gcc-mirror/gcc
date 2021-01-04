@@ -4045,6 +4045,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!flag_trapping_math)
   { constant_boolean_node (false, type); }))
 
+/* x == ~x -> false */
+/* x != ~x -> true */
+(for cmp (eq ne)
+ (simplify
+  (cmp:c @0 (bit_not @0))
+  { constant_boolean_node (cmp == NE_EXPR, type); }))
+
 /* Fold ~X op ~Y as Y op X.  */
 (for cmp (simple_comparison)
  (simplify
