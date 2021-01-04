@@ -7964,7 +7964,7 @@ vectorizable_store (vec_info *vinfo,
 	      /* Emit:
 		   MASK_STORE_LANES (DATAREF_PTR, ALIAS_PTR, VEC_MASK,
 				     VEC_ARRAY).  */
-	      unsigned int align = TYPE_ALIGN_UNIT (TREE_TYPE (vectype));
+	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
 	      tree alias_ptr = build_int_cst (ref_type, align);
 	      call = gimple_build_call_internal (IFN_MASK_STORE_LANES, 4,
 						 dataref_ptr, alias_ptr,
@@ -8079,7 +8079,7 @@ vectorizable_store (vec_info *vinfo,
 	      if (final_mask)
 		{
 		  align = least_bit_hwi (misalign | align);
-		  tree ptr = build_int_cst (ref_type, align);
+		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  gcall *call
 		    = gimple_build_call_internal (IFN_MASK_STORE, 4,
 						  dataref_ptr, ptr,
@@ -8094,7 +8094,7 @@ vectorizable_store (vec_info *vinfo,
 		    = vect_get_loop_len (loop_vinfo, loop_lens,
 					 vec_num * ncopies, vec_num * j + i);
 		  align = least_bit_hwi (misalign | align);
-		  tree ptr = build_int_cst (ref_type, align);
+		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  machine_mode vmode = TYPE_MODE (vectype);
 		  opt_machine_mode new_ovmode
 		    = get_len_load_store_mode (vmode, false);
@@ -9246,7 +9246,7 @@ vectorizable_load (vec_info *vinfo,
 	      /* Emit:
 		   VEC_ARRAY = MASK_LOAD_LANES (DATAREF_PTR, ALIAS_PTR,
 		                                VEC_MASK).  */
-	      unsigned int align = TYPE_ALIGN_UNIT (TREE_TYPE (vectype));
+	      unsigned int align = TYPE_ALIGN (TREE_TYPE (vectype));
 	      tree alias_ptr = build_int_cst (ref_type, align);
 	      call = gimple_build_call_internal (IFN_MASK_LOAD_LANES, 3,
 						 dataref_ptr, alias_ptr,
@@ -9347,7 +9347,8 @@ vectorizable_load (vec_info *vinfo,
 		    if (final_mask)
 		      {
 			align = least_bit_hwi (misalign | align);
-			tree ptr = build_int_cst (ref_type, align);
+			tree ptr = build_int_cst (ref_type,
+						  align * BITS_PER_UNIT);
 			gcall *call
 			  = gimple_build_call_internal (IFN_MASK_LOAD, 3,
 							dataref_ptr, ptr,
@@ -9363,7 +9364,8 @@ vectorizable_load (vec_info *vinfo,
 					       vec_num * ncopies,
 					       vec_num * j + i);
 			align = least_bit_hwi (misalign | align);
-			tree ptr = build_int_cst (ref_type, align);
+			tree ptr = build_int_cst (ref_type,
+						  align * BITS_PER_UNIT);
 			gcall *call
 			  = gimple_build_call_internal (IFN_LEN_LOAD, 3,
 							dataref_ptr, ptr,
