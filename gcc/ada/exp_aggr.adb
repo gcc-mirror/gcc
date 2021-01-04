@@ -6982,11 +6982,24 @@ package body Exp_Aggr is
       Init_Stat : Node_Id;
       Siz       : Int;
 
+      --  The following are used when the size of the aggregate is not
+      --  static and requires a dynamic evaluation.
+      Siz_Decl   : Node_Id;
+      Siz_Exp    : Node_Id := Empty;
+      Count_Type : Entity_Id;
+
       function Aggregate_Size return Int;
       --  Compute number of entries in aggregate, including choices
-      --  that cover a range, as well as iterated constructs.
+      --  that cover a range or subtype, as well as iterated constructs.
       --  Return -1 if the size is not known statically, in which case
-      --  we allocate a default size for the aggregate.
+      --  allocate a default size for the aggregate, or build an expression
+      --  to estimate the size dynamically.
+
+      function Build_Siz_Exp (Comp : Node_Id) return Int;
+      --  When the aggregate contains a single Iterated_Component_Association
+      --  or Element_Association with non-static bounds, build an expression
+      --  to be used as the allocated size of the container. This may be an
+      --  overestimate if a filter is present, but is a safe approximation.
 
       procedure Expand_Iterated_Component (Comp : Node_Id);
       --  Handle iterated_component_association and iterated_Element
@@ -7005,33 +7018,53 @@ package body Exp_Aggr is
          Siz     : Int := 0;
 
          procedure Add_Range_Size;
-         --  Compute size of component association given by
-         --  range or subtype name.
+         --  Compute number of components specified by a component association
+         --  given by a range or subtype name.
+
+         --------------------
+         -- Add_Range_Size --
+         --------------------
 
          procedure Add_Range_Size is
          begin
+            --  The bounds of the discrete range are integers or enumeration
+            --  literals
+
             if Nkind (Lo) = N_Integer_Literal then
                Siz := Siz + UI_To_Int (Intval (Hi))
-                 - UI_To_Int (Intval (Lo)) + 1;
+                          - UI_To_Int (Intval (Lo)) + 1;
+            else
+               Siz := Siz + UI_To_Int (Enumeration_Pos (Hi))
+                          - UI_To_Int (Enumeration_Pos (Lo)) + 1;
             end if;
          end Add_Range_Size;
 
       begin
+         --  Aggregate is either all positional or all named.
+
          if Present (Expressions (N)) then
             Siz := List_Length (Expressions (N));
          end if;
 
          if Present (Component_Associations (N)) then
             Comp := First (Component_Associations (N));
+            --  If there is a single component association it can be
+            --  an iterated component with dynamic bounds or an element
+            --  iterator over an iterable object. If it is an array
+            --  we can use the attribute Length to get its size;
+            --  for a predefined container the function Length plays
+            --  the same role. There is no available mechanism for
+            --  user-defined containers. For now we treat all of these
+            --  as dynamic.
 
-            --  If the component is an Iterated_Element_Association
-            --  it includes an iterator or a loop parameter, possibly
-            --  with a filter, so we do not attempt to compute its
-            --  size. Room for future optimization ???
-
-            if Nkind (Comp) = N_Iterated_Element_Association then
-               return -1;
+            if List_Length (Component_Associations (N)) = 1
+              and then Nkind (Comp) in N_Iterated_Component_Association |
+                                       N_Iterated_Element_Association
+            then
+               return Build_Siz_Exp (Comp);
             end if;
+
+            --  Otherwise all associations must specify static sizes.
 
             while Present (Comp) loop
                Choice := First (Choice_List (Comp));
@@ -7042,26 +7075,14 @@ package body Exp_Aggr is
                   if Nkind (Choice) = N_Range then
                      Lo := Low_Bound (Choice);
                      Hi := High_Bound (Choice);
-                     if Nkind (Lo) /= N_Integer_Literal
-                       or else Nkind (Hi) /= N_Integer_Literal
-                     then
-                        return -1;
-                     else
-                        Add_Range_Size;
-                     end if;
+                     Add_Range_Size;
 
                   elsif Is_Entity_Name (Choice)
                     and then Is_Type (Entity (Choice))
                   then
                      Lo := Type_Low_Bound (Entity (Choice));
                      Hi := Type_High_Bound (Entity (Choice));
-                     if Nkind (Lo) /= N_Integer_Literal
-                       or else Nkind (Hi) /= N_Integer_Literal
-                     then
-                        return -1;
-                     else
-                        Add_Range_Size;
-                     end if;
+                     Add_Range_Size;
 
                      Rewrite (Choice,
                        Make_Range (Loc,
@@ -7083,6 +7104,55 @@ package body Exp_Aggr is
 
          return Siz;
       end Aggregate_Size;
+
+      -------------------
+      -- Build_Siz_Exp --
+      -------------------
+
+      function Build_Siz_Exp (Comp : Node_Id) return Int is
+         Lo, Hi : Node_Id;
+      begin
+         if Nkind (Comp) = N_Range then
+            Lo := Low_Bound (Comp);
+            Hi := High_Bound (Comp);
+            Analyze (Lo);
+            Analyze (Hi);
+
+            --  Compute static size when possible.
+
+            if Is_Static_Expression (Lo)
+              and then Is_Static_Expression (Hi)
+            then
+               if Nkind (Lo) = N_Integer_Literal then
+                  Siz := UI_To_Int (Intval (Hi)) - UI_To_Int (Intval (Lo)) + 1;
+               else
+                  Siz := UI_To_Int (Enumeration_Pos (Hi))
+                       - UI_To_Int (Enumeration_Pos (Lo)) + 1;
+               end if;
+               return Siz;
+
+            else
+               Siz_Exp :=
+                 Make_Op_Add (Sloc (Comp),
+                   Left_Opnd =>
+                     Make_Op_Subtract (Sloc (Comp),
+                       Left_Opnd => New_Copy_Tree (Hi),
+                       Right_Opnd => New_Copy_Tree (Lo)),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, 1));
+               return -1;
+            end if;
+
+         elsif Nkind (Comp) = N_Iterated_Component_Association then
+            return Build_Siz_Exp (First (Discrete_Choices (Comp)));
+
+         elsif Nkind (Comp) = N_Iterated_Element_Association then
+            return -1;    --  TBD, build expression for size of the domain
+
+         else
+            return -1;
+         end if;
+      end Build_Siz_Exp;
 
       -------------------------------
       -- Expand_Iterated_Component --
@@ -7171,7 +7241,9 @@ package body Exp_Aggr is
          --  parameter. Otherwise the key is given by the loop parameter
          --  itself.
 
-         if Present (Add_Unnamed_Subp) then
+         if Present (Add_Unnamed_Subp)
+           and then No (Add_Named_Subp)
+         then
             Stats := New_List
               (Make_Procedure_Call_Statement (Loc,
                  Name => New_Occurrence_Of (Entity (Add_Unnamed_Subp), Loc),
@@ -7216,38 +7288,80 @@ package body Exp_Aggr is
 
       --  The constructor for bounded containers is a function with
       --  a parameter that sets the size of the container. If the
-      --  size cannot be determined statically we use a default value.
+      --  size cannot be determined statically we use a default value
+      --  or a dynamic expression.
 
       Siz := Aggregate_Size;
-      if Siz < 0 then
-         Siz := 10;
-      end if;
 
       if Ekind (Entity (Empty_Subp)) = E_Function
         and then Present (First_Formal (Entity (Empty_Subp)))
       then
          Default := Default_Value (First_Formal (Entity (Empty_Subp)));
-         --  If aggregate size is not static, use default value of
-         --  formal parameter for allocation. We assume that this
-         --  (implementation-dependent) value is static, even though
-         --   the AI does not require it ???.
 
-         if Siz < 0 then
-            Siz := UI_To_Int (Intval (Default));
+         --  If aggregate size is not static, we can use default value
+         --  of formal parameter for allocation. We assume that this
+         --  (implementation-dependent) value is static, even though
+         --   the AI does not require it.
+
+         --  Create declaration for size: a constant literal in the simple
+         --  case, an expression if iterated component associations may be
+         --  involved, the default otherwise.
+
+         Count_Type := Etype (First_Formal (Entity (Empty_Subp)));
+         if Siz = -1 then
+            if No (Siz_Exp) then
+               Siz := UI_To_Int (Intval (Default));
+               Siz_Exp := Make_Integer_Literal (Loc, Siz);
+
+            else
+               Siz_Exp := Make_Type_Conversion (Loc,
+                  Subtype_Mark =>
+                    New_Occurrence_Of (Count_Type, Loc),
+                  Expression => Siz_Exp);
+            end if;
+
+         else
+            Siz_Exp := Make_Integer_Literal (Loc, Siz);
          end if;
 
-         Init_Stat :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Temp,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc),
-             Expression => Make_Function_Call (Loc,
-               Name => New_Occurrence_Of (Entity (Empty_Subp), Loc),
-               Parameter_Associations =>
-                 New_List (Make_Integer_Literal (Loc, Siz))));
+         Siz_Decl := Make_Object_Declaration (Loc,
+            Defining_Identifier => Make_Temporary (Loc, 'S', N),
+            Object_Definition =>
+               New_Occurrence_Of (Count_Type, Loc),
+               Expression => Siz_Exp);
+         Append (Siz_Decl, Aggr_Code);
+
+         if Nkind (Siz_Exp) = N_Integer_Literal then
+            Init_Stat :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression => Make_Function_Call (Loc,
+                  Name => New_Occurrence_Of (Entity (Empty_Subp), Loc),
+                  Parameter_Associations =>
+                    New_List
+                      (New_Occurrence_Of
+                        (Defining_Identifier (Siz_Decl), Loc))));
+
+         else
+            Init_Stat :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression => Make_Function_Call (Loc,
+                  Name =>
+                    New_Occurrence_Of (Entity (New_Indexed_Subp), Loc),
+                  Parameter_Associations =>
+                    New_List (
+                      Make_Integer_Literal (Loc, 1),
+                      New_Occurrence_Of
+                        (Defining_Identifier (Siz_Decl), Loc))));
+         end if;
 
          Append (Init_Stat, Aggr_Code);
 
-         --  Use default value when aggregate size is not static.
+         --  Size is dynamic: Create declaration for object, and intitialize
+         --  with a call to the null container, or an assignment to it.
 
       else
          Decl :=
@@ -7256,11 +7370,16 @@ package body Exp_Aggr is
              Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
          Insert_Action (N, Decl);
+
+         --  The Empty entity is either a parameterless function, or
+         --  a constant.
+
          if Ekind (Entity (Empty_Subp)) = E_Function then
             Init_Stat := Make_Assignment_Statement (Loc,
               Name => New_Occurrence_Of (Temp, Loc),
               Expression => Make_Function_Call (Loc,
                 Name => New_Occurrence_Of (Entity (Empty_Subp), Loc)));
+
          else
             Init_Stat := Make_Assignment_Statement (Loc,
               Name => New_Occurrence_Of (Temp, Loc),
@@ -7277,9 +7396,7 @@ package body Exp_Aggr is
       --  If the aggregate is positional the aspect must include
       --  an Add_Unnamed subprogram.
 
-      if Present (Add_Unnamed_Subp)
-        and then No (Component_Associations (N))
-      then
+      if Present (Add_Unnamed_Subp) then
          if Present (Expressions (N)) then
             declare
                Insert : constant Entity_Id := Entity (Add_Unnamed_Subp);
@@ -7300,13 +7417,18 @@ package body Exp_Aggr is
             end;
          end if;
 
-         --  Iterated component associations may also be present.
+         --  Indexed aggregates are handled below. Unnamed aggregates
+         --  such as sets may include iterated component associations.
 
-         Comp := First (Component_Associations (N));
-         while Present (Comp) loop
-            Expand_Iterated_Component (Comp);
-            Next (Comp);
-         end loop;
+         if No (New_Indexed_Subp) then
+            Comp := First (Component_Associations (N));
+            while Present (Comp) loop
+               if Nkind (Comp) = N_Iterated_Component_Association then
+                  Expand_Iterated_Component (Comp);
+               end if;
+               Next (Comp);
+            end loop;
+         end if;
 
       ---------------------
       -- Named_Aggregate --
@@ -7357,6 +7479,8 @@ package body Exp_Aggr is
       --  subprogram. Note that unlike array aggregates, a container
       --  aggregate must be fully positional or fully indexed. In the
       --  first case the expansion has already taken place.
+      --  TBA: the keys for an indexed aggregate must provide a dense
+      --  range with no repetitions.
 
       if Present (Assign_Indexed_Subp)
         and then Present (Component_Associations (N))
