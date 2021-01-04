@@ -1,5 +1,14 @@
 2021-01-04  Nathan Sidwell  <nathan@acm.org>
 
+	Th, th, th, that's all folks!
+
+	There are a couple of cleanups it might be worth retrying in stage
+	1.
+	gcc/cp/decl.c (fixup_anonymous_aggr): I don't think we set these
+	bits prematurely anymore?
+	gcc/gcc.c (process_command): We just seem to be doing the same @
+	processing ass add_infile?
+
 	Merge trunk a5469584f61
 
 	Merge trunk 6288183377a
