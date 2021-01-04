@@ -1,5 +1,5 @@
 /* Assembly proxy functions for ms_abi tests.
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
 This file is part of GCC.

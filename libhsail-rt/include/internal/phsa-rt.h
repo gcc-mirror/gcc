@@ -1,7 +1,7 @@
 /* phsa-rt.h -- Data structures and functions of the PHSA device side runtime
    scheduler, and HSAIL built-ins.
 
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 

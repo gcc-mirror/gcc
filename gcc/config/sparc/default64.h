@@ -1,7 +1,7 @@
 /* Definitions of target machine for GCC, for bi-arch SPARC,
    defaulting to 64-bit code generation.
 
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

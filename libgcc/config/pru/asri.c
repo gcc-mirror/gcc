@@ -1,6 +1,6 @@
 /* PRU ABI compatibility functions
    Arithmetic right shift
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is free software; you can redistribute it and/or

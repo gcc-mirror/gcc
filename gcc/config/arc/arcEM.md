@@ -1,6 +1,6 @@
 ;; DFA scheduling description of the Synopsys DesignWare ARC EM cpu
 ;; for GNU C compiler
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;; Contributor: Claudiu Zissulescu <claudiu.zissulescu@synopsys.com>
 
 ;; This file is part of GCC.

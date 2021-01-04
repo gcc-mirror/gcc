@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, FreeBSD/arm version.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
