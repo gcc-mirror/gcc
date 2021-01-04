@@ -6682,6 +6682,7 @@ Type *TypeTraits::semantic(Loc, Scope *sc)
         exp->ident != Id::derivedMembers &&
         exp->ident != Id::getMember &&
         exp->ident != Id::parent &&
+        exp->ident != Id::child &&
         exp->ident != Id::getOverloads &&
         exp->ident != Id::getVirtualFunctions &&
         exp->ident != Id::getVirtualMethods &&

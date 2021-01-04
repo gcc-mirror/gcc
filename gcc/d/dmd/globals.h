@@ -286,7 +286,7 @@ typedef uint64_t                d_uns64;
 // file location
 struct Loc
 {
-    const char *filename;
+    const char *filename; // either absolute or relative to cwd
     unsigned linnum;
     unsigned charnum;
 

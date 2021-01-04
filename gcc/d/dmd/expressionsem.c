@@ -119,6 +119,36 @@ static bool preFunctionParameters(Scope *sc, Expressions *exps)
     return err;
 }
 
+/**
+ * Determines whether a symbol represents a module or package
+ * (Used as a helper for is(type == module) and is(type == package))
+ *
+ * Params:
+ *  sym = the symbol to be checked
+ *
+ * Returns:
+ *  the symbol which `sym` represents (or `null` if it doesn't represent a `Package`)
+ */
+Package *resolveIsPackage(Dsymbol *sym)
+{
+    Package *pkg;
+    if (Import *imp = sym->isImport())
+    {
+        if (imp->pkg == NULL)
+        {
+            error(sym->loc, "Internal Compiler Error: unable to process forward-referenced import `%s`",
+                  imp->toChars());
+            assert(0);
+        }
+        pkg = imp->pkg;
+    }
+    else
+        pkg = sym->isPackage();
+    if (pkg)
+        pkg->resolvePKGunknown();
+    return pkg;
+}
+
 class ExpressionSemanticVisitor : public Visitor
 {
 public:
@@ -1920,15 +1950,34 @@ public:
         }
 
         Type *tded = NULL;
-        Scope *sc2 = sc->copy();    // keep sc->flags
-        sc2->tinst = NULL;
-        sc2->minst = NULL;
-        sc2->flags |= SCOPEfullinst;
-        Type *t = e->targ->trySemantic(e->loc, sc2);
-        sc2->pop();
-        if (!t)
-            goto Lno;                       // errors, so condition is false
-        e->targ = t;
+        if (e->tok2 == TOKpackage || e->tok2 == TOKmodule) // These is() expressions are special because they can work on modules, not just types.
+        {
+            Dsymbol *sym = e->targ->toDsymbol(sc);
+            if (sym == NULL)
+                goto Lno;
+            Package *p = resolveIsPackage(sym);
+            if (p == NULL)
+                goto Lno;
+            if (e->tok2 == TOKpackage && p->isModule()) // Note that isModule() will return null for package modules because they're not actually instances of Module.
+                goto Lno;
+            else if(e->tok2 == TOKmodule && !(p->isModule() || p->isPackageMod()))
+                goto Lno;
+            tded = e->targ;
+            goto Lyes;
+        }
+
+        {
+            Scope *sc2 = sc->copy(); // keep sc->flags
+            sc2->tinst = NULL;
+            sc2->minst = NULL;
+            sc2->flags |= SCOPEfullinst;
+            Type *t = e->targ->trySemantic(e->loc, sc2);
+            sc2->pop();
+            if (!t) // errors, so condition is false
+                goto Lno;
+            e->targ = t;
+        }
+
         if (e->tok2 != TOKreserved)
         {
             switch (e->tok2)

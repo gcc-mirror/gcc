@@ -48,6 +48,7 @@ public:
     void accept(Visitor *v) { v->visit(this); }
 
     Module *isPackageMod();
+    void resolvePKGunknown();
 };
 
 class Module : public Package
@@ -68,7 +69,6 @@ public:
     const char *arg;    // original argument name
     ModuleDeclaration *md; // if !NULL, the contents of the ModuleDeclaration declaration
     File *srcfile;      // input source file
-    const char* srcfilePath; // the path prefix to the srcfile if it applies
     File *objfile;      // output .obj file
     File *hdrfile;      // 'header' file
     File *docfile;      // output documentation file
