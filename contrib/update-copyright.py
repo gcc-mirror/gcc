@@ -594,7 +594,7 @@ class TestsuiteFilter (GenericFilter):
         if filename == 'README' and os.path.basename (dir) == 'params':
             return True
         if filename == 'pdt_5.f03' and os.path.basename (dir) == 'gfortran.dg':
-	    return True
+            return True
         return GenericFilter.skip_file (self, dir, filename)
 
 class LibCppFilter (GenericFilter):
