@@ -1,3 +1,7 @@
+2021-01-03  Mike Frysinger  <vapier@gentoo.org>
+
+	* pkg.m4: New file from pkg-config-0.29.2.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* bootstrap-hwasan.mk: Disable random frame tags for stack-tagging

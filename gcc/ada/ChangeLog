@@ -1,3 +1,7 @@
+2021-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads: Bump copyright year.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.
