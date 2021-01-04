@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2666,27 +2666,45 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 
   /* We found a match. Get the corresponding popcount builtin.  */
   tree src = gimple_phi_arg_def (phi, loop_preheader_edge (loop)->dest_idx);
-  if (TYPE_PRECISION (TREE_TYPE (src)) == TYPE_PRECISION (integer_type_node))
+  if (TYPE_PRECISION (TREE_TYPE (src)) <= TYPE_PRECISION (integer_type_node))
     fn = builtin_decl_implicit (BUILT_IN_POPCOUNT);
-  else if (TYPE_PRECISION (TREE_TYPE (src)) == TYPE_PRECISION
-	   (long_integer_type_node))
+  else if (TYPE_PRECISION (TREE_TYPE (src))
+	   == TYPE_PRECISION (long_integer_type_node))
     fn = builtin_decl_implicit (BUILT_IN_POPCOUNTL);
-  else if (TYPE_PRECISION (TREE_TYPE (src)) == TYPE_PRECISION
-	   (long_long_integer_type_node))
+  else if (TYPE_PRECISION (TREE_TYPE (src))
+	   == TYPE_PRECISION (long_long_integer_type_node)
+	   || (TYPE_PRECISION (TREE_TYPE (src))
+	       == 2 * TYPE_PRECISION (long_long_integer_type_node)))
     fn = builtin_decl_implicit (BUILT_IN_POPCOUNTLL);
 
-  /* ??? Support promoting char/short to int.  */
   if (!fn)
     return false;
 
   /* Update NITER params accordingly  */
   tree utype = unsigned_type_for (TREE_TYPE (src));
   src = fold_convert (utype, src);
-  tree call = fold_convert (utype, build_call_expr (fn, 1, src));
+  if (TYPE_PRECISION (TREE_TYPE (src)) < TYPE_PRECISION (integer_type_node))
+    src = fold_convert (unsigned_type_node, src);
+  tree call;
+  if (TYPE_PRECISION (TREE_TYPE (src))
+      == 2 * TYPE_PRECISION (long_long_integer_type_node))
+    {
+      int prec = TYPE_PRECISION (long_long_integer_type_node);
+      tree src1 = fold_convert (long_long_unsigned_type_node,
+				fold_build2 (RSHIFT_EXPR, TREE_TYPE (src),
+					     unshare_expr (src),
+					     build_int_cst (integer_type_node,
+							    prec)));
+      tree src2 = fold_convert (long_long_unsigned_type_node, src);
+      call = build_call_expr (fn, 1, src1);
+      call = fold_build2 (PLUS_EXPR, TREE_TYPE (call), call,
+			  build_call_expr (fn, 1, src2));
+      call = fold_convert (utype, call);
+    }
+  else
+    call = fold_convert (utype, build_call_expr (fn, 1, src));
   if (adjust)
-    iter = fold_build2 (MINUS_EXPR, utype,
-			call,
-			build_int_cst (utype, 1));
+    iter = fold_build2 (MINUS_EXPR, utype, call, build_int_cst (utype, 1));
   else
     iter = call;
 
@@ -2703,10 +2721,9 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   if (adjust)
     {
       tree may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
-				      build_zero_cst
-				      (TREE_TYPE (src)));
-      niter->may_be_zero =
-	simplify_using_initial_conditions (loop, may_be_zero);
+				      build_zero_cst (TREE_TYPE (src)));
+      niter->may_be_zero
+	= simplify_using_initial_conditions (loop, may_be_zero);
     }
   else
     niter->may_be_zero = boolean_false_node;

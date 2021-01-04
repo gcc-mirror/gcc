@@ -1,5 +1,5 @@
 ;; Scheduling description for Motorola PowerPC 750 and PowerPC 7400 processors.
-;;   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+;;   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 

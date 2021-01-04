@@ -775,6 +775,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	os/dir_gccgo_c.lo \
 	$(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
@@ -1062,6 +1063,7 @@ extra_go_files_os_user = os_user_linknames.go
 os/user.lo.dep: $(extra_go_files_os_user)
 
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_fsys = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
@@ -1075,9 +1077,13 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_str = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_vcs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+
+extra_check_libs_cmd_internal_buildid = $(abs_builddir)/libgotool.a
 
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 
@@ -1121,6 +1127,11 @@ syscall/signame.lo: go/syscall/signame.c runtime.inc
 syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
+
+# An os function is written in C.
+os/dir_gccgo_c.lo: go/os/dir_gccgo_c.c runtime.inc
+	@$(MKDIR_P) os
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/os/dir_gccgo_c.c
 
 # internal/cpu needs some C code.
 internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc

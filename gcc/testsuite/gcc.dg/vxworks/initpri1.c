@@ -6,6 +6,7 @@
 /* The selector below excludes VxWorks AE because AE does not support
    RTP mode.  */
 /* { dg-do compile { target { *-*-vxworks* && { ! *-*-vxworksae* } } } } */
+/* { dg-skip-if "vxworks7 SR06x0 now uses .init_array" { *-*-vxworks7r* } } */
 /* { dg-options "-mrtp" } */
 /* { dg-final { scan-assembler "ctors\.00000" } } */
 /* { dg-final { scan-assembler "dtors\.00000" } } */

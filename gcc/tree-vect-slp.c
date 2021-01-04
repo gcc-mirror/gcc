@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -1429,6 +1429,7 @@ vect_build_slp_tree (vec_info *vinfo,
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
       vect_free_slp_tree (res);
+      memset (matches, 0, sizeof (bool) * group_size);
       return NULL;
     }
   --*limit;

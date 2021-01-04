@@ -1,5 +1,5 @@
 /* List implementation of a partition of consecutive integers.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
    This file is part of GCC.

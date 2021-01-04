@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5257,6 +5257,7 @@ c_parse_final_cleanups (void)
   perform_deferred_noexcept_checks ();
 
   fini_constexpr ();
+  cp_tree_c_finish_parsing ();
   clear_consteval_vfns (consteval_vtables);
 
   /* The entire file is now complete.  If requested, dump everything

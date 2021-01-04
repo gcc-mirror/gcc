@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -5924,6 +5924,15 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
       return true;
     }
   return false;
+}
+
+/* Release memory we no longer need after parsing.  */
+void
+cp_tree_c_finish_parsing ()
+{
+  if (previous_class_level)
+    invalidate_class_lookup_cache ();
+  deleted_copy_types = NULL;
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

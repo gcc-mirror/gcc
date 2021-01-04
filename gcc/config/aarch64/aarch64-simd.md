@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 AdvSIMD architecture.
-;; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -3340,11 +3340,20 @@
 (define_expand "aarch64_combine<mode>"
   [(match_operand:<VDBL> 0 "register_operand")
    (match_operand:VDC 1 "register_operand")
-   (match_operand:VDC 2 "register_operand")]
+   (match_operand:VDC 2 "aarch64_simd_reg_or_zero")]
   "TARGET_SIMD"
 {
-  aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
-
+  if (operands[2] == CONST0_RTX (<MODE>mode))
+    {
+      if (BYTES_BIG_ENDIAN)
+	emit_insn (gen_aarch64_combinez_be<mode> (operands[0], operands[1],
+						  operands[2]));
+      else
+	emit_insn (gen_aarch64_combinez<mode> (operands[0], operands[1],
+					       operands[2]));
+    }
+  else
+    aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
   DONE;
 }
 )

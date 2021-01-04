@@ -9,6 +9,7 @@ cmd/go/internal/doc
 cmd/go/internal/envcmd
 cmd/go/internal/fix
 cmd/go/internal/fmtcmd
+cmd/go/internal/fsys
 cmd/go/internal/generate
 cmd/go/internal/get
 cmd/go/internal/help
@@ -33,19 +34,23 @@ cmd/go/internal/search
 cmd/go/internal/str
 cmd/go/internal/test
 cmd/go/internal/tool
+cmd/go/internal/trace
 cmd/go/internal/txtar
+cmd/go/internal/vcs
 cmd/go/internal/version
 cmd/go/internal/vet
 cmd/go/internal/web
 cmd/go/internal/work
 cmd/internal/browser
 cmd/internal/buildid
+cmd/internal/codesign
 cmd/internal/diff
 cmd/internal/edit
 cmd/internal/objabi
 cmd/internal/pkgpath
 cmd/internal/sys
 cmd/internal/test2json
+cmd/internal/traceviewer
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/mod/internal/lazyregexp
@@ -70,6 +75,7 @@ golang.org/x/tools/go/analysis/passes/composite
 golang.org/x/tools/go/analysis/passes/copylock
 golang.org/x/tools/go/analysis/passes/ctrlflow
 golang.org/x/tools/go/analysis/passes/errorsas
+golang.org/x/tools/go/analysis/passes/framepointer
 golang.org/x/tools/go/analysis/passes/httpresponse
 golang.org/x/tools/go/analysis/passes/ifaceassert
 golang.org/x/tools/go/analysis/passes/inspect
@@ -83,6 +89,7 @@ golang.org/x/tools/go/analysis/passes/shift
 golang.org/x/tools/go/analysis/passes/stdmethods
 golang.org/x/tools/go/analysis/passes/stringintconv
 golang.org/x/tools/go/analysis/passes/structtag
+golang.org/x/tools/go/analysis/passes/testinggoroutine
 golang.org/x/tools/go/analysis/passes/tests
 golang.org/x/tools/go/analysis/passes/unmarshal
 golang.org/x/tools/go/analysis/passes/unreachable
@@ -95,5 +102,6 @@ golang.org/x/tools/go/cfg
 golang.org/x/tools/go/types/objectpath
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/internal/analysisinternal
+golang.org/x/tools/internal/lsp/fuzzy
 golang.org/x/xerrors
 golang.org/x/xerrors/internal

@@ -1,5 +1,5 @@
 /* Definitions for -*- C++ -*- parsing and type checking.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -8237,6 +8237,8 @@ struct uid_sensitive_constexpr_evaluation_checker
   uid_sensitive_constexpr_evaluation_checker ();
   bool evaluation_restricted_p () const;
 };
+
+void cp_tree_c_finish_parsing ();
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

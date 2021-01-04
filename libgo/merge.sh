@@ -54,7 +54,13 @@ merge() {
   old=$2
   new=$3
   libgo=$4
-  if ! test -f ${new}; then
+  if test -d ${new}; then
+    if ! test -d ${old}; then
+      if test -f ${old}; then
+	echo 1>&2 "merge.sh: ${name}: FILE BECAME DIRECTORY"
+      fi
+    fi
+  elif ! test -f ${new}; then
     # The file does not exist in the new version.
     if ! test -f ${old}; then
       echo 1>&2 "merge.sh internal error no files $old $new"
@@ -128,7 +134,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/test2json/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/test2json/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/* | ./cmd/vendor/golang.org/x/mod/* | ./cmd/vendor/golang.org/x/xerrors/* | ./cmd/vendor/golang.org/x/crypto/ed25519)
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/test2json/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/codesign/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/test2json/* | ./cmd/internal/sys/* | ./cmd/internal/traceviewer/* | ./cmd/vendor/golang.org/x/tools/* | ./cmd/vendor/golang.org/x/mod/* | ./cmd/vendor/golang.org/x/xerrors/* | ./cmd/vendor/golang.org/x/crypto/ed25519)
     ;;
   ./cmd/*)
     skip=true
@@ -147,10 +153,24 @@ echo ${rev} > VERSION
   merge $f ${oldfile} ${newfile} ${libgofile}
 done
 
+(cd ${NEWDIR}/src && find . -name 'go.mod' -print) | while read f; do
+  oldfile=${OLDDIR}/src/$f
+  newfile=${NEWDIR}/src/$f
+  libgofile=go/`echo $f | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
+  merge $f ${oldfile} ${newfile} ${libgofile}
+done
+
+(cd ${NEWDIR}/src && find . -name 'modules.txt' -print) | while read f; do
+  oldfile=${OLDDIR}/src/$f
+  newfile=${NEWDIR}/src/$f
+  libgofile=go/`echo $f | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
+  merge $f ${oldfile} ${newfile} ${libgofile}
+done
+
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
   case "$d" in
-  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/test2json/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/diff/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/test2json/* | ./cmd/internal/sys/* | ./cmd/vendor/golang.org/x/tools/*)
+  ./cmd/buildid/* | ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/test2json/* | ./cmd/vet/* | ./cmd/internal/browser/* | ./cmd/internal/buildid/* | ./cmd/internal/codesign/* | ./cmd/internal/diff/* | ./cmd/internal/edit/* | ./cmd/internal/objabi/* | ./cmd/internal/test2json/* | ./cmd/internal/sys/* | ./cmd/internal/traceviewer/* | ./cmd/vendor/golang.org/x/tools/*)
     ;;
   ./cmd/*)
     skip=true

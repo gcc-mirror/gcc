@@ -594,7 +594,7 @@ class TestsuiteFilter (GenericFilter):
         if filename == 'README' and os.path.basename (dir) == 'params':
             return True
         if filename == 'pdt_5.f03' and os.path.basename (dir) == 'gfortran.dg':
-	    return True
+            return True
         return GenericFilter.skip_file (self, dir, filename)
 
 class LibCppFilter (GenericFilter):
@@ -683,6 +683,7 @@ class GCCCopyright (Copyright):
 
         self.add_external_author ('ARM')
         self.add_external_author ('AdaCore')
+        self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
         self.add_external_author ('Cavium Networks.')
         self.add_external_author ('Faraday Technology Corp.')
@@ -710,6 +711,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
         self.add_external_author ('The Regents of the University of California.')
+        self.add_external_author ('Ulf Adams')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Toronto.')
         self.add_external_author ('Yoshinori Sato')

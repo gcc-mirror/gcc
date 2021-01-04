@@ -1,6 +1,6 @@
 # Specialized code needed to support construction and destruction of
 # file-scope objects in C++ and Java code, and to support exception handling.
-# Copyright (C) 2012-2020 Free Software Foundation, Inc.
+# Copyright (C) 2012-2021 Free Software Foundation, Inc.
 # Contributed by KPIT Cummins Infosystems Limited.
 
 # This file is free software; you can redistribute it and/or modify it

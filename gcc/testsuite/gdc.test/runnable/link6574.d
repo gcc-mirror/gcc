@@ -1,16 +1,18 @@
 // PERMUTE_ARGS:
 module link6574;
 
+import imports.testmangle;
+
 enum Method { A, B, }
 
 int foo(Method method = Method.A)()
 {
-    static assert(foo.mangleof == "_D8link657428__T3fooVE8link65746Methodi0Z3fooFZi");
+    static assert(foo.mangleof == "_D8link6574"~tl!"28"~"__T3fooVE"~id!("8link6574","Qs")~"6Methodi0Z"~id!("3foo","Qs")~"FZi");
     return 10 * foo!method();
 }
 int foo(Method method : Method.A)()
 {
-    static assert(foo.mangleof == "_D8link657429__T3fooHVE8link65746Methodi0Z3fooFZi");
+    static assert(foo.mangleof == "_D8link6574"~tl!"29"~"__T3fooHVE"~id!("8link6574","Qt")~"6Methodi0Z"~id!("3foo","Qt")~"FZi");
     return 2;
 }
 int foo(Method method : Method.B)()
@@ -21,7 +23,7 @@ int foo(Method method : Method.B)()
 
 int bar(Method method = Method.B)()
 {
-    static assert(bar.mangleof == "_D8link657428__T3barVE8link65746Methodi1Z3barFZi");
+    static assert(bar.mangleof == "_D8link6574"~tl!"28"~"__T3barVE"~id!("8link6574","Qs")~"6Methodi1Z"~id!("3bar","Qs")~"FZi");
     return 10 * bar!method();
 }
 int bar(Method method : Method.A)()
@@ -31,7 +33,7 @@ int bar(Method method : Method.A)()
 }
 int bar(Method method : Method.B)()
 {
-    static assert(bar.mangleof == "_D8link657429__T3barHVE8link65746Methodi1Z3barFZi");
+    static assert(bar.mangleof == "_D8link6574"~tl!"29"~"__T3barHVE"~id!("8link6574","Qt")~"6Methodi1Z"~id!("3bar","Qt")~"FZi");
     return 3;
 }
 

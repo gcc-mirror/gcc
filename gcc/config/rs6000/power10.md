@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER10 processor.
-;; Copyright (C) 2016-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021 Free Software Foundation, Inc.
 ;;
 ;; This is a clone of power9.md.  It is intended to be a placeholder until a
 ;; real scheduler model can be contributed.

@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -3258,7 +3258,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
 static unsigned int
 vect_vfa_align (dr_vec_info *dr_info)
 {
-  return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
+  return dr_alignment (dr_info->dr);
 }
 
 /* Function vect_no_alias_p.

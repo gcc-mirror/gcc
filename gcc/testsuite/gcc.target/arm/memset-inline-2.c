@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-save-temps -Os -fno-inline" } */
+/* { dg-options "-save-temps -Os -fno-inline -mno-long-calls" } */
 
 #include <string.h>
 #include <stdlib.h>

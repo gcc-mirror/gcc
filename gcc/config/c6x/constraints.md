@@ -1,5 +1,5 @@
 ;; Constraint definitions for TI C6X.
-;; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;; Contributed by Andrew Jenner <andrew@codesourcery.com>
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;; Contributed by CodeSourcery.

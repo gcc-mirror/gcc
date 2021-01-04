@@ -1,6 +1,6 @@
 // Implementation file for the -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

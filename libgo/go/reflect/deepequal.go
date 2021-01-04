@@ -21,15 +21,13 @@ type visit struct {
 // Tests for deep equality using reflected types. The map argument tracks
 // comparisons that have already been seen, which allows short circuiting on
 // recursive types.
-func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
+func deepValueEqual(v1, v2 Value, visited map[visit]bool) bool {
 	if !v1.IsValid() || !v2.IsValid() {
 		return v1.IsValid() == v2.IsValid()
 	}
 	if v1.Type() != v2.Type() {
 		return false
 	}
-
-	// if depth > 10 { panic("deepValueEqual") }	// for debugging
 
 	// We want to avoid putting more in the visited map than we need to.
 	// For any possible reference cycle that might be encountered,
@@ -89,7 +87,7 @@ func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
 	switch v1.Kind() {
 	case Array:
 		for i := 0; i < v1.Len(); i++ {
-			if !deepValueEqual(v1.Index(i), v2.Index(i), visited, depth+1) {
+			if !deepValueEqual(v1.Index(i), v2.Index(i), visited) {
 				return false
 			}
 		}
@@ -105,7 +103,7 @@ func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
 			return true
 		}
 		for i := 0; i < v1.Len(); i++ {
-			if !deepValueEqual(v1.Index(i), v2.Index(i), visited, depth+1) {
+			if !deepValueEqual(v1.Index(i), v2.Index(i), visited) {
 				return false
 			}
 		}
@@ -114,15 +112,15 @@ func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
 		if v1.IsNil() || v2.IsNil() {
 			return v1.IsNil() == v2.IsNil()
 		}
-		return deepValueEqual(v1.Elem(), v2.Elem(), visited, depth+1)
+		return deepValueEqual(v1.Elem(), v2.Elem(), visited)
 	case Ptr:
 		if v1.Pointer() == v2.Pointer() {
 			return true
 		}
-		return deepValueEqual(v1.Elem(), v2.Elem(), visited, depth+1)
+		return deepValueEqual(v1.Elem(), v2.Elem(), visited)
 	case Struct:
 		for i, n := 0, v1.NumField(); i < n; i++ {
-			if !deepValueEqual(v1.Field(i), v2.Field(i), visited, depth+1) {
+			if !deepValueEqual(v1.Field(i), v2.Field(i), visited) {
 				return false
 			}
 		}
@@ -140,7 +138,7 @@ func deepValueEqual(v1, v2 Value, visited map[visit]bool, depth int) bool {
 		for _, k := range v1.MapKeys() {
 			val1 := v1.MapIndex(k)
 			val2 := v2.MapIndex(k)
-			if !val1.IsValid() || !val2.IsValid() || !deepValueEqual(val1, val2, visited, depth+1) {
+			if !val1.IsValid() || !val2.IsValid() || !deepValueEqual(val1, val2, visited) {
 				return false
 			}
 		}
@@ -217,5 +215,5 @@ func DeepEqual(x, y interface{}) bool {
 	if v1.Type() != v2.Type() {
 		return false
 	}
-	return deepValueEqual(v1, v2, make(map[visit]bool), 0)
+	return deepValueEqual(v1, v2, make(map[visit]bool))
 }

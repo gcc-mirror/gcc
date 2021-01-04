@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for FreeBSD/ARM64 (aarch64).
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.
