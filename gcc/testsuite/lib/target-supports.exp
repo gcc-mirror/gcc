@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -323,6 +323,12 @@ proc check_weak_available { } {
     # pdp11 doesn't support it
 
     if { [istarget pdp11*-*-*] } {
+	return 0
+    }
+
+    # VxWorks hardly supports it (vx7 RTPs only)
+
+    if { [istarget *-*-vxworks*] } {
 	return 0
     }
 
@@ -2606,6 +2612,11 @@ proc check_function_available { function } {
 # Returns true iff "fork" is available on the target system.
 
 proc check_fork_available {} {
+    if { [istarget *-*-vxworks*] } {
+	# VxWorks doesn't have fork but our way to test can't
+	# tell as we're doing partial links for kernel modules.
+	return 0
+     }    
     return [check_function_available "fork"]
 }
 
@@ -4356,6 +4367,10 @@ proc add_options_for_aarch64_sve { flags } {
 # set et_arm_neon_fp16_flags to the best options to add.
 
 proc check_effective_target_arm_fp16_alternative_ok_nocache { } {
+    if { [istarget *-*-vxworks7*] } {
+	# Not supported by the target system.
+	return 0
+    }
     global et_arm_neon_fp16_flags
     set et_arm_neon_fp16_flags ""
     if { [check_effective_target_arm32] } {
@@ -9295,6 +9310,11 @@ proc check_effective_target_gld { } {
 # (LTO) support.
 
 proc check_effective_target_lto { } {
+    if { [istarget *-*-vxworks*] } {
+	# No LTO on VxWorks, with kernel modules
+	# built with partial links
+	return 0
+    }
     if { [istarget nvptx-*-*]
 	 || [istarget amdgcn-*-*] } {
 	return 0;
@@ -9514,6 +9534,11 @@ proc check_effective_target_run_expensive_tests { } {
 # Returns 1 if "mempcpy" is available on the target system.
 
 proc check_effective_target_mempcpy {} {
+    if { [istarget *-*-vxworks*] } {
+	# VxWorks doesn't have mempcpy but our way to test fails
+	# to detect as we're doing partial links for kernel modules.
+	return 0
+     }
     return [check_function_available "mempcpy"]
 }
 

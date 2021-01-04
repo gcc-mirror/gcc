@@ -39,7 +39,7 @@ package Gnatvsn is
    --  Note: Makefile.in uses the library version string to construct the
    --  soname value.
 
-   Current_Year : constant String := "2020";
+   Current_Year : constant String := "2021";
    --  Used in printing copyright messages
 
    Verbose_Library_Version : constant String := "GNAT Lib v" & Library_Version;

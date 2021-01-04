@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -11776,8 +11776,9 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      gfc_resolve_omp_do_blocks (code, ns);
 	      break;
 	    case EXEC_SELECT_TYPE:
-	      /* Blocks are handled in resolve_select_type because we have
-		 to transform the SELECT TYPE into ASSOCIATE first.  */
+	    case EXEC_SELECT_RANK:
+	      /* Blocks are handled in resolve_select_type/rank because we
+		 have to transform the SELECT TYPE into ASSOCIATE first.  */
 	      break;
             case EXEC_DO_CONCURRENT:
 	      gfc_do_concurrent_flag = 1;

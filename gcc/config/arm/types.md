@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2020 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -18,6 +18,19 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
+
+; The insn need to autodetect for specific type attribute
+(define_attr "autodetect_type"
+    "none,
+    alu_shift_lsl_op2,
+    alu_shift_lsr_op2,
+    alu_shift_asr_op2,
+    alu_shift_mul_op3,
+    alu_shift_operator1,
+    alu_shift_operator2,
+    alu_shift_operator3,
+    alu_shift_operator4"
+    (const_string "none"))
 
 ; TYPE attribute is used to classify instructions for use in scheduling.
 ;
@@ -39,16 +52,21 @@
 ;                    or an immediate operand.  This excludes
 ;                    MOV and MVN but includes MOVT.  This also excludes
 ;                    DSP-kind instructions.  This is also the default.
-; alu_shift_imm      any arithmetic instruction that has a source operand
-;                    shifted by a constant.  This excludes simple shifts.
-; alu_shift_reg      as alu_shift_imm, with the shift amount specified in a
+; alu_shift_imm_lsl_1to4
+;                    any arithmetic instruction that has a source operand
+;                    shifted left by a constant in range 1 to 4.  This
+;                    excludes simple shifts.
+; alu_shift_imm_other
+;                    as alu_shift_imm_lsl_1to4, with the shift type is LSR or
+;                    ASR, or the shift amount is greater than or equal 5.
+; alu_shift_reg      as alu_shift_imm_*, with the shift amount specified in a
 ;                    register.
 ; alu_dsp_reg        any DSP-kind instruction like QSUB8.
 ; alus_ext           From ARMv8-A: as alu_ext, setting condition flags.
 ;                    AArch64 Only.
 ; alus_imm           as alu_imm, setting condition flags.
 ; alus_sreg          as alu_sreg, setting condition flags.
-; alus_shift_imm     as alu_shift_imm, setting condition flags.
+; alus_shift_imm     as alu_shift_imm_*, setting condition flags.
 ; alus_shift_reg     as alu_shift_reg, setting condition flags.
 ; bfm                bitfield move operation.
 ; bfx                bitfield extract operation.
@@ -565,7 +583,8 @@
   alu_ext,\
   alu_imm,\
   alu_sreg,\
-  alu_shift_imm,\
+  alu_shift_imm_lsl_1to4,\
+  alu_shift_imm_other,\
   alu_shift_reg,\
   alu_dsp_reg,\
   alus_ext,\
@@ -1106,7 +1125,43 @@
   mve_move,\
   mve_store,\
   mve_load"
-   (const_string "untyped"))
+   (cond [(eq_attr "autodetect_type" "alu_shift_lsr_op2,alu_shift_asr_op2")
+            (const_string "alu_shift_imm_other")
+          (eq_attr "autodetect_type" "alu_shift_lsl_op2")
+            (if_then_else (match_operand 2 "const_1_to_4_operand")
+                          (const_string "alu_shift_imm_lsl_1to4")
+                          (const_string "alu_shift_imm_other"))
+          (eq_attr "autodetect_type" "alu_shift_mul_op3")
+            (if_then_else (match_operand 3 "const_2_4_8_16_operand")
+                          (const_string "alu_shift_imm_lsl_1to4")
+                          (const_string "alu_shift_imm_other"))
+          (eq_attr "autodetect_type" "alu_shift_operator1")
+            (if_then_else (match_operand 1 "alu_shift_reg_p")
+               (const_string "alu_shift_reg")
+               (if_then_else (match_operand 1 "alu_shift_operator_lsl_1_to_4")
+                             (const_string "alu_shift_imm_lsl_1to4")
+                             (const_string "alu_shift_imm_other")))
+          (eq_attr "autodetect_type" "alu_shift_operator2")
+            (if_then_else (match_operand 2 "alu_shift_reg_p")
+               (const_string "alu_shift_reg")
+               (if_then_else (match_operand 2 "alu_shift_operator_lsl_1_to_4")
+                             (const_string "alu_shift_imm_lsl_1to4")
+                             (const_string "alu_shift_imm_other")))
+          (eq_attr "autodetect_type" "alu_shift_operator3")
+            (if_then_else (match_operand 3 "alu_shift_reg_p")
+               (const_string "alu_shift_reg")
+               (if_then_else (match_operand 3 "alu_shift_operator_lsl_1_to_4")
+                             (const_string "alu_shift_imm_lsl_1to4")
+                             (const_string "alu_shift_imm_other")))
+          (eq_attr "autodetect_type" "alu_shift_operator4")
+            (if_then_else (match_operand 4 "alu_shift_reg_p")
+               (const_string "alu_shift_reg")
+               (if_then_else (match_operand 4 "alu_shift_operator_lsl_1_to_4")
+                             (const_string "alu_shift_imm_lsl_1to4")
+                             (const_string "alu_shift_imm_other")))
+         ]
+         (const_string "untyped")))
+
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
 (define_attr "mul32" "no,yes"

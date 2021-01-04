@@ -16,7 +16,11 @@ inline void *operator new(__SIZE_TYPE__)
   return p;
 }
 
+// C++11 and earlier
 inline void operator delete (void*) {}
+
+// C++14 profile
+inline void operator delete (void*, __SIZE_TYPE__) {}
 
 int * __attribute__((noinline)) doit(int n)
 {

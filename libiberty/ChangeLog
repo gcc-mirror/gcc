@@ -1,3 +1,25 @@
+2020-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67343
+	* cp-demangle.h (struct d_info): Add unresolved_name_state.
+	* cp-demangle.c (d_prefix): Add subst parm.
+	(d_nested_name): Pass it.
+	(d_unresolved_name): Split out from...
+	(d_expression_1): ...here.
+	(d_demangle_callback): Maybe retry with old sr mangling.
+	* testsuite/demangle-expected: Add test.
+
+2020-12-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_expression_1): Recognize qualified-id
+	on RHS of dt/pt.
+	* testsuite/demangle-expected: Add test.
+
+2020-12-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_unqualified_name): Clear is_expression.
+	* testsuite/demangle-expected: Add tests.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* configure: Regenerate.

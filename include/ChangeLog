@@ -1,3 +1,7 @@
+2021-01-03  Mike Frysinger  <vapier@gentoo.org>
+
+	* libiberty.h (strverscmp): Delete duplicate prototype.
+
 2020-12-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	* hsa.h: Replace whole file.

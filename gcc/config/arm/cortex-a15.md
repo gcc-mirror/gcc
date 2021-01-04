@@ -1,5 +1,5 @@
 ;; ARM Cortex-A15 pipeline description
-;; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ;;
 ;; Written by Matthew Gretton-Dann <matthew.gretton-dann@arm.com>
 
@@ -78,7 +78,7 @@
 (define_insn_reservation "cortex_a15_alu_shift" 3
   (and (eq_attr "tune" "cortexa15")
        (eq_attr "type" "extend,\
-                        alu_shift_imm,alus_shift_imm,\
+                        alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                         crc,logic_shift_imm,logics_shift_imm,\
                         mov_shift,mvn_shift"))
   "ca15_issue1,(ca15_sx1,ca15_sx1+ca15_sx1_shf,ca15_sx1_alu)\

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // hexadecimal floating-point literals.
 // { dg-do run { target c++17 } }
 // { dg-xfail-run-if "Ryu needs __int128" { large_long_double && { ! int128 } } }
+// { dg-require-effective-target ieee-floats }
 
 #include <charconv>
 

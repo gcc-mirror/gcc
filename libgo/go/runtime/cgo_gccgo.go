@@ -76,7 +76,7 @@ func CgocallDone() {
 func CgocallBack() {
 	gp := getg()
 	if gp == nil || gp.m == nil {
-		needm(0)
+		needm()
 		gp = getg()
 		mp := gp.m
 		mp.dropextram = true

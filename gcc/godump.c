@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -1159,6 +1159,8 @@ go_output_typedef (class godump_container *container, tree decl)
 
       type = IDENTIFIER_POINTER (DECL_NAME (decl));
       original_type = DECL_ORIGINAL_TYPE (decl);
+      if (original_type == NULL_TREE)
+	original_type = TREE_TYPE (decl);
 
       /* Suppress typedefs where the type name matches the underlying
 	 struct/union/enum tag. This way we'll emit the struct definition

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2021 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -242,6 +242,7 @@ in the following sections.
 -fext-numeric-literals @gol
 -flang-info-include-translate@r{[}=@var{name}@r{]} @gol
 -flang-info-include-translate-not @gol
+-stdlib=@var{libstdc++,libc++} @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
@@ -3368,6 +3369,15 @@ is used when building the C++ library.)
 @opindex flang-info-include-translate-not
 Diagnose include translation events.
 
+@item -stdlib=@var{libstdc++,libc++}
+@opindex stdlib
+When G++ is configured to support this option, it allows specification of
+alternate C++ runtime libraries.  Two options are available: @var{libstdc++}
+(the default, native C++ runtime for G++) and @var{libc++} which is the
+C++ runtime installed on some operating systems (e.g. Darwin versions from
+Darwin11 onwards).  The option switches G++ to use the headers from the
+specified library and to emit @code{-lstdc++} or @code{-lc++} respectively,
+when a C++ runtime is required for linking.
 @end table
 
 In addition, these warning options have meanings only for C++ programs:
@@ -14662,8 +14672,8 @@ the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
 The option cannot be combined with @option{-fsanitize=thread} or
-@option{-fsanitize=hwaddress}.  Note that the only target this option is
-currently supported on is AArch64.
+@option{-fsanitize=hwaddress}.  Note that the only target
+@option{-fsanitize=hwaddress} is currently supported on is AArch64.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
@@ -33071,7 +33081,7 @@ links are present.
 
 The mapper protocol was published as ``A Module Mapper''
 @uref{https://wg21.link/p1184}.  The implementation is provided by
-@command{libcody}, @uref{https://www.github.com/urnathan/libcody},
+@command{libcody}, @uref{https://github.com/urnathan/libcody},
 which specifies the canonical protocol definition.  A proof of concept
 server implementation embedded in @command{make} was described in
 ''Make Me A Module'', @uref{https://wg21.link/p1602}.

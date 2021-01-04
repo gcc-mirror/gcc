@@ -1,4 +1,4 @@
-@c Copyright (C) 2019 Free Software Foundation, Inc.
+@c Copyright (C) 2019-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by David Malcolm <dmalcolm@redhat.com>.
@@ -245,7 +245,7 @@ Merging can be disabled via @option{-fno-analyzer-state-merge}.
 
 Part of the state stored at a @code{exploded_node} is a @code{region_model}.
 This is an implementation of the region-based ternary model described in
-@url{http://lcs.ios.ac.cn/~xuzb/canalyze/memmodel.pdf,
+@url{http://lcs.ios.ac.cn/~xzx/memmodel.pdf,
 "A Memory Model for Static Analysis of C Programs"}
 (Zhongxing Xu, Ted Kremenek, and Jian Zhang).
 

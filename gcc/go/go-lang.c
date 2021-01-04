@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,6 +130,16 @@ go_langhook_init (void)
      for floating point constants with abstract type.  This may
      eventually be controllable by a command line option.  */
   mpfr_set_default_prec (256);
+
+  /* If necessary, override GCC's choice of minimum and maximum
+     exponents.  This should only affect GCC middle-end
+     compilation-time, not correctness.  */
+  mpfr_exp_t exp = mpfr_get_emax ();
+  if (exp < (1 << 16) - 1)
+    mpfr_set_emax ((1 << 16) - 1);
+  exp = mpfr_get_emin ();
+  if (exp > - ((1 << 16) - 1))
+    mpfr_set_emin (- ((1 << 16) - 1));
 
   /* Go uses exceptions.  */
   using_eh_for_cleanups ();

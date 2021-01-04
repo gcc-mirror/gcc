@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -712,7 +712,8 @@ extern CONST_MODE_FBIT unsigned char mode_fbit[NUM_MACHINE_MODES];
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
-extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
+extern CONST_MODE_MASK unsigned HOST_WIDE_INT
+  mode_mask_array[NUM_MACHINE_MODES];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[MODE]
 

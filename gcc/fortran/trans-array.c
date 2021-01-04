@@ -1,5 +1,5 @@
 /* Array translation routines
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -2199,6 +2199,7 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
   gfc_ref *ref;
   gfc_typespec *ts;
   mpz_t char_len;
+  gfc_se se;
 
   /* Don't bother if we already know the length is a constant.  */
   if (*len && INTEGER_CST_P (*len))
@@ -2242,6 +2243,19 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	default:
 	 gcc_unreachable ();
 	}
+    }
+
+  /* A last ditch attempt that is sometimes needed for deferred characters.  */
+  if (!ts->u.cl->backend_decl)
+    {
+      gfc_init_se (&se, NULL);
+      if (expr->rank)
+	gfc_conv_expr_descriptor (&se, expr);
+      else
+	gfc_conv_expr (&se, expr);
+      gcc_assert (se.string_length != NULL_TREE);
+      gfc_add_block_to_block (block, &se.pre);
+      ts->u.cl->backend_decl = se.string_length;
     }
 
   *len = ts->u.cl->backend_decl;
@@ -10176,6 +10190,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree jump_label2;
   tree neq_size;
   tree lbd;
+  tree class_expr2 = NULL_TREE;
   int n;
   int dim;
   gfc_array_spec * as;
@@ -10257,6 +10272,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   else if (expr1->ts.type == BT_CLASS)
     {
       tmp = expr1->rank ? gfc_get_class_from_expr (desc) : NULL_TREE;
+      if (tmp == NULL_TREE)
+	tmp = gfc_get_class_from_gfc_expr (expr1);
+
       if (tmp != NULL_TREE)
 	{
 	  tmp2 = gfc_class_vptr_get (tmp);
@@ -10332,6 +10350,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   else if (expr1->ts.type == BT_CLASS && expr2->ts.type == BT_CLASS)
     {
       tmp = expr2->rank ? gfc_get_class_from_expr (desc2) : NULL_TREE;
+      if (tmp == NULL_TREE && expr2->expr_type == EXPR_VARIABLE)
+	tmp = class_expr2 = gfc_get_class_from_gfc_expr (expr2);
+
       if (tmp != NULL_TREE)
 	tmp = gfc_class_vtab_size_get (tmp);
       else
@@ -10617,6 +10638,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	  tmp2 = gfc_get_class_from_expr (desc2);
 	  tmp2 = gfc_class_vptr_get (tmp2);
 	}
+      else if (expr2->ts.type == BT_CLASS && class_expr2 != NULL_TREE)
+	tmp2 = gfc_class_vptr_get (class_expr2);
       else
 	{
 	  tmp2 = gfc_get_symbol_decl (gfc_find_vtab (&expr2->ts));

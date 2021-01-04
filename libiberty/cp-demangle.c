@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -429,7 +429,7 @@ static struct demangle_component *d_name (struct d_info *);
 
 static struct demangle_component *d_nested_name (struct d_info *);
 
-static struct demangle_component *d_prefix (struct d_info *);
+static struct demangle_component *d_prefix (struct d_info *, int);
 
 static struct demangle_component *d_unqualified_name (struct d_info *);
 
@@ -1510,7 +1510,7 @@ d_nested_name (struct d_info *di)
      once we have something to attach it to.  */
   rqual = d_ref_qualifier (di, NULL);
 
-  *pret = d_prefix (di);
+  *pret = d_prefix (di, 1);
   if (*pret == NULL)
     return NULL;
 
@@ -1536,10 +1536,12 @@ d_nested_name (struct d_info *di)
    <template-prefix> ::= <prefix> <(template) unqualified-name>
                      ::= <template-param>
                      ::= <substitution>
-*/
+
+   SUBST is true if we should add substitutions (as normal), false
+   if not (in an unresolved-name).  */
 
 static struct demangle_component *
-d_prefix (struct d_info *di)
+d_prefix (struct d_info *di, int subst)
 {
   struct demangle_component *ret = NULL;
 
@@ -1605,7 +1607,7 @@ d_prefix (struct d_info *di)
       else
 	ret = d_make_comp (di, comb_type, ret, dc);
 
-      if (peek != 'S' && d_peek_char (di) != 'E')
+      if (peek != 'S' && d_peek_char (di) != 'E' && subst)
 	{
 	  if (! d_add_substitution (di, ret))
 	    return NULL;
@@ -1632,9 +1634,15 @@ d_unqualified_name (struct d_info *di)
     ret = d_source_name (di);
   else if (IS_LOWER (peek))
     {
+      int was_expr = di->is_expression;
       if (peek == 'o' && d_peek_next_char (di) == 'n')
-	d_advance (di, 2);
+	{
+	  d_advance (di, 2);
+	  /* Treat cv as naming a conversion operator.  */
+	  di->is_expression = 0;
+	}
       ret = d_operator_name (di);
+      di->is_expression = was_expr;
       if (ret != NULL && ret->type == DEMANGLE_COMPONENT_OPERATOR)
 	{
 	  di->expansion += sizeof "operator" + ret->u.s_operator.op->len - 2;
@@ -3285,14 +3293,58 @@ op_is_new_cast (struct demangle_component *op)
 	      || code[0] == 'c' || code[0] == 'r'));
 }
 
+/*   <unresolved-name> ::= [gs] <base-unresolved-name> # x or (with "gs") ::x
+       ::= sr <unresolved-type> <base-unresolved-name> # T::x / decltype(p)::x
+       # T::N::x /decltype(p)::N::x
+       ::= srN <unresolved-type> <unresolved-qualifier-level>+ E <base-unresolved-name>
+       # A::x, N::y, A<T>::z; "gs" means leading "::"
+       ::= [gs] sr <unresolved-qualifier-level>+ E <base-unresolved-name>
+
+     "gs" is handled elsewhere, as a unary operator.  */
+
+static struct demangle_component *
+d_unresolved_name (struct d_info *di)
+{
+  struct demangle_component *type;
+  struct demangle_component *name;
+  char peek;
+
+  /* Consume the "sr".  */
+  d_advance (di, 2);
+
+  peek = d_peek_char (di);
+  if (di->unresolved_name_state
+      && (IS_DIGIT (peek)
+	  || IS_LOWER (peek)
+	  || peek == 'C'
+	  || peek == 'U'
+	  || peek == 'L'))
+    {
+      /* The third production is ambiguous with the old unresolved-name syntax
+	 of <type> <base-unresolved-name>; in the old mangling, A::x was mangled
+	 as sr1A1x, now sr1AE1x.  So we first try to demangle using the new
+	 mangling, then with the old if that fails.  */
+      di->unresolved_name_state = -1;
+      type = d_prefix (di, 0);
+      if (d_peek_char (di) == 'E')
+	d_advance (di, 1);
+    }
+  else
+    type = cplus_demangle_type (di);
+  name = d_unqualified_name (di);
+  if (d_peek_char (di) == 'I')
+    name = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
+			d_template_args (di));
+  return d_make_comp (di, DEMANGLE_COMPONENT_QUAL_NAME, type, name);
+}
+
 /* <expression> ::= <(unary) operator-name> <expression>
                 ::= <(binary) operator-name> <expression> <expression>
                 ::= <(trinary) operator-name> <expression> <expression> <expression>
 		::= cl <expression>+ E
                 ::= st <type>
                 ::= <template-param>
-                ::= sr <type> <unqualified-name>
-                ::= sr <type> <unqualified-name> <template-args>
+		::= <unresolved-name>
                 ::= <expr-primary>
 
   <braced-expression> ::= <expression>
@@ -3302,7 +3354,7 @@ op_is_new_cast (struct demangle_component *op)
 									# [expr ... expr] = expr
 */
 
-static inline struct demangle_component *
+static struct demangle_component *
 d_expression_1 (struct d_info *di)
 {
   char peek;
@@ -3313,20 +3365,7 @@ d_expression_1 (struct d_info *di)
   else if (peek == 'T')
     return d_template_param (di);
   else if (peek == 's' && d_peek_next_char (di) == 'r')
-    {
-      struct demangle_component *type;
-      struct demangle_component *name;
-
-      d_advance (di, 2);
-      type = cplus_demangle_type (di);
-      name = d_unqualified_name (di);
-      if (d_peek_char (di) != 'I')
-	return d_make_comp (di, DEMANGLE_COMPONENT_QUAL_NAME, type, name);
-      else
-	return d_make_comp (di, DEMANGLE_COMPONENT_QUAL_NAME, type,
-			    d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
-					 d_template_args (di)));
-    }
+    return d_unresolved_name (di);
   else if (peek == 's' && d_peek_next_char (di) == 'p')
     {
       d_advance (di, 2);
@@ -3470,10 +3509,22 @@ d_expression_1 (struct d_info *di)
 	      right = d_exprlist (di, 'E');
 	    else if (!strcmp (code, "dt") || !strcmp (code, "pt"))
 	      {
-		right = d_unqualified_name (di);
-		if (d_peek_char (di) == 'I')
-		  right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
-				       right, d_template_args (di));
+		peek = d_peek_char (di);
+		/* These codes start a qualified name.  */
+		if ((peek == 'g' && d_peek_next_char (di) == 's')
+		    || (peek == 's' && d_peek_next_char (di) == 'r'))
+		  right = d_expression_1 (di);
+		else
+		  {
+		    /* Otherwise it's an unqualified name.  We use
+		       d_unqualified_name rather than d_expression_1 here for
+		       old mangled names that didn't add 'on' before operator
+		       names.  */
+		    right = d_unqualified_name (di);
+		    if (d_peek_char (di) == 'I')
+		      right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
+					   right, d_template_args (di));
+		  }
 	      }
 	    else
 	      right = d_expression_1 (di);
@@ -6379,6 +6430,9 @@ d_demangle_callback (const char *mangled, int options,
       type = DCT_TYPE;
     }
 
+  di.unresolved_name_state = 1;
+
+ again:
   cplus_demangle_init_info (mangled, options, strlen (mangled), &di);
 
   /* PR 87675 - Check for a mangled string that is so long
@@ -6436,6 +6490,13 @@ d_demangle_callback (const char *mangled, int options,
        parameters.  */
     if (((options & DMGL_PARAMS) != 0) && d_peek_char (&di) != '\0')
       dc = NULL;
+
+    /* See discussion in d_unresolved_name.  */
+    if (dc == NULL && di.unresolved_name_state == -1)
+      {
+	di.unresolved_name_state = 0;
+	goto again;
+      }
 
 #ifdef CP_DEMANGLE_DEBUG
     d_dump (dc, 0);

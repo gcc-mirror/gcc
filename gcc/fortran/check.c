@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -289,7 +289,7 @@ bin2real (gfc_expr *x, int kind)
 }
 
 
-/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2real () 
+/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2real ()
    converts the string into a REAL of the appropriate kind.  The treatment
    of the sign bit is processor dependent.  */
 
@@ -377,12 +377,12 @@ gfc_boz2real (gfc_expr *x, int kind)
 }
 
 
-/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2int () 
+/* Fortran 2018 treats a BOZ as simply a string of bits.  gfc_boz2int ()
    converts the string into an INTEGER of the appropriate kind.  The
    treatment of the sign bit is processor dependent.  If the  converted
    value exceeds the range of the type, then wrap-around semantics are
    applied.  */
- 
+
 bool
 gfc_boz2int (gfc_expr *x, int kind)
 {
@@ -975,7 +975,8 @@ allocatable_check (gfc_expr *e, int n)
   symbol_attribute attr;
 
   attr = gfc_variable_attr (e, NULL);
-  if (!attr.allocatable || attr.associate_var)
+  if (!attr.allocatable
+     || (attr.associate_var && !attr.select_rank_temporary))
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be ALLOCATABLE",
 		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
@@ -3232,7 +3233,7 @@ gfc_check_intconv (gfc_expr *x)
       || strcmp (gfc_current_intrinsic, "long") == 0)
     {
       gfc_error ("%qs intrinsic subprogram at %L has been deprecated.  "
-		 "Use INT intrinsic subprogram.", gfc_current_intrinsic, 
+		 "Use INT intrinsic subprogram.", gfc_current_intrinsic,
 		 &x->where);
       return false;
     }
@@ -3965,7 +3966,7 @@ gfc_check_findloc (gfc_actual_arglist *ap)
   /* Check the kind of the characters argument match.  */
   if (a1 && v1 && a->ts.kind != v->ts.kind)
     goto incompat;
-	 
+
   d = ap->next->next->expr;
   m = ap->next->next->next->expr;
   k = ap->next->next->next->next->expr;

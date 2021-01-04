@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C++ front end.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,6 +49,34 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBSTDCXX_STATIC NULL
 #endif
 
+#ifndef LIBCXX
+#define LIBCXX "c++"
+#endif
+#ifndef LIBCXX_PROFILE
+#define LIBCXX_PROFILE LIBCXX
+#endif
+#ifndef LIBCXX_STATIC
+#define LIBCXX_STATIC NULL
+#endif
+
+#ifndef LIBCXXABI
+#define LIBCXXABI "c++abi"
+#endif
+#ifndef LIBCXXABI_PROFILE
+#define LIBCXXABI_PROFILE LIBCXXABI
+#endif
+#ifndef LIBCXXABI_STATIC
+#define LIBCXXABI_STATIC NULL
+#endif
+
+/* The values used here must match those of the stdlib_kind enumeration
+   in c.opt.  */
+enum stdcxxlib_kind
+{
+  USE_LIBSTDCXX = 1,
+  USE_LIBCXX = 2
+};
+
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		      unsigned int *in_decoded_options_count,
@@ -59,12 +87,15 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* If nonzero, the user gave us the `-p' or `-pg' flag.  */
   int saw_profile_flag = 0;
 
-  /* What do with libstdc++:
-     -1 means we should not link in libstdc++
-     0  means we should link in libstdc++ if it is needed
-     1  means libstdc++ is needed and should be linked in.
-     2  means libstdc++ is needed and should be linked statically.  */
+  /* What action to take for the c++ runtime library:
+    -1  means we should not link it in.
+     0  means we should link it if it is needed.
+     1  means it is needed and should be linked in.
+     2  means it is needed but should be linked statically.  */
   int library = 0;
+
+  /* Which c++ runtime library to link.  */
+  stdcxxlib_kind which_library = USE_LIBSTDCXX;
 
   /* The number of arguments being added to what's in argv, other than
      libraries.  We use this to track the number of times we've inserted
@@ -194,6 +225,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  args[i] |= SKIPOPT;
 	  break;
 
+	case OPT_stdlib_:
+	  which_library = (stdcxxlib_kind) decoded_options[i].value;
+	  break;
+
 	case OPT_SPECIAL_input_file:
 	  {
 	    int len;
@@ -250,6 +285,13 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Add one for shared_libgcc or extra static library.  */
   num_args = argc + added + need_math + (library > 0) * 4 + 1;
+  /* For libc++, on most platforms, the ABI library (usually called libc++abi)
+     is provided as a separate DSO, which we must also append.
+     However, a platform might have the ability to forward the ABI library
+     from libc++, or combine it in some other way; in that case, LIBCXXABI
+     should be set to NULL to signal that it need not be appended.  */
+  if (which_library == USE_LIBCXX && LIBCXXABI != NULL)
+    num_args += 4;
   new_decoded_options = XNEWVEC (struct cl_decoded_option, num_args);
 
   i = 0;
@@ -323,9 +365,25 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  j++;
 	}
 #endif
-      generate_option (OPT_l,
-		       saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX, 1,
-		       CL_DRIVER, &new_decoded_options[j]);
+      if (which_library == USE_LIBCXX)
+	{
+	  generate_option (OPT_l,
+			 saw_profile_flag ? LIBCXX_PROFILE : LIBCXX, 1,
+			 CL_DRIVER, &new_decoded_options[j]);
+	  if (LIBCXXABI != NULL)
+	    {
+	      j++;
+	      added_libraries++;
+	      generate_option (OPT_l,
+			       saw_profile_flag ? LIBCXXABI_PROFILE
+						: LIBCXXABI, 1,
+			       CL_DRIVER, &new_decoded_options[j]);
+	    }
+	}
+      else
+	generate_option (OPT_l,
+			 saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX, 1,
+			 CL_DRIVER, &new_decoded_options[j]);
       added_libraries++;
       j++;
       /* Add target-dependent static library, if necessary.  */

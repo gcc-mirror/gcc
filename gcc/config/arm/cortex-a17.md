@@ -1,5 +1,5 @@
 ;; ARM Cortex-A17 pipeline description
-;; Copyright (C) 2014-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -47,7 +47,7 @@
 
 (define_insn_reservation "cortex_a17_alu_shiftimm" 2
   (and (eq_attr "tune" "cortexa17")
-       (eq_attr "type" "bfm,clz,rev,rbit, alu_shift_imm, alus_shift_imm,
+       (eq_attr "type" "bfm,clz,rev,rbit, alu_shift_imm_lsl_1to4,alu_shift_imm_other, alus_shift_imm,
                         logic_shift_imm,alu_dsp_reg, logics_shift_imm,shift_imm,\
                         shift_reg, mov_shift,mvn_shift"))
   "ca17_alu")

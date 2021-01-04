@@ -28,7 +28,9 @@ AUTOCONF := @AUTOCONF@
 AUTOHEADER := @AUTOHEADER@
 CXX := @CXX@
 CXXFLAGS := @CXXFLAGS@
-CXXOPTS := $(CXXFLAGS) -fno-exceptions -fno-rtti
+PIEFLAG := @PIEFLAG@
+CXXOPTS := $(CXXFLAGS) $(PIEFLAG) -fno-exceptions -fno-rtti
+LDFLAGS := @LDFLAGS@
 exeext := @EXEEXT@
 LIBIBERTY := ../libiberty/libiberty.a
 VERSION.O := ../gcc/version.o
@@ -88,7 +90,7 @@ MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
 CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I.
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) -o $@ $^ $(VERSION.O) $(LIBIBERTY)
+	+$(CXX) $(LDFLAGS) $(PIEFLAG) -o $@ $^ $(VERSION.O) $(LIBIBERTY)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)

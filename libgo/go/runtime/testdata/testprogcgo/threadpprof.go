@@ -75,7 +75,6 @@ import "C"
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -98,7 +97,7 @@ func CgoPprofThreadNoTraceback() {
 }
 
 func pprofThread() {
-	f, err := ioutil.TempFile("", "prof")
+	f, err := os.CreateTemp("", "prof")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)

@@ -1,4 +1,3 @@
 void test (void)
 { /* { dg-message "1: to match this '.'" } */
-  int filler;
-  /* { dg-error "-:expected '.' at end of input" "" { target *-*-* } .+1 } */
+  int filler; /* { dg-error "14:expected '.' at end of input"  } */

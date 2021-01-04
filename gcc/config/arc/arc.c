@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -901,7 +901,7 @@ arc_secondary_reload (bool in_p,
 
 	  /* It is a pseudo that ends in a stack location.  This
 	     procedure only works with the old reload step.  */
-	  if (reg_equiv_mem (REGNO (x)) && !lra_in_progress)
+	  if (!lra_in_progress && reg_equiv_mem (REGNO (x)))
 	    {
 	      /* Get the equivalent address and check the range of the
 		 offset.  */
@@ -9234,13 +9234,21 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	}
       if (arc_is_uncached_mem_p (operands[1]))
 	{
+	  rtx tmp = operands[0];
+
 	  if (MEM_P (operands[0]))
-	    operands[0] = force_reg (mode, operands[0]);
+	    tmp = gen_reg_rtx (mode);
+
 	  emit_insn (gen_rtx_SET
-		     (operands[0],
+		     (tmp,
 		      gen_rtx_UNSPEC_VOLATILE
 		      (mode, gen_rtvec (1, operands[1]),
 		       VUNSPEC_ARC_LDDI)));
+	  if (MEM_P (operands[0]))
+	    {
+	      operands[1] = tmp;
+	      return false;
+	    }
 	  return true;
 	}
     }

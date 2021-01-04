@@ -2,7 +2,7 @@
  *  restore_world routines, which need to do a run-time check to see if
  *  they should save and restore the vector registers.
  *
- *   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+ *   Copyright (C) 2004-2021 Free Software Foundation, Inc.
  * 
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

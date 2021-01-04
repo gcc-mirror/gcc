@@ -276,6 +276,10 @@ class GitCommit:
         self.revert_commit = None
         self.commit_to_info_hook = commit_to_info_hook
 
+        # Skip Update copyright years commits
+        if self.info.lines and self.info.lines[0] == 'Update copyright years.':
+            return
+
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
             m = revert_regex.match(line)

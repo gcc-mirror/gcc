@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1230,6 +1230,8 @@ common_comparison_type (vec<tree> &comps)
   for (unsigned i = 0; i < comps.length(); ++i)
     {
       tree comp = comps[i];
+      if (TREE_CODE (comp) == TREE_LIST)
+	comp = TREE_VALUE (comp);
       tree ctype = TREE_TYPE (comp);
       comp_cat_tag tag = cat_tag_for (ctype);
       /* build_comparison_op already checked this.  */
@@ -1419,10 +1421,47 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      continue;
 	    }
 
-	  tree lhs_mem = build3 (COMPONENT_REF, expr_type, lhs, field,
-				 NULL_TREE);
-	  tree rhs_mem = build3 (COMPONENT_REF, expr_type, rhs, field,
-				 NULL_TREE);
+	  tree lhs_mem = build3_loc (field_loc, COMPONENT_REF, expr_type, lhs,
+				     field, NULL_TREE);
+	  tree rhs_mem = build3_loc (field_loc, COMPONENT_REF, expr_type, rhs,
+				     field, NULL_TREE);
+	  tree loop_indexes = NULL_TREE;
+	  while (TREE_CODE (expr_type) == ARRAY_TYPE)
+	    {
+	      /* Flexible array member.  */
+	      if (TYPE_DOMAIN (expr_type) == NULL_TREE
+		  || TYPE_MAX_VALUE (TYPE_DOMAIN (expr_type)) == NULL_TREE)
+		{
+		  if (complain & tf_error)
+		    inform (field_loc, "cannot default compare "
+				       "flexible array member");
+		  bad = true;
+		  break;
+		}
+	      tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (expr_type));
+	      /* [0] array.  No subobjects to compare, just skip it.  */
+	      if (integer_all_onesp (maxval))
+		break;
+	      tree idx;
+	      /* [1] array, no loop needed, just add [0] ARRAY_REF.
+		 Similarly if !info.defining.  */
+	      if (integer_zerop (maxval) || !info.defining)
+		idx = size_zero_node;
+	      /* Some other array, will need runtime loop.  */
+	      else
+		{
+		  idx = force_target_expr (sizetype, maxval, complain);
+		  loop_indexes = tree_cons (idx, NULL_TREE, loop_indexes);
+		}
+	      expr_type = TREE_TYPE (expr_type);
+	      lhs_mem = build4_loc (field_loc, ARRAY_REF, expr_type, lhs_mem,
+				    idx, NULL_TREE, NULL_TREE);
+	      rhs_mem = build4_loc (field_loc, ARRAY_REF, expr_type, rhs_mem,
+				    idx, NULL_TREE, NULL_TREE);
+	    }
+	  if (TREE_CODE (expr_type) == ARRAY_TYPE)
+	    continue;
+
 	  tree overload = NULL_TREE;
 	  tree comp = build_new_op (field_loc, code, flags, lhs_mem, rhs_mem,
 				    NULL_TREE, &overload,
@@ -1486,6 +1525,18 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      bad = true;
 	      continue;
 	    }
+	  /* Most of the time, comp is the expression that should be evaluated
+	     to compare the two members.  If the expression needs to be
+	     evaluated more than once in a loop, it will be a TREE_LIST
+	     instead, whose TREE_VALUE is the expression for one array element,
+	     TREE_PURPOSE is innermost iterator temporary and if the array
+	     is multidimensional, TREE_CHAIN will contain another TREE_LIST
+	     with second innermost iterator in its TREE_PURPOSE and so on.  */
+	  if (loop_indexes)
+	    {
+	      TREE_VALUE (loop_indexes) = comp;
+	      comp = loop_indexes;
+	    }
 	  comps.safe_push (comp);
 	}
       if (code == SPACESHIP_EXPR && is_auto (rettype))
@@ -1502,8 +1553,38 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	{
 	  tree comp = comps[i];
 	  tree eq, retval = NULL_TREE, if_ = NULL_TREE;
+	  tree loop_indexes = NULL_TREE;
 	  if (info.defining)
-	    if_ = begin_if_stmt ();
+	    {
+	      if (TREE_CODE (comp) == TREE_LIST)
+		{
+		  loop_indexes = comp;
+		  comp = TREE_VALUE (comp);
+		  loop_indexes = nreverse (loop_indexes);
+		  for (tree loop_index = loop_indexes; loop_index;
+		       loop_index = TREE_CHAIN (loop_index))
+		    {
+		      tree for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
+		      tree idx = TREE_PURPOSE (loop_index);
+		      tree maxval = TARGET_EXPR_INITIAL (idx);
+		      TARGET_EXPR_INITIAL (idx) = size_zero_node;
+		      add_stmt (idx);
+		      finish_init_stmt (for_stmt);
+		      finish_for_cond (build2 (LE_EXPR, boolean_type_node, idx,
+					       maxval), for_stmt, false, 0);
+		      finish_for_expr (cp_build_unary_op (PREINCREMENT_EXPR,
+							  TARGET_EXPR_SLOT (idx),
+							  false, complain),
+							  for_stmt);
+		      /* Store in TREE_VALUE the for_stmt tree, so that we can
+			 later on call finish_for_stmt on it (in the reverse
+			 order).  */
+		      TREE_VALUE (loop_index) = for_stmt;
+		    }
+		  loop_indexes = nreverse (loop_indexes);
+		}
+	      if_ = begin_if_stmt ();
+	    }
 	  /* Spaceship is specified to use !=, but for the comparison category
 	     types, != is equivalent to !(==), so let's use == directly.  */
 	  if (code == EQ_EXPR)
@@ -1542,6 +1623,9 @@ build_comparison_op (tree fndecl, tsubst_flags_t complain)
 	      finish_return_stmt (retval);
 	      finish_else_clause (if_);
 	      finish_if_stmt (if_);
+	      for (tree loop_index = loop_indexes; loop_index;
+		   loop_index = TREE_CHAIN (loop_index))
+		finish_for_stmt (TREE_VALUE (loop_index));
 	    }
 	}
       if (info.defining)

@@ -1,5 +1,5 @@
 /* Utility functions used by tools like collect2 and lto-wrapper.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,7 +127,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
       /* Note: we assume argv contains at least one element; this is
          checked above.  */
 
-      if (!save_temps || !atsuffix)
+      if (!save_temps || !atsuffix || !dumppfx)
 	response_file = make_temp_file ("");
       else
 	response_file = concat (dumppfx, atsuffix, NULL);

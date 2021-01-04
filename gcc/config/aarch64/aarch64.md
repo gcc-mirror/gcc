@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -2474,7 +2474,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -2486,7 +2486,7 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "*add_<optab><ALLX:mode>_<GPI:mode>"
@@ -3121,7 +3121,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "sub\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -3134,7 +3134,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "sub\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "*sub_<optab><ALLX:mode>_<GPI:mode>"
@@ -3535,7 +3535,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "neg\\t%<w>0, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -3547,7 +3547,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "neg\\t%w0, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "mul<mode>3"

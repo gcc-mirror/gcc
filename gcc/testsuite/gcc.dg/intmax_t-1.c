@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
-/* { dg-error "" "" { target { { *arm*-*-*elf* xtensa*-*-elf* } || vxworks_kernel } } 0 } */
+/* { dg-error "" "" { target { { *arm*-*-*elf* xtensa*-*-elf* } || { vxworks_kernel && { ! *-*-vxworks7r* } } } } 0 } */
 
 /* Compile with -Wall to get a warning if built-in and system intmax_t don't
    match.  */

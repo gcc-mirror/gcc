@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5097,6 +5097,8 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
     x = TREE_OPERAND (x, 0);
 
   tree type = TREE_TYPE (x);
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
 
    if (TREE_CODE (x) != INTEGER_CST
       && TREE_CODE (x) != SSA_NAME)
@@ -13398,6 +13400,9 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
     return false;
 
   tree dealloc_decl = get_callee_fndecl (exp);
+  if (!dealloc_decl)
+    return false;
+
   if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
       && !DECL_IS_REPLACEABLE_OPERATOR (dealloc_decl))
     {
@@ -13410,7 +13415,7 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
 	  if (is_gimple_call (def_stmt))
 	    {
 	      tree alloc_decl = gimple_call_fndecl (def_stmt);
-	      if (!DECL_IS_OPERATOR_NEW_P (alloc_decl))
+	      if (!alloc_decl || !DECL_IS_OPERATOR_NEW_P (alloc_decl))
 		return false;
 	    }
 	}

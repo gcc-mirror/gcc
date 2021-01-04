@@ -5,8 +5,8 @@
 // Recreate a getsystemcfg syscall handler instead of
 // using the one provided by x/sys/unix to avoid having
 // the dependency between them. (See golang.org/issue/32102)
-// Morover, this file will be used during the building of
-// gccgo's libgo and thus must not use a CGo method.
+// Morever, this file will be used during the building of
+// gccgo's libgo and thus must not used a CGo method.
 
 // +build aix
 // +build gccgo

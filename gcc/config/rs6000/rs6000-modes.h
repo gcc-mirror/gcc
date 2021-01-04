@@ -1,5 +1,5 @@
 /* Definitions 128-bit floating point precisions used by PowerPC.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.ibm.com)
 
    This file is part of GCC.

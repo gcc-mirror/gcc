@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -2877,7 +2877,10 @@ write_member_name (tree member)
       write_unqualified_id (member);
     }
   else if (DECL_P (member))
-    write_unqualified_name (member);
+    {
+      gcc_assert (!DECL_OVERLOADED_OPERATOR_P (member));
+      write_unqualified_name (member);
+    }
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
     {
       tree name = TREE_OPERAND (member, 0);
@@ -3162,6 +3165,7 @@ write_expression (tree expr)
 	write_expression (member);
       else
 	{
+	  gcc_assert (code != BASELINK || BASELINK_QUALIFIED_P (expr));
 	  write_string ("sr");
 	  write_type (scope);
 	  write_member_name (member);
@@ -3344,7 +3348,9 @@ write_expression (tree expr)
     }
   else if (dependent_name (expr))
     {
-      write_unqualified_id (dependent_name (expr));
+      tree name = dependent_name (expr);
+      gcc_assert (!IDENTIFIER_ANY_OP_P (name));
+      write_unqualified_id (name);
     }
   else
     {

@@ -1,6 +1,6 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
 
-// Copyright (C) 1994-2020 Free Software Foundation, Inc.
+// Copyright (C) 1994-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

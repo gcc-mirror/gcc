@@ -1,6 +1,6 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=soft" } {""} } */
-/* { dg-additional-options "-march=armv8.1-m.main+mve -mfloat-abi=hard -mthumb -mfpu=auto --save-temps" } */
+/* { dg-additional-options "-march=armv8.1-m.main+mve -mfloat-abi=hard -mthumb -mfpu=auto -mno-long-calls --save-temps" } */
 
 float
 foo (float a, float b, float c)

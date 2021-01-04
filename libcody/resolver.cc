@@ -32,8 +32,8 @@ inline bool IsAbsPath (char const *str)
   // IIRC windows has the concept of per-drive current directories,
   // which make drive-using paths confusing.  Let's not get into that.
   return IsDirSep (str)
-    || (((str[0] >= 'A' && str[1] <= 'Z')
-	 || (str[0] >= 'a' && str[1] <= 'z'))&& str[1] == ':');
+    || (((str[0] >= 'A' && str[0] <= 'Z')
+	 || (str[0] >= 'a' && str[0] <= 'z'))&& str[1] == ':');
 }
 #else
 inline bool IsDirSep (char c)

@@ -1,3 +1,7 @@
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
@@ -2278,7 +2282,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2020 Free Software Foundation, Inc.
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

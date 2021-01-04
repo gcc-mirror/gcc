@@ -1,5 +1,5 @@
 /* d-lang.cc -- Language-dependent hooks for D.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -114,26 +114,35 @@ deps_add_target (const char *target, bool quoted)
     }
 
   /* Quote characters in target which are significant to Make.  */
+  unsigned slashes = 0;
+
   for (const char *p = target; *p != '\0'; p++)
     {
       switch (*p)
 	{
+	case '\\':
+	  slashes++;
+	  break;
+
 	case ' ':
 	case '\t':
-	  for (const char *q = p - 1; target <= q && *q == '\\';  q--)
+	  while (slashes--)
 	    obstack_1grow (&buffer, '\\');
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	case '$':
 	  obstack_1grow (&buffer, '$');
-	  break;
+	  goto Ldef;
 
 	case '#':
+	case ':':
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	default:
+	Ldef:
+	  slashes = 0;
 	  break;
 	}
 

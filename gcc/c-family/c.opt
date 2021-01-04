@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2020 Free Software Foundation, Inc.
+; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -2355,6 +2355,20 @@ Conform to the ISO 2017 C standard (published in 2018).
 std=iso9899:2018
 C ObjC Alias(std=c17)
 Conform to the ISO 2017 C standard (published in 2018).
+
+stdlib=
+Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)
+-stdlib=[libstdc++|libc++]	The standard library to be used for C++ headers
+and runtime.
+
+Enum
+Name(stdlib_kind) Type(int)
+
+EnumValue
+Enum(stdlib_kind) String(libstdc++) Value(1)
+
+EnumValue
+Enum(stdlib_kind) String(libc++) Value(2)
 
 traditional
 Driver

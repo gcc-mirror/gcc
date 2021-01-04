@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
 
@@ -6868,8 +6868,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 cases, so we need to check that this is ok.  One exception is when
 	 vectorizing an outer-loop: the inner-loop is executed sequentially,
 	 and therefore vectorizing reductions in the inner-loop during
-	 outer-loop vectorization is safe.  */
-      if (needs_fold_left_reduction_p (scalar_type, orig_code))
+	 outer-loop vectorization is safe.  Likewise when we are vectorizing
+	 a series of reductions using SLP and the VF is one the reductions
+	 are performed in scalar order.  */
+      if (slp_node
+	  && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	  && known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1u))
+	;
+      else if (needs_fold_left_reduction_p (scalar_type, orig_code))
 	{
 	  /* When vectorizing a reduction chain w/o SLP the reduction PHI
 	     is not directy used in stmt.  */

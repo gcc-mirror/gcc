@@ -154,7 +154,7 @@ func TestCgoExecSignalMask(t *testing.T) {
 	case "windows", "plan9":
 		t.Skipf("skipping signal mask test on %s", runtime.GOOS)
 	}
-	got := runTestProg(t, "testprogcgo", "CgoExecSignalMask")
+	got := runTestProg(t, "testprogcgo", "CgoExecSignalMask", "GOTRACEBACK=system")
 	want := "OK\n"
 	if got != want {
 		t.Errorf("expected %q, got %v", want, got)
@@ -253,6 +253,27 @@ func TestCgoCrashTraceback(t *testing.T) {
 	for i := 1; i <= 3; i++ {
 		if !strings.Contains(got, fmt.Sprintf("cgo symbolizer:%d", i)) {
 			t.Errorf("missing cgo symbolizer:%d", i)
+		}
+	}
+}
+
+func TestCgoCrashTracebackGo(t *testing.T) {
+	t.Parallel()
+	switch platform := runtime.GOOS + "/" + runtime.GOARCH; platform {
+	case "darwin/amd64":
+	case "linux/amd64":
+	case "linux/ppc64le":
+	default:
+		t.Skipf("not yet supported on %s", platform)
+	}
+	if runtime.Compiler == "gccgo" {
+		t.Skip("gccgo does not have SetCgoTraceback")
+	}
+	got := runTestProg(t, "testprogcgo", "CrashTracebackGo")
+	for i := 1; i <= 3; i++ {
+		want := fmt.Sprintf("main.h%d", i)
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %s", want)
 		}
 	}
 }
