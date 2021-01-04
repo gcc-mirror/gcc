@@ -16099,6 +16099,34 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
 
+(define_insn_and_split "*sse2_pmovskb_zexthisi"
+  [(set (match_operand:SI 0 "register_operand")
+	(zero_extend:SI
+	  (subreg:HI
+	    (unspec:SI
+	      [(match_operand:V16QI 1 "register_operand")]
+	      UNSPEC_MOVMSK) 0)))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand")
+	(zero_extend:SI
+	  (not:HI
+	    (subreg:HI
+	      (unspec:SI
+		[(match_operand:V16QI 1 "register_operand")]
+		UNSPEC_MOVMSK) 0))))]
+  "TARGET_SSE2"
+  [(set (match_dup 2)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
+   (set (match_dup 0)
+	(xor:SI (match_dup 2) (const_int 65535)))]
+ "operands[2] = gen_reg_rtx (SImode);")
+
 (define_split
   [(set (match_operand:SI 0 "register_operand")
 	(unspec:SI
