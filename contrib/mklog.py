@@ -27,8 +27,10 @@
 # Author: Martin Liska <mliska@suse.cz>
 
 import argparse
+import datetime
 import os
 import re
+import subprocess
 import sys
 from itertools import takewhile
 
@@ -227,6 +229,28 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     return out
 
 
+def update_copyright(data):
+    current_timestamp = datetime.datetime.now().strftime('%Y-%m-%d')
+    username = subprocess.check_output('git config user.name', shell=True,
+                                       encoding='utf8').strip()
+    email = subprocess.check_output('git config user.email', shell=True,
+                                    encoding='utf8').strip()
+
+    changelogs = set()
+    diff = PatchSet(data)
+
+    for file in diff:
+        changelog = os.path.join(find_changelog(file.path), 'ChangeLog')
+        if changelog not in changelogs:
+            changelogs.add(changelog)
+            with open(changelog) as f:
+                content = f.read()
+            with open(changelog, 'w+') as f:
+                f.write(f'{current_timestamp}  {username}  <{email}>\n\n')
+                f.write('\tUpdate copyright years.\n\n')
+                f.write(content)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=help_message)
     parser.add_argument('input', nargs='?',
@@ -238,28 +262,33 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--changelog',
                         help='Append the ChangeLog to a git commit message '
                              'file')
+    parser.add_argument('--update-copyright', action='store_true',
+                        help='Update copyright in ChangeLog files')
     args = parser.parse_args()
     if args.input == '-':
         args.input = None
 
     data = open(args.input) if args.input else sys.stdin
-    output = generate_changelog(data, args.no_functions,
-                                args.fill_up_bug_titles)
-    if args.changelog:
-        lines = open(args.changelog).read().split('\n')
-        start = list(takewhile(lambda l: not l.startswith('#'), lines))
-        end = lines[len(start):]
-        with open(args.changelog, 'w') as f:
-            if start:
-                # appent empty line
-                if start[-1] != '':
-                    start.append('')
-            else:
-                # append 2 empty lines
-                start = 2 * ['']
-            f.write('\n'.join(start))
-            f.write('\n')
-            f.write(output)
-            f.write('\n'.join(end))
+    if args.update_copyright:
+        update_copyright(data)
     else:
-        print(output, end='')
+        output = generate_changelog(data, args.no_functions,
+                                    args.fill_up_bug_titles)
+        if args.changelog:
+            lines = open(args.changelog).read().split('\n')
+            start = list(takewhile(lambda l: not l.startswith('#'), lines))
+            end = lines[len(start):]
+            with open(args.changelog, 'w') as f:
+                if start:
+                    # appent empty line
+                    if start[-1] != '':
+                        start.append('')
+                else:
+                    # append 2 empty lines
+                    start = 2 * ['']
+                f.write('\n'.join(start))
+                f.write('\n')
+                f.write(output)
+                f.write('\n'.join(end))
+        else:
+            print(output, end='')
