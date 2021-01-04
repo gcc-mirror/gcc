@@ -1,3 +1,11 @@
+2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR target/97865
+	* configure.tgt: Add dynamic_lookup to EXTRA_CXXFLAGS for
+	Darwin.
+	* configure: Regenerate.
+
 2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

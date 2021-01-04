@@ -1,3 +1,11 @@
+2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97438
+	* g++.dg/coroutines/pr97438.C: New test.
+
 2021-01-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

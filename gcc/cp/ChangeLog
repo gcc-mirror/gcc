@@ -1,3 +1,16 @@
+2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97438
+	* coroutines.cc (struct coroutine_info): Add a field to
+	record that we emitted a promise type error.
+	(coro_promise_type_found_p): Check for the case that the
+	promise type contains both return_void and return_value.
+	Emit an error if so, with information about the wrong
+	type methods.
+
 2020-12-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98332

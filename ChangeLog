@@ -1,3 +1,10 @@
+2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR target/97865
+	* libtool.m4: Update handling of Darwin platform link flags
+	for Darwin20.
+
 2020-11-25  Martin Liska  <mliska@suse.cz>
 
 	* .gitignore: Add .clang-tidy.

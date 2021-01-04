@@ -1,3 +1,12 @@
+2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR target/97865
+	* Makefile.am: Add dynamic_lookup to LD flags for Darwin.
+	* configure.ac: Test for Darwin host and set a flag.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.
