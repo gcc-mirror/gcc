@@ -2602,6 +2602,42 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      return (set_src_cost (tem, int_mode, speed)
 		      <= set_src_cost (orig, int_mode, speed) ? tem : 0);
 	    }
+
+	  /* Optimize (X - 1) * Y + Y to X * Y.  */
+	  lhs = op0;
+	  rhs = op1;
+	  if (GET_CODE (op0) == MULT)
+	    {
+	      if (((GET_CODE (XEXP (op0, 0)) == PLUS
+		    && XEXP (XEXP (op0, 0), 1) == constm1_rtx)
+		   || (GET_CODE (XEXP (op0, 0)) == MINUS
+		       && XEXP (XEXP (op0, 0), 1) == const1_rtx))
+		  && rtx_equal_p (XEXP (op0, 1), op1))
+		lhs = XEXP (XEXP (op0, 0), 0);
+	      else if (((GET_CODE (XEXP (op0, 1)) == PLUS
+			 && XEXP (XEXP (op0, 1), 1) == constm1_rtx)
+			|| (GET_CODE (XEXP (op0, 1)) == MINUS
+			    && XEXP (XEXP (op0, 1), 1) == const1_rtx))
+		       && rtx_equal_p (XEXP (op0, 0), op1))
+		lhs = XEXP (XEXP (op0, 1), 0);
+	    }
+	  else if (GET_CODE (op1) == MULT)
+	    {
+	      if (((GET_CODE (XEXP (op1, 0)) == PLUS
+		    && XEXP (XEXP (op1, 0), 1) == constm1_rtx)
+		   || (GET_CODE (XEXP (op1, 0)) == MINUS
+		       && XEXP (XEXP (op1, 0), 1) == const1_rtx))
+		  && rtx_equal_p (XEXP (op1, 1), op0))
+		rhs = XEXP (XEXP (op1, 0), 0);
+	      else if (((GET_CODE (XEXP (op1, 1)) == PLUS
+			 && XEXP (XEXP (op1, 1), 1) == constm1_rtx)
+			|| (GET_CODE (XEXP (op1, 1)) == MINUS
+			    && XEXP (XEXP (op1, 1), 1) == const1_rtx))
+		       && rtx_equal_p (XEXP (op1, 0), op0))
+		rhs = XEXP (XEXP (op1, 1), 0);
+	    }
+	  if (lhs != op0 || rhs != op1)
+	    return simplify_gen_binary (MULT, int_mode, lhs, rhs);
 	}
 
       /* (plus (xor X C1) C2) is (xor X (C1^C2)) if C2 is signbit.  */
@@ -2789,6 +2825,26 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      return (set_src_cost (tem, int_mode, speed)
 		      <= set_src_cost (orig, int_mode, speed) ? tem : 0);
 	    }
+
+	  /* Optimize (X + 1) * Y - Y to X * Y.  */
+	  lhs = op0;
+	  if (GET_CODE (op0) == MULT)
+	    {
+	      if (((GET_CODE (XEXP (op0, 0)) == PLUS
+		    && XEXP (XEXP (op0, 0), 1) == const1_rtx)
+		   || (GET_CODE (XEXP (op0, 0)) == MINUS
+		       && XEXP (XEXP (op0, 0), 1) == constm1_rtx))
+		  && rtx_equal_p (XEXP (op0, 1), op1))
+		lhs = XEXP (XEXP (op0, 0), 0);
+	      else if (((GET_CODE (XEXP (op0, 1)) == PLUS
+			 && XEXP (XEXP (op0, 1), 1) == const1_rtx)
+			|| (GET_CODE (XEXP (op0, 1)) == MINUS
+			    && XEXP (XEXP (op0, 1), 1) == constm1_rtx))
+		       && rtx_equal_p (XEXP (op0, 0), op1))
+		lhs = XEXP (XEXP (op0, 1), 0);
+	    }
+	  if (lhs != op0)
+	    return simplify_gen_binary (MULT, int_mode, lhs, op1);
 	}
 
       /* (a - (-b)) -> (a + b).  True even for IEEE.  */

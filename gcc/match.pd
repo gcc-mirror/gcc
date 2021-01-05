@@ -321,7 +321,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (unsigned long long) (1 << 31) is -2147483648ULL, not 2147483648ULL,
    so it is valid only if A >> 31 is zero.  */
 (simplify
- (trunc_div @0 (convert? (lshift integer_onep@1 @2)))
+ (trunc_div (convert?@0 @3) (convert2? (lshift integer_onep@1 @2)))
  (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
       && (!VECTOR_TYPE_P (type)
 	  || target_supports_op_p (type, RSHIFT_EXPR, optab_vector)
@@ -336,7 +336,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			  & wi::mask (element_precision (TREE_TYPE (@1)) - 1,
 				      true,
 				      element_precision (type))) == 0)))))
-  (rshift @0 @2)))
+   (if (!VECTOR_TYPE_P (type)
+	&& useless_type_conversion_p (TREE_TYPE (@3), TREE_TYPE (@1))
+	&& element_precision (TREE_TYPE (@3)) < element_precision (type))
+    (convert (rshift @3 @2))
+    (rshift @0 @2))))
 
 /* Preserve explicit divisions by 0: the C++ front-end wants to detect
    undefined behavior in constexpr evaluation, and assuming that the division

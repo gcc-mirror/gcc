@@ -1,3 +1,22 @@
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add AMD and Ulf Adams as external authors.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Use 8 spaces instead of tab to indent.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Add --update-copyright option which adds:
+	"Update copyright years." to ChangeLog files belonging
+	to a modified file.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Skip Update copyright
+	years commits.
+
 2020-12-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add new error for quoted

@@ -4840,9 +4840,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       gimple_call_set_fndecl (stmt, edge->callee->decl);
       update_stmt (stmt);
       id->src_node->remove ();
-      expand_call_inline (bb, stmt, id, to_purge);
+      successfully_inlined = expand_call_inline (bb, stmt, id, to_purge);
       maybe_remove_unused_call_args (cfun, stmt);
-      return true;
+      /* This used to return true even though we do fail to inline in
+	 some cases.  See PR98525.  */
+      goto egress;
     }
   fn = cg_edge->callee->decl;
   cg_edge->callee->get_untransformed_body ();

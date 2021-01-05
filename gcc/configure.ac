@@ -1335,6 +1335,15 @@ EXTRA_GCC_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(EXTRA_GCC_LIBS)
 
+# Solaris needs libsocket and libnsl for socket functions before 11.4.
+# C++ needs those for libcody.
+save_LIBS="$LIBS"
+LIBS=
+AX_LIB_SOCKET_NSL
+NETLIBS="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(NETLIBS)
+
 # Some systems put ldexp and frexp in libm instead of libc; assume
 # they're both in the same place.  jcf-dump needs them.
 save_LIBS="$LIBS"

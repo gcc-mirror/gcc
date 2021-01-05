@@ -378,6 +378,26 @@ convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
 	}
       break;
 
+    case UNSPEC:
+      /* Assume that all UNSPECs in a constant address can be converted
+	 operand-by-operand.  We could add a target hook if some targets
+	 require different behavior.  */
+      if (in_const && GET_MODE (x) == from_mode)
+	{
+	  unsigned int n = XVECLEN (x, 0);
+	  rtvec v = gen_rtvec (n);
+	  for (unsigned int i = 0; i < n; ++i)
+	    {
+	      rtx op = XVECEXP (x, 0, i);
+	      if (GET_MODE (op) == from_mode)
+		op = convert_memory_address_addr_space_1 (to_mode, op, as,
+							  in_const, no_emit);
+	      RTVEC_ELT (v, i) = op;
+	    }
+	  return gen_rtx_UNSPEC (to_mode, v, XINT (x, 1));
+	}
+      break;
+
     default:
       break;
     }

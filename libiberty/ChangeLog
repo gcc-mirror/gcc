@@ -1,3 +1,7 @@
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* strverscmp.c: Convert to utf8 from iso8859.
+
 2020-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67343

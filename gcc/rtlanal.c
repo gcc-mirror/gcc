@@ -1458,11 +1458,13 @@ set_of (const_rtx pat, const_rtx insn)
 /* Check whether instruction pattern PAT contains a SET with the following
    properties:
 
-   - the SET is executed unconditionally;
-   - the destination of the SET is write-only rather than read-write; and
+   - the SET is executed unconditionally; and
    - either:
      - the destination of the SET is a REG that contains REGNO; or
-     - the destination of the SET is a SUBREG of such a REG.
+     - both:
+       - the destination of the SET is a SUBREG of such a REG; and
+       - writing to the subreg clobbers all of the SUBREG_REG
+	 (in other words, read_modify_subreg_p is false).
 
    If PAT does have a SET like that, return the set, otherwise return null.
 

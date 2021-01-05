@@ -1096,11 +1096,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		   && rhs_code == BIT_FIELD_REF)
 	    {
 	      tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-	      if (TREE_CODE (vec) != SSA_NAME
+	      if (!is_a <bb_vec_info> (vinfo)
+		  || TREE_CODE (vec) != SSA_NAME
 		  || !types_compatible_p (vectype, TREE_TYPE (vec)))
 		{
-		  if (is_a <bb_vec_info> (vinfo) && i != 0)
-		    continue;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: "
@@ -3095,15 +3094,18 @@ vect_optimize_slp (vec_info *vinfo)
 	    ;
 	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
 	    {
-	      /* If the node if already a permute node we just need to apply
-		 the permutation to the permute node itself.  */
+	      /* If the node is already a permute node we can apply
+		 the permutation to the lane selection, effectively
+		 materializing it on the incoming vectors.  */
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "simplifying permute node %p\n",
 				 node);
 
-	      vect_slp_permute (perms[perm], SLP_TREE_LANE_PERMUTATION (node),
-				true);
+	      for (unsigned k = 0;
+		   k < SLP_TREE_LANE_PERMUTATION (node).length (); ++k)
+		SLP_TREE_LANE_PERMUTATION (node)[k].second
+		  = perms[perm][SLP_TREE_LANE_PERMUTATION (node)[k].second];
 	    }
 	  else
 	    {
@@ -4617,8 +4619,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	bb_vinfo->shared->check_datarefs ();
       bb_vinfo->vector_mode = next_vector_mode;
 
-      if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal, dataref_groups)
-	  && dbg_cnt (vect_slp))
+      if (vect_slp_analyze_bb_1 (bb_vinfo, n_stmts, fatal, dataref_groups))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -4648,6 +4649,9 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 				     "profitable.\n");
 		  continue;
 		}
+
+	      if (!dbg_cnt (vect_slp))
+		continue;
 
 	      if (!vectorized && dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
@@ -5553,7 +5557,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    dump_printf (MSG_NOTE, ",");
 	  dump_printf (MSG_NOTE, " vops%u[%u][%u]",
 		       vperm[i].first.first, vperm[i].first.second,
-		       vperm[i].first.second);
+		       vperm[i].second);
 	}
       dump_printf (MSG_NOTE, "\n");
     }
