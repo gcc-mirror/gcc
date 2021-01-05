@@ -1096,11 +1096,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		   && rhs_code == BIT_FIELD_REF)
 	    {
 	      tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-	      if (TREE_CODE (vec) != SSA_NAME
+	      if (!is_a <bb_vec_info> (vinfo)
+		  || TREE_CODE (vec) != SSA_NAME
 		  || !types_compatible_p (vectype, TREE_TYPE (vec)))
 		{
-		  if (is_a <bb_vec_info> (vinfo) && i != 0)
-		    continue;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: "
