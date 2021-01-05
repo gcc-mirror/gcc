@@ -10761,6 +10761,10 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
 
   tree ret = build_min (BIT_CAST_EXPR, type, arg);
   SET_EXPR_LOCATION (ret, loc);
+
+  if (!processing_template_decl && CLASS_TYPE_P (type))
+    ret = get_target_expr_sfinae (ret, complain);
+
   return ret;
 }
 

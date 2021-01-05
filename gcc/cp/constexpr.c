@@ -6900,6 +6900,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return t;
 
     case BIT_CAST_EXPR:
+      if (lval)
+	{
+	  if (!ctx->quiet)
+	    error_at (EXPR_LOCATION (t),
+		      "address of a call to %qs is not a constant expression",
+		      "__builtin_bit_cast");
+	  *non_constant_p = true;
+	  return t;
+	}
       r = cxx_eval_bit_cast (ctx, t, non_constant_p, overflow_p);
       break;
 
