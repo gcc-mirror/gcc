@@ -21373,9 +21373,10 @@ ix86_c_mode_for_suffix (char suffix)
    with the old cc0-based compiler.  */
 
 static rtx_insn *
-ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
-		    vec<const char *> &constraints,
-		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
+		    vec<machine_mode> & /*input_modes*/,
+		    vec<const char *> &constraints, vec<rtx> &clobbers,
+		    HARD_REG_SET &clobbered_regs)
 {
   bool saw_asm_flag = false;
 

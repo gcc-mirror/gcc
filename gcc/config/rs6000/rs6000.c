@@ -3412,9 +3412,10 @@ rs6000_builtin_mask_calculate (void)
    not such a great idea.  */
 
 static rtx_insn *
-rs6000_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
-		      vec<const char *> &/*constraints*/,
-		      vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+rs6000_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		      vec<machine_mode> & /*input_modes*/,
+		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		      HARD_REG_SET &clobbered_regs)
 {
   clobbers.safe_push (gen_rtx_REG (SImode, CA_REGNO));
   SET_HARD_REG_BIT (clobbered_regs, CA_REGNO);

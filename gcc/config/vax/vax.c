@@ -56,7 +56,7 @@ static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static machine_mode vax_cc_modes_compatible (machine_mode, machine_mode);
 static rtx_insn *vax_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-				    vec<const char *> &,
+				    vec<machine_mode> &, vec<const char *> &,
 				    vec<rtx> &, HARD_REG_SET &);
 static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
 static void vax_function_arg_advance (cumulative_args_t,
@@ -1174,6 +1174,7 @@ vax_cc_modes_compatible (machine_mode m1, machine_mode m2)
 static rtx_insn *
 vax_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 		   vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		   vec<machine_mode> &input_modes ATTRIBUTE_UNUSED,
 		   vec<const char *> &constraints ATTRIBUTE_UNUSED,
 		   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
 {
