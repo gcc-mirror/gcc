@@ -359,9 +359,10 @@ Session::enable_dump (std::string arg)
    * created */
   if (arg == "all")
     {
-      rust_error_at (Location (),
-		     "dumping all is not supported as of now. choose %<lex%>, %<parse%>, "
-         "or %<target_options%>");
+      rust_error_at (
+	Location (),
+	"dumping all is not supported as of now. choose %<lex%>, %<parse%>, "
+	"or %<target_options%>");
       return false;
     }
   else if (arg == "lex")
@@ -409,10 +410,11 @@ Session::enable_dump (std::string arg)
     }
   else
     {
-      rust_error_at (Location (),
-		     "dump option %qs was unrecognised. choose %<lex%>, %<parse%>, or "
-         "%<target_options%>",
-		     arg.c_str ());
+      rust_error_at (
+	Location (),
+	"dump option %qs was unrecognised. choose %<lex%>, %<parse%>, or "
+	"%<target_options%>",
+	arg.c_str ());
       return false;
     }
   return true;

@@ -111,6 +111,18 @@ public:
 	  = backend->named_type ("i32", backend->integer_type (false, 32),
 				 Linemap::predeclared_location ());
 	return;
+
+      case TyTy::IntType::I64:
+	translated
+	  = backend->named_type ("i64", backend->integer_type (false, 64),
+				 Linemap::predeclared_location ());
+	return;
+
+      case TyTy::IntType::I128:
+	translated
+	  = backend->named_type ("i128", backend->integer_type (false, 128),
+				 Linemap::predeclared_location ());
+	return;
       }
     gcc_unreachable ();
   }
@@ -133,6 +145,18 @@ public:
       case TyTy::UintType::U32:
 	translated
 	  = backend->named_type ("i32", backend->integer_type (true, 32),
+				 Linemap::predeclared_location ());
+	return;
+
+      case TyTy::UintType::U64:
+	translated
+	  = backend->named_type ("u64", backend->integer_type (true, 64),
+				 Linemap::predeclared_location ());
+	return;
+
+      case TyTy::UintType::U128:
+	translated
+	  = backend->named_type ("u128", backend->integer_type (true, 128),
 				 Linemap::predeclared_location ());
 	return;
       }

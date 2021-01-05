@@ -791,7 +791,8 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	  }
 
 	// create actual LiteralExpr
-	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_locus ());
+	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (),
+				   t->get_locus ());
 
 	std::unique_ptr<AST::AttrInputLiteral> attr_input_lit (
 	  new AST::AttrInputLiteral (std::move (lit_expr)));
@@ -7374,7 +7375,8 @@ Parser<ManagedTokenSource>::parse_literal_expr (
   // create literal based on stuff in switch
   return std::unique_ptr<AST::LiteralExpr> (
     new AST::LiteralExpr (std::move (literal_value), std::move (type),
-			  t->get_locus (), std::move (outer_attrs)));
+			  t->get_type_hint (), t->get_locus (),
+			  std::move (outer_attrs)));
 }
 
 // Parses a return expression (including any expression to return).
@@ -9954,7 +9956,8 @@ Parser<ManagedTokenSource>::parse_literal_or_range_pattern ()
       lexer.skip_token ();
       std::unique_ptr<AST::RangePatternBound> lower (
 	new AST::RangePatternBoundLiteral (
-	  AST::Literal (range_lower->get_str (), type),
+	  AST::Literal (range_lower->get_str (), type,
+			PrimitiveCoreType::CORETYPE_UNKNOWN),
 	  range_lower->get_locus (), has_minus));
 
       std::unique_ptr<AST::RangePatternBound> upper
@@ -9995,26 +9998,30 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
       lexer.skip_token ();
       return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	new AST::RangePatternBoundLiteral (
-	  AST::Literal (range_lower->get_str (), AST::Literal::CHAR),
+	  AST::Literal (range_lower->get_str (), AST::Literal::CHAR,
+			range_lower->get_type_hint ()),
 	  range_lower_locus));
     case BYTE_CHAR_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	new AST::RangePatternBoundLiteral (
-	  AST::Literal (range_lower->get_str (), AST::Literal::BYTE),
+	  AST::Literal (range_lower->get_str (), AST::Literal::BYTE,
+			range_lower->get_type_hint ()),
 	  range_lower_locus));
     case INT_LITERAL:
       lexer.skip_token ();
       return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	new AST::RangePatternBoundLiteral (
-	  AST::Literal (range_lower->get_str (), AST::Literal::INT),
+	  AST::Literal (range_lower->get_str (), AST::Literal::INT,
+			range_lower->get_type_hint ()),
 	  range_lower_locus));
     case FLOAT_LITERAL:
       lexer.skip_token ();
       fprintf (stderr, "warning: used deprecated float range pattern bound");
       return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	new AST::RangePatternBoundLiteral (
-	  AST::Literal (range_lower->get_str (), AST::Literal::FLOAT),
+	  AST::Literal (range_lower->get_str (), AST::Literal::FLOAT,
+			range_lower->get_type_hint ()),
 	  range_lower_locus));
     case MINUS:
       // branch on next token
@@ -10025,7 +10032,8 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
 	  lexer.skip_token (1);
 	  return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	    new AST::RangePatternBoundLiteral (
-	      AST::Literal (range_lower->get_str (), AST::Literal::INT),
+	      AST::Literal (range_lower->get_str (), AST::Literal::INT,
+			    range_lower->get_type_hint ()),
 	      range_lower_locus, true));
 	case FLOAT_LITERAL:
 	  lexer.skip_token (1);
@@ -10033,7 +10041,8 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
 		   "warning: used deprecated float range pattern bound");
 	  return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	    new AST::RangePatternBoundLiteral (
-	      AST::Literal (range_lower->get_str (), AST::Literal::FLOAT),
+	      AST::Literal (range_lower->get_str (), AST::Literal::FLOAT,
+			    range_lower->get_type_hint ()),
 	      range_lower_locus, true));
 	default:
 	  rust_error_at (range_lower->get_locus (),
@@ -12110,22 +12119,24 @@ Parser<ManagedTokenSource>::null_denotation (
       // encode as int?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::INT,
-			      tok->get_locus ()));
+			      tok->get_type_hint (), tok->get_locus ()));
     case FLOAT_LITERAL:
       // encode as float?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::FLOAT,
-			      tok->get_locus ()));
+			      tok->get_type_hint (), tok->get_locus ()));
     case STRING_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::STRING,
-			      tok->get_locus ()));
+			      tok->get_type_hint (), tok->get_locus ()));
     case TRUE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
-	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_locus ()));
+	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_type_hint (),
+			      tok->get_locus ()));
     case FALSE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
-	new AST::LiteralExpr ("false", AST::Literal::BOOL, tok->get_locus ()));
+	new AST::LiteralExpr ("false", AST::Literal::BOOL,
+			      tok->get_type_hint (), tok->get_locus ()));
       case LEFT_PAREN: { // have to parse whole expression if inside brackets
 	/* recursively invoke parse_expression with lowest priority possible as
 	 * it it were a top-level expression. */

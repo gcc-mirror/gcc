@@ -328,6 +328,7 @@ public:
 				   UNKNOWN_LOCAL_DEFID);
 
     translated = new HIR::LiteralExpr (mapping, expr.as_string (), type,
+				       expr.get_literal ().get_type_hint (),
 				       expr.get_locus ());
   }
 

@@ -50,10 +50,10 @@ public:
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
 
   LiteralExpr (std::string value_as_string, Literal::LitType type,
-	       Location locus,
+	       PrimitiveCoreType type_hint, Location locus,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : ExprWithoutBlock (std::move (outer_attrs)),
-      literal (std::move (value_as_string), type), locus (locus)
+      literal (std::move (value_as_string), type, type_hint), locus (locus)
   {}
 
   LiteralExpr (Literal literal, Location locus,

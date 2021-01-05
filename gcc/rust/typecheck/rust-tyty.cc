@@ -205,6 +205,10 @@ IntType::as_string () const
       return "i16";
     case I32:
       return "i32";
+    case I64:
+      return "i64";
+    case I128:
+      return "i128";
     }
   gcc_unreachable ();
   return "__unknown_int_type";
@@ -234,6 +238,10 @@ UintType::as_string () const
       return "u16";
     case U32:
       return "u32";
+    case U64:
+      return "u64";
+    case U128:
+      return "u128";
     }
   gcc_unreachable ();
   return "__unknown_uint_type";
