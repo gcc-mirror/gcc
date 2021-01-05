@@ -163,6 +163,24 @@ public:
     gcc_unreachable ();
   }
 
+  void visit (TyTy::FloatType &type) override
+  {
+    switch (type.get_kind ())
+      {
+      case TyTy::FloatType::F32:
+	translated = backend->named_type ("f32", backend->float_type (32),
+					  Linemap::predeclared_location ());
+	return;
+
+      case TyTy::FloatType::F64:
+	translated = backend->named_type ("f32", backend->float_type (64),
+					  Linemap::predeclared_location ());
+	return;
+      }
+
+    gcc_unreachable ();
+  }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

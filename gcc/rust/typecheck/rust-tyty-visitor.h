@@ -37,6 +37,7 @@ public:
   virtual void visit (BoolType &type) {}
   virtual void visit (IntType &type) {}
   virtual void visit (UintType &type) {}
+  virtual void visit (FloatType &type) {}
 };
 
 } // namespace TyTy

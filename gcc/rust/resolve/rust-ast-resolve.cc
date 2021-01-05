@@ -140,6 +140,10 @@ Resolver::generate_builtins ()
   auto i128
     = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I128);
   auto rbool = new TyTy::BoolType (mappings->get_next_hir_id ());
+  auto f32
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
+  auto f64
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
 
   MKBUILTIN_TYPE ("u8", builtins, u8);
   MKBUILTIN_TYPE ("u16", builtins, u16);
@@ -152,6 +156,8 @@ Resolver::generate_builtins ()
   MKBUILTIN_TYPE ("i64", builtins, i64);
   MKBUILTIN_TYPE ("i128", builtins, i128);
   MKBUILTIN_TYPE ("bool", builtins, rbool);
+  MKBUILTIN_TYPE ("f32", builtins, f32);
+  MKBUILTIN_TYPE ("f64", builtins, f64);
 }
 
 void

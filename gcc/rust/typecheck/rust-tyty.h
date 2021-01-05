@@ -295,6 +295,31 @@ private:
   UintKind uint_kind;
 };
 
+class FloatType : public TyBase
+{
+public:
+  enum FloatKind
+  {
+    F32,
+    F64
+  };
+
+  FloatType (HirId ref, FloatKind kind)
+    : TyBase (ref, TypeKind::FLOAT), float_kind (kind)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  FloatKind get_kind () const { return float_kind; }
+
+private:
+  FloatKind float_kind;
+};
+
 } // namespace TyTy
 } // namespace Rust
 

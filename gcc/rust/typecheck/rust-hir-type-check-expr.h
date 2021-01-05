@@ -196,6 +196,13 @@ public:
 	}
 	break;
 
+	case HIR::Literal::LitType::FLOAT: {
+	  // FIXME need to respect the suffix if applicable
+	  auto ok = context->lookup_builtin ("f32", &infered);
+	  rust_assert (ok);
+	}
+	break;
+
 	case HIR::Literal::LitType::BOOL: {
 	  auto ok = context->lookup_builtin ("bool", &infered);
 	  rust_assert (ok);

@@ -255,6 +255,33 @@ UintType::combine (TyBase *other)
 }
 
 void
+FloatType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+FloatType::as_string () const
+{
+  switch (float_kind)
+    {
+    case F32:
+      return "f32";
+    case F64:
+      return "f64";
+    }
+  gcc_unreachable ();
+  return "__unknown_float_type";
+}
+
+TyBase *
+FloatType::combine (TyBase *other)
+{
+  FloatRules r (this);
+  return r.combine (other);
+}
+
+void
 TypeCheckCallExpr::visit (FnType &type)
 {
   if (call.num_params () != type.num_params ())
