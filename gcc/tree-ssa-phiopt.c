@@ -62,6 +62,8 @@ static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, gimple *, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, gimple *, tree, tree);
+static bool xor_replacement (basic_block, basic_block,
+			     edge, edge, gimple *, tree, tree);
 static bool cond_removal_in_popcount_clz_ctz_pattern (basic_block, basic_block,
 						      edge, edge, gimple *,
 						      tree, tree);
@@ -344,6 +346,9 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 					       arg0, arg1))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (!early_p
+		   && xor_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (!early_p
 		   && cond_removal_in_popcount_clz_ctz_pattern (bb, bb1, e1,
@@ -2091,6 +2096,109 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
       gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
     }
+
+  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
+
+  /* Note that we optimized this PHI.  */
+  return true;
+}
+
+/* Optimize x < 0 ? ~y : y into (x >> (prec-1)) ^ y.  */
+
+static bool
+xor_replacement (basic_block cond_bb, basic_block middle_bb,
+		 edge e0 ATTRIBUTE_UNUSED, edge e1,
+		 gimple *phi, tree arg0, tree arg1)
+{
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
+    return false;
+
+  /* OTHER_BLOCK must have only one executable statement which must have the
+     form arg0 = ~arg1 or arg1 = ~arg0.  */
+
+  gimple *assign = last_and_only_stmt (middle_bb);
+  /* If we did not find the proper one's complement assignment, then we cannot
+     optimize.  */
+  if (assign == NULL)
+    return false;
+
+  /* If we got here, then we have found the only executable statement
+     in OTHER_BLOCK.  If it is anything other than arg = ~arg1 or
+     arg1 = ~arg0, then we cannot optimize.  */
+  if (!is_gimple_assign (assign))
+    return false;
+
+  if (gimple_assign_rhs_code (assign) != BIT_NOT_EXPR)
+    return false;
+
+  tree lhs = gimple_assign_lhs (assign);
+  tree rhs = gimple_assign_rhs1 (assign);
+
+  /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
+  if (!(lhs == arg0 && rhs == arg1) && !(lhs == arg1 && rhs == arg0))
+    return false;
+
+  gimple *cond = last_stmt (cond_bb);
+  tree result = PHI_RESULT (phi);
+
+  /* Only relationals comparing arg[01] against zero are interesting.  */
+  enum tree_code cond_code = gimple_cond_code (cond);
+  if (cond_code != LT_EXPR && cond_code != GE_EXPR)
+    return false;
+
+  /* Make sure the conditional is x OP 0.  */
+  tree clhs = gimple_cond_lhs (cond);
+  if (TREE_CODE (clhs) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (clhs))
+      || TYPE_UNSIGNED (TREE_TYPE (clhs))
+      || TYPE_PRECISION (TREE_TYPE (clhs)) != TYPE_PRECISION (TREE_TYPE (arg1))
+      || !integer_zerop (gimple_cond_rhs (cond)))
+    return false;
+
+  /* We need to know which is the true edge and which is the false
+     edge so that we know if have xor or inverted xor.  */
+  edge true_edge, false_edge;
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+
+  /* For GE_EXPR, if the true edge goes to OTHER_BLOCK, then we
+     will need to invert the result.  Similarly for LT_EXPR if
+     the false edge goes to OTHER_BLOCK.  */
+  edge e;
+  if (cond_code == GE_EXPR)
+    e = true_edge;
+  else
+    e = false_edge;
+
+  bool invert = e->dest == middle_bb;
+
+  result = duplicate_ssa_name (result, NULL);
+
+  gimple_stmt_iterator gsi = gsi_last_bb (cond_bb);
+
+  int prec = TYPE_PRECISION (TREE_TYPE (clhs));
+  gimple *new_stmt
+    = gimple_build_assign (make_ssa_name (TREE_TYPE (clhs)), RSHIFT_EXPR, clhs,
+			   build_int_cst (integer_type_node, prec - 1));
+  gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+
+  if (!useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (clhs)))
+    {
+      new_stmt = gimple_build_assign (make_ssa_name (TREE_TYPE (result)),
+				      NOP_EXPR, gimple_assign_lhs (new_stmt));
+      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+    }
+  lhs = gimple_assign_lhs (new_stmt);
+
+  if (invert)
+    {
+      new_stmt = gimple_build_assign (make_ssa_name (TREE_TYPE (result)),
+				      BIT_NOT_EXPR, rhs);
+      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+      rhs = gimple_assign_lhs (new_stmt);
+    }
+
+  new_stmt = gimple_build_assign (result, BIT_XOR_EXPR, lhs, rhs);
+  gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 
