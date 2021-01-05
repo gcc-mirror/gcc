@@ -2450,17 +2450,31 @@ package body Sem_Prag is
 
                --  Constant related checks
 
-               elsif Ekind (Item_Id) = E_Constant
-                 and then not Is_Access_Type (Etype (Item_Id))
-               then
+               elsif Ekind (Item_Id) = E_Constant then
 
-                  --  Unless it is of an access type, a constant is a read-only
-                  --  item, therefore it cannot act as an output.
+                  --  Constant is a read-only item, therefore it cannot act as
+                  --  an output.
 
                   if Global_Mode in Name_In_Out | Name_Output then
-                     SPARK_Msg_NE
-                       ("constant & cannot act as output", Item, Item_Id);
-                     return;
+
+                     --  Constant of a access-to-variable type is a read-write
+                     --  item in procedures, generic procedures, protected
+                     --  entries and tasks.
+
+                     if Is_Access_Variable (Etype (Item_Id))
+                       and then (Ekind (Spec_Id) in E_Entry
+                                                  | E_Entry_Family
+                                                  | E_Procedure
+                                                  | E_Generic_Procedure
+                                                  | E_Task_Type
+                                 or else Is_Single_Task_Object (Spec_Id))
+                     then
+                        null;
+                     else
+                        SPARK_Msg_NE
+                          ("constant & cannot act as output", Item, Item_Id);
+                        return;
+                     end if;
                   end if;
 
                --  Loop parameter related checks
