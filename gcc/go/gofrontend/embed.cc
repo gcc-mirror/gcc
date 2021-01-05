@@ -626,3 +626,18 @@ Embedcfg_reader::error(const char* msg)
 		"%<-fgo-embedcfg%>: %s: %s",
 		this->filename_, msg);
 }
+
+// Return whether the current file imports "embed".
+
+bool
+Gogo::is_embed_imported() const
+{
+  Packages::const_iterator p = this->packages_.find("embed");
+  if (p == this->packages_.end())
+    return false;
+
+  // We track current file imports in the package aliases, where a
+  // typical import will just list the package name in aliases.  So
+  // the package has been imported if there is at least one alias.
+  return !p->second->aliases().empty();
+}
