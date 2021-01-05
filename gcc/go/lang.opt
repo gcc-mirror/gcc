@@ -59,7 +59,7 @@ Go Joined RejectNegative
 
 fgo-embedcfg=
 Go Joined RejectNegative
--fgo-embedcfg=<file>	List embedded files via go:embed
+-fgo-embedcfg=<file>	List embedded files via go:embed.
 
 fgo-optimize-
 Go Joined
