@@ -427,7 +427,7 @@ package body Switch.C is
                --  The reason for this prohibition is that the rewriting of
                --  Sloc values causes strange malfunctions in the tests of
                --  whether units belong to the main source. This is really a
-               --  bug, but too hard to fix for a marginal capability ???
+               --  bug, but too hard to fix for a marginal capability.
 
                --  The proper fix is to completely redo -gnatD processing so
                --  that the tree is not messed with, and instead a separate
@@ -1612,11 +1612,6 @@ package body Switch.C is
                   Store_Switch := False;
                   Ptr := Ptr + 1;
                end if;
-
-            --  We ignore '/' in switches, this is historical, still needed???
-
-            when '/' =>
-               Store_Switch := False;
 
             --  Anything else is an error (illegal switch character)
 

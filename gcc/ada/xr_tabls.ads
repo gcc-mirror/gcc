@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  We need comment here saying what this package is???
+--  Cross reference utilities used by gnatxref and gnatfind
 
 with GNAT.OS_Lib;
 
