@@ -7502,6 +7502,17 @@ Variable::lower_init_expression(Gogo* gogo, Named_object* function,
   if (dep != NULL && dep->is_variable())
     dep->var_value()->lower_init_expression(gogo, function, inserter);
 
+  if (this->embeds_ != NULL)
+    {
+      // Now that we have seen any possible type aliases, convert the
+      // go:embed directives into an initializer.
+      go_assert(this->init_ == NULL && this->type_ != NULL);
+      this->init_ = gogo->initializer_for_embeds(this->type_, this->embeds_,
+						 this->location_);
+      delete this->embeds_;
+      this->embeds_ = NULL;
+    }
+
   if (this->init_ != NULL && !this->init_is_lowered_)
     {
       if (this->seen_)
