@@ -5224,8 +5224,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       switch (sty)
 	{
 	case SYMBOL_FORCE_TO_MEM:
+	  if (int_mode != ptr_mode)
+	    imm = convert_memory_address (ptr_mode, imm);
+
 	  if (const_offset != 0
-	      && targetm.cannot_force_const_mem (int_mode, imm))
+	      && targetm.cannot_force_const_mem (ptr_mode, imm))
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
