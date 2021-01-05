@@ -1,3 +1,130 @@
+2021-01-04  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98029
+	* gcc.dg/pr98029.c: New test.
+
+2021-01-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/binding-1_a.H: New.
+	* g++.dg/modules/binding-1_b.H: New.
+	* g++.dg/modules/binding-1_c.C: New.
+	* g++.dg/modules/binding-2.H: New.
+	* g++.dg/modules/builtin-3_a.C: New.
+	* g++.dg/modules/global-2_a.C: New.
+	* g++.dg/modules/global-2_b.C: New.
+	* g++.dg/modules/global-3_a.C: New.
+	* g++.dg/modules/global-3_b.C: New.
+	* g++.dg/modules/hello-1_a.C: New.
+	* g++.dg/modules/hello-1_b.C: New.
+	* g++.dg/modules/iostream-1_a.H: New.
+	* g++.dg/modules/iostream-1_b.C: New.
+	* g++.dg/modules/part-5_a.C: New.
+	* g++.dg/modules/part-5_b.C: New.
+	* g++.dg/modules/part-5_c.C: New.
+	* g++.dg/modules/stdio-1_a.H: New.
+	* g++.dg/modules/stdio-1_b.C: New.
+	* g++.dg/modules/string-1_a.H: New.
+	* g++.dg/modules/string-1_b.C: New.
+	* g++.dg/modules/string-view1.C: New.
+	* g++.dg/modules/string-view2.C: New.
+	* g++.dg/modules/tinfo-1.C: New.
+	* g++.dg/modules/tinfo-2_a.H: New.
+	* g++.dg/modules/tinfo-2_b.C: New.
+	* g++.dg/modules/tname-spec-1_a.H: New.
+	* g++.dg/modules/tname-spec-1_b.C: New.
+	* g++.dg/modules/xtreme-header-1.h: New.
+	* g++.dg/modules/xtreme-header-1_a.H: New.
+	* g++.dg/modules/xtreme-header-1_b.C: New.
+	* g++.dg/modules/xtreme-header-1_c.C: New.
+	* g++.dg/modules/xtreme-header-2.h: New.
+	* g++.dg/modules/xtreme-header-2_a.H: New.
+	* g++.dg/modules/xtreme-header-2_b.C: New.
+	* g++.dg/modules/xtreme-header-2_c.C: New.
+	* g++.dg/modules/xtreme-header-3.h: New.
+	* g++.dg/modules/xtreme-header-3_a.H: New.
+	* g++.dg/modules/xtreme-header-3_b.C: New.
+	* g++.dg/modules/xtreme-header-3_c.C: New.
+	* g++.dg/modules/xtreme-header-4.h: New.
+	* g++.dg/modules/xtreme-header-4_a.H: New.
+	* g++.dg/modules/xtreme-header-4_b.C: New.
+	* g++.dg/modules/xtreme-header-4_c.C: New.
+	* g++.dg/modules/xtreme-header-5.h: New.
+	* g++.dg/modules/xtreme-header-5_a.H: New.
+	* g++.dg/modules/xtreme-header-5_b.C: New.
+	* g++.dg/modules/xtreme-header-5_c.C: New.
+	* g++.dg/modules/xtreme-header-6.h: New.
+	* g++.dg/modules/xtreme-header-6_a.H: New.
+	* g++.dg/modules/xtreme-header-6_b.C: New.
+	* g++.dg/modules/xtreme-header-6_c.C: New.
+	* g++.dg/modules/xtreme-header.h: New.
+	* g++.dg/modules/xtreme-header_a.H: New.
+	* g++.dg/modules/xtreme-header_b.C: New.
+	* g++.dg/modules/xtreme-tr1.h: New.
+	* g++.dg/modules/xtreme-tr1_a.H: New.
+	* g++.dg/modules/xtreme-tr1_b.C: New.
+
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/95401
+	* g++.dg/vect/pr95401.cc: New test.
+	* g++.dg/vect/pr95401a.cc: Likewise.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98308
+	* gcc.dg/vect/pr98308.c: New testcase.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95771
+	* gcc.target/i386/pr95771.c: New test.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98464
+	* g++.dg/opt/pr98464.C: New testcase.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* g++.dg/opt/pr98282.C: New testcase.
+
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/89057
+	* gcc.target/aarch64/pr89057.c: New test.
+
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/prfb.c: Test for a MUL VL range of
+	[-32, 31].
+	* gcc.target/aarch64/sve/acle/asm/prfh.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfw.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/prfd.c: Likewise.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* README: Convert to utf8 from iso8859.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/avr/avr.exp: Run dos2unix on the file.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98291
+	* gcc.dg/vect/slp-reduc-11.c: New testcase.
+	* gcc.dg/vect/vect-reduc-in-order-4.c: Adjust.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96782
+	* gcc.dg/tree-ssa/pr96782.c: New test.
+
+2021-01-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.misc-tests/outputs.exp: Adjust testcase.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* ChangeLog-2020: Rotate ChangeLog.  New file.

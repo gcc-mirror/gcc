@@ -1,3 +1,7 @@
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* ChangeLog-2018: Remove duplicate ChangeLog entries.
+
 2021-01-01  Harald Anlauf  <anlauf@gmx.de>
 
 	* class.c (gfc_find_vtab): Add check on attribute is_class.

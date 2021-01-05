@@ -1,3 +1,87 @@
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/95401
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::load_store_cookie): Use bits rather than bytes
+	for the alignment argument to IFN_MASK_LOAD and IFN_MASK_STORE.
+	* gimple-fold.c (gimple_fold_mask_load_store_mem_ref): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98308
+	* tree-vect-stmts.c (vectorizable_load): Set invariant mask
+	SLP vectype.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95771
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): Handle types
+	with precision smaller than int's precision and types with precision
+	twice as large as long long.  Formatting fixes.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98464
+	* tree-ssa-sccvn.c (vn_valueize_for_srt): Rename from ...
+	(vn_valueize_wrapper): ... this.  Temporarily adjust vn_context_bb.
+	(process_bb): Adjust.
+
+2021-01-04  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	PR other/98437
+	* doc/invoke.texi (-fsanitize=address): Fix wording describing
+	clash with -fsanitize=hwaddress.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* tree-ssa-sccvn.c (vn_get_stmt_kind): Classify tcc_reference on
+	invariants as VN_NARY.
+
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/89057
+	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Accept
+	aarch64_simd_reg_or_zero for operand 2.  Use the combinez patterns
+	to handle zero operands.
+
+2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (offset_6bit_signed_scaled_p): New function.
+	(offset_6bit_unsigned_scaled_p): Fix typo in comment.
+	(aarch64_sve_prefetch_operand_p): Accept MUL VLs in the range
+	[-32, 31].
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98393
+	* tree-vect-slp.c (vect_build_slp_tree): Properly zero matches
+	when hitting the limit.
+
+2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98291
+	* tree-vect-loop.c (vectorizable_reduction): Bypass
+	associativity check for SLP reductions with VF 1.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96782
+	* match.pd (x == ~x -> false, x != ~x -> true): New simplifications.
+
+2021-01-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* collect-utils.c (collect_execute): Check dumppfx.
+	* collect2.c (maybe_run_lto_and_relink, do_link): Pass atsuffix
+	to collect_execute.
+	(do_link): Add new parameter atsuffix.
+	(main): Handle -dumpdir option.  Skip one argument for
+	-o, -isystem and -B options.
+	* gcc.c (make_at_file): New helper function.
+	(close_at_file): Use it.
+
 2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (MIN_LD64_NO_COAL_SECTS): Adjust.
