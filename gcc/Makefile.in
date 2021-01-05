@@ -415,6 +415,7 @@ CPPINC = -I$(srcdir)/../libcpp/include
 
 CODYLIB = ../libcody/libcody.a
 CODYINC = -I$(srcdir)/../libcody
+NETLIBS = @NETLIBS@
 
 # Where to find decNumber
 enable_decimal_float = @enable_decimal_float@
@@ -1729,7 +1730,7 @@ endif
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
 BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
-	$(CPPLIB) $(CODYLIB) $(LIBDECNUMBER)
+	$(CPPLIB) $(LIBDECNUMBER)
 
 # This is defined to "yes" if Tree checking is enabled, which roughly means
 # front-end checking.

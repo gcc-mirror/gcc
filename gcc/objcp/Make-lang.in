@@ -71,7 +71,8 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
 		     $(LIBDEPS) $(obj-c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.obj-c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
+		  $(CODYLIB) $(NETLIBS) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.obj-c++),end)
 
 # Objective C++ language specific files.

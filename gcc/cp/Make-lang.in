@@ -134,7 +134,8 @@ cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS) $(c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(NETLIBS) \
+		$(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.c++),end)
 
 ifeq ($(ENABLE_MAINTAINER_RULES), true)
