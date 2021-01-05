@@ -208,10 +208,10 @@ static unsigned int next_operand_entry_id;
 /* Starting rank number for a given basic block, so that we can rank
    operations using unmovable instructions in that BB based on the bb
    depth.  */
-static long *bb_rank;
+static int64_t *bb_rank;
 
 /* Operand->rank hashtable.  */
-static hash_map<tree, long> *operand_rank;
+static hash_map<tree, int64_t> *operand_rank;
 
 /* Vector of SSA_NAMEs on which after reassociate_bb is done with
    all basic blocks the CFG should be adjusted - basic blocks
@@ -220,7 +220,7 @@ static hash_map<tree, long> *operand_rank;
 static vec<tree> reassoc_branch_fixups;
 
 /* Forward decls.  */
-static long get_rank (tree);
+static int64_t get_rank (tree);
 static bool reassoc_stmt_dominates_stmt_p (gimple *, gimple *);
 
 /* Wrapper around gsi_remove, which adjusts gimple_uid of debug stmts
@@ -265,7 +265,7 @@ reassoc_remove_stmt (gimple_stmt_iterator *gsi)
    calculated into an accumulator variable to be independent for each
    iteration of the loop.  If STMT is some other phi, the rank is the
    block rank of its containing block.  */
-static long
+static int64_t
 phi_rank (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
@@ -319,7 +319,7 @@ static bool
 loop_carried_phi (tree exp)
 {
   gimple *phi_stmt;
-  long block_rank;
+  int64_t block_rank;
 
   if (TREE_CODE (exp) != SSA_NAME
       || SSA_NAME_IS_DEFAULT_DEF (exp))
@@ -345,10 +345,10 @@ loop_carried_phi (tree exp)
    from expression OP.  For most operands, this is just the rank of OP.
    For loop-carried phis, the value is zero to avoid undoing the bias
    in favor of the phi.  */
-static long
-propagate_rank (long rank, tree op)
+static int64_t
+propagate_rank (int64_t rank, tree op)
 {
-  long op_rank;
+  int64_t op_rank;
 
   if (loop_carried_phi (op))
     return rank;
@@ -360,17 +360,17 @@ propagate_rank (long rank, tree op)
 
 /* Look up the operand rank structure for expression E.  */
 
-static inline long
+static inline int64_t
 find_operand_rank (tree e)
 {
-  long *slot = operand_rank->get (e);
+  int64_t *slot = operand_rank->get (e);
   return slot ? *slot : -1;
 }
 
 /* Insert {E,RANK} into the operand rank hashtable.  */
 
 static inline void
-insert_operand_rank (tree e, long rank)
+insert_operand_rank (tree e, int64_t rank)
 {
   gcc_assert (rank > 0);
   gcc_assert (!operand_rank->put (e, rank));
@@ -378,7 +378,7 @@ insert_operand_rank (tree e, long rank)
 
 /* Given an expression E, return the rank of the expression.  */
 
-static long
+static int64_t
 get_rank (tree e)
 {
   /* SSA_NAME's have the rank of the expression they are the result
@@ -422,7 +422,7 @@ get_rank (tree e)
     {
       ssa_op_iter iter;
       gimple *stmt;
-      long rank;
+      int64_t rank;
       tree op;
 
       if (SSA_NAME_IS_DEFAULT_DEF (e))
@@ -454,7 +454,7 @@ get_rank (tree e)
 	{
 	  fprintf (dump_file, "Rank for ");
 	  print_generic_expr (dump_file, e);
-	  fprintf (dump_file, " is %ld\n", (rank + 1));
+	  fprintf (dump_file, " is %" PRId64 "\n", (rank + 1));
 	}
 
       /* Note the rank in the hashtable so we don't recompute it.  */
@@ -6587,7 +6587,7 @@ static void
 init_reassoc (void)
 {
   int i;
-  long rank = 2;
+  int64_t rank = 2;
   int *bbs = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
 
   /* Find the loops, so that we can prevent moving calculations in
@@ -6601,8 +6601,8 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = XCNEWVEC (long, last_basic_block_for_fn (cfun));
-  operand_rank = new hash_map<tree, long>;
+  bb_rank = XCNEWVEC (int64_t, last_basic_block_for_fn (cfun));
+  operand_rank = new hash_map<tree, int64_t>;
 
   /* Give each default definition a distinct rank.  This includes
      parameters and the static chain.  Walk backwards over all
