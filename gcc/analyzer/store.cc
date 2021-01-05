@@ -524,10 +524,27 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
   unsigned ix;
   tree index;
   tree val;
+  tree parent_type = parent_reg->get_type ();
+  tree field;
+  if (TREE_CODE (parent_type) == RECORD_TYPE)
+    field = TYPE_FIELDS (parent_type);
+  else
+    field = NULL_TREE;
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), ix, index, val)
     {
       if (!index)
-	index = build_int_cst (integer_type_node, ix);
+	{
+	  /* If index is NULL, then iterate through the fields for
+	     a RECORD_TYPE, or use an INTEGER_CST otherwise.
+	     Compare with similar logic in output_constructor.  */
+	  if (field)
+	    {
+	      index = field;
+	      field = DECL_CHAIN (field);
+	    }
+	  else
+	    index = build_int_cst (integer_type_node, ix);
+	}
       else if (TREE_CODE (index) == RANGE_EXPR)
 	{
 	  tree min_index = TREE_OPERAND (index, 0);
