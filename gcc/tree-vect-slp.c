@@ -3094,15 +3094,18 @@ vect_optimize_slp (vec_info *vinfo)
 	    ;
 	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
 	    {
-	      /* If the node if already a permute node we just need to apply
-		 the permutation to the permute node itself.  */
+	      /* If the node is already a permute node we can apply
+		 the permutation to the lane selection, effectively
+		 materializing it on the incoming vectors.  */
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "simplifying permute node %p\n",
 				 node);
 
-	      vect_slp_permute (perms[perm], SLP_TREE_LANE_PERMUTATION (node),
-				true);
+	      for (unsigned k = 0;
+		   k < SLP_TREE_LANE_PERMUTATION (node).length (); ++k)
+		SLP_TREE_LANE_PERMUTATION (node)[k].second
+		  = perms[perm][SLP_TREE_LANE_PERMUTATION (node)[k].second];
 	    }
 	  else
 	    {
@@ -5554,7 +5557,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    dump_printf (MSG_NOTE, ",");
 	  dump_printf (MSG_NOTE, " vops%u[%u][%u]",
 		       vperm[i].first.first, vperm[i].first.second,
-		       vperm[i].first.second);
+		       vperm[i].second);
 	}
       dump_printf (MSG_NOTE, "\n");
     }
