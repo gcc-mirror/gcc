@@ -1,3 +1,34 @@
+2021-01-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-01-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* class.c (gfc_find_vtab): Add check on attribute is_class.
+
+2021-01-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-12-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92587
+	* match.c (gfc_match_assignment): Move gfc_find_vtab call from here ...
+	* resolve.c (gfc_resolve_code): ... to here.
+
+2021-01-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96320
+	* interface.c (gfc_check_dummy_characteristics): If a module
+	procedure arrives with assumed shape in the interface and
+	deferred shape in the procedure itself, update the latter and
+	copy the lower bounds.
+
+2021-01-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/94246
+	* expr.c (scalarize_intrinsic_call): Remove the error checking.
+	Make a copy of the expression to be simplified and only replace
+	the original if the simplification succeeds.
+
 2020-12-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
