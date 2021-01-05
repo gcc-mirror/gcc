@@ -3030,10 +3030,8 @@ package body Exp_Ch4 is
       --  check when creating the upper bound. This is needed to avoid junk
       --  overflow checks in the common case of String types.
 
-      --  ??? Disabled for now
-
-      --  elsif Istyp = Standard_Positive then
-      --     Artyp := Standard_Unsigned;
+      elsif Istyp = Standard_Positive then
+         Artyp := Standard_Unsigned;
 
       --  For modular types, we use a 32-bit modular type for types whose size
       --  is in the range 1-31 bits. For 32-bit unsigned types, we use the
@@ -3793,7 +3791,7 @@ package body Exp_Ch4 is
       --  Bounds in Minimize calls, not used currently
 
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
-      --  Entity for Long_Long_Integer'Base (Standard should export this???)
+      --  Entity for Long_Long_Integer'Base
 
    begin
       Minimize_Eliminate_Overflows (Lop, Lo, Hi, Top_Level => False);
@@ -4489,10 +4487,6 @@ package body Exp_Ch4 is
          --  are too large, and which in the absence of a check results in
          --  undetected chaos ???
 
-         --  Note in particular that this is a pessimistic estimate in the
-         --  case of packed array types, where an array element might occupy
-         --  just a fraction of a storage element???
-
          declare
             Idx : Node_Id := First_Index (E);
             Len : Node_Id;
@@ -4614,9 +4608,10 @@ package body Exp_Ch4 is
       end if;
 
       --  RM E.2.2(17). We enforce that the expected type of an allocator
-      --  shall not be a remote access-to-class-wide-limited-private type
-
-      --  Why is this being done at expansion time, seems clearly wrong ???
+      --  shall not be a remote access-to-class-wide-limited-private type.
+      --  We probably shouldn't be doing this legality check during expansion,
+      --  but this is only an issue for Annex E users, and is unlikely to be a
+      --  problem in practice.
 
       Validate_Remote_Access_To_Class_Wide_Type (N);
 
@@ -5558,10 +5553,8 @@ package body Exp_Ch4 is
       if Is_Copy_Type (Typ) then
          Target_Typ := Typ;
 
-         --  ??? Do not perform the optimization when the return statement is
-         --  within a predicate function, as this causes spurious errors. Could
-         --  this be a possible mismatch in handling this case somewhere else
-         --  in semantic analysis?
+         --  Do not perform the optimization when the return statement is
+         --  within a predicate function, as this causes spurious errors.
 
          Optimize_Return_Stmt :=
            Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
@@ -6345,13 +6338,11 @@ package body Exp_Ch4 is
             --  perspective.
 
             if Comes_From_Source (Obj_Ref) then
-
-               --  Recover the actual object reference. There may be more cases
-               --  to consider???
-
                loop
                   if Nkind (Obj_Ref) in
-                       N_Type_Conversion | N_Unchecked_Type_Conversion
+                       N_Type_Conversion |
+                       N_Unchecked_Type_Conversion |
+                       N_Qualified_Expression
                   then
                      Obj_Ref := Expression (Obj_Ref);
                   else
@@ -6495,8 +6486,6 @@ package body Exp_Ch4 is
 
          begin
             --  If test is explicit x'First .. x'Last, replace by valid check
-
-            --  Could use some individual comments for this complex test ???
 
             if Is_Scalar_Type (Ltyp)
 
@@ -8105,10 +8094,6 @@ package body Exp_Ch4 is
          Enclosing_Scope : constant Node_Id := Scope (Typ);
          E : Entity_Id;
       begin
-         --  Prune this search by somehow not looking at decls that precede
-         --  the declaration of the first view of Typ (which might be a partial
-         --  view)???
-
          for Private_Entities in Boolean loop
             if Private_Entities then
                if Ekind (Enclosing_Scope) /= E_Package then
@@ -12702,17 +12687,7 @@ package body Exp_Ch4 is
 
       --  At this stage, either the conversion node has been transformed into
       --  some other equivalent expression, or left as a conversion that can be
-      --  handled by Gigi, in the following cases:
-
-      --    Conversions with no change of representation or type
-
-      --    Numeric conversions involving integer, floating- and fixed-point
-      --    values. Fixed-point values are allowed only if Conversion_OK is
-      --    set, i.e. if the fixed-point values are to be treated as integers.
-
-      --  No other conversions should be passed to Gigi
-
-      --  Check: are these rules stated in sinfo??? if so, why restate here???
+      --  handled by Gigi.
 
       --  The only remaining step is to generate a range check if we still have
       --  a type conversion at this stage and Do_Range_Check is set. Note that
@@ -12831,14 +12806,7 @@ package body Exp_Ch4 is
       --  an Assignment_OK indication which must be propagated to the operand.
 
       if Operand_Type = Target_Type then
-
-         --  Code duplicates Expand_N_Unchecked_Expression above, factor???
-
-         if Assignment_OK (N) then
-            Set_Assignment_OK (Operand);
-         end if;
-
-         Rewrite (N, Relocate_Node (Operand));
+         Expand_N_Unchecked_Expression (N);
          return;
       end if;
 
@@ -12868,9 +12836,6 @@ package body Exp_Ch4 is
       if Safe_Unchecked_Type_Conversion (N) then
          return;
       end if;
-
-      --  Otherwise force evaluation unless Assignment_OK flag is set (this
-      --  flag indicates ??? More comments needed here)
 
       if Assignment_OK (N) then
          null;
@@ -13804,9 +13769,6 @@ package body Exp_Ch4 is
    --  Note that since we are essentially doing this expansion by hand, we
    --  do not need to generate an actual or formal generic part, just the
    --  instantiated function itself.
-
-   --  Perhaps we could have the actual generic available in the run-time,
-   --  obtained by rtsfind, and actually expand a real instantiation ???
 
    function Make_Array_Comparison_Op
      (Typ : Entity_Id;

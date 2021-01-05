@@ -172,11 +172,8 @@ procedure Gnatdll is
       --  Add the files listed in List_Filename (one by line) to the list
       --  of file to handle
 
-      Max_Files   : constant := 5_000;
-      Max_Options : constant :=   100;
-      --  These are arbitrary limits, a better way will be to use linked list.
-      --  No, a better choice would be to use tables ???
-      --  Limits on what???
+      Max_Files   : constant := 50_000;
+      Max_Options : constant :=  1_000;
 
       Ofiles : Argument_List (1 .. Max_Files);
       O      : Positive := Ofiles'First;

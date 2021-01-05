@@ -1451,7 +1451,7 @@ package body Inline is
            --  Skip inlining if the function returns an unconstrained type
            --  using an extended return statement, since this part of the
            --  new inlining model is not yet supported by the current
-           --  implementation. ???
+           --  implementation.
 
            or else (Returns_Unconstrained_Type (Spec_Id)
                      and then Has_Extended_Return)
@@ -1531,7 +1531,6 @@ package body Inline is
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id defines a compilation unit
-      --  Shouldn't this be in Sem_Aux???
 
       function In_Package_Spec (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id is defined in the package specification,
@@ -2161,10 +2160,7 @@ package body Inline is
                Body_To_Inline :=
                  Copy_Generic_Node (N, Empty, Instantiating => True);
             else
-               --  ??? Shouldn't this use New_Copy_Tree? What about global
-               --  references captured in the body to inline?
-
-               Body_To_Inline := Copy_Separate_Tree (N);
+               Body_To_Inline := New_Copy_Tree (N);
             end if;
 
             --  Remove aspects/pragmas that have no meaning in an inlined body
@@ -3554,7 +3550,6 @@ package body Inline is
       procedure Reset_Dispatching_Calls (N : Node_Id) is
 
          function Do_Reset (N : Node_Id) return Traverse_Result;
-         --  Comment required ???
 
          --------------
          -- Do_Reset --
@@ -3620,7 +3615,6 @@ package body Inline is
 
          --  If the context is an assignment, and the left-hand side is free of
          --  side-effects, the replacement is also safe.
-         --  Can this be generalized further???
 
          elsif Nkind (Parent (N)) = N_Assignment_Statement
            and then

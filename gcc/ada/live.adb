@@ -82,9 +82,6 @@ package body Live is
    function Spec_Of (N : Node_Id) return Entity_Id;
    --  Given a subprogram body N, return defining identifier of its declaration
 
-   --  ??? the body of this package contains no comments at all, this
-   --  should be fixed.
-
    -------------
    -- Body_Of --
    -------------

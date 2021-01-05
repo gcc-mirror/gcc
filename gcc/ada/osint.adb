@@ -49,10 +49,11 @@ package body Osint is
    use type CRTL.size_t;
 
    Running_Program : Program_Type := Unspecified;
-   --  comment required here ???
+   --  Set by Set_Program to indicate which of Compiler, Binder, etc is
+   --  running.
 
    Program_Set : Boolean := False;
-   --  comment required here ???
+   --  True if Set_Program has been called; used to detect duplicate calls.
 
    Std_Prefix : String_Ptr;
    --  Standard prefix, computed dynamically the first time Relocate_Path
@@ -151,9 +152,9 @@ package body Osint is
    function To_Path_String_Access
      (Path_Addr : Address;
       Path_Len  : CRTL.size_t) return String_Access;
-   --  Converts a C String to an Ada String. Are we doing this to avoid withing
-   --  Interfaces.C.Strings ???
-   --  Caller must free result.
+   --  Converts a C String to an Ada String. We don't use a more general
+   --  purpose facility, because we are dealing with low-level types like
+   --  Address. Caller must free result.
 
    function Include_Dir_Default_Prefix return String_Access;
    --  Same as exported version, except returns a String_Access
@@ -1348,11 +1349,8 @@ package body Osint is
       Lib_File : out File_Name_Type;
       Attr     : out File_Attributes)
    is
-      A : aliased File_Attributes;
    begin
-      --  ??? seems we could use Smart_Find_File here
-      Find_File (N, Library, Lib_File, A'Access);
-      Attr := A;
+      Smart_Find_File (N, Library, Lib_File, Attr);
    end Full_Lib_File_Name;
 
    ------------------------
@@ -1891,7 +1889,7 @@ package body Osint is
                Name_Len := Full_Name'Length - 1;
                Name_Buffer (1 .. Name_Len) :=
                  Full_Name (1 .. Full_Name'Last - 1);
-               Found := Name_Find;  --  ??? Was Name_Enter, no obvious reason
+               Found := Name_Find;
             end if;
          end if;
       end;

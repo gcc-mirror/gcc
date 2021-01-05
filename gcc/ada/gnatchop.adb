@@ -995,9 +995,8 @@ procedure Gnatchop is
 
       Buffer (Read_Ptr) := EOF;
 
-      --  Comment needed for the following ???
-      --  Under what circumstances can the test fail ???
-      --  What is copy doing in that case???
+      --  The following test can fail if there was an I/O error, in which case
+      --  Success will be set to False.
 
       if Read_Ptr = Length then
          Contents := Buffer;

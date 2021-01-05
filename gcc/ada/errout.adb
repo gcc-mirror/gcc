@@ -1825,10 +1825,6 @@ package body Errout is
       F := First_Node (N);
       S := Sloc (F);
 
-      --  ??? Protect against inconsistency in locations, by returning S
-      --  immediately if not in the expected range, rather than failing with
-      --  a Constraint_Error when accessing Source_Text(SI)(S)
-
       if S not in SF .. SL then
          return S;
       end if;
@@ -1943,10 +1939,6 @@ package body Errout is
    begin
       F := Last_Node (N);
       S := Sloc (F);
-
-      --  ??? Protect against inconsistency in locations, by returning S
-      --  immediately if not in the expected range, rather than failing with
-      --  a Constraint_Error when accessing Source_Text(SI)(S)
 
       if S not in SF .. SL then
          return S;

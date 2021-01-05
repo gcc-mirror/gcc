@@ -29,11 +29,11 @@
 with Namet; use Namet;
 with Types; use Types;
 
-with System;                  use System;
+with System; use System;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
-with System.OS_Lib;           use System.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 pragma Warnings (On);
 
 with System.Storage_Elements;

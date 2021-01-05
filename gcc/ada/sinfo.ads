@@ -4732,7 +4732,8 @@ package Sinfo is
       --  Conversions from floating-point to integer are only handled in
       --  the case where Float_Truncate flag set. Other conversions from
       --  floating-point to integer (involving rounding) and all conversions
-      --  involving fixed-point types are handled by the expander.
+      --  involving fixed-point types are handled by the expander, unless the
+      --  Conversion_OK flag is set.
 
       --  Sprint syntax if Float_Truncate set: X^(Y)
       --  Sprint syntax if Conversion_OK set X?(Y)

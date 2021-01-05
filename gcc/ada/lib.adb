@@ -509,8 +509,8 @@ package body Lib is
 
          if Counter > Max_Iterations then
 
-            --  ??? Not quite right, but return a value to be able to generate
-            --  SCIL files and hope for the best.
+            --  In CodePeer_Mode, return a value to be able to generate SCIL
+            --  files and hope for the best.
 
             if CodePeer_Mode then
                return No;

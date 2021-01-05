@@ -235,8 +235,8 @@ package body Layout is
       Desig_Type : Entity_Id;
 
    begin
-      --  For string literal types, for now, kill the size always, this is
-      --  because gigi does not like or need the size to be set ???
+      --  For string literal types, kill the size always, because gigi does not
+      --  like or need the size to be set.
 
       if Ekind (E) = E_String_Literal_Subtype then
          Set_Esize (E, Uint_0);
@@ -448,7 +448,7 @@ package body Layout is
 
             begin
                --  For some reason, access types can cause trouble, So let's
-               --  just do this for scalar types ???
+               --  just do this for scalar types.
 
                if Present (CT)
                  and then Is_Scalar_Type (CT)
