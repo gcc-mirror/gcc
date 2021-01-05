@@ -22251,6 +22251,9 @@ resolve_overloaded_unification (tree tparms,
 		  --function_depth;
 		}
 
+	      if (flag_noexcept_type)
+		maybe_instantiate_noexcept (fn, tf_none);
+
 	      elem = TREE_TYPE (fn);
 	      if (try_one_overload (tparms, targs, tempargs, parm,
 				    elem, strict, sub_strict, addr_p, explain_p)
