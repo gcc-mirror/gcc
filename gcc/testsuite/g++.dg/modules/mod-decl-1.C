@@ -6,11 +6,11 @@ export module frist;
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 
-module foo.second; // { dg-error "not permitted here" }
+module foo.second; // { dg-error "only permitted as" }
 
 namespace Foo 
 {
-module third;  // { dg-error "not permitted here" }
+module third;  // { dg-error "only permitted as" }
 }
 
 struct Baz
@@ -23,7 +23,7 @@ void Bink ()
   module fifth; // { dg-error "expected" }
 }
 
-module a.; // { dg-error "not permitted" }
+module a.; // { dg-error "only permitted as" }
 
 // { dg-prune-output "not writing module" }
 

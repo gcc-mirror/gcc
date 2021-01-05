@@ -13726,19 +13726,22 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
       cp_lexer_consume_token (parser->lexer);
       cp_parser_require_pragma_eol (parser, token);
 
-      if ((mp_state != MP_PURVIEW && mp_state != MP_PURVIEW_IMPORTS)
+      if (!(mp_state == MP_PURVIEW || mp_state == MP_PURVIEW_IMPORTS)
 	  || !module_interface_p () || module_partition_p ())
 	error_at (token->location,
-		  "private module fragment not permitted here");
+		  "private module fragment only permitted in purview"
+		  " of module interface or partition");
       else
 	{
 	  mp_state = MP_PRIVATE_IMPORTS;
 	  sorry_at (token->location, "private module fragment");
 	}
     }
-  else if (mp_state != MP_FIRST && mp_state != MP_GLOBAL)
+  else if (!(mp_state == MP_FIRST || mp_state == MP_GLOBAL))
     {
-      error_at (token->location, "module-declaration not permitted here");
+      /* Neither the first declaration, nor in a GMF.  */
+      error_at (token->location, "module-declaration only permitted as first"
+		" declaration, or ending a global module fragment");
     skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }
