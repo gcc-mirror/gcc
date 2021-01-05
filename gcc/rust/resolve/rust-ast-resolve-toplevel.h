@@ -42,6 +42,15 @@ public:
 					struct_decl.get_node_id ());
   }
 
+  void visit (AST::StaticItem &var)
+  {
+    resolver->get_name_scope ().insert (var.get_identifier (),
+					var.get_node_id ());
+    resolver->insert_new_definition (var.get_node_id (),
+				     Definition{var.get_node_id (),
+						var.get_node_id ()});
+  }
+
   void visit (AST::ConstantItem &constant)
   {
     resolver->get_name_scope ().insert (constant.get_identifier (),

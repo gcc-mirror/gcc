@@ -2157,6 +2157,14 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Identifier get_identifier () const { return name; }
+
+  bool is_mutable () const { return has_mut; }
+
+  Expr *get_expr () { return expr.get (); }
+
+  Type *get_type () { return type.get (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

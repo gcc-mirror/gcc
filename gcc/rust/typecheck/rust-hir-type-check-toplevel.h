@@ -59,6 +59,15 @@ public:
     context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
   }
 
+  void visit (HIR::StaticItem &var)
+  {
+    TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
+    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
+
+    context->insert_type (var.get_mappings ().get_hirid (),
+			  type->combine (expr_type));
+  }
+
   void visit (HIR::ConstantItem &constant)
   {
     TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());

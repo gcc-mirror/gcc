@@ -47,6 +47,12 @@ public:
     });
   }
 
+  void visit (AST::StaticItem &var)
+  {
+    ResolveType::go (var.get_type ().get (), var.get_node_id ());
+    ResolveExpr::go (var.get_expr ().get (), var.get_node_id ());
+  }
+
   void visit (AST::ConstantItem &constant)
   {
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());

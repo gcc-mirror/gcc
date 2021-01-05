@@ -2527,7 +2527,7 @@ Gcc_backend::global_variable_set_init (Bvariable *var, Bexpression *expr)
     return;
   DECL_INITIAL (var_decl) = expr_tree;
 
-  // If this variable rustes in a unique section, it may need to rust into
+  // If this variable goes in a unique section, it may need to go into
   // a different one now that DECL_INITIAL is set.
   if (symtab_node::get (var_decl)
       && symtab_node::get (var_decl)->implicit_section)

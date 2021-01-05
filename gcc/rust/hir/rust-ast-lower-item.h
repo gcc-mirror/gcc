@@ -94,6 +94,32 @@ public:
 			       struct_decl.get_locus ());
   }
 
+  void visit (AST::StaticItem &var)
+  {
+    std::vector<HIR::Attribute> outer_attrs;
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, var.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::StaticItem (mapping, var.get_identifier (), var.is_mutable (),
+			     std::unique_ptr<HIR::Type> (type),
+			     std::unique_ptr<HIR::Expr> (expr), vis,
+			     outer_attrs, var.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       var.get_locus ());
+  }
+
   void visit (AST::ConstantItem &constant)
   {
     std::vector<HIR::Attribute> outer_attrs;

@@ -68,6 +68,34 @@ public:
 			       named_struct);
   }
 
+  void visit (HIR::StaticItem &var)
+  {
+    TyTy::TyBase *resolved_type = nullptr;
+    bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
+					      &resolved_type);
+    rust_assert (ok);
+
+    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
+
+    std::string name = var.get_identifier ();
+    // FIXME need name mangling
+    std::string asm_name = "__" + var.get_identifier ();
+
+    bool is_external = false;
+    bool is_hidden = false;
+    bool in_unique_section = true;
+
+    Bvariable *static_global
+      = ctx->get_backend ()->global_variable (name, asm_name, type, is_external,
+					      is_hidden, in_unique_section,
+					      var.get_locus ());
+    ctx->get_backend ()->global_variable_set_init (static_global, value);
+
+    ctx->insert_var_decl (var.get_mappings ().get_hirid (), static_global);
+    ctx->push_var (static_global);
+  }
+
   void visit (HIR::ConstantItem &constant)
   {
     TyTy::TyBase *resolved_type = nullptr;

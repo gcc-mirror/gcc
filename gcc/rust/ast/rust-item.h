@@ -2658,6 +2658,10 @@ public:
     return type;
   }
 
+  bool is_mutable () const { return has_mut; }
+
+  Identifier get_identifier () const { return name; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

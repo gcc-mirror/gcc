@@ -437,7 +437,7 @@ StaticItem::as_string () const
       str += " mut";
     }
 
-  str += name;
+  str += " " + name;
 
   // DEBUG: null pointer check
   if (type == nullptr)
