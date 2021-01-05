@@ -49,4 +49,5 @@ jobs:
     - name: Test
       run: |
            cd gccrs-build; \
-           make check-rust
+           make check-rust | tee results.log; \
+           if [ `grep "# of unexpected failures" results.log | wc -l` != "0" ]; then exit 1; fi
