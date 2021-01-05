@@ -8494,7 +8494,7 @@ vectorizable_live_operation (vec_info *vinfo,
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   imm_use_iterator imm_iter;
-  tree lhs, lhs_type, bitsize, vec_bitsize;
+  tree lhs, lhs_type, bitsize;
   tree vectype = (slp_node
 		  ? SLP_TREE_VECTYPE (slp_node)
 		  : STMT_VINFO_VECTYPE (stmt_info));
@@ -8637,7 +8637,6 @@ vectorizable_live_operation (vec_info *vinfo,
   lhs_type = TREE_TYPE (lhs);
 
   bitsize = vector_element_bits_tree (vectype);
-  vec_bitsize = TYPE_SIZE (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
   tree vec_lhs, bitstart;
@@ -8661,7 +8660,7 @@ vectorizable_live_operation (vec_info *vinfo,
       vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get the last lane in the vector.  */
-      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
+      bitstart = int_const_binop (MULT_EXPR, bitsize, bitsize_int (nunits - 1));
     }
 
   if (loop_vinfo)
