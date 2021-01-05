@@ -5138,31 +5138,65 @@
    (set_attr "type" "ssecvt")
    (set_attr "mode" "V4SF")])
 
-(define_insn "sse_cvtps2pi"
+(define_insn_and_split "sse_cvtps2pi"
   [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
-	  (unspec:V4SI [(match_operand:V4SF 1 "register_mmxmem_operand" "xm,YvBm")]
+	  (unspec:V4SI [(match_operand:V4SF 1 "nonimmediate_operand" "xm,YvBm")]
 		       UNSPEC_FIX_NOTRUNC)
 	  (parallel [(const_int 0) (const_int 1)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
   "@
    cvtps2pi\t{%1, %0|%0, %q1}
-   %vcvtps2dq\t{%1, %0|%0, %1}"
+   #"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REG_P (operands[0])"
+  [(const_int 0)]
+{
+  rtx op1 = lowpart_subreg (V2SFmode, operands[1],
+			    GET_MODE (operands[1]));
+  rtx tmp = lowpart_subreg (V4SFmode, operands[0],
+			    GET_MODE (operands[0]));
+
+  op1 = gen_rtx_VEC_CONCAT (V4SFmode, op1, CONST0_RTX (V2SFmode));
+  emit_insn (gen_rtx_SET (tmp, op1));
+
+  rtx dest = lowpart_subreg (V4SImode, operands[0],
+			    GET_MODE (operands[0]));
+  emit_insn (gen_sse2_fix_notruncv4sfv4si (dest, tmp));
+  DONE;
+}
   [(set_attr "isa" "*,sse2")
    (set_attr "mmx_isa" "native,*")
    (set_attr "type" "ssecvt")
    (set_attr "unit" "mmx,*")
    (set_attr "mode" "DI")])
 
-(define_insn "sse_cvttps2pi"
+(define_insn_and_split "sse_cvttps2pi"
   [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
-	  (fix:V4SI (match_operand:V4SF 1 "register_mmxmem_operand" "xm,YvBm"))
+	  (fix:V4SI (match_operand:V4SF 1 "nonimmediate_operand" "xm,YvBm"))
 	  (parallel [(const_int 0) (const_int 1)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE"
   "@
    cvttps2pi\t{%1, %0|%0, %q1}
-   %vcvttps2dq\t{%1, %0|%0, %1}"
+   #"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REG_P (operands[0])"
+  [(const_int 0)]
+{
+  rtx op1 = lowpart_subreg (V2SFmode, operands[1],
+			    GET_MODE (operands[1]));
+  rtx tmp = lowpart_subreg (V4SFmode, operands[0],
+			    GET_MODE (operands[0]));
+
+  op1 = gen_rtx_VEC_CONCAT (V4SFmode, op1, CONST0_RTX (V2SFmode));
+  emit_insn (gen_rtx_SET (tmp, op1));
+
+  rtx dest = lowpart_subreg (V4SImode, operands[0],
+			    GET_MODE (operands[0]));
+  emit_insn (gen_fix_truncv4sfv4si2 (dest, tmp));
+  DONE;
+}
   [(set_attr "isa" "*,sse2")
    (set_attr "mmx_isa" "native,*")
    (set_attr "type" "ssecvt")
@@ -7949,7 +7983,7 @@
 (define_insn "*vec_concatv4sf_0"
   [(set (match_operand:V4SF 0 "register_operand"       "=v")
 	(vec_concat:V4SF
-	  (match_operand:V2SF 1 "nonimmediate_operand" "xm")
+	  (match_operand:V2SF 1 "nonimmediate_operand" "vm")
 	  (match_operand:V2SF 2 "const0_operand"       " C")))]
   "TARGET_SSE2"
   "%vmovq\t{%1, %0|%0, %1}"
@@ -10364,7 +10398,7 @@
   [(set (match_operand:VF2_512_256 0 "register_operand" "=v")
 	(vec_merge:VF2_512_256
 	  (vec_duplicate:VF2_512_256
-	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "xm"))
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "vm"))
 	  (match_operand:VF2_512_256 1 "const0_operand" "C")
 	  (const_int 1)))]
   "TARGET_AVX"
