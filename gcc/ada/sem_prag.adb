@@ -1477,8 +1477,6 @@ package body Sem_Prag is
            (Item_Is_Input  : Boolean;
             Item_Is_Output : Boolean)
          is
-            Error_Msg : Name_Id;
-
          begin
             Name_Len := 0;
 
@@ -1491,8 +1489,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & cannot appear in dependence relation");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
 
                Error_Msg_Name_1 := Chars (Spec_Id);
                SPARK_Msg_NE
@@ -1521,8 +1518,8 @@ package body Sem_Prag is
                end if;
 
                Add_Str_To_Name_Buffer (" in dependence relation");
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
             end if;
          end Role_Error;
 
@@ -1574,8 +1571,6 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item_Id : Entity_Id) is
-            Error_Msg : Name_Id;
-
          begin
             --  Input case
 
@@ -1593,8 +1588,7 @@ package body Sem_Prag is
                   Add_Str_To_Name_Buffer
                     (" & is missing from input dependence list");
 
-                  Error_Msg := Name_Find;
-                  SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+                  SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
                   SPARK_Msg_NE
                     ("\add `null ='> &` dependency to ignore this input",
                      N, Item_Id);
@@ -1609,8 +1603,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & is missing from output dependence list");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
             end if;
          end Usage_Error;
 
