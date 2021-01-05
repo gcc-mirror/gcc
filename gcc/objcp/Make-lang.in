@@ -61,14 +61,14 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 
 cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
-	$(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
-	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \
+	$(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS)
+	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) \
 		$(LIBDEPS) checksum-options > cc1objplus-checksum.c.tmp && \
 	$(srcdir)/../move-if-change cc1objplus-checksum.c.tmp \
 	cc1objplus-checksum.c
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
-		     $(LIBDEPS) $(obj-c++.prev)
+		     $(CODYLIB) $(LIBDEPS) $(obj-c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.obj-c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
