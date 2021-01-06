@@ -565,6 +565,10 @@ procedure Gnat1drv is
 
          Tagged_Type_Expansion := False;
 
+         --  Force the use of "error:" prefix for error messages
+
+         Unique_Error_Tag := True;
+
          --  Detect that the runtime library support for floating-point numbers
          --  may not be compatible with SPARK analysis of IEEE-754 floats.
 
