@@ -2368,10 +2368,9 @@ package body Exp_Prag is
                if Comes_From_Source (E)
                  and then Is_Object (E)
                  and then not Is_Entry_Formal (E)
+                 and then not Is_Formal_Object (E)
                  and then Ekind (E) /= E_Component
                  and then Ekind (E) /= E_Discriminant
-                 and then Ekind (E) /= E_Generic_In_Parameter
-                 and then Ekind (E) /= E_Generic_In_Out_Parameter
                then
                   Append_To (A,
                     Make_Pragma_Argument_Association (Loc,

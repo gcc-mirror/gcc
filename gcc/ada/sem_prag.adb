@@ -718,9 +718,7 @@ package body Sem_Prag is
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
 
-         elsif Ekind (Item_Id) in
-                 E_Generic_In_Out_Parameter | E_Generic_In_Parameter
-         then
+         elsif Is_Formal_Object (Item_Id) then
             Add_Str_To_Name_Buffer ("generic parameter");
 
          elsif Is_Formal (Item_Id) then
@@ -3098,9 +3096,7 @@ package body Sem_Prag is
                         --  it is allowed for an initialization item to depend
                         --  on an input item.
 
-                        if Ekind (Input_Id) in E_Generic_In_Out_Parameter
-                                             | E_Generic_In_Parameter
-                        then
+                        if Is_Formal_Object (Input_Id) then
                            null;
 
                         elsif Ekind (Input_Id) in E_Constant | E_Variable
