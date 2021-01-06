@@ -7,6 +7,8 @@
 // +build !amd64p32
 // +build !arm
 // +build !arm64
+// +build !mips
+// +build !mipsle
 // +build !mips64
 // +build !mips64le
 // +build !ppc
@@ -14,6 +16,7 @@
 // +build !ppc64le
 // +build !riscv64
 // +build !s390x
+// +build !wasm
 
 package cpu
 

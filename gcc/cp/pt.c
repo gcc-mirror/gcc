@@ -23584,13 +23584,21 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  /* We haven't deduced the type of this parameter yet.  */
 	  if (cxx_dialect >= cxx17
 	      /* We deduce from array bounds in try_array_deduction.  */
-	      && !(strict & UNIFY_ALLOW_INTEGER))
+	      && !(strict & UNIFY_ALLOW_INTEGER)
+	      && TEMPLATE_PARM_LEVEL (parm) <= TMPL_ARGS_DEPTH (targs))
 	    {
 	      /* Deduce it from the non-type argument.  */
 	      tree atype = TREE_TYPE (arg);
 	      RECUR_AND_CHECK_FAILURE (tparms, targs,
 				       tparm, atype,
 				       UNIFY_ALLOW_NONE, explain_p);
+	      /* Now check whether the type of this parameter is still
+		 dependent, and give up if so.  */
+	      ++processing_template_decl;
+	      tparm = tsubst (tparm, targs, tf_none, NULL_TREE);
+	      --processing_template_decl;
+	      if (uses_template_parms (tparm))
+		return unify_success (explain_p);
 	    }
 	  else
 	    /* Try again later.  */

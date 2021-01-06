@@ -22,7 +22,7 @@ from itertools import takewhile
 
 from dateutil.parser import parse
 
-from git_commit import GitCommit, GitInfo
+from git_commit import GitCommit, GitInfo, decode_path
 
 from unidiff import PatchSet, PatchedFile
 
@@ -52,8 +52,8 @@ class GitEmail(GitCommit):
         modified_files = []
         for f in diff:
             # Strip "a/" and "b/" prefixes
-            source = f.source_file[2:]
-            target = f.target_file[2:]
+            source = decode_path(f.source_file)[2:]
+            target = decode_path(f.target_file)[2:]
 
             if f.is_added_file:
                 t = 'A'

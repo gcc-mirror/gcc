@@ -1,3 +1,20 @@
+2021-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a5c86f5b9.
+	* d-builtins.cc (d_eval_constant_expression): Handle ADDR_EXPR trees
+	created by build_string_literal.
+	* d-frontend.cc (retStyle): Remove function.
+	* d-target.cc (d_language_target_info): New variable.
+	(d_target_info_table): Likewise.
+	(Target::_init): Initialize d_target_info_table.
+	(Target::isReturnOnStack): New function.
+	(d_add_target_info_handlers): Likewise.
+	(d_handle_target_cpp_std): Likewise.
+	(d_handle_target_cpp_runtime_library): Likewise.
+	(Target::getTargetInfo): Likewise.
+	* d-target.h (struct d_target_info_spec): New type.
+	(d_add_target_info_handlers): Declare.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdc.texi: Bump @copyrights-d year.

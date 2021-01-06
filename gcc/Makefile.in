@@ -450,6 +450,9 @@ USER_H = $(srcdir)/ginclude/float.h \
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
 USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 
+# Enable target overriding of this fragment, as in config/t-vxworks.
+T_GLIMITS_H = $(srcdir)/glimits.h
+
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES).
@@ -3076,7 +3079,7 @@ gcov-tool$(exeext): $(GCOV_TOOL_OBJS) $(LIBDEPS)
 # be rebuilt.
 
 # Build the include directories.
-stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) fixinc_list
+stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
 #
 # The sed command gets just the last file name component;
@@ -3130,9 +3133,9 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) fixinc_list
 	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
 	  fix_dir=include-fixed$${multi_dir}; \
 	  if $(LIMITS_H_TEST) ; then \
-	    cat $(srcdir)/limitx.h $(srcdir)/glimits.h $(srcdir)/limity.h > tmp-xlimits.h; \
+	    cat $(srcdir)/limitx.h $(T_GLIMITS_H) $(srcdir)/limity.h > tmp-xlimits.h; \
 	  else \
-	    cat $(srcdir)/glimits.h > tmp-xlimits.h; \
+	    cat $(T_GLIMITS_H) > tmp-xlimits.h; \
 	  fi; \
 	  $(mkinstalldirs) $${fix_dir}; \
 	  chmod a+rx $${fix_dir} || true; \

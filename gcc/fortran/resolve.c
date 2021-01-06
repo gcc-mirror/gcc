@@ -14384,7 +14384,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   /* F2008, C448.  */
   if (c->ts.type == BT_CLASS)
     {
-      if (CLASS_DATA (c))
+      if (c->attr.class_ok && CLASS_DATA (c))
 	{
 	  attr = &(CLASS_DATA (c)->attr);
 

@@ -6783,7 +6783,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
         {
             //printf("type %s\n", ta->toChars());
             // It might really be an Expression or an Alias
-            ta->resolve(loc, sc, &ea, &ta, &sa);
+            ta->resolve(loc, sc, &ea, &ta, &sa, (flags & 1) != 0);
             if (ea) goto Lexpr;
             if (sa) goto Ldsym;
             if (ta == NULL)
@@ -6914,7 +6914,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
                     //goto Ldsym;
                 }
             }
-            if (ea->op == TOKdotvar)
+            if (ea->op == TOKdotvar && !(flags & 1))
             {
                 // translate expression to dsymbol.
                 sa = ((DotVarExp *)ea)->var;
@@ -6925,7 +6925,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
                 sa = ((TemplateExp *)ea)->td;
                 goto Ldsym;
             }
-            if (ea->op == TOKdottd)
+            if (ea->op == TOKdottd && !(flags & 1))
             {
                 // translate expression to dsymbol.
                 sa = ((DotTemplateExp *)ea)->td;

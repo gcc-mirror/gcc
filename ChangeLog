@@ -1,3 +1,9 @@
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* libtool.m4: Match gnu* along other GNU systems.
+	* libgo/config/libtool.m4: Match gnu* along other GNU systems.
+	* libgo/configure: Re-generate.
+
 2021-01-04  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	* MAINTAINERS: Update my email address.

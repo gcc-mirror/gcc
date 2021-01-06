@@ -5949,7 +5949,10 @@ bool Parser::isDeclaration(Token *t, int needId, TOK endtok, Token **pt)
     }
     if (!isDeclarator(&t, &haveId, &haveTpl, endtok, needId != 3))
         goto Lisnot;
-    if (needId == 1 || (needId == 0 && !haveId) || ((needId == 2 || needId == 3) && haveId))
+    if ((needId == 0 && !haveId) ||
+        (needId == 1) ||
+        (needId == 2 && haveId) ||
+        (needId == 3 && haveId))
     {
         if (pt)
             *pt = t;
@@ -6821,12 +6824,8 @@ Expression *Parser::parsePrimaryExp()
 
         case TOKfilefullpath:
         {
-            const char *srcfile = mod->srcfile->name->toChars();
-            const char *s;
-            if (loc.filename && !FileName::equals(loc.filename, srcfile))
-                s = loc.filename;
-            else
-                s = FileName::combine(mod->srcfilePath, srcfile);
+            assert(loc.filename); // __FILE_FULL_PATH__ does not work with an invalid location
+            const char *s = FileName::toAbsolute(loc.filename);
             e = new StringExp(loc, const_cast<char *>(s), strlen(s), 0);
             nextToken();
             break;
@@ -7039,6 +7038,8 @@ Expression *Parser::parsePrimaryExp()
                          token.value == TOKsuper ||
                          token.value == TOKenum ||
                          token.value == TOKinterface ||
+                         token.value == TOKmodule ||
+                         token.value == TOKpackage ||
                          token.value == TOKargTypes ||
                          token.value == TOKparameters ||
                          (token.value == TOKconst && peek(&token)->value == TOKrparen) ||

@@ -19,12 +19,12 @@ static assert(__FILE_FULL_PATH__[$-__FILE__.length..$] == __FILE__);
 
 static assert(__LINE__ == 101);
 static assert(__FILE__ == "newfile.d");
-static assert(__FILE_FULL_PATH__ == "newfile.d");
+static assert(__FILE_FULL_PATH__[$ - 9 .. $] == "newfile.d");
 
 # line 200
 
 static assert(__LINE__ == 201);
 static assert(__FILE__ == "newfile.d");
-static assert(__FILE_FULL_PATH__ == "newfile.d");
+static assert(__FILE_FULL_PATH__[$ - 9 .. $] == "newfile.d");
 
 

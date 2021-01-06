@@ -41,7 +41,6 @@ Expression *semantic(Expression *e, Scope *sc);
 int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow);
 TypeIdentifier *getThrowable();
 
-RET retStyle(TypeFunction *tf);
 void MODtoBuffer(OutBuffer *buf, MOD mod);
 char *MODtoChars(MOD mod);
 bool MODimplicitConv(MOD modfrom, MOD modto);
@@ -970,7 +969,7 @@ void FuncDeclaration::semantic(Scope *sc)
                 {
                     if (fdv->isFuture())
                     {
-                        ::deprecation(loc, "@future base class method %s is being overridden by %s; rename the latter",
+                        ::deprecation(loc, "@__future base class method %s is being overridden by %s; rename the latter",
                             fdv->toPrettyChars(), toPrettyChars());
                         // Treat 'this' as an introducing function, giving it a separate hierarchy in the vtbl[]
                         goto Lintro;
@@ -1758,7 +1757,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                 if (storage_class & STCauto)
                     storage_class &= ~STCauto;
             }
-            if (retStyle(f) != RETstack || checkNrvo())
+            if (!target.isReturnOnStack(f, needThis()) || !checkNRVO())
                 nrvo_can = 0;
 
             if (fbody->isErrorStatement())
@@ -4275,19 +4274,16 @@ void FuncDeclaration::checkDmain()
  * using NRVO is possible.
  *
  * Returns:
- *      true if the result cannot be returned by hidden reference.
+ *      `false` if the result cannot be returned by hidden reference.
  */
-bool FuncDeclaration::checkNrvo()
+bool FuncDeclaration::checkNRVO()
 {
-    if (!nrvo_can)
-        return true;
-
-    if (returns == NULL)
-        return true;
+    if (!nrvo_can || returns == NULL)
+        return false;
 
     TypeFunction *tf = type->toTypeFunction();
     if (tf->isref)
-        return true;
+        return false;
 
     for (size_t i = 0; i < returns->length; i++)
     {
@@ -4297,24 +4293,23 @@ bool FuncDeclaration::checkNrvo()
         {
             VarDeclaration *v = ve->var->isVarDeclaration();
             if (!v || v->isOut() || v->isRef())
-                return true;
+                return false;
             else if (nrvo_var == NULL)
             {
-                if (!v->isDataseg() && !v->isParameter() && v->toParent2() == this)
-                {
-                    //printf("Setting nrvo to %s\n", v->toChars());
-                    nrvo_var = v;
-                }
-                else
-                    return true;
+                // Variables in the data segment (e.g. globals, TLS or not),
+                // parameters and closure variables cannot be NRVOed.
+                if (v->isDataseg() || v->isParameter() || v->toParent2() != this)
+                    return false;
+                //printf("Setting nrvo to %s\n", v->toChars());
+                nrvo_var = v;
             }
             else if (nrvo_var != v)
-                return true;
+                return false;
         }
         else //if (!exp->isLvalue())    // keep NRVO-ability
-            return true;
+            return false;
     }
-    return false;
+    return true;
 }
 
 const char *FuncDeclaration::kind() const

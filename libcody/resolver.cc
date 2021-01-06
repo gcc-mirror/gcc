@@ -10,7 +10,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if (defined (__unix__)							\
+#if ((defined (__unix__)						\
+      && defined _POSIX_C_SOURCE					\
+      && (_POSIX_C_SOURCE - 0) >= 200809L)				\
      || (defined (__Apple__)						\
 	 && defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) 	\
 	 && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 101000))

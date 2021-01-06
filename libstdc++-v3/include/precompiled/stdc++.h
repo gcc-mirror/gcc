@@ -146,6 +146,7 @@
 #include <span>
 #include <stop_token>
 #include <semaphore>
+#include <source_location>
 #include <syncstream>
 #include <version>
 #endif

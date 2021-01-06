@@ -3337,7 +3337,7 @@ ClassReferenceExp *Expression::isClassReferenceExp()
 
 
 /****************************************
- * Resolve __FILE__, __LINE__, __MODULE__, __FUNCTION__, __PRETTY_FUNCTION__ to loc.
+ * Resolve __FILE__, __LINE__, __MODULE__, __FUNCTION__, __PRETTY_FUNCTION__, __FILE__FULL_PATH__ to loc.
  */
 
 Expression *Expression::resolveLoc(Loc, Scope *)
@@ -7170,9 +7170,12 @@ FileInitExp::FileInitExp(Loc loc, TOK tok)
 Expression *FileInitExp::resolveLoc(Loc loc, Scope *sc)
 {
     //printf("FileInitExp::resolve() %s\n", toChars());
-    const char *s = loc.filename ? loc.filename : sc->_module->ident->toChars();
+    const char *s;
     if (subop == TOKfilefullpath)
-        s = FileName::combine(sc->_module->srcfilePath, s);
+        s = FileName::toAbsolute(loc.filename != NULL ? loc.filename : sc->_module->srcfile->name->toChars());
+    else
+        s = loc.filename != NULL ? loc.filename : sc->_module->ident->toChars();
+
     Expression *e = new StringExp(loc, const_cast<char *>(s));
     e = semantic(e, sc);
     e = e->castTo(sc, type);

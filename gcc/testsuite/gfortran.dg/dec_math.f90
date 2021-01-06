@@ -1,5 +1,5 @@
 ! { dg-options "-cpp -std=gnu" }
-! { dg-do run }
+! { dg-do run { xfail i?86-*-freebsd* } }
 !
 ! Test extra math intrinsics formerly offered by -fdec-math,
 ! now included with -std=gnu or -std=legacy.
