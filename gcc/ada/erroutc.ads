@@ -496,6 +496,11 @@ package Erroutc is
    --  Given an error message ID, return tag showing warning message class, or
    --  the null string if this option is not enabled or this is not a warning.
 
+   function Matches (S : String; P : String) return Boolean;
+   --  Returns true if the String S matches the pattern P, which can contain
+   --  wildcard chars (*). The entire pattern must match the entire string.
+   --  Case is ignored in the comparison (so X matches x).
+
    procedure Output_Error_Msgs (E : in out Error_Msg_Id);
    --  Output source line, error flag, and text of stored error message and all
    --  subsequent messages for the same line and unit. On return E is set to be
