@@ -132,19 +132,19 @@ public:
     switch (type.get_kind ())
       {
       case TyTy::UintType::U8:
-	translated = backend->named_type ("i8", backend->integer_type (true, 8),
+	translated = backend->named_type ("u8", backend->integer_type (true, 8),
 					  Linemap::predeclared_location ());
 	return;
 
       case TyTy::UintType::U16:
 	translated
-	  = backend->named_type ("i16", backend->integer_type (true, 16),
+	  = backend->named_type ("u16", backend->integer_type (true, 16),
 				 Linemap::predeclared_location ());
 	return;
 
       case TyTy::UintType::U32:
 	translated
-	  = backend->named_type ("i32", backend->integer_type (true, 32),
+	  = backend->named_type ("u32", backend->integer_type (true, 32),
 				 Linemap::predeclared_location ());
 	return;
 
