@@ -1,3 +1,39 @@
+2021-01-05  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (unify) <case TEMPLATE_PARM_INDEX>: After walking into
+	the type of the NTTP, substitute into the type again.  If the
+	type is still dependent, don't unify the NTTP.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cc1plus-checksum, cc1plus$(exeext): Add
+	$(CODYLIB) after $(BACKEND).
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98469
+	* constexpr.c (cxx_eval_constant_expression) <case BIT_CAST_EXPR>:
+	Punt if lval is true.
+	* semantics.c (cp_build_bit_cast): Call get_target_expr_sfinae on
+	the result if it has a class type.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82099
+	* pt.c (resolve_overloaded_unification): Call
+	maybe_instantiate_noexcept after instantiating the function
+	decl.
+
+2021-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_module_declaration): Alter diagnostic
+	text to say where is permissable.
+
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* Make-lang.in (cc1plus$(exeext)): Add $(CODYLIB), $(NETLIBS).
+
 2021-01-02  Jan Hubicka  <jh@suse.cz>
 
 	* cp-tree.h (cp_tree_c_finish_parsing): Declare.

@@ -1,3 +1,11 @@
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2021-01-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/precompiled/stdc++.h: Add <source_location> to C++20 section.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* ChangeLog-2020: Rotate ChangeLog.  New file.

@@ -1,3 +1,187 @@
+2021-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Revert:
+	2020-12-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/standards.texi (HSAIL): Remove section.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-std=c++20): Adjust for the publication of
+	ISO 14882:2020 standard.
+	* doc/standards.texi: Likewise.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94802
+	* expr.h (maybe_optimize_sub_cmp_0): Declare.
+	* expr.c: Include tree-pretty-print.h and flags.h.
+	(maybe_optimize_sub_cmp_0): New function.
+	(do_store_flag): Use it.
+	* cfgexpand.c (expand_gimple_cond): Likewise.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* mux-utils.h (pointer_mux::m_ptr): Tweak description of contents.
+	* rtlanal.c (simple_regno_set): Tweak description to clarify the
+	RMW condition.
+
+2021-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98516
+	* tree-vect-slp.c (vect_optimize_slp): Permute the incoming
+	lanes when materializing on a VEC_PERM node.
+	(vectorizable_slp_permutation): Dump the permute properly.
+
+2021-01-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_region): Move debug counter
+	to cover individual subgraphs.
+
+2021-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98428
+	* tree-vect-slp.c (vect_build_slp_tree_1): Properly reject
+	vector lane extracts for loop vectorization.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98514
+	* tree-ssa-reassoc.c (bb_rank): Change type from long * to
+	int64_t *.
+	(operand_rank): Change type from hash_map<tree, long> to
+	hash_map<tree, int64_t>.
+	(phi_rank): Change return type from long to int64_t.
+	(loop_carried_phi): Change block_rank variable type from long to
+	int64_t.
+	(propagate_rank): Change return type, rank parameter type and
+	op_rank variable type from long to int64_t.
+	(find_operand_rank): Change return type from long to int64_t
+	and change slot variable type from long * to int64_t *.
+	(insert_operand_rank): Change rank parameter type from long to
+	int64_t.
+	(get_rank): Change return type and rank variable type from long to
+	int64_t.  Use PRId64 instead of ld to print the rank.
+	(init_reassoc): Change rank variable type from long to int64_t
+	and adjust correspondingly bb_rank and operand_rank initialization.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96928
+	* tree-ssa-phiopt.c (xor_replacement): New function.
+	(tree_ssa_phiopt_worker): Call it.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96930
+	* match.pd ((A / (1 << B)) -> (A >> B)): If A is extended
+	from narrower value which has the same type as 1 << B, perform
+	the right shift on the narrower value followed by extension.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96239
+	* gimple-ssa-store-merging.c (maybe_optimize_vector_constructor): New
+	function.
+	(get_status_for_store_merging): Don't return BB_INVALID for blocks
+	with potential bswap optimizable CONSTRUCTORs.
+	(pass_store_merging::execute): Optimize vector CONSTRUCTORs with bswap
+	if possible.
+
+2021-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98381
+	* tree.c (vector_element_bits): Properly compute bool vector
+	element size.
+	* tree-vect-loop.c (vectorizable_live_operation): Properly
+	compute the last lane bit offset.
+
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98522
+	* config/i386/sse.md (sse_cvtps2pi): Redefine as define_insn_and_split.
+	Clear the top 64 bytes of the input XMM register.
+	(sse_cvttps2pi): Ditto.
+
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98521
+	* config/i386/xopintrin.h (_mm256_cmov_si256): New.
+
+2021-01-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98495
+	* config/i386/xmmintrin.h (_mm_extract_pi16): Cast to unsigned
+	short first.
+
+2021-01-05  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddsidi4_split): Use ACC_REG_FIRST.
+	(umaddsidi4_split): Likewise.
+
+2021-01-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98461
+	* config/i386/sse.md (*sse2_pmovskb_zexthisi): New
+	define_insn_and_split for zero_extend of subreg HI of pmovskb
+	result.
+	(*sse2_pmovskb_zexthisi): Add new combine splitters for
+	zero_extend of not of subreg HI of pmovskb result.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/97269
+	* explow.c (convert_memory_address_addr_space_1): Handle UNSPECs
+	nested in CONSTs.
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Use
+	convert_memory_address to convert symbolic immediates to ptr_mode
+	before forcing them to memory.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97144
+	* recog.c (constrain_operands): Initialize matching_operand
+	for each alternative, rather than only doing it once.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98403
+	* rtl-ssa/changes.cc (function_info::finalize_new_accesses): Explain
+	why we don't remove call clobbers.
+	(function_info::apply_changes_to_insn): Don't attempt to add
+	call clobbers here.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98371
+	* tree-vect-loop.c (vect_reanalyze_as_main_loop): New function.
+	(vect_analyze_loop): If an epilogue loop appears to be cheaper
+	than the main loop, re-analyze it as a main loop before adopting
+	it as a main loop.
+
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* configure.ac (NETLIBS): Determine using AX_LIB_SOCKET_NSL.
+	* aclocal.m4, configure: Regenerate.
+	* Makefile.in (NETLIBS): Define.
+	(BACKEND): Remove $(CODYLIB).
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98334
+	* simplify-rtx.c (simplify_context::simplify_binary_operation_1):
+	Optimize (X - 1) * Y + Y to X * Y or (X + 1) * Y - Y to X * Y.
+
+2021-01-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-inline.c (expand_call_inline): Restore input_location.
+	Return result from recursive call.
+
 2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/95401

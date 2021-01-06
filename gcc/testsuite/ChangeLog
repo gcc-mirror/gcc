@@ -1,3 +1,116 @@
+2021-01-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Replace %% with %.
+
+2021-01-05  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	* gfortran.dg/dec_math.f90: xfail on i?86-*-freebsd*
+
+2021-01-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98495
+	* gcc.target/i386/sse2-mmx-pextrw.c (compute_correct_result): Use
+	unsigned short to compute pextrw result.
+
+2021-01-05  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/template/partial5.C: Adjust directives to expect the
+	same errors across all dialects.
+	* g++.dg/cpp1z/nontype-auto17.C: New test.
+	* g++.dg/cpp1z/nontype-auto18.C: New test.
+	* g++.dg/template/ttp33.C: New test.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94802
+	* gcc.target/i386/pr94802.c: New test.
+	* gcc.dg/Wstrict-overflow-25.c: Remove xfail.
+
+2021-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98516
+	* gcc.dg/vect/bb-slp-pr98516-1.c: New testcase.
+	* gcc.dg/vect/bb-slp-pr98516-2.c: Likewise.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98469
+	* g++.dg/cpp2a/bit-cast8.C: New test.
+	* g++.dg/cpp2a/bit-cast9.C: New test.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82099
+	* g++.dg/cpp1z/class-deduction76.C: Remove dg-ice.
+	* g++.dg/cpp0x/noexcept61.C: New test.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96928
+	* gcc.dg/tree-ssa/pr96928.c: New test.
+	* gcc.target/i386/ifcvt-onecmpl-abs-1.c: Remove -fdump-rtl-ce1,
+	instead of scanning rtl dump for ifcvt message check assembly
+	for xor instruction.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96930
+	* g++.dg/tree-ssa/pr96930.C: New test.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96239
+	* gcc.dg/tree-ssa/pr96239.c: New test.
+
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98522
+	* gcc.target/i386/pr98522.c: New test.
+
+2021-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/p0713-2.C: Adjust.
+	* g++.dg/modules/p0713-3.C: Adjust.
+
+2021-01-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98495
+	* gcc.target/i386/pr98495-1.c: New test.
+	* gcc.target/i386/pr98495-2.c: New test.
+	* gcc.target/i386/pr98495-3.c: New test.
+	* gcc.target/i386/pr98495-4.c: New test.
+	* gcc.target/i386/pr98495-5.c: New test.
+
+2021-01-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse2-pr98461-2.c: New test.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97144
+	* gcc.c-torture/compile/pr97144.c: New test.
+	* gcc.target/aarch64/sve/pr97144.c: Likewise.
+
+2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98403
+	* g++.dg/opt/pr98403.C: New test.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98334
+	* gcc.target/i386/pr98334.c: New test.
+
+2021-01-05  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g++.dg/cpp1y/constexpr-66093.C: Fix bounds issue.
+
+2021-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98293
+	* gcc.dg/analyzer/pr98293.c: New test.
+
 2021-01-04  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/98029

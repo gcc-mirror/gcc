@@ -1,3 +1,10 @@
+2021-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98293
+	* store.cc (binding_map::apply_ctor_to_region): When "index" is
+	NULL, iterate through the fields for RECORD_TYPEs, rather than
+	creating an INTEGER_CST index.
+
 2020-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer-pass.cc: Include "analyzer/analyzer.h" for the
