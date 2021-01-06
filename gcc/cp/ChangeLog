@@ -1,3 +1,62 @@
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82099
+	* pt.c (resolve_overloaded_unification): Call
+	maybe_instantiate_noexcept after instantiating the function
+	decl.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96675
+	PR c++/96742
+	* pt.c (tsubst_copy_and_build): Call value_dependent_expression_p or
+	type_dependent_expression_p instead of type_dependent_expression_p_push.
+	But only call value_dependent_expression_p for expressions that are
+	potential_constant_expression.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97975
+	* constexpr.c (fold_non_dependent_init): Add a tree parameter.
+	Use it.
+	* cp-tree.h (fold_non_dependent_init): Add a tree parameter with
+	a default value.
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr
+	only when checking the initializer for constexpr variables.
+	Call fold_non_dependent_init instead of maybe_constant_init.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98043
+	* decl.c (pop_switch): If SWITCH_STMT_TYPE is a scoped enum type,
+	set it to the type of SWITCH_STMT_COND.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98103
+	* constexpr.c (cxx_eval_dynamic_cast_fn): If the evaluating of vtable
+	yields a null pointer, give an error and return.  Use objtype.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* constexpr.c (cxx_set_object_constness): New function.
+	(cxx_eval_call_expression): Set new_obj for destructors too.
+	Call cxx_set_object_constness to set/unset TREE_READONLY of
+	the object under construction/destruction.
+
 2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

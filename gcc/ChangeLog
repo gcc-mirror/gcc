@@ -1,3 +1,15 @@
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98522
+	* config/i386/sse.md (sse_cvtps2pi): Redefine as define_insn_and_split.
+	Clear the top 64 bytes of the input XMM register.
+	(sse_cvttps2pi): Ditto.
+
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98521
+	* config/i386/xopintrin.h (_mm256_cmov_si256): New.
+
 2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek   <jakub@redhat.com>
 

@@ -1,3 +1,54 @@
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82099
+	* g++.dg/cpp0x/noexcept61.C: New test.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96675
+	PR c++/96742
+	* g++.dg/warn/Wdiv-by-zero-3.C: Turn dg-warning into dg-bogus.
+	* g++.dg/warn/Wtautological-compare3.C: New test.
+	* g++.dg/warn/Wtype-limits5.C: New test.
+	* g++.old-deja/g++.pt/crash10.C: Remove dg-warning.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97975
+	* g++.dg/cpp1z/inline-var8.C: New test.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98043
+	* g++.dg/cpp0x/enum41.C: New test.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98103
+	* g++.dg/ubsan/vptr-18.C: New test.
+
+2021-01-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* g++.dg/cpp2a/constexpr-dtor10.C: New test.
+
+2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98522
+	* gcc.target/i386/pr98522.c: New test.
+
 2021-01-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
