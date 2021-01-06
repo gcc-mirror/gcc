@@ -1281,17 +1281,22 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access-to-variable type should be
+            --  A constant or an IN parameter of a procedure or a protected
+            --  entry, if it is of an access-to-variable type, should be
             --  handled like a variable, as the underlying memory pointed-to
             --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
          begin
-            if Ekind (Item_Id) in E_Constant
-                                | E_Generic_In_Parameter
-                                | E_In_Parameter
+            if (Ekind (Item_Id) in E_Constant | E_Generic_In_Parameter
+                  or else
+                  (Ekind (Item_Id) = E_In_Parameter
+                     and then Ekind (Scope (Item_Id))
+                                not in E_Function | E_Generic_Function))
               and then Is_Access_Variable (Etype (Item_Id))
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -30244,16 +30249,6 @@ package body Sem_Prag is
          Formal := First_Entity (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
-
-               --  IN parameters can act as output when the related type is
-               --  access-to-variable.
-
-               if Ekind (Formal) = E_In_Parameter
-                 and then Is_Access_Variable (Etype (Formal))
-               then
-                  Append_New_Elmt (Formal, Subp_Outputs);
-               end if;
-
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
@@ -30269,6 +30264,17 @@ package body Sem_Prag is
                then
                   Append_New_Elmt (Formal, Subp_Inputs);
                end if;
+            end if;
+
+            --  IN parameters of procedures and protected entries can act as
+            --  outputs when the related type is access-to-variable.
+
+            if Ekind (Formal) = E_In_Parameter
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
+              and then Is_Access_Variable (Etype (Formal))
+            then
+               Append_New_Elmt (Formal, Subp_Outputs);
             end if;
 
             Next_Entity (Formal);
