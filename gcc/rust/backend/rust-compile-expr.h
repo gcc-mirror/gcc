@@ -156,8 +156,6 @@ public:
 	return;
 
 	case HIR::Literal::FLOAT: {
-	  printf ("FLOATY BOYO: [%s]\n", expr.as_string ().c_str ());
-
 	  mpfr_t fval;
 	  if (mpfr_init_set_str (fval, expr.as_string ().c_str (), 10,
 				 MPFR_RNDN)
@@ -176,8 +174,6 @@ public:
 				"did not resolve type for this literal expr");
 	      return;
 	    }
-
-	  printf ("tyty float is [%s]\n", tyty->as_string ().c_str ());
 
 	  Btype *type = TyTyResolveCompile::compile (ctx, tyty);
 	  translated

@@ -188,6 +188,15 @@ public:
 	      ok = context->lookup_builtin ("u128", &infered);
 	      break;
 
+	    case CORETYPE_F32:
+	      expr.get_literal ()->set_lit_type (HIR::Literal::LitType::FLOAT);
+	      ok = context->lookup_builtin ("f32", &infered);
+	      break;
+	    case CORETYPE_F64:
+	      expr.get_literal ()->set_lit_type (HIR::Literal::LitType::FLOAT);
+	      ok = context->lookup_builtin ("f64", &infered);
+	      break;
+
 	    default:
 	      ok = context->lookup_builtin ("i32", &infered);
 	      break;
@@ -197,8 +206,20 @@ public:
 	break;
 
 	case HIR::Literal::LitType::FLOAT: {
-	  // FIXME need to respect the suffix if applicable
-	  auto ok = context->lookup_builtin ("f32", &infered);
+	  bool ok = false;
+
+	  switch (expr.get_literal ()->get_type_hint ())
+	    {
+	    case CORETYPE_F32:
+	      ok = context->lookup_builtin ("f32", &infered);
+	      break;
+	    case CORETYPE_F64:
+	      ok = context->lookup_builtin ("f64", &infered);
+	      break;
+	    default:
+	      ok = context->lookup_builtin ("f32", &infered);
+	      break;
+	    }
 	  rust_assert (ok);
 	}
 	break;

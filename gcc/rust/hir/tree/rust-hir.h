@@ -257,6 +257,8 @@ public:
     return Literal ("", CHAR, PrimitiveCoreType::CORETYPE_UNKNOWN);
   }
 
+  void set_lit_type (LitType lt) { type = lt; }
+
   // Returns whether literal is in an invalid state.
   bool is_error () const { return value_as_string == ""; }
 };
