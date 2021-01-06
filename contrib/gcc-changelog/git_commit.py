@@ -174,6 +174,24 @@ REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
 DATE_FORMAT = '%Y-%m-%d'
 
 
+def decode_path(path):
+    # When core.quotepath is true (default value), utf8 chars are encoded like:
+    # "b/ko\304\215ka.txt"
+    #
+    # The upstream bug is fixed:
+    # https://github.com/gitpython-developers/GitPython/issues/1099
+    #
+    # but we still need a workaround for older versions of the library.
+    # Please take a look at the explanation of the transformation:
+    # https://stackoverflow.com/questions/990169/how-do-convert-unicode-escape-sequences-to-unicode-characters-in-a-python-string
+
+    if path.startswith('"') and path.endswith('"'):
+        return (path.strip('"').encode('utf8').decode('unicode-escape')
+                .encode('latin-1').decode('utf8'))
+    else:
+        return path
+
+
 class Error:
     def __init__(self, message, line=None):
         self.message = message
@@ -302,14 +320,6 @@ class GitCommit:
                                      'DEV-PHASE updates should be done '
                                      'separately from normal commits'))
             return
-
-        # check for an encoded utf-8 filename
-        hint = 'git config --global core.quotepath false'
-        for modified, _ in self.info.modified_files:
-            if modified.startswith('"') or modified.endswith('"'):
-                self.errors.append(Error('Quoted UTF8 filename, please set: '
-                                         f'"{hint}"', modified))
-                return
 
         all_are_ignored = (len(project_files) + len(ignored_files)
                            == len(self.info.modified_files))
