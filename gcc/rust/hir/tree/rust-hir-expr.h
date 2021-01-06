@@ -2594,6 +2594,8 @@ public:
       }
   }
 
+  bool is_final_stmt (Stmt *stmt) { return statements.back ().get () == stmt; }
+
   Location get_closing_locus ()
   {
     if (statements.size () == 0)

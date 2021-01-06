@@ -2838,6 +2838,8 @@ public:
       }
   }
 
+  size_t num_statements () const { return statements.size (); }
+
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }

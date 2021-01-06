@@ -107,7 +107,7 @@ private:
 class ASTLoweringExpr : public ASTLoweringBase
 {
 public:
-  static HIR::Expr *translate (AST::Expr *expr)
+  static HIR::Expr *translate (AST::Expr *expr, bool *terminated = nullptr)
   {
     ASTLoweringExpr resolver;
     expr->accept_vis (resolver);
@@ -121,6 +121,13 @@ public:
     resolver.mappings->insert_hir_expr (
       resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (), resolver.translated);
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (),
+      expr->get_locus_slow ());
+
+    if (terminated != nullptr)
+      *terminated = resolver.terminated;
 
     return resolver.translated;
   }
@@ -129,22 +136,22 @@ public:
 
   void visit (AST::IfExpr &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::IfExprConseqElse &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::IfExprConseqIf &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::BlockExpr &expr)
   {
-    translated = ASTLoweringBlock::translate (&expr);
+    translated = ASTLoweringBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::PathInExpression &expr)
@@ -154,6 +161,7 @@ public:
 
   void visit (AST::ReturnExpr &expr)
   {
+    terminated = true;
     HIR::Expr *return_expr
       = expr.has_returned_expr ()
 	  ? ASTLoweringExpr::translate (expr.get_returned_expr ().get ())
@@ -498,10 +506,13 @@ public:
   }
 
 private:
-  ASTLoweringExpr () : translated (nullptr), translated_array_elems (nullptr) {}
+  ASTLoweringExpr ()
+    : translated (nullptr), translated_array_elems (nullptr), terminated (false)
+  {}
 
   HIR::Expr *translated;
   HIR::ArrayElems *translated_array_elems;
+  bool terminated;
 };
 
 } // namespace HIR

@@ -85,6 +85,10 @@ public:
 	return true;
       });
 
+    if (function.get_definition ()->has_tail_expr ())
+      ResolveExpr::go (function.get_definition ()->get_tail_expr ().get (),
+		       function.get_node_id ());
+
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
   }

@@ -32,9 +32,9 @@ namespace Resolver {
 class TypeCheckExpr : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Expr *expr)
+  static TyTy::TyBase *Resolve (HIR::Expr *expr, bool is_final_expr = false)
   {
-    TypeCheckExpr resolver;
+    TypeCheckExpr resolver (is_final_expr);
     expr->accept_vis (resolver);
     if (resolver.infered != nullptr)
       resolver.context->insert_type (expr->get_mappings ().get_hirid (),
@@ -245,13 +245,30 @@ public:
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
     TypeCheckExpr::Resolve (expr.get_if_block ());
+
+    // if without else always resolves to unit type
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    TypeCheckExpr::Resolve (expr.get_if_condition ());
-    TypeCheckExpr::Resolve (expr.get_if_block ());
-    TypeCheckExpr::Resolve (expr.get_else_block ());
+    // this must combine to what the type is expected
+    // this might be a parameter or the last expr in an if + else in a BlockExpr
+    // then it must resolve to fn return type
+    // else its a unit-type
+    infered = is_final_expr
+		? context->peek_return_type ()
+		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+
+    TypeCheckExpr::Resolve (expr.get_if_condition (), is_final_expr);
+    auto if_blk_ty = TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto else_blk_ty = TypeCheckExpr::Resolve (expr.get_else_block ());
+
+    if (is_final_expr)
+      {
+	infered = infered->combine (if_blk_ty);
+	infered = infered->combine (else_blk_ty);
+      }
   }
 
   void visit (HIR::IfExprConseqIf &expr)
@@ -259,22 +276,28 @@ public:
     TypeCheckExpr::Resolve (expr.get_if_condition ());
     TypeCheckExpr::Resolve (expr.get_if_block ());
     TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BlockExpr &expr);
 
   void visit (HIR::ArrayIndexExpr &expr)
   {
-    // check the index
+    // FIXME this should be size type
     TyTy::IntType size_ty (expr.get_index_expr ()->get_mappings ().get_hirid (),
 			   TyTy::IntType::I32);
     auto resolved
       = size_ty.combine (TypeCheckExpr::Resolve (expr.get_index_expr ()));
-    context->insert_type (expr.get_index_expr ()->get_mappings ().get_hirid (),
-			  resolved);
+    rust_assert (resolved != nullptr);
 
     expr.get_array_expr ()->accept_vis (*this);
-    rust_assert (infered != nullptr);
+    if (infered->get_kind () != TyTy::TypeKind::ARRAY)
+      {
+	rust_fatal_error (expr.get_array_expr ()->get_locus_slow (),
+			  "expected an ArrayType for index expression");
+	return;
+      }
 
     // extract the element type out now from the base type
     infered = TyTyExtractorArray::ExtractElementTypeFromArray (infered);
@@ -318,12 +341,15 @@ public:
   }
 
 private:
-  TypeCheckExpr ()
-    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr)
+  TypeCheckExpr (bool is_final_expr)
+    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
+      is_final_expr (is_final_expr)
   {}
 
   TyTy::TyBase *infered;
   TyTy::TyBase *infered_array_elems;
+
+  bool is_final_expr;
 };
 
 } // namespace Resolver

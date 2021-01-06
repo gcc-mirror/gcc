@@ -184,6 +184,8 @@ class ExprStmt : public Stmt
   Location locus;
 
 public:
+  Location get_locus_slow () const final override { return get_locus (); }
+
   Location get_locus () const { return locus; }
 
 protected:

@@ -72,25 +72,7 @@ public:
     ResolveFnType resolve_fn_type (fnType);
     context->push_return_type (resolve_fn_type.go ());
 
-    // walk statements to make sure they are all typed correctly and they match
-    // up
-    function.function_body->iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-      TypeCheckStmt::Resolve (s);
-      return true;
-    });
-
-    // now that the stmts have been resolved we must resolve the block of locals
-    // and make sure the variables have been resolved
-    auto body_mappings = function.function_body->get_mappings ();
-    Rib *rib = nullptr;
-    if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
-      {
-	rust_fatal_error (function.get_locus (),
-			  "failed to lookup locals per block");
-	return;
-      }
-
-    TyTyResolver::Resolve (rib, mappings, resolver, context);
+    TypeCheckExpr::Resolve (function.function_body.get ());
 
     context->pop_return_type ();
   }

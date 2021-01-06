@@ -49,7 +49,7 @@ class TyVisitor;
 class TyBase
 {
 public:
-  ~TyBase () {}
+  virtual ~TyBase () {}
 
   HirId get_ref () const { return ref; }
 

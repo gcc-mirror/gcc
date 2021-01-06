@@ -28,7 +28,7 @@ namespace HIR {
 class ASTLoweringBlock : public ASTLoweringBase
 {
 public:
-  static HIR::BlockExpr *translate (AST::BlockExpr *expr)
+  static HIR::BlockExpr *translate (AST::BlockExpr *expr, bool *terminated)
   {
     ASTLoweringBlock resolver;
     expr->accept_vis (resolver);
@@ -40,6 +40,7 @@ public:
 	  resolver.translated);
       }
 
+    *terminated = resolver.terminated;
     return resolver.translated;
   }
 
@@ -48,15 +49,18 @@ public:
   void visit (AST::BlockExpr &expr);
 
 private:
-  ASTLoweringBlock () : ASTLoweringBase (), translated (nullptr) {}
+  ASTLoweringBlock ()
+    : ASTLoweringBase (), translated (nullptr), terminated (false)
+  {}
 
   HIR::BlockExpr *translated;
+  bool terminated;
 };
 
 class ASTLoweringIfBlock : public ASTLoweringBase
 {
 public:
-  static HIR::IfExpr *translate (AST::IfExpr *expr)
+  static HIR::IfExpr *translate (AST::IfExpr *expr, bool *terminated)
   {
     ASTLoweringIfBlock resolver;
     expr->accept_vis (resolver);
@@ -67,7 +71,7 @@ public:
 	  resolver.translated->get_mappings ().get_hirid (),
 	  resolver.translated);
       }
-
+    *terminated = resolver.terminated;
     return resolver.translated;
   }
 
@@ -80,15 +84,19 @@ public:
   void visit (AST::IfExprConseqIf &expr);
 
 private:
-  ASTLoweringIfBlock () : ASTLoweringBase (), translated (nullptr) {}
+  ASTLoweringIfBlock ()
+    : ASTLoweringBase (), translated (nullptr), terminated (false)
+  {}
 
   HIR::IfExpr *translated;
+  bool terminated;
 };
 
 class ASTLoweringExprWithBlock : public ASTLoweringBase
 {
 public:
-  static HIR::ExprWithBlock *translate (AST::ExprWithBlock *expr)
+  static HIR::ExprWithBlock *translate (AST::ExprWithBlock *expr,
+					bool *terminated)
   {
     ASTLoweringExprWithBlock resolver;
     expr->accept_vis (resolver);
@@ -100,6 +108,7 @@ public:
 	  resolver.translated);
       }
 
+    *terminated = resolver.terminated;
     return resolver.translated;
   }
 
@@ -107,23 +116,26 @@ public:
 
   void visit (AST::IfExpr &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::IfExprConseqElse &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
   void visit (AST::IfExprConseqIf &expr)
   {
-    translated = ASTLoweringIfBlock::translate (&expr);
+    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
 private:
-  ASTLoweringExprWithBlock () : ASTLoweringBase (), translated (nullptr) {}
+  ASTLoweringExprWithBlock ()
+    : ASTLoweringBase (), translated (nullptr), terminated (false)
+  {}
 
   HIR::ExprWithBlock *translated;
+  bool terminated;
 };
 
 } // namespace HIR

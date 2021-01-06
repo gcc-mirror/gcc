@@ -34,58 +34,83 @@ public:
 
   virtual void visit (UnitType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
+  }
+
+  virtual void visit (ADTType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (InferType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (FnType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (ParamType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (ArrayType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (BoolType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (IntType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (UintType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
 protected:
@@ -114,6 +139,11 @@ public:
 
   // we are an inference variable so this means we can take the other as the
   // type
+  virtual void visit (UnitType &type) override
+  {
+    resolved = new UnitType (type.get_ref ());
+  }
+
   virtual void visit (BoolType &type) override
   {
     resolved = new BoolType (type.get_ref ());
@@ -164,6 +194,8 @@ public:
     other->accept_vis (*this);
     return resolved;
   }
+
+  void visit (IntType &type) override { rust_assert (false); }
 
 private:
   UnitType *base;

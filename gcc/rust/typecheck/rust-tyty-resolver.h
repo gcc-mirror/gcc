@@ -73,8 +73,6 @@ public:
 						 d.parent, &hir_node_ref);
 	      rust_assert (ok);
 
-	      printf ("failed lets try [%u]\n", hir_node_ref);
-
 	      if (!context->lookup_type (hir_node_ref, &resolved))
 		{
 		  rust_fatal_error (
@@ -102,10 +100,8 @@ public:
 				 &resolved_type);
       rust_assert (ok);
 
-      if (!resolved_type->is_unit ())
-	{
-	  return true;
-	}
+      if (resolved_type->get_kind () != TyTy::TypeKind::INFER)
+	return true;
 
       auto resolved_tyty = resolved_type;
       for (auto it : gathered_types)

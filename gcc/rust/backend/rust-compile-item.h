@@ -232,6 +232,23 @@ public:
       return true;
     });
 
+    if (function_body->has_expr ())
+      {
+	// the previous passes will ensure this is a valid return
+	// dead code elimination should remove any bad trailing expressions
+	Bexpression *compiled_expr
+	  = CompileExpr::Compile (function_body->expr.get (), ctx);
+	rust_assert (compiled_expr != nullptr);
+
+	auto fncontext = ctx->peek_fn ();
+
+	std::vector<Bexpression *> retstmts;
+	retstmts.push_back (compiled_expr);
+	auto s = ctx->get_backend ()->return_statement (
+	  fncontext.fndecl, retstmts, function_body->expr->get_locus_slow ());
+	ctx->add_statement (s);
+      }
+
     ctx->pop_block ();
     auto body = ctx->get_backend ()->block_statement (code_block);
     if (!ctx->get_backend ()->function_set_body (fndecl, body))
