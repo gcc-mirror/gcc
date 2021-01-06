@@ -3032,8 +3032,7 @@ wi::lshift (const T1 &x, const T2 &y)
       if (STATIC_CONSTANT_P (xi.precision > HOST_BITS_PER_WIDE_INT)
 	  ? (STATIC_CONSTANT_P (shift < HOST_BITS_PER_WIDE_INT - 1)
 	     && xi.len == 1
-	     && xi.val[0] <= (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT)
-					      HOST_WIDE_INT_MAX >> shift))
+	     && IN_RANGE (xi.val[0], 0, HOST_WIDE_INT_MAX >> shift))
 	  : precision <= HOST_BITS_PER_WIDE_INT)
 	{
 	  val[0] = xi.ulow () << shift;
