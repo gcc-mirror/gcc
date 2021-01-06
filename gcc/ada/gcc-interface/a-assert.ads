@@ -33,23 +33,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised when calling Assert.
---  This is enforced by setting the corresponding assertion policy to Ignore.
-
-pragma Assertion_Policy (Pre => Ignore);
+--  This version is used to bootstrap the compiler only.
+--  It can be removed when we switch to using a GNAT from 2014 or later.
 
 pragma Compiler_Unit_Warning;
 
-package Ada.Assertions with
-  SPARK_Mode, Pure
-is
+package Ada.Assertions is
+   pragma Pure;
+
    Assertion_Error : exception;
 
-   procedure Assert (Check : Boolean) with
-     Pre => Check;
+   procedure Assert (Check : Boolean);
 
-   procedure Assert (Check : Boolean; Message : String) with
-     Pre => Check;
+   procedure Assert (Check : Boolean; Message : String);
 
 end Ada.Assertions;

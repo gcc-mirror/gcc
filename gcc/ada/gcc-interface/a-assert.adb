@@ -2,15 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       A D A . A S S E R T I O N S                        --
+--                           A D A . A S S E R T                            --
 --                                                                          --
---            Copyright (C) 2015-2021, Free Software Foundation, Inc.       --
+--                                 B o d y                                  --
 --                                                                          --
---                                 S p e c                                  --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the contracts that have been added.                      --
+--         Copyright (C) 2007-2021, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,27 +25,28 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- Extensive contributions were provided by Ada Core Technologies Inc. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised when calling Assert.
---  This is enforced by setting the corresponding assertion policy to Ignore.
+package body Ada.Assertions is
 
-pragma Assertion_Policy (Pre => Ignore);
+   ------------
+   -- Assert --
+   ------------
 
-pragma Compiler_Unit_Warning;
+   procedure Assert (Check : Boolean) is
+   begin
+      if Check = False then
+         raise Ada.Assertions.Assertion_Error;
+      end if;
+   end Assert;
 
-package Ada.Assertions with
-  SPARK_Mode, Pure
-is
-   Assertion_Error : exception;
-
-   procedure Assert (Check : Boolean) with
-     Pre => Check;
-
-   procedure Assert (Check : Boolean; Message : String) with
-     Pre => Check;
+   procedure Assert (Check : Boolean; Message : String) is
+   begin
+      if Check = False then
+         raise Ada.Assertions.Assertion_Error with Message;
+      end if;
+   end Assert;
 
 end Ada.Assertions;
