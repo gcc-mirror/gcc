@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---           A D A . W I D E _ T E X T _ I O . F L O A T _ A U X            --
+--                       S Y S T E M . I M G _ F L T                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--            Copyright (C) 2021, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,53 +29,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for Ada.Wide_Text_IO.Float_IO that
---  are shared among separate instantiations of this package. The routines
---  in this package are identical semantically to those in Float_IO, except
---  that the default parameters have been removed because they are supplied
---  explicitly by the calls from within the generic template. This package
---  is also used by Ada.Wide_Text_IO.Fixed_IO and Ada.Wide_Text_IO.Decimal_IO.
+--  This package contains routines for the Image attribute of floating point
+--  types based on Float, also used for Float_IO output.
 
-private generic
+with System.Image_R;
+with System.Img_Uns;
+with System.Powten_Flt;
+with System.Unsigned_Types;
 
-   type Num is digits <>;
+package System.Img_Flt is
+   pragma Pure;
 
-   with function Scan
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer) return Num;
+   package Impl is new Image_R
+     (Float,
+      System.Powten_Flt.Maxpow,
+      System.Powten_Flt.Powten'Address,
+      Unsigned_Types.Unsigned,
+      System.Img_Uns.Set_Image_Unsigned);
 
-   with procedure Set_Image
-     (V    : Num;
+   procedure Image_Float
+     (V    : Float;
+      S    : in out String;
+      P    : out Natural;
+      Digs : Natural)
+     renames Impl.Image_Floating_Point;
+
+   procedure Set_Image_Float
+     (V    : Float;
       S    : in out String;
       P    : in out Natural;
       Fore : Natural;
       Aft  : Natural;
-      Exp  : Natural);
+      Exp  : Natural)
+     renames Impl.Set_Image_Real;
 
-package Ada.Wide_Text_IO.Float_Aux is
-
-   procedure Get
-     (File  : File_Type;
-      Item  : out Num;
-      Width : Field);
-
-   procedure Put
-     (File : File_Type;
-      Item : Num;
-      Fore : Field;
-      Aft  : Field;
-      Exp  : Field);
-
-   procedure Gets
-     (From : String;
-      Item : out Num;
-      Last : out Positive);
-
-   procedure Puts
-     (To   : out String;
-      Item : Num;
-      Aft  : Field;
-      Exp  : Field);
-
-end Ada.Wide_Text_IO.Float_Aux;
+end System.Img_Flt;

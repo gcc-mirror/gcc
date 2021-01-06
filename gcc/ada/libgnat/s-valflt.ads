@@ -32,8 +32,8 @@
 --  This package contains routines for scanning real values for floating point
 --  type Float, for use in Text_IO.Float_IO and the Value attribute.
 
-with Interfaces;
 with System.Powten_Flt;
+with System.Unsigned_Types;
 with System.Val_Real;
 
 package System.Val_Flt is
@@ -41,9 +41,9 @@ package System.Val_Flt is
 
    package Impl is new Val_Real
      (Float,
-      Interfaces.Unsigned_32,
       System.Powten_Flt.Maxpow,
-      System.Powten_Flt.Powten'Address);
+      System.Powten_Flt.Powten'Address,
+      Unsigned_Types.Unsigned);
 
    function Scan_Float
      (Str : String;

@@ -36,11 +36,11 @@ generic
 
    type Num is digits <>;
 
-   type Uns is mod <>;
-
    Maxpow : Positive;
 
    Powten_Address : System.Address;
+
+   type Uns is mod <>;
 
 package System.Val_Real is
    pragma Preelaborate;

@@ -264,13 +264,15 @@ package Rtsfind is
       System_Img_Fixed_32,
       System_Img_Fixed_64,
       System_Img_Fixed_128,
+      System_Img_Flt,
       System_Img_Int,
+      System_Img_LFlt,
+      System_Img_LLF,
       System_Img_LLI,
       System_Img_LLLI,
       System_Img_LLU,
       System_Img_LLLU,
       System_Img_Name,
-      System_Img_Real,
       System_Img_Uns,
       System_Img_WChar,
       System_Interrupts,
@@ -956,13 +958,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128,                 -- System.Fore_Decimal_128
 
+     RE_Fore_Fixed,                      -- System.Fore_Real
+
      RE_Fore_Fixed32,                    -- System.Fore_Fixed_32
 
      RE_Fore_Fixed64,                    -- System.Fore_Fixed_64
 
      RE_Fore_Fixed128,                   -- System.Fore_Fixed_128
-
-     RE_Fore_Real,                       -- System.Fore_Real
 
      RE_Image_Boolean,                   -- System.Img_Bool
 
@@ -979,7 +981,13 @@ package Rtsfind is
      RE_Image_Enumeration_16,            -- System.Img_Enum_New
      RE_Image_Enumeration_32,            -- System.Img_Enum_New
 
+     RE_Image_Float,                     -- System_Img_Flt
+
      RE_Image_Integer,                   -- System.Img_Int
+
+     RE_Image_Long_Float,                -- System_Img_LFlt
+
+     RE_Image_Long_Long_Float,           -- System_Img_LLF
 
      RE_Image_Long_Long_Integer,         -- System.Img_LLI
 
@@ -989,12 +997,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned,   -- System.Img_LLLU
 
-     RE_Image_Fixed32,                   -- System.Img_Fixed_32
-     RE_Image_Fixed64,                   -- System.Img_Fixed_64
-     RE_Image_Fixed128,                  -- System.Img_Fixed_128
+     RE_Image_Fixed,                     -- System.Img_LFlt
 
-     RE_Image_Ordinary_Fixed_Point,      -- System.Img_Real
-     RE_Image_Floating_Point,            -- System.Img_Real
+     RE_Image_Fixed32,                   -- System.Img_Fixed_32
+
+     RE_Image_Fixed64,                   -- System.Img_Fixed_64
+
+     RE_Image_Fixed128,                  -- System.Img_Fixed_128
 
      RE_Image_Unsigned,                  -- System.Img_Uns
 
@@ -2635,13 +2644,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128                  => System_Fore_Decimal_128,
 
+     RE_Fore_Fixed                       => System_Fore_Real,
+
      RE_Fore_Fixed32                     => System_Fore_Fixed_32,
 
      RE_Fore_Fixed64                     => System_Fore_Fixed_64,
 
      RE_Fore_Fixed128                    => System_Fore_Fixed_128,
-
-     RE_Fore_Real                        => System_Fore_Real,
 
      RE_Image_Boolean                    => System_Img_Bool,
 
@@ -2658,7 +2667,13 @@ package Rtsfind is
      RE_Image_Enumeration_16             => System_Img_Enum_New,
      RE_Image_Enumeration_32             => System_Img_Enum_New,
 
+     RE_Image_Float                      => System_Img_Flt,
+
      RE_Image_Integer                    => System_Img_Int,
+
+     RE_Image_Long_Float                 => System_Img_LFlt,
+
+     RE_Image_Long_Long_Float            => System_Img_LLF,
 
      RE_Image_Long_Long_Integer          => System_Img_LLI,
 
@@ -2668,12 +2683,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned    => System_Img_LLLU,
 
-     RE_Image_Fixed32                    => System_Img_Fixed_32,
-     RE_Image_Fixed64                    => System_Img_Fixed_64,
-     RE_Image_Fixed128                   => System_Img_Fixed_128,
+     RE_Image_Fixed                      => System_Img_LFlt,
 
-     RE_Image_Ordinary_Fixed_Point       => System_Img_Real,
-     RE_Image_Floating_Point             => System_Img_Real,
+     RE_Image_Fixed32                    => System_Img_Fixed_32,
+
+     RE_Image_Fixed64                    => System_Img_Fixed_64,
+
+     RE_Image_Fixed128                   => System_Img_Fixed_128,
 
      RE_Image_Unsigned                   => System_Img_Uns,
 

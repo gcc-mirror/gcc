@@ -3631,8 +3631,8 @@ package body Exp_Attr is
       --             min (scale of Typ'Small, 0)
 
       --    For other ordinary fixed-point types
-      --      xx   = Real
-      --      ftyp = Universal_Real
+      --      xx   = Fixed
+      --      ftyp = Long_Float
       --      pm   = none
 
       --  Note that we know that the type is a nonstatic subtype, or Fore would
@@ -3691,8 +3691,8 @@ package body Exp_Attr is
                      Fid  := RE_Fore_Fixed128;
                      Ftyp := RTE (RE_Integer_128);
                   else
-                     Fid  := RE_Fore_Real;
-                     Ftyp := Universal_Real;
+                     Fid  := RE_Fore_Fixed;
+                     Ftyp := Standard_Long_Float;
                   end if;
                end;
             end if;
@@ -3721,7 +3721,7 @@ package body Exp_Attr is
             --  For ordinary fixed-point types, append Num, Den and Scale
             --  parameters and also set to do literal conversion
 
-            elsif Fid /= RE_Fore_Real then
+            elsif Fid /= RE_Fore_Fixed then
                Set_Conversion_OK (First (Arg_List));
                Set_Conversion_OK (Next (First (Arg_List)));
 

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---           A D A . W I D E _ T E X T _ I O . F L O A T _ A U X            --
+--                       S Y S T E M . I M A G E _ R                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -29,53 +29,64 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for Ada.Wide_Text_IO.Float_IO that
---  are shared among separate instantiations of this package. The routines
---  in this package are identical semantically to those in Float_IO, except
---  that the default parameters have been removed because they are supplied
---  explicitly by the calls from within the generic template. This package
---  is also used by Ada.Wide_Text_IO.Fixed_IO and Ada.Wide_Text_IO.Decimal_IO.
+--  This package contains routines for the Image attribute of real types, and
+--  is also for Float_IO/Fixed_IO output.
 
-private generic
+generic
 
    type Num is digits <>;
 
-   with function Scan
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer) return Num;
+   Maxpow : Positive;
 
-   with procedure Set_Image
+   Powten_Address : System.Address;
+
+   type Uns is mod <>;
+
+   with procedure Set_Image_Unsigned
+     (V : Uns;
+      S : in out String;
+      P : in out Natural);
+
+package System.Image_R is
+   pragma Pure;
+
+   procedure Image_Fixed_Point
+     (V   : Num;
+      S   : in out String;
+      P   : out Natural;
+      Aft : Natural);
+   --  Computes fixed_type'Image (V) and returns the result in S (1 .. P)
+   --  updating P on return. The result is computed according to the rules for
+   --  image for fixed-point types (RM 3.5(34)), where Aft is the value of the
+   --  Aft attribute for the fixed-point type. The caller guarantees that S is
+   --  long enough to hold the result and has a lower bound of 1.
+   --
+   --  Note: this procedure should NOT be called with V = -0.0 or V = +/-Inf.
+
+   procedure Image_Floating_Point
+     (V    : Num;
+      S    : in out String;
+      P    : out Natural;
+      Digs : Natural);
+   --  Computes Uns'Image (V) and returns the result in S (1 .. P) updating P
+   --  on return. The result is computed according to the rules for image for
+   --  floating-point types (RM 3.5(33)), where Digs is the value of the Digits
+   --  attribute for the floating-point type. The caller guarantees that S is
+   --  long enough to hold the result and has a lower bound of 1.
+
+   procedure Set_Image_Real
      (V    : Num;
       S    : in out String;
       P    : in out Natural;
       Fore : Natural;
       Aft  : Natural;
       Exp  : Natural);
+   --  Sets the image of V starting at S (P + 1), updating P to point to the
+   --  last character stored, the caller promises that the buffer is large
+   --  enough and no check is made for this. Constraint_Error will not
+   --  necessarily be raised if this is violated, since it is perfectly valid
+   --  to compile this unit with checks off). The Fore, Aft and Exp values
+   --  can be set to any valid values for the case of use from Text_IO. Note
+   --  that no space is stored at the start for non-negative values.
 
-package Ada.Wide_Text_IO.Float_Aux is
-
-   procedure Get
-     (File  : File_Type;
-      Item  : out Num;
-      Width : Field);
-
-   procedure Put
-     (File : File_Type;
-      Item : Num;
-      Fore : Field;
-      Aft  : Field;
-      Exp  : Field);
-
-   procedure Gets
-     (From : String;
-      Item : out Num;
-      Last : out Positive);
-
-   procedure Puts
-     (To   : out String;
-      Item : Num;
-      Aft  : Field;
-      Exp  : Field);
-
-end Ada.Wide_Text_IO.Float_Aux;
+end System.Image_R;

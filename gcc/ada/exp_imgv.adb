@@ -233,7 +233,7 @@ package body Exp_Imgv is
 
    --    For floating-point types
    --      xx = Floating_Point
-   --      tv = Long_Long_Float (Expr)
+   --      tv = [Long_[Long_]]Float (Expr)
    --      pm = typ'Digits (typ = subtype of expression)
 
    --    For decimal fixed-point types
@@ -250,8 +250,8 @@ package body Exp_Imgv is
    --           typ'Aft
 
    --    For other ordinary fixed-point types
-   --      xx = Ordinary_Fixed_Point
-   --      tv = Long_Long_Float (Expr)
+   --      xx = Fixed
+   --      tv = Long_Float (Expr)
    --      pm = typ'Aft (typ = subtype of expression)
 
    --  For enumeration types other than those declared in package Standard
@@ -471,11 +471,11 @@ package body Exp_Imgv is
 
       --  Ada 2020 allows 'Image on private types, so fetch the underlying
       --  type to obtain the structure of the type. We use the base type,
-      --  not the root type, to handle properly derived types, but we use
-      --  the root type for enumeration types, because the literal map is
-      --  attached to the root. Should be inherited ???
+      --  not the root type for discrete types, to handle properly derived
+      --  types, but we use the root type for enumeration types, because the
+      --  literal map is attached to the root. Should be inherited ???
 
-      if Is_Enumeration_Type (Ptyp) then
+      if Is_Real_Type (Ptyp) or else Is_Enumeration_Type (Ptyp) then
          Rtyp := Underlying_Type (Root_Type (Ptyp));
       else
          Rtyp := Underlying_Type (Base_Type (Ptyp));
@@ -631,14 +631,26 @@ package body Exp_Imgv is
                Imid := RE_Image_Fixed128;
                Tent := RTE (RE_Integer_128);
             else
-               Imid := RE_Image_Ordinary_Fixed_Point;
-               Tent := Standard_Long_Long_Float;
+               Imid := RE_Image_Fixed;
+               Tent := Standard_Long_Float;
             end if;
          end;
 
       elsif Is_Floating_Point_Type (Rtyp) then
-         Imid := RE_Image_Floating_Point;
-         Tent := Standard_Long_Long_Float;
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+            Imid := RE_Image_Float;
+            Tent := Standard_Float;
+
+         elsif Rtyp = Standard_Long_Float then
+            Imid := RE_Image_Long_Float;
+            Tent := Standard_Long_Float;
+
+         else
+            Imid := RE_Image_Long_Long_Float;
+            Tent := Standard_Long_Long_Float;
+         end if;
 
       --  Only other possibility is user-defined enumeration type
 
@@ -787,7 +799,7 @@ package body Exp_Imgv is
       --  and also set to do literal conversion.
 
       elsif Is_Ordinary_Fixed_Point_Type (Rtyp) then
-         if Imid /= RE_Image_Ordinary_Fixed_Point then
+         if Imid /= RE_Image_Fixed then
             Set_Conversion_OK (First (Arg_List));
 
             Append_To (Arg_List,
@@ -886,12 +898,16 @@ package body Exp_Imgv is
 
    --    btyp?(Value_Decimal{32,64,128} (X, typ'Scale));
 
-   --  For the most common ordinary fixed-point types
+   --  For the most common ordinary fixed-point types, it expands into
 
    --    btyp?(Value_Fixed{32,64,128} (X, numerator of S, denominator of S));
    --    where S = typ'Small
 
-   --  For Wide_[Wide_]Character types, typ'Value (X) expands into:
+   --  For other ordinary fixed-point types, it expands into
+
+   --    btyp (Value_Long_Float (X))
+
+   --  For Wide_[Wide_]Character types, typ'Value (X) expands into
 
    --    btyp (Value_xx (X, EM))
 
@@ -1036,21 +1052,11 @@ package body Exp_Imgv is
          if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
             Vid := RE_Value_Float;
 
-         --  If Long_Float and Long_Long_Float are the same type, then use the
-         --  implementation of the former, which is faster and more accurate.
-
-         elsif Rtyp = Standard_Long_Float
-           or else (Rtyp = Standard_Long_Long_Float
-                     and then
-                    Standard_Long_Long_Float_Size = Standard_Long_Float_Size)
-         then
+         elsif Rtyp = Standard_Long_Float then
             Vid := RE_Value_Long_Float;
 
-         elsif Rtyp = Standard_Long_Long_Float then
-            Vid := RE_Value_Long_Long_Float;
-
          else
-            raise Program_Error;
+            Vid := RE_Value_Long_Long_Float;
          end if;
 
       --  Only other possibility is user-defined enumeration type

@@ -42,7 +42,7 @@ private generic
 
    type Num is digits <>;
 
-   with package Aux is new Ada.Wide_Text_IO.Float_Aux (Num, <>);
+   with package Aux is new Ada.Wide_Text_IO.Float_Aux (Num, <>, <>);
 
 package Ada.Wide_Text_IO.Complex_Aux is
 
