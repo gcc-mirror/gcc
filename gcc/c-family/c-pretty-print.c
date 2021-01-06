@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "c-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "diagnostic.h"
 #include "stor-layout.h"
 #include "stringpool.h"
@@ -1334,6 +1335,34 @@ c_pretty_printer::primary_expression (tree e)
       pp_c_right_paren (this);
       break;
 
+    case SSA_NAME:
+      if (SSA_NAME_VAR (e))
+	{
+	  tree var = SSA_NAME_VAR (e);
+	  const char *name = IDENTIFIER_POINTER (SSA_NAME_IDENTIFIER (e));
+	  const char *dot;
+	  if (DECL_ARTIFICIAL (var) && (dot = strchr (name, '.')))
+	    {
+	      /* Print the name without the . suffix (such as in VLAs).
+		 Use pp_c_identifier so that it can be converted into
+		 the appropriate encoding.  */
+	      size_t size = dot - name;
+	      char *ident = XALLOCAVEC (char, size + 1);
+	      memcpy (ident, name, size);
+	      ident[size] = '\0';
+	      pp_c_identifier (this, ident);
+	    }
+	  else
+	    primary_expression (var);
+	}
+      else
+	{
+	  /* Print only the right side of the GIMPLE assignment.  */
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (e);
+	  pp_gimple_stmt_1 (this, def_stmt, 0, TDF_RHS_ONLY);
+	}
+      break;
+
     default:
       /* FIXME:  Make sure we won't get into an infinite loop.  */
       if (location_wrapper_p (e))
@@ -1780,6 +1809,139 @@ pp_c_call_argument_list (c_pretty_printer *pp, tree t)
   pp_c_right_paren (pp);
 }
 
+/* Print the MEM_REF expression REF, including its type and offset.
+   Apply casts as necessary if the type of the access is different
+   from the type of the accessed object.  Produce compact output
+   designed to include both the element index as well as any
+   misalignment by preferring
+     ((int*)((char*)p + 1))[2]
+   over
+     *(int*)((char*)p + 9)
+   The former is more verbose but makes it clearer that the access
+   to the third element of the array is misaligned by one byte.  */
+
+static void
+print_mem_ref (c_pretty_printer *pp, tree e)
+{
+  tree arg = TREE_OPERAND (e, 0);
+
+  /* The byte offset.  Initially equal to the MEM_REF offset, then
+     adjusted to the remainder of the division by the byte size of
+     the access.  */
+  offset_int byte_off = wi::to_offset (TREE_OPERAND (e, 1));
+  /* The result of dividing BYTE_OFF by the size of the access.  */
+  offset_int elt_idx = 0;
+  /* True to include a cast to char* (for a nonzero final BYTE_OFF).  */
+  bool char_cast = false;
+  const bool addr = TREE_CODE (arg) == ADDR_EXPR;
+  if (addr)
+    {
+      arg = TREE_OPERAND (arg, 0);
+      if (byte_off == 0)
+	{
+	  pp->expression (arg);
+	  return;
+	}
+    }
+
+  const tree access_type = TREE_TYPE (e);
+  tree arg_type = TREE_TYPE (TREE_TYPE (arg));
+  if (TREE_CODE (arg_type) == ARRAY_TYPE)
+    arg_type = TREE_TYPE (arg_type);
+
+  if (tree access_size = TYPE_SIZE_UNIT (access_type))
+    {
+      /* For naturally aligned accesses print the nonzero offset
+	 in units of the accessed type, in the form of an index.
+	 For unaligned accesses also print the residual byte offset.  */
+      offset_int asize = wi::to_offset (access_size);
+      offset_int szlg2 = wi::floor_log2 (asize);
+
+      elt_idx = byte_off >> szlg2;
+      byte_off = byte_off - (elt_idx << szlg2);
+    }
+
+  /* True to include a cast to the accessed type.  */
+  const bool access_cast = VOID_TYPE_P (arg_type)
+    || !gimple_canonical_types_compatible_p (access_type, arg_type);
+
+  if (byte_off != 0)
+    {
+      /* When printing the byte offset for a pointer to a type of
+	 a different size than char, include a cast to char* first,
+	 before printing the cast to a pointer to the accessed type.  */
+      tree arg_type = TREE_TYPE (TREE_TYPE (arg));
+      if (TREE_CODE (arg_type) == ARRAY_TYPE)
+	arg_type = TREE_TYPE (arg_type);
+      offset_int arg_size = 0;
+      if (tree size = TYPE_SIZE (arg_type))
+	arg_size = wi::to_offset (size);
+      if (arg_size != BITS_PER_UNIT)
+	char_cast = true;
+    }
+
+  if (elt_idx == 0)
+    {
+      if (!addr)
+	pp_c_star (pp);
+    }
+  else if (access_cast || char_cast)
+    pp_c_left_paren (pp);
+
+  if (access_cast)
+    {
+      /* Include a cast to the accessed type if it isn't compatible
+	 with the type of the referenced object (or if the object
+	 is typeless).  */
+      pp_c_left_paren (pp);
+      pp->type_id (access_type);
+      pp_c_star (pp);
+      pp_c_right_paren (pp);
+    }
+
+  if (byte_off != 0)
+    pp_c_left_paren (pp);
+
+  if (char_cast)
+    {
+      /* Include a cast to char*.  */
+      pp_c_left_paren (pp);
+      pp->type_id (char_type_node);
+      pp_c_star (pp);
+      pp_c_right_paren (pp);
+    }
+
+  pp->unary_expression (arg);
+
+  if (byte_off != 0)
+    {
+      pp_space (pp);
+      pp_plus (pp);
+      pp_space (pp);
+      tree off = wide_int_to_tree (ssizetype, byte_off);
+      pp->constant (off);
+      pp_c_right_paren (pp);
+    }
+  if (elt_idx != 0)
+    {
+      if (byte_off == 0 && char_cast)
+	pp_c_right_paren (pp);
+      pp_c_right_paren (pp);
+      if (addr)
+	{
+	  pp_space (pp);
+	  pp_plus (pp);
+	  pp_space (pp);
+	}
+      else
+	pp_c_left_bracket (pp);
+      tree idx = wide_int_to_tree (ssizetype, elt_idx);
+      pp->constant (idx);
+      if (!addr)
+	pp_c_right_bracket (pp);
+    }
+}
+
 /* unary-expression:
       postfix-expression
       ++ cast-expression
@@ -1837,30 +1999,7 @@ c_pretty_printer::unary_expression (tree e)
       break;
 
     case MEM_REF:
-      if (TREE_CODE (TREE_OPERAND (e, 0)) == ADDR_EXPR
-	  && integer_zerop (TREE_OPERAND (e, 1)))
-	expression (TREE_OPERAND (TREE_OPERAND (e, 0), 0));
-      else
-	{
-	  pp_c_star (this);
-	  if (!integer_zerop (TREE_OPERAND (e, 1)))
-	    {
-	      pp_c_left_paren (this);
-	      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0)));
-	      if (TYPE_SIZE_UNIT (type) == NULL_TREE
-		  || !integer_onep (TYPE_SIZE_UNIT (type)))
-		pp_c_type_cast (this, ptr_type_node);
-	    }
-	  pp_c_cast_expression (this, TREE_OPERAND (e, 0));
-	  if (!integer_zerop (TREE_OPERAND (e, 1)))
-	    {
-	      pp_plus (this);
-	      pp_c_integer_constant (this,
-				     fold_convert (ssizetype,
-						   TREE_OPERAND (e, 1)));
-	      pp_c_right_paren (this);
-	    }
-	}
+      print_mem_ref (this, e);
       break;
 
     case TARGET_MEM_REF:
