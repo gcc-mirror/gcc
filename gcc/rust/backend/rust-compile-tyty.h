@@ -173,7 +173,7 @@ public:
 	return;
 
       case TyTy::FloatType::F64:
-	translated = backend->named_type ("f32", backend->float_type (64),
+	translated = backend->named_type ("f64", backend->float_type (64),
 					  Linemap::predeclared_location ());
 	return;
       }
