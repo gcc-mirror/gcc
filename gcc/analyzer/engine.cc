@@ -3374,6 +3374,7 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
   LOG_SCOPE (logger);
 
   auto_sbitmap snodes_visited (eg->get_supergraph ().m_nodes.length ());
+  bitmap_clear (snodes_visited);
 
   /* Traverse the path, updating this model.  */
   region_model model (eng->get_model_manager ());
