@@ -519,3 +519,21 @@ struct Foo3A(T)
     @disable this(this);
     @disable this();
 }
+
+void test13x(@(10) int a, @(20) int, @(30) @(40) int[] arr...) {}
+
+enum Test14UDA1;
+struct Test14UDA2
+{
+    string str;
+}
+
+Test14UDA2 test14uda3(string name)
+{
+    return Test14UDA2(name);
+}
+struct Test14UDA4(string v){}
+
+void test14x(@Test14UDA1 int, @Test14UDA2("1") int, @test14uda3("2") int, @Test14UDA4!"3" int) {}
+
+void test15x(@(20) void delegate(int) @safe dg){}

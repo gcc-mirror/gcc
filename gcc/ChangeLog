@@ -1,3 +1,31 @@
+2021-01-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97978
+	* lra-int.h (lra_hard_reg_split_p): New external.
+	* lra.c (lra_hard_reg_split_p): New global.
+	(lra): Set up lra_hard_reg_split_p after splitting a hard reg.
+	* lra-assigns.c (lra_assign): Don't check allocation correctness
+	after hard reg splitting.
+
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98305
+	* builtins.c (new_delete_mismatch_p): New overload.
+	(new_delete_mismatch_p (tree, tree)): Call it.
+
+2021-01-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (T_GLIMITS_H): New.
+	(stmp-int-hdrs): Depend on it, use it.
+	* config/t-vxworks (T_GLIMITS_H): Override it.
+	(vxw-glimits.h): New.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98513
+	* value-range.cc (intersect_ranges): Compare the upper bounds
+	for the expected relation.
+
 2021-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Revert:

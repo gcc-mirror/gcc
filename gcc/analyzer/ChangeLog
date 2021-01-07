@@ -1,3 +1,10 @@
+2021-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97072
+	* region-model-reachability.cc (reachable_regions::init_cluster):
+	Convert symbolic region handling to a switch statement.  Add cases
+	to handle SK_UNKNOWN and SK_CONJURED.
+
 2021-01-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98293

@@ -434,9 +434,11 @@ public:
   static bool can_merge_p (const binding_cluster *cluster_a,
 			   const binding_cluster *cluster_b,
 			   binding_cluster *out_cluster,
+			   store *out_store,
 			   store_manager *mgr,
 			   model_merger *merger);
   void make_unknown_relative_to (const binding_cluster *other_cluster,
+				 store *out_store,
 				 store_manager *mgr);
 
   void mark_as_escaped ();

@@ -1543,7 +1543,7 @@ Type *stripDefaultArgs(Type *t)
             {
                 Parameter *p = (*params)[i];
                 Type *ta = stripDefaultArgs(p->type);
-                if (ta != p->type || p->defaultArg || p->ident)
+                if (ta != p->type || p->defaultArg || p->ident || p->userAttribDecl)
                 {
                     if (params == parameters)
                     {
@@ -1552,7 +1552,7 @@ Type *stripDefaultArgs(Type *t)
                         for (size_t j = 0; j < params->length; j++)
                             (*params)[j] = (*parameters)[j];
                     }
-                    (*params)[i] = new Parameter(p->storageClass, ta, NULL, NULL);
+                    (*params)[i] = new Parameter(p->storageClass, ta, NULL, NULL, NULL);
                 }
             }
         }
@@ -1996,7 +1996,7 @@ Type *TypeFunction::substWildTo(unsigned)
             continue;
         if (params == parameterList.parameters)
             params = parameterList.parameters->copy();
-        (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL);
+        (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL, NULL);
     }
     if (next == tret && params == parameterList.parameters)
         return this;
@@ -4914,7 +4914,7 @@ Expression *TypeAArray::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
         if (fd_aaLen == NULL)
         {
             Parameters *fparams = new Parameters();
-            fparams->push(new Parameter(STCin, this, NULL, NULL));
+            fparams->push(new Parameter(STCin, this, NULL, NULL, NULL));
             fd_aaLen = FuncDeclaration::genCfunc(fparams, Type::tsize_t, Id::aaLen);
             TypeFunction *tf = fd_aaLen->type->toTypeFunction();
             tf->purity = PUREconst;
@@ -5821,7 +5821,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                         }
 
                         (*newparams)[j] = new Parameter(
-                                stc, narg->type, narg->ident, narg->defaultArg);
+                                stc, narg->type, narg->ident, narg->defaultArg, narg->userAttribDecl);
                     }
                     fparam->type = new TypeTuple(newparams);
                 }
@@ -9098,7 +9098,7 @@ TypeTuple::TypeTuple(Expressions *exps)
         {   Expression *e = (*exps)[i];
             if (e->type->ty == Ttuple)
                 e->error("cannot form tuple of tuples");
-            Parameter *arg = new Parameter(STCundefined, e->type, NULL, NULL);
+            Parameter *arg = new Parameter(STCundefined, e->type, NULL, NULL, NULL);
             (*arguments)[i] = arg;
         }
     }
@@ -9124,15 +9124,15 @@ TypeTuple::TypeTuple(Type *t1)
     : Type(Ttuple)
 {
     arguments = new Parameters();
-    arguments->push(new Parameter(0, t1, NULL, NULL));
+    arguments->push(new Parameter(0, t1, NULL, NULL, NULL));
 }
 
 TypeTuple::TypeTuple(Type *t1, Type *t2)
     : Type(Ttuple)
 {
     arguments = new Parameters();
-    arguments->push(new Parameter(0, t1, NULL, NULL));
-    arguments->push(new Parameter(0, t2, NULL, NULL));
+    arguments->push(new Parameter(0, t1, NULL, NULL, NULL));
+    arguments->push(new Parameter(0, t2, NULL, NULL, NULL));
 }
 
 const char *TypeTuple::kind()
@@ -9436,17 +9436,20 @@ size_t ParameterList::length()
 
 /***************************** Parameter *****************************/
 
-Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
+Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident,
+                     Expression *defaultArg, UserAttributeDeclaration *userAttribDecl)
 {
     this->type = type;
     this->ident = ident;
     this->storageClass = storageClass;
     this->defaultArg = defaultArg;
+    this->userAttribDecl = userAttribDecl;
 }
 
-Parameter *Parameter::create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
+Parameter *Parameter::create(StorageClass storageClass, Type *type, Identifier *ident,
+                             Expression *defaultArg, UserAttributeDeclaration *userAttribDecl)
 {
-    return new Parameter(storageClass, type, ident, defaultArg);
+    return new Parameter(storageClass, type, ident, defaultArg, userAttribDecl);
 }
 
 Parameter *Parameter::syntaxCopy()
@@ -9454,7 +9457,8 @@ Parameter *Parameter::syntaxCopy()
     return new Parameter(storageClass,
         type ? type->syntaxCopy() : NULL,
         ident,
-        defaultArg ? defaultArg->syntaxCopy() : NULL);
+        defaultArg ? defaultArg->syntaxCopy() : NULL,
+        userAttribDecl ? (UserAttributeDeclaration *) userAttribDecl->syntaxCopy(NULL) : NULL);
 }
 
 Parameters *Parameter::arraySyntaxCopy(Parameters *parameters)

@@ -1,3 +1,11 @@
+2021-01-06  Nick Alcock  <nick.alcock@oracle.com>
+
+	* Makefile.def: Sync with binutils-gdb:
+	(dependencies): all-ld depends on all-libctf.
+	(host_modules): libctf is no longer no_install.
+	No longer no_check.  Checking depends on all-ld.
+	* Makefile.in: Regenerated.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* libtool.m4: Match gnu* along other GNU systems.

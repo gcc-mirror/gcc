@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "attr-fnspec.h"
+#include "demangle.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -13055,6 +13056,122 @@ call_dealloc_argno (tree exp)
   return UINT_MAX;
 }
 
+/* Return true if DELC doesn't refer to an operator delete that's
+   suitable to call with a pointer returned from the operator new
+   described by NEWC.  */
+
+static bool
+new_delete_mismatch_p (const demangle_component &newc,
+		       const demangle_component &delc)
+{
+  if (newc.type != delc.type)
+    return true;
+
+  switch (newc.type)
+    {
+    case DEMANGLE_COMPONENT_NAME:
+      {
+	int len = newc.u.s_name.len;
+	const char *news = newc.u.s_name.s;
+	const char *dels = delc.u.s_name.s;
+	if (len != delc.u.s_name.len || memcmp (news, dels, len))
+	  return true;
+
+	if (news[len] == 'n')
+	  {
+	    if (news[len + 1] == 'a')
+	      return dels[len] != 'd' || dels[len + 1] != 'a';
+	    if (news[len + 1] == 'w')
+	      return dels[len] != 'd' || dels[len + 1] != 'l';
+	  }
+	return false;
+      }
+
+    case DEMANGLE_COMPONENT_OPERATOR:
+      /* Operator mismatches are handled above.  */
+      return false;
+
+    case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
+      if (newc.u.s_extended_operator.args != delc.u.s_extended_operator.args)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_extended_operator.name,
+				    *delc.u.s_extended_operator.name);
+
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+      if (newc.u.s_fixed.accum != delc.u.s_fixed.accum
+	  || newc.u.s_fixed.sat != delc.u.s_fixed.sat)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_fixed.length,
+				    *delc.u.s_fixed.length);
+
+    case DEMANGLE_COMPONENT_CTOR:
+      if (newc.u.s_ctor.kind != delc.u.s_ctor.kind)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_ctor.name,
+				    *delc.u.s_ctor.name);
+
+    case DEMANGLE_COMPONENT_DTOR:
+      if (newc.u.s_dtor.kind != delc.u.s_dtor.kind)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_dtor.name,
+				    *delc.u.s_dtor.name);
+
+    case DEMANGLE_COMPONENT_BUILTIN_TYPE:
+      {
+	/* The demangler API provides no better way to compare built-in
+	   types except to by comparing their demangled names. */
+	size_t nsz, dsz;
+	demangle_component *pnc = const_cast<demangle_component *>(&newc);
+	demangle_component *pdc = const_cast<demangle_component *>(&delc);
+	char *nts = cplus_demangle_print (0, pnc, 16, &nsz);
+	char *dts = cplus_demangle_print (0, pdc, 16, &dsz);
+	if (!nts != !dts)
+	  return true;
+	bool mismatch = strcmp (nts, dts);
+	free (nts);
+	free (dts);
+	return mismatch;
+      }
+
+    case DEMANGLE_COMPONENT_SUB_STD:
+      if (newc.u.s_string.len != delc.u.s_string.len)
+	return true;
+      return memcmp (newc.u.s_string.string, delc.u.s_string.string,
+		     newc.u.s_string.len);
+
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
+    case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
+      return newc.u.s_number.number != delc.u.s_number.number;
+
+    case DEMANGLE_COMPONENT_CHARACTER:
+      return newc.u.s_character.character != delc.u.s_character.character;
+
+    case DEMANGLE_COMPONENT_DEFAULT_ARG:
+    case DEMANGLE_COMPONENT_LAMBDA:
+      if (newc.u.s_unary_num.num != delc.u.s_unary_num.num)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_unary_num.sub,
+				    *delc.u.s_unary_num.sub);
+    default:
+      break;
+    }
+
+  if (!newc.u.s_binary.left != !delc.u.s_binary.left)
+    return true;
+
+  if (!newc.u.s_binary.left)
+    return false;
+
+  if (new_delete_mismatch_p (*newc.u.s_binary.left, *delc.u.s_binary.left)
+      || !newc.u.s_binary.right != !delc.u.s_binary.right)
+    return true;
+
+  if (newc.u.s_binary.right)
+    return new_delete_mismatch_p (*newc.u.s_binary.right,
+				  *delc.u.s_binary.right);
+  return false;
+}
+
 /* Return true if DELETE_DECL is an operator delete that's not suitable
    to call with a pointer returned fron NEW_DECL.  */
 
@@ -13064,110 +13181,25 @@ new_delete_mismatch_p (tree new_decl, tree delete_decl)
   tree new_name = DECL_ASSEMBLER_NAME (new_decl);
   tree delete_name = DECL_ASSEMBLER_NAME (delete_decl);
 
-  /* valid_new_delete_pair_p() returns a conservative result.  A true
-     result is reliable but a false result doesn't necessarily mean
-     the operators don't match.  */
+  /* valid_new_delete_pair_p() returns a conservative result (currently
+     it only handles global operators).  A true result is reliable but
+     a false result doesn't necessarily mean the operators don't match.  */
   if (valid_new_delete_pair_p (new_name, delete_name))
     return false;
 
+  /* For anything not handled by valid_new_delete_pair_p() such as member
+     operators compare the individual demangled components of the mangled
+     name.  */
   const char *new_str = IDENTIFIER_POINTER (new_name);
   const char *del_str = IDENTIFIER_POINTER (delete_name);
 
-  if (*new_str != '_')
-    return *new_str != *del_str;
-
-  ++del_str;
-  if (*++new_str != 'Z')
-    return *new_str != *del_str;
-
-  ++del_str;
-  if (*++new_str == 'n')
-    return *del_str != 'd';
-
-  if (*new_str != 'N')
-    return *del_str != 'N';
-
-  /* Handle user-defined member operators below.  */
-  ++new_str;
-  ++del_str;
-
-  do
-    {
-      /* Determine if both operators are members of the same type.
-	 If not, they don't match.  */
-      char *new_end, *del_end;
-      unsigned long nlen = strtoul (new_str, &new_end, 10);
-      unsigned long dlen = strtoul (del_str, &del_end, 10);
-      if (nlen != dlen)
-	return true;
-
-      /* Skip past the name length.   */
-      new_str = new_end;
-      del_str = del_end;
-
-      /* Skip past the names making sure each has the expected length
-	 (it would suggest some sort of a corruption if they didn't).  */
-      while (nlen--)
-	if (!*++new_end)
-	  return true;
-
-      for (nlen = dlen; nlen--; )
-	if (!*++del_end)
-	  return true;
-
-      /* The names have the expected length.  Compare them.  */
-      if (memcmp (new_str, del_str, dlen))
-	return true;
-
-      new_str = new_end;
-      del_str = del_end;
-
-      if (*new_str == 'I')
-	{
-	  /* Template instantiation.  */
-	  do
-	    {
-	      ++new_str;
-	      ++del_str;
-
-	      if (*new_str == 'n')
-		break;
-	      if (*new_str != *del_str)
-		return true;
-	    }
-	  while (*new_str);
-	}
-
-      if (*new_str == 'n')
-	{
-	  if (*del_str != 'd')
-	    return true;
-
-	  ++del_str;
-	  if (*++new_str == 'w' && *del_str != 'l')
-	    return true;
-	  if (*new_str == 'a' && *del_str != 'a')
-	    return true;
-	  ++new_str;
-	  ++del_str;
-	  break;
-	}
-    } while (true);
-
-  if (*new_str != 'E')
-    return *del_str != *new_str;
-
-  ++new_str;
-  ++del_str;
-  if (*new_str != 'j' && *new_str != 'm' && *new_str != 'y')
-    return true;
-  if (*del_str != 'P' || *++del_str != 'v')
-    return true;
-
-  /* Ignore any remaining arguments.  Since both operators are members
-     of the same class, mismatches in those should be detectable and
-     diagnosed by the front end.  */
-  return false;
+  void *np = NULL, *dp = NULL;
+  demangle_component *ndc = cplus_demangle_v3_components (new_str, 0, &np);
+  demangle_component *ddc = cplus_demangle_v3_components (del_str, 0, &dp);
+  bool mismatch = new_delete_mismatch_p (*ndc, *ddc);
+  free (np);
+  free (dp);
+  return mismatch;
 }
 
 /* ALLOC_DECL and DEALLOC_DECL are pair of allocation and deallocation

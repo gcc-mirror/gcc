@@ -3097,6 +3097,18 @@ public:
 
     void visit(Parameter *p)
     {
+        if (p->userAttribDecl)
+        {
+            buf->writestring("@");
+            bool isAnonymous = p->userAttribDecl->atts->length > 0
+                && (*p->userAttribDecl->atts)[0]->op != TOKcall;
+            if (isAnonymous)
+                buf->writestring("(");
+            argsToBuffer(p->userAttribDecl->atts);
+            if (isAnonymous)
+                buf->writestring(")");
+            buf->writestring(" ");
+        }
         if (p->storageClass & STCauto)
             buf->writestring("auto ");
 

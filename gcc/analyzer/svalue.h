@@ -194,6 +194,8 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+  bool implicitly_live_p (const svalue_set &,
+			  const region_model *) const FINAL OVERRIDE;
 
   const region * get_pointee () const { return m_reg; }
 

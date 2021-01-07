@@ -623,9 +623,12 @@ public:
     Type *type;
     Identifier *ident;
     Expression *defaultArg;
+    UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 
-    Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
-    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
+    Parameter(StorageClass storageClass, Type *type, Identifier *ident,
+              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
+    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident,
+                             Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();
     // kludge for template.isType()

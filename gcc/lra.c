@@ -2211,6 +2211,9 @@ bitmap_head lra_subreg_reload_pseudos;
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
+/* True if we split hard reg after the last constraint sub-pass.  */
+bool lra_hard_reg_split_p;
+
 /* True if we found an asm error.  */
 bool lra_asm_error_p;
 
@@ -2359,6 +2362,7 @@ lra (FILE *f)
 	  if (live_p)
 	    lra_clear_live_ranges ();
 	  bool fails_p;
+	  lra_hard_reg_split_p = false;
 	  do
 	    {
 	      /* We need live ranges for lra_assign -- so build them.
@@ -2403,6 +2407,7 @@ lra (FILE *f)
 		  live_p = false;
 		  if (! lra_split_hard_reg_for ())
 		    break;
+		  lra_hard_reg_split_p = true;
 		}
 	    }
 	  while (fails_p);

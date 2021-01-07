@@ -1221,6 +1221,15 @@ Ldone:
         Compiler::genCmain(sc);
 
     assert(type->ty != Terror || errors);
+
+    // semantic for parameters' UDAs
+    const size_t nparams = f->parameterList.length();
+    for (size_t i = 0; i < nparams; i++)
+    {
+        Parameter *param = f->parameterList[i];
+        if (param && param->userAttribDecl)
+            param->userAttribDecl->semantic(sc);
+    }
 }
 
 void FuncDeclaration::semantic2(Scope *sc)
@@ -1236,6 +1245,17 @@ void FuncDeclaration::semantic2(Scope *sc)
     if (parent->isClassDeclaration())
     {
         objc()->checkLinkage(this);
+    }
+    if (!type || type->ty != Tfunction)
+        return;
+    TypeFunction *f = type->toTypeFunction();
+    const size_t nparams = f->parameterList.length();
+    // semantic for parameters' UDAs
+    for (size_t i = 0; i < nparams; i++)
+    {
+        Parameter *param = f->parameterList[i];
+        if (param && param->userAttribDecl)
+            param->userAttribDecl->semantic2(sc);
     }
 }
 
@@ -1317,7 +1337,7 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         Parameter *p = NULL;
         if (fdx->outId)
         {
-            p = new Parameter(STCref | STCconst, f->nextOf(), fdx->outId, NULL);
+            p = new Parameter(STCref | STCconst, f->nextOf(), fdx->outId, NULL, NULL);
             fparams->push(p);
         }
         TypeFunction *tf = new TypeFunction(ParameterList(fparams), Type::tvoid, LINKd);
@@ -1603,6 +1623,8 @@ void FuncDeclaration::semantic3(Scope *sc)
                     parameters->push(v);
                 localsymtab->insert(v);
                 v->parent = this;
+                if (fparam->userAttribDecl)
+                    v->userAttribDecl = fparam->userAttribDecl;
             }
         }
 

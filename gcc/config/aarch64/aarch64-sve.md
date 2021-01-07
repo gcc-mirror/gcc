@@ -2940,23 +2940,23 @@
 
 ;; Predicated integer unary arithmetic with merging.
 (define_expand "@cond_<optab><mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (SVE_INT_UNARY:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand"))
-	   (match_operand:SVE_FULL_I 3 "aarch64_simd_reg_or_zero")]
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand"))
+	   (match_operand:SVE_I 3 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
 )
 
 ;; Predicated integer unary arithmetic, merging with the first input.
 (define_insn "*cond_<optab><mode>_2"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (SVE_INT_UNARY:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand" "0, w"))
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "0, w"))
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
@@ -2974,12 +2974,12 @@
 ;; as earlyclobber helps to make the instruction more regular to the
 ;; register allocator.
 (define_insn "*cond_<optab><mode>_any"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=&w, ?&w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (SVE_INT_UNARY:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand" "w, w, w"))
-	   (match_operand:SVE_FULL_I 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "w, w, w"))
+	   (match_operand:SVE_I 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[3])"
   "@

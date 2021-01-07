@@ -224,7 +224,7 @@ Type *TupleDeclaration::getType()
         {
             Type *t = (*types)[i];
             //printf("type = %s\n", t->toChars());
-            Parameter *arg = new Parameter(0, t, NULL, NULL);
+            Parameter *arg = new Parameter(0, t, NULL, NULL, NULL);
             (*args)[i] = arg;
             if (!t->deco)
                 hasdeco = 0;

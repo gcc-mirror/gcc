@@ -2051,7 +2051,7 @@ public:
                         for (size_t i = 0; i < cd->baseclasses->length; i++)
                         {
                             BaseClass *b = (*cd->baseclasses)[i];
-                            args->push(new Parameter(STCin, b->type, NULL, NULL));
+                            args->push(new Parameter(STCin, b->type, NULL, NULL, NULL));
                         }
                         tded = new TypeTuple(args);
                     }
@@ -2100,7 +2100,8 @@ public:
                                 return setError();
                             args->push(new Parameter(arg->storageClass, arg->type,
                                                      (e->tok2 == TOKparameters) ? arg->ident : NULL,
-                                                     (e->tok2 == TOKparameters) ? arg->defaultArg : NULL));
+                                                     (e->tok2 == TOKparameters) ? arg->defaultArg : NULL,
+                                                     arg->userAttribDecl));
                         }
                         tded = new TypeTuple(args);
                         break;
