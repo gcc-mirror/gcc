@@ -1,3 +1,94 @@
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98474
+	* gcc.c-torture/execute/pr98474.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98353
+	* g++.dg/opt/pr98353.C: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98383
+	* g++.dg/gomp/pr98383.C: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98183
+	* gcc.dg/gomp/pr98183.c: New test.
+	* gcc.dg/goacc/pr98183.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98205
+	* c-c++-common/gomp/doacross-4.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94440
+	* gcc.target/i386/pr94440-1.c: New file.
+	* gcc.target/i386/pr94440-2.c: New file.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-c++-common/gomp/pr98187.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98122
+	* g++.dg/cpp1y/constexpr-98122.C: New test.
+	* g++.dg/cpp2a/constexpr-98122.C: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* gcc.target/i386/pr98100.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98072
+	* c-c++-common/gomp/depobj-2.c: New test.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98063
+	* gcc.target/i386/pr98063.c: New test.
+
 2021-01-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82099

@@ -1,3 +1,155 @@
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98514
+	* tree-ssa-reassoc.c (bb_rank): Change type from long * to
+	int64_t *.
+	(operand_rank): Change type from hash_map<tree, long> to
+	hash_map<tree, int64_t>.
+	(phi_rank): Change return type from long to int64_t.
+	(loop_carried_phi): Change block_rank variable type from long to
+	int64_t.
+	(propagate_rank): Change return type, rank parameter type and
+	op_rank variable type from long to int64_t.
+	(find_operand_rank): Change return type from long to int64_t
+	and change slot variable type from long * to int64_t *.
+	(insert_operand_rank): Change rank parameter type from long to
+	int64_t.
+	(get_rank): Change return type and rank variable type from long to
+	int64_t.  Use PRId64 instead of ld to print the rank.
+	(init_reassoc): Change rank variable type from long to int64_t
+	and adjust correspondingly bb_rank and operand_rank initialization.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98474
+	* wide-int.cc (wi::to_mpz): If wide_int has MSB set, but type
+	is unsigned and excess negative, append set bits after len until
+	precision.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98353
+	* gimplify.c (gimplify_init_ctor_eval_range): Gimplify value before
+	storing it into cref.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98383
+	* gimplify.c (struct gimplify_omp_ctx): Add in_for_exprs flag.
+	(gimple_add_tmp_var): For addressable temporaries appearing in
+	simd lb, b or incr expressions, don't add a private clause unless
+	it is seen also outside of those expressions in the simd body.
+	(omp_notice_variable): Likewise.
+	(gimplify_omp_for): Set and reset in_for_exprs around gimplification
+	of lb, b or incr expressions.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add has_depend member.
+	(gimplify_scan_omp_clauses): Set it to true if OMP_CLAUSE_DEPEND
+	appears on OMP_TASK.
+	(gimplify_adjust_omp_clauses_1, gimplify_adjust_omp_clauses): Force
+	GOVD_WRITTEN on shared variables if task construct has depend clause.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98183
+	* omp-low.c (lower_omp_target): Don't add OMP_RETURN for
+	data regions.
+	* omp-expand.c (expand_omp_target): Don't try to remove
+	OMP_RETURN for data regions.
+	(build_omp_regions_1, omp_make_gimple_edges): Don't expect
+	OMP_RETURN for data regions.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98205
+	* omp-expand.c (expand_omp_for_generic): Fix up broken_loop handling.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/94440
+	* config/i386/i386.opt (ix86_excess_precision,
+	ix86_unsafe_math_optimizations): New TargetVariables.
+	* config/i386/i386.h (X87_ENABLE_ARITH, X87_ENABLE_FLOAT): Use
+	ix86_unsafe_math_optimizations instead of
+	flag_unsafe_math_optimizations and ix86_excess_precision instead of
+	flag_excess_precision.
+	* config/i386/i386.c (ix86_excess_precision): Rename to ...
+	(ix86_get_excess_precision): ... this.
+	(TARGET_C_EXCESS_PRECISION): Define to ix86_get_excess_precision.
+	* config/i386/i386-options.c (ix86_valid_target_attribute_tree,
+	ix86_option_override_internal): Update ix86_unsafe_math_optimization
+	from flag_unsafe_math_optimizations and ix86_excess_precision
+	from flag_excess_precision when constructing target option nodes.
+	(ix86_set_current_function): If flag_unsafe_math_optimizations
+	or flag_excess_precision is different from the one recorded
+	in TARGET_OPTION_NODE, create a new target option node for the
+	current function and switch to that.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98100
+	* cfgexpand.c (expand_gimple_basic_block): For vars with
+	vector type, use TYPE_MODE rather than DECL_MODE.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (add_scalar_info): Only use add_AT_wide for 128-bit
+	constants and only in dwarf-5 or later, where DW_FORM_data16 is
+	available.  Otherwise use DW_FORM_block*/DW_FORM_exprloc with
+	DW_OP_implicit_value to describe the constant.
+
+2021-01-06  Scott Snyder  <sss@li-snyder.org>
+
+	Backported from master:
+	2020-12-02  Scott Snyder  <sss@li-snyder.org>
+
+	PR plugins/98059
+	* vec.h (auto_delete_vec): Use
+	DISABLE_COPY_AND_ASSIGN(auto_delete_vec) instead of
+	DISABLE_COPY_AND_ASSIGN(auto_delete_vec<T>) to make it valid C++20
+	after DR2237.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98063
+	* config/i386/i386-expand.c (ix86_expand_call): Handle non-plt
+	CM_LARGE_PIC calls.
+
 2021-01-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/98522

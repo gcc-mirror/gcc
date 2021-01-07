@@ -1,3 +1,35 @@
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* parser.c (cp_parser_omp_parallel): For parallel master with
+	-fopenmp-simd only, just call cp_parser_omp_master instead of
+	wrapping it in OMP_PARALLEL.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98122
+	* constexpr.c (cxx_union_active_member): New function.
+	(cxx_fold_indirect_ref_1): Add ctx argument, pass it through to
+	recursive call.  Handle UNION_TYPE.
+	(cxx_fold_indirect_ref): Add ctx argument, pass it to recursive calls
+	and cxx_fold_indirect_ref_1.
+	(cxx_eval_indirect_ref): Adjust cxx_fold_indirect_ref calls.
+
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98072
+	* parser.c (cp_parser_omp_depobj): Suppress location wrappers when
+	parsing depend clause.
+
 2021-01-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82099

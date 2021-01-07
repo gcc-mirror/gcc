@@ -1,3 +1,10 @@
+2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/task-6.c: New test.
+
 2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek   <jakub@redhat.com>
 
