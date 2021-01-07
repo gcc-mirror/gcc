@@ -20794,8 +20794,30 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
 #endif
 
-      if (!TARGET_PECOFF && flag_pic)
-	fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+      if (!TARGET_PECOFF)
+	{
+	  switch (ix86_cmodel)
+	    {
+	    case CM_LARGE:
+	      /* NB: R10 is caller-saved.  Although it can be used as a
+		 static chain register, it is preserved when calling
+		 mcount for nested functions.  */
+	      fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
+		       mcount_name);
+	      break;
+	    case CM_LARGE_PIC:
+	      sorry ("profiling %<-mcmodel=large%> with PIC is not supported");
+	      break;
+	    case CM_SMALL_PIC:
+	    case CM_MEDIUM_PIC:
+	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
+		       mcount_name);
+	      break;
+	    default:
+	      x86_print_call_or_nop (file, mcount_name);
+	      break;
+	    }
+	}
       else
 	x86_print_call_or_nop (file, mcount_name);
     }
