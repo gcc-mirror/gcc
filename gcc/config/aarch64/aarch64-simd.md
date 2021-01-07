@@ -859,14 +859,18 @@
   }
 )
 
-(define_insn "aba<mode>_3"
+(define_insn "aarch64_<su>aba<mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
-	(plus:VDQ_BHSI (abs:VDQ_BHSI (minus:VDQ_BHSI
-			 (match_operand:VDQ_BHSI 1 "register_operand" "w")
-			 (match_operand:VDQ_BHSI 2 "register_operand" "w")))
-		       (match_operand:VDQ_BHSI 3 "register_operand" "0")))]
+	(plus:VDQ_BHSI (minus:VDQ_BHSI
+			 (USMAX:VDQ_BHSI
+			   (match_operand:VDQ_BHSI 2 "register_operand" "w")
+			   (match_operand:VDQ_BHSI 3 "register_operand" "w"))
+			 (<max_opp>:VDQ_BHSI
+			   (match_dup 2)
+			   (match_dup 3)))
+		       (match_operand:VDQ_BHSI 1 "register_operand" "0")))]
   "TARGET_SIMD"
-  "saba\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>aba\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
