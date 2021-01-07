@@ -766,7 +766,7 @@
 ;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
 ;; Whereas SABD would return 192 (-64 signed) on the above example.
 ;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
-(define_insn "aarch64_<su>abd<mode>_3"
+(define_insn "aarch64_<su>abd<mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(minus:VDQ_BHSI
 	  (USMAX:VDQ_BHSI
@@ -842,7 +842,7 @@
       {
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
-	emit_insn (gen_aarch64_<sur>abdv16qi_3 (abd, operands[1], operands[2]));
+	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
 	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
 					  abd, ones));
 	DONE;

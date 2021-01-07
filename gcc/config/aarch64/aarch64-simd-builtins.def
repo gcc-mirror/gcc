@@ -149,6 +149,10 @@
   BUILTIN_VDQ_BHSI (BINOP, srhadd, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, urhadd, 0, NONE)
 
+  /* Implemented by aarch64_<su>abd<mode>.  */
+  BUILTIN_VDQ_BHSI (BINOP, sabd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOPU, uabd, 0, NONE)
+
   /* Implemented by aarch64_<su>aba<mode>.  */
   BUILTIN_VDQ_BHSI (TERNOP, saba, 0, NONE)
   BUILTIN_VDQ_BHSI (TERNOPU, uaba, 0, NONE)
