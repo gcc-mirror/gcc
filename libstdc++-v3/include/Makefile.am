@@ -30,6 +30,7 @@ std_headers = \
 	${std_srcdir}/any \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
+	${std_srcdir}/barrier \
 	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
 	${std_srcdir}/charconv \
