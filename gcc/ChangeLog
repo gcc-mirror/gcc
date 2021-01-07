@@ -1,3 +1,9 @@
+2021-01-06  2019-07-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/90806
+	Backport from mainline
+	* wide-int.h (wi::lshift): Reject negative values for the fast path.
+
 2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793
