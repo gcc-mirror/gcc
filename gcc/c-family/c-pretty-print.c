@@ -1844,22 +1844,25 @@ print_mem_ref (c_pretty_printer *pp, tree e)
 	}
     }
 
-  const tree access_type = TREE_TYPE (e);
+  tree access_type = TREE_TYPE (e);
+  if (TREE_CODE (access_type) == ARRAY_TYPE)
+    access_type = TREE_TYPE (access_type);
   tree arg_type = TREE_TYPE (TREE_TYPE (arg));
   if (TREE_CODE (arg_type) == ARRAY_TYPE)
     arg_type = TREE_TYPE (arg_type);
 
   if (tree access_size = TYPE_SIZE_UNIT (access_type))
-    {
-      /* For naturally aligned accesses print the nonzero offset
-	 in units of the accessed type, in the form of an index.
-	 For unaligned accesses also print the residual byte offset.  */
-      offset_int asize = wi::to_offset (access_size);
-      offset_int szlg2 = wi::floor_log2 (asize);
+    if (TREE_CODE (access_size) == INTEGER_CST)
+      {
+	/* For naturally aligned accesses print the nonzero offset
+	   in units of the accessed type, in the form of an index.
+	   For unaligned accesses also print the residual byte offset.  */
+	offset_int asize = wi::to_offset (access_size);
+	offset_int szlg2 = wi::floor_log2 (asize);
 
-      elt_idx = byte_off >> szlg2;
-      byte_off = byte_off - (elt_idx << szlg2);
-    }
+	elt_idx = byte_off >> szlg2;
+	byte_off = byte_off - (elt_idx << szlg2);
+      }
 
   /* True to include a cast to the accessed type.  */
   const bool access_cast = VOID_TYPE_P (arg_type)
@@ -1924,9 +1927,9 @@ print_mem_ref (c_pretty_printer *pp, tree e)
     }
   if (elt_idx != 0)
     {
-      if (byte_off == 0 && char_cast)
+      if (access_cast || char_cast)
 	pp_c_right_paren (pp);
-      pp_c_right_paren (pp);
+
       if (addr)
 	{
 	  pp_space (pp);

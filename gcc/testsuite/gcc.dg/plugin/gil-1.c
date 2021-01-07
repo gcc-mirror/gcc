@@ -13,7 +13,7 @@ void test_2 (PyObject *obj)
 {
   Py_BEGIN_ALLOW_THREADS /* { dg-message "releasing the GIL here" } */
 
-  Py_INCREF (obj); /* { dg-warning "use of PyObject '\\*\\(obj\\)' without the GIL" } */
+  Py_INCREF (obj); /* { dg-warning "use of PyObject '\\*obj' without the GIL" } */
   Py_DECREF (obj);
 
   Py_END_ALLOW_THREADS
@@ -60,7 +60,7 @@ void test_5 (PyObject *obj)
 static void  __attribute__((noinline))
 called_by_test_6 (PyObject *obj)
 {
-  Py_INCREF (obj); /* { dg-warning "use of PyObject '\\*\\(obj\\)' without the GIL" } */
+  Py_INCREF (obj); /* { dg-warning "use of PyObject '\\*obj' without the GIL" } */
   Py_DECREF (obj);
 }
 
