@@ -30246,7 +30246,7 @@ package body Sem_Prag is
 
          --  Process all formal parameters
 
-         Formal := First_Entity (Spec_Id);
+         Formal := First_Formal (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
                Append_New_Elmt (Formal, Subp_Inputs);
@@ -30277,7 +30277,7 @@ package body Sem_Prag is
                Append_New_Elmt (Formal, Subp_Outputs);
             end if;
 
-            Next_Entity (Formal);
+            Next_Formal (Formal);
          end loop;
 
       --  Otherwise the input denotes a task type, a task body, or the
