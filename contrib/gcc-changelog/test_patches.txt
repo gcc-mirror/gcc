@@ -3145,7 +3145,7 @@ gcc/ChangeLog:
 	by using Pmode instead of ptr_mode.
 
 Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
-(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80 (only part))
 ---
  gcc/asan.c | 1 +
  1 file changed, 1 insertion(+)
@@ -3319,4 +3319,83 @@ index 7c9d492f6a4..37e73348cb7 100644
 - 
 -- 
 2.25.1
+
+=== 0001-Wildcard-subdirs.patch ===
+From b798205595426c53eb362065f6ed6c320dcc161d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 30 Nov 2020 13:27:51 +0100
+Subject: [PATCH] Fix it.
+
+libstdc++-v3/ChangeLog:
+
+	* testsuite/28_regex/*: Fix them all.
+	* testsuite/28_regex_not-existing/*: Fix them all.
+---
+ contrib/gcc-changelog/git_commit.py          | 1 +
+ libstdc++-v3/testsuite/28_regex/init-list.cc | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/libstdc++-v3/testsuite/28_regex/init-list.cc b/libstdc++-v3/testsuite/28_regex/init-list.cc
+index f51453f019a..d10ecf483f4 100644
+--- a/libstdc++-v3/testsuite/28_regex/init-list.cc
++++ b/libstdc++-v3/testsuite/28_regex/init-list.cc
+@@ -1 +1,2 @@
+ 
++
+--
+2.29.2
+
+=== 0001-Add-horse.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ koníček.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 koníček.txt
+
+diff --git a/koníček.txt b/koníček.txt
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ b/koníček.txt
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+=== 0001-Add-horse2.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ "kon\303\255\304\215ek.txt" | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 "kon\303\255\304\215ek.txt"
+
+diff --git "a/kon\303\255\304\215ek.txt" "b/kon\303\255\304\215ek.txt"
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ "b/kon\303\255\304\215ek.txt"
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+
 
