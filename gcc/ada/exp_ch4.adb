@@ -3025,14 +3025,6 @@ package body Exp_Ch4 is
       if Is_Enumeration_Type (Ityp) then
          Artyp := Standard_Integer;
 
-      --  If index type is Positive, we use the standard unsigned type, to give
-      --  more room on the top of the range, obviating the need for an overflow
-      --  check when creating the upper bound. This is needed to avoid junk
-      --  overflow checks in the common case of String types.
-
-      elsif Istyp = Standard_Positive then
-         Artyp := Standard_Unsigned;
-
       --  For modular types, we use a 32-bit modular type for types whose size
       --  is in the range 1-31 bits. For 32-bit unsigned types, we use the
       --  identity type, and for larger unsigned types we use a 64-bit type.
