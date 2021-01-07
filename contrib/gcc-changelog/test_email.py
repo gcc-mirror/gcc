@@ -113,7 +113,9 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0096')
         assert email.errors
         err = email.errors[0]
-        assert err.message == 'unchanged file mentioned in a ChangeLog'
+        assert err.message == 'unchanged file mentioned in a ChangeLog (did ' \
+            'you mean "gcc/testsuite/gcc.target/aarch64/' \
+            'advsimd-intrinsics/vdot-3-1.c"?)'
         assert err.line == 'gcc/testsuite/gcc.target/aarch64/' \
                            'advsimd-intrinsics/vdot-compile-3-1.c'
 
@@ -333,7 +335,7 @@ class TestGccChangelog(unittest.TestCase):
         assert not email.errors
         email = self.from_patch_glob('0002-libstdc-Fake-test-change-1.patch')
         assert len(email.errors) == 1
-        msg = 'pattern doesn''t match any changed files'
+        msg = "pattern doesn't match any changed files"
         assert email.errors[0].message == msg
         assert email.errors[0].line == 'libstdc++-v3/doc/html/'
         email = self.from_patch_glob('0003-libstdc-Fake-test-change-2.patch')
@@ -355,6 +357,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_backport(self):
         email = self.from_patch_glob('0001-asan-fix-RTX-emission.patch')
         assert not email.errors
+        expected_hash = '8cff672cb9a132d3d3158c2edfc9a64b55292b80'
+        assert email.cherry_pick_commit == expected_hash
         assert len(email.changelog_entries) == 1
         entry = list(email.to_changelog_entries())[0][1]
         assert entry.startswith('2020-06-11  Martin Liska  <mliska@suse.cz>')
@@ -384,3 +388,19 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-lto-fix-LTO-debug')
         assert not email.errors
         assert len(email.changelog_entries) == 1
+
+    def test_wildcard_in_subdir(self):
+        email = self.from_patch_glob('0001-Wildcard-subdirs.patch')
+        assert len(email.changelog_entries) == 1
+        err = email.errors[0]
+        assert err.message == "pattern doesn't match any changed files"
+        assert err.line == 'libstdc++-v3/testsuite/28_regex_not-existing/'
+
+    def test_unicode_chars_in_filename(self):
+        email = self.from_patch_glob('0001-Add-horse.patch')
+        assert not email.errors
+
+    def test_bad_unicode_chars_in_filename(self):
+        email = self.from_patch_glob('0001-Add-horse2.patch')
+        assert not email.errors
+        assert email.changelog_entries[0].files == ['koníček.txt']
