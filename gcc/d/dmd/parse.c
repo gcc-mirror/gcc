@@ -372,11 +372,11 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
             case TOKinvariant:
             {
                 Token *t = peek(&token);
-                if ((t->value == TOKlparen && peek(t)->value == TOKrparen) ||
-                    t->value == TOKlcurly)
+                if (t->value == TOKlparen || t->value == TOKlcurly)
                 {
-                    // invariant {}
-                    // invariant() {}
+                    // invariant { statements... }
+                    // invariant() { statements... }
+                    // invariant (expression);
                     s = parseInvariant(pAttrs);
                 }
                 else
@@ -1846,7 +1846,9 @@ Dsymbol *Parser::parseSharedStaticDtor(PrefixAttributes *pAttrs)
 
 /*****************************************
  * Parse an invariant definition:
- *      invariant() { body }
+ *      invariant { statements... }
+ *      invariant() { statements... }
+ *      invariant (expression);
  * Current token is 'invariant'.
  */
 
@@ -1856,10 +1858,35 @@ Dsymbol *Parser::parseInvariant(PrefixAttributes *pAttrs)
     StorageClass stc = pAttrs ? pAttrs->storageClass : STCundefined;
 
     nextToken();
-    if (token.value == TOKlparen)       // optional ()
+    if (token.value == TOKlparen) // optional () or invariant (expression);
     {
         nextToken();
-        check(TOKrparen);
+        if (token.value != TOKrparen) // invariant (expression);
+        {
+            Expression *e = parseAssignExp();
+            Expression *msg = NULL;
+            if (token.value == TOKcomma)
+            {
+                nextToken();
+                if (token.value != TOKrparen)
+                {
+                    msg = parseAssignExp();
+                    if (token.value == TOKcomma)
+                        nextToken();
+                }
+            }
+            check(TOKrparen);
+            check(TOKsemicolon);
+            e = new AssertExp(loc, e, msg);
+            ExpStatement *fbody = new ExpStatement(loc, e);
+            InvariantDeclaration *f = new InvariantDeclaration(loc, token.loc, stc);
+            f->fbody = fbody;
+            return f;
+        }
+        else
+        {
+            nextToken();
+        }
     }
 
     InvariantDeclaration *f = new InvariantDeclaration(loc, Loc(), stc);
@@ -4426,11 +4453,12 @@ FuncDeclaration *Parser::parseContracts(FuncDeclaration *f)
     // The following is irrelevant, as it is overridden by sc->linkage in
     // TypeFunction::semantic
     linkage = LINKd;            // nested functions have D linkage
+    bool requireDo = false;
 L1:
     switch (token.value)
     {
         case TOKlcurly:
-            if (f->frequire || f->fensure)
+            if (requireDo)
                 error("missing body { ... } after in or out");
             f->fbody = parseStatement(PSsemi);
             f->endloc = endloc;
@@ -4448,35 +4476,100 @@ L1:
             break;
 
         case TOKin:
+        {
+            // in { statements... }
+            // in (expression)
+            Loc loc = token.loc;
             nextToken();
-            if (f->frequire)
-                error("redundant 'in' statement");
-            f->frequire = parseStatement(PScurly | PSscope);
+            if (!f->frequires)
+            {
+                f->frequires = new Statements();
+            }
+            if (token.value == TOKlparen)
+            {
+                nextToken();
+                Expression *e = parseAssignExp();
+                Expression *msg = NULL;
+                if (token.value == TOKcomma)
+                {
+                    nextToken();
+                    if (token.value != TOKrparen)
+                    {
+                        msg = parseAssignExp();
+                        if (token.value == TOKcomma)
+                            nextToken();
+                    }
+                }
+                check(TOKrparen);
+                e = new AssertExp(loc, e, msg);
+                f->frequires->push(new ExpStatement(loc, e));
+                requireDo = false;
+            }
+            else
+            {
+                f->frequires->push(parseStatement(PScurly | PSscope));
+                requireDo = true;
+            }
             goto L1;
+        }
 
         case TOKout:
-            // parse: out (identifier) { statement }
+        {
+            // out { statements... }
+            // out (; expression)
+            // out (identifier) { statements... }
+            // out (identifier; expression)
+            Loc loc = token.loc;
             nextToken();
+            if (!f->fensures)
+            {
+                f->fensures = new Ensures();
+            }
+            Identifier *id = NULL;
             if (token.value != TOKlcurly)
             {
                 check(TOKlparen);
-                if (token.value != TOKidentifier)
-                    error("(identifier) following 'out' expected, not %s", token.toChars());
-                f->outId = token.ident;
-                nextToken();
+                if (token.value != TOKidentifier && token.value != TOKsemicolon)
+                    error("`(identifier) { ... }` or `(identifier; expression)` following `out` expected, not `%s`", token.toChars());
+                if (token.value != TOKsemicolon)
+                {
+                    id = token.ident;
+                    nextToken();
+                }
+                if (token.value == TOKsemicolon)
+                {
+                    nextToken();
+                    Expression *e = parseAssignExp();
+                    Expression *msg = NULL;
+                    if (token.value == TOKcomma)
+                    {
+                        nextToken();
+                        if (token.value != TOKrparen)
+                        {
+                            msg = parseAssignExp();
+                            if (token.value == TOKcomma)
+                                nextToken();
+                        }
+                    }
+                    check(TOKrparen);
+                    e = new AssertExp(loc, e, msg);
+                    f->fensures->push(Ensure(id, new ExpStatement(loc, e)));
+                    requireDo = false;
+                    goto L1;
+                }
                 check(TOKrparen);
             }
-            if (f->fensure)
-                error("redundant 'out' statement");
-            f->fensure = parseStatement(PScurly | PSscope);
+            f->fensures->push(Ensure(id, parseStatement(PScurly | PSscope)));
+            requireDo = true;
             goto L1;
+        }
 
         case TOKsemicolon:
             if (!literal)
             {
                 // Bugzilla 15799: Semicolon becomes a part of function declaration
-                // only when neither of contracts exists.
-                if (!f->frequire && !f->fensure)
+                // only when 'do' is not required
+                if (!requireDo)
                     nextToken();
                 break;
             }
@@ -4486,10 +4579,10 @@ L1:
         Ldefault:
             if (literal)
             {
-                const char *sbody = (f->frequire || f->fensure) ? "body " : "";
+                const char *sbody = requireDo ? "do " : "";
                 error("missing %s{ ... } for function literal", sbody);
             }
-            else if (!f->frequire && !f->fensure)   // allow these even with no body
+            else if (!requireDo)   // allow these even with no body
             {
                 error("semicolon expected following function declaration");
             }

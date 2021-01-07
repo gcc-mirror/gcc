@@ -1950,32 +1950,70 @@ public:
         int saveauto = hgs->autoMember;
         hgs->tpltMember = 0;
         hgs->autoMember = 0;
-
         buf->writenl();
-
+        bool requireDo = false;
         // in{}
-        if (f->frequire)
+        if (f->frequires)
         {
-            buf->writestring("in");
-            buf->writenl();
-            f->frequire->accept(this);
+            for (size_t i = 0; i < f->frequires->length; i++)
+            {
+                Statement *frequire = (*f->frequires)[i];
+                buf->writestring("in");
+                if (ExpStatement *es = frequire->isExpStatement())
+                {
+                    assert(es->exp && es->exp->op == TOKassert);
+                    buf->writestring(" (");
+                    ((AssertExp *)es->exp)->e1->accept(this);
+                    buf->writeByte(')');
+                    buf->writenl();
+                    requireDo = false;
+                }
+                else
+                {
+                    buf->writenl();
+                    frequire->accept(this);
+                    requireDo = true;
+                }
+            }
         }
 
         // out{}
-        if (f->fensure)
+        if (f->fensures)
         {
-            buf->writestring("out");
-            if (f->outId)
+            for (size_t i = 0; i < f->fensures->length; i++)
             {
-                buf->writeByte('(');
-                buf->writestring(f->outId->toChars());
-                buf->writeByte(')');
+                Ensure fensure = (*f->fensures)[i];
+                buf->writestring("out");
+                if (ExpStatement *es = fensure.ensure->isExpStatement())
+                {
+                    assert(es->exp && es->exp->op == TOKassert);
+                    buf->writestring(" (");
+                    if (fensure.id)
+                    {
+                        buf->writestring(fensure.id->toChars());
+                    }
+                    buf->writestring("; ");
+                    ((AssertExp *)es->exp)->e1->accept(this);
+                    buf->writeByte(')');
+                    buf->writenl();
+                    requireDo = false;
+                }
+                else
+                {
+                    if (fensure.id)
+                    {
+                        buf->writeByte('(');
+                        buf->writestring(fensure.id->toChars());
+                        buf->writeByte(')');
+                    }
+                    buf->writenl();
+                    fensure.ensure->accept(this);
+                    requireDo = true;
+                }
             }
-            buf->writenl();
-            f->fensure->accept(this);
         }
 
-        if (f->frequire || f->fensure)
+        if (requireDo)
         {
             buf->writestring("body");
             buf->writenl();
@@ -2093,7 +2131,18 @@ public:
         if (stcToBuffer(buf, d->storage_class))
             buf->writeByte(' ');
         buf->writestring("invariant");
-        bodyToBuffer(d);
+        if (ExpStatement *es = d->fbody->isExpStatement())
+        {
+            assert(es->exp && es->exp->op == TOKassert);
+            buf->writestring(" (");
+            ((AssertExp *)es->exp)->e1->accept(this);
+            buf->writestring(");");
+            buf->writenl();
+        }
+        else
+        {
+            bodyToBuffer(d);
+        }
     }
 
     void visit(UnitTestDeclaration *d)

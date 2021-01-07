@@ -20,6 +20,16 @@ class LabelDsymbol;
 class Initializer;
 class Module;
 class ForeachStatement;
+struct Ensure
+{
+    Identifier *id;
+    Statement *ensure;
+
+    Ensure();
+    Ensure(Identifier *id, Statement *ensure);
+    Ensure syntaxCopy();
+    static Ensures *arraySyntaxCopy(Ensures *a);
+};
 class FuncDeclaration;
 class ExpInitializer;
 class StructDeclaration;
@@ -516,8 +526,10 @@ class FuncDeclaration : public Declaration
 {
 public:
     Types *fthrows;                     // Array of Type's of exceptions (not used)
-    Statement *frequire;
-    Statement *fensure;
+    Statements *frequires;              // in contracts
+    Ensures *fensures;                  // out contracts
+    Statement *frequire;                // lowered in contract
+    Statement *fensure;                 // lowered out contract
     Statement *fbody;
 
     FuncDeclarations foverrides;        // functions this function overrides
@@ -526,8 +538,7 @@ public:
 
     const char *mangleString;           // mangled symbol created from mangleExact()
 
-    Identifier *outId;                  // identifier for out statement
-    VarDeclaration *vresult;            // variable corresponding to outId
+    VarDeclaration *vresult;            // result variable for out contracts
     LabelDsymbol *returnLabel;          // where the return goes
 
     // used to prevent symbols in different
