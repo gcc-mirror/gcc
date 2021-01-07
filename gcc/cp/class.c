@@ -1507,6 +1507,10 @@ mark_or_check_tags (tree t, tree *tp, abi_tag_data *p, bool val)
 static tree
 find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1527,6 +1531,10 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 static tree
 mark_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
