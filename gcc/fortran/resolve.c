@@ -4858,6 +4858,8 @@ gfc_resolve_dim_arg (gfc_expr *dim)
    base symbol.  We traverse the list of reference structures, setting
    the stored reference to references.  Component references can
    provide an additional array specification.  */
+static void
+resolve_assoc_var (gfc_symbol* sym, bool resolve_target);
 
 static void
 find_array_spec (gfc_expr *e)
@@ -4866,6 +4868,13 @@ find_array_spec (gfc_expr *e)
   gfc_component *c;
   gfc_ref *ref;
   bool class_as = false;
+
+  if (e->symtree->n.sym->assoc)
+    {
+      if (e->symtree->n.sym->assoc->target)
+	gfc_resolve_expr (e->symtree->n.sym->assoc->target);
+      resolve_assoc_var (e->symtree->n.sym, false);
+    }
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
     {
