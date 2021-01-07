@@ -9289,24 +9289,14 @@ __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_s8 (int16x4_t __a, int8x8_t __b)
 {
-  int16x4_t __result;
-  __asm__ ("sadalp %0.4h,%2.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv8qi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_s16 (int32x2_t __a, int16x4_t __b)
 {
-  int32x2_t __result;
-  __asm__ ("sadalp %0.2s,%2.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv4hi (__a, __b);
 }
 
 __extension__ extern __inline int64x1_t
@@ -9325,24 +9315,14 @@ __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_u8 (uint16x4_t __a, uint8x8_t __b)
 {
-  uint16x4_t __result;
-  __asm__ ("uadalp %0.4h,%2.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_u16 (uint32x2_t __a, uint16x4_t __b)
 {
-  uint32x2_t __result;
-  __asm__ ("uadalp %0.2s,%2.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
@@ -9361,72 +9341,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s8 (int16x8_t __a, int8x16_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sadalp %0.8h,%2.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv16qi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s16 (int32x4_t __a, int16x8_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sadalp %0.4s,%2.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv8hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s32 (int64x2_t __a, int32x4_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("sadalp %0.2d,%2.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv4si (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u8 (uint16x8_t __a, uint8x16_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("uadalp %0.8h,%2.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u16 (uint32x4_t __a, uint16x8_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("uadalp %0.4s,%2.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u32 (uint64x2_t __a, uint32x4_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("uadalp %0.2d,%2.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t

@@ -801,13 +801,13 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_insn "aarch64_<sur>adalp<mode>_3"
+(define_insn "aarch64_<sur>adalp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
-			  (match_operand:<VDBLW> 2 "register_operand" "0")]
+	(unspec:<VDBLW> [(match_operand:VDQV_S 2 "register_operand" "w")
+			  (match_operand:<VDBLW> 1 "register_operand" "0")]
 	ADALP))]
   "TARGET_SIMD"
-  "<sur>adalp\t%0.<Vwtype>, %1.<Vtype>"
+  "<sur>adalp\t%0.<Vwhalf>, %2.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
@@ -852,8 +852,7 @@
 					       operands[2]));
     emit_insn (gen_aarch64_<sur>abalv16qi_4 (reduc, operands[1],
 					      operands[2], reduc));
-    emit_insn (gen_aarch64_<sur>adalpv8hi_3 (operands[3], reduc,
-					      operands[3]));
+    emit_insn (gen_aarch64_<sur>adalpv8hi (operands[3], operands[3], reduc));
     emit_move_insn (operands[0], operands[3]);
     DONE;
   }
