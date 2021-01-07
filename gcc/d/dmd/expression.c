@@ -1953,7 +1953,7 @@ bool functionParameters(Loc loc, Scope *sc, TypeFunction *tf,
         args->setDim(arguments->length - nparams);
         for (size_t i = 0; i < arguments->length - nparams; i++)
         {
-            Parameter *arg = new Parameter(STCin, (*arguments)[nparams + i]->type, NULL, NULL);
+            Parameter *arg = new Parameter(STCin, (*arguments)[nparams + i]->type, NULL, NULL, NULL);
             (*args)[i] = arg;
         }
 

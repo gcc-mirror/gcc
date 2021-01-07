@@ -1494,7 +1494,7 @@ public:
                             s = new ExpStatement(Loc(), v);
                             fs->_body = new CompoundStatement(loc, s, fs->_body);
                         }
-                        params->push(new Parameter(stc, p->type, id, NULL));
+                        params->push(new Parameter(stc, p->type, id, NULL, NULL));
                     }
                     // Bugzilla 13840: Throwable nested function inside nothrow function is acceptable.
                     StorageClass stc = mergeFuncAttrs(STCsafe | STCpure | STCnogc, fs->func);
@@ -1570,15 +1570,15 @@ public:
                         if (!fdapply[i])
                         {
                             params = new Parameters();
-                            params->push(new Parameter(0, Type::tvoid->pointerTo(), NULL, NULL));
-                            params->push(new Parameter(STCin, Type::tsize_t, NULL, NULL));
+                            params->push(new Parameter(0, Type::tvoid->pointerTo(), NULL, NULL, NULL));
+                            params->push(new Parameter(STCin, Type::tsize_t, NULL, NULL, NULL));
                             Parameters* dgparams = new Parameters;
-                            dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
+                            dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL, NULL));
                             if (dim == 2)
-                                dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
+                                dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL, NULL));
                             fldeTy[i] = new TypeDelegate(new TypeFunction(ParameterList(dgparams),
                                                                           Type::tint32, LINKd));
-                            params->push(new Parameter(0, fldeTy[i], NULL, NULL));
+                            params->push(new Parameter(0, fldeTy[i], NULL, NULL, NULL));
                             fdapply[i] = FuncDeclaration::genCfunc(params, Type::tint32, name[i]);
                         }
 
@@ -1637,14 +1637,14 @@ public:
                         FuncDeclaration *fdapply;
                         TypeDelegate *dgty;
                         params = new Parameters();
-                        params->push(new Parameter(STCin, tn->arrayOf(), NULL, NULL));
+                        params->push(new Parameter(STCin, tn->arrayOf(), NULL, NULL, NULL));
                         Parameters* dgparams = new Parameters;
-                        dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
+                        dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL, NULL));
                         if (dim == 2)
-                            dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL));
+                            dgparams->push(new Parameter(0, Type::tvoidptr, NULL, NULL, NULL));
                         dgty = new TypeDelegate(new TypeFunction(ParameterList(dgparams),
                                                                  Type::tint32, LINKd));
-                        params->push(new Parameter(0, dgty, NULL, NULL));
+                        params->push(new Parameter(0, dgty, NULL, NULL, NULL));
                         fdapply = FuncDeclaration::genCfunc(params, Type::tint32, fdname);
 
                         if (tab->ty == Tsarray)
@@ -3192,7 +3192,7 @@ public:
             cs->push(new ExpStatement(ss->loc, tmp));
 
             Parameters* args = new Parameters;
-            args->push(new Parameter(0, ClassDeclaration::object->type, NULL, NULL));
+            args->push(new Parameter(0, ClassDeclaration::object->type, NULL, NULL, NULL));
 
             FuncDeclaration *fdenter = FuncDeclaration::genCfunc(args, Type::tvoid, Id::monitorenter);
             Expression *e = new CallExp(ss->loc, new VarExp(ss->loc, fdenter, false), new VarExp(ss->loc, tmp));
@@ -3234,7 +3234,7 @@ public:
             cs->push(new ExpStatement(ss->loc, v));
 
             Parameters* args = new Parameters;
-            args->push(new Parameter(0, t->pointerTo(), NULL, NULL));
+            args->push(new Parameter(0, t->pointerTo(), NULL, NULL, NULL));
 
             FuncDeclaration *fdenter = FuncDeclaration::genCfunc(args, Type::tvoid, Id::criticalenter, STCnothrow);
             Expression *e = new AddrExp(ss->loc, tmpExp);
