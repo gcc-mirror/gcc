@@ -978,6 +978,25 @@ public:
 
 }; // class pass_optimize_bswap
 
+/* Helper function for bswap_replace.  Build VIEW_CONVERT_EXPR from
+   VAL to TYPE.  If VAL has different type size, emit a NOP_EXPR cast
+   first.  */
+
+static tree
+bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
+{
+  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (val)));
+  if (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (val)))
+    {
+      HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_SIZE (type));
+      tree itype = build_nonstandard_integer_type (prec, 1);
+      gimple *g = gimple_build_assign (make_ssa_name (itype), NOP_EXPR, val);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      val = gimple_assign_lhs (g);
+    }
+  return build1 (VIEW_CONVERT_EXPR, type, val);
+}
+
 /* Perform the bswap optimization: replace the expression computed in the rhs
    of gsi_stmt (GSI) (or if NULL add instead of replace) by an equivalent
    bswap, load or load + bswap expression.
@@ -1100,7 +1119,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 	      if (conv_code == VIEW_CONVERT_EXPR)
-		val_tmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), val_tmp);
+		val_tmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), val_tmp);
 	      gimple_assign_set_rhs_with_ops (&gsi, conv_code, val_tmp);
 	      update_stmt (cur_stmt);
 	    }
@@ -1144,7 +1163,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	  if (!is_gimple_val (src))
 	    return NULL_TREE;
 	  if (conv_code == VIEW_CONVERT_EXPR)
-	    src = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), src);
+	    src = bswap_view_convert (&gsi, TREE_TYPE (tgt), src);
 	  g = gimple_build_assign (tgt, conv_code, src);
 	}
       else if (cur_stmt)
@@ -1227,7 +1246,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
       tree atmp = tmp;
       if (conv_code == VIEW_CONVERT_EXPR)
-	atmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), tmp);
+	atmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), tmp);
       convert_stmt = gimple_build_assign (tgt, conv_code, atmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
