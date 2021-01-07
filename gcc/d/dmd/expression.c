@@ -2344,9 +2344,18 @@ bool Expression::checkArithmetic()
     return checkValue();
 }
 
-void Expression::checkDeprecated(Scope *sc, Dsymbol *s)
+bool Expression::checkDeprecated(Scope *sc, Dsymbol *s)
 {
-    s->checkDeprecated(loc, sc);
+    return s->checkDeprecated(loc, sc);
+}
+
+bool Expression::checkDisabled(Scope *sc, Dsymbol *s)
+{
+    if (Declaration *d = s->isDeclaration())
+    {
+        return d->checkDisabled(loc, sc);
+    }
+    return false;
 }
 
 /*********************************************
@@ -2661,11 +2670,8 @@ bool Expression::checkPostblit(Scope *sc, Type *t)
         StructDeclaration *sd = ((TypeStruct *)t)->sym;
         if (sd->postblit)
         {
-            if (sd->postblit->storage_class & STCdisable)
-            {
-                sd->error(loc, "is not copyable because it is annotated with @disable");
+            if (sd->postblit->checkDisabled(loc, sc))
                 return true;
-            }
             //checkDeprecated(sc, sd->postblit);        // necessary?
             checkPurity(sc, sd->postblit);
             checkSafety(sc, sd->postblit);
@@ -3715,14 +3721,22 @@ Lagain:
     else
     {
         if (!s->isFuncDeclaration())        // functions are checked after overloading
+        {
             s->checkDeprecated(loc, sc);
+            if (d)
+                d->checkDisabled(loc, sc);
+        }
 
         // Bugzilla 12023: if 's' is a tuple variable, the tuple is returned.
         s = s->toAlias();
 
         //printf("s = '%s', s->kind = '%s', s->needThis() = %p\n", s->toChars(), s->kind(), s->needThis());
         if (s != olds && !s->isFuncDeclaration())
+        {
             s->checkDeprecated(loc, sc);
+            if (d)
+                d->checkDisabled(loc, sc);
+        }
     }
 
     if (EnumMember *em = s->isEnumMember())

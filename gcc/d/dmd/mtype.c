@@ -1762,10 +1762,10 @@ bool Type::needsNested()
 
 void Type::checkDeprecated(Loc loc, Scope *sc)
 {
-    Dsymbol *s = toDsymbol(sc);
-
-    if (s)
+    if (Dsymbol *s = toDsymbol(sc))
+    {
         s->checkDeprecated(loc, sc);
+    }
 }
 
 
@@ -6956,7 +6956,12 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
         if (d && (d->storage_class & STCtemplateparameter))
             s = s->toAlias();
         else
-            s->checkDeprecated(loc, sc);            // check for deprecated aliases
+        {
+            // check for deprecated aliases
+            s->checkDeprecated(loc, sc);
+            if (d)
+                d->checkDisabled(loc, sc, true);
+        }
 
         s = s->toAlias();
         //printf("\t2: s = '%s' %p, kind = '%s'\n",s->toChars(), s, s->kind());
@@ -8045,7 +8050,11 @@ L1:
         // return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();
@@ -8749,7 +8758,11 @@ L1:
         // return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();

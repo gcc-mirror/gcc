@@ -85,6 +85,8 @@ public:
     EnumDeclaration *ed;
 
     EnumMember(Loc loc, Identifier *id, Expression *value, Type *origType);
+    EnumMember(Loc loc, Identifier *id, Expression *value, Type *memType,
+        StorageClass stc, UserAttributeDeclaration *uad, DeprecatedDeclaration *dd);
     Dsymbol *syntaxCopy(Dsymbol *s);
     const char *kind() const;
     void semantic(Scope *sc);

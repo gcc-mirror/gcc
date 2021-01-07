@@ -13,6 +13,7 @@
 
 #include "errors.h"
 #include "enum.h"
+#include "attrib.h"
 #include "mtype.h"
 #include "scope.h"
 #include "id.h"
@@ -504,6 +505,18 @@ EnumMember::EnumMember(Loc loc, Identifier *id, Expression *value, Type *origTyp
     this->origType = origType;
 }
 
+EnumMember::EnumMember(Loc loc, Identifier *id, Expression *value, Type *memType,
+        StorageClass stc, UserAttributeDeclaration *uad, DeprecatedDeclaration *dd)
+    : VarDeclaration(loc, NULL, id ? id : Id::empty, new ExpInitializer(loc, value))
+{
+    this->ed = NULL;
+    this->origValue = value;
+    this->origType = memType;
+    this->storage_class = stc;
+    this->userAttribDecl = uad;
+    this->depdecl = dd;
+}
+
 Expression *&EnumMember::value()
 {
     return ((ExpInitializer*)_init)->exp;
@@ -536,6 +549,7 @@ void EnumMember::semantic(Scope *sc)
         return;
     }
     assert(ed);
+
     ed->semantic(sc);
     if (ed->errors)
         goto Lerrors;
@@ -552,8 +566,16 @@ void EnumMember::semantic(Scope *sc)
 
     protection = ed->isAnonymous() ? ed->protection : Prot(Prot::public_);
     linkage = LINKd;
-    storage_class = STCmanifest;
-    userAttribDecl = ed->isAnonymous() ? ed->userAttribDecl : NULL;
+    storage_class |= STCmanifest;
+
+    // https://issues.dlang.org/show_bug.cgi?id=9701
+    if (ed->isAnonymous())
+    {
+        if (userAttribDecl)
+            userAttribDecl->userAttribDecl = ed->userAttribDecl;
+        else
+            userAttribDecl = ed->userAttribDecl;
+    }
 
     // The first enum member is special
     bool first = (this == (*ed->members)[0]);
@@ -743,6 +765,14 @@ void EnumMember::semantic(Scope *sc)
 Expression *EnumMember::getVarExp(Loc loc, Scope *sc)
 {
     semantic(sc);
+    if (errors)
+        return new ErrorExp();
+    checkDisabled(loc, sc);
+
+    if (depdecl && !depdecl->_scope)
+        depdecl->_scope = sc;
+    checkDeprecated(loc, sc);
+
     if (errors)
         return new ErrorExp();
     Expression *e = new VarExp(loc, this);

@@ -181,7 +181,8 @@ public:
     bool checkNoBool();
     bool checkIntegral();
     bool checkArithmetic();
-    void checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDisabled(Scope *sc, Dsymbol *s);
     bool checkPurity(Scope *sc, FuncDeclaration *f);
     bool checkPurity(Scope *sc, VarDeclaration *v);
     bool checkSafety(Scope *sc, FuncDeclaration *f);

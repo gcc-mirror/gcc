@@ -760,7 +760,7 @@ void Dsymbol::deprecation(const char *format, ...)
     va_end(ap);
 }
 
-void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
+bool Dsymbol::checkDeprecated(Loc loc, Scope *sc)
 {
     if (global.params.useDeprecated != DIAGNOSTICoff && isDeprecated())
     {
@@ -768,17 +768,17 @@ void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
         for (Dsymbol *sp = sc->parent; sp; sp = sp->parent)
         {
             if (sp->isDeprecated())
-                goto L1;
+                return false;
         }
 
         for (Scope *sc2 = sc; sc2; sc2 = sc2->enclosing)
         {
             if (sc2->scopesym && sc2->scopesym->isDeprecated())
-                goto L1;
+                return false;
 
             // If inside a StorageClassDeclaration that is deprecated
             if (sc2->stc & STCdeprecated)
-                goto L1;
+                return false;
         }
 
         const char *message = NULL;
@@ -793,20 +793,11 @@ void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
             deprecation(loc, "is deprecated - %s", message);
         else
             deprecation(loc, "is deprecated");
+
+        return true;
     }
 
-  L1:
-    Declaration *d = isDeclaration();
-    if (d && d->storage_class & STCdisable)
-    {
-        if (!(sc->func && sc->func->storage_class & STCdisable))
-        {
-            if (d->toParent() && d->isPostBlitDeclaration())
-                d->toParent()->error(loc, "is not copyable because it is annotated with @disable");
-            else
-                error(loc, "is not callable because it is annotated with @disable");
-        }
-    }
+    return false;
 }
 
 /**********************************

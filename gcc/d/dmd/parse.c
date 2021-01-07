@@ -216,6 +216,24 @@ Lerr:
     return new Dsymbols();
 }
 
+static StorageClass parseDeprecatedAttribute(Parser *p, Expression **msg)
+{
+    if (p->peekNext() != TOKlparen)
+        return STCdeprecated;
+
+    p->nextToken();
+    p->check(TOKlparen);
+    Expression *e = p->parseAssignExp();
+    p->check(TOKrparen);
+    if (*msg)
+    {
+        p->error("conflicting storage class `deprecated(%s)` and `deprecated(%s)`",
+                 (*msg)->toChars(), e->toChars());
+    }
+    *msg = e;
+    return STCundefined;
+}
+
 struct PrefixAttributes
 {
     StorageClass storageClass;
@@ -626,21 +644,12 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
 
             case TOKdeprecated:
             {
-                if (peek(&token)->value != TOKlparen)
+                Expression *e = NULL;
+                if (StorageClass _stc = parseDeprecatedAttribute(this, &pAttrs->depmsg))
                 {
-                    stc = STCdeprecated;
+                    stc = _stc;
                     goto Lstc;
                 }
-                nextToken();
-                check(TOKlparen);
-                Expression *e = parseAssignExp();
-                check(TOKrparen);
-                if (pAttrs->depmsg)
-                {
-                    error("conflicting storage class 'deprecated(%s)' and 'deprecated(%s)'",
-                        pAttrs->depmsg->toChars(), e->toChars());
-                }
-                pAttrs->depmsg = e;
                 a = parseBlock(pLastDecl, pAttrs);
                 if (pAttrs->depmsg)
                 {
@@ -2185,7 +2194,7 @@ EnumDeclaration *Parser::parseEnum()
     Type *memtype;
     Loc loc = token.loc;
 
-    //printf("Parser::parseEnum()\n");
+    // printf("Parser::parseEnum()\n");
     nextToken();
     if (token.value == TOKidentifier)
     {
@@ -2213,36 +2222,96 @@ EnumDeclaration *Parser::parseEnum()
         nextToken();
     else if (token.value == TOKlcurly)
     {
+        bool isAnonymousEnum = !id;
+
         //printf("enum definition\n");
         e->members = new Dsymbols();
         nextToken();
         const utf8_t *comment = token.blockComment;
         while (token.value != TOKrcurly)
         {
-            /* Can take the following forms:
+            /* Can take the following forms...
              *  1. ident
              *  2. ident = value
              *  3. type ident = value
+             *  ... prefixed by valid attributes
              */
-
             loc = token.loc;
 
             Type *type = NULL;
             Identifier *ident = NULL;
-            Token *tp = peek(&token);
-            if (token.value == TOKidentifier &&
-                (tp->value == TOKassign || tp->value == TOKcomma || tp->value == TOKrcurly))
+
+            Expressions *udas = NULL;
+            StorageClass stc = STCundefined;
+            Expression *deprecationMessage = NULL;
+
+            while (token.value != TOKrcurly &&
+                   token.value != TOKcomma &&
+                   token.value != TOKassign)
             {
-                ident = token.ident;
-                type = NULL;
-                nextToken();
+                switch (token.value)
+                {
+                    case TOKat:
+                        if (StorageClass _stc = parseAttribute(&udas))
+                        {
+                            if (_stc == STCdisable)
+                                stc |= _stc;
+                            else
+                            {
+                                OutBuffer buf;
+                                stcToBuffer(&buf, _stc);
+                                error("`%s` is not a valid attribute for enum members", buf.peekChars());
+                            }
+                            nextToken();
+                        }
+                        break;
+                    case TOKdeprecated:
+                        if (StorageClass _stc = parseDeprecatedAttribute(this, &deprecationMessage))
+                        {
+                            stc |= _stc;
+                            nextToken();
+                        }
+                        break;
+                    case TOKidentifier:
+                    {
+                        Token *tp = peek(&token);
+                        if (tp->value == TOKassign || tp->value == TOKcomma || tp->value == TOKrcurly)
+                        {
+                            ident = token.ident;
+                            type = NULL;
+                            nextToken();
+                        }
+                        else
+                        {
+                            goto Ldefault;
+                        }
+                        break;
+                    }
+                    default:
+                    Ldefault:
+                        if (isAnonymousEnum)
+                        {
+                            type = parseType(&ident, NULL);
+                            if (type == Type::terror)
+                            {
+                                type = NULL;
+                                nextToken();
+                            }
+                        }
+                        else
+                        {
+                            error("`%s` is not a valid attribute for enum members", token.toChars());
+                            nextToken();
+                        }
+                        break;
+                }
             }
-            else
+
+            if (type && type != Type::terror)
             {
-                type = parseType(&ident, NULL);
                 if (!ident)
                     error("no identifier for declarator %s", type->toChars());
-                if (id || memtype)
+                if (!isAnonymousEnum)
                     error("type only allowed if anonymous enum and no enum type");
             }
 
@@ -2255,11 +2324,22 @@ EnumDeclaration *Parser::parseEnum()
             else
             {
                 value = NULL;
-                if (type)
+                if (type && type != Type::terror && isAnonymousEnum)
                     error("if type, there must be an initializer");
             }
 
-            EnumMember *em = new EnumMember(loc, ident, value, type);
+            UserAttributeDeclaration *uad = NULL;
+            if (udas)
+                uad = new UserAttributeDeclaration(udas, NULL);
+
+            DeprecatedDeclaration *dd = NULL;
+            if (deprecationMessage)
+            {
+                dd = new DeprecatedDeclaration(deprecationMessage, NULL);
+                stc |= STCdeprecated;
+            }
+
+            EnumMember *em = new EnumMember(loc, ident, value, type, stc, uad, dd);
             e->members->push(em);
 
             if (token.value == TOKrcurly)

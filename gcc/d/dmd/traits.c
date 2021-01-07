@@ -313,7 +313,6 @@ static Expression *isDsymX(TraitsExp *e, bool (*fp)(Dsymbol *s))
     return True(e);
 }
 
-static bool isFuncDisabled(FuncDeclaration *f) { return f->isDisabled(); }
 static bool isFuncAbstractFunction(FuncDeclaration *f) { return f->isAbstract(); }
 static bool isFuncVirtualFunction(FuncDeclaration *f) { return f->isVirtual(); }
 static bool isFuncVirtualMethod(FuncDeclaration *f) { return f->isVirtualMethod(); }
@@ -337,6 +336,7 @@ static Expression *isFuncX(TraitsExp *e, bool (*fp)(FuncDeclaration *f))
     return True(e);
 }
 
+static bool isDeclDisabled(Declaration *d) { return d->isDisabled(); }
 static bool isDeclFuture(Declaration *d) { return d->isFuture(); }
 static bool isDeclRef(Declaration *d) { return d->isRef(); }
 static bool isDeclOut(Declaration *d) { return d->isOut(); }
@@ -811,7 +811,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         if (dim != 1)
             return dimError(e, 1, dim);
 
-        return isFuncX(e, &isFuncDisabled);
+        return isDeclX(e, &isDeclDisabled);
     }
     else if (e->ident == Id::isAbstractFunction)
     {

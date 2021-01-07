@@ -175,7 +175,7 @@ public:
     void error(const char *format, ...);
     void deprecation(Loc loc, const char *format, ...);
     void deprecation(const char *format, ...);
-    void checkDeprecated(Loc loc, Scope *sc);
+    bool checkDeprecated(Loc loc, Scope *sc);
     Module *getModule();
     Module *getAccessModule();
     Dsymbol *pastMixin();
