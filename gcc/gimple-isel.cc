@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "optabs.h"
 #include "gimple-fold.h"
+#include "internal-fn.h"
 
 /* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
    internal function based on vector type of selected expansion.
@@ -250,7 +251,10 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	     Try changing it to NE_EXPR.  */
 	  tcode = NE_EXPR;
 	}
-      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+      if ((tcode == EQ_EXPR || tcode == NE_EXPR)
+	  && direct_internal_fn_supported_p (IFN_VCONDEQ, TREE_TYPE (lhs),
+					     TREE_TYPE (op0a),
+					     OPTIMIZE_FOR_BOTH))
 	{
 	  tree tcode_tree = build_int_cst (integer_type_node, tcode);
 	  return gimple_build_call_internal (IFN_VCONDEQ, 5, op0a, op0b, op1,
