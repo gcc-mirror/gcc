@@ -1,3 +1,18 @@
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95768
+	* c-pretty-print.c (c_pretty_printer::primary_expression): For
+	SSA_NAMEs print VLA names and GIMPLE defining statements.
+	(print_mem_ref): New function.
+	(c_pretty_printer::unary_expression): Call it.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95582
+	* c-attribs.c (c_common_attribute_table): Add entry for
+	signed_bool_precision.
+	(handle_signed_bool_precision_attribute): New.
+
 2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c.opt: Add -stdlib= option and enumerations for

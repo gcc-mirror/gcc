@@ -1,3 +1,62 @@
+2021-01-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97978
+	* gcc.target/i386/pr97978.c: New.
+
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95768
+	* g++.dg/pr95768.C: New test.
+	* g++.dg/warn/Wuninitialized-12.C: New test.
+	* gcc.dg/uninit-38.c: New test.
+
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98305
+	* g++.dg/warn/Wmismatched-new-delete-3.C: New test.
+
+2021-01-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96504
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: Use suspend_always
+	as the final suspend point so that we can check that the state
+	machine has reached the expected point.
+
+2021-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/98566
+	* g++.dg/warn/Wmismatched-dealloc.C: Use target c++14 in
+	dg-error.
+
+2021-01-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/opt/store-merging-2.C: Add the required alignment.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95582
+	* gcc.dg/pr95582.c: New testcase.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98513
+	* gcc.dg/tree-ssa/pr98513.c: New testcase.
+
+2021-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97072
+	* gcc.dg/analyzer/pr97072.c: New test.
+
+2021-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98073
+	* gcc.dg/analyzer/pr98073.c: New test.
+
+2021-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98223
+	* gcc.dg/analyzer/pr94851-1.c: Remove xfail.
+
 2021-01-05  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/s390.exp: Replace %% with %.

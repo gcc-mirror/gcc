@@ -1,3 +1,8 @@
+2021-01-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/98506
+	* resolver.cc: Only use fstatat when _POSIX_C_SOURCE >= 200809L.
+
 2021-01-04  Nathan Sidwell  <nathan@acm.org>
 
 	* client.cc (Client::ProcessResponse): Remove std::move

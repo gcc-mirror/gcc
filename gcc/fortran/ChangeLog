@@ -1,3 +1,8 @@
+2021-01-06  Harald Anlauf  <anlauf@gmx.de>
+
+	* resolve.c (resolve_component): Add check for valid CLASS
+	reference before trying to access CLASS data.
+
 2021-01-04  Martin Liska  <mliska@suse.cz>
 
 	* ChangeLog-2018: Remove duplicate ChangeLog entries.
