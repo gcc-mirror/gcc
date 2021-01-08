@@ -20,7 +20,7 @@ import (
 //mount(source *byte, target *byte, fstype *byte, flags _C_long, data *byte) _C_int
 
 //sysnb rawOpenat(dirfd int, pathname *byte, flags int, perm uint32) (fd int, err Errno)
-//openat(dirfd _C_int, pathname *byte, flags _C_int, perm Mode_t) _C_int
+//__go_openat(dirfd _C_int, pathname *byte, flags _C_int, perm Mode_t) _C_int
 
 // SysProcIDMap holds Container ID to Host ID mappings used for User Namespaces in Linux.
 // See user_namespaces(7).
