@@ -2226,6 +2226,7 @@ package body Sem_Eval is
                if UR_Is_Zero (Right_Real) then
                   Apply_Compile_Time_Constraint_Error
                     (N, "division by zero", CE_Divide_By_Zero);
+                  Set_Raises_Constraint_Error (N);
                   return;
                end if;
 
