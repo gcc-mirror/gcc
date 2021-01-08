@@ -285,6 +285,9 @@ ResolveExpr::visit (AST::BlockExpr &expr)
     return true;
   });
 
+  if (expr.has_tail_expr ())
+    ResolveExpr::go (expr.get_tail_expr ().get (), expr.get_node_id ());
+
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
 }
