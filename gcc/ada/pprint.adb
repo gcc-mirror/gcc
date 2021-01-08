@@ -226,8 +226,7 @@ package body Pprint is
                end;
 
             when N_Integer_Literal =>
-               UI_Image (Intval (Expr));
-               return UI_Image_Buffer (1 .. UI_Image_Length);
+               return UI_Image (Intval (Expr));
 
             when N_Real_Literal =>
                return Real_Image (Realval (Expr));
