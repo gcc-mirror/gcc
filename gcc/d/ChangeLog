@@ -1,3 +1,9 @@
+2021-01-07  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 9038e64c5.
+	* d-builtins.cc (build_frontend_type): Update call to
+	Parameter::create.
+
 2021-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd a5c86f5b9.

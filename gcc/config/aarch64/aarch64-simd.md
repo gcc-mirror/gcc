@@ -766,7 +766,7 @@
 ;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
 ;; Whereas SABD would return 192 (-64 signed) on the above example.
 ;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
-(define_insn "aarch64_<su>abd<mode>_3"
+(define_insn "aarch64_<su>abd<mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(minus:VDQ_BHSI
 	  (USMAX:VDQ_BHSI
@@ -801,13 +801,13 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_insn "aarch64_<sur>adalp<mode>_3"
+(define_insn "aarch64_<sur>adalp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
-			  (match_operand:<VDBLW> 2 "register_operand" "0")]
+	(unspec:<VDBLW> [(match_operand:VDQV_S 2 "register_operand" "w")
+			  (match_operand:<VDBLW> 1 "register_operand" "0")]
 	ADALP))]
   "TARGET_SIMD"
-  "<sur>adalp\t%0.<Vwtype>, %1.<Vtype>"
+  "<sur>adalp\t%0.<Vwhalf>, %2.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
@@ -842,7 +842,7 @@
       {
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
-	emit_insn (gen_aarch64_<sur>abdv16qi_3 (abd, operands[1], operands[2]));
+	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
 	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
 					  abd, ones));
 	DONE;
@@ -852,21 +852,24 @@
 					       operands[2]));
     emit_insn (gen_aarch64_<sur>abalv16qi_4 (reduc, operands[1],
 					      operands[2], reduc));
-    emit_insn (gen_aarch64_<sur>adalpv8hi_3 (operands[3], reduc,
-					      operands[3]));
+    emit_insn (gen_aarch64_<sur>adalpv8hi (operands[3], operands[3], reduc));
     emit_move_insn (operands[0], operands[3]);
     DONE;
   }
 )
 
-(define_insn "aba<mode>_3"
+(define_insn "aarch64_<su>aba<mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
-	(plus:VDQ_BHSI (abs:VDQ_BHSI (minus:VDQ_BHSI
-			 (match_operand:VDQ_BHSI 1 "register_operand" "w")
-			 (match_operand:VDQ_BHSI 2 "register_operand" "w")))
-		       (match_operand:VDQ_BHSI 3 "register_operand" "0")))]
+	(plus:VDQ_BHSI (minus:VDQ_BHSI
+			 (USMAX:VDQ_BHSI
+			   (match_operand:VDQ_BHSI 2 "register_operand" "w")
+			   (match_operand:VDQ_BHSI 3 "register_operand" "w"))
+			 (<max_opp>:VDQ_BHSI
+			   (match_dup 2)
+			   (match_dup 3)))
+		       (match_operand:VDQ_BHSI 1 "register_operand" "0")))]
   "TARGET_SIMD"
-  "saba\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>aba\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 

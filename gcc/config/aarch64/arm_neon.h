@@ -6621,72 +6621,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_s8 (int8x8_t __a, int8x8_t __b, int8x8_t __c)
 {
-  int8x8_t __result;
-  __asm__ ("saba %0.8b,%2.8b,%3.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav8qi (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
 {
-  int16x4_t __result;
-  __asm__ ("saba %0.4h,%2.4h,%3.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav4hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
 {
-  int32x2_t __result;
-  __asm__ ("saba %0.2s,%2.2s,%3.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav2si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_u8 (uint8x8_t __a, uint8x8_t __b, uint8x8_t __c)
 {
-  uint8x8_t __result;
-  __asm__ ("uaba %0.8b,%2.8b,%3.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav8qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_u16 (uint16x4_t __a, uint16x4_t __b, uint16x4_t __c)
 {
-  uint16x4_t __result;
-  __asm__ ("uaba %0.4h,%2.4h,%3.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaba_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
 {
-  uint32x2_t __result;
-  __asm__ ("uaba %0.2s,%2.2s,%3.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
@@ -6837,144 +6807,84 @@ __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_s8 (int8x16_t __a, int8x16_t __b, int8x16_t __c)
 {
-  int8x16_t __result;
-  __asm__ ("saba %0.16b,%2.16b,%3.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav16qi (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
 {
-  int16x8_t __result;
-  __asm__ ("saba %0.8h,%2.8h,%3.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("saba %0.4s,%2.4s,%3.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabav4si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
 {
-  uint8x16_t __result;
-  __asm__ ("uaba %0.16b,%2.16b,%3.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav16qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  uint16x8_t __result;
-  __asm__ ("uaba %0.8h,%2.8h,%3.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabaq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("uaba %0.4s,%2.4s,%3.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabav4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_s8 (int8x8_t __a, int8x8_t __b)
 {
-  int8x8_t __result;
-  __asm__ ("sabd %0.8b, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv8qi (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_s16 (int16x4_t __a, int16x4_t __b)
 {
-  int16x4_t __result;
-  __asm__ ("sabd %0.4h, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_s32 (int32x2_t __a, int32x2_t __b)
 {
-  int32x2_t __result;
-  __asm__ ("sabd %0.2s, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv2si (__a, __b);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  uint8x8_t __result;
-  __asm__ ("uabd %0.8b, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  uint16x4_t __result;
-  __asm__ ("uabd %0.4h, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabd_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  uint32x2_t __result;
-  __asm__ ("uabd %0.2s, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
@@ -7125,72 +7035,42 @@ __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_s8 (int8x16_t __a, int8x16_t __b)
 {
-  int8x16_t __result;
-  __asm__ ("sabd %0.16b, %1.16b, %2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv16qi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_s16 (int16x8_t __a, int16x8_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sabd %0.8h, %1.8h, %2.8h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv8hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_s32 (int32x4_t __a, int32x4_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sabd %0.4s, %1.4s, %2.4s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_sabdv4si (__a, __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  uint8x16_t __result;
-  __asm__ ("uabd %0.16b, %1.16b, %2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("uabd %0.8h, %1.8h, %2.8h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("uabd %0.4s, %1.4s, %2.4s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return  __builtin_aarch64_uabdv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16_t
@@ -9409,24 +9289,14 @@ __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_s8 (int16x4_t __a, int8x8_t __b)
 {
-  int16x4_t __result;
-  __asm__ ("sadalp %0.4h,%2.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv8qi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_s16 (int32x2_t __a, int16x4_t __b)
 {
-  int32x2_t __result;
-  __asm__ ("sadalp %0.2s,%2.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv4hi (__a, __b);
 }
 
 __extension__ extern __inline int64x1_t
@@ -9445,24 +9315,14 @@ __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_u8 (uint16x4_t __a, uint8x8_t __b)
 {
-  uint16x4_t __result;
-  __asm__ ("uadalp %0.4h,%2.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_u16 (uint32x2_t __a, uint16x4_t __b)
 {
-  uint32x2_t __result;
-  __asm__ ("uadalp %0.2s,%2.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
@@ -9481,72 +9341,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s8 (int16x8_t __a, int8x16_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sadalp %0.8h,%2.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv16qi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s16 (int32x4_t __a, int16x8_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sadalp %0.4s,%2.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv8hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_s32 (int64x2_t __a, int32x4_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("sadalp %0.2d,%2.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sadalpv4si (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u8 (uint16x8_t __a, uint8x16_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("uadalp %0.8h,%2.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv16qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u16 (uint32x4_t __a, uint16x8_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("uadalp %0.4s,%2.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadalq_u32 (uint64x2_t __a, uint32x4_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("uadalp %0.2d,%2.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uadalpv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t

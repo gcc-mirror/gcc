@@ -1378,7 +1378,7 @@ bst_traits::equal (value_type existing, value_type candidate)
   return true;
 }
 
-typedef hash_map <vec <gimple *>, slp_tree,
+typedef hash_map <vec <stmt_vec_info>, slp_tree,
 		  simple_hashmap_traits <bst_traits, slp_tree> >
   scalar_stmts_to_slp_tree_map_t;
 
@@ -1405,6 +1405,7 @@ vect_build_slp_tree (vec_info *vinfo,
 	{
 	  SLP_TREE_REF_COUNT (*leader)++;
 	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
+	  stmts.release ();
 	}
       return *leader;
     }
@@ -3029,19 +3030,27 @@ vect_optimize_slp (vec_info *vinfo)
 
 	  /* Decide on permute materialization.  Look whether there's
 	     a use (pred) edge that is permuted differently than us.
-	     In that case mark ourselves so the permutation is applied.  */
-	  bool all_preds_permuted = slpg->vertices[idx].pred != NULL;
-	  for (graph_edge *pred = slpg->vertices[idx].pred;
-	       pred; pred = pred->pred_next)
-	    {
-	      gcc_checking_assert (bitmap_bit_p (n_visited, pred->src));
-	      int pred_perm = n_perm[pred->src];
-	      if (!vect_slp_perms_eq (perms, perm, pred_perm))
-		{
-		  all_preds_permuted = false;
-		  break;
-		}
-	    }
+	     In that case mark ourselves so the permutation is applied.
+	     For VEC_PERM_EXPRs the permutation doesn't carry along
+	     from children to parents so force materialization at the
+	     point of the VEC_PERM_EXPR.  In principle VEC_PERM_EXPRs
+	     are a source of an arbitrary permutation again, similar
+	     to constants/externals - that's something we do not yet
+	     optimally handle.  */
+	  bool all_preds_permuted = (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+				     && slpg->vertices[idx].pred != NULL);
+	  if (all_preds_permuted)
+	    for (graph_edge *pred = slpg->vertices[idx].pred;
+		 pred; pred = pred->pred_next)
+	      {
+		gcc_checking_assert (bitmap_bit_p (n_visited, pred->src));
+		int pred_perm = n_perm[pred->src];
+		if (!vect_slp_perms_eq (perms, perm, pred_perm))
+		  {
+		    all_preds_permuted = false;
+		    break;
+		  }
+	      }
 	  if (!all_preds_permuted)
 	    {
 	      if (!bitmap_bit_p (n_materialize, idx))

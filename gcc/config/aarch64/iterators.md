@@ -1291,6 +1291,11 @@
 			  (V8HI "4s") (V4SI "2d")
 			  (V8HF "4s") (V4SF "2d")])
 
+;; Widened mode with half the element register suffixes for VD_BHSI/VQW/VQ_HSF.
+(define_mode_attr Vwhalf [(V8QI "4h") (V4HI "2s")
+			  (V2SI "1d") (V16QI "8h")
+			  (V8HI "4s") (V4SI "2d")])
+
 ;; SVE vector after narrowing.
 (define_mode_attr Ventype [(VNx8HI "b")
 			   (VNx4SI "h") (VNx4SF "h")

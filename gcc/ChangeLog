@@ -1,3 +1,57 @@
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98567
+	* config/i386/i386.md (*bmi_blsi_<mode>_cmp, *bmi_blsi_<mode>_ccno):
+	New define_insn patterns.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@cond_<SVE_INT_UNARY:optab><mode>)
+	(*cond_<SVE_INT_UNARY:optab><mode>_2): Extend from SVE_FULL_I to SVE_I.
+	(*cond_<SVE_INT_UNARY:optab><mode>_any): Likewise.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98560
+	* internal-fn.def (IFN_VCONDU, IFN_VCONDEQ): Use type vec_cond.
+	* internal-fn.c (vec_cond_mask_direct): Get the data mode from
+	argument 1.
+	(vec_cond_direct): Likewise argument 2.
+	(vec_condu_direct, vec_condeq_direct): Delete.
+	(expand_vect_cond_optab_fn): Rename to...
+	(expand_vec_cond_optab_fn): ...this, replacing old macro.
+	(expand_vec_condu_optab_fn, expand_vec_condeq_optab_fn): Delete.
+	(expand_vect_cond_mask_optab_fn): Rename to...
+	(expand_vec_cond_mask_optab_fn): ...this, replacing old macro.
+	(direct_vec_cond_mask_optab_supported_p): Treat the optab as a
+	convert optab.
+	(direct_vec_cond_optab_supported_p): Likewise.
+	(direct_vec_condu_optab_supported_p): Delete.
+	(direct_vec_condeq_optab_supported_p): Delete.
+	* gimple-isel.cc: Include internal-fn.h.
+	(gimple_expand_vec_cond_expr): Check that IFN_VCONDEQ is supported
+	before using it.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98560
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): If we fail to use
+	IFN_VCOND{,U,EQ}, fall back on IFN_VCOND_MASK.
+
+2021-01-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (insn): Merge from plusminus_insn, shift_insn,
+	rotate_insn and optab code attributes.
+	Update all uses to merged code attribute.
+	* config/i386/sse.md: Update all uses to merged code attribute.
+	* config/i386/mmx.md: Update all uses to merged code attribute.
+
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98568
+	* gimple-ssa-store-merging.c (bswap_view_convert): New function.
+	(bswap_replace): Use it.
+
 2021-01-06  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97978

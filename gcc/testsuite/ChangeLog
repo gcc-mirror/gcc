@@ -1,3 +1,81 @@
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98329
+	* g++.dg/cpp2a/bit-cast10.C: New test.
+
+2021-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98578
+	* gcc.dg/plugin/gil-1.c: Adjust expected output.
+	* gcc.dg/uninit-pr98578.c: New test.
+
+2021-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98441
+	* g++.dg/cpp0x/auto55.C: New test.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98580
+	* gcc.dg/analyzer/pr98580-a.c: New test.
+	* gcc.dg/analyzer/pr98580-b.c: New test.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93701
+	* gfortran.dg/associate_54.f90: New test.
+	* gfortran.dg/associate_55.f90: New test.
+	* gfortran.dg/associate_56.f90: New test.
+
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98567
+	* gcc.target/i386/pr98567-1.c: New test.
+	* gcc.target/i386/pr98567-2.c: New test.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_unary_5.c: New test.
+	* gcc.target/aarch64/sve/cond_unary_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_8_run.c: Likewise.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98560
+	* gcc.dg/vect/pr98560-2.c: New test.
+
+2021-01-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98560
+	* gcc.dg/vect/pr98560-1.c: New test.
+
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98568
+	* g++.dg/torture/pr98568.C: New test.
+
+2021-01-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/pr92658-avx512bw.c: Add
+	-mprefer-vector-width=512 to avoid impact of different default
+	mtune which gcc is built with.
+	* gcc.target/i386/pr92658-avx512bw-2.c: Ditto.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97074
+	* gcc.dg/analyzer/pr97074.c: New test.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98564
+	* gcc.dg/analyzer/pr98564.c: New test.
+
 2021-01-06  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97978

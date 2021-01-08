@@ -761,11 +761,25 @@ alloc_conversions (size_t n)
   return (conversion **) conversion_obstack_alloc (n * sizeof (conversion *));
 }
 
+/* True iff the active member of conversion::u for code CODE is NEXT.  */
+
+static inline bool
+has_next (conversion_kind code)
+{
+  return !(code == ck_identity
+	   || code == ck_ambig
+	   || code == ck_list
+	   || code == ck_aggr);
+}
+
 static conversion *
 build_conv (conversion_kind code, tree type, conversion *from)
 {
   conversion *t;
   conversion_rank rank = CONVERSION_RANK (from);
+
+  /* Only call this function for conversions that use u.next.  */
+  gcc_assert (from == NULL || has_next (code));
 
   /* Note that the caller is responsible for filling in t->cand for
      user-defined conversions.  */
@@ -863,10 +877,7 @@ static conversion *
 next_conversion (conversion *conv)
 {
   if (conv == NULL
-      || conv->kind == ck_identity
-      || conv->kind == ck_ambig
-      || conv->kind == ck_list
-      || conv->kind == ck_aggr)
+      || !has_next (conv->kind))
     return NULL;
   return conv->u.next;
 }
@@ -879,10 +890,7 @@ strip_standard_conversion (conversion *conv)
 {
   while (conv
 	 && conv->kind != ck_user
-	 && conv->kind != ck_ambig
-	 && conv->kind != ck_list
-	 && conv->kind != ck_aggr
-	 && conv->kind != ck_identity)
+	 && has_next (conv->kind))
     conv = next_conversion (conv);
   return conv;
 }
@@ -1266,13 +1274,15 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	(TREE_TYPE (to), TREE_TYPE (from), NULL_TREE, c_cast_p, flags,
 	 complain);
 
-      if (part_conv)
+      if (!part_conv)
+	conv = NULL;
+      else if (part_conv->kind == ck_identity)
+	/* Leave conv alone.  */;
+      else
 	{
 	  conv = build_conv (part_conv->kind, to, conv);
 	  conv->rank = part_conv->rank;
 	}
-      else
-	conv = NULL;
 
       return conv;
     }
@@ -10619,10 +10629,7 @@ is_subseq (conversion *ics1, conversion *ics2)
 	ics2 = next_conversion (ics2);
 
       if (ics2->kind == ck_user
-	  || ics2->kind == ck_ambig
-	  || ics2->kind == ck_aggr
-	  || ics2->kind == ck_list
-	  || ics2->kind == ck_identity)
+	  || !has_next (ics2->kind))
 	/* At this point, ICS1 cannot be a proper subsequence of
 	   ICS2.  We can get a USER_CONV when we are comparing the
 	   second standard conversion sequence of two user conversion

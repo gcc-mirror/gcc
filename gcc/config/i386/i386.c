@@ -20794,8 +20794,38 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
 #endif
 
-      if (!TARGET_PECOFF && flag_pic)
-	fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+      if (!TARGET_PECOFF)
+	{
+	  switch (ix86_cmodel)
+	    {
+	    case CM_LARGE:
+	      /* NB: R10 is caller-saved.  Although it can be used as a
+		 static chain register, it is preserved when calling
+		 mcount for nested functions.  */
+	      fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
+		       mcount_name);
+	      break;
+	    case CM_LARGE_PIC:
+#ifdef NO_PROFILE_COUNTERS
+	      fprintf (file, "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
+	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tcall\t*%%r10\n");
+#else
+	      sorry ("profiling %<-mcmodel=large%> with PIC is not supported");
+#endif
+	      break;
+	    case CM_SMALL_PIC:
+	    case CM_MEDIUM_PIC:
+	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+	      break;
+	    default:
+	      x86_print_call_or_nop (file, mcount_name);
+	      break;
+	    }
+	}
       else
 	x86_print_call_or_nop (file, mcount_name);
     }

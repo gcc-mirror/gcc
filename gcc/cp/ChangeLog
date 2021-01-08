@@ -1,3 +1,32 @@
+2021-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98329
+	* pt.c (tsubst_copy) <case BIT_CAST_EXPR>: Don't call
+	cp_build_bit_cast here, instead just build_min a BIT_CAST_EXPR and set
+	its location.
+	(tsubst_copy_and_build): Handle BIT_CAST_EXPR.
+
+2021-01-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98441
+	* decl.c (grokdeclarator): Move the !funcdecl_p check inside the
+	!late_return_type block.
+
+2021-01-07  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_bind_parameters_in_call): Add comment.
+	(cxx_eval_store_expression): Add comment.
+
+2021-01-07  Jason Merrill  <jason@redhat.com>
+
+	* call.c (has_next): Factor out from...
+	(next_conversion): ...here.
+	(strip_standard_conversion): And here.
+	(is_subseq): And here.
+	(build_conv): Check it.
+	(standard_conversion): Don't call build_conv
+	for ck_identity.
+
 2021-01-06  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/95768

@@ -12241,10 +12241,12 @@ grokdeclarator (const cp_declarator *declarator,
 	    tree late_return_type = declarator->u.function.late_return_type;
 	    if (tree auto_node = type_uses_auto (type))
 	      {
-		if (!late_return_type && funcdecl_p)
+		if (!late_return_type)
 		  {
-		    if (current_class_type
-			&& LAMBDA_TYPE_P (current_class_type))
+		    if (!funcdecl_p)
+		      /* auto (*fp)() = f; is OK.  */;
+		    else if (current_class_type
+			     && LAMBDA_TYPE_P (current_class_type))
 		      /* OK for C++11 lambdas.  */;
 		    else if (cxx_dialect < cxx14)
 		      {

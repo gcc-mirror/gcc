@@ -969,6 +969,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
 						 c.get_map ());
     }
 
+  /* LTO can write out error_mark_node as the DECL_INITIAL for simple scalar
+     values (to avoid writing out an extra section).  */
+  if (init == error_mark_node)
+    return NULL;
+
   if (TREE_CODE (init) == CONSTRUCTOR)
     return get_svalue_for_constructor (init, mgr);
 

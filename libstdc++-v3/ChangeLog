@@ -1,3 +1,24 @@
+2021-01-07  Thomas Rodgers  <trodgers@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add new header.
+	* include/Makefile.am (std_headers): likewise.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add new header.
+	* include/std/barrier: New file.
+	* include/std/version: Add __cpp_lib_barrier feature test macro.
+	* testsuite/30_threads/barrier/1.cc: New test.
+	* testsuite/30_threads/barrier/2.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_drop.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_wait.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive.cc: Likewise.
+	* testsuite/30_threads/barrier/completion.cc: Likewise.
+
+2021-01-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98384
+	* testsuite/20_util/to_chars/long_double.cc: Use nexttowardl
+	instead of the non-standard nextupl and nextdownl.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

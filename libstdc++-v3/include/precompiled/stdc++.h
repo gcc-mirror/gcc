@@ -134,6 +134,7 @@
 #endif
 
 #if __cplusplus > 201703L
+#include <barrier>
 #include <bit>
 #include <compare>
 #include <concepts>

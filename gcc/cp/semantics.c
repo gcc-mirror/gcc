@@ -2107,14 +2107,24 @@ check_accessibility_of_qualified_id (tree decl,
       /* If the reference is to a non-static member of the
 	 current class, treat it as if it were referenced through
 	 `this'.  */
-      tree ct;
       if (DECL_NONSTATIC_MEMBER_P (decl)
-	  && current_class_ptr
-	  && DERIVED_FROM_P (scope, ct = current_nonlambda_class_type ()))
-	qualifying_type = ct;
+	  && current_class_ptr)
+	if (tree current = current_nonlambda_class_type ())
+	  {
+	    if (dependent_type_p (current))
+	    /* In general we can't know whether this access goes through
+	       `this' until instantiation time.  Punt now, or else we might
+	       create a deferred access check that's not relative to `this'
+	       when it ought to be.  We'll check this access again after
+	       substitution, e.g. from tsubst_qualified_id.  */
+	      return true;
+
+	    if (DERIVED_FROM_P (scope, current))
+	      qualifying_type = current;
+	  }
       /* Otherwise, use the type indicated by the
 	 nested-name-specifier.  */
-      else
+      if (!qualifying_type)
 	qualifying_type = nested_name_specifier;
     }
   else
