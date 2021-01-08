@@ -682,7 +682,7 @@ package body Pprint is
          end case;
       end Expr_Name;
 
-   --  Start of processing for Expression_Name
+   --  Start of processing for Expression_Image
 
    begin
       if not From_Source then
@@ -695,6 +695,12 @@ package body Pprint is
                return S;
             end if;
          end;
+      end if;
+
+      --  Reach to the underlying expression for an expression-with-actions
+
+      if Nkind (Expr) = N_Expression_With_Actions then
+         return Expression_Image (Expression (Expr), Default);
       end if;
 
       --  Compute left (start) and right (end) slocs for the expression
