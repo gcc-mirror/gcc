@@ -238,10 +238,10 @@ package body Pprint is
                return "new " & Expr_Name (Expression (Expr));
 
             when N_Aggregate =>
-               if Present (Sinfo.Expressions (Expr)) then
+               if Present (Expressions (Expr)) then
                   return
                     List_Name
-                      (List      => First (Sinfo.Expressions (Expr)),
+                      (List      => First (Expressions (Expr)),
                        Add_Space => False);
 
                --  Do not return empty string for (others => <>) aggregate
@@ -265,7 +265,7 @@ package body Pprint is
             when N_Extension_Aggregate =>
                return "(" & Expr_Name (Ancestor_Part (Expr)) & " with "
                  & List_Name
-                     (List      => First (Sinfo.Expressions (Expr)),
+                     (List      => First (Expressions (Expr)),
                       Add_Space => False,
                       Add_Paren => False) & ")";
 
@@ -356,9 +356,8 @@ package body Pprint is
                           and then Nkind (Decl) = N_Object_Declaration
                           and then not Comes_From_Source (Decl)
                           and then Constant_Present (Decl)
-                          and then Present (Sinfo.Expression (Decl))
-                          and then Nkind (Sinfo.Expression (Decl)) =
-                                     N_Reference
+                          and then Present (Expression (Decl))
+                          and then Nkind (Expression (Decl)) = N_Reference
                         then
                            return "";
                         end if;
@@ -411,7 +410,7 @@ package body Pprint is
 
             when N_If_Expression =>
                declare
-                  N : constant Node_Id := First (Sinfo.Expressions (Expr));
+                  N : constant Node_Id := First (Expressions (Expr));
                begin
                   return
                     "if " & Expr_Name (N) & " then "
@@ -622,9 +621,9 @@ package body Pprint is
                if Take_Prefix then
                   return
                     Expr_Name (Prefix (Expr))
-                      & List_Name (First (Sinfo.Expressions (Expr)));
+                      & List_Name (First (Expressions (Expr)));
                else
-                  return List_Name (First (Sinfo.Expressions (Expr)));
+                  return List_Name (First (Expressions (Expr)));
                end if;
 
             when N_Function_Call =>
@@ -636,13 +635,12 @@ package body Pprint is
                if Default = "" then
                   return '('
                     & Expr_Name (Name (Expr))
-                    & List_Name (First (Sinfo.Parameter_Associations (Expr)))
+                    & List_Name (First (Parameter_Associations (Expr)))
                     & ')';
                else
                   return
                     Expr_Name (Name (Expr))
-                      & List_Name
-                          (First (Sinfo.Parameter_Associations (Expr)));
+                      & List_Name (First (Parameter_Associations (Expr)));
                end if;
 
             when N_Null =>
@@ -768,11 +766,11 @@ package body Pprint is
                end if;
 
             when N_Indexed_Component =>
-               Right := Original_Node (Last (Sinfo.Expressions (Right)));
+               Right := Original_Node (Last (Expressions (Right)));
                Append_Paren := Append_Paren + 1;
 
             when N_Function_Call =>
-               if Present (Sinfo.Parameter_Associations (Right)) then
+               if Present (Parameter_Associations (Right)) then
                   declare
                      Rover : Node_Id;
                      Found : Boolean;
@@ -781,7 +779,7 @@ package body Pprint is
                      --  Avoid source position confusion associated with
                      --  parameters for which Comes_From_Source is False.
 
-                     Rover := First (Sinfo.Parameter_Associations (Right));
+                     Rover := First (Parameter_Associations (Right));
                      Found := False;
                      while Present (Rover) loop
                         if Comes_From_Source (Original_Node (Rover)) then
