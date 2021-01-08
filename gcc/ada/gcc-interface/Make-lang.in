@@ -390,6 +390,7 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/s-memory.o	\
  ada/libgnat/s-os_lib.o	\
  ada/libgnat/s-parame.o	\
+ ada/libgnat/s-pehage.o	\
  ada/libgnat/s-purexc.o	\
  ada/libgnat/s-restri.o	\
  ada/libgnat/s-secsta.o	\
@@ -585,7 +586,6 @@ GNATBIND_OBJS = \
  ada/libgnat/s-exctab.o   \
  ada/libgnat/s-htable.o   \
  ada/libgnat/s-imenne.o   \
- ada/libgnat/s-imgenu.o   \
  ada/libgnat/s-imgint.o   \
  ada/libgnat/s-mastop.o   \
  ada/libgnat/s-memory.o   \

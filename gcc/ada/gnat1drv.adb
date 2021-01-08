@@ -423,6 +423,12 @@ procedure Gnat1drv is
          if Warning_Mode = Suppress then
             Debug_Flag_MM := True;
          end if;
+
+         --  The implementation of 'Value that uses a perfect hash function
+         --  is significantly more complex and harder to initialize than the
+         --  old implementation. Deactivate it for CodePeer.
+
+         Debug_Flag_Underscore_H := True;
       end if;
 
       --  Enable some individual switches that are implied by relaxed RM

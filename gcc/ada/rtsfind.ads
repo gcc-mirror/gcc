@@ -259,8 +259,9 @@ package Rtsfind is
       System_Img_Decimal_32,
       System_Img_Decimal_64,
       System_Img_Decimal_128,
-      System_Img_Enum,
-      System_Img_Enum_New,
+      System_Img_Enum_8,
+      System_Img_Enum_16,
+      System_Img_Enum_32,
       System_Img_Fixed_32,
       System_Img_Fixed_64,
       System_Img_Fixed_128,
@@ -430,7 +431,9 @@ package Rtsfind is
       System_Val_Decimal_32,
       System_Val_Decimal_64,
       System_Val_Decimal_128,
-      System_Val_Enum,
+      System_Val_Enum_8,
+      System_Val_Enum_16,
+      System_Val_Enum_32,
       System_Val_Fixed_32,
       System_Val_Fixed_64,
       System_Val_Fixed_128,
@@ -2663,9 +2666,11 @@ package Rtsfind is
 
      RE_Image_Decimal128                 => System_Img_Decimal_128,
 
-     RE_Image_Enumeration_8              => System_Img_Enum_New,
-     RE_Image_Enumeration_16             => System_Img_Enum_New,
-     RE_Image_Enumeration_32             => System_Img_Enum_New,
+     RE_Image_Enumeration_8              => System_Img_Enum_8,
+
+     RE_Image_Enumeration_16             => System_Img_Enum_16,
+
+     RE_Image_Enumeration_32             => System_Img_Enum_32,
 
      RE_Image_Float                      => System_Img_Flt,
 
@@ -3720,9 +3725,11 @@ package Rtsfind is
 
      RE_Value_Decimal128                 => System_Val_Decimal_128,
 
-     RE_Value_Enumeration_8              => System_Val_Enum,
-     RE_Value_Enumeration_16             => System_Val_Enum,
-     RE_Value_Enumeration_32             => System_Val_Enum,
+     RE_Value_Enumeration_8              => System_Val_Enum_8,
+
+     RE_Value_Enumeration_16             => System_Val_Enum_16,
+
+     RE_Value_Enumeration_32             => System_Val_Enum_32,
 
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 

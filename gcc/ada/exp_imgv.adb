@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Exp_Put_Image;
 with Exp_Util; use Exp_Util;
@@ -47,6 +48,8 @@ with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 
+with System.Perfect_Hash_Generators;
+
 package body Exp_Imgv is
 
    procedure Rewrite_Object_Image
@@ -65,20 +68,87 @@ package body Exp_Imgv is
    ------------------------------------
 
    procedure Build_Enumeration_Image_Tables (E : Entity_Id; N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (E);
+      Loc          : constant Source_Ptr := Sloc (E);
+      In_Main_Unit : constant Boolean    := In_Extended_Main_Code_Unit (Loc);
 
+      Act  : List_Id;
       Eind : Entity_Id;
       Estr : Entity_Id;
+      H_Id : Entity_Id;
+      H_OK : Boolean;
+      H_Sp : Node_Id;
       Ind  : List_Id;
       Ityp : Node_Id;
       Len  : Nat;
       Lit  : Entity_Id;
       Nlit : Nat;
+      S_Id : Entity_Id;
+      S_N  : Nat;
       Str  : String_Id;
+
+      package SPHG renames System.Perfect_Hash_Generators;
 
       Saved_SSO : constant Character := Opt.Default_SSO;
       --  Used to save the current scalar storage order during the generation
       --  of the literal lookup table.
+
+      Serial_Number_Budget : constant := 50;
+      --  We may want to compute a perfect hash function for use by the Value
+      --  attribute. However computing this function is costly and, therefore,
+      --  cannot be done when compiling every unit where the enumeration type
+      --  is referenced, so we do it only when compiling the unit where it is
+      --  declared. This means that we may need to control the internal serial
+      --  numbers of this unit, or else we would risk generating public symbols
+      --  with mismatched names later on. The strategy for this is to allocate
+      --  a fixed budget of serial numbers to be spent from a specified point
+      --  until the end of the processing and to make sure that it is always
+      --  exactly spent on all possible paths from this point.
+
+      Threshold : constant := 3;
+      --  Threshold above which we want to generate the hash function in the
+      --  default case.
+
+      Threshold_For_Size : constant := 9;
+      --  But the function and its tables take a bit of space so the threshold
+      --  is raised when compiling for size.
+
+      procedure Append_Table_To
+        (L    : List_Id;
+         E    : Entity_Id;
+         UB   : Nat;
+         Ctyp : Entity_Id;
+         V    : List_Id);
+      --  Append to L the declaration of E as a constant array of range 0 .. UB
+      --  and component type Ctyp with initial value V.
+
+      ---------------------
+      -- Append_Table_To --
+      ---------------------
+
+      procedure Append_Table_To
+        (L    : List_Id;
+         E    : Entity_Id;
+         UB   : Nat;
+         Ctyp : Entity_Id;
+         V    : List_Id)
+      is
+      begin
+         Append_To (L,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => E,
+             Constant_Present    => True,
+             Object_Definition   =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Range (Loc,
+                     Low_Bound  => Make_Integer_Literal (Loc, 0),
+                     High_Bound => Make_Integer_Literal (Loc, UB))),
+                 Component_Definition =>
+                   Make_Component_Definition (Loc,
+                     Aliased_Present    => False,
+                     Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
+             Expression          => Make_Aggregate (Loc, Expressions => V)));
+      end Append_Table_To;
 
    begin
       --  Nothing to do for types other than a root enumeration type
@@ -99,10 +169,10 @@ package body Exp_Imgv is
       Lit := First_Literal (E);
       Len := 1;
       Nlit := 0;
+      H_OK := False;
 
       loop
-         Append_To (Ind,
-           Make_Integer_Literal (Loc, UI_From_Int (Len)));
+         Append_To (Ind, Make_Integer_Literal (Loc, UI_From_Int (Len)));
 
          exit when No (Lit);
          Nlit := Nlit + 1;
@@ -114,6 +184,9 @@ package body Exp_Imgv is
          end if;
 
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
+         if In_Main_Unit then
+            SPHG.Insert (Name_Buffer (1 .. Name_Len));
+         end if;
          Len := Len + Int (Name_Len);
          Next_Literal (Lit);
       end loop;
@@ -148,7 +221,7 @@ package body Exp_Imgv is
 
       --  Generate literal table
 
-      Insert_Actions (N,
+      Act :=
         New_List (
           Make_Object_Declaration (Loc,
             Defining_Identifier => Estr,
@@ -157,27 +230,420 @@ package body Exp_Imgv is
               New_Occurrence_Of (Standard_String, Loc),
             Expression          =>
               Make_String_Literal (Loc,
-                Strval => Str)),
+                Strval => Str)));
 
-          Make_Object_Declaration (Loc,
-            Defining_Identifier => Eind,
-            Constant_Present    => True,
+      --  Generate index table
 
-            Object_Definition =>
-              Make_Constrained_Array_Definition (Loc,
-                Discrete_Subtype_Definitions => New_List (
-                  Make_Range (Loc,
-                    Low_Bound  => Make_Integer_Literal (Loc, 0),
-                    High_Bound => Make_Integer_Literal (Loc, Nlit))),
-                Component_Definition =>
-                  Make_Component_Definition (Loc,
-                    Aliased_Present    => False,
-                    Subtype_Indication => New_Occurrence_Of (Ityp, Loc))),
+      Append_Table_To (Act, Eind, Nlit, Ityp, Ind);
 
-            Expression          =>
-              Make_Aggregate (Loc,
-                Expressions => Ind))),
-        Suppress => All_Checks);
+      --  If the number of literals is at most 3, then we are done. Otherwise
+      --  we compute a (perfect) hash function for use by the Value attribute.
+
+      if Nlit > Threshold then
+         --  We start to count serial numbers from here
+
+         S_N := Increment_Serial_Number;
+
+         --  Generate specification of hash function
+
+         H_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (E), 'H'));
+         Set_Ekind       (H_Id, E_Function);
+         Set_Is_Internal (H_Id);
+
+         if not Debug_Generated_Code then
+            Set_Debug_Info_Off (H_Id);
+         end if;
+
+         Set_Lit_Hash (E, H_Id);
+
+         S_Id := Make_Temporary (Loc, 'S');
+
+         H_Sp := Make_Function_Specification (Loc,
+           Defining_Unit_Name       => H_Id,
+           Parameter_Specifications => New_List (
+             Make_Parameter_Specification (Loc,
+               Defining_Identifier => S_Id,
+               Parameter_Type      =>
+                 New_Occurrence_Of (Standard_String, Loc))),
+           Result_Definition       =>
+             New_Occurrence_Of (Standard_Natural, Loc));
+
+         --  If the unit where the type is declared is the main unit, and the
+         --  number of literals is greater than Threshold_For_Size when we are
+         --  optimizing for size, and -gnatd_h is not specified, try to compute
+         --  the hash function.
+
+         if In_Main_Unit
+           and then (Optimize_Size = 0 or else Nlit > Threshold_For_Size)
+           and then not Debug_Flag_Underscore_H
+         then
+            declare
+               LB : constant Positive := 2 * Positive (Nlit) + 1;
+               UB : constant Positive := LB + 24;
+
+            begin
+               --  Try at most 25 * 4 times to compute the hash function before
+               --  giving up and using a linear search for the Value attribute.
+
+               for V in LB .. UB loop
+                  begin
+                     SPHG.Initialize (4321, V, SPHG.Memory_Space, Tries => 4);
+                     SPHG.Compute ("");
+                     H_OK := True;
+                     exit;
+                  exception
+                     when SPHG.Too_Many_Tries => null;
+                  end;
+               end loop;
+            end;
+         end if;
+
+         --  If the hash function has been successfully computed, 4 more tables
+         --  named P, T1, T2 and G are needed. The hash function is of the form
+
+         --     function Hash (S : String) return Natural is
+         --        F    : constant Natural := S'First - 1;
+         --        L    : constant Natural := S'Length;
+         --        A, B : Natural := 0;
+         --        J    : Natural;
+
+         --     begin
+         --        for K in P'Range loop
+         --           exit when L < P (K);
+         --           J := Character'Pos (S (P (K) + F));
+         --           A := (A + Natural (T1 (K) * J)) mod N;
+         --           B := (B + Natural (T2 (K) * J)) mod N;
+         --        end loop;
+
+         --        return (Natural (G (A)) + Natural (G (B))) mod M;
+         --     end Hash;
+
+         --  where N is the length of G and M the number of literals.
+
+         if H_OK then
+            declare
+               Siz, L1, L2 : Natural;
+               I           : Int;
+
+               Pos,  T1,  T2,  G  : List_Id;
+               EPos, ET1, ET2, EG : Entity_Id;
+
+               F, L, A, B, J, K : Entity_Id;
+               Body_Decls       : List_Id;
+               Body_Stmts       : List_Id;
+               Loop_Stmts       : List_Id;
+
+            begin
+               --  Generate position table
+
+               SPHG.Define (SPHG.Character_Position, Siz, L1, L2);
+               Pos := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Character_Position, J));
+                  Append_To (Pos, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               EPos :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), 'P'));
+
+               Append_Table_To
+                 (Act, EPos, Nat (L1 - 1), Standard_Natural, Pos);
+
+               --  Generate function table 1
+
+               SPHG.Define (SPHG.Function_Table_1, Siz, L1, L2);
+               T1 := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Function_Table_1, J));
+                  Append_To (T1, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               ET1 :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), "T1"));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Act, ET1, Nat (L1 - 1), Ityp, T1);
+
+               --  Generate function table 2
+
+               SPHG.Define (SPHG.Function_Table_2, Siz, L1, L2);
+               T2 := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Function_Table_2, J));
+                  Append_To (T2, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               ET2 :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), "T2"));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Act, ET2, Nat (L1 - 1), Ityp, T2);
+
+               --  Generate graph table
+
+               SPHG.Define (SPHG.Graph_Table, Siz, L1, L2);
+               G := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Graph_Table, J));
+                  Append_To (G, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               EG :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), 'G'));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Act, EG, Nat (L1 - 1), Ityp, G);
+
+               --  Generate body of hash function
+
+               F := Make_Temporary (Loc, 'F');
+
+               Body_Decls := New_List (
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => F,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          =>
+                     Make_Op_Subtract (Loc,
+                       Left_Opnd  =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix => New_Occurrence_Of (S_Id, Loc),
+                           Attribute_Name => Name_First),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, 1))));
+
+               L := Make_Temporary (Loc, 'L');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => L,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (S_Id, Loc),
+                       Attribute_Name => Name_Length)));
+
+               A := Make_Temporary (Loc, 'A');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => A,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          => Make_Integer_Literal (Loc, 0)));
+
+               B := Make_Temporary (Loc, 'B');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => B,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          => Make_Integer_Literal (Loc, 0)));
+
+               J := Make_Temporary (Loc, 'J');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => J,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc)));
+
+               K := Make_Temporary (Loc, 'K');
+
+               --  Generate exit when L < P (K);
+
+               Loop_Stmts := New_List (
+                 Make_Exit_Statement (Loc,
+                   Condition =>
+                     Make_Op_Lt (Loc,
+                       Left_Opnd  => New_Occurrence_Of (L, Loc),
+                       Right_Opnd =>
+                         Make_Indexed_Component (Loc,
+                           Prefix      => New_Occurrence_Of (EPos, Loc),
+                           Expressions => New_List (
+                             New_Occurrence_Of (K, Loc))))));
+
+               --  Generate J := Character'Pos (S (P (K) + F));
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (J, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Standard_Character, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (
+                         Make_Indexed_Component (Loc,
+                           Prefix      => New_Occurrence_Of (S_Id, Loc),
+                           Expressions => New_List (
+                              Make_Op_Add (Loc,
+                                Left_Opnd  =>
+                                  Make_Indexed_Component (Loc,
+                                    Prefix      =>
+                                      New_Occurrence_Of (EPos, Loc),
+                                  Expressions => New_List (
+                                    New_Occurrence_Of (K, Loc))),
+                                Right_Opnd =>
+                                  New_Occurrence_Of (F, Loc))))))));
+
+               --  Generate A := (A + Natural (T1 (K) * J)) mod N;
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (A, Loc),
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                          Make_Op_Add (Loc,
+                            Left_Opnd  => New_Occurrence_Of (A, Loc),
+                            Right_Opnd =>
+                              Make_Op_Multiply (Loc,
+                                Left_Opnd  =>
+                                  Convert_To (Standard_Natural,
+                                     Make_Indexed_Component (Loc,
+                                       Prefix      =>
+                                         New_Occurrence_Of (ET1, Loc),
+                                       Expressions => New_List (
+                                         New_Occurrence_Of (K, Loc)))),
+                                Right_Opnd => New_Occurrence_Of (J, Loc))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Int (L1)))));
+
+               --  Generate B := (B + Natural (T2 (K) * J)) mod N;
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (B, Loc),
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                          Make_Op_Add (Loc,
+                            Left_Opnd  => New_Occurrence_Of (B, Loc),
+                            Right_Opnd =>
+                              Make_Op_Multiply (Loc,
+                                Left_Opnd  =>
+                                  Convert_To (Standard_Natural,
+                                     Make_Indexed_Component (Loc,
+                                       Prefix      =>
+                                         New_Occurrence_Of (ET2, Loc),
+                                       Expressions => New_List (
+                                         New_Occurrence_Of (K, Loc)))),
+                                Right_Opnd => New_Occurrence_Of (J, Loc))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Int (L1)))));
+
+            --  Generate loop
+
+               Body_Stmts := New_List (
+                 Make_Implicit_Loop_Statement (N,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => K,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         =>
+                                 New_Occurrence_Of (EPos, Loc),
+                               Attribute_Name => Name_Range))),
+                   Statements       => Loop_Stmts));
+
+               --  Generate return (Natural (G (A)) + Natural (G (B))) mod M;
+
+               Append_To (Body_Stmts,
+                 Make_Simple_Return_Statement (Loc,
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                         Make_Op_Add (Loc,
+                           Left_Opnd  =>
+                             Convert_To (Standard_Natural,
+                               Make_Indexed_Component (Loc,
+                                 Prefix      =>
+                                   New_Occurrence_Of (EG, Loc),
+                                 Expressions => New_List (
+                                   New_Occurrence_Of (A, Loc)))),
+                           Right_Opnd =>
+                             Convert_To (Standard_Natural,
+                               Make_Indexed_Component (Loc,
+                                 Prefix      =>
+                                   New_Occurrence_Of (EG, Loc),
+                                 Expressions => New_List (
+                                   New_Occurrence_Of (B, Loc))))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Nlit))));
+
+               --  Generate final body
+
+               Append_To (Act,
+                 Make_Subprogram_Body (Loc,
+                   Specification => H_Sp,
+                   Declarations => Body_Decls,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc, Body_Stmts)));
+            end;
+
+         --  If we chose not to or did not manage to compute the hash function,
+         --  we need to build a dummy function always returning Natural'Last
+         --  because other units reference it if they use the Value attribute.
+
+         elsif In_Main_Unit then
+            declare
+               Body_Stmts : List_Id;
+
+            begin
+               --  Generate return Natural'Last
+
+               Body_Stmts := New_List (
+                 Make_Simple_Return_Statement (Loc,
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Standard_Natural, Loc),
+                       Attribute_Name => Name_Last)));
+
+               --  Generate body
+
+               Append_To (Act,
+                 Make_Subprogram_Body (Loc,
+                   Specification => H_Sp,
+                   Declarations => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc, Body_Stmts)));
+            end;
+
+         --  For the other units, just declare the function
+
+         else
+            Append_To (Act,
+              Make_Subprogram_Declaration (Loc, Specification => H_Sp));
+         end if;
+
+      else
+         Set_Lit_Hash (E, Empty);
+      end if;
+
+      if In_Main_Unit then
+         System.Perfect_Hash_Generators.Finalize;
+      end if;
+
+      Insert_Actions (N, Act, Suppress => All_Checks);
+
+      --  This is where we check that our budget of serial numbers has been
+      --  entirely spent, see the declaration of Serial_Number_Budget above.
+
+      if Nlit > Threshold then
+         Synchronize_Serial_Number (S_N + Serial_Number_Budget);
+      end if;
 
       --  Reset the scalar storage order to the saved value
 
@@ -916,15 +1382,17 @@ package body Exp_Imgv is
    --  For enumeration types other than those derived from types Boolean,
    --  Character, Wide_[Wide_]Character in Standard, typ'Value (X) expands to:
 
-   --    Enum'Val (Value_Enumeration_NN (typS, typI'Address, Num, X))
+   --    Enum'Val
+   --      (Value_Enumeration_NN
+   --        (typS, typN'Address, typH'Unrestricted_Access, Num, X))
 
-   --  where typS and typI and the Lit_Strings and Lit_Indexes entities
-   --  from T's root type entity, and Num is Enum'Pos (Enum'Last). The
-   --  Value_Enumeration_NN function will search the tables looking for
+   --  where typS, typN and typH are the Lit_Strings, Lit_Indexes and Lit_Hash
+   --  entities from T's root type entity, and Num is Enum'Pos (Enum'Last).
+   --  The Value_Enumeration_NN function will search the tables looking for
    --  X and return the position number in the table if found which is
    --  used to provide the result of 'Value (using Enum'Val). If the
    --  value is not found Constraint_Error is raised. The suffix _NN
-   --  depends on the element type of typI.
+   --  depends on the element type of typN.
 
    procedure Expand_Value_Attribute (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
@@ -1083,10 +1551,11 @@ package body Exp_Imgv is
 
             Analyze_And_Resolve (N, Btyp);
 
-         --  Here for normal case where we have enumeration tables, this
-         --  is where we build
+         --  Normal case where we have enumeration tables, build
 
-         --    T'Val (Value_Enumeration_NN (typS, typI'Address, Num, X))
+         --   T'Val
+         --     (Value_Enumeration_NN
+         --       (typS, typN'Address, typH'Unrestricted_Access, Num, X))
 
          else
             Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
@@ -1107,6 +1576,15 @@ package body Exp_Imgv is
                   Make_Attribute_Reference (Loc,
                     Prefix => New_Occurrence_Of (Rtyp, Loc),
                     Attribute_Name => Name_Last))));
+
+            if Present (Lit_Hash (Rtyp)) then
+               Prepend_To (Args,
+                 Make_Attribute_Reference (Loc,
+                   Prefix => New_Occurrence_Of (Lit_Hash (Rtyp), Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+            else
+               Prepend_To (Args, Make_Null (Loc));
+            end if;
 
             Prepend_To (Args,
               Make_Attribute_Reference (Loc,

@@ -834,10 +834,13 @@ package body Sem_Attr is
 
       begin
          --  Access and Unchecked_Access are illegal in declare_expressions,
-         --  according to the RM. We also make the GNAT-specific
-         --  Unrestricted_Access attribute illegal.
+         --  according to the RM. We also make the GNAT Unrestricted_Access
+         --  attribute illegal if it comes from source.
 
-         if In_Declare_Expr > 0 then
+         if In_Declare_Expr > 0
+           and then (Attr_Id /= Attribute_Unrestricted_Access
+                      or else Comes_From_Source (N))
+         then
             Error_Attr ("% attribute cannot occur in a declare_expression", N);
          end if;
 

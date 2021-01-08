@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       G N A T . H E A P _ S O R T                        --
+--                   S Y S T E M . I M G _ E N U M _ 3 2                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2021, AdaCore                     --
+--             Copyright (C) 2021, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,46 +29,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Sort utility (Using Heapsort Algorithm)
+--  Instantiation of System.Image_N for enumeration types whose names table
+--  has a length that fits in a 32-bit but not a 16-bit integer.
 
---  This package provides a heapsort routine that works with access to
---  subprogram parameters, so that it can be used with different types with
---  shared sorting code.
+with Interfaces;
+with System.Image_N;
 
---  This heapsort algorithm uses approximately N*log(N) compares in the
---  worst case and is in place with no additional storage required. See
---  the body for exact details of the algorithm used.
-
---  See also GNAT.Heap_Sort_G which is a generic version that will be faster
---  since the overhead of the indirect calls is avoided, at the expense of
---  generic code duplication and less convenient interface.
-
---  Note: GNAT.Heap_Sort replaces and obsoletes GNAT.Heap_Sort_A, which is
---  retained in the GNAT library for backwards compatibility.
-
-pragma Compiler_Unit_Warning;
-
-package GNAT.Heap_Sort is
+package System.Img_Enum_32 is
    pragma Pure;
 
-   --  The data to be sorted is assumed to be indexed by integer values
-   --  from 1 to N, where N is the number of items to be sorted.
+   package Impl is new Image_N (Interfaces.Integer_32);
 
-   type Xchg_Procedure is access procedure (Op1, Op2 : Natural);
-   --  A pointer to a procedure that exchanges the two data items whose
-   --  index values are Op1 and Op2.
+   procedure Image_Enumeration_32
+     (Pos     : Natural;
+      S       : in out String;
+      P       : out Natural;
+      Names   : String;
+      Indexes : System.Address)
+     renames Impl.Image_Enumeration;
 
-   type Lt_Function is access function (Op1, Op2 : Natural) return Boolean;
-   --  A pointer to a function that compares two items and returns True if
-   --  the item with index value Op1 is less than the item with Index value
-   --  Op2, and False if the Op1 item is greater than the Op2 item. If
-   --  the items are equal, then it does not matter if True or False is
-   --  returned (but it is slightly more efficient to return False).
-
-   procedure Sort (N : Natural; Xchg : Xchg_Procedure; Lt : Lt_Function);
-   --  This procedures sorts items in the range from 1 to N into ascending
-   --  order making calls to Lt to do required comparisons, and calls to
-   --  Xchg to exchange items. The sort is not stable, that is the order
-   --  of equal items in the input data set is not preserved.
-
-end GNAT.Heap_Sort;
+end System.Img_Enum_32;

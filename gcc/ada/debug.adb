@@ -146,7 +146,7 @@ package body Debug is
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g
-   --  d_h
+   --  d_h  Disable the use of (perfect) hash functions for enumeration Value
    --  d_i  Ignore activations and calls to instances for elaboration
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k
@@ -970,6 +970,9 @@ package body Debug is
    --       understand analysis results. By default these are not issued as
    --       beginners find them confusing. Set automatically by GNATprove when
    --       switch --info is used.
+
+   --  d_h  The compiler does not make use of (perfect) hash functions in the
+   --       implementation of the Value attribute for enumeration types.
 
    --  d_i  The compiler ignores calls and task activations when they target a
    --       subprogram or task type defined in an external instance for both

@@ -3498,6 +3498,13 @@ package Einfo is
 --       field may be set as a result of a linker section pragma applied to the
 --       type of the object.
 
+--    Lit_Hash (Node21)
+--       Defined in enumeration types and subtypes. Non-empty only for the
+--       case of an enumeration root type, where it contains the entity for
+--       the generated hash function. See unit Exp_Imgv for full details of
+--       the nature and use of this entity for implementing the Value
+--       attribute for the enumeration type in question.
+
 --    Lit_Indexes (Node18)
 --       Defined in enumeration types and subtypes. Non-empty only for the
 --       case of an enumeration root type, where it contains the entity for
@@ -6150,6 +6157,7 @@ package Einfo is
    --    Lit_Indexes                         (Node18)   (root type only)
    --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
+   --    Lit_Hash                            (Node21)   (root type only)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
    --    Static_Discrete_Predicate           (List25)
    --    Has_Biased_Representation           (Flag139)
@@ -7469,6 +7477,7 @@ package Einfo is
    function Last_Entity                         (Id : E) return E;
    function Limited_View                        (Id : E) return E;
    function Linker_Section_Pragma               (Id : E) return N;
+   function Lit_Hash                            (Id : E) return E;
    function Lit_Indexes                         (Id : E) return E;
    function Lit_Strings                         (Id : E) return E;
    function Low_Bound_Tested                    (Id : E) return B;
@@ -8191,6 +8200,7 @@ package Einfo is
    procedure Set_Last_Entity                     (Id : E; V : E);
    procedure Set_Limited_View                    (Id : E; V : E);
    procedure Set_Linker_Section_Pragma           (Id : E; V : N);
+   procedure Set_Lit_Hash                        (Id : E; V : E);
    procedure Set_Lit_Indexes                     (Id : E; V : E);
    procedure Set_Lit_Strings                     (Id : E; V : E);
    procedure Set_Low_Bound_Tested                (Id : E; V : B := True);
@@ -9073,6 +9083,7 @@ package Einfo is
    pragma Inline (Limited_View);
    pragma Inline (Link_Entities);
    pragma Inline (Linker_Section_Pragma);
+   pragma Inline (Lit_Hash);
    pragma Inline (Lit_Indexes);
    pragma Inline (Lit_Strings);
    pragma Inline (Low_Bound_Tested);
@@ -9643,6 +9654,7 @@ package Einfo is
    pragma Inline (Set_Last_Entity);
    pragma Inline (Set_Limited_View);
    pragma Inline (Set_Linker_Section_Pragma);
+   pragma Inline (Set_Lit_Hash);
    pragma Inline (Set_Lit_Indexes);
    pragma Inline (Set_Lit_Strings);
    pragma Inline (Set_Low_Bound_Tested);
