@@ -7883,6 +7883,9 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_finalize ();
 
+  if (scev_initialized_p ())
+    scev_reset_htab ();
+
   /* For late FRE after IVOPTs and unrolling, see if we can
      remove some TREE_ADDRESSABLE and rewrite stuff into SSA.  */
   if (!may_iterate)
