@@ -79,13 +79,13 @@
 	(match_dup 1))])
 
 (define_subst "subst_f<cc>"
-  [(set (match_operand 0 "")
-	(match_operand 1 ""))
+  [(set (match_operand:VAXfp 0 "")
+	(match_operand:VAXfp 1 ""))
    (clobber (reg:CC VAX_PSL_REGNUM))]
   ""
   [(set (reg:VAXccnz VAX_PSL_REGNUM)
 	(compare:VAXccnz (match_dup 1)
-			 (const_double_zero)))
+			 (const_double_zero:VAXfp)))
    (set (match_dup 0)
 	(match_dup 1))])
 
