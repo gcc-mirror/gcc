@@ -3135,12 +3135,12 @@
 ;; The canonical form of this operation is an AND of a constant rather
 ;; than (zero_extend (truncate ...)).
 (define_insn "*cond_uxt<mode>_2"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (and:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand" "0, w")
-	     (match_operand:SVE_FULL_I 3 "aarch64_sve_uxt_immediate"))
+	   (and:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "0, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_uxt_immediate"))
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
@@ -3159,13 +3159,13 @@
 ;; as early-clobber helps to make the instruction more regular to the
 ;; register allocator.
 (define_insn "*cond_uxt<mode>_any"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=&w, ?&w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (and:SVE_FULL_I
-	     (match_operand:SVE_FULL_I 2 "register_operand" "w, w, w")
-	     (match_operand:SVE_FULL_I 3 "aarch64_sve_uxt_immediate"))
-	   (match_operand:SVE_FULL_I 4 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	   (and:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "w, w, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_uxt_immediate"))
+	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   "@
