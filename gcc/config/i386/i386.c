@@ -20806,12 +20806,20 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 		       mcount_name);
 	      break;
 	    case CM_LARGE_PIC:
+#ifdef NO_PROFILE_COUNTERS
+	      fprintf (file, "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
+	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tcall\t*%%r10\n");
+#else
 	      sorry ("profiling %<-mcmodel=large%> with PIC is not supported");
+#endif
 	      break;
 	    case CM_SMALL_PIC:
 	    case CM_MEDIUM_PIC:
-	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
-		       mcount_name);
+	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
 	      break;
 	    default:
 	      x86_print_call_or_nop (file, mcount_name);
