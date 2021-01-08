@@ -218,11 +218,11 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  Token *clone_token_tree_impl () const override { return clone_token_impl (); }
+  Token *clone_token_tree_impl () const final override { return clone_token_impl (); }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  Token *clone_macro_match_impl () const override
+  Token *clone_macro_match_impl () const final override
   {
     return clone_token_impl ();
   }
@@ -641,7 +641,7 @@ public:
 
 protected:
   // Use covariance to implement clone function as returning this type
-  AttrInputMetaItemContainer *clone_attr_input_impl () const override
+  AttrInputMetaItemContainer *clone_attr_input_impl () const final override
   {
     return clone_attr_input_meta_item_container_impl ();
   }
@@ -667,14 +667,14 @@ protected:
 
   /* Use covariance to implement clone function as returning a DelimTokenTree
    * object */
-  DelimTokenTree *clone_attr_input_impl () const override
+  DelimTokenTree *clone_attr_input_impl () const final override
   {
     return clone_delim_tok_tree_impl ();
   }
 
   /* Use covariance to implement clone function as returning a DelimTokenTree
    * object */
-  DelimTokenTree *clone_token_tree_impl () const override
+  DelimTokenTree *clone_token_tree_impl () const final override
   {
     return clone_delim_tok_tree_impl ();
   }
@@ -930,7 +930,7 @@ public:
 
   /* downcasting hack from expr to use pratt parsing with
    * parse_expr_without_block */
-  ExprWithoutBlock *as_expr_without_block () const override
+  ExprWithoutBlock *as_expr_without_block () const final override
   {
     return clone_expr_without_block_impl ();
   }
@@ -956,7 +956,7 @@ public:
   std::string as_string () const override { return ident; }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   Identifier get_ident () const { return ident; }
 
@@ -974,7 +974,7 @@ public:
 
 protected:
   // Clone method implementation
-  IdentifierExpr *clone_expr_without_block_impl () const override
+  IdentifierExpr *clone_expr_without_block_impl () const final override
   {
     return clone_identifier_expr_impl ();
   }
@@ -1559,35 +1559,35 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_item_impl () const override
+  MacroInvocationSemi *clone_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_inherent_impl_item_impl () const override
+  MacroInvocationSemi *clone_inherent_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_trait_impl_item_impl () const override
+  MacroInvocationSemi *clone_trait_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_trait_item_impl () const override
+  MacroInvocationSemi *clone_trait_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_external_item_impl () const override
+  MacroInvocationSemi *clone_external_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }

@@ -353,7 +353,7 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -367,14 +367,19 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  PathInExpression *clone_pattern_impl () const override
+  PathInExpression *clone_pattern_impl () const final override
   {
-    return new PathInExpression (*this);
+    return clone_path_in_expression_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  PathInExpression *clone_expr_without_block_impl () const override
+  PathInExpression *clone_expr_without_block_impl () const final override
+  {
+    return clone_path_in_expression_impl ();
+  }
+
+  /*virtual*/ PathInExpression *clone_path_in_expression_impl () const
   {
     return new PathInExpression (*this);
   }
@@ -860,7 +865,7 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -881,14 +886,19 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  QualifiedPathInExpression *clone_pattern_impl () const override
+  QualifiedPathInExpression *clone_pattern_impl () const final override
   {
-    return new QualifiedPathInExpression (*this);
+    return clone_qual_path_in_expression_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  QualifiedPathInExpression *clone_expr_without_block_impl () const override
+  QualifiedPathInExpression *clone_expr_without_block_impl () const final override
+  {
+    return clone_qual_path_in_expression_impl ();
+  }
+
+  /*virtual*/ QualifiedPathInExpression *clone_qual_path_in_expression_impl () const
   {
     return new QualifiedPathInExpression (*this);
   }

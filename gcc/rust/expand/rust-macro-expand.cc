@@ -3616,7 +3616,34 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
 
 AST::ASTFragment 
 MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc, AST::MacroRulesDefinition &rules_def) {
-  
+  // ensure that both invocation and rules are in a valid state
+  rust_assert (!invoc.is_marked_for_strip ());
+  rust_assert (!rules_def.is_marked_for_strip ());
+  rust_assert (rules_def.get_macro_rules ().size () > 0);
+
+  /* probably something here about parsing invoc and rules def token trees to token stream. if not, 
+   * how would parser handle the captures of exprs and stuff? on the other hand, token trees may be
+   * kind of useful in rules def as creating a point where recursion can occur (like having 
+   * "compare_macro_match" and then it calling itself when it finds delimiters) */
+
+  /* find matching rule to invoc token tree, based on macro rule's matcher. if none exist, error. 
+   * - specifically, check each matcher in order. if one fails to match, move onto next. */
+  /* TODO: does doing this require parsing expressions and whatever in the invoc? if so, might as 
+   * well save the results if referenced using $ or whatever. If not, do another pass saving them. 
+   * Except this is probably useless as different rules could have different starting points for exprs
+   * or whatever. Decision trees could avoid this, but they have their own issues. */
+  /* TODO: will need to modify the parser so that it can essentially "catch" errors - maybe 
+   * "try_parse_expr" or whatever methods. */
+  // this technically creates a back-tracking parser - this will be the implementation style
+
+  /* then, after results are saved, generate the macro output from the transcriber token tree. if i
+   * understand this correctly, the macro invocation gets replaced by the transcriber tokens, except
+   * with substitutions made (e.g. for $i variables) */
+
+  /* TODO: it is probably better to modify AST::Token to store a pointer to a Lexer::Token (rather 
+   * than being converted) - i.e. not so much have AST::Token as a Token but rather a TokenContainer
+   * (as it is another type of TokenTree). This will prevent re-conversion of Tokens between each type
+   * all the time, while still allowing the heterogenous storage of token trees.  */
 }
 
 void
@@ -3697,7 +3724,7 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 void
 MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
 {
-  for (int i = 0; i < attrs.size ();)
+  for (std::size_t i = 0; i < attrs.size ();)
     {
       auto &attr = attrs[i];
       if (attr.get_path () == "cfg_attr")

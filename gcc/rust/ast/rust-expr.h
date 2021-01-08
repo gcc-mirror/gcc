@@ -69,7 +69,7 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   Literal get_literal () const { return literal; }
 
@@ -82,7 +82,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  LiteralExpr *clone_expr_without_block_impl () const override
+  LiteralExpr *clone_expr_without_block_impl () const final override
   {
     return clone_literal_expr_impl ();
   }
@@ -238,7 +238,7 @@ protected:
 
 public:
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { main_or_left_expr = nullptr; }
@@ -861,7 +861,6 @@ class GroupedExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> inner_attrs;
   std::unique_ptr<Expr> expr_in_parens;
-
   Location locus;
 
 public:
@@ -910,7 +909,7 @@ public:
   GroupedExpr &operator= (GroupedExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1148,7 +1147,7 @@ public:
   ArrayExpr &operator= (ArrayExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1231,7 +1230,7 @@ public:
   ArrayIndexExpr &operator= (ArrayIndexExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1329,7 +1328,7 @@ public:
    * comma, i.e. (0,) rather than (0) */
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1411,7 +1410,7 @@ public:
   TupleIndexExpr &operator= (TupleIndexExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1484,7 +1483,7 @@ public:
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1866,7 +1865,7 @@ public:
   StructExprTuple &operator= (StructExprTuple &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1903,7 +1902,7 @@ public:
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2143,7 +2142,7 @@ public:
   EnumExprStruct &operator= (EnumExprStruct &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2208,7 +2207,7 @@ public:
   EnumExprTuple &operator= (EnumExprTuple &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2247,7 +2246,7 @@ public:
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2326,7 +2325,7 @@ public:
   bool has_params () const { return !params.empty (); }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2429,7 +2428,7 @@ public:
   MethodCallExpr &operator= (MethodCallExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2514,7 +2513,7 @@ public:
   FieldAccessExpr &operator= (FieldAccessExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2647,7 +2646,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<ClosureParam> &get_params () const { return params; }
@@ -2846,7 +2845,7 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  BlockExpr *clone_expr_with_block_impl () const override
+  BlockExpr *clone_expr_with_block_impl () const final override
   {
     return clone_block_expr_impl ();
   }
@@ -2974,7 +2973,7 @@ public:
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3058,7 +3057,7 @@ public:
   BreakExpr &operator= (BreakExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3095,7 +3094,7 @@ protected:
 
 public:
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 };
 
 // Range from (inclusive) and to (exclusive) expression AST node object
@@ -3536,7 +3535,7 @@ public:
   ReturnExpr &operator= (ReturnExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3609,7 +3608,7 @@ public:
   UnsafeBlockExpr &operator= (UnsafeBlockExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3714,7 +3713,7 @@ public:
   bool has_loop_label () const { return !loop_label.is_error (); }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   // Invalid if loop block is null, so base stripping on that.
   void mark_for_strip () override { loop_block = nullptr; }
@@ -4029,7 +4028,7 @@ public:
    * better approach? or does it not parse correctly and have downsides? */
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4258,7 +4257,7 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4877,7 +4876,7 @@ public:
   MatchExpr &operator= (MatchExpr &&other) = default;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -4953,7 +4952,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -5024,7 +5023,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 

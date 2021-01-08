@@ -316,6 +316,12 @@ class MacroRulesDefinition : public MacroItem
 
   Location locus;
 
+  /* NOTE: in rustc, macro definitions are considered (and parsed as) a type 
+   * of macro, whereas here they are considered part of the language itself.
+   * I am not aware of the implications of this decision. The rustc spec does
+   * mention that using the same parser for macro definitions and invocations
+   * is "extremely self-referential and non-intuitive". */
+
 public:
   std::string as_string () const override;
 
@@ -388,21 +394,26 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_pattern_impl () const override
+  MacroInvocation *clone_pattern_impl () const final override
   {
-    return new MacroInvocation (*this);
+    return clone_macro_invocation_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_expr_without_block_impl () const override
+  MacroInvocation *clone_expr_without_block_impl () const final override
   {
-    return new MacroInvocation (*this);
+    return clone_macro_invocation_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_type_no_bounds_impl () const override
+  MacroInvocation *clone_type_no_bounds_impl () const final override
+  {
+    return clone_macro_invocation_impl ();
+  }
+
+  /*virtual*/ MacroInvocation *clone_macro_invocation_impl () const
   {
     return new MacroInvocation (*this);
   }
