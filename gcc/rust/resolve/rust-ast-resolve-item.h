@@ -39,6 +39,26 @@ public:
 
   ~ResolveItem () {}
 
+  void visit (AST::StructStruct &struct_decl)
+  {
+    struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+      ResolveType::go (field.get_field_type ().get (), field.get_node_id ());
+      return true;
+    });
+  }
+
+  void visit (AST::StaticItem &var)
+  {
+    ResolveType::go (var.get_type ().get (), var.get_node_id ());
+    ResolveExpr::go (var.get_expr ().get (), var.get_node_id ());
+  }
+
+  void visit (AST::ConstantItem &constant)
+  {
+    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+  }
+
   void visit (AST::Function &function)
   {
     if (function.has_return_type ())

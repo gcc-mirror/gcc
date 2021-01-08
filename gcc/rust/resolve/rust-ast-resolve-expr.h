@@ -21,6 +21,7 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-full.h"
+#include "rust-ast-resolve-struct-expr-field.h"
 
 namespace Rust {
 namespace Resolver {
@@ -38,19 +39,22 @@ public:
 
   void visit (AST::PathInExpression &expr)
   {
+    // name scope first
     if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
       {
-	rust_error_at (expr.get_locus (), "unknown path %s",
-		       expr.as_string ().c_str ());
-	return;
+	// check the type scope
+	if (!resolver->get_type_scope ().lookup (expr.as_string (),
+						 &resolved_node))
+	  {
+	    rust_error_at (expr.get_locus (), "unknown path %s",
+			   expr.as_string ().c_str ());
+	    return;
+	  }
       }
-    else
-      {
-	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
-	resolver->insert_new_definition (expr.get_node_id (),
-					 Definition{expr.get_node_id (),
-						    parent});
-      }
+
+    resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
+    resolver->insert_new_definition (expr.get_node_id (),
+				     Definition{expr.get_node_id (), parent});
   }
 
   void visit (AST::ReturnExpr &expr)
@@ -152,6 +156,17 @@ public:
   {
     ResolveExpr::go (elems.get_num_copies ().get (), elems.get_node_id ());
     ResolveExpr::go (elems.get_elem_to_copy ().get (), elems.get_node_id ());
+  }
+
+  void visit (AST::StructExprStructFields &struct_expr)
+  {
+    ResolveExpr::go (&struct_expr.get_struct_name (),
+		     struct_expr.get_node_id ());
+    struct_expr.iterate (
+      [&] (AST::StructExprField *struct_field) mutable -> bool {
+	ResolveStructExprField::go (struct_field, struct_expr.get_node_id ());
+	return true;
+      });
   }
 
 private:

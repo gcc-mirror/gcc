@@ -47,8 +47,8 @@ public:
 
   LiteralPattern (std::string val, Literal::LitType type, Location locus,
 		  bool has_minus = false)
-    : lit (Literal (std::move (val), type)), has_minus (has_minus),
-      locus (locus)
+    : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
+      has_minus (has_minus), locus (locus)
   {}
 
   Location get_locus () const { return locus; }

@@ -3683,7 +3683,7 @@ StructExprStruct::as_string () const
 {
   std::string str ("StructExprStruct (or subclass): ");
 
-  str += "\n Path: " + get_struct_name ().as_string ();
+  str += "\n Path: " + struct_name.as_string ();
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -3761,7 +3761,7 @@ StructExprStructFields::as_string () const
     }
   else
     {
-      str += struct_base.as_string ();
+      str += struct_base->as_string ();
     }
 
   return str;
@@ -4904,38 +4904,8 @@ DelimTokenTree::to_token_stream () const
 Literal
 MacroParser::parse_literal ()
 {
-  const std::unique_ptr<Token> &tok = peek_token ();
-  switch (tok->get_id ())
-    {
-    case CHAR_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::CHAR);
-    case STRING_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::STRING);
-    case BYTE_CHAR_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE);
-    case BYTE_STRING_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE_STRING);
-    case INT_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::INT);
-    case FLOAT_LITERAL:
-      skip_token ();
-      return Literal (tok->as_string (), Literal::FLOAT);
-    case TRUE_LITERAL:
-      skip_token ();
-      return Literal ("true", Literal::BOOL);
-    case FALSE_LITERAL:
-      skip_token ();
-      return Literal ("false", Literal::BOOL);
-    default:
-      rust_error_at (tok->get_locus (), "expected literal - found '%s'",
-		     get_token_description (tok->get_id ()));
-      return Literal::create_error ();
-    }
+  // marcos need to be removed from HIR
+  gcc_unreachable ();
 }
 
 SimplePath
@@ -5037,7 +5007,8 @@ Attribute
 MetaNameValueStr::to_attribute () const
 {
   LiteralExpr lit_expr (Analysis::NodeMapping::get_error (), str,
-			Literal::LitType::STRING, Location ());
+			Literal::LitType::STRING,
+			PrimitiveCoreType::CORETYPE_STR, Location ());
   return Attribute (SimplePath::from_str (ident),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));

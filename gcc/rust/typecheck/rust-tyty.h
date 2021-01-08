@@ -41,6 +41,7 @@ enum TypeKind
   UINT,
   FLOAT,
   UNIT,
+  FIELD,
   // there are more to add...
 };
 
@@ -59,6 +60,8 @@ public:
   virtual TyBase *combine (TyBase *other) = 0;
 
   virtual bool is_unit () const { return kind == TypeKind::UNIT; }
+
+  TypeKind get_kind () const { return kind; }
 
 protected:
   TyBase (HirId ref, TypeKind kind) : kind (kind), ref (ref) {}
@@ -93,6 +96,65 @@ public:
   std::string as_string () const override;
 
   TyBase *combine (TyBase *other) override;
+};
+
+class StructFieldType : public TyBase
+{
+public:
+  StructFieldType (HirId ref, std::string name, TyBase *ty)
+    : TyBase (ref, TypeKind::FIELD), name (name), ty (ty)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  bool is_unit () const override { return ty->is_unit (); }
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  std::string get_name () const { return name; }
+
+  TyBase *get_field_type () { return ty; }
+
+private:
+  std::string name;
+  TyBase *ty;
+};
+
+class ADTType : public TyBase
+{
+public:
+  ADTType (HirId ref, std::string identifier,
+	   std::vector<StructFieldType *> fields)
+    : TyBase (ref, TypeKind::ADT), identifier (identifier), fields (fields)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  bool is_unit () const override { return false; }
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  size_t num_fields () const { return fields.size (); }
+
+  StructFieldType *get_field (size_t index) { return fields.at (index); }
+
+  StructFieldType *get_field (const std::string &lookup)
+  {
+    for (auto &field : fields)
+      {
+	if (field->get_name ().compare (lookup) == 0)
+	  return field;
+      }
+    return nullptr;
+  }
+
+private:
+  std::string identifier;
+  std::vector<StructFieldType *> fields;
 };
 
 class ParamType : public TyBase
@@ -185,6 +247,8 @@ public:
     I8,
     I16,
     I32,
+    I64,
+    I128
   };
 
   IntType (HirId ref, IntKind kind)
@@ -211,6 +275,8 @@ public:
     U8,
     U16,
     U32,
+    U64,
+    U128
   };
 
   UintType (HirId ref, UintKind kind)
@@ -227,6 +293,31 @@ public:
 
 private:
   UintKind uint_kind;
+};
+
+class FloatType : public TyBase
+{
+public:
+  enum FloatKind
+  {
+    F32,
+    F64
+  };
+
+  FloatType (HirId ref, FloatKind kind)
+    : TyBase (ref, TypeKind::FLOAT), float_kind (kind)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  FloatKind get_kind () const { return float_kind; }
+
+private:
+  FloatKind float_kind;
 };
 
 } // namespace TyTy

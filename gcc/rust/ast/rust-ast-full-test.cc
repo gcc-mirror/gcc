@@ -437,7 +437,7 @@ StaticItem::as_string () const
       str += " mut";
     }
 
-  str += name;
+  str += " " + name;
 
   // DEBUG: null pointer check
   if (type == nullptr)
@@ -4947,28 +4947,30 @@ MacroParser::parse_literal ()
     {
     case CHAR_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::CHAR);
+      return Literal (tok->as_string (), Literal::CHAR, tok->get_type_hint ());
     case STRING_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::STRING);
+      return Literal (tok->as_string (), Literal::STRING,
+		      tok->get_type_hint ());
     case BYTE_CHAR_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE);
+      return Literal (tok->as_string (), Literal::BYTE, tok->get_type_hint ());
     case BYTE_STRING_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::BYTE_STRING);
+      return Literal (tok->as_string (), Literal::BYTE_STRING,
+		      tok->get_type_hint ());
     case INT_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::INT);
+      return Literal (tok->as_string (), Literal::INT, tok->get_type_hint ());
     case FLOAT_LITERAL:
       skip_token ();
-      return Literal (tok->as_string (), Literal::FLOAT);
+      return Literal (tok->as_string (), Literal::FLOAT, tok->get_type_hint ());
     case TRUE_LITERAL:
       skip_token ();
-      return Literal ("true", Literal::BOOL);
+      return Literal ("true", Literal::BOOL, tok->get_type_hint ());
     case FALSE_LITERAL:
       skip_token ();
-      return Literal ("false", Literal::BOOL);
+      return Literal ("false", Literal::BOOL, tok->get_type_hint ());
     default:
       rust_error_at (tok->get_locus (), "expected literal - found '%s'",
 		     get_token_description (tok->get_id ()));
@@ -5291,7 +5293,8 @@ Token::to_token_stream () const
 Attribute
 MetaNameValueStr::to_attribute () const
 {
-  LiteralExpr lit_expr (str, Literal::LitType::STRING, Location ());
+  LiteralExpr lit_expr (str, Literal::LitType::STRING,
+			PrimitiveCoreType::CORETYPE_UNKNOWN, Location ());
   return Attribute (SimplePath::from_str (ident),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));

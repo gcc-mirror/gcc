@@ -141,6 +141,21 @@ public:
     return true;
   }
 
+  void insert_const_decl (HirId id, ::Bexpression *expr)
+  {
+    compiled_consts[id] = expr;
+  }
+
+  bool lookup_const_decl (HirId id, ::Bexpression **expr)
+  {
+    auto it = compiled_consts.find (id);
+    if (it == compiled_consts.end ())
+      return false;
+
+    *expr = it->second;
+    return true;
+  }
+
   void push_fn (::Bfunction *fn, ::Bvariable *ret_addr)
   {
     fn_stack.push_back (fncontext{fn, ret_addr});
@@ -183,6 +198,7 @@ private:
   std::map<HirId, ::Bvariable *> compiled_var_decls;
   std::map<HirId, ::Btype *> compiled_type_map;
   std::map<HirId, ::Bfunction *> compiled_fn_map;
+  std::map<HirId, ::Bexpression *> compiled_consts;
   std::vector< ::std::vector<Bstatement *> > statements;
   std::vector< ::Bblock *> scope_stack;
 
@@ -210,6 +226,14 @@ public:
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ADTType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
 
   void visit (TyTy::ArrayType &type) override
   {
@@ -241,6 +265,14 @@ public:
   }
 
   void visit (TyTy::UintType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
+
+  void visit (TyTy::FloatType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);

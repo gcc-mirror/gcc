@@ -24,6 +24,7 @@
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
 #include "rust-tyty-resolver.h"
+#include "rust-hir-type-check-struct-field.h"
 
 namespace Rust {
 namespace Resolver {
@@ -136,9 +137,8 @@ public:
     TyTy::TyBase *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
-	// FIXME we need to be able to lookup the location info for the
-	// reference here
-	rust_error_at (expr.get_locus (), "consider giving this a type: %s",
+	rust_error_at (mappings->lookup_location (ref),
+		       "consider giving this a type: %s",
 		       expr.as_string ().c_str ());
 	return;
       }
@@ -152,10 +152,53 @@ public:
     switch (expr.get_lit_type ())
       {
 	case HIR::Literal::LitType::INT: {
-	  // FIXME:
-	  // assume i32 let the combiner functions figure it out
-	  // this should look at the suffix of the literal value to check
-	  auto ok = context->lookup_builtin ("i32", &infered);
+	  bool ok = false;
+
+	  switch (expr.get_literal ()->get_type_hint ())
+	    {
+	    case CORETYPE_I8:
+	      ok = context->lookup_builtin ("i8", &infered);
+	      break;
+	    case CORETYPE_I16:
+	      ok = context->lookup_builtin ("i16", &infered);
+	      break;
+	    case CORETYPE_I32:
+	      ok = context->lookup_builtin ("i32", &infered);
+	      break;
+	    case CORETYPE_I64:
+	      ok = context->lookup_builtin ("i64", &infered);
+	      break;
+	    case CORETYPE_I128:
+	      ok = context->lookup_builtin ("i128", &infered);
+	      break;
+
+	    case CORETYPE_U8:
+	      ok = context->lookup_builtin ("u8", &infered);
+	      break;
+	    case CORETYPE_U16:
+	      ok = context->lookup_builtin ("u16", &infered);
+	      break;
+	    case CORETYPE_U32:
+	      ok = context->lookup_builtin ("u32", &infered);
+	      break;
+	    case CORETYPE_U64:
+	      ok = context->lookup_builtin ("u64", &infered);
+	      break;
+	    case CORETYPE_U128:
+	      ok = context->lookup_builtin ("u128", &infered);
+	      break;
+
+	    default:
+	      ok = context->lookup_builtin ("i32", &infered);
+	      break;
+	    }
+	  rust_assert (ok);
+	}
+	break;
+
+	case HIR::Literal::LitType::FLOAT: {
+	  // FIXME need to respect the suffix if applicable
+	  auto ok = context->lookup_builtin ("f32", &infered);
 	  rust_assert (ok);
 	}
 	break;
@@ -267,6 +310,11 @@ public:
   void visit (HIR::ArrayElemsCopied &elems)
   {
     infered_array_elems = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
+  }
+
+  void visit (HIR::StructExprStructFields &struct_expr)
+  {
+    infered = TypeCheckStructExpr::Resolve (&struct_expr);
   }
 
 private:

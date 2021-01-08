@@ -64,6 +64,47 @@ InferType::combine (TyBase *other)
 }
 
 void
+StructFieldType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+StructFieldType::as_string () const
+{
+  return name + ":" + ty->as_string ();
+}
+
+TyBase *
+StructFieldType::combine (TyBase *other)
+{
+  StructFieldTypeRules r (this);
+  return r.combine (other);
+}
+
+void
+ADTType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ADTType::as_string () const
+{
+  std::string fields_buffer;
+  for (auto &field : fields)
+    fields_buffer += field->as_string () + "\n";
+
+  return identifier + "{\n" + fields_buffer + "\n}";
+}
+
+TyBase *
+ADTType::combine (TyBase *other)
+{
+  return nullptr;
+}
+
+void
 FnType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);
@@ -164,6 +205,10 @@ IntType::as_string () const
       return "i16";
     case I32:
       return "i32";
+    case I64:
+      return "i64";
+    case I128:
+      return "i128";
     }
   gcc_unreachable ();
   return "__unknown_int_type";
@@ -193,6 +238,10 @@ UintType::as_string () const
       return "u16";
     case U32:
       return "u32";
+    case U64:
+      return "u64";
+    case U128:
+      return "u128";
     }
   gcc_unreachable ();
   return "__unknown_uint_type";
@@ -202,6 +251,33 @@ TyBase *
 UintType::combine (TyBase *other)
 {
   UintRules r (this);
+  return r.combine (other);
+}
+
+void
+FloatType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+FloatType::as_string () const
+{
+  switch (float_kind)
+    {
+    case F32:
+      return "f32";
+    case F64:
+      return "f64";
+    }
+  gcc_unreachable ();
+  return "__unknown_float_type";
+}
+
+TyBase *
+FloatType::combine (TyBase *other)
+{
+  FloatRules r (this);
   return r.combine (other);
 }
 

@@ -22,6 +22,7 @@
 #include "rust-diagnostics.h"
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-block.h"
+#include "rust-ast-lower-struct-field-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -61,6 +62,47 @@ private:
   bool ok;
   size_t result;
 }; // namespace Resolver
+
+class ASTLowerPathInExpression : public ASTLoweringBase
+{
+public:
+  static HIR::PathInExpression *translate (AST::PathInExpression *expr)
+  {
+    ASTLowerPathInExpression compiler;
+    expr->accept_vis (compiler);
+    rust_assert (compiler.translated);
+    return compiler.translated;
+  }
+
+  ~ASTLowerPathInExpression () {}
+
+  void visit (AST::PathInExpression &expr)
+  {
+    std::vector<HIR::PathExprSegment> path_segments;
+    expr.iterate_path_segments ([&] (AST::PathExprSegment &s) mutable -> bool {
+      rust_assert (s.has_generic_args () == false); // TODO
+
+      HIR::PathIdentSegment is (s.get_ident_segment ().as_string ());
+      HIR::PathExprSegment seg (is, s.get_locus ());
+      path_segments.push_back (seg);
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::PathInExpression (mapping, std::move (path_segments),
+					    expr.get_locus (),
+					    expr.opening_scope_resolution ());
+  }
+
+private:
+  ASTLowerPathInExpression () : translated (nullptr) {}
+
+  HIR::PathInExpression *translated;
+};
 
 class ASTLoweringExpr : public ASTLoweringBase
 {
@@ -107,24 +149,7 @@ public:
 
   void visit (AST::PathInExpression &expr)
   {
-    std::vector<HIR::PathExprSegment> path_segments;
-    expr.iterate_path_segments ([&] (AST::PathExprSegment &s) mutable -> bool {
-      rust_assert (s.has_generic_args () == false); // TODO
-
-      HIR::PathIdentSegment is (s.get_ident_segment ().as_string ());
-      HIR::PathExprSegment seg (is, s.get_locus ());
-      path_segments.push_back (seg);
-      return true;
-    });
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-
-    translated = new HIR::PathInExpression (mapping, std::move (path_segments),
-					    expr.get_locus (),
-					    expr.opening_scope_resolution ());
+    translated = ASTLowerPathInExpression::translate (&expr);
   }
 
   void visit (AST::ReturnExpr &expr)
@@ -303,6 +328,7 @@ public:
 				   UNKNOWN_LOCAL_DEFID);
 
     translated = new HIR::LiteralExpr (mapping, expr.as_string (), type,
+				       expr.get_literal ().get_type_hint (),
 				       expr.get_locus ());
   }
 
@@ -429,6 +455,46 @@ public:
       = new HIR::LazyBooleanExpr (mapping, std::unique_ptr<HIR::Expr> (lhs),
 				  std::unique_ptr<HIR::Expr> (rhs), kind,
 				  expr.get_locus ());
+  }
+
+  void visit (AST::StructExprStructFields &struct_expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+
+    // bit of a hack for now
+    HIR::PathInExpression *path
+      = ASTLowerPathInExpression::translate (&struct_expr.get_struct_name ());
+    HIR::PathInExpression copied_path (*path);
+    delete path;
+
+    HIR::StructBase *base = nullptr;
+    if (struct_expr.has_struct_base ())
+      {
+	HIR::Expr *translated_base = ASTLoweringExpr::translate (
+	  struct_expr.get_struct_base ().get_base_struct ().get ());
+	base
+	  = new HIR::StructBase (std::unique_ptr<HIR::Expr> (translated_base));
+      }
+
+    std::vector<std::unique_ptr<HIR::StructExprField> > fields;
+    struct_expr.iterate ([&] (AST::StructExprField *field) mutable -> bool {
+      HIR::StructExprField *translated
+	= ASTLowerStructExprField::translate (field);
+      fields.push_back (std::unique_ptr<HIR::StructExprField> (translated));
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, struct_expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::StructExprStructFields (mapping, copied_path,
+					 std::move (fields),
+					 struct_expr.get_locus (), base,
+					 inner_attribs, outer_attribs);
   }
 
 private:

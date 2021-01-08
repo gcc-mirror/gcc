@@ -1390,7 +1390,7 @@ protected:
 // Rust base struct declaration HIR node - abstract base class
 class Struct : public VisItem
 {
-public:
+protected:
   // protected to enable access by derived classes - allows better as_string
   Identifier struct_name;
 
@@ -1402,6 +1402,9 @@ public:
   WhereClause where_clause;
 
   Location locus;
+
+public:
+  Identifier get_identifier () const { return struct_name; }
 
   // Returns whether struct has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1465,6 +1468,10 @@ public:
   Identifier field_name;
   std::unique_ptr<Type> field_type;
 
+  Analysis::NodeMapping mappings;
+
+  Location locus;
+
   // should this store location info?
 
   // Returns whether struct field has any outer attributes.
@@ -1473,18 +1480,19 @@ public:
   // Returns whether struct field has a non-private (non-default) visibility.
   bool has_visibility () const { return !visibility.is_error (); }
 
-  StructField (Identifier field_name, std::unique_ptr<Type> field_type,
-	       Visibility vis,
+  StructField (Analysis::NodeMapping mappings, Identifier field_name,
+	       std::unique_ptr<Type> field_type, Visibility vis, Location locus,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_name (std::move (field_name)), field_type (std::move (field_type))
+      field_name (std::move (field_name)), field_type (std::move (field_type)),
+      mappings (mappings), locus (locus)
   {}
 
   // Copy constructor
   StructField (StructField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
       field_name (other.field_name),
-      field_type (other.field_type->clone_type ())
+      field_type (other.field_type->clone_type ()), mappings (other.mappings)
   {}
 
   ~StructField () = default;
@@ -1496,6 +1504,7 @@ public:
     field_type = other.field_type->clone_type ();
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -1504,20 +1513,19 @@ public:
   StructField (StructField &&other) = default;
   StructField &operator= (StructField &&other) = default;
 
-  // Returns whether struct field is in an error state.
-  bool is_error () const
-  {
-    return field_name.empty () && field_type == nullptr;
-    // this should really be an or since neither are allowed
-  }
-
-  // Creates an error state struct field.
-  static StructField create_error ()
-  {
-    return StructField (std::string (""), nullptr, Visibility::create_error ());
-  }
-
   std::string as_string () const;
+
+  Identifier get_field_name () const { return field_name; }
+
+  std::unique_ptr<Type> &get_field_type ()
+  {
+    rust_assert (field_type != nullptr);
+    return field_type;
+  }
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
+
+  Location get_locus () { return locus; }
 };
 
 // Rust struct declaration with true struct type HIR node
@@ -1559,6 +1567,15 @@ public:
   bool is_unit_struct () const { return is_unit; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  void iterate (std::function<bool (StructField &)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2055,6 +2072,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Type *get_type () { return type.get (); }
+
+  Expr *get_expr () { return const_expr.get (); }
+
+  std::string get_identifier () { return identifier; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2133,6 +2156,14 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Identifier get_identifier () const { return name; }
+
+  bool is_mutable () const { return has_mut; }
+
+  Expr *get_expr () { return expr.get (); }
+
+  Type *get_type () { return type.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object

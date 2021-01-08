@@ -19,6 +19,7 @@
 #include "rust-compile.h"
 #include "rust-compile-item.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-struct-field-expr.h"
 
 namespace Rust {
 namespace Compile {
@@ -150,6 +151,14 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
 					 else_block, expr.get_locus ());
+}
+
+// rust-compile-struct-field-expr.h
+
+void
+CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
+{
+  translated = CompileExpr::Compile (field.get_value (), ctx);
 }
 
 } // namespace Compile

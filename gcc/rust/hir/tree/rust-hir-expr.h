@@ -66,10 +66,11 @@ public:
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
 
   LiteralExpr (Analysis::NodeMapping mappings, std::string value_as_string,
-	       Literal::LitType type, Location locus,
+	       Literal::LitType type, PrimitiveCoreType type_hint,
+	       Location locus,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
-      literal (std::move (value_as_string), type), locus (locus)
+      literal (std::move (value_as_string), type, type_hint), locus (locus)
   {}
 
   LiteralExpr (Analysis::NodeMapping mappings, Literal literal, Location locus,
@@ -1315,9 +1316,9 @@ protected:
 // Base struct/tuple/union value creator HIR node (abstract)
 class StructExpr : public ExprWithoutBlock
 {
+protected:
   PathInExpression struct_name;
 
-protected:
   // Protected constructor to allow initialising struct_name
   StructExpr (Analysis::NodeMapping mappings, PathInExpression struct_path,
 	      std::vector<Attribute> outer_attribs)
@@ -1326,7 +1327,7 @@ protected:
   {}
 
 public:
-  const PathInExpression &get_struct_name () const { return struct_name; }
+  PathInExpression &get_struct_name () { return struct_name; }
 
   std::string as_string () const override;
 };
@@ -1417,6 +1418,8 @@ public:
   bool is_invalid () const { return base_struct == nullptr; }
 
   std::string as_string () const;
+
+  Expr *get_base () { return base_struct.get (); }
 };
 
 /* Base HIR node for a single struct expression field (in struct instance
@@ -1436,9 +1439,20 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  Analysis::NodeMapping &get_mappings () { return mappings; }
+
+  Location get_locus () { return locus; }
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
+
+  StructExprField (Analysis::NodeMapping mapping, Location locus)
+    : mappings (mapping), locus (locus)
+  {}
+
+  Analysis::NodeMapping mappings;
+  Location locus;
 };
 
 // Identifier-only variant of StructExprField HIR node
@@ -1449,8 +1463,10 @@ public:
 
   // TODO: should this store location data?
 
-  StructExprFieldIdentifier (Identifier field_identifier)
-    : field_name (std::move (field_identifier))
+  StructExprFieldIdentifier (Analysis::NodeMapping mapping,
+			     Identifier field_identifier, Location locus)
+    : StructExprField (mapping, locus),
+      field_name (std::move (field_identifier))
   {}
 
   std::string as_string () const override { return field_name; }
@@ -1470,23 +1486,26 @@ protected:
  * abstract */
 class StructExprFieldWithVal : public StructExprField
 {
-public:
   std::unique_ptr<Expr> value;
 
 protected:
-  StructExprFieldWithVal (std::unique_ptr<Expr> field_value)
-    : value (std::move (field_value))
+  StructExprFieldWithVal (Analysis::NodeMapping mapping,
+			  std::unique_ptr<Expr> field_value, Location locus)
+    : StructExprField (mapping, locus), value (std::move (field_value))
   {}
 
   // Copy constructor requires clone
   StructExprFieldWithVal (StructExprFieldWithVal const &other)
-    : value (other.value->clone_expr ())
+    : StructExprField (other.mappings, other.locus),
+      value (other.value->clone_expr ())
   {}
 
   // Overload assignment operator to clone unique_ptr
   StructExprFieldWithVal &operator= (StructExprFieldWithVal const &other)
   {
     value = other.value->clone_expr ();
+    mappings = other.mappings;
+    locus = other.locus;
 
     return *this;
   }
@@ -1497,6 +1516,8 @@ protected:
 
 public:
   std::string as_string () const override;
+
+  Expr *get_value () { return value.get (); }
 };
 
 // Identifier and value variant of StructExprField HIR node
@@ -1507,9 +1528,11 @@ public:
 
   // TODO: should this store location data?
 
-  StructExprFieldIdentifierValue (Identifier field_identifier,
-				  std::unique_ptr<Expr> field_value)
-    : StructExprFieldWithVal (std::move (field_value)),
+  StructExprFieldIdentifierValue (Analysis::NodeMapping mapping,
+				  Identifier field_identifier,
+				  std::unique_ptr<Expr> field_value,
+				  Location locus)
+    : StructExprFieldWithVal (mapping, std::move (field_value), locus),
       field_name (std::move (field_identifier))
   {}
 
@@ -1534,9 +1557,11 @@ public:
 
   // TODO: should this store location data?
 
-  StructExprFieldIndexValue (TupleIndex tuple_index,
-			     std::unique_ptr<Expr> field_value)
-    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index)
+  StructExprFieldIndexValue (Analysis::NodeMapping mapping,
+			     TupleIndex tuple_index,
+			     std::unique_ptr<Expr> field_value, Location locus)
+    : StructExprFieldWithVal (mapping, std::move (field_value), locus),
+      index (tuple_index)
   {}
 
   std::string as_string () const override;
@@ -1560,31 +1585,24 @@ public:
   std::vector<std::unique_ptr<StructExprField> > fields;
 
   // bool has_struct_base;
-  StructBase struct_base;
+  // FIXME make unique_ptr
+  StructBase *struct_base;
 
   std::string as_string () const override;
 
-  bool has_struct_base () const { return !struct_base.is_invalid (); }
-
-  /*inline std::vector<std::unique_ptr<StructExprField>> get_fields()
-  const { return fields;
-  }*/
-
-  /*inline StructBase get_struct_base() const {
-      return has_struct_base ? struct_base : StructBase::error();
-  }*/
+  bool has_struct_base () const { return struct_base != nullptr; }
 
   // Constructor for StructExprStructFields when no struct base is used
   StructExprStructFields (
     Analysis::NodeMapping mappings, PathInExpression struct_path,
     std::vector<std::unique_ptr<StructExprField> > expr_fields, Location locus,
-    StructBase base_struct = StructBase::error (),
+    StructBase *base_struct,
     std::vector<Attribute> inner_attribs = std::vector<Attribute> (),
     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : StructExprStruct (std::move (mappings), std::move (struct_path),
 			std::move (inner_attribs), std::move (outer_attribs),
 			locus),
-      fields (std::move (expr_fields)), struct_base (std::move (base_struct))
+      fields (std::move (expr_fields)), struct_base (base_struct)
   {}
 
   // copy constructor with vector clone
@@ -1614,6 +1632,15 @@ public:
   StructExprStructFields &operator= (StructExprStructFields &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  void iterate (std::function<bool (StructExprField *)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field.get ()))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1752,11 +1779,7 @@ class StructExprUnit : public StructExpr
   Location locus;
 
 public:
-  std::string as_string () const override
-  {
-    return get_struct_name ().as_string ();
-    // return struct_name.as_string();
-  }
+  std::string as_string () const override { return struct_name.as_string (); }
 
   StructExprUnit (Analysis::NodeMapping mappings, PathInExpression struct_path,
 		  std::vector<Attribute> outer_attribs, Location locus)

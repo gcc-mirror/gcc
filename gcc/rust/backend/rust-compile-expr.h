@@ -23,6 +23,7 @@
 #include "rust-compile-tyty.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
+#include "rust-compile-struct-field-expr.h"
 
 namespace Rust {
 namespace Compile {
@@ -56,7 +57,7 @@ public:
 
   void visit (HIR::CallExpr &expr)
   {
-    Bexpression *fn = ResolvePath::Compile (expr.get_fnexpr (), ctx);
+    Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
     rust_assert (fn != nullptr);
 
     std::vector<Bexpression *> args;
@@ -105,6 +106,11 @@ public:
 	return;
       }
 
+    // this could be a constant reference
+    if (ctx->lookup_const_decl (ref, &translated))
+      return;
+
+    // must be an identifier
     Bvariable *var = nullptr;
     if (!ctx->lookup_var_decl (ref, &var))
       {
@@ -146,6 +152,36 @@ public:
 	  Btype *type = TyTyResolveCompile::compile (ctx, tyty);
 	  translated
 	    = ctx->get_backend ()->integer_constant_expression (type, ival);
+	}
+	return;
+
+	case HIR::Literal::FLOAT: {
+	  printf ("FLOATY BOYO: [%s]\n", expr.as_string ().c_str ());
+
+	  mpfr_t fval;
+	  if (mpfr_init_set_str (fval, expr.as_string ().c_str (), 10,
+				 MPFR_RNDN)
+	      != 0)
+	    {
+	      rust_fatal_error (expr.get_locus (),
+				"bad float number in literal");
+	      return;
+	    }
+
+	  TyTy::TyBase *tyty = nullptr;
+	  if (!ctx->get_tyctx ()->lookup_type (
+		expr.get_mappings ().get_hirid (), &tyty))
+	    {
+	      rust_fatal_error (expr.get_locus (),
+				"did not resolve type for this literal expr");
+	      return;
+	    }
+
+	  printf ("tyty float is [%s]\n", tyty->as_string ().c_str ());
+
+	  Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+	  translated
+	    = ctx->get_backend ()->float_constant_expression (type, fval);
 	}
 	return;
 
@@ -348,6 +384,25 @@ public:
     auto code_block = CompileBlock::compile (&expr, ctx);
     auto block_stmt = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (block_stmt);
+  }
+
+  void visit (HIR::StructExprStructFields &struct_expr)
+  {
+    Btype *type
+      = ResolvePathType::Compile (&struct_expr.get_struct_name (), ctx);
+
+    // this assumes all fields are in order from type resolution and if a base
+    // struct was specified those fields are filed via accesors
+    std::vector<Bexpression *> vals;
+    struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
+      Bexpression *expr = CompileStructExprField::Compile (field, ctx);
+      vals.push_back (expr);
+      return true;
+    });
+
+    translated
+      = ctx->get_backend ()->constructor_expression (type, vals,
+						     struct_expr.get_locus ());
   }
 
 private:

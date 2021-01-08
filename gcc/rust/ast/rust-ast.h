@@ -212,6 +212,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  PrimitiveCoreType get_type_hint () const { return type_hint; }
+
 protected:
   // No virtual for now as not polymorphic but can be in future
   /*virtual*/ Token *clone_token_impl () const { return new Token (*this); }
@@ -250,17 +252,25 @@ private:
    * (or generics) */
   std::string value_as_string;
   LitType type;
+  PrimitiveCoreType type_hint;
 
 public:
   std::string as_string () const { return value_as_string; }
 
   LitType get_lit_type () const { return type; }
 
-  Literal (std::string value_as_string, LitType type)
-    : value_as_string (std::move (value_as_string)), type (type)
+  PrimitiveCoreType get_type_hint () const { return type_hint; }
+
+  Literal (std::string value_as_string, LitType type,
+	   PrimitiveCoreType type_hint)
+    : value_as_string (std::move (value_as_string)), type (type),
+      type_hint (type_hint)
   {}
 
-  static Literal create_error () { return Literal ("", CHAR); }
+  static Literal create_error ()
+  {
+    return Literal ("", CHAR, PrimitiveCoreType::CORETYPE_UNKNOWN);
+  }
 
   // Returns whether literal is in an invalid state.
   bool is_error () const { return value_as_string == ""; }

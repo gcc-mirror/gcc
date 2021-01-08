@@ -21,6 +21,7 @@
 #include "rust-hir-type-check-toplevel.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-struct-field.h"
 
 namespace Rust {
 namespace Resolver {
@@ -43,6 +44,124 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     TypeCheckStmt::Resolve (s);
     return true;
   });
+}
+
+// RUST_HIR_TYPE_CHECK_STRUCT_FIELD
+
+void
+TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
+{
+  struct_expr.get_struct_name ().accept_vis (*this);
+  if (struct_path_resolved == nullptr)
+    {
+      rust_fatal_error (struct_expr.get_struct_name ().get_locus (),
+			"Failed to resolve type");
+      return;
+    }
+
+  struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
+    resolved_field = nullptr;
+    field->accept_vis (*this);
+    if (resolved_field == nullptr)
+      {
+	rust_fatal_error (field->get_locus (),
+			  "failed to resolve type for field");
+	return false;
+      }
+
+    context->insert_type (field->get_mappings ().get_hirid (), resolved_field);
+    return true;
+  });
+
+  TyTy::TyBase *expr_type = struct_path_resolved;
+  if (struct_expr.has_struct_base ())
+    {
+      TyTy::TyBase *base_resolved
+	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
+      expr_type = expr_type->combine (base_resolved);
+      if (resolved == nullptr)
+	{
+	  rust_fatal_error (
+	    struct_expr.struct_base->base_struct->get_locus_slow (),
+	    "incompatible types for base struct reference");
+	  return;
+	}
+    }
+  else if (fields_assigned.size () != struct_path_resolved->num_fields ())
+    {
+      rust_fatal_error (struct_expr.get_locus (),
+			"some fields are not fully assigned");
+      return;
+    }
+
+  resolved = expr_type;
+}
+
+void
+TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
+{
+  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+
+  // then lookup the reference_node_id
+  NodeId ref_node_id;
+  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    {
+      rust_error_at (expr.get_locus (),
+		     "Failed to lookup reference for node: %s",
+		     expr.as_string ().c_str ());
+      return;
+    }
+
+  // node back to HIR
+  HirId ref;
+  if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				     ref_node_id, &ref))
+    {
+      rust_error_at (expr.get_locus (), "reverse lookup failure");
+      return;
+    }
+
+  // the base reference for this name _must_ have a type set
+  TyTy::TyBase *lookup;
+  if (!context->lookup_type (ref, &lookup))
+    {
+      rust_error_at (mappings->lookup_location (ref),
+		     "consider giving this a type: %s",
+		     expr.as_string ().c_str ());
+      return;
+    }
+
+  if (lookup->get_kind () != TyTy::TypeKind::ADT)
+    {
+      rust_fatal_error (mappings->lookup_location (ref),
+			"expected an ADT type");
+      return;
+    }
+  struct_path_resolved = (TyTy::ADTType *) lookup;
+}
+
+void
+TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
+{
+  auto it = fields_assigned.find (field.field_name);
+  if (it != fields_assigned.end ())
+    {
+      rust_fatal_error (field.get_locus (), "used more than once");
+      return;
+    }
+
+  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::StructFieldType *field_type
+    = struct_path_resolved->get_field (field.field_name);
+  if (field_type == nullptr)
+    {
+      rust_error_at (field.get_locus (), "unknown field");
+      return;
+    }
+
+  resolved_field = field_type->get_field_type ()->combine (value);
+  if (resolved_field != nullptr)
+    fields_assigned.insert (field.field_name);
 }
 
 } // namespace Resolver

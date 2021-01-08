@@ -24,6 +24,7 @@
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-stmt.h"
+#include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
 
@@ -41,6 +42,108 @@ public:
   }
 
   virtual ~ASTLoweringItem () {}
+
+  void visit (AST::StructStruct &struct_decl)
+  {
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+    std::vector<HIR::Attribute> outer_attrs;
+
+    bool is_unit = false;
+    std::vector<HIR::StructField> fields;
+    struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+      std::vector<HIR::Attribute> outer_attrs;
+      HIR::Visibility vis = HIR::Visibility::create_public ();
+      HIR::Type *type
+	= ASTLoweringType::translate (field.get_field_type ().get ());
+
+      auto crate_num = mappings->get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
+				     mappings->get_next_hir_id (crate_num),
+				     mappings->get_next_localdef_id (
+				       crate_num));
+
+      // FIXME
+      // AST::StructField is missing Location info
+      Location field_locus;
+      HIR::StructField translated_field (mapping, field.get_field_name (),
+					 std::unique_ptr<HIR::Type> (type), vis,
+					 field_locus, outer_attrs);
+      fields.push_back (std::move (translated_field));
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, struct_decl.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::StructStruct (mapping, std::move (fields),
+					struct_decl.get_identifier (),
+					std::move (generic_params),
+					std::move (where_clause), is_unit, vis,
+					std::move (outer_attrs),
+					struct_decl.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       struct_decl.get_locus ());
+  }
+
+  void visit (AST::StaticItem &var)
+  {
+    std::vector<HIR::Attribute> outer_attrs;
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, var.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::StaticItem (mapping, var.get_identifier (), var.is_mutable (),
+			     std::unique_ptr<HIR::Type> (type),
+			     std::unique_ptr<HIR::Expr> (expr), vis,
+			     outer_attrs, var.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       var.get_locus ());
+  }
+
+  void visit (AST::ConstantItem &constant)
+  {
+    std::vector<HIR::Attribute> outer_attrs;
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
+					vis, std::unique_ptr<HIR::Type> (type),
+					std::unique_ptr<HIR::Expr> (expr),
+					outer_attrs, constant.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       constant.get_locus ());
+  }
 
   void visit (AST::Function &function)
   {

@@ -126,20 +126,38 @@ Resolver::generate_builtins ()
     = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U16);
   auto u32
     = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U32);
+  auto u64
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U64);
+  auto u128
+    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U128);
   auto i8 = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I8);
   auto i16
     = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I16);
   auto i32
     = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I32);
+  auto i64
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I64);
+  auto i128
+    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I128);
   auto rbool = new TyTy::BoolType (mappings->get_next_hir_id ());
+  auto f32
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
+  auto f64
+    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
 
   MKBUILTIN_TYPE ("u8", builtins, u8);
   MKBUILTIN_TYPE ("u16", builtins, u16);
   MKBUILTIN_TYPE ("u32", builtins, u32);
+  MKBUILTIN_TYPE ("u64", builtins, u64);
+  MKBUILTIN_TYPE ("u128", builtins, u128);
   MKBUILTIN_TYPE ("i8", builtins, i8);
   MKBUILTIN_TYPE ("i16", builtins, i16);
   MKBUILTIN_TYPE ("i32", builtins, i32);
+  MKBUILTIN_TYPE ("i64", builtins, i64);
+  MKBUILTIN_TYPE ("i128", builtins, i128);
   MKBUILTIN_TYPE ("bool", builtins, rbool);
+  MKBUILTIN_TYPE ("f32", builtins, f32);
+  MKBUILTIN_TYPE ("f64", builtins, f64);
 }
 
 void
@@ -269,6 +287,14 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
+}
+
+// rust-ast-resolve-struct-expr-field.h
+
+void
+ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
+{
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
 }
 
 } // namespace Resolver

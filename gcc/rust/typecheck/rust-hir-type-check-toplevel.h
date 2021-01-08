@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-expr.h"
 #include "rust-tyty.h"
 
 namespace Rust {
@@ -34,6 +35,46 @@ public:
   {
     TypeCheckTopLevel resolver;
     item->accept_vis (resolver);
+  }
+
+  void visit (HIR::StructStruct &struct_decl)
+  {
+    std::vector<TyTy::StructFieldType *> fields;
+    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
+      TyTy::TyBase *field_type
+	= TypeCheckType::Resolve (field.get_field_type ().get ());
+      TyTy::StructFieldType *ty_field
+	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				     field.get_field_name (), field_type);
+      fields.push_back (ty_field);
+      context->insert_type (field.get_mappings ().get_hirid (),
+			    ty_field->get_field_type ());
+      return true;
+    });
+
+    TyTy::TyBase *type
+      = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
+			   struct_decl.get_identifier (), std::move (fields));
+
+    context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
+  }
+
+  void visit (HIR::StaticItem &var)
+  {
+    TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
+    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
+
+    context->insert_type (var.get_mappings ().get_hirid (),
+			  type->combine (expr_type));
+  }
+
+  void visit (HIR::ConstantItem &constant)
+  {
+    TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
+    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+
+    context->insert_type (constant.get_mappings ().get_hirid (),
+			  type->combine (expr_type));
   }
 
   void visit (HIR::Function &function)

@@ -134,6 +134,24 @@ private:
   TyBase *resolved;
 };
 
+class StructFieldTypeRules : protected BaseRules
+{
+public:
+  StructFieldTypeRules (StructFieldType *base)
+    : BaseRules (base), base (base), resolved (nullptr)
+  {}
+
+  TyBase *combine (TyBase *other)
+  {
+    other->accept_vis (*this);
+    return resolved;
+  }
+
+private:
+  StructFieldType *base;
+  TyBase *resolved;
+};
+
 class UnitRules : protected BaseRules
 {
 public:
@@ -295,6 +313,31 @@ public:
 
 private:
   UintType *base;
+  TyBase *resolved;
+};
+
+class FloatRules : protected BaseRules
+{
+public:
+  FloatRules (FloatType *base)
+    : BaseRules (base), base (base), resolved (nullptr)
+  {}
+  ~FloatRules () {}
+
+  TyBase *combine (TyBase *other)
+  {
+    other->accept_vis (*this);
+    return resolved;
+  }
+
+  void visit (FloatType &type) override
+  {
+    // FIXME we should look at the FloatKind and respect it
+    resolved = new FloatType (type.get_ref (), type.get_kind ());
+  }
+
+private:
+  FloatType *base;
   TyBase *resolved;
 };
 
