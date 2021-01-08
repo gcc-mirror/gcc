@@ -1,3 +1,11 @@
+2021-01-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Sync from master.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-11-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Use revert_regex instead
