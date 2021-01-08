@@ -3033,6 +3033,16 @@ gcn_expand_prologue ()
 		    gen_rtx_SET (sp, gen_rtx_PLUS (DImode, sp,
 						   dbg_adjustment)));
 
+      if (offsets->need_frame_pointer)
+	{
+	  /* Set the CFA to the entry stack address, as an offset from the
+	     frame pointer.  This is necessary when alloca is used, and
+	     harmless otherwise.  */
+	  rtx neg_adjust = gen_int_mode (-offsets->callee_saves, DImode);
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (DImode, fp, neg_adjust));
+	}
+
       /* Make sure the flat scratch reg doesn't get optimised away.  */
       emit_insn (gen_prologue_use (gen_rtx_REG (DImode, FLAT_SCRATCH_REG)));
     }
@@ -3144,10 +3154,13 @@ bool
 gcn_frame_pointer_rqd (void)
 {
   /* GDB needs the frame pointer in order to unwind properly,
-     but that's not important for the entry point.
-     We should also repect the -fomit-frame-pointer flag.  */
-  return (cfun && cfun->machine && cfun->machine->normal_function
-	  && !flag_omit_frame_pointer);
+     but that's not important for the entry point, unless alloca is used.
+     It's not important for code execution, so we should repect the
+     -fomit-frame-pointer flag.  */
+  return (!flag_omit_frame_pointer
+	  && cfun
+	  && (cfun->calls_alloca
+	      || (cfun->machine && cfun->machine->normal_function)));
 }
 
 /* Implement TARGET_CAN_ELIMINATE.
