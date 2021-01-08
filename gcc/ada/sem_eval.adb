@@ -4137,7 +4137,7 @@ package body Sem_Eval is
 
          Len := String_Length (Strval (N));
 
-         if UI_From_Int (Len) > String_Type_Len (Bas) then
+         if Len > String_Type_Len (Bas) then
 
             --  Issue message. Note that this message is a warning if the
             --  string literal is not marked as static (happens in some cases

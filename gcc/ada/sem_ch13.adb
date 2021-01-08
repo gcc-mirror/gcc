@@ -12304,7 +12304,7 @@ package body Sem_Ch13 is
       --  Reject patently improper size values
 
       if Is_Elementary_Type (T)
-        and then Siz > UI_From_Int (Int'Last)
+        and then Siz > Int'Last
       then
          Error_Msg_N ("Size value too large for elementary type", N);
 

@@ -4262,7 +4262,7 @@ package body Exp_Ch4 is
             --  larger type for the operands, to prevent spurious constraint
             --  errors on large legal literals of the type.
 
-            if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
+            if Modulus (Etype (N)) > Int (Integer'Last) then
                Target_Type := Standard_Long_Long_Integer;
             else
                Target_Type := Standard_Integer;

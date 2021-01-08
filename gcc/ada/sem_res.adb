@@ -11555,14 +11555,14 @@ package body Sem_Res is
                Comp_Typ_Hi : constant Node_Id :=
                                Type_High_Bound (Component_Type (Typ));
 
-               Char_Val : Uint;
+               Char_Val : Int;
 
             begin
                if Compile_Time_Known_Value (Comp_Typ_Lo)
                  and then Compile_Time_Known_Value (Comp_Typ_Hi)
                then
                   for J in 1 .. Strlen loop
-                     Char_Val := UI_From_Int (Int (Get_String_Char (Str, J)));
+                     Char_Val := Int (Get_String_Char (Str, J));
 
                      if Char_Val < Expr_Value (Comp_Typ_Lo)
                        or else Char_Val > Expr_Value (Comp_Typ_Hi)
@@ -11587,7 +11587,7 @@ package body Sem_Res is
       --  heavy artillery for this situation, but it is hard work to avoid.
 
       declare
-         Lits : constant List_Id    := New_List;
+         Lits : constant List_Id := New_List;
          P    : Source_Ptr := Loc + 1;
          C    : Char_Code;
 
