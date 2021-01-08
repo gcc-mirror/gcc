@@ -3227,16 +3227,16 @@
 )
 
 (define_insn "*cnot<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(unspec:<VPRED>
 	     [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	      (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	      (eq:<VPRED>
-		(match_operand:SVE_FULL_I 2 "register_operand" "0, w")
-		(match_operand:SVE_FULL_I 3 "aarch64_simd_imm_zero"))]
+		(match_operand:SVE_I 2 "register_operand" "0, w")
+		(match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
 	     UNSPEC_PRED_Z)
-	   (match_operand:SVE_FULL_I 4 "aarch64_simd_imm_one")
+	   (match_operand:SVE_I 4 "aarch64_simd_imm_one")
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
@@ -3274,19 +3274,19 @@
 
 ;; Predicated logical inverse, merging with the first input.
 (define_insn_and_rewrite "*cond_cnot<mode>_2"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   ;; Logical inverse of operand 2 (as above).
-	   (unspec:SVE_FULL_I
+	   (unspec:SVE_I
 	     [(unspec:<VPRED>
 		[(match_operand 5)
 		 (const_int SVE_KNOWN_PTRUE)
 		 (eq:<VPRED>
-		   (match_operand:SVE_FULL_I 2 "register_operand" "0, w")
-		   (match_operand:SVE_FULL_I 3 "aarch64_simd_imm_zero"))]
+		   (match_operand:SVE_I 2 "register_operand" "0, w")
+		   (match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
 		UNSPEC_PRED_Z)
-	      (match_operand:SVE_FULL_I 4 "aarch64_simd_imm_one")
+	      (match_operand:SVE_I 4 "aarch64_simd_imm_one")
 	      (match_dup 3)]
 	     UNSPEC_SEL)
 	   (match_dup 2)]
@@ -3310,22 +3310,22 @@
 ;; as earlyclobber helps to make the instruction more regular to the
 ;; register allocator.
 (define_insn_and_rewrite "*cond_cnot<mode>_any"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=&w, ?&w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   ;; Logical inverse of operand 2 (as above).
-	   (unspec:SVE_FULL_I
+	   (unspec:SVE_I
 	     [(unspec:<VPRED>
 		[(match_operand 5)
 		 (const_int SVE_KNOWN_PTRUE)
 		 (eq:<VPRED>
-		   (match_operand:SVE_FULL_I 2 "register_operand" "w, w, w")
-		   (match_operand:SVE_FULL_I 3 "aarch64_simd_imm_zero"))]
+		   (match_operand:SVE_I 2 "register_operand" "w, w, w")
+		   (match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
 		UNSPEC_PRED_Z)
-	      (match_operand:SVE_FULL_I 4 "aarch64_simd_imm_one")
+	      (match_operand:SVE_I 4 "aarch64_simd_imm_one")
 	      (match_dup 3)]
 	     UNSPEC_SEL)
-	   (match_operand:SVE_FULL_I 6 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	   (match_operand:SVE_I 6 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE && !rtx_equal_p (operands[2], operands[6])"
   "@
