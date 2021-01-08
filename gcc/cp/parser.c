@@ -24091,31 +24091,10 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_funs_with_default_args, 0);
-      /* Now parse any NSDMIs.  */
-      save_ccp = current_class_ptr;
-      save_ccr = current_class_ref;
-      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
-	{
-	  if (class_type != DECL_CONTEXT (decl))
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = DECL_CONTEXT (decl);
-	      pushed_scope = push_scope (class_type);
-	    }
-	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
-	  cp_parser_late_parsing_nsdmi (parser, decl);
-	}
-      vec_safe_truncate (unparsed_nsdmis, 0);
-      current_class_ptr = save_ccp;
-      current_class_ref = save_ccr;
-      if (pushed_scope)
-	pop_scope (pushed_scope);
 
       /* If there are noexcept-specifiers that have not yet been processed,
-	 take care of them now.  */
-      class_type = NULL_TREE;
-      pushed_scope = NULL_TREE;
+	 take care of them now.  Do this before processing NSDMIs as they
+	 may depend on noexcept-specifiers already having been processed.  */
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
@@ -24163,6 +24142,25 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_noexcepts, 0);
+
+      /* Now parse any NSDMIs.  */
+      save_ccp = current_class_ptr;
+      save_ccr = current_class_ref;
+      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
+	{
+	  if (class_type != DECL_CONTEXT (decl))
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = DECL_CONTEXT (decl);
+	      pushed_scope = push_scope (class_type);
+	    }
+	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
+	  cp_parser_late_parsing_nsdmi (parser, decl);
+	}
+      vec_safe_truncate (unparsed_nsdmis, 0);
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
 
