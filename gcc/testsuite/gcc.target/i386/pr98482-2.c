@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target { *-*-linux* && lp64 } } } */
 /* { dg-require-effective-target mfentry } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-fpic -fprofile -mfentry -O2 -mcmodel=large" } */
