@@ -59,7 +59,7 @@ using namespace tree_switch_conversion;
 
 struct condition_info
 {
-  typedef vec<std::pair<gphi *, tree>> mapping_vec;
+  typedef auto_vec<std::pair<gphi *, tree>> mapping_vec;
 
   condition_info (gcond *cond): m_cond (cond), m_bb (gimple_bb (cond)),
     m_forwarder_bb (NULL), m_ranges (), m_true_edge (NULL), m_false_edge (NULL),
@@ -75,7 +75,7 @@ struct condition_info
   gcond *m_cond;
   basic_block m_bb;
   basic_block m_forwarder_bb;
-  vec<range_entry> m_ranges;
+  auto_vec<range_entry> m_ranges;
   edge m_true_edge;
   edge m_false_edge;
   mapping_vec m_true_edge_phi_mapping;
@@ -253,6 +253,10 @@ if_chain::is_beneficial ()
   r = output.length () < filtered_clusters.length ();
   if (r)
     dump_clusters (&output, "BT can be built");
+
+  for (unsigned i = 0; i < output.length (); i++)
+    delete output[i];
+
   output.release ();
   return r;
 }
@@ -377,7 +381,7 @@ convert_if_conditions_to_switch (if_chain *chain)
 
 static void
 find_conditions (basic_block bb,
-		 hash_map<basic_block, condition_info> *conditions_in_bbs)
+		 hash_map<basic_block, condition_info *> *conditions_in_bbs)
 {
   gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
   if (gsi_end_p (gsi))
@@ -394,7 +398,7 @@ find_conditions (basic_block bb,
   tree rhs = gimple_cond_rhs (cond);
   tree_code code = gimple_cond_code (cond);
 
-  condition_info info (cond);
+  condition_info *info = new condition_info (cond);
 
   gassign *def;
   if (code == NE_EXPR
@@ -405,49 +409,53 @@ find_conditions (basic_block bb,
       enum tree_code rhs_code = gimple_assign_rhs_code (def);
       if (rhs_code == BIT_IOR_EXPR)
 	{
-	  info.m_ranges.safe_grow (2, true);
-	  init_range_entry (&info.m_ranges[0], gimple_assign_rhs1 (def), NULL);
-	  init_range_entry (&info.m_ranges[1], gimple_assign_rhs2 (def), NULL);
+	  info->m_ranges.safe_grow (2, true);
+	  init_range_entry (&info->m_ranges[0], gimple_assign_rhs1 (def), NULL);
+	  init_range_entry (&info->m_ranges[1], gimple_assign_rhs2 (def), NULL);
 	}
     }
   else
     {
-      info.m_ranges.safe_grow (1, true);
-      init_range_entry (&info.m_ranges[0], NULL_TREE, cond);
+      info->m_ranges.safe_grow (1, true);
+      init_range_entry (&info->m_ranges[0], NULL_TREE, cond);
     }
 
   /* All identified ranges must have equal expression and IN_P flag.  */
-  if (!info.m_ranges.is_empty ())
+  if (!info->m_ranges.is_empty ())
     {
       edge true_edge, false_edge;
-      tree expr = info.m_ranges[0].exp;
-      bool in_p = info.m_ranges[0].in_p;
+      tree expr = info->m_ranges[0].exp;
+      bool in_p = info->m_ranges[0].in_p;
 
       extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
-      info.m_true_edge = in_p ? true_edge : false_edge;
-      info.m_false_edge = in_p ? false_edge : true_edge;
+      info->m_true_edge = in_p ? true_edge : false_edge;
+      info->m_false_edge = in_p ? false_edge : true_edge;
 
-      for (unsigned i = 0; i < info.m_ranges.length (); ++i)
-	if (info.m_ranges[i].exp == NULL_TREE
-	    || !INTEGRAL_TYPE_P (TREE_TYPE (info.m_ranges[i].exp))
-	    || info.m_ranges[i].low == NULL_TREE
-	    || info.m_ranges[i].high == NULL_TREE
-	    || (TYPE_PRECISION (TREE_TYPE (info.m_ranges[i].low))
-		!= TYPE_PRECISION (TREE_TYPE (info.m_ranges[i].high))))
-	  return;
+      for (unsigned i = 0; i < info->m_ranges.length (); ++i)
+	if (info->m_ranges[i].exp == NULL_TREE
+	    || !INTEGRAL_TYPE_P (TREE_TYPE (info->m_ranges[i].exp))
+	    || info->m_ranges[i].low == NULL_TREE
+	    || info->m_ranges[i].high == NULL_TREE
+	    || (TYPE_PRECISION (TREE_TYPE (info->m_ranges[i].low))
+		!= TYPE_PRECISION (TREE_TYPE (info->m_ranges[i].high))))
+	  goto exit;
 
-      for (unsigned i = 1; i < info.m_ranges.length (); ++i)
-	if (info.m_ranges[i].exp != expr
-	    || info.m_ranges[i].in_p != in_p)
-	  return;
+      for (unsigned i = 1; i < info->m_ranges.length (); ++i)
+	if (info->m_ranges[i].exp != expr
+	    || info->m_ranges[i].in_p != in_p)
+	  goto exit;
 
-      info.record_phi_mapping (info.m_true_edge,
-			       &info.m_true_edge_phi_mapping);
-      info.record_phi_mapping (info.m_false_edge,
-			       &info.m_false_edge_phi_mapping);
+      info->record_phi_mapping (info->m_true_edge,
+				&info->m_true_edge_phi_mapping);
+      info->record_phi_mapping (info->m_false_edge,
+				&info->m_false_edge_phi_mapping);
       conditions_in_bbs->put (bb, info);
     }
 
+  return;
+
+exit:
+  delete info;
 }
 
 namespace {
@@ -487,7 +495,7 @@ unsigned int
 pass_if_to_switch::execute (function *fun)
 {
   auto_vec<if_chain *> all_candidates;
-  hash_map<basic_block, condition_info> conditions_in_bbs;
+  hash_map<basic_block, condition_info *> conditions_in_bbs;
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -507,9 +515,10 @@ pass_if_to_switch::execute (function *fun)
 	continue;
 
       bitmap_set_bit (seen_bbs, bb->index);
-      condition_info *info = conditions_in_bbs.get (bb);
-      if (info)
+      condition_info **slot = conditions_in_bbs.get (bb);
+      if (slot)
 	{
+	  condition_info *info = *slot;
 	  if_chain *chain = new if_chain ();
 	  chain->m_entries.safe_push (info);
 	  /* Try to find a chain starting in this BB.  */
@@ -518,19 +527,19 @@ pass_if_to_switch::execute (function *fun)
 	      if (!single_pred_p (gimple_bb (info->m_cond)))
 		break;
 	      edge e = single_pred_edge (gimple_bb (info->m_cond));
-	      condition_info *info2 = conditions_in_bbs.get (e->src);
-	      if (!info2 || info->m_ranges[0].exp != info2->m_ranges[0].exp)
+	      condition_info **info2 = conditions_in_bbs.get (e->src);
+	      if (!info2 || info->m_ranges[0].exp != (*info2)->m_ranges[0].exp)
 		break;
 
 	      /* It is important that the blocks are linked through FALSE_EDGE.
 		 For an expression of index != VALUE, true and false edges
 		 are flipped.  */
-	      if (info2->m_false_edge != e)
+	      if ((*info2)->m_false_edge != e)
 		break;
 
-	      chain->m_entries.safe_push (info2);
+	      chain->m_entries.safe_push (*info2);
 	      bitmap_set_bit (seen_bbs, e->src->index);
-	      info = info2;
+	      info = *info2;
 	    }
 
 	  chain->m_entries.reverse ();
@@ -546,6 +555,8 @@ pass_if_to_switch::execute (function *fun)
 				 chain->m_entries.length ());
 	      all_candidates.safe_push (chain);
 	    }
+	  else
+	    delete chain;
 	}
     }
 
@@ -556,6 +567,10 @@ pass_if_to_switch::execute (function *fun)
     }
 
   free (rpo);
+
+  for (hash_map<basic_block, condition_info *>::iterator it
+       = conditions_in_bbs.begin (); it != conditions_in_bbs.end (); ++it)
+    delete (*it).second;
 
   if (!all_candidates.is_empty ())
     {
