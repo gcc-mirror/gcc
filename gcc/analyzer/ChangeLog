@@ -1,3 +1,30 @@
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98580
+	* region.cc (decl_region::get_svalue_for_initializer): Gracefully
+	handle when LTO writes out DECL_INITIAL as error_mark_node.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97074
+	* store.cc (binding_cluster::can_merge_p): Add "out_store" param
+	and pass to calls to binding_cluster::make_unknown_relative_to.
+	(binding_cluster::make_unknown_relative_to): Add "out_store"
+	param.  Use it to mark base regions that are pointed to by
+	pointers that become unknown as having escaped.
+	(store::can_merge_p): Pass out_store to
+	binding_cluster::can_merge_p.
+	* store.h (binding_cluster::can_merge_p): Add "out_store" param.
+	(binding_cluster::make_unknown_relative_to): Likewise.
+	* svalue.cc (region_svalue::implicitly_live_p): New vfunc.
+	* svalue.h (region_svalue::implicitly_live_p): New vfunc decl.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98564
+	* engine.cc (exploded_path::feasible_p): Add missing call to
+	bitmap_clear.
+
 2021-01-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97072

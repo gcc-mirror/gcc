@@ -1,3 +1,10 @@
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93701
+	* resolve.c (find_array_spec): Put static prototype for
+	resolve_assoc_var before this function and call for associate
+	variables.
+
 2021-01-06  Harald Anlauf  <anlauf@gmx.de>
 
 	* resolve.c (resolve_component): Add check for valid CLASS
