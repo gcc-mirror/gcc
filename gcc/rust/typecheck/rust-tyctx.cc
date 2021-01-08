@@ -69,7 +69,10 @@ TypeCheckContext::lookup_type (HirId id, TyTy::TyBase **type)
 {
   auto it = resolved.find (id);
   if (it == resolved.end ())
-    return false;
+    {
+      *type = new TyTy::ErrorType (id);
+      return false;
+    }
 
   *type = it->second;
   return true;

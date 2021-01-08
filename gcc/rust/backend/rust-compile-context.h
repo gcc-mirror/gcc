@@ -221,11 +221,17 @@ public:
 
   virtual ~TyTyResolveCompile () {}
 
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+
   void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::ADTType &type) override
   {

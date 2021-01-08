@@ -43,13 +43,19 @@ public:
 
   ~TyTyCompile () {}
 
-  void visit (TyTy::InferType &type) override
-  {
-    // there shouldn't be any of these left
-    gcc_unreachable ();
-  }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::UnitType &type) override {}
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override
   {
@@ -81,8 +87,6 @@ public:
       = backend->function_type (receiver, parameters, results, NULL,
 				mappings->lookup_location (type.get_ref ()));
   }
-
-  void visit (TyTy::ParamType &type) override {}
 
   void visit (TyTy::BoolType &type) override
   {
@@ -205,6 +209,18 @@ public:
 
   ~TyTyExtractParamsFromFnType () {}
 
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+
   void visit (TyTy::FnType &type) override
   {
     ok = true;
@@ -234,6 +250,18 @@ public:
 
   ~TyTyExtractRetFromFnType () {}
 
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+
   void visit (TyTy::FnType &type) override
   {
     ok = true;
@@ -260,6 +288,18 @@ public:
   }
 
   ~TyTyCompileParam () {}
+
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::ParamType &type) override
   {

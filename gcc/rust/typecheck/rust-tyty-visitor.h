@@ -27,17 +27,18 @@ namespace TyTy {
 class TyVisitor
 {
 public:
-  virtual void visit (UnitType &type) {}
-  virtual void visit (InferType &type) {}
-  virtual void visit (StructFieldType &type) {}
-  virtual void visit (ADTType &type) {}
-  virtual void visit (FnType &type) {}
-  virtual void visit (ParamType &type) {}
-  virtual void visit (ArrayType &type) {}
-  virtual void visit (BoolType &type) {}
-  virtual void visit (IntType &type) {}
-  virtual void visit (UintType &type) {}
-  virtual void visit (FloatType &type) {}
+  virtual void visit (UnitType &type) = 0;
+  virtual void visit (InferType &type) = 0;
+  virtual void visit (StructFieldType &type) = 0;
+  virtual void visit (ADTType &type) = 0;
+  virtual void visit (FnType &type) = 0;
+  virtual void visit (ParamType &type) = 0;
+  virtual void visit (ArrayType &type) = 0;
+  virtual void visit (BoolType &type) = 0;
+  virtual void visit (IntType &type) = 0;
+  virtual void visit (UintType &type) = 0;
+  virtual void visit (FloatType &type) = 0;
+  virtual void visit (ErrorType &type) = 0;
 };
 
 } // namespace TyTy

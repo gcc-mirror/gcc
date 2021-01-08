@@ -151,6 +151,18 @@ public:
 
   virtual ~TyTyExtractorArray () {}
 
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+
   void visit (TyTy::ArrayType &type) override { extracted = type.get_type (); }
 
 private:

@@ -38,6 +38,18 @@ public:
   }
   ~TypeCheckCallExpr () {}
 
+  void visit (UnitType &type) override { gcc_unreachable (); }
+  void visit (InferType &type) override { gcc_unreachable (); }
+  void visit (StructFieldType &type) override { gcc_unreachable (); }
+  void visit (ADTType &type) override { gcc_unreachable (); }
+  void visit (ParamType &type) override { gcc_unreachable (); }
+  void visit (ArrayType &type) override { gcc_unreachable (); }
+  void visit (BoolType &type) override { gcc_unreachable (); }
+  void visit (IntType &type) override { gcc_unreachable (); }
+  void visit (UintType &type) override { gcc_unreachable (); }
+  void visit (FloatType &type) override { gcc_unreachable (); }
+  void visit (ErrorType &type) override { gcc_unreachable (); }
+
   void visit (FnType &type) override;
 
 private:
