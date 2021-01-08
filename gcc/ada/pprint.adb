@@ -410,12 +410,14 @@ package body Pprint is
 
             when N_If_Expression =>
                declare
-                  N : constant Node_Id := First (Expressions (Expr));
+                  Cond_Expr : constant Node_Id := First (Expressions (Expr));
+                  Then_Expr : constant Node_Id := Next (Cond_Expr);
+                  Else_Expr : constant Node_Id := Next (Then_Expr);
                begin
                   return
-                    "if " & Expr_Name (N) & " then "
-                      & Expr_Name (Next (N)) & " else "
-                      & Expr_Name (Next (Next (N)));
+                    "if " & Expr_Name (Cond_Expr) & " then "
+                      & Expr_Name (Then_Expr) & " else "
+                      & Expr_Name (Else_Expr);
                end;
 
             when N_Qualified_Expression =>
