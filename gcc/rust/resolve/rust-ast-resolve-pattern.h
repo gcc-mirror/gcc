@@ -81,7 +81,8 @@ public:
     // if we have a duplicate id this then allows for shadowing correctly
     // as new refs to this decl will match back here so it is ok to overwrite
     resolver->get_name_scope ().insert (pattern.get_ident (),
-					pattern.get_node_id ());
+					pattern.get_node_id (),
+					pattern.get_locus ());
     resolver->insert_new_definition (pattern.get_node_id (),
 				     Definition{pattern.get_node_id (),
 						parent});

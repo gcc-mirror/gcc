@@ -22,6 +22,7 @@
 #include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-item.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-ast-resolve-unused.h"
 
 #define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \
@@ -107,8 +108,9 @@ void
 Resolver::insert_builtin_types (Rib *r)
 {
   auto builtins = get_builtin_types ();
-  for (auto it = builtins.begin (); it != builtins.end (); it++)
-    r->insert_name ((*it)->as_string (), (*it)->get_node_id ());
+  for (auto &builtin : builtins)
+    r->insert_name (builtin->as_string (), builtin->get_node_id (),
+		    Linemap::predeclared_location ());
 }
 
 std::vector<AST::TypePath *> &
@@ -187,7 +189,7 @@ Resolver::insert_resolved_name (NodeId refId, NodeId defId)
   rust_assert (it == resolved_names.end ());
 
   resolved_names[refId] = defId;
-  get_name_scope ().peek ()->append_reference_for_def (defId, refId);
+  get_name_scope ().append_reference_for_def (refId, defId);
 }
 
 bool
@@ -208,7 +210,7 @@ Resolver::insert_resolved_type (NodeId refId, NodeId defId)
   rust_assert (it == resolved_types.end ());
 
   resolved_types[refId] = defId;
-  get_type_scope ().peek ()->append_reference_for_def (defId, refId);
+  get_type_scope ().append_reference_for_def (refId, defId);
 }
 
 bool
@@ -267,6 +269,9 @@ NameResolution::go (AST::Crate &crate)
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveItem::go (it->get ());
+
+  ScanUnused::Scan (resolver->get_name_scope ().peek ());
+  ScanUnused::Scan (resolver->get_type_scope ().peek ());
 }
 
 // rust-ast-resolve-expr.h
@@ -287,6 +292,9 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 
   if (expr.has_tail_expr ())
     ResolveExpr::go (expr.get_tail_expr ().get (), expr.get_node_id ());
+
+  ScanUnused::Scan (resolver->get_name_scope ().peek ());
+  ScanUnused::Scan (resolver->get_type_scope ().peek ());
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
