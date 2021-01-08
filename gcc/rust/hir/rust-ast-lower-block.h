@@ -129,6 +129,11 @@ public:
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
+  void visit (AST::BlockExpr &expr)
+  {
+    translated = ASTLoweringBlock::translate (&expr, &terminated);
+  }
+
 private:
   ASTLoweringExprWithBlock ()
     : ASTLoweringBase (), translated (nullptr), terminated (false)
