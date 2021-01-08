@@ -1,3 +1,32 @@
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96325
+	* gfortran.dg/pr96325.f90: Change from run to compile.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96325
+	* gfortran.dg/pr96325.f90: New test.
+	* gfortran.dg/pr91589.f90: Update error message.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	PR fortran/96012
+	* gfortran.dg/dependency_60.f90: New test.
+	* gfortran.dg/class_allocate_25.f90: New test.
+	* gfortran.dg/class_assign_4.f90: New test.
+	* gfortran.dg/unlimited_polymorphic_32.f03: New test.
+
 2021-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

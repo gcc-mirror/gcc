@@ -1,3 +1,83 @@
+2021-01-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-01-06  Harald Anlauf  <anlauf@gmx.de>
+
+	* resolve.c (resolve_component): Add check for valid CLASS
+	reference before trying to access CLASS data.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-08-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96325
+	* primary.c (gfc_match_varspec): In the case that a component
+	reference is added to an intrinsic type component, emit the
+	error message in this function.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Make
+	sure that class expressions are captured for dummy arguments by
+	use of gfc_get_class_from_gfc_expr otherwise the wrong vptr is
+	used.
+	* trans-expr.c (gfc_get_class_from_gfc_expr): New function.
+	(gfc_get_class_from_expr): If a constant expression is
+	encountered, return NULL_TREE;
+	(gfc_trans_assignment_1): Deallocate rhs allocatable components
+	after passing derived type function results to class lhs.
+	* trans.h : Add prototype for gfc_get_class_from_gfc_expr.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	PR fortran/96012
+	* resolve.c (resolve_ordinary_assign): Generate a vtable if
+	necessary for scalar non-polymorphic rhs's to unlimited lhs's.
+	* trans-array.c (get_class_info_from_ss): New function.
+	(gfc_trans_allocate_array_storage): Defer obtaining class
+	element type until all sources of class exprs are tried. Use
+	class API rather than TREE_OPERAND. Look for class expressions
+	in ss->info by calling get_class_info_from_ss. After, obtain
+	the element size for class descriptors. Where the element type
+	is unknown, cast the data as character(len=size) to overcome
+	unlimited polymorphic problems.
+	(gfc_conv_ss_descriptor): Do not fix class variable refs.
+	(build_class_array_ref, structure_alloc_comps): Replace code
+	replicating the new function gfc_resize_class_size_with_len.
+	(gfc_alloc_allocatable_for_assignment): Obtain element size
+	for lhs in cases of deferred characters and class enitities.
+	Move code for the element size of rhs to start of block. Clean
+	up extraction of class parameters throughout this function.
+	After the shape check test whether or not the lhs and rhs
+	element sizes are the same. Use earlier evaluation of
+	'cond_null'. Reallocation of lhs only to happen if size changes
+	or element size changes.
+	* trans-expr.c (gfc_resize_class_size_with_len): New function.
+	(gfc_get_class_from_expr): If a constant expression is
+	encountered, return NULL_TREE;
+	(trans_scalar_class_assign): New function.
+	(gfc_conv_procedure_call): Ensure the vtable is present for
+	passing a non-class actual to an unlimited formal.
+	(trans_class_vptr_len_assignment): For expressions of type
+	BT_CLASS, extract the class expression if necessary. Use a
+	statement block outside the loop body. Ensure that 'rhs' is
+	of the correct type. Obtain rhs vptr in all circumstances.
+	(gfc_trans_scalar_assign): Call trans_scalar_class_assign to
+	make maximum use of the vptr copy in place of assignment.
+	(trans_class_assignment): Actually do reallocation if needed.
+	(gfc_trans_assignment_1): Simplify some of the logic with
+	'realloc_flag'. Set 'vptr_copy' for all array assignments to
+	unlimited polymorphic lhs.
+	* trans.c (gfc_build_array_ref): Call gfc_resize_class_size_
+	with_len to correct span for unlimited polymorphic decls.
+	* trans.h : Add prototype for gfc_resize_class_size_with_len.
+
 2021-01-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
