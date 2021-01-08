@@ -36,7 +36,7 @@ with Uintp;   use Uintp;
 
 package body Pprint is
 
-   List_Name_Count : Integer := 0;
+   List_Name_Count : Natural := 0;
    --  Counter used to prevent infinite recursion while computing name of
    --  complex expressions.
 
