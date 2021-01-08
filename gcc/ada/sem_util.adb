@@ -1436,6 +1436,7 @@ package body Sem_Util is
       --  generate a check message.
 
       if GNATprove_Mode then
+         Set_Raises_Constraint_Error (N);
          return;
       end if;
 

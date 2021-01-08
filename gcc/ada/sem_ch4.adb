@@ -5452,8 +5452,6 @@ package body Sem_Ch4 is
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
                         Ent => Prefix_Type);
-
-                     Set_Raises_Constraint_Error (N);
                      return;
                   end if;
 

@@ -2124,7 +2124,6 @@ package body Sem_Eval is
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
                         Warn => not Stat or SPARK_Mode = On);
-                     Set_Raises_Constraint_Error (N);
                      return;
 
                   --  Otherwise we can do the division
@@ -2226,7 +2225,6 @@ package body Sem_Eval is
                if UR_Is_Zero (Right_Real) then
                   Apply_Compile_Time_Constraint_Error
                     (N, "division by zero", CE_Divide_By_Zero);
-                  Set_Raises_Constraint_Error (N);
                   return;
                end if;
 
