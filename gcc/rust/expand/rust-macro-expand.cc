@@ -3609,9 +3609,9 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
 
   bool result = invoc.get_meta_items ()[0]->check_cfg_predicate (session);
   if (result)
-    return AST::Literal ("true", AST::Literal::BOOL);
+    return AST::Literal ("true", AST::Literal::BOOL, CORETYPE_BOOL);
   else
-    return AST::Literal ("false", AST::Literal::BOOL);
+    return AST::Literal ("false", AST::Literal::BOOL, CORETYPE_BOOL);
 }
 
 AST::ASTFragment 
