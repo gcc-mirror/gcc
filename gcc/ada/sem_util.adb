@@ -1412,7 +1412,6 @@ package body Sem_Util is
       Ent    : Entity_Id  := Empty;
       Typ    : Entity_Id  := Empty;
       Loc    : Source_Ptr := No_Location;
-      Rep    : Boolean    := True;
       Warn   : Boolean    := False)
    is
       Stat   : constant Boolean := Is_Static_Expression (N);
@@ -1436,7 +1435,7 @@ package body Sem_Util is
       --  a few cases where a suitable check flag is set for GNATprove to
       --  generate a check message.
 
-      if not Rep or GNATprove_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 

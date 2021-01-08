@@ -162,7 +162,6 @@ package Sem_Util is
       Ent    : Entity_Id  := Empty;
       Typ    : Entity_Id  := Empty;
       Loc    : Source_Ptr := No_Location;
-      Rep    : Boolean    := True;
       Warn   : Boolean    := False);
    --  N is a subexpression that will raise Constraint_Error when evaluated
    --  at run time. Msg is a message that explains the reason for raising the
@@ -171,21 +170,20 @@ package Sem_Util is
    --  (because of violation of static expression rules) in Ada 95 (but not
    --  in Ada 83). Typically this routine posts all messages at the Sloc of
    --  node N. However, if Loc /= No_Location, Loc is the Sloc used to output
-   --  the message. After posting the appropriate message, and if the flag
-   --  Rep is set, this routine replaces the expression with an appropriate
-   --  N_Raise_Constraint_Error node using the given Reason code. This node
-   --  is then marked as being static if the original node is static, but
-   --  sets the flag Raises_Constraint_Error, preventing further evaluation.
-   --  The error message may contain a } or & insertion character. This
-   --  normally references Etype (N), unless the Ent argument is given
-   --  explicitly, in which case it is used instead. The type of the raise
-   --  node that is built is normally Etype (N), but if the Typ parameter
-   --  is present, this is used instead. Warn is normally False. If it is
-   --  True then the message is treated as a warning even though it does
-   --  not end with a ? (this is used when the caller wants to parameterize
-   --  whether an error or warning is given), or when the message should be
-   --  treated as a warning even when SPARK_Mode is On (which otherwise would
-   --  force an error).
+   --  the message. After posting the appropriate message, this routine
+   --  replaces the expression with an appropriate N_Raise_Constraint_Error
+   --  node using the given Reason code. This node is then marked as being
+   --  static if the original node is static, but sets the flag
+   --  Raises_Constraint_Error, preventing further evaluation. The error
+   --  message may contain a } or & insertion character. This normally
+   --  references Etype (N), unless the Ent argument is given explicitly, in
+   --  which case it is used instead. The type of the raise node that is built
+   --  is normally Etype (N), but if the Typ parameter is present, this is used
+   --  instead. Warn is normally False. If it is True then the message is
+   --  treated as a warning even though it does not end with a ? (this is used
+   --  when the caller wants to parameterize whether an error or warning is
+   --  given), or when the message should be treated as a warning even when
+   --  SPARK_Mode is On (which otherwise would force an error).
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
    --  Id should be the entity of a state abstraction, an object, or a type.
