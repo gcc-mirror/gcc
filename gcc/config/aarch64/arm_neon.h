@@ -8709,72 +8709,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s8 (int8x8_t __a)
 {
-  int16x8_t __result;
-  __asm__ ("sshll %0.8h,%1.8b,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int16x8_t);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s16 (int16x4_t __a)
 {
-  int32x4_t __result;
-  __asm__ ("sshll %0.4s,%1.4h,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int32x4_t);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s32 (int32x2_t __a)
 {
-  int64x2_t __result;
-  __asm__ ("sshll %0.2d,%1.2s,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int64x2_t);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u8 (uint8x8_t __a)
 {
-  uint16x8_t __result;
-  __asm__ ("ushll %0.8h,%1.8b,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint16x8_t);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u16 (uint16x4_t __a)
 {
-  uint32x4_t __result;
-  __asm__ ("ushll %0.4s,%1.4h,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint32x4_t);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u32 (uint32x2_t __a)
 {
-  uint64x2_t __result;
-  __asm__ ("ushll %0.2d,%1.2s,#0"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint64x2_t);
 }
 
 __extension__ extern __inline int8x16_t
@@ -8853,72 +8823,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s16 (int16x8_t __a)
 {
-  int8x8_t __result;
-  __asm__ ("xtn %0.8b,%1.8h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int8x8_t);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s32 (int32x4_t __a)
 {
-  int16x4_t __result;
-  __asm__ ("xtn %0.4h,%1.4s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int16x4_t);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s64 (int64x2_t __a)
 {
-  int32x2_t __result;
-  __asm__ ("xtn %0.2s,%1.2d"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, int32x2_t);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u16 (uint16x8_t __a)
 {
-  uint8x8_t __result;
-  __asm__ ("xtn %0.8b,%1.8h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint8x8_t);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u32 (uint32x4_t __a)
 {
-  uint16x4_t __result;
-  __asm__ ("xtn %0.4h,%1.4s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint16x4_t);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u64 (uint64x2_t __a)
 {
-  uint32x2_t __result;
-  __asm__ ("xtn %0.2s,%1.2d"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_convertvector (__a, uint32x2_t);
 }
 
 #define vmull_high_lane_s16(a, b, c)                                    \
