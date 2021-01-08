@@ -1378,7 +1378,7 @@ bst_traits::equal (value_type existing, value_type candidate)
   return true;
 }
 
-typedef hash_map <vec <gimple *>, slp_tree,
+typedef hash_map <vec <stmt_vec_info>, slp_tree,
 		  simple_hashmap_traits <bst_traits, slp_tree> >
   scalar_stmts_to_slp_tree_map_t;
 
@@ -1405,6 +1405,7 @@ vect_build_slp_tree (vec_info *vinfo,
 	{
 	  SLP_TREE_REF_COUNT (*leader)++;
 	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
+	  stmts.release ();
 	}
       return *leader;
     }

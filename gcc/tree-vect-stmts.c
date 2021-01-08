@@ -7717,11 +7717,11 @@ vectorizable_store (vec_info *vinfo,
 		}
 	    }
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+	  vec_oprnds.release ();
 	  if (slp)
 	    break;
 	}
 
-      vec_oprnds.release ();
       return true;
     }
 
