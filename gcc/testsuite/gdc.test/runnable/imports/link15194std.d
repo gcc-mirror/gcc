@@ -30,7 +30,6 @@ else
 
     struct SetUnion(Rs...)
     {
-        pragma(msg, Rs);
         Rs r;
 
         // Rs[0] == RBRange!(RBNode!int*)

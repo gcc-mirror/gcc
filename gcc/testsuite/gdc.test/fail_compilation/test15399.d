@@ -1,4 +1,5 @@
 /* https://issues.dlang.org/show_bug.cgi?id=15399
+TEST_OUTPUT:
 ---
 fail_compilation/test15399.d(31): Error: writing to misaligned pointer in field S1.ptr is not @safe
 fail_compilation/test15399.d(32): Error: writing to misaligned pointer in field S2.ptr is not @safe

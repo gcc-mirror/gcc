@@ -1,5 +1,15 @@
 // PERMUTE_ARGS:
 // EXTRA_SOURCES: imports/mangle10077.d
+// EXTRA_FILES: imports/testmangle.d
+/*
+TEST_OUTPUT:
+---
+_D7imports10testmangle12detectMangleFPSQBlQBg6DetectZQq
+_D7imports10testmangle__T10DetectTmplTiZQpFNaNbNiNfZv
+true
+false
+---
+*/
 
 import imports.testmangle;
 

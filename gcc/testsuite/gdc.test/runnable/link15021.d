@@ -1,4 +1,11 @@
 // PERMUTE_ARGS: -inline -g -debug -unittest
+// EXTRA_FILES: imports/std15021conv.d
+/*
+TEST_OUTPUT:
+---
+hit!
+---
+*/
 
 import imports.std15021conv;
 

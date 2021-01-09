@@ -901,12 +901,12 @@ void test49()
 
 void foo50(int[] f, ...)
 {
-    foreach(int i, TypeInfo ti; _arguments) { }
+    foreach(size_t i, TypeInfo ti; _arguments) { }
 }
 
 void bar50(out int[] f, ...)
 {
-    foreach(int i, TypeInfo ti; _arguments) { }
+    foreach(size_t i, TypeInfo ti; _arguments) { }
 }
 
 void test50()
