@@ -1,3 +1,11 @@
+2021-01-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-07-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/std/coroutine: Mark the methods of the
+	trivial awaitables as constexpr.
+
 2021-01-03  Iain Sandoe  <iain@sandoe.co.uk>
 	    Jakub Jelinek   <jakub@redhat.com>
 

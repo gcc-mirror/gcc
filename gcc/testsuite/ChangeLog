@@ -1,3 +1,21 @@
+2021-01-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-01-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96504
+	* g++.dg/coroutines/torture/pr95519-05-gro.C: Use suspend_always
+	as the final suspend point so that we can check that the state
+	machine has reached the expected point.
+
+2021-01-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-05-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C: Check for
+	promise destruction via a global variable.
+
 2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
