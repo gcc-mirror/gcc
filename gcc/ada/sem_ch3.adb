@@ -17827,6 +17827,44 @@ package body Sem_Ch3 is
 
          T := Make_Defining_Identifier (Sloc (P), Nam);
 
+         --  If In_Spec_Expression, for example within a pre/postcondition,
+         --  provide enough information for use of the subtype without
+         --  depending on full analysis and freezing, which will happen when
+         --  building the correspondiing subprogram.
+
+         if In_Spec_Expression then
+            Analyze (Subtype_Mark (Obj_Def));
+
+            declare
+               Base_T : constant Entity_Id := Entity (Subtype_Mark (Obj_Def));
+               Decl   : constant Node_Id :=
+                 Make_Subtype_Declaration (Sloc (P),
+                   Defining_Identifier => T,
+                   Subtype_Indication  => Relocate_Node (Obj_Def));
+            begin
+               Set_Etype  (T, Base_T);
+               Set_Ekind  (T, Subtype_Kind (Ekind (Base_T)));
+               Set_Parent (T, Obj_Def);
+
+               if Ekind (T) = E_Array_Subtype then
+                  Set_First_Index (T, First_Index (Base_T));
+                  Set_Is_Constrained (T);
+
+               elsif Ekind (T) = E_Record_Subtype then
+                  Set_First_Entity (T, First_Entity (Base_T));
+                  Set_Has_Discriminants (T, Has_Discriminants (Base_T));
+                  Set_Is_Constrained (T);
+               end if;
+
+               Insert_Before (Related_Nod, Decl);
+            end;
+
+            return T;
+         end if;
+
+         --  When generating code, insert subtype declaration ahead of
+         --  declaration that generated it.
+
          Insert_Action (Obj_Def,
            Make_Subtype_Declaration (Sloc (P),
              Defining_Identifier => T,
