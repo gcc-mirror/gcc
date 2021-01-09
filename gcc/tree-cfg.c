@@ -3966,7 +3966,7 @@ verify_gimple_assign_binary (gassign *stmt)
 	    /* Because we special-case pointers to void we allow difference
 	       of arbitrary pointers with the same mode.  */
 	    || TYPE_MODE (rhs1_type) != TYPE_MODE (rhs2_type)
-	    || TREE_CODE (lhs_type) != INTEGER_TYPE
+	    || !INTEGRAL_TYPE_P (lhs_type)
 	    || TYPE_UNSIGNED (lhs_type)
 	    || TYPE_PRECISION (lhs_type) != TYPE_PRECISION (rhs1_type))
 	  {
