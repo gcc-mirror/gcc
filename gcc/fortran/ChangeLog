@@ -1,3 +1,17 @@
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93794
+	* trans-expr.c (gfc_conv_component_ref): Remove the condition
+	that deferred character length components only be allocatable.
+
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98458
+	* simplify.c (is_constant_array_expr): If an array constructor
+	expression has elements other than constants or structures, try
+	fixing the expression with gfc_reduce_init_expr. Also, if shape
+	is NULL, obtain the array size and set it.
+
 2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93701

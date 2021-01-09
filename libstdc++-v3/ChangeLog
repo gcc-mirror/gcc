@@ -1,3 +1,8 @@
+2021-01-08  Olivier Hainque  <hainque@adacore.com>
+
+	* testsuite/20_util/bind/ref_neg.cc: Tweak the
+	dg-prune-output regex for out-of-build-tree contexts.
+
 2021-01-07  Thomas Rodgers  <trodgers@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Add new header.

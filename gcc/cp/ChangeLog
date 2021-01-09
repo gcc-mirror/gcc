@@ -1,3 +1,16 @@
+2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98551
+	* constexpr.c (cxx_eval_call_expression): Check CLASS_TYPE_P
+	instead of AGGREGATE_TYPE_P before calling replace_result_decl.
+
+2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98515
+	* semantics.c (check_accessibility_of_qualified_id): Punt if
+	we're checking access of a scoped non-static member inside a
+	class template.
+
 2021-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98329
