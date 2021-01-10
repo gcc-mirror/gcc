@@ -70,14 +70,8 @@ package Exp_Imgv is
    --
    --  If the number of enumeration literals is large enough, a (perfect) hash
    --  function mapping the literals to their position number is also built and
-   --  requires in turn to build four additional tables:
-   --
-   --    xxxP  : constant array (0 .. X - 1) of Natural = (p1, p2, ..., pX);
-   --    xxxT1 : constant array (0 .. Y - 1) of Index_Type = (q1, ..., qY);
-   --    xxxT2 : constant array (0 .. Y - 1) of Index_Type = (r1, ..., rY);
-   --    xxxG  : constant array (0 .. Z - 1) of Index_Type = (s1, ..., sZ);
-   --
-   --  See the System.Perfect_Hash_Generators unit for a complete description.
+   --  requires additional tables. See the System.Perfect_Hash_Generators unit
+   --  for a complete description of this processing.
 
    procedure Expand_Image_Attribute (N : Node_Id);
    --  This procedure is called from Exp_Attr to expand an occurrence of the

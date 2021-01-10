@@ -304,6 +304,11 @@ package body Exp_Imgv is
          --  named P, T1, T2 and G are needed. The hash function is of the form
 
          --     function Hash (S : String) return Natural is
+         --        xxxP  : constant array (0 .. X) of Natural    = [...];
+         --        xxxT1 : constant array (0 .. Y) of Index_Type = [...];
+         --        xxxT2 : constant array (0 .. Y) of Index_Type = [...];
+         --        xxxG  : constant array (0 .. Z) of Index_Type = [...];
+
          --        F    : constant Natural := S'First - 1;
          --        L    : constant Natural := S'Length;
          --        A, B : Natural := 0;
@@ -320,7 +325,13 @@ package body Exp_Imgv is
          --        return (Natural (G (A)) + Natural (G (B))) mod M;
          --     end Hash;
 
-         --  where N is the length of G and M the number of literals.
+         --  where N is the length of G and M the number of literals. Note that
+         --  we declare the tables inside the function for two reasons: first,
+         --  their analysis creates array subtypes and thus their concatenation
+         --  operators which are homonyms of the concatenation operator and may
+         --  change the homonym number of user operators declared in the scope;
+         --  second, the code generator can fold the values in the tables when
+         --  they are small and avoid emitting them in the final object code.
 
          if H_OK then
             declare
@@ -336,6 +347,8 @@ package body Exp_Imgv is
                Loop_Stmts       : List_Id;
 
             begin
+               Body_Decls := New_List;
+
                --  Generate position table
 
                SPHG.Define (SPHG.Character_Position, Siz, L1, L2);
@@ -350,7 +363,7 @@ package body Exp_Imgv is
                    Chars => New_External_Name (Chars (E), 'P'));
 
                Append_Table_To
-                 (Act, EPos, Nat (L1 - 1), Standard_Natural, Pos);
+                 (Body_Decls, EPos, Nat (L1 - 1), Standard_Natural, Pos);
 
                --  Generate function table 1
 
@@ -367,7 +380,7 @@ package body Exp_Imgv is
 
                Ityp :=
                  Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
-               Append_Table_To (Act, ET1, Nat (L1 - 1), Ityp, T1);
+               Append_Table_To (Body_Decls, ET1, Nat (L1 - 1), Ityp, T1);
 
                --  Generate function table 2
 
@@ -384,7 +397,7 @@ package body Exp_Imgv is
 
                Ityp :=
                  Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
-               Append_Table_To (Act, ET2, Nat (L1 - 1), Ityp, T2);
+               Append_Table_To (Body_Decls, ET2, Nat (L1 - 1), Ityp, T2);
 
                --  Generate graph table
 
@@ -401,13 +414,11 @@ package body Exp_Imgv is
 
                Ityp :=
                  Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
-               Append_Table_To (Act, EG, Nat (L1 - 1), Ityp, G);
-
-               --  Generate body of hash function
+               Append_Table_To (Body_Decls, EG, Nat (L1 - 1), Ityp, G);
 
                F := Make_Temporary (Loc, 'F');
 
-               Body_Decls := New_List (
+               Append_To (Body_Decls,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => F,
                    Object_Definition   =>
