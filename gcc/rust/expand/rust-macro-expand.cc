@@ -56,31 +56,6 @@ public:
 	// if nothing else happens, increment
 	++it;
       }
-
-#if 0
-    for (int i = 0; i < fields.size ();)
-      {
-	auto &field = fields[i];
-
-	auto &field_attrs = field.get_outer_attrs ();
-	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg_with_expand (field_attrs))
-	  {
-	    fields.erase (fields.begin () + i);
-	    continue;
-	  }
-
-	// expand sub-types of type, but can't strip type itself
-	auto &type = field.get_field_type ();
-	type->accept_vis (*this);
-	if (type->is_marked_for_strip ())
-	  rust_error_at (type->get_locus_slow (),
-			 "cannot strip type in this position");
-
-	// if nothing else happens, increment
-	i++;
-      }
-#endif
   }
 
   void expand_tuple_fields (std::vector<AST::TupleField> &fields)
@@ -107,31 +82,6 @@ public:
 	// if nothing else happens, increment
 	++it;
       }
-
-#if 0
-    for (int i = 0; i < fields.size ();)
-      {
-	auto &field = fields[i];
-
-	auto &field_attrs = field.get_outer_attrs ();
-	expander.expand_cfg_attrs (field_attrs);
-	if (expander.fails_cfg_with_expand (field_attrs))
-	  {
-	    fields.erase (fields.begin () + i);
-	    continue;
-	  }
-
-	// expand sub-types of type, but can't strip type itself
-	auto &type = field.get_field_type ();
-	type->accept_vis (*this);
-	if (type->is_marked_for_strip ())
-	  rust_error_at (type->get_locus_slow (),
-			 "cannot strip type in this position");
-
-	// if nothing else happens, increment
-	i++;
-      }
-#endif
   }
 
   void expand_function_params (std::vector<AST::FunctionParam> &params)
@@ -164,37 +114,6 @@ public:
 	// increment
 	++it;
       }
-
-#if 0
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	auto &param_attrs = param.get_outer_attrs ();
-	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg_with_expand (param_attrs))
-	  {
-	    params.erase (params.begin () + i);
-	    continue;
-	  }
-
-	// TODO: should an unwanted strip lead to break out of loop?
-	auto &pattern = param.get_pattern ();
-	pattern->accept_vis (*this);
-	if (pattern->is_marked_for_strip ())
-	  rust_error_at (pattern->get_locus_slow (),
-			 "cannot strip pattern in this position");
-
-	auto &type = param.get_type ();
-	type->accept_vis (*this);
-	if (type->is_marked_for_strip ())
-	  rust_error_at (type->get_locus_slow (),
-			 "cannot strip type in this position");
-
-	// increment
-	i++;
-      }
-#endif
   }
 
   void expand_generic_args (AST::GenericArgs &args)
@@ -271,39 +190,6 @@ public:
 	// increment if found nothing else so far
 	++it;
       }
-
-#if 0
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	auto &param_attrs = param.get_outer_attrs ();
-	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg_with_expand (param_attrs))
-	  {
-	    params.erase (params.begin () + i);
-	    continue;
-	  }
-
-	auto &pattern = param.get_pattern ();
-	pattern->accept_vis (*this);
-	if (pattern->is_marked_for_strip ())
-	  rust_error_at (pattern->get_locus_slow (),
-			 "cannot strip pattern in this position");
-
-	if (param.has_type_given ())
-	  {
-	    auto &type = param.get_type ();
-	    type->accept_vis (*this);
-	    if (type->is_marked_for_strip ())
-	      rust_error_at (type->get_locus_slow (),
-			     "cannot strip type in this position");
-	  }
-
-	// increment if found nothing else so far
-	i++;
-      }
-#endif
   }
 
   void expand_self_param (AST::SelfParam &self_param)
@@ -798,22 +684,6 @@ public:
     /* apparently outer attributes are allowed in "elements of array
      * expressions" according to spec */
     expand_pointer_allow_strip (elems.get_values ());
-
-#if 0
-    auto &values = elems.get_values ();
-    for (int i = 0; i < values.size ();)
-      {
-	auto &value = values[i];
-
-	// mark for stripping if required
-	value->accept_vis (*this);
-
-	if (value->is_marked_for_strip ())
-	  values.erase (values.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::ArrayElemsCopied &elems) override
   {
@@ -916,22 +786,6 @@ public:
     /* apparently outer attributes are allowed in "elements of tuple
      * expressions" according to spec */
     expand_pointer_allow_strip (expr.get_tuple_elems ());
-
-#if 0
-    auto &values = expr.get_tuple_elems ();
-    for (int i = 0; i < values.size ();)
-      {
-	auto &value = values[i];
-
-	// mark for stripping if required
-	value->accept_vis (*this);
-
-	if (value->is_marked_for_strip ())
-	  values.erase (values.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::TupleIndexExpr &expr) override
   {
@@ -1118,22 +972,6 @@ public:
     /* spec says outer attributes are specifically allowed for elements
      * of tuple-style struct expressions, so full stripping possible */
     expand_pointer_allow_strip (expr.get_elems ());
-
-#if 0
-    auto &values = expr.get_elems ();
-    for (int i = 0; i < values.size ();)
-      {
-	auto &value = values[i];
-
-	// mark for stripping if required
-	value->accept_vis (*this);
-
-	if (value->is_marked_for_strip ())
-	  values.erase (values.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::StructExprUnit &expr) override
   {
@@ -1229,22 +1067,6 @@ public:
     /* spec says outer attributes are specifically allowed for elements
      * of tuple-style enum expressions, so full stripping possible */
     expand_pointer_allow_strip (expr.get_elems ());
-
-#if 0
-    auto &values = expr.get_elems ();
-    for (int i = 0; i < values.size ();)
-      {
-	auto &value = values[i];
-
-	// mark for stripping if required
-	value->accept_vis (*this);
-
-	if (value->is_marked_for_strip ())
-	  values.erase (values.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::EnumExprFieldless &expr) override
   {
@@ -1280,22 +1102,6 @@ public:
     /* spec says outer attributes are specifically allowed for elements
      * of call expressions, so full stripping possible */
     expand_pointer_allow_strip (expr.get_params ());
-
-#if 0
-    auto &params = expr.get_params ();
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	// mark for stripping if required
-	param->accept_vis (*this);
-
-	if (param->is_marked_for_strip ())
-	  params.erase (params.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::MethodCallExpr &expr) override
   {
@@ -1324,22 +1130,6 @@ public:
     /* spec says outer attributes are specifically allowed for elements
      * of method call expressions, so full stripping possible */
     expand_pointer_allow_strip (expr.get_params ());
-
-#if 0
-    auto &params = expr.get_params ();
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	// mark for stripping if required
-	param->accept_vis (*this);
-
-	if (param->is_marked_for_strip ())
-	  params.erase (params.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::FieldAccessExpr &expr) override
   {
@@ -1404,22 +1194,6 @@ public:
 
     // strip all statements
     expand_pointer_allow_strip (expr.get_statements ());
-
-#if 0
-    auto &stmts = expr.get_statements ();
-    for (int i = 0; i < stmts.size ();)
-      {
-	auto &stmt = stmts[i];
-
-	// mark for stripping if required
-	stmt->accept_vis (*this);
-
-	if (stmt->is_marked_for_strip ())
-	  stmts.erase (stmts.begin () + i);
-	else
-	  i++;
-      }
-#endif
 
     // strip tail expression if exists - can actually fully remove it
     if (expr.has_tail_expr ())
@@ -2118,56 +1892,6 @@ public:
 	// increment to next case if haven't continued
 	++it;
       }
-
-#if 0
-    for (int i = 0; i < match_cases.size ();)
-      {
-	auto &match_case = match_cases[i];
-
-	// strip match case based on outer attributes in match arm
-	auto &match_arm = match_case.get_arm ();
-	expander.expand_cfg_attrs (match_arm.get_outer_attrs ());
-	if (expander.fails_cfg_with_expand (match_arm.get_outer_attrs ()))
-	  {
-	    // strip match case
-	    match_cases.erase (match_cases.begin () + i);
-	    continue;
-	  }
-
-	for (auto &pattern : match_arm.get_patterns ())
-	  {
-	    pattern->accept_vis (*this);
-	    if (pattern->is_marked_for_strip ())
-	      rust_error_at (pattern->get_locus_slow (),
-			     "cannot strip pattern in this position");
-	  }
-
-	/* assuming that guard expression cannot be stripped as
-	 * strictly speaking you would have to strip the whole guard to
-	 * make syntactical sense, which you can't do. as such, only
-	 * strip sub-expressions */
-	if (match_arm.has_match_arm_guard ())
-	  {
-	    auto &guard_expr = match_arm.get_guard_expr ();
-	    guard_expr->accept_vis (*this);
-	    if (guard_expr->is_marked_for_strip ())
-	      rust_error_at (guard_expr->get_locus_slow (),
-			     "cannot strip expression in this position - outer "
-			     "attributes not allowed");
-	  }
-
-	// strip sub-expressions from match cases
-	auto &case_expr = match_case.get_expr ();
-	case_expr->accept_vis (*this);
-	if (case_expr->is_marked_for_strip ())
-	  rust_error_at (case_expr->get_locus_slow (),
-			 "cannot strip expression in this position - outer "
-			 "attributes not allowed");
-
-	// increment to next case if haven't continued
-	i++;
-      }
-#endif
   }
   void visit (AST::AwaitExpr &expr) override
   {
@@ -2310,22 +2034,6 @@ public:
 
     // strip items if required
     expand_pointer_allow_strip (module.get_items ());
-
-#if 0
-    auto &items = module.get_items ();
-    for (int i = 0; i < items.size ();)
-      {
-	auto &item = items[i];
-
-	// mark for stripping if required
-	item->accept_vis (*this);
-
-	if (item->is_marked_for_strip ())
-	  items.erase (items.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::ModuleNoBody &module) override
   {
@@ -2552,22 +2260,6 @@ public:
     /* strip enum fields if required - this is presumably
      * allowed by spec */
     expand_pointer_allow_strip (enum_item.get_variants ());
-
-#if 0
-    auto &variants = enum_item.get_variants ();
-    for (int i = 0; i < variants.size ();)
-      {
-	auto &variant = variants[i];
-
-	// mark for stripping if required
-	variant->accept_vis (*this);
-
-	if (variant->is_marked_for_strip ())
-	  variants.erase (variants.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::Union &union_item) override
   {
@@ -2775,22 +2467,6 @@ public:
 
     // strip trait items if required
     expand_pointer_allow_strip (trait.get_trait_items ());
-
-#if 0
-    auto &trait_items = trait.get_trait_items ();
-    for (int i = 0; i < trait_items.size ();)
-      {
-	auto &item = trait_items[i];
-
-	// mark for stripping if required
-	item->accept_vis (*this);
-
-	if (item->is_marked_for_strip ())
-	  trait_items.erase (trait_items.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::InherentImpl &impl) override
   {
@@ -2825,22 +2501,6 @@ public:
 
     // strip inherent impl items if required
     expand_pointer_allow_strip (impl.get_impl_items ());
-
-#if 0
-    auto &impl_items = impl.get_impl_items ();
-    for (int i = 0; i < impl_items.size ();)
-      {
-	auto &item = impl_items[i];
-
-	// mark for stripping if required
-	item->accept_vis (*this);
-
-	if (item->is_marked_for_strip ())
-	  impl_items.erase (impl_items.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::TraitImpl &impl) override
   {
@@ -2881,22 +2541,6 @@ public:
 
     // strip trait impl items if required
     expand_pointer_allow_strip (impl.get_impl_items ());
-
-#if 0
-    auto &impl_items = impl.get_impl_items ();
-    for (int i = 0; i < impl_items.size ();)
-      {
-	auto &item = impl_items[i];
-
-	// mark for stripping if required
-	item->accept_vis (*this);
-
-	if (item->is_marked_for_strip ())
-	  impl_items.erase (impl_items.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
   void visit (AST::ExternalStaticItem &item) override
   {
@@ -2952,29 +2596,6 @@ public:
 	// increment if nothing else happens
 	++it;
       }
-#if 0
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	auto &param_attrs = param.get_outer_attrs ();
-	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg_with_expand (param_attrs))
-	  {
-	    params.erase (params.begin () + i);
-	    continue;
-	  }
-
-	auto &type = param.get_type ();
-	type->accept_vis (*this);
-	if (type->is_marked_for_strip ())
-	  rust_error_at (type->get_locus_slow (),
-			 "cannot strip type in this position");
-
-	// increment if nothing else happens
-	i++;
-      }
-#endif
     /* NOTE: these are extern function params, which may have different
      * rules and restrictions to "normal" function params. So expansion
      * handled separately. */
@@ -3014,22 +2635,6 @@ public:
 
     // strip external items if required
     expand_pointer_allow_strip (block.get_extern_items ());
-
-#if 0
-    auto &extern_items = block.get_extern_items ();
-    for (int i = 0; i < extern_items.size ();)
-      {
-	auto &item = extern_items[i];
-
-	// mark for stripping if required
-	item->accept_vis (*this);
-
-	if (item->is_marked_for_strip ())
-	  extern_items.erase (extern_items.begin () + i);
-	else
-	  i++;
-      }
-#endif
   }
 
   // I don't think it would be possible to strip macros without expansion
@@ -3184,21 +2789,6 @@ public:
 
     // assuming you can strip struct pattern fields
     expand_pointer_allow_strip (elems.get_struct_pattern_fields ());
-
-#if 0
-    auto &fields = elems.get_struct_pattern_fields ();
-    for (int i = 0; i < fields.size ();)
-      {
-	auto &field = fields[i];
-
-	field->accept_vis (*this);
-
-	if (field->is_marked_for_strip ())
-	  fields.erase (fields.begin () + i);
-	else
-	  i++;
-      }
-#endif
 
     // assuming you can strip the ".." part
     if (elems.has_etc ())
@@ -3530,29 +3120,6 @@ public:
 	// increment if nothing else happens
 	++it;
       }
-#if 0
-    for (int i = 0; i < params.size ();)
-      {
-	auto &param = params[i];
-
-	auto &param_attrs = param.get_outer_attrs ();
-	expander.expand_cfg_attrs (param_attrs);
-	if (expander.fails_cfg_with_expand (param_attrs))
-	  {
-	    params.erase (params.begin () + i);
-	    continue;
-	  }
-
-	auto &type = param.get_type ();
-	type->accept_vis (*this);
-	if (type->is_marked_for_strip ())
-	  rust_error_at (type->get_locus_slow (),
-			 "cannot strip type in this position");
-
-	// increment if nothing else happens
-	i++;
-      }
-#endif
 
     /* TODO: assuming that variadic nature cannot be stripped. If this
      * is not true, then have code here to do so. */
@@ -3798,20 +3365,6 @@ MacroExpander::expand_crate ()
 	++it;
     }
 
-#if 0
-  for (int i = 0; i < items.size ();)
-    {
-      auto &item = items[i];
-
-      // mark for stripping if required
-      item->accept_vis (attr_visitor);
-
-      if (item->is_marked_for_strip ())
-	items.erase (items.begin () + i);
-      else
-	i++;
-    }
-#endif
   // TODO: should recursive attribute and macro expansion be done in the same
   // transversal? Or in separate ones like currently?
 
