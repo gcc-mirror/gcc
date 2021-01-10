@@ -48,24 +48,33 @@ next_power_of_two (size_t size)
   return 1 << (PTR_BITS - __builtin_clzl (size - 1));
 }
 
+#define ERRCHECK(a) do {	\
+    int rc = a;			\
+    if (rc) {   		\
+      errno = rc;		\
+      perror (#a " failed");	\
+      exit (1);			\
+    }				\
+} while(0)
+
 void
 initialize_shared_mutex (pthread_mutex_t *mutex)
 {
   pthread_mutexattr_t mattr;
-  pthread_mutexattr_init (&mattr);
-  pthread_mutexattr_setpshared (&mattr, PTHREAD_PROCESS_SHARED);
-  pthread_mutex_init (mutex, &mattr);
-  pthread_mutexattr_destroy (&mattr);
+  ERRCHECK (pthread_mutexattr_init (&mattr));
+  ERRCHECK (pthread_mutexattr_setpshared (&mattr, PTHREAD_PROCESS_SHARED));
+  ERRCHECK (pthread_mutex_init (mutex, &mattr));
+  ERRCHECK (pthread_mutexattr_destroy (&mattr));
 }
 
 void
 initialize_shared_condition (pthread_cond_t *cond)
 {
   pthread_condattr_t cattr;
-  pthread_condattr_init (&cattr);
-  pthread_condattr_setpshared (&cattr, PTHREAD_PROCESS_SHARED);
-  pthread_cond_init (cond, &cattr);
-  pthread_condattr_destroy (&cattr);
+  ERRCHECK (pthread_condattr_init (&cattr));
+  ERRCHECK (pthread_condattr_setpshared (&cattr, PTHREAD_PROCESS_SHARED));
+  ERRCHECK (pthread_cond_init (cond, &cattr));
+  ERRCHECK (pthread_condattr_destroy (&cattr));
 }
 
 int
