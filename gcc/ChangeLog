@@ -1,3 +1,51 @@
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (cc): Remove mode attribute.
+	(subst_<cc>, subst_f<cc>): Rename to...
+	(subst_<mode>, subst_f<VAXccnz:mode>): ... these respectively.
+	(*cbranch<VAXint:mode>4_<VAXcc:mode>): Update for `cc' removal.
+	(*cbranch<VAXfp:mode>4_<VAXccnz:mode>): Likewise.
+	(*branch_<mode>, *branch_<mode>_reversed): Likewise.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (subst_f<cc>): Add mode to operands and
+	`const_double_zero'.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/pdp11/pdp11.md (PDPfp): New mode iterator.
+	(fcc_cc, fcc_ccnz): Use it.  Add mode to `const_double_zero' and
+	operands.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* genemit.c (gen_exp) <CONST_DOUBLE>: Handle `const_double_zero'
+	rtx.
+	* read-rtl.c (rtx_reader::read_rtx_code): Handle machine mode
+	with `const_double_zero'.
+	* doc/rtl.texi (Constant Expression Types): Document it.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* tree-cfg.c (verify_gimple_assign_binary): Allow lhs of
+	POINTER_DIFF_EXPR to be any integral type.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98603
+	* function.c (instantiate_virtual_regs_in_insn): For asm goto
+	with impossible constraints, drop all SETs, CLOBBERs, drop PARALLEL
+	if any, set ASM_OPERANDS mode to VOIDmode and change
+	ASM_OPERANDS_OUTPUT_CONSTRAINT and ASM_OPERANDS_OUTPUT_IDX.
+
+2021-01-09  Alexandre Oliva  <oliva@gnu.org>
+
+	PR debug/97714
+	* final.c (notice_source_line): Narrow down the condition to
+	skip a line-0 marker.
+
 2021-01-08  Sergei Trofimovich  <siarheit@google.com>
 
 	* ipa-modref.c (merge_call_side_effects): Fix

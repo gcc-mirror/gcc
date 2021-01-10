@@ -1,3 +1,26 @@
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/cmpelim-eq-notsi.c: Use subtraction from a
+	constant then rather than addition.
+	* gcc.target/vax/cmpelim-le-notsi.c: Likewise.
+	* gcc.target/vax/cmpelim-lt-notsi.c: Likewise.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* c-c++-common/pr98556.c: New test.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98603
+	* gcc.target/i386/pr98603.c: New test.
+	* gcc.target/aarch64/pr98603.c: New test.
+
+2021-01-09  Alexandre Oliva  <oliva@gnu.org>
+
+	PR debug/97714
+	* gcc.dg/debug/pr97714.c: New.
+
 2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/98482
