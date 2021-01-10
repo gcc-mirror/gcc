@@ -1,3 +1,12 @@
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* tree-cfg.c (verify_gimple_assign_binary): Allow lhs of
+	POINTER_DIFF_EXPR to be any integral type.
+
 2021-01-07  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backported from master:

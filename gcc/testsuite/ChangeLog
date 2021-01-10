@@ -1,3 +1,27 @@
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* c-c++-common/pr98556.c: New test.
+
+2021-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98551
+	* g++.dg/cpp0x/constexpr-pmf2.C: New test.
+
+2021-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96197
+	* g++.dg/cpp1y/constexpr-array8.C: New test.
+
 2021-01-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

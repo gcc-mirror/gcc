@@ -1,3 +1,35 @@
+2021-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98551
+	* constexpr.c (cxx_eval_call_expression): Check CLASS_TYPE_P
+	instead of AGGREGATE_TYPE_P before calling replace_result_decl.
+
+2021-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96197
+	* constexpr.c (cxx_eval_constant_expression) <case CONST_DECL>:
+	Pass false to decl_constant_value and decl_really_constant_value
+	so that they don't unshare their result.
+	* cp-tree.h (decl_constant_value): New declaration with an added
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter defaulting to
+	true to existing declaration.
+	* init.c (constant_value_1): Add bool parameter which controls
+	whether to unshare the initializer before returning.  Call
+	unshare_expr at most once.
+	(scalar_constant_value): Pass true to constant_value_1's new
+	bool parameter.
+	(decl_really_constant_value): Add bool parameter and forward it
+	to constant_value_1.
+	(decl_constant_value): Likewise, but instead define a new
+	overload with an added bool parameter.
+
 2021-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
