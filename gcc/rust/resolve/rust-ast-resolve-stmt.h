@@ -51,12 +51,12 @@ public:
 
   void visit (AST::LetStmt &stmt)
   {
+    if (stmt.has_init_expr ())
+      ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id ());
+
     PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
     if (stmt.has_type ())
       ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
-
-    if (stmt.has_init_expr ())
-      ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id ());
   }
 
 private:

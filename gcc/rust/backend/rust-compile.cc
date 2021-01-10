@@ -90,6 +90,23 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     return true;
   });
 
+  if (expr.has_expr ())
+    {
+      // the previous passes will ensure this is a valid return
+      // dead code elimination should remove any bad trailing expressions
+      Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
+      rust_assert (compiled_expr != nullptr);
+
+      auto fncontext = ctx->peek_fn ();
+
+      std::vector<Bexpression *> retstmts;
+      retstmts.push_back (compiled_expr);
+      auto s
+	= ctx->get_backend ()->return_statement (fncontext.fndecl, retstmts,
+						 expr.expr->get_locus_slow ());
+      ctx->add_statement (s);
+    }
+
   ctx->pop_block ();
   translated = new_block;
 }

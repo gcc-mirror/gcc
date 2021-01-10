@@ -64,6 +64,25 @@ InferType::combine (TyBase *other)
 }
 
 void
+ErrorType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ErrorType::as_string () const
+{
+  return "<tyty::error>";
+}
+
+TyBase *
+ErrorType::combine (TyBase *other)
+{
+  // rust_error_at ();
+  return this;
+}
+
+void
 StructFieldType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

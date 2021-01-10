@@ -43,13 +43,14 @@ enum TypeKind
   UNIT,
   FIELD,
   // there are more to add...
+  ERROR
 };
 
 class TyVisitor;
 class TyBase
 {
 public:
-  ~TyBase () {}
+  virtual ~TyBase () {}
 
   HirId get_ref () const { return ref; }
 
@@ -74,6 +75,20 @@ class InferType : public TyBase
 {
 public:
   InferType (HirId ref) : TyBase (ref, TypeKind::INFER) {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  bool is_unit () const override { return true; }
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+};
+
+class ErrorType : public TyBase
+{
+public:
+  ErrorType (HirId ref) : TyBase (ref, TypeKind::ERROR) {}
 
   void accept_vis (TyVisitor &vis) override;
 

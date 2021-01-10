@@ -64,16 +64,43 @@ ASTLowering::go ()
 void
 ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
-  std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
-  std::unique_ptr<HIR::ExprWithoutBlock> block_expr;
   std::vector<HIR::Attribute> inner_attribs;
   std::vector<HIR::Attribute> outer_attribs;
 
+  std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
+  bool block_did_terminate = false;
   expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
-    auto translated_stmt = ASTLoweringStmt::translate (s);
+    bool terminated = false;
+    auto translated_stmt = ASTLoweringStmt::translate (s, &terminated);
     block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
+    block_did_terminate = terminated;
+    return !block_did_terminate;
+  });
+
+  // if there was a return expression everything after that becomes
+  // unreachable code. This can be detected for any AST NodeIDs that have no
+  // associated HIR Mappings
+  expr.iterate_stmts ([&] (AST::Stmt *s) -> bool {
+    HirId ref;
+    if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
+				       s->get_node_id (), &ref))
+      rust_warning_at (s->get_locus_slow (), 0, "unreachable statement");
+
     return true;
   });
+
+  HIR::ExprWithoutBlock *tail_expr = nullptr;
+  if (expr.has_tail_expr () && !block_did_terminate)
+    {
+      tail_expr = (HIR::ExprWithoutBlock *) ASTLoweringExpr::translate (
+	expr.get_tail_expr ().get ());
+    }
+  else if (expr.has_tail_expr () && block_did_terminate)
+    {
+      // warning unreachable tail expressions
+      rust_warning_at (expr.get_tail_expr ()->get_locus_slow (), 0,
+		       "unreachable expression");
+    }
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -82,17 +109,23 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 
   translated
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
-			  std::move (block_expr), std::move (inner_attribs),
-			  std::move (outer_attribs), expr.get_locus ());
+			  std::unique_ptr<HIR::ExprWithoutBlock> (tail_expr),
+			  std::move (inner_attribs), std::move (outer_attribs),
+			  expr.get_locus ());
+
+  terminated = block_did_terminate || expr.has_tail_expr ();
 }
 
 void
 ASTLoweringIfBlock::visit (AST::IfExpr &expr)
 {
+  bool ignored_terminated = false;
   HIR::Expr *condition
-    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+    = ASTLoweringExpr::translate (expr.get_condition_expr ().get (),
+				  &ignored_terminated);
   HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
+				   &ignored_terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -109,10 +142,18 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
 {
   HIR::Expr *condition
     = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+
+  bool if_block_terminated = false;
+  bool else_block_termianted = false;
+
   HIR::BlockExpr *if_block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
+				   &if_block_terminated);
   HIR::BlockExpr *else_block
-    = ASTLoweringBlock::translate (expr.get_else_block ().get ());
+    = ASTLoweringBlock::translate (expr.get_else_block ().get (),
+				   &else_block_termianted);
+
+  terminated = if_block_terminated && else_block_termianted;
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -132,10 +173,14 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
 {
   HIR::Expr *condition
     = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
+
+  bool ignored_terminated = false;
   HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get ());
+    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
+				   &ignored_terminated);
   HIR::IfExpr *conseq_if_expr
-    = ASTLoweringIfBlock::translate (expr.get_conseq_if_expr ().get ());
+    = ASTLoweringIfBlock::translate (expr.get_conseq_if_expr ().get (),
+				     &ignored_terminated);
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),

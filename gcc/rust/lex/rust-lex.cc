@@ -1938,16 +1938,6 @@ Lexer::parse_decimal_int_or_float (Location loc)
       PrimitiveCoreType type_hint = type_suffix_pair.first;
       length += type_suffix_pair.second;
 
-      if (type_hint == CORETYPE_F32 || type_hint == CORETYPE_F64)
-	{
-	  rust_error_at (
-	    get_current_location (),
-	    "invalid type suffix %qs for integer (decimal) literal",
-	    get_type_hint_string (type_hint));
-	  // ignore invalid type suffix as everything else seems fine
-	  type_hint = CORETYPE_UNKNOWN;
-	}
-
       current_column += length;
 
       str.shrink_to_fit ();

@@ -34,77 +34,127 @@ public:
 
   virtual void visit (UnitType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
+  }
+
+  virtual void visit (ADTType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (InferType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (FnType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (ParamType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (ArrayType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (BoolType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (IntType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
   virtual void visit (UintType &type) override
   {
-    Location locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (locus, "expected [%s] got [%s]", base->as_string ().c_str (),
-		   type.as_string ().c_str ());
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
+  }
+
+  virtual void visit (FloatType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
+  }
+
+  virtual void visit (ErrorType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
+  }
+
+  virtual void visit (StructFieldType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location def_locus = mappings->lookup_location (base->get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+    rust_fatal_error (def_locus, "declared here");
   }
 
 protected:
-  BaseRules (TyBase *base) : mappings (Analysis::Mappings::get ()), base (base)
+  BaseRules (TyBase *base)
+    : mappings (Analysis::Mappings::get ()), base (base),
+      resolved (new ErrorType (base->get_ref ()))
   {}
 
   Analysis::Mappings *mappings;
-
-private:
   TyBase *base;
+  TyBase *resolved;
 };
 
 class InferRules : protected BaseRules
 {
 public:
-  InferRules (InferType *base)
-    : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~InferRules () {}
+  InferRules (InferType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -114,31 +164,34 @@ public:
 
   // we are an inference variable so this means we can take the other as the
   // type
-  virtual void visit (BoolType &type) override
+  void visit (UnitType &type) override
+  {
+    resolved = new UnitType (type.get_ref ());
+  }
+
+  void visit (BoolType &type) override
   {
     resolved = new BoolType (type.get_ref ());
   }
 
-  virtual void visit (IntType &type) override
+  void visit (IntType &type) override
   {
     resolved = new IntType (type.get_ref (), type.get_kind ());
   }
 
-  virtual void visit (UintType &type) override
+  void visit (UintType &type) override
   {
     resolved = new UintType (type.get_ref (), type.get_kind ());
   }
 
 private:
   InferType *base;
-  TyBase *resolved;
 };
 
 class StructFieldTypeRules : protected BaseRules
 {
 public:
-  StructFieldTypeRules (StructFieldType *base)
-    : BaseRules (base), base (base), resolved (nullptr)
+  StructFieldTypeRules (StructFieldType *base) : BaseRules (base), base (base)
   {}
 
   TyBase *combine (TyBase *other)
@@ -149,15 +202,12 @@ public:
 
 private:
   StructFieldType *base;
-  TyBase *resolved;
 };
 
 class UnitRules : protected BaseRules
 {
 public:
-  UnitRules (UnitType *base) : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~UnitRules () {}
+  UnitRules (UnitType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -165,16 +215,16 @@ public:
     return resolved;
   }
 
+  void visit (IntType &type) override { rust_assert (false); }
+
 private:
   UnitType *base;
-  TyBase *resolved;
 };
 
 class FnRules : protected BaseRules
 {
 public:
-  FnRules (FnType *base) : BaseRules (base), base (base), resolved (nullptr) {}
-  ~FnRules () {}
+  FnRules (FnType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -184,16 +234,12 @@ public:
 
 private:
   FnType *base;
-  TyBase *resolved;
 };
 
 class ParamRules : protected BaseRules
 {
 public:
-  ParamRules (ParamType *base)
-    : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~ParamRules () {}
+  ParamRules (ParamType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -203,17 +249,12 @@ public:
 
 private:
   ParamType *base;
-  TyBase *resolved;
 };
 
 class ArrayRules : protected BaseRules
 {
 public:
-  ArrayRules (ArrayType *base)
-    : BaseRules (base), base (base), resolved (nullptr)
-  {}
-
-  ~ArrayRules () {}
+  ArrayRules (ArrayType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -242,15 +283,12 @@ public:
 
 private:
   ArrayType *base;
-  TyBase *resolved;
 };
 
 class BoolRules : protected BaseRules
 {
 public:
-  BoolRules (BoolType *base) : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~BoolRules () {}
+  BoolRules (BoolType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -265,15 +303,12 @@ public:
 
 private:
   BoolType *base;
-  TyBase *resolved;
 };
 
 class IntRules : protected BaseRules
 {
 public:
-  IntRules (IntType *base) : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~IntRules () {}
+  IntRules (IntType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -289,15 +324,12 @@ public:
 
 private:
   IntType *base;
-  TyBase *resolved;
 };
 
 class UintRules : protected BaseRules
 {
 public:
-  UintRules (UintType *base) : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~UintRules () {}
+  UintRules (UintType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -313,16 +345,12 @@ public:
 
 private:
   UintType *base;
-  TyBase *resolved;
 };
 
 class FloatRules : protected BaseRules
 {
 public:
-  FloatRules (FloatType *base)
-    : BaseRules (base), base (base), resolved (nullptr)
-  {}
-  ~FloatRules () {}
+  FloatRules (FloatType *base) : BaseRules (base), base (base) {}
 
   TyBase *combine (TyBase *other)
   {
@@ -338,7 +366,6 @@ public:
 
 private:
   FloatType *base;
-  TyBase *resolved;
 };
 
 } // namespace TyTy

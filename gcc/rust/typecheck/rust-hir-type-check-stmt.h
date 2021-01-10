@@ -30,27 +30,29 @@ namespace Resolver {
 class TypeCheckStmt : public TypeCheckBase
 {
 public:
-  static void Resolve (HIR::Stmt *stmt)
+  static TyTy::TyBase *Resolve (HIR::Stmt *stmt, bool is_final_stmt)
   {
-    TypeCheckStmt resolver;
+    TypeCheckStmt resolver (is_final_stmt);
     stmt->accept_vis (resolver);
+    return resolver.infered;
   }
 
   void visit (HIR::ExprStmtWithBlock &stmt)
   {
-    TypeCheckExpr::Resolve (stmt.get_expr ());
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), is_final_stmt);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
-    TypeCheckExpr::Resolve (stmt.get_expr ());
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), is_final_stmt);
   }
 
   void visit (HIR::LetStmt &stmt)
   {
     TyTy::TyBase *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
-      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
+      init_expr_ty
+	= TypeCheckExpr::Resolve (stmt.get_init_expr (), is_final_stmt);
 
     TyTy::TyBase *specified_ty = nullptr;
     if (stmt.has_type ())
@@ -94,7 +96,12 @@ public:
   }
 
 private:
-  TypeCheckStmt () : TypeCheckBase () {}
+  TypeCheckStmt (bool is_final_stmt)
+    : TypeCheckBase (), is_final_stmt (is_final_stmt)
+  {}
+
+  TyTy::TyBase *infered;
+  bool is_final_stmt;
 }; // namespace Resolver
 
 } // namespace Resolver

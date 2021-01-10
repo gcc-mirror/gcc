@@ -40,10 +40,44 @@ TypeResolution::Resolve (HIR::Crate &crate)
 void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
+  TyTy::TyBase *block_tyty
+    = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-    TypeCheckStmt::Resolve (s);
+    bool is_final_stmt = expr.is_final_stmt (s);
+    bool is_final_expr = is_final_stmt && !expr.has_expr ();
+
+    auto infered = TypeCheckStmt::Resolve (s, is_final_stmt);
+    if (is_final_expr)
+      {
+	delete block_tyty;
+	block_tyty = infered;
+      }
+
     return true;
   });
+
+  if (expr.has_expr ())
+    {
+      auto tail_tyty = TypeCheckExpr::Resolve (expr.expr.get (), true);
+
+      delete block_tyty;
+      block_tyty = tail_tyty;
+    }
+
+  // now that the stmts have been resolved we must resolve the block of locals
+  // and make sure the variables have been resolved
+  auto body_mappings = expr.get_mappings ();
+  Rib *rib = nullptr;
+  if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
+    {
+      rust_fatal_error (expr.get_locus (), "failed to lookup locals per block");
+      return;
+    }
+
+  TyTyResolver::Resolve (rib, mappings, resolver, context);
+
+  infered = block_tyty;
 }
 
 // RUST_HIR_TYPE_CHECK_STRUCT_FIELD

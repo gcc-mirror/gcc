@@ -65,6 +65,14 @@ public:
       ResolveType::go (function.get_return_type ().get (),
 		       function.get_node_id ());
 
+    NodeId scope_node_id = function.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+
+    // we make a new scope so the names of parameters are resolved and shadowed
+    // correctly
     for (auto &param : function.get_function_params ())
       {
 	ResolveType::go (param.get_type ().get (), param.get_node_id ());
@@ -72,18 +80,9 @@ public:
 				param.get_node_id ());
       }
 
-    // setup parent scoping for names
-    NodeId scope_node_id = function.get_definition ()->get_node_id ();
-    resolver->get_name_scope ().push (scope_node_id);
-    resolver->get_type_scope ().push (scope_node_id);
-    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-
-    function.get_definition ()->iterate_stmts (
-      [&] (AST::Stmt *s) mutable -> bool {
-	ResolveStmt::go (s, s->get_node_id ());
-	return true;
-      });
+    // resolve the function body
+    ResolveExpr::go (function.get_definition ().get (),
+		     function.get_node_id ());
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();

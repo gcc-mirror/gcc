@@ -185,9 +185,14 @@ public:
 	function_params.push_back (hir_param);
       }
 
+    bool terminated = false;
     std::unique_ptr<HIR::BlockExpr> function_body
       = std::unique_ptr<HIR::BlockExpr> (
-	ASTLoweringBlock::translate (function.get_definition ().get ()));
+	ASTLoweringBlock::translate (function.get_definition ().get (),
+				     &terminated));
+    if (!terminated && function.has_return_type ())
+      rust_error_at (function.get_definition ()->get_locus (),
+		     "missing return");
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),

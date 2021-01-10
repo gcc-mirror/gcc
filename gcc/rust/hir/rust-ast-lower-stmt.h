@@ -33,15 +33,12 @@ namespace HIR {
 class ASTLoweringStmt : public ASTLoweringBase
 {
 public:
-  static HIR::Stmt *translate (AST::Stmt *stmt)
+  static HIR::Stmt *translate (AST::Stmt *stmt, bool *terminated)
   {
     ASTLoweringStmt resolver;
     stmt->accept_vis (resolver);
-    if (resolver.translated == nullptr)
-      {
-	printf ("Failing translating: %s\n", stmt->as_string ().c_str ());
-	rust_assert (resolver.translated != nullptr);
-      }
+    rust_assert (resolver.translated != nullptr);
+    *terminated = resolver.terminated;
     return resolver.translated;
   }
 
@@ -50,7 +47,8 @@ public:
   void visit (AST::ExprStmtWithBlock &stmt)
   {
     HIR::ExprWithBlock *expr
-      = ASTLoweringExprWithBlock::translate (stmt.get_expr ().get ());
+      = ASTLoweringExprWithBlock::translate (stmt.get_expr ().get (),
+					     &terminated);
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -67,7 +65,8 @@ public:
 
   void visit (AST::ExprStmtWithoutBlock &stmt)
   {
-    HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr ().get ());
+    HIR::Expr *expr
+      = ASTLoweringExpr::translate (stmt.get_expr ().get (), &terminated);
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -110,9 +109,10 @@ public:
   }
 
 private:
-  ASTLoweringStmt () : translated (nullptr) {}
+  ASTLoweringStmt () : translated (nullptr), terminated (false) {}
 
   HIR::Stmt *translated;
+  bool terminated;
 };
 
 } // namespace HIR
