@@ -229,6 +229,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
   else if (SLP_TREE_DEF_TYPE (root) != vect_internal_def)
     {
       retval.first = PERM_TOP;
+      perm_cache->put (root, retval);
       return retval;
     }
 
@@ -241,6 +242,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
       complex_load_perm_t res = linear_loads_p (perm_cache, child);
       kind = vect_merge_perms (kind, res.first);
       /* Unknown and Top are not valid on blends as they produce no permute.  */
+      retval.first = kind;
       if (kind == PERM_UNKNOWN || kind == PERM_TOP)
 	return retval;
       all_loads.safe_push (res.second);
@@ -258,7 +260,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
       retval.first = kind;
       retval.second = nloads;
     }
-  else if (all_loads.length () == 1)
+  else
     {
       retval.first = kind;
       retval.second = all_loads[0];
