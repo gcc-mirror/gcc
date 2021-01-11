@@ -40,21 +40,27 @@ public:
   void visit (AST::PathInExpression &expr)
   {
     // name scope first
-    if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+    if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
       {
-	// check the type scope
-	if (!resolver->get_type_scope ().lookup (expr.as_string (),
-						 &resolved_node))
-	  {
-	    rust_error_at (expr.get_locus (), "unknown path %s",
-			   expr.as_string ().c_str ());
-	    return;
-	  }
+	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
+	resolver->insert_new_definition (expr.get_node_id (),
+					 Definition{expr.get_node_id (),
+						    parent});
       }
-
-    resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
-    resolver->insert_new_definition (expr.get_node_id (),
-				     Definition{expr.get_node_id (), parent});
+    // check the type scope
+    else if (resolver->get_type_scope ().lookup (expr.as_string (),
+						 &resolved_node))
+      {
+	resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
+	resolver->insert_new_definition (expr.get_node_id (),
+					 Definition{expr.get_node_id (),
+						    parent});
+      }
+    else
+      {
+	rust_error_at (expr.get_locus (), "unknown path %s",
+		       expr.as_string ().c_str ());
+      }
   }
 
   void visit (AST::ReturnExpr &expr)

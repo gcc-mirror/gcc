@@ -75,7 +75,7 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
 {
   // need to look up the reference for this identifier
   NodeId ref_node_id;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
+  if (!ctx->get_resolver ()->lookup_resolved_type (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
       rust_fatal_error (expr.get_locus (), "failed to look up resolved name");

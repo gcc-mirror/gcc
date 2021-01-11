@@ -180,7 +180,7 @@ public:
       }
 
     std::vector<Bvariable *> locals;
-    rib->iterate_decls ([&] (NodeId n) mutable -> bool {
+    rib->iterate_decls ([&] (NodeId n, Location) mutable -> bool {
       Resolver::Definition d;
       bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
       rust_assert (ok);

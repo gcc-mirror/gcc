@@ -37,10 +37,10 @@ public:
 
   ~Rib () {}
 
-  void insert_name (std::string ident, NodeId id)
+  void insert_name (std::string ident, NodeId id, Location locus)
   {
     mappings[ident] = id;
-    decls_within_rib.insert (id);
+    decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
   }
 
@@ -57,11 +57,11 @@ public:
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
 
-  void iterate_decls (std::function<bool (NodeId)> cb)
+  void iterate_decls (std::function<bool (NodeId, Location)> cb)
   {
     for (auto it : decls_within_rib)
       {
-	if (!cb (it))
+	if (!cb (it.first, it.second))
 	  return;
       }
   }
@@ -84,11 +84,30 @@ public:
     references[def].insert (ref);
   }
 
+  bool have_references_for_node (NodeId def) const
+  {
+    auto it = references.find (def);
+    if (it == references.end ())
+      return false;
+
+    return !it->second.empty ();
+  }
+
+  bool decl_was_declared_here (NodeId def) const
+  {
+    for (auto &it : decls_within_rib)
+      {
+	if (it.first == def)
+	  return true;
+      }
+    return false;
+  }
+
 private:
   CrateNum crate_num;
   NodeId node_id;
   std::map<std::string, NodeId> mappings;
-  std::set<NodeId> decls_within_rib;
+  std::set<std::pair<NodeId, Location> > decls_within_rib;
   std::map<NodeId, std::set<NodeId> > references;
 };
 
@@ -98,9 +117,9 @@ public:
   Scope (CrateNum crate_num) : crate_num (crate_num) {}
   ~Scope () {}
 
-  void insert (std::string ident, NodeId id)
+  void insert (std::string ident, NodeId id, Location locus)
   {
-    peek ()->insert_name (ident, id);
+    peek ()->insert_name (ident, id, locus);
   }
 
   bool lookup (std::string ident, NodeId *id)
@@ -137,6 +156,21 @@ public:
   }
 
   CrateNum get_crate_num () const { return crate_num; }
+
+  void append_reference_for_def (NodeId refId, NodeId defId)
+  {
+    bool ok = false;
+    iterate ([&] (Rib *r) mutable -> bool {
+      if (r->decl_was_declared_here (defId))
+	{
+	  ok = true;
+	  r->append_reference_for_def (defId, refId);
+	  return false;
+	}
+      return true;
+    });
+    rust_assert (ok);
+  }
 
 private:
   CrateNum crate_num;

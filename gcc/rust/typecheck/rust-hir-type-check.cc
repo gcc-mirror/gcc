@@ -140,10 +140,13 @@ TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
   NodeId ref_node_id;
   if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
-      rust_error_at (expr.get_locus (),
-		     "Failed to lookup reference for node: %s",
-		     expr.as_string ().c_str ());
-      return;
+      if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "Failed to lookup reference for node: %s",
+			 expr.as_string ().c_str ());
+	  return;
+	}
     }
 
   // node back to HIR

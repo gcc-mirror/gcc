@@ -44,7 +44,7 @@ public:
 
   void go (Rib *rib)
   {
-    rib->iterate_decls ([&] (NodeId decl_node_id) mutable -> bool {
+    rib->iterate_decls ([&] (NodeId decl_node_id, Location) mutable -> bool {
       // type inference in rust means we need to gather and examine all
       // references of this decl and combine each to make sure the type is
       // correctly inferred. Consider the example:

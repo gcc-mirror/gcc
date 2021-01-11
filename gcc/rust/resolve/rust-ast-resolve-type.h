@@ -46,7 +46,6 @@ public:
   {
     // this will need changed to handle mod/crate/use globs and look
     // at the segments in granularity
-    locus = path.get_locus ();
     if (resolver->get_type_scope ().lookup (path.as_string (), &resolved_node))
       {
 	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
