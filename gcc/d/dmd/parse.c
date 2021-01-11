@@ -644,7 +644,6 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
 
             case TOKdeprecated:
             {
-                Expression *e = NULL;
                 if (StorageClass _stc = parseDeprecatedAttribute(this, &pAttrs->depmsg))
                 {
                     stc = _stc;

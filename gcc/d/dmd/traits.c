@@ -933,7 +933,7 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return dimError(e, 1, dim);
 
         Scope *sc2 = sc->push();
-        sc2->flags = sc->flags | SCOPEnoaccesscheck;
+        sc2->flags = sc->flags | SCOPEnoaccesscheck | SCOPEignoresymbolvisibility;
         bool ok = TemplateInstance::semanticTiargs(e->loc, sc2, e->args, 1);
         sc2->pop();
         if (!ok)

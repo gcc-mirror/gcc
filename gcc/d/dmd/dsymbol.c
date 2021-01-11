@@ -531,7 +531,9 @@ Dsymbol *Dsymbol::search_correct(Identifier *ident)
 {
     if (global.gag)
         return NULL;            // don't do it for speculative compiles; too time consuming
-
+    // search for exact name first
+    if (Dsymbol *s = search(Loc(), ident, IgnoreErrors))
+        return s;
     return (Dsymbol *)speller(ident->toChars(), &symbol_search_fp, (void *)this, idchars);
 }
 
@@ -1094,7 +1096,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
             if ((flags & IgnorePrivateImports) && prots[i] == Prot::private_)
                 continue;
 
-            int sflags = flags & (IgnoreErrors | IgnoreAmbiguous | IgnoreSymbolVisibility); // remember these in recursive searches
+            int sflags = flags & (IgnoreErrors | IgnoreAmbiguous); // remember these in recursive searches
             Dsymbol *ss = (*importedScopes)[i];
 
             //printf("\tscanning import '%s', prots = %d, isModule = %p, isImport = %p\n", ss->toChars(), prots[i], ss->isModule(), ss->isImport());
@@ -1108,9 +1110,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
             {
                 if (flags & SearchImportsOnly)
                     continue;
-                // compatibility with -transition=import (Bugzilla 15925)
-                // SearchLocalsOnly should always get set for new lookup rules
-                sflags |= (flags & SearchLocalsOnly);
+                sflags |= SearchLocalsOnly;
             }
 
             /* Don't find private members if ss is a module
@@ -1189,19 +1189,6 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
                 if (!s->isOverloadSet())
                     a = mergeOverloadSet(ident, a, s);
                 s = a;
-            }
-
-            // TODO: remove once private symbol visibility has been deprecated
-            if (!(flags & IgnoreErrors) && s->prot().kind == Prot::private_ &&
-                !s->isOverloadable() && !s->parent->isTemplateMixin() && !s->parent->isNspace())
-            {
-                AliasDeclaration *ad;
-                // accessing private selective and renamed imports is
-                // deprecated by restricting the symbol visibility
-                if (s->isImport() || ((ad = s->isAliasDeclaration()) != NULL && ad->_import != NULL))
-                {}
-                else
-                    error(loc, "%s %s is private", s->kind(), s->toPrettyChars());
             }
             //printf("\tfound in imports %s.%s\n", toChars(), s.toChars());
             return s;

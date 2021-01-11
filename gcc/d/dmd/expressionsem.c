@@ -43,6 +43,7 @@ bool checkAccess(AggregateDeclaration *ad, Loc loc, Scope *sc, Dsymbol *smember)
 bool checkNestedRef(Dsymbol *s, Dsymbol *p);
 bool checkFrameAccess(Loc loc, Scope *sc, AggregateDeclaration *ad, size_t istart = 0);
 bool symbolIsVisible(Module *mod, Dsymbol *s);
+bool symbolIsVisible(Scope *sc, Dsymbol *s);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *extractSideEffect(Scope *sc, const char *name, Expression **e0, Expression *e, bool alwaysCopy = false);
 Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
@@ -331,7 +332,7 @@ public:
             /* See if the symbol was a member of an enclosing 'with'
             */
             WithScopeSymbol *withsym = scopesym->isWithScopeSymbol();
-            if (withsym && withsym->withstate->wthis)
+            if (withsym && withsym->withstate->wthis && symbolIsVisible(sc, s))
             {
                 /* Disallow shadowing
                 */
@@ -368,9 +369,20 @@ public:
             {
                 if (withsym)
                 {
-                    Declaration *d = s->isDeclaration();
-                    if (d)
-                        checkAccess(exp->loc, sc, NULL, d);
+                    if (withsym->withstate->exp->type->ty != Tvoid)
+                    {
+                        // with (exp)' is a type expression
+                        // or 's' is not visible there (for error message)
+                        e = new TypeExp(exp->loc, withsym->withstate->exp->type);
+                    }
+                    else
+                    {
+                        // 'with (exp)' is a Package/Module
+                        e = withsym->withstate->exp;
+                    }
+                    e = new DotIdExp(exp->loc, e, exp->ident);
+                    result = semantic(e, sc);
+                    return;
                 }
 
                 /* If f is really a function template,
@@ -8374,17 +8386,18 @@ Expression *semanticY(DotIdExp *exp, Scope *sc, int flag)
          */
         if (s && !(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc->_module, s))
         {
-            if (s->isDeclaration())
-                ::error(exp->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toChars());
-            else
-                ::deprecation(exp->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toChars());
-            // s = NULL
+            s = NULL;
         }
         if (s)
         {
-            if (Package *p = s->isPackage())
-                checkAccess(exp->loc, sc, p);
-
+            Package *p = s->isPackage();
+            if (p && checkAccess(sc, p))
+            {
+                s = NULL;
+            }
+        }
+        if (s)
+        {
             // if 's' is a tuple variable, the tuple is returned.
             s = s->toAlias();
 
@@ -8555,8 +8568,14 @@ Expression *semanticY(DotIdExp *exp, Scope *sc, int flag)
             return NULL;
         s = ie->sds->search_correct(exp->ident);
         if (s)
-            exp->error("undefined identifier '%s' in %s '%s', did you mean %s '%s'?",
-                       exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->kind(), s->toChars());
+        {
+            if (s->isPackage())
+                exp->error("undefined identifier `%s` in %s `%s`, perhaps add `static import %s;`",
+                    exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->toPrettyChars());
+            else
+                exp->error("undefined identifier '%s' in %s '%s', did you mean %s '%s'?",
+                    exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->kind(), s->toChars());
+        }
         else
             exp->error("undefined identifier '%s' in %s '%s'",
                        exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars());

@@ -1,9 +1,4 @@
-/*
-REQUIRED_ARGS: -de
-TEST_OUTPUT:
----
----
-*/
+// REQUIRED_ARGS: -de
 deprecated("A deprecated class") {
 class DepClass
 {

@@ -677,7 +677,7 @@ static Dsymbol *searchScopes(Scope *sc, Loc loc, Identifier *ident, int flags)
  * Find symbol in accordance with the UFCS name look up rule
  */
 
-Expression *searchUFCS(Scope *sc, UnaExp *ue, Identifier *ident)
+static Expression *searchUFCS(Scope *sc, UnaExp *ue, Identifier *ident)
 {
     //printf("searchUFCS(ident = %s)\n", ident->toChars());
     Loc loc = ue->loc;
@@ -687,46 +687,13 @@ Expression *searchUFCS(Scope *sc, UnaExp *ue, Identifier *ident)
     if (sc->flags & SCOPEignoresymbolvisibility)
         flags |= IgnoreSymbolVisibility;
 
-    Dsymbol *sold = NULL;
-    if (global.params.bug10378 || global.params.check10378)
-    {
-        sold = searchScopes(sc, loc, ident, flags | IgnoreSymbolVisibility);
-        if (!global.params.check10378)
-        {
-            s = sold;
-            goto Lsearchdone;
-        }
-    }
-
     // First look in local scopes
     s = searchScopes(sc, loc, ident, flags | SearchLocalsOnly);
     if (!s)
     {
         // Second look in imported modules
         s = searchScopes(sc, loc, ident, flags | SearchImportsOnly);
-
-        /** Still find private symbols, so that symbols that weren't access
-         * checked by the compiler remain usable.  Once the deprecation is over,
-         * this should be moved to search_correct instead.
-         */
-        if (!s && !(flags & IgnoreSymbolVisibility))
-        {
-            s = searchScopes(sc, loc, ident, flags | SearchLocalsOnly | IgnoreSymbolVisibility);
-            if (!s)
-                s = searchScopes(sc, loc, ident, flags | SearchImportsOnly | IgnoreSymbolVisibility);
-            if (s)
-                ::deprecation(loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toChars());
-        }
     }
-    if (global.params.check10378)
-    {
-        Dsymbol *snew = s;
-        if (sold != snew)
-            Scope::deprecation10378(loc, sold, snew);
-        if (global.params.bug10378)
-            s = sold;
-    }
-Lsearchdone:
 
     if (!s)
         return ue->e1->type->Type::getProperty(loc, ident, 0);
