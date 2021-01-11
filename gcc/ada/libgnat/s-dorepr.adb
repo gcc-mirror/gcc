@@ -38,7 +38,7 @@ separate (System.Double_Real)
 package body Product is
 
    procedure Split (N : Num; Hi : out Num; Lo : out Num);
-   --  Compute high word and low word of N
+   --  Compute high part and low part of N
 
    -----------
    -- Split --
@@ -52,44 +52,62 @@ package body Product is
    --  See the recent paper by Claude-Pierre Jeannerod, Jean-Michel Muller
    --  and Paul Zimmermann: On various ways to split a floating-point number
    --  ARITH 2018 - 25th IEEE Symposium on Computer Arithmetic, Jun 2018,
-   --  Amherst (MA), United States. pp.53-60.
+   --  Amherst (MA), United States, pages 53-60.
 
    procedure Split (N : Num; Hi : out Num; Lo : out Num) is
-      M : constant Positive := Num'Machine_Mantissa;
-
-      Rep32 : Interfaces.Unsigned_32;
-      Rep64 : Interfaces.Unsigned_64;
-      Rep80 : array (1 .. 2) of Interfaces.Unsigned_64;
-
       X : Num;
-      for X'Address use (case M is when 24 => Rep32'Address,
-                                   when 53 => Rep64'Address,
-                                   when 64 => Rep80'Address,
-                                   when others => raise Program_Error);
 
    begin
-      X := N;
+      --  Spill the input into the appropriate (maybe larger) bit container,
+      --  mask out the low bits and reload the modified value.
 
-      case M is
+      case Num'Machine_Mantissa is
          when 24 =>
-            --  Mask out the low 12 bits
+            declare
+               Rep32 : aliased Interfaces.Unsigned_32;
+               Temp  : Num := N with Address => Rep32'Address;
+               pragma Annotate (CodePeer, Modified, Rep32);
 
-            Rep32 := Rep32 and 16#FFFFF000#;
+            begin
+               --  Mask out the low 12 bits
+
+               Rep32 := Rep32 and 16#FFFFF000#;
+
+               X := Temp;
+            end;
 
          when 53 =>
-            --  Mask out the low 27 bits
+            declare
+               Rep64 : aliased Interfaces.Unsigned_64;
+               Temp  : Num := N with Address => Rep64'Address;
+               pragma Annotate (CodePeer, Modified, Rep64);
 
-            Rep64 := Rep64 and 16#FFFFFFFFF8000000#;
+            begin
+               --  Mask out the low 27 bits
+
+               Rep64 := Rep64 and 16#FFFFFFFFF8000000#;
+
+               X := Temp;
+            end;
 
          when 64 =>
-            --  Mask out the low 32 bits
+            declare
+               Rep80 : aliased array (1 .. 2) of Interfaces.Unsigned_64;
+               Temp  : Num := N with Address => Rep80'Address;
+               pragma Annotate (CodePeer, Modified, Rep80);
 
-            if System.Default_Bit_Order = High_Order_First then
-               Rep80 (1) := Rep80 (1) and 16#FFFFFFFFFFFF0000#;
-               Rep80 (2) := Rep80 (2) and 16#0000FFFFFFFFFFFF#;
-            else
-               Rep80 (1) := Rep80 (1) and 16#FFFFFFFF00000000#;
-            end if;
+            begin
+               --  Mask out the low 32 bits
+
+               if System.Default_Bit_Order = High_Order_First then
+                  Rep80 (1) := Rep80 (1) and 16#FFFFFFFFFFFF0000#;
+                  Rep80 (2) := Rep80 (2) and 16#0000FFFFFFFFFFFF#;
+               else
+                  Rep80 (1) := Rep80 (1) and 16#FFFFFFFF00000000#;
+               end if;
+
+               X := Temp;
+            end;
 
          when others =>
             raise Program_Error;
