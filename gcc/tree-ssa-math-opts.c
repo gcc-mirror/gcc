@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "targhooks.h"
 #include "domwalk.h"
+#include "tree-ssa-math-opts.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -1527,7 +1528,7 @@ powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
 /* Convert ARG0**N to a tree of multiplications of ARG0 with itself.
    This function needs to be kept in sync with powi_cost above.  */
 
-static tree
+tree
 powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
 	       tree arg0, HOST_WIDE_INT n)
 {
@@ -1536,9 +1537,9 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
   tree target;
 
   if (n == 0)
-    return build_real (type, dconst1);
+    return build_one_cst (type);
 
-  memset (cache, 0,  sizeof (cache));
+  memset (cache, 0, sizeof (cache));
   cache[1] = arg0;
 
   result = powi_as_mults_1 (gsi, loc, type, (n < 0) ? -n : n, cache);
