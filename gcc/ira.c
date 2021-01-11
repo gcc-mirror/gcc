@@ -5111,6 +5111,15 @@ move_unallocated_pseudos (void)
       {
 	int idx = i - first_moveable_pseudo;
 	rtx other_reg = pseudo_replaced_reg[idx];
+	/* The iterating range [first_moveable_pseudo, last_moveable_pseudo)
+	   covers every new pseudo created in find_moveable_pseudos,
+	   regardless of the validation with it is successful or not.
+	   So we need to skip the pseudos which were used in those failed
+	   validations to avoid unexpected DF info and consequent ICE.
+	   We only set pseudo_replaced_reg[] when the validation is successful
+	   in find_moveable_pseudos, it's enough to check it here.  */
+	if (!other_reg)
+	  continue;
 	rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
 	/* The use must follow all definitions of OTHER_REG, so we can
 	   insert the new definition immediately after any of them.  */
