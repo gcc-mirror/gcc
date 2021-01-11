@@ -3964,8 +3964,8 @@ have_whole_vector_shift (machine_mode mode)
 /* Function vect_model_reduction_cost.
 
    Models cost for a reduction operation, including the vector ops
-   generated within the strip-mine loop, the initial definition before
-   the loop, and the epilogue code that must be generated.  */
+   generated within the strip-mine loop in some cases, the initial
+   definition before the loop, and the epilogue code that must be generated.  */
 
 static void
 vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
@@ -4028,10 +4028,6 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
       prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
 					 scalar_to_vec, stmt_info, 0,
 					 vect_prologue);
-
-      /* Cost of reduction op inside loop.  */
-      inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
-				      stmt_info, 0, vect_body);
     }
 
   /* Determine cost of epilogue code.
@@ -6775,6 +6771,15 @@ vectorizable_reduction (stmt_vec_info stmt_info, slp_tree slp_node,
 
   vect_model_reduction_cost (stmt_info, reduc_fn, reduction_type, ncopies,
 			     cost_vec);
+  /* Cost the reduction op inside the loop if transformed via
+     vect_transform_reduction.  Otherwise this is costed by the
+     separate vectorizable_* routines.  */
+  if (single_defuse_cycle
+      || code == DOT_PROD_EXPR
+      || code == WIDEN_SUM_EXPR
+      || code == SAD_EXPR)
+    record_stmt_cost (cost_vec, ncopies, vector_stmt, stmt_info, 0, vect_body);
+
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
     dump_printf_loc (MSG_NOTE, vect_location,
