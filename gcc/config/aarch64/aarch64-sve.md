@@ -3973,10 +3973,10 @@
 
 ;; Unpredicated integer absolute difference.
 (define_expand "<su>abd<mode>_3"
-  [(use (match_operand:SVE_FULL_I 0 "register_operand"))
-   (USMAX:SVE_FULL_I
-     (match_operand:SVE_FULL_I 1 "register_operand")
-     (match_operand:SVE_FULL_I 2 "register_operand"))]
+  [(use (match_operand:SVE_I 0 "register_operand"))
+   (USMAX:SVE_I
+     (match_operand:SVE_I 1 "register_operand")
+     (match_operand:SVE_I 2 "register_operand"))]
   "TARGET_SVE"
   {
     rtx pred = aarch64_ptrue_reg (<VPRED>mode);
@@ -3988,17 +3988,20 @@
 
 ;; Predicated integer absolute difference.
 (define_insn "@aarch64_pred_<su>abd<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (minus:SVE_FULL_I
-	     (USMAX:SVE_FULL_I
-	       (match_operand:SVE_FULL_I 2 "register_operand" "%0, w")
-	       (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
-	     (<max_opp>:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(minus:SVE_I
+	  (unspec:SVE_I
+	    [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	     (USMAX:SVE_I
+	       (match_operand:SVE_I 2 "register_operand" "%0, w")
+	       (match_operand:SVE_I 3 "register_operand" "w, w"))]
+	    UNSPEC_PRED_X)
+	  (unspec:SVE_I
+	    [(match_dup 1)
+	     (<max_opp>:SVE_I
 	       (match_dup 2)
-	       (match_dup 3)))]
-	  UNSPEC_PRED_X))]
+	       (match_dup 3))]
+	    UNSPEC_PRED_X)))]
   "TARGET_SVE"
   "@
    <su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
@@ -4033,19 +4036,19 @@
 
 ;; Predicated integer absolute difference, merging with the first input.
 (define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_2"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (minus:SVE_FULL_I
-	     (unspec:SVE_FULL_I
+	   (minus:SVE_I
+	     (unspec:SVE_I
 	       [(match_operand 4)
-		(USMAX:SVE_FULL_I
-		  (match_operand:SVE_FULL_I 2 "register_operand" "0, w")
-		  (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))]
+		(USMAX:SVE_I
+		  (match_operand:SVE_I 2 "register_operand" "0, w")
+		  (match_operand:SVE_I 3 "register_operand" "w, w"))]
 	       UNSPEC_PRED_X)
-	     (unspec:SVE_FULL_I
+	     (unspec:SVE_I
 	       [(match_operand 5)
-		(<max_opp>:SVE_FULL_I
+		(<max_opp>:SVE_I
 		  (match_dup 2)
 		  (match_dup 3))]
 	       UNSPEC_PRED_X))
@@ -4062,25 +4065,56 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
-;; Predicated integer absolute difference, merging with an independent value.
-(define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_any"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=&w, &w, &w, &w, ?&w")
-	(unspec:SVE_FULL_I
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
-	   (minus:SVE_FULL_I
-	     (unspec:SVE_FULL_I
-	       [(match_operand 5)
-		(USMAX:SVE_FULL_I
-		  (match_operand:SVE_FULL_I 2 "register_operand" "0, w, w, w, w")
-		  (match_operand:SVE_FULL_I 3 "register_operand" "w, 0, w, w, w"))]
+;; Predicated integer absolute difference, merging with the second input.
+(define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_3"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (minus:SVE_I
+	     (unspec:SVE_I
+	       [(match_operand 4)
+		(USMAX:SVE_I
+		  (match_operand:SVE_I 2 "register_operand" "w, w")
+		  (match_operand:SVE_I 3 "register_operand" "0, w"))]
 	       UNSPEC_PRED_X)
-	     (unspec:SVE_FULL_I
-	       [(match_operand 6)
-		(<max_opp>:SVE_FULL_I
+	     (unspec:SVE_I
+	       [(match_operand 5)
+		(<max_opp>:SVE_I
 		  (match_dup 2)
 		  (match_dup 3))]
 	       UNSPEC_PRED_X))
-	   (match_operand:SVE_FULL_I 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0, %3\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+  "&& (!CONSTANT_P (operands[4]) || !CONSTANT_P (operands[5]))"
+  {
+    operands[4] = operands[5] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer absolute difference, merging with an independent value.
+(define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, &w, &w, &w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (minus:SVE_I
+	     (unspec:SVE_I
+	       [(match_operand 5)
+		(USMAX:SVE_I
+		  (match_operand:SVE_I 2 "register_operand" "0, w, w, w, w")
+		  (match_operand:SVE_I 3 "register_operand" "w, 0, w, w, w"))]
+	       UNSPEC_PRED_X)
+	     (unspec:SVE_I
+	       [(match_operand 6)
+		(<max_opp>:SVE_I
+		  (match_dup 2)
+		  (match_dup 3))]
+	       UNSPEC_PRED_X))
+	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[4])
