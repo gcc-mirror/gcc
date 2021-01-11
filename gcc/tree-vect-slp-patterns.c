@@ -140,32 +140,32 @@ is_linear_load_p (load_permutation_t loads)
 
   unsigned load, i;
   complex_perm_kinds_t candidates[4]
-    = { PERM_EVENODD
-      , PERM_ODDEVEN
-      , PERM_ODDODD
+    = { PERM_ODDODD
       , PERM_EVENEVEN
+      , PERM_EVENODD
+      , PERM_ODDEVEN
       };
 
   int valid_patterns = 4;
-  FOR_EACH_VEC_ELT_FROM (loads, i, load, 1)
+  FOR_EACH_VEC_ELT (loads, i, load)
     {
-      if (candidates[0] != PERM_UNKNOWN && load != i)
+      if (candidates[0] != PERM_UNKNOWN && load != 1)
 	{
 	  candidates[0] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[1] != PERM_UNKNOWN
-	  && load != (i % 2 == 0 ? i + 1 : i - 1))
+      if (candidates[1] != PERM_UNKNOWN && load != 0)
 	{
 	  candidates[1] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[2] != PERM_UNKNOWN && load != 1)
+      if (candidates[2] != PERM_UNKNOWN && load != i)
 	{
 	  candidates[2] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[3] != PERM_UNKNOWN && load != 0)
+      if (candidates[3] != PERM_UNKNOWN
+	  && load != (i % 2 == 0 ? i + 1 : i - 1))
 	{
 	  candidates[3] = PERM_UNKNOWN;
 	  valid_patterns--;
