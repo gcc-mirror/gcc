@@ -4192,12 +4192,12 @@
 
 ;; Unpredicated highpart multiplication.
 (define_expand "<su>mul<mode>3_highpart"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
 	  [(match_dup 3)
-	   (unspec:SVE_FULL_I
-	     [(match_operand:SVE_FULL_I 1 "register_operand")
-	      (match_operand:SVE_FULL_I 2 "register_operand")]
+	   (unspec:SVE_I
+	     [(match_operand:SVE_I 1 "register_operand")
+	      (match_operand:SVE_I 2 "register_operand")]
 	     MUL_HIGHPART)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
@@ -4208,12 +4208,12 @@
 
 ;; Predicated highpart multiplication.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL_I
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (unspec:SVE_FULL_I
-	     [(match_operand:SVE_FULL_I 2 "register_operand" "%0, w")
-	      (match_operand:SVE_FULL_I 3 "register_operand" "w, w")]
+	   (unspec:SVE_I
+	     [(match_operand:SVE_I 2 "register_operand" "%0, w")
+	      (match_operand:SVE_I 3 "register_operand" "w, w")]
 	     MUL_HIGHPART)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
