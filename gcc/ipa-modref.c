@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The following information is computed
      1) load/store access tree described in ipa-modref-tree.h
-	This is used by tree-ssa-alias to disambiguate load/dtores
+	This is used by tree-ssa-alias to disambiguate load/stores
      2) EAF flags used by points-to analysis (in tree-ssa-structlias).
 	and defined in tree-core.h.
    and stored to optimization_summaries.
@@ -1604,7 +1604,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	continue;
       if (dump_file)
 	{
-	  fprintf (dump_file, "%*s  Analyzing stmt:", depth * 4, "");
+	  fprintf (dump_file, "%*s  Analyzing stmt: ", depth * 4, "");
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
 
@@ -1621,9 +1621,19 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
       else if (gcall *call = dyn_cast <gcall *> (use_stmt))
 	{
 	  tree callee = gimple_call_fndecl (call);
-
+	  /* Return slot optiomization would require bit of propagation;
+	     give up for now.  */
+	  if (gimple_call_return_slot_opt_p (call)
+	      && gimple_call_lhs (call) != NULL_TREE
+	      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "%*s  Unhandled return slot opt\n",
+			 depth * 4, "");
+	      lattice[index].merge (0);
+	    }
 	  /* Recursion would require bit of propagation; give up for now.  */
-	  if (callee && !ipa && recursive_call_p (current_function_decl,
+	  else if (callee && !ipa && recursive_call_p (current_function_decl,
 						  callee))
 	    lattice[index].merge (0);
 	  else
