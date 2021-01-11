@@ -754,7 +754,7 @@ package body Exp_Imgv is
       Expr  : constant Node_Id    := Relocate_Node (First (Exprs));
       Pref  : constant Node_Id    := Prefix (N);
 
-      procedure Expand_User_Defined_Enumeration_Image;
+      procedure Expand_User_Defined_Enumeration_Image (Typ : Entity_Id);
       --  Expand attribute 'Image in user-defined enumeration types, avoiding
       --  string copy.
 
@@ -766,14 +766,12 @@ package body Exp_Imgv is
       -- Expand_User_Defined_Enumeration_Image --
       -------------------------------------------
 
-      procedure Expand_User_Defined_Enumeration_Image is
+      procedure Expand_User_Defined_Enumeration_Image (Typ : Entity_Id) is
          Ins_List : constant List_Id   := New_List;
          P1_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P2_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P3_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P4_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
-         Ptyp     : constant Entity_Id := Entity (Pref);
-         Rtyp     : constant Entity_Id := Root_Type (Ptyp);
          S1_Id    : constant Entity_Id := Make_Temporary (Loc, 'S');
 
       begin
@@ -785,7 +783,7 @@ package body Exp_Imgv is
          end if;
 
          --  Generate:
-         --    P1 : constant Natural := Pos;
+         --    P1 : constant Natural := Typ'Pos (Typ?(Expr));
 
          Append_To (Ins_List,
            Make_Object_Declaration (Loc,
@@ -797,8 +795,8 @@ package body Exp_Imgv is
                Convert_To (Standard_Natural,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Pos,
-                   Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                   Expressions    => New_List (Expr)))));
+                   Prefix         => New_Occurrence_Of (Typ, Loc),
+                   Expressions    => New_List (OK_Convert_To (Typ, Expr))))));
 
          --  Compute the index of the string start, generating:
          --    P2 : constant Natural := call_put_enumN (P1);
@@ -813,7 +811,7 @@ package body Exp_Imgv is
                Convert_To (Standard_Natural,
                  Make_Indexed_Component (Loc,
                    Prefix      =>
-                     New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                     New_Occurrence_Of (Lit_Indexes (Typ), Loc),
                    Expressions =>
                      New_List (New_Occurrence_Of (P1_Id, Loc))))));
 
@@ -837,7 +835,7 @@ package body Exp_Imgv is
                   Convert_To (Standard_Natural,
                     Make_Indexed_Component (Loc,
                       Prefix      =>
-                        New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                        New_Occurrence_Of (Lit_Indexes (Typ), Loc),
                       Expressions =>
                         New_List (Add_Node)))));
          end;
@@ -860,7 +858,7 @@ package body Exp_Imgv is
                 Name                =>
                   Make_Slice (Loc,
                     Prefix         =>
-                      New_Occurrence_Of (Lit_Strings (Rtyp), Loc),
+                      New_Occurrence_Of (Lit_Strings (Typ), Loc),
                     Discrete_Range =>
                       Make_Range (Loc,
                         Low_Bound  => New_Occurrence_Of (P2_Id, Loc),
@@ -944,7 +942,7 @@ package body Exp_Imgv is
          return;
       end if;
 
-      Ptyp := Entity (Pref);
+      Ptyp := Underlying_Type (Entity (Pref));
 
       --  Ada 2020 allows 'Image on private types, so fetch the underlying
       --  type to obtain the structure of the type. We use the base type,
@@ -958,16 +956,16 @@ package body Exp_Imgv is
          Rtyp := Underlying_Type (Base_Type (Ptyp));
       end if;
 
-      --  Enable speed-optimized expansion of user-defined enumeration types
-      --  if we are compiling with optimizations enabled and enumeration type
-      --  literals are generated. Otherwise the call will be expanded into a
-      --  call to the runtime library.
+      --  Use inline expansion for user-defined enumeration types for which
+      --  the literal string entity has been built, and if -gnatd_x is not
+      --  passed to the compiler. Otherwise the attribute will be expanded
+      --  into a call to a routine in the runtime.
 
-      if Optimization_Level > 0
-        and then not Global_Discard_Names
-        and then Is_User_Defined_Enumeration_Type (Rtyp)
+      if Is_User_Defined_Enumeration_Type (Rtyp)
+        and then Present (Lit_Strings (Rtyp))
+        and then not Debug_Flag_Underscore_X
       then
-         Expand_User_Defined_Enumeration_Image;
+         Expand_User_Defined_Enumeration_Image (Rtyp);
          return;
       end if;
 

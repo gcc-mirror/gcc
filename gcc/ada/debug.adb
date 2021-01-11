@@ -162,7 +162,7 @@ package body Debug is
    --  d_u
    --  d_v
    --  d_w
-   --  d_x
+   --  d_x  Disable inline expansion of Image attribute for enumeration types
    --  d_y
    --  d_z  Enable Put_Image on tagged types
 
@@ -989,6 +989,9 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_x  The compiler does not expand in line the Image attribute for user-
+   --       defined enumeration types.
 
    --  d_z  Enable the default Put_Image on tagged types that are not
    --       predefined.
