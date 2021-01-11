@@ -1,5 +1,20 @@
 // RUNNABLE_PHOBOS_TEST
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+EXTRA_FILES: imports/a9546.d
+
+Windows linker may write something like:
+---
+Creating library {{RESULTS_DIR}}/runnable/traits_0.lib and object {{RESULTS_DIR}}/runnable/traits_0.exp
+---
+
+TRANSFORM_OUTPUT: remove_lines("Creating library")
+TEST_OUTPUT:
+---
+__lambda1
+---
+*/
+
 module traits;
 
 import std.stdio;
@@ -1562,6 +1577,15 @@ void test15094()
 }
 
 /********************************************************/
+
+void testIsDisabled()
+{
+    static assert(__traits(isDisabled, D1.true_));
+    static assert(!__traits(isDisabled, D1.false_));
+    static assert(!__traits(isDisabled, D1));
+}
+
+/********************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=10100
 
 enum E10100
@@ -1575,15 +1599,6 @@ enum E10100
 static assert(
     [__traits(allMembers, E10100)] ==
     ["value", "_value", "__value", "___value", "____value"]);
-
-/********************************************************/
-
-void testIsDisabled()
-{
-    static assert(__traits(isDisabled, D1.true_));
-    static assert(!__traits(isDisabled, D1.false_));
-    static assert(!__traits(isDisabled, D1));
-}
 
 /********************************************************/
 

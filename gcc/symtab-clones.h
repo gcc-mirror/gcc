@@ -83,7 +83,7 @@ inline void
 clone_info::release ()
 {
   if (symtab->m_clones)
-    delete (symtab->m_clones);
+    ggc_delete (symtab->m_clones);
   symtab->m_clones = NULL;
 }
 

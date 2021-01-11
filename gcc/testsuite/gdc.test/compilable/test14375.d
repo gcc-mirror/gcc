@@ -1,8 +1,4 @@
-/*
-TEST_OUTPUT:
----
----
- */
+// https://issues.dlang.org/show_bug.cgi?id=14375
 interface IKeysAPI(string greetings) {
     static assert(greetings == "Hello world", greetings);
 }

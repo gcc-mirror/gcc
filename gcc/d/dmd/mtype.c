@@ -1762,10 +1762,10 @@ bool Type::needsNested()
 
 void Type::checkDeprecated(Loc loc, Scope *sc)
 {
-    Dsymbol *s = toDsymbol(sc);
-
-    if (s)
+    if (Dsymbol *s = toDsymbol(sc))
+    {
         s->checkDeprecated(loc, sc);
+    }
 }
 
 
@@ -6956,7 +6956,12 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
         if (d && (d->storage_class & STCtemplateparameter))
             s = s->toAlias();
         else
-            s->checkDeprecated(loc, sc);            // check for deprecated aliases
+        {
+            // check for deprecated aliases
+            s->checkDeprecated(loc, sc);
+            if (d)
+                d->checkDisabled(loc, sc, true);
+        }
 
         s = s->toAlias();
         //printf("\t2: s = '%s' %p, kind = '%s'\n",s->toChars(), s, s->kind());
@@ -6991,8 +6996,8 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
             Dsymbol *sm = s->searchX(loc, sc, id);
             if (sm && !(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, sm))
             {
-                ::deprecation(loc, "%s is not visible from module %s", sm->toPrettyChars(), sc->_module->toChars());
-                // sm = NULL;
+                ::error(loc, "`%s` is not visible from module `%s`", sm->toPrettyChars(), sc->_module->toChars());
+                sm = NULL;
             }
             if (global.errors != errorsave)
             {
@@ -7960,29 +7965,6 @@ Dsymbol *TypeStruct::toDsymbol(Scope *)
     return sym;
 }
 
-static Dsymbol *searchSymStruct(Scope *sc, Dsymbol *sym, Expression *e, Identifier *ident)
-{
-    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-    Dsymbol *sold = NULL;
-    if (global.params.bug10378 || global.params.check10378)
-    {
-        sold = sym->search(e->loc, ident, flags);
-        if (!global.params.check10378)
-            return sold;
-    }
-
-    Dsymbol *s = sym->search(e->loc, ident, flags | SearchLocalsOnly);
-    if (global.params.check10378)
-    {
-        Dsymbol *snew = s;
-        if (sold != snew)
-            Scope::deprecation10378(e->loc, sold, snew);
-        if (global.params.bug10378)
-            s = sold;
-    }
-    return s;
-}
-
 Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
 {
     Dsymbol *s;
@@ -8033,7 +8015,8 @@ Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
         return e;
     }
 
-    s = searchSymStruct(sc, sym, e, ident);
+    const int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
+    s = sym->search(e->loc, ident, flags | IgnorePrivateImports);
 L1:
     if (!s)
     {
@@ -8041,11 +8024,14 @@ L1:
     }
     if (!(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, s))
     {
-        ::deprecation(e->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toPrettyChars());
-        // return noMember(sc, e, ident, flag);
+        return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();
@@ -8515,35 +8501,6 @@ Dsymbol *TypeClass::toDsymbol(Scope *)
     return sym;
 }
 
-static Dsymbol *searchSymClass(Scope *sc, Dsymbol *sym, Expression *e, Identifier *ident)
-{
-    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-    Dsymbol *sold = NULL;
-    if (global.params.bug10378 || global.params.check10378)
-    {
-        sold = sym->search(e->loc, ident, flags | IgnoreSymbolVisibility);
-        if (!global.params.check10378)
-            return sold;
-    }
-
-    Dsymbol *s = sym->search(e->loc, ident, flags | SearchLocalsOnly);
-    if (!s && !(flags & IgnoreSymbolVisibility))
-    {
-        s = sym->search(e->loc, ident, flags | SearchLocalsOnly | IgnoreSymbolVisibility);
-        if (s && !(flags & IgnoreErrors))
-            ::deprecation(e->loc, "%s is not visible from class %s", s->toPrettyChars(), sym->toChars());
-    }
-    if (global.params.check10378)
-    {
-        Dsymbol *snew = s;
-        if (sold != snew)
-            Scope::deprecation10378(e->loc, sold, snew);
-        if (global.params.bug10378)
-            s = sold;
-    }
-    return s;
-}
-
 Expression *TypeClass::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
 {
     Dsymbol *s;
@@ -8597,7 +8554,9 @@ Expression *TypeClass::dotExp(Scope *sc, Expression *e, Identifier *ident, int f
         return e;
     }
 
-    s = searchSymClass(sc, sym, e, ident);
+    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
+    s = sym->search(e->loc, ident, flags | IgnorePrivateImports);
+
 L1:
     if (!s)
     {
@@ -8745,11 +8704,14 @@ L1:
     }
     if (!(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, s))
     {
-        ::deprecation(e->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toPrettyChars());
-        // return noMember(sc, e, ident, flag);
+        return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();

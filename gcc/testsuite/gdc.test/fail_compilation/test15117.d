@@ -1,6 +1,13 @@
 // REQUIRED_ARGS: -o-
 // PERMUTE_ARGS:
-// EXTRA_SOURCES: imports/test15117a.d
+// COMPILED_IMPORTS: imports/test15117a.d
+/*
+TEST_OUTPUT:
+---
+fail_compilation/test15177.d-mixin-20(20): Error: `imports.test15117a.object` is not visible from module `test15177`
+fail_compilation/test15177.d(29): Error: template instance `test15177.RunApiTest!()` error instantiating
+---
+*/
 
 import users = imports.test15117a;
 

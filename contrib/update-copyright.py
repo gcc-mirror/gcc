@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2013-2020 Free Software Foundation, Inc.
 #
@@ -64,7 +64,10 @@ class GenericFilter:
     def __init__ (self):
         self.skip_files = set()
         self.skip_dirs = set()
-        self.skip_extensions = set()
+        self.skip_extensions = set([
+                '.png',
+                '.pyc',
+                ])
         self.fossilised_files = set()
         self.own_files = set()
 
@@ -307,7 +310,7 @@ class Copyright:
             # If it looks like the copyright is incomplete, add the next line.
             while not self.is_complete (match):
                 try:
-                    next_line = file.next()
+                    next_line = file.readline()
                 except StopIteration:
                     break
 
@@ -381,6 +384,15 @@ class Copyright:
 
         return (line != orig_line, line, next_line)
 
+    def guess_encoding (self, pathname):
+        for encoding in ('utf8', 'iso8859'):
+            try:
+                open(pathname, 'r', encoding=encoding).read()
+                return encoding
+            except UnicodeDecodeError:
+                pass
+        return None
+
     def process_file (self, dir, filename, filter):
         pathname = os.path.join (dir, filename)
         if filename.endswith ('.tmp'):
@@ -395,7 +407,8 @@ class Copyright:
         changed = False
         line_filter = filter.get_line_filter (dir, filename)
         mode = None
-        with open (pathname, 'r') as file:
+        encoding = self.guess_encoding(pathname)
+        with open (pathname, 'r', encoding=encoding) as file:
             prev = None
             mode = os.fstat (file.fileno()).st_mode
             for line in file:
@@ -421,7 +434,7 @@ class Copyright:
         # If something changed, write the new file out.
         if changed and self.errors.ok():
             tmp_pathname = pathname + '.tmp'
-            with open (tmp_pathname, 'w') as file:
+            with open (tmp_pathname, 'w', encoding=encoding) as file:
                 for line in lines:
                     file.write (line)
                 os.fchmod (file.fileno(), mode)
@@ -432,7 +445,7 @@ class Copyright:
     def process_tree (self, tree, filter):
         for (dir, subdirs, filenames) in os.walk (tree):
             # Don't recurse through directories that should be skipped.
-            for i in xrange (len (subdirs) - 1, -1, -1):
+            for i in range (len (subdirs) - 1, -1, -1):
                 if filter.skip_dir (dir, subdirs[i]):
                     del subdirs[i]
 

@@ -57,3 +57,8 @@ int main()
   test02();
   return 0;
 }
+
+// The __versa_string destructor triggers a bogus -Wfree-nonheap-object
+// due to pr54202.
+// { dg-prune-output "\\\[-Wfree-nonheap-object" }
+

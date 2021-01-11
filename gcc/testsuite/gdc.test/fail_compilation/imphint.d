@@ -1,4 +1,5 @@
-/* PERMUTE_ARGS:
+/*
+TEST_OUTPUT:
 ---
 fail_compilation/imphint.d(14): Error: 'printf' is not defined, perhaps you need to import core.stdc.stdio; ?
 fail_compilation/imphint.d(15): Error: 'writeln' is not defined, perhaps you need to import std.stdio; ?

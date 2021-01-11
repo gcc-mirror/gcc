@@ -1793,7 +1793,7 @@ DO_LINK_SERIALIZATION = @DO_LINK_SERIALIZATION@
 ifeq ($(DO_LINK_SERIALIZATION),)
 LINK_PROGRESS = :
 else
-LINK_PROGRESS = msg="Linking |"; cnt=0; if test "$(2)" = start; then \
+LINK_PROGRESS = msg="Linking $@ |"; cnt=0; if test "$(2)" = start; then \
   idx=0; cnt2=$(DO_LINK_SERIALIZATION); \
   while test $$cnt2 -le $(1); do msg="$${msg}=="; cnt2=`expr $$cnt2 + 1`; idx=`expr $$idx + 1`; done; \
   cnt=$$idx; \

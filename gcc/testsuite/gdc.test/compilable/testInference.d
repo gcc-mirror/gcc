@@ -653,7 +653,7 @@ void foo10296()()
 
     void bar()() { a[1] = 2; }
     bar();
-    pragma(msg, typeof(bar!()));    // nothrow @safe void()
+    static assert(typeof(bar!()).stringof == "pure nothrow @nogc @safe void()");    // nothrow @safe void()
 }
 pure void test10296()
 {
@@ -811,7 +811,7 @@ void test13840() nothrow
             func13840();        // throwable function call
         }
     }
-    catch
+    catch(Throwable)
     {}
 }
 

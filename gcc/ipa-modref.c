@@ -835,10 +835,6 @@ merge_call_side_effects (modref_summary *cur_summary,
   auto_vec <modref_parm_map, 32> parm_map;
   bool changed = false;
 
-  if (dump_file)
-    fprintf (dump_file, " - Merging side effects of %s with parm map:",
-	     callee_node->dump_name ());
-
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
@@ -849,6 +845,10 @@ merge_call_side_effects (modref_summary *cur_summary,
 	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
       cur_summary->loads->collapse ();
     }
+
+  if (dump_file)
+    fprintf (dump_file, " - Merging side effects of %s with parm map:",
+	     callee_node->dump_name ());
 
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)

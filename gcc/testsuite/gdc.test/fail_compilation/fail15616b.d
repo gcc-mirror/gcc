@@ -1,5 +1,6 @@
 /*
 REQUIRED_ARGS: -v
+TEST_OUTPUT:
 ---
 fail_compilation/fail15616b.d(43): Error: none of the overloads of 'foo' are callable using argument types (double), candidates are:
 fail_compilation/fail15616b.d(16):        fail15616b.foo(int a)

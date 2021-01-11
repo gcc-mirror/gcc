@@ -1,3 +1,123 @@
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/cmpelim-eq-notsi.c: Use subtraction from a
+	constant then rather than addition.
+	* gcc.target/vax/cmpelim-le-notsi.c: Likewise.
+	* gcc.target/vax/cmpelim-lt-notsi.c: Likewise.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* c-c++-common/pr98556.c: New test.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98603
+	* gcc.target/i386/pr98603.c: New test.
+	* gcc.target/aarch64/pr98603.c: New test.
+
+2021-01-09  Alexandre Oliva  <oliva@gnu.org>
+
+	PR debug/97714
+	* gcc.dg/debug/pr97714.c: New.
+
+2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98482
+	* gcc.target/i386/pr98482-1.c: Require lp64.
+	* gcc.target/i386/pr98482-2.c: Likewise.
+
+2021-01-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-vx-macro-off-on.c: New test.
+	* gcc.target/s390/vector/long-double-vx-macro-on-off.c: New test.
+
+2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98551
+	* g++.dg/cpp0x/constexpr-pmf2.C: New test.
+
+2021-01-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98515
+	* g++.dg/template/access32.C: New test.
+	* g++.dg/template/access33.C: New test.
+
+2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98482
+	* gcc.target/i386/pr98482-2.c: Updated.
+
+2021-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98544
+	* gcc.dg/vect/bb-slp-pr98544.c: New testcase.
+
+2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98482
+	* gcc.target/i386/pr98482-1.c: New test.
+	* gcc.target/i386/pr98482-1.c: Likewise.
+	* gcc.target/i386/pr98482-2.c: New file.
+
+2021-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98585
+	* gcc.target/i386/pr98585.c: New test.
+
+2021-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cnot_2.c: New test.
+	* gcc.target/aarch64/sve/cond_cnot_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_6_run.c: Likewise.
+
+2021-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_uxt_5.c: New test.
+	* gcc.target/aarch64/sve/cond_uxt_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_8_run.c: Likewise.
+
+2021-01-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_asm_sve2_ok): New.
+	* g++.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Use it.
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+
+2021-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/usaba_1.c: New test.
+
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93794
+	* gfortran.dg/deferred_character_35.f90 : New test.
+
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98458
+	* gfortran.dg/implied_do_3.f90 : New test.
+
+2021-01-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.dg/array-quals-1.c: Allow srodata.
+
+2021-01-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/predef-10.c: New.
+	* gcc.target/riscv/predef-11.c: New.
+	* gcc.target/riscv/predef-12.c: New.
+	* gcc.target/riscv/predef-13.c: New.
+
 2021-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98329

@@ -1,4 +1,36 @@
-// RUNNABLE_PHOBOS_TEST
+/* RUNNABLE_PHOBOS_TEST
+TEST_OUTPUT:
+---
+hello
+hello
+
+
+
+hello
+hello
+---
+
+RUN_OUTPUT:
+---
+31
+42
+53
+64
+75
+86
+97
+108
+119
+1210
+5
+test4
+Constructor
+  Inside Scope
+Destructor
+hey
+Success
+---
+*/
 import std.stdio;
 
 /*********************************************/

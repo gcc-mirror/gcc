@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "case-cfn-macros.h"
 #include "tree-ssa-reassoc.h"
+#include "tree-ssa-math-opts.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -5976,8 +5977,8 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
   gimple *mul_stmt, *pow_stmt;
 
   /* Nothing to do if BUILT_IN_POWI doesn't exist for this type and
-     target.  */
-  if (!powi_fndecl)
+     target, unless type is integral.  */
+  if (!powi_fndecl && !INTEGRAL_TYPE_P (type))
     return NULL_TREE;
 
   /* Allocate the repeated factor vector.  */
@@ -6086,14 +6087,33 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	    }
 	  else
 	    {
-	      iter_result = make_temp_ssa_name (type, NULL, "reassocpow");
-	      pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
-					    build_int_cst (integer_type_node,
-							   power));
-	      gimple_call_set_lhs (pow_stmt, iter_result);
-	      gimple_set_location (pow_stmt, gimple_location (stmt));
-	      gimple_set_uid (pow_stmt, gimple_uid (stmt));
-	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+	      if (INTEGRAL_TYPE_P (type))
+		{
+		  gcc_assert (power > 1);
+		  gimple_stmt_iterator gsip = gsi;
+		  gsi_prev (&gsip);
+		  iter_result = powi_as_mults (&gsi, gimple_location (stmt),
+					       rf1->repr, power);
+		  gimple_stmt_iterator gsic = gsi;
+		  while (gsi_stmt (gsic) != gsi_stmt (gsip))
+		    {
+		      gimple_set_uid (gsi_stmt (gsic), gimple_uid (stmt));
+		      gimple_set_visited (gsi_stmt (gsic), true);
+		      gsi_prev (&gsic);
+		    }
+		}
+	      else
+		{
+		  iter_result = make_temp_ssa_name (type, NULL, "reassocpow");
+		  pow_stmt
+		    = gimple_build_call (powi_fndecl, 2, rf1->repr,
+					 build_int_cst (integer_type_node,
+							power));
+		  gimple_call_set_lhs (pow_stmt, iter_result);
+		  gimple_set_location (pow_stmt, gimple_location (stmt));
+		  gimple_set_uid (pow_stmt, gimple_uid (stmt));
+		  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+		}
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -6188,14 +6208,32 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	  /* Form a call to __builtin_powi for the maximum product
 	     just formed, raised to the power obtained earlier.  */
 	  rf1 = &repeat_factor_vec[j];
-	  iter_result = make_temp_ssa_name (type, NULL, "reassocpow");
-	  pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
-					build_int_cst (integer_type_node,
-						       power));
-	  gimple_call_set_lhs (pow_stmt, iter_result);
-	  gimple_set_location (pow_stmt, gimple_location (stmt));
-	  gimple_set_uid (pow_stmt, gimple_uid (stmt));
-	  gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+	  if (INTEGRAL_TYPE_P (type))
+	    {
+	      gcc_assert (power > 1);
+	      gimple_stmt_iterator gsip = gsi;
+	      gsi_prev (&gsip);
+	      iter_result = powi_as_mults (&gsi, gimple_location (stmt),
+					   rf1->repr, power);
+	      gimple_stmt_iterator gsic = gsi;
+	      while (gsi_stmt (gsic) != gsi_stmt (gsip))
+		{
+		  gimple_set_uid (gsi_stmt (gsic), gimple_uid (stmt));
+		  gimple_set_visited (gsi_stmt (gsic), true);
+		  gsi_prev (&gsic);
+		}
+	    }
+	  else
+	    {
+	      iter_result = make_temp_ssa_name (type, NULL, "reassocpow");
+	      pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr,
+					    build_int_cst (integer_type_node,
+							   power));
+	      gimple_call_set_lhs (pow_stmt, iter_result);
+	      gimple_set_location (pow_stmt, gimple_location (stmt));
+	      gimple_set_uid (pow_stmt, gimple_uid (stmt));
+	      gsi_insert_before (&gsi, pow_stmt, GSI_SAME_STMT);
+	    }
 	}
 
       /* If we previously formed at least one other builtin_powi call,
@@ -6522,7 +6560,8 @@ reassociate_bb (basic_block bb)
 		  attempt_builtin_copysign (&ops);
 
 		  if (reassoc_insert_powi_p
-		      && flag_unsafe_math_optimizations)
+		      && (flag_unsafe_math_optimizations
+			  || (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))))
 		    powi_result = attempt_builtin_powi (stmt, &ops);
 		}
 

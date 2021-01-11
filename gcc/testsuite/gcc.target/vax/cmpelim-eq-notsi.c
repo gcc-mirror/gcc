@@ -11,14 +11,14 @@ eq_notsi (int_t x)
   if (x == 0)
     return x;
   else
-    return x + 2;
+    return 2 - x;
 }
 
 /* Expect assembly like:
 
 	mcoml 4(%ap),%r0		# 32	[c=16]  *one_cmplsi2_ccz
 	jeql .L1			# 34	[c=26]  *branch_ccz
-	addl2 $2,%r0			# 31	[c=32]  *addsi3
+	subl3 %r0,$2,%r0		# 31	[c=32]  *subsi3/1
 .L1:
 
  */

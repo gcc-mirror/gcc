@@ -1,3 +1,220 @@
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (cc): Remove mode attribute.
+	(subst_<cc>, subst_f<cc>): Rename to...
+	(subst_<mode>, subst_f<VAXccnz:mode>): ... these respectively.
+	(*cbranch<VAXint:mode>4_<VAXcc:mode>): Update for `cc' removal.
+	(*cbranch<VAXfp:mode>4_<VAXccnz:mode>): Likewise.
+	(*branch_<mode>, *branch_<mode>_reversed): Likewise.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.md (subst_f<cc>): Add mode to operands and
+	`const_double_zero'.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/pdp11/pdp11.md (PDPfp): New mode iterator.
+	(fcc_cc, fcc_ccnz): Use it.  Add mode to `const_double_zero' and
+	operands.
+
+2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* genemit.c (gen_exp) <CONST_DOUBLE>: Handle `const_double_zero'
+	rtx.
+	* read-rtl.c (rtx_reader::read_rtx_code): Handle machine mode
+	with `const_double_zero'.
+	* doc/rtl.texi (Constant Expression Types): Document it.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98556
+	* tree-cfg.c (verify_gimple_assign_binary): Allow lhs of
+	POINTER_DIFF_EXPR to be any integral type.
+
+2021-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98603
+	* function.c (instantiate_virtual_regs_in_insn): For asm goto
+	with impossible constraints, drop all SETs, CLOBBERs, drop PARALLEL
+	if any, set ASM_OPERANDS mode to VOIDmode and change
+	ASM_OPERANDS_OUTPUT_CONSTRAINT and ASM_OPERANDS_OUTPUT_IDX.
+
+2021-01-09  Alexandre Oliva  <oliva@gnu.org>
+
+	PR debug/97714
+	* final.c (notice_source_line): Narrow down the condition to
+	skip a line-0 marker.
+
+2021-01-08  Sergei Trofimovich  <siarheit@google.com>
+
+	* ipa-modref.c (merge_call_side_effects): Fix
+	linebreak split by reordering two print calls.
+
+2021-01-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md (*tf_to_fprx2_0): Rename from
+	"*mov_tf_to_fprx2_0" for consistency, fix constraint.
+	(*tf_to_fprx2_1): Rename from "*mov_tf_to_fprx2_1" for
+	consistency, fix constraint.
+
+2021-01-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390-c.c (s390_def_or_undef_macro): Accept
+	callables instead of mask values.
+	(struct target_flag_set_p): New predicate.
+	(s390_cpu_cpp_builtins_internal): Define or undefine
+	__LONG_DOUBLE_VX__ macro.
+
+2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98482
+	* config/i386/i386.c (x86_function_profiler): Use R10 and R11
+	to call mcount in large model with PIC for NO_PROFILE_COUNTERS
+	targets.
+
+2021-01-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (pass_fre::execute): Reset the SCEV hash table.
+
+2021-01-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (scalar_stmts_to_slp_tree_map_t): Fix.
+	(vect_build_slp_tree): On cache hit release the matched
+	scalar stmts vector.
+	* tree-vect-stmts.c (vectorizable_store): Properly free
+	vec_oprnds before possibly gathering them again.
+
+2021-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98544
+	* tree-vect-slp.c (vect_optimize_slp): Always materialize
+	permutes at a permute node.
+
+2021-01-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98482
+	* config/i386/i386.c (x86_function_profiler): Use R10 to call
+	mcount in large model.  Sorry for large model with PIC.
+
+2021-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98585
+	* config/i386/i386.opt (ix86_cmodel, ix86_incoming_stack_boundary_arg,
+	ix86_pmode, ix86_preferred_stack_boundary_arg, ix86_regparm,
+	ix86_veclibabi_type): Remove x_ prefix, use TargetVariable instead of
+	TargetSave and initialize for variables with enum types.
+	(mfentry, mstack-protector-guard-reg=, mstack-protector-guard-offset=,
+	mstack-protector-guard-symbol=): Add Save.
+	* config/i386/i386-options.c (ix86_function_specific_save,
+	ix86_function_specific_restore): Don't save or restore x_ix86_cmodel,
+	x_ix86_incoming_stack_boundary_arg, x_ix86_pmode,
+	x_ix86_preferred_stack_boundary_arg, x_ix86_regparm,
+	x_ix86_veclibabi_type.
+
+2021-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cnot<mode>): Extend from
+	SVE_FULL_I to SVE_I.
+	(*cond_cnot<mode>_2, *cond_cnot<mode>_any): Likewise.
+
+2021-01-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_uxt<mode>_2): Extend from
+	SVE_FULL_I to SVE_I.
+	(*cond_uxt<mode>_any): Likewise.
+
+2021-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (Vwhalf): New iterator.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>adalp<mode>_3):
+	Rename to...
+	(aarch64_<sur>adalp<mode>): ... This.  Make more
+	builtin-friendly.
+	(<sur>sadv16qi): Adjust callsite of the above.
+	* config/aarch64/aarch64-simd-builtins.def (sadalp, uadalp): New
+	builtins.
+	* config/aarch64/arm_neon.h (vpadal_s8): Reimplement using
+	builtins.
+	(vpadal_s16): Likewise.
+	(vpadal_u8): Likewise.
+	(vpadal_u16): Likewise.
+	(vpadalq_s8): Likewise.
+	(vpadalq_s16): Likewise.
+	(vpadalq_s32): Likewise.
+	(vpadalq_u8): Likewise.
+	(vpadalq_u16): Likewise.
+	(vpadalq_u32): Likewise.
+
+2021-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<su>abd<mode>_3):
+	Rename to...
+	(aarch64_<su>abd<mode>): ... This.
+	(<sur>sadv16qi): Adjust callsite of the above.
+	* config/aarch64/aarch64-simd-builtins.def (sabd, uabd): Define
+	builtins.
+	* config/aarch64/arm_neon.h (vabd_s8): Reimplement using
+	builtin.
+	(vabd_s16): Likewise.
+	(vabd_s32): Likewise.
+	(vabd_u8): Likewise.
+	(vabd_u16): Likewise.
+	(vabd_u32): Likewise.
+	(vabdq_s8): Likewise.
+	(vabdq_s16): Likewise.
+	(vabdq_s32): Likewise.
+	(vabdq_u8): Likewise.
+	(vabdq_u16): Likewise.
+	(vabdq_u32): Likewise.
+
+2021-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (saba, uaba): Define
+	builtins.
+	* config/aarch64/arm_neon.h (vaba_s8): Implement using builtin.
+	(vaba_s16): Likewise.
+	(vaba_s32): Likewise.
+	(vaba_u8): Likewise.
+	(vaba_u16): Likewise.
+	(vaba_u32): Likewise.
+	(vabaq_s8): Likewise.
+	(vabaq_s16): Likewise.
+	(vabaq_s32): Likewise.
+	(vabaq_u8): Likewise.
+	(vabaq_u16): Likewise.
+	(vabaq_u32): Likewise.
+
+2021-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aba<mode>_3): Rename to...
+	(aarch64_<su>aba<mode>): ... This.  Handle uaba as well.
+	Change RTL pattern to match.
+
+2021-01-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_current_subset_list): New.
+	* config/riscv/riscv-c.c (riscv-subset.h): New.
+	(INCLUDE_STRING): Define.
+	(riscv_cpu_cpp_builtins): Add new style architecture extension
+	test macros.
+	* config/riscv/riscv-subset.h (riscv_subset_list::begin): New.
+	(riscv_subset_list::end): New.
+	(riscv_current_subset_list): New.
+
+2021-01-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (RISCV_DONT_CARE_VERSION):
+	Move to riscv-subset.h.
+	(struct riscv_subset_t): Ditto.
+	(class riscv_subset_list): Ditto.
+	* config/riscv/riscv-subset.h (RISCV_DONT_CARE_VERSION): Move
+	from riscv-common.c.
+	(struct riscv_subset_t): Ditto.
+	(class riscv_subset_list): Ditto.
+	* config/riscv/t-riscv ($(common_out_file)): Add file
+	dependency.
+
 2021-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/98567

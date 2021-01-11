@@ -1,4 +1,10 @@
 // REQUIRED_ARGS:
+/*
+TEST_OUTPUT:
+---
+null
+---
+*/
 
 import core.stdc.stdio;
 

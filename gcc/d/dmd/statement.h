@@ -74,6 +74,7 @@ public:
 
     Statement(Loc loc);
     virtual Statement *syntaxCopy();
+    static Statements *arraySyntaxCopy(Statements *a);
 
     void print();
     const char *toChars();

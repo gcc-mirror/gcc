@@ -551,10 +551,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.vcomplex = value;
       break;
 
-    case OPT_ftransition_checkimports:
-      global.params.check10378 = value;
-      break;
-
     case OPT_ftransition_complex:
       global.params.vcomplex = value;
       break;
@@ -570,10 +566,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_ftransition_field:
       global.params.vfield = value;
-      break;
-
-    case OPT_ftransition_import:
-      global.params.bug10378 = value;
       break;
 
     case OPT_ftransition_nogc:

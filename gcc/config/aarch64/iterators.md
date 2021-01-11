@@ -422,6 +422,10 @@
 			      VNx2DI VNx2DF
 			      VNx4QI VNx4HI VNx4HF VNx4BF VNx4SI VNx4SF])
 
+;; SVE integer modes with 2 or 4 elements.
+(define_mode_iterator SVE_24I [VNx2QI VNx2HI VNx2SI VNx2DI
+			       VNx4QI VNx4HI VNx4SI])
+
 ;; SVE modes with 2 elements.
 (define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2BF
 			     VNx2SI VNx2SF VNx2DI VNx2DF])

@@ -1,18 +1,8 @@
-// REQUIRED_ARGS: -transition=checkimports -transition=import -de
+// REQUIRED_ARGS:
 /*
 TEST_OUTPUT:
 ---
-
-fail_compilation/checkimports2c.d(28): Deprecation: local import search method found variable imports.imp2.X instead of variable checkimports2c.X
-fail_compilation/checkimports2c.d(28):        while evaluating: `static assert(2 == 2)`
-fail_compilation/checkimports2c.d(34): Deprecation: local import search method found variable imports.imp2.X instead of nothing
-fail_compilation/checkimports2c.d(34):        while evaluating: `static assert(2 == 2)`
-fail_compilation/checkimports2c.d(35): Deprecation: local import search method found variable imports.imp2.Y instead of nothing
-fail_compilation/checkimports2c.d(35):        while evaluating: `static assert(2 == 2)`
-fail_compilation/checkimports2c.d(37): Deprecation: local import search method found variable imports.imp2.X instead of variable checkimports2c.X
-fail_compilation/checkimports2c.d(37):        while evaluating: `static assert(2 == 2)`
-fail_compilation/checkimports2c.d(38): Deprecation: local import search method found variable imports.imp2.Y instead of variable imports.imp1.Y
-fail_compilation/checkimports2c.d(38):        while evaluating: `static assert(2 == 2)`
+fail_compilation/checkimports2c.d(18): Error: static assert:  `0 == 2` is false
 ---
 */
 

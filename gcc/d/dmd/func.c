@@ -292,6 +292,42 @@ public:
     }
 };
 
+/***********************************************************
+ * Tuple of result identifier (possibly null) and statement.
+ * This is used to store out contracts: out(id){ ensure }
+ */
+Ensure::Ensure()
+{
+    this->id = NULL;
+    this->ensure = NULL;
+}
+
+Ensure::Ensure(Identifier *id, Statement *ensure)
+{
+    this->id = id;
+    this->ensure = ensure;
+}
+
+Ensure Ensure::syntaxCopy()
+{
+    return Ensure(id, ensure->syntaxCopy());
+}
+
+/*****************************************
+ * Do syntax copy of an array of Ensure's.
+ */
+Ensures *Ensure::arraySyntaxCopy(Ensures *a)
+{
+    Ensures *b = NULL;
+    if (a)
+    {
+        b = a->copy();
+        for (size_t i = 0; i < a->length; i++)
+            (*b)[i] = (*a)[i].syntaxCopy();
+    }
+    return b;
+}
+
 /********************************* FuncDeclaration ****************************/
 
 FuncDeclaration::FuncDeclaration(Loc loc, Loc endloc, Identifier *id, StorageClass storage_class, Type *type)
@@ -314,10 +350,11 @@ FuncDeclaration::FuncDeclaration(Loc loc, Loc endloc, Identifier *id, StorageCla
     fdrequire = NULL;
     fdensure = NULL;
     mangleString = NULL;
-    outId = NULL;
     vresult = NULL;
     returnLabel = NULL;
     fensure = NULL;
+    frequires = NULL;
+    fensures = NULL;
     fbody = NULL;
     localsymtab = NULL;
     vthis = NULL;
@@ -372,10 +409,9 @@ Dsymbol *FuncDeclaration::syntaxCopy(Dsymbol *s)
     FuncDeclaration *f =
         s ? (FuncDeclaration *)s
           : new FuncDeclaration(loc, endloc, ident, storage_class, type->syntaxCopy());
-    f->outId = outId;
-    f->frequire = frequire ? frequire->syntaxCopy() : NULL;
-    f->fensure  = fensure  ? fensure->syntaxCopy()  : NULL;
-    f->fbody    = fbody    ? fbody->syntaxCopy()    : NULL;
+    f->frequires = frequires ? Statement::arraySyntaxCopy(frequires) : NULL;
+    f->fensures = fensures ? Ensure::arraySyntaxCopy(fensures) : NULL;
+    f->fbody = fbody ? fbody->syntaxCopy() : NULL;
     assert(!fthrows); // deprecated
     return f;
 }
@@ -439,6 +475,28 @@ static void initInferAttributes(FuncDeclaration *fd)
     // Initialize for inferring STCscope
     if (global.params.vsafe)
         fd->flags |= FUNCFLAGinferScope;
+}
+
+// Returns true if a contract can appear without a function body.
+static bool allowsContractWithoutBody(FuncDeclaration *funcdecl)
+{
+    assert(!funcdecl->fbody);
+
+    /* Contracts can only appear without a body when they are virtual
+     * interface functions or abstract.
+     */
+    Dsymbol *parent = funcdecl->toParent();
+    InterfaceDeclaration *id = parent->isInterfaceDeclaration();
+
+    if (!funcdecl->isAbstract() &&
+        (funcdecl->fensures || funcdecl->frequires) &&
+        !(id && funcdecl->isVirtual()))
+    {
+        ClassDeclaration *cd = parent->isClassDeclaration();
+        if (!(cd && cd->isAbstract()))
+            return false;
+    }
+    return true;
 }
 
 // Do the semantic analysis on the external interface to the function.
@@ -779,11 +837,6 @@ void FuncDeclaration::semantic(Scope *sc)
             isInvariantDeclaration())
             error("destructors, postblits and invariants are not allowed in union %s", ud->toChars());
     }
-
-    /* Contracts can only appear without a body when they are virtual interface functions
-     */
-    if (!fbody && (fensure || frequire) && !(id && isVirtual()))
-        error("in and out contracts require function body");
 
     if (parent->isStructDeclaration())
     {
@@ -1157,6 +1210,12 @@ void FuncDeclaration::semantic(Scope *sc)
     // Reflect this->type to f because it could be changed by findVtblIndex
     f = type->toTypeFunction();
 
+Ldone:
+    /* Contracts can only appear without a body when they are virtual interface functions
+     */
+    if (!fbody && !allowsContractWithoutBody(this))
+        error("in and out contracts can only appear without a body when they are virtual interface functions or abstract");
+
     /* Do not allow template instances to add virtual functions
      * to a class.
      */
@@ -1186,7 +1245,6 @@ void FuncDeclaration::semantic(Scope *sc)
     if (isMain())
         checkDmain();       // Check main() parameters and return type
 
-Ldone:
     /* Purity and safety can be inferred for some functions by examining
      * the function body.
      */
@@ -1270,7 +1328,7 @@ void FuncDeclaration::semantic2(Scope *sc)
  */
 static bool needsFensure(FuncDeclaration *fd)
 {
-    if (fd->fensure)
+    if (fd->fensures)
         return true;
 
     for (size_t i = 0; i < fd->foverrides.length; i++)
@@ -1287,16 +1345,83 @@ static bool needsFensure(FuncDeclaration *fd)
 }
 
 /****************************************************
- * Rewrite contracts as nested functions, then call them. Doing it as nested
- * functions means that overriding functions can call them.
+ * Check whether result variable can be built.
+ * Returns:
+ *     `true` if the function has a return type that
+ *     is different from `void`.
+ */
+static bool canBuildResultVar(FuncDeclaration *fd)
+{
+    TypeFunction *f = (TypeFunction *)fd->type;
+    return f && f->nextOf() && f->nextOf()->toBasetype()->ty != Tvoid;
+}
+
+/****************************************************
+ * Rewrite contracts as statements.
  * Params:
- *      fd = the function to rewrite contracts for
+ *      fdx = the function to rewrite contracts for
  */
 static void buildEnsureRequire(FuncDeclaration *fdx)
 {
+    if (fdx->frequires)
+    {
+        /*   in { statements1... }
+         *   in { statements2... }
+         *   ...
+         * becomes:
+         *   in { { statements1... } { statements2... } ... }
+         */
+        assert(fdx->frequires->length);
+        Loc loc = (*fdx->frequires)[0]->loc;
+        Statements *s = new Statements;
+        for (size_t i = 0; i < fdx->frequires->length; i++)
+        {
+            Statement *r = (*fdx->frequires)[i];
+            s->push(new ScopeStatement(r->loc, r, r->loc));
+        }
+        fdx->frequire = new CompoundStatement(loc, s);
+    }
+
+    if (fdx->fensures)
+    {
+        /*   out(id1) { statements1... }
+         *   out(id2) { statements2... }
+         *   ...
+         * becomes:
+         *   out(__result) { { ref id1 = __result; { statements1... } }
+         *                   { ref id2 = __result; { statements2... } } ... }
+         */
+        assert(fdx->fensures->length);
+        Loc loc = (*fdx->fensures)[0].ensure->loc;
+        Statements *s = new Statements;
+        for (size_t i = 0; i < fdx->fensures->length; i++)
+        {
+            Ensure r = (*fdx->fensures)[i];
+            if (r.id && canBuildResultVar(fdx))
+            {
+                Loc rloc = r.ensure->loc;
+                IdentifierExp *resultId = new IdentifierExp(rloc, Id::result);
+                ExpInitializer *init = new ExpInitializer(rloc, resultId);
+                StorageClass stc = STCref | STCtemp | STCresult;
+                VarDeclaration *decl = new VarDeclaration(rloc, NULL, r.id, init);
+                decl->storage_class = stc;
+                ExpStatement *sdecl = new ExpStatement(rloc, decl);
+                s->push(new ScopeStatement(rloc, new CompoundStatement(rloc, sdecl, r.ensure), rloc));
+            }
+            else
+            {
+                s->push(r.ensure);
+            }
+        }
+        fdx->fensure = new CompoundStatement(loc, s);
+    }
+
     if (!fdx->isVirtual())
         return;
 
+    /* Rewrite contracts as nested functions, then call them. Doing it as nested
+     * functions means that overriding functions can call them.
+     */
     TypeFunction *f = (TypeFunction *)fdx->type;
 
     if (fdx->frequire)
@@ -1322,9 +1447,6 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         fdx->fdrequire = fd;
     }
 
-    if (!fdx->outId && f->nextOf() && f->nextOf()->toBasetype()->ty != Tvoid)
-        fdx->outId = Id::result; // provide a default
-
     if (fdx->fensure)
     {
         /*   out (result) { ... }
@@ -1335,9 +1457,9 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         Loc loc = fdx->fensure->loc;
         Parameters *fparams = new Parameters();
         Parameter *p = NULL;
-        if (fdx->outId)
+        if (canBuildResultVar(fdx))
         {
-            p = new Parameter(STCref | STCconst, f->nextOf(), fdx->outId, NULL, NULL);
+            p = new Parameter(STCref | STCconst, f->nextOf(), Id::result, NULL, NULL);
             fparams->push(p);
         }
         TypeFunction *tf = new TypeFunction(ParameterList(fparams), Type::tvoid, LINKd);
@@ -1350,8 +1472,8 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         fd->fbody = fdx->fensure;
         Statement *s1 = new ExpStatement(loc, fd);
         Expression *eresult = NULL;
-        if (fdx->outId)
-            eresult = new IdentifierExp(loc, fdx->outId);
+        if (canBuildResultVar(fdx))
+            eresult = new IdentifierExp(loc, Id::result);
         Expression *e = new CallExp(loc, new VarExp(loc, fd, false), eresult);
         Statement *s2 = new ExpStatement(loc, e);
         fdx->fensure = new CompoundStatement(loc, s1, s2);
@@ -1435,13 +1557,13 @@ void FuncDeclaration::semantic3(Scope *sc)
 
     unsigned oldErrors = global.errors;
 
-    if (frequire)
+    if (frequires)
     {
         for (size_t i = 0; i < foverrides.length; i++)
         {
             FuncDeclaration *fdv = foverrides[i];
 
-            if (fdv->fbody && !fdv->frequire)
+            if (fdv->fbody && !fdv->frequires)
             {
                 error("cannot have an in contract when overriden function %s does not have an in contract", fdv->toPrettyChars());
                 break;
@@ -1450,9 +1572,9 @@ void FuncDeclaration::semantic3(Scope *sc)
     }
 
     // Remember whether we need to generate an 'out' contract.
-    bool needEnsure = needsFensure(this);
+    const bool needEnsure = needsFensure(this);
 
-    if (fbody || frequire || needEnsure)
+    if (fbody || frequires || needEnsure)
     {
         /* Symbol table into which we place parameters and nested functions,
          * solely to diagnose name collisions.
@@ -2039,7 +2161,7 @@ void FuncDeclaration::semantic3(Scope *sc)
         }
 
         frequire = mergeFrequire(frequire);
-        fensure = mergeFensure(fensure, outId);
+        fensure = mergeFensure(fensure, Id::result);
 
         Statement *freq = frequire;
         Statement *fens = fensure;
@@ -2075,8 +2197,18 @@ void FuncDeclaration::semantic3(Scope *sc)
         {
             /* fensure is composed of the [out] contracts
              */
-            if (f->next->ty == Tvoid && outId)
-                error("void functions have no result");
+            if (f->next->ty == Tvoid && fensures)
+            {
+                for (size_t i = 0; i < fensures->length; i++)
+                {
+                    Ensure e = (*fensures)[i];
+                    if (e.id)
+                    {
+                        error(e.ensure->loc, "`void` functions have no result");
+                        //fens = NULL;
+                    }
+                }
+            }
 
             sc2 = scout;    //push
             sc2->flags = (sc2->flags & ~SCOPEcontract) | SCOPEensure;
@@ -2263,8 +2395,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             }
 
             // If declaration has no body, don't set sbody to prevent incorrect codegen.
-            InterfaceDeclaration *id = parent->isInterfaceDeclaration();
-            if (fbody || (id && (fdensure || fdrequire) && isVirtual()))
+            if (fbody || allowsContractWithoutBody(this))
                 fbody = sbody;
         }
 
@@ -2277,7 +2408,7 @@ void FuncDeclaration::semantic3(Scope *sc)
             }
         }
 
-        if (naked && (fensure || frequire))
+        if (naked && (fensures || frequires))
             error("naked assembly functions with contracts are not supported");
 
         sc2->callSuper = 0;
@@ -2610,11 +2741,8 @@ void FuncDeclaration::buildResultVar(Scope *sc, Type *tret)
          * So, in here it may be a temporary type for vresult, and after
          * fbody->semantic() running, vresult->type might be modified.
          */
-        vresult = new VarDeclaration(loc, tret, outId ? outId : Id::result, NULL);
-        vresult->storage_class |= STCnodtor;
-
-        if (outId == Id::result)
-            vresult->storage_class |= STCtemp;
+        vresult = new VarDeclaration(loc, tret, Id::result, NULL);
+        vresult->storage_class |= STCnodtor | STCtemp;
         if (!isVirtual())
             vresult->storage_class |= STCconst;
         vresult->storage_class |= STCresult;
@@ -2685,7 +2813,7 @@ Statement *FuncDeclaration::mergeFrequire(Statement *sf)
          * be completed before code generation occurs.
          * https://issues.dlang.org/show_bug.cgi?id=3602
          */
-        if (fdv->frequire && fdv->semanticRun != PASSsemantic3done)
+        if (fdv->frequires && fdv->semanticRun != PASSsemantic3done)
         {
             assert(fdv->_scope);
             Scope *sc = fdv->_scope->push();
@@ -2758,7 +2886,7 @@ Statement *FuncDeclaration::mergeFensure(Statement *sf, Identifier *oid)
             //printf("fdv->fensure: %s\n", fdv->fensure->toChars());
             // Make the call: __ensure(result)
             Expression *eresult = NULL;
-            if (outId)
+            if (canBuildResultVar(this))
             {
                 eresult = new IdentifierExp(loc, oid);
 

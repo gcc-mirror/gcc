@@ -195,6 +195,14 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info)
       return;
 
     case CONST_DOUBLE:
+      /* Handle `const_double_zero' rtx.  */
+      if (CONST_DOUBLE_REAL_VALUE (x)->cl == rvc_zero)
+	{
+	  printf ("CONST_DOUBLE_ATOF (\"0\", %smode)",
+		  GET_MODE_NAME (GET_MODE (x)));
+	  return;
+	}
+      /* Fall through.  */
     case CONST_FIXED:
     case CONST_WIDE_INT:
       /* These shouldn't be written in MD files.  Instead, the appropriate

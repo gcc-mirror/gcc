@@ -202,7 +202,9 @@ class B9
     {
         A9 test1 = new A9(1, 2, 3);
         A9 test2 = new A9(1, 2, 3, 4);
-        int[3] arg; A9 test3 = new A9((arg[0]=1, arg[1]=2, arg[2]=3, arg));
+        int[3] arg;
+        arg[0]=1, arg[1]=2, arg[2]=3;
+        A9 test3 = new A9(arg);
     }
 }
 

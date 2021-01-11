@@ -1,10 +1,4 @@
 // REQUIRED_ARGS: -o-
-/*
-TEST_OUTPUT:
----
----
-*/
-
 mixin template Helpers()
 {
     static if (is(Flags!Move))

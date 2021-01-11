@@ -58,7 +58,7 @@ struct Symbol;          // back end symbol
 Expression *resolveProperties(Scope *sc, Expression *e);
 Expression *resolvePropertiesOnly(Scope *sc, Expression *e1);
 bool checkAccess(Loc loc, Scope *sc, Expression *e, Declaration *d);
-bool checkAccess(Loc loc, Scope *sc, Package *p);
+bool checkAccess(Scope *sc, Package *p);
 Expression *build_overload(Loc loc, Scope *sc, Expression *ethis, Expression *earg, Dsymbol *d);
 Dsymbol *search_function(ScopeDsymbol *ad, Identifier *funcid);
 void expandTuples(Expressions *exps);
@@ -181,7 +181,8 @@ public:
     bool checkNoBool();
     bool checkIntegral();
     bool checkArithmetic();
-    void checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDeprecated(Scope *sc, Dsymbol *s);
+    bool checkDisabled(Scope *sc, Dsymbol *s);
     bool checkPurity(Scope *sc, FuncDeclaration *f);
     bool checkPurity(Scope *sc, VarDeclaration *v);
     bool checkSafety(Scope *sc, FuncDeclaration *f);

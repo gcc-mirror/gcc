@@ -10,6 +10,30 @@ static assert(true, "message");
 
 alias double mydbl;
 
+alias fl1 = function ()
+    in {}
+    in (true)
+    out (; true)
+    out (r; true)
+    out
+    {
+    }
+    out (r)
+    {
+    }
+    do
+    {
+        return 2;
+    };
+
+alias fl2 = function ()
+    in (true)
+    out(; true)
+    out(r; true)
+    {
+        return 2;
+    };
+
 int testmain()
 in
 {
@@ -133,11 +157,11 @@ template Foo(T, int V)
     }
 
     try
-	    bar(1, 2);
+	bar(1, 2);
     catch(Object o)
-	    x++;
+	x++;
     finally
-	    x--;
+	x--;
 
     Object o;
     synchronized (o)
@@ -244,6 +268,7 @@ class Test
 
     pure nothrow @safe @nogc unittest {}
     pure nothrow @safe @nogc invariant {}
+    pure nothrow @safe @nogc invariant (true);
 
     pure nothrow @safe @nogc new (size_t sz) { return null; }
     pure nothrow @safe @nogc delete (void* p) { }

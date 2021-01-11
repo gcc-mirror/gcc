@@ -140,32 +140,32 @@ is_linear_load_p (load_permutation_t loads)
 
   unsigned load, i;
   complex_perm_kinds_t candidates[4]
-    = { PERM_EVENODD
-      , PERM_ODDEVEN
-      , PERM_ODDODD
+    = { PERM_ODDODD
       , PERM_EVENEVEN
+      , PERM_EVENODD
+      , PERM_ODDEVEN
       };
 
   int valid_patterns = 4;
-  FOR_EACH_VEC_ELT_FROM (loads, i, load, 1)
+  FOR_EACH_VEC_ELT (loads, i, load)
     {
-      if (candidates[0] != PERM_UNKNOWN && load != i)
+      if (candidates[0] != PERM_UNKNOWN && load != 1)
 	{
 	  candidates[0] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[1] != PERM_UNKNOWN
-	  && load != (i % 2 == 0 ? i + 1 : i - 1))
+      if (candidates[1] != PERM_UNKNOWN && load != 0)
 	{
 	  candidates[1] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[2] != PERM_UNKNOWN && load != 1)
+      if (candidates[2] != PERM_UNKNOWN && load != i)
 	{
 	  candidates[2] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[3] != PERM_UNKNOWN && load != 0)
+      if (candidates[3] != PERM_UNKNOWN
+	  && load != (i % 2 == 0 ? i + 1 : i - 1))
 	{
 	  candidates[3] = PERM_UNKNOWN;
 	  valid_patterns--;
@@ -229,6 +229,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
   else if (SLP_TREE_DEF_TYPE (root) != vect_internal_def)
     {
       retval.first = PERM_TOP;
+      perm_cache->put (root, retval);
       return retval;
     }
 
@@ -241,6 +242,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
       complex_load_perm_t res = linear_loads_p (perm_cache, child);
       kind = vect_merge_perms (kind, res.first);
       /* Unknown and Top are not valid on blends as they produce no permute.  */
+      retval.first = kind;
       if (kind == PERM_UNKNOWN || kind == PERM_TOP)
 	return retval;
       all_loads.safe_push (res.second);
@@ -258,7 +260,7 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
       retval.first = kind;
       retval.second = nloads;
     }
-  else if (all_loads.length () == 1)
+  else
     {
       retval.first = kind;
       retval.second = all_loads[0];
@@ -501,7 +503,7 @@ class complex_pattern : public vect_pattern
     void build (vec_info *);
 
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
 	     vec<slp_tree> *);
 };
 
@@ -606,11 +608,17 @@ class complex_add_pattern : public complex_pattern
   public:
     void build (vec_info *);
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
 	     vec<slp_tree> *);
 
     static vect_pattern*
     recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+
+    static vect_pattern*
+    mkInstance (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
+    {
+      return new complex_add_pattern (node, m_ops, ifn);
+    }
 };
 
 /* Perform a replacement of the detected complex add pattern with the new
@@ -627,6 +635,11 @@ complex_add_pattern::build (vec_info *vinfo)
   nodes.create (children.length ());
   nodes.quick_push (children[0]);
   nodes.quick_push (vect_build_swap_evenodd_node (children[1]));
+
+  SLP_TREE_REF_COUNT (nodes[0])++;
+  SLP_TREE_REF_COUNT (nodes[1])++;
+  vect_free_slp_tree (this->m_ops[0]);
+  vect_free_slp_tree (this->m_ops[1]);
 
   SLP_TREE_CHILDREN (*this->m_node).truncate (0);
   SLP_TREE_CHILDREN (*this->m_node).safe_splice (nodes);
@@ -648,7 +661,7 @@ complex_add_pattern::build (vec_info *vinfo)
 internal_fn
 complex_add_pattern::matches (complex_operation_t op,
 			      slp_tree_to_load_perm_map_t *perm_cache,
-			      vec<slp_tree> *ops)
+			      slp_tree *node, vec<slp_tree> *ops)
 {
   internal_fn ifn = IFN_LAST;
 
@@ -683,6 +696,9 @@ complex_add_pattern::matches (complex_operation_t op,
   if (linear_loads_p (perm_cache, children[1]).first != PERM_ODDEVEN)
     return IFN_LAST;
 
+  if (!vect_pattern_validate_optab (ifn, *node))
+    return IFN_LAST;
+
   return ifn;
 }
 
@@ -695,8 +711,9 @@ complex_add_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
   auto_vec<slp_tree> ops;
   complex_operation_t op
     = vect_detect_pair_op (*node, true, &ops);
-  internal_fn ifn = complex_add_pattern::matches (op, perm_cache, &ops);
-  if (!vect_pattern_validate_optab (ifn, *node))
+  internal_fn ifn
+    = complex_add_pattern::matches (op, perm_cache, node, &ops);
+  if (ifn == IFN_LAST)
     return NULL;
 
   return new complex_add_pattern (node, &ops, ifn);
