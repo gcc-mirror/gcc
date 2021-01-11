@@ -3901,17 +3901,17 @@
 )
 
 (define_insn_and_rewrite "*aarch64_adr<mode>_shift"
-  [(set (match_operand:SVE_FULL_SDI 0 "register_operand" "=w")
-	(plus:SVE_FULL_SDI
-	  (unspec:SVE_FULL_SDI
+  [(set (match_operand:SVE_24I 0 "register_operand" "=w")
+	(plus:SVE_24I
+	  (unspec:SVE_24I
 	    [(match_operand 4)
-	     (ashift:SVE_FULL_SDI
-	       (match_operand:SVE_FULL_SDI 2 "register_operand" "w")
-	       (match_operand:SVE_FULL_SDI 3 "const_1_to_3_operand"))]
+	     (ashift:SVE_24I
+	       (match_operand:SVE_24I 2 "register_operand" "w")
+	       (match_operand:SVE_24I 3 "const_1_to_3_operand"))]
 	    UNSPEC_PRED_X)
-	  (match_operand:SVE_FULL_SDI 1 "register_operand" "w")))]
+	  (match_operand:SVE_24I 1 "register_operand" "w")))]
   "TARGET_SVE"
-  "adr\t%0.<Vetype>, [%1.<Vetype>, %2.<Vetype>, lsl %3]"
+  "adr\t%0.<Vctype>, [%1.<Vctype>, %2.<Vctype>, lsl %3]"
   "&& !CONSTANT_P (operands[4])"
   {
     operands[4] = CONSTM1_RTX (<VPRED>mode);
