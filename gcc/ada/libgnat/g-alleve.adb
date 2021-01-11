@@ -258,7 +258,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
       pragma Convention (LL_Altivec, vspltisx);
 
       type Bit_Operation is
-        access function
+        not null access function
         (Value  : Component_Type;
          Amount : Natural) return Component_Type;
 

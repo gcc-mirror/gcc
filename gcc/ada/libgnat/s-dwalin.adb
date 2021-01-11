@@ -130,7 +130,7 @@ package body System.Dwarf_Lines is
       Code :        uint32) return String;
    --  Extract a file name from the prologue
 
-   type Callback is access procedure (C : in out Dwarf_Context);
+   type Callback is not null access procedure (C : in out Dwarf_Context);
    procedure For_Each_Row (C : in out Dwarf_Context; F : Callback);
    --  Traverse each .debug_line entry with a callback
 
