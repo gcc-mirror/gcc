@@ -2538,7 +2538,11 @@ vect_analyze_group_access_1 (vec_info *vinfo, dr_vec_info *dr_info)
 	 size.  */
       if (DR_IS_READ (dr)
 	  && (dr_step % type_size) == 0
-	  && groupsize > 0)
+	  && groupsize > 0
+	  /* This could be UINT_MAX but as we are generating code in a very
+	     inefficient way we have to cap earlier.
+	     See PR91403 for example.  */
+	  && groupsize <= 4096)
 	{
 	  DR_GROUP_FIRST_ELEMENT (stmt_info) = stmt_info;
 	  DR_GROUP_SIZE (stmt_info) = groupsize;
