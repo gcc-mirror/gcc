@@ -2,48 +2,15 @@
 # Copyright (C) 2019-2020 Nathan Sidwell, nathan@acm.org
 # License: Apache v2.0
 
-ifeq (0,$(MAKELEVEL))
-ifneq (,@tools@)
-$(info Prepending @tools@/bin to PATH)
-PATH := @tools@/bin:$(PATH)
-export PATH
-endif
-ifeq (,$(SERIAL))
-# Figure out if we should set parallelism
-ifeq (,$(filter clean%,$(MAKECMDGOALS)))
-PARALLELISM := @NUM_CPUS@
-endif
-endif
-endif
-
-ifeq (00,$(MAKELEVEL)$(if $(PARALLELISM),0,1))
-# Although Make 4.3 documentation suggests I can set parallelism just
-# by appending to MAKEFLAGS, it doesn't seem to work.  It's also not
-# possible to figure out the current Make invocation's parallelism,
-# the -j option doesn't appear in MAKEFLAGS and is magically inserted
-# when that is expanded in a rule.  I can't figure how to get a rule
-# expansion into a variable to test.  Fortunately, Make propagates an
-# incoming -j option rather than the one you attempted to append
-$(info Parallelizing $(PARALLELISM) ways)
-MAKEFLAGS += -j$(PARALLELISM)
-ifneq (,$(MAKECMDGOALS))
-$(MAKECMDGOALS): recurse
-endif
-recurse:
-	$(MAKE) -r$(MAKEFLAGS) $(MAKECMDGOALS)
-.PHONY: recurse
-else
-
 srcdir := @srcdir@
 prefix := @prefix@
 exec_prefix := @exec_prefix@
 bindir := @bindir@
 libdir := @libdir@
 includedir := @includedir@
-SUBDIRS := @SUBDIRS@
-# autoconf doesn't seem to like setting SHELL
-SHELL := $(shell which zsh 2>/dev/null >/dev/null && echo zsh \
-  || (echo "No ZSH, maybe flakey" >&2 && echo sh))
+# Linker options
+LDFLAGS := @LDFLAGS@
+LIBS := @LIBS@
 
 # We have to place the -I paths last, so that building will see -I paths to us
 CXX := $(filter-out -I%,@CXX@)
@@ -55,45 +22,9 @@ INSTALL := $(srcdir)/build-aux/install-sh
 CXXFLAGS := @CXXFLAGS@
 CXXINC := $(filter -I%,@CXX@)
 CXXOPTS := $(CXXFLAGS) @PICFLAG@
-ifeq ($(notdir $(firstword $(CXX))),g++)
-# It's GCC, or pretending to be it -- so it better smell like it!
-# Code generation
-CXXOPTS += -fno-enforce-eh-specs
-CXXOPTS += -fno-stack-protector -fno-threadsafe-statics
+
 ifneq (@EXCEPTIONS@,yes)
 CXXOPTS += -fno-exceptions -fno-rtti
-endif
-ifeq ($(filter -fdebug-prefix-map=%,$(CXXOPTS)),)
-CXXOPTS += -fdebug-prefix-map=${srcdir}/=
-endif
-# Warning options
-CXXOPTS += -W -Wall
-ifeq (no,)
-# just turn off for now
-CXXOPTS += -Woverloaded-virtual -Wshadow
-CXXOPTS += -Wno-invalid-offsetof -Wno-unused-variable
-CXXOPTS += -Wno-missing-field-initializers
-# Diagnostic options, look at controlling terminal so that piping
-# through more works
-MLEN := $(shell stty size </dev/tty 2>/dev/null | cut -d' ' -f2)
-ifneq (,$(MLEN))
-CXXOPTS += -fmessage-length=$(MLEN)
-endif
-CXXOPTS += -fdiagnostics-color=always -fno-diagnostics-show-option
-endif
-else
-ifeq ($(notdir $(firstword $(CXX))),clang++)
-CXXOPTS += -fno-stack-protector -fno-threadsafe-statics
-ifneq (@EXCEPTIONS@,yes)
-CXXOPTS += -fno-exceptions -fno-rtti
-endif
-# Warning options
-CXXOPTS += -W -Wall -Woverloaded-virtual -Wshadow
-CXXOPTS += -Wno-invalid-offsetof -Wno-unused-variable
-CXXOPTS += -Wno-missing-field-initializers
-else
-# Add different compiler's options here
-endif
 endif
 
 # Config
@@ -127,13 +58,12 @@ vpath %.cc $(srcdir)
 	$(CXX) $(strip $(CXXOPTS) $(call SRC_CXXFLAGS,$<) $(CXXINC)) \
 	  -MMD -MP -MF ${@:.o=.d} -c -o $@ $<
 
-all:: Makefile $(addprefix all.,$(SUBDIRS))
+all:: Makefile
 
-check:: Makefile $(addprefix check.,$(SUBDIRS))
+clean:: Makefile
 
-clean:: Makefile $(addprefix clean.,$(SUBDIRS))
-
-revision.stamp: $(addprefix $(srcdir)/,. $(SUBDIRS))
+# FIXME: Delete
+revision.stamp: $(srcdir)/.
 	@revision=$$(git -C $(srcdir) rev-parse HEAD 2>/dev/null) ;\
 	if test -n "$$revision" ;\
 	then revision=git-$$revision ;\
@@ -152,14 +82,11 @@ clean::
 
 distclean:: clean
 	rm -f config.log config.status
-	rm -rf $(SUBDIRS)
 
-$(srcdir)/configure: $(srcdir)/configure.ac \
-	  $(patsubst %,$(srcdir)/%/config.m4,. $(SUBDIRS))
+$(srcdir)/configure: $(srcdir)/configure.ac $(srcdir)/config.m4
 	$(call MAINTAINER,$@,cd $(@D) && autoconf -W all,error)
 
-$(srcdir)/config.h.in: $(srcdir)/configure.ac \
-	  $(patsubst %,$(srcdir)/%/config.m4,. $(SUBDIRS))
+$(srcdir)/config.h.in: $(srcdir)/configure.ac $(srcdir)/config.m4
 	$(call MAINTAINER,$@,cd $(@D) && autoheader -f -W all,error)
 
 config.h: config.status config.h.in
@@ -167,7 +94,7 @@ config.h: config.status config.h.in
 	touch $@
 
 ifeq ($(filter %clean,$(MAKECMDGOALS)),)
-@CONFIG_FILES@: %: config.status %.in
+Makefile: config.status Makefile.in
 	./$< --file=$@
 	touch $@
 endif
@@ -186,7 +113,29 @@ clean::
 
 .PHONY: all check clean distclean maintainer-clean
 
--include $(addsuffix /Makesub,. $(SUBDIRS))
--include $(addsuffix /tests/Makesub,. $(SUBDIRS))
+CXXFLAGS/ := -I$(srcdir)
+LIBCODY.O := buffer.o client.o fatal.o netclient.o netserver.o \
+	resolver.o packet.o server.o
 
+all:: libcody.a
+
+libcody.a: $(LIBCODY.O)
+	$(AR) -cr $@ $^
+	$(RANLIB) $@
+
+clean::
+	rm -f $(LIBCODY.O) $(LIBCODY.O:.o=.d)
+	rm -f libcody.a
+
+CXXFLAGS/fatal.cc = -DSRCDIR='"$(srcdir)"'
+
+fatal.o: Makefile revision
+
+install::
+	$(INSTALL) -d $(libdir) $(includedir)
+	$(INSTALL) libcody.a $(libdir)
+	$(INSTALL) $(srcdir)/cody.hh $(includedir)
+
+ifeq ($(filter clean%,$(MAKECMDGOALS)),)
+-include $(LIBCODY.O:.o=.d)
 endif
