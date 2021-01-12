@@ -4888,10 +4888,19 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
 	unsigned int const_shift = TREE_INT_CST_LOW (shift);
 	if (code == LSHIFT_EXPR)
 	  {
+	    /* Avoid creating an undefined shift.
+
+	       ??? We could instead use min_output_precision as-is and
+	       optimize out-of-range shifts to zero.  However, only
+	       degenerate testcases shift away all their useful input data,
+	       and it isn't natural to drop input operations in the middle
+	       of vectorization.  This sort of thing should really be
+	       handled before vectorization.  */
+	    operation_precision = MAX (stmt_info->min_output_precision,
+				       const_shift + 1);
 	    /* We need CONST_SHIFT fewer bits of the input.  */
-	    operation_precision = stmt_info->min_output_precision;
 	    min_input_precision = (MAX (operation_precision, const_shift)
-				    - const_shift);
+				   - const_shift);
 	  }
 	else
 	  {
