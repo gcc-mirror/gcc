@@ -3667,6 +3667,7 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
   tree multop = NULL_TREE, divlhs = NULL_TREE;
+  gimple *cur_use_stmt = use_stmt;
 
   if (code == MULT_EXPR)
     {
@@ -3697,26 +3698,26 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
       if (!divlhs)
 	return 0;
       use_operand_p use;
-      if (!single_imm_use (divlhs, &use, &use_stmt))
+      if (!single_imm_use (divlhs, &use, &cur_use_stmt))
 	return 0;
     }
-  if (gimple_code (use_stmt) == GIMPLE_COND)
+  if (gimple_code (cur_use_stmt) == GIMPLE_COND)
     {
-      ccode = gimple_cond_code (use_stmt);
-      crhs1 = gimple_cond_lhs (use_stmt);
-      crhs2 = gimple_cond_rhs (use_stmt);
+      ccode = gimple_cond_code (cur_use_stmt);
+      crhs1 = gimple_cond_lhs (cur_use_stmt);
+      crhs2 = gimple_cond_rhs (cur_use_stmt);
     }
-  else if (is_gimple_assign (use_stmt))
+  else if (is_gimple_assign (cur_use_stmt))
     {
-      if (gimple_assign_rhs_class (use_stmt) == GIMPLE_BINARY_RHS)
+      if (gimple_assign_rhs_class (cur_use_stmt) == GIMPLE_BINARY_RHS)
 	{
-	  ccode = gimple_assign_rhs_code (use_stmt);
-	  crhs1 = gimple_assign_rhs1 (use_stmt);
-	  crhs2 = gimple_assign_rhs2 (use_stmt);
+	  ccode = gimple_assign_rhs_code (cur_use_stmt);
+	  crhs1 = gimple_assign_rhs1 (cur_use_stmt);
+	  crhs2 = gimple_assign_rhs2 (cur_use_stmt);
 	}
-      else if (gimple_assign_rhs_code (use_stmt) == COND_EXPR)
+      else if (gimple_assign_rhs_code (cur_use_stmt) == COND_EXPR)
 	{
-	  tree cond = gimple_assign_rhs1 (use_stmt);
+	  tree cond = gimple_assign_rhs1 (cur_use_stmt);
 	  if (COMPARISON_CLASS_P (cond))
 	    {
 	      ccode = TREE_CODE (cond);
@@ -3792,11 +3793,17 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
 	    {
 	      if ((crhs1 == divlhs && arith_cast_equal_p (crhs2, multop))
 		  || (crhs2 == divlhs && arith_cast_equal_p (crhs1, multop)))
-		return ccode == NE_EXPR ? 1 : -1;
+		{
+		  use_stmt = cur_use_stmt;
+		  return ccode == NE_EXPR ? 1 : -1;
+		}
 	    }
 	  else if ((crhs1 == divlhs && operand_equal_p (crhs2, multop, 0))
 		   || (crhs2 == divlhs && crhs1 == multop))
-	    return ccode == NE_EXPR ? 1 : -1;
+	    {
+	      use_stmt = cur_use_stmt;
+	      return ccode == NE_EXPR ? 1 : -1;
+	    }
 	}
       break;
     default:
