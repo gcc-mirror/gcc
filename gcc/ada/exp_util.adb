@@ -8733,26 +8733,6 @@ package body Exp_Util is
                end if;
             end if;
 
-            --  The following code is historical, it used to be present but it
-            --  is too cautious, because the front-end does not know the proper
-            --  default alignments for the target. Also, if the alignment is
-            --  not known, the front end can't know in any case. If a copy is
-            --  needed, the back-end will take care of it. This whole section
-            --  including this comment can be removed later ???
-
-            --  If the component reference is for a record that has a specified
-            --  alignment, and we either know it is too small, or cannot tell,
-            --  then the component may be unaligned.
-
-            --  What is the following commented out code ???
-
-            --  if Known_Alignment (Etype (P))
-            --    and then Alignment (Etype (P)) < Ttypes.Maximum_Alignment
-            --    and then M > Alignment (Etype (P))
-            --  then
-            --     return True;
-            --  end if;
-
             --  Case of component clause present which may specify an
             --  unaligned position.
 
