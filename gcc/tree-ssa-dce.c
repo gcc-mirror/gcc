@@ -1516,7 +1516,7 @@ eliminate_unnecessary_stmts (void)
 			    || gimple_plf (stmt, STMT_NECESSARY))
 			  {
 			    found = true;
-			    BREAK_FROM_IMM_USE_STMT (iter);
+			    break;
 			  }
 		      }
 		    if (found)

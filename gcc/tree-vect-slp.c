@@ -3857,7 +3857,7 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 		      mark_visited = false;
 		    else
 		      STMT_VINFO_LIVE_P (stmt_info) = false;
-		    BREAK_FROM_IMM_USE_STMT (use_iter);
+		    break;
 		  }
 	      }
 	  /* We have to verify whether we can insert the lane extract
@@ -4124,7 +4124,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 			      (vect_stmt_to_vectorize (use_stmt_info)))
 		      {
 			(*life)[i] = true;
-			BREAK_FROM_IMM_USE_STMT (use_iter);
+			break;
 		      }
 		  }
 	    }

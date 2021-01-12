@@ -524,7 +524,7 @@ uses_consumed_by_stmt (tree name, gimple *stmt, unsigned recurse = 0)
 				     recurse + 1))
 	{
 	  retval = false;
-	  BREAK_FROM_IMM_USE_STMT (iter);
+	  break;
 	}
     }
 

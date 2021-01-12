@@ -850,7 +850,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 	      || (arg_count = gimple_call_num_args (call)) == 0)
 	    {
 	      res = -1;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 
 	  cgraph_edge *cs = node->get_edge (stmt);
@@ -874,7 +874,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 	      || all_uses != simple_uses)
 	    {
 	      res = -1;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 	  res += all_uses;
 	}
@@ -891,7 +891,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 	  if (TREE_CODE (lhs) != SSA_NAME)
 	    {
 	      res = -1;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs)))
@@ -901,7 +901,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 	      if (tmp < 0)
 		{
 		  res = tmp;
-		  BREAK_FROM_IMM_USE_STMT (imm_iter);
+		  break;
 		}
 	      res += tmp;
 	    }
@@ -909,7 +909,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
       else
 	{
 	  res = -1;
-	  BREAK_FROM_IMM_USE_STMT (imm_iter);
+	  break;
 	}
     }
   return res;
@@ -1016,7 +1016,7 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
 	      || (arg_count = gimple_call_num_args (call)) == 0)
 	    {
 	      ret = true;
-	      BREAK_FROM_IMM_USE_STMT (ui);
+	      break;
 	    }
 
 	  cgraph_edge *cs = node->get_edge (stmt);
@@ -1062,7 +1062,7 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
       if (uses_ok != all_uses)
 	{
 	  ret = true;
-	  BREAK_FROM_IMM_USE_STMT (ui);
+	  break;
 	}
     }
 
@@ -1975,7 +1975,7 @@ ssa_name_only_returned_p (tree name, bitmap analyzed)
 	  if (t != name)
 	    {
 	      res = false;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 	}
       else if ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
@@ -1991,20 +1991,20 @@ ssa_name_only_returned_p (tree name, bitmap analyzed)
 	  if (TREE_CODE (lhs) != SSA_NAME)
 	    {
 	      res = false;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs))
 	      && !ssa_name_only_returned_p (lhs, analyzed))
 	    {
 	      res = false;
-	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	      break;
 	    }
 	}
       else
 	{
 	  res = false;
-	  BREAK_FROM_IMM_USE_STMT (imm_iter);
+	  break;
 	}
     }
   return res;

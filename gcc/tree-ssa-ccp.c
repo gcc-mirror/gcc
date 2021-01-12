@@ -3020,7 +3020,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	}
 
       use_bool = false;
-      BREAK_FROM_IMM_USE_STMT (iter);
+      break;
     }
 
   tree new_lhs = make_ssa_name (TREE_TYPE (lhs));

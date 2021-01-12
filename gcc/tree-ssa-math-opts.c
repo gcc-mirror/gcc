@@ -1285,7 +1285,7 @@ execute_cse_sincos_1 (tree name)
 	 and, in subsequent rounds, that the built_in type is the same
 	 type, or a compatible type.  */
       if (type != t && !types_compatible_p (type, t))
-	RETURN_FROM_IMM_USE_STMT (use_iter, false);
+	return false;
     }
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     return false;
