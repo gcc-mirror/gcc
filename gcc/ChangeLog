@@ -1,3 +1,30 @@
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98117
+	* tree-vect-loop-manip.c (vect_gen_vector_loop_niters):
+	Properly handle degenerate niter when setting the vector
+	loop IV range.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* tree-ssa-pre.c (insert): Move hoist insertion after PRE
+	insertion iteration and do not iterate it.
+	(create_expression_by_pieces): Guard NEW_SETS access.
+	(insert_into_preds_of_block): Likewise.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* tree-ssa-pre.c (insert): First do hoist insertion in
+	a backward walk.
+
 2021-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

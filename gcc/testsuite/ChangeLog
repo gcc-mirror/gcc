@@ -1,3 +1,26 @@
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98117
+	* gcc.dg/torture/pr98117.c: New testcase.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* gcc.dg/tree-ssa/ssa-hoist-3.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-hoist-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-30.c: Likewise.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* gcc.dg/tree-ssa/ssa-hoist-7.c: New testcase.
+
 2021-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
