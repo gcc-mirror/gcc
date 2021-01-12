@@ -754,6 +754,9 @@ package body Exp_Imgv is
       Expr  : constant Node_Id    := Relocate_Node (First (Exprs));
       Pref  : constant Node_Id    := Prefix (N);
 
+      procedure Expand_Standard_Boolean_Image;
+      --  Expand attribute 'Image in Standard.Boolean, avoiding string copy
+
       procedure Expand_User_Defined_Enumeration_Image (Typ : Entity_Id);
       --  Expand attribute 'Image in user-defined enumeration types, avoiding
       --  string copy.
@@ -761,6 +764,107 @@ package body Exp_Imgv is
       function Is_User_Defined_Enumeration_Type
         (Typ : Entity_Id) return Boolean;
       --  Return True if Typ is a user-defined enumeration type
+
+      -----------------------------------
+      -- Expand_Standard_Boolean_Image --
+      -----------------------------------
+
+      procedure Expand_Standard_Boolean_Image is
+         Ins_List : constant List_Id   := New_List;
+         S1_Id    : constant Entity_Id := Make_Temporary (Loc, 'S');
+         T_Id     : constant Entity_Id := Make_Temporary (Loc, 'T');
+         F_Id     : constant Entity_Id := Make_Temporary (Loc, 'F');
+         V_Id     : constant Entity_Id := Make_Temporary (Loc, 'V');
+
+      begin
+         --  We use a single 5-character string subtype throughout so that the
+         --  subtype of the string if-expression is constrained and, therefore,
+         --  does not force the creation of a temporary during analysis.
+
+         --  Generate:
+         --    subtype S1 is String (1 .. 5);
+
+         Append_To (Ins_List,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => S1_Id,
+             Subtype_Indication  =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Standard_String, Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => New_List (
+                       Make_Range (Loc,
+                         Low_Bound  => Make_Integer_Literal (Loc, 1),
+                         High_Bound => Make_Integer_Literal (Loc, 5)))))));
+
+         --  Generate:
+         --    T : constant String (1 .. 5) := "TRUE ";
+
+         Start_String;
+         Store_String_Chars ("TRUE ");
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => T_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Constant_Present    => True,
+             Expression          => Make_String_Literal (Loc, End_String)));
+
+         --  Generate:
+         --    F : constant String (1 .. 5) := "FALSE";
+
+         Start_String;
+         Store_String_Chars ("FALSE");
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => F_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Constant_Present    => True,
+             Expression          => Make_String_Literal (Loc, End_String)));
+
+         --  Generate:
+         --    V : String (1 .. 5) renames (if Expr then T else F);
+
+         Append_To (Ins_List,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => V_Id,
+             Subtype_Mark        =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Name                =>
+               Make_If_Expression (Loc,
+                 Expressions => New_List (
+                   Relocate_Node (Expr),
+                   New_Occurrence_Of (T_Id, Loc),
+                   New_Occurrence_Of (F_Id, Loc)))));
+
+         --  Insert all the above declarations before N. We suppress checks
+         --  because everything is in range at this stage.
+
+         Insert_Actions (N, Ins_List, Suppress => All_Checks);
+
+         --  Final step is to rewrite the expression as a slice:
+         --  V (1 .. (if Expr then 4 else 5)) and analyze, again with no
+         --  checks, since we are sure that everything is OK.
+
+         Rewrite (N,
+           Make_Slice (Loc,
+              Prefix         => New_Occurrence_Of (V_Id, Loc),
+              Discrete_Range =>
+                Make_Range (Loc,
+                  Low_Bound  => Make_Integer_Literal (Loc, 1),
+                  High_Bound =>
+                    Make_If_Expression (Loc,
+                      Expressions => New_List (
+                        Duplicate_Subexpr (Expr),
+                        Make_Integer_Literal (Loc, 4),
+                        Make_Integer_Literal (Loc, 5))))));
+
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+      end Expand_Standard_Boolean_Image;
 
       -------------------------------------------
       -- Expand_User_Defined_Enumeration_Image --
@@ -866,7 +970,7 @@ package body Exp_Imgv is
          end;
 
          --  Generate:
-         --    subtype S1 is string (1 .. P3 - P2);
+         --    subtype S1 is String (1 .. P3 - P2);
 
          declare
             HB : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
@@ -1010,8 +1114,17 @@ package body Exp_Imgv is
          return;
 
       elsif Rtyp = Standard_Boolean then
-         Imid := RE_Image_Boolean;
-         Tent := Rtyp;
+         --  Use inline expansion if the -gnatd_x switch is not passed to the
+         --  compiler. Otherwise expand into a call to the runtime.
+
+         if not Debug_Flag_Underscore_X then
+            Expand_Standard_Boolean_Image;
+            return;
+
+         else
+            Imid := RE_Image_Boolean;
+            Tent := Rtyp;
+         end if;
 
       --  For standard character, we have to select the version which handles
       --  soft hyphen correctly, based on the version of Ada in use (this is

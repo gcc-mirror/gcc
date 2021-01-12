@@ -991,7 +991,7 @@ package body Debug is
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
 
    --  d_x  The compiler does not expand in line the Image attribute for user-
-   --       defined enumeration types.
+   --       defined enumeration types and the standard boolean type.
 
    --  d_z  Enable the default Put_Image on tagged types that are not
    --       predefined.
