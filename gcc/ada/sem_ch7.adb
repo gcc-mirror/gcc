@@ -40,7 +40,6 @@ with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
-with GNAT_CUDA; use GNAT_CUDA;
 with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
 with Namet;     use Namet;
@@ -999,13 +998,6 @@ package body Sem_Ch7 is
          Append_RACW_Bodies (Declarations (N), Spec_Id);
          Analyze_List (Declarations (N));
       end if;
-
-      --  If procedures marked with CUDA_Global have been defined within N, we
-      --  need to register them with the CUDA runtime at program startup. This
-      --  requires multiple declarations and function calls which need to be
-      --  appended to N's declarations.
-
-      Build_And_Insert_CUDA_Initialization (N);
 
       HSS := Handled_Statement_Sequence (N);
 
