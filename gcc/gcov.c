@@ -442,7 +442,7 @@ void source_info::debug ()
       for (vector<block_info>::iterator bit = fn->blocks.begin ();
 	   bit != fn->blocks.end (); bit++)
 	{
-	  fprintf (stderr, "    block_info id=%d, count=%ld\n",
+	  fprintf (stderr, "    block_info id=%d, count=%" PRId64 " \n",
 		   bit->id, bit->count);
 	}
     }
@@ -450,7 +450,7 @@ void source_info::debug ()
   for (unsigned lineno = 1; lineno < lines.size (); ++lineno)
     {
       line_info &line = lines[lineno];
-      fprintf (stderr, "  line_info=%d, count=%ld\n", lineno, line.count);
+      fprintf (stderr, "  line_info=%d, count=%" PRId64 "\n", lineno, line.count);
     }
 
   fprintf (stderr, "\n");
