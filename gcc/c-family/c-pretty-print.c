@@ -1847,10 +1847,11 @@ print_mem_ref (c_pretty_printer *pp, tree e)
   tree access_type = TREE_TYPE (e);
   if (TREE_CODE (access_type) == ARRAY_TYPE)
     access_type = TREE_TYPE (access_type);
-  tree arg_type = TREE_TYPE (TREE_TYPE (arg));
+  tree arg_type = TREE_TYPE (arg);
+  if (POINTER_TYPE_P (arg_type))
+    arg_type = TREE_TYPE (arg_type);
   if (TREE_CODE (arg_type) == ARRAY_TYPE)
     arg_type = TREE_TYPE (arg_type);
-
   if (tree access_size = TYPE_SIZE_UNIT (access_type))
     if (TREE_CODE (access_size) == INTEGER_CST)
       {
@@ -1866,16 +1867,13 @@ print_mem_ref (c_pretty_printer *pp, tree e)
 
   /* True to include a cast to the accessed type.  */
   const bool access_cast = VOID_TYPE_P (arg_type)
-    || !gimple_canonical_types_compatible_p (access_type, arg_type);
+    || TYPE_MAIN_VARIANT (access_type) != TYPE_MAIN_VARIANT (arg_type);
 
   if (byte_off != 0)
     {
       /* When printing the byte offset for a pointer to a type of
 	 a different size than char, include a cast to char* first,
 	 before printing the cast to a pointer to the accessed type.  */
-      tree arg_type = TREE_TYPE (TREE_TYPE (arg));
-      if (TREE_CODE (arg_type) == ARRAY_TYPE)
-	arg_type = TREE_TYPE (arg_type);
       offset_int arg_size = 0;
       if (tree size = TYPE_SIZE (arg_type))
 	arg_size = wi::to_offset (size);
