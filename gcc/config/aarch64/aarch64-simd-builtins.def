@@ -315,6 +315,9 @@
   BUILTIN_VSDQ_I (SHIFTIMM, sqshl_n, 0, ALL)
   BUILTIN_VSDQ_I (USHIFTIMM, uqshl_n, 0, ALL)
 
+  /* Implemented by aarch64_xtn2<mode>.  */
+  BUILTIN_VQN (UNOP, xtn2, 0, NONE)
+
   /* Implemented by aarch64_reduc_plus_<mode>.  */
   BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, NONE)
 
