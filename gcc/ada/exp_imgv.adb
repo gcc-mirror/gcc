@@ -43,6 +43,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -104,11 +105,16 @@ package body Exp_Imgv is
       --  until the end of the processing and to make sure that it is always
       --  exactly spent on all possible paths from this point.
 
-      Threshold : constant := 3;
+      Threshold : constant Nat :=
+        (if Is_Library_Level_Entity (E)
+           or else not Always_Compatible_Rep_On_Target
+         then 3
+         else Nat'Last);
       --  Threshold above which we want to generate the hash function in the
-      --  default case.
+      --  default case. We avoid doing it if this would cause a trampoline to
+      --  be generated because the type is local and descriptors are not used.
 
-      Threshold_For_Size : constant := 9;
+      Threshold_For_Size : constant Nat := Nat'Max (Threshold, 9);
       --  But the function and its tables take a bit of space so the threshold
       --  is raised when compiling for size.
 
@@ -236,8 +242,9 @@ package body Exp_Imgv is
 
       Append_Table_To (Act, Eind, Nlit, Ityp, Ind);
 
-      --  If the number of literals is at most 3, then we are done. Otherwise
-      --  we compute a (perfect) hash function for use by the Value attribute.
+      --  If the number of literals is not greater than Threshold, then we are
+      --  done. Otherwise we compute a (perfect) hash function for use by the
+      --  Value attribute.
 
       if Nlit > Threshold then
          --  We start to count serial numbers from here
@@ -1483,13 +1490,17 @@ package body Exp_Imgv is
       Btyp  : constant Entity_Id  := Base_Type (Typ);
       Rtyp  : constant Entity_Id  := Root_Type (Typ);
       Exprs : constant List_Id    := Expressions (N);
-      Vid   : RE_Id;
       Args  : List_Id;
       Func  : RE_Id;
       Ttyp  : Entity_Id;
+      Vid   : RE_Id;
 
    begin
       Args := Exprs;
+
+      --  Fall through for all cases except user-defined enumeration type
+      --  and decimal types, with Vid set to the Id of the entity for the
+      --  Value routine and Args set to the list of parameters for the call.
 
       if Rtyp = Standard_Character then
          Vid := RE_Value_Character;
@@ -1692,10 +1703,6 @@ package body Exp_Imgv is
 
          return;
       end if;
-
-      --  Fall through for all cases except user-defined enumeration type
-      --  and decimal types, with Vid set to the Id of the entity for the
-      --  Value routine and Args set to the list of parameters for the call.
 
       --  Compiling package Ada.Tags under No_Run_Time_Mode we disable the
       --  expansion of the attribute into the function call statement to avoid
