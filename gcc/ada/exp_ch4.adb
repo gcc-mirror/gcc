@@ -737,8 +737,7 @@ package body Exp_Ch4 is
 
             Append_To (Stmts,
               Make_Raise_Program_Error (Loc,
-                Condition => New_Occurrence_Of (Standard_True, Loc),
-                Reason    => PE_Accessibility_Check_Failed));
+                Reason => PE_Accessibility_Check_Failed));
 
             --  Step 2: Create the accessibility comparison
 
