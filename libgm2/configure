@@ -7788,7 +7788,15 @@ fi
 test -z "$AR" && AR=ar
 if test -n "$plugin_option"; then
   if $AR --help 2>&1 | grep -q "\--plugin"; then
-    AR="$AR $plugin_option"
+    touch conftest.c
+    $AR $plugin_option rc conftest.a conftest.c
+    if test "$?" != 0; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Failed: $AR $plugin_option rc" >&5
+$as_echo "$as_me: WARNING: Failed: $AR $plugin_option rc" >&2;}
+    else
+      AR="$AR $plugin_option"
+    fi
+    rm -f conftest.*
   fi
 fi
 test -z "$AR_FLAGS" && AR_FLAGS=cru
@@ -12687,7 +12695,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12690 "configure"
+#line 12698 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12793,7 +12801,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12796 "configure"
+#line 12804 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
