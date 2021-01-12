@@ -8634,11 +8634,6 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
   if (VECTOR_MODE_P (mode1))
     op1 = safe_vector_operand (op1, mode1);
 
-  /* Swap operands if we have a comparison that isn't available in
-     hardware.  */
-  if (d->flag & BUILTIN_DESC_SWAP_OPERANDS)
-    std::swap (op0, op1);
-
   target = gen_reg_rtx (SImode);
   emit_move_insn (target, const0_rtx);
   target = gen_rtx_SUBREG (QImode, target, 0);

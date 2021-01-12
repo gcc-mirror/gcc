@@ -10825,3 +10825,26 @@
   [(set_attr "type" "coproc")
    (set_attr "length" "8")]
 )
+
+(define_insn "*movmisalign<mode>_mve_store"
+  [(set (match_operand:MVE_VLD_ST 0 "neon_permissive_struct_operand"	     "=Um")
+	(unspec:MVE_VLD_ST [(match_operand:MVE_VLD_ST 1 "s_register_operand" " w")]
+	 UNSPEC_MISALIGNED_ACCESS))]
+  "((TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+    || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode)))
+   && !BYTES_BIG_ENDIAN && unaligned_access"
+  "vstr<V_sz_elem1>.<V_sz_elem>\t%q1, %E0"
+  [(set_attr "type" "mve_store")]
+)
+
+
+(define_insn "*movmisalign<mode>_mve_load"
+  [(set (match_operand:MVE_VLD_ST 0 "s_register_operand"				 "=w")
+	(unspec:MVE_VLD_ST [(match_operand:MVE_VLD_ST 1 "neon_permissive_struct_operand" " Um")]
+	 UNSPEC_MISALIGNED_ACCESS))]
+  "((TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+    || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode)))
+   && !BYTES_BIG_ENDIAN && unaligned_access"
+  "vldr<V_sz_elem1>.<V_sz_elem>\t%q0, %E1"
+  [(set_attr "type" "mve_load")]
+)

@@ -1,3 +1,8 @@
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Port to python3 by guessing encoding
+	(first utf8, then iso8859). Add 2 more ignores: .png and .pyc.
+
 2021-01-06  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add decode_path function.

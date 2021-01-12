@@ -1,3 +1,13 @@
+2021-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 2d3d13748.
+	* d-lang.cc (d_handle_option): Remove OPT_ftransition_checkimports and
+	OPT_ftransition_import.
+	* gdc.texi (Warnings): Remove documentation for -ftransition=import
+	and -ftransition=checkimports.
+	* lang.opt (ftransition=checkimports): Remove.
+	(ftransition=import): Remove.
+
 2021-01-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd cb1106ad5.

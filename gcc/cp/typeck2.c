@@ -1563,6 +1563,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
+	      && !cp_unevaluated_operand
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
@@ -1593,6 +1594,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	  /* Warn when some struct elements are implicitly initialized
 	     to zero.  */
 	  if ((complain & tf_warning)
+	      && !cp_unevaluated_operand
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);

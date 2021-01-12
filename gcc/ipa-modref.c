@@ -1597,9 +1597,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
     {
       if (lattice[index].flags == 0)
-	{
-	  BREAK_FROM_IMM_USE_STMT (ui);
-	}
+	break;
       if (is_gimple_debug (use_stmt))
 	continue;
       if (dump_file)

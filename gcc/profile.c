@@ -1294,6 +1294,11 @@ branch_prob (bool thunk)
   if (dump_file)
     fprintf (dump_file, "%d instrumentation edges\n", num_instrumented);
 
+  /* Dump function body before it's instrumented.
+     It helps to debug gcov tool.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_function_to_file (cfun->decl, dump_file, dump_flags);
+
   /* Compute two different checksums. Note that we want to compute
      the checksum in only once place, since it depends on the shape
      of the control flow which can change during 

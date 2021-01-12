@@ -5173,12 +5173,15 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   result = NULL_TREE;
   switch (code)
     {
+    case TEMPLATE_TYPE_PARM:
+      if (template_placeholder_p (*tp))
+	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (*tp));
+      /* Fall through.  */
     case DEFERRED_PARSE:
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
-    case TEMPLATE_TYPE_PARM:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked

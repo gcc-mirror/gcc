@@ -1,3 +1,179 @@
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (sdiv_pow2<mode>3): Extend from
+	SVE_FULL_I to SVE_I.  Generate an UNSPEC_PRED_X.
+	(*sdiv_pow2<mode>3): New pattern.
+	(@cond_<sve_int_op><mode>): Extend from SVE_FULL_I to SVE_I.
+	Wrap the ASRD in an UNSPEC_PRED_X.
+	(*cond_<sve_int_op><mode>_2): Likewise.  Replace the UNSPEC_PRED_X
+	predicate with a constant PTRUE, if it isn't already.
+	(*cond_<sve_int_op><mode>_z): Replace with...
+	(*cond_<sve_int_op><mode>_any): ...this new pattern.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_bic<mode>_2): Extend from
+	SVE_FULL_I to SVE_I.
+	(*cond_bic<mode>_any): Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<su>mul<mode>3_highpart)
+	(@aarch64_pred_<MUL_HIGHPART:optab><mode>): Extend from SVE_FULL_I
+	to SVE_I.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<su>abd<mode>_3): Extend from
+	SVE_FULL_I to SVE_I.
+	(*aarch64_cond_<su>abd<mode>_2): Likewise.
+	(*aarch64_cond_<su>abd<mode>_any): Likewise.
+	(@aarch64_pred_<su>abd<mode>): Likewise.  Use UNSPEC_PRED_X
+	for the max and min but not for the minus.
+	(*aarch64_cond_<su>abd<mode>_3): New pattern.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_24I): New iterator.
+	* config/aarch64/aarch64-sve.md (*aarch64_adr<mode>_shift): Extend from
+	SVE_FULL_SDI to SVE_24I.  Use containers rather than elements.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@cond_<SVE_INT_BINARY:optab><mode>)
+	(*cond_<SVE_INT_BINARY:optab><mode>_2): Extend from SVE_FULL_I
+	to SVE_I.
+	(*cond_<SVE_INT_BINARY:optab><mode>_3): Likewise.
+	(*cond_<SVE_INT_BINARY:optab><mode>_any): Likewise.
+	(*cond_<SVE_INT_BINARY:optab><mode>_2_const): Likewise.
+	(*cond_<SVE_INT_BINARY:optab><mode>_any_const): Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<SVE_INT_BINARY_IMM:optab><mode>3)
+	(@aarch64_pred_<SVE_INT_BINARY_IMM:optab><mode>)
+	(*post_ra_<SVE_INT_BINARY_IMM:optab><mode>3): Extend from SVE_FULL_I
+	to SVE_I.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (<ASHIFT:optab><mode>3)
+	(v<ASHIFT:optab><mode>3, @aarch64_pred_<optab><mode>)
+	(*post_ra_v<ASHIFT:optab><mode>3): Extend from SVE_FULL_I to SVE_I.
+
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	PR jit/98615
+	* symtab-clones.h (clone_info::release): Release
+	symtab::m_clones with ggc_delete as it's a GGC memory.
+
+2021-01-11  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (LINK_PROGRESS): Show the link target.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91403
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Cap
+	single-element interleaving group size at 4096 elements.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98526
+	* tree-vect-loop.c (vect_model_reduction_cost): Remove costing
+	of the actual reduction op for the regular case.
+	(vectorizable_reduction): Cost the stmts
+	vect_transform_reduction produces here.
+
+2021-01-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* tree-ssa-forwprop.c (simplify_vector_constructor): For
+	big-endian, use UNPACK[_FLOAT]_HI.
+
+2021-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (class complex_pattern,
+	class complex_add_pattern): Add parameters to matches.
+	(complex_add_pattern::build): Free memory.
+	(complex_add_pattern::matches): Move validation end of match.
+	(complex_add_pattern::recognize): Likewise.
+
+2021-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (linear_loads_p): Fix externals.
+
+2021-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (is_linear_load_p): Fix ambiguity.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95867
+	* tree-ssa-math-opts.h: New header.
+	* tree-ssa-math-opts.c: Include tree-ssa-math-opts.h.
+	(powi_as_mults): No longer static.  Use build_one_cst instead of
+	build_real.  Formatting fix.
+	* tree-ssa-reassoc.c: Include tree-ssa-math-opts.h.
+	(attempt_builtin_powi): Handle multiplication reassociation without
+	powi_fndecl using powi_as_mults.
+	(reassociate_bb): For integral types don't require
+	-funsafe-math-optimizations to call attempt_builtin_powi.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95852
+	* tree-ssa-math-opts.c (maybe_optimize_guarding_check): Change
+	mul_stmts parameter type to vec<gimple *> &.  Before cond_stmt
+	allow in the bb any of the stmts in that vector, div_stmt and
+	up to 3 cast stmts.
+	(arith_cast_equal_p): New function.
+	(arith_overflow_check_p): Add cast_stmt argument, handle signed
+	multiply overflow checks.
+	(match_arith_overflow): Adjust caller.  Handle signed multiply
+	overflow checks.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95852
+	* tree-ssa-math-opts.c (maybe_optimize_guarding_check): New function.
+	(uaddsub_overflow_check_p): Renamed to ...
+	(arith_overflow_check_p): ... this.  Handle also multiplication
+	with overflow check.
+	(match_uaddsub_overflow): Renamed to ...
+	(match_arith_overflow): ... this.  Add cfg_changed argument.  Handle
+	also multiplication with overflow check.  Adjust function comment.
+	(math_opts_dom_walker::after_dom_children): Adjust callers.  Call
+	match_arith_overflow also for MULT_EXPR.
+
+2021-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vmovl_s8): Reimplement using
+	__builtin_convertvector.
+	(vmovl_s16): Likewise.
+	(vmovl_s32): Likewise.
+	(vmovl_u8): Likewise.
+	(vmovl_u16): Likewise.
+	(vmovl_u32): Likewise.
+	(vmovn_s16): Likewise.
+	(vmovn_s32): Likewise.
+	(vmovn_s64): Likewise.
+	(vmovn_u16): Likewise.
+	(vmovn_u32): Likewise.
+	(vmovn_u64): Likewise.
+
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	* gimple-if-to-switch.cc (struct condition_info): Use auto_var.
+	(if_chain::is_beneficial): Delete clusters
+	(find_conditions): Make second argument of conditions_in_bbs a
+	pointer so that we control over it's lifetime.
+	(pass_if_to_switch::execute): Delete them.
+
+2021-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* ira.c (move_unallocated_pseudos): Check other_reg and skip if
+	it isn't set.
+
 2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/vax/vax.md (cc): Remove mode attribute.

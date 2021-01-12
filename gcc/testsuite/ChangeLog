@@ -1,3 +1,100 @@
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/asrdiv_4.c: New test.
+	* gcc.target/aarch64/sve/cond_asrd_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_asrd_3_run.c: Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/cond_bic_1.C: New test.
+	* g++.target/aarch64/sve/cond_bic_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_bic_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_bic_4.C: Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mul_highpart_3.c: New test.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/abd_1.C: New test.
+	* g++.target/aarch64/sve/cond_abd_1.C: Likewise.
+	* g++.target/aarch64/sve/cond_abd_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_abd_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_abd_4.C: Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/adr_6.c: New test.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/cond_arith_1.C: New test.
+	* g++.target/aarch64/sve/cond_arith_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_arith_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_arith_4.C: Likewise.
+	* g++.target/aarch64/sve/cond_shift_1.C: New test.
+	* g++.target/aarch64/sve/cond_shift_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_shift_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_shift_4.C: Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/98602
+	* g++.target/aarch64/sve/max_1.C: New test.
+	* g++.target/aarch64/sve/min_1.C: Likewise.
+	* gcc.target/aarch64/sve/mul_2.c: Likewise.
+
+2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/shift_2.c: New test.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98481
+	* g++.dg/abi/abi-tag24.C: New test.
+
+2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91403
+	* gcc.dg/vect/pr91403.c: New testcase.
+
+2021-01-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR testsuite/98225
+	* gcc.misc-tests/outputs.exp: Unset MAKEFLAGS.
+	Expect .ld1_args only when GNU LD is used.
+	Add an exception for *.gcc_args files.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95867
+	* gcc.dg/tree-ssa/pr95867.c: New test.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95852
+	* gcc.target/i386/pr95852-3.c: New test.
+	* gcc.target/i386/pr95852-4.c: New test.
+
+2021-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95852
+	* gcc.target/i386/pr95852-1.c: New test.
+	* gcc.target/i386/pr95852-2.c: New test.
+
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98273
+	* lib/gcov.exp: Add run-gcov-pytest function which runs pytest.
+	* g++.dg/gcov/pr98273.C: New test.
+	* g++.dg/gcov/gcov.py: New test.
+	* g++.dg/gcov/test-pr98273.py: New test.
+
 2021-01-09  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* gcc.target/vax/cmpelim-eq-notsi.c: Use subtraction from a

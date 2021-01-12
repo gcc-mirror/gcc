@@ -1262,9 +1262,7 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
 	&& (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt)))
       {
 	add_write (writes, def);
-	/* This is required by the FOR_EACH_IMM_USE_STMT when we want to break
-	   before all the uses have been visited.  */
-	BREAK_FROM_IMM_USE_STMT (imm_iter);
+	break;
       }
 }
 

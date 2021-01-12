@@ -3320,7 +3320,8 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 /* Optimize x != 0 && y != 0 && z != 0 into (x | y | z) != 0
    and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.
    Also, handle x < C && y < C && z < C where C is power of two as
-   (x | y | z) < C.  */
+   (x | y | z) < C.  And also handle signed x < 0 && y < 0 && z < 0
+   as (x | y | z) < 0.  */
 
 static bool
 optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
@@ -3340,13 +3341,13 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 
       if (ranges[i].exp == NULL_TREE
 	  || TREE_CODE (ranges[i].exp) != SSA_NAME
-	  || !ranges[i].in_p
 	  || TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) <= 1
 	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE)
 	continue;
 
       if (ranges[i].low != NULL_TREE
 	  && ranges[i].high != NULL_TREE
+	  && ranges[i].in_p
 	  && tree_int_cst_equal (ranges[i].low, ranges[i].high))
 	{
 	  idx = !integer_zerop (ranges[i].low);
@@ -3354,7 +3355,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    continue;
 	}
       else if (ranges[i].high != NULL_TREE
-	       && TREE_CODE (ranges[i].high) == INTEGER_CST)
+	       && TREE_CODE (ranges[i].high) == INTEGER_CST
+	       && ranges[i].in_p)
 	{
 	  wide_int w = wi::to_wide (ranges[i].high);
 	  int prec = TYPE_PRECISION (TREE_TYPE (ranges[i].exp));
@@ -3370,10 +3372,20 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		    && integer_zerop (ranges[i].low))))
 	    continue;
 	}
+      else if (ranges[i].high == NULL_TREE
+	       && ranges[i].low != NULL_TREE
+	       /* Perform this optimization only in the last
+		  reassoc pass, as it interferes with the reassociation
+		  itself or could also with VRP etc. which might not
+		  be able to virtually undo the optimization.  */
+	       && !reassoc_insert_powi_p
+	       && !TYPE_UNSIGNED (TREE_TYPE (ranges[i].exp))
+	       && integer_zerop (ranges[i].low))
+	idx = 3;
       else
 	continue;
 
-      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 3 + idx;
+      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 4 + idx;
       if (buckets.length () <= b)
 	buckets.safe_grow_cleared (b + 1, true);
       if (chains.length () <= (unsigned) i)
@@ -3386,7 +3398,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
     if (i && chains[i - 1])
       {
 	int j, k = i;
-	if ((b % 3) == 2)
+	if ((b % 4) == 2)
 	  {
 	    /* When ranges[X - 1].high + 1 is a power of two,
 	       we need to process the same bucket up to
@@ -3439,6 +3451,19 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	  {
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    strict_overflow_p |= ranges[j - 1].strict_overflow_p;
+	    if ((b % 4) == 3)
+	      {
+		/* For the signed < 0 cases, the types should be
+		   really compatible (all signed with the same precision,
+		   instead put ranges that have different in_p from
+		   k first.  */
+		if (!useless_type_conversion_p (type1, type))
+		  continue;
+		if (ranges[j - 1].in_p != ranges[k - 1].in_p)
+		  candidates.safe_push (&ranges[j - 1]);
+		type2 = type1;
+		continue;
+	      }
 	    if (j == k
 		|| useless_type_conversion_p (type1, type))
 	      ;
@@ -3456,6 +3481,14 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	    tree type = TREE_TYPE (ranges[j - 1].exp);
 	    if (j == k)
 	      continue;
+	    if ((b % 4) == 3)
+	      {
+		if (!useless_type_conversion_p (type1, type))
+		  continue;
+		if (ranges[j - 1].in_p == ranges[k - 1].in_p)
+		  candidates.safe_push (&ranges[j - 1]);
+		continue;
+	      }
 	    if (useless_type_conversion_p (type1, type))
 	      ;
 	    else if (type2 == NULL_TREE
@@ -3471,6 +3504,7 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	FOR_EACH_VEC_ELT (candidates, id, r)
 	  {
 	    gimple *g;
+	    enum tree_code code;
 	    if (id == 0)
 	      {
 		op = r->exp;
@@ -3478,7 +3512,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 	      }
 	    if (id == l)
 	      {
-		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, op);
+		code = (b % 4) == 3 ? BIT_NOT_EXPR : NOP_EXPR;
+		g = gimple_build_assign (make_ssa_name (type1), code, op);
 		gimple_seq_add_stmt_without_update (&seq, g);
 		op = gimple_assign_lhs (g);
 	      }
@@ -3490,21 +3525,24 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 		gimple_seq_add_stmt_without_update (&seq, g);
 		exp = gimple_assign_lhs (g);
 	      }
+	    if ((b % 4) == 3)
+	      code = r->in_p ? BIT_IOR_EXPR : BIT_AND_EXPR;
+	    else
+	      code = (b % 4) == 1 ? BIT_AND_EXPR : BIT_IOR_EXPR;
 	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
-				     (b % 3) == 1
-				     ? BIT_AND_EXPR : BIT_IOR_EXPR, op, exp);
+				     code, op, exp);
 	    gimple_seq_add_stmt_without_update (&seq, g);
 	    op = gimple_assign_lhs (g);
 	  }
 	candidates.pop ();
 	if (update_range_test (&ranges[k - 1], NULL, candidates.address (),
 			       candidates.length (), opcode, ops, op,
-			       seq, true, ranges[k - 1].low,
+			       seq, ranges[k - 1].in_p, ranges[k - 1].low,
 			       ranges[k - 1].high, strict_overflow_p))
 	  any_changes = true;
 	else
 	  gimple_seq_discard (seq);
-	if ((b % 3) == 2 && buckets[b] != i)
+	if ((b % 4) == 2 && buckets[b] != i)
 	  /* There is more work to do for this bucket.  */
 	  b--;
       }
@@ -3909,10 +3947,10 @@ optimize_range_tests (enum tree_code opcode,
   if (lshift_cheap_p (optimize_function_for_speed_p (cfun)))
     any_changes |= optimize_range_tests_to_bit_test (opcode, first, length,
 						     ops, ranges);
-  any_changes |= optimize_range_tests_cmp_bitwise (opcode, first, length,
-						   ops, ranges);
   any_changes |= optimize_range_tests_var_bound (opcode, first, length, ops,
 						 ranges, first_bb);
+  any_changes |= optimize_range_tests_cmp_bitwise (opcode, first, length,
+						   ops, ranges);
 
   if (any_changes && opcode != ERROR_MARK)
     {
