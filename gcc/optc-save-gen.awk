@@ -1036,8 +1036,10 @@ for (i = 0; i < n_target_save; i++) {
 	type = var;
 	sub("^.*[ *]", "", name)
 	sub(" *" name "$", "", type)
-	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$")
+	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$") {
 		var_target_str[n_target_str++] = name;
+		string_options_names[name]++
+	}
 	else {
 		if (target_save_decl[i] ~ " .*\\[.+\\]+$") {
 			size = name;
@@ -1451,7 +1453,7 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 	checked_options[name]++
 
-	if (name in string_options_names) {
+	if (name in string_options_names || ("x_" name) in string_options_names) {
 	  print "  if (ptr1->x_" name " != ptr2->x_" name "";
 	  print "      && (!ptr1->x_" name" || !ptr2->x_" name
 	  print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";
