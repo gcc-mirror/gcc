@@ -17379,10 +17379,11 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 {
   /* Take into account explicit auto-vectorization ISA preferences through
      aarch64_cmp_autovec_modes.  */
-  poly_int64 bits
-    = (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
-       ? BITS_PER_SVE_VECTOR : 128;
-  return aarch64_simd_container_mode (mode, bits);
+  if (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
+    return aarch64_full_sve_mode (mode).else_mode (word_mode);
+  if (TARGET_SIMD)
+    return aarch64_vq_mode (mode).else_mode (word_mode);
+  return word_mode;
 }
 
 /* Return a list of possible vector sizes for the vectorizer
