@@ -873,11 +873,8 @@ vect_record_max_nunits (vec_info *vinfo, stmt_vec_info stmt_info,
 
   /* If populating the vector type requires unrolling then fail
      before adjusting *max_nunits for basic-block vectorization.  */
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  unsigned HOST_WIDE_INT const_nunits;
   if (is_a <bb_vec_info> (vinfo)
-      && (!nunits.is_constant (&const_nunits)
-	  || const_nunits > group_size))
+      && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -928,6 +925,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_load_p = false, load_p = false;
   bool first_stmt_phi_p = false, phi_p = false;
+  bool maybe_soft_fail = false;
+  tree soft_fail_nunits_vectype = NULL_TREE;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -977,16 +976,24 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
       tree nunits_vectype;
       if (!vect_get_vector_types_for_stmt (vinfo, stmt_info, &vectype,
-					   &nunits_vectype, group_size)
-	  || (nunits_vectype
-	      && !vect_record_max_nunits (vinfo, stmt_info, group_size,
-					  nunits_vectype, max_nunits)))
+					   &nunits_vectype, group_size))
 	{
 	  if (is_a <bb_vec_info> (vinfo) && i != 0)
 	    continue;
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
 	  return false;
+	}
+      /* Record nunits required but continue analysis, producing matches[]
+	 as if nunits was not an issue.  This allows splitting of groups
+	 to happen.  */
+      if (nunits_vectype
+	  && !vect_record_max_nunits (vinfo, stmt_info, group_size,
+				      nunits_vectype, max_nunits))
+	{
+	  gcc_assert (is_a <bb_vec_info> (vinfo));
+	  maybe_soft_fail = true;
+	  soft_fail_nunits_vectype = nunits_vectype;
 	}
 
       gcc_assert (vectype);
@@ -1338,6 +1345,23 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
       *two_operators = true;
+    }
+
+  if (maybe_soft_fail)
+    {
+      unsigned HOST_WIDE_INT const_nunits;
+      if (!TYPE_VECTOR_SUBPARTS
+	    (soft_fail_nunits_vectype).is_constant (&const_nunits)
+	  || const_nunits > group_size)
+	matches[0] = false;
+      else
+	{
+	  /* With constant vector elements simulate a mismatch at the
+	     point we need to split.  */
+	  unsigned tail = group_size & (const_nunits - 1);
+	  memset (&matches[group_size - tail], 0, sizeof (bool) * tail);
+	}
+      return false;
     }
 
   return true;
