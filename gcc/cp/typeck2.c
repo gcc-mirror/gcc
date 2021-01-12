@@ -1466,7 +1466,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree next;
-      tree type;
 
       if (TREE_CODE (field) != FIELD_DECL
 	  || (DECL_ARTIFICIAL (field)
@@ -1477,10 +1476,10 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	continue;
 
       /* If this is a bitfield, first convert to the declared type.  */
-      type = TREE_TYPE (field);
+      tree fldtype = TREE_TYPE (field);
       if (DECL_BIT_FIELD_TYPE (field))
-	type = DECL_BIT_FIELD_TYPE (field);
-      if (type == error_mark_node)
+	fldtype = DECL_BIT_FIELD_TYPE (field);
+      if (fldtype == error_mark_node)
 	return PICFLAG_ERRONEOUS;
 
       next = NULL_TREE;
@@ -1496,8 +1495,8 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 			  || identifier_p (ce->index));
 	      if (ce->index == field || ce->index == DECL_NAME (field))
 		next = ce->value;
-	      else if (ANON_AGGR_TYPE_P (type)
-		       && search_anon_aggr (type,
+	      else if (ANON_AGGR_TYPE_P (fldtype)
+		       && search_anon_aggr (fldtype,
 					    TREE_CODE (ce->index) == FIELD_DECL
 					    ? DECL_NAME (ce->index)
 					    : ce->index))
@@ -1525,7 +1524,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	  if (ce)
 	    {
 	      gcc_assert (ce->value);
-	      next = massage_init_elt (type, next, nested, flags, complain);
+	      next = massage_init_elt (fldtype, next, nested, flags, complain);
 	      ++idx;
 	    }
 	}
@@ -1551,15 +1550,14 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      && find_placeholders (next))
 	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
 	}
-      else if (type_build_ctor_call (TREE_TYPE (field)))
+      else if (type_build_ctor_call (fldtype))
 	{
 	  /* If this type needs constructors run for
 	     default-initialization, we can't rely on the back end to do it
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
-	  next = massage_init_elt (TREE_TYPE (field), next, nested, flags,
-				   complain);
+	  next = massage_init_elt (fldtype, next, nested, flags, complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
@@ -1570,7 +1568,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	}
       else
 	{
-	  const_tree fldtype = TREE_TYPE (field);
 	  if (TYPE_REF_P (fldtype))
 	    {
 	      if (complain & tf_error)
@@ -1601,7 +1598,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 
 	  if (!zero_init_p (fldtype)
 	      || skipped < 0)
-	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
+	    next = build_zero_init (fldtype, /*nelts=*/NULL_TREE,
 				    /*static_storage_p=*/false);
 	  else
 	    {
@@ -1620,7 +1617,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	continue;
 
       /* If this is a bitfield, now convert to the lowered type.  */
-      if (type != TREE_TYPE (field))
+      if (fldtype != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
       picflags |= picflag_from_initializer (next);
       CONSTRUCTOR_APPEND_ELT (v, field, next);
