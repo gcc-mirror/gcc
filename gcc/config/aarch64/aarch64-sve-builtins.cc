@@ -2576,7 +2576,7 @@ gimple_folder::fold_contiguous_base (gimple_seq &stmts, tree vectype)
 tree
 gimple_folder::load_store_cookie (tree type)
 {
-  return build_int_cst (build_pointer_type (type), TYPE_ALIGN_UNIT (type));
+  return build_int_cst (build_pointer_type (type), TYPE_ALIGN (type));
 }
 
 /* Fold the call to a call to INSTANCE, with the same arguments.  */

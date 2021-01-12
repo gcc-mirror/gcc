@@ -4302,7 +4302,7 @@ gimple_fold_mask_load_store_mem_ref (gcall *call, tree vectype)
   if (!tree_fits_uhwi_p (alias_align) || !integer_all_onesp (mask))
     return NULL_TREE;
 
-  unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align) * BITS_PER_UNIT;
+  unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align);
   if (TYPE_ALIGN (vectype) != align)
     vectype = build_aligned_type (vectype, align);
   tree offset = build_zero_cst (TREE_TYPE (alias_align));
