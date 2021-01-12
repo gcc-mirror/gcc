@@ -2547,10 +2547,7 @@ constrain_operands (int strict, alternative_mask alternatives)
     return 1;
 
   for (c = 0; c < recog_data.n_operands; c++)
-    {
-      constraints[c] = recog_data.constraints[c];
-      matching_operands[c] = -1;
-    }
+    constraints[c] = recog_data.constraints[c];
 
   do
     {
@@ -2569,6 +2566,9 @@ constrain_operands (int strict, alternative_mask alternatives)
 	  which_alternative++;
 	  continue;
 	}
+
+      for (opno = 0; opno < recog_data.n_operands; opno++)
+	matching_operands[opno] = -1;
 
       for (opno = 0; opno < recog_data.n_operands; opno++)
 	{
