@@ -3232,7 +3232,7 @@ vect_vfa_access_size (dr_vec_info *dr_info)
 static unsigned int
 vect_vfa_align (dr_vec_info *dr_info)
 {
-  return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
+  return dr_alignment (dr_info->dr);
 }
 
 /* Function vect_no_alias_p.
