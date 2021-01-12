@@ -11895,6 +11895,9 @@ instantiate_class_template_1 (tree type)
      relative to the scope of the class.  */
   pop_to_parent_deferring_access_checks ();
 
+  /* A vector to hold members marked with attribute used. */
+  auto_vec<tree> used;
+
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
        member; member = TREE_CHAIN (member))
@@ -11968,7 +11971,7 @@ instantiate_class_template_1 (tree type)
 	      finish_member_declaration (r);
 	      /* Instantiate members marked with attribute used.  */
 	      if (r != error_mark_node && DECL_PRESERVE_P (r))
-		mark_used (r);
+		used.safe_push (r);
 	      if (TREE_CODE (r) == FUNCTION_DECL
 		  && DECL_OMP_DECLARE_REDUCTION_P (r))
 		cp_check_omp_declare_reduction (r);
@@ -12034,7 +12037,7 @@ instantiate_class_template_1 (tree type)
 			     /*flags=*/0);
 			  /* Instantiate members marked with attribute used. */
 			  if (r != error_mark_node && DECL_PRESERVE_P (r))
-			    mark_used (r);
+			    used.safe_push (r);
 			}
 		      else if (TREE_CODE (r) == FIELD_DECL)
 			{
@@ -12224,6 +12227,11 @@ instantiate_class_template_1 (tree type)
      the keyed_classes.  */
   if (TYPE_CONTAINS_VPTR_P (type) && CLASSTYPE_KEY_METHOD (type))
     vec_safe_push (keyed_classes, type);
+
+  /* Now that we've gone through all the members, instantiate those
+     marked with attribute used.  */
+  for (tree x : used)
+    mark_used (x);
 
   return type;
 }
