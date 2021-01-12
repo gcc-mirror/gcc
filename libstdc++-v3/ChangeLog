@@ -1,3 +1,54 @@
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpPathPrinter): Store the
+	name of the type and pass it to the iterator.
+	* testsuite/libstdc++-prettyprinters/filesystem-ts.cc: New test.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65480
+	PR libstdc++/68735
+	* python/libstdcxx/v6/printers.py (function_pointer_to_name):
+	New helper function to get the name of a function from its
+	address.
+	(StdExpAnyPrinter.__init__): Use it.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Use gdb.Type.strip_typedefs().
+	* testsuite/libstdc++-prettyprinters/compat.cc: Use a typedef in
+	the emulated old type.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__): Do
+	not assume field called _M_head_impl is the first tuple element.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Copy from gcc-9
+	branch.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr with
+	empty pointer type and non-empty deleter.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Correct name of option.
+	* doc/html/*: Regenerate.
+
 2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
