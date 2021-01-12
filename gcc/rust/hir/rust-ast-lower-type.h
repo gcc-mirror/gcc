@@ -122,10 +122,9 @@ public:
   }
 
 private:
-  ASTLoweringType () : translated (nullptr) {}
+  ASTLoweringType () : translated (nullptr), translated_segment (nullptr) {}
 
   HIR::Type *translated;
-
   HIR::TypePathSegment *translated_segment;
 };
 

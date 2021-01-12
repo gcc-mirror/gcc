@@ -246,7 +246,7 @@ public:
       return true;
     });
 
-    if (function_body->has_expr ())
+    if (function_body->has_expr () && function_body->tail_expr_reachable ())
       {
 	// the previous passes will ensure this is a valid return
 	// dead code elimination should remove any bad trailing expressions

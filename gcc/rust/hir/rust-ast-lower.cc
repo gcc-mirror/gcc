@@ -89,29 +89,30 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     return true;
   });
 
-  HIR::ExprWithoutBlock *tail_expr = nullptr;
-  if (expr.has_tail_expr () && !block_did_terminate)
-    {
-      tail_expr = (HIR::ExprWithoutBlock *) ASTLoweringExpr::translate (
-	expr.get_tail_expr ().get ());
-    }
-  else if (expr.has_tail_expr () && block_did_terminate)
+  bool tail_reachable = expr.has_tail_expr () && !block_did_terminate;
+  if (expr.has_tail_expr () && block_did_terminate)
     {
       // warning unreachable tail expressions
       rust_warning_at (expr.get_tail_expr ()->get_locus_slow (), 0,
 		       "unreachable expression");
     }
 
+  HIR::ExprWithoutBlock *tail_expr = nullptr;
+  if (expr.has_tail_expr ())
+    {
+      tail_expr = (HIR::ExprWithoutBlock *) ASTLoweringExpr::translate (
+	expr.get_tail_expr ().get ());
+    }
+
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-
   translated
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
 			  std::unique_ptr<HIR::ExprWithoutBlock> (tail_expr),
-			  std::move (inner_attribs), std::move (outer_attribs),
-			  expr.get_locus ());
+			  tail_reachable, std::move (inner_attribs),
+			  std::move (outer_attribs), expr.get_locus ());
 
   terminated = block_did_terminate || expr.has_tail_expr ();
 }

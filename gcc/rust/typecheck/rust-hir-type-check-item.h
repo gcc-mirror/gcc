@@ -85,6 +85,12 @@ public:
     context->push_return_type (resolve_fn_type.go ());
 
     TypeCheckExpr::Resolve (function.function_body.get ());
+    if (function.function_body->has_expr ())
+      {
+	auto resolved
+	  = TypeCheckExpr::Resolve (function.function_body->expr.get ());
+	context->peek_return_type ()->combine (resolved);
+      }
 
     context->pop_return_type ();
   }

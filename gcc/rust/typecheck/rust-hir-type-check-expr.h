@@ -36,10 +36,13 @@ public:
   {
     TypeCheckExpr resolver (is_final_expr);
     expr->accept_vis (resolver);
-    if (resolver.infered != nullptr)
-      resolver.context->insert_type (expr->get_mappings ().get_hirid (),
-				     resolver.infered);
 
+    if (resolver.infered == nullptr)
+      resolver.infered
+	= new TyTy::UnitType (expr->get_mappings ().get_hirid ());
+
+    resolver.context->insert_type (expr->get_mappings ().get_hirid (),
+				   resolver.infered);
     return resolver.infered;
   }
 
@@ -104,6 +107,10 @@ public:
       }
 
     infered = TyTy::TypeCheckCallExpr::go (lookup, expr);
+
+    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
+    infered = infer.combine (infered);
+    infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::AssignmentExpr &expr)
@@ -159,8 +166,9 @@ public:
 	return;
       }
 
-    // FIXME this needs to be cloned for memory management later on
-    infered = lookup;
+    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
+    infered = infer.combine (lookup);
+    infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::LiteralExpr &expr)
@@ -250,6 +258,10 @@ public:
 	gcc_unreachable ();
 	break;
       }
+
+    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
+    infered = infer.combine (infered);
+    infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr)
@@ -266,7 +278,6 @@ public:
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     infered = lhs->combine (rhs);
-    // FIXME this will need to turn into bool
   }
 
   void visit (HIR::LazyBooleanExpr &expr)
@@ -281,40 +292,69 @@ public:
   void visit (HIR::IfExpr &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-    TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto blk_expr = TypeCheckExpr::Resolve (expr.get_if_block ());
 
-    // if without else always resolves to unit type
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    if (is_final_expr
+	&& context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	auto expected_ty = context->peek_return_type ();
+	infered = expected_ty->combine (blk_expr);
+      }
   }
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    // this must combine to what the type is expected
-    // this might be a parameter or the last expr in an if + else in a BlockExpr
-    // then it must resolve to fn return type
-    // else its a unit-type
-    infered = is_final_expr
-		? context->peek_return_type ()
-		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    // check and resolve all types in the conditional var
+    TypeCheckExpr::Resolve (expr.get_if_condition ());
 
-    TypeCheckExpr::Resolve (expr.get_if_condition (), is_final_expr);
-    auto if_blk_ty = TypeCheckExpr::Resolve (expr.get_if_block ());
-    auto else_blk_ty = TypeCheckExpr::Resolve (expr.get_else_block ());
+    auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_else_block ());
 
-    if (is_final_expr)
+    TyTy::TyBase *if_block_tyty = nullptr;
+    if (expr.get_if_block ()->has_expr ())
+      if_block_tyty
+	= TypeCheckExpr::Resolve (expr.get_if_block ()->expr.get ());
+    else
+      if_block_tyty = if_blk_resolved;
+
+    TyTy::TyBase *else_block_tyty = nullptr;
+    if (expr.get_else_block ()->has_expr ())
+      else_block_tyty
+	= TypeCheckExpr::Resolve (expr.get_else_block ()->expr.get ());
+    else
+      else_block_tyty = else_blk_resolved;
+
+    if (context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
       {
-	infered = infered->combine (if_blk_ty);
-	infered = infered->combine (else_blk_ty);
+	// this must combine to what the type is expected
+	// this might be a parameter or the last expr in an if + else in a
+	// BlockExpr then it must resolve to fn return type else its a unit-type
+	auto expected_ty
+	  = is_final_expr
+	      ? context->peek_return_type ()
+	      : new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+
+	auto if_blk_combined = expected_ty->combine (if_block_tyty);
+	auto else_blk_combined = expected_ty->combine (else_block_tyty);
+
+	infered = if_blk_combined->combine (else_blk_combined);
       }
   }
 
   void visit (HIR::IfExprConseqIf &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-    TypeCheckExpr::Resolve (expr.get_if_block ());
-    TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
+    auto if_blk = TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto elif_blk = TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
 
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    if (is_final_expr
+	&& context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	auto expected_ty = context->peek_return_type ();
+
+	infered = expected_ty->combine (if_blk);
+	infered = infered->combine (elif_blk);
+      }
   }
 
   void visit (HIR::BlockExpr &expr);

@@ -119,7 +119,6 @@ public:
 
     // this might be a struct type (TyTy::ADT) reference
     // TODO
-    printf ("UNREACHABLE %s\n", path.as_string ().c_str ());
     gcc_unreachable ();
   }
 

@@ -190,14 +190,15 @@ public:
       = std::unique_ptr<HIR::BlockExpr> (
 	ASTLoweringBlock::translate (function.get_definition ().get (),
 				     &terminated));
-    if (!terminated && function.has_return_type ())
-      rust_error_at (function.get_definition ()->get_locus (),
-		     "missing return");
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
+
+    mappings->insert_location (crate_num,
+			       function_body->get_mappings ().get_hirid (),
+			       function.get_locus ());
 
     auto fn
       = new HIR::Function (mapping, std::move (function_name),

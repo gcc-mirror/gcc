@@ -90,7 +90,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     return true;
   });
 
-  if (expr.has_expr ())
+  if (expr.has_expr () && expr.tail_expr_reachable ())
     {
       // the previous passes will ensure this is a valid return
       // dead code elimination should remove any bad trailing expressions

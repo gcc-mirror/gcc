@@ -239,7 +239,7 @@ public:
   void visit (TyTy::ADTType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -260,7 +260,7 @@ public:
   void visit (TyTy::BoolType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -268,7 +268,7 @@ public:
   void visit (TyTy::IntType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -276,7 +276,7 @@ public:
   void visit (TyTy::UintType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -284,7 +284,7 @@ public:
   void visit (TyTy::FloatType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }

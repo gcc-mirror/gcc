@@ -44,6 +44,12 @@ UnitType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+UnitType::clone ()
+{
+  return new UnitType (get_ref (), get_ty_ref ());
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -53,7 +59,7 @@ InferType::accept_vis (TyVisitor &vis)
 std::string
 InferType::as_string () const
 {
-  return "[_]";
+  return "?";
 }
 
 TyBase *
@@ -61,6 +67,12 @@ InferType::combine (TyBase *other)
 {
   InferRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+InferType::clone ()
+{
+  return new InferType (get_ref (), get_ty_ref ());
 }
 
 void
@@ -78,8 +90,15 @@ ErrorType::as_string () const
 TyBase *
 ErrorType::combine (TyBase *other)
 {
+  // FIXME
   // rust_error_at ();
   return this;
+}
+
+TyBase *
+ErrorType::clone ()
+{
+  return new ErrorType (get_ref ());
 }
 
 void
@@ -99,6 +118,13 @@ StructFieldType::combine (TyBase *other)
 {
   StructFieldTypeRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+StructFieldType::clone ()
+{
+  return new StructFieldType (get_ref (), get_ty_ref (), get_name (),
+			      get_field_type ()->clone ());
 }
 
 void
@@ -121,6 +147,16 @@ TyBase *
 ADTType::combine (TyBase *other)
 {
   return nullptr;
+}
+
+TyBase *
+ADTType::clone ()
+{
+  std::vector<StructFieldType *> cloned_fields;
+  for (auto &f : fields)
+    cloned_fields.push_back ((StructFieldType *) f->clone ());
+
+  return new ADTType (get_ref (), get_ty_ref (), get_name (), cloned_fields);
 }
 
 void
@@ -150,6 +186,17 @@ FnType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+FnType::clone ()
+{
+  std::vector<ParamType *> cloned_params;
+  for (auto &p : params)
+    cloned_params.push_back ((ParamType *) p->clone ());
+
+  return new FnType (get_ref (), get_ty_ref (), cloned_params,
+		     get_return_type ()->clone ());
+}
+
 void
 ParamType::accept_vis (TyVisitor &vis)
 {
@@ -167,6 +214,13 @@ ParamType::combine (TyBase *other)
 {
   ParamRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+ParamType::clone ()
+{
+  return new ParamType (get_ref (), get_ty_ref (), get_identifier (),
+			get_base_type ()->clone ());
 }
 
 void
@@ -188,6 +242,13 @@ ArrayType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+ArrayType::clone ()
+{
+  return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
+			get_type ()->clone ());
+}
+
 void
 BoolType::accept_vis (TyVisitor &vis)
 {
@@ -205,6 +266,12 @@ BoolType::combine (TyBase *other)
 {
   BoolRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+BoolType::clone ()
+{
+  return new BoolType (get_ref (), get_ty_ref ());
 }
 
 void
@@ -240,6 +307,12 @@ IntType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+IntType::clone ()
+{
+  return new IntType (get_ref (), get_ty_ref (), get_kind ());
+}
+
 void
 UintType::accept_vis (TyVisitor &vis)
 {
@@ -273,6 +346,12 @@ UintType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+UintType::clone ()
+{
+  return new UintType (get_ref (), get_ty_ref (), get_kind ());
+}
+
 void
 FloatType::accept_vis (TyVisitor &vis)
 {
@@ -298,6 +377,12 @@ FloatType::combine (TyBase *other)
 {
   FloatRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+FloatType::clone ()
+{
+  return new FloatType (get_ref (), get_ty_ref (), get_kind ());
 }
 
 void

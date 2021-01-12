@@ -2524,11 +2524,10 @@ class BlockExpr : public ExprWithBlock
 public:
   std::vector<Attribute> inner_attrs;
 
-  // bool has_statements;
   std::vector<std::unique_ptr<Stmt> > statements;
-  // bool has_expr;
   std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
 
+  bool tail_reachable;
   Location locus;
 
   std::string as_string () const override;
@@ -2539,15 +2538,17 @@ public:
   // Returns whether the block contains an expression
   bool has_expr () const { return expr != nullptr; }
 
+  bool tail_expr_reachable () const { return tail_reachable; }
+
   BlockExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
-	     std::unique_ptr<ExprWithoutBlock> block_expr,
+	     std::unique_ptr<ExprWithoutBlock> block_expr, bool tail_reachable,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      locus (locus)
+      tail_reachable (tail_reachable), locus (locus)
   {}
 
   // Copy constructor with clone

@@ -47,7 +47,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     bool is_final_stmt = expr.is_final_stmt (s);
     bool is_final_expr = is_final_stmt && !expr.has_expr ();
 
-    auto infered = TypeCheckStmt::Resolve (s, is_final_stmt);
+    auto infered = TypeCheckStmt::Resolve (s, is_final_expr);
     if (is_final_expr)
       {
 	delete block_tyty;
@@ -57,13 +57,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     return true;
   });
 
+  // tail expression must be checked as part of the caller since
+  // the result of this is very dependant on what we expect it to be
   if (expr.has_expr ())
-    {
-      auto tail_tyty = TypeCheckExpr::Resolve (expr.expr.get (), true);
-
-      delete block_tyty;
-      block_tyty = tail_tyty;
-    }
+    TypeCheckExpr::Resolve (expr.expr.get ());
 
   // now that the stmts have been resolved we must resolve the block of locals
   // and make sure the variables have been resolved
@@ -74,7 +71,6 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       rust_fatal_error (expr.get_locus (), "failed to lookup locals per block");
       return;
     }
-
   TyTyResolver::Resolve (rib, mappings, resolver, context);
 
   infered = block_tyty;

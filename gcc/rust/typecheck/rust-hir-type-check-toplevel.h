@@ -83,7 +83,12 @@ public:
     if (!function.has_function_return_type ())
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
-      ret_type = TypeCheckType::Resolve (function.return_type.get ());
+      {
+	TyTy::InferType infer (function.get_mappings ().get_hirid ());
+	auto resolved = TypeCheckType::Resolve (function.return_type.get ());
+	ret_type = infer.combine (resolved);
+	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
+      }
 
     std::vector<TyTy::ParamType *> params;
     for (auto &param : function.function_params)

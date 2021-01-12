@@ -38,7 +38,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (ADTType &type) override
@@ -47,7 +47,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (InferType &type) override
@@ -56,7 +56,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (FnType &type) override
@@ -65,7 +65,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (ParamType &type) override
@@ -74,7 +74,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (ArrayType &type) override
@@ -83,7 +83,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (BoolType &type) override
@@ -92,7 +92,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (IntType &type) override
@@ -101,7 +101,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (UintType &type) override
@@ -110,7 +110,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (FloatType &type) override
@@ -119,7 +119,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (ErrorType &type) override
@@ -128,7 +128,7 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
   virtual void visit (StructFieldType &type) override
@@ -137,13 +137,13 @@ public:
     Location def_locus = mappings->lookup_location (base->get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_fatal_error (def_locus, "declared here");
+    rust_error_at (def_locus, "declared here");
   }
 
 protected:
   BaseRules (TyBase *base)
     : mappings (Analysis::Mappings::get ()), base (base),
-      resolved (new ErrorType (base->get_ref ()))
+      resolved (new ErrorType (base->get_ref (), base->get_ref ()))
   {}
 
   Analysis::Mappings *mappings;
@@ -164,25 +164,23 @@ public:
 
   // we are an inference variable so this means we can take the other as the
   // type
-  void visit (UnitType &type) override
-  {
-    resolved = new UnitType (type.get_ref ());
-  }
+  void visit (InferType &type) override { resolved = type.clone (); }
 
-  void visit (BoolType &type) override
-  {
-    resolved = new BoolType (type.get_ref ());
-  }
+  void visit (UnitType &type) override { resolved = type.clone (); }
 
-  void visit (IntType &type) override
-  {
-    resolved = new IntType (type.get_ref (), type.get_kind ());
-  }
+  void visit (BoolType &type) override { resolved = type.clone (); }
 
-  void visit (UintType &type) override
-  {
-    resolved = new UintType (type.get_ref (), type.get_kind ());
-  }
+  void visit (IntType &type) override { resolved = type.clone (); }
+
+  void visit (UintType &type) override { resolved = type.clone (); }
+
+  void visit (FloatType &type) override { resolved = type.clone (); }
+
+  void visit (ParamType &type) override { resolved = type.clone (); }
+
+  void visit (ArrayType &type) override { resolved = type.clone (); }
+
+  void visit (ADTType &type) override { resolved = type.clone (); }
 
 private:
   InferType *base;
@@ -217,7 +215,7 @@ public:
 
   void visit (UnitType &type) override
   {
-    resolved = new UnitType (type.get_ref ());
+    resolved = new UnitType (type.get_ref (), type.get_ty_ref ());
   }
 
 private:
@@ -280,8 +278,8 @@ public:
 	return;
       }
 
-    resolved
-      = new ArrayType (type.get_ref (), type.get_capacity (), base_resolved);
+    resolved = new ArrayType (type.get_ref (), type.get_ty_ref (),
+			      type.get_capacity (), base_resolved);
   }
 
 private:
@@ -301,7 +299,7 @@ public:
 
   void visit (BoolType &type) override
   {
-    resolved = new BoolType (type.get_ref ());
+    resolved = new BoolType (type.get_ref (), type.get_ty_ref ());
   }
 
 private:
@@ -321,8 +319,14 @@ public:
 
   void visit (IntType &type) override
   {
-    // FIXME we should look at the IntTypeKind and check if i8 vs i16 etc..
-    resolved = new IntType (type.get_ref (), type.get_kind ());
+    if (type.get_kind () != base->get_kind ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved
+      = new IntType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
   }
 
 private:
@@ -342,8 +346,14 @@ public:
 
   void visit (UintType &type) override
   {
-    // FIXME we should look at the IntTypeKind and check if u8 vs u16 etc..
-    resolved = new UintType (type.get_ref (), type.get_kind ());
+    if (type.get_kind () != base->get_kind ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved
+      = new UintType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
   }
 
 private:
@@ -363,8 +373,14 @@ public:
 
   void visit (FloatType &type) override
   {
-    // FIXME we should look at the FloatKind and respect it
-    resolved = new FloatType (type.get_ref (), type.get_kind ());
+    if (type.get_kind () != base->get_kind ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved
+      = new FloatType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
   }
 
 private:
