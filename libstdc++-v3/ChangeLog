@@ -1,3 +1,109 @@
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Correct name of option.
+	* doc/html/*: Regenerate.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpPathPrinter): Store the
+	name of the type and pass it to the iterator.
+	(StdPathPrinter): Likewise.
+	* testsuite/libstdc++-prettyprinters/filesystem-ts.cc: New test.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96083
+	* include/ext/throw_allocator.h: Use __has_builtin to check for
+	__builtin_sprintf support, and use std::sprintf if necessary.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65480
+	PR libstdc++/68735
+	* python/libstdcxx/v6/printers.py (function_pointer_to_name):
+	New helper function to get the name of a function from its
+	address.
+	(StdExpAnyPrinter.__init__): Use it.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Use gdb.Type.strip_typedefs().
+	* testsuite/libstdc++-prettyprinters/compat.cc: Use a typedef in
+	the emulated old type.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2019-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__): Do
+	not assume field called _M_head_impl is the first tuple element.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Make tuple
+	implementation more accurate.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr with
+	empty pointer type and non-empty deleter.
+
+2021-01-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2019-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (lookup_node_type): Remove redundant
+	call to lookup_node_type.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Define
+	_GLIBCXX_USE_CXX11_ABI to 0.
+	* testsuite/libstdc++-prettyprinters/91997.cc: Use regexp-test to check
+	'a' content.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2019-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91997
+	* python/libstdcxx/v6/printers.py (find_type): Fail more gracefully
+	if we run out of base classes to look at.
+	(llokup_templ_spec, lookup_node_type): New utilities to find node
+	types for node-based containers.
+	(StdListPrinter.children, NodeIteratorPrinter.__init__)
+	(NodeIteratorPrinter.to_string, StdSlistPrinter.children)
+	(StdSlistIteratorPrinter.to_string, StdRbtreeIteratorPrinter.__init__)
+	(StdMapPrinter.children, StdSetPrinter.children)
+	(StdForwardListPrinter.children): Use lookup_node_type instead of
+	find_type.
+	(StdListIteratorPrinter.__init__, StdFwdListIteratorPrinter.__init__):
+	Pass name of node type to NodeIteratorPrinter constructor.
+	(Tr1HashtableIterator.__init__): Rename argument.
+	(StdHashtableIterator.__init__): Likewise. Use lookup_templ_spec
+	instead of find_type.
+	* testsuite/libstdc++-prettyprinters/59161.cc: Remove workaround for
+	_Node typedef not being present in debuginfo.
+	* testsuite/libstdc++-prettyprinters/91997.cc: New test.
+
+2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/filesystem_error/cons.cc:
+	Remove -std=gnu++17 option.
+
 2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
