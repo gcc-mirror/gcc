@@ -1724,6 +1724,9 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   if (!dwarf2_debug_info_emitted_p (current_function_decl))
     dwarf2out_begin_prologue (0, 0, NULL);
 
+  if (DECL_IGNORED_P (current_function_decl) && last_linenum && last_filename)
+    debug_hooks->set_ignored_loc (last_linenum, last_columnnum, last_filename);
+
 #ifdef LEAF_REG_REMAP
   if (crtl->uses_only_leaf_regs)
     leaf_renumber_regs (first);
@@ -2187,6 +2190,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	  in_cold_section_p = !in_cold_section_p;
 
+	  gcc_checking_assert (in_cold_section_p);
 	  if (in_cold_section_p)
 	    cold_function_name
 	      = clone_function_name (current_function_decl, "cold");
@@ -2200,6 +2204,10 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    }
 	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
+	  if (DECL_IGNORED_P (current_function_decl) && last_linenum
+	      && last_filename)
+	    debug_hooks->set_ignored_loc (last_linenum, last_columnnum,
+					  last_filename);
 
 	  switch_to_section (current_function_section ());
 	  targetm.asm_out.function_switched_text_sections (asm_out_file,

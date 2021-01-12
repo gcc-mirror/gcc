@@ -362,6 +362,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_end_block,
   debug_true_const_tree,	         /* ignore_block */
   dbxout_source_line,		         /* source_line */
+  debug_nothing_int_int_charstar,	 /* set_ignored_loc */
   dbxout_begin_prologue,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
   debug_nothing_int_charstar,	         /* begin_epilogue */
@@ -409,6 +410,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_end_block,
   debug_true_const_tree,	         /* ignore_block */
   xcoffout_source_line,
+  debug_nothing_int_int_charstar,	 /* set_ignored_loc */
   xcoffout_begin_prologue,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
   debug_nothing_int_charstar,	         /* begin_epilogue */
