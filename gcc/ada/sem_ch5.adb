@@ -1108,6 +1108,12 @@ package body Sem_Ch5 is
                --  warnings when an assignment is rewritten as another
                --  assignment, and gets tied up with itself.
 
+               --  We also omit the warning if the RHS includes target names,
+               --  that is to say the Ada2020 "@" that denotes an instance of
+               --  the LHS, which indicates that the current value is being
+               --  used. Note that this implicit reference to the entity on
+               --  the RHS is not treated as a source reference.
+
                --  There may have been a previous reference to a component of
                --  the variable, which in general removes the Last_Assignment
                --  field of the variable to indicate a relevant use of the
@@ -1126,6 +1132,7 @@ package body Sem_Ch5 is
                  and then Comes_From_Source (N)
                  and then In_Extended_Main_Source_Unit (Ent)
                  and then not Has_Deferred_Reference (Ent)
+                 and then not Has_Target_Names (N)
                then
                   Warn_On_Useless_Assignment (Ent, N);
                end if;
