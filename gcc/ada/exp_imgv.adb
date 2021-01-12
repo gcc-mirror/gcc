@@ -761,10 +761,6 @@ package body Exp_Imgv is
       --  Expand attribute 'Image in user-defined enumeration types, avoiding
       --  string copy.
 
-      function Is_User_Defined_Enumeration_Type
-        (Typ : Entity_Id) return Boolean;
-      --  Return True if Typ is a user-defined enumeration type
-
       -----------------------------------
       -- Expand_Standard_Boolean_Image --
       -----------------------------------
@@ -837,7 +833,7 @@ package body Exp_Imgv is
              Name                =>
                Make_If_Expression (Loc,
                  Expressions => New_List (
-                   Relocate_Node (Expr),
+                   Duplicate_Subexpr (Expr),
                    New_Occurrence_Of (T_Id, Loc),
                    New_Occurrence_Of (F_Id, Loc)))));
 
@@ -1005,20 +1001,6 @@ package body Exp_Imgv is
          Analyze_And_Resolve (N, Standard_String);
       end Expand_User_Defined_Enumeration_Image;
 
-      --------------------------------------
-      -- Is_User_Defined_Enumeration_Type --
-      --------------------------------------
-
-      function Is_User_Defined_Enumeration_Type
-        (Typ : Entity_Id) return Boolean is
-      begin
-         return Ekind (Typ) = E_Enumeration_Type
-           and then Typ /= Standard_Boolean
-           and then Typ /= Standard_Character
-           and then Typ /= Standard_Wide_Character
-           and then Typ /= Standard_Wide_Wide_Character;
-      end Is_User_Defined_Enumeration_Type;
-
       --  Local variables
 
       Enum_Case : Boolean;
@@ -1059,46 +1041,6 @@ package body Exp_Imgv is
       else
          Rtyp := Underlying_Type (Base_Type (Ptyp));
       end if;
-
-      --  Use inline expansion for user-defined enumeration types for which
-      --  the literal string entity has been built, and if -gnatd_x is not
-      --  passed to the compiler. Otherwise the attribute will be expanded
-      --  into a call to a routine in the runtime.
-
-      if Is_User_Defined_Enumeration_Type (Rtyp)
-        and then Present (Lit_Strings (Rtyp))
-        and then not Debug_Flag_Underscore_X
-      then
-         Expand_User_Defined_Enumeration_Image (Rtyp);
-         return;
-      end if;
-
-      --  Build declarations of Snn and Pnn to be inserted
-
-      Ins_List := New_List (
-
-         --  Snn : String (1 .. typ'Width);
-
-         Make_Object_Declaration (Loc,
-            Defining_Identifier => Snn,
-            Object_Definition   =>
-              Make_Subtype_Indication (Loc,
-                Subtype_Mark => New_Occurrence_Of (Standard_String, Loc),
-                Constraint   =>
-                  Make_Index_Or_Discriminant_Constraint (Loc,
-                    Constraints => New_List (
-                      Make_Range (Loc,
-                        Low_Bound  => Make_Integer_Literal (Loc, 1),
-                        High_Bound =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Occurrence_Of (Rtyp, Loc),
-                            Attribute_Name => Name_Width)))))),
-
-         --  Pnn : Natural;
-
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => Pnn,
-           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc)));
 
       --  Set Imid (RE_Id of procedure to call), and Tent, target for the
       --  type conversion of the first argument for all possibilities.
@@ -1266,9 +1208,14 @@ package body Exp_Imgv is
             Analyze_And_Resolve (N, Standard_String);
             return;
 
-         else
-            --  Here for enumeration type case
+         --  Use inline expansion if the -gnatd_x switch is not passed to the
+         --  compiler. Otherwise expand into a call to the runtime.
 
+         elsif not Debug_Flag_Underscore_X then
+            Expand_User_Defined_Enumeration_Image (Rtyp);
+            return;
+
+         else
             Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
 
             if Ttyp = Standard_Integer_8 then
@@ -1295,25 +1242,11 @@ package body Exp_Imgv is
       --  Build first argument for call
 
       if Enum_Case then
-         declare
-            T : Entity_Id;
-         begin
-            --  In Ada 2020 we need the underlying type here, because 'Image is
-            --  allowed on private types. We have already checked the version
-            --  when resolving the attribute.
-
-            if Is_Private_Type (Ptyp) then
-               T := Rtyp;
-            else
-               T := Ptyp;
-            end if;
-
-            Arg_List := New_List (
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Pos,
-                Prefix         => New_Occurrence_Of (T, Loc),
-                Expressions    => New_List (Expr)));
-         end;
+         Arg_List := New_List (
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Pos,
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
+             Expressions    => New_List (Expr)));
 
       --  AI12-0020: Ada 2020 allows 'Image for all types, including private
       --  types. If the full type is not a fixed-point type, then it is enough
@@ -1325,6 +1258,7 @@ package body Exp_Imgv is
       else
          declare
             Conv : Node_Id;
+
          begin
             if Is_Private_Type (Etype (Expr)) then
                if Is_Fixed_Point_Type (Rtyp) then
@@ -1339,6 +1273,33 @@ package body Exp_Imgv is
             Arg_List := New_List (Conv);
          end;
       end if;
+
+      --  Build declarations of Snn and Pnn to be inserted
+
+      Ins_List := New_List (
+
+         --  Snn : String (1 .. typ'Width);
+
+         Make_Object_Declaration (Loc,
+            Defining_Identifier => Snn,
+            Object_Definition   =>
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark => New_Occurrence_Of (Standard_String, Loc),
+                Constraint   =>
+                  Make_Index_Or_Discriminant_Constraint (Loc,
+                    Constraints => New_List (
+                      Make_Range (Loc,
+                        Low_Bound  => Make_Integer_Literal (Loc, 1),
+                        High_Bound =>
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => New_Occurrence_Of (Rtyp, Loc),
+                            Attribute_Name => Name_Width)))))),
+
+         --  Pnn : Natural;
+
+         Make_Object_Declaration (Loc,
+           Defining_Identifier => Pnn,
+           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc)));
 
       --  Append Snn, Pnn arguments
 
