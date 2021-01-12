@@ -8170,26 +8170,18 @@ package body Exp_Ch4 is
            (Variant : Node_Id) return Boolean
          is
             Clist : constant Node_Id := Component_List (Variant);
+            Comp  : Node_Id := First (Component_Items (Clist));
 
          begin
-            if Is_Empty_List (Component_Items (Clist)) then
-               return False;
-            end if;
-
             --  We only need to test one component
 
-            declare
-               Comp : Node_Id := First (Component_Items (Clist));
+            while Present (Comp) loop
+               if Component_Is_Unconstrained_UU (Comp) then
+                  return True;
+               end if;
 
-            begin
-               while Present (Comp) loop
-                  if Component_Is_Unconstrained_UU (Comp) then
-                     return True;
-                  end if;
-
-                  Next (Comp);
-               end loop;
-            end;
+               Next (Comp);
+            end loop;
 
             --  None of the components withing the variant were of
             --  unconstrained Unchecked_Union type.

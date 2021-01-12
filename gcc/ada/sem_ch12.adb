@@ -16169,16 +16169,11 @@ package body Sem_Ch12 is
             pragma Assert (D /= Union_Id (No_List));
             --  Because No_List = Empty, which is in Node_Range above
 
-            if Is_Empty_List (List_Id (D)) then
-               null;
-
-            else
-               N1 := First (List_Id (D));
-               while Present (N1) loop
-                  Save_References (N1);
-                  Next (N1);
-               end loop;
-            end if;
+            N1 := First (List_Id (D));
+            while Present (N1) loop
+               Save_References (N1);
+               Next (N1);
+            end loop;
 
          --  Element list or other non-node field, nothing to do
 

@@ -6640,28 +6640,25 @@ package body Exp_Disp is
       ----------------------
 
       function Find_Entry_Index (E : Entity_Id) return Uint is
-         Index     : Uint := Uint_1;
-         Subp_Decl : Entity_Id;
+         Index     : Uint := Uint_0;
+         Subp_Decl : Node_Id;
 
       begin
-         if Present (Decls)
-           and then not Is_Empty_List (Decls)
-         then
-            Subp_Decl := First (Decls);
-            while Present (Subp_Decl) loop
-               if Nkind (Subp_Decl) = N_Entry_Declaration then
-                  if Defining_Identifier (Subp_Decl) = E then
-                     return Index;
-                  end if;
+         Subp_Decl := First (Decls);
+         while Present (Subp_Decl) loop
+            if Nkind (Subp_Decl) = N_Entry_Declaration then
+               Index := Index + 1;
 
-                  Index := Index + 1;
+               if Defining_Identifier (Subp_Decl) = E then
+                  exit;
                end if;
 
-               Next (Subp_Decl);
-            end loop;
-         end if;
+            end if;
 
-         return Uint_0;
+            Next (Subp_Decl);
+         end loop;
+
+         return Index;
       end Find_Entry_Index;
 
       --  Local variables
