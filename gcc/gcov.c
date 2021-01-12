@@ -371,6 +371,9 @@ public:
   /* Register a new function.  */
   void add_function (function_info *fn);
 
+  /* Debug the source file.  */
+  void debug ();
+
   /* Index of the source_info in sources vector.  */
   unsigned index;
 
@@ -426,6 +429,31 @@ source_info::get_functions_at_location (unsigned line_num) const
     std::sort (slot->begin (), slot->end (), function_line_start_cmp ());
 
   return slot;
+}
+
+void source_info::debug ()
+{
+  fprintf (stderr, "source_info: %s\n", name);
+  for (vector<function_info *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
+    {
+      function_info *fn = *it;
+      fprintf (stderr, "  function_info: %s\n", fn->get_name ());
+      for (vector<block_info>::iterator bit = fn->blocks.begin ();
+	   bit != fn->blocks.end (); bit++)
+	{
+	  fprintf (stderr, "    block_info id=%d, count=%ld\n",
+		   bit->id, bit->count);
+	}
+    }
+
+  for (unsigned lineno = 1; lineno < lines.size (); ++lineno)
+    {
+      line_info &line = lines[lineno];
+      fprintf (stderr, "  line_info=%d, count=%ld\n", lineno, line.count);
+    }
+
+  fprintf (stderr, "\n");
 }
 
 class name_map
@@ -578,6 +606,10 @@ static int flag_human_readable_numbers = 0;
 /* Output summary info for each function.  */
 
 static int flag_function_summary = 0;
+
+/* Print debugging dumps.  */
+
+static int flag_debug = 0;
 
 /* Object directory file prefix.  This is the directory/file where the
    graph and data files are looked for, if nonzero.  */
@@ -896,6 +928,7 @@ print_usage (int error_p)
   fnotice (file, "  -c, --branch-counts             Output counts of branches taken\n\
                                     rather than percentages\n");
   fnotice (file, "  -d, --display-progress          Display progress information\n");
+  fnotice (file, "  -D, --debug			    Display debugging dumps\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
   fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
@@ -963,6 +996,7 @@ static const struct option options[] =
   { "hash-filenames",	    no_argument,       NULL, 'x' },
   { "use-colors",	    no_argument,       NULL, 'k' },
   { "use-hotness-colors",   no_argument,       NULL, 'q' },
+  { "debug",		    no_argument,       NULL, 'D' },
   { 0, 0, 0, 0 }
 };
 
@@ -973,7 +1007,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhHijklmno:pqrs:tuvwx";
+  const char *opts = "abcdDfhHijklmno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -1043,6 +1077,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 't':
 	  flag_use_stdout = 1;
+	  break;
+	case 'D':
+	  flag_debug = 1;
 	  break;
 	case 'v':
 	  print_version ();
@@ -1466,6 +1503,8 @@ generate_results (const char *file_name)
 	}
 
       accumulate_line_counts (src);
+      if (flag_debug)
+	src->debug ();
 
       if (!flag_use_stdout)
 	file_summary (&src->coverage);
@@ -1804,6 +1843,8 @@ read_graph_file (void)
 	      arc = XCNEW (arc_info);
 
 	      arc->dst = &fn->blocks[dest];
+	      /* Set id in order to find EXIT_BLOCK.  */
+	      arc->dst->id = dest;
 	      arc->src = src_blk;
 
 	      arc->count = 0;
