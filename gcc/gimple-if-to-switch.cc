@@ -91,11 +91,8 @@ condition_info::record_phi_mapping (edge e, mapping_vec *vec)
        gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
-      if (!virtual_operand_p (gimple_phi_result (phi)))
-	{
-	  tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
-	  vec->safe_push (std::make_pair (phi, arg));
-	}
+      tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
+      vec->safe_push (std::make_pair (phi, arg));
     }
 }
 
@@ -470,7 +467,7 @@ const pass_data pass_data_if_to_switch =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_cleanup_cfg | TODO_update_ssa /* todo_flags_finish */
+  TODO_update_ssa /* todo_flags_finish */
 };
 
 class pass_if_to_switch : public gimple_opt_pass
@@ -575,7 +572,7 @@ pass_if_to_switch::execute (function *fun)
   if (!all_candidates.is_empty ())
     {
       free_dominance_info (CDI_DOMINATORS);
-      mark_virtual_operands_for_renaming (fun);
+      return TODO_cleanup_cfg;
     }
 
   return 0;
