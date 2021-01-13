@@ -569,17 +569,30 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 				  NULL_TREE);
 
+		  /* We may need to add a copy constructor call if
+		     the field has [[no_unique_address]].  */
 		  if (unsafe_return_slot_p (sub))
 		    {
-		      /* We may need to add a copy constructor call if
-			 the field has [[no_unique_address]].  */
+		      /* But not if the initializer is an implicit ctor call
+			 we just built in digest_init.  */
+		      if (TREE_CODE (value) == TARGET_EXPR
+			  && TARGET_EXPR_LIST_INIT_P (value)
+			  && make_safe_copy_elision (sub, value))
+			goto build_init;
+
+		      tree name = (DECL_FIELD_IS_BASE (field_index)
+				   ? base_ctor_identifier
+				   : complete_ctor_identifier);
 		      releasing_vec args = make_tree_vector_single (value);
 		      code = build_special_member_call
-			(sub, complete_ctor_identifier, &args, inner_type,
+			(sub, name, &args, inner_type,
 			 LOOKUP_NORMAL, tf_warning_or_error);
 		    }
 		  else
-		    code = build2 (INIT_EXPR, inner_type, sub, value);
+		    {
+		    build_init:
+		      code = build2 (INIT_EXPR, inner_type, sub, value);
+		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
