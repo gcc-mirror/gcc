@@ -1,3 +1,69 @@
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98513
+	* gcc.dg/tree-ssa/pr98513.c: New testcase.
+
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* g++.dg/opt/pr98282.C: New testcase.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94994
+	* gcc.dg/vect/pr94994.c: New test.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/95401
+	* g++.dg/vect/pr95401.cc: New test.
+	* g++.dg/vect/pr95401a.cc: Likewise.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97144
+	* gcc.c-torture/compile/pr97144.c: New test.
+	* gcc.target/aarch64/sve/pr97144.c: Likewise.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98214
+	* gcc.target/aarch64/sve/pr98214.c: New file.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* gcc.dg/vect/pr98302.c: New test.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/89057
+	* gcc.target/aarch64/pr89057.c: New test.
+
 2021-01-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

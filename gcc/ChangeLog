@@ -1,3 +1,111 @@
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98513
+	* value-range.cc (intersect_ranges): Compare the upper bounds
+	for the expected relation.
+
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* tree-ssa-sccvn.c (vn_get_stmt_kind): Classify tcc_reference on
+	invariants as VN_NARY.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/94994
+	* tree-vect-data-refs.c (vect_vfa_align): Use dr_alignment.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/95401
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::load_store_cookie): Use bits rather than bytes
+	for the alignment argument to IFN_MASK_LOAD and IFN_MASK_STORE.
+	* gimple-fold.c (gimple_fold_mask_load_store_mem_ref): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97144
+	* recog.c (constrain_operands): Initialize matching_operand
+	for each alternative, rather than only doing it once.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98214
+	* genmodes.c (emit_insn_modes_h): Emit a definition of CONST_MODE_MASK.
+	(emit_mode_mask): Treat mode_mask_array as non-constant if adj_nunits.
+	(emit_mode_adjustments): Update GET_MODE_MASK when updating
+	GET_MODE_NUNITS.
+	* machmode.h (mode_mask_array): Use CONST_MODE_MASK.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* tree-vect-patterns.c (vect_determine_precisions_from_users): Make
+	sure that the precision remains greater than the shift count.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98371
+	* tree-vect-loop.c (vect_reanalyze_as_main_loop): New function.
+	(vect_analyze_loop): If an epilogue loop appears to be cheaper
+	than the main loop, re-analyze it as a main loop before adopting
+	it as a main loop.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/89057
+	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Accept
+	aarch64_simd_reg_or_zero for operand 2.  Use the combinez patterns
+	to handle zero operands.
+
+2021-01-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_simd_mode): Use
+	aarch64_full_sve_mode and aarch64_vq_mode directly, instead of
+	going via aarch64_simd_container_mode.
+
+2021-01-12  Andreas Krebbel  <krebbel@gcc.gnu.org>
+
+	Backported from master:
+	2021-01-11  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR tree-optimization/98221
+	* tree-ssa-forwprop.c (simplify_vector_constructor): For
+	big-endian, use UNPACK[_FLOAT]_HI.
+
 2021-01-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
