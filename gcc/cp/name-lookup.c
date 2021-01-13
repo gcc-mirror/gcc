@@ -9279,4 +9279,14 @@ push_operator_bindings ()
 	}
 }
 
+/* Wrapper around push_local_binding to push the bindings for
+   a non-member USING_DECL DECL that was found during template parsing.  */
+
+void
+push_using_decl_bindings (tree decl)
+{
+  push_local_binding (DECL_NAME (decl), USING_DECL_DECLS (decl),
+		      /*using*/true);
+}
+
 #include "gt-cp-name-lookup.h"
