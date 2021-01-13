@@ -1,3 +1,11 @@
+2021-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/98597
+	PR c/98592
+	* c-pretty-print.c (print_mem_ref): Avoid assuming MEM_REF operand
+	has pointer type.  Remove redundant code.  Avoid calling
+	gimple_canonical_types_compatible_p.
+
 2021-01-07  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98578

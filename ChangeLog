@@ -1,3 +1,11 @@
+2021-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS: Fix spacing.
+
+2021-01-12  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* MAINTAINERS (Write After Approval): Add myself
+
 2021-01-06  Nick Alcock  <nick.alcock@oracle.com>
 
 	* Makefile.def: Sync with binutils-gdb:
