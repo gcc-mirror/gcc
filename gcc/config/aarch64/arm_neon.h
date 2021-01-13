@@ -8709,42 +8709,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s8 (int8x8_t __a)
 {
-  return __builtin_convertvector (__a, int16x8_t);
+  return __builtin_aarch64_sxtlv8hi (__a);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s16 (int16x4_t __a)
 {
-  return __builtin_convertvector (__a, int32x4_t);
+  return __builtin_aarch64_sxtlv4si (__a);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_s32 (int32x2_t __a)
 {
-  return __builtin_convertvector (__a, int64x2_t);
+  return __builtin_aarch64_sxtlv2di (__a);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u8 (uint8x8_t __a)
 {
-  return __builtin_convertvector (__a, uint16x8_t);
+  return __builtin_aarch64_uxtlv8hi_uu (__a);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u16 (uint16x4_t __a)
 {
-  return __builtin_convertvector (__a, uint32x4_t);
+  return __builtin_aarch64_uxtlv4si_uu (__a);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovl_u32 (uint32x2_t __a)
 {
-  return __builtin_convertvector (__a, uint64x2_t);
+  return __builtin_aarch64_uxtlv2di_uu (__a);
 }
 
 __extension__ extern __inline int8x16_t
@@ -8796,42 +8796,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s16 (int16x8_t __a)
 {
-  return __builtin_convertvector (__a, int8x8_t);
+  return __builtin_aarch64_xtnv8hi (__a);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s32 (int32x4_t __a)
 {
-  return __builtin_convertvector (__a, int16x4_t);
+  return __builtin_aarch64_xtnv4si (__a);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_s64 (int64x2_t __a)
 {
-  return __builtin_convertvector (__a, int32x2_t);
+  return __builtin_aarch64_xtnv2di (__a);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u16 (uint16x8_t __a)
 {
-  return __builtin_convertvector (__a, uint8x8_t);
+  return (uint8x8_t)__builtin_aarch64_xtnv8hi ((int16x8_t) __a);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u32 (uint32x4_t __a)
 {
-  return __builtin_convertvector (__a, uint16x4_t);
+  return (uint16x4_t) __builtin_aarch64_xtnv4si ((int32x4_t )__a);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u64 (uint64x2_t __a)
 {
-  return __builtin_convertvector (__a, uint32x2_t);
+  return (uint32x2_t) __builtin_aarch64_xtnv2di ((int64x2_t) __a);
 }
 
 #define vmull_high_lane_s16(a, b, c)                                    \

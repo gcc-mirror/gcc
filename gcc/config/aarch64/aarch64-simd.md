@@ -7301,6 +7301,20 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
+(define_expand "aarch64_<su>xtl<mode>"
+  [(set (match_operand:VQN 0 "register_operand" "=w")
+	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  ""
+)
+
+(define_expand "aarch64_xtn<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  ""
+)
+
 ;; Truncate a 128-bit integer vector to a 64-bit vector.
 (define_insn "trunc<mode><Vnarrowq>2"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
