@@ -6067,8 +6067,7 @@
    && (arith_reg_operand (operands[0], SFmode)
        || fpul_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode)
-       || fpul_operand (operands[1], SFmode)
-       || arith_reg_operand (operands[2], SImode))"
+       || fpul_operand (operands[1], SFmode))"
   "@
 	fmov	%1,%0
 	mov	%1,%0
