@@ -8425,6 +8425,60 @@ call_copy_ctor (tree a, tsubst_flags_t complain)
   return r;
 }
 
+/* Return the base constructor corresponding to COMPLETE_CTOR or NULL_TREE.  */
+
+static tree
+base_ctor_for (tree complete_ctor)
+{
+  tree clone;
+  FOR_EACH_CLONE (clone, DECL_CLONED_FUNCTION (complete_ctor))
+    if (DECL_BASE_CONSTRUCTOR_P (clone))
+      return clone;
+  return NULL_TREE;
+}
+
+/* Try to make EXP suitable to be used as the initializer for a base subobject,
+   and return whether we were successful.  EXP must have already been cleared
+   by unsafe_copy_elision_p.  */
+
+static bool
+make_base_init_ok (tree exp)
+{
+  if (TREE_CODE (exp) == TARGET_EXPR)
+    exp = TARGET_EXPR_INITIAL (exp);
+  while (TREE_CODE (exp) == COMPOUND_EXPR)
+    exp = TREE_OPERAND (exp, 1);
+  if (TREE_CODE (exp) == COND_EXPR)
+    {
+      bool ret = make_base_init_ok (TREE_OPERAND (exp, 2));
+      if (tree op1 = TREE_OPERAND (exp, 1))
+	{
+	  bool r1 = make_base_init_ok (op1);
+	  /* If unsafe_copy_elision_p was false, the arms should match.  */
+	  gcc_assert (r1 == ret);
+	}
+      return ret;
+    }
+  if (TREE_CODE (exp) != AGGR_INIT_EXPR)
+    /* A trivial copy is OK.  */
+    return true;
+  if (!AGGR_INIT_VIA_CTOR_P (exp))
+    /* unsafe_copy_elision_p must have said this is OK.  */
+    return true;
+  tree fn = cp_get_callee_fndecl_nofold (exp);
+  if (DECL_BASE_CONSTRUCTOR_P (fn))
+    return true;
+  gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (fn));
+  fn = base_ctor_for (fn);
+  if (!fn || DECL_HAS_IN_CHARGE_PARM_P (fn))
+    /* The base constructor has more parameters, so we can't just change the
+       call target.  It would be possible to splice in the appropriate
+       arguments, but probably not worth the complexity.  */
+    return false;
+  AGGR_INIT_EXPR_FN (exp) = build_address (fn);
+  return true;
+}
+
 /* Return true iff T refers to a base or potentially-overlapping field, which
    cannot be used for return by invisible reference.  We avoid doing C++17
    mandatory copy elision when this is true.
@@ -9151,6 +9205,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	cp_warn_deprecated_use (fn, complain);
+
+      if (eliding_temp && DECL_BASE_CONSTRUCTOR_P (fn)
+	  && !make_base_init_ok (arg))
+	unsafe = true;
 
       /* If we're creating a temp and we already have one, don't create a
 	 new one.  If we're not creating a temp but we get one, use
