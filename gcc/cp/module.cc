@@ -18977,8 +18977,8 @@ module_add_import_initializers ()
   if (modules)
     {
       tree fntype = build_function_type (void_type_node, void_list_node);
-      vec<tree, va_gc> *args = NULL;
-      
+      releasing_vec args;  // There are no args
+
       for (unsigned ix = modules->length (); --ix;)
 	{
 	  module_state *import = (*modules)[ix];
