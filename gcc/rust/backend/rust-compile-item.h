@@ -138,10 +138,24 @@ public:
     // convert to the actual function type
     auto compiled_fn_type = TyTyCompile::compile (ctx->get_backend (), fnType);
 
+    unsigned int flags = 0;
+    bool is_main_fn = function.function_name.compare ("main") == 0;
+
+    // if its the main fn or pub visibility mark its as DECL_PUBLIC
+    // please see https://github.com/Rust-GCC/gccrs/pull/137
+    if (is_main_fn || function.has_visibility ())
+      flags |= Backend::function_is_visible;
+
+    std::string asm_name = function.function_name;
+    if (!is_main_fn)
+      {
+	// FIXME need name mangling
+	asm_name = "__" + function.function_name;
+      }
+
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, function.function_name,
-				       "" /* asm_name */, 0 /* flags */,
-				       function.get_locus ());
+				       asm_name, flags, function.get_locus ());
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
