@@ -5549,23 +5549,16 @@ package body Sem_Eval is
          return False;
       end if;
 
-      Anc_Subt := Ancestor_Subtype (Typ);
+      --  Then, check if the subtype is strictly static. This takes care of
+      --  checking for generics and predicates.
 
-      if Anc_Subt = Empty then
-         Anc_Subt := Base_T;
+      if not Is_Static_Subtype (Typ) then
+         return False;
       end if;
-
-      if Is_Generic_Type (Root_Type (Base_T))
-        or else Is_Generic_Actual_Type (Base_T)
-      then
-         return False;
-
-      elsif Has_Dynamic_Predicate_Aspect (Typ) then
-         return False;
 
       --  String types
 
-      elsif Is_String_Type (Typ) then
+      if Is_String_Type (Typ) then
          return
            Ekind (Typ) = E_String_Literal_Subtype
              or else
@@ -5579,6 +5572,12 @@ package body Sem_Eval is
             return True;
 
          else
+            Anc_Subt := Ancestor_Subtype (Typ);
+
+            if No (Anc_Subt) then
+               Anc_Subt := Base_T;
+            end if;
+
             --  Scalar_Range (Typ) might be an N_Subtype_Indication, so use
             --  Get_Type_{Low,High}_Bound.
 
