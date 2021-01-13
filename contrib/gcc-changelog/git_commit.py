@@ -308,7 +308,7 @@ class GitCommit:
             self.info = self.commit_to_info_hook(self.revert_commit)
 
         project_files = [f for f in self.info.modified_files
-                         if self.is_changelog_filename(f[0])
+                         if self.is_changelog_filename(f[0], allow_suffix=True)
                          or f[0] in misc_files]
         ignored_files = [f for f in self.info.modified_files
                          if self.in_ignored_location(f[0])]
@@ -343,8 +343,14 @@ class GitCommit:
         return [x[0] for x in self.info.modified_files if x[1] == 'A']
 
     @classmethod
-    def is_changelog_filename(cls, path):
-        return path.endswith('/ChangeLog') or path == 'ChangeLog'
+    def is_changelog_filename(cls, path, allow_suffix=False):
+        basename = os.path.basename(path)
+        if basename == 'ChangeLog':
+            return True
+        elif allow_suffix and basename.startswith('ChangeLog'):
+            return True
+        else:
+            return False
 
     @classmethod
     def find_changelog_location(cls, name):

@@ -3398,4 +3398,24 @@ index 00000000000..56c67f58752
 -- 
 2.29.2
 
+=== 0001-fix-old-ChangeLog.patch ===
+From fd498465b2801203089616be9a0e3c1f4fc065a0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 11:45:37 +0100
+Subject: [PATCH] Fix a changelog.
+
+---
+ gcc/ChangeLog-2020 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/ChangeLog-2020 b/gcc/ChangeLog-2020
+index 6553720acad..2c170ef014a 100644
+--- a/gcc/ChangeLog-2020
++++ b/gcc/ChangeLog-2020
+@@ -1 +1,2 @@
+ 
++
+ 
+-- 
+2.29.2
 
