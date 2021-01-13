@@ -175,6 +175,11 @@
   /* Implemented by aarch64_<sur>qmovn<mode>.  */
   BUILTIN_VSQN_HSDI (UNOP, sqmovn, 0, ALL)
   BUILTIN_VSQN_HSDI (UNOP, uqmovn, 0, ALL)
+
+  /* Implemented by aarch64_<su>qxtn2<mode>.  */
+  BUILTIN_VQN (BINOP, sqxtn2, 0, ALL)
+  BUILTIN_VQN (BINOPU, uqxtn2, 0, ALL)
+
   /* Implemented by aarch64_s<optab><mode>.  */
   BUILTIN_VSDQ_I (UNOP, sqabs, 0, ALL)
   BUILTIN_VSDQ_I (UNOP, sqneg, 0, ALL)
