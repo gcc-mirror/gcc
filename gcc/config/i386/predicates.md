@@ -1600,6 +1600,38 @@
   return true;
 })
 
+;; Return true if OP is a parallel for an pmovz{bw,wd,dq} vec_select,
+;; where one of the two operands of the vec_concat is const0_operand.
+(define_predicate "pmovzx_parallel"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int nelt = XVECLEN (op, 0);
+  int elt, i;
+
+  if (nelt < 2)
+    return false;
+
+  /* Check that the permutation is suitable for pmovz{bw,wd,dq}.
+     For example { 0 16 1 17 2 18 3 19 4 20 5 21 6 22 7 23 }.  */
+  elt = INTVAL (XVECEXP (op, 0, 0));
+  if (elt == 0)
+    {
+      for (i = 1; i < nelt; ++i)
+	if ((i & 1) != 0)
+	  {
+	    if (INTVAL (XVECEXP (op, 0, i)) < nelt)
+	      return false;
+	  }
+	else if (INTVAL (XVECEXP (op, 0, i)) != i / 2)
+	  return false;
+    }
+  else
+    return false;
+
+  return true;
+})
+
 ;; Return true if OP is a parallel for a vbroadcast permute.
 (define_predicate "avx_vbroadcast_operand"
   (and (match_code "parallel")
