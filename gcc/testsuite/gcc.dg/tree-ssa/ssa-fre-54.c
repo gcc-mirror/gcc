@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int32plus } */
-/* { dg-options "-O -fdump-tree-fre1 -fdump-tree-dse1" } */
+/* { dg-options "-O -fdump-tree-forwprop4 -fdump-tree-dse1" } */
 
 extern void abort (void);
 
@@ -51,6 +51,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "\\(char\\) i_" "fre1" } } */
-/* { dg-final { scan-tree-dump "\\(short int\\) i_" "fre1" } } */
+/* { dg-final { scan-tree-dump "\\(char\\) i_" "forwprop4" } } */
+/* { dg-final { scan-tree-dump "\\(short int\\) i_" "forwprop4" } } */
 /* { dg-final { scan-tree-dump-not "u.i =" "dse1" } } */
