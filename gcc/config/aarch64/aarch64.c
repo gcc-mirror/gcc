@@ -21084,8 +21084,11 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
   d.target = target;
-  d.op0 = op0;
-  d.op1 = op1;
+  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  if (op0 == op1)
+    d.op1 = d.op0;
+  else
+    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)

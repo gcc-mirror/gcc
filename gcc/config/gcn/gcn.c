@@ -3982,13 +3982,14 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
   for (unsigned int i = 0; i < nelt; ++i)
     perm[i] = sel[i] & (2 * nelt - 1);
 
+  src0 = force_reg (vmode, src0);
+  src1 = force_reg (vmode, src1);
+
   /* Make life a bit easier by swapping operands if necessary so that
      the first element always comes from src0.  */
   if (perm[0] >= nelt)
     {
-      rtx temp = src0;
-      src0 = src1;
-      src1 = temp;
+      std::swap (src0, src1);
 
       for (unsigned int i = 0; i < nelt; ++i)
 	if (perm[i] < nelt)

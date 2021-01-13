@@ -17611,6 +17611,23 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
+(define_insn_and_split "*avx2_zero_extendv16qiv16hi2_1"
+  [(set (match_operand:V32QI 0 "register_operand" "=v")
+	(vec_select:V32QI
+	  (vec_concat:V64QI
+	    (match_operand:V32QI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V32QI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V16HI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V16HImode, operands[0], V32QImode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], V32QImode);
+})
+
 (define_expand "<insn>v16qiv16hi2"
   [(set (match_operand:V16HI 0 "register_operand")
 	(any_extend:V16HI
@@ -17627,6 +17644,23 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
+
+(define_insn_and_split "*avx512bw_zero_extendv32qiv32hi2_1"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+	(vec_select:V64QI
+	  (vec_concat:V128QI
+	    (match_operand:V64QI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V64QI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX512BW"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V32HI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V32HImode, operands[0], V64QImode);
+  operands[1] = lowpart_subreg (V32QImode, operands[1], V64QImode);
+})
 
 (define_expand "<insn>v32qiv32hi2"
   [(set (match_operand:V32HI 0 "register_operand")
@@ -17883,6 +17917,23 @@
 	  (match_operand:V16HI 1 "nonimmediate_operand")))]
   "TARGET_AVX512F")
 
+(define_insn_and_split "avx512f_zero_extendv16hiv16si2_1"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(vec_select:V32HI
+	  (vec_concat:V64HI
+	    (match_operand:V32HI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V32HI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V16SI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V16SImode, operands[0], V32HImode);
+  operands[1] = lowpart_subreg (V16HImode, operands[1], V32HImode);
+})
+
 (define_insn "avx2_<code>v8hiv8si2<mask_name>"
   [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(any_extend:V8SI
@@ -17899,6 +17950,23 @@
 	(any_extend:V8SI
 	  (match_operand:V8HI 1 "nonimmediate_operand")))]
   "TARGET_AVX2")
+
+(define_insn_and_split "avx2_zero_extendv8hiv8si2_1"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
+	(vec_select:V16HI
+	  (vec_concat:V32HI
+	    (match_operand:V16HI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V16HI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V8SI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V8SImode, operands[0], V16HImode);
+  operands[1] = lowpart_subreg (V8HImode, operands[1], V16HImode);
+})
 
 (define_insn "sse4_1_<code>v4hiv4si2<mask_name>"
   [(set (match_operand:V4SI 0 "register_operand" "=Yr,*x,v")
@@ -18275,6 +18343,23 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
+(define_insn_and_split "*avx512f_zero_extendv8siv8di2_1"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_select:V16SI
+	  (vec_concat:V32SI
+	    (match_operand:V16SI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V16SI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V8DI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V8DImode, operands[0], V16SImode);
+  operands[1] = lowpart_subreg (V8SImode, operands[1], V16SImode);
+})
+
 (define_expand "<insn>v8siv8di2"
   [(set (match_operand:V8DI 0 "register_operand" "=v")
 	(any_extend:V8DI
@@ -18291,6 +18376,23 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "OI")])
+
+(define_insn_and_split "*avx2_zero_extendv4siv4di2_1"
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
+	(vec_select:V8SI
+	  (vec_concat:V16SI
+	    (match_operand:V8SI 1 "nonimmediate_operand" "vm")
+	    (match_operand:V8SI 2 "const0_operand" "C"))
+	  (match_parallel 3 "pmovzx_parallel"
+	    [(match_operand 4 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V4DI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V4DImode, operands[0], V8SImode);
+  operands[1] = lowpart_subreg (V4SImode, operands[1], V8SImode);
+})
 
 (define_expand "<insn>v4siv4di2"
   [(set (match_operand:V4DI 0 "register_operand" "=v")

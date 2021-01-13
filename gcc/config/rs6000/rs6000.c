@@ -22946,6 +22946,16 @@ rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   if (TARGET_ALTIVEC && testing_p)
     return true;
 
+  if (op0)
+    {
+      rtx nop0 = force_reg (vmode, op0);
+      if (op0 == op1)
+        op1 = nop0;
+      op0 = nop0;
+    }
+  if (op1)
+    op1 = force_reg (vmode, op1);
+
   /* Check for ps_merge* or xxpermdi insns.  */
   if ((vmode == V2DFmode || vmode == V2DImode) && VECTOR_MEM_VSX_P (vmode))
     {

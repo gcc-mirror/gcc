@@ -1,9 +1,9 @@
 /* PR target/95905 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse4.1" } */
-/* { dg-final { scan-assembler "\tv?pmovzxbw\t" } } */
-/* { dg-final { scan-assembler "\tv?pmovzxwd\t" } } */
-/* { dg-final { scan-assembler "\tv?pmovzxdq\t" } } */
+/* { dg-final { scan-assembler-times "\tv?pmovzxbw\t" 4 } } */
+/* { dg-final { scan-assembler-times "\tv?pmovzxwd\t" 4 } } */
+/* { dg-final { scan-assembler-times "\tv?pmovzxdq\t" 4 } } */
 
 typedef unsigned char V1 __attribute__((vector_size (16)));
 typedef unsigned short V2 __attribute__((vector_size (16)));
@@ -43,4 +43,40 @@ V3
 f6 (V3 *x)
 {
   return __builtin_shuffle (*x, (V3) {}, (V3) { 0, 4, 1, 5 });
+}
+
+V1
+f7 (V1 x)
+{
+  return __builtin_shuffle ((V1) {}, x, (V1) { 16, 0, 17, 1, 18, 2, 19, 3, 20, 4, 21, 5, 22, 6, 23, 7 });
+}
+
+V2
+f8 (V2 x)
+{
+  return __builtin_shuffle ((V2) {}, x, (V2) { 8, 0, 9, 1, 10, 2, 11, 3 });
+}
+
+V3
+f9 (V3 x)
+{
+  return __builtin_shuffle ((V3) {}, x, (V3) { 4, 0, 5, 1 });
+}
+
+V1
+f10 (V1 *x)
+{
+  return __builtin_shuffle ((V1) {}, *x, (V1) { 16, 0, 17, 1, 18, 2, 19, 3, 20, 4, 21, 5, 22, 6, 23, 7 });
+}
+
+V2
+f11 (V2 *x)
+{
+  return __builtin_shuffle ((V2) {}, *x, (V2) { 8, 0, 9, 1, 10, 2, 11, 3 });
+}
+
+V3
+f12 (V3 *x)
+{
+  return __builtin_shuffle ((V3) {}, *x, (V3) { 4, 0, 5, 1 });
 }

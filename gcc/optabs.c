@@ -6070,11 +6070,8 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 
   if (targetm.vectorize.vec_perm_const != NULL)
     {
-      v0 = force_reg (mode, v0);
       if (single_arg_p)
 	v1 = v0;
-      else
-	v1 = force_reg (mode, v1);
 
       if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
 	return target;
@@ -6094,6 +6091,11 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 					       v1_qi, qimode_indices))
 	return gen_lowpart (mode, target_qi);
     }
+
+  v0 = force_reg (mode, v0);
+  if (single_arg_p)
+    v1 = v0;
+  v1 = force_reg (mode, v1);
 
   /* Otherwise expand as a fully variable permuation.  */
 
