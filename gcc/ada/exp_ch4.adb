@@ -8082,7 +8082,7 @@ package body Exp_Ch4 is
       function User_Defined_Primitive_Equality_Op
         (Typ : Entity_Id) return Entity_Id
       is
-         Enclosing_Scope : constant Node_Id := Scope (Typ);
+         Enclosing_Scope : constant Entity_Id := Scope (Typ);
          E : Entity_Id;
       begin
          for Private_Entities in Boolean loop
