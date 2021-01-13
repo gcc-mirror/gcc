@@ -8154,7 +8154,7 @@ package body Exp_Ch4 is
                --  Unconstrained nominal type. In the case of a constraint
                --  present, the node kind would have been N_Subtype_Indication.
 
-               if Nkind (Sindic) = N_Identifier then
+               if Nkind (Sindic) in N_Expanded_Name | N_Identifier then
                   return Is_Unchecked_Union (Base_Type (Etype (Sindic)));
                end if;
 
