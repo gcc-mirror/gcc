@@ -62,66 +62,12 @@ __gnat_unhandled_terminate (void)
 #ifndef IN_RTS
 int
 __gnat_backtrace (void **array ATTRIBUTE_UNUSED,
-                  int size ATTRIBUTE_UNUSED,
-                  void *exclude_min ATTRIBUTE_UNUSED,
-                  void *exclude_max ATTRIBUTE_UNUSED,
-                  int skip_frames ATTRIBUTE_UNUSED)
+		  int size ATTRIBUTE_UNUSED,
+		  void *exclude_min ATTRIBUTE_UNUSED,
+		  void *exclude_max ATTRIBUTE_UNUSED,
+		  int skip_frames ATTRIBUTE_UNUSED)
 {
   return 0;
-}
-
-void
-__gnat_eh_personality (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_04 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_10 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_19 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_20 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_21 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_30 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_31 (void)
-{
-  abort ();
-}
-
-void
-__gnat_rcheck_32 (void)
-{
-  abort ();
 }
 #endif
 #ifdef __cplusplus

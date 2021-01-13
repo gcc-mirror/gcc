@@ -86,3 +86,6 @@ ada/stamp-sdefault : $(srcdir)/ada/version.c Makefile
 	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
 	$(fsrcdir)/../move-if-change tmp-sdefault.adb ada/sdefault.adb
 	touch ada/stamp-sdefault
+
+ada/%: $(srcdir)/ada/libgnat/%
+	$(CP) $< $@
