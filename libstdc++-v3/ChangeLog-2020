@@ -255,7 +255,7 @@
 
 	PR libstdc++/96083
 	* include/ext/throw_allocator.h: Use __has_builtin to check for
-	__builtin_sprintf support, and use std::sprtinf if necessary.
+	__builtin_sprintf support, and use std::sprintf if necessary.
 
 2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
 

@@ -1,3 +1,9 @@
+2021-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98628
+	* store.cc (binding_cluster::make_unknown_relative_to): Don't mark
+	dereferenced unknown pointers as having escaped.
+
 2021-01-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98580

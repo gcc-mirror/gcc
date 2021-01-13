@@ -1,3 +1,111 @@
+2021-01-12  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (source_info::debug): Fix printf format for 32-bit hosts.
+
+2021-01-12  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* function-abi.h: Fix typo.
+
+2021-01-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/97875
+	PR target/97875
+	* config/arm/arm.h (ARM_HAVE_NEON_V8QI_LDST): New macro.
+	(ARM_HAVE_NEON_V16QI_LDST, ARM_HAVE_NEON_V4HI_LDST): Likewise.
+	(ARM_HAVE_NEON_V8HI_LDST, ARM_HAVE_NEON_V2SI_LDST): Likewise.
+	(ARM_HAVE_NEON_V4SI_LDST, ARM_HAVE_NEON_V4HF_LDST): Likewise.
+	(ARM_HAVE_NEON_V8HF_LDST, ARM_HAVE_NEON_V4BF_LDST): Likewise.
+	(ARM_HAVE_NEON_V8BF_LDST, ARM_HAVE_NEON_V2SF_LDST): Likewise.
+	(ARM_HAVE_NEON_V4SF_LDST, ARM_HAVE_NEON_DI_LDST): Likewise.
+	(ARM_HAVE_NEON_V2DI_LDST): Likewise.
+	(ARM_HAVE_V8QI_LDST, ARM_HAVE_V16QI_LDST): Likewise.
+	(ARM_HAVE_V4HI_LDST, ARM_HAVE_V8HI_LDST): Likewise.
+	(ARM_HAVE_V2SI_LDST, ARM_HAVE_V4SI_LDST, ARM_HAVE_V4HF_LDST): Likewise.
+	(ARM_HAVE_V8HF_LDST, ARM_HAVE_V4BF_LDST, ARM_HAVE_V8BF_LDST): Likewise.
+	(ARM_HAVE_V2SF_LDST, ARM_HAVE_V4SF_LDST, ARM_HAVE_DI_LDST): Likewise.
+	(ARM_HAVE_V2DI_LDST): Likewise.
+	* config/arm/mve.md (*movmisalign<mode>_mve_store): New pattern.
+	(*movmisalign<mode>_mve_load): New pattern.
+	* config/arm/neon.md (movmisalign<mode>): Move to ...
+	* config/arm/vec-common.md: ... here.
+
+2021-01-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97969
+	* lra-eliminations.c (eliminate_regs_in_insn): Add transformation
+	of pattern 'plus (plus (hard reg, const), pseudo)'.
+
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98550
+	* tree-vect-slp.c (vect_record_max_nunits): Check whether
+	the group size is a multiple of the vector element count.
+	(vect_build_slp_tree_1): When we need to fail because
+	the vector type choosen causes unrolling do so lazily
+	without affecting matches only at the end to guide group splitting.
+
+2021-01-12  Martin Liska  <mliska@suse.cz>
+
+	PR c++/97284
+	* optc-save-gen.awk: Compare also n_target_save vars with
+	strcmp.
+
+2021-01-12  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (source_info::debug): New.
+	(print_usage): Add --debug (-D) option.
+	(process_args): Likewise.
+	(generate_results): Call src->debug after
+	accumulate_line_counts.
+	(read_graph_file): Properly assign id for EXIT_BLOCK.
+	* profile.c (branch_prob): Dump function body before it is
+	instrumented.
+
+2021-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98629
+	* tree-ssa-math-opts.c (arith_overflow_check_p): Don't update use_stmt
+	unless returning non-zero.
+
+2021-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95731
+	* tree-ssa-reassoc.c (optimize_range_tests_cmp_bitwise): Also optimize
+	x < 0 && y < 0 && z < 0 into (x | y | z) < 0 for signed x, y, z.
+	(optimize_range_tests): Call optimize_range_tests_cmp_bitwise
+	only after optimize_range_tests_var_bound.
+
+2021-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Ensure c/Make-lang.in comes first in @all_lang_makefrags@.
+	* configure: Regenerated.
+
+2021-01-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98612
+	* config/i386/i386-builtins.h (BUILTIN_DESC_SWAP_OPERANDS):
+	Deleted.
+	* config/i386/i386-expand.c (ix86_expand_sse_comi): Delete
+	dead code.
+
+2021-01-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* ssa-iterators.h (end_imm_use_stmt_traverse): Forward
+	declare.
+	(auto_end_imm_use_stmt_traverse): New struct.
+	(FOR_EACH_IMM_USE_STMT): Use it.
+	(BREAK_FROM_IMM_USE_STMT, RETURN_FROM_IMM_USE_STMT): Remove,
+	along with uses...
+	* gimple-ssa-strength-reduction.c: ... here, ...
+	* graphite-scop-detection.c: ... here, ...
+	* ipa-modref.c, ipa-pure-const.c, ipa-sra.c: ... here, ...
+	* tree-predcom.c, tree-ssa-ccp.c: ... here, ...
+	* tree-ssa-dce.c, tree-ssa-dse.c: ... here, ...
+	* tree-ssa-loop-ivopts.c, tree-ssa-math-opts.c: ... here, ...
+	* tree-ssa-phiprop.c, tree-ssa.c: ... here, ...
+	* tree-vect-slp.c: ... and here, ...
+	* doc/tree-ssa.texi: ... and the example here.
+
 2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (sdiv_pow2<mode>3): Extend from

@@ -947,8 +947,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_ior:c (bit_xor:c@3 @0 @1) (bit_xor:c (bit_xor:c @1 @2) @0))
  (bit_ior @3 @2))
 
-/* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
+/* (~X | C) ^ D -> (X | C) ^ (~D ^ C) if (~D ^ C) can be simplified.  */
+(simplify
+ (bit_xor:c (bit_ior:cs (bit_not:s @0) @1) @2)
+  (bit_xor (bit_ior @0 @1) (bit_xor! (bit_not! @2) @1)))
+
+/* (~X & C) ^ D -> (X & C) ^ (D ^ C) if (D ^ C) can be simplified.  */
+(simplify
+ (bit_xor:c (bit_and:cs (bit_not:s @0) @1) @2)
+  (bit_xor (bit_and @0 @1) (bit_xor! @2 @1)))
+
+/* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 (simplify
  (bit_and (bit_not SSA_NAME@0) INTEGER_CST@1)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
@@ -6075,6 +6085,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   /* Low-parts can be reduced to integral conversions.
 	      ???  The following doesn't work for PDP endian.  */
 	   || (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	       /* But only do this after vectorization.  */
+	       && canonicalize_math_after_vectorization_p ()
 	       /* Don't even think about BITS_BIG_ENDIAN.  */
 	       && TYPE_PRECISION (TREE_TYPE (@0)) % BITS_PER_UNIT == 0
 	       && TYPE_PRECISION (type) % BITS_PER_UNIT == 0

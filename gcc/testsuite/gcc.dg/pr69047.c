@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-cddce1" } */
+/* { dg-options "-O -fdump-tree-forwprop4" } */
 
 __UINT8_TYPE__
 f(__UINT16_TYPE__ b)
@@ -15,4 +15,4 @@ f(__UINT16_TYPE__ b)
   return a;
 }
 
-/* { dg-final { scan-tree-dump "_\[0-9\]+ = \\(\[^)\]+\\) b" "cddce1" } } */
+/* { dg-final { scan-tree-dump "_\[0-9\]+ = \\(\[^)\]+\\) b" "forwprop4" } } */

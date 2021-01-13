@@ -1,3 +1,54 @@
+2021-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/98597
+	PR c/98592
+	* g++.dg/warn/Wuninitialized-13.C: New test.
+	 gcc.dg/uninit-39.c: New test.
+	#
+	* gcc.dg/uninit-39.c: New file.
+
+2021-01-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/97875
+	* gcc.target/arm/simd/mve-vneg.c: Update test.
+
+2021-01-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97969
+	* gcc.target/arm/pr97969.c: New.
+
+2021-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98611
+	* g++.dg/cpp2a/concepts-ctad1.C: New test.
+	* g++.dg/cpp2a/concepts-ctad2.C: New test.
+
+2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98550
+	* g++.dg/opt/pr98550.C: New testcase.
+
+2021-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98629
+	* gcc.c-torture/compile/pr98629.c: New test.
+
+2021-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95731
+	* gcc.dg/tree-ssa/pr95731.c: New test.
+	* gcc.c-torture/execute/pr95731.c: New test.
+
+2021-01-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98620
+	* g++.dg/warn/Wmissing-field-initializers-2.C: New test.
+
+2021-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98628
+	* gcc.dg/analyzer/pr98628.c: New test.
+
 2021-01-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/asrdiv_4.c: New test.

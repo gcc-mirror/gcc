@@ -404,3 +404,15 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-Add-horse2.patch')
         assert not email.errors
         assert email.changelog_entries[0].files == ['koníček.txt']
+
+    def test_modification_of_old_changelog(self):
+        email = self.from_patch_glob('0001-fix-old-ChangeLog.patch')
+        assert not email.errors
+
+    def test_multiline_parentheses(self):
+        email = self.from_patch_glob('0001-Add-macro.patch')
+        assert not email.errors
+
+    def test_multiline_bad_parentheses(self):
+        email = self.from_patch_glob('0002-Wrong-macro-changelog.patch')
+        assert email.errors[0].message == 'bad parentheses wrapping'

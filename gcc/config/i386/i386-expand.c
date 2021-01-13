@@ -19929,6 +19929,32 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 
   two_args = canonicalize_perm (&d);
 
+  /* If one of the operands is a zero vector, try to match pmovzx.  */
+  if (two_args && (d.op0 == CONST0_RTX (vmode) || d.op1 == CONST0_RTX (vmode)))
+    {
+      struct expand_vec_perm_d dzero = d;
+      if (d.op0 == CONST0_RTX (vmode))
+	{
+	  d.op1 = dzero.op1 = force_reg (vmode, d.op1);
+	  std::swap (dzero.op0, dzero.op1);
+	  for (i = 0; i < nelt; ++i)
+	    dzero.perm[i] ^= nelt;
+	}
+      else
+	d.op0 = dzero.op0 = force_reg (vmode, d.op0);
+
+      if (expand_vselect_vconcat (dzero.target, dzero.op0, dzero.op1,
+				  dzero.perm, nelt, dzero.testing_p))
+	return true;
+    }
+
+  /* Force operands into registers.  */
+  rtx nop0 = force_reg (vmode, d.op0);
+  if (d.op0 == d.op1)
+    d.op1 = nop0;
+  d.op0 = nop0;
+  d.op1 = force_reg (vmode, d.op1);
+
   if (ix86_expand_vec_perm_const_1 (&d))
     return true;
 

@@ -32860,7 +32860,7 @@ not get debugging information for routines in the precompiled header.
 @section C++ Modules
 @cindex speed of compilation
 
-Modules are a C++ 20 language feature.  As the name suggests, it
+Modules are a C++20 language feature.  As the name suggests, they
 provides a modular compilation system, intending to provide both
 faster builds and better library isolation.  The ``Merging Modules''
 paper @uref{https://wg21.link/p1103}, provides the easiest to read set
@@ -32892,7 +32892,7 @@ emitted.
 
 @item Translation-Unit local referencing rules
 Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
-(@uref{https://wg21.link/p2003} add limitations on which entities an
+(@uref{https://wg21.link/p2003}) add limitations on which entities an
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
 

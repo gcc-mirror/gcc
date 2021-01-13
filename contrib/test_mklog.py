@@ -399,6 +399,44 @@ gcc/ChangeLog:
 
 '''
 
+PATCH9 = '''\
+diff --git a/gcc/config/i386/sse.md b/gcc/config/i386/sse.md
+index 2a260c1cfbd..7f03fc491c3 100644
+--- a/gcc/config/i386/sse.md
++++ b/gcc/config/i386/sse.md
+@@ -17611,6 +17611,23 @@ (define_insn "avx2_<code>v16qiv16hi2<mask_name>"
+    (set_attr "prefix" "maybe_evex")
+    (set_attr "mode" "OI")])
+ 
++(define_insn_and_split "*avx2_zero_extendv16qiv16hi2_1"
++  [(set (match_operand:V32QI 0 "register_operand" "=v")
++	(vec_select:V32QI
++	  (vec_concat:V64QI
++	    (match_operand:V32QI 1 "nonimmediate_operand" "vm")
++	    (match_operand:V32QI 2 "const0_operand" "C"))
++	  (match_parallel 3 "pmovzx_parallel"
++	    [(match_operand 4 "const_int_operand" "n")])))]
++  "TARGET_AVX2"
++  "#"
++  "&& reload_completed"
++  [(set (match_dup 0) (zero_extend:V16HI (match_dup 1)))]
++{
++  operands[0] = lowpart_subreg (V16HImode, operands[0], V32QImode);
++  operands[1] = lowpart_subreg (V16QImode, operands[1], V32QImode);
++})
++
+ (define_expand "<insn>v16qiv16hi2"
+   [(set (match_operand:V16HI 0 "register_operand")
+ 	(any_extend:V16HI
+'''
+
+EXPECTED9 = '''\
+gcc/ChangeLog:
+
+	* config/i386/sse.md (*avx2_zero_extendv16qiv16hi2_1):
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -437,3 +475,7 @@ class TestMklog(unittest.TestCase):
     def test_renaming(self):
         changelog = generate_changelog(PATCH8)
         assert changelog == EXPECTED8
+
+    def test_define_macro_parsing(self):
+        changelog = generate_changelog(PATCH9)
+        assert changelog == EXPECTED9

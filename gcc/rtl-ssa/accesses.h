@@ -965,13 +965,13 @@ public:
 //   clobber_group that spans P.  MUX then contains this definition
 //   or clobber_group.
 //
-// - Otherwise, COMPARISON is less than 0 if we found the definition
+// - Otherwise, COMPARISON is greater than 0 if we found the definition
 //   that precedes P or the group of clobbers that precedes P.  MUX then
 //   contains this definition or clobber_group.
 //
-// - Otherwise, COMPARISON is greater than zero and we found the
-//   definition that follows P, or the group of clobbers that follows P.
-//   MUX then contains this definition or clobber_group.
+// - Otherwise, COMPARISON is less than zero and we found the definition
+//   that follows P, or the group of clobbers that follows P.  MUX then
+//   contains this definition or clobber_group.
 class def_lookup
 {
 public:

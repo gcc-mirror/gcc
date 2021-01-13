@@ -1,3 +1,15 @@
+2021-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98611
+	* tree.c (cp_walk_subtrees) <case TEMPLATE_TYPE_PARM>: Visit
+	the template of a CTAD placeholder.
+
+2021-01-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98620
+	* typeck2.c (process_init_constructor_record): Don't emit
+	-Wmissing-field-initializers warnings in unevaluated contexts.
+
 2021-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98481

@@ -464,6 +464,22 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   2, /* imm_offset  */
 };
 
+static const struct cpu_addrcost_table a64fx_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  2, /* register_offset  */
+  3, /* register_sextend  */
+  3, /* register_zextend  */
+  0, /* imm_offset  */
+};
+
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   1, /* GP2GP  */
@@ -559,6 +575,16 @@ static const struct cpu_regmove_cost tsv110_regmove_cost =
   2  /* FP2FP  */
 };
 
+static const struct cpu_regmove_cost a64fx_regmove_cost =
+{
+  1, /* GP2GP  */
+  /* Avoid the use of slow int<->fp moves for spilling by setting
+     their cost higher than memmov_cost.  */
+  5, /* GP2FP  */
+  7, /* FP2GP  */
+  2 /* FP2FP  */
+};
+
 /* Generic costs for Advanced SIMD vector operations.   */
 static const advsimd_vec_cost generic_advsimd_vector_cost =
 {
@@ -598,6 +624,44 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* cond_not_taken_branch_cost  */
   &generic_advsimd_vector_cost, /* advsimd  */
   &generic_sve_vector_cost /* sve */
+};
+
+static const advsimd_vec_cost a64fx_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  13, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  6, /* align_load_cost  */
+  6, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+static const sve_vec_cost a64fx_sve_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  13, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  6, /* align_load_cost  */
+  6, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+static const struct cpu_vector_cost a64fx_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  5, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &a64fx_advsimd_vector_cost, /* advsimd  */
+  &a64fx_sve_vector_cost /* sve  */
 };
 
 static const advsimd_vec_cost qdf24xx_advsimd_vector_cost =
@@ -1460,10 +1524,10 @@ static const struct tune_params neoversen2_tunings =
 
 static const struct tune_params a64fx_tunings =
 {
-  &generic_extra_costs,
-  &generic_addrcost_table,
-  &generic_regmove_cost,
-  &generic_vector_cost,
+  &a64fx_extra_costs,
+  &a64fx_addrcost_table,
+  &a64fx_regmove_cost,
+  &a64fx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_512, /* sve_width  */
@@ -21020,8 +21084,11 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
   d.target = target;
-  d.op0 = op0;
-  d.op1 = op1;
+  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  if (op0 == op1)
+    d.op1 = d.op0;
+  else
+    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)
