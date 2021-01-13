@@ -40,7 +40,17 @@ public:
       }
   };
 
-  ~ResolveType () {}
+  void visit (AST::TupleType &tuple)
+  {
+    if (tuple.is_unit_type ())
+      {
+	resolved_node = resolver->get_unit_type_node_id ();
+	return;
+      }
+
+    // TODO see github #78
+    gcc_unreachable ();
+  }
 
   void visit (AST::TypePath &path)
   {

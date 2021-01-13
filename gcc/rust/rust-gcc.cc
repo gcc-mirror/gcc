@@ -225,6 +225,8 @@ public:
     return this->make_expression (null_pointer_node);
   }
 
+  Bexpression *unit_expression () { return this->make_expression (void_node); }
+
   Bexpression *var_expression (Bvariable *var, Location);
 
   Bexpression *indirect_expression (Btype *, Bexpression *expr,

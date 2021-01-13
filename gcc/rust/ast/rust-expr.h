@@ -1345,6 +1345,8 @@ public:
     return tuple_elems;
   }
 
+  bool is_unit () const { return tuple_elems.size () == 0; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

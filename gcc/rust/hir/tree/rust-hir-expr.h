@@ -1233,6 +1233,17 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const
+  {
+    return tuple_elems;
+  }
+  std::vector<std::unique_ptr<Expr> > &get_tuple_elems ()
+  {
+    return tuple_elems;
+  }
+
+  bool is_unit () const { return tuple_elems.size () == 0; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

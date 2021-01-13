@@ -215,7 +215,10 @@ public:
     return resolved;
   }
 
-  void visit (IntType &type) override { rust_assert (false); }
+  void visit (UnitType &type) override
+  {
+    resolved = new UnitType (type.get_ref ());
+  }
 
 private:
   UnitType *base;

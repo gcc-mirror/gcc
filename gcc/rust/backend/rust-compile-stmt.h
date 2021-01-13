@@ -71,6 +71,18 @@ public:
     if (!stmt.has_init_expr ())
       return;
 
+    TyTy::TyBase *ty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
+					 &ty))
+      {
+	rust_fatal_error (stmt.get_locus (), "failed to lookup var decl type");
+	return;
+      }
+
+    // there is an ICE in GCC for void_node
+    if (ty->get_kind () == TyTy::TypeKind::UNIT)
+      return;
+
     Bvariable *var = nullptr;
     if (!ctx->lookup_var_decl (stmt.get_mappings ().get_hirid (), &var))
       {
@@ -79,7 +91,8 @@ public:
 	return;
       }
 
-    auto *init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+    Bexpression *init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+
     auto fnctx = ctx->peek_fn ();
     auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var, init);
     ctx->add_statement (s);

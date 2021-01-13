@@ -108,13 +108,19 @@ public:
 	{
 	  auto combined = resolved_tyty->combine (it);
 	  if (combined == nullptr)
-	    break;
+	    {
+	      rust_fatal_error (decl->get_locus_slow (),
+				"type-check resolver failed");
+	      break;
+	    }
 
 	  resolved_tyty = combined;
 	}
 
       // something is not inferred we need to look at all references now
-      if (resolved_tyty == nullptr || resolved_tyty->is_unit ())
+      if (resolved_tyty == nullptr
+	  || resolved_tyty->get_kind () == TyTy::TypeKind::INFER
+	  || resolved_tyty->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_fatal_error (decl->get_locus_slow (), "failed to resolve type");
 	  return false;

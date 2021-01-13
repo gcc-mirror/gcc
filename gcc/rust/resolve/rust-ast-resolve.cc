@@ -113,7 +113,7 @@ Resolver::insert_builtin_types (Rib *r)
 		    Linemap::predeclared_location ());
 }
 
-std::vector<AST::TypePath *> &
+std::vector<AST::Type *> &
 Resolver::get_builtin_types ()
 {
   return builtins;
@@ -160,6 +160,16 @@ Resolver::generate_builtins ()
   MKBUILTIN_TYPE ("bool", builtins, rbool);
   MKBUILTIN_TYPE ("f32", builtins, f32);
   MKBUILTIN_TYPE ("f64", builtins, f64);
+
+  // unit type ()
+  TyTy::UnitType *unit_tyty = new TyTy::UnitType (mappings->get_next_hir_id ());
+  std::vector<std::unique_ptr<AST::Type> > elems;
+  AST::TupleType *unit_type
+    = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());
+  builtins.push_back (unit_type);
+  tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
+			 unit_tyty);
+  set_unit_type_node_id (unit_type->get_node_id ());
 }
 
 void

@@ -76,6 +76,22 @@ public:
     return resolver.translated;
   }
 
+  void visit (HIR::TupleType &tuple)
+  {
+    if (tuple.is_unit_type ())
+      {
+	auto unit_node_id = resolver->get_unit_type_node_id ();
+	if (!context->lookup_builtin (unit_node_id, &translated))
+	  {
+	    rust_error_at (tuple.get_locus (),
+			   "failed to lookup builtin unit type");
+	  }
+	return;
+      }
+
+    gcc_unreachable ();
+  }
+
   void visit (HIR::TypePath &path)
   {
     // check if this is already defined or not

@@ -43,6 +43,22 @@ public:
     return resolver.infered;
   }
 
+  void visit (HIR::TupleExpr &expr)
+  {
+    if (expr.is_unit ())
+      {
+	auto unit_node_id = resolver->get_unit_type_node_id ();
+	if (!context->lookup_builtin (unit_node_id, &infered))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "failed to lookup builtin unit type");
+	  }
+	return;
+      }
+
+    gcc_unreachable ();
+  }
+
   void visit (HIR::ReturnExpr &expr)
   {
     auto ret = context->peek_return_type ();

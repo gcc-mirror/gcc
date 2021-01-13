@@ -38,7 +38,16 @@ public:
     return compiler.translated;
   }
 
-  virtual ~CompileExpr () {}
+  void visit (HIR::TupleExpr &expr)
+  {
+    if (expr.is_unit ())
+      {
+	translated = ctx->get_backend ()->unit_expression ();
+	return;
+      }
+
+    gcc_unreachable ();
+  }
 
   void visit (HIR::ReturnExpr &expr)
   {
@@ -84,10 +93,6 @@ public:
 	rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
 	return;
       }
-
-    printf ("have ast node id %u ref %u for expr [%s]\n",
-	    expr.get_mappings ().get_nodeid (), ref_node_id,
-	    expr.as_string ().c_str ());
 
     // these ref_node_ids will resolve to a pattern declaration but we are
     // interested in the definition that this refers to get the parent id

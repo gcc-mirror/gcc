@@ -35,7 +35,13 @@ public:
     expr->accept_vis (resolver);
   };
 
-  ~ResolveExpr () {}
+  void visit (AST::TupleExpr &expr)
+  {
+    if (expr.is_unit ())
+      return;
+
+    gcc_unreachable ();
+  }
 
   void visit (AST::PathInExpression &expr)
   {

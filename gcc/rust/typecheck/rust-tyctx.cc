@@ -36,6 +36,21 @@ TypeCheckContext::TypeCheckContext () {}
 TypeCheckContext::~TypeCheckContext () {}
 
 bool
+TypeCheckContext::lookup_builtin (NodeId id, TyTy::TyBase **type)
+{
+  auto ref_it = node_id_refs.find (id);
+  if (ref_it == node_id_refs.end ())
+    return false;
+
+  auto it = resolved.find (ref_it->second);
+  if (it == resolved.end ())
+    return false;
+
+  *type = it->second;
+  return true;
+}
+
+bool
 TypeCheckContext::lookup_builtin (std::string name, TyTy::TyBase **type)
 {
   for (auto &builtin : builtins)

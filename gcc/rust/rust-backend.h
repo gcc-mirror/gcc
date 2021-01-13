@@ -254,6 +254,8 @@ public:
   // Create a nil pointer expression.
   virtual Bexpression *nil_pointer_expression () = 0;
 
+  virtual Bexpression *unit_expression () = 0;
+
   // Create a reference to a variable.
   virtual Bexpression *var_expression (Bvariable *var, Location) = 0;
 

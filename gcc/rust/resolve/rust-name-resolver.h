@@ -209,7 +209,7 @@ public:
 
   // these will be required for type resolution passes to
   // map back to tyty nodes
-  std::vector<AST::TypePath *> &get_builtin_types ();
+  std::vector<AST::Type *> &get_builtin_types ();
 
   void push_new_name_rib (Rib *r);
   void push_new_type_rib (Rib *r);
@@ -232,6 +232,9 @@ public:
 
   NodeId get_global_type_node_id () { return global_type_node_id; }
 
+  void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
+  NodeId get_unit_type_node_id () { return unit_ty_node_id; }
+
 private:
   Resolver ();
 
@@ -240,12 +243,13 @@ private:
   Analysis::Mappings *mappings;
   TypeCheckContext *tyctx;
 
-  std::vector<AST::TypePath *> builtins;
+  std::vector<AST::Type *> builtins;
 
   Scope name_scope;
   Scope type_scope;
 
   NodeId global_type_node_id;
+  NodeId unit_ty_node_id;
 
   // map a AST Node to a Rib
   std::map<NodeId, Rib *> name_ribs;

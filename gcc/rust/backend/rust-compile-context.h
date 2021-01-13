@@ -223,8 +223,6 @@ public:
 
   void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override { gcc_unreachable (); }
@@ -232,6 +230,11 @@ public:
   void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::UnitType &type) override
+  {
+    translated = ctx->get_backend ()->void_type ();
+  }
 
   void visit (TyTy::ADTType &type) override
   {

@@ -33,12 +33,34 @@ public:
   {
     ASTLoweringType resolver;
     type->accept_vis (resolver);
+
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (),
+      type->get_locus_slow ());
+
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringType () {}
+  void visit (AST::TupleType &tuple)
+  {
+    std::vector<std::unique_ptr<HIR::Type> > elems;
+    for (auto &e : tuple.get_elems ())
+      {
+	HIR::Type *t = ASTLoweringType::translate (e.get ());
+	elems.push_back (std::unique_ptr<HIR::Type> (t));
+      }
 
-  virtual void visit (AST::TypePathSegment &segment)
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, tuple.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::TupleType (std::move (mapping), std::move (elems),
+				     tuple.get_locus ());
+  }
+
+  void visit (AST::TypePathSegment &segment)
   {
     HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
     translated_segment
@@ -47,7 +69,7 @@ public:
 				  segment.get_locus ());
   }
 
-  virtual void visit (AST::TypePath &path)
+  void visit (AST::TypePath &path)
   {
     std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
 
