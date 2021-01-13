@@ -588,11 +588,14 @@ struct gcov_root __gcov_root;
 struct gcov_master __gcov_master = 
   {GCOV_VERSION, 0};
 
-/* Pool of pre-allocated gcov_kvp strutures.  */
-struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
+/* Dynamic pool for gcov_kvp structures.  */
+struct gcov_kvp *__gcov_kvp_dynamic_pool;
 
-/* Index to first free gcov_kvp in the pool.  */
-unsigned __gcov_kvp_pool_index;
+/* Index into __gcov_kvp_dynamic_pool array.  */
+unsigned __gcov_kvp_dynamic_pool_index;
+
+/* Size of _gcov_kvp_dynamic_pool array.  */
+unsigned __gcov_kvp_dynamic_pool_size;
 
 void
 __gcov_exit (void)

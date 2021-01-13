@@ -45,6 +45,10 @@
 #include "libgcc_tm.h"
 #include "gcov.h"
 
+#if HAVE_SYS_MMAN_H
+#include <sys/mman.h>
+#endif
+
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
@@ -250,8 +254,9 @@ struct indirect_call_tuple
   
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
-extern struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
-extern unsigned __gcov_kvp_pool_index;
+extern struct gcov_kvp *__gcov_kvp_dynamic_pool;
+extern unsigned __gcov_kvp_dynamic_pool_index;
+extern unsigned __gcov_kvp_dynamic_pool_size;
 
 /* Dump a set of gcov objects.  */
 extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
@@ -410,25 +415,44 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
 static inline struct gcov_kvp *
 allocate_gcov_kvp (void)
 {
+#define MMAP_CHUNK_SIZE	(128 * 1024)
   struct gcov_kvp *new_node = NULL;
+  unsigned kvp_sizeof = sizeof(struct gcov_kvp);
 
-#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn)
-  if (__gcov_kvp_pool_index < GCOV_PREALLOCATED_KVP)
+  /* Try mmaped pool if available.  */
+#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn) && HAVE_SYS_MMAN_H
+  if (__gcov_kvp_dynamic_pool == NULL
+      || __gcov_kvp_dynamic_pool_index >= __gcov_kvp_dynamic_pool_size)
+    {
+      void *ptr = mmap (NULL, MMAP_CHUNK_SIZE,
+			PROT_READ | PROT_WRITE,
+			MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+      if (ptr != MAP_FAILED)
+	{
+	  __gcov_kvp_dynamic_pool = ptr;
+	  __gcov_kvp_dynamic_pool_size = MMAP_CHUNK_SIZE / kvp_sizeof;
+	  __gcov_kvp_dynamic_pool_index = 0;
+	}
+    }
+
+  if (__gcov_kvp_dynamic_pool != NULL)
     {
       unsigned index;
 #if GCOV_SUPPORTS_ATOMIC
       index
-	= __atomic_fetch_add (&__gcov_kvp_pool_index, 1, __ATOMIC_RELAXED);
+	= __atomic_fetch_add (&__gcov_kvp_dynamic_pool_index, 1,
+			      __ATOMIC_RELAXED);
 #else
-      index = __gcov_kvp_pool_index++;
+      index = __gcov_kvp_dynamic_pool_index++;
 #endif
-      if (index < GCOV_PREALLOCATED_KVP)
-	new_node = &__gcov_kvp_pool[index];
+      if (index < __gcov_kvp_dynamic_pool_size)
+	new_node = __gcov_kvp_dynamic_pool + index;
     }
 #endif
 
+  /* Fallback to malloc.  */
   if (new_node == NULL)
-    new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+    new_node = (struct gcov_kvp *)xcalloc (1, kvp_sizeof);
 
   return new_node;
 }
