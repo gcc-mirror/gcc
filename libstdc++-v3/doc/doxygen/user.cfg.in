@@ -947,7 +947,6 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/backward/hash_set \
                          include/backward/strstream \
                          include/debug \
-                         include/debug/array \
                          include/debug/bitset \
                          include/debug/deque \
                          include/debug/forward_list \
