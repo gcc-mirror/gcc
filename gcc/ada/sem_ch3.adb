@@ -13971,9 +13971,7 @@ package body Sem_Ch3 is
           (Has_Unknown_Discriminants (T)
             or else
               (not Has_Discriminants (T)
-                and then Has_Discriminants (Full_View (T))
-                and then Present (Discriminant_Default_Value
-                           (First_Discriminant (Full_View (T))))))
+                and then Has_Defaulted_Discriminants (Full_View (T))))
       then
          T := Full_View (T);
          E := Full_View (E);
@@ -20805,9 +20803,7 @@ package body Sem_Ch3 is
 
       if not Has_Unknown_Discriminants (Priv_T)
         and then not Has_Discriminants (Priv_T)
-        and then Has_Discriminants (Full_T)
-        and then
-          Present (Discriminant_Default_Value (First_Discriminant (Full_T)))
+        and then Has_Defaulted_Discriminants (Full_T)
       then
          Set_Has_Constrained_Partial_View (Full_T);
          Set_Has_Constrained_Partial_View (Priv_T);

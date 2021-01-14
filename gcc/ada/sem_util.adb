@@ -11818,7 +11818,6 @@ package body Sem_Util is
    function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean is
    begin
       return Has_Discriminants (Typ)
-       and then Present (First_Discriminant (Typ))
        and then Present (Discriminant_Default_Value
                            (First_Discriminant (Typ)));
    end Has_Defaulted_Discriminants;
@@ -17141,9 +17140,7 @@ package body Sem_Util is
       --  Record types
 
       elsif Is_Record_Type (Typ) then
-         if Has_Discriminants (Typ)
-           and then
-             Present (Discriminant_Default_Value (First_Discriminant (Typ)))
+         if Has_Defaulted_Discriminants (Typ)
            and then Is_Fully_Initialized_Variant (Typ)
          then
             return True;

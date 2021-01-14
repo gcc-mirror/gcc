@@ -6115,10 +6115,7 @@ package body Exp_Attr is
                   return;
                end if;
 
-               if Has_Discriminants (U_Type)
-                 and then Present
-                   (Discriminant_Default_Value (First_Discriminant (U_Type)))
-               then
+               if Has_Defaulted_Discriminants (U_Type) then
                   Build_Mutable_Record_Read_Procedure
                     (Loc, Full_Base (U_Type), Decl, Pname);
                else
@@ -7750,10 +7747,7 @@ package body Exp_Attr is
                   end if;
                end if;
 
-               if Has_Discriminants (U_Type)
-                 and then Present
-                   (Discriminant_Default_Value (First_Discriminant (U_Type)))
-               then
+               if Has_Defaulted_Discriminants (U_Type) then
                   Build_Mutable_Record_Write_Procedure
                     (Loc, Full_Base (U_Type), Decl, Pname);
                else

@@ -599,12 +599,8 @@ package body Sem_Ch4 is
                Type_Id := Entity (E);
 
                if Is_Tagged_Type (Type_Id)
-                 and then Has_Discriminants (Type_Id)
+                 and then Has_Defaulted_Discriminants (Type_Id)
                  and then not Is_Constrained (Type_Id)
-                 and then
-                   Present
-                     (Discriminant_Default_Value
-                       (First_Discriminant (Type_Id)))
                then
                   declare
                      Constr : constant List_Id    := New_List;
@@ -612,19 +608,17 @@ package body Sem_Ch4 is
                      Discr  : Entity_Id := First_Discriminant (Type_Id);
 
                   begin
-                     if Present (Discriminant_Default_Value (Discr)) then
-                        while Present (Discr) loop
-                           Append (Discriminant_Default_Value (Discr), Constr);
-                           Next_Discriminant (Discr);
-                        end loop;
+                     while Present (Discr) loop
+                        Append (Discriminant_Default_Value (Discr), Constr);
+                        Next_Discriminant (Discr);
+                     end loop;
 
-                        Rewrite (E,
-                          Make_Subtype_Indication (Loc,
-                            Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
-                            Constraint   =>
-                              Make_Index_Or_Discriminant_Constraint (Loc,
-                                Constraints => Constr)));
-                     end if;
+                     Rewrite (E,
+                       Make_Subtype_Indication (Loc,
+                         Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                         Constraint   =>
+                           Make_Index_Or_Discriminant_Constraint (Loc,
+                             Constraints => Constr)));
                   end;
                end if;
             end if;
