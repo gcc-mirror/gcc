@@ -641,7 +641,7 @@ ix86_function_specific_save (struct cl_target_option *ptr,
 {
   ptr->arch = ix86_arch;
   ptr->schedule = ix86_schedule;
-  ptr->prefetch_sse = x86_prefetch_sse;
+  ptr->prefetch_sse = ix86_prefetch_sse;
   ptr->tune = ix86_tune;
   ptr->branch_cost = ix86_branch_cost;
   ptr->tune_defaulted = ix86_tune_defaulted;
@@ -773,8 +773,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   ix86_arch = (enum processor_type) ptr->arch;
   ix86_schedule = (enum attr_cpu) ptr->schedule;
   ix86_tune = (enum processor_type) ptr->tune;
-  x86_prefetch_sse = ptr->prefetch_sse;
-  opts->x_ix86_branch_cost = ptr->branch_cost;
+  ix86_prefetch_sse = ptr->prefetch_sse;
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
@@ -2348,7 +2347,7 @@ ix86_option_override_internal (bool main_args_p,
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
-	  x86_prefetch_sse = true;
+	  ix86_prefetch_sse = true;
 	if (((processor_alias_table[i].flags & PTA_MWAITX) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MWAITX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAITX;
@@ -2446,7 +2445,7 @@ ix86_option_override_internal (bool main_args_p,
 	if (TARGET_CMOV
 	    && ((processor_alias_table[i].flags
 	      & (PTA_PREFETCH_SSE | PTA_SSE)) != 0))
-	  x86_prefetch_sse = true;
+	  ix86_prefetch_sse = true;
 	break;
       }
 
@@ -2589,7 +2588,7 @@ ix86_option_override_internal (bool main_args_p,
       || (TARGET_PRFCHW_P (opts->x_ix86_isa_flags)
 	  && !TARGET_3DNOW_P (opts->x_ix86_isa_flags))
       || TARGET_PREFETCHWT1_P (opts->x_ix86_isa_flags))
-    x86_prefetch_sse = true;
+    ix86_prefetch_sse = true;
 
   /* Enable popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags)

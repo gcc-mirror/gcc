@@ -347,7 +347,7 @@ enum processor_type ix86_tune;
 enum processor_type ix86_arch;
 
 /* True if processor has SSE prefetch instruction.  */
-unsigned char x86_prefetch_sse;
+unsigned char ix86_prefetch_sse;
 
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
