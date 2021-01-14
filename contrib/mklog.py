@@ -133,6 +133,9 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     diff = PatchSet(data)
 
     for file in diff:
+        # skip files that can't be parsed
+        if file.path == '/dev/null':
+            continue
         changelog = find_changelog(file.path)
         if changelog not in changelogs:
             changelogs[changelog] = []
