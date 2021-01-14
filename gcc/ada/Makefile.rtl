@@ -583,6 +583,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-exctab$(objext) \
   s-exctra$(objext) \
   s-exnint$(objext) \
+  s-exnflt$(objext) \
+  s-exnlfl$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
   s-expint$(objext) \
@@ -590,6 +592,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-expllu$(objext) \
   s-expmod$(objext) \
   s-exponn$(objext) \
+  s-exponr$(objext) \
   s-expont$(objext) \
   s-exponu$(objext) \
   s-expuns$(objext) \

@@ -228,6 +228,8 @@ package Rtsfind is
       System_Exception_Table,
       System_Exceptions_Debug,
       System_Exn_Int,
+      System_Exn_Flt,
+      System_Exn_LFlt,
       System_Exn_LLF,
       System_Exn_LLI,
       System_Exn_LLLI,
@@ -906,8 +908,10 @@ package Rtsfind is
 
      RE_Exn_Integer,                     -- System.Exn_Int
 
-     RE_Exn_Float,                       -- System.Exn_LLF
-     RE_Exn_Long_Float,                  -- System.Exn_LLF
+     RE_Exn_Float,                       -- System.Exn_Flt
+
+     RE_Exn_Long_Float,                  -- System.Exn_LFlt
+
      RE_Exn_Long_Long_Float,             -- System.Exn_LLF
 
      RE_Exn_Long_Long_Integer,           -- System.Exn_LLI
@@ -2592,8 +2596,10 @@ package Rtsfind is
 
      RE_Exn_Integer                      => System_Exn_Int,
 
-     RE_Exn_Float                        => System_Exn_LLF,
-     RE_Exn_Long_Float                   => System_Exn_LLF,
+     RE_Exn_Float                        => System_Exn_Flt,
+
+     RE_Exn_Long_Float                   => System_Exn_LFlt,
+
      RE_Exn_Long_Long_Float              => System_Exn_LLF,
 
      RE_Exn_Long_Long_Integer            => System_Exn_LLI,

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . E X N _ L L F                        --
+--                      S Y S T E M . E X N _ L F L T                       --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--            Copyright (C) 2021, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is an instantiation. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+--  Long_Float exponentiation (checks off)
 
-pragma No_Body;
+with System.Exponr;
+
+package System.Exn_LFlt is
+
+   function Exn_Long_Float is new Exponr (Long_Float);
+   pragma Pure_Function (Exn_Long_Float);
+
+end System.Exn_LFlt;

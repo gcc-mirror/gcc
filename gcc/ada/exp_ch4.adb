@@ -9081,15 +9081,12 @@ package body Exp_Ch4 is
       --  overflow), and if there is an infinity generated and a range check
       --  is required, the check will fail anyway.
 
-      --  Historical note: we used to convert everything to Long_Long_Float
-      --  and call a single common routine, but this had the undesirable effect
-      --  of giving different results for small static exponent values and the
-      --  same dynamic values.
-
       else
          pragma Assert (Is_Floating_Point_Type (Rtyp));
 
-         if Rtyp = Standard_Float then
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
             Etyp := Standard_Float;
             Rent := RE_Exn_Float;
 
