@@ -1,3 +1,9 @@
+2021-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98605
+	* include/std/mutex (call_once): Use NOLINT to suppress clang
+	analyzer warnings.
+
 2021-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2021-01-13  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	Backported from master:
+	2021-01-13  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* config.gcc [$target == *-*-gnu*]: Enable
+	'default_gnu_indirect_function'.
+
 2021-01-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
