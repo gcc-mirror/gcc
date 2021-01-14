@@ -18133,6 +18133,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    tree scope = USING_DECL_SCOPE (decl);
 	    gcc_checking_assert (scope
 				 == tsubst (scope, args, complain, in_decl));
+	    /* We still need to push the bindings so that we can look up
+	       this name later.  */
+	    push_using_decl_bindings (decl);
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))

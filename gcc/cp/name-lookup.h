@@ -478,6 +478,7 @@ extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
+extern void push_using_decl_bindings (tree);
 extern void discard_operator_bindings (tree);
 
 /* Lower level interface for modules. */

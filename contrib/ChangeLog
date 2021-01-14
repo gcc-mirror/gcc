@@ -1,3 +1,24 @@
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support wrapping of functions
+	in parentheses that can take multiple lines.
+	* gcc-changelog/test_email.py: Add tests for it.
+	* gcc-changelog/test_patches.txt: Add 2 patches.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Parse also define_insn_and_split and similar
+	directives in .md files.
+	* test_mklog.py: Test.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow modifications of older
+	ChangeLog (or specific) files without need to make a ChangeLog
+	entry.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
 2021-01-11  Martin Liska  <mliska@suse.cz>
 
 	* update-copyright.py: Port to python3 by guessing encoding

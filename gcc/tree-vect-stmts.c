@@ -1120,6 +1120,30 @@ vect_model_load_cost (vec_info *vinfo,
      once per group anyhow.  */
   bool first_stmt_p = (first_stmt_info == stmt_info);
 
+  /* An IFN_LOAD_LANES will load all its vector results, regardless of which
+     ones we actually need.  Account for the cost of unused results.  */
+  if (first_stmt_p && !slp_node && memory_access_type == VMAT_LOAD_STORE_LANES)
+    {
+      unsigned int gaps = DR_GROUP_SIZE (first_stmt_info);
+      stmt_vec_info next_stmt_info = first_stmt_info;
+      do
+	{
+	  gaps -= 1;
+	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+	}
+      while (next_stmt_info);
+      if (gaps)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vect_model_load_cost: %d unused vectors.\n",
+			     gaps);
+	  vect_get_load_cost (vinfo, stmt_info, ncopies * gaps, false,
+			      &inside_cost, &prologue_cost,
+			      cost_vec, cost_vec, true);
+	}
+    }
+
   /* We assume that the cost of a single load-lanes instruction is
      equivalent to the cost of DR_GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,

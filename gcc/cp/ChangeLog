@@ -1,3 +1,16 @@
+2021-01-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98231
+	* name-lookup.c (push_using_decl_bindings): New.
+	* name-lookup.h (push_using_decl_bindings): Declare.
+	* pt.c (tsubst_expr): Call push_using_decl_bindings.
+
+2021-01-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98626
+	* module.cc (module_add_import_initializers):  Pass a
+	zero-element argument vector.
+
 2021-01-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98611

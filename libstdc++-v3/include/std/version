@@ -200,8 +200,8 @@
 #if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
 # define __cpp_lib_atomic_wait 201907L
 # if __cpp_aligned_new
-# define __cpp_lib_barrier 201907L
-#endif
+#  define __cpp_lib_barrier 201907L
+# endif
 #endif
 #define __cpp_lib_bind_front 201907L
 #if __has_builtin(__builtin_bit_cast)

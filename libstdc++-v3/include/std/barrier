@@ -1,6 +1,6 @@
 // <barrier> -*- C++ -*-
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -103,7 +103,7 @@ It looks different from literature pseudocode for two main reasons:
 			   static_cast<__barrier_phase_t>(__old_phase_val + 2);
 
 	size_t __current_expected = _M_expected;
-	std::hash<std::thread::id>__hasher;
+	std::hash<std::thread::id> __hasher;
 	size_t __current = __hasher(std::this_thread::get_id())
 					  % ((_M_expected + 1) >> 1);
 

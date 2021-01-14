@@ -33,7 +33,7 @@ extern enum attr_cpu ix86_schedule;
 
 extern enum processor_type ix86_tune;
 extern enum processor_type ix86_arch;
-extern unsigned char x86_prefetch_sse;
+extern unsigned char ix86_prefetch_sse;
 extern const struct processor_costs *ix86_tune_cost;
 
 extern int ix86_tune_defaulted;

@@ -1834,6 +1834,9 @@
 ;; Unsigned comparison operators.
 (define_code_iterator FAC_COMPARISONS [lt le ge gt])
 
+;; Signed and unsigned saturating truncations.
+(define_code_iterator SAT_TRUNC [ss_truncate us_truncate])
+
 ;; SVE integer unary operations.
 (define_code_iterator SVE_INT_UNARY [abs neg not clrsb clz popcount
 				     (ss_abs "TARGET_SVE2")
@@ -1987,7 +1990,8 @@
 		      (fix "s") (unsigned_fix "u")
 		      (div "s") (udiv "u")
 		      (smax "s") (umax "u")
-		      (smin "s") (umin "u")])
+		      (smin "s") (umin "u")
+		      (ss_truncate "s") (us_truncate "u")])
 
 ;; "s" for signed ops, empty for unsigned ones.
 (define_code_attr s [(sign_extend "s") (zero_extend "")])

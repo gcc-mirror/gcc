@@ -5068,8 +5068,8 @@ resolve_array_ref (gfc_array_ref *ar)
 }
 
 
-static bool
-resolve_substring (gfc_ref *ref, bool *equal_length)
+bool
+gfc_resolve_substring (gfc_ref *ref, bool *equal_length)
 {
   int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
 
@@ -5277,7 +5277,7 @@ gfc_resolve_ref (gfc_expr *expr)
 
       case REF_SUBSTRING:
 	equal_length = false;
-	if (!resolve_substring (*prev, &equal_length))
+	if (!gfc_resolve_substring (*prev, &equal_length))
 	  return false;
 
 	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
@@ -14722,6 +14722,10 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
         && c->attr.pointer
         && sym != c->ts.u.derived)
     add_dt_to_dt_list (c->ts.u.derived);
+
+  if (c->as && c->as->type != AS_DEFERRED
+      && (c->attr.pointer || c->attr.allocatable))
+    return false;
 
   if (!gfc_resolve_array_spec (c->as,
                                !(c->attr.pointer || c->attr.proc_pointer

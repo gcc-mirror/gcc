@@ -3878,6 +3878,45 @@
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
+(define_insn "aarch64_<su>qxtn2<mode>_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (SAT_TRUNC:<VNARROWQ>
+	    (match_operand:VQN 2 "register_operand" "w"))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "<su>qxtn2\\t%0.<V2ntype>, %2.<Vtype>"
+   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_<su>qxtn2<mode>_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (SAT_TRUNC:<VNARROWQ>
+	    (match_operand:VQN 2 "register_operand" "w"))
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "<su>qxtn2\\t%0.<V2ntype>, %2.<Vtype>"
+   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_<su>qxtn2<mode>"
+  [(match_operand:<VNARROWQ2> 0 "register_operand")
+   (match_operand:<VNARROWQ> 1 "register_operand")
+   (SAT_TRUNC:<VNARROWQ>
+     (match_operand:VQN 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    if (BYTES_BIG_ENDIAN)
+      emit_insn (gen_aarch64_<su>qxtn2<mode>_be (operands[0], operands[1],
+						 operands[2]));
+    else
+      emit_insn (gen_aarch64_<su>qxtn2<mode>_le (operands[0], operands[1],
+						 operands[2]));
+    DONE;
+  }
+)
+
 ;; <su>q<absneg>
 
 (define_insn "aarch64_s<optab><mode>"
@@ -7262,6 +7301,20 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
+(define_expand "aarch64_<su>xtl<mode>"
+  [(set (match_operand:VQN 0 "register_operand" "=w")
+	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  ""
+)
+
+(define_expand "aarch64_xtn<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  ""
+)
+
 ;; Truncate a 128-bit integer vector to a 64-bit vector.
 (define_insn "trunc<mode><Vnarrowq>2"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
@@ -7269,6 +7322,42 @@
   "TARGET_SIMD"
   "xtn\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_xtn2<mode>_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand" "w"))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "xtn2\t%0.<V2ntype>, %2.<Vtype>"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_xtn2<mode>_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand" "w"))
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "xtn2\t%0.<V2ntype>, %2.<Vtype>"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_xtn2<mode>"
+  [(match_operand:<VNARROWQ2> 0 "register_operand")
+   (match_operand:<VNARROWQ> 1 "register_operand")
+   (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    if (BYTES_BIG_ENDIAN)
+      emit_insn (gen_aarch64_xtn2<mode>_be (operands[0], operands[1],
+					     operands[2]));
+    else
+      emit_insn (gen_aarch64_xtn2<mode>_le (operands[0], operands[1],
+					     operands[2]));
+    DONE;
+  }
 )
 
 (define_insn "aarch64_bfdot<mode>"
