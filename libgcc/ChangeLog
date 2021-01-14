@@ -1,3 +1,13 @@
+2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	Backported from master:
+	2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/i386/gnu-unwind.h (x86_gnu_fallback_frame_state): Add the
+	posix siginfo case to struct handler_args. Detect between legacy
+	and siginfo from the second parameter, which is a small sigcode in
+	the legacy case, and a pointer in the siginfo case.
+
 2020-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
