@@ -449,6 +449,13 @@ diagnostic_get_location_text (diagnostic_context *context,
 			       line_col, locus_ce);
 }
 
+static const char *const diagnostic_kind_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
+#include "diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+  "must-not-happen"
+};
+
 /* Return a malloc'd string describing a location and the severity of the
    diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
    freeing the memory.  */
@@ -456,12 +463,6 @@ char *
 diagnostic_build_prefix (diagnostic_context *context,
 			 const diagnostic_info *diagnostic)
 {
-  static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-    "must-not-happen"
-  };
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
 
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
@@ -1871,6 +1872,38 @@ error_recursion (diagnostic_context *context)
 void
 fancy_abort (const char *file, int line, const char *function)
 {
+  /* If fancy_abort is called before the diagnostic subsystem is initialized,
+     internal_error will crash internally in a way that prevents a
+     useful message reaching the user.
+     This can happen with libgccjit in the case of gcc_assert failures
+     that occur outside of the libgccjit mutex that guards the rest of
+     gcc's state, including global_dc (when global_dc may not be
+     initialized yet, or might be in use by another thread).
+     Handle such cases as gracefully as possible by falling back to a
+     minimal abort handler that only relies on i18n.  */
+  if (global_dc->printer == NULL)
+    {
+      /* Print the error message.  */
+      fnotice (stderr, diagnostic_kind_text[DK_ICE]);
+      fnotice (stderr, "in %s, at %s:%d", function, trim_filename (file), line);
+      fputc ('\n', stderr);
+
+      /* Attempt to print a backtrace.  */
+      struct backtrace_state *state
+	= backtrace_create_state (NULL, 0, bt_err_callback, NULL);
+      int count = 0;
+      if (state != NULL)
+	backtrace_full (state, 2, bt_callback, bt_err_callback,
+			(void *) &count);
+
+      /* We can't call warn_if_plugins or emergency_dump_function as these
+	 rely on GCC state that might not be initialized, or might be in
+	 use by another thread.  */
+
+      /* Abort the process.  */
+      real_abort ();
+    }
+
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
