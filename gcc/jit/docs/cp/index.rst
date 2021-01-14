@@ -28,10 +28,6 @@ This is a collection of "thin" wrapper classes around the C API.
 Everything is an inline function, implemented in terms of the C API,
 so there is nothing extra to link against.
 
-Note that libgccjit is currently of "Alpha" quality;
-the APIs are not yet set in stone, and they shouldn't be used in
-production yet.
-
 Contents:
 
 .. toctree::
