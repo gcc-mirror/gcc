@@ -25,7 +25,7 @@
 #include <iostream>
 #include <testsuite_hooks.h>
 
-const int iterations = 200;
+int iterations = 200;
 
 using namespace std;
 
@@ -45,10 +45,41 @@ int main()
   promise<int> p;
   future<int> f = p.get_future();
 
+ start_over:
   auto start = chrono::high_resolution_clock::now();
   for(int i = 0; i < iterations; i++)
     f.wait_for(chrono::seconds(0));
   auto stop = chrono::high_resolution_clock::now();
+
+  /* We've run too few iterations for the clock resolution.
+     Attempt to calibrate it.  */
+  if (start == stop)
+    {
+      /* Loop until the clock advances, so that start is right after a
+	 time increment.  */
+      do
+	start = chrono::high_resolution_clock::now();
+      while (start == stop);
+      int i = 0;
+      /* Now until the clock advances again, so that stop is right
+	 after another time increment.  */
+      do
+	{
+	  f.wait_for(chrono::seconds(0));
+	  stop = chrono::high_resolution_clock::now();
+	  i++;
+	}
+      while (start == stop);
+      /* Go for some 10 cycles, but if we're already past that and
+	 still get into the calibration loop, double the iteration
+	 count and try again.  */
+      if (iterations < i * 10)
+	iterations = i * 10;
+      else
+	iterations *= 2;
+      goto start_over;
+    }
+
   double wait_for_0 = print("wait_for(0s)", stop - start);
 
   start = chrono::high_resolution_clock::now();
