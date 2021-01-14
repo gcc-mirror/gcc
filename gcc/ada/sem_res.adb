@@ -9095,6 +9095,16 @@ package body Sem_Res is
       --  that the context in general allows sliding, while a qualified
       --  expression forces equality of bounds.
 
+      Result_Type  : Entity_Id := Typ;
+      --  So in most cases the type of the If_Expression and of its
+      --  dependent expressions is that of the context. However, if
+      --  the expression is the index of an Indexed_Component, we must
+      --  ensure that a proper index check is applied, rather than a
+      --  range check on the index type (which might be discriminant
+      --  dependent). In this case we resolve with the base type of the
+      --  index type, and the index check is generated in the resolution
+      --  of the indexed_component above.
+
       -----------------
       -- Apply_Check --
       -----------------
@@ -9118,10 +9128,10 @@ package body Sem_Res is
          else
             Rewrite (Expr,
               Make_Qualified_Expression (Loc,
-                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Subtype_Mark => New_Occurrence_Of (Result_Type, Loc),
                 Expression   => Relocate_Node (Expr)));
 
-            Analyze_And_Resolve (Expr, Typ);
+            Analyze_And_Resolve (Expr, Result_Type);
          end if;
       end Apply_Check;
 
@@ -9140,6 +9150,12 @@ package body Sem_Res is
          return;
       end if;
 
+      if Nkind (Parent (N)) = N_Indexed_Component
+        or else Nkind (Parent (Parent (N))) = N_Indexed_Component
+      then
+         Result_Type := Base_Type (Typ);
+      end if;
+
       Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
@@ -9149,7 +9165,7 @@ package body Sem_Res is
       Else_Expr := Next (Then_Expr);
 
       Resolve (Condition, Any_Boolean);
-      Resolve (Then_Expr, Typ);
+      Resolve (Then_Expr, Result_Type);
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
@@ -9163,7 +9179,7 @@ package body Sem_Res is
             Resolve (Else_Expr, Any_Real);
 
          else
-            Resolve (Else_Expr, Typ);
+            Resolve (Else_Expr, Result_Type);
          end if;
 
          Apply_Check (Else_Expr);
@@ -9187,7 +9203,7 @@ package body Sem_Res is
       elsif Root_Type (Typ) = Standard_Boolean then
          Else_Expr :=
            Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
-         Analyze_And_Resolve (Else_Expr, Typ);
+         Analyze_And_Resolve (Else_Expr, Result_Type);
          Append_To (Expressions (N), Else_Expr);
 
       else
@@ -9195,7 +9211,7 @@ package body Sem_Res is
          Append_To (Expressions (N), Error);
       end if;
 
-      Set_Etype (N, Typ);
+      Set_Etype (N, Result_Type);
 
       if not Error_Posted (N) then
          Eval_If_Expression (N);
