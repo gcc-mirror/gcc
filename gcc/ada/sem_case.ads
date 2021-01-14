@@ -44,8 +44,8 @@
 --    till the freeze point in this case.
 
 --    3. Set the Others_Discrete_Choices list for an others choice. This is
---    used in various ways, e.g. to construct the disriminant checking function
---    for the case of a variant with an others choice.
+--    used in various ways, e.g. to construct the discriminant checking
+--    function for the case of a variant with an others choice.
 
 --    4. In the case of static predicates, we need to expand out choices that
 --    correspond to the predicate for the back end. This expansion destroys

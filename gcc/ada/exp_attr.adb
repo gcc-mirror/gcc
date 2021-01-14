@@ -4237,12 +4237,13 @@ package body Exp_Attr is
                --  type if the type lacks default discriminant values.
 
                if Is_Unchecked_Union (Base_Type (U_Type))
-                 and then No (Discriminant_Constraint (U_Type))
+                 and then
+                 No (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
-                  Insert_Action (N,
+                  Rewrite (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Unchecked_Union_Restriction));
-
+                  Set_Etype (N, B_Type);
                   return;
                end if;
 
@@ -5332,12 +5333,13 @@ package body Exp_Attr is
                --  values.
 
                if Is_Unchecked_Union (Base_Type (U_Type))
-                 and then No (Discriminant_Constraint (U_Type))
+                 and then
+                 No (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
-                  Insert_Action (N,
+                  Rewrite (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Unchecked_Union_Restriction));
-
+                  Set_Etype (N, Standard_Void_Type);
                   return;
                end if;
 
