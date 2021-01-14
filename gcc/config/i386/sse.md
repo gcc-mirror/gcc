@@ -17721,7 +17721,7 @@
   [(set (match_operand:V16QI 0 "register_operand" "=Yr,*x,v")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
-	    (match_operand:V16QI 1 "vector_operand" "Yrm,*xm,vm")
+	    (match_operand:V16QI 1 "vector_operand" "YrBm,*xBm,vm")
 	    (match_operand:V16QI 2 "const0_operand" "C,C,C"))
 	  (match_parallel 3 "pmovzx_parallel"
 	    [(match_operand 4 "const_int_operand" "n,n,n")])))]
@@ -17745,7 +17745,8 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
-})
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_expand "<insn>v8qiv8hi2"
   [(set (match_operand:V8HI 0 "register_operand")
@@ -18031,7 +18032,7 @@
   [(set (match_operand:V8HI 0 "register_operand" "=Yr,*x,v")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
-	    (match_operand:V8HI 1 "vector_operand" "Yrm,*xm,vm")
+	    (match_operand:V8HI 1 "vector_operand" "YrBm,*xBm,vm")
 	    (match_operand:V8HI 2 "const0_operand" "C,C,C"))
 	  (match_parallel 3 "pmovzx_parallel"
 	    [(match_operand 4 "const_int_operand" "n,n,n")])))]
@@ -18053,7 +18054,8 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
-})
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_insn "avx512f_<code>v8qiv8di2<mask_name>"
   [(set (match_operand:V8DI 0 "register_operand" "=v")
@@ -18447,7 +18449,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=Yr,*x,v")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "vector_operand" "Yrm,*xm,vm")
+	    (match_operand:V4SI 1 "vector_operand" "YrBm,*xBm,vm")
 	    (match_operand:V4SI 2 "const0_operand" "C,C,C"))
 	  (match_parallel 3 "pmovzx_parallel"
 	    [(match_operand 4 "const_int_operand" "n,n,n")])))]
@@ -18467,7 +18469,8 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
-})
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_expand "<insn>v2siv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
