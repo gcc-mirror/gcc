@@ -627,22 +627,20 @@ class complex_add_pattern : public complex_pattern
 void
 complex_add_pattern::build (vec_info *vinfo)
 {
-  auto_vec<slp_tree> nodes;
+  SLP_TREE_CHILDREN (*this->m_node).reserve_exact (2);
+
   slp_tree node = this->m_ops[0];
   vec<slp_tree> children = SLP_TREE_CHILDREN (node);
 
   /* First re-arrange the children.  */
-  nodes.create (children.length ());
-  nodes.quick_push (children[0]);
-  nodes.quick_push (vect_build_swap_evenodd_node (children[1]));
+  SLP_TREE_CHILDREN (*this->m_node)[0] = children[0];
+  SLP_TREE_CHILDREN (*this->m_node)[1] =
+    vect_build_swap_evenodd_node (children[1]);
 
-  SLP_TREE_REF_COUNT (nodes[0])++;
-  SLP_TREE_REF_COUNT (nodes[1])++;
+  SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (*this->m_node)[0])++;
+  SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (*this->m_node)[1])++;
   vect_free_slp_tree (this->m_ops[0]);
   vect_free_slp_tree (this->m_ops[1]);
-
-  SLP_TREE_CHILDREN (*this->m_node).truncate (0);
-  SLP_TREE_CHILDREN (*this->m_node).safe_splice (nodes);
 
   complex_pattern::build (vinfo);
 }
