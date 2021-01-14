@@ -2562,7 +2562,7 @@ public:
 };
 
 extern const pta processor_alias_table[];
-extern int const pta_size;
+extern unsigned int const pta_size;
 extern unsigned int const num_arch_names;
 #endif
 

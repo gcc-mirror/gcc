@@ -1088,8 +1088,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
   /* If this is a list, recurse to get the options.  */
   if (TREE_CODE (args) == TREE_LIST)
     {
-      bool ret = true;
-
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
 	    && !ix86_valid_target_attribute_inner_p (fndecl, TREE_VALUE (args),
@@ -1782,7 +1780,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts,
 			       struct gcc_options *opts_set)
 {
-  int i;
+  unsigned int i;
   unsigned HOST_WIDE_INT ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
 
@@ -2852,7 +2850,7 @@ ix86_option_override_internal (bool main_args_p,
     {
       char *p = ASTRDUP (opts->x_ix86_recip_name);
       char *q;
-      unsigned int mask, i;
+      unsigned int mask;
       bool invert;
 
       while ((q = strtok (p, ",")) != NULL)
