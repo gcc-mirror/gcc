@@ -169,7 +169,7 @@ public:
     return m_offset;
   }
 
-  bool operator== (const region_offset &other)
+  bool operator== (const region_offset &other) const
   {
     return (m_base_region == other.m_base_region
 	    && m_offset == other.m_offset

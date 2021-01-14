@@ -425,7 +425,7 @@ public:
 
   template <typename T>
   void for_each_value (void (*cb) (const svalue *sval, T user_data),
-		       T user_data)
+		       T user_data) const
   {
     for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
       cb ((*iter).second, user_data);
@@ -459,7 +459,7 @@ public:
   const svalue *maybe_get_simple_value (store_manager *mgr) const;
 
   template <typename BindingVisitor>
-  void for_each_binding (BindingVisitor &v)
+  void for_each_binding (BindingVisitor &v) const
   {
     for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
       {
