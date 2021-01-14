@@ -6247,6 +6247,51 @@ The operation is only supported for vector modes @var{m}.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{cmls@var{m}4} instruction pattern
+@item @samp{cmls@var{m}4}
+Perform a vector multiply and subtract that is semantically the same as
+a multiply and subtract of complex numbers.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] -= a[i] * b[i];
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmls_conj@var{m}4} instruction pattern
+@item @samp{cmls_conj@var{m}4}
+Perform a vector multiply by conjugate and subtract that is semantically
+the same as a multiply and subtract of complex numbers where the second
+multiply arguments is conjugated.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] -= a[i] * conj (b[i]);
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{cmul@var{m}4} instruction pattern
 @item @samp{cmul@var{m}4}
 Perform a vector multiply that is semantically the same as multiply of
