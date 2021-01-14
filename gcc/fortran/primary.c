@@ -1151,6 +1151,61 @@ got_delim:
   if (match_substring (NULL, 0, &e->ref, false) != MATCH_NO)
     e->expr_type = EXPR_SUBSTRING;
 
+  /* Substrings with constant starting and ending points are eligible as
+     designators (F2018, section 9.1).  Simplify substrings to make them usable
+     e.g. in data statements.  */
+  if (e->expr_type == EXPR_SUBSTRING
+      && e->ref && e->ref->type == REF_SUBSTRING
+      && e->ref->u.ss.start->expr_type == EXPR_CONSTANT
+      && (e->ref->u.ss.end == NULL
+	  || e->ref->u.ss.end->expr_type == EXPR_CONSTANT))
+    {
+      gfc_expr *res;
+      ptrdiff_t istart, iend;
+      size_t length;
+      bool equal_length = false;
+
+      /* Basic checks on substring starting and ending indices.  */
+      if (!gfc_resolve_substring (e->ref, &equal_length))
+	return MATCH_ERROR;
+
+      length = e->value.character.length;
+      istart = gfc_mpz_get_hwi (e->ref->u.ss.start->value.integer);
+      if (e->ref->u.ss.end == NULL)
+	iend = length;
+      else
+	iend = gfc_mpz_get_hwi (e->ref->u.ss.end->value.integer);
+
+      if (istart <= iend)
+	{
+	  if (istart < 1)
+	    {
+	      gfc_error ("Substring start index (%ld) at %L below 1",
+			 (long) istart, &e->ref->u.ss.start->where);
+	      return MATCH_ERROR;
+	    }
+	  if (iend > (ssize_t) length)
+	    {
+	      gfc_error ("Substring end index (%ld) at %L exceeds string "
+			 "length", (long) iend, &e->ref->u.ss.end->where);
+	      return MATCH_ERROR;
+	    }
+	  length = iend - istart + 1;
+	}
+      else
+	length = 0;
+
+      res = gfc_get_constant_expr (BT_CHARACTER, e->ts.kind, &e->where);
+      res->value.character.string = gfc_get_wide_string (length + 1);
+      res->value.character.length = length;
+      if (length > 0)
+	memcpy (res->value.character.string,
+		&e->value.character.string[istart - 1],
+		length * sizeof (gfc_char_t));
+      res->value.character.string[length] = '\0';
+      e = res;
+    }
+
   *result = e;
 
   return MATCH_YES;
