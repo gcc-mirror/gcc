@@ -1772,6 +1772,17 @@ strongly_connected_components::dump () const
     }
 }
 
+/* Return a new json::array of per-snode SCC ids.  */
+
+json::array *
+strongly_connected_components::to_json () const
+{
+  json::array *scc_arr = new json::array ();
+  for (int i = 0; i < m_sg.num_nodes (); i++)
+    scc_arr->append (new json::integer_number (get_scc_id (i)));
+  return scc_arr;
+}
+
 /* Subroutine of strongly_connected_components's ctor, part of Tarjan's
    SCC algorithm.  */
 
@@ -1966,6 +1977,22 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
      so order them by enode index, so that we have at least have a
      stable sort.  */
   return ka.m_enode->m_index - kb.m_enode->m_index;
+}
+
+/* Return a new json::object of the form
+   {"scc" : [per-snode-IDs]},  */
+
+json::object *
+worklist::to_json () const
+{
+  json::object *worklist_obj = new json::object ();
+
+  worklist_obj->set ("scc", m_scc.to_json ());
+
+  /* The following field isn't yet being JSONified:
+     queue_t m_queue;  */
+
+  return worklist_obj;
 }
 
 /* exploded_graph's ctor.  */
@@ -3315,10 +3342,10 @@ exploded_graph::to_json () const
   /* m_sg is JSONified at the top-level.  */
 
   egraph_obj->set ("ext_state", m_ext_state.to_json ());
+  egraph_obj->set ("worklist", m_worklist.to_json ());
   egraph_obj->set ("diagnostic_manager", m_diagnostic_manager.to_json ());
 
   /* The following fields aren't yet being JSONified:
-     worklist m_worklist;
      const state_purge_map *const m_purge_map;
      const analysis_plan &m_plan;
      stats m_global_stats;

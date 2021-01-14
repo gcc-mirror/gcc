@@ -1740,7 +1740,7 @@ store::dump (bool simple) const
    {PARENT_REGION_DESC: {BASE_REGION_DESC: object for binding_map,
 			 ... for each cluster within parent region},
     ...for each parent region,
-    "called_unknown_function": true/false}.  */
+    "called_unknown_fn": true/false}.  */
 
 json::object *
 store::to_json () const
