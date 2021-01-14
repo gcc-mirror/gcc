@@ -26121,6 +26121,26 @@ Currently, the following sets are defined:
 -mcustom-fdivs=255 @gol
 -fsingle-precision-constant}
 
+@option{-mcustom-fpu-cfg=fph2} is equivalent to:
+@gccoptlist{-mcustom-fabss=224 @gol
+-mcustom-fnegs=225 @gol
+-mcustom-fcmpnes=226 @gol
+-mcustom-fcmpeqs=227 @gol
+-mcustom-fcmpges=228 @gol
+-mcustom-fcmpgts=229 @gol
+-mcustom-fcmples=230 @gol
+-mcustom-fcmplts=231 @gol
+-mcustom-fmaxs=232 @gol
+-mcustom-fmins=233 @gol
+-mcustom-round=248 @gol
+-mcustom-fixsi=249 @gol
+-mcustom-floatis=250 @gol
+-mcustom-fsqrts=251 @gol
+-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol}
+
 Custom instruction assignments given by individual
 @option{-mcustom-@var{insn}=} options override those given by
 @option{-mcustom-fpu-cfg=}, regardless of the
@@ -26130,6 +26150,14 @@ Note that you can gain more local control over selection of a FPU
 configuration by using the @code{target("custom-fpu-cfg=@var{name}")}
 function attribute (@pxref{Function Attributes})
 or pragma (@pxref{Function Specific Option Pragmas}).
+
+The name @var{fph2} is an abbreviation for @emph{Nios II Floating Point
+Hardware 2 Component}.  Please note that the custom instructions enabled by
+@option{-mcustom-fmins=233} and @option{-mcustom-fmaxs=234} are only generated
+if @option{-ffinite-math-only} is specified.  The custom instruction enabled by
+@option{-mcustom-round=248} is only generated if @option{-fno-math-errno} is
+specified.  In contrast to the other configurations,
+@option{-fsingle-precision-constant} is not set.
 
 @end table
 

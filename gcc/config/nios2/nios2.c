@@ -1208,7 +1208,7 @@ struct nios2_fpu_config
   int code[n2fpu_code_num];
 };
 
-#define NIOS2_FPU_CONFIG_NUM 3
+#define NIOS2_FPU_CONFIG_NUM 4
 static struct nios2_fpu_config custom_fpu_config[NIOS2_FPU_CONFIG_NUM];
 
 static void
@@ -1247,6 +1247,27 @@ nios2_init_fpu_configs (void)
   cfg->code[n2fpu_fcmples] = 249;
   cfg->code[n2fpu_fcmpeqs] = 250;
   cfg->code[n2fpu_fcmpnes] = 251;
+  cfg->code[n2fpu_fmuls]   = 252;
+  cfg->code[n2fpu_fadds]   = 253;
+  cfg->code[n2fpu_fsubs]   = 254;
+  cfg->code[n2fpu_fdivs]   = 255;
+
+  NEXT_FPU_CONFIG;
+  cfg->name = "fph2";
+  cfg->code[n2fpu_fabss]   = 224;
+  cfg->code[n2fpu_fnegs]   = 225;
+  cfg->code[n2fpu_fcmpnes] = 226;
+  cfg->code[n2fpu_fcmpeqs] = 227;
+  cfg->code[n2fpu_fcmpges] = 228;
+  cfg->code[n2fpu_fcmpgts] = 229;
+  cfg->code[n2fpu_fcmples] = 230;
+  cfg->code[n2fpu_fcmplts] = 231;
+  cfg->code[n2fpu_fmaxs]   = 232;
+  cfg->code[n2fpu_fmins]   = 233;
+  cfg->code[n2fpu_round]   = 248;
+  cfg->code[n2fpu_fixsi]   = 249;
+  cfg->code[n2fpu_floatis] = 250;
+  cfg->code[n2fpu_fsqrts]  = 251;
   cfg->code[n2fpu_fmuls]   = 252;
   cfg->code[n2fpu_fadds]   = 253;
   cfg->code[n2fpu_fsubs]   = 254;
