@@ -1446,6 +1446,83 @@ complex_fms_pattern::build (vec_info *vinfo)
 }
 
 /*******************************************************************************
+ * complex_operations_pattern class
+ ******************************************************************************/
+
+/* This function combines all the existing pattern matchers above into one class
+   that shares the functionality between them.  The initial match is shared
+   between all complex operations.  */
+
+class complex_operations_pattern : public complex_pattern
+{
+  protected:
+    complex_operations_pattern (slp_tree *node, vec<slp_tree> *m_ops,
+				internal_fn ifn)
+      : complex_pattern (node, m_ops, ifn)
+    {
+      this->m_num_args = 0;
+    }
+
+  public:
+    void build (vec_info *);
+    static internal_fn
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
+	     vec<slp_tree> *);
+
+    static vect_pattern*
+    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+};
+
+/* Dummy matches implementation for proxy object.  */
+
+internal_fn
+complex_operations_pattern::
+matches (complex_operation_t /* op */,
+	 slp_tree_to_load_perm_map_t * /* perm_cache */,
+	 slp_tree * /* ref_node */, vec<slp_tree> * /* ops */)
+{
+  return IFN_LAST;
+}
+
+/* Attempt to recognize a complex mul pattern.  */
+
+vect_pattern*
+complex_operations_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
+				       slp_tree *node)
+{
+  auto_vec<slp_tree> ops;
+  complex_operation_t op
+    = vect_detect_pair_op (*node, true, &ops);
+  internal_fn ifn = IFN_LAST;
+
+  ifn  = complex_fms_pattern::matches (op, perm_cache, node, &ops);
+  if (ifn != IFN_LAST)
+    return complex_fms_pattern::mkInstance (node, &ops, ifn);
+
+  ifn  = complex_mul_pattern::matches (op, perm_cache, node, &ops);
+  if (ifn != IFN_LAST)
+    return complex_mul_pattern::mkInstance (node, &ops, ifn);
+
+  ifn  = complex_fma_pattern::matches (op, perm_cache, node, &ops);
+  if (ifn != IFN_LAST)
+    return complex_fma_pattern::mkInstance (node, &ops, ifn);
+
+  ifn  = complex_add_pattern::matches (op, perm_cache, node, &ops);
+  if (ifn != IFN_LAST)
+    return complex_add_pattern::mkInstance (node, &ops, ifn);
+
+  return NULL;
+}
+
+/* Dummy implementation of build.  */
+
+void
+complex_operations_pattern::build (vec_info * /* vinfo */)
+{
+  gcc_unreachable ();
+}
+
+/*******************************************************************************
  * Pattern matching definitions
  ******************************************************************************/
 
@@ -1456,7 +1533,7 @@ vect_pattern_decl_t slp_patterns[]
      order patterns from the largest to the smallest.  Especially if they
      overlap in what they can detect.  */
 
-  SLP_PATTERN (complex_add_pattern),
+  SLP_PATTERN (complex_operations_pattern),
 };
 #undef SLP_PATTERN
 
