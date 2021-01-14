@@ -1291,6 +1291,23 @@ access_fn_component_p (tree op)
     }
 }
 
+/* Returns whether BASE can have a access_fn_component_p with BASE
+   as base.  */
+
+static bool
+base_supports_access_fn_components_p (tree base)
+{
+  switch (TREE_CODE (TREE_TYPE (base)))
+    {
+    case COMPLEX_TYPE:
+    case ARRAY_TYPE:
+    case RECORD_TYPE:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Determines the base object and the list of indices of memory reference
    DR, analyzed in LOOP and instantiated before NEST.  */
 
@@ -3272,8 +3289,13 @@ initialize_data_dependence_relation (struct data_reference *a,
 		      && full_seq.start_b + full_seq.length == num_dimensions_b
 		      && DR_UNCONSTRAINED_BASE (a) == DR_UNCONSTRAINED_BASE (b)
 		      && operand_equal_p (base_a, base_b, OEP_ADDRESS_OF)
-		      && types_compatible_p (TREE_TYPE (base_a),
-					     TREE_TYPE (base_b))
+		      && (types_compatible_p (TREE_TYPE (base_a),
+					      TREE_TYPE (base_b))
+			  || (!base_supports_access_fn_components_p (base_a)
+			      && !base_supports_access_fn_components_p (base_b)
+			      && operand_equal_p
+				   (TYPE_SIZE (TREE_TYPE (base_a)),
+				    TYPE_SIZE (TREE_TYPE (base_b)), 0)))
 		      && (!loop_nest.exists ()
 			  || (object_address_invariant_in_loop_p
 			      (loop_nest[0], base_a))));
