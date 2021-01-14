@@ -14723,6 +14723,10 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
         && sym != c->ts.u.derived)
     add_dt_to_dt_list (c->ts.u.derived);
 
+  if (c->as && c->as->type != AS_DEFERRED
+      && (c->attr.pointer || c->attr.allocatable))
+    return false;
+
   if (!gfc_resolve_array_spec (c->as,
                                !(c->attr.pointer || c->attr.proc_pointer
                                  || c->attr.allocatable)))
