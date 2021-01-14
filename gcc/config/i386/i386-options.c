@@ -3014,8 +3014,14 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   if (opts->x_flag_cf_protection != CF_NONE)
-    opts->x_flag_cf_protection
+    {
+      if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
+	  && !TARGET_64BIT && !TARGET_CMOV)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      opts->x_flag_cf_protection
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
 
   if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
     SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 256);
