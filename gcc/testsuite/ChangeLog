@@ -1,3 +1,83 @@
+2021-01-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98231
+	* g++.dg/lookup/using63.C: New test.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96691
+	* gcc.dg/tree-ssa/pr96691.c: New test.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* gcc.target/i386/pr92645-7.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-54.c: Adjust.
+	* gcc.dg/pr69047.c: Likewise.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mls_2.c: New test.
+	* g++.target/aarch64/sve/cond_mls_1.C: Likewise.
+	* g++.target/aarch64/sve/cond_mls_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_mls_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_mls_4.C: Likewise.
+	* g++.target/aarch64/sve/cond_mls_5.C: Likewise.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mla_2.c: New test.
+	* g++.target/aarch64/sve/cond_mla_1.C: Likewise.
+	* g++.target/aarch64/sve/cond_mla_2.C: Likewise.
+	* g++.target/aarch64/sve/cond_mla_3.C: Likewise.
+	* g++.target/aarch64/sve/cond_mla_4.C: Likewise.
+	* g++.target/aarch64/sve/cond_mla_5.C: Likewise.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* gcc.target/i386/pr92645-6.c: New testcase.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/sel_1.c: Require aarch64_variant_pcs.
+	* gcc.target/aarch64/sve/sel_2.c: Likewise.
+	* gcc.target/aarch64/sve/sel_3.c: Likewise.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95905
+	* gcc.target/i386/pr95905-2.c: Use scan-assembler-times instead of
+	scan-assembler.  Add tests with zero vector as first __builtin_shuffle
+	operand.
+	* gcc.target/i386/pr95905-3.c: New test.
+	* gcc.target/i386/pr95905-4.c: New test.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98455
+	* gcc.dg/tree-ssa/pr98455.c: New test.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98640
+	* gcc.dg/torture/pr98640.c: New testcase.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96938
+	* gcc.target/i386/pr96938.c: New test.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95905
+	* gcc.target/i386/pr95905-1.c: New test.
+	* gcc.target/i386/pr95905-2.c: New test.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/gcn/fpdiv.c: New test.
+
 2021-01-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/98597

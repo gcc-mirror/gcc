@@ -1,3 +1,167 @@
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.h (ASM_PREFERRED_EH_DATA_FORMAT): New macro.
+
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/linux.h (TARGET_ASM_FILE_END): Define macro.
+
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.h (TARGET_CPU_CPP_BUILTINS): Add builtin
+	  define for __or1k_hard_float__.
+
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.h (NO_PROFILE_COUNTERS): Define as 1.
+	(PROFILE_HOOK): Define to call _mcount.
+	(FUNCTION_PROFILER): Change from abort to no-op.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96691
+	* match.pd ((~X | C) ^ D -> (X | C) ^ (~D ^ C),
+	(~X & C) ^ D -> (X & C) ^ (D ^ C)): New simplifications if
+	(~D ^ C) or (D ^ C) can be simplified.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* match.pd (BIT_FIELD_REF to conversion): Delay canonicalization
+	until after vector lowering.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (fnma<mode>4): Extend from SVE_FULL_I
+	to SVE_I.
+	(@aarch64_pred_fnma<mode>, cond_fnma<mode>, *cond_fnma<mode>_2)
+	(*cond_fnma<mode>_4, *cond_fnma<mode>_any): Likewise.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (fma<mode>4): Extend from SVE_FULL_I
+	to SVE_I.
+	(@aarch64_pred_fma<mode>, cond_fma<mode>, *cond_fma<mode>_2)
+	(*cond_fma<mode>_4, *cond_fma<mode>_any): Likewise.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92645
+	* tree-vect-slp.c (vect_build_slp_tree_1): Relax supported
+	BIT_FIELD_REF argument.
+	(vect_build_slp_tree_2): Record the desired vector type
+	on the external vector def.
+	(vectorizable_slp_permutation): Handle required punning
+	of existing vector defs.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/accesses.h (def_lookup): Fix order of comparison results.
+
+2021-01-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sh/sh.md (movsf_ie): Remove operands[2] test.
+
+2021-01-13  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* config.gcc [$target == *-*-gnu*]: Enable
+	'default_gnu_indirect_function'.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95905
+	* optabs.c (expand_vec_perm_const): Don't force v0 and v1 into
+	registers before calling targetm.vectorize.vec_perm_const, only after
+	that.
+	* config/i386/i386-expand.c (ix86_vectorize_vec_perm_const): Handle
+	two argument permutation when one operand is zero vector and only
+	after that force operands into registers.
+	* config/i386/sse.md (*avx2_zero_extendv16qiv16hi2_1): New
+	define_insn_and_split pattern.
+	(*avx512bw_zero_extendv32qiv32hi2_1): Likewise.
+	(*avx512f_zero_extendv16hiv16si2_1): Likewise.
+	(*avx2_zero_extendv8hiv8si2_1): Likewise.
+	(*avx512f_zero_extendv8siv8di2_1): Likewise.
+	(*avx2_zero_extendv4siv4di2_1): Likewise.
+	* config/mips/mips.c (mips_vectorize_vec_perm_const): Force operands
+	into registers.
+	* config/arm/arm.c (arm_vectorize_vec_perm_const): Likewise.
+	* config/sparc/sparc.c (sparc_vectorize_vec_perm_const): Likewise.
+	* config/ia64/ia64.c (ia64_vectorize_vec_perm_const): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vectorize_vec_perm_const): Likewise.
+	* config/rs6000/rs6000.c (rs6000_vectorize_vec_perm_const): Likewise.
+	* config/gcn/gcn.c (gcn_vectorize_vec_perm_const): Likewise.  Use std::swap.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98455
+	* gimple-if-to-switch.cc (condition_info::record_phi_mapping):
+	Record also virtual PHIs.
+	(pass_if_to_switch::execute): Return TODO_cleanup_cfg only
+	conditionally.
+
+2021-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Fix typos.
+
+2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98640
+	* tree-ssa-sccvn.c (visit_nary_op): Do not try to
+	handle plus or minus from a truncated operand to be
+	sign-extended.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96938
+	* config/i386/i386.md (*btr<mode>_1, *btr<mode>_2): New
+	define_insn_and_split patterns.
+	(splitter after *btr<mode>_2): New splitter.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98652
+	* cgraphunit.c (analyze_functions): Remove dead code.
+
+2021-01-13  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cost-tables.h (a64fx_extra_costs): New.
+	* config/aarch64/aarch64.c (a64fx_addrcost_table): New.
+	(a64fx_regmove_cost, a64fx_vector_cost): New.
+	(a64fx_tunings): Use the new added cost tables.
+
+2021-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95905
+	* config/i386/predicates.md (pmovzx_parallel): New predicate.
+	* config/i386/sse.md (*sse4_1_zero_extendv8qiv8hi2_3): New
+	define_insn_and_split pattern.
+	(*sse4_1_zero_extendv4hiv4si2_3): Likewise.
+	(*sse4_1_zero_extendv2siv2di2_3): Likewise.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_conditional_register_usage): Remove dead code
+	to fix v0 register.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_md_reorg): Fix case where EXEC reg is live
+	on entry to a BB.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (recip<mode>2<exec>, recip<mode>2): Use unspec
+	for reciprocal-approximation instructions.
+	(div<mode>3): Use fused multiply-accumulate operations for reciprocal
+	refinement and division result.
+	* config/gcn/gcn.md (UNSPEC_RCP): New unspec constant.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (subdf): Rename to...
+	(subdf3): This.
+
 2021-01-12  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (source_info::debug): Fix printf format for 32-bit hosts.
