@@ -5068,8 +5068,8 @@ resolve_array_ref (gfc_array_ref *ar)
 }
 
 
-bool
-gfc_resolve_substring (gfc_ref *ref, bool *equal_length)
+static bool
+resolve_substring (gfc_ref *ref, bool *equal_length)
 {
   int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
 
@@ -5277,7 +5277,7 @@ gfc_resolve_ref (gfc_expr *expr)
 
       case REF_SUBSTRING:
 	equal_length = false;
-	if (!gfc_resolve_substring (*prev, &equal_length))
+	if (!resolve_substring (*prev, &equal_length))
 	  return false;
 
 	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
@@ -5563,10 +5563,6 @@ resolve_variable (gfc_expr *e)
   if (e->symtree == NULL)
     return false;
   sym = e->symtree->n.sym;
-  if (sym == NULL)
-    return false;
-//  if (e->ts.type == BT_UNKNOWN)
-//    return false;
 
   /* Use same check as for TYPE(*) below; this check has to be before TYPE(*)
      as ts.type is set to BT_ASSUMED in resolve_symbol.  */
@@ -7042,8 +7038,7 @@ fixup_unique_dummy (gfc_expr *e)
   gfc_symtree *st = NULL;
   gfc_symbol *s = NULL;
 
-  if (e->symtree->n.sym->ns
-      && e->symtree->n.sym->ns->proc_name
+  if (e->symtree->n.sym->ns->proc_name
       && e->symtree->n.sym->ns->proc_name->formal)
     s = e->symtree->n.sym->ns->proc_name->formal->sym;
 
@@ -7081,8 +7076,8 @@ gfc_resolve_expr (gfc_expr *e)
       first_actual_arg = false;
     }
   else if (e->symtree != NULL
-	   && e->symtree->name && *e->symtree->name == '@'
-	   && e->symtree->n.sym && e->symtree->n.sym->attr.dummy)
+	   && *e->symtree->name == '@'
+	   && e->symtree->n.sym->attr.dummy)
     {
       /* Deal with submodule specification expressions that are not
 	 found to be referenced in module.c(read_cleanup).  */
@@ -7179,7 +7174,6 @@ gfc_resolve_expr (gfc_expr *e)
   /* For some reason, resolving these expressions a second time mangles
      the typespec of the expression itself.  */
   if (t && e->expr_type == EXPR_VARIABLE
-      && e->symtree && e->symtree->n.sym
       && e->symtree->n.sym->attr.select_rank_temporary
       && UNLIMITED_POLY (e->symtree->n.sym))
     e->do_not_resolve_again = 1;
@@ -12437,13 +12431,7 @@ resolve_charlen (gfc_charlen *cl)
   saved_specification_expr = specification_expr;
   specification_expr = true;
 
-  /* if (cl->length == NULL) */
-  /*   { */
-  /*     specification_expr = saved_specification_expr; */
-  /*     return true; // return false; */
-  /*   } */
-
-  if (cl->length_from_typespec && cl->length)
+  if (cl->length_from_typespec)
     {
       if (!gfc_resolve_expr (cl->length))
 	{
@@ -14734,10 +14722,6 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
         && c->attr.pointer
         && sym != c->ts.u.derived)
     add_dt_to_dt_list (c->ts.u.derived);
-
-  if (c->as && c->as->type != AS_DEFERRED
-      && (c->attr.pointer || c->attr.allocatable))
-    return false;
 
   if (!gfc_resolve_array_spec (c->as,
                                !(c->attr.pointer || c->attr.proc_pointer
