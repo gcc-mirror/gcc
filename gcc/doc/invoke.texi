@@ -32711,6 +32711,25 @@ Recognize EUCJP characters.
 If @env{LANG} is not defined, or if it has some other value, then the
 compiler uses @code{mblen} and @code{mbtowc} as defined by the default locale to
 recognize and translate multibyte characters.
+
+@item GCC_EXTRA_DIAGNOSTIC_OUTPUT
+If @env{GCC_EXTRA_DIAGNOSTIC_OUTPUT} is set to one of the following values,
+then additional text will be emitted to stderr when fix-it hints are
+emitted.  @option{-fdiagnostics-parseable-fixits} and
+@option{-fno-diagnostics-parseable-fixits} take precedence over this
+environment variable.
+
+@table @samp
+@item fixits-v1
+Emit parseable fix-it hints, equivalent to
+@option{-fdiagnostics-parseable-fixits}.  In particular, columns are
+expressed as a count of bytes, starting at byte 1 for the initial column.
+
+@item fixits-v2
+As @code{fixits-v1}, but columns are expressed as display columns,
+as per @option{-fdiagnostics-column-unit=display}.
+@end table
+
 @end table
 
 @noindent
