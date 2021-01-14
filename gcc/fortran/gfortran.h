@@ -3406,6 +3406,7 @@ bool find_forall_index (gfc_expr *, gfc_symbol *, int);
 bool gfc_resolve_index (gfc_expr *, int);
 bool gfc_resolve_dim_arg (gfc_expr *);
 bool gfc_is_formal_arg (void);
+bool gfc_resolve_substring (gfc_ref *, bool *);
 void gfc_resolve_substring_charlen (gfc_expr *);
 match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
