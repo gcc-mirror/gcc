@@ -3286,6 +3286,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_o:
       case OPT_d:
       case OPT_dumpbase:
+      case OPT_dumpbase_ext:
       case OPT_dumpdir:
       case OPT_quiet:
       case OPT_version:
