@@ -20910,6 +20910,15 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
   if (list)
     {
       add_AT_location_description (die, DW_AT_location, list);
+
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+      if (!ADDR_SPACE_GENERIC_P (as))
+	{
+	  int action = targetm.addr_space.debug (as);
+	  /* Positive values indicate an address_class.  */
+	  if (action >= 0)
+	    add_AT_unsigned (die, DW_AT_address_class, action);
+	}
       return true;
     }
   /* None of that worked, so it must not really have a location;

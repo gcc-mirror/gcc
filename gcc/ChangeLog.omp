@@ -1,3 +1,8 @@
+2021-01-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (add_location_or_const_value_attribute): Set
+	DW_AT_address_class, if appropriate.
+
 2020-12-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* dwarf2out.cc (gen_subprogram_die): Add high/low_pc attributes for
