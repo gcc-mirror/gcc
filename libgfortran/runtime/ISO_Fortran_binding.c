@@ -345,8 +345,7 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
   dv->base_addr = base_addr;
 
   if (type == CFI_type_char || type == CFI_type_ucs4_char ||
-      type == CFI_type_signed_char || type == CFI_type_struct ||
-      type == CFI_type_other)
+      type == CFI_type_struct || type == CFI_type_other)
     dv->elem_len = elem_len;
   else
     {
