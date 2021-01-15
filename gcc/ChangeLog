@@ -1,3 +1,11 @@
+2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.c (main): Create an offload image only in
+	64-bit configurations.
+
 2021-01-13  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	Backported from master:
