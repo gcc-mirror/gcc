@@ -28,6 +28,7 @@ if ![istarget s390*-*-*] then {
 load_lib gcc-dg.exp
 load_lib target-supports.exp
 load_lib gfortran-dg.exp
+load_lib atomic-dg.exp
 
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
@@ -250,6 +251,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch13/*.{c,S}]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
 
+# Some md tests require libatomic
+atomic_init
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
@@ -294,4 +297,5 @@ foreach t [list $srcdir/$subdir/pr80080-3.c] {
 }
 
 # All done.
+atomic_finish
 dg-finish
