@@ -5915,6 +5915,7 @@ vect_schedule_slp_node (vec_info *vinfo,
       /* Emit other stmts after the children vectorized defs which is
 	 earliest possible.  */
       gimple *last_stmt = NULL;
+      bool seen_vector_def = false;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
@@ -5966,8 +5967,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	       we do not insert before the region boundary.  */
 	    if (SLP_TREE_SCALAR_OPS (child).is_empty ()
 		&& !vinfo->lookup_def (SLP_TREE_VEC_DEFS (child)[0]))
-	      last_stmt = gsi_stmt (gsi_after_labels
-				      (as_a <bb_vec_info> (vinfo)->bbs[0]));
+	      seen_vector_def = true;
 	    else
 	      {
 		unsigned j;
@@ -5987,7 +5987,12 @@ vect_schedule_slp_node (vec_info *vinfo,
 	 constants.  */
       if (!last_stmt)
 	last_stmt = vect_find_first_scalar_stmt_in_slp (node)->stmt;
-      if (is_a <gphi *> (last_stmt))
+      if (!last_stmt)
+	{
+	  gcc_assert (seen_vector_def);
+	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
+	}
+      else if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));
       else
 	{
