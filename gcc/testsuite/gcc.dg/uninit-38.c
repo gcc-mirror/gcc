@@ -29,28 +29,28 @@ void sink (void*, ...);
   }						\
   typedef void dummy_type
 
-T (int, 0, 0);      // { dg-warning "'\\*\\(int\\*\\)p' is used uninitialized" }
-T (int, 0, 1);      // { dg-warning "'\\*\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)'" }
-T (int, 0, 2);      // { dg-warning "'\\*\\(int\\*\\)\\(\\(char\\*\\)p \\+ 2\\)'" }
-T (int, 0, 3);      // { dg-warning "'\\*\\(int\\*\\)\\(\\(char\\*\\)p \\+ 3\\)'" }
-T (int, 0, 4);      // { dg-warning "'\\(\\(int\\*\\)p\\)\\\[1]'" }
-T (int, 0, 5);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\\)\\\[1]'" }
-T (int, 0, 6);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 2\\)\\)\\\[1]'" }
-T (int, 0, 7);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 3\\)\\)\\\[1]'" }
-T (int, 0, 8);      // { dg-warning "'\\(\\(int\\*\\)p\\)\\\[2]'" }
-T (int, 0, 9);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\\)\\\[2]'" }
+T (int, 0, 0);      // { dg-warning "'\\*\\(int \\*\\)p' is used uninitialized" }
+T (int, 0, 1);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)'" }
+T (int, 0, 2);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)p \\+ 2\\)'" }
+T (int, 0, 3);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)p \\+ 3\\)'" }
+T (int, 0, 4);      // { dg-warning "'\\(\\(int \\*\\)p\\)\\\[1]'" }
+T (int, 0, 5);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)\\)\\\[1]'" }
+T (int, 0, 6);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 2\\)\\)\\\[1]'" }
+T (int, 0, 7);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 3\\)\\)\\\[1]'" }
+T (int, 0, 8);      // { dg-warning "'\\(\\(int \\*\\)p\\)\\\[2]'" }
+T (int, 0, 9);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)\\)\\\[2]'" }
 
 
-T (int, 1, 0);      // { dg-warning "'\\(\\(int\\*\\)p\\)\\\[1]' is used uninitialized" }
-T (int, 1, 1);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\\)\\\[1]'" }
-T (int, 1, 2);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 2\\)\\)\\\[1]'" }
-T (int, 1, 3);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 3\\)\\)\\\[1]'" }
-T (int, 1, 4);      // { dg-warning "'\\(\\(int\\*\\)p\\)\\\[2]'" }
-T (int, 1, 5);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\\)\\\[2]'" }
-T (int, 1, 6);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 2\\)\\)\\\[2]'" }
-T (int, 1, 7);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 3\\)\\)\\\[2]'" }
-T (int, 1, 8);      // { dg-warning "'\\(\\(int\\*\\)p\\)\\\[3]'" }
-T (int, 1, 9);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\\)\\\[3]'" }
+T (int, 1, 0);      // { dg-warning "'\\(\\(int \\*\\)p\\)\\\[1]' is used uninitialized" }
+T (int, 1, 1);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)\\)\\\[1]'" }
+T (int, 1, 2);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 2\\)\\)\\\[1]'" }
+T (int, 1, 3);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 3\\)\\)\\\[1]'" }
+T (int, 1, 4);      // { dg-warning "'\\(\\(int \\*\\)p\\)\\\[2]'" }
+T (int, 1, 5);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)\\)\\\[2]'" }
+T (int, 1, 6);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 2\\)\\)\\\[2]'" }
+T (int, 1, 7);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 3\\)\\)\\\[2]'" }
+T (int, 1, 8);      // { dg-warning "'\\(\\(int \\*\\)p\\)\\\[3]'" }
+T (int, 1, 9);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)p \\+ 1\\)\\)\\\[3]'" }
 
 #undef T
 #define T(Type, idx, off)			\
@@ -63,25 +63,25 @@ T (int, 1, 9);      // { dg-warning "'\\(\\(int\\*\\)\\(\\(char\\*\\)p \\+ 1\\)\
   }						\
   typedef void dummy_type
 
-T (int, 0, 0);      // { dg-warning "'\\*\\(int\\*\\)a' is used uninitialized" }
-T (int, 0, 1);      // { dg-warning "'\\*\\(int\\*\\)\\(a \\+ 1\\)'" }
-T (int, 0, 2);      // { dg-warning "'\\*\\(int\\*\\)\\(a \\+ 2\\)'" }
-T (int, 0, 3);      // { dg-warning "'\\*\\(int\\*\\)\\(a \\+ 3\\)'" }
-T (int, 0, 4);      // { dg-warning "'\\(\\(int\\*\\)a\\)\\\[1]'" }
-T (int, 0, 5);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 1\\)\\)\\\[1]'" }
-T (int, 0, 6);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 2\\)\\)\\\[1]'" }
-T (int, 0, 7);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 3\\)\\)\\\[1]'" }
-T (int, 0, 8);      // { dg-warning "'\\(\\(int\\*\\)a\\)\\\[2]'" }
-T (int, 0, 9);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 1\\)\\)\\\[2]'" }
+T (int, 0, 0);      // { dg-warning "'\\*\\(int \\*\\)a' is used uninitialized" }
+T (int, 0, 1);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)'" }
+T (int, 0, 2);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)a \\+ 2\\)'" }
+T (int, 0, 3);      // { dg-warning "'\\*\\(int \\*\\)\\(\\(char \\*\\)a \\+ 3\\)'" }
+T (int, 0, 4);      // { dg-warning "'\\(\\(int \\*\\)a\\)\\\[1]'" }
+T (int, 0, 5);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)\\)\\\[1]'" }
+T (int, 0, 6);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 2\\)\\)\\\[1]'" }
+T (int, 0, 7);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 3\\)\\)\\\[1]'" }
+T (int, 0, 8);      // { dg-warning "'\\(\\(int \\*\\)a\\)\\\[2]'" }
+T (int, 0, 9);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)\\)\\\[2]'" }
 
 
-T (int, 1, 0);      // { dg-warning "'\\(\\(int\\*\\)a\\)\\\[1]' is used uninitialized" }
-T (int, 1, 1);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 1\\)\\)\\\[1]'" }
-T (int, 1, 2);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 2\\)\\)\\\[1]'" }
-T (int, 1, 3);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 3\\)\\)\\\[1]'" }
-T (int, 1, 4);      // { dg-warning "'\\(\\(int\\*\\)a\\)\\\[2]'" }
-T (int, 1, 5);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 1\\)\\)\\\[2]'" }
-T (int, 1, 6);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 2\\)\\)\\\[2]'" }
-T (int, 1, 7);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 3\\)\\)\\\[2]'" }
-T (int, 1, 8);      // { dg-warning "'\\(\\(int\\*\\)a\\)\\\[3]'" }
-T (int, 1, 9);      // { dg-warning "'\\(\\(int\\*\\)\\(a \\+ 1\\)\\)\\\[3]'" }
+T (int, 1, 0);      // { dg-warning "'\\(\\(int \\*\\)a\\)\\\[1]' is used uninitialized" }
+T (int, 1, 1);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)\\)\\\[1]'" }
+T (int, 1, 2);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 2\\)\\)\\\[1]'" }
+T (int, 1, 3);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 3\\)\\)\\\[1]'" }
+T (int, 1, 4);      // { dg-warning "'\\(\\(int \\*\\)a\\)\\\[2]'" }
+T (int, 1, 5);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)\\)\\\[2]'" }
+T (int, 1, 6);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 2\\)\\)\\\[2]'" }
+T (int, 1, 7);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 3\\)\\)\\\[2]'" }
+T (int, 1, 8);      // { dg-warning "'\\(\\(int \\*\\)a\\)\\\[3]'" }
+T (int, 1, 9);      // { dg-warning "'\\(\\(int \\*\\)\\(\\(char \\*\\)a \\+ 1\\)\\)\\\[3]'" }
