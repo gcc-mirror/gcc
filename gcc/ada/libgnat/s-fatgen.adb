@@ -959,7 +959,19 @@ package body System.Fat_Gen is
       else pragma Assert (Exp = IEEE_Emin - 1);
          --  This is a denormalized number, valid if T'Denorm is True or 0.0
 
-         return T'Denorm or else X.all = 0.0;
+         if T'Denorm then
+            return True;
+
+         --  Note that we cannot do a direct comparison with 0.0 because the
+         --  hardware may evaluate it to True for all denormalized numbers.
+
+         else
+            --  First clear the sign bit (the exponent is already zero)
+
+            Rep (MSW) := Rep (MSW) and not Sign_Mask;
+
+            return (for all J in 0 .. Rep_Last => Rep (J) = 0);
+         end if;
       end if;
    end Valid;
 
