@@ -1,3 +1,129 @@
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v1.c:
+	New file.
+	* gcc.dg/plugin/diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v2.c:
+	New file.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add them.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/complex/complex-mla-template.c: New test.
+	* gcc.dg/vect/complex/complex-mls-template.c: New test.
+	* gcc.dg/vect/complex/complex-mul-template.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mla-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mla-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: New test.
+
+2021-01-14  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/template/pr98372.C: Only run in C++14 and up.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* substr_10.f90: New test.
+	* substr_9.f90: New test.
+
+2021-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/sigsetjmp-5.c: Use sigjmp_buf.
+	* gcc.dg/analyzer/sigsetjmp-6.c: Likewise.
+
+2021-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/sensitive-1.c: Declare getpass.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* gfortran.dg/pr98661.f90: New test.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* gfortran.dg/pr98661.f90: New test.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* gfortran.dg/pr98661.f90: New test.
+
+2021-01-14  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-17.C: New test.
+	* g++.dg/gcov/test-gcov-17.py: New test.
+
+2021-01-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98667
+	* gcc.target/i386/pr98667-1.c: New file.
+	* gcc.target/i386/pr98667-2.c: Likewise.
+	* gcc.target/i386/pr98667-3.c: Likewise.
+
+2021-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98674
+	* gcc.dg/vect/pr98674.c: New testcase.
+
+2021-01-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98676
+	* gcc.target/i386/pr95021-1.c: Add -mpreferred-stack-boundary=4
+	-mno-stackrealign.
+	* gcc.target/i386/pr95021-3.c: Likewise.
+
+2021-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98372
+	* g++.dg/cpp0x/constexpr-52830.C: Restore dg-ice
+	* g++.dg/template/pr98372.C: New.
+
+2021-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98670
+	* gcc.target/i386/pr98670.c: New test.
+
+2021-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96688
+	* gcc.dg/tree-ssa/pr96688.c: New test.
+	* gcc.dg/tree-ssa/reassoc-37.c: Adjust scan-tree-dump regex.
+	* gcc.target/i386/pr66821.c: Likewise.
+
+2021-01-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_11.c: New test.
+	* gcc.target/aarch64/sve/mask_struct_load_5.c: Use
+	-fno-vect-cost-model.
+
+2021-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Update uqxtn2 and
+	sqxtn2 scan-assembler-times.
+
+2021-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Adjust
+	scan-assembler-times for xtn2.
+
 2021-01-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98231

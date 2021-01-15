@@ -1,3 +1,13 @@
+2021-01-14  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (process_init_constructor_record): Use fldtype
+	variable consistently.
+
+2021-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98372
+	* tree.c (cp_tree_equal): Correct map_context logic.
+
 2021-01-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98231

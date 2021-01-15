@@ -1,3 +1,217 @@
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/98586
+	* diagnostic.c (diagnostic_kind_text): Break out this array
+	from...
+	(diagnostic_build_prefix): ...here.
+	(fancy_abort): Detect when diagnostic_initialize has not yet been
+	called and fall back to a minimal implementation of printing the
+	ICE, rather than segfaulting in internal_error.
+
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (diagnostic_initialize): Eliminate
+	parseable_fixits_p in favor of initializing extra_output_kind from
+	GCC_EXTRA_DIAGNOSTIC_OUTPUT.
+	(convert_column_unit): New function, split out from...
+	(diagnostic_converted_column): ...this.
+	(print_parseable_fixits): Add "column_unit" and "tabstop" params.
+	Use them to call convert_column_unit on the column values.
+	(diagnostic_report_diagnostic): Eliminate conditional on
+	parseable_fixits_p in favor of a switch statement on
+	extra_output_kind, passing the appropriate values to the new
+	params of print_parseable_fixits.
+	(selftest::test_print_parseable_fixits_none): Update for new
+	params of print_parseable_fixits.
+	(selftest::test_print_parseable_fixits_insert): Likewise.
+	(selftest::test_print_parseable_fixits_remove): Likewise.
+	(selftest::test_print_parseable_fixits_replace): Likewise.
+	(selftest::test_print_parseable_fixits_bytes_vs_display_columns):
+	New.
+	(selftest::diagnostic_c_tests): Call it.
+	* diagnostic.h (enum diagnostics_extra_output_kind): New.
+	(diagnostic_context::parseable_fixits_p): Delete field in favor
+	of...
+	(diagnostic_context::extra_output_kind): ...this new field.
+	* doc/invoke.texi (Environment Variables): Add
+	GCC_EXTRA_DIAGNOSTIC_OUTPUT.
+	* opts.c (common_handle_option): Update handling of
+	OPT_fdiagnostics_parseable_fixits for change to diagnostic_context
+	fields.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (class complex_operations_pattern,
+	complex_operations_pattern::matches,
+	complex_operations_pattern::recognize,
+	complex_operations_pattern::build): New.
+	(slp_patterns): Use it.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* internal-fn.def (COMPLEX_FMS, COMPLEX_FMS_CONJ): New.
+	* optabs.def (cmls_optab, cmls_conj_optab): New.
+	* doc/md.texi: Document them.
+	* tree-vect-slp-patterns.c (class complex_fms_pattern,
+	complex_fms_pattern::matches, complex_fms_pattern::recognize,
+	complex_fms_pattern::build): New.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* internal-fn.def (COMPLEX_FMA, COMPLEX_FMA_CONJ): New.
+	* optabs.def (cmla_optab, cmla_conj_optab): New.
+	* doc/md.texi: Document them.
+	* tree-vect-slp-patterns.c (vect_match_call_p,
+	class complex_fma_pattern, vect_slp_reset_pattern,
+	complex_fma_pattern::matches, complex_fma_pattern::recognize,
+	complex_fma_pattern::build): New.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* internal-fn.def (COMPLEX_MUL, COMPLEX_MUL_CONJ): New.
+	* optabs.def (cmul_optab, cmul_conj_optab): New.
+	* doc/md.texi: Document them.
+	* tree-vect-slp-patterns.c (vect_match_call_complex_mla,
+	vect_normalize_conj_loc, is_eq_or_top, vect_validate_multiplication,
+	vect_build_combine_node, class complex_mul_pattern,
+	complex_mul_pattern::matches, complex_mul_pattern::recognize,
+	complex_mul_pattern::build): New.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp.c (optimize_load_redistribution_1): New.
+	(optimize_load_redistribution, vect_is_slp_load_node): New.
+	(vect_match_slp_patterns): Use it.
+
+2021-01-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (complex_add_pattern::build):
+	Elide nodes.
+
+2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.c (main): Create an offload image only in
+	64-bit configurations.
+
+2021-01-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98667
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Issue an error for -fcf-protection with CF_BRANCH when compiling
+	for 32-bit non-TARGET_CMOV targets.
+
+2021-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98671
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p):
+	Remove declaration and initialization of shadow variable "ret".
+	(ix86_option_override_internal): Remove delcaration of
+	shadow variable "i".  Redeclare shadowed variable to unsigned.
+	* common/config/i386/i386-common.c (pta_size): Redeclare to unsigned.
+	* config/i386/i386-builtins.c (get_builtin_code_for_version):
+	Update for redeclaration.
+	* config/i386/i386.h (pta_size): Ditto.
+
+2021-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98674
+	* tree-data-ref.c (base_supports_access_fn_components_p): New.
+	(initialize_data_dependence_relation): For two bases without
+	possible access fns resort to type size equality when determining
+	shape compatibility.
+
+2021-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h: Replace calls to __builtin_vcge* by
+	<=, >= operators in vcle and vcge intrinsics respectively.
+	* config/arm/arm_neon_builtins.def: Remove entry for
+	vcge and vcgeu.
+
+2021-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98671
+	* config/i386/i386-options.c (ix86_function_specific_save):
+	Remove redundant assignment to opts->x_ix86_branch_cost.
+	* config/i386/i386.c (ix86_prefetch_sse):
+	Rename from x86_prefetch_sse.  Update all uses.
+	* config/i386/i386.h: Update for rename.
+	* config/i386/i386-options.h: Ditto.
+
+2021-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98670
+	* config/i386/sse.md (*sse4_1_zero_extendv8qiv8hi2_3,
+	*sse4_1_zero_extendv4hiv4si2_3, *sse4_1_zero_extendv2siv2di2_3):
+	Use Bm instead of m for non-avx.  Add isa attribute.
+
+2021-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96688
+	* match.pd (~(X >> Y) -> ~X >> Y): New simplification if
+	~X can be simplified.
+
+2021-01-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_model_load_cost): Account for unused
+	IFN_LOAD_LANES results.
+
+2021-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<su>xtl<mode>):
+	Define.
+	(aarch64_xtn<mode>): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (sxtl, uxtl, xtn):
+	Define
+	builtins.
+	* config/aarch64/arm_neon.h (vmovl_s8): Reimplement using
+	builtin.
+	(vmovl_s16): Likewise.
+	(vmovl_s32): Likewise.
+	(vmovl_u8): Likewise.
+	(vmovl_u16): Likewise.
+	(vmovl_u32): Likewise.
+	(vmovn_s16): Likewise.
+	(vmovn_s32): Likewise.
+	(vmovn_s64): Likewise.
+	(vmovn_u16): Likewise.
+	(vmovn_u32): Likewise.
+	(vmovn_u64): Likewise.
+
+2021-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<su>qxtn2<mode>_le):
+	Define.
+	(aarch64_<su>qxtn2<mode>_be): Likewise.
+	(aarch64_<su>qxtn2<mode>): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (sqxtn2, uqxtn2):
+	Define builtins.
+	* config/aarch64/iterators.md (SAT_TRUNC): Define code_iterator.
+	(su): Handle ss_truncate and us_truncate.
+	* config/aarch64/arm_neon.h (vqmovn_high_s16): Reimplement using
+	builtin.
+	(vqmovn_high_s32): Likewise.
+	(vqmovn_high_s64): Likewise.
+	(vqmovn_high_u16): Likewise.
+	(vqmovn_high_u32): Likewise.
+	(vqmovn_high_u64): Likewise.
+
+2021-01-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_xtn2<mode>_le):
+	Define.
+	(aarch64_xtn2<mode>_be): Likewise.
+	(aarch64_xtn2<mode>): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (xtn2): Define
+	builtins.
+	* config/aarch64/arm_neon.h (vmovn_high_s16): Reimplement using
+	builtins.
+	(vmovn_high_s32): Likewise.
+	(vmovn_high_s64): Likewise.
+	(vmovn_high_u16): Likewise.
+	(vmovn_high_u32): Likewise.
+	(vmovn_high_u64): Likewise.
+
 2021-01-13  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/or1k.h (ASM_PREFERRED_EH_DATA_FORMAT): New macro.
