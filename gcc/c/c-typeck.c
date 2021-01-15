@@ -13979,7 +13979,9 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
 	      size = save_expr (size);
 	      tree index_type = build_index_type (size);
-	      tree atype = build_array_type (type, index_type);
+	      tree atype = build_array_type (TYPE_MAIN_VARIANT (type),
+					     index_type);
+	      atype = c_build_qualified_type (atype, TYPE_QUALS (type));
 	      tree ptype = build_pointer_type (type);
 	      if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		t = build_fold_addr_expr (t);
