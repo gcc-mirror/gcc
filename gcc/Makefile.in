@@ -1024,6 +1024,13 @@ PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
 CONTEXT_H = context.h
 GENSUPPORT_H = gensupport.h read-md.h optabs.def
+RTL_SSA_H = $(PRETTY_PRINT_H) insn-config.h splay-tree-utils.h \
+	    $(RECOG_H) $(REGS_H) function-abi.h obstack-utils.h \
+	    mux-utils.h rtlanal.h memmodel.h $(EMIT_RTL_H) \
+	    rtl-ssa/accesses.h rtl-ssa/insns.h rtl-ssa/blocks.h \
+	    rtl-ssa/changes.h rtl-ssa/functions.h rtl-ssa/is-a.inl \
+	    rtl-ssa/access-utils.h rtl-ssa/insn-utils.h rtl-ssa/movement.h \
+	    rtl-ssa/change-utils.h rtl-ssa/member-fns.inl
 
 #
 # Now figure out from those variables how to compile and link.

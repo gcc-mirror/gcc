@@ -622,6 +622,8 @@ public:
 
   void dump () const;
 
+  json::array *to_json () const;
+
 private:
   struct per_node_data
   {
@@ -663,6 +665,8 @@ public:
   {
     return m_scc.get_scc_id (snode.m_index);
   }
+
+  json::object *to_json () const;
 
 private:
   class key_t

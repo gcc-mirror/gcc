@@ -3092,6 +3092,10 @@ Check line counts in @command{gcov} tests.
 @item run-gcov [branches] [calls] @{ @var{opts} @var{sourcefile} @}
 Check branch and/or call counts, in addition to line counts, in
 @command{gcov} tests.
+
+@item run-gcov-pytest @{ @var{sourcefile} @var{pytest_file} @}
+Check output of @command{gcov} intermediate format with a pytest
+script.
 @end table
 
 @subsubsection Clean up generated test files

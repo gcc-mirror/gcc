@@ -1,3 +1,54 @@
+2021-01-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/deque/debug/98466.cc: Make it pre-C++11
+	compliant.
+
+2021-01-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/30_threads/future/members/poll.cc: Calibrate
+	iteration count.
+
+2021-01-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/98466
+	* include/bits/hashtable_policy.h (_Node_iterator_base()): Set _M_cur to nullptr.
+	(_Node_iterator()): Make default.
+	(_Node_const_iterator()): Make default.
+	* include/debug/macros.h (__glibcxx_check_erae_range_after): Add _M_singular
+	iterator checks.
+	* include/debug/safe_iterator.h
+	(_GLIBCXX_DEBUG_VERIFY_OPERANDS): Accept if both iterator are value initialized.
+	* include/debug/safe_local_iterator.h (_GLIBCXX_DEBUG_VERIFY_OPERANDS):
+	Likewise.
+	* include/debug/safe_iterator.tcc (_Safe_iterator<>::_M_valid_range): Add
+	_M_singular checks on input iterators.
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_can_compare): Remove _M_singular
+	checks.
+	* testsuite/23_containers/deque/debug/98466.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/98466.cc: New test.
+
+2021-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98471
+	* include/bits/fs_path.h (__throw_conversion_error): New
+	function to throw or abort on character conversion errors.
+	(__wstr_from_utf8): Move definition after filesystem_error has
+	been defined. Use __throw_conversion_error.
+	(path::_S_convert<_EcharT>): Use __throw_conversion_error.
+	(path::_S_str_convert<_CharT, _Traits, _Allocator>): Likewise.
+	(path::u8string): Likewise.
+
+2021-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier: Update copyright years. Fix whitespace.
+	* include/std/version: Fix whitespace.
+	* testsuite/30_threads/barrier/1.cc: Update copyright years.
+	* testsuite/30_threads/barrier/2.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_drop.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_wait.cc: Likewise.
+	* testsuite/30_threads/barrier/completion.cc: Likewise.
+
 2021-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/user.cfg.in (INPUT): Remove include/debug/array.

@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++11 } }
+// { dg-do run }
 
 #include <debug/deque>
 #include <testsuite_hooks.h>
@@ -24,10 +24,12 @@
 
 void test01()
 {
-  __gnu_debug::deque<int>::iterator it{};
+  typedef typename __gnu_debug::deque<int>::iterator It;
+  It it = It();
   VERIFY( it == it );
 
-  __gnu_debug::deque<int>::const_iterator cit{};
+  typedef typename __gnu_debug::deque<int>::const_iterator Cit;
+  Cit cit = Cit();
   VERIFY( cit == cit );
 }
 

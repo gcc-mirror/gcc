@@ -1,3 +1,32 @@
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.h (gfc_resolve_substring): Add prototype.
+	* primary.c (match_string_constant): Simplify substrings with
+	constant starting and ending points.
+	* resolve.c: Rename resolve_substring to gfc_resolve_substring.
+	(gfc_resolve_ref): Use renamed function gfc_resolve_substring.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
 2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93794

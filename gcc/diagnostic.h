@@ -66,6 +66,22 @@ enum diagnostic_path_format
   DPF_INLINE_EVENTS
 };
 
+/* An enum for capturing values of GCC_EXTRA_DIAGNOSTIC_OUTPUT,
+   and for -fdiagnostics-parseable-fixits.  */
+
+enum diagnostics_extra_output_kind
+{
+  /* No extra output, or an unrecognized value.  */
+  EXTRA_DIAGNOSTIC_OUTPUT_none,
+
+  /* Emit fix-it hints using the "fixits-v1" format, equivalent to
+     -fdiagnostics-parseable-fixits.  */
+  EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1,
+
+  /* Emit fix-it hints using the "fixits-v2" format.  */
+  EXTRA_DIAGNOSTIC_OUTPUT_fixits_v2
+};
+
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
    list in diagnostic.def.  */
@@ -290,9 +306,10 @@ struct diagnostic_context
      source output.  */
   bool show_ruler_p;
 
-  /* If true, print fixits in machine-parseable form after the
-     rest of the diagnostic.  */
-  bool parseable_fixits_p;
+  /* Used to specify additional diagnostic output to be emitted after the
+     rest of the diagnostic.  This is for implementing
+     -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */
+  enum diagnostics_extra_output_kind extra_output_kind;
 
   /* What units to use when outputting the column number.  */
   enum diagnostics_column_unit column_unit;

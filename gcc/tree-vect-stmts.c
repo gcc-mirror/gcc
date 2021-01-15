@@ -2378,19 +2378,26 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   else
     {
       int cmp = compare_step_with_zero (vinfo, stmt_info);
-      if (cmp < 0)
-	*memory_access_type = get_negative_load_store_type
-	  (vinfo, stmt_info, vectype, vls_type, ncopies);
-      else if (cmp == 0)
+      if (cmp == 0)
 	{
 	  gcc_assert (vls_type == VLS_LOAD);
 	  *memory_access_type = VMAT_INVARIANT;
+	  /* Invariant accesses perform only component accesses, alignment
+	     is irrelevant for them.  */
+	  *alignment_support_scheme = dr_unaligned_supported;
 	}
       else
-	*memory_access_type = VMAT_CONTIGUOUS;
-      *alignment_support_scheme
-	= vect_supportable_dr_alignment (vinfo,
-					 STMT_VINFO_DR_INFO (stmt_info), false);
+	{
+	  if (cmp < 0)
+	    *memory_access_type = get_negative_load_store_type
+	       (vinfo, stmt_info, vectype, vls_type, ncopies);
+	  else
+	    *memory_access_type = VMAT_CONTIGUOUS;
+	  *alignment_support_scheme
+	    = vect_supportable_dr_alignment (vinfo,
+					     STMT_VINFO_DR_INFO (stmt_info),
+					     false);
+	}
     }
 
   if ((*memory_access_type == VMAT_ELEMENTWISE

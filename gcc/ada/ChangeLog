@@ -1,3 +1,9 @@
+2021-01-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR ada/98595
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <riscv*-*-rtems*>: Use
+	wraplf version of Aux_Long_Long_Float.
+
 2021-01-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.

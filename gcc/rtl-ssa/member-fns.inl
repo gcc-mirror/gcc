@@ -883,7 +883,7 @@ function_info::mem_defs () const
 }
 
 inline iterator_range<def_iterator>
-function_info::ref_defs (unsigned int regno) const
+function_info::reg_defs (unsigned int regno) const
 {
   return { m_defs[regno + 1], nullptr };
 }

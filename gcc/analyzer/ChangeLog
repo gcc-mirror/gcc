@@ -1,3 +1,25 @@
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (strongly_connected_components::to_json): New.
+	(worklist::to_json): New.
+	(exploded_graph::to_json): JSON-ify the worklist.
+	* exploded-graph.h (strongly_connected_components::to_json): New
+	decl.
+	(worklist::to_json): New decl.
+	* store.cc (store::to_json): Fix comment.
+	* supergraph.cc (supernode::to_json): Fix reference to
+	"returning_call" in comment.  Add optional "fun" to JSON.
+	(edge_kind_to_string): New.
+	(superedge::to_json): Add "kind" to JSON.
+
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98679
+	* analyzer.h (region_offset::operator==): Make const.
+	* pending-diagnostic.h (pending_diagnostic::equal_p): Likewise.
+	* store.h (binding_cluster::for_each_value): Likewise.
+	(binding_cluster::for_each_binding): Likewise.
+
 2021-01-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98628

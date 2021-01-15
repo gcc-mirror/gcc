@@ -2522,7 +2522,9 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_parseable_fixits:
-      dc->parseable_fixits_p = value;
+      dc->extra_output_kind = (value
+			       ? EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1
+			       : EXTRA_DIAGNOSTIC_OUTPUT_none);
       break;
 
     case OPT_fdiagnostics_column_unit_:

@@ -845,25 +845,6 @@
 ; generic vectorizer code.  It ends up creating a V2DI constructor with
 ; SImode elements.
 
-(define_insn "vashl<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
-	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w,w")
-		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dm")))]
-  "TARGET_NEON"
-  {
-    switch (which_alternative)
-      {
-        case 0: return "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2";
-        case 1: return neon_output_shift_immediate ("vshl", 'i', &operands[2],
-                         			    <MODE>mode,
-						    VALID_NEON_QREG_MODE (<MODE>mode),
-						    true);
-        default: gcc_unreachable ();
-      }
-  }
-  [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
-)
-
 (define_insn "vashr<mode>3_imm"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
@@ -917,40 +898,6 @@
   "vshl.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_shift_reg<q>")]
 )
-
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vashr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vlshr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vlshr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
 
 ;; 64-bit shifts
 

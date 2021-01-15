@@ -1,5 +1,5 @@
 // PR 98372 ICE due to incorrect type compare
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++14 } }
 
 template <typename _Tp> using remove_pointer_t = typename _Tp ::type;
 template <bool> struct enable_if;

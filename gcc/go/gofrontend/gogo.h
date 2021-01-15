@@ -393,6 +393,10 @@ class Gogo
   set_c_header(const std::string& s)
   { this->c_header_ = s; }
 
+  // Read an embedcfg file.
+  void
+  read_embedcfg(const char* filename);
+
   // Return whether to check for division by zero in binary operations.
   bool
   check_divide_by_zero() const
