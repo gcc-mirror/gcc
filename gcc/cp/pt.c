@@ -18136,7 +18136,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 				 == tsubst (scope, args, complain, in_decl));
 	    /* We still need to push the bindings so that we can look up
 	       this name later.  */
-	    push_using_decl_bindings (decl);
+	    push_using_decl_bindings (DECL_NAME (decl),
+				      USING_DECL_DECLS (decl));
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
