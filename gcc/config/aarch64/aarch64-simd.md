@@ -1384,15 +1384,16 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mla_elt_merge<mode>"
-  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+(define_insn "aarch64_mla_n<mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(plus:VDQHS
-	  (mult:VDQHS (vec_duplicate:VDQHS
-		  (match_operand:<VEL> 1 "register_operand" "<h_con>"))
-		(match_operand:VDQHS 2 "register_operand" "w"))
-	  (match_operand:VDQHS 3 "register_operand" "0")))]
+	  (mult:VDQHS
+	    (vec_duplicate:VDQHS
+	      (match_operand:<VEL> 3 "register_operand" "<h_con>"))
+	    (match_operand:VDQHS 2 "register_operand" "w"))
+	  (match_operand:VDQHS 1 "register_operand" "0")))]
  "TARGET_SIMD"
- "mla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+ "mla\t%0.<Vtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 

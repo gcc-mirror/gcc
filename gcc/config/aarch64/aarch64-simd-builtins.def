@@ -180,6 +180,8 @@
 
   /* Implemented by aarch64_mla<mode>.  */
   BUILTIN_VDQ_BHSI (TERNOP, mla, 0, NONE)
+  /* Implemented by aarch64_mla_n<mode>.  */
+  BUILTIN_VDQHS (TERNOP, mla_n, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
