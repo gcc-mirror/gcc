@@ -3162,7 +3162,7 @@ package body Osint is
    -- Write_With_Check --
    ----------------------
 
-   procedure Write_With_Check (A  : Address; N  : Integer) is
+   procedure Write_With_Check (A : Address; N : Integer) is
       Ignore : Boolean;
    begin
       if N = Write (Output_FD, A, N) then
