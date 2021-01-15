@@ -1755,7 +1755,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
-(define_insn "*aarch64_<su>mlsl_hi<mode>"
+(define_insn "aarch64_<su>mlsl_hi<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (minus:<VWIDE>
           (match_operand:<VWIDE> 1 "register_operand" "0")
@@ -1769,6 +1769,20 @@
   "TARGET_SIMD"
   "<su>mlsl2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vtype>"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
+)
+
+(define_expand "aarch64_<su>mlsl_hi<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (match_operand:<VWIDE> 1 "register_operand")
+   (ANY_EXTEND:<VWIDE>(match_operand:VQW 2 "register_operand"))
+   (match_operand:VQW 3 "register_operand")]
+  "TARGET_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+  emit_insn (gen_aarch64_<su>mlsl_hi<mode>_insn (operands[0], operands[1],
+						 operands[2], p, operands[3]));
+  DONE;
+}
 )
 
 (define_insn "*aarch64_<su>mlal<mode>"
@@ -1785,7 +1799,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
-(define_insn "*aarch64_<su>mlsl<mode>"
+(define_insn "aarch64_<su>mlsl<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (minus:<VWIDE>
           (match_operand:<VWIDE> 1 "register_operand" "0")
