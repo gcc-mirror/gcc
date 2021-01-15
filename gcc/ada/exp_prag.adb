@@ -3139,7 +3139,7 @@ package body Exp_Prag is
    begin
       --  When applied to a variable, the default initialization must not be
       --  done. As it is already done when the pragma is found, we just get rid
-      --  of the call the initialization procedure which followed the object
+      --  of the call to the initialization procedure which followed the object
       --  declaration. The call is inserted after the declaration, but validity
       --  checks may also have been inserted and thus the initialization call
       --  does not necessarily appear immediately after the object declaration.

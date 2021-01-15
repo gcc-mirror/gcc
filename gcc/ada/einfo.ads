@@ -2259,8 +2259,8 @@ package Einfo is
 
 --    Initialization_Statements (Node28)
 --       Defined in constants and variables. For a composite object initialized
---       initialized with an aggregate that has been converted to a sequence
---       of assignments, points to a block statement containing the
+--       with an aggregate that has been converted to a sequence of
+--       assignments, points to a compound statement containing the
 --       assignments.
 
 --    Inner_Instances (Elist23)

@@ -11329,7 +11329,7 @@ package body Exp_Util is
 
       Init_Call : Node_Id;
 
-   --  Start of processing for Find_Init_Call
+   --  Start of processing for Remove_Init_Call
 
    begin
       if Present (Initialization_Statements (Var)) then
@@ -11383,6 +11383,7 @@ package body Exp_Util is
       if Present (Init_Call) then
          Remove (Init_Call);
       end if;
+
       return Init_Call;
    end Remove_Init_Call;
 
