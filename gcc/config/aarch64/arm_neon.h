@@ -7840,48 +7840,32 @@ __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_s16 (int16x4_t __a, int16x4_t __b, int16_t __c)
 {
-  int16x4_t __result;
-  __asm__ ("mls %0.4h, %2.4h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_mls_nv4hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_s32 (int32x2_t __a, int32x2_t __b, int32_t __c)
 {
-  int32x2_t __result;
-  __asm__ ("mls %0.2s, %2.2s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_mls_nv2si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_u16 (uint16x4_t __a, uint16x4_t __b, uint16_t __c)
 {
-  uint16x4_t __result;
-  __asm__ ("mls %0.4h, %2.4h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return (uint16x4_t) __builtin_aarch64_mls_nv4hi ((int16x4_t) __a,
+                                                   (int16x4_t) __b,
+                                                   (int16_t) __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_u32 (uint32x2_t __a, uint32x2_t __b, uint32_t __c)
 {
-  uint32x2_t __result;
-  __asm__ ("mls %0.2s, %2.2s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return (uint32x2_t) __builtin_aarch64_mls_nv2si ((int32x2_t) __a,
+                                                   (int32x2_t) __b,
+                                                   (int32_t) __c);
 }
 
 __extension__ extern __inline int8x8_t
@@ -8353,48 +8337,32 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_s16 (int16x8_t __a, int16x8_t __b, int16_t __c)
 {
-  int16x8_t __result;
-  __asm__ ("mls %0.8h, %2.8h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_mls_nv8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_s32 (int32x4_t __a, int32x4_t __b, int32_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("mls %0.4s, %2.4s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_mls_nv4si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_u16 (uint16x8_t __a, uint16x8_t __b, uint16_t __c)
 {
-  uint16x8_t __result;
-  __asm__ ("mls %0.8h, %2.8h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return (uint16x8_t) __builtin_aarch64_mls_nv8hi ((int16x8_t) __a,
+                                                   (int16x8_t) __b,
+                                                   (int16_t) __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_u32 (uint32x4_t __a, uint32x4_t __b, uint32_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("mls %0.4s, %2.4s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return (uint32x4_t) __builtin_aarch64_mls_nv4si ((int32x4_t) __a,
+                                                   (int32x4_t) __b,
+                                                   (int32_t) __c);
 }
 
 __extension__ extern __inline int8x16_t
