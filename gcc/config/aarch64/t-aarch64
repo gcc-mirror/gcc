@@ -158,6 +158,12 @@ aarch64-bti-insert.o: $(srcdir)/config/aarch64/aarch64-bti-insert.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-bti-insert.c
 
+aarch64-cc-fusion.o: $(srcdir)/config/aarch64/aarch64-cc-fusion.cc \
+    $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(BACKEND_H) $(RTL_H) $(DF_H) \
+    $(RTL_SSA_H) tree-pass.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/aarch64/aarch64-cc-fusion.cc
+
 comma=,
 MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
 MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
