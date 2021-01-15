@@ -1463,9 +1463,9 @@ Alphabetical List of All Switches
 
 :switch:`-gnatd`
   Specify debug options for the compiler. The string of characters after
-  the :switch:`-gnatd` specify the specific debug options. The possible
-  characters are 0-9, a-z, A-Z, optionally preceded by a dot. See
-  compiler source file :file:`debug.adb` for details of the implemented
+  the :switch:`-gnatd` specifies the specific debug options. The possible
+  characters are 0-9, a-z, A-Z, optionally preceded by a dot or underscore.
+  See compiler source file :file:`debug.adb` for details of the implemented
   debug options. Certain debug options are relevant to applications
   programmers, and these are documented at appropriate points in this
   users guide.
