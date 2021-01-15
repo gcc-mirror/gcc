@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <alloca.h>
 #include "analyzer-decls.h"
 
 struct foo
@@ -140,8 +139,8 @@ void test_11 (void)
 
 void test_12 (void)
 {
-  void *p = alloca (256);
-  void *q = alloca (256);
+  void *p = __builtin_alloca (256);
+  void *q = __builtin_alloca (256);
 
   /* alloca results should be unique.  */
   __analyzer_eval (p == q); /* { dg-warning "FALSE" } */

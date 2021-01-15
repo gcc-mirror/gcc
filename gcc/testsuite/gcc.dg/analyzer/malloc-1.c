@@ -1,6 +1,5 @@
 /* { dg-require-effective-target alloca } */
 
-#include <alloca.h>
 #include <stdlib.h>
 
 extern int foo (void);
@@ -273,7 +272,7 @@ int *test_23a (int n)
 
 int test_24 (void)
 {
-  void *ptr = alloca (sizeof (int)); /* { dg-message "memory is allocated on the stack here" } */
+  void *ptr = __builtin_alloca (sizeof (int)); /* { dg-message "memory is allocated on the stack here" } */
   free (ptr); /* { dg-warning "'free' of memory allocated on the stack by 'alloca' \\('ptr'\\) will corrupt the heap \\\[CWE-590\\\]" } */
 }
 
