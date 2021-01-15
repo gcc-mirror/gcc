@@ -1712,6 +1712,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
   last_bb_discriminator = bb_discriminator = 0;
+  force_source_line = false;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
