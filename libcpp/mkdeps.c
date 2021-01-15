@@ -156,7 +156,6 @@ munge (const char *str, const char *trail = NULL, ...)
 	      /* FALLTHROUGH  */
 
 	    case '#':
-	    case ':':
 	      buf[dst++] = '\\';
 	      /* FALLTHROUGH  */
 
