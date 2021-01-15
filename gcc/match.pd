@@ -3993,6 +3993,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (single_use (@2))
     (cmp @0 @1)))))
 
+/* Simplify (x < 0) ^ (y < 0) to (x ^ y) < 0 and
+   (x >= 0) ^ (y >= 0) to (x ^ y) < 0.  */
+(for cmp (lt ge)
+ (simplify
+  (bit_xor (cmp:s @0 integer_zerop) (cmp:s @1 integer_zerop))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& !TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+    (lt (bit_xor @0 @1) { build_zero_cst (TREE_TYPE (@0)); }))))
+/* Simplify (x < 0) ^ (y >= 0) to (x ^ y) >= 0 and
+   (x >= 0) ^ (y < 0) to (x ^ y) >= 0.  */
+(simplify
+ (bit_xor:c (lt:s @0 integer_zerop) (ge:s @1 integer_zerop))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (ge (bit_xor @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
+
 /* Transform comparisons of the form X * C1 CMP 0 to X CMP 0 in the
    signed arithmetic case.  That form is created by the compiler
    often enough for folding it to be of value.  One example is in
