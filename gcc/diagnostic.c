@@ -2188,7 +2188,12 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
   where.m_finish = linemap_position_for_column (line_table, 17);
   richloc.add_fixit_replace (where, "color");
 
-  const int buf_len = strlen (fname) + 100;
+  /* Escape fname.  */
+  pretty_printer tmp_pp;
+  print_escaped_string (&tmp_pp, fname);
+  char *escaped_fname = xstrdup (pp_formatted_text (&tmp_pp));
+
+  const int buf_len = strlen (escaped_fname) + 100;
   char *const expected = XNEWVEC (char, buf_len);
 
   {
@@ -2196,7 +2201,7 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
     print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_BYTE,
 			    tabstop);
     snprintf (expected, buf_len,
-	      "fix-it:\"%s\":{1:12-1:18}:\"color\"\n", fname);
+	      "fix-it:%s:{1:12-1:18}:\"color\"\n", escaped_fname);
     ASSERT_STREQ (expected, pp_formatted_text (&pp));
   }
   {
@@ -2204,11 +2209,12 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
     print_parseable_fixits (&pp, &richloc, DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
 			    tabstop);
     snprintf (expected, buf_len,
-	      "fix-it:\"%s\":{1:10-1:16}:\"color\"\n", fname);
+	      "fix-it:%s:{1:10-1:16}:\"color\"\n", escaped_fname);
     ASSERT_STREQ (expected, pp_formatted_text (&pp));
   }
 
   XDELETEVEC (expected);
+  free (escaped_fname);
 }
 
 /* Verify that
