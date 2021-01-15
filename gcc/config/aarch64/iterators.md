@@ -712,6 +712,10 @@
     UNSPEC_FCMLA90	; Used in aarch64-simd.md.
     UNSPEC_FCMLA180	; Used in aarch64-simd.md.
     UNSPEC_FCMLA270	; Used in aarch64-simd.md.
+    UNSPEC_FCMUL	; Used in aarch64-simd.md.
+    UNSPEC_FCMUL_CONJ	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA_CONJ	; Used in aarch64-simd.md.
+    UNSPEC_FCMLA180_CONJ	; Used in aarch64-simd.md.
     UNSPEC_ASRD		; Used in aarch64-sve.md.
     UNSPEC_ADCLB	; Used in aarch64-sve2.md.
     UNSPEC_ADCLT	; Used in aarch64-sve2.md.
@@ -730,6 +734,10 @@
     UNSPEC_CMLA180	; Used in aarch64-sve2.md.
     UNSPEC_CMLA270	; Used in aarch64-sve2.md.
     UNSPEC_CMLA90	; Used in aarch64-sve2.md.
+    UNSPEC_CMLA_CONJ	; Used in aarch64-sve2.md.
+    UNSPEC_CMLA180_CONJ	; Used in aarch64-sve2.md.
+    UNSPEC_CMUL		; Used in aarch64-sve2.md.
+    UNSPEC_CMUL_CONJ	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTLT	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTNT	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTX	; Used in aarch64-sve2.md.
@@ -1291,7 +1299,7 @@
 
 ;; Widened mode register suffixes for VD_BHSI/VQW/VQ_HSF.
 (define_mode_attr Vwtype [(V8QI "8h") (V4HI "4s")
-			  (V2SI "2d") (V16QI "8h") 
+			  (V2SI "2d") (V16QI "8h")
 			  (V8HI "4s") (V4SI "2d")
 			  (V8HF "4s") (V4SF "2d")])
 
@@ -1313,7 +1321,7 @@
 
 ;; Widened mode register suffixes for VDW/VQW.
 (define_mode_attr Vmwtype [(V8QI ".8h") (V4HI ".4s")
-			   (V2SI ".2d") (V16QI ".8h") 
+			   (V2SI ".2d") (V16QI ".8h")
 			   (V8HI ".4s") (V4SI ".2d")
 			   (V4HF ".4s") (V2SF ".2d")
 			   (SI   "")    (HI   "")])
@@ -2611,6 +2619,20 @@
 				    UNSPEC_SQRDCMLAH180
 				    UNSPEC_SQRDCMLAH270])
 
+;; Unlike the normal CMLA instructions these represent the actual operation
+;; to be performed.  They will always need to be expanded into multiple
+;; sequences consisting of CMLA.
+(define_int_iterator SVE2_INT_CMLA_OP [UNSPEC_CMLA
+				       UNSPEC_CMLA_CONJ
+				       UNSPEC_CMLA180
+				       UNSPEC_CMLA180_CONJ])
+
+;; Unlike the normal CMLA instructions these represent the actual operation
+;; to be performed.  They will always need to be expanded into multiple
+;; sequences consisting of CMLA.
+(define_int_iterator SVE2_INT_CMUL_OP [UNSPEC_CMUL
+				       UNSPEC_CMUL_CONJ])
+
 ;; Same as SVE2_INT_CADD but exclude the saturating instructions
 (define_int_iterator SVE2_INT_CADD_OP [UNSPEC_CADD90
 				       UNSPEC_CADD270])
@@ -2724,6 +2746,14 @@
 
 (define_int_iterator BF_MLA [UNSPEC_BFMLALB
 			     UNSPEC_BFMLALT])
+
+(define_int_iterator FCMLA_OP [UNSPEC_FCMLA
+			       UNSPEC_FCMLA180
+			       UNSPEC_FCMLA_CONJ
+			       UNSPEC_FCMLA180_CONJ])
+
+(define_int_iterator FCMUL_OP [UNSPEC_FCMUL
+			       UNSPEC_FCMUL_CONJ])
 
 ;; Iterators for atomic operations.
 
@@ -3435,7 +3465,80 @@
 		      (UNSPEC_COND_FCMLA "0")
 		      (UNSPEC_COND_FCMLA90 "90")
 		      (UNSPEC_COND_FCMLA180 "180")
-		      (UNSPEC_COND_FCMLA270 "270")])
+		      (UNSPEC_COND_FCMLA270 "270")
+		      (UNSPEC_FCMUL "0")
+		      (UNSPEC_FCMUL_CONJ "180")])
+
+;; A conjucate is a negation of the imaginary component
+;; The number in the unspecs are the rotation component of the instruction, e.g
+;; FCMLA180 means use the instruction with #180.
+;; The iterator is used to produce the right name mangling for the function.
+(define_int_attr conj_op [(UNSPEC_FCMLA180 "")
+			  (UNSPEC_FCMLA180_CONJ "_conj")
+			  (UNSPEC_FCMLA "")
+			  (UNSPEC_FCMLA_CONJ "_conj")
+			  (UNSPEC_FCMUL "")
+			  (UNSPEC_FCMUL_CONJ "_conj")
+			  (UNSPEC_CMLA "")
+			  (UNSPEC_CMLA180 "")
+			  (UNSPEC_CMLA180_CONJ "_conj")
+			  (UNSPEC_CMLA_CONJ "_conj")
+			  (UNSPEC_CMUL "")
+			  (UNSPEC_CMUL_CONJ "_conj")])
+
+;; The complex operations when performed on a real complex number require two
+;; instructions to perform the operation. e.g. complex multiplication requires
+;; two FCMUL with a particular rotation value.
+;;
+;; These values can be looked up in rotsplit1 and rotsplit2.  as an example
+;; FCMUL needs the first instruction to use #0 and the second #90.
+(define_int_attr rotsplit1 [(UNSPEC_FCMLA "0")
+			    (UNSPEC_FCMLA_CONJ "0")
+			    (UNSPEC_FCMUL "0")
+			    (UNSPEC_FCMUL_CONJ "0")
+			    (UNSPEC_FCMLA180 "180")
+			    (UNSPEC_FCMLA180_CONJ "180")])
+
+(define_int_attr rotsplit2 [(UNSPEC_FCMLA "90")
+			    (UNSPEC_FCMLA_CONJ "270")
+			    (UNSPEC_FCMUL "90")
+			    (UNSPEC_FCMUL_CONJ "270")
+			    (UNSPEC_FCMLA180 "270")
+			    (UNSPEC_FCMLA180_CONJ "90")])
+
+;; SVE has slightly different namings from NEON so we have to split these
+;; iterators.
+(define_int_attr sve_rot1 [(UNSPEC_FCMLA "")
+			   (UNSPEC_FCMLA_CONJ "")
+			   (UNSPEC_FCMUL "")
+			   (UNSPEC_FCMUL_CONJ "")
+			   (UNSPEC_FCMLA180 "180")
+			   (UNSPEC_FCMLA180_CONJ "180")
+			   (UNSPEC_CMLA "")
+			   (UNSPEC_CMLA_CONJ "")
+			   (UNSPEC_CMUL "")
+			   (UNSPEC_CMUL_CONJ "")
+			   (UNSPEC_CMLA180 "180")
+			   (UNSPEC_CMLA180_CONJ "180")])
+
+(define_int_attr sve_rot2 [(UNSPEC_FCMLA "90")
+			   (UNSPEC_FCMLA_CONJ "270")
+			   (UNSPEC_FCMUL "90")
+			   (UNSPEC_FCMUL_CONJ "270")
+			   (UNSPEC_FCMLA180 "270")
+			   (UNSPEC_FCMLA180_CONJ "90")
+			   (UNSPEC_CMLA "90")
+			   (UNSPEC_CMLA_CONJ "270")
+			   (UNSPEC_CMUL "90")
+			   (UNSPEC_CMUL_CONJ "270")
+			   (UNSPEC_CMLA180 "270")
+			   (UNSPEC_CMLA180_CONJ "90")])
+
+
+(define_int_attr fcmac1 [(UNSPEC_FCMLA "a") (UNSPEC_FCMLA_CONJ "a")
+			 (UNSPEC_FCMLA180 "s") (UNSPEC_FCMLA180_CONJ "s")
+			 (UNSPEC_CMLA "a") (UNSPEC_CMLA_CONJ "a")
+			 (UNSPEC_CMLA180 "s") (UNSPEC_CMLA180_CONJ "s")])
 
 (define_int_attr sve_fmla_op [(UNSPEC_COND_FMLA "fmla")
 			      (UNSPEC_COND_FMLS "fmls")
