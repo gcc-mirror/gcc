@@ -1467,6 +1467,10 @@ package body Sem_Attr is
          --  Check that Image_Type is legal as the type of a prefix of 'Image.
          --  Legality depends on the Ada language version.
 
+         ----------------------
+         -- Check_Image_Type --
+         ----------------------
+
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
             --  Image_Type may be empty in case of another error detected,
@@ -1493,7 +1497,7 @@ package body Sem_Attr is
             Set_Etype (N, Str_Typ);
             Check_Image_Type (Etype (P));
 
-            if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
+            if Attr_Id /= Attribute_Img then
                Error_Msg_Ada_2012_Feature ("|Object''Image", Sloc (P));
             end if;
          else
