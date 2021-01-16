@@ -91,6 +91,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->hint);
   gfc_free_expr (c->num_tasks);
   gfc_free_expr (c->priority);
+  gfc_free_expr (c->detach);
   for (i = 0; i < OMP_IF_LAST; i++)
     gfc_free_expr (c->if_exprs[i]);
   gfc_free_expr (c->async_expr);
@@ -446,6 +447,39 @@ cleanup:
   gfc_free_omp_namelist (head);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
+}
+
+/* Match detach(event-handle).  */
+
+static match
+gfc_match_omp_detach (gfc_expr **expr)
+{
+  locus old_loc = gfc_current_locus;
+
+  if (gfc_match ("detach ( ") != MATCH_YES)
+    goto syntax_error;
+
+  if (gfc_match_variable (expr, 0) != MATCH_YES)
+    goto syntax_error;
+
+  if ((*expr)->ts.type != BT_INTEGER || (*expr)->ts.kind != gfc_c_intptr_kind)
+    {
+      gfc_error ("%qs at %L should be of type "
+		 "integer(kind=omp_event_handle_kind)",
+		 (*expr)->symtree->n.sym->name, &(*expr)->where);
+      return MATCH_ERROR;
+    }
+
+  if (gfc_match_char (')') != MATCH_YES)
+    goto syntax_error;
+
+  return MATCH_YES;
+
+syntax_error:
+   gfc_error ("Syntax error in OpenMP detach clause at %C");
+   gfc_current_locus = old_loc;
+   return MATCH_ERROR;
+
 }
 
 /* Match depend(sink : ...) construct a namelist from it.  */
@@ -807,6 +841,7 @@ enum omp_mask1
   OMP_CLAUSE_ATOMIC,  /* OpenMP 5.0.  */
   OMP_CLAUSE_CAPTURE,  /* OpenMP 5.0.  */
   OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -840,7 +875,6 @@ enum omp_mask2
   OMP_CLAUSE_IF_PRESENT,
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
-  OMP_CLAUSE_DETACH,
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1378,6 +1412,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		gfc_current_locus = old_loc;
 	    }
 	  if ((mask & OMP_CLAUSE_DETACH)
+	      && !openacc
+	      && !c->detach
+	      && gfc_match_omp_detach (&c->detach) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_DETACH)
+	      && openacc
 	      && gfc_match ("detach ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
 					   OMP_MAP_DETACH, false,
@@ -2763,7 +2803,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
    | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL | OMP_CLAUSE_MERGEABLE	\
-   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION)
+   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION	\
+   | OMP_CLAUSE_DETACH)
 #define OMP_TASKLOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF		\
@@ -5061,6 +5102,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (n->sym->attr.associate_var)
 		  gfc_error ("ASSOCIATE name %qs in SHARED clause at %L",
 			     n->sym->name, &n->where);
+		if (omp_clauses->detach
+		    && n->sym == omp_clauses->detach->symtree->n.sym)
+		  gfc_error ("DETACH event handle %qs in SHARED clause at %L",
+			     n->sym->name, &n->where);
 	      }
 	    break;
 	  case OMP_LIST_ALIGNED:
@@ -5387,7 +5432,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    default:
 		      break;
 		    }
-
+		if (omp_clauses->detach
+		    && (list == OMP_LIST_PRIVATE
+			|| list == OMP_LIST_FIRSTPRIVATE
+			|| list == OMP_LIST_LASTPRIVATE)
+		    && n->sym == omp_clauses->detach->symtree->n.sym)
+		  gfc_error ("DETACH event handle %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
 		switch (list)
 		  {
 		  case OMP_LIST_REDUCTION_INSCAN:
@@ -5684,6 +5735,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
     }
+  if (!openacc && omp_clauses->mergeable && omp_clauses->detach)
+    gfc_error ("%<DETACH%> clause at %L must not be used together with "
+	       "%<MERGEABLE%> clause", &omp_clauses->detach->where);
 }
 
 
