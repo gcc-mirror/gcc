@@ -440,6 +440,30 @@ public:
     infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get ());
   }
 
+  void visit (HIR::FieldAccessExpr &expr)
+  {
+    auto struct_base
+      = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get ());
+    if (struct_base->get_kind () != TyTy::TypeKind::ADT)
+      {
+	rust_error_at (expr.get_locus (), "expected ADT Type got: [%s]",
+		       struct_base->as_string ().c_str ());
+	return;
+      }
+
+    TyTy::ADTType *adt = (TyTy::ADTType *) struct_base;
+    auto resolved = adt->get_field (expr.get_field_name ());
+    if (resolved == nullptr)
+      {
+	rust_error_at (expr.get_locus (), "unknown field [%s] for type [%s]",
+		       expr.get_field_name ().c_str (),
+		       adt->as_string ().c_str ());
+	return;
+      }
+
+    infered = resolved->get_field_type ();
+  }
+
 private:
   TypeCheckExpr (bool is_final_expr)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),

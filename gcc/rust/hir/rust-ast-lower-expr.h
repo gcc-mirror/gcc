@@ -544,6 +544,25 @@ public:
 			      std::move (outer_attribs), expr.get_locus ());
   }
 
+  void visit (AST::FieldAccessExpr &expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *receiver
+      = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    translated
+      = new HIR::FieldAccessExpr (mapping,
+				  std::unique_ptr<HIR::Expr> (receiver),
+				  expr.get_field_name (),
+				  std::move (outer_attribs), expr.get_locus ());
+  }
+
 private:
   ASTLoweringExpr ()
     : translated (nullptr), translated_array_elems (nullptr), terminated (false)

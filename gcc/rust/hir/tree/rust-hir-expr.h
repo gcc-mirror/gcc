@@ -2370,6 +2370,14 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_receiver_expr ()
+  {
+    rust_assert (receiver != nullptr);
+    return receiver;
+  }
+
+  Identifier get_field_name () const { return field; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

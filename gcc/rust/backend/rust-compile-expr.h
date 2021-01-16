@@ -433,6 +433,31 @@ public:
     translated = CompileExpr::Compile (expr.get_expr_in_parens ().get (), ctx);
   }
 
+  void visit (HIR::FieldAccessExpr &expr)
+  {
+    // resolve the receiver back to ADT type
+    TyTy::TyBase *receiver = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
+      {
+	rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+		       "unresolved type for receiver");
+	return;
+      }
+    rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
+
+    TyTy::ADTType *adt = (TyTy::ADTType *) receiver;
+    size_t index = 0;
+    adt->get_field (expr.get_field_name (), &index);
+
+    Bexpression *struct_ref
+      = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
+
+    translated
+      = ctx->get_backend ()->struct_field_expression (struct_ref, index,
+						      expr.get_locus ());
+  }
+
 private:
   CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 

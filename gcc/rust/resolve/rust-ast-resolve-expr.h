@@ -187,6 +187,11 @@ public:
     ResolveExpr::go (expr.get_expr_in_parens ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::FieldAccessExpr &expr)
+  {
+    ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };

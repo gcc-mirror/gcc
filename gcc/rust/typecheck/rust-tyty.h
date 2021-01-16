@@ -194,12 +194,19 @@ public:
 
   StructFieldType *get_field (size_t index) { return fields.at (index); }
 
-  StructFieldType *get_field (const std::string &lookup)
+  StructFieldType *get_field (const std::string &lookup,
+			      size_t *index = nullptr)
   {
+    size_t i = 0;
     for (auto &field : fields)
       {
 	if (field->get_name ().compare (lookup) == 0)
-	  return field;
+	  {
+	    if (index != nullptr)
+	      *index = i;
+	    return field;
+	  }
+	i++;
       }
     return nullptr;
   }
