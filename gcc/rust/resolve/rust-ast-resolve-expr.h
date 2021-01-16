@@ -40,7 +40,8 @@ public:
     if (expr.is_unit ())
       return;
 
-    gcc_unreachable ();
+    for (auto &elem : expr.get_tuple_elems ())
+      ResolveExpr::go (elem.get (), expr.get_node_id ());
   }
 
   void visit (AST::PathInExpression &expr)

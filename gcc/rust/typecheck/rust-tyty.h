@@ -206,6 +206,9 @@ public:
 
   TyBase *clone () final override;
 
+  std::vector<StructFieldType *> &get_fields () { return fields; }
+  const std::vector<StructFieldType *> &get_fields () const { return fields; }
+
 private:
   std::string identifier;
   std::vector<StructFieldType *> fields;

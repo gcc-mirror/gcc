@@ -238,10 +238,34 @@ public:
 
   void visit (TyTy::ADTType &type) override
   {
-    ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
-    rust_assert (ok);
-    translated = compiled_type;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
+    if (ok)
+      return;
+
+    // create implicit struct
+    std::vector<Backend::Btyped_identifier> fields;
+    for (size_t i = 0; i < type.num_fields (); i++)
+      {
+	TyTy::StructFieldType *field = type.get_field (i);
+	Btype *compiled_field_ty
+	  = TyTyCompile::compile (ctx->get_backend (),
+				  field->get_field_type ());
+
+	Backend::Btyped_identifier f (field->get_name (), compiled_field_ty,
+				      ctx->get_mappings ()->lookup_location (
+					type.get_ty_ref ()));
+	fields.push_back (std::move (f));
+      }
+
+    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *named_struct
+      = ctx->get_backend ()->named_type (type.get_name (), struct_type_record,
+					 ctx->get_mappings ()->lookup_location (
+					   type.get_ty_ref ()));
+
+    ctx->push_type (named_struct);
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
+    translated = named_struct;
   }
 
   void visit (TyTy::ArrayType &type) override

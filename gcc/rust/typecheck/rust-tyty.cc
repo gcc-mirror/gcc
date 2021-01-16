@@ -146,7 +146,8 @@ ADTType::as_string () const
 TyBase *
 ADTType::combine (TyBase *other)
 {
-  return nullptr;
+  ADTRules r (this);
+  return r.combine (other);
 }
 
 TyBase *

@@ -31,13 +31,7 @@ public:
   static void go (AST::Type *type, NodeId parent)
   {
     ResolveType resolver (parent);
-
     type->accept_vis (resolver);
-    if (resolver.resolved_node == UNKNOWN_NODEID)
-      {
-	rust_error_at (resolver.locus, "failed to resolve type %s",
-		       type->as_string ().c_str ());
-      }
   };
 
   void visit (AST::TupleType &tuple)
@@ -48,21 +42,23 @@ public:
 	return;
       }
 
-    // TODO see github #78
-    gcc_unreachable ();
+    for (auto &elem : tuple.get_elems ())
+      ResolveType::go (elem.get (), tuple.get_node_id ());
   }
 
   void visit (AST::TypePath &path)
   {
     // this will need changed to handle mod/crate/use globs and look
     // at the segments in granularity
-    if (resolver->get_type_scope ().lookup (path.as_string (), &resolved_node))
+    if (!resolver->get_type_scope ().lookup (path.as_string (), &resolved_node))
       {
-	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
-	resolver->insert_new_definition (path.get_node_id (),
-					 Definition{path.get_node_id (),
-						    parent});
+	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
+		       path.as_string ().c_str ());
+	return;
       }
+    resolver->insert_resolved_type (path.get_node_id (), resolved_node);
+    resolver->insert_new_definition (path.get_node_id (),
+				     Definition{path.get_node_id (), parent});
   }
 
   void visit (AST::ArrayType &type)

@@ -46,7 +46,29 @@ public:
 	return;
       }
 
-    gcc_unreachable ();
+    TyTy::TyBase *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &tyty))
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "did not resolve type for this TupleExpr");
+	return;
+      }
+
+    Btype *tuple_type = TyTyResolveCompile::compile (ctx, tyty);
+    rust_assert (tuple_type != nullptr);
+
+    // this assumes all fields are in order from type resolution
+    std::vector<Bexpression *> vals;
+    for (auto &elem : expr.get_tuple_elems ())
+      {
+	auto e = CompileExpr::Compile (elem.get (), ctx);
+	vals.push_back (e);
+      }
+
+    translated
+      = ctx->get_backend ()->constructor_expression (tuple_type, vals,
+						     expr.get_locus ());
   }
 
   void visit (HIR::ReturnExpr &expr)

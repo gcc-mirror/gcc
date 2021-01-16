@@ -198,6 +198,16 @@ public:
     return resolved;
   }
 
+  void visit (StructFieldType &type)
+  {
+    TyBase *ty = base->get_field_type ()->combine (type.get_field_type ());
+    if (ty == nullptr)
+      return;
+
+    resolved = new TyTy::StructFieldType (type.get_ref (), type.get_ty_ref (),
+					  type.get_name (), ty);
+  }
+
 private:
   StructFieldType *base;
 };
@@ -385,6 +395,55 @@ public:
 
 private:
   FloatType *base;
+};
+
+class ADTRules : protected BaseRules
+{
+public:
+  ADTRules (ADTType *base) : BaseRules (base), base (base) {}
+
+  TyBase *combine (TyBase *other)
+  {
+    other->accept_vis (*this);
+    return resolved;
+  }
+
+  void visit (ADTType &type)
+  {
+    if (base->num_fields () != type.num_fields ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    if (base->get_name ().compare (type.get_name ()) != 0)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    std::vector<TyTy::StructFieldType *> fields;
+    for (size_t i = 0; i < type.num_fields (); ++i)
+      {
+	TyTy::StructFieldType *base_field = base->get_field (i);
+	TyTy::StructFieldType *other_field = type.get_field (i);
+
+	TyBase *combined = base_field->combine (other_field);
+	if (combined == nullptr)
+	  {
+	    BaseRules::visit (type);
+	    return;
+	  }
+
+	fields.push_back ((TyTy::StructFieldType *) combined);
+      }
+
+    resolved = new TyTy::ADTType (type.get_ref (), type.get_ty_ref (),
+				  type.get_name (), fields);
+  }
+
+private:
+  ADTType *base;
 };
 
 } // namespace TyTy

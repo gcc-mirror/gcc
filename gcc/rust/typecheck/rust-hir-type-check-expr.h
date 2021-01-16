@@ -59,7 +59,25 @@ public:
 	return;
       }
 
-    gcc_unreachable ();
+    size_t index = 0;
+    std::string identifier = "(";
+    std::vector<TyTy::StructFieldType *> fields;
+    for (auto &elem : expr.get_tuple_elems ())
+      {
+	auto field_ty = TypeCheckExpr::Resolve (elem.get ());
+	identifier += field_ty->as_string ();
+	if ((index + 1) < expr.get_tuple_elems ().size ())
+	  identifier += ",";
+
+	auto field_tyty
+	  = new TyTy::StructFieldType (elem->get_mappings ().get_hirid (),
+				       std::to_string (index), field_ty);
+	fields.push_back (field_tyty);
+	index++;
+      }
+    identifier += ")";
+    infered = new TyTy::ADTType (expr.get_mappings ().get_hirid (), identifier,
+				 fields);
   }
 
   void visit (HIR::ReturnExpr &expr)

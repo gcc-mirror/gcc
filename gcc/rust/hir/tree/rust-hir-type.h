@@ -393,6 +393,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
+  const std::vector<std::unique_ptr<Type> > &get_elems () const
+  {
+    return elems;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
