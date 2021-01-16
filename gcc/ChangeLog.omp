@@ -1,3 +1,7 @@
+2021-01-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Check offload attributes only.
+
 2021-01-15  Andrew Stubbs  <ams@codesourcery.com>
 
 	* dwarf2out.cc (add_location_or_const_value_attribute): Set

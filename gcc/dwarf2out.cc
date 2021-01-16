@@ -23802,9 +23802,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		will ignore the function and everything nested within unless
 		we give it a notional code range (the values aren't
 		important, as long as they are valid).  */
-	     if (flag_generate_offload
-		 && lookup_attribute ("omp target entrypoint",
-				      DECL_ATTRIBUTES (decl))
+	     if (lookup_attribute ("omp target entrypoint",
+				   DECL_ATTRIBUTES (decl))
 		 && subr_die->die_parent
 		 && subr_die->die_parent->die_tag == DW_TAG_subprogram
 		 && !get_AT_low_pc (subr_die->die_parent))
