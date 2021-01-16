@@ -1186,34 +1186,6 @@ nios2_custom_check_insns (void)
 	break;
       }
 
-  /* Warn if the user has certain exotic operations that won't get used
-     without -funsafe-math-optimizations.  See expand_builtin () in
-     builtins.c.  */
-  if (!flag_unsafe_math_optimizations)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_UNSAFE_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-funsafe-math-optimizations%> is specified",
-		 N2FPU_NAME (i));
-
-  /* Warn if the user is trying to use -mcustom-fmins et. al, that won't
-     get used without -ffinite-math-only.  See fold_builtin_fmin_fmax ()
-     in builtins.c.  */
-  if (!flag_finite_math_only)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_FINITE_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-ffinite-math-only%> is specified", N2FPU_NAME (i));
-
-  /* Warn if the user is trying to use a custom rounding instruction
-     that won't get used without -fno-math-errno.  See
-     expand_builtin_int_roundingfn_2 () in builtins.c.  */
-  if (flag_errno_math)
-    for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
-      if (N2FPU_ENABLED_P (i) && N2FPU_NO_ERRNO_P (i))
-	warning (0, "switch %<-mcustom-%s%> has no effect unless "
-		 "%<-fno-math-errno%> is specified", N2FPU_NAME (i));
-
   if (errors || custom_code_conflict)
     fatal_error (input_location,
 		 "conflicting use of %<-mcustom%> switches, target attributes, "
