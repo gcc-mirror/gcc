@@ -1,3 +1,9 @@
+2021-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Fixed signed
+	  char arrays. Signed char or uint8_t arrays would cause
+	  crashes unless an element size is specified.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

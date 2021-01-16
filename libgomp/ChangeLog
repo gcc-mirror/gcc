@@ -1,3 +1,10 @@
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70454
+	* configure.tgt: For i?86 and x86_64 determine if -march=i486 needs to
+	be added through preprocessor check on
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+
 2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/65099
