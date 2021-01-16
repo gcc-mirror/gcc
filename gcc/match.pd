@@ -3117,6 +3117,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (op @0 { build_int_cst (TREE_TYPE (@1), low); })))))))
 
 
+/* Simplify (CST << x) & 1 to 0 if CST is even or to x == 0 if it is odd.  */
+(simplify
+ (bit_and (lshift INTEGER_CST@1 @0) integer_onep)
+  (if ((wi::to_wide (@1) & 1) != 0)
+   (convert (eq:boolean_type_node @0 { build_zero_cst (TREE_TYPE (@0)); }))
+   { build_zero_cst (type); }))
+
 /* Simplify ((C << x) & D) != 0 where C and D are power of two constants,
    either to false if D is smaller (unsigned comparison) than C, or to
    x == log2 (D) - log2 (C).  Similarly for right shifts.  */

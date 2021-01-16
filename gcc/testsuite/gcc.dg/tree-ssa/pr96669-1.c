@@ -1,7 +1,7 @@
 /* PR tree-optimization/96669 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-original" } */
-/* { dg-final { scan-tree-dump "return a == 0;" "original" } } */
+/* { dg-final { scan-tree-dump "a == 0" "original" } } */
 /* { dg-final { scan-tree-dump "return 1;" "original" } } */
 /* { dg-final { scan-tree-dump "return c == 3;" "original" } } */
 /* { dg-final { scan-tree-dump "return d != 1;" "original" } } */
