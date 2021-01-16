@@ -1,3 +1,16 @@
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_detach): New.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DETACH.
+	(OMP_TASK_CLAUSE_MASK): Add mask for PRAGMA_OMP_CLAUSE_DETACH.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	Prevent use of detach with mergeable and overriding the data sharing
+	mode of the event handle.
+
 2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

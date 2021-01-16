@@ -3649,6 +3649,22 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->detach)
+    {
+      tree detach;
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, clauses->detach);
+      gfc_add_block_to_block (block, &se.pre);
+      detach = se.expr;
+      gfc_add_block_to_block (block, &se.post);
+
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DETACH);
+      TREE_ADDRESSABLE (detach) = 1;
+      OMP_CLAUSE_DECL (c) = detach;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->hint)
     {
       tree hint;

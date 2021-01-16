@@ -171,6 +171,11 @@ typedef struct omp_alloctrait_t
   omp_uintptr_t value;
 } omp_alloctrait_t;
 
+typedef enum omp_event_handle_t __GOMP_UINTPTR_T_ENUM
+{
+  __omp_event_handle_t_max__ = __UINTPTR_MAX__
+} omp_event_handle_t;
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()
@@ -244,6 +249,8 @@ extern int omp_get_team_num (void) __GOMP_NOTHROW;
 extern int omp_is_initial_device (void) __GOMP_NOTHROW;
 extern int omp_get_initial_device (void) __GOMP_NOTHROW;
 extern int omp_get_max_task_priority (void) __GOMP_NOTHROW;
+
+extern void omp_fulfill_event (omp_event_handle_t) __GOMP_NOTHROW;
 
 extern void *omp_target_alloc (__SIZE_TYPE__, int) __GOMP_NOTHROW;
 extern void omp_target_free (void *, int) __GOMP_NOTHROW;

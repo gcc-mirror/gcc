@@ -605,6 +605,12 @@ omp_get_max_task_priority_ (void)
 }
 
 void
+omp_fulfill_event_ (intptr_t event)
+{
+  omp_fulfill_event ((omp_event_handle_t) event);
+}
+
+void
 omp_set_affinity_format_ (const char *format, size_t format_len)
 {
   gomp_set_affinity_format (format, format_len);

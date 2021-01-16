@@ -6383,6 +6383,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool oacc_gang_seen = false;
+  bool detach_seen = false;
+  bool mergeable_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -7338,6 +7340,36 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	    }
 	  break;
+	case OMP_CLAUSE_DETACH:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (detach_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"too many %qs clauses on a task construct",
+			"detach");
+	      remove = true;
+	      break;
+	    }
+	  else
+	    {
+	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+	      if (!type_dependent_expression_p (t)
+		  && (!INTEGRAL_TYPE_P (type)
+		      || TREE_CODE (type) != ENUMERAL_TYPE
+		      || (DECL_NAME (TYPE_NAME (type))
+			  != get_identifier ("omp_event_handle_t"))))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<detach%> clause event handle "
+			    "has type %qT rather than "
+			    "%<omp_event_handle_t%>",
+			    type);
+		  remove = true;
+		}
+	      detach_seen = true;
+	      cxx_mark_addressable (t);
+	    }
+	  break;
 
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_TO:
@@ -7884,7 +7916,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
@@ -7902,6 +7933,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_NOHOST:
+	  break;
+
+	case OMP_CLAUSE_MERGEABLE:
+	  mergeable_seen = true;
 	  break;
 
 	case OMP_CLAUSE_TILE:
@@ -8141,6 +8176,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
+	case OMP_CLAUSE_DETACH:
+	  if (mergeable_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<detach%> clause must not be used together with "
+			"%<mergeable%> clause");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)
 	    {
@@ -8262,6 +8308,19 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"clauses", omp_clause_printable_decl (t));
 	      remove = true;
 	    }
+	}
+
+      if (detach_seen
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+	  && OMP_CLAUSE_DECL (c) == t)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "the event handle of a %<detach%> clause "
+		    "should not be in a data-sharing clause");
+	  remove = true;
 	}
 
       /* We're interested in the base element, not arrays.  */

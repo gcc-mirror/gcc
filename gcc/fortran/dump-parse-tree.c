@@ -1692,6 +1692,12 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->priority);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->detach)
+    {
+      fputs (" DETACH(", dumpfile);
+      show_expr (omp_clauses->detach);
+      fputc (')', dumpfile);
+    }
   for (i = 0; i < OMP_IF_LAST; i++)
     if (omp_clauses->if_exprs[i])
       {

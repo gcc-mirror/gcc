@@ -1,3 +1,38 @@
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* builtin-types.def
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT): Rename
+	to...
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR):
+	...this.  Add extra argument.
+	* gimplify.c (omp_default_clause): Ensure that event handle is
+	firstprivate in a task region.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_DETACH.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-builtins.def (BUILT_IN_GOMP_TASK): Change function type to
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR.
+	* omp-expand.c (expand_task_call): Add GOMP_TASK_FLAG_DETACH to flags
+	if detach clause specified.  Add detach argument when generating
+	call to GOMP_task.
+	* omp-low.c (scan_sharing_clauses): Setup data environment for detach
+	clause.
+	(finish_taskreg_scan): Move field for variable containing the event
+	handle to the front of the struct.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DETACH.  Fix
+	ordering.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Handle
+	OMP_CLAUSE_DETACH clause.
+	(convert_local_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_DETACH.
+	* tree.c (omp_clause_num_ops): Add entry for OMP_CLAUSE_DETACH.
+	Fix ordering.
+	(omp_clause_code_name): Add entry for OMP_CLAUSE_DETACH.  Fix
+	ordering.
+	(walk_tree_1): Handle OMP_CLAUSE_DETACH.
+
 2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

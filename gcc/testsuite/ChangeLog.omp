@@ -1,3 +1,13 @@
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/task-detach-1.c: New.
+	* g++.dg/gomp/task-detach-1.C: New.
+	* gcc.dg/gomp/task-detach-1.c: New.
+	* gfortran.dg/gomp/task-detach-1.f90: New.
+
 2021-01-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

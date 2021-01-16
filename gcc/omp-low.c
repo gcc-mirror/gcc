@@ -1550,6 +1550,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_DETACH:
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_OPERAND (c, 0), ctx->outer);
 	  break;
@@ -1960,6 +1961,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE_TO:
@@ -2521,6 +2523,9 @@ finish_taskreg_scan (omp_context *ctx)
     {
       location_t loc = gimple_location (ctx->stmt);
       tree *p, vla_fields = NULL_TREE, *q = &vla_fields;
+      tree detach_clause
+	= omp_find_clause (gimple_omp_task_clauses (ctx->stmt),
+			   OMP_CLAUSE_DETACH);
       /* Move VLA fields to the end.  */
       p = &TYPE_FIELDS (ctx->record_type);
       while (*p)
@@ -2585,6 +2590,48 @@ finish_taskreg_scan (omp_context *ctx)
 	      else
 		DECL_CHAIN (f2) = TYPE_FIELDS (ctx->srecord_type);
 	      TYPE_FIELDS (ctx->srecord_type) = f1;
+	    }
+	}
+      if (detach_clause)
+	{
+	  tree c, field;
+
+	  /* Look for a firstprivate clause with the detach event handle.  */
+	  for (c = gimple_omp_taskreg_clauses (ctx->stmt);
+	       c; c = OMP_CLAUSE_CHAIN (c))
+	    {
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
+		continue;
+	      if (maybe_lookup_decl_in_outer_ctx (OMP_CLAUSE_DECL (c), ctx)
+		  == OMP_CLAUSE_DECL (detach_clause))
+		break;
+	    }
+
+	  gcc_assert (c);
+	  field = lookup_field (OMP_CLAUSE_DECL (c), ctx);
+
+	  /* Move field corresponding to the detach clause first.
+	     This is filled by GOMP_task and needs to be in a
+	     specific position.  */
+	  p = &TYPE_FIELDS (ctx->record_type);
+	  while (*p)
+	    if (*p == field)
+	      *p = DECL_CHAIN (*p);
+	    else
+	      p = &DECL_CHAIN (*p);
+	  DECL_CHAIN (field) = TYPE_FIELDS (ctx->record_type);
+	  TYPE_FIELDS (ctx->record_type) = field;
+	  if (ctx->srecord_type)
+	    {
+	      field = lookup_sfield (OMP_CLAUSE_DECL (detach_clause), ctx);
+	      p = &TYPE_FIELDS (ctx->srecord_type);
+	      while (*p)
+		if (*p == field)
+		  *p = DECL_CHAIN (*p);
+		else
+		  p = &DECL_CHAIN (*p);
+	      DECL_CHAIN (field) = TYPE_FIELDS (ctx->srecord_type);
+	      TYPE_FIELDS (ctx->srecord_type) = field;
 	    }
 	}
       layout_type (ctx->record_type);

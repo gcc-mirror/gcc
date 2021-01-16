@@ -1390,6 +1390,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *hint;
   struct gfc_expr *num_tasks;
   struct gfc_expr *priority;
+  struct gfc_expr *detach;
   struct gfc_expr *if_exprs[OMP_IF_LAST];
   enum gfc_omp_sched_kind dist_sched_kind;
   struct gfc_expr *dist_chunk_size;
@@ -3088,6 +3089,7 @@ extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
+extern int gfc_c_intptr_kind;
 extern int gfc_atomic_int_kind;
 extern int gfc_atomic_logical_kind;
 extern int gfc_intio_kind;
