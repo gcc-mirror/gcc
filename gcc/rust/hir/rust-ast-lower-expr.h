@@ -525,6 +525,25 @@ public:
 					 inner_attribs, outer_attribs);
   }
 
+  void visit (AST::GroupedExpr &expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *paren_expr
+      = ASTLoweringExpr::translate (expr.get_expr_in_parens ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::GroupedExpr (mapping, std::unique_ptr<HIR::Expr> (paren_expr),
+			      std::move (inner_attribs),
+			      std::move (outer_attribs), expr.get_locus ());
+  }
+
 private:
   ASTLoweringExpr ()
     : translated (nullptr), translated_array_elems (nullptr), terminated (false)

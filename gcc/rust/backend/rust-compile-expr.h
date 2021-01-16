@@ -428,6 +428,11 @@ public:
 						     struct_expr.get_locus ());
   }
 
+  void visit (HIR::GroupedExpr &expr)
+  {
+    translated = CompileExpr::Compile (expr.get_expr_in_parens ().get (), ctx);
+  }
+
 private:
   CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 

@@ -880,6 +880,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_expr_in_parens ()
+  {
+    rust_assert (expr_in_parens != nullptr);
+    return expr_in_parens;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

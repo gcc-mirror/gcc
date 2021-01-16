@@ -435,6 +435,11 @@ public:
     infered = TypeCheckStructExpr::Resolve (&struct_expr);
   }
 
+  void visit (HIR::GroupedExpr &expr)
+  {
+    infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get ());
+  }
+
 private:
   TypeCheckExpr (bool is_final_expr)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
