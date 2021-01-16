@@ -182,6 +182,11 @@ public:
       });
   }
 
+  void visit (AST::GroupedExpr &expr)
+  {
+    ResolveExpr::go (expr.get_expr_in_parens ().get (), expr.get_node_id ());
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };
