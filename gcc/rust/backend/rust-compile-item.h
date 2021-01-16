@@ -31,9 +31,9 @@ namespace Compile {
 class CompileItem : public HIRCompileBase
 {
 public:
-  static void compile (HIR::Item *item, Context *ctx)
+  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true)
   {
-    CompileItem compiler (ctx);
+    CompileItem compiler (ctx, compile_fns);
     item->accept_vis (compiler);
   }
 
@@ -116,6 +116,9 @@ public:
 
   void visit (HIR::Function &function)
   {
+    if (!compile_fns)
+      return;
+
     // items can be forward compiled which means we may not need to invoke this
     // code
     Bfunction *lookup = nullptr;
@@ -277,7 +280,11 @@ public:
   }
 
 private:
-  CompileItem (Context *ctx) : HIRCompileBase (ctx) {}
+  CompileItem (Context *ctx, bool compile_fns)
+    : HIRCompileBase (ctx), compile_fns (compile_fns)
+  {}
+
+  bool compile_fns;
 };
 
 } // namespace Compile

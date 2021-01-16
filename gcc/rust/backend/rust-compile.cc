@@ -41,8 +41,11 @@ CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
 void
 CompileCrate::go ()
 {
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    CompileItem::compile (it->get (), ctx);
+  for (auto &item : crate.items)
+    CompileItem::compile (item.get (), ctx, false);
+
+  for (auto &item : crate.items)
+    CompileItem::compile (item.get (), ctx, true);
 }
 
 // rust-compile-block.h
