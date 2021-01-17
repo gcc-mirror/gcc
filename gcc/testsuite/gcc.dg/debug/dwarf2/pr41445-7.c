@@ -3,6 +3,7 @@
    gets correct locus even when preprocessing separately.  */
 /* { dg-do compile } */
 /* { dg-options "-save-temps -gdwarf-5 -O0 -dA -fno-merge-debug-strings" } */
+/* { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } } */
 
 #define A(x) vari x
 #define vari(x)
