@@ -1340,18 +1340,23 @@ c_pretty_printer::primary_expression (tree e)
       if (SSA_NAME_VAR (e))
 	{
 	  tree var = SSA_NAME_VAR (e);
-	  const char *name = IDENTIFIER_POINTER (SSA_NAME_IDENTIFIER (e));
-	  const char *dot;
-	  if (DECL_ARTIFICIAL (var) && (dot = strchr (name, '.')))
+	  if (tree id = SSA_NAME_IDENTIFIER (e))
 	    {
-	      /* Print the name without the . suffix (such as in VLAs).
-		 Use pp_c_identifier so that it can be converted into
-		 the appropriate encoding.  */
-	      size_t size = dot - name;
-	      char *ident = XALLOCAVEC (char, size + 1);
-	      memcpy (ident, name, size);
-	      ident[size] = '\0';
-	      pp_c_identifier (this, ident);
+	      const char *name = IDENTIFIER_POINTER (id);
+	      const char *dot;
+	      if (DECL_ARTIFICIAL (var) && (dot = strchr (name, '.')))
+		{
+		  /* Print the name without the . suffix (such as in VLAs).
+		     Use pp_c_identifier so that it can be converted into
+		     the appropriate encoding.  */
+		  size_t size = dot - name;
+		  char *ident = XALLOCAVEC (char, size + 1);
+		  memcpy (ident, name, size);
+		  ident[size] = '\0';
+		  pp_c_identifier (this, ident);
+		}
+	      else
+		primary_expression (var);
 	    }
 	  else
 	    primary_expression (var);
