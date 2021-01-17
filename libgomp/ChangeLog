@@ -1,3 +1,48 @@
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* fortran.c (omp_fulfill_event_): New.
+	* libgomp.h (struct gomp_task): Add detach and completion_sem fields.
+	(struct gomp_team): Add task_detach_queue and task_detach_count
+	fields.
+	* libgomp.map (OMP_5.0.1): Add omp_fulfill_event and omp_fulfill_event_.
+	* libgomp_g.h (GOMP_task): Add extra argument.
+	* omp.h.in (enum omp_event_handle_t): New.
+	(omp_fulfill_event): New.
+	* omp_lib.f90.in (omp_event_handle_kind): New.
+	(omp_fulfill_event): New.
+	* omp_lib.h.in (omp_event_handle_kind): New.
+	(omp_fulfill_event): Declare.
+	* priority_queue.c (priority_tree_find): New.
+	(priority_list_find): New.
+	(priority_queue_find): New.
+	* priority_queue.h (priority_queue_predicate): New.
+	(priority_queue_find): New.
+	* task.c (gomp_init_task): Initialize detach field.
+	(task_fulfilled_p): New.
+	(GOMP_task): Add detach argument.  Ignore detach argument if
+	GOMP_TASK_FLAG_DETACH not set in flags.  Initialize completion_sem
+	field.	Copy address of completion_sem into detach argument and
+	into the start of the data record.  Wait for detach event if task
+	not deferred.
+	(gomp_barrier_handle_tasks): Queue tasks with unfulfilled events.
+	Remove completed tasks and requeue dependent tasks.
+	(omp_fulfill_event): New.
+	* team.c (gomp_new_team): Initialize task_detach_queue and
+	task_detach_count fields.
+	(free_team): Free task_detach_queue field.
+	* testsuite/libgomp.c-c++-common/task-detach-1.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-2.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-3.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-4.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-5.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: New testcase.
+	* testsuite/libgomp.fortran/task-detach-1.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-2.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-3.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-4.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-5.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-6.f90: New testcase.
+
 2021-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70454

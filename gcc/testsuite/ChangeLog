@@ -1,3 +1,27 @@
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Include
+	../../../libgfortran/ISO_Fortran_binding.h rather than
+	ISO_Fortran_binding.h.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/task-detach-1.c: New.
+	* g++.dg/gomp/task-detach-1.C: New.
+	* gcc.dg/gomp/task-detach-1.c: New.
+	* gfortran.dg/gomp/task-detach-1.f90: New.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96669
+	* gcc.dg/tree-ssa/pr96669-1.c: Adjust regexp.
+	* gcc.dg/tree-ssa/pr96669-2.c: New test.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96271
+	* gcc.target/i386/pr96271.c: New test.
+
 2021-01-15  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-1-p10-runnable.c: New test file.

@@ -1,3 +1,26 @@
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle detach clause.
+	* frontend-passes.c (gfc_code_walker): Walk detach expression.
+	* gfortran.h (struct gfc_omp_clauses): Add detach field.
+	(gfc_c_intptr_kind): New.
+	* openmp.c (gfc_free_omp_clauses): Free detach clause.
+	(gfc_match_omp_detach): New.
+	(enum omp_mask1): Add OMP_CLAUSE_DETACH.
+	(enum omp_mask2): Remove OMP_CLAUSE_DETACH.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_DETACH for OpenMP.
+	(OMP_TASK_CLAUSES): Add OMP_CLAUSE_DETACH.
+	(resolve_omp_clauses): Prevent use of detach with mergeable and
+	overriding the data sharing mode of the event handle.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle detach clause.
+	* trans-types.c (gfc_c_intptr_kind): New.
+	(gfc_init_kinds): Initialize gfc_c_intptr_kind.
+	* types.def
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT): Rename
+	to...
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR):
+	...this.  Add extra argument.
+
 2021-01-14  Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.h (gfc_resolve_substring): Add prototype.

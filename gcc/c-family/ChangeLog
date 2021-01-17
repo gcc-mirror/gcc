@@ -1,3 +1,8 @@
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DETACH.
+	Redefine PRAGMA_OACC_CLAUSE_DETACH.
+
 2021-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/98597
