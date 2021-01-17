@@ -32,7 +32,6 @@ TODO (the list is probably incomplete):
 - make STAT and ERRMSG work for ALLOCATE, DEALLOCATE, SYNC and locks
 - Teams
 - Types containing allocatable components in coarrays
-- Atomics
 - Events
 - MOVE_ALLOC
 - automatic linking of relevant libraries with -fcoarray=shared
