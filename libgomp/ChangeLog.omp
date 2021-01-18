@@ -1,6 +1,18 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/sem.h (gomp_sem_getcount): New function.
+	* config/posix/sem.h (gomp_sem_getcount): New function.
+	* config/posix/sem.c (gomp_sem_getcount): New function.
+	* config/accel/sem.h (gomp_sem_getcount): New function.
+	* task.c (task_fulfilled_p): Use gomp_sem_getcount.
+	(omp_fulfill_event): Likewise.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* fortran.c (omp_fulfill_event_): New.

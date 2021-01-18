@@ -62,4 +62,13 @@ gomp_sem_post (gomp_sem_t *sem)
 {
   (void) __atomic_add_fetch (sem, 1, MEMMODEL_RELEASE);
 }
+
+static inline int
+gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int count = __atomic_load_n (sem, MEMMODEL_RELAXED);
+  if (count < 0)
+    return -1;
+  return count;
+}
 #endif /* GOMP_SEM_H */
