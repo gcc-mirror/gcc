@@ -196,6 +196,11 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 		    struct_expr.struct_base->base_struct->get_locus_slow ());
 		}
 
+	      size_t field_index;
+	      bool ok = struct_path_resolved->get_field (missing, &field_index);
+	      rust_assert (ok);
+
+	      adtFieldIndexToField[field_index] = implicit_field;
 	      struct_expr.get_fields ().push_back (
 		std::unique_ptr<HIR::StructExprField> (implicit_field));
 	    }
@@ -207,7 +212,18 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   // assigned field in the constructor is in the same order as the field in the
   // type
 
-  // TODO
+  std::vector<std::unique_ptr<HIR::StructExprField> > expr_fields
+    = struct_expr.get_fields_as_owner ();
+  for (auto &f : expr_fields)
+    f.release ();
+
+  std::vector<std::unique_ptr<HIR::StructExprField> > ordered_fields;
+  for (size_t i = 0; i < adtFieldIndexToField.size (); i++)
+    {
+      ordered_fields.push_back (
+	std::unique_ptr<HIR::StructExprField> (adtFieldIndexToField[i]));
+    }
+  struct_expr.set_fields_as_owner (std::move (ordered_fields));
 }
 
 void
@@ -266,9 +282,10 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
+  size_t field_index;
   TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
   TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field.field_name);
+    = struct_path_resolved->get_field (field.field_name, &field_index);
   if (field_type == nullptr)
     {
       rust_error_at (field.get_locus (), "unknown field");
@@ -277,7 +294,10 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 
   resolved_field = field_type->get_field_type ()->combine (value);
   if (resolved_field != nullptr)
-    fields_assigned.insert (field.field_name);
+    {
+      fields_assigned.insert (field.field_name);
+      adtFieldIndexToField[field_index] = &field;
+    }
 }
 
 void
@@ -291,9 +311,10 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
+  size_t field_index;
   TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
   TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field_name);
+    = struct_path_resolved->get_field (field_name, &field_index);
   if (field_type == nullptr)
     {
       rust_error_at (field.get_locus (), "unknown field");
@@ -302,7 +323,10 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
 
   resolved_field = field_type->get_field_type ()->combine (value);
   if (resolved_field != nullptr)
-    fields_assigned.insert (field_name);
+    {
+      fields_assigned.insert (field_name);
+      adtFieldIndexToField[field_index] = &field;
+    }
 }
 
 void
@@ -315,8 +339,9 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       return;
     }
 
+  size_t field_index;
   TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field.get_field_name ());
+    = struct_path_resolved->get_field (field.get_field_name (), &field_index);
   if (field_type == nullptr)
     {
       rust_error_at (field.get_locus (), "unknown field");
@@ -331,7 +356,10 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 
   resolved_field = field_type->get_field_type ()->combine (value);
   if (resolved_field != nullptr)
-    fields_assigned.insert (field.field_name);
+    {
+      fields_assigned.insert (field.field_name);
+      adtFieldIndexToField[field_index] = &field;
+    }
 }
 
 } // namespace Resolver

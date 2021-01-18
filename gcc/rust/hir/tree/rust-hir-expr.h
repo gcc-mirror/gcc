@@ -1679,6 +1679,17 @@ public:
     return fields;
   };
 
+  std::vector<std::unique_ptr<StructExprField> > get_fields_as_owner ()
+  {
+    return std::move (fields);
+  };
+
+  void set_fields_as_owner (
+    std::vector<std::unique_ptr<StructExprField> > new_fields)
+  {
+    fields = std::move (new_fields);
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

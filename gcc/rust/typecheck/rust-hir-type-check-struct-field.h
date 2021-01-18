@@ -57,6 +57,7 @@ private:
   TyTy::ADTType *struct_path_resolved;
   TyTy::TyBase *resolved_field;
   std::set<std::string> fields_assigned;
+  std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
 };
 
 } // namespace Resolver
