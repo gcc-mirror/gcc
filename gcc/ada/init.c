@@ -2749,11 +2749,7 @@ __gnat_install_handler (void)
 /* __gnat_init_float */
 /*********************/
 
-/* This routine is called as each process thread is created, for possible
-   initialization of the FP processor.  This version is used under INTERIX
-   and WIN32.  */
-
-#if defined (_WIN32) || defined (__INTERIX) \
+#if defined (_WIN32) || defined (__INTERIX) || defined (__linux__) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
   || defined (__OpenBSD__) || defined (__DragonFly__) || defined(__QNX__)
 
@@ -2763,13 +2759,10 @@ void
 __gnat_init_float (void)
 {
 #if defined (__i386__) || defined (__x86_64__)
-
-  /* This is used to properly initialize the FPU on an x86 for each
-     process thread.  */
-
+  /* This is used to properly initialize the FPU to 64-bit precision on an x86
+     for each process thread and also for floating-point I/O.  */
   asm ("finit");
-
-#endif  /* Defined __i386__ */
+#endif
 }
 #endif
 
