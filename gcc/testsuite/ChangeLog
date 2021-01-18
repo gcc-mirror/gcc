@@ -1,3 +1,22 @@
+2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/inline-ns-2.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/inline-var-2.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp17.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp20.C: Skip on AIX.
+	* gcc.dg/debug/dwarf2/inline6.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/lang-c11.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/pr41445-7.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/pr41445-8.c: Skip on AIX.
+
+2021-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98222
+	* gcc.dg/ipa/pr98222.c: New test.
+
 2021-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Include

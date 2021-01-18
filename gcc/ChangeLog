@@ -1,3 +1,20 @@
+2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Override
+	dwarf_version to 4.
+	* config/rs6000/aix72.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+
+2021-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98222
+	* cgraph.c (clone_of_p): Check also former_clone_of as we climb
+	the clone tree.
+
+2021-01-17  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt (gdwarf-): Init(5).
+	* doc/invoke.texi (-gdwarf): Document default to 5.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* builtin-types.def

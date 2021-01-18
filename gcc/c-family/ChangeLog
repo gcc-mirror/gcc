@@ -1,3 +1,8 @@
+2021-01-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	assume SSA_NAME_IDENTIFIER evaluates to nonzero.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DETACH.
