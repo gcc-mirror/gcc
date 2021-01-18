@@ -2,7 +2,8 @@
 
 /* { dg-do compile } */
 /* { dg-options "-save-temps -O2 -fno-inline" } */
-/* { dg-add-options arm_neon } */
+/* { dg-require-effective-target arm_crypto_ok } */
+/* { dg-add-options arm_crypto } */
 
 #include "arm_neon.h"
 
