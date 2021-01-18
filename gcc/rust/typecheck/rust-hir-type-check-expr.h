@@ -46,6 +46,42 @@ public:
     return resolver.infered;
   }
 
+  void visit (HIR::TupleIndexExpr &expr)
+  {
+    auto resolved = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get ());
+    if (resolved == nullptr)
+      {
+	rust_error_at (expr.get_tuple_expr ()->get_locus_slow (),
+		       "failed to resolve TupleIndexExpr receiver");
+	return;
+      }
+    if (resolved->get_kind () != TyTy::TypeKind::ADT)
+      {
+	rust_error_at (expr.get_tuple_expr ()->get_locus_slow (),
+		       "Expected ADT type got: %s",
+		       resolved->as_string ().c_str ());
+	return;
+      }
+
+    TyTy::ADTType *adt = (TyTy::ADTType *) resolved;
+    TupleIndex index = expr.get_tuple_index ();
+    if ((size_t) index >= adt->num_fields ())
+      {
+	rust_error_at (expr.get_locus (), "unknown field at index %i", index);
+	return;
+      }
+
+    auto field_tyty = adt->get_field ((size_t) index);
+    if (field_tyty == nullptr)
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to lookup field type at index %i", index);
+	return;
+      }
+
+    infered = field_tyty->get_field_type ();
+  }
+
   void visit (HIR::TupleExpr &expr)
   {
     if (expr.is_unit ())

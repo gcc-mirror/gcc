@@ -1314,6 +1314,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_tuple_expr ()
+  {
+    rust_assert (tuple_expr != nullptr);
+    return tuple_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

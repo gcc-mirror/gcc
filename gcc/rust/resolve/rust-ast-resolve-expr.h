@@ -35,6 +35,11 @@ public:
     expr->accept_vis (resolver);
   };
 
+  void visit (AST::TupleIndexExpr &expr)
+  {
+    ResolveExpr::go (expr.get_tuple_expr ().get (), expr.get_node_id ());
+  }
+
   void visit (AST::TupleExpr &expr)
   {
     if (expr.is_unit ())

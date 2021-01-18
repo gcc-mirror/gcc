@@ -38,6 +38,17 @@ public:
     return compiler.translated;
   }
 
+  void visit (HIR::TupleIndexExpr &expr)
+  {
+    HIR::Expr *tuple_expr = expr.get_tuple_expr ().get ();
+    TupleIndex index = expr.get_tuple_index ();
+
+    Bexpression *receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
+    translated
+      = ctx->get_backend ()->struct_field_expression (receiver_ref, index,
+						      expr.get_locus ());
+  }
+
   void visit (HIR::TupleExpr &expr)
   {
     if (expr.is_unit ())

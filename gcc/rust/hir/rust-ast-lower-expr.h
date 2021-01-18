@@ -132,6 +132,25 @@ public:
     return resolver.translated;
   }
 
+  void visit (AST::TupleIndexExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *tuple_expr
+      = ASTLoweringExpr::translate (expr.get_tuple_expr ().get (), &terminated);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TupleIndexExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (tuple_expr),
+				 expr.get_tuple_index (),
+				 std::move (outer_attribs), expr.get_locus ());
+  }
+
   void visit (AST::TupleExpr &expr)
   {
     std::vector<HIR::Attribute> inner_attribs;
