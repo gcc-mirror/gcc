@@ -1,4 +1,4 @@
-2021-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2021-01-15  Harris Snyder  <hsnyder@structura.bio>
 
 	* runtime/ISO_Fortran_binding.c (CFI_establish): Fixed signed
 	  char arrays. Signed char or uint8_t arrays would cause

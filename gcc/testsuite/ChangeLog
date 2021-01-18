@@ -45,7 +45,7 @@
 
 	* gcc.target/powerpc/builtins-1-p10-runnable.c: New test file.
 
-2021-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2021-01-15  Harris Snyder  <hsnyder@structura.bio>
 
 	* gfortran.dg/iso_fortran_binding_uint8_array.f90: New test.
 	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: New test.
