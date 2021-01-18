@@ -228,5 +228,11 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
   translated = CompileExpr::Compile (field.get_value (), ctx);
 }
 
+void
+CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
+{
+  translated = CompileExpr::Compile (field.get_value (), ctx);
+}
+
 } // namespace Compile
 } // namespace Rust

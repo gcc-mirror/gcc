@@ -1591,6 +1591,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  TupleIndex get_tuple_index () const { return index; };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

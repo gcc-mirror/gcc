@@ -38,6 +38,8 @@ public:
 
   void visit (HIR::StructExprFieldIdentifierValue &field);
 
+  void visit (HIR::StructExprFieldIndexValue &field);
+
 private:
   CompileStructExprField (Context *ctx)
     : HIRCompileBase (ctx), translated (nullptr)

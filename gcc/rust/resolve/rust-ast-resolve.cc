@@ -318,5 +318,11 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
   ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
 }
 
+void
+ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
+{
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+}
+
 } // namespace Resolver
 } // namespace Rust

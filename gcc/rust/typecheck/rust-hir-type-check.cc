@@ -197,5 +197,30 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     fields_assigned.insert (field.field_name);
 }
 
+void
+TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
+{
+  std::string field_name (std::to_string (field.get_tuple_index ()));
+  auto it = fields_assigned.find (field_name);
+  if (it != fields_assigned.end ())
+    {
+      rust_fatal_error (field.get_locus (), "used more than once");
+      return;
+    }
+
+  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::StructFieldType *field_type
+    = struct_path_resolved->get_field (field_name);
+  if (field_type == nullptr)
+    {
+      rust_error_at (field.get_locus (), "unknown field");
+      return;
+    }
+
+  resolved_field = field_type->get_field_type ()->combine (value);
+  if (resolved_field != nullptr)
+    fields_assigned.insert (field_name);
+}
+
 } // namespace Resolver
 } // namespace Rust

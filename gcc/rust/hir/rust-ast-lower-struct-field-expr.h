@@ -46,6 +46,8 @@ public:
 
   void visit (AST::StructExprFieldIdentifierValue &field);
 
+  void visit (AST::StructExprFieldIndexValue &field);
+
 private:
   ASTLowerStructExprField () : translated (nullptr) {}
 

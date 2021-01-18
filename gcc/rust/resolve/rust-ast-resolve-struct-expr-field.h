@@ -41,7 +41,7 @@ public:
 
   void visit (AST::StructExprFieldIdentifierValue &field);
 
-  // TODO
+  void visit (AST::StructExprFieldIndexValue &field);
 
 private:
   ResolveStructExprField (NodeId parent) : ResolverBase (parent) {}
