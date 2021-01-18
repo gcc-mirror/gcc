@@ -137,9 +137,41 @@ public:
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     infered = lhs->combine (rhs);
-    // need to overrite the lhs type with this combination
-    context->insert_type (expr.get_lhs ()->get_mappings ().get_hirid (),
-			  infered);
+
+    // in the case of declare first for an ADT Type:
+    //
+    // let a;
+    // a = Foo{..}
+    // let b = a.field;
+    //
+    // The lhs will have a TyTy of INFER and so when the declaration is
+    // referenced it will still have an unknown type so we will fail to resolve
+    // FieldAccessExpr
+    if (lhs->get_kind () == TyTy::TypeKind::INFER)
+      {
+	NodeId ast_node_id = expr.get_lhs ()->get_mappings ().get_nodeid ();
+	NodeId ref_node_id;
+	if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+	  return;
+
+	Definition def;
+	if (!resolver->lookup_definition (ref_node_id, &def))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "assignment infer - unknown reference");
+	    return;
+	  }
+
+	HirId ref;
+	if (!mappings->lookup_node_to_hir (
+	      expr.get_mappings ().get_crate_num (), def.parent, &ref))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "assignment infer - reverse lookup failure");
+	    return;
+	  }
+	context->insert_type (ref, infered);
+      }
   }
 
   void visit (HIR::IdentifierExpr &expr)
