@@ -6454,6 +6454,8 @@ the jump-table.
 
 @hook TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
 
+@hook TARGET_ASM_SHOULD_RESTORE_CFA_STATE
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 

@@ -69,6 +69,7 @@ extern void darwin_non_lazy_pcrel (FILE *, rtx);
 
 extern void darwin_emit_unwind_label (FILE *, tree, int, int);
 extern void darwin_emit_except_table_label (FILE *);
+extern bool darwin_should_restore_cfa_state (void);
 
 extern void darwin_pragma_ignore (struct cpp_reader *);
 extern void darwin_pragma_options (struct cpp_reader *);
