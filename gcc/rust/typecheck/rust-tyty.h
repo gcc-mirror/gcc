@@ -219,6 +219,15 @@ public:
   std::vector<StructFieldType *> &get_fields () { return fields; }
   const std::vector<StructFieldType *> &get_fields () const { return fields; }
 
+  void iterate_fields (std::function<bool (StructFieldType *)> cb)
+  {
+    for (auto &f : fields)
+      {
+	if (!cb (f))
+	  return;
+      }
+  }
+
 private:
   std::string identifier;
   bool is_tuple;

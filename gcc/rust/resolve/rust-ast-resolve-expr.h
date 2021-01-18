@@ -179,6 +179,14 @@ public:
   {
     ResolveExpr::go (&struct_expr.get_struct_name (),
 		     struct_expr.get_node_id ());
+
+    if (struct_expr.has_struct_base ())
+      {
+	AST::StructBase &base = struct_expr.get_struct_base ();
+	ResolveExpr::go (base.get_base_struct ().get (),
+			 struct_expr.get_node_id ());
+      }
+
     struct_expr.iterate (
       [&] (AST::StructExprField *struct_field) mutable -> bool {
 	ResolveStructExprField::go (struct_field, struct_expr.get_node_id ());

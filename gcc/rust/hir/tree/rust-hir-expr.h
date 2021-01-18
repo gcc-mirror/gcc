@@ -1669,6 +1669,16 @@ public:
       }
   }
 
+  std::vector<std::unique_ptr<StructExprField> > &get_fields ()
+  {
+    return fields;
+  };
+
+  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
+  {
+    return fields;
+  };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

@@ -819,15 +819,15 @@ public:
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
+  // Clone function implementation as pure virtual method
+  virtual Expr *clone_expr_impl () const = 0;
+
 protected:
   // Constructor
   Expr (Analysis::NodeMapping mappings,
 	std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attribs)), mappings (std::move (mappings))
   {}
-
-  // Clone function implementation as pure virtual method
-  virtual Expr *clone_expr_impl () const = 0;
 
   // TODO: think of less hacky way to implement this kind of thing
   // Sets outer attributes.

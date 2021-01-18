@@ -89,26 +89,12 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
       return;
     }
 
-  struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
-    resolved_field = nullptr;
-    field->accept_vis (*this);
-    if (resolved_field == nullptr)
-      {
-	rust_fatal_error (field->get_locus (),
-			  "failed to resolve type for field");
-	return false;
-      }
-
-    context->insert_type (field->get_mappings ().get_hirid (), resolved_field);
-    return true;
-  });
-
-  TyTy::TyBase *expr_type = struct_path_resolved;
+  resolved = struct_path_resolved;
   if (struct_expr.has_struct_base ())
     {
       TyTy::TyBase *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
-      expr_type = expr_type->combine (base_resolved);
+      resolved = struct_path_resolved->combine (base_resolved);
       if (resolved == nullptr)
 	{
 	  rust_fatal_error (
@@ -117,14 +103,111 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	  return;
 	}
     }
-  else if (fields_assigned.size () != struct_path_resolved->num_fields ())
+
+  bool ok = true;
+  struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
+    resolved_field = nullptr;
+    field->accept_vis (*this);
+    if (resolved_field == nullptr)
+      {
+	rust_fatal_error (field->get_locus (),
+			  "failed to resolve type for field");
+	ok = false;
+	return false;
+      }
+
+    context->insert_type (field->get_mappings ().get_hirid (), resolved_field);
+    return true;
+  });
+
+  // something failed setting up the fields
+  if (!ok)
+    return;
+
+  // check the arguments are all assigned and fix up the ordering
+  if (fields_assigned.size () != struct_path_resolved->num_fields ())
     {
-      rust_fatal_error (struct_expr.get_locus (),
-			"some fields are not fully assigned");
-      return;
+      if (!struct_expr.has_struct_base ())
+	{
+	  rust_error_at (struct_expr.get_locus (),
+			 "constructor is missing fields");
+	  return;
+	}
+      else
+	{
+	  // we have a struct base to assign the missing fields from.
+	  // the missing fields can be implicit FieldAccessExprs for the value
+	  std::set<std::string> missing_fields;
+	  struct_path_resolved->iterate_fields (
+	    [&] (TyTy::StructFieldType *field) mutable -> bool {
+	      auto it = fields_assigned.find (field->get_name ());
+	      if (it == fields_assigned.end ())
+		missing_fields.insert (field->get_name ());
+	      return true;
+	    });
+
+	  // we can generate FieldAccessExpr or TupleAccessExpr for the values
+	  // of the missing fields.
+	  for (auto &missing : missing_fields)
+	    {
+	      HIR::Expr *receiver
+		= struct_expr.struct_base->base_struct->clone_expr_impl ();
+
+	      HIR::StructExprField *implicit_field = nullptr;
+	      if (struct_path_resolved->is_tuple_struct ())
+		{
+		  std::vector<HIR::Attribute> outer_attribs;
+		  TupleIndex tuple_index = std::stoi (missing);
+
+		  auto crate_num = mappings->get_current_crate ();
+		  Analysis::NodeMapping mapping (
+		    crate_num,
+		    struct_expr.struct_base->base_struct->get_mappings ()
+		      .get_nodeid (),
+		    mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+
+		  HIR::Expr *field_value = new HIR::TupleIndexExpr (
+		    mapping, std::unique_ptr<HIR::Expr> (receiver), tuple_index,
+		    std::move (outer_attribs),
+		    struct_expr.struct_base->base_struct->get_locus_slow ());
+
+		  implicit_field = new HIR::StructExprFieldIndexValue (
+		    mapping, tuple_index,
+		    std::unique_ptr<HIR::Expr> (field_value),
+		    struct_expr.struct_base->base_struct->get_locus_slow ());
+		}
+	      else
+		{
+		  std::vector<HIR::Attribute> outer_attribs;
+		  auto crate_num = mappings->get_current_crate ();
+		  Analysis::NodeMapping mapping (
+		    crate_num,
+		    struct_expr.struct_base->base_struct->get_mappings ()
+		      .get_nodeid (),
+		    mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+
+		  HIR::Expr *field_value = new HIR::FieldAccessExpr (
+		    mapping, std::unique_ptr<HIR::Expr> (receiver), missing,
+		    std::move (outer_attribs),
+		    struct_expr.struct_base->base_struct->get_locus_slow ());
+
+		  implicit_field = new HIR::StructExprFieldIdentifierValue (
+		    mapping, missing, std::unique_ptr<HIR::Expr> (field_value),
+		    struct_expr.struct_base->base_struct->get_locus_slow ());
+		}
+
+	      struct_expr.get_fields ().push_back (
+		std::unique_ptr<HIR::StructExprField> (implicit_field));
+	    }
+	}
     }
 
-  resolved = expr_type;
+  // everything is ok, now we need to ensure all field values are ordered
+  // correctly. The GIMPLE backend uses a simple algorithm that assumes each
+  // assigned field in the constructor is in the same order as the field in the
+  // type
+
+  // TODO
 }
 
 void
