@@ -201,6 +201,20 @@ DEFHOOKPOD
  be called afterward.",
  bool, true)
 
+/* Return true if the target needs extra instructions to restore the current
+   frame address after a DW_CFA_restore_state opcode.  */
+DEFHOOK
+(should_restore_cfa_state,
+ "For DWARF-based unwind frames, two CFI instructions provide for save and\
+ restore of register state.  GCC maintains the current frame address (CFA)\
+ separately from the register bank but the unwinder in libgcc preserves this\
+ state along with the registers (and this is expected by the code that writes\
+ the unwind frames).  This hook allows the target to specify that the CFA data\
+ is not saved/restored along with the registers by the target unwinder so that\
+ suitable additional instructions should be emitted to restore it.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* Generate an internal label.
    For now this is just a wrapper for ASM_GENERATE_INTERNAL_LABEL.  */
 DEFHOOK_UNDOC

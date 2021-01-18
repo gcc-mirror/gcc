@@ -2231,6 +2231,17 @@ darwin_emit_except_table_label (FILE *file)
 			       except_table_label_num++);
   ASM_OUTPUT_LABEL (file, section_start_label);
 }
+
+/* The unwinders in earlier Darwin versions are based on an old version
+   of libgcc_s and need current frame address stateto be reset after a
+   DW_CFA_restore_state recovers the register values.  */
+
+bool
+darwin_should_restore_cfa_state (void)
+{
+  return generating_for_darwin_version <= 10;
+}
+
 /* Generate a PC-relative reference to a Mach-O non-lazy-symbol.  */
 
 void
