@@ -310,4 +310,6 @@ extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
 
+extern unsigned fndecl_dealloc_argno (tree fndecl);
+
 #endif // GCC_ATTRIBS_H

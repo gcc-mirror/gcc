@@ -9155,7 +9155,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-double-free} to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
-can have @code{free} called on it more than once.
+can have a deallocator called on it more than once, either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-exposure-through-output-file
 @opindex Wanalyzer-exposure-through-output-file
@@ -9196,7 +9197,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer allocated via @code{malloc} is leaked.
+pointer allocated via an allocator is leaked: either @code{malloc},
+or a function marked with attribute @code{malloc}.
 
 @item -Wno-analyzer-mismatching-deallocation
 @opindex Wanalyzer-mismatching-deallocation
@@ -9207,7 +9209,10 @@ to disable it.
 
 This diagnostic warns for paths through the code in which the
 wrong deallocation function is called on a pointer value, based on
-which function was used to allocate the pointer value.
+which function was used to allocate the pointer value.  The diagnostic
+will warn about mismatches between @code{free}, scalar @code{delete}
+and vector @code{delete[]}, and those marked as allocator/deallocator
+pairs using attribute @code{malloc}.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
@@ -9322,7 +9327,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-use-after-free} to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer is used after @code{free} is called on it.
+pointer is used after a deallocator is called on it: either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame

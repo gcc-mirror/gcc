@@ -189,6 +189,8 @@ public:
     return m_feasibility_problem;
   }
 
+  const state_machine *get_sm () const { return m_sd.m_sm; }
+
 private:
   typedef reachability<eg_traits> enode_reachability;
 
@@ -709,9 +711,11 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 class state_change_event_creator : public state_change_visitor
 {
 public:
-  state_change_event_creator (const exploded_edge &eedge,
+  state_change_event_creator (const path_builder &pb,
+			      const exploded_edge &eedge,
 			      checker_path *emission_path)
-    : m_eedge (eedge),
+    : m_pb (pb),
+      m_eedge (eedge),
       m_emission_path (emission_path)
   {}
 
@@ -720,6 +724,8 @@ public:
 			       state_machine::state_t dst_sm_val)
     FINAL OVERRIDE
   {
+    if (&sm != m_pb.get_sm ())
+      return false;
     const exploded_node *src_node = m_eedge.m_src;
     const program_point &src_point = src_node->get_point ();
     const int src_stack_depth = src_point.get_stack_depth ();
@@ -748,6 +754,8 @@ public:
 			const svalue *sval,
 			const svalue *dst_origin_sval) FINAL OVERRIDE
   {
+    if (&sm != m_pb.get_sm ())
+      return false;
     const exploded_node *src_node = m_eedge.m_src;
     const program_point &src_point = src_node->get_point ();
     const int src_stack_depth = src_point.get_stack_depth ();
@@ -783,6 +791,7 @@ public:
     return false;
   }
 
+  const path_builder &m_pb;
   const exploded_edge &m_eedge;
   checker_path *m_emission_path;
 };
@@ -1002,7 +1011,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       | ~~~~~~~~~~~~~^~~~~
       |              |
       |              (3) ...to here        (end_cfg_edge_event).  */
-  state_change_event_creator visitor (eedge, emission_path);
+  state_change_event_creator visitor (pb, eedge, emission_path);
   for_each_state_change (src_state, dst_state, pb.get_ext_state (),
 			 &visitor);
 
