@@ -26,8 +26,7 @@ namespace Rust {
 namespace Resolver {
 
 // this resolves values being assigned not that the field actually exists yet.
-// We cant resolve the field to struct until type resolution since the HIR
-// Mappings don't exist yet.
+
 class ResolveStructExprField : public ResolverBase
 {
 public:
@@ -42,6 +41,8 @@ public:
   void visit (AST::StructExprFieldIdentifierValue &field);
 
   void visit (AST::StructExprFieldIndexValue &field);
+
+  void visit (AST::StructExprFieldIdentifier &field);
 
 private:
   ResolveStructExprField (NodeId parent) : ResolverBase (parent) {}

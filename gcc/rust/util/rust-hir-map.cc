@@ -350,6 +350,30 @@ Mappings::lookup_hir_param (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_struct_field (CrateNum crateNum, HirId id,
+				   HIR::StructExprField *field)
+{
+  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+
+  hirStructFieldMappings[crateNum][id] = field;
+  nodeIdToHirMappings[crateNum][field->get_mappings ().get_nodeid ()] = id;
+}
+
+HIR::StructExprField *
+Mappings::lookup_hir_struct_field (CrateNum crateNum, HirId id)
+{
+  auto it = hirStructFieldMappings.find (crateNum);
+  if (it == hirStructFieldMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				      HIR::Item *item)
 {

@@ -228,5 +228,18 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 					  field.get_locus ());
 }
 
+void
+ASTLowerStructExprField::visit (AST::StructExprFieldIdentifier &field)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::StructExprFieldIdentifier (mapping, field.get_field_name (),
+					  field.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust

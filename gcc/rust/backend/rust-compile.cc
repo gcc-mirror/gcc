@@ -234,5 +234,15 @@ CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
   translated = CompileExpr::Compile (field.get_value (), ctx);
 }
 
+void
+CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
+{
+  // we can make the field look like an identifier expr to take advantage of
+  // existing code
+  HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
+			    field.get_locus ());
+  translated = CompileExpr::Compile (&expr, ctx);
+}
+
 } // namespace Compile
 } // namespace Rust

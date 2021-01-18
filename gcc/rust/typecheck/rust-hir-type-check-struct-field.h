@@ -46,6 +46,8 @@ public:
 
   void visit (HIR::StructExprFieldIndexValue &field);
 
+  void visit (HIR::StructExprFieldIdentifier &field);
+
 private:
   TypeCheckStructExpr ()
     : TypeCheckBase (), resolved (nullptr), struct_path_resolved (nullptr)

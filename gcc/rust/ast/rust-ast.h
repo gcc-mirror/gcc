@@ -882,6 +882,8 @@ public:
 
   virtual NodeId get_node_id () const { return node_id; }
 
+  virtual void set_node_id (NodeId id) { node_id = id; }
+
 protected:
   // Constructor
   Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())

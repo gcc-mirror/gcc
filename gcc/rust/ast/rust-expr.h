@@ -1604,6 +1604,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  Identifier get_field_name () const { return field_name; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

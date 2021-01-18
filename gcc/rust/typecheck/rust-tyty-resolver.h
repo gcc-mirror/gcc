@@ -44,7 +44,8 @@ public:
 
   void go (Rib *rib)
   {
-    rib->iterate_decls ([&] (NodeId decl_node_id, Location) mutable -> bool {
+    rib->iterate_decls ([&] (NodeId decl_node_id,
+			     Location locus) mutable -> bool {
       // type inference in rust means we need to gather and examine all
       // references of this decl and combine each to make sure the type is
       // correctly inferred. Consider the example:
@@ -52,33 +53,53 @@ public:
       // we can only say x is an infer variable then at the assignment
       // we think x must be an integer
 
+      bool ok = true;
       std::vector<TyTy::TyBase *> gathered_types;
       rib->iterate_references_for_def (
 	decl_node_id, [&] (NodeId ref_node) mutable -> bool {
 	  HirId hir_node_ref;
-	  bool ok
-	    = mappings->lookup_node_to_hir (mappings->get_current_crate (),
-					    ref_node, &hir_node_ref);
-	  rust_assert (ok);
+	  if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
+					     ref_node, &hir_node_ref))
+	    {
+	      rust_error_at (locus,
+			     "failed to reserve lookup HIR node for reference");
+	      ok = false;
+	      return false;
+	    }
 
 	  TyTy::TyBase *resolved = nullptr;
 	  if (!context->lookup_type (hir_node_ref, &resolved))
 	    {
 	      // this could be an array/adt type
 	      Definition d;
-	      bool ok = resolver->lookup_definition (ref_node, &d);
-	      rust_assert (ok);
+	      if (!resolver->lookup_definition (ref_node, &d))
+		{
+		  rust_error_at (
+		    locus,
+		    "failed to lookup definition for referenced hir node");
 
-	      ok = mappings->lookup_node_to_hir (mappings->get_current_crate (),
-						 d.parent, &hir_node_ref);
-	      rust_assert (ok);
+		  ok = false;
+		  return false;
+		}
+
+	      if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
+						 d.parent, &hir_node_ref))
+		{
+		  rust_error_at (locus,
+				 "failed to lookup HIR node for parent NodeId");
+
+		  ok = false;
+		  return false;
+		}
 
 	      if (!context->lookup_type (hir_node_ref, &resolved))
 		{
-		  rust_fatal_error (
+		  rust_error_at (
 		    mappings->lookup_location (hir_node_ref),
 		    "failed to lookup type for reference at node [%u]",
 		    hir_node_ref);
+
+		  ok = false;
 		  return false;
 		}
 	    }
@@ -88,18 +109,29 @@ public:
 	});
 
       Definition d;
-      bool ok = resolver->lookup_definition (decl_node_id, &d);
-      rust_assert (ok);
+      if (!resolver->lookup_definition (decl_node_id, &d))
+	{
+	  rust_error_at (locus, "Failed to lookup definition within rib");
+	  return false;
+	}
 
       HIR::Stmt *decl = nullptr;
-      ok = mappings->resolve_nodeid_to_stmt (d.parent, &decl);
-      rust_assert (ok);
+      if (!mappings->resolve_nodeid_to_stmt (d.parent, &decl))
+	{
+	  rust_error_at (locus, "Failed to resolve decl to HIR::Stmt");
+	  return false;
+	}
 
       TyTy::TyBase *resolved_type = nullptr;
-      ok = context->lookup_type (decl->get_mappings ().get_hirid (),
-				 &resolved_type);
-      rust_assert (ok);
+      if (!context->lookup_type (decl->get_mappings ().get_hirid (),
+				 &resolved_type))
+	{
+	  rust_error_at (locus, "Unknown base type for decl in Rib");
+	  return false;
+	}
 
+      // if it is not infer then it must have been figured out already
+      // we might need changes for generics later on
       if (resolved_type->get_kind () != TyTy::TypeKind::INFER)
 	return true;
 

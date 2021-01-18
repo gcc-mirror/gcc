@@ -121,6 +121,10 @@ public:
   void insert_hir_param (CrateNum crateNum, HirId id, HIR::FunctionParam *type);
   HIR::FunctionParam *lookup_hir_param (CrateNum crateNum, HirId id);
 
+  void insert_hir_struct_field (CrateNum crateNum, HirId id,
+				HIR::StructExprField *type);
+  HIR::StructExprField *lookup_hir_struct_field (CrateNum crateNum, HirId id);
+
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
 
@@ -159,6 +163,8 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::Expr *> > hirExprMappings;
   std::map<CrateNum, std::map<HirId, HIR::Stmt *> > hirStmtMappings;
   std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
+  std::map<CrateNum, std::map<HirId, HIR::StructExprField *> >
+    hirStructFieldMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;
