@@ -5433,12 +5433,22 @@ ira (FILE *f)
 	  for (int i = 0; i < recog_data.n_operands; i++)
 	    if (recog_data.operand_type[i] != OP_IN)
 	      {
+		bool skip_p = false;
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  if (EDGE_CRITICAL_P (e)
+		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+		      && (e->flags & EDGE_ABNORMAL))
+		    {
+		      skip_p = true;
+		      break;
+		    }
+		if (skip_p)
+		  break;
 		output_jump_reload_p = true;
 		FOR_EACH_EDGE (e, ei, bb->succs)
 		  if (EDGE_CRITICAL_P (e)
 		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		    {
-		      ira_assert (!(e->flags & EDGE_ABNORMAL));
 		      start_sequence ();
 		      /* We need to put some no-op insn here.  We can
 			 not put a note as commit_edges insertion will
