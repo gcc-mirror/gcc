@@ -9613,8 +9613,9 @@ possible.
 @opindex gdwarf
 Produce debugging information in DWARF format (if that is supported).
 The value of @var{version} may be either 2, 3, 4 or 5; the default
-version for most targets is 5 (with the exception of VxWorks and
-Darwin/Mac OS X which default to version 2).
+version for most targets is 5 (with the exception of VxWorks, TPF and
+Darwin/Mac OS X, which default to version 2, and AIX, which defaults
+to version 4).
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
