@@ -13854,6 +13854,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree simdlen = NULL_TREE, safelen = NULL_TREE;
   bool branch_seen = false;
   bool copyprivate_seen = false;
+  bool mergeable_seen = false;
+  tree *detach_seen = NULL;
   bool linear_variable_step_check = false;
   tree *nowait_clause = NULL;
   tree ordered_clause = NULL_TREE;
@@ -14937,6 +14939,21 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
+	case OMP_CLAUSE_DETACH:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (detach_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"too many %qs clauses on a task construct",
+			"detach");
+	      remove = true;
+	      break;
+	    }
+	  detach_seen = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  c_mark_addressable (t);
+	  continue;
+
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
@@ -14945,7 +14962,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
-	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_PARALLEL:
@@ -14976,6 +14992,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_MERGEABLE:
+	  mergeable_seen = true;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -15228,6 +15249,41 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		"%<nogroup%> clause must not be used together with "
 		"%<reduction%> clause");
       *nogroup_seen = OMP_CLAUSE_CHAIN (*nogroup_seen);
+    }
+
+  if (detach_seen)
+    {
+      if (mergeable_seen)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (*detach_seen),
+		    "%<detach%> clause must not be used together with "
+		    "%<mergeable%> clause");
+	  *detach_seen = OMP_CLAUSE_CHAIN (*detach_seen);
+	}
+      else
+	{
+	  tree detach_decl = OMP_CLAUSE_DECL (*detach_seen);
+
+	  for (pc = &clauses, c = clauses; c ; c = *pc)
+	    {
+	      bool remove = false;
+	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+		  && OMP_CLAUSE_DECL (c) == detach_decl)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "the event handle of a %<detach%> clause "
+			    "should not be in a data-sharing clause");
+		  remove = true;
+		}
+	      if (remove)
+		*pc = OMP_CLAUSE_CHAIN (c);
+	      else
+		pc = &OMP_CLAUSE_CHAIN (c);
+	    }
+	}
     }
 
   bitmap_obstack_release (NULL);

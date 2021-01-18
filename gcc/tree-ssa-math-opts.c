@@ -4170,6 +4170,7 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	rhs2 = fold_convert (type, rhs2);
       else
 	{
+	  g = SSA_NAME_DEF_STMT (rhs2);
 	  if (gimple_assign_cast_p (g)
 	      && useless_type_conversion_p (type,
 					    TREE_TYPE (gimple_assign_rhs1 (g)))

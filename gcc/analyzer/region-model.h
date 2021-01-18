@@ -463,6 +463,7 @@ class region_model
   bool impl_call_strlen (const call_details &cd);
   bool impl_call_operator_new (const call_details &cd);
   bool impl_call_operator_delete (const call_details &cd);
+  void impl_deallocation_call (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);

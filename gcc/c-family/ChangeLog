@@ -1,3 +1,25 @@
+2021-01-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	assume SSA_NAME_IDENTIFIER evaluates to nonzero.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DETACH.
+	Redefine PRAGMA_OACC_CLAUSE_DETACH.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98597
+	* c-pretty-print.c: Include options.h.
+	(c_fold_indirect_ref_for_warn): New function.
+	(print_mem_ref): Use it.  If it returns something that has compatible
+	type and is TBAA compatible with zero offset, print it and return,
+	otherwise print it using offsetof syntax or array ref syntax.  Fix up
+	printing if MEM_REFs first operand is ADDR_EXPR, or when the first
+	argument has pointer to array type.  Print pointers using the standard
+	formatting.
+
 2021-01-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/98597

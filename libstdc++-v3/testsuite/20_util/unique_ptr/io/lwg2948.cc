@@ -73,8 +73,10 @@ template<typename D>
 
 static_assert( streamable<std::ostream, Unique_ptr<deleter<char>>> );
 static_assert( ! streamable<std::ostream, Unique_ptr<deleter<wchar_t>>> );
+#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( ! streamable<std::wostream, Unique_ptr<deleter<char>>> );
 static_assert( streamable<std::wostream, Unique_ptr<deleter<wchar_t>>> );
+#endif
 
 void
 test02()

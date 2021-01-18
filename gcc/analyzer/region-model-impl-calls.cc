@@ -436,6 +436,15 @@ region_model::impl_call_strlen (const call_details &cd)
   return true;
 }
 
+/* Handle calls to functions referenced by
+   __attribute__((malloc(FOO))).  */
+
+void
+region_model::impl_deallocation_call (const call_details &cd)
+{
+  impl_call_free (cd);
+}
+
 } // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */

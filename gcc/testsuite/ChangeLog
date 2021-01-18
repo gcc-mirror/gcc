@@ -1,3 +1,202 @@
+2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/dwarf2/inline-ns-2.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/inline-var-2.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/inline-var-3.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp17.C: Skip on AIX.
+	* g++.dg/debug/dwarf2/lang-cpp20.C: Skip on AIX.
+	* gcc.dg/debug/dwarf2/inline6.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/lang-c11.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/pr41445-7.c: Skip on AIX.
+	* gcc.dg/debug/dwarf2/pr41445-8.c: Skip on AIX.
+
+2021-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98222
+	* gcc.dg/ipa/pr98222.c: New test.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Include
+	../../../libgfortran/ISO_Fortran_binding.h rather than
+	ISO_Fortran_binding.h.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/task-detach-1.c: New.
+	* g++.dg/gomp/task-detach-1.C: New.
+	* gcc.dg/gomp/task-detach-1.c: New.
+	* gfortran.dg/gomp/task-detach-1.f90: New.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96669
+	* gcc.dg/tree-ssa/pr96669-1.c: Adjust regexp.
+	* gcc.dg/tree-ssa/pr96669-2.c: New test.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96271
+	* gcc.target/i386/pr96271.c: New test.
+
+2021-01-15  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-p10-runnable.c: New test file.
+
+2021-01-15  Harris Snyder  <hsnyder@structura.bio>
+
+	* gfortran.dg/iso_fortran_binding_uint8_array.f90: New test.
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: New test.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98538
+	* g++.dg/template/pr98538.C: New.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95253
+	* g++.dg/modules/dep-1_a.C: Adjust expected output.
+	* g++.dg/modules/dep-1_b.C: Likewise.
+	* g++.dg/modules/dep-2.C: Likewise.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96669
+	* gcc.dg/tree-ssa/pr96669-1.c: New test.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96681
+	* gcc.dg/tree-ssa/pr96681.c: New test.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98642
+	* g++.dg/cpp1z/elide5.C: New test.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/elide4.C: New test.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* g++.dg/cpp0x/initlist-array13.C: New test.
+
+2021-01-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/alloca-leak.c: Drop alloca.h, use builtin.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-1.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-8.c: Likewise.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96671
+	* gcc.dg/tree-ssa/pr96671-1.c: New test.
+	* gcc.dg/tree-ssa/pr96671-2.c: New test.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98597
+	* gcc.dg/uninit-38.c: Expect a space in between type name and asterisk.
+	Expect for now a (char *) cast for VLAs.
+	* gcc.dg/uninit-40.c: New test.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98591
+	* g++.dg/modules/pr98591.H: New file.
+
+2021-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/88836
+	* gcc.target/aarch64/sve/acle/general/ldff1_8.c: New test.
+	* gcc.target/aarch64/sve/ptest_1.c: Likewise.
+
+2021-01-15  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Call lib atomic-dg.exp to link
+	libatomic into testcases in gcc.target/s390/md.
+	* gcc.target/s390/md/atomic_exchange-1.c: Remove no unnecessary
+	-latomic.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: Add tests for
+	vceqz_p64, vceqq_p64 and vceqzq_p64.
+	* gcc.target/arm/simd/vceqz_p64.c: New test.
+	* gcc.target/arm/simd/vceqzq_p64.c: New test.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Revert:
+	2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: Add tests for
+	vceqz_p64, vceqq_p64 and vceqzq_p64.
+
+2021-01-15  Martin Liska  <mliska@suse.cz>
+
+	* lib/gcov.exp: Use 'env python3' for execution of pytests.
+	Check that pytest accepts all needed options first.
+	Improve formatting of PASS/FAIL lines.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96147
+	* gcc.dg/vect/bb-slp-32.c: Align p.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96147
+	* gcc.dg/vect/bb-slp-9.c: Scan for a vector load transform.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96147
+	* gcc.dg/vect/slp-45.c: Key scanning on
+	vect_hw_misalign.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96147
+	* gcc.dg/vect/slp-43.c: Remove ! vect_hw_misalign scan.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/p64_p128.c: Add tests for
+	vceqz_p64, vceqq_p64 and vceqzq_p64.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/96098
+	* gcc.dg/vect/bb-slp-pr68892.c: Remove.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vshr.c: Add tests for vshr.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vshl.c: Add tests for vshl.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98685
+	* gcc.dg/vect/bb-slp-pr98685.c: New testcase.
+
+2021-01-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/complex/complex-mla-template.c: Fix sed.
+	* gcc.dg/vect/complex/complex-mls-template.c: Likewise.
+
 2021-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-GCC_EXTRA_DIAGNOSTIC_OUTPUT-fixits-v1.c:

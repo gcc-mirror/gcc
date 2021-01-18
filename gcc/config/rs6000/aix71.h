@@ -62,6 +62,9 @@ do {									\
       /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
       rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
     }									\
+  if (!global_options_set.x_dwarf_version)				\
+    /* AIX only supports DWARF 4.  */					\
+    dwarf_version = 4;							\
 } while (0)
 
 #define ASM_SPEC32 "-a32"

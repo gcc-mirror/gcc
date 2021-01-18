@@ -3117,13 +3117,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (op @0 { build_int_cst (TREE_TYPE (@1), low); })))))))
 
 
-/* ((1 << A) & 1) != 0 -> A == 0
-   ((1 << A) & 1) == 0 -> A != 0 */
+/* Simplify (CST << x) & 1 to 0 if CST is even or to x == 0 if it is odd.  */
+(simplify
+ (bit_and (lshift INTEGER_CST@1 @0) integer_onep)
+  (if ((wi::to_wide (@1) & 1) != 0)
+   (convert (eq:boolean_type_node @0 { build_zero_cst (TREE_TYPE (@0)); }))
+   { build_zero_cst (type); }))
+
+/* Simplify ((C << x) & D) != 0 where C and D are power of two constants,
+   either to false if D is smaller (unsigned comparison) than C, or to
+   x == log2 (D) - log2 (C).  Similarly for right shifts.  */
 (for cmp (ne eq)
      icmp (eq ne)
  (simplify
-  (cmp (bit_and (lshift integer_onep @0) integer_onep) integer_zerop)
-  (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
+  (cmp (bit_and (lshift integer_pow2p@1 @0) integer_pow2p@2) integer_zerop)
+   (with { int c1 = wi::clz (wi::to_wide (@1));
+	   int c2 = wi::clz (wi::to_wide (@2)); }
+    (if (c1 < c2)
+     { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
+     (icmp @0 { build_int_cst (TREE_TYPE (@0), c1 - c2); }))))
+ (simplify
+  (cmp (bit_and (rshift integer_pow2p@1 @0) integer_pow2p@2) integer_zerop)
+   (if (tree_int_cst_sgn (@1) > 0)
+    (with { int c1 = wi::clz (wi::to_wide (@1));
+	    int c2 = wi::clz (wi::to_wide (@2)); }
+     (if (c1 > c2)
+      { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
+      (icmp @0 { build_int_cst (TREE_TYPE (@0), c2 - c1); }))))))
 
 /* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
    (CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)
@@ -3992,6 +4012,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (cmp (sub@2 @0 @1) integer_zerop)
    (if (single_use (@2))
     (cmp @0 @1)))))
+
+/* Simplify (x < 0) ^ (y < 0) to (x ^ y) < 0 and
+   (x >= 0) ^ (y >= 0) to (x ^ y) < 0.  */
+(for cmp (lt ge)
+ (simplify
+  (bit_xor (cmp:s @0 integer_zerop) (cmp:s @1 integer_zerop))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& !TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+    (lt (bit_xor @0 @1) { build_zero_cst (TREE_TYPE (@0)); }))))
+/* Simplify (x < 0) ^ (y >= 0) to (x ^ y) >= 0 and
+   (x >= 0) ^ (y < 0) to (x ^ y) >= 0.  */
+(simplify
+ (bit_xor:c (lt:s @0 integer_zerop) (ge:s @1 integer_zerop))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+   (ge (bit_xor @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
 
 /* Transform comparisons of the form X * C1 CMP 0 to X CMP 0 in the
    signed arithmetic case.  That form is created by the compiler

@@ -9155,7 +9155,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-double-free} to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
-can have @code{free} called on it more than once.
+can have a deallocator called on it more than once, either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-exposure-through-output-file
 @opindex Wanalyzer-exposure-through-output-file
@@ -9196,7 +9197,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer allocated via @code{malloc} is leaked.
+pointer allocated via an allocator is leaked: either @code{malloc},
+or a function marked with attribute @code{malloc}.
 
 @item -Wno-analyzer-mismatching-deallocation
 @opindex Wanalyzer-mismatching-deallocation
@@ -9207,7 +9209,10 @@ to disable it.
 
 This diagnostic warns for paths through the code in which the
 wrong deallocation function is called on a pointer value, based on
-which function was used to allocate the pointer value.
+which function was used to allocate the pointer value.  The diagnostic
+will warn about mismatches between @code{free}, scalar @code{delete}
+and vector @code{delete[]}, and those marked as allocator/deallocator
+pairs using attribute @code{malloc}.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
@@ -9322,7 +9327,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-use-after-free} to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer is used after @code{free} is called on it.
+pointer is used after a deallocator is called on it: either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -9606,14 +9612,16 @@ possible.
 @itemx -gdwarf-@var{version}
 @opindex gdwarf
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3, 4 or 5; the default version
-for most targets is 4.  DWARF Version 5 is only experimental.
+The value of @var{version} may be either 2, 3, 4 or 5; the default
+version for most targets is 5 (with the exception of VxWorks, TPF and
+Darwin/Mac OS X, which default to version 2, and AIX, which defaults
+to version 4).
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
-for maximum benefit.
+for maximum benefit. Version 5 requires GDB 8.0 or higher.
 
 GCC no longer supports DWARF Version 1, which is substantially
 different than Version 2 and later.  For historical reasons, some
@@ -26121,6 +26129,26 @@ Currently, the following sets are defined:
 -mcustom-fdivs=255 @gol
 -fsingle-precision-constant}
 
+@option{-mcustom-fpu-cfg=fph2} is equivalent to:
+@gccoptlist{-mcustom-fabss=224 @gol
+-mcustom-fnegs=225 @gol
+-mcustom-fcmpnes=226 @gol
+-mcustom-fcmpeqs=227 @gol
+-mcustom-fcmpges=228 @gol
+-mcustom-fcmpgts=229 @gol
+-mcustom-fcmples=230 @gol
+-mcustom-fcmplts=231 @gol
+-mcustom-fmaxs=232 @gol
+-mcustom-fmins=233 @gol
+-mcustom-round=248 @gol
+-mcustom-fixsi=249 @gol
+-mcustom-floatis=250 @gol
+-mcustom-fsqrts=251 @gol
+-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol}
+
 Custom instruction assignments given by individual
 @option{-mcustom-@var{insn}=} options override those given by
 @option{-mcustom-fpu-cfg=}, regardless of the
@@ -26130,6 +26158,14 @@ Note that you can gain more local control over selection of a FPU
 configuration by using the @code{target("custom-fpu-cfg=@var{name}")}
 function attribute (@pxref{Function Attributes})
 or pragma (@pxref{Function Specific Option Pragmas}).
+
+The name @var{fph2} is an abbreviation for @emph{Nios II Floating Point
+Hardware 2 Component}.  Please note that the custom instructions enabled by
+@option{-mcustom-fmins=233} and @option{-mcustom-fmaxs=234} are only generated
+if @option{-ffinite-math-only} is specified.  The custom instruction enabled by
+@option{-mcustom-round=248} is only generated if @option{-fno-math-errno} is
+specified.  In contrast to the other configurations,
+@option{-fsingle-precision-constant} is not set.
 
 @end table
 

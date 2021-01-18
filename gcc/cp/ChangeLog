@@ -1,3 +1,48 @@
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_detach): New.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DETACH.
+	(OMP_TASK_CLAUSE_MASK): Add mask for PRAGMA_OMP_CLAUSE_DETACH.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	Prevent use of detach with mergeable and overriding the	data sharing
+	mode of the event handle.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98538
+	* tree.c (cp_build_qualified_type_real): Propagate an array's
+	dependentness to the copy, if known.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98642
+	* call.c (unsafe_return_slot_p): Return int.
+	(init_by_return_slot_p): Split out from...
+	(unsafe_copy_elision_p): ...here.
+	(unsafe_copy_elision_p_opt): New name for old meaning.
+	(build_over_call): Adjust.
+	(make_safe_copy_elision): New.
+	* typeck2.c (split_nonconstant_init_1): Elide copy from safe
+	list-initialization.
+	* cp-tree.h: Adjust.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (base_ctor_for, make_base_init_ok): New.
+	(build_over_call): Use make_base_init_ok.
+
+2021-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* tree.c (build_vec_init_expr): Don't call build_vec_init_elt
+	if we got a CONSTRUCTOR.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98591
+	* lang-specs.h: Fix handling of -fmodule-only with -fsyntax-only.
+
 2021-01-14  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (process_init_constructor_record): Use fldtype

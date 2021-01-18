@@ -13014,6 +13014,16 @@ call_dealloc_argno (tree exp)
   if (!fndecl)
     return UINT_MAX;
 
+  return fndecl_dealloc_argno (fndecl);
+}
+
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or UINT_MAX
+   if it isn't.  */
+
+unsigned
+fndecl_dealloc_argno (tree fndecl)
+{
   /* A call to operator delete isn't recognized as one to a built-in.  */
   if (DECL_IS_OPERATOR_DELETE_P (fndecl))
     return 0;

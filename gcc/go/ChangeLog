@@ -1,3 +1,7 @@
+2021-01-15  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/embed.o.
+
 2021-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (fgo-embedcfg=): Add full stop at the end of description.

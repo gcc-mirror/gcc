@@ -1339,6 +1339,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_DETACH:
 	do_decl_clause:
 	  if (pdecl == NULL)
 	    pdecl = &OMP_CLAUSE_DECL (clause);
@@ -2108,6 +2109,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_DETACH:
 	do_decl_clause:
 	  if (pdecl == NULL)
 	    pdecl = &OMP_CLAUSE_DECL (clause);

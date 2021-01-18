@@ -1340,10 +1340,12 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
-	  gcc_checking_assert (TYPE_DEPENDENT_P_VALID (type)
-			       || !dependent_type_p (type));
+	  /* If we already know the dependentness, tell the array type
+	     constructor.  This is important for module streaming, as we cannot
+	     dynamically determine that on read in.  */
 	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
-				      TYPE_DEPENDENT_P (type));
+				      TYPE_DEPENDENT_P_VALID (type)
+				      ? int (TYPE_DEPENDENT_P (type)) : -1);
 
 	  /* Keep the typedef name.  */
 	  if (TYPE_NAME (t) != TYPE_NAME (type))

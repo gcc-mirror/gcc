@@ -32,7 +32,7 @@
 /* add and rlwinm instructions only on the variable tests. */
 /* { dg-final { scan-assembler-times {\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "rlwinm" 3 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 6 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M} 9 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlha\M|\mlhz\M} 6 { target ilp32 } } } */
 
 

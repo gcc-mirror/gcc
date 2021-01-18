@@ -1,3 +1,8 @@
+2021-01-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:
+	Add -fcf-protection=none to -march=i486.
+
 2021-01-14  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/deque/debug/98466.cc: Make it pre-C++11

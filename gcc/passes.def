@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
-	  NEXT_PASS (pass_cd_dce);
+	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
 	  NEXT_PASS (pass_modref);
 	  NEXT_PASS (pass_tail_recursion);
@@ -272,7 +272,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
 	     empty loops.  Remove them now.  */
-	  NEXT_PASS (pass_cd_dce);
+	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_linterchange);
@@ -336,7 +336,9 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_dse);
-      NEXT_PASS (pass_cd_dce);
+      NEXT_PASS (pass_cd_dce, true /* update_address_taken_p */);
+      /* After late CD DCE we rewrite no longer addressed locals into SSA
+	 form if possible.  */
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_fold_builtins);

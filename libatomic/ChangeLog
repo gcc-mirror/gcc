@@ -1,3 +1,12 @@
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70454
+	* configure.tgt: For i?86 and x86_64 determine if -march=i486 needs to
+	be added through preprocessor check on
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.  Determine if try_ifunc is needed
+	based on preprocessor check on __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+	or __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

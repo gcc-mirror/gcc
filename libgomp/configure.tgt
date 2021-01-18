@@ -64,6 +64,10 @@ if test x$enable_linux_futex = xyes; then
 	config_path="linux/powerpc linux posix"
 	;;
 
+    riscv64*-*-linux*)
+	config_path="linux posix"
+	;;
+
     s390*-*-linux*)
 	config_path="linux/s390 linux posix"
 	;;

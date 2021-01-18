@@ -60,4 +60,5 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } */ 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_widen_sum_hi_to_si_pattern || { ! vect_unpack } } } } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" } } */
+/* Check we can elide permutes if SLP vectorizing the reduction.  */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" { xfail { vect_widen_sum_hi_to_si_pattern || { ! vect_unpack } } } } } */

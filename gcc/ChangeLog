@@ -1,3 +1,259 @@
+2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Override
+	dwarf_version to 4.
+	* config/rs6000/aix72.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+
+2021-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98222
+	* cgraph.c (clone_of_p): Check also former_clone_of as we climb
+	the clone tree.
+
+2021-01-17  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt (gdwarf-): Init(5).
+	* doc/invoke.texi (-gdwarf): Document default to 5.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* builtin-types.def
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT): Rename
+	to...
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR):
+	...this.  Add extra argument.
+	* gimplify.c (omp_default_clause): Ensure that event handle is
+	firstprivate in a task region.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_DETACH.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-builtins.def (BUILT_IN_GOMP_TASK): Change function type to
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR.
+	* omp-expand.c (expand_task_call): Add GOMP_TASK_FLAG_DETACH to flags
+	if detach clause specified.  Add detach argument when generating
+	call to	GOMP_task.
+	* omp-low.c (scan_sharing_clauses): Setup data environment for detach
+	clause.
+	(finish_taskreg_scan): Move field for variable containing the event
+	handle to the front of the struct.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DETACH.  Fix
+	ordering.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Handle
+	OMP_CLAUSE_DETACH clause.
+	(convert_local_omp_clauses): Handle OMP_CLAUSE_DETACH clause.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_DETACH.
+	* tree.c (omp_clause_num_ops): Add entry for OMP_CLAUSE_DETACH.
+	Fix ordering.
+	(omp_clause_code_name): Add entry for OMP_CLAUSE_DETACH.  Fix
+	ordering.
+	(walk_tree_1): Handle OMP_CLAUSE_DETACH.
+
+2021-01-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/nios2/t-rtems: Reset all MULTILIB_* variables.  Shorten
+	multilib directory names.  Use MULTILIB_REQUIRED instead of
+	MULTILIB_EXCEPTIONS.  Add -mhw-mul -mhw-mulx -mhw-div
+	-mcustom-fpu-cfg=fph2 multilib.
+
+2021-01-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/nios2/nios2.c (NIOS2_FPU_CONFIG_NUM): Adjust value.
+	(nios2_init_fpu_configs): Provide register values for new
+	-mcustom-fpu-cfg=fph2 option variant.
+	* doc/invoke.texi (-mcustom-fpu-cfg=fph2): Document new option
+	variant.
+
+2021-01-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/nios2/nios2.c (nios2_custom_check_insns): Remove
+	custom instruction warnings.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96669
+	* match.pd ((CST << x) & 1 -> x == 0): New simplification.
+
+2021-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96271
+	* passes.def: Pass false argument to first two pass_cd_dce
+	instances and true to last instance.  Add comment that
+	last instance rewrites no longer addressed locals.
+	* tree-ssa-dce.c (pass_cd_dce): Add update_address_taken_p member and
+	initialize it.
+	(pass_cd_dce::set_pass_param): New method.
+	(pass_cd_dce::execute): Return TODO_update_address_taken from
+	last cd_dce instance.
+
+2021-01-15  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_mulh, vec_div, vec_dive, vec_mod):
+	New defines.
+	* config/rs6000/altivec.md (VIlong): Move define to file vsx.md.
+	* config/rs6000/rs6000-builtin.def (DIVES_V4SI, DIVES_V2DI,
+	DIVEU_V4SI, DIVEU_V2DI, DIVS_V4SI, DIVS_V2DI, DIVU_V4SI,
+	DIVU_V2DI, MODS_V2DI, MODS_V4SI, MODU_V2DI, MODU_V4SI,
+	MULHS_V2DI, MULHS_V4SI, MULHU_V2DI, MULHU_V4SI, MULLD_V2DI):
+	Add builtin define.
+	(MULH, DIVE, MOD):  Add new BU_P10_OVERLOAD_2 definitions.
+	* config/rs6000/rs6000-call.c (VSX_BUILTIN_VEC_DIV,
+	VSX_BUILTIN_VEC_DIVE, P10_BUILTIN_VEC_MOD, P10_BUILTIN_VEC_MULH):
+	New overloaded definitions.
+	(builtin_function_type) [P10V_BUILTIN_DIVEU_V4SI,
+	P10V_BUILTIN_DIVEU_V2DI, P10V_BUILTIN_DIVU_V4SI,
+	P10V_BUILTIN_DIVU_V2DI, P10V_BUILTIN_MODU_V2DI,
+	P10V_BUILTIN_MODU_V4SI, P10V_BUILTIN_MULHU_V2DI,
+	P10V_BUILTIN_MULHU_V4SI]: Add case
+	statement for builtins.
+	* config/rs6000/rs6000.md (bits): Add new attribute sizes V4SI, V2DI.
+	* config/rs6000/vsx.md (VIlong): Moved from config/rs6000/altivec.md.
+	(UNSPEC_VDIVES, UNSPEC_VDIVEU): New unspec definitions.
+	(vsx_mul_v2di): Add if TARGET_POWER10 statement.
+	(vsx_udiv_v2di): Add if TARGET_POWER10 statement.
+	(dives_<mode>, diveu_<mode>, div<mode>3, uvdiv<mode>3,
+	mods_<mode>, modu_<mode>, mulhs_<mode>, mulhu_<mode>, mulv2di3):
+	Add define_insn, mode is VIlong.
+	* doc/extend.texi (vec_mulh, vec_mul, vec_div, vec_dive, vec_mod):
+	Add builtin descriptions.
+
+2021-01-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* final.c (final_start_function_1): Reset force_source_line.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96669
+	* match.pd (((1 << A) & 1) != 0 -> A == 0,
+	((1 << A) & 1) == 0 -> A != 0): Generalize for 1s replaced by
+	possibly different power of two constants and to right shift too.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96681
+	* match.pd ((x < 0) ^ (y < 0) to (x ^ y) < 0): New simplification.
+	((x >= 0) ^ (y >= 0) to (x ^ y) < 0): Likewise.
+	((x < 0) ^ (y >= 0) to (x ^ y) >= 0): Likewise.
+	((x >= 0) ^ (y < 0) to (x ^ y) >= 0): Likewise.
+
+2021-01-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* opts.c (gen_command_line_string): Exclude -dumpbase-ext.
+
+2021-01-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (cml<fcmac1><conj_op><mode>4,
+	cmul<conj_op><mode>3): New.
+	* config/aarch64/iterators.md (UNSPEC_FCMUL,
+	UNSPEC_FCMUL180, UNSPEC_FCMLA_CONJ, UNSPEC_FCMLA180_CONJ,
+	UNSPEC_CMLA_CONJ, UNSPEC_CMLA180_CONJ, UNSPEC_CMUL, UNSPEC_CMUL180,
+	FCMLA_OP, FCMUL_OP, conj_op, rotsplit1, rotsplit2, fcmac1, sve_rot1,
+	sve_rot2, SVE2_INT_CMLA_OP, SVE2_INT_CMUL_OP, SVE2_INT_CADD_OP): New.
+	(rot): Add UNSPEC_FCMUL, UNSPEC_FCMUL180.
+	(rot_op): Renamed to conj_op.
+	* config/aarch64/aarch64-sve.md (cml<fcmac1><conj_op><mode>4,
+	cmul<conj_op><mode>3): New.
+	* config/aarch64/aarch64-sve2.md (cml<fcmac1><conj_op><mode>4,
+	cmul<conj_op><mode>3): New.
+
+2021-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/98696
+	* diagnostic.c
+	(selftest::test_print_parseable_fixits_bytes_vs_display_columns):
+	Escape the tempfile name when constructing the expected output.
+
+2021-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>mlsl_hi<mode>):
+	Rename to...
+	(aarch64_<su>mlsl_hi<mode>): ... This.
+	(aarch64_<su>mlsl_hi<mode>): Define.
+	(*aarch64_<su>mlsl<mode): Rename to...
+	(aarch64_<su>mlsl<mode): ... This.
+	* config/aarch64/aarch64-simd-builtins.def (smlsl, umlsl,
+	smlsl_hi, umlsl_hi): Define builtins.
+	* config/aarch64/arm_neon.h (vmlsl_high_s8, vmlsl_high_s16,
+	vmlsl_high_s32, vmlsl_high_u8, vmlsl_high_u16, vmlsl_high_u32,
+	vmlsl_s8, vmlsl_s16, vmlsl_s32, vmlsl_u8,
+	vmlsl_u16, vmlsl_u32): Reimplement with builtins.
+
+2021-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-c.c (ix86_target_macros):
+	Use cpp_define_formatted for __SIZEOF_FLOAT80__ definition.
+
+2021-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/88836
+	* config.gcc (aarch64*-*-*): Add aarch64-cc-fusion.o to extra_objs.
+	* Makefile.in (RTL_SSA_H): New variable.
+	* config/aarch64/t-aarch64 (aarch64-cc-fusion.o): New rule.
+	* config/aarch64/aarch64-protos.h (make_pass_cc_fusion): Declare.
+	* config/aarch64/aarch64-passes.def: Add pass_cc_fusion after
+	pass_combine.
+	* config/aarch64/aarch64-cc-fusion.cc: New file.
+
+2021-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.h (insn_change_watermark::~insn_change_watermark): Avoid
+	calling cancel_changes for changes that no longer exist.
+
+2021-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/functions.h (function_info::ref_defs): Rename to...
+	(function_info::reg_defs): ...this.
+	* rtl-ssa/member-fns.inl (function_info::ref_defs): Rename to...
+	(function_info::reg_defs): ...this.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* config/arm/arm_neon.h (vceqz_p64, vceqq_p64, vceqzq_p64): New.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Revert:
+	2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* config/arm/arm_neon.h (vceqz_p64, vceqq_p64, vceqzq_p64): New.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96376
+	* tree-vect-stmts.c (get_load_store_type): Disregard alignment
+	for VMAT_INVARIANT.
+
+2021-01-15  Martin Liska  <mliska@suse.cz>
+
+	* doc/install.texi: Document that some tests need pytest module.
+	* doc/sourcebuild.texi: Likewise.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* config/arm/arm_neon.h (vceqz_p64, vceqq_p64, vceqzq_p64): New.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vshrq_n_s<mode>_imm): New entry.
+	(mve_vshrq_n_u<mode>_imm): Likewise.
+	* config/arm/neon.md (vashr<mode>3, vlshr<mode>3): Move to ...
+	* config/arm/vec-common.md: ... here.
+
+2021-01-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vshlq_<supf><mode>): Move to
+	vec-commond.md.
+	* config/arm/neon.md (vashl<mode>3): Delete.
+	* config/arm/vec-common.md (mve_vshlq_<supf><mode>): New.
+	(vasl<mode>3): New expander.
+
+2021-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98685
+	* tree-vect-slp.c (vect_schedule_slp_node): Refactor handling
+	of vector extern defs.
+
 2021-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/98586
