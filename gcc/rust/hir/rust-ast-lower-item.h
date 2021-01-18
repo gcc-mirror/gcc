@@ -38,10 +38,67 @@ public:
   {
     ASTLoweringItem resolver;
     item->accept_vis (resolver);
+
+    // this is useful for debugging
+    // if (resolver.translated == nullptr)
+    //   {
+    //     rust_fatal_error (item->get_locus_slow (), "failed to lower: %s",
+    //     		  item->as_string ().c_str ());
+    //     return nullptr;
+    //   }
+
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringItem () {}
+  void visit (AST::TupleStruct &struct_decl)
+  {
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+    std::vector<HIR::Attribute> outer_attrs;
+
+    std::vector<HIR::TupleField> fields;
+    struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
+      std::vector<HIR::Attribute> outer_attrs;
+      HIR::Visibility vis = HIR::Visibility::create_public ();
+      HIR::Type *type
+	= ASTLoweringType::translate (field.get_field_type ().get ());
+
+      auto crate_num = mappings->get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
+				     mappings->get_next_hir_id (crate_num),
+				     mappings->get_next_localdef_id (
+				       crate_num));
+
+      // FIXME
+      // AST::TupleField is missing Location info
+      Location field_locus;
+      HIR::TupleField translated_field (mapping,
+					std::unique_ptr<HIR::Type> (type), vis,
+					field_locus, outer_attrs);
+      fields.push_back (std::move (translated_field));
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, struct_decl.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::TupleStruct (mapping, std::move (fields),
+				       struct_decl.get_identifier (),
+				       std::move (generic_params),
+				       std::move (where_clause), vis,
+				       std::move (outer_attrs),
+				       struct_decl.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       struct_decl.get_locus ());
+  }
 
   void visit (AST::StructStruct &struct_decl)
   {
@@ -51,7 +108,7 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
     std::vector<HIR::Attribute> outer_attrs;
 
-    bool is_unit = false;
+    bool is_unit = struct_decl.is_unit_struct ();
     std::vector<HIR::StructField> fields;
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
       std::vector<HIR::Attribute> outer_attrs;

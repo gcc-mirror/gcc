@@ -86,24 +86,7 @@ public:
     ctx->add_statement (s);
   }
 
-  void visit (HIR::CallExpr &expr)
-  {
-    Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
-    rust_assert (fn != nullptr);
-
-    std::vector<Bexpression *> args;
-    expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-      Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-      rust_assert (compiled_expr != nullptr);
-      args.push_back (compiled_expr);
-      return true;
-    });
-
-    auto fncontext = ctx->peek_fn ();
-    translated
-      = ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
-					      nullptr, expr.get_locus ());
-  }
+  void visit (HIR::CallExpr &expr);
 
   void visit (HIR::IdentifierExpr &expr)
   {

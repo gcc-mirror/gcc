@@ -37,35 +37,32 @@ public:
     item->accept_vis (compiler);
   }
 
-  virtual ~CompileItem () {}
+  void visit (HIR::TupleStruct &struct_decl)
+  {
+    TyTy::TyBase *resolved = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_decl.get_mappings ().get_hirid (), &resolved))
+      {
+	rust_fatal_error (struct_decl.get_locus (),
+			  "Failed to lookup type for struct decl");
+	return;
+      }
+
+    TyTyResolveCompile::compile (ctx, resolved);
+  }
 
   void visit (HIR::StructStruct &struct_decl)
   {
-    std::vector<Backend::Btyped_identifier> fields;
-    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
-      TyTy::TyBase *resolved_type = nullptr;
-      bool ok
-	= ctx->get_tyctx ()->lookup_type (field.get_mappings ().get_hirid (),
-					  &resolved_type);
-      rust_assert (ok);
+    TyTy::TyBase *resolved = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_decl.get_mappings ().get_hirid (), &resolved))
+      {
+	rust_fatal_error (struct_decl.get_locus (),
+			  "Failed to lookup type for struct decl");
+	return;
+      }
 
-      Btype *compiled_field_ty
-	= TyTyCompile::compile (ctx->get_backend (), resolved_type);
-
-      Backend::Btyped_identifier f (field.field_name, compiled_field_ty,
-				    field.get_locus ());
-      fields.push_back (std::move (f));
-      return true;
-    });
-
-    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
-    Btype *named_struct
-      = ctx->get_backend ()->named_type (struct_decl.get_identifier (),
-					 struct_type_record,
-					 struct_decl.get_locus ());
-    ctx->push_type (named_struct);
-    ctx->insert_compiled_type (struct_decl.get_mappings ().get_hirid (),
-			       named_struct);
+    TyTyResolveCompile::compile (ctx, resolved);
   }
 
   void visit (HIR::StaticItem &var)

@@ -36,6 +36,13 @@ public:
 
   ~ResolveTopLevel () {}
 
+  void visit (AST::TupleStruct &struct_decl)
+  {
+    resolver->get_type_scope ().insert (struct_decl.get_identifier (),
+					struct_decl.get_node_id (),
+					struct_decl.get_locus ());
+  }
+
   void visit (AST::StructStruct &struct_decl)
   {
     resolver->get_type_scope ().insert (struct_decl.get_identifier (),

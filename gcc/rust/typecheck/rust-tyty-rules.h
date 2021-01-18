@@ -438,8 +438,9 @@ public:
 	fields.push_back ((TyTy::StructFieldType *) combined);
       }
 
-    resolved = new TyTy::ADTType (type.get_ref (), type.get_ty_ref (),
-				  type.get_name (), fields);
+    resolved
+      = new TyTy::ADTType (type.get_ref (), type.get_ty_ref (),
+			   type.get_name (), type.is_tuple_struct (), fields);
   }
 
 private:

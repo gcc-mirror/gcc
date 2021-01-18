@@ -40,10 +40,20 @@ public:
 
   ~ResolveItem () {}
 
+  void visit (AST::TupleStruct &struct_decl)
+  {
+    struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
+      ResolveType::go (field.get_field_type ().get (),
+		       struct_decl.get_node_id ());
+      return true;
+    });
+  }
+
   void visit (AST::StructStruct &struct_decl)
   {
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
-      ResolveType::go (field.get_field_type ().get (), field.get_node_id ());
+      ResolveType::go (field.get_field_type ().get (),
+		       struct_decl.get_node_id ());
       return true;
     });
   }

@@ -37,6 +37,32 @@ public:
     item->accept_vis (resolver);
   }
 
+  void visit (HIR::TupleStruct &struct_decl)
+  {
+    std::vector<TyTy::StructFieldType *> fields;
+
+    size_t idx = 0;
+    struct_decl.iterate ([&] (HIR::TupleField &field) mutable -> bool {
+      TyTy::TyBase *field_type
+	= TypeCheckType::Resolve (field.get_field_type ().get ());
+      TyTy::StructFieldType *ty_field
+	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
+				     std::to_string (idx), field_type);
+      fields.push_back (ty_field);
+      context->insert_type (field.get_mappings ().get_hirid (),
+			    ty_field->get_field_type ());
+      idx++;
+      return true;
+    });
+
+    TyTy::TyBase *type
+      = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
+			   struct_decl.get_identifier (), true,
+			   std::move (fields));
+
+    context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
+  }
+
   void visit (HIR::StructStruct &struct_decl)
   {
     std::vector<TyTy::StructFieldType *> fields;
@@ -54,7 +80,8 @@ public:
 
     TyTy::TyBase *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), std::move (fields));
+			   struct_decl.get_identifier (), false,
+			   std::move (fields));
 
     context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
   }

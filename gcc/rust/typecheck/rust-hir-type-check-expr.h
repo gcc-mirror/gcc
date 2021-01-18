@@ -77,7 +77,7 @@ public:
       }
     identifier += ")";
     infered = new TyTy::ADTType (expr.get_mappings ().get_hirid (), identifier,
-				 fields);
+				 true, fields);
   }
 
   void visit (HIR::ReturnExpr &expr)
@@ -94,14 +94,17 @@ public:
     auto fn = expr.get_fnexpr ();
     auto fn_node_id = fn->get_mappings ().get_nodeid ();
 
-    // then lookup the reference_node_id
+    // CallExpr might be a function but it might also be a TupleStruct
     NodeId ref_node_id;
     if (!resolver->lookup_resolved_name (fn_node_id, &ref_node_id))
       {
-	rust_error_at (expr.get_locus (),
-		       "Failed to lookup reference for node: %s",
-		       expr.as_string ().c_str ());
-	return;
+	if (!resolver->lookup_resolved_type (fn_node_id, &ref_node_id))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "Failed to lookup reference for node: %s",
+			   expr.as_string ().c_str ());
+	    return;
+	  }
       }
 
     // node back to HIR
@@ -109,7 +112,8 @@ public:
     if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
 				       ref_node_id, &ref))
       {
-	rust_error_at (expr.get_locus (), "reverse lookup failure");
+	rust_error_at (expr.get_locus (), "reverse lookup failure for node %u",
+		       ref_node_id);
 	return;
       }
 
@@ -125,6 +129,11 @@ public:
       }
 
     infered = TyTy::TypeCheckCallExpr::go (lookup, expr);
+    if (infered == nullptr)
+      {
+	rust_error_at (expr.get_locus (), "failed to lookup type to CallExpr");
+	return;
+      }
 
     TyTy::InferType infer (expr.get_mappings ().get_hirid ());
     infered = infer.combine (infered);

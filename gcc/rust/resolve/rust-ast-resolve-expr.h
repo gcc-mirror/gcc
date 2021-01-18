@@ -83,7 +83,6 @@ public:
       ResolveExpr::go (p, expr.get_node_id ());
       return true;
     });
-    // resolver->insert_resolved_name(NodeId refId,NodeId defId)
   }
 
   void visit (AST::AssignmentExpr &expr)

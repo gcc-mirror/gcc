@@ -32,7 +32,6 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
   if (!ctx->get_resolver ()->lookup_resolved_name (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
-      rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
       return;
     }
 
@@ -40,7 +39,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
     {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      rust_error_at (expr.get_locus (), "reverse lookup failure");
       return;
     }
 
@@ -54,14 +53,14 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 	expr.get_mappings ().get_crate_num (), ref);
       if (resolved_item == nullptr)
 	{
-	  rust_fatal_error (expr.get_locus (), "failed to lookup forward decl");
+	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");
 	  return;
 	}
 
       CompileItem::compile (resolved_item, ctx);
       if (!ctx->lookup_function_decl (ref, &fn))
 	{
-	  rust_fatal_error (expr.get_locus (), "forward decl was not compiled");
+	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
 	  return;
 	}
     }
@@ -78,7 +77,6 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
   if (!ctx->get_resolver ()->lookup_resolved_type (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
-      rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
       return;
     }
 
@@ -86,14 +84,14 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
     {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      rust_error_at (expr.get_locus (), "reverse lookup failure");
       return;
     }
 
   // assumes paths are functions for now
   if (!ctx->lookup_compiled_types (ref, &resolved))
     {
-      rust_fatal_error (expr.get_locus (), "forward decl was not compiled");
+      rust_error_at (expr.get_locus (), "forward decl was not compiled");
       return;
     }
 }

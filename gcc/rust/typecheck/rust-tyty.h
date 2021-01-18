@@ -169,15 +169,16 @@ private:
 class ADTType : public TyBase
 {
 public:
-  ADTType (HirId ref, std::string identifier,
+  ADTType (HirId ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields)
-    : TyBase (ref, ref, TypeKind::ADT), identifier (identifier), fields (fields)
+    : TyBase (ref, ref, TypeKind::ADT), identifier (identifier),
+      is_tuple (is_tuple), fields (fields)
   {}
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier,
+  ADTType (HirId ref, HirId ty_ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields)
     : TyBase (ref, ty_ref, TypeKind::ADT), identifier (identifier),
-      fields (fields)
+      is_tuple (is_tuple), fields (fields)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -191,6 +192,8 @@ public:
   size_t num_fields () const { return fields.size (); }
 
   std::string get_name () const { return identifier; }
+
+  bool is_tuple_struct () const { return is_tuple; }
 
   StructFieldType *get_field (size_t index) { return fields.at (index); }
 
@@ -218,6 +221,7 @@ public:
 
 private:
   std::string identifier;
+  bool is_tuple;
   std::vector<StructFieldType *> fields;
 };
 

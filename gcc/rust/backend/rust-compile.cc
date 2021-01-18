@@ -48,6 +48,53 @@ CompileCrate::go ()
     CompileItem::compile (item.get (), ctx, true);
 }
 
+// rust-compile-expr.h
+
+void
+CompileExpr::visit (HIR::CallExpr &expr)
+{
+  // this can be a function call or it can be a constructor for a tuple struct
+  Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
+  if (fn != nullptr)
+    {
+      std::vector<Bexpression *> args;
+      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
+	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
+	rust_assert (compiled_expr != nullptr);
+	args.push_back (compiled_expr);
+	return true;
+      });
+
+      auto fncontext = ctx->peek_fn ();
+      translated
+	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
+						nullptr, expr.get_locus ());
+    }
+  else
+    {
+      Btype *type = ResolvePathType::Compile (expr.get_fnexpr (), ctx);
+      if (type == nullptr)
+	{
+	  rust_fatal_error (expr.get_locus (),
+			    "failed to lookup type associated with call");
+	  return;
+	}
+
+      // this assumes all fields are in order from type resolution and if a base
+      // struct was specified those fields are filed via accesors
+      std::vector<Bexpression *> vals;
+      expr.iterate_params ([&] (HIR::Expr *argument) mutable -> bool {
+	Bexpression *e = CompileExpr::Compile (argument, ctx);
+	vals.push_back (e);
+	return true;
+      });
+
+      translated
+	= ctx->get_backend ()->constructor_expression (type, vals,
+						       expr.get_locus ());
+    }
+}
+
 // rust-compile-block.h
 
 void

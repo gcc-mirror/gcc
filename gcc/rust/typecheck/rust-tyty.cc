@@ -157,7 +157,8 @@ ADTType::clone ()
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), get_name (), cloned_fields);
+  return new ADTType (get_ref (), get_ty_ref (), get_name (),
+		      is_tuple_struct (), cloned_fields);
 }
 
 void
@@ -387,11 +388,62 @@ FloatType::clone ()
 }
 
 void
+TypeCheckCallExpr::visit (ADTType &type)
+{
+  if (!type.is_tuple_struct ())
+    {
+      rust_error_at (call.get_locus (), "Expected TupleStruct");
+      return;
+    }
+
+  if (call.num_params () != type.num_fields ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_fields ());
+      return;
+    }
+
+  size_t i = 0;
+  call.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
+    StructFieldType *field = type.get_field (i);
+    TyBase *field_tyty = field->get_field_type ();
+
+    TyBase *arg = Resolver::TypeCheckExpr::Resolve (p);
+    if (arg == nullptr)
+      {
+	rust_error_at (p->get_locus_slow (), "failed to resolve argument type");
+	return false;
+      }
+
+    auto res = field_tyty->combine (arg);
+    if (res == nullptr)
+      return false;
+
+    delete res;
+    i++;
+    return true;
+  });
+
+  if (i != call.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
+
+  resolved = type.clone ();
+}
+
+void
 TypeCheckCallExpr::visit (FnType &type)
 {
   if (call.num_params () != type.num_params ())
     {
-      rust_error_at (call.get_locus (), "differing number of arguments");
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_params ());
       return;
     }
 
@@ -409,12 +461,18 @@ TypeCheckCallExpr::visit (FnType &type)
     if (res == nullptr)
       return false;
 
+    delete res;
     i++;
     return true;
   });
 
   if (i != call.num_params ())
-    return;
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
 
   resolved = type.get_return_type ();
 }

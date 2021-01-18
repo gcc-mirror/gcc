@@ -107,7 +107,7 @@ public:
       }
     identifier += ")";
     translated = new TyTy::ADTType (tuple.get_mappings ().get_hirid (),
-				    identifier, fields);
+				    identifier, true, fields);
   }
 
   void visit (HIR::TypePath &path)
