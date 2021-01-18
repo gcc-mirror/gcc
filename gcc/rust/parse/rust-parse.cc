@@ -41,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 // maybe put these back in if compiling no longer works
 
-#include <algorithm> // for std::find
-
 /* TODO: move non-essential stuff back here from rust-parse-impl.h after
  * confirming that it works */
 

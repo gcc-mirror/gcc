@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-diagnostics.h"
 
-#include <algorithm> // for std::find
-
 namespace Rust {
 // Left binding powers of operations.
 enum binding_powers
