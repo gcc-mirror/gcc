@@ -47,6 +47,11 @@ static inline void gomp_sem_post (gomp_sem_t *sem)
   _Semaphore_Post (sem);
 }
 
+static inline int gomp_sem_getcount (gomp_sem_t *sem)
+{
+  return (int) __atomic_load_n (&sem->_count, MEMMODEL_RELAXED);
+}
+
 static inline void gomp_sem_destroy (gomp_sem_t *sem)
 {
   _Semaphore_Destroy (sem);
