@@ -330,7 +330,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 static bool
 task_fulfilled_p (struct gomp_task *task)
 {
-  return __atomic_load_n (&task->completion_sem, __ATOMIC_RELAXED);
+  return gomp_sem_getcount (&task->completion_sem) > 0;
 }
 
 /* Called when encountering an explicit task directive.  If IF_CLAUSE is
@@ -2406,7 +2406,7 @@ omp_fulfill_event (omp_event_handle_t event)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr ? thr->ts.team : NULL;
 
-  if (__atomic_load_n (sem, __ATOMIC_RELAXED))
+  if (gomp_sem_getcount (sem) > 0)
     gomp_fatal ("omp_fulfill_event: %p event already fulfilled!\n", sem);
 
   gomp_debug (0, "omp_fulfill_event: %p\n", sem);

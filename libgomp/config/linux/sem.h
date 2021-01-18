@@ -85,4 +85,13 @@ gomp_sem_post (gomp_sem_t *sem)
   if (__builtin_expect (count & SEM_WAIT, 0))
     gomp_sem_post_slow (sem);
 }
+
+static inline int
+gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int count = __atomic_load_n (sem, MEMMODEL_RELAXED);
+  if ((count & SEM_WAIT) != 0)
+    return -1;
+  return count / SEM_INC;
+}
 #endif /* GOMP_SEM_H */
