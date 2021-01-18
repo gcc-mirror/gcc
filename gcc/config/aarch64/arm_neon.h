@@ -7035,13 +7035,7 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_n_f32 (float32x2_t __a, float32x2_t __b, float32_t __c)
 {
-  float32x2_t __result;
-  float32x2_t __t1;
-  __asm__ ("fmul %1.2s, %3.2s, %4.s[0]; fadd %0.2s, %0.2s, %1.2s"
-           : "=w"(__result), "=w"(__t1)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_mla_nv2sf (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x4_t
@@ -7388,13 +7382,7 @@ __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
 {
-  float32x4_t __result;
-  float32x4_t __t1;
-  __asm__ ("fmul %1.4s, %3.4s, %4.s[0]; fadd %0.4s, %0.4s, %1.4s"
-           : "=w"(__result), "=w"(__t1)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_mla_nv4sf (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
@@ -7481,13 +7469,7 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_f32 (float32x2_t __a, float32x2_t __b, float32_t __c)
 {
-  float32x2_t __result;
-  float32x2_t __t1;
-  __asm__ ("fmul %1.2s, %3.2s, %4.s[0]; fsub %0.2s, %0.2s, %1.2s"
-           : "=w"(__result), "=w"(__t1)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_mls_nv2sf (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x4_t
@@ -7838,13 +7820,7 @@ __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_f32 (float32x4_t __a, float32x4_t __b, float32_t __c)
 {
-  float32x4_t __result;
-  float32x4_t __t1;
-  __asm__ ("fmul %1.4s, %3.4s, %4.s[0]; fsub %0.4s, %0.4s, %1.4s"
-           : "=w"(__result), "=w"(__t1)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_mls_nv4sf (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t

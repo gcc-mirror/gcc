@@ -750,14 +750,14 @@
   [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mul3_elt_from_dup<mode>"
+(define_insn "mul_n<mode>3"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
-    (mult:VMUL
-      (vec_duplicate:VMUL
-	    (match_operand:<VEL> 1 "register_operand" "<h_con>"))
-      (match_operand:VMUL 2 "register_operand" "w")))]
+       (mult:VMUL
+	 (vec_duplicate:VMUL
+	   (match_operand:<VEL> 2 "register_operand" "<h_con>"))
+	 (match_operand:VMUL 1 "register_operand" "w")))]
   "TARGET_SIMD"
-  "<f>mul\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]";
+  "<f>mul\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[0]";
   [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
@@ -2634,6 +2634,40 @@
  "TARGET_SIMD"
  "fabs\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "type" "neon_fp_abs_<stype><q>")]
+)
+
+(define_expand "aarch64_float_mla_n<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand")
+	(plus:VDQSF
+	  (mult:VDQSF
+	    (vec_duplicate:VDQSF
+	      (match_operand:<VEL> 3 "register_operand"))
+	    (match_operand:VDQSF 2 "register_operand"))
+	  (match_operand:VDQSF 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul_n<mode>3 (scratch, operands[2], operands[3]));
+    emit_insn (gen_add<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_float_mls_n<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand")
+	(minus:VDQSF
+	  (match_operand:VDQSF 1 "register_operand")
+	  (mult:VDQSF
+	    (vec_duplicate:VDQSF
+	      (match_operand:<VEL> 3 "register_operand"))
+	    (match_operand:VDQSF 2 "register_operand"))))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul_n<mode>3 (scratch, operands[2], operands[3]));
+    emit_insn (gen_sub<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
 )
 
 (define_insn "fma<mode>4"
