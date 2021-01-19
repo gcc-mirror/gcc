@@ -2074,6 +2074,19 @@
   [(set_attr "type" "neon_mul_<Vetype>_scalar_long")]
 )
 
+(define_insn "aarch64_<su>mull_n<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (mult:<VWIDE>
+          (ANY_EXTEND:<VWIDE>
+            (vec_duplicate:<VCOND>
+	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))
+          (ANY_EXTEND:<VWIDE>
+            (match_operand:VD_HSI 1 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "<su>mull\t%0.<Vwtype>, %1.<Vtype>, %2.<Vetype>[0]"
+  [(set_attr "type" "neon_mul_<Vetype>_scalar_long")]
+)
+
 ;; vmlal_lane_s16 intrinsics
 (define_insn "aarch64_vec_<su>mlal_lane<Qlane>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
