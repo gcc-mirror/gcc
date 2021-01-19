@@ -8,6 +8,7 @@ class i {
     struct j {
 	using c = int *;
     };
+public:
     using as = j::c;
 };
 template <typename> class k {
