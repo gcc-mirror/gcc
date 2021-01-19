@@ -1,3 +1,68 @@
+2021-01-18  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/debug/dwarf2/pr41445-7.c: Fix expected output.
+
+2021-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp1z/class-deduction77.C: New test.
+
+2021-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98727
+	* gcc.c-torture/execute/pr98727.c: New test.
+
+2021-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/97987
+	* gcc.c-torture/compile/asmgoto-2.c: Skip on hppa.
+	* gcc.c-torture/compile/asmgoto-5.c: Likewise.
+
+2021-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/no-stack-protector-attr-3.C: Don't compile on hppa*-*-*.
+	* g++.dg/no-stack-protector-attr.C: Likewise.
+
+2021-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/attr-malloc-1.c: New test.
+	* gcc.dg/analyzer/attr-malloc-2.c: New test.
+	* gcc.dg/analyzer/attr-malloc-4.c: New test.
+	* gcc.dg/analyzer/attr-malloc-5.c: New test.
+	* gcc.dg/analyzer/attr-malloc-6.c: New test.
+	* gcc.dg/analyzer/attr-malloc-CVE-2019-19078-usb-leak.c: New test.
+	* gcc.dg/analyzer/attr-malloc-misuses.c: New test.
+
+2021-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/slp-11b.c: Adjust.
+
+2021-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/arm/simd/vceqz_p64.c: Use arm_crypto options.
+	* gcc.target/arm/simd/vceqzq_p64.c: Likewise.
+
+2021-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97299
+	* gcc.dg/vect/slp-reduc-3.c: Guard VEC_PERM_EXPR scan.
+
+2021-01-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: Adjust addi count.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: Same.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Same.
+	* gcc.target/powerpc/sse-andnps-1.c: Restrict to LE.
+	* gcc.target/powerpc/sse-movhps-1.c: Restrict to LE.
+	* gcc.target/powerpc/sse-movlps-1.c: Restrict to LE.
+	* gcc.target/powerpc/sse2-andnpd-1.c: Restrict to LE.
+
 2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/inline-ns-2.C: Skip on AIX.

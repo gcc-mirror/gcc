@@ -1,3 +1,30 @@
+2021-01-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97847
+	* ira.c (ira): Skip abnormal critical edge splitting.
+
+2021-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98727
+	* tree-ssa-math-opts.c (match_arith_overflow): Fix up computation of
+	second .MUL_OVERFLOW operand for signed multiplication with overflow
+	checking if the second operand of multiplication is not constant.
+
+2021-01-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* doc/invoke.texi (-gdwarf): TPF defaults to version 2 and AIX
+	defaults to version 4.
+
+2021-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.h (fndecl_dealloc_argno): New decl.
+	* builtins.c (call_dealloc_argno): Split out second half of
+	function into...
+	(fndecl_dealloc_argno): New.
+	* doc/extend.texi (Common Function Attributes): Document the
+	interaction between the analyzer and the malloc attribute.
+	* doc/invoke.texi (Static Analyzer Options): Likewise.
+
 2021-01-17  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Override

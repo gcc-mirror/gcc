@@ -1247,11 +1247,13 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
 	    && (!fnspec.global_memory_read_p ()
 		|| !fnspec.global_memory_written_p ()))
 	  {
-	    fnspec_summaries->get_create
-		 (cgraph_node::get (current_function_decl)->get_edge (stmt))
-			->fnspec = xstrdup (fnspec.get_str ());
-	    if (dump_file)
-	      fprintf (dump_file, "  Recorded fnspec %s\n", fnspec.get_str ());
+	    cgraph_edge *e = cgraph_node::get (current_function_decl)->get_edge (stmt);
+	    if (e->callee)
+	      {
+		fnspec_summaries->get_create (e)->fnspec = xstrdup (fnspec.get_str ());
+		if (dump_file)
+		  fprintf (dump_file, "  Recorded fnspec %s\n", fnspec.get_str ());
+	      }
 	  }
       }
      return true;

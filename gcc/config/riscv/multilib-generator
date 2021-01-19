@@ -68,14 +68,14 @@ def arch_canonicalize(arch):
 def _expand_combination(ext):
   exts = list(ext.split("*"))
 
-  # No need to expand if there is no `*`.
-  if len(exts) == 1:
-    return [(exts[0],)]
-
   # Add underline to every extension.
   # e.g.
   #  _b * zvamo => _b * _zvamo
   exts = list(map(lambda x: '_' + x, exts))
+
+  # No need to expand if there is no `*`.
+  if len(exts) == 1:
+    return [(exts[0],)]
 
   # Generate combination!
   ext_combs = []
@@ -147,7 +147,9 @@ for cfg in sys.argv[1:]:
   # Drop duplicated entry.
   alts = unique(alts)
 
-  for alt in alts[1:]:
+  for alt in alts:
+    if alt == arch:
+      continue
     arches[alt] = 1
     reuse.append('march.%s/mabi.%s=march.%s/mabi.%s' % (arch, abi, alt, abi))
   required.append('march=%s/mabi=%s' % (arch, abi))

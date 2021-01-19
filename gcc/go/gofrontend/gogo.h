@@ -397,6 +397,10 @@ class Gogo
   void
   read_embedcfg(const char* filename);
 
+  // Return whether the current file imports "embed".
+  bool
+  is_embed_imported() const;
+
   // Return whether to check for division by zero in binary operations.
   bool
   check_divide_by_zero() const
@@ -2276,6 +2280,16 @@ class Variable
     this->is_referenced_by_inline_ = true;
   }
 
+  // Attach any go:embed comments for this variable.
+  void
+  set_embeds(std::vector<std::string>* embeds)
+  {
+    go_assert(this->is_global_
+	      && this->init_ == NULL
+	      && this->preinit_ == NULL);
+    this->embeds_ = embeds;
+  }
+
   // Return the top-level declaration for this variable.
   Statement*
   toplevel_decl()
@@ -2346,6 +2360,8 @@ class Variable
   Block* preinit_;
   // Location of variable definition.
   Location location_;
+  // Any associated go:embed comments.
+  std::vector<std::string>* embeds_;
   // Backend representation.
   Bvariable* backend_;
   // Whether this is a global variable.

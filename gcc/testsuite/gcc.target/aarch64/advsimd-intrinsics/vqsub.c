@@ -46,24 +46,6 @@ VECT_VAR_DECL(expected,uint,32,4) [] = { 0xffffff79, 0xffffff7a,
 VECT_VAR_DECL(expected,uint,64,2) [] = { 0xffffffffffffff68,
 					 0xffffffffffffff69 };
 
-/* Expected values of cumulative saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,64,2) = 0;
-
 /* 64-bits types, with 0 as second input.  */
 VECT_VAR_DECL(expected_64,int,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected_64,uint,64,1) [] = { 0xfffffffffffffff0 };
@@ -71,11 +53,6 @@ VECT_VAR_DECL(expected_64,int,64,2) [] = { 0xfffffffffffffff0,
 					   0xfffffffffffffff1 };
 VECT_VAR_DECL(expected_64,uint,64,2) [] = { 0xfffffffffffffff0,
 					    0xfffffffffffffff1 };
-int VECT_VAR(expected_cumulative_sat_64,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_64,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_64,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_64,uint,64,2) = 0;
-
 /* 64-bits types, other cases.  */
 VECT_VAR_DECL(expected_64_2,int,64,1) [] = { 0xffffffffffffffac };
 VECT_VAR_DECL(expected_64_2,uint,64,1) [] = { 0xffffffffffffff68 };
@@ -83,10 +60,6 @@ VECT_VAR_DECL(expected_64_2,int,64,2) [] = { 0xffffffffffffffac,
 					     0xffffffffffffffad };
 VECT_VAR_DECL(expected_64_2,uint,64,2) [] = { 0xffffffffffffff68,
 					      0xffffffffffffff69 };
-int VECT_VAR(expected_cumulative_sat_64_2,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_64_2,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_64_2,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_64_2,uint,64,2) = 0;
 
 /* 64-bits types, all causing cumulative saturation.  */
 VECT_VAR_DECL(expected_64_3,int,64,1) [] = { 0x8000000000000000 };
@@ -94,10 +67,6 @@ VECT_VAR_DECL(expected_64_3,uint,64,1) [] = { 0x0 };
 VECT_VAR_DECL(expected_64_3,int,64,2) [] = { 0x7fffffffffffffff,
 					     0x7fffffffffffffff };
 VECT_VAR_DECL(expected_64_3,uint,64,2) [] = { 0x0, 0x0 };
-int VECT_VAR(expected_cumulative_sat_64_3,int,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_64_3,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_64_3,int,64,2) = 1;
-int VECT_VAR(expected_cumulative_sat_64_3,uint,64,2) = 1;
 
 /* smaller types, corner cases causing cumulative saturation. (1)  */
 VECT_VAR_DECL(expected_lt_64_1,int,8,8) [] = { 0x80, 0x80, 0x80, 0x80,
@@ -115,13 +84,6 @@ VECT_VAR_DECL(expected_lt_64_1,int,16,8) [] = { 0x8000, 0x8000,
 						0x8000, 0x8000 };
 VECT_VAR_DECL(expected_lt_64_1,int,32,4) [] = { 0x80000000, 0x80000000,
 						0x80000000, 0x80000000 };
-int VECT_VAR(expected_csat_lt_64_1,int,8,8) = 1;
-int VECT_VAR(expected_csat_lt_64_1,int,16,4) = 1;
-int VECT_VAR(expected_csat_lt_64_1,int,32,2) = 1;
-int VECT_VAR(expected_csat_lt_64_1,int,8,16) = 1;
-int VECT_VAR(expected_csat_lt_64_1,int,16,8) = 1;
-int VECT_VAR(expected_csat_lt_64_1,int,32,4) = 1;
-
 /* smaller types, corner cases causing cumulative saturation. (2)  */
 VECT_VAR_DECL(expected_lt_64_2,uint,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
 						0x0, 0x0, 0x0, 0x0 };
@@ -134,12 +96,6 @@ VECT_VAR_DECL(expected_lt_64_2,uint,8,16) [] = { 0x0, 0x0, 0x0, 0x0,
 VECT_VAR_DECL(expected_lt_64_2,uint,16,8) [] = { 0x0, 0x0, 0x0, 0x0,
 						 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_lt_64_2,uint,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
-int VECT_VAR(expected_csat_lt_64_2,uint,8,8) = 1;
-int VECT_VAR(expected_csat_lt_64_2,uint,16,4) = 1;
-int VECT_VAR(expected_csat_lt_64_2,uint,32,2) = 1;
-int VECT_VAR(expected_csat_lt_64_2,uint,8,16) = 1;
-int VECT_VAR(expected_csat_lt_64_2,uint,16,8) = 1;
-int VECT_VAR(expected_csat_lt_64_2,uint,32,4) = 1;
 
 void vqsub_extras(void)
 {
@@ -157,10 +113,10 @@ void vqsub_extras(void)
   VDUP(vector2, q, uint, u, 64, 2, 0x0);
 
 #define MSG "64 bits saturation when adding zero"
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, expected_cumulative_sat_64, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, expected_cumulative_sat_64, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, expected_cumulative_sat_64, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, expected_cumulative_sat_64, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, MSG);
 
   CHECK(TEST_MSG, int, 64, 1, PRIx64, expected_64, MSG);
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected_64, MSG);
@@ -175,10 +131,10 @@ void vqsub_extras(void)
 
 #undef MSG
 #define MSG "64 bits saturation cumulative_sat (2)"
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, expected_cumulative_sat_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, expected_cumulative_sat_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, expected_cumulative_sat_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, expected_cumulative_sat_64_2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, MSG);
 
   CHECK(TEST_MSG, int, 64, 1, PRIx64, expected_64_2, MSG);
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected_64_2, MSG);
@@ -197,10 +153,10 @@ void vqsub_extras(void)
 
 #undef MSG
 #define MSG "64 bits saturation cumulative_sat (3)"
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, expected_cumulative_sat_64_3, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, expected_cumulative_sat_64_3, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, expected_cumulative_sat_64_3, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, expected_cumulative_sat_64_3, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 64, 1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 64, 2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 64, 2, MSG);
 
   CHECK(TEST_MSG, int, 64, 1, PRIx64, expected_64_3, MSG);
   CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected_64_3, MSG);
@@ -218,12 +174,12 @@ void vqsub_extras(void)
 
 #undef MSG
 #define MSG "less than 64 bits saturation cumulative_sat (1)"
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 8, 8, expected_csat_lt_64_1, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 16, 4, expected_csat_lt_64_1, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 32, 2, expected_csat_lt_64_1, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, expected_csat_lt_64_1, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, expected_csat_lt_64_1, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, expected_csat_lt_64_1, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 8, 8, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 16, 4, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , int, s, 32, 2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 8, 16, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 16, 8, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, MSG);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_lt_64_1, MSG);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_lt_64_1, MSG);
@@ -250,12 +206,12 @@ void vqsub_extras(void)
 
 #undef MSG
 #define MSG "less than 64 bits saturation cumulative_sat (2)"
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 8, 8, expected_csat_lt_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 16, 4, expected_csat_lt_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 32, 2, expected_csat_lt_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 8, 16, expected_csat_lt_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 16, 8, expected_csat_lt_64_2, MSG);
-  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 32, 4, expected_csat_lt_64_2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 8, 8, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 16, 4, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, , uint, u, 32, 2, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 8, 16, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 16, 8, MSG);
+  TEST_BINARY_SAT_OP(INSN_NAME, q, uint, u, 32, 4, MSG);
 
   CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_lt_64_2, MSG);
   CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_lt_64_2, MSG);

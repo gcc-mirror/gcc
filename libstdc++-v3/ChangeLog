@@ -1,3 +1,22 @@
+2021-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* testsuite/20_util/unique_ptr/io/lwg2948.cc:  Do not try to
+	write to a wide character stream if wide character support is
+	disabled in the library.
+
+2021-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Use
+	stringbuf not wstringbuf.
+
+2021-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98708
+	* src/c++11/Makefile.am (cxx11-ios_failure-lt.s, cxx11-ios_failure.s):
+	Compile with -gno-as-loc-support.
+	* src/c++11/Makefile.in: Regenerated.
+
 2021-01-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	* testsuite/29_atomics/atomic_flag/test_and_set/explicit-hle.cc:

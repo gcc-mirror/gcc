@@ -6215,6 +6215,12 @@ tree_function_versioning (tree old_decl, tree new_decl,
   auto_vec<gimple *, 10> init_stmts;
   tree vars = NULL_TREE;
 
+  /* We can get called recursively from expand_call_inline via clone
+     materialization.  While expand_call_inline maintains input_location
+     we cannot tolerate it to leak into the materialized clone.  */
+  location_t saved_location = input_location;
+  input_location = UNKNOWN_LOCATION;
+
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
@@ -6516,6 +6522,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   gcc_assert (!id.debug_stmts.exists ());
   pop_cfun ();
+  input_location = saved_location;
   return;
 }
 

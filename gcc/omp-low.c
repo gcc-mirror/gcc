@@ -12520,7 +12520,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    || omp_is_allocatable_or_ptr (ovar))
 		  {
 		    type = TREE_TYPE (type);
-		    if (TREE_CODE (type) != ARRAY_TYPE
+		    if (POINTER_TYPE_P (type)
+			&& TREE_CODE (type) != ARRAY_TYPE
 			&& ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_is_reference (ovar)
@@ -12784,7 +12785,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (omp_is_reference (var))
 		  {
 		    type = TREE_TYPE (type);
-		    if (TREE_CODE (type) != ARRAY_TYPE
+		    if (POINTER_TYPE_P (type)
+			&& TREE_CODE (type) != ARRAY_TYPE
 			&& (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
 			    || (omp_is_reference (var)
 				&& omp_is_allocatable_or_ptr (var))))
