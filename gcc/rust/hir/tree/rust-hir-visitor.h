@@ -77,7 +77,6 @@ public:
   virtual void visit (LazyBooleanExpr &expr) = 0;
   virtual void visit (TypeCastExpr &expr) = 0;
   virtual void visit (AssignmentExpr &expr) = 0;
-  virtual void visit (CompoundAssignmentExpr &expr) = 0;
   virtual void visit (GroupedExpr &expr) = 0;
   // virtual void visit(ArrayElems& elems) = 0;
   virtual void visit (ArrayElemsValues &elems) = 0;

@@ -116,6 +116,12 @@ public:
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::CompoundAssignmentExpr &expr)
+  {
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+  }
+
   void visit (AST::ComparisonExpr &expr)
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());

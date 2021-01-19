@@ -532,6 +532,64 @@ public:
 			       std::move (outer_attribs), expr.get_locus ());
   }
 
+  void visit (AST::CompoundAssignmentExpr &expr)
+  {
+    HIR::ArithmeticOrLogicalExpr::ExprType kind
+      = HIR::ArithmeticOrLogicalExpr::ExprType::ADD;
+    switch (expr.get_expr_type ())
+      {
+      case AST::CompoundAssignmentExpr::ExprType::ADD:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::ADD;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::SUBTRACT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::SUBTRACT;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::MULTIPLY:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::MULTIPLY;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::DIVIDE:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::DIVIDE;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::MODULUS:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::MODULUS;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_AND:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_AND;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_OR:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_OR;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_XOR:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_XOR;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::LEFT_SHIFT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::LEFT_SHIFT;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::RIGHT_SHIFT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::RIGHT_SHIFT;
+	break;
+      }
+
+    HIR::Expr *asignee_expr
+      = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
+    HIR::Expr *value
+      = ASTLoweringExpr::translate (expr.get_right_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    HIR::Expr *operator_expr
+      = new HIR::ArithmeticOrLogicalExpr (mapping, asignee_expr->clone_expr (),
+					  std::unique_ptr<HIR::Expr> (value),
+					  kind, expr.get_locus ());
+    translated
+      = new HIR::AssignmentExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (asignee_expr),
+				 std::unique_ptr<HIR::Expr> (operator_expr),
+				 expr.get_locus ());
+  }
+
   void visit (AST::StructExprStructFields &struct_expr)
   {
     std::vector<HIR::Attribute> inner_attribs;
