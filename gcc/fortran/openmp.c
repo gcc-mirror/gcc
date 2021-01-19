@@ -5345,22 +5345,25 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		}
 	    break;
 	  case OMP_LIST_IS_DEVICE_PTR:
-	    if (!n->sym->attr.dummy)
-	      gfc_error ("Non-dummy object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.allocatable
-		|| (n->sym->ts.type == BT_CLASS
-		    && CLASS_DATA (n->sym)->attr.allocatable))
-	      gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.pointer
-		|| (n->sym->ts.type == BT_CLASS
-		    && CLASS_DATA (n->sym)->attr.pointer))
-	      gfc_error ("POINTER object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.value)
-	      gfc_error ("VALUE object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
+	    for (n = omp_clauses->lists[list]; n != NULL; n = n->next)
+	      {
+		if (!n->sym->attr.dummy)
+		  gfc_error ("Non-dummy object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.allocatable
+		    || (n->sym->ts.type == BT_CLASS
+			&& CLASS_DATA (n->sym)->attr.allocatable))
+		  gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.pointer
+		    || (n->sym->ts.type == BT_CLASS
+			&& CLASS_DATA (n->sym)->attr.pointer))
+		  gfc_error ("POINTER object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.value)
+		  gfc_error ("VALUE object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+	      }
 	    break;
 	  case OMP_LIST_USE_DEVICE_PTR:
 	  case OMP_LIST_USE_DEVICE_ADDR:
@@ -5657,6 +5660,38 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    break;
 	  }
       }
+  /* OpenMP 5.1: use_device_ptr acts like use_device_addr, except for
+     type(c_ptr).  */
+  if (omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR])
+    {
+      gfc_omp_namelist *n_prev, *n_next, *n_addr;
+      n_addr = omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR];
+      for (; n_addr && n_addr->next; n_addr = n_addr->next)
+	;
+      n_prev = NULL;
+      n = omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR];
+      while (n)
+	{
+	  n_next = n->next;
+	  if (n->sym->ts.type != BT_DERIVED
+	      || n->sym->ts.u.derived->ts.f90_type != BT_VOID)
+	    {
+	      n->next = NULL;
+	      if (n_addr)
+		n_addr->next = n;
+	      else
+		omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR] = n;
+	      n_addr = n;
+	      if (n_prev)
+		n_prev->next = n_next;
+	      else
+		omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR] = n_next;
+	    }
+	  else
+	    n_prev = n;
+	  n = n_next;
+	}
+    }
   if (omp_clauses->safelen_expr)
     resolve_positive_int_expr (omp_clauses->safelen_expr, "SAFELEN");
   if (omp_clauses->simdlen_expr)
