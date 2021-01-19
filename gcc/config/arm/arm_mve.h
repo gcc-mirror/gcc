@@ -3670,7 +3670,7 @@ __arm_vaddlvq_p_u32 (uint32x4_t __a, mve_pred16_t __p)
   return __builtin_mve_vaddlvq_p_uv4si (__a, __p);
 }
 
-__extension__ extern __inline int32_t
+__extension__ extern __inline mve_pred16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vcmpneq_s8 (int8x16_t __a, int8x16_t __b)
 {
