@@ -3727,7 +3727,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static cpp_macro *deferred_macro (cpp_reader *, location_t, cpp_hashnode *);
 
  public:
-  void write_location (bytes_out &, location_t);
+  static void write_location (bytes_out &, location_t);
   location_t read_location (bytes_in &) const;
 
  public:
