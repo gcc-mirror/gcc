@@ -466,7 +466,9 @@ Lexer::build_token ()
 	  if (peek_input () == '=')
 	    {
 	      // modulo-assign
+	      skip_input ();
 	      current_column += 2;
+
 	      return Token::make (PERCENT_EQ, loc);
 	    }
 	  else
@@ -479,7 +481,9 @@ Lexer::build_token ()
 	  if (peek_input () == '=')
 	    {
 	      // xor-assign?
+	      skip_input ();
 	      current_column += 2;
+
 	      return Token::make (CARET_EQ, loc);
 	    }
 	  else
