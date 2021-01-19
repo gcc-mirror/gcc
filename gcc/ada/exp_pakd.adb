@@ -1909,9 +1909,10 @@ package body Exp_Pakd is
       --  where PAT is the packed array type. This works fine, since in the
       --  modular case we guarantee that the unused bits are always zeroes.
       --  We do have to compare the lengths because we could be comparing
-      --  two different subtypes of the same base type.
+      --  two different subtypes of the same base type. We can only do this
+      --  if the PATs on both sides are the same.
 
-      if Is_Modular_Integer_Type (PAT) then
+      if Is_Modular_Integer_Type (PAT) and then PAT = Etype (R) then
          Rewrite (N,
            Make_And_Then (Loc,
              Left_Opnd =>
