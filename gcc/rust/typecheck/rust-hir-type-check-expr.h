@@ -376,7 +376,12 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-    infered = lhs->combine (rhs);
+    auto result = lhs->combine (rhs);
+    if (result == nullptr || result->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+
+    // we expect this to be
+    infered = new TyTy::BoolType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::LazyBooleanExpr &expr)
@@ -384,8 +389,18 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
+    // we expect the lhs and rhs must be bools at this point
+    TyTy::BoolType elhs (expr.get_mappings ().get_hirid ());
+    lhs = elhs.combine (lhs);
+    if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+
+    TyTy::BoolType rlhs (expr.get_mappings ().get_hirid ());
+    rhs = elhs.combine (rhs);
+    if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+
     infered = lhs->combine (rhs);
-    // FIXME this will need to turn into bool
   }
 
   void visit (HIR::IfExpr &expr)
