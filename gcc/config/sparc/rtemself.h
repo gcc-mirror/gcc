@@ -33,6 +33,8 @@
 	builtin_assert ("system=rtems");	\
 	if (sparc_fix_b2bst)			\
 	  builtin_define ("__FIX_LEON3FT_B2BST"); \
+	if (sparc_fix_gr712rc || sparc_fix_ut700 || sparc_fix_ut699) \
+	  builtin_define ("__FIX_LEON3FT_TN0018"); \
     }						\
   while (0)
 
