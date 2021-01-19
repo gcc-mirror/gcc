@@ -2,12 +2,6 @@
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"
 
-/* Expected values of cumulative_saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,4) = 0;
-
 /* Expected results.  */
 VECT_VAR_DECL(expected,int,16,4) [] = { 0xffff, 0xffff, 0xffff, 0xffff };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0xffffffff, 0xffffffff };
@@ -15,13 +9,6 @@ VECT_VAR_DECL(expected,int,16,8) [] = { 0xffff, 0xffff, 0xffff, 0xffff,
 					0xffff, 0xffff, 0xffff, 0xffff };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0xffffffff, 0xffffffff,
 					0xffffffff, 0xffffffff };
-
-/* Expected values of cumulative_saturation flag when saturation
-   occurs.  */
-int VECT_VAR(expected_cumulative_sat2,int,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat2,int,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat2,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat2,int,32,4) = 1;
 
 /* Expected results when saturation occurs.  */
 VECT_VAR_DECL(expected2,int,16,4) [] = { 0x7fff, 0x7fff, 0x7fff, 0x7fff };
@@ -39,22 +26,21 @@ VECT_VAR_DECL(expected2,int,32,4) [] = { 0x7fffffff, 0x7fffffff,
 void FNNAME (INSN_NAME) (void)
 {
   /* vector_res = vqdmulh_lane(vector,vector2,lane), then store the result.  */
-#define TEST_VQDMULH_LANE2(INSN, Q, T1, T2, W, N, N2, L, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_VQDMULH_LANE2(INSN, Q, T1, T2, W, N, N2, L, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_lane_##T2##W(VECT_VAR(vector, T1, W, N),			\
 			   VECT_VAR(vector2, T1, W, N2),		\
 			   L);						\
   vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),				\
-		    VECT_VAR(vector_res, T1, W, N));			\
-  CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		    VECT_VAR(vector_res, T1, W, N))
 
   /* Two auxliary macros are necessary to expand INSN.  */
-#define TEST_VQDMULH_LANE1(INSN, Q, T1, T2, W, N, N2, L, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQDMULH_LANE2(INSN, Q, T1, T2, W, N, N2, L, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQDMULH_LANE1(INSN, Q, T1, T2, W, N, N2, L, CMT) \
+  TEST_VQDMULH_LANE2(INSN, Q, T1, T2, W, N, N2, L, CMT)
 
-#define TEST_VQDMULH_LANE(Q, T1, T2, W, N, N2, L, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQDMULH_LANE1(INSN_NAME, Q, T1, T2, W, N, N2, L, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQDMULH_LANE(Q, T1, T2, W, N, N2, L, CMT) \
+  TEST_VQDMULH_LANE1(INSN_NAME, Q, T1, T2, W, N, N2, L, CMT)
 
   DECL_VARIABLE(vector, int, 16, 4);
   DECL_VARIABLE(vector, int, 32, 2);
@@ -84,10 +70,10 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, , int, s, 32, 2, 0xBB);
 
   /* Choose lane arbitrarily.  */
-  TEST_VQDMULH_LANE(, int, s, 16, 4, 4, 2, expected_cumulative_sat, "");
-  TEST_VQDMULH_LANE(, int, s, 32, 2, 2, 1, expected_cumulative_sat, "");
-  TEST_VQDMULH_LANE(q, int, s, 16, 8, 4, 3, expected_cumulative_sat, "");
-  TEST_VQDMULH_LANE(q, int, s, 32, 4, 2, 0, expected_cumulative_sat, "");
+  TEST_VQDMULH_LANE(, int, s, 16, 4, 4, 2, "");
+  TEST_VQDMULH_LANE(, int, s, 32, 2, 2, 1, "");
+  TEST_VQDMULH_LANE(q, int, s, 16, 8, 4, 3, "");
+  TEST_VQDMULH_LANE(q, int, s, 32, 4, 2, 0, "");
 
   CHECK (TEST_MSG, int, 16, 4, PRIx16, expected, "");
   CHECK (TEST_MSG, int, 32, 2, PRIx32, expected, "");
@@ -103,10 +89,10 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector2, , int, s, 32, 2, 0x80000000);
 
 #define TEST_MSG2 " (check mul cumulative saturation)"
-  TEST_VQDMULH_LANE(, int, s, 16, 4, 4, 3, expected_cumulative_sat2, TEST_MSG2);
-  TEST_VQDMULH_LANE(, int, s, 32, 2, 2, 1, expected_cumulative_sat2, TEST_MSG2);
-  TEST_VQDMULH_LANE(q, int, s, 16, 8, 4, 2, expected_cumulative_sat2, TEST_MSG2);
-  TEST_VQDMULH_LANE(q, int, s, 32, 4, 2, 1, expected_cumulative_sat2, TEST_MSG2);
+  TEST_VQDMULH_LANE(, int, s, 16, 4, 4, 3, TEST_MSG2);
+  TEST_VQDMULH_LANE(, int, s, 32, 2, 2, 1, TEST_MSG2);
+  TEST_VQDMULH_LANE(q, int, s, 16, 8, 4, 2, TEST_MSG2);
+  TEST_VQDMULH_LANE(q, int, s, 32, 4, 2, 1, TEST_MSG2);
 
   CHECK (TEST_MSG, int, 16, 4, PRIx16, expected2, TEST_MSG2);
   CHECK (TEST_MSG, int, 32, 2, PRIx32, expected2, TEST_MSG2);

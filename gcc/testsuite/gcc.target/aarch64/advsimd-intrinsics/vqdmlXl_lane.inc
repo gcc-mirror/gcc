@@ -5,7 +5,7 @@ void FNNAME (INSN_NAME) (void)
 {
   /* vector_res = vqdmlXl_lane(vector, vector3, vector4, lane),
      then store the result.  */
-#define TEST_VQDMLXL_LANE1(INSN, T1, T2, W, W2, N, V, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_VQDMLXL_LANE1(INSN, T1, T2, W, W2, N, V, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##_##T2##W2(VECT_VAR(vector, T1, W, N),				\
@@ -13,11 +13,10 @@ void FNNAME (INSN_NAME) (void)
 		    VECT_VAR(vector4, T1, W2, N),			\
 		    V);							\
   vst1q_##T2##W(VECT_VAR(result, T1, W, N),				\
-		VECT_VAR(vector_res, T1, W, N));			\
-  CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		VECT_VAR(vector_res, T1, W, N))
 
-#define TEST_VQDMLXL_LANE(INSN, T1, T2, W, W2, N, V, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQDMLXL_LANE1(INSN, T1, T2, W, W2, N, V, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQDMLXL_LANE(INSN, T1, T2, W, W2, N, V, CMT) \
+  TEST_VQDMLXL_LANE1(INSN, T1, T2, W, W2, N, V, CMT)
 
   DECL_VARIABLE(vector, int, 32, 4);
   DECL_VARIABLE(vector3, int, 16, 4);
@@ -39,8 +38,8 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector3, , int, s, 32, 2, 0x55);
   VDUP(vector4, , int, s, 32, 2, 0xBB);
 
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, expected_cumulative_sat, "");
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, expected_cumulative_sat, "");
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, "");
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, "");
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
   CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
@@ -48,8 +47,8 @@ void FNNAME (INSN_NAME) (void)
 #define TEST_MSG2 "(mul with input=0)"
   VDUP(vector3, , int, s, 16, 4, 0);
   VDUP(vector3, , int, s, 32, 2, 0);
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, expected_cumulative_sat2, TEST_MSG2);
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, expected_cumulative_sat2, TEST_MSG2);
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, TEST_MSG2);
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, TEST_MSG2);
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected2, TEST_MSG2);
   CHECK(TEST_MSG, int, 64, 2, PRIx64, expected2, TEST_MSG2);
@@ -59,8 +58,8 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector3, , int, s, 32, 2, 0x80000000);
   VDUP(vector4, , int, s, 16, 4, 0x8000);
   VDUP(vector4, , int, s, 32, 2, 0x80000000);
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, expected_cumulative_sat3, TEST_MSG3);
-  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, expected_cumulative_sat3, TEST_MSG3);
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 32, 16, 4, 0, TEST_MSG3);
+  TEST_VQDMLXL_LANE(INSN_NAME, int, s, 64, 32, 2, 0, TEST_MSG3);
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected3, TEST_MSG3);
   CHECK(TEST_MSG, int, 64, 2, PRIx64, expected3, TEST_MSG3);

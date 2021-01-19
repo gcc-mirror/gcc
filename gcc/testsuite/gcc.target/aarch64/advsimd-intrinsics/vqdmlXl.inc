@@ -5,18 +5,17 @@ void FNNAME (INSN_NAME) (void)
 {
   /* vector_res = OP(vector, vector3, vector4),
      then store the result.  */
-#define TEST_VQDMLXL1(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_VQDMLXL1(INSN, T1, T2, W, W2, N, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##_##T2##W2(VECT_VAR(vector, T1, W, N),				\
 		    VECT_VAR(vector3, T1, W2, N),			\
 		    VECT_VAR(vector4, T1, W2, N));			\
     vst1q_##T2##W(VECT_VAR(result, T1, W, N),				\
-		  VECT_VAR(vector_res, T1, W, N));			\
-    CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		  VECT_VAR(vector_res, T1, W, N))
 
-#define TEST_VQDMLXL(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQDMLXL1(INSN, T1, T2, W, W2, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQDMLXL(INSN, T1, T2, W, W2, N, CMT) \
+  TEST_VQDMLXL1(INSN, T1, T2, W, W2, N, CMT)
 
   DECL_VARIABLE(vector, int, 32, 4);
   DECL_VARIABLE(vector3, int, 16, 4);
@@ -37,8 +36,8 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector3, , int, s, 32, 2, 0x55);
   VDUP(vector4, , int, s, 32, 2, 0xBB);
 
-  TEST_VQDMLXL(INSN_NAME, int, s, 32, 16, 4, expected_cumulative_sat, "");
-  TEST_VQDMLXL(INSN_NAME, int, s, 64, 32, 2, expected_cumulative_sat, "");
+  TEST_VQDMLXL(INSN_NAME, int, s, 32, 16, 4, "");
+  TEST_VQDMLXL(INSN_NAME, int, s, 64, 32, 2, "");
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
   CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
@@ -49,8 +48,8 @@ void FNNAME (INSN_NAME) (void)
   VDUP(vector4, , int, s, 32, 2, 0x80000000);
 
 #define TEST_MSG2 "with saturation"
-  TEST_VQDMLXL(INSN_NAME, int, s, 32, 16, 4, expected_cumulative_sat2, TEST_MSG2);
-  TEST_VQDMLXL(INSN_NAME, int, s, 64, 32, 2, expected_cumulative_sat2, TEST_MSG2);
+  TEST_VQDMLXL(INSN_NAME, int, s, 32, 16, 4, TEST_MSG2);
+  TEST_VQDMLXL(INSN_NAME, int, s, 64, 32, 2, TEST_MSG2);
 
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected2, TEST_MSG2);
   CHECK(TEST_MSG, int, 64, 2, PRIx64, expected2, TEST_MSG2);
