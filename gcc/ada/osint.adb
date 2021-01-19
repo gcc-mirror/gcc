@@ -2564,7 +2564,7 @@ package body Osint is
       --  Read data from the file
 
       declare
-         Actual_Len : Integer := 0;
+         Actual_Len : Integer;
 
          Lo : constant Text_Ptr := 0;
          --  Low bound for allocated text buffer
