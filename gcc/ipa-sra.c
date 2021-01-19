@@ -1933,13 +1933,13 @@ scan_function (cgraph_node *node, struct function *fun)
     }
 }
 
-/* Return true if SSA_NAME NAME is only used in return statements, or if
-   results of any operations it is involved in are only used in return
-   statements.  ANALYZED is a bitmap that tracks which SSA names we have
-   already started investigating.  */
+/* Return true if SSA_NAME NAME of function described by FUN is only used in
+   return statements, or if results of any operations it is involved in are
+   only used in return statements.  ANALYZED is a bitmap that tracks which SSA
+   names we have already started investigating.  */
 
 static bool
-ssa_name_only_returned_p (tree name, bitmap analyzed)
+ssa_name_only_returned_p (function *fun, tree name, bitmap analyzed)
 {
   bool res = true;
   imm_use_iterator imm_iter;
@@ -1959,8 +1959,9 @@ ssa_name_only_returned_p (tree name, bitmap analyzed)
 	      BREAK_FROM_IMM_USE_STMT (imm_iter);
 	    }
 	}
-      else if ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
-	       || gimple_code (stmt) == GIMPLE_PHI)
+      else if (!stmt_unremovable_because_of_non_call_eh_p (fun, stmt)
+	       && ((is_gimple_assign (stmt) && !gimple_has_volatile_ops (stmt))
+		   || gimple_code (stmt) == GIMPLE_PHI))
 	{
 	  /* TODO: And perhaps for const function calls too?  */
 	  tree lhs;
@@ -1976,7 +1977,7 @@ ssa_name_only_returned_p (tree name, bitmap analyzed)
 	    }
 	  gcc_assert (!gimple_vdef (stmt));
 	  if (bitmap_set_bit (analyzed, SSA_NAME_VERSION (lhs))
-	      && !ssa_name_only_returned_p (lhs, analyzed))
+	      && !ssa_name_only_returned_p (fun, lhs, analyzed))
 	    {
 	      res = false;
 	      BREAK_FROM_IMM_USE_STMT (imm_iter);
@@ -2030,7 +2031,8 @@ isra_analyze_call (cgraph_edge *cs)
       if (TREE_CODE (lhs) == SSA_NAME)
 	{
 	  bitmap analyzed = BITMAP_ALLOC (NULL);
-	  if (ssa_name_only_returned_p (lhs, analyzed))
+	  if (ssa_name_only_returned_p (DECL_STRUCT_FUNCTION (cs->caller->decl),
+					lhs, analyzed))
 	    csum->m_return_returned = true;
 	  BITMAP_FREE (analyzed);
 	}
