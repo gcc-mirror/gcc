@@ -1,9 +1,9 @@
 /* PR preprocessor/41445 DWARF5 variant */
 /* Test that token after multi-line function-like macro use
-   gets correct locus even when preprocessing separately.  */
+   gets correct locus even when preprocessing separately.
+   If lines are inserted, the expected line number must be updated.  */
 /* { dg-do compile } */
 /* { dg-options "-save-temps -gdwarf-5 -O0 -dA -fno-merge-debug-strings" } */
-/* { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } } */
 
 #define A(x) vari x
 #define vari(x)
