@@ -504,6 +504,34 @@ public:
 				  expr.get_locus ());
   }
 
+  void visit (AST::NegationExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::NegationExpr::NegationType type;
+    switch (expr.get_negation_type ())
+      {
+      case AST::NegationExpr::NegationType::NEGATE:
+	type = HIR::NegationExpr::NegationType::NEGATE;
+	break;
+      case AST::NegationExpr::NegationType::NOT:
+	type = HIR::NegationExpr::NegationType::NOT;
+	break;
+      }
+
+    HIR::Expr *negated_value
+      = ASTLoweringExpr::translate (expr.get_negated_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    translated
+      = new HIR::NegationExpr (mapping,
+			       std::unique_ptr<HIR::Expr> (negated_value), type,
+			       std::move (outer_attribs), expr.get_locus ());
+  }
+
   void visit (AST::StructExprStructFields &struct_expr)
   {
     std::vector<HIR::Attribute> inner_attribs;

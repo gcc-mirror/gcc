@@ -456,6 +456,45 @@ public:
     infered = lhs->combine (rhs);
   }
 
+  void visit (HIR::NegationExpr &expr)
+  {
+    auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr ());
+
+    // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
+    switch (expr.get_negation_type ())
+      {
+	case HIR::NegationExpr::NegationType::NEGATE: {
+	  bool valid
+	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::FLOAT);
+	  if (!valid)
+	    {
+	      rust_error_at (expr.get_locus (), "cannot apply unary - to %s",
+			     negated_expr_ty->as_string ().c_str ());
+	      return;
+	    }
+	}
+	break;
+
+	case HIR::NegationExpr::NegationType::NOT: {
+	  bool valid
+	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::BOOL)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT);
+	  if (!valid)
+	    {
+	      rust_error_at (expr.get_locus (), "cannot apply unary ! to %s",
+			     negated_expr_ty->as_string ().c_str ());
+	      return;
+	    }
+	}
+	break;
+      }
+
+    infered = negated_expr_ty;
+  }
+
   void visit (HIR::IfExpr &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
