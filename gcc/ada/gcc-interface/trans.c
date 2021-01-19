@@ -9030,14 +9030,15 @@ add_decl_expr (tree gnu_decl, Node_Id gnat_node)
 	  MARK_VISITED (DECL_SIZE_UNIT (gnu_decl));
 	  MARK_VISITED (DECL_INITIAL (gnu_decl));
 	}
-      /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
-      else if (TREE_CODE (gnu_decl) == TYPE_DECL
-	       && RECORD_OR_UNION_TYPE_P (type)
-	       && !TYPE_FAT_POINTER_P (type))
-	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
   else
     add_stmt_with_node (gnu_stmt, gnat_node);
+
+  /* Mark our TYPE_ADA_SIZE field now since it will not be gimplified.  */
+  if (TREE_CODE (gnu_decl) == TYPE_DECL
+      && RECORD_OR_UNION_TYPE_P (type)
+      && !TYPE_FAT_POINTER_P (type))
+    MARK_VISITED (TYPE_ADA_SIZE (type));
 
   /* If this is a variable and an initializer is attached to it, it must be
      valid for the context.  Similar to init_const in create_var_decl.  */
