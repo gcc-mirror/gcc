@@ -49,8 +49,7 @@ public:
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
 				     std::to_string (idx), field_type);
       fields.push_back (ty_field);
-      context->insert_type (field.get_mappings ().get_hirid (),
-			    ty_field->get_field_type ());
+      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       idx++;
       return true;
     });
@@ -60,7 +59,7 @@ public:
 			   struct_decl.get_identifier (), true,
 			   std::move (fields));
 
-    context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
+    context->insert_type (struct_decl.get_mappings (), type);
   }
 
   void visit (HIR::StructStruct &struct_decl)
@@ -73,8 +72,7 @@ public:
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
 				     field.get_field_name (), field_type);
       fields.push_back (ty_field);
-      context->insert_type (field.get_mappings ().get_hirid (),
-			    ty_field->get_field_type ());
+      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       return true;
     });
 
@@ -83,7 +81,7 @@ public:
 			   struct_decl.get_identifier (), false,
 			   std::move (fields));
 
-    context->insert_type (struct_decl.get_mappings ().get_hirid (), type);
+    context->insert_type (struct_decl.get_mappings (), type);
   }
 
   void visit (HIR::StaticItem &var)
@@ -91,8 +89,7 @@ public:
     TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
     TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
 
-    context->insert_type (var.get_mappings ().get_hirid (),
-			  type->combine (expr_type));
+    context->insert_type (var.get_mappings (), type->combine (expr_type));
   }
 
   void visit (HIR::ConstantItem &constant)
@@ -100,8 +97,7 @@ public:
     TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
     TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
 
-    context->insert_type (constant.get_mappings ().get_hirid (),
-			  type->combine (expr_type));
+    context->insert_type (constant.get_mappings (), type->combine (expr_type));
   }
 
   void visit (HIR::Function &function)
@@ -123,16 +119,16 @@ public:
 	// get the name as well required for later on
 	auto param_type = TypeCheckType::Resolve (param.type.get ());
 	auto param_tyty
-	  = new TyTy::ParamType (param.get_mappings ()->get_hirid (),
+	  = new TyTy::ParamType (param.get_mappings ().get_hirid (),
 				 param.param_name->as_string (), param_type);
 	params.push_back (param_tyty);
 
-	context->insert_type (param.get_mappings ()->get_hirid (), param_tyty);
+	context->insert_type (param.get_mappings (), param_tyty);
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				    params, ret_type);
-    context->insert_type (function.get_mappings ().get_hirid (), fnType);
+    context->insert_type (function.get_mappings (), fnType);
   }
 
 private:

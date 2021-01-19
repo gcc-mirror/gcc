@@ -278,54 +278,6 @@ private:
   TyTy::TyBase *translated;
 };
 
-class TyTyCompileParam : public TyTy::TyVisitor
-{
-public:
-  static ::Bvariable *compile (::Backend *backend, Bfunction *fndecl,
-			       TyTy::TyBase *ty)
-  {
-    TyTyCompileParam compiler (backend, fndecl);
-    ty->accept_vis (compiler);
-    rust_assert (compiler.translated != nullptr);
-    return compiler.translated;
-  }
-
-  ~TyTyCompileParam () {}
-
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
-  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::ParamType &type) override
-  {
-    auto btype = TyTyCompile::compile (backend, type.get_base_type ());
-    bool tree_addressable = false;
-    translated = backend->parameter_variable (fndecl, type.get_identifier (),
-					      btype, tree_addressable,
-					      mappings->lookup_location (
-						type.get_ref ()));
-  }
-
-private:
-  TyTyCompileParam (::Backend *backend, ::Bfunction *fndecl)
-    : backend (backend), translated (nullptr), fndecl (fndecl),
-      mappings (Analysis::Mappings::get ())
-  {}
-
-  ::Backend *backend;
-  ::Bvariable *translated;
-  ::Bfunction *fndecl;
-  Analysis::Mappings *mappings;
-};
-
 } // namespace Compile
 } // namespace Rust
 

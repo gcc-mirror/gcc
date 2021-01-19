@@ -73,9 +73,13 @@ TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type)
 }
 
 void
-TypeCheckContext::insert_type (HirId id, TyTy::TyBase *type)
+TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
+			       TyTy::TyBase *type)
 {
   rust_assert (type != nullptr);
+  NodeId ref = mappings.get_nodeid ();
+  HirId id = mappings.get_hirid ();
+  node_id_refs[ref] = id;
   resolved[id] = type;
 }
 

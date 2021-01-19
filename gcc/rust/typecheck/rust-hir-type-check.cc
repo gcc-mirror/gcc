@@ -116,7 +116,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	return false;
       }
 
-    context->insert_type (field->get_mappings ().get_hirid (), resolved_field);
+    context->insert_type (field->get_mappings (), resolved_field);
     return true;
   });
 

@@ -70,7 +70,7 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated != nullptr)
-      resolver.context->insert_type (type->get_mappings ().get_hirid (),
+      resolver.context->insert_type (type->get_mappings (),
 				     resolver.translated);
 
     return resolver.translated;
@@ -112,10 +112,6 @@ public:
 
   void visit (HIR::TypePath &path)
   {
-    // check if this is already defined or not
-    if (context->lookup_type (path.get_mappings ().get_hirid (), &translated))
-      return;
-
     // lookup the Node this resolves to
     NodeId ref;
     if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
@@ -132,11 +128,10 @@ public:
       {
 	// we got an HIR node
 	if (context->lookup_type (hir_lookup, &translated))
-	  return;
+	  {
+	    return;
+	  }
       }
-
-    // this might be a struct type (TyTy::ADT) reference
-    // TODO
     gcc_unreachable ();
   }
 

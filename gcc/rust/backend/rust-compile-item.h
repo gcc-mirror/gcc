@@ -127,16 +127,16 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fnType;
+    TyTy::TyBase *fntype;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
-					 &fnType))
+					 &fntype))
       {
 	rust_fatal_error (function.locus, "failed to lookup function type");
 	return;
       }
 
     // convert to the actual function type
-    auto compiled_fn_type = TyTyCompile::compile (ctx->get_backend (), fnType);
+    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
     bool is_main_fn = function.function_name.compare ("main") == 0;
@@ -159,15 +159,14 @@ public:
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
-    TyTy::TyBase *tyret = TyTyExtractRetFromFnType::compile (fnType);
+    TyTy::TyBase *tyret = TyTyExtractRetFromFnType::compile (fntype);
     std::vector<TyTy::ParamType *> typarams
-      = TyTyExtractParamsFromFnType::compile (fnType);
+      = TyTyExtractParamsFromFnType::compile (fntype);
     std::vector<Bvariable *> param_vars;
 
     for (auto &it : typarams)
       {
-	auto compiled_param
-	  = TyTyCompileParam::compile (ctx->get_backend (), fndecl, it);
+	auto compiled_param = TyTyCompileParam::compile (ctx, fndecl, it);
 	param_vars.push_back (compiled_param);
 
 	ctx->insert_var_decl (it->get_ref (), compiled_param);
@@ -226,7 +225,7 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_function_return_type ())
       {
-	Btype *return_type = TyTyCompile::compile (ctx->get_backend (), tyret);
+	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
 	Bstatement *ret_var_stmt = nullptr;

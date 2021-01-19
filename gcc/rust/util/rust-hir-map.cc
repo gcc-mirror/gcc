@@ -332,7 +332,7 @@ Mappings::insert_hir_param (CrateNum crateNum, HirId id,
   rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
 
   hirParamMappings[crateNum][id] = param;
-  nodeIdToHirMappings[crateNum][param->get_mappings ()->get_nodeid ()] = id;
+  nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
 }
 
 HIR::FunctionParam *

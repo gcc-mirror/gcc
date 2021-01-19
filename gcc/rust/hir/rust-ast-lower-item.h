@@ -274,8 +274,7 @@ public:
     for (auto &param : fn->function_params)
       {
 	mappings->insert_hir_param (mapping.get_crate_num (),
-				    param.get_mappings ()->get_hirid (),
-				    &param);
+				    param.get_mappings ().get_hirid (), &param);
 	mappings->insert_location (crate_num, mapping.get_hirid (),
 				   param.get_locus ());
       }

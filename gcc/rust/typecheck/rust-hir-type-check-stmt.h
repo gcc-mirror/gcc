@@ -69,26 +69,24 @@ public:
 	    return;
 	  }
 
-	context->insert_type (stmt.get_mappings ().get_hirid (), combined);
+	context->insert_type (stmt.get_mappings (), combined);
       }
     else
       {
 	// let x:i32;
 	if (specified_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
-				  specified_ty);
+	    context->insert_type (stmt.get_mappings (), specified_ty);
 	  }
 	// let x = 123;
 	else if (init_expr_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
-				  init_expr_ty);
+	    context->insert_type (stmt.get_mappings (), init_expr_ty);
 	  }
 	// let x;
 	else
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
+	    context->insert_type (stmt.get_mappings (),
 				  new TyTy::InferType (
 				    stmt.get_mappings ().get_hirid ()));
 	  }

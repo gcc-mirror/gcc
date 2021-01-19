@@ -225,11 +225,42 @@ public:
 
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
-
   void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::FnType &type) override
+  {
+    Backend::Btyped_identifier receiver;
+    std::vector<Backend::Btyped_identifier> parameters;
+    std::vector<Backend::Btyped_identifier> results;
+
+    if (!type.get_return_type ()->is_unit ())
+      {
+	auto hir_type = type.get_return_type ();
+	auto ret = TyTyResolveCompile::compile (ctx, hir_type);
+	results.push_back (Backend::Btyped_identifier (
+	  "_", ret,
+	  ctx->get_mappings ()->lookup_location (hir_type->get_ref ())));
+      }
+
+    for (size_t i = 0; i < type.num_params (); i++)
+      {
+	auto param_tyty = type.param_at (i);
+	auto compiled_param_type
+	  = TyTyResolveCompile::compile (ctx, param_tyty->get_base_type ());
+
+	auto compiled_param = Backend::Btyped_identifier (
+	  param_tyty->get_identifier (), compiled_param_type,
+	  ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
+
+	parameters.push_back (compiled_param);
+      }
+
+    translated = ctx->get_backend ()->function_type (
+      receiver, parameters, results, NULL,
+      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+  }
 
   void visit (TyTy::UnitType &type) override
   {
@@ -318,6 +349,51 @@ private:
 
   Context *ctx;
   ::Btype *translated;
+};
+
+class TyTyCompileParam : public TyTy::TyVisitor
+{
+public:
+  static ::Bvariable *compile (Context *ctx, Bfunction *fndecl,
+			       TyTy::TyBase *ty)
+  {
+    TyTyCompileParam compiler (ctx, fndecl);
+    ty->accept_vis (compiler);
+    rust_assert (compiler.translated != nullptr);
+    return compiler.translated;
+  }
+
+  ~TyTyCompileParam () {}
+
+  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+
+  void visit (TyTy::ParamType &type) override
+  {
+    auto btype = TyTyResolveCompile::compile (ctx, type.get_base_type ());
+    bool tree_addressable = false;
+    translated = ctx->get_backend ()->parameter_variable (
+      fndecl, type.get_identifier (), btype, tree_addressable,
+      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+  }
+
+private:
+  TyTyCompileParam (Context *ctx, ::Bfunction *fndecl)
+    : ctx (ctx), fndecl (fndecl), translated (nullptr)
+  {}
+
+  Context *ctx;
+  ::Bfunction *fndecl;
+  ::Bvariable *translated;
 };
 
 } // namespace Compile

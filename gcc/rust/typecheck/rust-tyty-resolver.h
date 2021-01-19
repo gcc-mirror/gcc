@@ -159,7 +159,7 @@ public:
 	}
 
       // insert the new resolved definition
-      context->insert_type (decl->get_mappings ().get_hirid (), resolved_tyty);
+      context->insert_type (decl->get_mappings (), resolved_tyty);
       return true;
     });
   }

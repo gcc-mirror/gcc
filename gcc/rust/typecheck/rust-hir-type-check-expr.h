@@ -41,8 +41,7 @@ public:
       resolver.infered
 	= new TyTy::UnitType (expr->get_mappings ().get_hirid ());
 
-    resolver.context->insert_type (expr->get_mappings ().get_hirid (),
-				   resolver.infered);
+    resolver.context->insert_type (expr->get_mappings (), resolver.infered);
     return resolver.infered;
   }
 
@@ -215,7 +214,12 @@ public:
 			   "assignment infer - reverse lookup failure");
 	    return;
 	  }
-	context->insert_type (ref, infered);
+
+	context->insert_type (
+	  Analysis::NodeMapping (
+	    expr.get_lhs ()->get_mappings ().get_crate_num (), ref_node_id, ref,
+	    UNKNOWN_LOCAL_DEFID),
+	  infered);
       }
   }
 
