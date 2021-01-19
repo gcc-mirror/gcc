@@ -367,8 +367,61 @@ public:
   {
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+    auto combined = lhs->combine (rhs);
 
-    infered = lhs->combine (rhs);
+    // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
+    switch (expr.get_expr_type ())
+      {
+	// integers or floats
+      case HIR::ArithmeticOrLogicalExpr::ADD:
+      case HIR::ArithmeticOrLogicalExpr::SUBTRACT:
+      case HIR::ArithmeticOrLogicalExpr::MULTIPLY:
+      case HIR::ArithmeticOrLogicalExpr::DIVIDE:
+	case HIR::ArithmeticOrLogicalExpr::MODULUS: {
+	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
+		       || (combined->get_kind () == TyTy::TypeKind::UINT)
+		       || (combined->get_kind () == TyTy::TypeKind::FLOAT);
+	  if (!valid)
+	    {
+	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
+			     combined->as_string ().c_str ());
+	      return;
+	    }
+	}
+	break;
+
+	// integers or bools
+      case HIR::ArithmeticOrLogicalExpr::BITWISE_AND:
+      case HIR::ArithmeticOrLogicalExpr::BITWISE_OR:
+	case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR: {
+	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
+		       || (combined->get_kind () == TyTy::TypeKind::UINT)
+		       || (combined->get_kind () == TyTy::TypeKind::BOOL);
+	  if (!valid)
+	    {
+	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
+			     combined->as_string ().c_str ());
+	      return;
+	    }
+	}
+	break;
+
+	// integers only
+      case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
+	case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT: {
+	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
+		       || (combined->get_kind () == TyTy::TypeKind::UINT);
+	  if (!valid)
+	    {
+	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
+			     combined->as_string ().c_str ());
+	      return;
+	    }
+	}
+	break;
+      }
+
+    infered = combined;
   }
 
   void visit (HIR::ComparisonExpr &expr)
