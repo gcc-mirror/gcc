@@ -784,7 +784,7 @@ package body System.Fat_Gen is
             --  Check for gradual underflow
 
             if T'Denorm
-              and then Adjustment >= IEEE_Emin - (Mantissa - 1) - Exp
+              and then Adjustment >= IEEE_Emin - Mantissa - Exp
             then
                Expf := IEEE_Emin;
                Expi := Exp + Adjustment - Expf;
@@ -807,6 +807,13 @@ package body System.Fat_Gen is
                         Float_Word (IEEE_Ebias + Expf) * Exp_Factor;
 
          if Expi < 0 then
+            --  Given that Expi >= -Mantissa, only -64 is problematic
+
+            if Expi = -64 then
+               XX := XX / 2.0;
+               Expi := -63;
+            end if;
+
             XX := XX / T (UST.Long_Long_Unsigned (2) ** (-Expi));
          end if;
 
