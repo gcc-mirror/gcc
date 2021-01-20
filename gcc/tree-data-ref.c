@@ -3924,9 +3924,25 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
+      /* CHREC_RIGHT and its negated value should fit in a lambda_int.
+	 Pointer typed chrecs right are to be interpreted signed.  */
+      HOST_WIDE_INT chrec_right;
+      if (POINTER_TYPE_P (chrec_type (chrec)))
+	{
+	  if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
+	    return chrec_dont_know;
+	  chrec_right = int_cst_value (CHREC_RIGHT (chrec));
+	}
+      else
+	{
+	  if (!tree_fits_shwi_p (CHREC_RIGHT (chrec)))
+	    return chrec_dont_know;
+	  chrec_right = tree_to_shwi (CHREC_RIGHT (chrec));
+	}
+      /* We want to be able to negate without overflow.  */
+      if (chrec_right == HOST_WIDE_INT_MIN)
 	return chrec_dont_know;
-      A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
+      A[index][0] = mult * chrec_right;
       return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 
     case PLUS_EXPR:
@@ -4193,17 +4209,28 @@ lambda_vector_first_nz (lambda_vector vec1, int n, int start)
 /* Add a multiple of row R1 of matrix MAT with N columns to row R2:
    R2 = R2 + CONST1 * R1.  */
 
-static void
+static bool
 lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2,
 		       lambda_int const1)
 {
   int i;
 
   if (const1 == 0)
-    return;
+    return true;
 
   for (i = 0; i < n; i++)
-    mat[r2][i] += const1 * mat[r1][i];
+    {
+      bool ovf;
+      lambda_int tem = mul_hwi (mat[r1][i], const1, &ovf);
+      if (ovf)
+	return false;
+      lambda_int tem2 = add_hwi (mat[r2][i], tem, &ovf);
+      if (ovf || tem2 == HOST_WIDE_INT_MIN)
+	return false;
+      mat[r2][i] = tem2;
+    }
+
+  return true;
 }
 
 /* Multiply vector VEC1 of length SIZE by a constant CONST1,
@@ -4258,7 +4285,7 @@ lambda_vector_equal (lambda_vector vec1, lambda_vector vec2, int size)
    Ref: Algorithm 2.1 page 33 in "Loop Transformations for
    Restructuring Compilers" Utpal Banerjee.  */
 
-static void
+static bool
 lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 			     lambda_matrix S, lambda_matrix U)
 {
@@ -4276,24 +4303,26 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 	    {
 	      while (S[i][j] != 0)
 		{
-		  lambda_int sigma, factor, a, b;
+		  lambda_int factor, a, b;
 
 		  a = S[i-1][j];
 		  b = S[i][j];
-		  sigma = ((a < 0) ^ (b < 0)) ? -1: 1;
-		  unsigned HOST_WIDE_INT abs_a = absu_hwi (a);
-		  unsigned HOST_WIDE_INT abs_b = absu_hwi (b);
-		  factor = sigma * (lambda_int)(abs_a / abs_b);
+		  gcc_assert (a != HOST_WIDE_INT_MIN);
+		  factor = a / b;
 
-		  lambda_matrix_row_add (S, n, i, i-1, -factor);
+		  if (!lambda_matrix_row_add (S, n, i, i-1, -factor))
+		    return false;
 		  std::swap (S[i], S[i-1]);
 
-		  lambda_matrix_row_add (U, m, i, i-1, -factor);
+		  if (!lambda_matrix_row_add (U, m, i, i-1, -factor))
+		    return false;
 		  std::swap (U[i], U[i-1]);
 		}
 	    }
 	}
     }
+
+  return true;
 }
 
 /* Determines the overlapping elements due to accesses CHREC_A and
@@ -4410,7 +4439,13 @@ analyze_subscript_affine_affine (tree chrec_a,
     }
 
   /* U.A = S */
-  lambda_matrix_right_hermite (A, dim, 1, S, U);
+  if (!lambda_matrix_right_hermite (A, dim, 1, S, U))
+    {
+      *overlaps_a = conflict_fn_not_known ();
+      *overlaps_b = conflict_fn_not_known ();
+      *last_conflicts = chrec_dont_know;
+      goto end_analyze_subs_aa;
+    }
 
   if (S[0][0] < 0)
     {
