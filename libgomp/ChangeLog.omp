@@ -1,6 +1,16 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_task): Rename priority argument to priority_arg,
+	add priority automatic variable and modify that variable.  Instead of
+	clearing detach argument when GOMP_TASK_FLAG_DETACH bit is not set,
+	check flags for that bit.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/task-6.c: New test.

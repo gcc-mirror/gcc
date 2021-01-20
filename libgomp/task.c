@@ -354,10 +354,11 @@ task_fulfilled_p (struct gomp_task *task)
 void
 GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	   long arg_size, long arg_align, bool if_clause, unsigned flags,
-	   void **depend, int priority, void *detach)
+	   void **depend, int priority_arg, void *detach)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
+  int priority = 0;
 
 #ifdef HAVE_BROKEN_POSIX_SEMAPHORES
   /* If pthread_mutex_* is used for omp_*lock*, then each task must be
@@ -385,13 +386,12 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	}
     }
 
-  if ((flags & GOMP_TASK_FLAG_PRIORITY) == 0)
-    priority = 0;
-  else if (priority > gomp_max_task_priority_var)
-    priority = gomp_max_task_priority_var;
-
-  if ((flags & GOMP_TASK_FLAG_DETACH) == 0)
-    detach = NULL;
+  if (__builtin_expect ((flags & GOMP_TASK_FLAG_PRIORITY) != 0, 0))
+    {
+      priority = priority_arg;
+      if (priority > gomp_max_task_priority_var)
+	priority = gomp_max_task_priority_var;
+    }
 
   if (!if_clause || team == NULL
       || (thr->task && thr->task->final_task)
@@ -415,7 +415,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 			|| (flags & GOMP_TASK_FLAG_FINAL);
       task.priority = priority;
 
-      if (detach)
+      if ((flags & GOMP_TASK_FLAG_DETACH) != 0)
 	{
 	  task.detach = true;
 	  gomp_sem_init (&task.completion_sem, 0);
@@ -443,7 +443,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       else
 	fn (data);
 
-      if (detach && !task_fulfilled_p (&task))
+      if (task.detach && !task_fulfilled_p (&task))
 	gomp_sem_wait (&task.completion_sem);
 
       /* Access to "children" is normally done inside a task_lock
@@ -484,7 +484,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       task->kind = GOMP_TASK_UNDEFERRED;
       task->in_tied_task = parent->in_tied_task;
       task->taskgroup = taskgroup;
-      if (detach)
+      if ((flags & GOMP_TASK_FLAG_DETACH) != 0)
 	{
 	  task->detach = true;
 	  gomp_sem_init (&task->completion_sem, 0);
