@@ -1,6 +1,16 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98742
+	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_DETACH>: If
+	error_operand_p, remove clause without further checking.  Check
+	for non-NULL TYPE_NAME.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_detach): New.
