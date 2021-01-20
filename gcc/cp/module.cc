@@ -878,9 +878,12 @@ bytes_in::i ()
 	  v &= 0xf;
 	  if (v & 0x8)
 	    v |= -1 ^ 0x7;
+	  /* unsigned necessary due to left shifts of -ve values.  */
+	  unsigned uv = unsigned (v);
 	  if ((ptr = read (++bytes)))
 	    while (bytes--)
-	      v = (v << 8) | (*ptr++ & 0xff);
+	      uv = (uv << 8) | (*ptr++ & 0xff);
+	  v = int (uv);
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
@@ -969,9 +972,12 @@ bytes_in::wi ()
 	  v &= 0xf;
 	  if (v & 0x8)
 	    v |= -1 ^ 0x7;
+	  /* unsigned necessary due to left shifts of -ve values.  */
+	  unsigned HOST_WIDE_INT uv = (unsigned HOST_WIDE_INT) v;
 	  if ((ptr = read (++bytes)))
 	    while (bytes--)
-	      v = (v << 8) | (*ptr++ & 0xff);
+	      uv = (uv << 8) | (*ptr++ & 0xff);
+	  v = (HOST_WIDE_INT) uv;
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
