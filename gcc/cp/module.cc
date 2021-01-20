@@ -276,13 +276,10 @@ static inline cpp_hashnode *cpp_node (tree id)
 {
   return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id));
 }
-static inline tree identifier (cpp_hashnode *node)
+
+static inline tree identifier (const cpp_hashnode *node)
 {
-  return HT_IDENT_TO_GCC_IDENT (HT_NODE (node));
-}
-static inline const_tree identifier (const cpp_hashnode *node)
-{
-  return identifier (const_cast <cpp_hashnode *> (node));
+  return HT_IDENT_TO_GCC_IDENT (HT_NODE (const_cast<cpp_hashnode *> (node)));
 }
 
 /* During duplicate detection we need to tell some comparators that
@@ -3727,7 +3724,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static cpp_macro *deferred_macro (cpp_reader *, location_t, cpp_hashnode *);
 
  public:
-  void write_location (bytes_out &, location_t);
+  static void write_location (bytes_out &, location_t);
   location_t read_location (bytes_in &) const;
 
  public:

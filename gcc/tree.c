@@ -12638,10 +12638,13 @@ tree_inlined_location (tree exp, bool system_header /* = true */)
     }
 
   if (loc == UNKNOWN_LOCATION)
-    loc = EXPR_LOCATION (exp);
-
-  if (system_header)
-    return expansion_point_location_if_in_system_header (loc);
+    {
+      loc = EXPR_LOCATION (exp);
+      if (system_header)
+	/* Only consider macro expansion when the block traversal failed
+	   to find a location.  Otherwise it's not relevant.  */
+	return expansion_point_location_if_in_system_header (loc);
+    }
 
   return loc;
 }

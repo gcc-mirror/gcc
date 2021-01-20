@@ -1,7 +1,6 @@
 /* PR preprocessor/41445 DWARF5 variant*/
 /* { dg-do compile } */
 /* { dg-options "-gdwarf-5 -O0 -dA -fno-merge-debug-strings" } */
-/* { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } } */
 
 #include "pr41445-5.c"
 

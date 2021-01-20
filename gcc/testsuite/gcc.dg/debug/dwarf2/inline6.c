@@ -17,7 +17,6 @@
 /* Explicitly use dwarf-5 which uses DW_FORM_implicit_const.  */
 /* { dg-do compile } */
 /* { dg-options "-O -g3 -gdwarf-5 -dA -fgnu89-inline" } */
-/* { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } } */
 
 /* There are 6 inlined subroutines:
    - One for each subroutine inlined into main, that's 3.

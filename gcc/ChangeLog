@@ -1,3 +1,83 @@
+2021-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98664
+	* tree-ssa-live.c (remove_unused_scope_block_p): Keep scopes for
+	all functions, even if they're not declared artificial or inline.
+	* tree.c (tree_inlined_location): Use macro expansion location
+	only if scope traversal fails to expose one.
+
+2021-01-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/92294
+	* alias.c (compare_base_symbol_refs): Take an extra parameter
+	and add the distance between two symbols to it.  Enshrine in
+	comments that -1 means "either 0 or 1, but we can't tell
+	which at compile time".
+	(memrefs_conflict_p): Update call accordingly.
+	(rtx_equal_for_memref_p): Likewise.  Take the distance between symbols
+	into account.
+
+2021-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqshl, uqshl,
+	sqrshl, uqrshl, sqadd, uqadd, sqsub, uqsub, suqadd, usqadd, sqmovn,
+	uqmovn, sqxtn2, uqxtn2, sqabs, sqneg, sqdmlal, sqdmlsl, sqdmlal_lane,
+	sqdmlsl_lane, sqdmlal_laneq, sqdmlsl_laneq, sqdmlal_n, sqdmlsl_n,
+	sqdmlal2, sqdmlsl2, sqdmlal2_lane, sqdmlsl2_lane, sqdmlal2_laneq,
+	sqdmlsl2_laneq, sqdmlal2_n, sqdmlsl2_n, sqdmull, sqdmull_lane,
+	sqdmull_laneq, sqdmull_n, sqdmull2, sqdmull2_lane, sqdmull2_laneq,
+	sqdmull2_n, sqdmulh, sqrdmulh, sqdmulh_lane, sqdmulh_laneq,
+	sqrdmulh_lane, sqrdmulh_laneq, sqshrun_n, sqrshrun_n, sqshrn_n,
+	uqshrn_n, sqrshrn_n, uqrshrn_n, sqshlu_n, sqshl_n, uqshl_n, sqrdmlah,
+	sqrdmlsh, sqrdmlah_lane, sqrdmlsh_lane, sqrdmlah_laneq, sqrdmlsh_laneq,
+	sqmovun): Use NONE flags.
+
+2021-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/98330
+	* ipa-modref.c (analyze_stmt): Only record a summary for a
+	direct call.
+
+2021-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98638
+	* tree-ssanames.c (fini_ssanames): Zero SSA_NAME_DEF_STMT.
+
+2021-01-19  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
+	built-in define __FIX_LEON3FT_TN0018.
+
+2021-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97673
+	* tree-inline.c (tree_function_versioning): Set input_location
+	to UNKNOWN_LOCATION throughout the function.
+
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98476
+	* omp-low.c (lower_omp_target): Handle nonpointer is_device_ptr.
+
+2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98690
+	* ipa-sra.c (ssa_name_only_returned_p): New parameter fun.  Check
+	whether non-call exceptions allow removal of a statement.
+	(isra_analyze_call): Pass the appropriate function to
+	ssa_name_only_returned_p.
+
+2021-01-19  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/riscv/arch-canonicalize (longext_sort): New function for
+	 sorting 'multi-letter'.
+	* config/riscv/multilib-generator: Adjusting the loop of 'alt' in
+	'alts'.	The 'arch' may not be the first of 'alts'.
+	(_expand_combination): Add underline for the 'ext' without '*'.
+	This is because, a single-letter extension can always be treated well
+	with a '_' prefix, but it cannot be separated out if it is appended
+	to a multi-letter.
+
 2021-01-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/97847

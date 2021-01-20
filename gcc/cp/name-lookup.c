@@ -6279,6 +6279,61 @@ pushdecl_namespace_level (tree x, bool hiding)
   return t;
 }
 
+/* Wrapper around push_local_binding to push the bindings for
+   a non-member USING_DECL with NAME and VALUE.  LOOKUP, if non-null,
+   is the result of name lookup during template parsing.  */
+
+static void
+push_using_decl_bindings (name_lookup *lookup, tree name, tree value)
+{
+  tree type = NULL_TREE;
+
+  cxx_binding *binding = find_local_binding (current_binding_level, name);
+  if (binding)
+    {
+      value = binding->value;
+      type = binding->type;
+    }
+
+  /* DR 36 questions why using-decls at function scope may not be
+     duplicates.  Disallow it, as C++11 claimed and PR 20420
+     implemented.  */
+  if (lookup)
+    do_nonmember_using_decl (*lookup, true, true, &value, &type);
+
+  if (!value)
+    ;
+  else if (binding && value == binding->value)
+    /* Redeclaration of this USING_DECL.  */;
+  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
+    {
+      /* We already have this binding, so replace it.  */
+      update_local_overload (IDENTIFIER_BINDING (name), value);
+      IDENTIFIER_BINDING (name)->value = value;
+    }
+  else
+    /* Install the new binding.  */
+    push_local_binding (name, value, /*using=*/true);
+
+  if (!type)
+    ;
+  else if (binding && type == binding->type)
+    ;
+  else
+    {
+      push_local_binding (name, type, /*using=*/true);
+      set_identifier_type_value (name, type);
+    }
+}
+
+/* Overload for push_using_decl_bindings that doesn't take a name_lookup.  */
+
+void
+push_using_decl_bindings (tree name, tree value)
+{
+  push_using_decl_bindings (nullptr, name, value);
+}
+
 /* Process a using declaration in non-class scope.  */
 
 void
@@ -6395,43 +6450,7 @@ finish_nonmember_using_decl (tree scope, tree name)
   else
     {
       add_decl_expr (using_decl);
-
-      cxx_binding *binding = find_local_binding (current_binding_level, name);
-      tree value = NULL;
-      tree type = NULL;
-      if (binding)
-	{
-	  value = binding->value;
-	  type = binding->type;
-	}
-
-      /* DR 36 questions why using-decls at function scope may not be
-	 duplicates.  Disallow it, as C++11 claimed and PR 20420
-	 implemented.  */
-      do_nonmember_using_decl (lookup, true, true, &value, &type);
-
-      if (!value)
-	;
-      else if (binding && value == binding->value)
-	;
-      else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
-	{
-	  update_local_overload (IDENTIFIER_BINDING (name), value);
-	  IDENTIFIER_BINDING (name)->value = value;
-	}
-      else
-	/* Install the new binding.  */
-	push_local_binding (name, value, true);
-
-      if (!type)
-	;
-      else if (binding && type == binding->type)
-	;
-      else
-	{
-	  push_local_binding (name, type, true);
-	  set_identifier_type_value (name, type);
-	}
+      push_using_decl_bindings (&lookup, name, NULL_TREE);
     }
 }
 
@@ -9277,16 +9296,6 @@ push_operator_bindings ()
 	  tree name = TREE_PURPOSE (binds);
 	  push_local_binding (name, val, /*using*/true);
 	}
-}
-
-/* Wrapper around push_local_binding to push the bindings for
-   a non-member USING_DECL DECL that was found during template parsing.  */
-
-void
-push_using_decl_bindings (tree decl)
-{
-  push_local_binding (DECL_NAME (decl), USING_DECL_DECLS (decl),
-		      /*using*/true);
 }
 
 #include "gt-cp-name-lookup.h"

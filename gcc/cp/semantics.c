@@ -7430,12 +7430,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	      break;
 	    }
+	  else if (error_operand_p (t))
+	    {
+	      remove = true;
+	      break;
+	    }
 	  else
 	    {
 	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 	      if (!type_dependent_expression_p (t)
 		  && (!INTEGRAL_TYPE_P (type)
 		      || TREE_CODE (type) != ENUMERAL_TYPE
+		      || TYPE_NAME (type) == NULL_TREE
 		      || (DECL_NAME (TYPE_NAME (type))
 			  != get_identifier ("omp_event_handle_t"))))
 		{

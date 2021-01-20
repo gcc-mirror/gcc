@@ -25008,31 +25008,10 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_funs_with_default_args, 0);
-      /* Now parse any NSDMIs.  */
-      save_ccp = current_class_ptr;
-      save_ccr = current_class_ref;
-      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
-	{
-	  if (class_type != DECL_CONTEXT (decl))
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = DECL_CONTEXT (decl);
-	      pushed_scope = push_scope (class_type);
-	    }
-	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
-	  cp_parser_late_parsing_nsdmi (parser, decl);
-	}
-      vec_safe_truncate (unparsed_nsdmis, 0);
-      current_class_ptr = save_ccp;
-      current_class_ref = save_ccr;
-      if (pushed_scope)
-	pop_scope (pushed_scope);
 
       /* If there are noexcept-specifiers that have not yet been processed,
-	 take care of them now.  */
-      class_type = NULL_TREE;
-      pushed_scope = NULL_TREE;
+	 take care of them now.  Do this before processing NSDMIs as they
+	 may depend on noexcept-specifiers already having been processed.  */
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
@@ -25084,6 +25063,25 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_noexcepts, 0);
+
+      /* Now parse any NSDMIs.  */
+      save_ccp = current_class_ptr;
+      save_ccr = current_class_ref;
+      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
+	{
+	  if (class_type != DECL_CONTEXT (decl))
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = DECL_CONTEXT (decl);
+	      pushed_scope = push_scope (class_type);
+	    }
+	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
+	  cp_parser_late_parsing_nsdmi (parser, decl);
+	}
+      vec_safe_truncate (unparsed_nsdmis, 0);
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
 
@@ -25578,19 +25576,11 @@ cp_parser_class_head (cp_parser* parser,
 
      is valid.  */
 
-  /* Get the list of base-classes, if there is one.  */
+  /* Get the list of base-classes, if there is one.  Defer access checking
+     until the entire list has been seen, as per [class.access.general].  */
+  push_deferring_access_checks (dk_deferred);
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    {
-      /* PR59482: enter the class scope so that base-specifiers are looked
-	 up correctly.  */
-      if (type)
-	pushclass (type);
-      bases = cp_parser_base_clause (parser);
-      /* PR59482: get out of the previously pushed class scope so that the
-	 subsequent pops pop the right thing.  */
-      if (type)
-	popclass ();
-    }
+    bases = cp_parser_base_clause (parser);
   else
     bases = NULL_TREE;
 
@@ -25598,6 +25588,20 @@ cp_parser_class_head (cp_parser* parser,
      If they're invalid, fail.  */
   if (type && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     xref_basetypes (type, bases);
+
+  /* Now that all bases have been seen and attached to the class, check
+     accessibility of the types named in the base-clause.  This must be
+     done relative to the class scope, so that we accept e.g.
+
+       struct A { protected: struct B {}; };
+       struct C : A::B, A {}; // OK: A::B is accessible via base A
+
+     as per [class.access.general].  */
+  if (type)
+    pushclass (type);
+  pop_to_parent_deferring_access_checks ();
+  if (type)
+    popclass ();
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will
@@ -30825,10 +30829,6 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       start_preparsed_function (member_function, NULL_TREE,
 				SF_PRE_PARSED | SF_INCLASS_INLINE);
 
-      /* Don't do access checking if it is a templated function.  */
-      if (processing_template_decl)
-	push_deferring_access_checks (dk_no_check);
-
       /* #pragma omp declare reduction needs special parsing.  */
       if (DECL_OMP_DECLARE_REDUCTION_P (member_function))
 	{
@@ -30841,9 +30841,6 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 	/* Now, parse the body of the function.  */
 	cp_parser_function_definition_after_declarator (parser,
 							/*inline_p=*/true);
-
-      if (processing_template_decl)
-	pop_deferring_access_checks ();
 
       /* Leave the scope of the containing function.  */
       if (function_scope)

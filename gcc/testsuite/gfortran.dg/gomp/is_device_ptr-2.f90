@@ -8,7 +8,7 @@ subroutine abc(cc)
     !$omp target enter data map(to: cc, dd)
 
     !$omp target data use_device_addr(cc) use_device_ptr(dd)
-      !$omp target is_device_ptr(cc, dd)  ! { dg-error "Non-dummy object 'cc' in IS_DEVICE_PTR clause at" }
+      !$omp target is_device_ptr(cc, dd)  ! { dg-error "Non-dummy object 'dd' in IS_DEVICE_PTR clause at" }
         if (cc /= 131 .or. dd /= 484) stop 1
         cc = 44
         dd = 45

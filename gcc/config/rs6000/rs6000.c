@@ -9932,10 +9932,8 @@ rs6000_emit_le_vsx_load (rtx dest, rtx source, machine_mode mode)
 void
 rs6000_emit_le_vsx_store (rtx dest, rtx source, machine_mode mode)
 {
-  /* This should never be called during or after LRA, because it does
-     not re-permute the source register.  It is intended only for use
-     during expand.  */
-  gcc_assert (!lra_in_progress && !reload_completed);
+  /* This should never be called after LRA.  */
+  gcc_assert (can_create_pseudo_p ());
 
   /* Use V2DImode to do swaps of types with 128-bit scalar parts (TImode,
      V1TImode).  */
@@ -9946,7 +9944,7 @@ rs6000_emit_le_vsx_store (rtx dest, rtx source, machine_mode mode)
       source = gen_lowpart (V2DImode, source);
     }
 
-  rtx tmp = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (source) : source;
+  rtx tmp = gen_reg_rtx_and_attrs (source);
   rs6000_emit_le_vsx_permute (tmp, source, mode);
   rs6000_emit_le_vsx_permute (dest, tmp, mode);
 }

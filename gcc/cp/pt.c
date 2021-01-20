@@ -11825,16 +11825,13 @@ instantiate_class_template_1 (tree type)
 	      || COMPLETE_OR_OPEN_TYPE_P (TYPE_CONTEXT (type)));
 
   base_list = NULL_TREE;
+  /* Defer access checking while we substitute into the types named in
+     the base-clause.  */
+  push_deferring_access_checks (dk_deferred);
   if (BINFO_N_BASE_BINFOS (pbinfo))
     {
       tree pbase_binfo;
-      tree pushed_scope;
       int i;
-
-      /* We must enter the scope containing the type, as that is where
-	 the accessibility of types named in dependent bases are
-	 looked up from.  */
-      pushed_scope = push_scope (CP_TYPE_CONTEXT (type));
 
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
@@ -11877,9 +11874,6 @@ instantiate_class_template_1 (tree type)
 
       /* The list is now in reverse order; correct that.  */
       base_list = nreverse (base_list);
-
-      if (pushed_scope)
-	pop_scope (pushed_scope);
     }
   /* Now call xref_basetypes to set up all the base-class
      information.  */
@@ -11896,6 +11890,10 @@ instantiate_class_template_1 (tree type)
      begin_class_definition when defining an ordinary non-template
      class, except we also need to push the enclosing classes.  */
   push_nested_class (type);
+
+  /* Now check accessibility of the types named in its base-clause,
+     relative to the scope of the class.  */
+  pop_to_parent_deferring_access_checks ();
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
@@ -15690,6 +15688,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
 		      {
 			pl = tsubst_copy (pl, args, complain, in_decl);
+			if (TREE_CODE (pl) == TEMPLATE_TEMPLATE_PARM)
+			  pl = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (pl);
 			CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
 		      }
 		  }
@@ -18136,7 +18136,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 				 == tsubst (scope, args, complain, in_decl));
 	    /* We still need to push the bindings so that we can look up
 	       this name later.  */
-	    push_using_decl_bindings (decl);
+	    push_using_decl_bindings (DECL_NAME (decl),
+				      USING_DECL_DECLS (decl));
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
@@ -25456,7 +25457,8 @@ always_instantiate_p (tree decl)
 bool
 maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
-  tree fntype, spec, noex;
+  if (fn == error_mark_node)
+    return false;
 
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl
@@ -25475,13 +25477,13 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       return !DECL_MAYBE_DELETED (fn);
     }
 
-  fntype = TREE_TYPE (fn);
-  spec = TYPE_RAISES_EXCEPTIONS (fntype);
+  tree fntype = TREE_TYPE (fn);
+  tree spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
   if (!spec || !TREE_PURPOSE (spec))
     return true;
 
-  noex = TREE_PURPOSE (spec);
+  tree noex = TREE_PURPOSE (spec);
   if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
       && TREE_CODE (noex) != DEFERRED_PARSE)
     return true;

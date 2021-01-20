@@ -4733,7 +4733,9 @@ int
 reset_indirect_string (indirect_string_node **h, void *)
 {
   struct indirect_string_node *node = *h;
-  if (node->form == DW_FORM_strp || node->form == dwarf_FORM (DW_FORM_strx))
+  if (node->form == DW_FORM_strp
+      || node->form == DW_FORM_line_strp
+      || node->form == dwarf_FORM (DW_FORM_strx))
     {
       free (node->label);
       node->label = NULL;
@@ -12709,22 +12711,27 @@ output_one_line_info_table (dw_line_info_table *table)
   dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
 }
 
+static unsigned int output_line_info_generation;
+
 /* Output the source line number correspondence information.  This
    information goes into the .debug_line section.  */
 
 static void
 output_line_info (bool prologue_only)
 {
-  static unsigned int generation;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES], l2[MAX_ARTIFICIAL_LABEL_BYTES];
   char p1[MAX_ARTIFICIAL_LABEL_BYTES], p2[MAX_ARTIFICIAL_LABEL_BYTES];
   bool saw_one = false;
   int opc;
 
-  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, generation++);
+  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL,
+			       output_line_info_generation++);
 
   if (!XCOFF_DEBUGGING_INFO)
     {
@@ -28589,6 +28596,10 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
   macinfo_label_base += macinfo_label_base_adj;
 }
 
+/* As init_sections_and_labels may get called multiple times, have a
+   generation count for labels.  */
+static unsigned init_sections_and_labels_generation;
+
 /* Initialize the various sections and labels for dwarf output and prefix
    them with PREFIX if non-NULL.  Returns the generation (zero based
    number of times function was called).  */
@@ -28596,10 +28607,6 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 static unsigned
 init_sections_and_labels (bool early_lto_debug)
 {
-  /* As we may get called multiple times have a generation count for
-     labels.  */
-  static unsigned generation = 0;
-
   if (early_lto_debug)
     {
       if (!dwarf_split_debug_info)
@@ -28634,7 +28641,7 @@ init_sections_and_labels (bool early_lto_debug)
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
 				       DEBUG_SKELETON_ABBREV_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 
 	  /* Somewhat confusing detail: The skeleton_[abbrev|info] sections
 	     stay in the main .o, but the skeleton_line goes into the split
@@ -28644,14 +28651,14 @@ init_sections_and_labels (bool early_lto_debug)
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
 				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_offsets_section
 	    = get_section (DEBUG_LTO_DWO_STR_OFFSETS_SECTION,
 			   SECTION_DEBUG | SECTION_EXCLUDE,
 			   NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
 				       DEBUG_SKELETON_INFO_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_dwo_section = get_section (DEBUG_LTO_STR_DWO_SECTION,
 					       DEBUG_STR_DWO_SECTION_FLAGS,
 					       NULL);
@@ -28667,7 +28674,8 @@ init_sections_and_labels (bool early_lto_debug)
       debug_line_section = get_section (DEBUG_LTO_LINE_SECTION,
 					SECTION_DEBUG | SECTION_EXCLUDE, NULL);
       ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
-				   DEBUG_LINE_SECTION_LABEL, generation);
+				   DEBUG_LINE_SECTION_LABEL,
+				   init_sections_and_labels_generation);
 
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
@@ -28711,7 +28719,7 @@ init_sections_and_labels (bool early_lto_debug)
 						       SECTION_DEBUG, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
 				       DEBUG_SKELETON_ABBREV_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 
 	  /* Somewhat confusing detail: The skeleton_[abbrev|info] sections
 	     stay in the main .o, but the skeleton_line goes into the
@@ -28721,13 +28729,13 @@ init_sections_and_labels (bool early_lto_debug)
 			     SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
 				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_offsets_section
 	    = get_section (DEBUG_DWO_STR_OFFSETS_SECTION,
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
 				       DEBUG_SKELETON_INFO_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_loc_section = get_section (dwarf_version >= 5
 					   ? DEBUG_DWO_LOCLISTS_SECTION
 					   : DEBUG_DWO_LOC_SECTION,
@@ -28767,31 +28775,37 @@ init_sections_and_labels (bool early_lto_debug)
     }
 
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
-			       DEBUG_ABBREV_SECTION_LABEL, generation);
+			       DEBUG_ABBREV_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
-			       DEBUG_INFO_SECTION_LABEL, generation);
+			       DEBUG_INFO_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   info_section_emitted = false;
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
-			       DEBUG_LINE_SECTION_LABEL, generation);
+			       DEBUG_LINE_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   /* There are up to 4 unique ranges labels per generation.
      See also output_rnglists.  */
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, generation * 4);
+			       DEBUG_RANGES_SECTION_LABEL,
+			       init_sections_and_labels_generation * 4);
   if (dwarf_version >= 5 && dwarf_split_debug_info)
     ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
 				 DEBUG_RANGES_SECTION_LABEL,
-				 1 + generation * 4);
+				 1 + init_sections_and_labels_generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
-			       DEBUG_ADDR_SECTION_LABEL, generation);
+			       DEBUG_ADDR_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
 			       (dwarf_strict && dwarf_version < 5)
 			       ? DEBUG_MACINFO_SECTION_LABEL
-			       : DEBUG_MACRO_SECTION_LABEL, generation);
+			       : DEBUG_MACRO_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL,
-			       generation);
+			       init_sections_and_labels_generation);
 
-  ++generation;
-  return generation - 1;
+  ++init_sections_and_labels_generation;
+  return init_sections_and_labels_generation - 1;
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -29465,8 +29479,9 @@ prune_unused_types_update_strings (dw_die_ref die)
 	s->refcount++;
 	/* Avoid unnecessarily putting strings that are used less than
 	   twice in the hash table.  */
-	if (s->refcount
-	    == ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2))
+	if (s->form != DW_FORM_line_strp
+	    && (s->refcount
+		== ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2)))
 	  {
 	    indirect_string_node **slot
 	      = debug_str_hash->find_slot_with_hash (s->str,
@@ -31313,6 +31328,33 @@ reset_dies (dw_die_ref die)
   FOR_EACH_CHILD (die, c, reset_dies (c));
 }
 
+/* reset_indirect_string removed the references coming from DW_AT_name
+   and DW_AT_comp_dir attributes on compilation unit DIEs.  Readd them as
+   .debug_line_str strings again.  */
+
+static void
+adjust_name_comp_dir (dw_die_ref die)
+{
+  for (int i = 0; i < 2; i++)
+    {
+      dwarf_attribute attr_kind = i ? DW_AT_comp_dir : DW_AT_name;
+      dw_attr_node *a = get_AT (die, attr_kind);
+      if (a == NULL || a->dw_attr_val.val_class != dw_val_class_str)
+	continue;
+
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      struct indirect_string_node *node
+	= find_AT_string_in_table (a->dw_attr_val.v.val_str->str,
+				   debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = DW_FORM_line_strp;
+      a->dw_attr_val.v.val_str = node;
+    }
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -31386,6 +31428,12 @@ dwarf2out_finish (const char *filename)
 	{
 	  debug_line_str_hash->traverse<void *, reset_indirect_string> (NULL);
 	  debug_line_str_hash = NULL;
+	  if (asm_outputs_debug_line_str ())
+	    {
+	      adjust_name_comp_dir (comp_unit_die ());
+	      for (limbo_die_node *node = cu_die_list; node; node = node->next)
+		adjust_name_comp_dir (node->die);
+	    }
 	}
     }
 
@@ -32379,6 +32427,8 @@ dwarf2out_c_finalize (void)
   base_types.release ();
   XDELETEVEC (producer_string);
   producer_string = NULL;
+  output_line_info_generation = 0;
+  init_sections_and_labels_generation = 0;
 }
 
 #include "gt-dwarf2out.h"

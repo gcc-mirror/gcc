@@ -1,3 +1,42 @@
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98659
+	* pt.c (maybe_instantiate_noexcept): Return false if FN is
+	error_mark_node.
+
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98687
+	* name-lookup.c (push_using_decl_bindings): New, broken out of...
+	(finish_nonmember_using_decl): ...here.
+	* name-lookup.h (push_using_decl_bindings): Update declaration.
+	* pt.c (tsubst_expr): Update the call to push_using_decl_bindings.
+
+2021-01-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/41437
+	PR c++/58993
+	* search.c (friend_accessible_p): If scope is a hidden friend
+	defined inside a dependent class, consider access from the
+	class.
+	* parser.c (cp_parser_late_parsing_for_member): Don't push a
+	dk_no_check access state.
+
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98333
+	* parser.c (cp_parser_class_specifier_1): Perform late-parsing
+	of NSDMIs before late-parsing of noexcept-specifiers.
+
+2021-01-19  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (identifier): Merge overloads.
+
+2021-01-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98624
+	* module.cc (trees_out::write_location): Make static.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_detach): New.

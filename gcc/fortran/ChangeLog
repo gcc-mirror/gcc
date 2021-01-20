@@ -1,3 +1,10 @@
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98476
+	* openmp.c (resolve_omp_clauses): Change use_device_ptr
+	to use_device_addr for unless type(c_ptr); check all
+	list item for is_device_ptr.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle detach clause.
