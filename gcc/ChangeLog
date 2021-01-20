@@ -1,3 +1,22 @@
+2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98690
+	* ipa-sra.c (ssa_name_only_returned_p): New parameter fun.  Check
+	whether non-call exceptions allow removal of a statement.
+	(isra_analyze_call): Pass the appropriate function to
+	ssa_name_only_returned_p.
+
+2021-01-19  Daniel Hellstrom  <daniel@gaisler.com>
+
+	Backported from master:
+	2021-01-19  Daniel Hellstrom  <daniel@gaisler.com>
+
+	* config/sparc/rtemself.h (TARGET_OS_CPP_BUILTINS): Add
+	built-in define __FIX_LEON3FT_TN0018.
+
 2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98690
+	* g++.dg/ipa/pr98690.C: New test.
+
 2021-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr98100.c: Require ifunc support.
