@@ -6654,6 +6654,99 @@ package body Sem_Util is
       return N;
    end Compile_Time_Constraint_Error;
 
+   --------------------------------
+   -- Collect_Types_In_Hierarchy --
+   --------------------------------
+
+   function Collect_Types_In_Hierarchy
+     (Typ                : Entity_Id;
+      Examine_Components : Boolean := False) return Elist_Id
+   is
+      Results : Elist_Id;
+
+      procedure Process_Type (Typ : Entity_Id);
+      --  Collect type Typ if it satisfies function Predicate. Do so for its
+      --  parent type, base type, progenitor types, and any component types.
+
+      ------------------
+      -- Process_Type --
+      ------------------
+
+      procedure Process_Type (Typ : Entity_Id) is
+         Comp       : Entity_Id;
+         Iface_Elmt : Elmt_Id;
+
+      begin
+         if not Is_Type (Typ) or else Error_Posted (Typ) then
+            return;
+         end if;
+
+         --  Collect the current type if it satisfies the predicate
+
+         if Predicate (Typ) then
+            Append_Elmt (Typ, Results);
+         end if;
+
+         --  Process component types
+
+         if Examine_Components then
+
+            --  Examine components and discriminants
+
+            if Is_Concurrent_Type (Typ)
+              or else Is_Incomplete_Or_Private_Type (Typ)
+              or else Is_Record_Type (Typ)
+              or else Has_Discriminants (Typ)
+            then
+               Comp := First_Component_Or_Discriminant (Typ);
+
+               while Present (Comp) loop
+                  Process_Type (Etype (Comp));
+
+                  Next_Component_Or_Discriminant (Comp);
+               end loop;
+
+            --  Examine array components
+
+            elsif Ekind (Typ) = E_Array_Type then
+               Process_Type (Component_Type (Typ));
+            end if;
+         end if;
+
+         --  Examine parent type
+
+         if Etype (Typ) /= Typ then
+            Process_Type (Etype (Typ));
+         end if;
+
+         --  Examine base type
+
+         if Base_Type (Typ) /= Typ then
+            Process_Type (Base_Type (Typ));
+         end if;
+
+         --  Examine interfaces
+
+         if Is_Record_Type (Typ)
+           and then Present (Interfaces (Typ))
+         then
+            Iface_Elmt := First_Elmt (Interfaces (Typ));
+            while Present (Iface_Elmt) loop
+               Process_Type (Node (Iface_Elmt));
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end if;
+      end Process_Type;
+
+   --  Start of processing for Collect_Types_In_Hierarchy
+
+   begin
+      Results := New_Elmt_List;
+      Process_Type (Typ);
+      return Results;
+   end Collect_Types_In_Hierarchy;
+
    -----------------------
    -- Conditional_Delay --
    -----------------------

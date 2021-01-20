@@ -581,6 +581,18 @@ package Sem_Util is
    --  emitted immediately after the main message (and before output of any
    --  message indicating that Constraint_Error will be raised).
 
+   generic
+      with function Predicate (Typ : Entity_Id) return Boolean;
+   function Collect_Types_In_Hierarchy
+     (Typ                : Entity_Id;
+      Examine_Components : Boolean := False) return Elist_Id;
+   --  Inspect the ancestor and progenitor types of Typ and Typ itself -
+   --  collecting those for which function Predicate is True. The resulting
+   --  list is ordered in a type-to-ultimate-ancestor fashion.
+
+   --  When Examine_Components is True, components types in the hierarchy also
+   --  get collected.
+
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
    --  Sets the Has_Delayed_Freeze flag of New_Ent if the Delayed_Freeze flag
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is

@@ -2192,6 +2192,11 @@ package body Freeze is
       --  which is the current instance type can only be applied when the type
       --  is limited.
 
+      procedure Check_No_Controlled_Parts_Violations (Typ : Entity_Id);
+      --  Check that Typ does not violate the semantics of aspect
+      --  No_Controlled_Parts when it is specified on Typ or one of its
+      --  ancestors.
+
       procedure Check_Suspicious_Convention (Rec_Type : Entity_Id);
       --  Give a warning for pragma Convention with language C or C++ applied
       --  to a discriminated record type. This is suppressed for the unchecked
@@ -2411,6 +2416,361 @@ package body Freeze is
             Traverse (Comp_Decl);
          end if;
       end Check_Current_Instance;
+
+      ------------------------------------------
+      -- Check_No_Controlled_Parts_Violations --
+      ------------------------------------------
+
+      procedure Check_No_Controlled_Parts_Violations (Typ : Entity_Id) is
+
+         function Find_Aspect_No_Controlled_Parts
+           (Typ : Entity_Id) return Node_Id;
+         --  Search for aspect No_Controlled_Parts on a given type. When
+         --  the aspect is not explicity specified Empty is returned.
+
+         function Get_Aspect_No_Controlled_Parts_Value
+           (Typ : Entity_Id) return Entity_Id;
+         --  Obtain the value for the No_Controlled_Parts aspect on a given
+         --  type. When the aspect is not explicitly specified Empty is
+         --  returned.
+
+         function Has_Aspect_No_Controlled_Parts
+           (Typ : Entity_Id) return Boolean;
+         --  Predicate function which identifies whether No_Controlled_Parts
+         --  is explicitly specified on a given type.
+
+         -------------------------------------
+         -- Find_Aspect_No_Controlled_Parts --
+         -------------------------------------
+
+         function Find_Aspect_No_Controlled_Parts
+           (Typ : Entity_Id) return Node_Id
+         is
+            Partial_View : constant Entity_Id :=
+              Incomplete_Or_Partial_View (Typ);
+
+            Aspect_Spec : Entity_Id :=
+              Find_Aspect (Typ, Aspect_No_Controlled_Parts);
+            Curr_Aspect_Spec : Entity_Id;
+         begin
+
+            --  Examine Typ's associated node, when present, since aspect
+            --  specifications do not get transferred when nodes get rewritten.
+
+            --  For example, this can happen in the expansion of array types
+
+            if No (Aspect_Spec)
+              and then Present (Associated_Node_For_Itype (Typ))
+              and then Nkind (Associated_Node_For_Itype (Typ))
+                         = N_Full_Type_Declaration
+            then
+               Aspect_Spec :=
+                 Find_Aspect
+                   (Id => Defining_Identifier
+                            (Associated_Node_For_Itype (Typ)),
+                    A  => Aspect_No_Controlled_Parts);
+            end if;
+
+            --  Examine aspects specifications on private type declarations
+
+            --  Should Find_Aspect be improved to handle this case ???
+
+            if No (Aspect_Spec)
+              and then Present (Partial_View)
+              and then Present
+                         (Aspect_Specifications
+                           (Declaration_Node
+                             (Partial_View)))
+            then
+               Curr_Aspect_Spec :=
+                 First
+                   (Aspect_Specifications
+                     (Declaration_Node
+                       (Partial_View)));
+
+               --  Search through aspects present on the private type
+
+               while Present (Curr_Aspect_Spec) loop
+                  if Get_Aspect_Id (Curr_Aspect_Spec)
+                       = Aspect_No_Controlled_Parts
+                  then
+                     Aspect_Spec := Curr_Aspect_Spec;
+                     exit;
+                  end if;
+
+                  Next (Curr_Aspect_Spec);
+               end loop;
+
+            end if;
+
+            --  When errors are posted on the aspect return Empty
+
+            if Error_Posted (Aspect_Spec) then
+               return Empty;
+            end if;
+
+            return Aspect_Spec;
+         end Find_Aspect_No_Controlled_Parts;
+
+         ------------------------------------------
+         -- Get_Aspect_No_Controlled_Parts_Value --
+         ------------------------------------------
+
+         function Get_Aspect_No_Controlled_Parts_Value
+           (Typ : Entity_Id) return Entity_Id
+         is
+            Aspect_Spec : constant Entity_Id :=
+              Find_Aspect_No_Controlled_Parts (Typ);
+         begin
+
+            --  Return the value of the aspect when present
+
+            if Present (Aspect_Spec) then
+
+               --  No expression is the same as True
+
+               if No (Expression (Aspect_Spec)) then
+                  return Standard_True;
+               end if;
+
+               --  Assume its expression has already been constant folded into
+               --  a Boolean value and return its value.
+
+               return Entity (Expression (Aspect_Spec));
+            end if;
+
+            --  Otherwise, the aspect is not specified - so return Empty
+
+            return Empty;
+         end Get_Aspect_No_Controlled_Parts_Value;
+
+         ------------------------------------
+         -- Has_Aspect_No_Controlled_Parts --
+         ------------------------------------
+
+         function Has_Aspect_No_Controlled_Parts
+           (Typ : Entity_Id) return Boolean
+         is (Present (Find_Aspect_No_Controlled_Parts (Typ)));
+
+         --  Generic instances
+
+         -------------------------------------------
+         -- Get_Generic_Formal_Types_In_Hierarchy --
+         -------------------------------------------
+
+         function Get_Generic_Formal_Types_In_Hierarchy
+           is new Collect_Types_In_Hierarchy (Predicate => Is_Generic_Formal);
+         --  Return a list of all types within a given type's hierarchy which
+         --  are generic formals.
+
+         ----------------------------------------
+         -- Get_Types_With_Aspect_In_Hierarchy --
+         ----------------------------------------
+
+         function Get_Types_With_Aspect_In_Hierarchy
+           is new Collect_Types_In_Hierarchy
+                    (Predicate => Has_Aspect_No_Controlled_Parts);
+         --  Returns a list of all types within a given type's hierarchy which
+         --  have the aspect No_Controlled_Parts specified.
+
+         --  Local declarations
+
+         Types_With_Aspect : Elist_Id :=
+           Get_Types_With_Aspect_In_Hierarchy (Typ);
+
+         Aspect_Value     : Entity_Id;
+         Curr_Value       : Entity_Id;
+         Curr_Typ_Elmt    : Elmt_Id;
+         Curr_Body_Elmt   : Elmt_Id;
+         Curr_Formal_Elmt : Elmt_Id;
+         Gen_Bodies       : Elist_Id;
+         Gen_Formals      : Elist_Id;
+         Scop             : Entity_Id;
+
+      --  Start of processing for Check_No_Controlled_Parts_Violations
+
+      begin
+         --  There are no types with No_Controlled_Parts specified, so there
+         --  is nothing to check.
+
+         if Is_Empty_Elmt_List (Types_With_Aspect)
+           or else not Comes_From_Source (Typ)
+         then
+            return;
+         end if;
+
+         --  Obtain the aspect value for No_Controlled_Parts for comparison
+
+         Aspect_Value :=
+           Get_Aspect_No_Controlled_Parts_Value
+             (Node (First_Elmt (Types_With_Aspect)));
+
+         --  When the value is True and there are controlled parts or the type
+         --  itself is controlled, trigger the appropriate error.
+
+         if Aspect_Value = Standard_True
+           and then (Is_Controlled (Typ)
+                      or else Has_Controlled_Component (Typ))
+         then
+            Error_Msg_N
+              ("aspect No_Controlled_Parts applied to controlled type &", Typ);
+         end if;
+
+         --  Move through Types_With_Aspect - checking that the value specified
+         --  for their corresponding No_Controlled_Parts aspects do not
+         --  override each other.
+
+         Curr_Typ_Elmt := First_Elmt (Types_With_Aspect);
+         while Present (Curr_Typ_Elmt) loop
+            Curr_Value :=
+              Get_Aspect_No_Controlled_Parts_Value (Node (Curr_Typ_Elmt));
+
+            --  Compare the aspect value against the current type
+
+            if Curr_Value /= Aspect_Value then
+               Error_Msg_NE
+                 ("cannot override aspect No_Controlled_Parts of "
+                   & "ancestor type &", Typ, Node (Curr_Typ_Elmt));
+               return;
+            end if;
+
+            Next_Elmt (Curr_Typ_Elmt);
+         end loop;
+
+         --  Issue an error if the aspect applies to a type declared inside a
+         --  generic body and if said type derives from or has a component of
+         --  a generic formal type - since those are considered to be both
+         --  controlled and have aspect No_Controlled_Parts specified as False
+         --  by default (RM H.4.1(4/5)).
+
+         --  We do not check tagged types since deriving from a formal type
+         --  within an enclosing generic unit is already illegal
+         --  (RM 3.9.1 (4/2)).
+
+         if Aspect_Value = Standard_True
+           and then In_Generic_Body (Typ)
+           and then not Is_Tagged_Type (Typ)
+         then
+            Gen_Bodies  := New_Elmt_List;
+            Gen_Formals :=
+              Get_Generic_Formal_Types_In_Hierarchy
+                (Typ                => Typ,
+                 Examine_Components => True);
+
+            --  Climb scopes collecting generic bodies
+
+            Scop := Scope (Typ);
+            while Present (Scop) and then Scop /= Standard_Standard loop
+
+               --  Generic package body
+
+               if Ekind (Scop) = E_Generic_Package
+                 and then In_Package_Body (Scop)
+               then
+                  Append_Elmt (Scop, Gen_Bodies);
+
+               --  Generic subprogram body
+
+               elsif Is_Generic_Subprogram (Scop) then
+                  Append_Elmt (Scop, Gen_Bodies);
+               end if;
+
+               Scop := Scope (Scop);
+            end loop;
+
+            --  Warn about the improper use of No_Controlled_Parts on a type
+            --  declaration deriving from or that has a component of a generic
+            --  formal type within the formal type's corresponding generic
+            --  body by moving through all formal types in Typ's hierarchy and
+            --  checking if they are formals in any of the enclosing generic
+            --  bodies.
+
+            --  However, a special exception gets made for formal types which
+            --  derive from a type which has No_Controlled_Parts True.
+
+            --  For example:
+
+            --  generic
+            --     type Form is private;
+            --  package G is
+            --     type Type_A is new Form with No_Controlled_Parts; --  OK
+            --  end;
+            --
+            --  package body G is
+            --     type Type_B is new Form with No_Controlled_Parts; --  ERROR
+            --  end;
+
+            --  generic
+            --     type Form is private;
+            --  package G is
+            --     type Type_A is record C : Form; end record
+            --       with No_Controlled_Parts;                       --  OK
+            --  end;
+            --
+            --  package body G is
+            --     type Type_B is record C : Form; end record
+            --       with No_Controlled_Parts;                       --  ERROR
+            --  end;
+
+            --  type Root is tagged null record with No_Controlled_Parts;
+            --
+            --  generic
+            --     type Form is new Root with private;
+            --  package G is
+            --     type Type_A is record C : Form; end record
+            --       with No_Controlled_Parts;                       --  OK
+            --  end;
+            --
+            --  package body G is
+            --     type Type_B is record C : Form; end record
+            --       with No_Controlled_Parts;                       --  OK
+            --  end;
+
+            Curr_Formal_Elmt := First_Elmt (Gen_Formals);
+            while Present (Curr_Formal_Elmt) loop
+
+               Curr_Body_Elmt := First_Elmt (Gen_Bodies);
+               while Present (Curr_Body_Elmt) loop
+
+                  --  Obtain types in the formal type's hierarchy which have
+                  --  the aspect specified.
+
+                  Types_With_Aspect :=
+                    Get_Types_With_Aspect_In_Hierarchy
+                      (Node (Curr_Formal_Elmt));
+
+                  --  We found a type declaration in a generic body where both
+                  --  No_Controlled_Parts is true and one of its ancestors is a
+                  --  generic formal type.
+
+                  if Scope (Node (Curr_Formal_Elmt)) =
+                       Node (Curr_Body_Elmt)
+
+                    --  Check that no ancestors of the formal type have
+                    --  No_Controlled_Parts True before issuing the error.
+
+                    and then (Is_Empty_Elmt_List (Types_With_Aspect)
+                               or else
+                                 Get_Aspect_No_Controlled_Parts_Value
+                                   (Node (First_Elmt (Types_With_Aspect)))
+                                  = Standard_False)
+                  then
+                     Error_Msg_Node_1 := Typ;
+                     Error_Msg_Node_2 := Node (Curr_Formal_Elmt);
+                     Error_Msg
+                       ("aspect No_Controlled_Parts cannot be applied to "
+                         & "type & which has an ancestor or component of "
+                         & "formal type & within the formal type's "
+                         & "corresponding generic body", Sloc (Typ));
+                  end if;
+
+                  Next_Elmt (Curr_Body_Elmt);
+               end loop;
+
+               Next_Elmt (Curr_Formal_Elmt);
+            end loop;
+         end if;
+      end Check_No_Controlled_Parts_Violations;
 
       ---------------------------------
       -- Check_Suspicious_Convention --
@@ -6800,6 +7160,16 @@ package body Freeze is
                end if;
             end;
          end if;
+
+         --  Verify at this point that No_Controlled_Parts, when specified on
+         --  the current type or one of its ancestors, has not been overridden
+         --  and that no violation of the aspect has occurred.
+
+         --  It is important that we perform the checks here after the type has
+         --  been processed because if said type depended on a private type it
+         --  will not have been marked controlled.
+
+         Check_No_Controlled_Parts_Violations (E);
 
          --  End of freeze processing for type entities
       end if;

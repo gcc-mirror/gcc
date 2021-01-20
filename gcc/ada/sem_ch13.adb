@@ -1816,6 +1816,13 @@ package body Sem_Ch13 is
       Aspect := First (L);
       Aspect_Loop : while Present (Aspect) loop
          Analyze_One_Aspect : declare
+
+            Aspect_Exit : exception;
+            --  This exception is used to exit aspect processing completely. It
+            --  is used when an error is detected, and no further processing is
+            --  required. It is also used if an earlier error has left the tree
+            --  in a state where the aspect should not be processed.
+
             Expr : constant Node_Id    := Expression (Aspect);
             Id   : constant Node_Id    := Identifier (Aspect);
             Loc  : constant Source_Ptr := Sloc (Aspect);
@@ -1853,6 +1860,17 @@ package body Sem_Ch13 is
 
             procedure Analyze_Aspect_Static;
             --  Ada 202x (AI12-0075): Perform analysis of aspect Static
+
+            procedure Check_Expr_Is_OK_Static_Expression
+              (Expr : Node_Id;
+               Typ  : Entity_Id := Empty);
+            --  Check the specified expression Expr to make sure that it is a
+            --  static expression of the given type (i.e. it will be analyzed
+            --  and resolved using this type, which can be any valid argument
+            --  to Resolve, e.g. Any_Integer is OK). If not, give an error
+            --  and raise Aspect_Exit. If Typ is left Empty, then any static
+            --  expression is allowed. Includes checking that the expression
+            --  does not raise Constraint_Error.
 
             function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
@@ -2711,6 +2729,42 @@ package body Sem_Ch13 is
                end if;
             end Analyze_Aspect_Yield;
 
+            ----------------------------------------
+            -- Check_Expr_Is_OK_Static_Expression --
+            ----------------------------------------
+
+            procedure Check_Expr_Is_OK_Static_Expression
+              (Expr : Node_Id;
+               Typ  : Entity_Id := Empty)
+            is
+            begin
+               if Present (Typ) then
+                  Analyze_And_Resolve (Expr, Typ);
+               else
+                  Analyze_And_Resolve (Expr);
+               end if;
+
+               --  An expression cannot be considered static if its resolution
+               --  failed or if it's erroneous. Stop the analysis of the
+               --  related aspect.
+
+               if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
+                  raise Aspect_Exit;
+
+               elsif Is_OK_Static_Expression (Expr) then
+                  return;
+
+               --  Finally, we have a real error
+
+               else
+                  Error_Msg_Name_1 := Nam;
+                  Flag_Non_Static_Expr
+                    ("entity for aspect% must be a static expression",
+                     Expr);
+                  raise Aspect_Exit;
+               end if;
+            end Check_Expr_Is_OK_Static_Expression;
+
             -----------------------
             -- Make_Aitem_Pragma --
             -----------------------
@@ -2874,7 +2928,10 @@ package body Sem_Ch13 is
                --  versions of the language. Allowed for them only for
                --  shared variable control aspects.
 
-               if Nkind (N) = N_Formal_Type_Declaration then
+               --  Original node is used in case expansion rewrote the node -
+               --  as is the case with generic derived types.
+
+               if Nkind (Original_Node (N)) = N_Formal_Type_Declaration then
                   if Ada_Version < Ada_2020 then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
@@ -3883,6 +3940,32 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
+               --  No_Controlled_Parts
+
+               when Aspect_No_Controlled_Parts =>
+
+                  --  Check appropriate type argument
+
+                  if not Is_Type (E) then
+                     Error_Msg_N
+                       ("aspect % can only be applied to types", E);
+                  end if;
+
+                  --  Disallow subtypes
+
+                  if Nkind (Declaration_Node (E)) = N_Subtype_Declaration then
+                     Error_Msg_N
+                       ("aspect % cannot be applied to subtypes", E);
+                  end if;
+
+                  --  Resolve the expression to a boolean
+
+                  if Present (Expr) then
+                     Check_Expr_Is_OK_Static_Expression (Expr, Any_Boolean);
+                  end if;
+
+                  goto Continue;
+
                --  Obsolescent
 
                when Aspect_Obsolescent => declare
@@ -4860,6 +4943,8 @@ package body Sem_Ch13 is
                   end if;
                end;
             end if;
+         exception
+            when Aspect_Exit => null;
          end Analyze_One_Aspect;
 
          Next (Aspect);
@@ -10996,6 +11081,7 @@ package body Sem_Ch13 is
             | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
             | Aspect_No_Caching
+            | Aspect_No_Controlled_Parts
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post
