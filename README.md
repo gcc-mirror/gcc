@@ -14,6 +14,10 @@ Now that the language is stable, it is an excellent time to create alternative c
 the project are keen “Rustaceans” with a desire to give back to the Rust community and to learn what GCC is capable
 of when it comes to a modern language.
 
+## FAQ
+
+Please find the answers to frequently asked questions over on: https://github.com/Rust-GCC/gccrs/wiki/Frequently-Asked-Questions
+
 ## Development Environment
 
 Fetch dependencies for Ubuntu:
