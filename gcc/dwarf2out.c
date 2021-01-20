@@ -4733,7 +4733,9 @@ int
 reset_indirect_string (indirect_string_node **h, void *)
 {
   struct indirect_string_node *node = *h;
-  if (node->form == DW_FORM_strp || node->form == dwarf_FORM (DW_FORM_strx))
+  if (node->form == DW_FORM_strp
+      || node->form == DW_FORM_line_strp
+      || node->form == dwarf_FORM (DW_FORM_strx))
     {
       free (node->label);
       node->label = NULL;
@@ -29477,8 +29479,9 @@ prune_unused_types_update_strings (dw_die_ref die)
 	s->refcount++;
 	/* Avoid unnecessarily putting strings that are used less than
 	   twice in the hash table.  */
-	if (s->refcount
-	    == ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2))
+	if (s->form != DW_FORM_line_strp
+	    && (s->refcount
+		== ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2)))
 	  {
 	    indirect_string_node **slot
 	      = debug_str_hash->find_slot_with_hash (s->str,
@@ -31325,6 +31328,33 @@ reset_dies (dw_die_ref die)
   FOR_EACH_CHILD (die, c, reset_dies (c));
 }
 
+/* reset_indirect_string removed the references coming from DW_AT_name
+   and DW_AT_comp_dir attributes on compilation unit DIEs.  Readd them as
+   .debug_line_str strings again.  */
+
+static void
+adjust_name_comp_dir (dw_die_ref die)
+{
+  for (int i = 0; i < 2; i++)
+    {
+      dwarf_attribute attr_kind = i ? DW_AT_comp_dir : DW_AT_name;
+      dw_attr_node *a = get_AT (die, attr_kind);
+      if (a == NULL || a->dw_attr_val.val_class != dw_val_class_str)
+	continue;
+
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      struct indirect_string_node *node
+	= find_AT_string_in_table (a->dw_attr_val.v.val_str->str,
+				   debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = DW_FORM_line_strp;
+      a->dw_attr_val.v.val_str = node;
+    }
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -31398,6 +31428,12 @@ dwarf2out_finish (const char *filename)
 	{
 	  debug_line_str_hash->traverse<void *, reset_indirect_string> (NULL);
 	  debug_line_str_hash = NULL;
+	  if (asm_outputs_debug_line_str ())
+	    {
+	      adjust_name_comp_dir (comp_unit_die ());
+	      for (limbo_die_node *node = cu_die_list; node; node = node->next)
+		adjust_name_comp_dir (node->die);
+	    }
 	}
     }
 
