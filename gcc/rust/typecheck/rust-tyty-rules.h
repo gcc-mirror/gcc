@@ -70,11 +70,7 @@ public:
 
   virtual void visit (ParamType &type) override
   {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    Location def_locus = mappings->lookup_location (base->get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
-    rust_error_at (def_locus, "declared here");
+    type.get_base_type ()->accept_vis (*this);
   }
 
   virtual void visit (ArrayType &type) override
