@@ -3416,15 +3416,13 @@ package body Sem_Ch6 is
             Prag := Empty;
          end if;
 
-         if Present (Prag) then
+         if Present (Prag) and then Is_List_Member (N) then
             if Present (Spec_Id) then
-               if Is_List_Member (N)
-                 and then Is_List_Member (Unit_Declaration_Node (Spec_Id))
+               if Is_List_Member (Unit_Declaration_Node (Spec_Id))
                  and then In_Same_List (N, Unit_Declaration_Node (Spec_Id))
                then
                   Analyze (Prag);
                end if;
-
             else
                --  Create a subprogram declaration, to make treatment uniform.
                --  Make the sloc of the subprogram name that of the entity in
