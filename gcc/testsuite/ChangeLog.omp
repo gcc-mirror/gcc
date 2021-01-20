@@ -1,6 +1,15 @@
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-01-20  Tobias Burnus <tobias@codesourcery.com>
+
+	PR fortran/98763
+	* gfortran.dg/gomp/task-detach-1.f90: Use integer(1) to avoid
+	missing diagnostic issues with c_intptr_t == default integer kind.
+
+2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98742

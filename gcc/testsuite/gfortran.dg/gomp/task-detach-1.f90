@@ -7,7 +7,7 @@ program task_detach_1
   
   integer, parameter :: omp_event_handle_kind = c_intptr_t
   integer (kind=omp_event_handle_kind) :: x, y
-  integer :: z
+  integer(1) :: z
   
   !$omp task detach(x) detach(y) ! { dg-error "Failed to match clause at \\\(1\\\)" }
   !$omp end task ! { dg-error "Unexpected !\\\$OMP END TASK statement at \\\(1\\\)" }
