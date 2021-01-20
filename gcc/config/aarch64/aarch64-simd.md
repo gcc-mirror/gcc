@@ -3312,7 +3312,9 @@
 ;; Lane extraction of a value, neither sign nor zero extension
 ;; is guaranteed so upper bits should be considered undefined.
 ;; RTL uses GCC vector extension indices throughout so flip only for assembly.
-(define_insn "aarch64_get_lane<mode>"
+;; Extracting lane zero is split into a simple move when it is between SIMD
+;; registers or a store.
+(define_insn_and_split "aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=?r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
@@ -3332,6 +3334,12 @@
 	  gcc_unreachable ();
       }
   }
+ "&& reload_completed
+  && ENDIAN_LANE_N (<nunits>, INTVAL (operands[2])) == 0"
+ [(set (match_dup 0) (match_dup 1))]
+ {
+   operands[1] = aarch64_replace_reg_mode (operands[1], <VEL>mode);
+ }
   [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
 )
 
