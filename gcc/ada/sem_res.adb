@@ -10542,12 +10542,9 @@ package body Sem_Res is
                PL : constant Node_Id := Prefix (Lorig);
                PH : constant Node_Id := Prefix (Horig);
             begin
-               if Is_Entity_Name (PL)
+               return Is_Entity_Name (PL)
                  and then Is_Entity_Name (PH)
-                 and then Entity (PL) = Entity (PH)
-               then
-                  return True;
-               end if;
+                 and then Entity (PL) = Entity (PH);
             end;
          end if;
 
@@ -10616,11 +10613,11 @@ package body Sem_Res is
 
       if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
-            Fold_Uint (L, Expr_Value (L), Is_OK_Static_Expression (L));
+            Fold_Uint (L, Expr_Value (L), Static => True);
          end if;
 
          if Is_OK_Static_Expression (H) then
-            Fold_Uint (H, Expr_Value (H), Is_OK_Static_Expression (H));
+            Fold_Uint (H, Expr_Value (H), Static => True);
          end if;
       end if;
    end Resolve_Range;
