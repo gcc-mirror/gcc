@@ -1,3 +1,13 @@
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-01-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/91640
+	* trans-expr.c (gfc_conv_procedure_call): Avoid copy-out for nonvariable
+	arguments to contiguous dummy args.  Avoid re-checking whether fsym is
+	NULL.
+
 2021-01-07  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
