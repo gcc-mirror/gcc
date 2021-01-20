@@ -1,3 +1,135 @@
+2021-01-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/cpp/ucs.c: Expect Invalid warning for 2byte wchar.
+	* gcc.dg/debug/dwarf2/inline6.c: Remove skip AIX.
+	* gcc.dg/debug/dwarf2/lang-c11.c: Remove skip AIX.
+	* gcc.dg/debug/dwarf2/pr41445-7.c: Remove skip AIX.
+	* gcc.dg/debug/dwarf2/pr41445-8.c: Remove skip AIX.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-20.c: Require 4byte wchar.
+
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98659
+	* g++.dg/template/deduce8.C: New test.
+
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98687
+	* g++.dg/lookup/using64.C: New test.
+	* g++.dg/lookup/using65.C: New test.
+
+2021-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98664
+	* gcc.dg/Wvla-larger-than-4.c: Adjust expected output.
+	* gcc.dg/plugin/diagnostic-test-inlining-3.c: Same.
+	* g++.dg/warn/Wfree-nonheap-object-5.C: New test.
+	* gcc.dg/Wfree-nonheap-object-4.c: New test.
+
+2021-01-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/41437
+	PR c++/58993
+	* g++.dg/opt/pr87974.C: Adjust.
+	* g++.dg/template/access34.C: New test.
+	* g++.dg/template/friend68.C: New test.
+	* g++.dg/template/friend69.C: New test.
+
+2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98333
+	* g++.dg/cpp0x/noexcept62.C: New test.
+
+2021-01-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr88233.c: Update dg- stanzas.
+
+2021-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(CHECK_CUMULATIVE_SAT): Delete.
+	(CHECK_CUMULATIVE_SAT_NAMED): Likewise.  Deleted related
+	variables.
+	* gcc.target/aarch64/advsimd-intrinsics/binary_sat_op.inc:
+	Remove uses of the above.
+	* gcc.target/aarch64/advsimd-intrinsics/unary_sat_op.inc:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqabs.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl_lane.inc:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl_n.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqmovn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqmovun.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqneg.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh_lane.inc:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlah.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlah_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlsh.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlsh_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmulh.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmulh_lane.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmulh_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrn_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrun_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshl_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshlu_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrn_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrun_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqsub.c: Likewise.
+
+2021-01-19  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Force dwarf-4 generation
+	and update expected output.
+
+2021-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/98330
+	* g++.dg/pr98330.C: New testcase.
+	* gcc.dg/pr98330.c: Likewise.
+
+2021-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97673
+	* gfortran.dg/pr97673.f90: New testcase.
+
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98476
+	* gfortran.dg/gomp/map-3.f90: Update expected scan-dump-tree.
+	* gfortran.dg/gomp/is_device_ptr-2.f90: New test.
+	* gfortran.dg/gomp/use_device_ptr-1.f90: New test.
+
+2021-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98690
+	* g++.dg/ipa/pr98690.C: New test.
+
 2021-01-18  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/debug/dwarf2/pr41445-7.c: Fix expected output.
