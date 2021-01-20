@@ -25576,19 +25576,11 @@ cp_parser_class_head (cp_parser* parser,
 
      is valid.  */
 
-  /* Get the list of base-classes, if there is one.  */
+  /* Get the list of base-classes, if there is one.  Defer access checking
+     until the entire list has been seen, as per [class.access.general].  */
+  push_deferring_access_checks (dk_deferred);
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    {
-      /* PR59482: enter the class scope so that base-specifiers are looked
-	 up correctly.  */
-      if (type)
-	pushclass (type);
-      bases = cp_parser_base_clause (parser);
-      /* PR59482: get out of the previously pushed class scope so that the
-	 subsequent pops pop the right thing.  */
-      if (type)
-	popclass ();
-    }
+    bases = cp_parser_base_clause (parser);
   else
     bases = NULL_TREE;
 
@@ -25596,6 +25588,20 @@ cp_parser_class_head (cp_parser* parser,
      If they're invalid, fail.  */
   if (type && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     xref_basetypes (type, bases);
+
+  /* Now that all bases have been seen and attached to the class, check
+     accessibility of the types named in the base-clause.  This must be
+     done relative to the class scope, so that we accept e.g.
+
+       struct A { protected: struct B {}; };
+       struct C : A::B, A {}; // OK: A::B is accessible via base A
+
+     as per [class.access.general].  */
+  if (type)
+    pushclass (type);
+  pop_to_parent_deferring_access_checks ();
+  if (type)
+    popclass ();
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will

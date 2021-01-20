@@ -11825,16 +11825,13 @@ instantiate_class_template_1 (tree type)
 	      || COMPLETE_OR_OPEN_TYPE_P (TYPE_CONTEXT (type)));
 
   base_list = NULL_TREE;
+  /* Defer access checking while we substitute into the types named in
+     the base-clause.  */
+  push_deferring_access_checks (dk_deferred);
   if (BINFO_N_BASE_BINFOS (pbinfo))
     {
       tree pbase_binfo;
-      tree pushed_scope;
       int i;
-
-      /* We must enter the scope containing the type, as that is where
-	 the accessibility of types named in dependent bases are
-	 looked up from.  */
-      pushed_scope = push_scope (CP_TYPE_CONTEXT (type));
 
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
@@ -11877,9 +11874,6 @@ instantiate_class_template_1 (tree type)
 
       /* The list is now in reverse order; correct that.  */
       base_list = nreverse (base_list);
-
-      if (pushed_scope)
-	pop_scope (pushed_scope);
     }
   /* Now call xref_basetypes to set up all the base-class
      information.  */
@@ -11896,6 +11890,10 @@ instantiate_class_template_1 (tree type)
      begin_class_definition when defining an ordinary non-template
      class, except we also need to push the enclosing classes.  */
   push_nested_class (type);
+
+  /* Now check accessibility of the types named in its base-clause,
+     relative to the scope of the class.  */
+  pop_to_parent_deferring_access_checks ();
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
