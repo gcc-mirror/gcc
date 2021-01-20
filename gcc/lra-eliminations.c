@@ -1057,7 +1057,10 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 	reg2 = SUBREG_REG (reg2);
       if (REG_P (reg1) && REG_P (reg2)
 	  && REGNO (reg1) < FIRST_PSEUDO_REGISTER
-	  && REGNO (reg2) >= FIRST_PSEUDO_REGISTER)
+	  && REGNO (reg2) >= FIRST_PSEUDO_REGISTER
+	  && GET_MODE (reg1) == Pmode
+	  && !have_addptr3_insn (gen_reg_rtx (Pmode), reg1,
+				 XEXP (XEXP (SET_SRC (set), 0), 1)))
 	{
 	  XEXP (XEXP (SET_SRC (set), 0), 0) = op2;
 	  XEXP (SET_SRC (set), 1) = op1;
