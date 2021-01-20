@@ -125,10 +125,10 @@ package Sem_Case is
    package Generic_Check_Choices is
 
       procedure Check_Choices
-        (N                        : Node_Id;
-         Alternatives             : List_Id;
-         Subtyp                   : Entity_Id;
-         Others_Present           : out Boolean);
+        (N              : Node_Id;
+         Alternatives   : List_Id;
+         Subtyp         : Entity_Id;
+         Others_Present : out Boolean);
       --  From a case expression, case statement, or record variant N, this
       --  routine analyzes the corresponding list of discrete choices which
       --  appear in each element of the list Alternatives (for the variant
