@@ -1,3 +1,10 @@
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle element selection
+	for arrays of derived types.
+
 2021-02-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

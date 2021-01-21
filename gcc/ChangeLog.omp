@@ -1,3 +1,10 @@
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle ATTACH_DETACH
+	for non-decls.
+
 2021-02-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi (nvptx's -misa): Update default to sm_35.

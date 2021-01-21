@@ -1,3 +1,16 @@
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	* gfortran.dg/goacc/array-with-dt-1.f90: New test.
+	* gfortran.dg/goacc/array-with-dt-3.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-4.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-5.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Re-enable test.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-classtypes-1.f95: Uncomment
+	previously-broken directives.
+
 2021-02-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
