@@ -481,7 +481,10 @@ enum gomp_task_kind
      but not yet completed.  Once that completes, they will be readded
      into the queues as GOMP_TASK_WAITING in order to perform the var
      unmapping.  */
-  GOMP_TASK_ASYNC_RUNNING
+  GOMP_TASK_ASYNC_RUNNING,
+  /* Task that has finished executing but is waiting for its
+     completion event to be fulfilled.  */
+  GOMP_TASK_DETACHED
 };
 
 struct gomp_task_depend_entry

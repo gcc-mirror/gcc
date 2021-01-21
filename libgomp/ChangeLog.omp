@@ -1,3 +1,28 @@
+2021-01-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	PR libgomp/98738
+	* libgomp.h (enum gomp_task_kind): Add GOMP_TASK_DETACHED.
+	* task.c (task_fulfilled_p): Check detach field as well.
+	(GOMP_task): Add thread to debug messages.  Use address of task as
+	the event handle.
+	(gomp_barrier_handle_tasks): Fix indentation.  Use address of task
+	as event handle. Set kind of suspended detach task to
+	GOMP_TASK_DETACHED and decrement task_running_count.  Move
+	finish_cancelled block out of else branch.  Skip decrement of
+	task_running_count if task kind is GOMP_TASK_DETACHED.
+	(GOMP_taskwait): Finish fulfilled detach tasks.  Update comment.
+	Queue detach tasks that have not been fulfilled.
+	(omp_fulfill_event): Use address of task as event handle.  Post
+	to taskwait_sem and taskgroup_sem if necessary.  Check
+	task_running_count before calling gomp_team_barrier_wake.
+	* testsuite/libgomp.c-c++-common/task-detach-5.c (main): Change
+	data-sharing of detach events on enclosing parallel to private.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c (main): Likewise.
+	* testsuite/libgomp.fortran/task-detach-5.f90 (task_detach_5):
+	Likewise.
+	* testsuite/libgomp.fortran/task-detach-6.f90 (task_detach_6):
+	Likewise.
+
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

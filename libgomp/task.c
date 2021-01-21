@@ -330,7 +330,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 static bool
 task_fulfilled_p (struct gomp_task *task)
 {
-  return gomp_sem_getcount (&task->completion_sem) > 0;
+  return task->detach && gomp_sem_getcount (&task->completion_sem) > 0;
 }
 
 /* Called when encountering an explicit task directive.  If IF_CLAUSE is
@@ -419,11 +419,12 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	{
 	  task.detach = true;
 	  gomp_sem_init (&task.completion_sem, 0);
-	  *(void **) detach = &task.completion_sem;
+	  *(void **) detach = &task;
 	  if (data)
-	    *(void **) data = &task.completion_sem;
+	    *(void **) data = &task;
 
-	  gomp_debug (0, "New event: %p\n", &task.completion_sem);
+	  gomp_debug (0, "Thread %d: new event: %p\n",
+		      thr->ts.team_id, &task);
 	}
 
       if (thr->task)
@@ -488,11 +489,12 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	{
 	  task->detach = true;
 	  gomp_sem_init (&task->completion_sem, 0);
-	  *(void **) detach = &task->completion_sem;
+	  *(void **) detach = task;
 	  if (data)
-	    *(void **) data = &task->completion_sem;
+	    *(void **) data = task;
 
-	  gomp_debug (0, "New event: %p\n", &task->completion_sem);
+	  gomp_debug (0, "Thread %d: new event: %p\n",
+		      thr->ts.team_id, task);
 	}
       thr->task = task;
       if (cpyfn)
@@ -1372,14 +1374,14 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 				 child_task, MEMMODEL_RELAXED);
 	  --team->task_detach_count;
 	  gomp_debug (0, "thread %d: found task with fulfilled event %p\n",
-		      thr->ts.team_id, &child_task->completion_sem);
+		      thr->ts.team_id, child_task);
 
-	if (to_free)
-	  {
-	    gomp_finish_task (to_free);
-	    free (to_free);
-	    to_free = NULL;
-	  }
+	  if (to_free)
+	    {
+	      gomp_finish_task (to_free);
+	      free (to_free);
+	      to_free = NULL;
+	    }
 	  goto finish_cancelled;
 	}
 
@@ -1452,41 +1454,43 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 	{
 	  if (child_task->detach && !task_fulfilled_p (child_task))
 	    {
+	      child_task->kind = GOMP_TASK_DETACHED;
 	      priority_queue_insert (PQ_TEAM, &team->task_detach_queue,
 				     child_task, child_task->priority,
 				     PRIORITY_INSERT_END,
 				     false, false);
 	      ++team->task_detach_count;
-	      gomp_debug (0, "thread %d: queueing task with event %p\n",
-			  thr->ts.team_id, &child_task->completion_sem);
+	      --team->task_running_count;
+	      gomp_debug (0,
+			  "thread %d: queuing detached task with event %p\n",
+			  thr->ts.team_id, child_task);
 	      child_task = NULL;
+	      continue;
 	    }
-	  else
+
+	 finish_cancelled:;
+	  size_t new_tasks
+	    = gomp_task_run_post_handle_depend (child_task, team);
+	  gomp_task_run_post_remove_parent (child_task);
+	  gomp_clear_parent (&child_task->children_queue);
+	  gomp_task_run_post_remove_taskgroup (child_task);
+	  to_free = child_task;
+	  if (!cancelled && child_task->kind != GOMP_TASK_DETACHED)
+	    team->task_running_count--;
+	  child_task = NULL;
+	  if (new_tasks > 1)
 	    {
-	     finish_cancelled:;
-	      size_t new_tasks
-		= gomp_task_run_post_handle_depend (child_task, team);
-	      gomp_task_run_post_remove_parent (child_task);
-	      gomp_clear_parent (&child_task->children_queue);
-	      gomp_task_run_post_remove_taskgroup (child_task);
-	      to_free = child_task;
-	      child_task = NULL;
-	      if (!cancelled)
-		team->task_running_count--;
-	      if (new_tasks > 1)
-		{
-		  do_wake = team->nthreads - team->task_running_count;
-		  if (do_wake > new_tasks)
-		    do_wake = new_tasks;
-		}
-	      if (--team->task_count == 0
-		  && gomp_team_barrier_waiting_for_tasks (&team->barrier))
-		{
-		  gomp_team_barrier_done (&team->barrier, state);
-		  gomp_mutex_unlock (&team->task_lock);
-		  gomp_team_barrier_wake (&team->barrier, 0);
-		  gomp_mutex_lock (&team->task_lock);
-		}
+	      do_wake = team->nthreads - team->task_running_count;
+	      if (do_wake > new_tasks)
+		do_wake = new_tasks;
+	    }
+	  if (--team->task_count == 0
+	      && gomp_team_barrier_waiting_for_tasks (&team->barrier))
+	    {
+	      gomp_team_barrier_done (&team->barrier, state);
+	      gomp_mutex_unlock (&team->task_lock);
+	      gomp_team_barrier_wake (&team->barrier, 0);
+	      gomp_mutex_lock (&team->task_lock);
 	    }
 	}
     }
@@ -1556,10 +1560,28 @@ GOMP_taskwait (void)
 	      goto finish_cancelled;
 	    }
 	}
+      else if (next_task->kind == GOMP_TASK_DETACHED
+	       && task_fulfilled_p (next_task))
+	{
+	  child_task = next_task;
+	  gomp_debug (0, "thread %d: found task with fulfilled event %p\n",
+		      thr->ts.team_id, &child_task);
+	  priority_queue_remove (PQ_TEAM, &team->task_detach_queue,
+				 child_task, MEMMODEL_RELAXED);
+	  --team->task_detach_count;
+	  if (to_free)
+	    {
+	      gomp_finish_task (to_free);
+	      free (to_free);
+	      to_free = NULL;
+	    }
+	  goto finish_cancelled;
+	}
       else
 	{
 	/* All tasks we are waiting for are either running in other
-	   threads, or they are tasks that have not had their
+	   threads, are detached and waiting for the completion event to be
+	   fulfilled, or they are tasks that have not had their
 	   dependencies met (so they're not even in the queue).  Wait
 	   for them.  */
 	  if (task->taskwait == NULL)
@@ -1614,6 +1636,21 @@ GOMP_taskwait (void)
       gomp_mutex_lock (&team->task_lock);
       if (child_task)
 	{
+	  if (child_task->detach && !task_fulfilled_p (child_task))
+	    {
+	      child_task->kind = GOMP_TASK_DETACHED;
+	      priority_queue_insert (PQ_TEAM, &team->task_detach_queue,
+				     child_task, child_task->priority,
+				     PRIORITY_INSERT_END,
+				     false, false);
+	      ++team->task_detach_count;
+	      gomp_debug (0,
+			  "thread %d: queuing detached task with event %p\n",
+			  thr->ts.team_id, child_task);
+	      child_task = NULL;
+	      continue;
+	    }
+
 	 finish_cancelled:;
 	  size_t new_tasks
 	    = gomp_task_run_post_handle_depend (child_task, team);
@@ -2402,17 +2439,45 @@ ialias (omp_in_final)
 void
 omp_fulfill_event (omp_event_handle_t event)
 {
-  gomp_sem_t *sem = (gomp_sem_t *) event;
+  struct gomp_task *task = (struct gomp_task *) event;
+  struct gomp_task *parent = task->parent;
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr ? thr->ts.team : NULL;
 
-  if (gomp_sem_getcount (sem) > 0)
-    gomp_fatal ("omp_fulfill_event: %p event already fulfilled!\n", sem);
+  if (gomp_sem_getcount (&task->completion_sem) > 0)
+    gomp_fatal ("omp_fulfill_event: %p event already fulfilled!\n", task);
 
-  gomp_debug (0, "omp_fulfill_event: %p\n", sem);
-  gomp_sem_post (sem);
-  if (team)
-    gomp_team_barrier_wake (&team->barrier, 1);
+  gomp_debug (0, "omp_fulfill_event: %p\n", task);
+  gomp_sem_post (&task->completion_sem);
+
+  /* Wake up any threads that may be waiting for the detached task
+     to complete.  */
+  gomp_mutex_lock (&team->task_lock);
+  if (parent && parent->taskwait)
+    {
+      if (parent->taskwait->in_taskwait)
+	{
+	  parent->taskwait->in_taskwait = false;
+	  gomp_sem_post (&parent->taskwait->taskwait_sem);
+	}
+      else if (parent->taskwait->in_depend_wait)
+	{
+	  parent->taskwait->in_depend_wait = false;
+	  gomp_sem_post (&parent->taskwait->taskwait_sem);
+	}
+    }
+  if (task->taskgroup && task->taskgroup->in_taskgroup_wait)
+    {
+      task->taskgroup->in_taskgroup_wait = false;
+      gomp_sem_post (&task->taskgroup->taskgroup_sem);
+    }
+  if (team && team->nthreads > team->task_running_count)
+    {
+      gomp_mutex_unlock (&team->task_lock);
+      gomp_team_barrier_wake (&team->barrier, 1);
+    }
+  else
+    gomp_mutex_unlock (&team->task_lock);
 }
 
 ialias (omp_fulfill_event)

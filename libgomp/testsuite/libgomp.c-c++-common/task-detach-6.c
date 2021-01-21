@@ -14,7 +14,7 @@ int main (void)
   omp_event_handle_t detach_event1, detach_event2;
 
   #pragma omp target map(tofrom: x, y, z) map(from: thread_count)
-    #pragma omp parallel firstprivate(detach_event1, detach_event2)
+    #pragma omp parallel private(detach_event1, detach_event2)
       {
 	#pragma omp single
 	  thread_count = omp_get_num_threads();

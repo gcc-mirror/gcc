@@ -12,7 +12,7 @@ program task_detach_6
   integer :: thread_count
 
   !$omp target map(tofrom: x, y, z) map(from: thread_count)
-    !$omp parallel firstprivate(detach_event1, detach_event2)
+    !$omp parallel private(detach_event1, detach_event2)
       !$omp single
 	thread_count = omp_get_num_threads()
       !$omp end single
