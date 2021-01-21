@@ -1,3 +1,30 @@
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-glibc.ver
 
-HOST_LIBGCC2_CFLAGS += -mlong-double-128 -mno-minimal-toc
+HOST_LIBGCC2_CFLAGS += -mlong-double-128
+
+# This is a way of selecting -mcmodel=small for ppc64, which gives
+# smaller and faster libgcc code.  Directly specifying -mcmodel=small
+# would need to take into account targets for which -mcmodel is invalid.
+HOST_LIBGCC2_CFLAGS += -mno-minimal-toc
+
+# On the modules that deal with IBM 128-bit values, make sure that TFmode uses
+# the IBM extended double format.  Also turn off gnu attributes on the static
+# modules.
+IBM128_STATIC_OBJS	= ibm-ldouble$(objext) _powitf2$(objext) \
+			  ppc64-fp$(objext) _divtc3$(object) _multc3$(object) \
+			  _fixtfdi$(object) _fixunstfdi$(object) \
+	                  _floatditf$(objext) _floatunsditf$(objext)
+IBM128_SHARED_OBJS	= $(IBM128_STATIC_OBJS:$(objext):_s$(objext))
+IBM128_OBJS		= $(IBM128_STATIC_OBJS) $(IBM128_SHARED_OBJS)
+
+IBM128_CFLAGS		= -Wno-psabi -mabi=ibmlongdouble -mno-gnu-attribute
+
+$(IBM128_OBJS) : INTERNAL_CFLAGS += $(IBM128_CFLAGS)
+
+# Turn off gnu attributes for long double size on all of the shared library
+# modules, but leave it on for the static modules, except for the functions
+# that explicitly process IBM 128-bit floating point.  Shared libraries only
+# have one gnu attribute for the whole library, and it can lead to warnings if
+# somebody changes the long double format.  We leave it on for the static
+# modules to catch mis-compilation errors.
+gcc_s_compile += -mno-gnu-attribute
