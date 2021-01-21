@@ -3926,11 +3926,16 @@ lookup_class_binding (tree klass, tree name)
       vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
 
       found = member_vec_binary_search (member_vec, name);
-      if (IDENTIFIER_CONV_OP_P (name))
+      if (!found)
+	;
+      else if (STAT_HACK_P (found))
+	/* Rearrange the stat hack so that we don't need to expose that
+	   internal detail.  */
+	found = ovl_make (STAT_TYPE (found), STAT_DECL (found));
+      else if (IDENTIFIER_CONV_OP_P (name))
 	{
 	  gcc_checking_assert (name == conv_op_identifier);
-	  if (found)
-	    found = OVL_CHAIN (found);
+	  found = OVL_CHAIN (found);
 	}
     }
   else
