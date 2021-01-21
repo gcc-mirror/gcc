@@ -24,42 +24,9 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-stmt.h"
 #include "rust-tyty-visitor.h"
-#include "rust-tyty-resolver.h"
 
 namespace Rust {
 namespace Resolver {
-
-class ResolveFnType : public TyTy::TyVisitor
-{
-public:
-  ResolveFnType (TyTy::TyBase *base) : base (base), state (nullptr) {}
-
-  TyTy::TyBase *go ()
-  {
-    base->accept_vis (*this);
-    if (state == nullptr)
-      gcc_unreachable ();
-
-    return state;
-  }
-
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::FnType &type) override { state = type.return_type (); }
-
-private:
-  TyTy::TyBase *base;
-  TyTy::TyBase *state;
-};
 
 class TypeCheckItem : public TypeCheckBase
 {
@@ -72,23 +39,42 @@ public:
 
   void visit (HIR::Function &function)
   {
-    TyTy::TyBase *fnType;
-    if (!context->lookup_type (function.get_mappings ().get_hirid (), &fnType))
+    TyTy::TyBase *lookup;
+    if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       {
 	rust_error_at (function.locus, "failed to lookup function type");
 	return;
       }
 
+    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (function.get_locus (),
+		       "found invalid type for function [%s]",
+		       lookup->as_string ().c_str ());
+	return;
+      }
+
     // need to get the return type from this
-    ResolveFnType resolve_fn_type (fnType);
-    context->push_return_type (resolve_fn_type.go ());
+    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
+    auto expected_ret_tyty = resolve_fn_type->return_type ();
+    context->push_return_type (expected_ret_tyty);
 
     TypeCheckExpr::Resolve (function.function_body.get ());
     if (function.function_body->has_expr ())
       {
 	auto resolved
 	  = TypeCheckExpr::Resolve (function.function_body->expr.get ());
-	context->peek_return_type ()->combine (resolved);
+
+	auto ret_resolved = expected_ret_tyty->combine (resolved);
+	if (ret_resolved == nullptr)
+	  {
+	    rust_error_at (function.function_body->expr->get_locus_slow (),
+			   "failed to resolve final expression");
+	    return;
+	  }
+
+	context->peek_return_type ()->append_reference (
+	  ret_resolved->get_ref ());
       }
 
     context->pop_return_type ();

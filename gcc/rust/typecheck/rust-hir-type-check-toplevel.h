@@ -56,8 +56,7 @@ public:
 
     TyTy::TyBase *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), true,
-			   std::move (fields));
+			   struct_decl.get_identifier (), std::move (fields));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -78,8 +77,7 @@ public:
 
     TyTy::TyBase *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), false,
-			   std::move (fields));
+			   struct_decl.get_identifier (), std::move (fields));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -107,9 +105,15 @@ public:
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
       {
-	TyTy::InferType infer (function.get_mappings ().get_hirid ());
 	auto resolved = TypeCheckType::Resolve (function.return_type.get ());
-	ret_type = infer.combine (resolved);
+	if (resolved == nullptr)
+	  {
+	    rust_error_at (function.get_locus (),
+			   "failed to resolve return type");
+	    return;
+	  }
+
+	ret_type = resolved->clone ();
 	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
       }
 

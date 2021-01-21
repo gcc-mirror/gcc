@@ -40,11 +40,12 @@ public:
 
   void visit (HIR::LiteralExpr &expr)
   {
+    auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
       {
 	case HIR::Literal::LitType::INT: {
 	  ok = true;
-	  std::stringstream ss (expr.as_string ());
+	  std::stringstream ss (literal_value->as_string ());
 	  ss >> result;
 	}
 	break;
@@ -70,8 +71,10 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated != nullptr)
-      resolver.context->insert_type (type->get_mappings (),
-				     resolver.translated);
+      {
+	resolver.context->insert_type (type->get_mappings (),
+				       resolver.translated);
+      }
 
     return resolver.translated;
   }
@@ -89,25 +92,15 @@ public:
 	return;
       }
 
-    size_t index = 0;
-    std::string identifier = "(";
-    std::vector<TyTy::StructFieldType *> fields;
+    std::vector<HirId> fields;
     for (auto &elem : tuple.get_elems ())
       {
 	auto field_ty = TypeCheckType::Resolve (elem.get ());
-	identifier += field_ty->as_string ();
-	if ((index + 1) < tuple.get_elems ().size ())
-	  identifier += ",";
-
-	auto field_tyty
-	  = new TyTy::StructFieldType (elem->get_mappings ().get_hirid (),
-				       std::to_string (index), field_ty);
-	fields.push_back (field_tyty);
-	index++;
+	fields.push_back (field_ty->get_ref ());
       }
-    identifier += ")";
-    translated = new TyTy::ADTType (tuple.get_mappings ().get_hirid (),
-				    identifier, true, fields);
+
+    translated
+      = new TyTy::TupleType (tuple.get_mappings ().get_hirid (), fields);
   }
 
   void visit (HIR::TypePath &path)
@@ -129,6 +122,9 @@ public:
 	// we got an HIR node
 	if (context->lookup_type (hir_lookup, &translated))
 	  {
+	    translated = translated->clone ();
+	    auto ref = path.get_mappings ().get_hirid ();
+	    translated->set_ref (ref);
 	    return;
 	  }
       }

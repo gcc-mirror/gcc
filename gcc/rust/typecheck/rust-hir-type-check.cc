@@ -34,6 +34,54 @@ TypeResolution::Resolve (HIR::Crate &crate)
 
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckItem::Resolve (it->get ());
+
+  auto mappings = Analysis::Mappings::get ();
+  auto context = TypeCheckContext::get ();
+
+  context->iterate ([&] (HirId id, TyTy::TyBase *ty) mutable -> bool {
+    // nothing to do
+    if (ty->get_kind () != TyTy::TypeKind::INFER)
+      return true;
+
+    TyTy::InferType *infer_var = (TyTy::InferType *) ty;
+    switch (infer_var->get_infer_kind ())
+      {
+      case TyTy::InferType::GENERAL:
+	rust_error_at (mappings->lookup_location (id),
+		       "unable to determine type: %u", id);
+	break;
+
+	case TyTy::InferType::INTEGRAL: {
+	  TyTy::TyBase *default_integer;
+	  bool ok = context->lookup_builtin ("i32", &default_integer);
+	  rust_assert (ok);
+
+	  auto result = ty->combine (default_integer);
+	  result->set_ref (id);
+	  context->insert_type (
+	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+				   UNKNOWN_LOCAL_DEFID),
+	    result);
+	}
+	break;
+
+	case TyTy::InferType::FLOAT: {
+	  TyTy::TyBase *default_float;
+	  bool ok = context->lookup_builtin ("f32", &default_float);
+	  rust_assert (ok);
+
+	  auto result = ty->combine (default_float);
+	  result->set_ref (id);
+	  context->insert_type (
+	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+				   UNKNOWN_LOCAL_DEFID),
+	    result);
+	}
+	break;
+      }
+
+    return true;
+  });
 }
 
 // RUST_HIR_TYPE_CHECK_EXPR
@@ -48,6 +96,12 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     bool is_final_expr = is_final_stmt && !expr.has_expr ();
 
     auto infered = TypeCheckStmt::Resolve (s, is_final_expr);
+    if (infered == nullptr)
+      {
+	rust_error_at (s->get_locus_slow (), "failure to resolve type");
+	return false;
+      }
+
     if (is_final_expr)
       {
 	delete block_tyty;
@@ -59,21 +113,19 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
   // tail expression must be checked as part of the caller since
   // the result of this is very dependant on what we expect it to be
-  if (expr.has_expr ())
-    TypeCheckExpr::Resolve (expr.expr.get ());
 
   // now that the stmts have been resolved we must resolve the block of locals
   // and make sure the variables have been resolved
-  auto body_mappings = expr.get_mappings ();
-  Rib *rib = nullptr;
-  if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
-    {
-      rust_fatal_error (expr.get_locus (), "failed to lookup locals per block");
-      return;
-    }
-  TyTyResolver::Resolve (rib, mappings, resolver, context);
+  // auto body_mappings = expr.get_mappings ();
+  // Rib *rib = nullptr;
+  // if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
+  //   {
+  //     rust_fatal_error (expr.get_locus (), "failed to lookup locals per
+  //     block"); return;
+  //   }
+  // TyTyResolver::Resolve (rib, mappings, resolver, context);
 
-  infered = block_tyty;
+  infered = block_tyty->clone ();
 }
 
 // RUST_HIR_TYPE_CHECK_STRUCT_FIELD
@@ -154,47 +206,23 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 		= struct_expr.struct_base->base_struct->clone_expr_impl ();
 
 	      HIR::StructExprField *implicit_field = nullptr;
-	      if (struct_path_resolved->is_tuple_struct ())
-		{
-		  std::vector<HIR::Attribute> outer_attribs;
-		  TupleIndex tuple_index = std::stoi (missing);
 
-		  auto crate_num = mappings->get_current_crate ();
-		  Analysis::NodeMapping mapping (
-		    crate_num,
-		    struct_expr.struct_base->base_struct->get_mappings ()
-		      .get_nodeid (),
-		    mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+	      std::vector<HIR::Attribute> outer_attribs;
+	      auto crate_num = mappings->get_current_crate ();
+	      Analysis::NodeMapping mapping (
+		crate_num,
+		struct_expr.struct_base->base_struct->get_mappings ()
+		  .get_nodeid (),
+		mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
 
-		  HIR::Expr *field_value = new HIR::TupleIndexExpr (
-		    mapping, std::unique_ptr<HIR::Expr> (receiver), tuple_index,
-		    std::move (outer_attribs),
-		    struct_expr.struct_base->base_struct->get_locus_slow ());
+	      HIR::Expr *field_value = new HIR::FieldAccessExpr (
+		mapping, std::unique_ptr<HIR::Expr> (receiver), missing,
+		std::move (outer_attribs),
+		struct_expr.struct_base->base_struct->get_locus_slow ());
 
-		  implicit_field = new HIR::StructExprFieldIndexValue (
-		    mapping, tuple_index,
-		    std::unique_ptr<HIR::Expr> (field_value),
-		    struct_expr.struct_base->base_struct->get_locus_slow ());
-		}
-	      else
-		{
-		  std::vector<HIR::Attribute> outer_attribs;
-		  auto crate_num = mappings->get_current_crate ();
-		  Analysis::NodeMapping mapping (
-		    crate_num,
-		    struct_expr.struct_base->base_struct->get_mappings ()
-		      .get_nodeid (),
-		    mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
-
-		  HIR::Expr *field_value = new HIR::FieldAccessExpr (
-		    mapping, std::unique_ptr<HIR::Expr> (receiver), missing,
-		    std::move (outer_attribs),
-		    struct_expr.struct_base->base_struct->get_locus_slow ());
-
-		  implicit_field = new HIR::StructExprFieldIdentifierValue (
-		    mapping, missing, std::unique_ptr<HIR::Expr> (field_value),
-		    struct_expr.struct_base->base_struct->get_locus_slow ());
-		}
+	      implicit_field = new HIR::StructExprFieldIdentifierValue (
+		mapping, missing, std::unique_ptr<HIR::Expr> (field_value),
+		struct_expr.struct_base->base_struct->get_locus_slow ());
 
 	      size_t field_index;
 	      bool ok = struct_path_resolved->get_field (missing, &field_index);

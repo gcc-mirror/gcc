@@ -298,6 +298,37 @@ public:
     translated = named_struct;
   }
 
+  void visit (TyTy::TupleType &type) override
+  {
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
+    if (ok)
+      return;
+
+    // create implicit struct
+    std::vector<Backend::Btyped_identifier> fields;
+    for (size_t i = 0; i < type.num_fields (); i++)
+      {
+	TyTy::TyBase *field = type.get_field (i);
+	Btype *compiled_field_ty
+	  = TyTyCompile::compile (ctx->get_backend (), field);
+
+	Backend::Btyped_identifier f (std::to_string (i), compiled_field_ty,
+				      ctx->get_mappings ()->lookup_location (
+					type.get_ty_ref ()));
+	fields.push_back (std::move (f));
+      }
+
+    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *named_struct
+      = ctx->get_backend ()->named_type (type.as_string (), struct_type_record,
+					 ctx->get_mappings ()->lookup_location (
+					   type.get_ty_ref ()));
+
+    ctx->push_type (named_struct);
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
+    translated = named_struct;
+  }
+
   void visit (TyTy::ArrayType &type) override
   {
     mpz_t ival;

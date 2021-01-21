@@ -159,6 +159,7 @@ Mappings::get_next_hir_id (CrateNum crateNum)
 
   auto id = it->second + 1;
   hirIdIter[crateNum] = id;
+  hirNodesWithinCrate[crateNum].insert (id);
   return id;
 }
 

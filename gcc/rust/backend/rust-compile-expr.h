@@ -145,17 +145,19 @@ public:
 
   void visit (HIR::LiteralExpr &expr)
   {
+    auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
       {
 	case HIR::Literal::BOOL: {
-	  bool bval = expr.as_string ().compare ("true") == 0;
+	  bool bval = literal_value->as_string ().compare ("true") == 0;
 	  translated = ctx->get_backend ()->boolean_constant_expression (bval);
 	}
 	return;
 
 	case HIR::Literal::INT: {
 	  mpz_t ival;
-	  if (mpz_init_set_str (ival, expr.as_string ().c_str (), 10) != 0)
+	  if (mpz_init_set_str (ival, literal_value->as_string ().c_str (), 10)
+	      != 0)
 	    {
 	      rust_fatal_error (expr.get_locus (), "bad number in literal");
 	      return;
@@ -178,7 +180,7 @@ public:
 
 	case HIR::Literal::FLOAT: {
 	  mpfr_t fval;
-	  if (mpfr_init_set_str (fval, expr.as_string ().c_str (), 10,
+	  if (mpfr_init_set_str (fval, literal_value->as_string ().c_str (), 10,
 				 MPFR_RNDN)
 	      != 0)
 	    {

@@ -52,6 +52,8 @@ public:
 
   void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
 
+  void visit (TyTy::TupleType &type) override { gcc_unreachable (); }
+
   void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::UnitType &type) override

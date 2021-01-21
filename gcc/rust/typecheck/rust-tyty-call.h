@@ -23,6 +23,7 @@
 #include "rust-hir-full.h"
 #include "rust-tyty-visitor.h"
 #include "rust-tyty.h"
+#include "rust-hir-type-check.h"
 
 namespace Rust {
 namespace TyTy {
@@ -30,9 +31,10 @@ namespace TyTy {
 class TypeCheckCallExpr : private TyVisitor
 {
 public:
-  static TyBase *go (TyBase *ref, HIR::CallExpr &call)
+  static TyBase *go (TyBase *ref, HIR::CallExpr &call,
+		     Resolver::TypeCheckContext *context)
   {
-    TypeCheckCallExpr checker (call);
+    TypeCheckCallExpr checker (call, context);
     ref->accept_vis (checker);
     return checker.resolved;
   }
@@ -40,6 +42,7 @@ public:
 
   void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
+  void visit (TupleType &type) override { gcc_unreachable (); }
   void visit (StructFieldType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }
   void visit (BoolType &type) override { gcc_unreachable (); }
@@ -55,10 +58,15 @@ public:
   void visit (FnType &type) override;
 
 private:
-  TypeCheckCallExpr (HIR::CallExpr &c) : resolved (nullptr), call (c) {}
+  TypeCheckCallExpr (HIR::CallExpr &c, Resolver::TypeCheckContext *context)
+    : resolved (nullptr), call (c), context (context),
+      mappings (Analysis::Mappings::get ())
+  {}
 
   TyBase *resolved;
   HIR::CallExpr &call;
+  Resolver::TypeCheckContext *context;
+  Analysis::Mappings *mappings;
 };
 
 } // namespace TyTy

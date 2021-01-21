@@ -2072,23 +2072,15 @@ ArithmeticOrLogicalExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      operator_str = "invalid operator. wtf";
+      gcc_unreachable ();
       break;
     }
 
-  std::string str ("ArithmeticOrLogicalExpr: ");
-  if (main_or_left_expr == nullptr || right_expr == nullptr)
-    {
-      str += "error. this is probably a parsing failure.";
-    }
-  else
-    {
-      str += main_or_left_expr->as_string () + " ";
-      str += operator_str + " ";
-      str += right_expr->as_string ();
-    }
+  std::string str = main_or_left_expr->as_string () + " ";
+  str += operator_str + " ";
+  str += right_expr->as_string ();
 
-  return str + "::" + get_mappings ().as_string ();
+  return "( " + str + " (" + get_mappings ().as_string () + "))";
 }
 
 std::string

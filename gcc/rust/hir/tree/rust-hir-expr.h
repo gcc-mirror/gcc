@@ -61,7 +61,11 @@ class LiteralExpr : public ExprWithoutBlock
   Location locus;
 
 public:
-  std::string as_string () const override { return literal.as_string (); }
+  std::string as_string () const override
+  {
+    return "( " + literal.as_string () + " (" + get_mappings ().as_string ()
+	   + "))";
+  }
 
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
 

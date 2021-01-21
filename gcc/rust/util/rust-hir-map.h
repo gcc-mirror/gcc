@@ -143,6 +143,11 @@ public:
     return resolve_nodeid_to_stmt (get_current_crate (), id, stmt);
   }
 
+  std::set<HirId> &get_hirids_within_crate (CrateNum crate)
+  {
+    return hirNodesWithinCrate[crate];
+  }
+
 private:
   Mappings ();
 
@@ -171,6 +176,9 @@ private:
 
   // reverse mappings
   std::map<CrateNum, std::map<NodeId, HirId> > nodeIdToHirMappings;
+
+  // all hirid nodes
+  std::map<CrateNum, std::set<HirId> > hirNodesWithinCrate;
 };
 
 } // namespace Analysis

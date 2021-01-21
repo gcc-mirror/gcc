@@ -47,6 +47,15 @@ public:
   void push_return_type (TyTy::TyBase *return_type);
   void pop_return_type ();
 
+  void iterate (std::function<bool (HirId, TyTy::TyBase *)> cb)
+  {
+    for (auto it = resolved.begin (); it != resolved.end (); it++)
+      {
+	if (!cb (it->first, it->second))
+	  return;
+      }
+  }
+
 private:
   TypeCheckContext ();
 

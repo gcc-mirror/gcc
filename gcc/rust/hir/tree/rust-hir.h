@@ -895,7 +895,10 @@ public:
       ident (std::move (ident)), locus (locus)
   {}
 
-  std::string as_string () const override { return ident; }
+  std::string as_string () const override
+  {
+    return "( " + ident + " (" + get_mappings ().as_string () + "))";
+  }
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
@@ -907,6 +910,8 @@ public:
   {
     return std::unique_ptr<IdentifierExpr> (clone_identifier_expr_impl ());
   }
+
+  Identifier get_identifier () const { return ident; }
 
 protected:
   // Clone method implementation

@@ -23,7 +23,6 @@
 #include "rust-hir-full.h"
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
-#include "rust-tyty-resolver.h"
 #include "rust-hir-type-check-struct-field.h"
 
 namespace Rust {
@@ -38,10 +37,15 @@ public:
     expr->accept_vis (resolver);
 
     if (resolver.infered == nullptr)
-      resolver.infered
-	= new TyTy::UnitType (expr->get_mappings ().get_hirid ());
+      {
+	resolver.infered
+	  = new TyTy::UnitType (expr->get_mappings ().get_hirid ());
+      }
 
+    auto ref = expr->get_mappings ().get_hirid ();
+    resolver.infered->set_ref (ref);
     resolver.context->insert_type (expr->get_mappings (), resolver.infered);
+
     return resolver.infered;
   }
 
@@ -54,11 +58,37 @@ public:
 		       "failed to resolve TupleIndexExpr receiver");
 	return;
       }
-    if (resolved->get_kind () != TyTy::TypeKind::ADT)
+
+    bool is_valid_type = resolved->get_kind () == TyTy::TypeKind::ADT
+			 || resolved->get_kind () == TyTy::TypeKind::TUPLE;
+    if (!is_valid_type)
       {
 	rust_error_at (expr.get_tuple_expr ()->get_locus_slow (),
-		       "Expected ADT type got: %s",
+		       "Expected Tuple or ADT got: %s",
 		       resolved->as_string ().c_str ());
+	return;
+      }
+
+    if (resolved->get_kind () == TyTy::TypeKind::TUPLE)
+      {
+	TyTy::TupleType *tuple = (TyTy::TupleType *) resolved;
+	TupleIndex index = expr.get_tuple_index ();
+	if ((size_t) index >= tuple->num_fields ())
+	  {
+	    rust_error_at (expr.get_locus (), "unknown field at index %i",
+			   index);
+	    return;
+	  }
+
+	auto field_tyty = tuple->get_field ((size_t) index);
+	if (field_tyty == nullptr)
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "failed to lookup field type at index %i", index);
+	    return;
+	  }
+
+	infered = field_tyty;
 	return;
       }
 
@@ -94,34 +124,32 @@ public:
 	return;
       }
 
-    size_t index = 0;
-    std::string identifier = "(";
-    std::vector<TyTy::StructFieldType *> fields;
+    std::vector<HirId> fields;
     for (auto &elem : expr.get_tuple_elems ())
       {
 	auto field_ty = TypeCheckExpr::Resolve (elem.get ());
-	identifier += field_ty->as_string ();
-	if ((index + 1) < expr.get_tuple_elems ().size ())
-	  identifier += ",";
-
-	auto field_tyty
-	  = new TyTy::StructFieldType (elem->get_mappings ().get_hirid (),
-				       std::to_string (index), field_ty);
-	fields.push_back (field_tyty);
-	index++;
+	fields.push_back (field_ty->get_ref ());
       }
-    identifier += ")";
-    infered = new TyTy::ADTType (expr.get_mappings ().get_hirid (), identifier,
-				 true, fields);
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (), fields);
   }
 
   void visit (HIR::ReturnExpr &expr)
   {
-    auto ret = context->peek_return_type ();
-    rust_assert (ret != nullptr);
+    auto fn_return_tyty = context->peek_return_type ();
+    rust_assert (fn_return_tyty != nullptr);
 
     auto expr_ty = TypeCheckExpr::Resolve (expr.get_expr ());
-    infered = ret->combine (expr_ty);
+    if (expr_ty == nullptr)
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to resolve type for ReturnExpr");
+	return;
+      }
+
+    infered = fn_return_tyty->combine (expr_ty);
+    fn_return_tyty->append_reference (expr_ty->get_ref ());
+    for (auto &ref : infered->get_combined_refs ())
+      fn_return_tyty->append_reference (ref);
   }
 
   void visit (HIR::CallExpr &expr)
@@ -163,15 +191,13 @@ public:
 	return;
       }
 
-    infered = TyTy::TypeCheckCallExpr::go (lookup, expr);
+    infered = TyTy::TypeCheckCallExpr::go (lookup, expr, context);
     if (infered == nullptr)
       {
 	rust_error_at (expr.get_locus (), "failed to lookup type to CallExpr");
 	return;
       }
 
-    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
-    infered = infer.combine (infered);
     infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
@@ -181,6 +207,12 @@ public:
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
     infered = lhs->combine (rhs);
+    if (infered == nullptr)
+      {
+	rust_error_at (expr.get_locus (),
+		       "failure in TypeInference AssignmentExpr");
+	return;
+      }
 
     // in the case of declare first for an ADT Type:
     //
@@ -191,36 +223,34 @@ public:
     // The lhs will have a TyTy of INFER and so when the declaration is
     // referenced it will still have an unknown type so we will fail to resolve
     // FieldAccessExpr
-    if (lhs->get_kind () == TyTy::TypeKind::INFER)
+
+    NodeId ast_node_id = expr.get_lhs ()->get_mappings ().get_nodeid ();
+    NodeId ref_node_id;
+    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+      return;
+
+    Definition def;
+    if (!resolver->lookup_definition (ref_node_id, &def))
       {
-	NodeId ast_node_id = expr.get_lhs ()->get_mappings ().get_nodeid ();
-	NodeId ref_node_id;
-	if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-	  return;
-
-	Definition def;
-	if (!resolver->lookup_definition (ref_node_id, &def))
-	  {
-	    rust_error_at (expr.get_locus (),
-			   "assignment infer - unknown reference");
-	    return;
-	  }
-
-	HirId ref;
-	if (!mappings->lookup_node_to_hir (
-	      expr.get_mappings ().get_crate_num (), def.parent, &ref))
-	  {
-	    rust_error_at (expr.get_locus (),
-			   "assignment infer - reverse lookup failure");
-	    return;
-	  }
-
-	context->insert_type (
-	  Analysis::NodeMapping (
-	    expr.get_lhs ()->get_mappings ().get_crate_num (), ref_node_id, ref,
-	    UNKNOWN_LOCAL_DEFID),
-	  infered);
+	rust_error_at (expr.get_locus (),
+		       "assignment infer - unknown reference");
+	return;
       }
+
+    HirId ref;
+    if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				       def.parent, &ref))
+      {
+	rust_error_at (expr.get_locus (),
+		       "assignment infer - reverse lookup failure");
+	return;
+      }
+
+    // FIXME free the old one
+    context->insert_type (
+      Analysis::NodeMapping (expr.get_lhs ()->get_mappings ().get_crate_num (),
+			     ref_node_id, ref, UNKNOWN_LOCAL_DEFID),
+      infered->clone ());
   }
 
   void visit (HIR::IdentifierExpr &expr)
@@ -265,8 +295,8 @@ public:
 	return;
       }
 
-    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
-    infered = infer.combine (lookup);
+    lookup->append_reference (lookup->get_ref ());
+    infered = lookup->clone ();
     infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
@@ -321,7 +351,10 @@ public:
 	      break;
 
 	    default:
-	      ok = context->lookup_builtin ("i32", &infered);
+	      ok = true;
+	      infered = new TyTy::InferType (
+		expr.get_mappings ().get_hirid (),
+		TyTy::InferType::InferTypeKind::INTEGRAL);
 	      break;
 	    }
 	  rust_assert (ok);
@@ -339,8 +372,12 @@ public:
 	    case CORETYPE_F64:
 	      ok = context->lookup_builtin ("f64", &infered);
 	      break;
+
 	    default:
-	      ok = context->lookup_builtin ("f32", &infered);
+	      ok = true;
+	      infered
+		= new TyTy::InferType (expr.get_mappings ().get_hirid (),
+				       TyTy::InferType::InferTypeKind::FLOAT);
 	      break;
 	    }
 	  rust_assert (ok);
@@ -358,9 +395,7 @@ public:
 	break;
       }
 
-    TyTy::InferType infer (expr.get_mappings ().get_hirid ());
-    infered = infer.combine (infered);
-    infered->set_ref (expr.get_mappings ().get_hirid ());
+    infered = infered->clone ();
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr)
@@ -380,7 +415,13 @@ public:
 	case HIR::ArithmeticOrLogicalExpr::MODULUS: {
 	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
 		       || (combined->get_kind () == TyTy::TypeKind::UINT)
-		       || (combined->get_kind () == TyTy::TypeKind::FLOAT);
+		       || (combined->get_kind () == TyTy::TypeKind::FLOAT)
+		       || (combined->get_kind () == TyTy::TypeKind::INFER
+			   && (((TyTy::InferType *) combined)->get_infer_kind ()
+			       == TyTy::InferType::INTEGRAL))
+		       || (combined->get_kind () == TyTy::TypeKind::INFER
+			   && (((TyTy::InferType *) combined)->get_infer_kind ()
+			       == TyTy::InferType::FLOAT));
 	  if (!valid)
 	    {
 	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
@@ -396,7 +437,10 @@ public:
 	case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR: {
 	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
 		       || (combined->get_kind () == TyTy::TypeKind::UINT)
-		       || (combined->get_kind () == TyTy::TypeKind::BOOL);
+		       || (combined->get_kind () == TyTy::TypeKind::BOOL)
+		       || (combined->get_kind () == TyTy::TypeKind::INFER
+			   && (((TyTy::InferType *) combined)->get_infer_kind ()
+			       == TyTy::InferType::INTEGRAL));
 	  if (!valid)
 	    {
 	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
@@ -410,7 +454,10 @@ public:
       case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
 	case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT: {
 	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
-		       || (combined->get_kind () == TyTy::TypeKind::UINT);
+		       || (combined->get_kind () == TyTy::TypeKind::UINT)
+		       || (combined->get_kind () == TyTy::TypeKind::INFER
+			   && (((TyTy::InferType *) combined)->get_infer_kind ()
+			       == TyTy::InferType::INTEGRAL));
 	  if (!valid)
 	    {
 	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
@@ -422,6 +469,8 @@ public:
       }
 
     infered = combined;
+    infered->append_reference (lhs->get_ref ());
+    infered->append_reference (rhs->get_ref ());
   }
 
   void visit (HIR::ComparisonExpr &expr)
@@ -435,6 +484,8 @@ public:
 
     // we expect this to be
     infered = new TyTy::BoolType (expr.get_mappings ().get_hirid ());
+    infered->append_reference (lhs->get_ref ());
+    infered->append_reference (rhs->get_ref ());
   }
 
   void visit (HIR::LazyBooleanExpr &expr)
@@ -454,6 +505,8 @@ public:
       return;
 
     infered = lhs->combine (rhs);
+    infered->append_reference (lhs->get_ref ());
+    infered->append_reference (rhs->get_ref ());
   }
 
   void visit (HIR::NegationExpr &expr)
@@ -467,7 +520,13 @@ public:
 	  bool valid
 	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
-	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::FLOAT);
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::FLOAT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INFER
+		  && (((TyTy::InferType *) negated_expr_ty)->get_infer_kind ()
+		      == TyTy::InferType::INTEGRAL))
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INFER
+		  && (((TyTy::InferType *) negated_expr_ty)->get_infer_kind ()
+		      == TyTy::InferType::FLOAT));
 	  if (!valid)
 	    {
 	      rust_error_at (expr.get_locus (), "cannot apply unary - to %s",
@@ -481,7 +540,10 @@ public:
 	  bool valid
 	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::BOOL)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
-	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT);
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
+	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INFER
+		  && (((TyTy::InferType *) negated_expr_ty)->get_infer_kind ()
+		      == TyTy::InferType::INTEGRAL));
 	  if (!valid)
 	    {
 	      rust_error_at (expr.get_locus (), "cannot apply unary ! to %s",
@@ -492,7 +554,8 @@ public:
 	break;
       }
 
-    infered = negated_expr_ty;
+    infered = negated_expr_ty->clone ();
+    infered->append_reference (negated_expr_ty->get_ref ());
   }
 
   void visit (HIR::IfExpr &expr)
@@ -567,23 +630,45 @@ public:
 
   void visit (HIR::ArrayIndexExpr &expr)
   {
-    // FIXME this should be size type
-    TyTy::IntType size_ty (expr.get_index_expr ()->get_mappings ().get_hirid (),
-			   TyTy::IntType::I32);
-    auto resolved
-      = size_ty.combine (TypeCheckExpr::Resolve (expr.get_index_expr ()));
-    rust_assert (resolved != nullptr);
-
-    expr.get_array_expr ()->accept_vis (*this);
-    if (infered->get_kind () != TyTy::TypeKind::ARRAY)
+    TyTy::TyBase *size_ty;
+    if (!context->lookup_builtin ("i32", &size_ty))
       {
-	rust_fatal_error (expr.get_array_expr ()->get_locus_slow (),
-			  "expected an ArrayType for index expression");
+	rust_error_at (
+	  expr.get_locus (),
+	  "Failure looking up size type for index in ArrayIndexExpr");
 	return;
       }
 
-    // extract the element type out now from the base type
-    infered = TyTyExtractorArray::ExtractElementTypeFromArray (infered);
+    auto resolved_index_expr
+      = size_ty->combine (TypeCheckExpr::Resolve (expr.get_index_expr ()));
+    if (resolved_index_expr == nullptr)
+      {
+	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+		       "Type Resolver failure in Index for ArrayIndexExpr");
+	return;
+      }
+    context->insert_type (expr.get_index_expr ()->get_mappings (),
+			  resolved_index_expr);
+
+    // resolve the array reference
+    expr.get_array_expr ()->accept_vis (*this);
+    if (infered == nullptr)
+      {
+	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+		       "failed to resolve array reference expression");
+	return;
+      }
+    else if (infered->get_kind () != TyTy::TypeKind::ARRAY)
+      {
+	rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+		       "expected an ArrayType got [%s]",
+		       infered->as_string ().c_str ());
+	infered = nullptr;
+	return;
+      }
+
+    TyTy::ArrayType *array_type = (TyTy::ArrayType *) infered;
+    infered = array_type->get_type ()->clone ();
   }
 
   void visit (HIR::ArrayExpr &expr)
@@ -611,6 +696,9 @@ public:
       {
 	infered_array_elems = infered_array_elems->combine (types.at (i));
       }
+
+    for (auto &elem : types)
+      infered_array_elems->append_reference (elem->get_ref ());
   }
 
   void visit (HIR::ArrayElemsCopied &elems)
@@ -632,9 +720,12 @@ public:
   {
     auto struct_base
       = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get ());
-    if (struct_base->get_kind () != TyTy::TypeKind::ADT)
+
+    bool is_valid_type = struct_base->get_kind () == TyTy::TypeKind::ADT;
+    if (!is_valid_type)
       {
-	rust_error_at (expr.get_locus (), "expected ADT Type got: [%s]",
+	rust_error_at (expr.get_locus (),
+		       "expected ADT or Tuple Type got: [%s]",
 		       struct_base->as_string ().c_str ());
 	return;
       }
