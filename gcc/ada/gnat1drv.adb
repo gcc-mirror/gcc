@@ -633,13 +633,9 @@ procedure Gnat1drv is
       end if;
 
       --  Set and check exception mechanism. This is only meaningful when
-      --  compiling, and in particular not meaningful for special modes used
-      --  for program analysis rather than compilation: CodePeer mode and
-      --  GNATprove mode.
+      --  generating code.
 
-      if Operating_Mode = Generate_Code
-        and then not (CodePeer_Mode or GNATprove_Mode)
-      then
+      if Operating_Mode = Generate_Code then
          case Targparm.Frontend_Exceptions_On_Target is
             when True =>
                case Targparm.ZCX_By_Default_On_Target is
