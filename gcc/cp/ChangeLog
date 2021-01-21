@@ -1,3 +1,31 @@
+2021-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (bytes_in::i, bytes_in::wi): Avoid left shift of
+	signed type.
+
+2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95434
+	* pt.c (tsubst) <case TEMPLATE_TYPE_PARM>: If tsubsting
+	CLASS_PLACEHOLDER_TEMPLATE yields a TEMPLATE_TEMPLATE_PARM,
+	adjust to its TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL.
+
+2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82613
+	* parser.c (cp_parser_class_head): Defer access checking when
+	parsing the base-clause until all bases are seen and attached
+	to the class type.
+	* pt.c (instantiate_class_template): Likewise when substituting
+	into dependent bases.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98742
+	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_DETACH>: If
+	error_operand_p, remove clause without further checking.  Check
+	for non-NULL TYPE_NAME.
+
 2021-01-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98659
