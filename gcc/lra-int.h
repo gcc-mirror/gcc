@@ -326,6 +326,7 @@ extern void lra_register_new_scratch_op (rtx_insn *, int, int);
 extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
 extern int lra_bad_spill_regno_start;
+extern rtx lra_pmode_pseudo;
 extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;
