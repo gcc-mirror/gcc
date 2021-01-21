@@ -781,11 +781,9 @@ package body System.Fat_Gen is
          --  Check for underflow
 
          elsif Adjustment < IEEE_Emin - Exp then
-            --  Check for gradual underflow
+            --  Check for possibly gradual underflow (up to the hardware)
 
-            if T'Denorm
-              and then Adjustment >= IEEE_Emin - Mantissa - Exp
-            then
+            if Adjustment >= IEEE_Emin - Mantissa - Exp then
                Expf := IEEE_Emin;
                Expi := Exp + Adjustment - Expf;
 
@@ -810,6 +808,9 @@ package body System.Fat_Gen is
             --  Given that Expi >= -Mantissa, only -64 is problematic
 
             if Expi = -64 then
+               pragma Annotate
+                 (CodePeer, Intentional, "test always false",
+                  "test always false in some instantiations");
                XX := XX / 2.0;
                Expi := -63;
             end if;
