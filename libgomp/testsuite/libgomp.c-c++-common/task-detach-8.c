@@ -5,7 +5,8 @@
 
 /* Test tasks with detach clause on an offload device.  Each device
    thread spawns off a chain of tasks, that can then be executed by
-   any available thread.  */
+   any available thread.  Each thread uses taskwait to wait for the
+   child tasks to complete.  */
 
 int main (void)
 {
@@ -19,11 +20,11 @@ int main (void)
 	#pragma omp single
 	  thread_count = omp_get_num_threads ();
 
-	#pragma omp task detach(detach_event1) untied
+	#pragma omp task detach (detach_event1) untied
 	  #pragma omp atomic update
 	    x++;
 
-	#pragma omp task detach(detach_event2) untied
+	#pragma omp task detach (detach_event2) untied
 	{
 	  #pragma omp atomic update
 	    y++;
@@ -36,6 +37,8 @@ int main (void)
 	    z++;
 	  omp_fulfill_event (detach_event2);
 	}
+
+	#pragma omp taskwait
       }
 
   assert (x == thread_count);

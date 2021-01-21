@@ -2,9 +2,10 @@
 
 ! Test tasks with detach clause on an offload device.  Each device
 ! thread spawns off a chain of tasks, that can then be executed by
-! any available thread.
+! any available thread.  Each thread uses taskwait to wait for the
+! child tasks to complete.
 
-program task_detach_6
+program task_detach_8
   use omp_lib
 
   integer (kind=omp_event_handle_kind) :: detach_event1, detach_event2
@@ -33,6 +34,8 @@ program task_detach_6
 	  z = z + 1
 	call omp_fulfill_event (detach_event2)
       !$omp end task
+
+      !$omp taskwait
     !$omp end parallel
   !$omp end target
 

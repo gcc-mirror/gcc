@@ -4,7 +4,8 @@
 #include <assert.h>
 
 /* Test tasks with detach clause.  Each thread spawns off a chain of tasks,
-   that can then be executed by any available thread.  */
+   that can then be executed by any available thread.  Each thread uses
+   taskwait to wait for the child tasks to complete.  */
 
 int main (void)
 {
@@ -34,6 +35,8 @@ int main (void)
 	z++;
       omp_fulfill_event (detach_event2);
     }
+
+    #pragma omp taskwait
   }
 
   assert (x == thread_count);

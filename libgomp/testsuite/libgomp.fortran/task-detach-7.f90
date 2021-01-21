@@ -1,9 +1,10 @@
 ! { dg-do run }
 
 ! Test tasks with detach clause.  Each thread spawns off a chain of tasks,
-! that can then be executed by any available thread.
+! that can then be executed by any available thread.  Each thread uses
+! taskwait to wait for the child tasks to complete.
 
-program task_detach_5
+program task_detach_7
   use omp_lib
 
   integer (kind=omp_event_handle_kind) :: detach_event1, detach_event2
@@ -12,7 +13,7 @@ program task_detach_5
 
   !$omp parallel private (detach_event1, detach_event2)
     !$omp single
-      thread_count = omp_get_num_threads ()
+      thread_count = omp_get_num_threads()
     !$omp end single
 
     !$omp task detach (detach_event1) untied
@@ -23,14 +24,16 @@ program task_detach_5
     !$omp task detach (detach_event2) untied
       !$omp atomic update
 	y = y + 1
-      call omp_fulfill_event (detach_event1);
+      call omp_fulfill_event (detach_event1)
     !$omp end task
 
     !$omp task untied
       !$omp atomic update
 	z = z + 1
-      call omp_fulfill_event (detach_event2);
+      call omp_fulfill_event (detach_event2)
     !$omp end task
+
+    !$omp taskwait
   !$omp end parallel
 
   if (x /= thread_count) stop 1

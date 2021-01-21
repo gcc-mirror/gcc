@@ -14,10 +14,10 @@ int main (void)
   #pragma omp parallel
     #pragma omp single
     {
-      #pragma omp task detach(detach_event1)
+      #pragma omp task detach (detach_event1)
 	x++;
 
-      #pragma omp task detach(detach_event2)
+      #pragma omp task detach (detach_event2)
       {
 	y++;
 	omp_fulfill_event (detach_event1);
