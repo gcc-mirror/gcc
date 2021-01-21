@@ -4946,6 +4946,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       if (REFERENCE_REF_P (t)
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	t = TREE_OPERAND (t, 0);
+      if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
+	  && TREE_CODE (t) == FIELD_DECL)
+	t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
       ret = t;
       if (TREE_CODE (t) == COMPONENT_REF
 	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -4971,8 +4974,12 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      t = TREE_OPERAND (t, 0);
-	      if (ort == C_ORT_ACC && TREE_CODE (t) == INDIRECT_REF)
-		t = TREE_OPERAND (t, 0);
+	      if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
+		  && TREE_CODE (t) == INDIRECT_REF)
+		{
+		  t = TREE_OPERAND (t, 0);
+		  STRIP_NOPS (t);
+		}
 	    }
 	  if (REFERENCE_REF_P (t))
 	    t = TREE_OPERAND (t, 0);
@@ -4992,6 +4999,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       else if (ort == C_ORT_OMP
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TO
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FROM
 	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
 	       && DECL_NAME (t) == this_identifier)
@@ -7667,6 +7677,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			t = TREE_OPERAND (t, 0);
 		      if (REFERENCE_REF_P (t))
 			t = TREE_OPERAND (t, 0);
+		      if (TREE_CODE (t) == INDIRECT_REF)
+			{
+			  t = TREE_OPERAND (t, 0);
+			  STRIP_NOPS (t);
+			}
 		      if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
 			break;
 		      if (bitmap_bit_p (&map_head, DECL_UID (t)))
@@ -7781,6 +7796,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		    goto handle_map_references;
 		}
 	    }
+	  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
+	      && !processing_template_decl
+	      && TREE_CODE (t) == FIELD_DECL)
+	    {
+	      OMP_CLAUSE_DECL (c) = finish_non_static_data_member (t, NULL_TREE,
+								   NULL_TREE);
+	      break;
+	    }
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
@@ -7807,7 +7830,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (ort != C_ORT_ACC && t == current_class_ptr)
+	  else if (ort != C_ORT_ACC
+		   && ort != C_ORT_OMP
+		   && t == current_class_ptr)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<this%> allowed in OpenMP only in %<declare simd%>"
