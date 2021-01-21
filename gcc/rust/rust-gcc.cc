@@ -173,6 +173,8 @@ public:
 
   Btype *pointer_type (Btype *);
 
+  Btype *immutable_type (Btype *);
+
   Btype *function_type (const Btyped_identifier &,
 			const std::vector<Btyped_identifier> &,
 			const std::vector<Btyped_identifier> &, Btype *,
@@ -846,6 +848,18 @@ Gcc_backend::pointer_type (Btype *to_type)
     return this->error_type ();
   tree type = build_pointer_type (to_type_tree);
   return this->make_type (type);
+}
+
+// Get immutable type
+
+Btype *
+Gcc_backend::immutable_type (Btype *base)
+{
+  tree type_tree = base->get_tree ();
+  if (type_tree == error_mark_node)
+    return this->error_type ();
+  tree constified = build_qualified_type (type_tree, TYPE_QUAL_CONST);
+  return this->make_type (constified);
 }
 
 // Make a function type.

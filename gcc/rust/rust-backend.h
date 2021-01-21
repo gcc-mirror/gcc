@@ -112,6 +112,9 @@ public:
   // Get a pointer type.
   virtual Btype *pointer_type (Btype *to_type) = 0;
 
+  // make type immutable
+  virtual Btype *immutable_type (Btype *base) = 0;
+
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
   // is provided so that the names are available.  This should return
