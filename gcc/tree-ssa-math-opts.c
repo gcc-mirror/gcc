@@ -3091,8 +3091,8 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 
   bool check_defer
     = (state->m_deferring_p
-       && (tree_to_shwi (TYPE_SIZE (type))
-	   <= param_avoid_fma_max_bits));
+       && maybe_le (tree_to_poly_int64 (TYPE_SIZE (type)),
+		    param_avoid_fma_max_bits));
   bool defer = check_defer;
   bool seen_negate_p = false;
   /* Make sure that the multiplication statement becomes dead after
