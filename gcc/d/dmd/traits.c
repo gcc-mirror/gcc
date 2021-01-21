@@ -1103,12 +1103,14 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             return new ErrorExp();
         }
 
+        // ignore symbol visibility and disable access checks for these traits
+        Scope *scx = sc->push();
+        scx->flags |= SCOPEignoresymbolvisibility | SCOPEnoaccesscheck;
+
         if (e->ident == Id::hasMember)
         {
             /* Take any errors as meaning it wasn't found
              */
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
             ex = trySemantic(ex, scx);
             scx->pop();
             return ex ? True(e) : False(e);
@@ -1118,8 +1120,6 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             if (ex->op == TOKdotid)
                 // Prevent semantic() from replacing Symbol with its initializer
                 ((DotIdExp *)ex)->wantsym = true;
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
             ex = semantic(ex, scx);
             scx->pop();
             return ex;
@@ -1130,8 +1130,6 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
         {
             unsigned errors = global.errors;
             Expression *eorig = ex;
-            Scope *scx = sc->push();
-            scx->flags |= SCOPEignoresymbolvisibility;
             ex = semantic(ex, scx);
             if (errors < global.errors)
                 e->error("%s cannot be resolved", eorig->toChars());
