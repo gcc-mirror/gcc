@@ -399,7 +399,10 @@ package body Make is
       Non_Std_Executable : out Boolean);
    --  Parse the linker switches and project file to compute the name of the
    --  executable to generate.
-   --  ??? What is the meaning of Non_Std_Executable
+   --
+   --  When the platform expects a specific extension for the generated binary,
+   --  there is a chance that the linker might not use the right name for the
+   --  it. Non_Std_Executable is set to True in this case.
 
    procedure Compilation_Phase
      (Main_Source_File           : File_Name_Type;
