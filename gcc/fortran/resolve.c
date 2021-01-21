@@ -14025,7 +14025,8 @@ resolve_typebound_procedure (gfc_symtree* stree)
       /* Check for F08:C465.  */
       if ((!proc->attr.subroutine && !proc->attr.function)
 	  || (proc->attr.proc != PROC_MODULE
-	      && proc->attr.if_source != IFSRC_IFBODY)
+	      && proc->attr.if_source != IFSRC_IFBODY
+	      && !proc->attr.module_procedure)
 	  || proc->attr.abstract)
 	{
 	  gfc_error ("%qs must be a module procedure or an external "
