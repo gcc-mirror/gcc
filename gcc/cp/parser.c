@@ -24710,7 +24710,6 @@ inject_parm_decls (tree decl)
   if (args && is_this_parameter (args))
     {
       gcc_checking_assert (current_class_ptr == NULL_TREE);
-      current_class_ptr = NULL_TREE;
       current_class_ref = cp_build_fold_indirect_ref (args);
       current_class_ptr = args;
     }
@@ -24967,7 +24966,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       tree pushed_scope = NULL_TREE;
       unsigned ix;
       cp_default_arg_entry *e;
-      tree save_ccp, save_ccr;
 
       if (!type_definition_ok_p || any_erroneous_template_args_p (type))
 	{
@@ -25012,6 +25010,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       /* If there are noexcept-specifiers that have not yet been processed,
 	 take care of them now.  Do this before processing NSDMIs as they
 	 may depend on noexcept-specifiers already having been processed.  */
+      tree save_ccp = current_class_ptr;
+      tree save_ccr = current_class_ref;
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
@@ -25029,7 +25029,9 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  /* Make sure that any template parameters are in scope.  */
 	  maybe_begin_member_template_processing (decl);
 
-	  /* Make sure that any member-function parameters are in scope.  */
+	  /* Make sure that any member-function parameters are in scope.
+	     This function doesn't expect ccp to be set.  */
+	  current_class_ptr = current_class_ref = NULL_TREE;
 	  inject_parm_decls (decl);
 
 	  /* 'this' is not allowed in static member functions.  */
@@ -25065,8 +25067,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       vec_safe_truncate (unparsed_noexcepts, 0);
 
       /* Now parse any NSDMIs.  */
-      save_ccp = current_class_ptr;
-      save_ccr = current_class_ref;
       FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
 	{
 	  if (class_type != DECL_CONTEXT (decl))
