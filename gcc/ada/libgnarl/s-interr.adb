@@ -783,7 +783,7 @@ package body System.Interrupts is
                   null;
 
                when others =>
-                  pragma Assert (False);
+                  pragma Assert (Standard.False);
                   null;
             end case;
 
@@ -1228,7 +1228,7 @@ package body System.Interrupts is
             when X : others =>
                System.IO.Put_Line ("Exception in Interrupt_Manager");
                System.IO.Put_Line (Ada.Exceptions.Exception_Information (X));
-               pragma Assert (False);
+               pragma Assert (Standard.False);
          end;
       end loop;
    end Interrupt_Manager;

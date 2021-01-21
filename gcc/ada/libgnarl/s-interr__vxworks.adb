@@ -1040,7 +1040,7 @@ package body System.Interrupts is
                null;
 
             when others =>
-               pragma Assert (False);
+               pragma Assert (Standard.False);
                null;
          end;
       end loop;

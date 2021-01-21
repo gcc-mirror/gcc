@@ -38,7 +38,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
    procedure Served (Entry_Call : Entry_Call_Link) is
       pragma Unreferenced (Entry_Call);
    begin
-      pragma Assert (False, "Invalid operation");
+      pragma Assert (Standard.False, "Invalid operation");
    end Served;
 
    -------------------------
@@ -47,7 +47,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
 
    procedure Wakeup_Served_Entry is
    begin
-      pragma Assert (False, "Invalid operation");
+      pragma Assert (Standard.False, "Invalid operation");
    end Wakeup_Served_Entry;
 
 end System.Tasking.Protected_Objects.Multiprocessors;

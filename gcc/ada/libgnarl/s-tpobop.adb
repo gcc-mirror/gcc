@@ -601,7 +601,7 @@ package body System.Tasking.Protected_Objects.Operations is
             when Asynchronous_Call
                | Timed_Call
             =>
-               pragma Assert (False);
+               pragma Assert (Standard.False);
                null;
          end case;
       end if;

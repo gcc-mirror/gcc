@@ -56,8 +56,7 @@ package Interfaces.C.Extensions is
 
    --  C bool
 
-   type bool is new Boolean;
-   pragma Convention (C, bool);
+   subtype bool is Interfaces.C.bool;
 
    --  64-bit integer types
 

@@ -578,7 +578,7 @@ package body System.Tasking.Stages is
 
          --  ??? Should never get here
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
