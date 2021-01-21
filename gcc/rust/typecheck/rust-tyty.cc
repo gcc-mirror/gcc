@@ -173,7 +173,9 @@ FnType::as_string () const
   std::string params_str = "";
   for (auto &param : params)
     {
-      params_str += param->as_string ();
+      auto pattern = param.first;
+      auto ty = param.second;
+      params_str += pattern->as_string () + " " + ty->as_string ();
       params_str += ",";
     }
 
@@ -191,38 +193,13 @@ FnType::combine (TyBase *other)
 TyBase *
 FnType::clone ()
 {
-  std::vector<ParamType *> cloned_params;
+  std::vector<std::pair<HIR::Pattern *, TyBase *> > cloned_params;
   for (auto &p : params)
-    cloned_params.push_back ((ParamType *) p->clone ());
+    cloned_params.push_back (
+      std::pair<HIR::Pattern *, TyBase *> (p.first, p.second->clone ()));
 
   return new FnType (get_ref (), get_ty_ref (), cloned_params,
 		     get_return_type ()->clone ());
-}
-
-void
-ParamType::accept_vis (TyVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-std::string
-ParamType::as_string () const
-{
-  return "(" + identifier + " :" + type->as_string () + ")";
-}
-
-TyBase *
-ParamType::combine (TyBase *other)
-{
-  ParamRules r (this);
-  return r.combine (other);
-}
-
-TyBase *
-ParamType::clone ()
-{
-  return new ParamType (get_ref (), get_ty_ref (), get_identifier (),
-			get_base_type ()->clone ());
 }
 
 void
@@ -449,7 +426,7 @@ TypeCheckCallExpr::visit (FnType &type)
 
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-    TyBase *pt = type.param_at (i);
+    auto fnparam = type.param_at (i);
     auto t = Resolver::TypeCheckExpr::Resolve (p);
     if (t == nullptr)
       {
@@ -457,6 +434,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	return false;
       }
 
+    auto pt = fnparam.second;
     auto res = pt->combine (t);
     if (res == nullptr)
       return false;

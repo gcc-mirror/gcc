@@ -47,7 +47,6 @@ public:
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
   void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
   void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
   void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
   void visit (TyTy::IntType &type) override { gcc_unreachable (); }

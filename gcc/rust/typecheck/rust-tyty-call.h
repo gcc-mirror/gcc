@@ -41,7 +41,6 @@ public:
   void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
   void visit (StructFieldType &type) override { gcc_unreachable (); }
-  void visit (ParamType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }
   void visit (BoolType &type) override { gcc_unreachable (); }
   void visit (IntType &type) override { gcc_unreachable (); }

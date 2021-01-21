@@ -127,14 +127,21 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fntype;
+    TyTy::TyBase *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
-					 &fntype))
+					 &fntype_tyty))
       {
 	rust_fatal_error (function.locus, "failed to lookup function type");
 	return;
       }
 
+    if (fntype_tyty->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (function.get_locus (), "invalid TyTy for function item");
+	return;
+      }
+
+    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
     // convert to the actual function type
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
@@ -159,17 +166,31 @@ public:
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
-    TyTy::TyBase *tyret = TyTyExtractRetFromFnType::compile (fntype);
-    std::vector<TyTy::ParamType *> typarams
-      = TyTyExtractParamsFromFnType::compile (fntype);
+
+    TyTy::TyBase *tyret = fntype->return_type ();
     std::vector<Bvariable *> param_vars;
 
-    for (auto &it : typarams)
+    size_t i = 0;
+    for (auto &it : fntype->get_params ())
       {
-	auto compiled_param = TyTyCompileParam::compile (ctx, fndecl, it);
-	param_vars.push_back (compiled_param);
+	HIR::FunctionParam &referenced_param = function.function_params.at (i);
+	auto param_pattern = it.first;
+	auto param_tyty = it.second;
 
-	ctx->insert_var_decl (it->get_ref (), compiled_param);
+	auto compiled_param_type
+	  = TyTyResolveCompile::compile (ctx, param_tyty);
+
+	bool tree_addressable = false;
+	auto compiled_param_var = ctx->get_backend ()->parameter_variable (
+	  fndecl, param_pattern->as_string (), compiled_param_type,
+	  tree_addressable,
+	  ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
+
+	param_vars.push_back (compiled_param_var);
+
+	ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
+			      compiled_param_var);
+	i++;
       }
 
     if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))

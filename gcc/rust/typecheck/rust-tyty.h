@@ -234,43 +234,17 @@ private:
   std::vector<StructFieldType *> fields;
 };
 
-class ParamType : public TyBase
-{
-public:
-  ParamType (HirId ref, std::string identifier, TyBase *type)
-    : TyBase (ref, ref, TypeKind::PARAM), identifier (identifier), type (type)
-  {}
-
-  ParamType (HirId ref, HirId ty_ref, std::string identifier, TyBase *type)
-    : TyBase (ref, ty_ref, TypeKind::PARAM), identifier (identifier),
-      type (type)
-  {}
-
-  void accept_vis (TyVisitor &vis) override;
-
-  std::string as_string () const override;
-
-  TyBase *combine (TyBase *other) override;
-
-  std::string get_identifier () const { return identifier; }
-
-  TyBase *get_base_type () { return type; }
-
-  TyBase *clone () final override;
-
-private:
-  std::string identifier;
-  TyBase *type;
-};
-
 class FnType : public TyBase
 {
 public:
-  FnType (HirId ref, std::vector<ParamType *> params, TyBase *type)
-    : TyBase (ref, ref, TypeKind::FNDEF), params (params), type (type)
+  FnType (HirId ref, std::vector<std::pair<HIR::Pattern *, TyBase *> > params,
+	  TyBase *type)
+    : TyBase (ref, ref, TypeKind::FNDEF), params (std::move (params)),
+      type (type)
   {}
 
-  FnType (HirId ref, HirId ty_ref, std::vector<ParamType *> params,
+  FnType (HirId ref, HirId ty_ref,
+	  std::vector<std::pair<HIR::Pattern *, TyBase *> > params,
 	  TyBase *type)
     : TyBase (ref, ty_ref, TypeKind::FNDEF), params (params), type (type)
   {}
@@ -285,14 +259,22 @@ public:
 
   size_t num_params () const { return params.size (); }
 
-  ParamType *param_at (size_t idx) { return params[idx]; }
+  std::vector<std::pair<HIR::Pattern *, TyBase *> > &get_params ()
+  {
+    return params;
+  }
+
+  std::pair<HIR::Pattern *, TyBase *> &param_at (size_t idx)
+  {
+    return params[idx];
+  }
 
   TyBase *get_return_type () { return type; }
 
   TyBase *clone () final override;
 
 private:
-  std::vector<ParamType *> params;
+  std::vector<std::pair<HIR::Pattern *, TyBase *> > params;
   TyBase *type;
 };
 

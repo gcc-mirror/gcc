@@ -404,13 +404,13 @@ public:
 // A function parameter
 struct FunctionParam
 {
-public:
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
 
   Location locus;
   Analysis::NodeMapping mappings;
 
+public:
   FunctionParam (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Pattern> param_name,
 		 std::unique_ptr<Type> param_type, Location locus)

@@ -68,11 +68,6 @@ public:
     rust_error_at (def_locus, "declared here");
   }
 
-  virtual void visit (ParamType &type) override
-  {
-    type.get_base_type ()->accept_vis (*this);
-  }
-
   virtual void visit (ArrayType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -172,8 +167,6 @@ public:
 
   void visit (FloatType &type) override { resolved = type.clone (); }
 
-  void visit (ParamType &type) override { resolved = type.clone (); }
-
   void visit (ArrayType &type) override { resolved = type.clone (); }
 
   void visit (ADTType &type) override { resolved = type.clone (); }
@@ -241,21 +234,6 @@ public:
 
 private:
   FnType *base;
-};
-
-class ParamRules : protected BaseRules
-{
-public:
-  ParamRules (ParamType *base) : BaseRules (base), base (base) {}
-
-  TyBase *combine (TyBase *other)
-  {
-    // we only case about the base type of a param
-    return base->get_base_type ()->combine (other);
-  }
-
-private:
-  ParamType *base;
 };
 
 class ArrayRules : protected BaseRules

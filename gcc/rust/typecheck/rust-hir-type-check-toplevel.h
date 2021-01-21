@@ -113,15 +113,14 @@ public:
 	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
       }
 
-    std::vector<TyTy::ParamType *> params;
+    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
     for (auto &param : function.function_params)
       {
 	// get the name as well required for later on
-	auto param_type = TypeCheckType::Resolve (param.type.get ());
-	auto param_tyty
-	  = new TyTy::ParamType (param.get_mappings ().get_hirid (),
-				 param.param_name->as_string (), param_type);
-	params.push_back (param_tyty);
+	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::TyBase *> (param.get_param_name (),
+						     param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
       }

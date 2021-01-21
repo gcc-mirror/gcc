@@ -26,6 +26,7 @@
 #include "rust-tyty.h"
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
+#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Compile {
@@ -48,8 +49,6 @@ public:
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
 
@@ -74,13 +73,14 @@ public:
 	  "_", ret, mappings->lookup_location (hir_type->get_ref ())));
       }
 
-    for (size_t i = 0; i < type.num_params (); i++)
+    for (auto &params : type.get_params ())
       {
-	auto param_tyty = type.param_at (i);
-	auto compiled_param_type
-	  = TyTyCompile::compile (backend, param_tyty->get_base_type ());
+	auto param_pattern = params.first;
+	auto param_tyty = params.second;
+	auto compiled_param_type = TyTyCompile::compile (backend, param_tyty);
+
 	auto compiled_param = Backend::Btyped_identifier (
-	  param_tyty->get_identifier (), compiled_param_type,
+	  param_pattern->as_string (), compiled_param_type,
 	  mappings->lookup_location (param_tyty->get_ref ()));
 
 	parameters.push_back (compiled_param);
@@ -197,85 +197,6 @@ private:
   ::Backend *backend;
   ::Btype *translated;
   Analysis::Mappings *mappings;
-};
-
-class TyTyExtractParamsFromFnType : public TyTy::TyVisitor
-{
-public:
-  static std::vector<TyTy::ParamType *> compile (TyTy::TyBase *ty)
-  {
-    TyTyExtractParamsFromFnType compiler;
-    ty->accept_vis (compiler);
-    rust_assert (compiler.ok);
-    return compiler.translated;
-  }
-
-  ~TyTyExtractParamsFromFnType () {}
-
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::FnType &type) override
-  {
-    ok = true;
-    for (size_t i = 0; i < type.num_params (); i++)
-      {
-	translated.push_back (type.param_at (i));
-      }
-  }
-
-private:
-  TyTyExtractParamsFromFnType () : ok (false) {}
-
-  bool ok;
-  std::vector<TyTy::ParamType *> translated;
-};
-
-class TyTyExtractRetFromFnType : public TyTy::TyVisitor
-{
-public:
-  static TyTy::TyBase *compile (TyTy::TyBase *ty)
-  {
-    TyTyExtractRetFromFnType compiler;
-    ty->accept_vis (compiler);
-    rust_assert (compiler.ok);
-    return compiler.translated;
-  }
-
-  ~TyTyExtractRetFromFnType () {}
-
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &type) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &type) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &type) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &type) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::FnType &type) override
-  {
-    ok = true;
-    translated = type.get_return_type ();
-  }
-
-private:
-  TyTyExtractRetFromFnType () : ok (false), translated (nullptr) {}
-
-  bool ok;
-  TyTy::TyBase *translated;
 };
 
 } // namespace Compile
