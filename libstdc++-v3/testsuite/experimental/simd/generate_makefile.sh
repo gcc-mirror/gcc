@@ -97,10 +97,10 @@ DRIVEROPTS ?=
 all: simd_testsuite.sum
 
 simd_testsuite.sum: simd_testsuite.log
-	@echo "\n\t\t=== simd_testsuite \$(TESTFLAGS) Summary ===\n\n"\\
+	@printf "\n\t\t=== simd_testsuite \$(TESTFLAGS) Summary ===\n\n"\\
 	"# of expected passes:\t\t\$(shell grep -c '^PASS:' \$@)\n"\\
 	"# of unexpected failures:\t\$(shell grep -c '^FAIL:' \$@)\n"\\
-	"# of unsupported tests:\t\t\$(shell grep -c '^UNSUPPORTED:' \$@)"\\
+	"# of unsupported tests:\t\t\$(shell grep -c '^UNSUPPORTED:' \$@)\n"\\
 	  | tee -a \$@
 
 EOF
@@ -208,7 +208,7 @@ EOF
 EOF
     done
   done
-  echo 'run-%: export GCC_TEST_RUN_EXPENSIVE=yes\n'
+  echo 'run-%: export GCC_TEST_RUN_EXPENSIVE=yes'
   all_tests | while read file && read name; do
     echo "run-$name: $name.log"
     all_types "$file" | while read t && read type; do
@@ -221,7 +221,7 @@ EOF
   done
   cat <<EOF
 help:
-	@echo "use DRIVEROPTS=<options> to pass the following options:\n"\\
+	@printf "use DRIVEROPTS=<options> to pass the following options:\n"\\
 	"-q, --quiet         Only print failures.\n"\\
 	"-v, --verbose       Print compiler and test output on failure.\n"\\
 	"-k, --keep-failed   Keep executables of failed tests.\n"\\
@@ -232,19 +232,20 @@ help:
 	"                    Multiply the default timeout with x.\n"\\
 	"--run-expensive     Compile and run tests marked as expensive (default:\n"\\
 	"                    true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).\n"\\
-	"--only <pattern>    Compile and run only tests matching the given pattern.\n"
-	@echo "use TESTFLAGS=<flags> to pass additional compiler flags\n"
+	"--only <pattern>    Compile and run only tests matching the given pattern.\n\n"
+	@echo "use TESTFLAGS=<flags> to pass additional compiler flags"
+	@echo
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all"
 	@echo "... clean"
 	@echo "... help"
 EOF
   all_tests | while read file && read name; do
-    echo "\t@echo '... run-${name}'"
+    printf "\t@echo '... run-${name}'\n"
     all_types | while read t && read type; do
-      echo "\t@echo '... run-${name}-${type}'"
+      printf "\t@echo '... run-${name}-${type}'\n"
       for i in $(seq 0 9); do
-        echo "\t@echo '... run-${name}-${type}-$i'"
+        printf "\t@echo '... run-${name}-${type}-$i'\n"
       done
     done
   done
