@@ -10080,6 +10080,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       return error_mark_node;
     }
 
+  /* decltype is an unevaluated context.  */
+  cp_unevaluated u;
+
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
@@ -10095,9 +10098,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      ++cp_unevaluated_operand;
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      --cp_unevaluated_operand;
       if (expr == error_mark_node)
 	return error_mark_node;
     }

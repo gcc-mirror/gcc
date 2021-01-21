@@ -3753,7 +3753,7 @@ Collective subroutine
 @item @var{A}            @tab shall be an integer, real or character variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
-present, it shall have the same the same value on all images and refer to an
+present, it shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable

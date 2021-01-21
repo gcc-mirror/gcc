@@ -1,3 +1,66 @@
+2021-01-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/torture/ftrapv-2.c: Make overflow instruction unremovable.
+
+2021-01-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/vdup_lane_2.c: Scan for fmov rather than
+	dup.
+
+2021-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98722
+	* g++.target/s390/pr98722.C: New.
+
+2021-01-20  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR tree-optimization/96674
+	* gcc.dg/pr96674.c: New tests.
+
+2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95434
+	* g++.dg/cpp2a/lambda-generic9.C: New test.
+
+2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82613
+	* g++.dg/parse/access12.C: New test.
+	* g++.dg/template/access35.C: New test.
+
+2021-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98535
+	* gcc.target/aarch64/sve/pr98535.c: New file.
+
+2021-01-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98763
+	* gfortran.dg/gomp/task-detach-1.f90: Use integer(1) to avoid
+	missing diagnostic issues with c_intptr_t == default integer kind.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98721
+	* gcc.dg/pr98721-1.c: New test.
+	* gcc.dg/pr98721-2.c: New test.
+
+2021-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* gcc.dg/torture/pr98758.c: New testcase.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98742
+	* c-c++-common/gomp/task-detach-2.c: New test.
+
+2021-01-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98757
+	PR fortran/98476
+	* gfortran.dg/gomp/is_device_ptr-2.f90: Fix dg-error.
+
 2021-01-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/cpp/ucs.c: Expect Invalid warning for 2byte wchar.

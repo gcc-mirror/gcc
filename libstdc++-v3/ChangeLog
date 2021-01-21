@@ -1,3 +1,10 @@
+2021-01-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/os/aix/ctype_inline.h (bool ctype<char>:: is): Cast
+	_OBJ_DATA subscript to unsigned char. Add _THREAD_SAFE access to
+	__lc_type.
+	(const char* ctype<char>:: is): Same.
+
 2021-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98725

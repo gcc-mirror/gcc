@@ -45,7 +45,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if(_M_table)
       return _M_table[static_cast<unsigned char>(__c)] & __m;
     else
-      return __OBJ_DATA(__lc_ctype)->mask[__c] & __m;
+#ifdef _THREAD_SAFE
+      return __OBJ_DATA((*__lc_ctype_ptr))->mask[static_cast<unsigned char>(__c)] & __m;
+#else
+      return __OBJ_DATA(__lc_ctype)->mask[static_cast<unsigned char>(__c)] & __m;
+#endif
   }
 
   const char*
@@ -57,7 +61,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	*__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
     else
       while (__low < __high)
-        *__vec++ = __OBJ_DATA(__lc_ctype)->mask[*__low++];
+#ifdef _THREAD_SAFE
+	*__vec++ = __OBJ_DATA((*__lc_ctype_ptr))->mask[static_cast<unsigned char>(*__low++)];
+#else
+        *__vec++ = __OBJ_DATA(__lc_ctype)->mask[static_cast<unsigned char>(*__low++)];
+#endif
     return __high;
   }
 

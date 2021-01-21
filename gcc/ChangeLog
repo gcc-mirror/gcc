@@ -1,3 +1,82 @@
+2021-01-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_get_lane<mode>):
+	Convert to define_insn_and_split.  Split into simple move when moving
+	bottom element.
+
+2021-01-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_store): Change assert.
+	Adjust comment.  Simplify code.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98765
+	* dwarf2out.c (reset_indirect_string): Also reset indirect strings
+	with DW_FORM_line_strp form.
+	(prune_unused_types_update_strings): Don't add into debug_str_hash
+	indirect strings with DW_FORM_line_strp form.
+	(adjust_name_comp_dir): New function.
+	(dwarf2out_finish): Call it on CU DIEs after resetting
+	debug_line_str_hash.
+
+2021-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98722
+	* lra-eliminations.c (eliminate_regs_in_insn): Check that target
+	has no 3-op add insn to transform insns containing two pluses.
+
+2021-01-20  Richard Biener  <rguenther@suse.de>
+
+	* hwint.h (add_hwi): New function.
+	(mul_hwi): Likewise.
+	* tree-data-ref.c (initialize_matrix_A): Properly translate
+	tree constants and avoid HOST_WIDE_INT_MIN.
+	(lambda_matrix_row_add): Avoid undefined integer overflow
+	and return true on such overflow.
+	(lambda_matrix_right_hermite): Handle overflow from
+	lambda_matrix_row_add gracefully.  Simplify previous fix.
+	(analyze_subscript_affine_affine): Likewise.
+
+2021-01-20  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR tree-optimization/96674
+	* match.pd: New patterns: x < y || y == XXX_MIN --> x <= y - 1
+	x >= y && y != XXX_MIN --> x > y - 1
+
+2021-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98535
+	* tree-vect-slp.c (duplicate_and_interleave): Use quick_grow_cleared.
+	If the high and low permutes are the same, remove the high permutes
+	from the working set and only continue with the low ones.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98721
+	* builtins.c (access_ref::inform_access): Don't assume
+	SSA_NAME_IDENTIFIER must be non-NULL.  Print messages about
+	object whenever allocfn is NULL, rather than only when DECL_P
+	is true.  Use %qE instead of %qD for that.  Formatting fixes.
+
+2021-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* tree-data-ref.c (int_divides_p): Use lambda_int arguments.
+	(lambda_matrix_right_hermite): Avoid undefinedness with
+	signed integer abs and multiplication.
+	(analyze_subscript_affine_affine): Use lambda_int.
+
+2021-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR debug/98751
+	* dwarf2out.c (output_line_info): Rename static variable
+	"generation", moving it out of the function to...
+	(output_line_info_generation): New.
+	(init_sections_and_labels): Likewise, renaming the variable to...
+	(init_sections_and_labels_generation): New.
+	(dwarf2out_c_finalize): Reset the new variables.
+
 2021-01-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98664
