@@ -1637,10 +1637,14 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 
-	  if (!zero_init_p (fldtype)
-	      || skipped < 0)
-	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
-				    /*static_storage_p=*/false);
+	  if (!zero_init_p (fldtype) || skipped < 0)
+	    {
+	      if (TYPE_REF_P (fldtype))
+		next = build_zero_cst (TREE_TYPE (field));
+	      else
+		next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
+					/*static_storage_p=*/false);
+	    }
 	  else
 	    {
 	      /* The default zero-initialization is fine for us; don't
