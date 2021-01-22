@@ -4811,44 +4811,12 @@ process_command (unsigned int decoded_options_count,
       if (decoded_options[j].opt_index == OPT_SPECIAL_input_file)
 	{
 	  const char *arg = decoded_options[j].arg;
-          const char *p = strrchr (arg, '@');
-          char *fname;
-	  long offset;
-	  int consumed;
+
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  arg = convert_filename (arg, 0, access (arg, F_OK));
 #endif
-	  /* For LTO static archive support we handle input file
-	     specifications that are composed of a filename and
-	     an offset like FNAME@OFFSET.  */
-	  if (p
-	      && p != arg
-	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
-	      && strlen (p) == (unsigned int)consumed)
-	    {
-              fname = (char *)xmalloc (p - arg + 1);
-              memcpy (fname, arg, p - arg);
-              fname[p - arg] = '\0';
-	      /* Only accept non-stdin and existing FNAME parts, otherwise
-		 try with the full name.  */
-	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
-		{
-		  free (fname);
-		  fname = xstrdup (arg);
-		}
-	    }
-	  else
-	    fname = xstrdup (arg);
+	  add_infile (arg, spec_lang);
 
-          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
-	    {
-	      bool resp = fname[0] == '@' && access (fname + 1, F_OK) < 0;
-	      error ("%s: %m", fname + resp);
-	    }
-          else
-	    add_infile (arg, spec_lang);
-
-          free (fname);
 	  continue;
 	}
 

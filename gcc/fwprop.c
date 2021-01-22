@@ -176,7 +176,7 @@ namespace
     static const uint16_t CONSTANT = FIRST_SPARE_RESULT << 1;
     static const uint16_t PROFITABLE = FIRST_SPARE_RESULT << 2;
 
-    fwprop_propagation (rtx_insn *, rtx, rtx);
+    fwprop_propagation (insn_info *, insn_info *, rtx, rtx);
 
     bool changed_mem_p () const { return result_flags & CHANGED_MEM; }
     bool folded_to_constants_p () const;
@@ -185,13 +185,20 @@ namespace
     bool check_mem (int, rtx) final override;
     void note_simplification (int, uint16_t, rtx, rtx) final override;
     uint16_t classify_result (rtx, rtx);
+
+  private:
+    const bool single_use_p;
+    const bool single_ebb_p;
   };
 }
 
 /* Prepare to replace FROM with TO in INSN.  */
 
-fwprop_propagation::fwprop_propagation (rtx_insn *insn, rtx from, rtx to)
-  : insn_propagation (insn, from, to)
+fwprop_propagation::fwprop_propagation (insn_info *use_insn,
+					insn_info *def_insn, rtx from, rtx to)
+  : insn_propagation (use_insn->rtl (), from, to),
+    single_use_p (def_insn->num_uses () == 1),
+    single_ebb_p (use_insn->ebb () == def_insn->ebb ())
 {
   should_check_mems = true;
   should_note_simplifications = true;
@@ -260,6 +267,22 @@ fwprop_propagation::classify_result (rtx old_rtx, rtx new_rtx)
       && (VECTOR_MODE_P (GET_MODE (from))
 	  || COMPLEX_MODE_P (GET_MODE (from)))
       && GET_MODE (new_rtx) == GET_MODE_INNER (GET_MODE (from)))
+    return PROFITABLE;
+
+  /* Allow (subreg (mem)) -> (mem) simplifications with the following
+     exceptions:
+     1) Propagating (mem)s into multiple uses is not profitable.
+     2) Propagating (mem)s across EBBs may not be profitable if the source EBB
+	runs less frequently.
+     3) Propagating (mem)s into paradoxical (subreg)s is not profitable.
+     4) Creating new (mem/v)s is not correct, since DCE will not remove the old
+	ones.  */
+  if (single_use_p
+      && single_ebb_p
+      && SUBREG_P (old_rtx)
+      && !paradoxical_subreg_p (old_rtx)
+      && MEM_P (new_rtx)
+      && !MEM_VOLATILE_P (new_rtx))
     return PROFITABLE;
 
   return 0;
@@ -363,7 +386,7 @@ try_fwprop_subst_note (insn_info *use_insn, insn_info *def_insn,
   rtx_insn *use_rtl = use_insn->rtl ();
 
   insn_change_watermark watermark;
-  fwprop_propagation prop (use_rtl, dest, src);
+  fwprop_propagation prop (use_insn, def_insn, dest, src);
   if (!prop.apply_to_rvalue (&XEXP (note, 0)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -426,7 +449,7 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
   rtx_insn *use_rtl = use_insn->rtl ();
 
   insn_change_watermark watermark;
-  fwprop_propagation prop (use_rtl, dest, src);
+  fwprop_propagation prop (use_insn, def_insn, dest, src);
   if (!prop.apply_to_pattern (loc))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))

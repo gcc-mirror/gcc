@@ -1069,6 +1069,53 @@
   return true;
 })
 
+/* Return true if operand is a float vector constant that is all ones. */
+(define_predicate "float_vector_all_ones_operand"
+  (match_code "const_vector,mem")
+{
+  mode = GET_MODE (op);
+  if (!FLOAT_MODE_P (mode)
+      || (MEM_P (op)
+	  && (!SYMBOL_REF_P (XEXP (op, 0))
+	      || !CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))))
+    return false;
+
+  if (MEM_P (op))
+    {
+      op = get_pool_constant (XEXP (op, 0));
+      if (GET_CODE (op) != CONST_VECTOR)
+	return false;
+
+      if (GET_MODE (op) != mode
+	 && INTEGRAL_MODE_P (GET_MODE (op))
+	 && op == CONSTM1_RTX (GET_MODE (op)))
+	return true;
+    }
+
+  rtx first = XVECEXP (op, 0, 0);
+  for (int i = 1; i != GET_MODE_NUNITS (GET_MODE (op)); i++)
+    {
+      rtx tmp = XVECEXP (op, 0, i);
+      if (!rtx_equal_p (tmp, first))
+	return false;
+    }
+  if (GET_MODE (first) == E_SFmode)
+    {
+      long l;
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (first), l);
+      return (l & 0xffffffff) == 0xffffffff;
+    }
+  else if (GET_MODE (first) == E_DFmode)
+    {
+      long l[2];
+      REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (first), l);
+      return ((l[0] & 0xffffffff) == 0xffffffff
+	     && (l[1] & 0xffffffff) == 0xffffffff);
+    }
+  else
+    return false;
+})
+
 /* Return true if operand is a vector constant that is all ones. */
 (define_predicate "vector_all_ones_operand"
   (and (match_code "const_vector")

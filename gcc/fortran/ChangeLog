@@ -1,3 +1,18 @@
+2021-01-21  Jorge D'Elia  <jdelia@cimec.unl.edu.ar>
+
+	* intrinsic.texi (CO_MAX): Fix typo.
+
+2021-01-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96320
+	* decl.c (gfc_match_modproc): It is not an error to find a
+	module procedure declaration within a contains block.
+	* expr.c (gfc_check_vardef_context): Pure procedure result is
+	assignable. Change 'own_scope' accordingly.
+	* resolve.c (resolve_typebound_procedure): A procedure that
+	has the module procedure attribute is almost certainly a
+	module procedure, whatever its interface.
+
 2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/98476

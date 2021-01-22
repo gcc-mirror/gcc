@@ -2837,7 +2837,8 @@ Version 14, which first appeared in G++ 10, corrects the mangling of
 the nullptr expression.
 
 Version 15, which first appeared in G++ 11, changes the mangling of
-@code{__alignof__} to be distinct from that of @code{alignof}.
+@code{__alignof__} to be distinct from that of @code{alignof}, and
+dependent operator names.
 
 See also @option{-Wabi}.
 

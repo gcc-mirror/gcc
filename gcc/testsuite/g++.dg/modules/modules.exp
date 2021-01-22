@@ -118,10 +118,12 @@ proc module_cmi_p { src ifs } {
 	}
 	set not [lindex $if_arg 2]
 	set cmi [lindex $if_arg 3]
+	global srcdir
+	set relcmi [string map [list $srcdir "/\$srcdir"] $cmi]
 	if { $not != [file_on_host exists $cmi] } {
-	    pass "$src module-cmi $spec ($cmi)"
+	    pass "$src module-cmi $spec ($relcmi)"
 	} else {
-	    fail "$src module-cmi $spec ($cmi)"
+	    fail "$src module-cmi $spec ($relcmi)"
 	    set not [expr ! $not ]
 	}
 	if { ! $not } {
@@ -210,8 +212,10 @@ proc module_do_it { do_what testcase std asm_list } {
     }
 
     set options { }
+    set ident $testcase
     if { $std != "" } {
 	lappend options "additional_flags=$std"
+	set ident "$ident $std"
     }
     if { [llength $do_what] > 3 } {
 	lappend options "additional_flags=[lindex $do_what 3]"
@@ -222,15 +226,15 @@ proc module_do_it { do_what testcase std asm_list } {
     # link it
     verbose "Linking $asm_list" 1
     if { !$ok } {
-	unresolved "$testcase link"
+	unresolved "$identlink"
     } else {
 	set out [${tool}_target_compile $asm_list \
 		     $execname executable $options]
 	eval $xfail
 	if { $out == "" } {
-	    pass "$testcase link"
+	    pass "$ident link"
 	} else {
-	    fail "$testcase link"
+	    fail "$ident link"
 	    set ok 0
 	}
     }
@@ -238,12 +242,12 @@ proc module_do_it { do_what testcase std asm_list } {
     # run it?
     if { !$run } {
     } elseif { !$ok } {
-	unresolved "$testcase execute"
+	unresolved "$ident execute"
     } else {
 	set out [${tool}_load $execname "" ""]
 	set status [lindex $out 0]
 	eval $xfail
-	$status "$testcase execute"
+	$status "$ident execute"
 	if { $status != "pass" } {
 	    set $ok 0
 	}

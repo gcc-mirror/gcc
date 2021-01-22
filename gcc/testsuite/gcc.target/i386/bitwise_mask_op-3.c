@@ -40,5 +40,4 @@ foo_andnb (__m512i a, __m512i b)
   foo = m1 & ~m2;
 }
 
-/* { dg-final { scan-assembler-times "knotb\[\t \]" "1" } }  */
 /* { dg-final { scan-assembler-times "kmovb\[\t \]" "4"} }  */

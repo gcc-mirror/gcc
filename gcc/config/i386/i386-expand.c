@@ -3568,17 +3568,11 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 		  ? force_reg (mode, op_false) : op_false);
       if (op_true == CONST0_RTX (mode))
 	{
-	  rtx (*gen_not) (rtx, rtx);
-	  switch (cmpmode)
-	    {
-	    case E_QImode: gen_not = gen_knotqi; break;
-	    case E_HImode: gen_not = gen_knothi; break;
-	    case E_SImode: gen_not = gen_knotsi; break;
-	    case E_DImode: gen_not = gen_knotdi; break;
-	    default: gcc_unreachable ();
-	    }
 	  rtx n = gen_reg_rtx (cmpmode);
-	  emit_insn (gen_not (n, cmp));
+	  if (cmpmode == E_DImode && !TARGET_64BIT)
+	    emit_insn (gen_knotdi (n, cmp));
+	  else
+	    emit_insn (gen_rtx_SET (n, gen_rtx_fmt_e (NOT, cmpmode, cmp)));
 	  cmp = n;
 	  /* Reverse op_true op_false.  */
 	  std::swap (op_true, op_false);
