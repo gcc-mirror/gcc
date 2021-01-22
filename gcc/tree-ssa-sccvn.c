@@ -1103,7 +1103,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      poly_offset_int woffset
 		= wi::sext (wi::to_poly_offset (op->op0)
 			    - wi::to_poly_offset (op->op1),
-			    TYPE_PRECISION (TREE_TYPE (op->op0)));
+			    TYPE_PRECISION (sizetype));
 	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
 	      woffset <<= LOG2_BITS_PER_UNIT;
 	      offset += woffset;

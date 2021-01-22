@@ -7082,7 +7082,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	      poly_offset_int woffset
 		= wi::sext (wi::to_poly_offset (idx)
 			    - wi::to_poly_offset (low_bound),
-			    TYPE_PRECISION (TREE_TYPE (idx)));
+			    TYPE_PRECISION (sizetype));
 	      woffset *= tree_to_uhwi (unit_size);
 	      woffset *= BITS_PER_UNIT;
 	      if (woffset.to_shwi (&offset))
