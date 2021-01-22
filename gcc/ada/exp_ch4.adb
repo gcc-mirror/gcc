@@ -5915,9 +5915,14 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_If_Expression
 
    begin
-      --  Check for MINIMIZED/ELIMINATED overflow mode
+      --  Check for MINIMIZED/ELIMINATED overflow mode.
+      --  Apply_Arithmetic_Overflow_Check will not deal with Then/Else_Actions
+      --  so skip this step if any actions are present.
 
-      if Minimized_Eliminated_Overflow_Check (N) then
+      if Minimized_Eliminated_Overflow_Check (N)
+        and then No (Then_Actions (N))
+        and then No (Else_Actions (N))
+      then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
