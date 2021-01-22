@@ -7090,10 +7090,10 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 }
 
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
-   is variable and also counts by vector element size.  */
+   is variable and also counts by vector element size for p9 and above.  */
 
 void
-rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
+rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
 
@@ -7134,6 +7134,119 @@ rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
   rtx perml
     = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvl);
   emit_insn (perml);
+}
+
+/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
+   is variable and also counts by vector element size for p8.  */
+
+void
+rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
+{
+  machine_mode mode = GET_MODE (target);
+
+  gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
+
+  gcc_assert (GET_MODE (idx) == E_SImode);
+
+  machine_mode inner_mode = GET_MODE (val);
+  HOST_WIDE_INT mode_mask = GET_MODE_MASK (inner_mode);
+
+  rtx tmp = gen_reg_rtx (GET_MODE (idx));
+  int width = GET_MODE_SIZE (inner_mode);
+
+  gcc_assert (width >= 1 && width <= 4);
+
+  if (!BYTES_BIG_ENDIAN)
+    {
+      /*  idx = idx * width.  */
+      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
+      /*  idx = idx + 8.  */
+      emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (8)));
+    }
+  else
+    {
+      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
+      emit_insn (gen_subsi3 (tmp, GEN_INT (24 - width), tmp));
+    }
+
+  /*  lxv vs33, mask.
+      DImode: 0xffffffffffffffff0000000000000000
+      SImode: 0x00000000ffffffff0000000000000000
+      HImode: 0x000000000000ffff0000000000000000.
+      QImode: 0x00000000000000ff0000000000000000.  */
+  rtx mask = gen_reg_rtx (V16QImode);
+  rtx mask_v2di = gen_reg_rtx (V2DImode);
+  rtvec v = rtvec_alloc (2);
+  if (!BYTES_BIG_ENDIAN)
+    {
+      RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (DImode, 0);
+      RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (DImode, mode_mask);
+    }
+  else
+    {
+      RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (DImode, mode_mask);
+      RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (DImode, 0);
+    }
+  emit_insn (gen_vec_initv2didi (mask_v2di, gen_rtx_PARALLEL (V2DImode, v)));
+  rtx sub_mask = simplify_gen_subreg (V16QImode, mask_v2di, V2DImode, 0);
+  emit_insn (gen_rtx_SET (mask, sub_mask));
+
+  /*  mtvsrd[wz] f0,tmp_val.  */
+  rtx tmp_val = gen_reg_rtx (SImode);
+  if (inner_mode == E_SFmode)
+    emit_insn (gen_movsi_from_sf (tmp_val, val));
+  else
+    tmp_val = force_reg (SImode, val);
+
+  rtx val_v16qi = gen_reg_rtx (V16QImode);
+  rtx val_v2di = gen_reg_rtx (V2DImode);
+  rtvec vec_val = rtvec_alloc (2);
+  if (!BYTES_BIG_ENDIAN)
+  {
+    RTVEC_ELT (vec_val, 0) = gen_rtx_CONST_INT (DImode, 0);
+    RTVEC_ELT (vec_val, 1) = tmp_val;
+  }
+  else
+  {
+    RTVEC_ELT (vec_val, 0) = tmp_val;
+    RTVEC_ELT (vec_val, 1) = gen_rtx_CONST_INT (DImode, 0);
+  }
+  emit_insn (
+    gen_vec_initv2didi (val_v2di, gen_rtx_PARALLEL (V2DImode, vec_val)));
+  rtx sub_val = simplify_gen_subreg (V16QImode, val_v2di, V2DImode, 0);
+  emit_insn (gen_rtx_SET (val_v16qi, sub_val));
+
+  /*  lvsl    13,0,idx.  */
+  tmp = convert_modes (DImode, SImode, tmp, 1);
+  rtx pcv = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsl_reg (pcv, tmp));
+
+  /*  vperm 1,1,1,13.  */
+  /*  vperm 0,0,0,13.  */
+  rtx val_perm = gen_reg_rtx (V16QImode);
+  rtx mask_perm = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_vperm_v8hiv16qi (val_perm, val_v16qi, val_v16qi, pcv));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (mask_perm, mask, mask, pcv));
+
+  rtx target_v16qi = simplify_gen_subreg (V16QImode, target, mode, 0);
+
+  /*  xxsel 34,34,32,33.  */
+  emit_insn (
+    gen_vector_select_v16qi (target_v16qi, target_v16qi, val_perm, mask_perm));
+}
+
+/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
+   is variable and also counts by vector element size.  */
+
+void
+rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
+{
+  machine_mode mode = GET_MODE (target);
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  if (TARGET_P9_VECTOR || GET_MODE_SIZE (inner_mode) == 8)
+    rs6000_expand_vector_set_var_p9 (target, val, idx);
+  else
+    rs6000_expand_vector_set_var_p8 (target, val, idx);
 }
 
 /* Extract field ELT from VEC into TARGET.  */

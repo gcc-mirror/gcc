@@ -1599,10 +1599,29 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  SET_EXPR_LOCATION (stmt, loc);
 	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
 	}
-      stmt = build_array_ref (loc, stmt, arg2);
-      stmt = fold_build2 (MODIFY_EXPR, TREE_TYPE (arg0), stmt,
-			  convert (TREE_TYPE (stmt), arg0));
-      stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+
+      if (TARGET_P8_VECTOR)
+	{
+	  stmt = build_array_ref (loc, stmt, arg2);
+	  stmt = fold_build2 (MODIFY_EXPR, TREE_TYPE (arg0), stmt,
+			      convert (TREE_TYPE (stmt), arg0));
+	  stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+	}
+      else
+	{
+	  tree arg1_inner_type;
+	  tree innerptrtype;
+	  arg1_inner_type = TREE_TYPE (arg1_type);
+	  innerptrtype = build_pointer_type (arg1_inner_type);
+
+	  stmt = build_unary_op (loc, ADDR_EXPR, stmt, 0);
+	  stmt = convert (innerptrtype, stmt);
+	  stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
+	  stmt = build_indirect_ref (loc, stmt, RO_NULL);
+	  stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
+			 convert (TREE_TYPE (stmt), arg0));
+	  stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
+	}
       return stmt;
     }
 

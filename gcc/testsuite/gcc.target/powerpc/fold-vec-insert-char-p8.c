@@ -44,15 +44,16 @@ vector unsigned char testuu_cst (unsigned char x, vector unsigned char v)
        return vec_insert (x, v, 12);
 }
 
-/* one store per _var test */
-/* { dg-final { scan-assembler-times {\mstvx\M|\mstxvw4x\M} 4 } } */
+/* no store per _var test */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstxvw4x\M} 0 } } */
 /* one store-byte per test */
-/* { dg-final { scan-assembler-times {\mstb\M} 8 } } */
+/* { dg-final { scan-assembler-times {\mstb\M} 4 } } */
 /* one load per test */
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 8 } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 8 { target le } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 4 { target be } } } */
 
 /* one lvebx per _cst test.*/
 /* { dg-final { scan-assembler-times {\mlvebx\M} 4 } } */
 /* one vperm per _cst test.*/
-/* { dg-final { scan-assembler-times {\mvperm\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 12 } } */
 

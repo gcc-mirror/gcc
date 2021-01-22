@@ -193,7 +193,7 @@ vector unsigned __int128 splat_uint128 (unsigned __int128 x) { return vec_splats
 /* { dg-final { scan-assembler-times {\mrldic\M} 0  { target { be && ilp32 } } } } */
 /* { dg-final { scan-assembler-times {\mrldic\M} 64 { target { be && lp64 } } } } */
 /* { dg-final { scan-assembler-times {\mrldic\M} 64 { target le } } } */
-/* { dg-final { scan-assembler-times "xxpermdi" 4 { target be } } } */
+/* { dg-final { scan-assembler-times "xxpermdi" 11 { target be } } } */
 /* { dg-final { scan-assembler-times "xxpermdi" 6 { target le } } } */
 /* { dg-final { scan-assembler-times "vspltisb" 2 } } */
 /* { dg-final { scan-assembler-times "vspltish" 2 } } */
