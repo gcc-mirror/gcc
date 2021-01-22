@@ -122,6 +122,41 @@ dfs_lookup_base (tree binfo, void *data_)
   return NULL_TREE;
 }
 
+/* This deals with bug PR17314.
+
+   DECL is a declaration and BINFO represents a class that has attempted (but
+   failed) to access DECL.
+
+   Examine the parent binfos of BINFO and determine whether any of them had
+   private access to DECL.  If they did, return the parent binfo.  This helps
+   in figuring out the correct error message to show (if the parents had
+   access, it's their fault for not giving sufficient access to BINFO).
+
+   If no parents had access, return NULL_TREE.  */
+
+tree
+get_parent_with_private_access (tree decl, tree binfo)
+{
+  /* Only BINFOs should come through here.  */
+  gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
+
+  tree base_binfo = NULL_TREE;
+
+  /* Iterate through immediate parent classes.  */
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    {
+      /* This parent had private access.  Therefore that's why BINFO can't
+	  access DECL.  */
+      if (access_in_type (BINFO_TYPE (base_binfo), decl) == ak_private)
+	return base_binfo;
+    }
+
+  /* None of the parents had access.  Note: it's impossible for one of the
+     parents to have had public or protected access to DECL, since then
+     BINFO would have been able to access DECL too.  */
+  return NULL_TREE;
+}
+
 /* Returns true if type BASE is accessible in T.  (BASE is known to be
    a (possibly non-proper) base class of T.)  If CONSIDER_LOCAL_P is
    true, consider any special access of the current scope, or access

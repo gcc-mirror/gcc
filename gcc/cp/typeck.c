@@ -2980,7 +2980,8 @@ complain_about_unrecognized_member (tree access_path, tree name,
 		    TREE_CODE (access_path) == TREE_BINFO
 		    ? TREE_TYPE (access_path) : object_type,
 		    name, afi.get_diag_decl ());
-	  complain_about_access (afi.get_decl (), afi.get_diag_decl (), false);
+	  complain_about_access (afi.get_decl (), afi.get_diag_decl (),
+				 afi.get_diag_decl (), false, ak_none);
 	}
     }
   else

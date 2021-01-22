@@ -7142,27 +7142,45 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 /* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL
    in the diagnostics.
 
-   If ISSUE_ERROR is true, then issue an error about the
-   access, followed by a note showing the declaration.
-   Otherwise, just show the note.  */
+   If ISSUE_ERROR is true, then issue an error about the access, followed
+   by a note showing the declaration.  Otherwise, just show the note.
+
+   DIAG_DECL and DIAG_LOCATION will almost always be the same.
+   DIAG_LOCATION is just another DECL.  NO_ACCESS_REASON is an optional
+   parameter used to specify why DECL wasn't accessible (e.g. ak_private
+   would be because DECL was private).  If not using NO_ACCESS_REASON,
+   then it must be ak_none, and the access failure reason will be
+   figured out by looking at the protection of DECL.  */
 
 void
-complain_about_access (tree decl, tree diag_decl, bool issue_error)
+complain_about_access (tree decl, tree diag_decl, tree diag_location,
+		       bool issue_error, access_kind no_access_reason)
 {
-  if (TREE_PRIVATE (decl))
+  /* If we have not already figured out why DECL is inaccessible...  */
+  if (no_access_reason == ak_none)
+    {
+      /* Examine the access of DECL to find out why.  */
+      if (TREE_PRIVATE (decl))
+	no_access_reason = ak_private;
+      else if (TREE_PROTECTED (decl))
+	no_access_reason = ak_protected;
+    }
+
+  /* Now generate an error message depending on calculated access.  */
+  if (no_access_reason == ak_private)
     {
       if (issue_error)
 	error ("%q#D is private within this context", diag_decl);
-      inform (DECL_SOURCE_LOCATION (diag_decl),
-	      "declared private here");
+      inform (DECL_SOURCE_LOCATION (diag_location), "declared private here");
     }
-  else if (TREE_PROTECTED (decl))
+  else if (no_access_reason == ak_protected)
     {
       if (issue_error)
 	error ("%q#D is protected within this context", diag_decl);
-      inform (DECL_SOURCE_LOCATION (diag_decl),
-	      "declared protected here");
+      inform (DECL_SOURCE_LOCATION (diag_location), "declared protected here");
     }
+  /* Couldn't figure out why DECL is inaccesible, so just say it's
+     inaccessible.  */
   else
     {
       if (issue_error)

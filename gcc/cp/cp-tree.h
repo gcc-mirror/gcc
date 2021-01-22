@@ -6434,7 +6434,8 @@ class access_failure_info
   tree m_diag_decl;
 };
 
-extern void complain_about_access		(tree, tree, bool);
+extern void complain_about_access		(tree, tree, tree, bool,
+						 access_kind);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -7274,6 +7275,7 @@ extern unsigned get_pseudo_tinfo_index		(tree);
 extern tree get_pseudo_tinfo_type		(unsigned);
 
 /* in search.c */
+extern tree get_parent_with_private_access 	(tree decl, tree binfo);
 extern bool accessible_base_p			(tree, tree, bool);
 extern tree lookup_base                         (tree, tree, base_access,
 						 base_kind *, tsubst_flags_t);
