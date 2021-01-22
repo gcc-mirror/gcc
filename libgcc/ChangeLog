@@ -1,3 +1,14 @@
+2021-01-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): Back port from
+	master (12/3/2020).  New make variable.
+	(IBM128_SHARED_OBJS): New make variable.
+	(IBM128_OBJS): New make variable.  Set all objects to use the
+	explicit IBM format, and disable gnu attributes.
+	(IBM128_CFLAGS): New make variable.
+	(gcc_s_compile): Add -mno-gnu-attribute to all shared library
+	modules.
+
 2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	Backported from master:
