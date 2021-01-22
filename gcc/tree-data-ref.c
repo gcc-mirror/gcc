@@ -3924,21 +3924,10 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      /* CHREC_RIGHT and its negated value should fit in a lambda_int.
-	 Pointer typed chrecs right are to be interpreted signed.  */
       HOST_WIDE_INT chrec_right;
-      if (POINTER_TYPE_P (chrec_type (chrec)))
-	{
-	  if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
-	    return chrec_dont_know;
-	  chrec_right = int_cst_value (CHREC_RIGHT (chrec));
-	}
-      else
-	{
-	  if (!tree_fits_shwi_p (CHREC_RIGHT (chrec)))
-	    return chrec_dont_know;
-	  chrec_right = tree_to_shwi (CHREC_RIGHT (chrec));
-	}
+      if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
+	return chrec_dont_know;
+      chrec_right = int_cst_value (CHREC_RIGHT (chrec));
       /* We want to be able to negate without overflow.  */
       if (chrec_right == HOST_WIDE_INT_MIN)
 	return chrec_dont_know;
