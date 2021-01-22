@@ -8470,7 +8470,7 @@ make_base_init_ok (tree exp)
     return true;
   gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (fn));
   fn = base_ctor_for (fn);
-  if (!fn || DECL_HAS_IN_CHARGE_PARM_P (fn))
+  if (!fn || DECL_HAS_VTT_PARM_P (fn))
     /* The base constructor has more parameters, so we can't just change the
        call target.  It would be possible to splice in the appropriate
        arguments, but probably not worth the complexity.  */
