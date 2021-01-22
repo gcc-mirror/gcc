@@ -25323,6 +25323,9 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
   tree fntype, spec, noex, clone;
 
+  if (fn == error_mark_node)
+    return false;
+
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl
       && (!flag_noexcept_type || type_dependent_expression_p (fn)))
