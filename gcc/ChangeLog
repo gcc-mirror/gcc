@@ -1,3 +1,52 @@
+2021-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98777
+	* lra-int.h (lra_pmode_pseudo): New extern.
+	* lra.c (lra_pmode_pseudo): New global.
+	(lra): Set it up.
+	* lra-eliminations.c (eliminate_regs_in_insn): Use it.
+
+2021-01-21  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* fwprop.c (fwprop_propagation::classify_result): Allow
+	(subreg (mem)) simplifications.
+
+2021-01-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqdml<SBINQOPS:as>l<mode>):
+	Split into...
+	(aarch64_sqdmlal<mode>): ... This...
+	(aarch64_sqdmlsl<mode>): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>): Split into...
+	(aarch64_sqdmlal_lane<mode>): ... This...
+	(aarch64_sqdmlsl_lane<mode>): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>): Split into...
+	(aarch64_sqdmlsl_laneq<mode>): ... This...
+	(aarch64_sqdmlal_laneq<mode>):  ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l_n<mode>): Split into...
+	(aarch64_sqdmlsl_n<mode>): ... This...
+	(aarch64_sqdmlal_n<mode>): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l2<mode>_internal): Split into...
+	(aarch64_sqdmlal2<mode>_internal): ... This...
+	(aarch64_sqdmlsl2<mode>_internal): ... And this.
+
+2021-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve.h (__arm_vcmpneq_s8): Fix return type.
+
+2021-01-21  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/96372
+	* doc/sourcebuild.texi (arm_thumb2_no_arm_v8_1_lob): Document.
+
+2021-01-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/98694
+	* regcprop.c (copy_value): If SRC had been assigned a mode
+	narrower than the copy, we can't link DEST into the chain even
+	they have same hard_regno_nregs(i.e. HImode/SImode in i386
+	backend).
+
 2021-01-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_get_lane<mode>):

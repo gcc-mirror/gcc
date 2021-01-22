@@ -1,3 +1,7 @@
+2021-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/Makefile.in: Regenerate.
+
 2021-01-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/os/aix/ctype_inline.h (bool ctype<char>:: is): Cast

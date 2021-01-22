@@ -1,3 +1,41 @@
+2021-01-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/71879
+	* semantics.c (finish_decltype_type): Set up a cp_unevaluated
+	sentinel at the start of the function.  Remove a now-redundant
+	manual adjustment of cp_unevaluated_operand.
+
+2021-01-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98624
+	* module.cc (depset::hash::find_dependencies): Add
+	module arg.
+	(trees_out::core_vals): Check state before calling
+	write_location.
+	(sort_cluster, module_state::write): Adjust
+	find_dependencies call.
+
+2021-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98672
+	* constexpr.c (check_for_return_continue_data): Add break_stmt member.
+	(check_for_return_continue): Also look for BREAK_STMT.  Handle
+	SWITCH_STMT by ignoring break_stmt from its body.
+	(potential_constant_expression_1) <case FOR_STMT>,
+	<case WHILE_STMT>: If the condition isn't constant true, check if
+	the loop body can contain a return stmt.
+	<case SWITCH_STMT>: Adjust check_for_return_continue_data initializer.
+	<case IF_STMT>: If recursion with tf_none is successful,
+	merge *jump_target from the branches - returns with highest priority,
+	breaks or continues lower.  If then branch is potentially constant and
+	doesn't return, check the else branch if it could return, break or
+	continue.
+
+2021-01-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98530
+	* name-lookup.c (lookup_class_binding): Rearrange a stat-hack.
+
 2021-01-20  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (bytes_in::i, bytes_in::wi): Avoid left shift of
