@@ -474,6 +474,9 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
       if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
 	return NULL;
     }
+  if (TREE_CODE (new_arg0) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg0))
+    return NULL;
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {
@@ -484,13 +487,25 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 	  || gimple_assign_rhs_code (arg1_def_stmt) != convert_code)
 	return NULL;
 
+      /* Either arg1_def_stmt or arg0_def_stmt should be conditional.  */
+      if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt))
+	  && dominated_by_p (CDI_DOMINATORS,
+			     gimple_bb (phi), gimple_bb (arg1_def_stmt)))
+	return NULL;
+
       /* Use the RHS as new_arg1.  */
       new_arg1 = gimple_assign_rhs1 (arg1_def_stmt);
       if (convert_code == VIEW_CONVERT_EXPR)
 	new_arg1 = TREE_OPERAND (new_arg1, 0);
+      if (TREE_CODE (new_arg1) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg1))
+	return NULL;
     }
   else
     {
+      /* arg0_def_stmt should be conditional.  */
+      if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
+	return NULL;
       /* If arg1 is an INTEGER_CST, fold it to new type.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
 	  && int_fits_type_p (arg1, TREE_TYPE (new_arg0)))
