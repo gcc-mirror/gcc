@@ -8584,6 +8584,47 @@ vmovn_u64 (uint64x2_t __a)
   return (uint32x2_t) __builtin_aarch64_xtnv2di ((int64x2_t) __a);
 }
 
+__extension__ extern __inline int8x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_s16 (int16x8_t __a, const int __b)
+{
+  return __builtin_aarch64_shrnv8hi (__a, __b);
+}
+
+__extension__ extern __inline int16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_s32 (int32x4_t __a, const int __b)
+{
+  return __builtin_aarch64_shrnv4si (__a, __b);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_s64 (int64x2_t __a, const int __b)
+{
+  return __builtin_aarch64_shrnv2di (__a, __b);
+}
+
+__extension__ extern __inline uint8x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_u16 (uint16x8_t __a, const int __b)
+{
+  return (uint8x8_t)__builtin_aarch64_shrnv8hi ((int16x8_t)__a, __b);
+}
+
+__extension__ extern __inline uint16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_u32 (uint32x4_t __a, const int __b)
+{
+  return (uint16x4_t)__builtin_aarch64_shrnv4si ((int32x4_t)__a, __b);
+}
+
+__extension__ extern __inline uint32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_n_u64 (uint64x2_t __a, const int __b)
+{
+  return (uint32x2_t)__builtin_aarch64_shrnv2di ((int64x2_t)__a, __b);
+}
 #define vmull_high_lane_s16(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
@@ -9854,78 +9895,6 @@ vrsqrteq_u32 (uint32x4_t __a)
        __asm__ ("shrn2 %0.4s,%1.2d,#%2"                                 \
                 : "+w"(result)                                          \
                 : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_s16(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t a_ = (a);                                              \
-       int8x8_t result;                                                 \
-       __asm__ ("shrn %0.8b,%1.8h,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_s32(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t a_ = (a);                                              \
-       int16x4_t result;                                                \
-       __asm__ ("shrn %0.4h,%1.4s,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_s64(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t a_ = (a);                                              \
-       int32x2_t result;                                                \
-       __asm__ ("shrn %0.2s,%1.2d,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_u16(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t a_ = (a);                                             \
-       uint8x8_t result;                                                \
-       __asm__ ("shrn %0.8b,%1.8h,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_u32(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t a_ = (a);                                             \
-       uint16x4_t result;                                               \
-       __asm__ ("shrn %0.4h,%1.4s,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vshrn_n_u64(a, b)                                               \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t a_ = (a);                                             \
-       uint32x2_t result;                                               \
-       __asm__ ("shrn %0.2s,%1.2d,%2"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
                 : /* No clobbers */);                                   \
        result;                                                          \
      })

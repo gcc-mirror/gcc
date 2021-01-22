@@ -1458,6 +1458,9 @@
 			   (QI   "qi") (HI    "hi")
 			   (SI   "si")])
 
+;; Like ve_mode but for the half-width modes.
+(define_mode_attr vn_mode [(V8HI  "qi") (V4SI  "hi") (V2DI  "si")])
+
 ;; Vm for lane instructions is restricted to FP_LO_REGS.
 (define_mode_attr vwx [(V4HI "x") (V8HI "x") (HI "x")
 		       (V2SI "w") (V4SI "w") (SI "w")])
