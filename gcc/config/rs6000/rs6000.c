@@ -6993,6 +6993,12 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 
   if (VECTOR_MEM_VSX_P (mode))
     {
+      if (!CONST_INT_P (elt_rtx))
+	{
+	  rs6000_expand_vector_set_var (target, val, elt_rtx);
+	  return;
+	}
+
       rtx insn = NULL_RTX;
 
       if (mode == V2DFmode)
@@ -7081,6 +7087,53 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
     }
 
   emit_insn (gen_rtx_SET (target, x));
+}
+
+/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
+   is variable and also counts by vector element size.  */
+
+void
+rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
+{
+  machine_mode mode = GET_MODE (target);
+
+  gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
+
+  gcc_assert (GET_MODE (idx) == E_SImode);
+
+  machine_mode inner_mode = GET_MODE (val);
+
+  rtx tmp = gen_reg_rtx (GET_MODE (idx));
+  int width = GET_MODE_SIZE (inner_mode);
+
+  gcc_assert (width >= 1 && width <= 8);
+
+  int shift = exact_log2 (width);
+  /* Generate the IDX for permute shift, width is the vector element size.
+     idx = idx * width.  */
+  emit_insn (gen_ashlsi3 (tmp, idx, GEN_INT (shift)));
+
+  tmp = convert_modes (DImode, SImode, tmp, 1);
+
+  /*  lvsr    v1,0,idx.  */
+  rtx pcvr = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsr_reg (pcvr, tmp));
+
+  /*  lvsl    v2,0,idx.  */
+  rtx pcvl = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsl_reg (pcvl, tmp));
+
+  rtx sub_target = simplify_gen_subreg (V16QImode, target, mode, 0);
+
+  rtx permr
+    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvr);
+  emit_insn (permr);
+
+  rs6000_expand_vector_set (target, val, const0_rtx);
+
+  rtx perml
+    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvl);
+  emit_insn (perml);
 }
 
 /* Extract field ELT from VEC into TARGET.  */
