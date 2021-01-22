@@ -1,3 +1,12 @@
+2021-01-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backported from master:
+	2019-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/98618
+	* gcc.target/aarch64/symbol-range.c: Improve testcase.
+	* gcc.target/aarch64/symbol-range-tiny.c: Likewise.
+
 2020-12-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/96793
