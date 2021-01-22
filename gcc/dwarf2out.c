@@ -12252,10 +12252,50 @@ output_file_names (void)
     {
       if (dwarf_version >= 5)
 	{
-	  dw2_asm_output_data (1, 0, "Directory entry format count");
-	  dw2_asm_output_data_uleb128 (0, "Directories count");
-	  dw2_asm_output_data (1, 0, "File name entry format count");
-	  dw2_asm_output_data_uleb128 (0, "File names count");
+	  const char *comp_dir = comp_dir_string ();
+	  if (comp_dir == NULL)
+	    comp_dir = "";
+	  dw2_asm_output_data (1, 1, "Directory entry format count");
+	  enum dwarf_form str_form = DW_FORM_string;
+	  if (DWARF5_USE_DEBUG_LINE_STR)
+	    str_form = DW_FORM_line_strp;
+	  dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+	  dw2_asm_output_data_uleb128 (str_form, "%s",
+				       get_DW_FORM_name (str_form));
+	  dw2_asm_output_data_uleb128 (1, "Directories count");
+	  if (str_form == DW_FORM_string)
+	    dw2_asm_output_nstring (comp_dir, -1, "Directory Entry: %#x", 0);
+	  else
+	    output_line_string (str_form, comp_dir, "Directory Entry", 0);
+	  const char *filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+	  if (filename0 == NULL)
+	    filename0 = "";
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data (1, 4, "File name entry format count");
+#else
+	  dw2_asm_output_data (1, 2, "File name entry format count");
+#endif
+	  dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+	  dw2_asm_output_data_uleb128 (str_form, "%s",
+				       get_DW_FORM_name (str_form));
+	  dw2_asm_output_data_uleb128 (DW_LNCT_directory_index,
+				       "DW_LNCT_directory_index");
+	  dw2_asm_output_data_uleb128 (DW_FORM_data1, "%s",
+				       get_DW_FORM_name (DW_FORM_data1));
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data_uleb128 (DW_LNCT_timestamp, "DW_LNCT_timestamp");
+	  dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+	  dw2_asm_output_data_uleb128 (DW_LNCT_size, "DW_LNCT_size");
+	  dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+#endif
+	  dw2_asm_output_data_uleb128 (1, "File names count");
+
+	  output_line_string (str_form, filename0, "File Entry", 0);
+	  dw2_asm_output_data (1, 0, NULL);
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data_uleb128 (0, NULL);
+	  dw2_asm_output_data_uleb128 (0, NULL);
+#endif
 	}
       else
 	{
