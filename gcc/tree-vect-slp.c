@@ -3589,7 +3589,7 @@ duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
 
   tree_vector_builder partial_elts;
   auto_vec<tree, 32> pieces (nvectors * 2);
-  pieces.quick_grow (nvectors * 2);
+  pieces.quick_grow_cleared (nvectors * 2);
   for (unsigned int i = 0; i < nvectors; ++i)
     {
       /* (2) Replace ELTS[0:NELTS] with ELTS'[0:NELTS'], where each element of
@@ -3608,53 +3608,60 @@ duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
   /* (4) Use a tree of VEC_PERM_EXPRs to create a single VM with the
 	 correct byte contents.
 
-     We need to repeat the following operation log2(nvectors) times:
+     Conceptually, we need to repeat the following operation log2(nvectors)
+     times, where hi_start = nvectors / 2:
 
 	out[i * 2] = VEC_PERM_EXPR (in[i], in[i + hi_start], lo_permute);
 	out[i * 2 + 1] = VEC_PERM_EXPR (in[i], in[i + hi_start], hi_permute);
 
      However, if each input repeats every N elements and the VF is
-     a multiple of N * 2, the HI result is the same as the LO.  */
+     a multiple of N * 2, the HI result is the same as the LO result.
+     This will be true for the first N1 iterations of the outer loop,
+     followed by N2 iterations for which both the LO and HI results
+     are needed.  I.e.:
+
+	N1 + N2 = log2(nvectors)
+
+     Each "N1 iteration" doubles the number of redundant vectors and the
+     effect of the process as a whole is to have a sequence of nvectors/2**N1
+     vectors that repeats 2**N1 times.  Rather than generate these redundant
+     vectors, we halve the number of vectors for each N1 iteration.  */
   unsigned int in_start = 0;
   unsigned int out_start = nvectors;
-  unsigned int hi_start = nvectors / 2;
-  /* A bound on the number of outputs needed to produce NRESULTS results
-     in the final iteration.  */
-  unsigned int noutputs_bound = nvectors * nresults;
+  unsigned int new_nvectors = nvectors;
   for (unsigned int in_repeat = 1; in_repeat < nvectors; in_repeat *= 2)
     {
-      noutputs_bound /= 2;
-      unsigned int limit = MIN (noutputs_bound, nvectors);
-      for (unsigned int i = 0; i < limit; ++i)
+      unsigned int hi_start = new_nvectors / 2;
+      unsigned int out_i = 0;
+      for (unsigned int in_i = 0; in_i < new_nvectors; ++in_i)
 	{
-	  if ((i & 1) != 0
+	  if ((in_i & 1) != 0
 	      && multiple_p (TYPE_VECTOR_SUBPARTS (new_vector_type),
 			     2 * in_repeat))
-	    {
-	      pieces[out_start + i] = pieces[out_start + i - 1];
-	      continue;
-	    }
+	    continue;
 
 	  tree output = make_ssa_name (new_vector_type);
-	  tree input1 = pieces[in_start + (i / 2)];
-	  tree input2 = pieces[in_start + (i / 2) + hi_start];
+	  tree input1 = pieces[in_start + (in_i / 2)];
+	  tree input2 = pieces[in_start + (in_i / 2) + hi_start];
 	  gassign *stmt = gimple_build_assign (output, VEC_PERM_EXPR,
 					       input1, input2,
-					       permutes[i & 1]);
+					       permutes[in_i & 1]);
 	  gimple_seq_add_stmt (seq, stmt);
-	  pieces[out_start + i] = output;
+	  pieces[out_start + out_i] = output;
+	  out_i += 1;
 	}
       std::swap (in_start, out_start);
+      new_nvectors = out_i;
     }
 
   /* (5) Use VIEW_CONVERT_EXPR to cast the final VM to the required type.  */
   results.reserve (nresults);
   for (unsigned int i = 0; i < nresults; ++i)
-    if (i < nvectors)
+    if (i < new_nvectors)
       results.quick_push (gimple_build (seq, VIEW_CONVERT_EXPR, vector_type,
 					pieces[in_start + i]));
     else
-      results.quick_push (results[i - nvectors]);
+      results.quick_push (results[i - new_nvectors]);
 }
 
 
