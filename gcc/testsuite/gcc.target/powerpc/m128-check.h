@@ -85,6 +85,7 @@ typedef union
 
 #define CHECK_EXP(UINON_TYPE, VALUE_TYPE, FMT)		\
 static int						\
+__attribute__((optimize ("no-strict-aliasing")))	\
 __attribute__((noinline, unused))			\
 check_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
 {							\
