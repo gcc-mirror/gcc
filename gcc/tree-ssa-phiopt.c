@@ -465,6 +465,9 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
       if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
 	return NULL;
     }
+  if (TREE_CODE (new_arg0) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg0))
+    return NULL;
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {
@@ -479,6 +482,9 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
       new_arg1 = gimple_assign_rhs1 (arg1_def_stmt);
       if (convert_code == VIEW_CONVERT_EXPR)
 	new_arg1 = TREE_OPERAND (new_arg1, 0);
+      if (TREE_CODE (new_arg1) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg1))
+	return NULL;
     }
   else
     {
