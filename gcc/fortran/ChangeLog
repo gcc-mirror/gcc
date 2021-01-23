@@ -1,3 +1,10 @@
+2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98565
+	* trans-intrinsic.c (gfc_conv_associated): Do not add a _data
+	component for scalar class function targets. Instead, fix the
+	function result and access the _data from that.
+
 2021-01-21  Jorge D'Elia  <jdelia@cimec.unl.edu.ar>
 
 	* intrinsic.texi (CO_MAX): Fix typo.
