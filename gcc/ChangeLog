@@ -1,3 +1,13 @@
+2021-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98535
+	* tree-vect-slp.c (duplicate_and_interleave): Use quick_grow_cleared.
+	If the high and low permutes are the same, remove the high permutes
+	from the working set and only continue with the low ones.
+
 2021-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm_mve.h (__arm_vcmpneq_s8): Fix return type.

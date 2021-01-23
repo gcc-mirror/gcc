@@ -1,3 +1,9 @@
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98790
+	* pt.c (maybe_instantiate_noexcept): Return false if FN is
+	error_mark_node.
+
 2021-01-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
