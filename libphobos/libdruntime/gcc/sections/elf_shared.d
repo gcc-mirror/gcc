@@ -22,6 +22,8 @@
 
 module gcc.sections.elf_shared;
 
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
@@ -762,6 +764,8 @@ version (Shared)
                     // while upstreaming RISC-V support. Otherwise MIPS is the only arch which sets
                     // in glibc: #define DL_RO_DYN_SECTION 1
                     version (RISCV_Any)
+                        strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                    else version (MIPS_Any)
                         strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                     else
                         strtab = cast(const(char)*)dyn.d_un.d_ptr;
