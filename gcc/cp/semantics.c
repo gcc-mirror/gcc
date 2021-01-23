@@ -2214,8 +2214,7 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
-      if ((type_dependent_expression_p (expr)
-	   || !shared_member_p (expr))
+      if (!shared_member_p (expr)
 	  && current_class_ptr
 	  && DERIVED_FROM_P (qualifying_class,
 			     current_nonlambda_class_type ()))

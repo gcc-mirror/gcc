@@ -21413,6 +21413,7 @@ cp_parser_init_declarator (cp_parser* parser,
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p = cp_parser_friend_p (decl_specifiers);
+  bool static_p = decl_specifiers->storage_class == sc_static;
   tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
@@ -21446,7 +21447,7 @@ cp_parser_init_declarator (cp_parser* parser,
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    flags, &ctor_dtor_or_conv_p,
 			    /*parenthesized_p=*/NULL,
-			    member_p, friend_p, /*static_p=*/false);
+			    member_p, friend_p, static_p);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -22122,7 +22123,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  tree save_ccp = current_class_ptr;
 		  tree save_ccr = current_class_ref;
-		  if (memfn)
+		  if (memfn && !friend_p)
 		    /* DR 1207: 'this' is in scope after the cv-quals.  */
 		    inject_this_parameter (current_class_type, cv_quals);
 
