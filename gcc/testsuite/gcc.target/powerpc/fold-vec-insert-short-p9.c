@@ -56,6 +56,8 @@ testus2_cst(unsigned short x, vector unsigned short v)
 
 /* -m32 uses sth/lvehx as part of the sequence. */
 /* { dg-final { scan-assembler-times {\msth\M} 8 { target ilp32 }} } */
-/* { dg-final { scan-assembler-times {\mlvehx\M} 4 { target ilp32 }} } */
+/* { dg-final { scan-assembler-times {\mlvehx\M} 8 { target ilp32 }} } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 8 { target ilp32 }} } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 8 { target ilp32 }} } */
 /* { dg-final { scan-assembler-times {\mlxv\M|\mlvx\M} 8 { target ilp32 }} } */
 
