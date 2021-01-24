@@ -1327,6 +1327,7 @@ package body Exp_Util is
                  and then Is_Primitive_Wrapper (New_E)
                  and then Is_Primitive_Wrapper (Subp)
                  and then Scope (Subp) = Scope (New_E)
+                 and then Chars (Pragma_Identifier (Prag)) = Name_Precondition
                then
                   Error_Msg_Node_2 := Wrapped_Entity (Subp);
                   Error_Msg_NE
