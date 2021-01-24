@@ -1,3 +1,20 @@
+2021-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* gfortran.dg/data_inquiry_ref.f90: Change to dg-compile and
+	add errors for inquiry references.
+
+2021-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* gfortran.dg/data_inquiry_ref.f90: New test.
+
 2021-01-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backported from master:
