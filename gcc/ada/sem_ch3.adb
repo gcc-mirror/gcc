@@ -14171,8 +14171,6 @@ package body Sem_Ch3 is
       then
          --  A Range attribute will be transformed into N_Range by Resolve
 
-         Analyze (S);
-         Set_Etype (S, T);
          R := S;
 
          Process_Range_Expr_In_Decl (R, T);
