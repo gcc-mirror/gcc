@@ -1,3 +1,22 @@
+2021-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* data.c (gfc_assign_data_value): Throw an error for inquiry
+	references. Follow with corrected code that would provide the
+	expected result and provides clean error recovery.
+
+2021-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2020-12-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98022
+	* data.c (gfc_assign_data_value): Handle inquiry references in
+	the data statement object list.
+
 2021-01-07  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
