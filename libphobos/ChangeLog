@@ -1,3 +1,10 @@
+2021-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98806
+	* libdruntime/gcc/sections/elf_shared.d (MIPS_Any): Declare version
+	for MIPS32 and MIPS64.
+	(getDependencies): Adjust dlpi_addr on MIPS_Any.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

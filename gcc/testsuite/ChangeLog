@@ -1,3 +1,34 @@
+2021-01-23  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	* g++.dg/lookup/scoped1.C: Modified testcase to run successfully
+	with changes.
+	* g++.dg/tc1/dr142.C: Same as above.
+	* g++.dg/tc1/dr52.C: Same as above.
+	* g++.old-deja/g++.brendan/visibility6.C: Same as above.
+	* g++.old-deja/g++.brendan/visibility8.C: Same as above.
+	* g++.old-deja/g++.jason/access8.C: Same as above.
+	* g++.old-deja/g++.law/access4.C: Same as above.
+	* g++.old-deja/g++.law/visibility12.C: Same as above.
+	* g++.old-deja/g++.law/visibility4.C: Same as above.
+	* g++.old-deja/g++.law/visibility8.C: Same as above.
+	* g++.old-deja/g++.other/access4.C: Same as above.
+
+2021-01-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88548
+	PR c++/97399
+	* g++.dg/cpp0x/this2.C: New test.
+	* g++.dg/template/pr97399.C: New test.
+
+2021-01-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Adjust ilp32.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Same.
+	* gcc.target/powerpc/pr79251.p9.c: Same.
+
 2021-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96623

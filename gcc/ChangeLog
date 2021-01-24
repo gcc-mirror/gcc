@@ -1,3 +1,8 @@
+2021-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/97301
+	* config/rs6000/mmintrin.h (__m64): Add __may_alias__ attribute.
+
 2021-01-22  Jonathan Wright  <jonathan.wright@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Add mla builtin
