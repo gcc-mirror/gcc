@@ -2794,8 +2794,20 @@ maybe_compile_in_parallel (void)
   bool jobserver = false;
   bool job_auto = false;
   int num_jobs = -1;
+  unsigned long long insns = 0;
+  cgraph_node *cnode;
 
   if (!flag_parallel_jobs || !split_outputs)
+    return false;
+
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
+    {
+      ipa_size_summary *ss = ipa_size_summaries->get (cnode);
+      if (!cnode->inlined_to && ss)
+	insns += ss->size;
+    }
+
+  if (insns < (unsigned long long) param_min_partition_size)
     return false;
 
   if (!strcmp (flag_parallel_jobs, "auto"))
