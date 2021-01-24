@@ -1626,7 +1626,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    }
 	}
 
-      if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field))
+      if (is_empty_field (field)
 	  && !TREE_SIDE_EFFECTS (next))
 	/* Don't add trivial initialization of an empty base/field to the
 	   constructor, as they might not be ordered the way the back-end

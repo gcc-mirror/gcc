@@ -821,7 +821,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	    /* A flexible array can't be intialized here, so don't complain
 	       that it isn't.  */
 	    continue;
-	  if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field)))
+	  if (is_empty_field (field))
 	    /* An empty field doesn't need an initializer.  */
 	    continue;
 	  ftype = strip_array_types (ftype);
@@ -5291,17 +5291,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       type = refs->pop();
       tree index = refs->pop();
 
-      if (TREE_CODE (index) == FIELD_DECL
-	  && !(same_type_ignoring_top_level_qualifiers_p
-	       (DECL_CONTEXT (index), TREE_TYPE (*valp))))
-	{
-	  /* INDEX isn't a member of *valp.  This can happen if it's a member
-	     of an empty base which isn't represented with a FIELD_DECL.  Stop
-	     trying to build a CONSTRUCTOR for the inner target; we'll notice
-	     this disconnect again below and just return init.  */
-	  gcc_assert (is_empty_class (DECL_CONTEXT (index)));
-	  break;
-	}
+      if (is_empty_field (index))
+	/* Don't build a sub-CONSTRUCTOR for an empty base or field, as they
+	   have no data and might have an offset lower than previously declared
+	   fields, which confuses the middle-end.  The code below will notice
+	   that we don't have a CONSTRUCTOR for our inner target and just
+	   return init.  */
+	break;
 
       if (code == UNION_TYPE && CONSTRUCTOR_NELTS (*valp)
 	  && CONSTRUCTOR_ELT (*valp, 0)->index != index)

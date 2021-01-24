@@ -877,7 +877,7 @@ perform_member_init (tree member, tree init)
 	}
       if (init == error_mark_node)
 	return;
-      if (DECL_SIZE (member) && integer_zerop (DECL_SIZE (member))
+      if (is_empty_field (member)
 	  && !TREE_SIDE_EFFECTS (init))
 	/* Don't add trivial initialization of an empty base/field, as they
 	   might not be ordered the way the back-end expects.  */
