@@ -709,10 +709,13 @@ package body Exp_Disp is
       Eq_Prim_Op      : Entity_Id := Empty;
       Controlling_Tag : Node_Id;
 
-      procedure Build_Class_Wide_Check;
+      procedure Build_Class_Wide_Check (E : Entity_Id);
       --  If the denoted subprogram has a class-wide precondition, generate a
       --  check using that precondition before the dispatching call, because
-      --  this is the only class-wide precondition that applies to the call.
+      --  this is the only class-wide precondition that applies to the call;
+      --  otherwise climb to the ancestors searching for the enclosing
+      --  overridden primitive of E that has a class-wide precondition (and
+      --  use it to generate the check).
 
       function New_Value (From : Node_Id) return Node_Id;
       --  From is the original Expression. New_Value is equivalent to a call
@@ -723,7 +726,14 @@ package body Exp_Disp is
       -- Build_Class_Wide_Check --
       ----------------------------
 
-      procedure Build_Class_Wide_Check is
+      procedure Build_Class_Wide_Check (E : Entity_Id) is
+         Subp : Entity_Id := E;
+
+         function Has_Class_Wide_Precondition
+           (Subp : Entity_Id) return Boolean;
+         --  Evaluates if the dispatching subprogram Subp has a class-wide
+         --  precondition.
+
          function Replace_Formals (N : Node_Id) return Traverse_Result;
          --  Replace occurrences of the formals of the subprogram by the
          --  corresponding actuals in the call, given that this check is
@@ -734,6 +744,32 @@ package body Exp_Disp is
          --  the expression of a local expression function), the spec
          --  has not been analyzed yet, in which case we use the Chars
          --  field to recognize intended occurrences of the formals.
+
+         ---------------------------------
+         -- Has_Class_Wide_Precondition --
+         ---------------------------------
+
+         function Has_Class_Wide_Precondition
+           (Subp : Entity_Id) return Boolean
+         is
+            Prec : Node_Id := Empty;
+
+         begin
+            if Present (Contract (Subp))
+              and then Present (Pre_Post_Conditions (Contract (Subp)))
+            then
+               Prec := Pre_Post_Conditions (Contract (Subp));
+
+               while Present (Prec) loop
+                  exit when Pragma_Name (Prec) = Name_Precondition
+                    and then Class_Present (Prec);
+                  Prec := Next_Pragma (Prec);
+               end loop;
+            end if;
+
+            return Present (Prec)
+              and then not Is_Ignored (Prec);
+         end Has_Class_Wide_Precondition;
 
          ---------------------
          -- Replace_Formals --
@@ -750,27 +786,46 @@ package body Exp_Disp is
                if Present (Entity (N)) and then Is_Formal (Entity (N)) then
                   while Present (F) loop
                      if F = Entity (N) then
-                        Rewrite (N, New_Copy_Tree (A));
+                        if not Is_Controlling_Actual (N) then
+                           Rewrite (N, New_Copy_Tree (A));
 
-                        --  If the formal is class-wide, and thus not a
-                        --  controlling argument, preserve its type because
-                        --  it may appear in a nested call with a class-wide
-                        --  parameter.
+                           --  If the formal is class-wide, and thus not a
+                           --  controlling argument, preserve its type because
+                           --  it may appear in a nested call with a class-wide
+                           --  parameter.
 
-                        if Is_Class_Wide_Type (Etype (F)) then
-                           Set_Etype (N, Etype (F));
+                           if Is_Class_Wide_Type (Etype (F)) then
+                              Set_Etype (N, Etype (F));
 
-                        --  Conversely, if this is a controlling argument
-                        --  (in a dispatching call in the condition) that is a
-                        --  dereference, the source is an access-to-class-wide
-                        --  type, so preserve the dispatching nature of the
-                        --  call in the rewritten condition.
+                           --  Conversely, if this is a controlling argument
+                           --  (in a dispatching call in the condition) that
+                           --  is a dereference, the source is an access-to-
+                           --  -class-wide type, so preserve the dispatching
+                           --  nature of the call in the rewritten condition.
 
-                        elsif Nkind (Parent (N)) = N_Explicit_Dereference
-                          and then Is_Controlling_Actual (Parent (N))
-                        then
-                           Set_Controlling_Argument (Parent (Parent (N)),
-                              Parent (N));
+                           elsif Nkind (Parent (N)) = N_Explicit_Dereference
+                             and then Is_Controlling_Actual (Parent (N))
+                           then
+                              Set_Controlling_Argument (Parent (Parent (N)),
+                                 Parent (N));
+                           end if;
+
+                        --  Ensure that the type of the controlling actual
+                        --  matches the type of the controlling formal of the
+                        --  parent primitive Subp defining the class-wide
+                        --  precondition.
+
+                        elsif Is_Class_Wide_Type (Etype (A)) then
+                           Rewrite (N,
+                             Convert_To
+                               (Class_Wide_Type (Etype (F)),
+                                New_Copy_Tree (A)));
+
+                        else
+                           Rewrite (N,
+                             Convert_To
+                               (Etype (F),
+                                New_Copy_Tree (A)));
                         end if;
 
                         exit;
@@ -816,6 +871,13 @@ package body Exp_Disp is
       --  Start of processing for Build_Class_Wide_Check
 
       begin
+         --  Climb searching for the enclosing class-wide precondition
+
+         while not Has_Class_Wide_Precondition (Subp)
+           and then Present (Overridden_Operation (Subp))
+         loop
+            Subp := Overridden_Operation (Subp);
+         end loop;
 
          --  Locate class-wide precondition, if any
 
@@ -924,7 +986,7 @@ package body Exp_Disp is
          Subp := Alias (Subp);
       end if;
 
-      Build_Class_Wide_Check;
+      Build_Class_Wide_Check (Subp);
 
       --  Definition of the class-wide type and the tagged type
 
