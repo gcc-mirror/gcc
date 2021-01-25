@@ -14027,13 +14027,7 @@ vector_element_bits (const_tree type)
 {
   gcc_checking_assert (VECTOR_TYPE_P (type));
   if (VECTOR_BOOLEAN_TYPE_P (type))
-    {
-      if (SCALAR_INT_MODE_P (TYPE_MODE (type)))
-	return 1;
-      else
-	return vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (type)),
-				    TYPE_VECTOR_SUBPARTS (type));
-    }
+    return TYPE_PRECISION (TREE_TYPE (type));
   return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
 }
 

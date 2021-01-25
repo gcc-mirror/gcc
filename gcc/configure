@@ -29077,7 +29077,11 @@ fi
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_gdwarf_5_flag=yes
+	if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5

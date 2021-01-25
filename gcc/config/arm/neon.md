@@ -2952,6 +2952,25 @@
   [(set_attr "type" "neon_fcmla")]
 )
 
+;; The complex mul operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:VDF 0 "register_operand")
+	(unspec:VDF [(match_operand:VDF 1 "register_operand")
+		     (match_operand:VDF 2 "register_operand")]
+		    VCMUL_OP))]
+  "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
+{
+  rtx res1 = gen_reg_rtx (<MODE>mode);
+  rtx tmp = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+  emit_insn (gen_neon_vcmla<rotsplit1><mode> (res1, tmp,
+					      operands[2], operands[1]));
+  emit_insn (gen_neon_vcmla<rotsplit2><mode> (operands[0], res1,
+					      operands[2], operands[1]));
+  DONE;
+})
+
 
 ;; These instructions map to the __builtins for the Dot Product operations.
 (define_insn "neon_<sup>dot<vsi2qi>"

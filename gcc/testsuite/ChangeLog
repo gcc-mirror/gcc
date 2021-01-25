@@ -1,3 +1,167 @@
+2021-01-23  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	* g++.dg/lookup/scoped1.C: Modified testcase to run successfully
+	with changes.
+	* g++.dg/tc1/dr142.C: Same as above.
+	* g++.dg/tc1/dr52.C: Same as above.
+	* g++.old-deja/g++.brendan/visibility6.C: Same as above.
+	* g++.old-deja/g++.brendan/visibility8.C: Same as above.
+	* g++.old-deja/g++.jason/access8.C: Same as above.
+	* g++.old-deja/g++.law/access4.C: Same as above.
+	* g++.old-deja/g++.law/visibility12.C: Same as above.
+	* g++.old-deja/g++.law/visibility4.C: Same as above.
+	* g++.old-deja/g++.law/visibility8.C: Same as above.
+	* g++.old-deja/g++.other/access4.C: Same as above.
+
+2021-01-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88548
+	PR c++/97399
+	* g++.dg/cpp0x/this2.C: New test.
+	* g++.dg/template/pr97399.C: New test.
+
+2021-01-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Adjust ilp32.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Same.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Same.
+	* gcc.target/powerpc/pr79251.p9.c: Same.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96623
+	* g++.dg/cpp0x/noexcept64.C: New test.
+
+2021-01-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/eh/spbp.C: Remove skip on AIX.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/m128-check.h (CHECK_EXP, CHECK_FP_EXP): Fix a
+	typo, UINON_TYPE to UNION_TYPE.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/m128-check.h (CHECK_EXP, CHECK_FP_EXP): Fix a typo,
+	UINON_TYPE to UNION_TYPE.
+	* gcc.target/i386/m256-check.h (CHECK_FP_EXP): Likewise.
+	* gcc.target/i386/m512-check.h (CHECK_ROUGH_EXP): Likewise.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/m128-check.h (check_##UINON_TYPE): Add
+	optimize ("no-strict-aliasing") attribute.
+
+2021-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98744
+	* g++.dg/init/elide7.C: New test.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95693
+	* g++.dg/ubsan/pr95693.C: New test.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98545
+	* g++.dg/abi/mangle76.C: New test.
+
+2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98565
+	* gfortran.dg/associated_target_7.f90 : New test.
+
+2021-01-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47059
+	* gcc.dg/tree-ssa/pr47059.c: New test.
+
+2021-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/98766
+	* gcc.dg/pr98766.c: New test.
+
+2021-01-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR testsuite/98795
+	* g++.dg/modules/modules.exp (module_cmi_p): Avoid
+	embedded absolute paths.
+	(module_do_it): Append $std to test name.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98793
+	* gcc.dg/pr98793.c: New testcase.
+
+2021-01-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr79251.p8.c: New test.
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Adjust
+	instruction counts.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-7.c: Likewise.
+
+2021-01-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr79251.p9.c: New test.
+	* gcc.target/powerpc/pr79251-run.c: New test.
+	* gcc.target/powerpc/pr79251.h: New header.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98773
+	* gcc.dg/torture/pr98773.c: New testcase.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90248
+	* gcc.dg/tree-ssa/copy-sign-1.c: Don't expect any copysign
+	builtins.
+	* gcc.dg/pr90248.c: New test.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98255
+	* gcc.dg/pr98255.c: New test.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98786
+	* gcc.dg/torture/pr98786.c: New testcase.
+
+2021-01-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/98636
+	* gcc.target/arm/pr98636.c: New test.
+
+2021-01-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96891
+	PR target/98348
+	* gcc.target/i386/avx512bw-pr96891-1.c: New test.
+	* gcc.target/i386/avx512f-pr96891-1.c: New test.
+	* gcc.target/i386/avx512f-pr96891-2.c: New test.
+	* gcc.target/i386/avx512f-pr96891-3.c: New test.
+	* g++.target/i386/avx512f-pr96891-1.C: New test.
+	* gcc.target/i386/bitwise_mask_op-3.c: Adjust testcase.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97966
+	* g++.dg/cpp0x/noexcept63.C: New test.
+
 2021-01-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/cpp2a/lambda-uneval1.C: Ignore preceding "l" and

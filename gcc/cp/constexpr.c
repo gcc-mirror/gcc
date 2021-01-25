@@ -3474,7 +3474,9 @@ get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
     }
   else
     {
-      gcc_assert (TREE_CODE (index) == FIELD_DECL);
+      gcc_assert (TREE_CODE (index) == FIELD_DECL
+		  && (same_type_ignoring_top_level_qualifiers_p
+		      (DECL_CONTEXT (index), TREE_TYPE (ctor))));
 
       /* We must keep the CONSTRUCTOR's ELTS in FIELD order.
 	 Usually we meet initializers in that order, but it is
@@ -5277,7 +5279,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 		};
 	      CONSTRUCTOR_ELTS (ary_ctor)->quick_push (elt);
 	    }
-	  
+
 	  *valp = ary_ctor;
 	}
 
@@ -5288,6 +5290,18 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       enum tree_code code = TREE_CODE (type);
       type = refs->pop();
       tree index = refs->pop();
+
+      if (TREE_CODE (index) == FIELD_DECL
+	  && !(same_type_ignoring_top_level_qualifiers_p
+	       (DECL_CONTEXT (index), TREE_TYPE (*valp))))
+	{
+	  /* INDEX isn't a member of *valp.  This can happen if it's a member
+	     of an empty base which isn't represented with a FIELD_DECL.  Stop
+	     trying to build a CONSTRUCTOR for the inner target; we'll notice
+	     this disconnect again below and just return init.  */
+	  gcc_assert (is_empty_class (DECL_CONTEXT (index)));
+	  break;
+	}
 
       if (code == UNION_TYPE && CONSTRUCTOR_NELTS (*valp)
 	  && CONSTRUCTOR_ELT (*valp, 0)->index != index)

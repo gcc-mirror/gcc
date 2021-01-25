@@ -122,6 +122,41 @@ dfs_lookup_base (tree binfo, void *data_)
   return NULL_TREE;
 }
 
+/* This deals with bug PR17314.
+
+   DECL is a declaration and BINFO represents a class that has attempted (but
+   failed) to access DECL.
+
+   Examine the parent binfos of BINFO and determine whether any of them had
+   private access to DECL.  If they did, return the parent binfo.  This helps
+   in figuring out the correct error message to show (if the parents had
+   access, it's their fault for not giving sufficient access to BINFO).
+
+   If no parents had access, return NULL_TREE.  */
+
+tree
+get_parent_with_private_access (tree decl, tree binfo)
+{
+  /* Only BINFOs should come through here.  */
+  gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
+
+  tree base_binfo = NULL_TREE;
+
+  /* Iterate through immediate parent classes.  */
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    {
+      /* This parent had private access.  Therefore that's why BINFO can't
+	  access DECL.  */
+      if (access_in_type (BINFO_TYPE (base_binfo), decl) == ak_private)
+	return base_binfo;
+    }
+
+  /* None of the parents had access.  Note: it's impossible for one of the
+     parents to have had public or protected access to DECL, since then
+     BINFO would have been able to access DECL too.  */
+  return NULL_TREE;
+}
+
 /* Returns true if type BASE is accessible in T.  (BASE is known to be
    a (possibly non-proper) base class of T.)  If CONSIDER_LOCAL_P is
    true, consider any special access of the current scope, or access
@@ -910,7 +945,7 @@ struct lookup_field_info {
   const char *errstr;
 };
 
-/* Nonzero for a class member means that it is shared between all objects
+/* True for a class member means that it is shared between all objects
    of that class.
 
    [class.member.lookup]:If the resulting set of declarations are not all
@@ -920,25 +955,27 @@ struct lookup_field_info {
 
    This function checks that T contains no non-static members.  */
 
-int
+bool
 shared_member_p (tree t)
 {
-  if (VAR_P (t) || TREE_CODE (t) == TYPE_DECL \
+  if (VAR_P (t) || TREE_CODE (t) == TYPE_DECL
       || TREE_CODE (t) == CONST_DECL)
-    return 1;
+    return true;
   if (is_overloaded_fn (t))
     {
       for (ovl_iterator iter (get_fns (t)); iter; ++iter)
 	{
 	  tree decl = strip_using_decl (*iter);
-	  /* We don't expect or support dependent decls.  */
-	  gcc_assert (TREE_CODE (decl) != USING_DECL);
+	  if (TREE_CODE (decl) == USING_DECL)
+	    /* Conservatively assume a dependent using-declaration
+	       might resolve to a non-static member.  */
+	    return false;
 	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	    return 0;
+	    return false;
 	}
-      return 1;
+      return true;
     }
-  return 0;
+  return false;
 }
 
 /* Routine to see if the sub-object denoted by the binfo PARENT can be

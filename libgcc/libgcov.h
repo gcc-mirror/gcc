@@ -435,9 +435,10 @@ allocate_gcov_kvp (void)
 
 /* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
    is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
-   do it in atomic way.  */
+   do it in atomic way.  Return true when the counter is full, otherwise
+   return false.  */
 
-static inline void
+static inline unsigned
 gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 		     int use_atomic, int increment_total)
 {
@@ -453,7 +454,7 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (current_node->value == value)
 	{
 	  gcov_counter_add (&current_node->count, count, use_atomic);
-	  return;
+	  return 0;
 	}
 
       if (minimal_node == NULL
@@ -471,12 +472,14 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 	  minimal_node->value = value;
 	  minimal_node->count = count;
 	}
+
+      return 1;
     }
   else
     {
       struct gcov_kvp *new_node = allocate_gcov_kvp ();
       if (new_node == NULL)
-	return;
+	return 0;
 
       new_node->value = value;
       new_node->count = count;
@@ -515,6 +518,8 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (success)
 	gcov_counter_add (&counters[1], 1, use_atomic);
     }
+
+  return 0;
 }
 
 #endif /* !inhibit_libc */

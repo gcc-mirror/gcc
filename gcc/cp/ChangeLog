@@ -1,3 +1,63 @@
+2021-01-23  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	* call.c (complain_about_access): Altered function.
+	* cp-tree.h (complain_about_access): Changed parameters of function.
+	(get_parent_with_private_access): Declared new function.
+	* search.c (get_parent_with_private_access): Defined new function.
+	* semantics.c (enforce_access): Modified function.
+	* typeck.c (complain_about_unrecognized_member): Updated function
+	arguments in complain_about_access.
+
+2021-01-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97399
+	* cp-tree.h (shared_member_p): Adjust declaration.
+	* parser.c (cp_parser_init_declarator): If the storage class
+	specifier is sc_static, pass true for static_p to
+	cp_parser_declarator.
+	(cp_parser_direct_declarator): Don't do inject_this_parm when
+	the declarator is a friend.
+	* search.c (shared_member_p): Change return type to bool and
+	adjust function body accordingly.  Return false for a dependent
+	USING_DECL instead of aborting.
+	* semantics.c (finish_qualified_id_expr): Rely on shared_member_p
+	even when type-dependent.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96623
+	* parser.c (inject_parm_decls): Remove a redundant assignment.
+	(cp_parser_class_specifier_1): Clear current_class_{ptr,ref}
+	before calling inject_parm_decls.
+
+2021-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98744
+	* call.c (make_base_init_ok): Use DECL_HAS_VTT_PARM_P.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95693
+	* init.c (build_zero_init_1): Revert the 2018-03-06 change to
+	return build_zero_cst for reference types.
+	* typeck2.c (process_init_constructor_record): Instead call
+	build_zero_cst here during error recovery instead of build_zero_init.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98545
+	* mangle.c (write_member_name): Emit abi_warn_or_compat_version_crosses
+	warnings regardless of abi_version_at_least.
+	(write_expression): When the expression is a dependent name
+	and an operator name, write "on" before writing its name.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97966
+	* pt.c (instantiate_class_template_1): Instantiate members
+	marked with attribute used only after we're done instantiating
+	the class.
+
 2021-01-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/71879

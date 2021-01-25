@@ -6,11 +6,12 @@
 // Subject:  member access rule bug
 // Message-ID: <9306300528.AA17185@coda.mel.dit.CSIRO.AU>
 struct a {
-  int aa; // { dg-message "" } private
+  int aa; 
         };
 
-class b : private a {
-        };
+class b : private a // { dg-message "" } private
+{
+};
 
 class c : public b {
         int xx(void) { return (aa); }  // aa should be invisible// { dg-error "" } .*

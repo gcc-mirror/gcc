@@ -316,7 +316,36 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
       if (flag_new_inheriting_ctors)
 	diag_decl = strip_inheriting_ctors (diag_decl);
       if (complain & tf_error)
-	complain_about_access (decl, diag_decl, true);
+	{
+	  /* We will usually want to point to the same place as
+	     diag_decl but not always.  */
+	  tree diag_location = diag_decl;
+	  access_kind parent_access = ak_none;
+
+	  /* See if any of BASETYPE_PATH's parents had private access
+	     to DECL.  If they did, that will tell us why we don't.  */
+	  tree parent_binfo = get_parent_with_private_access (decl,
+							      basetype_path);
+
+	  /* If a parent had private access, then the diagnostic
+	     location DECL should be that of the parent class, since it
+	     failed to give suitable access by using a private
+	     inheritance.  But if DECL was actually defined in the parent,
+	     it wasn't privately inherited, and so we don't need to do
+	     this, and complain_about_access will figure out what to
+	     do.  */
+	  if (parent_binfo != NULL_TREE
+	      && (context_for_name_lookup (decl)
+		  != BINFO_TYPE (parent_binfo)))
+	    {
+	      diag_location = TYPE_NAME (BINFO_TYPE (parent_binfo));
+	      parent_access = ak_private;
+	    }
+
+	  /* Finally, generate an error message.  */
+	  complain_about_access (decl, diag_decl, diag_location, true,
+				 parent_access);
+	}
       if (afi)
 	afi->record_access_failure (basetype_path, decl, diag_decl);
       return false;
@@ -2214,8 +2243,7 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
-      if ((type_dependent_expression_p (expr)
-	   || !shared_member_p (expr))
+      if (!shared_member_p (expr)
 	  && current_class_ptr
 	  && DERIVED_FROM_P (qualifying_class,
 			     current_nonlambda_class_type ()))

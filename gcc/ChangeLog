@@ -1,3 +1,143 @@
+2021-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/97301
+	* config/rs6000/mmintrin.h (__m64): Add __may_alias__ attribute.
+
+2021-01-22  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add mla builtin
+	generator macro.
+	* config/aarch64/arm_neon.h (vmla_s8): Use RTL builtin rather
+	than asm.
+	(vmla_s16): Likewise.
+	(vmla_s32): Likewise.
+	(vmla_u8): Likewise.
+	(vmla_u16): Likewise.
+	(vmla_u32): Likewise.
+	(vmlaq_s8): Likewise.
+	(vmlaq_s16): Likewise.
+	(vmlaq_s32): Likewise.
+	(vmlaq_u8): Likewise.
+	(vmlaq_u16): Likewise.
+	(vmlaq_u32): Likewise.
+
+2021-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (GCC_EXTRA_DIAGNOSTIC_OUTPUT): Add @findex
+	directive.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98796
+	* dwarf2out.c (output_file_names): For -gdwarf-5, if there are no
+	filenames to emit, still emit the required 0 index directory and
+	filename entries that match DW_AT_comp_dir and DW_AT_name of the
+	compilation unit.
+
+2021-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98545
+	* doc/invoke.texi: Update C++ ABI Version 15 description.
+
+2021-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/98766
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Use maybe_le when
+	comparing against type size with param_avoid_fma_max_bits.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98793
+	* tree.c (vector_element_bits): Key single-bit bool vector on
+	integer mode rather than not vector mode.
+
+2021-01-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/98093
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Generate ARRAY_REF(VIEW_CONVERT_EXPR) for P8 and later
+	platforms.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set_var): Update
+	to call different path for P8 and P9.
+	(rs6000_expand_vector_set_var_p9): New function.
+	(rs6000_expand_vector_set_var_p8): New function.
+
+2021-01-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/79251
+	PR target/98065
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Ajdust variable index vec_insert from address dereference to
+	ARRAY_REF(VIEW_CONVERT_EXPR) tree expression.
+	* config/rs6000/rs6000-protos.h (rs6000_expand_vector_set_var):
+	New declaration.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set_var): New function.
+
+2021-01-22  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* profile.c (compute_value_histograms): Drop time profile for
+	-fprofile-reproducible=multithreaded.
+
+2021-01-22  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (process_command): Don't check OPT_SPECIAL_input_file
+	existence here.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98773
+	* tree-data-ref.c (initalize_matrix_A): Revert previous
+	change, retaining failing on HOST_WIDE_INT_MIN CHREC_RIGHT.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90248
+	* match.pd (X cmp 0.0 ? 1.0 : -1.0 -> copysign(1, +-X),
+	X cmp 0.0 ? -1.0 : +1.0 -> copysign(1, -+X)): Remove
+	simplifications.
+	(X * (X cmp 0.0 ? 1.0 : -1.0) -> +-abs(X),
+	X * (X cmp 0.0 ? -1.0 : 1.0) -> +-abs(X)): New simplifications.
+
+2021-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98255
+	* tree-dfa.c (get_ref_base_and_extent): For ARRAY_REFs, sign
+	extend index - low_bound from sizetype's precision rather than index
+	precision.
+	(get_addr_base_and_unit_offset_1): Likewise.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Likewise.
+	* gimple-fold.c (fold_const_aggregate_ref_1): Likewise.
+
+2021-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98786
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Avoid
+	adding new uses of abnormals.  Verify we deal with a conditional
+	conversion.
+
+2021-01-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/98636
+	* optc-save-gen.awk: Add arm_fp16_format to checked_options.
+
+2021-01-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/96891
+	PR target/98348
+	* config/i386/sse.md (VI_128_256): New mode iterator.
+	(*avx_cmp<mode>3_1, *avx_cmp<mode>3_2, *avx_cmp<mode>3_3,
+	 *avx_cmp<mode>3_4, *avx2_eq<mode>3, *avx2_pcmp<mode>3_1,
+	 *avx2_pcmp<mode>3_2, *avx2_gt<mode>3): New
+	define_insn_and_split to lower avx512 vector comparison to avx
+	version when dest is vector.
+	(*<avx512>_cmp<mode>3,*<avx512>_cmp<mode>3,*<avx512>_ucmp<mode>3):
+	define_insn_and_split for negating the comparison result.
+	* config/i386/predicates.md (float_vector_all_ones_operand):
+	New predicate.
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Use
+	general NOT operator without UNSPEC_MASKOP.
+
 2021-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/98777
