@@ -5416,8 +5416,12 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
   gcc_cv_as_gdwarf_5_flag,
-  [elf,2,36,0], [--gdwarf-5], [$insn],,
-  [AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
+  [elf,2,36,0], [--gdwarf-5], [$insn],
+  [if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi],[AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf-5 option.])])
 
  dwarf4_debug_info_size=0x46
