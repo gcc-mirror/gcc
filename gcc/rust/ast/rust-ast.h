@@ -962,7 +962,7 @@ public:
   std::string as_string () const override { return ident; }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const override { return locus; }
 
   Identifier get_ident () const { return ident; }
 

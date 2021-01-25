@@ -62,12 +62,22 @@ public:
   {
     ResolveType::go (var.get_type ().get (), var.get_node_id ());
     ResolveExpr::go (var.get_expr ().get (), var.get_node_id ());
+
+    // the mutability checker needs to verify for immutable decls the number
+    // of assignments are <1. This marks an implicit assignment
+    resolver->mark_assignment_to_decl (var.get_node_id (), var.get_node_id ());
   }
 
   void visit (AST::ConstantItem &constant)
   {
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
     ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+
+    // the mutability checker needs to verify for immutable decls the number
+    // of assignments are <1. This marks an implicit assignment
+    resolver->mark_decl_mutability (constant.get_node_id (), false);
+    resolver->mark_assignment_to_decl (constant.get_node_id (),
+				       constant.get_node_id ());
   }
 
   void visit (AST::Function &function)
@@ -89,6 +99,11 @@ public:
 	ResolveType::go (param.get_type ().get (), param.get_node_id ());
 	PatternDeclaration::go (param.get_pattern ().get (),
 				param.get_node_id ());
+
+	// the mutability checker needs to verify for immutable decls the number
+	// of assignments are <1. This marks an implicit assignment
+	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
+					   param.get_node_id ());
       }
 
     // resolve the function body

@@ -54,6 +54,9 @@ public:
 
   void visit (HIR::IdentifierPattern &pattern)
   {
+    if (!pattern.is_mut)
+      translated_type = ctx->get_backend ()->immutable_type (translated_type);
+
     translated
       = ctx->get_backend ()->local_variable (fndecl, pattern.variable_ident,
 					     translated_type, NULL /*decl_var*/,

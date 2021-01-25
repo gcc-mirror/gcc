@@ -57,6 +57,7 @@ public:
     resolver->insert_new_definition (var.get_node_id (),
 				     Definition{var.get_node_id (),
 						var.get_node_id ()});
+    resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
   }
 
   void visit (AST::ConstantItem &constant)

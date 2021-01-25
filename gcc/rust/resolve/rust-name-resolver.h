@@ -235,6 +235,37 @@ public:
   void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
   NodeId get_unit_type_node_id () { return unit_ty_node_id; }
 
+  void mark_decl_mutability (NodeId id, bool mut)
+  {
+    rust_assert (decl_mutability.find (id) == decl_mutability.end ());
+    decl_mutability[id] = mut;
+  }
+
+  bool decl_is_mutable (NodeId id) const
+  {
+    auto it = decl_mutability.find (id);
+    rust_assert (it != decl_mutability.end ());
+    return it->second;
+  }
+
+  void mark_assignment_to_decl (NodeId id, NodeId assignment)
+  {
+    auto it = assignment_to_decl.find (id);
+    if (it == assignment_to_decl.end ())
+      assignment_to_decl[id] = {};
+
+    assignment_to_decl[id].insert (assignment);
+  }
+
+  size_t get_num_assignments_to_decl (NodeId id) const
+  {
+    auto it = assignment_to_decl.find (id);
+    if (it == assignment_to_decl.end ())
+      return 0;
+
+    return it->second.size ();
+  }
+
 private:
   Resolver ();
 
@@ -269,6 +300,11 @@ private:
   // we need two namespaces one for names and ones for types
   std::map<NodeId, NodeId> resolved_names;
   std::map<NodeId, NodeId> resolved_types;
+
+  // map of resolved names mutability flag
+  std::map<NodeId, bool> decl_mutability;
+  // map of resolved names and set of assignments to the decl
+  std::map<NodeId, std::set<NodeId> > assignment_to_decl;
 };
 
 } // namespace Resolver

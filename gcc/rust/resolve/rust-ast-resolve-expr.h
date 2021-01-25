@@ -22,6 +22,7 @@
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-full.h"
 #include "rust-ast-resolve-struct-expr-field.h"
+#include "rust-ast-verify-assignee.h"
 
 namespace Rust {
 namespace Resolver {
@@ -94,6 +95,9 @@ public:
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+
+    // need to verify the assignee
+    VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::IdentifierExpr &expr)
@@ -120,6 +124,9 @@ public:
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+
+    // need to verify the assignee
+    VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::ComparisonExpr &expr)

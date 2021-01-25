@@ -24,6 +24,7 @@
 #include "rust-compile-var-decl.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
@@ -174,17 +175,20 @@ public:
     for (auto &it : fntype->get_params ())
       {
 	HIR::FunctionParam &referenced_param = function.function_params.at (i);
-	auto param_pattern = it.first;
 	auto param_tyty = it.second;
-
 	auto compiled_param_type
 	  = TyTyResolveCompile::compile (ctx, param_tyty);
 
-	bool tree_addressable = false;
-	auto compiled_param_var = ctx->get_backend ()->parameter_variable (
-	  fndecl, param_pattern->as_string (), compiled_param_type,
-	  tree_addressable,
-	  ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
+	Location param_locus
+	  = ctx->get_mappings ()->lookup_location (param_tyty->get_ref ());
+	Bvariable *compiled_param_var
+	  = CompileFnParam::compile (ctx, fndecl, &referenced_param,
+				     compiled_param_type, param_locus);
+	if (compiled_param_var == nullptr)
+	  {
+	    rust_error_at (param_locus, "failed to compile parameter variable");
+	    return;
+	  }
 
 	param_vars.push_back (compiled_param_var);
 
