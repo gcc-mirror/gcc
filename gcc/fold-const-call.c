@@ -53,16 +53,15 @@ complex_cst_p (tree t)
   return TREE_CODE (t) == COMPLEX_CST;
 }
 
-/* Return true if ARG is a constant in the range of the host size_t.
+/* Return true if ARG is a size_type_node constant.
    Store it in *SIZE_OUT if so.  */
 
 static inline bool
-host_size_t_cst_p (tree t, size_t *size_out)
+size_t_cst_p (tree t, unsigned HOST_WIDE_INT *size_out)
 {
   if (types_compatible_p (size_type_node, TREE_TYPE (t))
       && integer_cst_p (t)
-      && (wi::min_precision (wi::to_wide (t), UNSIGNED)
-	  <= sizeof (size_t) * CHAR_BIT))
+      && tree_fits_uhwi_p (t))
     {
       *size_out = tree_to_uhwi (t);
       return true;
@@ -1763,23 +1762,22 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   const char *p0, *p1;
   char c;
-  unsigned HOST_WIDE_INT s0, s1;
-  size_t s2 = 0;
+  unsigned HOST_WIDE_INT s0, s1, s2 = 0;
   switch (fn)
     {
     case CFN_BUILT_IN_STRNCMP:
-      if (!host_size_t_cst_p (arg2, &s2))
+      if (!size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
       if (s2 == 0
 	  && !TREE_SIDE_EFFECTS (arg0)
 	  && !TREE_SIDE_EFFECTS (arg1))
 	return build_int_cst (type, 0);
       else if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
-	return build_int_cst (type, strncmp (p0, p1, s2));
+	return build_int_cst (type, strncmp (p0, p1, MIN (s2, SIZE_MAX)));
       return NULL_TREE;
 
     case CFN_BUILT_IN_STRNCASECMP:
-      if (!host_size_t_cst_p (arg2, &s2))
+      if (!size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
       if (s2 == 0
 	  && !TREE_SIDE_EFFECTS (arg0)
@@ -1787,13 +1785,13 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 	return build_int_cst (type, 0);
       else if ((p0 = c_getstr (arg0))
 	       && (p1 = c_getstr (arg1))
-	       && strncmp (p0, p1, s2) == 0)
+	       && strncmp (p0, p1, MIN (s2, SIZE_MAX)) == 0)
 	return build_int_cst (type, 0);
       return NULL_TREE;
 
     case CFN_BUILT_IN_BCMP:
     case CFN_BUILT_IN_MEMCMP:
-      if (!host_size_t_cst_p (arg2, &s2))
+      if (!size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
       if (s2 == 0
 	  && !TREE_SIDE_EFFECTS (arg0)
@@ -1807,7 +1805,7 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
       return NULL_TREE;
 
     case CFN_BUILT_IN_MEMCHR:
-      if (!host_size_t_cst_p (arg2, &s2))
+      if (!size_t_cst_p (arg2, &s2))
 	return NULL_TREE;
       if (s2 == 0
 	  && !TREE_SIDE_EFFECTS (arg0)
