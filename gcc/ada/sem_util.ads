@@ -1388,6 +1388,17 @@ package Sem_Util is
    --  Determine whether type Typ has a suitable Default_Initial_Condition
    --  pragma which provides the full default initialization of the type.
 
+   function Has_Inferable_Discriminants (N : Node_Id) return Boolean;
+   --  Ada 2005 (AI-216): A view of an Unchecked_Union object has inferable
+   --  discriminants if it has a constrained nominal type, unless the object
+   --  is a component of an enclosing Unchecked_Union object that is subject
+   --  to a per-object constraint and the enclosing object lacks inferable
+   --  discriminants.
+   --
+   --  An expression of an Unchecked_Union type has inferable discriminants
+   --  if it is either a name of an object with inferable discriminants or a
+   --  qualified expression whose subtype mark denotes a constrained subtype.
+
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.
