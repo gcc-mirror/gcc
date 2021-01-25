@@ -4101,15 +4101,16 @@
 (define_insn "mve_vcmlaq<mve_rot><mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w,w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "0,Dz")
-		       (match_operand:MVE_0 2 "s_register_operand" "w,w")
-		       (match_operand:MVE_0 3 "s_register_operand" "w,w")]
-	 VCMLA))
+	(plus:MVE_0 (match_operand:MVE_0 1 "reg_or_zero_operand" "Dz,0")
+		    (unspec:MVE_0
+		        [(match_operand:MVE_0 2 "s_register_operand" "w,w")
+		         (match_operand:MVE_0 3 "s_register_operand" "w,w")]
+		     VCMLA)))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "@
-   vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>
-   vcmul.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>"
+   vcmul.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>
+   vcmla.f%#<V_sz_elem>	%q0, %q2, %q3, #<rot>"
   [(set_attr "type" "mve_move")
 ])
 

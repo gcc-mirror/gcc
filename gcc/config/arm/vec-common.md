@@ -215,6 +215,63 @@
 		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
 )
 
+;; The complex mul operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:VQ_HSF 0 "register_operand")
+        (unspec:VQ_HSF [(match_operand:VQ_HSF 1 "register_operand")
+			(match_operand:VQ_HSF 2 "register_operand")]
+		       VCMUL_OP))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT))
+   && !BYTES_BIG_ENDIAN"
+{
+  rtx res1 = gen_reg_rtx (<MODE>mode);
+  if (TARGET_COMPLEX)
+    {
+      rtx tmp = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+      emit_insn (gen_arm_vcmla<rotsplit1><mode> (res1, tmp,
+						 operands[2], operands[1]));
+    }
+  else
+    emit_insn (gen_arm_vcmla<rotsplit1><mode> (res1, CONST0_RTX (<MODE>mode),
+					       operands[2], operands[1]));
+
+  emit_insn (gen_arm_vcmla<rotsplit2><mode> (operands[0], res1,
+					     operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "arm_vcmla<rot><mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(plus:VF (match_operand:VF 1 "register_operand")
+		 (unspec:VF [(match_operand:VF 2 "register_operand")
+			     (match_operand:VF 3 "register_operand")]
+			     VCMLA)))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+)
+
+;; The complex mla/mls operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cml<fcmac1><conj_op><mode>4"
+  [(set (match_operand:VF 0 "register_operand")
+	(plus:VF (match_operand:VF 1 "register_operand")
+		 (unspec:VF [(match_operand:VF 2 "register_operand")
+			     (match_operand:VF 3 "register_operand")]
+			    VCMLA_OP)))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_arm_vcmla<rotsplit1><mode> (tmp, operands[1],
+					     operands[3], operands[2]));
+  emit_insn (gen_arm_vcmla<rotsplit2><mode> (operands[0], tmp,
+					     operands[3], operands[2]));
+  DONE;
+})
+
 (define_expand "movmisalign<mode>"
  [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
 	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]

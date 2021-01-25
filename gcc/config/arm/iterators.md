@@ -1186,6 +1186,33 @@
 		      (UNSPEC_VCMLA180 "180")
 		      (UNSPEC_VCMLA270 "270")])
 
+;; The complex operations when performed on a real complex number require two
+;; instructions to perform the operation. e.g. complex multiplication requires
+;; two VCMUL with a particular rotation value.
+;;
+;; These values can be looked up in rotsplit1 and rotsplit2.  as an example
+;; VCMUL needs the first instruction to use #0 and the second #90.
+(define_int_attr rotsplit1 [(UNSPEC_VCMLA "0")
+			    (UNSPEC_VCMLA_CONJ "0")
+			    (UNSPEC_VCMUL "0")
+			    (UNSPEC_VCMUL_CONJ "0")
+			    (UNSPEC_VCMLA180 "180")
+			    (UNSPEC_VCMLA180_CONJ "180")])
+
+(define_int_attr rotsplit2 [(UNSPEC_VCMLA "90")
+			    (UNSPEC_VCMLA_CONJ "270")
+			    (UNSPEC_VCMUL "90")
+			    (UNSPEC_VCMUL_CONJ "270")
+			    (UNSPEC_VCMLA180 "270")
+			    (UNSPEC_VCMLA180_CONJ "90")])
+
+(define_int_attr conj_op [(UNSPEC_VCMLA180 "")
+			  (UNSPEC_VCMLA180_CONJ "_conj")
+			  (UNSPEC_VCMLA "")
+			  (UNSPEC_VCMLA_CONJ "_conj")
+			  (UNSPEC_VCMUL "")
+			  (UNSPEC_VCMUL_CONJ "_conj")])
+
 (define_int_attr mve_rot [(UNSPEC_VCADD90 "_rot90")
 			  (UNSPEC_VCADD270 "_rot270")
 			  (UNSPEC_VCMLA "")
@@ -1199,6 +1226,9 @@
 
 (define_int_iterator VCMUL [UNSPEC_VCMUL UNSPEC_VCMUL90
 			    UNSPEC_VCMUL180 UNSPEC_VCMUL270])
+
+(define_int_attr fcmac1 [(UNSPEC_VCMLA "a") (UNSPEC_VCMLA_CONJ "a")
+			 (UNSPEC_VCMLA180 "s") (UNSPEC_VCMLA180_CONJ "s")])
 
 (define_int_attr simd32_op [(UNSPEC_QADD8 "qadd8") (UNSPEC_QSUB8 "qsub8")
 			    (UNSPEC_SHADD8 "shadd8") (UNSPEC_SHSUB8 "shsub8")
@@ -1723,3 +1753,13 @@
 (define_int_iterator UQRSHLLQ [UQRSHLL_64 UQRSHLL_48])
 (define_int_iterator SQRSHRLQ [SQRSHRL_64 SQRSHRL_48])
 (define_int_iterator VSHLCQ_M [VSHLCQ_M_S VSHLCQ_M_U])
+
+;; Define iterators for VCMLA operations
+(define_int_iterator VCMLA_OP [UNSPEC_VCMLA
+			       UNSPEC_VCMLA_CONJ
+			       UNSPEC_VCMLA180
+			       UNSPEC_VCMLA180_CONJ])
+
+;; Define iterators for VCMLA operations as MUL
+(define_int_iterator VCMUL_OP [UNSPEC_VCMUL
+			       UNSPEC_VCMUL_CONJ])
