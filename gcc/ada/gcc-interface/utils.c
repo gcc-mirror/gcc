@@ -3416,6 +3416,12 @@ create_subprog_decl (tree name, tree asm_name, tree type, tree param_decl_list,
 void
 finish_subprog_decl (tree decl, tree asm_name, tree type)
 {
+  /* DECL_ARGUMENTS is set by the caller, but not its context.  */
+  for (tree param_decl = DECL_ARGUMENTS (decl);
+       param_decl;
+       param_decl = DECL_CHAIN (param_decl))
+    DECL_CONTEXT (param_decl) = decl;
+
   tree result_decl
     = build_decl (DECL_SOURCE_LOCATION (decl), RESULT_DECL, NULL_TREE,
 		  TREE_TYPE (type));
@@ -3461,8 +3467,6 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
 void
 begin_subprog_body (tree subprog_decl)
 {
-  tree param_decl;
-
   announce_function (subprog_decl);
 
   /* This function is being defined.  */
@@ -3478,10 +3482,6 @@ begin_subprog_body (tree subprog_decl)
   /* Enter a new binding level and show that all the parameters belong to
      this function.  */
   gnat_pushlevel ();
-
-  for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
-       param_decl = DECL_CHAIN (param_decl))
-    DECL_CONTEXT (param_decl) = subprog_decl;
 }
 
 /* Finish translating the current subprogram and set its BODY.  */
