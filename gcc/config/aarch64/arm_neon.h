@@ -9809,95 +9809,50 @@ vrsqrteq_u32 (uint32x4_t __a)
   return __result;
 }
 
-#define vshrn_high_n_s16(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t b_ = (b);                                              \
-       int8x8_t a_ = (a);                                               \
-       int8x16_t result = vcombine_s8                                   \
-                            (a_, vcreate_s8                             \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.16b,%1.8h,#%2"                                \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_s16 (int8x8_t __a, int16x8_t __b, const int __c)
+{
+  return __builtin_aarch64_shrn2v8hi (__a, __b, __c);
+}
 
-#define vshrn_high_n_s32(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t b_ = (b);                                              \
-       int16x4_t a_ = (a);                                              \
-       int16x8_t result = vcombine_s16                                  \
-                            (a_, vcreate_s16                            \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.8h,%1.4s,#%2"                                 \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_s32 (int16x4_t __a, int32x4_t __b, const int __c)
+{
+  return __builtin_aarch64_shrn2v4si (__a, __b, __c);
+}
 
-#define vshrn_high_n_s64(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x2_t b_ = (b);                                              \
-       int32x2_t a_ = (a);                                              \
-       int32x4_t result = vcombine_s32                                  \
-                            (a_, vcreate_s32                            \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.4s,%1.2d,#%2"                                 \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_s64 (int32x2_t __a, int64x2_t __b, const int __c)
+{
+  return __builtin_aarch64_shrn2v2di (__a, __b, __c);
+}
 
-#define vshrn_high_n_u16(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t b_ = (b);                                             \
-       uint8x8_t a_ = (a);                                              \
-       uint8x16_t result = vcombine_u8                                  \
-                            (a_, vcreate_u8                             \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.16b,%1.8h,#%2"                                \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_u16 (uint8x8_t __a, uint16x8_t __b, const int __c)
+{
+  return (uint8x16_t)
+    __builtin_aarch64_shrn2v8hi ((int8x8_t) __a, (int16x8_t) __b, __c);
+}
 
-#define vshrn_high_n_u32(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t b_ = (b);                                             \
-       uint16x4_t a_ = (a);                                             \
-       uint16x8_t result = vcombine_u16                                 \
-                            (a_, vcreate_u16                            \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.8h,%1.4s,#%2"                                 \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_u32 (uint16x4_t __a, uint32x4_t __b, const int __c)
+{
+  return (uint16x8_t)
+    __builtin_aarch64_shrn2v4si ((int16x4_t) __a, (int32x4_t) __b, __c);
+}
 
-#define vshrn_high_n_u64(a, b, c)                                       \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x2_t b_ = (b);                                             \
-       uint32x2_t a_ = (a);                                             \
-       uint32x4_t result = vcombine_u32                                 \
-                            (a_, vcreate_u32                            \
-                                   (__AARCH64_UINT64_C (0x0)));         \
-       __asm__ ("shrn2 %0.4s,%1.2d,#%2"                                 \
-                : "+w"(result)                                          \
-                : "w"(b_), "i"(c)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vshrn_high_n_u64 (uint32x2_t __a, uint64x2_t __b, const int __c)
+{
+  return (uint32x4_t)
+    __builtin_aarch64_shrn2v2di ((int32x2_t) __a, (int64x2_t) __b, __c);
+}
 
 #define vsli_n_p8(a, b, c)                                              \
   __extension__                                                         \

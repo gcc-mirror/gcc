@@ -191,6 +191,9 @@
   /* Implemented by aarch64_shrn<mode>".  */
   BUILTIN_VQN (SHIFTIMM, shrn, 0, NONE)
 
+  /* Implemented by aarch64_shrn2<mode>.  */
+  BUILTIN_VQN (SHIFTACC, shrn2, 0, NONE)
+
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
   BUILTIN_VD_BHSI (TERNOPU, umlsl, 0, NONE)
