@@ -771,12 +771,19 @@ package body System.Fat_Gen is
          --  Check for overflow
 
          if Adjustment > IEEE_Emax - Exp then
-            XX := 0.0;
-            return (if Minus then -1.0 / XX else 1.0 / XX);
-            pragma Annotate
-              (CodePeer, Intentional, "overflow check", "Infinity produced");
-            pragma Annotate
-              (CodePeer, Intentional, "divide by zero", "Infinity produced");
+            --  Optionally raise Constraint_Error as per RM A.5.3(29)
+
+            if T'Machine_Overflows then
+               raise Constraint_Error with "Too large exponent";
+
+            else
+               XX := 0.0;
+               return (if Minus then -1.0 / XX else 1.0 / XX);
+               pragma Annotate (CodePeer, Intentional, "overflow check",
+                                "Infinity produced");
+               pragma Annotate (CodePeer, Intentional, "divide by zero",
+                                "Infinity produced");
+            end if;
 
          --  Check for underflow
 
