@@ -777,7 +777,7 @@ get_nth_most_common_value (gimple *stmt, const char *counter_type,
       && flag_profile_reproducible == PROFILE_REPRODUCIBILITY_PARALLEL_RUNS)
     {
       if (dump_file)
-	fprintf (dump_file, "Histogram value dropped in %qs mode",
+	fprintf (dump_file, "Histogram value dropped in '%s' mode\n",
 		 "-fprofile-reproducible=parallel-runs");
       return false;
     }
@@ -785,7 +785,7 @@ get_nth_most_common_value (gimple *stmt, const char *counter_type,
 	   && flag_profile_reproducible == PROFILE_REPRODUCIBILITY_MULTITHREADED)
     {
       if (dump_file)
-	fprintf (dump_file, "Histogram value dropped in %qs mode",
+	fprintf (dump_file, "Histogram value dropped in '%s' mode\n",
 		 "-fprofile-reproducible=multithreaded");
       return false;
     }
