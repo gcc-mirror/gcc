@@ -432,6 +432,56 @@ FloatType::clone ()
 }
 
 void
+USizeType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+USizeType::as_string () const
+{
+  return "usize";
+}
+
+TyBase *
+USizeType::combine (TyBase *other)
+{
+  USizeRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+USizeType::clone ()
+{
+  return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
+ISizeType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ISizeType::as_string () const
+{
+  return "isize";
+}
+
+TyBase *
+ISizeType::combine (TyBase *other)
+{
+  ISizeRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+ISizeType::clone ()
+{
+  return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
 TypeCheckCallExpr::visit (ADTType &type)
 {
   if (call.num_params () != type.num_fields ())

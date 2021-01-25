@@ -146,6 +146,8 @@ Resolver::generate_builtins ()
     = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
   auto f64
     = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
+  auto usize = new TyTy::USizeType (mappings->get_next_hir_id ());
+  auto isize = new TyTy::ISizeType (mappings->get_next_hir_id ());
 
   MKBUILTIN_TYPE ("u8", builtins, u8);
   MKBUILTIN_TYPE ("u16", builtins, u16);
@@ -160,6 +162,8 @@ Resolver::generate_builtins ()
   MKBUILTIN_TYPE ("bool", builtins, rbool);
   MKBUILTIN_TYPE ("f32", builtins, f32);
   MKBUILTIN_TYPE ("f64", builtins, f64);
+  MKBUILTIN_TYPE ("usize", builtins, usize);
+  MKBUILTIN_TYPE ("isize", builtins, isize);
 
   // unit type ()
   TyTy::UnitType *unit_tyty = new TyTy::UnitType (mappings->get_next_hir_id ());

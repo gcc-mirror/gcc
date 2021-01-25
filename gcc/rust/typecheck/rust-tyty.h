@@ -43,6 +43,8 @@ enum TypeKind
   FLOAT,
   UNIT,
   FIELD,
+  USIZE,
+  ISIZE,
   // there are more to add...
   ERROR
 };
@@ -508,6 +510,46 @@ public:
 
 private:
   FloatKind float_kind;
+};
+
+class USizeType : public TyBase
+{
+public:
+  USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ref, TypeKind::USIZE)
+  {}
+
+  USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ty_ref, TypeKind::USIZE)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  TyBase *clone () final override;
+};
+
+class ISizeType : public TyBase
+{
+public:
+  ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ref, TypeKind::ISIZE)
+  {}
+
+  ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ty_ref, TypeKind::ISIZE)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  TyBase *clone () final override;
 };
 
 } // namespace TyTy

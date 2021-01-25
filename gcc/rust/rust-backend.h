@@ -98,6 +98,9 @@ public:
   // Get the unnamed boolean type.
   virtual Btype *bool_type () = 0;
 
+  // Get the Host pointer size in bits
+  virtual int get_pointer_size () = 0;
+
   // Get an unnamed integer type with the given signedness and number
   // of bits.
   virtual Btype *integer_type (bool is_unsigned, int bits) = 0;

@@ -190,6 +190,20 @@ public:
     gcc_unreachable ();
   }
 
+  void visit (TyTy::USizeType &type) override
+  {
+    translated = backend->named_type (
+      "usize", backend->integer_type (true, backend->get_pointer_size ()),
+      Linemap::predeclared_location ());
+  }
+
+  void visit (TyTy::ISizeType &type) override
+  {
+    translated = backend->named_type (
+      "isize", backend->integer_type (false, backend->get_pointer_size ()),
+      Linemap::predeclared_location ());
+  }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

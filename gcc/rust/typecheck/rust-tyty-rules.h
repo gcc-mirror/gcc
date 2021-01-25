@@ -134,6 +134,20 @@ public:
 		   base->as_string ().c_str (), type.as_string ().c_str ());
   }
 
+  virtual void visit (USizeType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+  }
+
+  virtual void visit (ISizeType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+  }
+
   virtual void visit (FloatType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -216,6 +230,36 @@ public:
   }
 
   void visit (UintType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
+	|| (base->get_infer_kind ()
+	    == TyTy::InferType::InferTypeKind::INTEGRAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseRules::visit (type);
+  }
+
+  void visit (USizeType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
+	|| (base->get_infer_kind ()
+	    == TyTy::InferType::InferTypeKind::INTEGRAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseRules::visit (type);
+  }
+
+  void visit (ISizeType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -589,6 +633,54 @@ public:
 
 private:
   TupleType *base;
+};
+
+class USizeRules : public BaseRules
+{
+public:
+  USizeRules (USizeType *base) : BaseRules (base), base (base) {}
+
+  void visit (InferType &type) override
+  {
+    // cant assign a float inference variable
+    if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (USizeType &type) override { resolved = type.clone (); }
+
+private:
+  USizeType *base;
+};
+
+class ISizeRules : public BaseRules
+{
+public:
+  ISizeRules (ISizeType *base) : BaseRules (base), base (base) {}
+
+  void visit (InferType &type) override
+  {
+    // cant assign a float inference variable
+    if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (ISizeType &type) override { resolved = type.clone (); }
+
+private:
+  ISizeType *base;
 };
 
 } // namespace TyTy

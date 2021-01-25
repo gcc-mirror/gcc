@@ -165,6 +165,8 @@ public:
 
   Btype *bool_type () { return this->make_type (boolean_type_node); }
 
+  int get_pointer_size ();
+
   Btype *integer_type (bool, int);
 
   Btype *float_type (int);
@@ -757,6 +759,12 @@ Gcc_backend::Gcc_backend ()
 }
 
 // Get an unnamed integer type.
+
+int
+Gcc_backend::get_pointer_size ()
+{
+  return POINTER_SIZE;
+}
 
 Btype *
 Gcc_backend::integer_type (bool is_unsigned, int bits)

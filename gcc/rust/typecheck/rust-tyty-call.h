@@ -49,6 +49,8 @@ public:
   void visit (IntType &type) override { gcc_unreachable (); }
   void visit (UintType &type) override { gcc_unreachable (); }
   void visit (FloatType &type) override { gcc_unreachable (); }
+  void visit (USizeType &type) override { gcc_unreachable (); }
+  void visit (ISizeType &type) override { gcc_unreachable (); }
   void visit (ErrorType &type) override { gcc_unreachable (); }
 
   // tuple-structs

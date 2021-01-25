@@ -631,7 +631,7 @@ public:
   void visit (HIR::ArrayIndexExpr &expr)
   {
     TyTy::TyBase *size_ty;
-    if (!context->lookup_builtin ("i32", &size_ty))
+    if (!context->lookup_builtin ("usize", &size_ty))
       {
 	rust_error_at (
 	  expr.get_locus (),

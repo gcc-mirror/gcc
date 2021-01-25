@@ -38,6 +38,8 @@ public:
   virtual void visit (IntType &type) = 0;
   virtual void visit (UintType &type) = 0;
   virtual void visit (FloatType &type) = 0;
+  virtual void visit (USizeType &type) = 0;
+  virtual void visit (ISizeType &type) = 0;
   virtual void visit (ErrorType &type) = 0;
 };
 
