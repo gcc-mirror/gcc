@@ -36,11 +36,11 @@
  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!qrtems:crt0%O%s} " \
-"%{qrtems:" RTEMS_STARTFILE_SPEC " %{!qnolinkcmds:-T linkcmds%s}}"
+"%{qrtems:" RTEMS_STARTFILE_SPEC "}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-"%{qrtems:" RTEMS_ENDFILE_SPEC "}"
+"%{qrtems:" RTEMS_ENDFILE_SPEC " %{!qnolinkcmds:-T linkcmds%s}}"
 
 /*
  * Some targets do not set up LIB_SPECS, override it, here.
