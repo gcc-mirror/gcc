@@ -1,3 +1,14 @@
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* cvt.c (cp_fold_convert): Propagate TREE_NO_WARNING.
+
+2021-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98463
+	* constexpr.c (get_or_insert_ctor_field): Add check.
+	(cxx_eval_store_expression): Handle discontinuity of refs.
+
 2021-01-23  Anthony Sharp  <anthonysharp15@gmail.com>
 
 	* call.c (complain_about_access): Altered function.

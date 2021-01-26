@@ -3564,7 +3564,7 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (argno == 0)
 		{
 		  if (warning_at (loc, OPT_Wnonnull,
-				  "%G%qs pointer null", stmt, "this")
+				  "%G%qs pointer is null", stmt, "this")
 		      && fndecl)
 		    inform (DECL_SOURCE_LOCATION (fndecl),
 			    "in a call to non-static member function %qD",

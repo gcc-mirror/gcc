@@ -1795,7 +1795,13 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && !DECL_HAS_VALUE_EXPR_P (decl)
 	  && DECL_ALIGN (decl) <= MAX_SUPPORTED_STACK_ALIGNMENT
 	  && dbg_cnt (asan_use_after_scope)
-	  && !gimplify_omp_ctxp)
+	  && !gimplify_omp_ctxp
+	  /* GNAT introduces temporaries to hold return values of calls in
+	     initializers of variables defined in other units, so the
+	     declaration of the variable is discarded completely.  We do not
+	     want to issue poison calls for such dropped variables.  */
+	  && (DECL_SEEN_IN_BIND_EXPR_P (decl)
+	      || (DECL_ARTIFICIAL (decl) && DECL_NAME (decl) == NULL_TREE)))
 	{
 	  asan_poisoned_variables->add (decl);
 	  asan_poison_variable (decl, false, seq_p);

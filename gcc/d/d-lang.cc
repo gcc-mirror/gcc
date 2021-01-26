@@ -980,7 +980,6 @@ d_parse_file (void)
 
       m->importedFrom = m;
       m->parse ();
-      Compiler::loadModule (m);
 
       if (m->isDocFile)
 	{

@@ -37,7 +37,6 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
 set MOD_STD_LIST { 17 2a }
 
-setenv CXX_MODULE_PATH "$srcdir/$subdir"
 dg-init
 
 global module_do
@@ -226,7 +225,7 @@ proc module_do_it { do_what testcase std asm_list } {
     # link it
     verbose "Linking $asm_list" 1
     if { !$ok } {
-	unresolved "$identlink"
+	unresolved "$ident link"
     } else {
 	set out [${tool}_target_compile $asm_list \
 		     $execname executable $options]

@@ -183,6 +183,19 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	}
     }
 
+  if (start < 0)
+    {
+      gfc_error ("Substring start index at %L is less than one",
+		 &ref->u.ss.start->where);
+      return NULL;
+    }
+  if (end > init->value.character.length)
+    {
+      gfc_error ("Substring end index at %L exceeds the string length",
+		 &ref->u.ss.end->where);
+      return NULL;
+    }
+
   if (rvalue->ts.type == BT_HOLLERITH)
     {
       for (size_t i = 0; i < (size_t) len; i++)
@@ -576,6 +589,8 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
+      if (!expr)
+	return false;
     }
   else
     {

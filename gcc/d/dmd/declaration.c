@@ -145,6 +145,20 @@ int Declaration::checkModify(Loc loc, Scope *sc, Type *, Expression *e1, int fla
         }
     }
 
+    if (e1 && e1->op == TOKthis && isField())
+    {
+        VarDeclaration *vthis = e1->isThisExp()->var;
+        for (Scope *scx = sc; scx; scx = scx->enclosing)
+        {
+            if (scx->func == vthis->parent && (scx->flags & SCOPEcontract))
+            {
+                if (!flag)
+                    error(loc, "cannot modify parameter `this` in contract");
+                return 2;   // do not report type related errors
+            }
+        }
+    }
+
     if (v && (isCtorinit() || isField()))
     {
         // It's only modifiable if inside the right constructor

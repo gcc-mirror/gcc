@@ -1,3 +1,21 @@
+2021-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70070
+	* data.c (create_character_initializer): Check substring indices
+	against bounds.
+	(gfc_assign_data_value): Catch error returned from
+	create_character_initializer.
+
+2021-01-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (CO_BROADCAST, CO_MIN, CO_REDUCE, CO_SUM): Fix typos.
+
+2021-01-25  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98517
+	* resolve.c (resolve_charlen): Check that length expression is
+	present before testing for scalar/integer..
+
 2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98565

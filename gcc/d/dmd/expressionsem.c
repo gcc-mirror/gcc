@@ -3344,6 +3344,13 @@ public:
                 return setError();
             }
 
+            // https://issues.dlang.org/show_bug.cgi?id=18719
+            // If `exp` is a call expression to another constructor
+            // then it means that all struct/class fields will be
+            // initialized after this call.
+            for (size_t i = 0; i < sc->fieldinit_dim; i++)
+                sc->fieldinit[i] |= CSXthis_ctor;
+
             if (!sc->intypeof && !(sc->callSuper & CSXhalt))
             {
                 if (sc->noctor || sc->callSuper & CSXlabel)

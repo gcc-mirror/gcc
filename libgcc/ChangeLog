@@ -1,3 +1,10 @@
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov-merge.c (__gcov_merge_topn): Mark when merging
+	ends with a dropped counter.
+	* libgcov.h (gcov_topn_add_value): Add return value.
+
 2021-01-13  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/sfp-machine.h (FP_RND_NEAREST, FP_RND_ZERO,

@@ -2181,7 +2181,6 @@ void FuncDeclaration::semantic3(Scope *sc)
             sc2->flags = (sc2->flags & ~SCOPEcontract) | SCOPErequire;
 
             // BUG: need to error if accessing out parameters
-            // BUG: need to treat parameters as const
             // BUG: need to disallow returns and throws
             // BUG: verify that all in and ref parameters are read
             freq = ::semantic(freq, sc2);
@@ -2213,7 +2212,6 @@ void FuncDeclaration::semantic3(Scope *sc)
             sc2 = scout;    //push
             sc2->flags = (sc2->flags & ~SCOPEcontract) | SCOPEensure;
 
-            // BUG: need to treat parameters as const
             // BUG: need to disallow returns and throws
             if (fensure && f->next->ty != Tvoid)
                 buildResultVar(scout, f->next);

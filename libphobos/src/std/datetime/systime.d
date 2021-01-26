@@ -39,6 +39,16 @@ version (unittest)
     initializeTests();
 }
 
+version (unittest) private bool clockSupported(ClockType c)
+{
+    // Skip unsupported clocks on older linux kernels, assume that only
+    // CLOCK_MONOTONIC and CLOCK_REALTIME exist, as that is the lowest
+    // common denominator supported by all versions of Linux pre-2.6.12.
+    version (Linux_Pre_2639)
+        return c == ClockType.normal || c == ClockType.precise;
+    else
+        return true;
+}
 
 /++
     Effectively a namespace to make it clear that the methods it contains are
@@ -95,10 +105,13 @@ public:
         foreach (ct; AliasSeq!(ClockType.coarse, ClockType.precise, ClockType.second))
         {
             scope(failure) writefln("ClockType.%s", ct);
-            auto value1 = Clock.currTime!ct;
-            auto value2 = Clock.currTime!ct(UTC());
-            assert(value1 <= value2, format("%s %s", value1, value2));
-            assert(abs(value1 - value2) <= seconds(2));
+            static if (clockSupported(ct))
+            {
+                auto value1 = Clock.currTime!ct;
+                auto value2 = Clock.currTime!ct(UTC());
+                assert(value1 <= value2, format("%s %s (ClockType: %s)", value1, value2, ct));
+                assert(abs(value1 - value2) <= seconds(2), format("ClockType.%s", ct));
+            }
         }
     }
 
@@ -270,10 +283,13 @@ public:
         foreach (ct; AliasSeq!(ClockType.coarse, ClockType.precise, ClockType.second))
         {
             scope(failure) writefln("ClockType.%s", ct);
-            auto value1 = Clock.currStdTime!ct;
-            auto value2 = Clock.currStdTime!ct;
-            assert(value1 <= value2, format("%s %s", value1, value2));
-            assert(abs(value1 - value2) <= limit);
+            static if (clockSupported(ct))
+            {
+                auto value1 = Clock.currStdTime!ct;
+                auto value2 = Clock.currStdTime!ct;
+                assert(value1 <= value2, format("%s %s (ClockType: %s)", value1, value2, ct));
+                assert(abs(value1 - value2) <= limit);
+            }
         }
     }
 

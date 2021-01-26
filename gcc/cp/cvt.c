@@ -599,11 +599,14 @@ ignore_overflows (tree expr, tree orig)
 }
 
 /* Fold away simple conversions, but make sure TREE_OVERFLOW is set
-   properly.  */
+   properly and propagate TREE_NO_WARNING if folding EXPR results
+   in the same expression code.  */
 
 tree
 cp_fold_convert (tree type, tree expr)
 {
+  bool nowarn = TREE_NO_WARNING (expr);
+
   tree conv;
   if (TREE_TYPE (expr) == type)
     conv = expr;
@@ -626,6 +629,10 @@ cp_fold_convert (tree type, tree expr)
       conv = fold_convert (type, expr);
       conv = ignore_overflows (conv, expr);
     }
+
+  if (nowarn && TREE_CODE (expr) == TREE_CODE (conv))
+    TREE_NO_WARNING (conv) = nowarn;
+
   return conv;
 }
 
