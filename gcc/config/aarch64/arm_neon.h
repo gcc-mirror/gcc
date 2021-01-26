@@ -7614,48 +7614,28 @@ __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_n_s16 (int32x4_t __a, int16x4_t __b, int16_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("smlal %0.4s,%2.4h,%3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_nv4hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_n_s32 (int64x2_t __a, int32x2_t __b, int32_t __c)
 {
-  int64x2_t __result;
-  __asm__ ("smlal %0.2d,%2.2s,%3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_nv2si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_n_u16 (uint32x4_t __a, uint16x4_t __b, uint16_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("umlal %0.4s,%2.4h,%3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_nv4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_n_u32 (uint64x2_t __a, uint32x2_t __b, uint32_t __c)
 {
-  uint64x2_t __result;
-  __asm__ ("umlal %0.2d,%2.2s,%3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_nv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t

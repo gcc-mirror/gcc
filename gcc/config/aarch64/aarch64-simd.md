@@ -1932,6 +1932,21 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
+(define_insn "aarch64_<su>mlal_n<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (plus:<VWIDE>
+          (mult:<VWIDE>
+            (ANY_EXTEND:<VWIDE>
+              (vec_duplicate:VD_HSI
+	              (match_operand:<VEL> 3 "register_operand" "<h_con>")))
+            (ANY_EXTEND:<VWIDE>
+              (match_operand:VD_HSI 2 "register_operand" "w")))
+          (match_operand:<VWIDE> 1 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "<su>mlal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vetype>[0]"
+  [(set_attr "type" "neon_mla_<Vetype>_long")]
+)
+
 (define_insn "aarch64_<su>mlsl<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (minus:<VWIDE>
