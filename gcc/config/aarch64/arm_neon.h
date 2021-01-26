@@ -7662,72 +7662,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_s8 (int16x8_t __a, int8x8_t __b, int8x8_t __c)
 {
-  int16x8_t __result;
-  __asm__ ("smlal %0.8h,%2.8b,%3.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlalv8qi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_s16 (int32x4_t __a, int16x4_t __b, int16x4_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("smlal %0.4s,%2.4h,%3.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlalv4hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_s32 (int64x2_t __a, int32x2_t __b, int32x2_t __c)
 {
-  int64x2_t __result;
-  __asm__ ("smlal %0.2d,%2.2s,%3.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlalv2si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_u8 (uint16x8_t __a, uint8x8_t __b, uint8x8_t __c)
 {
-  uint16x8_t __result;
-  __asm__ ("umlal %0.8h,%2.8b,%3.8b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlalv8qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_u16 (uint32x4_t __a, uint16x4_t __b, uint16x4_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("umlal %0.4s,%2.4h,%3.4h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlalv4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_u32 (uint64x2_t __a, uint32x2_t __b, uint32x2_t __c)
 {
-  uint64x2_t __result;
-  __asm__ ("umlal %0.2d,%2.2s,%3.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlalv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline float32x4_t

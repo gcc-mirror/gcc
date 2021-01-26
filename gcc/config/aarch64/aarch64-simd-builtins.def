@@ -192,6 +192,10 @@
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
   BUILTIN_VD_BHSI (TERNOPU, umlsl, 0, NONE)
 
+  /* Implemented by aarch64_<su>mlal<mode>.  */
+  BUILTIN_VD_BHSI (TERNOP, smlal, 0, NONE)
+  BUILTIN_VD_BHSI (TERNOPU, umlal, 0, NONE)
+
   /* Implemented by aarch64_<su>mlsl_hi<mode>.  */
   BUILTIN_VQW (TERNOP, smlsl_hi, 0, NONE)
   BUILTIN_VQW (TERNOPU, umlsl_hi, 0, NONE)
