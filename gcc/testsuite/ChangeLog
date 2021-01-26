@@ -1,3 +1,44 @@
+2021-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70070
+	* gfortran.dg/pr70070.f90: New test.
+
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* g++.dg/warn/Wnonnull5.C: Adjust text of an expected warning.
+	* g++.dg/warn/Wnonnull10.C: New test.
+	* g++.dg/warn/Wnonnull9.C: New test.
+
+2021-01-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/associate_57.f90: New test.
+
+2021-01-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/96843
+	* gfortran.dg/interface_assignment_7.f90: New test.
+
+2021-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98463
+	* g++.dg/cpp2a/no_unique_address8.C: New test.
+
+2021-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98807
+	* gcc.dg/pr98807.c: New testcase.
+
+2021-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/thunk2.adb, gnat.dg/thunk2.ads: New test.
+	* gnat.dg/thunk2_pkg.ads: New helper.
+
+2021-01-25  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98517
+	* gfortran.dg/charlen_18.f90 : New test.
+
 2021-01-23  Anthony Sharp  <anthonysharp15@gmail.com>
 
 	* g++.dg/lookup/scoped1.C: Modified testcase to run successfully

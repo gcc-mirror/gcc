@@ -1,3 +1,8 @@
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* c-common.c (check_nonnull_arg): Adjust warning text.
+
 2021-01-17  Martin Sebor  <msebor@redhat.com>
 
 	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't

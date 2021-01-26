@@ -1,3 +1,7 @@
+2021-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp.texi (omp_fulfill_event): New entry.
+
 2021-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* task.c (GOMP_task): Rename priority argument to priority_arg,

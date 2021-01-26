@@ -1,3 +1,72 @@
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Adjust warning text.
+
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (get_nth_most_common_value): Use %s instead
+	of %qs string.
+
+2021-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98811
+	* configure.ac (HAVE_AS_GDWARF_5_DEBUG_FLAG): Only define if
+	readelf -wi is able to read the emitted .debug_info back.
+	* configure: Regenerated.
+
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* common.opt: Add missing sign symbol.
+	* value-prof.c (get_nth_most_common_value): Restore handling
+	of PROFILE_REPRODUCIBILITY_PARALLEL_RUNS and
+	PROFILE_REPRODUCIBILITY_MULTITHREADED.
+
+2021-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98807
+	* tree.c (vector_element_bits): Always use precision of
+	the element type for boolean vectors.
+
+2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (STARTFILE_SPEC): Remove qnolinkcmds.
+	(ENDFILE_SPEC): Evaluate qnolinkcmds.
+
+2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (STARTFILE_SPEC): Remove nostdlib and
+	nostartfiles handling since this is already done by
+	LINK_COMMAND_SPEC.  Evaluate qnolinkcmds.
+	(ENDFILE_SPEC): Remove nostdlib and nostartfiles handling since this
+	is already done by LINK_COMMAND_SPEC.
+	(LIB_SPECS): Remove nostdlib and nodefaultlibs handling since
+	this is already done by LINK_COMMAND_SPEC.  Remove qnolinkcmds
+	evaluation.
+
+2021-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98771
+	* fold-const-call.c (host_size_t_cst_p): Renamed to ...
+	(size_t_cst_p): ... this.  Check and store unsigned HOST_WIDE_INT
+	value rather than host size_t.
+	(fold_const_call): Change type of s2 from size_t to
+	unsigned HOST_WIDE_INT.  Use size_t_cst_p instead of
+	host_size_t_cst_p.  For strncmp calls, pass MIN (s2, SIZE_MAX)
+	instead of s2 as last argument.
+
+2021-01-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/iterators.md (rotsplit1, rotsplit2, conj_op, fcmac1,
+	VCMLA_OP, VCMUL_OP): New.
+	* config/arm/mve.md (mve_vcmlaq<mve_rot><mode>): Support vec_dup 0.
+	* config/arm/neon.md (cmul<conj_op><mode>3): New.
+	* config/arm/unspecs.md (UNSPEC_VCMLA_CONJ, UNSPEC_VCMLA180_CONJ,
+	UNSPEC_VCMUL_CONJ): New.
+	* config/arm/vec-common.md (cmul<conj_op><mode>3, arm_vcmla<rot><mode>,
+	cml<fcmac1><conj_op><mode>4): New.
+
 2021-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/97301
