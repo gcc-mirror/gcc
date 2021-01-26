@@ -11968,10 +11968,11 @@ aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode mode, rtx mask,
 				    rtx shft_amnt)
 {
   return CONST_INT_P (mask) && CONST_INT_P (shft_amnt)
-	 && INTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
-	 && exact_log2 ((INTVAL (mask) >> INTVAL (shft_amnt)) + 1) >= 0
-	 && (INTVAL (mask)
-	     & ((HOST_WIDE_INT_1U << INTVAL (shft_amnt)) - 1)) == 0;
+	 && INTVAL (mask) > 0
+	 && UINTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
+	 && exact_log2 ((UINTVAL (mask) >> UINTVAL (shft_amnt)) + 1) >= 0
+	 && (UINTVAL (mask)
+	     & ((HOST_WIDE_INT_1U << UINTVAL (shft_amnt)) - 1)) == 0;
 }
 
 /* Return true if the masks and a shift amount from an RTX of the form
