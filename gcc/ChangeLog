@@ -1,3 +1,40 @@
+2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (STARTFILE_SPEC): Remove qnolinkcmds.
+	(ENDFILE_SPEC): Evaluate qnolinkcmds.
+
+2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (STARTFILE_SPEC): Remove nostdlib and
+	nostartfiles handling since this is already done by
+	LINK_COMMAND_SPEC.  Evaluate qnolinkcmds.
+	(ENDFILE_SPEC): Remove nostdlib and nostartfiles handling since this
+	is already done by LINK_COMMAND_SPEC.
+	(LIB_SPECS): Remove nostdlib and nodefaultlibs handling since
+	this is already done by LINK_COMMAND_SPEC.  Remove qnolinkcmds
+	evaluation.
+
+2021-01-25  Claudiu Zissulescu  <claziss@gmail.com>
+
+	Backported from master:
+	2020-12-11  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mpyd<su_optab>_arcv2hs): New template
+	pattern.
+	(*pmpyd<su_optab>_arcv2hs): Likewise.
+	(*pmpyd<su_optab>_imm_arcv2hs): Likewise.
+	(mpyd_arcv2hs): Moved into above template.
+	(mpyd_imm_arcv2hs): Moved into above template.
+	(mpydu_arcv2hs): Likewise.
+	(mpydu_imm_arcv2hs): Likewise.
+	(su_optab): New optab prefix for sign/zero-extending operations.
+
 2021-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
