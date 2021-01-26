@@ -75,6 +75,9 @@ public:
     resolver->get_name_scope ().insert (function.get_function_name (),
 					function.get_node_id (),
 					function.get_locus ());
+    resolver->insert_new_definition (function.get_node_id (),
+				     Definition{function.get_node_id (),
+						function.get_node_id ()});
 
     // if this does not get a reference it will be determined to be unused
     // lets give it a fake reference to itself

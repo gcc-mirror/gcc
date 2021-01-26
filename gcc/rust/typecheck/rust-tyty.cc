@@ -147,11 +147,14 @@ ADTType::accept_vis (TyVisitor &vis)
 std::string
 ADTType::as_string () const
 {
+  if (num_fields () == 0)
+    return identifier;
+
   std::string fields_buffer;
   for (auto &field : fields)
-    fields_buffer += field->as_string () + "\n";
+    fields_buffer += field->as_string () + ", ";
 
-  return identifier + "{\n" + fields_buffer + "\n}";
+  return identifier + "{" + fields_buffer + "}";
 }
 
 TyBase *

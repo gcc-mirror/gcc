@@ -816,6 +816,10 @@ public:
     rust_assert (param_type != nullptr);
     return param_type;
   }
+
+  ParamKind get_param_kind () const { return param_kind; }
+
+  Identifier get_name () const { return name; }
 };
 
 /* A function pointer type - can be created via coercion from function items and

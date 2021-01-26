@@ -34,6 +34,15 @@ public:
     type->accept_vis (resolver);
   };
 
+  void visit (AST::BareFunctionType &fntype)
+  {
+    for (auto &param : fntype.get_function_params ())
+      ResolveType::go (param.get_type ().get (), fntype.get_node_id ());
+
+    if (fntype.has_return_type ())
+      ResolveType::go (fntype.get_return_type ().get (), fntype.get_node_id ());
+  }
+
   void visit (AST::TupleType &tuple)
   {
     if (tuple.is_unit_type ())

@@ -79,6 +79,34 @@ public:
     return resolver.translated;
   }
 
+  void visit (HIR::BareFunctionType &fntype)
+  {
+    TyTy::TyBase *return_type
+      = fntype.has_return_type ()
+	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
+	  : new TyTy::UnitType (fntype.get_mappings ().get_hirid ());
+
+    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    for (auto &param : fntype.get_function_params ())
+      {
+	std::unique_ptr<HIR::Pattern> to_bind;
+
+	bool is_ref = false;
+	bool is_mut = false;
+
+	HIR::Pattern *pattern
+	  = new HIR::IdentifierPattern (param.get_name (), param.get_locus (),
+					is_ref, is_mut, std::move (to_bind));
+
+	TyTy::TyBase *ptype = TypeCheckType::Resolve (param.get_type ().get ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::TyBase *> (pattern, ptype));
+      }
+
+    translated = new TyTy::FnType (fntype.get_mappings ().get_hirid (),
+				   std::move (params), return_type);
+  }
+
   void visit (HIR::TupleType &tuple)
   {
     if (tuple.is_unit_type ())

@@ -550,8 +550,8 @@ Session::parse_file (const char *filename)
   type_resolution (hir);
 
   // FIXME this needs an option of itself
-  // auto buf = Resolver::TypeResolverDump::go (hir);
-  // fprintf (stderr, "%s\n", buf.c_str ());
+  auto buf = Resolver::TypeResolverDump::go (hir);
+  fprintf (stderr, "%s\n", buf.c_str ());
 
   if (saw_errors ())
     return;

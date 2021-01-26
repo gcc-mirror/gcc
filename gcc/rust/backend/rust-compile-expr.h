@@ -127,20 +127,28 @@ public:
 	return;
       }
 
-    // this could be a constant reference
-    if (ctx->lookup_const_decl (ref, &translated))
-      return;
-
-    // must be an identifier
+    Bfunction *fn = nullptr;
     Bvariable *var = nullptr;
-    if (!ctx->lookup_var_decl (ref, &var))
+    if (ctx->lookup_const_decl (ref, &translated))
       {
-	rust_fatal_error (expr.get_locus (),
-			  "failed to lookup compiled variable");
 	return;
       }
-
-    translated = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+    else if (ctx->lookup_function_decl (ref, &fn))
+      {
+	translated
+	  = ctx->get_backend ()->function_code_expression (fn,
+							   expr.get_locus ());
+      }
+    else if (ctx->lookup_var_decl (ref, &var))
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+      }
+    else
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "failed to lookup compiled reference");
+      }
   }
 
   void visit (HIR::LiteralExpr &expr)

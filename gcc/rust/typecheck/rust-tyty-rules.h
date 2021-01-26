@@ -410,6 +410,52 @@ class FnRules : public BaseRules
 public:
   FnRules (FnType *base) : BaseRules (base), base (base) {}
 
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (FnType &type) override
+  {
+    if (base->num_params () != type.num_params ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    // FIXME add an abstract method for is_equal on TyBase
+    for (size_t i = 0; i < base->num_params (); i++)
+      {
+	auto a = base->param_at (i).second;
+	auto b = type.param_at (i).second;
+
+	auto combined_param = a->combine (b);
+	if (combined_param == nullptr)
+	  {
+	    BaseRules::visit (type);
+	    return;
+	  }
+      }
+
+    auto combined_return
+      = base->get_return_type ()->combine (type.get_return_type ());
+    if (combined_return == nullptr)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
 private:
   FnType *base;
 };

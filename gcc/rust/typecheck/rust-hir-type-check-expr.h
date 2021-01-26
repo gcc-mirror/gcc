@@ -157,17 +157,32 @@ public:
     auto fn = expr.get_fnexpr ();
     auto fn_node_id = fn->get_mappings ().get_nodeid ();
 
-    // CallExpr might be a function but it might also be a TupleStruct
-    NodeId ref_node_id;
-    if (!resolver->lookup_resolved_name (fn_node_id, &ref_node_id))
+    // then lookup the reference_node_id
+    NodeId ref_node_id = UNKNOWN_NODEID;
+    if (resolver->lookup_resolved_name (fn_node_id, &ref_node_id))
       {
-	if (!resolver->lookup_resolved_type (fn_node_id, &ref_node_id))
+	Definition def;
+	if (!resolver->lookup_definition (ref_node_id, &def))
 	  {
 	    rust_error_at (expr.get_locus (),
-			   "Failed to lookup reference for node: %s",
-			   expr.as_string ().c_str ());
+			   "unknown reference for resolved name");
 	    return;
 	  }
+	ref_node_id = def.parent;
+      }
+    else if (!resolver->lookup_resolved_type (fn_node_id, &ref_node_id))
+      {
+	rust_error_at (expr.get_locus (),
+		       "Failed to lookup type reference for node: %s",
+		       expr.as_string ().c_str ());
+	return;
+      }
+
+    if (ref_node_id == UNKNOWN_NODEID)
+      {
+	rust_error_at (expr.get_locus (), "unresolved node: %s",
+		       expr.as_string ().c_str ());
+	return;
       }
 
     // node back to HIR
@@ -258,28 +273,39 @@ public:
     NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 
     // then lookup the reference_node_id
-    NodeId ref_node_id;
-    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    NodeId ref_node_id = UNKNOWN_NODEID;
+    if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+      {
+	// these ref_node_ids will resolve to a pattern declaration but we are
+	// interested in the definition that this refers to get the parent id
+	Definition def;
+	if (!resolver->lookup_definition (ref_node_id, &def))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "unknown reference for resolved name");
+	    return;
+	  }
+	ref_node_id = def.parent;
+      }
+    else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
       {
 	rust_error_at (expr.get_locus (),
-		       "Failed to lookup reference for node: %s",
+		       "Failed to lookup type reference for node: %s",
 		       expr.as_string ().c_str ());
 	return;
       }
 
-    // these ref_node_ids will resolve to a pattern declaration but we are
-    // interested in the definition that this refers to get the parent id
-    Definition def;
-    if (!resolver->lookup_definition (ref_node_id, &def))
+    if (ref_node_id == UNKNOWN_NODEID)
       {
-	rust_error_at (expr.get_locus (), "unknown reference");
+	rust_error_at (expr.get_locus (), "unresolved node: %s",
+		       expr.as_string ().c_str ());
 	return;
       }
 
     // node back to HIR
     HirId ref;
     if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				       def.parent, &ref))
+				       ref_node_id, &ref))
       {
 	rust_error_at (expr.get_locus (), "reverse lookup failure");
 	return;

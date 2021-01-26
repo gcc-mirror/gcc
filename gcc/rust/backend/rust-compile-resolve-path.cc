@@ -28,23 +28,43 @@ void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
   // need to look up the reference for this identifier
-  NodeId ref_node_id;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (ctx->get_resolver ()->lookup_resolved_name (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
-      return;
+      Resolver::Definition def;
+      if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "unknown reference for resolved name");
+	  return;
+	}
+      ref_node_id = def.parent;
     }
+
+  // this can fail because it might be a Constructor for something
+  // in that case the caller should attempt ResolvePathType::Compile
+  if (ref_node_id == UNKNOWN_NODEID)
+    return;
 
   HirId ref;
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
     {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
+      rust_error_at (expr.get_locus (), "reverse call path lookup failure");
       return;
     }
 
-  // assumes paths are functions for now
-  Bfunction *fn;
+  // this might be a variable reference or a function reference
+  Bvariable *var = nullptr;
+  if (ctx->lookup_var_decl (ref, &var))
+    {
+      resolved = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+      return;
+    }
+
+  // must be a function call
+  Bfunction *fn = nullptr;
   if (!ctx->lookup_function_decl (ref, &fn))
     {
       // this might fail because its a forward decl so we can attempt to
