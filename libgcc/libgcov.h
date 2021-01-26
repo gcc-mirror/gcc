@@ -443,7 +443,13 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 		     int use_atomic, int increment_total)
 {
   if (increment_total)
-    gcov_counter_add (&counters[0], 1, use_atomic);
+    {
+      /* In the multi-threaded mode, we can have an already merged profile
+	 with a negative total value.  In that case, we should bail out.  */
+      if (counters[0] < 0)
+	return 0;
+      gcov_counter_add (&counters[0], 1, use_atomic);
+    }
 
   struct gcov_kvp *prev_node = NULL;
   struct gcov_kvp *minimal_node = NULL;
