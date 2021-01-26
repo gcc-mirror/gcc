@@ -1,3 +1,12 @@
+2021-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (make_covariant_thunk): Set the DECL_CONTEXT
+	of the parameters and do not set TREE_PUBLIC on the thunk.
+	(maybe_make_gnu_thunk): Pass the alias to the covariant thunk.
+	* gcc-interface/utils.c (finish_subprog_decl): Set the DECL_CONTEXT
+	of the parameters here...
+	(begin_subprog_body): ...instead of here.
+
 2021-01-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/98740
