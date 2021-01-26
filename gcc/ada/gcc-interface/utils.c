@@ -1467,7 +1467,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     {
       tree packable_type = make_packable_type (type, true, align);
       if (TYPE_MODE (packable_type) != BLKmode
-	  && align >= TYPE_ALIGN (packable_type))
+	  && compare_tree_int (TYPE_SIZE (packable_type), align) <= 0)
         type = packable_type;
     }
 
