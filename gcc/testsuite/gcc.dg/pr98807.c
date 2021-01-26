@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-psabi -w" } */
 /* { dg-additional-options "-mno-sse2" { target x86_64-*-* i?86-*-* } } */
 
 #include <stdint.h>
