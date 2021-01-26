@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 dw2_assemble_integer (int size, rtx x)
 {
-  if (size == 2 * DWARF2_ADDR_SIZE && !CONST_SCALAR_INT_P (x))
+  if (size == 2 * (int) DWARF2_ADDR_SIZE && !CONST_SCALAR_INT_P (x))
     {
       /* On 32-bit targets with -gdwarf64, DImode values with
 	 relocations usually result in assembler errors.  Assume
