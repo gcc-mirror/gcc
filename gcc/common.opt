@@ -2195,7 +2195,7 @@ Enum(profile_reproducibility) String(parallel-runs) Value(PROFILE_REPRODUCIBILIT
 EnumValue
 Enum(profile_reproducibility) String(multithreaded) Value(PROFILE_REPRODUCIBILITY_MULTITHREADED)
 
-fprofile-reproducible
+fprofile-reproducible=
 Common Joined RejectNegative Var(flag_profile_reproducible) Enum(profile_reproducibility) Init(PROFILE_REPRODUCIBILITY_SERIAL)
 -fprofile-reproducible=[serial|parallel-runs|multithreaded]	Control level of reproducibility of profile gathered by -fprofile-generate.
 
