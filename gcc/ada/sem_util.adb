@@ -269,14 +269,12 @@ package body Sem_Util is
       --  Construct an integer literal representing an accessibility level
       --  with its type set to Natural.
 
-      function Innermost_Master_Scope_Depth
-        (N : Node_Id) return Uint;
+      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint;
       --  Returns the scope depth of the given node's innermost
       --  enclosing dynamic scope (effectively the accessibility
       --  level of the innermost enclosing master).
 
-      function Function_Call_Or_Allocator_Level
-        (N : Node_Id) return Node_Id;
+      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
       --  Centralized processing of subprogram calls which may appear in
       --  prefix notation.
 
@@ -284,10 +282,9 @@ package body Sem_Util is
       -- Innermost_Master_Scope_Depth --
       ----------------------------------
 
-      function Innermost_Master_Scope_Depth
-        (N : Node_Id) return Uint
-      is
+      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint is
          Encl_Scop           : Entity_Id;
+         Ent                 : Entity_Id;
          Node_Par            : Node_Id := Parent (N);
          Master_Lvl_Modifier : Int     := 0;
 
@@ -301,12 +298,10 @@ package body Sem_Util is
          --  among other things. These cases are detected properly ???
 
          while Present (Node_Par) loop
+            Ent := Defining_Entity_Or_Empty (Node_Par);
 
-            if Present (Defining_Entity
-                         (Node_Par, Empty_On_Errors => True))
-            then
-               Encl_Scop := Nearest_Dynamic_Scope
-                              (Defining_Entity (Node_Par));
+            if Present (Ent) then
+               Encl_Scop := Nearest_Dynamic_Scope (Ent);
 
                --  Ignore transient scopes made during expansion
 
@@ -7076,10 +7071,23 @@ package body Sem_Util is
    -- Defining_Entity --
    ---------------------
 
-   function Defining_Entity
-     (N               : Node_Id;
-      Empty_On_Errors : Boolean := False) return Entity_Id
-   is
+   function Defining_Entity (N : Node_Id) return Entity_Id is
+      Ent : constant Entity_Id := Defining_Entity_Or_Empty (N);
+
+   begin
+      if Present (Ent) then
+         return Ent;
+
+      else
+         raise Program_Error;
+      end if;
+   end Defining_Entity;
+
+   ------------------------------
+   -- Defining_Entity_Or_Empty --
+   ------------------------------
+
+   function Defining_Entity_Or_Empty (N : Node_Id) return Entity_Id is
    begin
       case Nkind (N) is
          when N_Abstract_Subprogram_Declaration
@@ -7178,13 +7186,9 @@ package body Sem_Util is
             return Entity (Identifier (N));
 
          when others =>
-            if Empty_On_Errors then
-               return Empty;
-            end if;
-
-            raise Program_Error;
+            return Empty;
       end case;
-   end Defining_Entity;
+   end Defining_Entity_Or_Empty;
 
    --------------------------
    -- Denotes_Discriminant --
