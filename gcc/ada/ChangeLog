@@ -1,3 +1,9 @@
+2021-01-26  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR ada/98228
+	* gcc-interface/utils.c (maybe_pad_type): Test the size of the new
+	packable type instead of its alignment for addressability's sake.
+
 2021-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (make_covariant_thunk): Set the DECL_CONTEXT
