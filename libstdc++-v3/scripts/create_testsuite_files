@@ -27,6 +27,7 @@ tmp="${TMPDIR:-/tmp}/ctt$$"
 tests_file_normal="$outdir/testsuite_files"
 tests_file_inter="$outdir/testsuite_files_interactive"
 tests_file_perf="$outdir/testsuite_files_performance"
+tests_file_simd="$outdir/testsuite_files_simd"
 
 cd $srcdir
 # This is the ugly version of "everything but the current directory".  It's
@@ -49,8 +50,11 @@ grep -v _xin $tmp.1 > $tmp.4
 grep performance $tmp.4 > $tests_file_perf
 grep -v performance $tmp.4 > $tmp.5
 
+grep simd/tests/ $tmp.5 > $tests_file_simd
+grep -v simd/tests/ $tmp.5 > $tmp.6
+
 # ...more filters go here.
-cp $tmp.5 $tests_file_normal
+cp $tmp.6 $tests_file_normal
 
 rm $tmp*
 exit 0

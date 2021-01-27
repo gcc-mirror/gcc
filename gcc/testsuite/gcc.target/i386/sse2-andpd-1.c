@@ -31,6 +31,7 @@ TEST (void)
     double d[2];
     long long ll[2];
   }source1, source2, e;
+  double d[2];
    
   s1.x = _mm_set_pd (34545, 95567);
   s2.x = _mm_set_pd (674, 57897);
@@ -42,7 +43,8 @@ TEST (void)
    
   e.ll[0] = source1.ll[0] & source2.ll[0];
   e.ll[1] = source1.ll[1] & source2.ll[1];
+  __builtin_memcpy (d, e.d, sizeof (d));
 
-  if (check_union128d (u, e.d))
+  if (check_union128d (u, d))
     abort ();
 }

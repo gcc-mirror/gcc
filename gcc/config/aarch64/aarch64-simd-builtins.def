@@ -180,10 +180,21 @@
 
   /* Implemented by aarch64_mla<mode>.  */
   BUILTIN_VDQ_BHSI (TERNOP, mla, 0, NONE)
+  /* Implemented by aarch64_mla_n<mode>.  */
+  BUILTIN_VDQHS (TERNOP, mla_n, 0, NONE)
+
+  /* Implemented by aarch64_mls<mode>.  */
+  BUILTIN_VDQ_BHSI (TERNOP, mls, 0, NONE)
+  /* Implemented by aarch64_mls_n<mode>.  */
+  BUILTIN_VDQHS (TERNOP, mls_n, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
   BUILTIN_VD_BHSI (TERNOPU, umlsl, 0, NONE)
+
+  /* Implemented by aarch64_<su>mlal<mode>.  */
+  BUILTIN_VD_BHSI (TERNOP, smlal, 0, NONE)
+  BUILTIN_VD_BHSI (TERNOPU, umlal, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl_hi<mode>.  */
   BUILTIN_VQW (TERNOP, smlsl_hi, 0, NONE)

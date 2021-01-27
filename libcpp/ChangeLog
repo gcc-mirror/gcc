@@ -1,3 +1,9 @@
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* include/cpplib.h (c_lang): Add CXX23 and GNUCXX23.
+	* init.c (lang_defaults): Add rows for CXX23 and GNUCXX23.
+	(cpp_init_builtins): Set __cplusplus to 202100L for C++23.
+
 2021-01-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/95253

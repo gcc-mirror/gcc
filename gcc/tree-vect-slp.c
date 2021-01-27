@@ -1896,7 +1896,10 @@ fail:
 		n_vector_builds++;
 	    }
 	}
-      if (all_uniform_p || n_vector_builds > 1)
+      if (all_uniform_p
+	  || n_vector_builds > 1
+	  || (n_vector_builds == children.length ()
+	      && is_a <gphi *> (stmt_info->stmt)))
 	{
 	  /* Roll back.  */
 	  matches[0] = false;

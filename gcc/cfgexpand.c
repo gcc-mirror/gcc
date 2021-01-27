@@ -6503,7 +6503,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec
     | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
-  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( PROP_ssa | PROP_gimple ), /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };

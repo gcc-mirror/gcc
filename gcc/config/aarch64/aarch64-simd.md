@@ -1384,15 +1384,16 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mla_elt_merge<mode>"
-  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+(define_insn "aarch64_mla_n<mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(plus:VDQHS
-	  (mult:VDQHS (vec_duplicate:VDQHS
-		  (match_operand:<VEL> 1 "register_operand" "<h_con>"))
-		(match_operand:VDQHS 2 "register_operand" "w"))
-	  (match_operand:VDQHS 3 "register_operand" "0")))]
+	  (mult:VDQHS
+	    (vec_duplicate:VDQHS
+	      (match_operand:<VEL> 3 "register_operand" "<h_con>"))
+	    (match_operand:VDQHS 2 "register_operand" "w"))
+	  (match_operand:VDQHS 1 "register_operand" "0")))]
  "TARGET_SIMD"
- "mla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+ "mla\t%0.<Vtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
@@ -1442,15 +1443,16 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mls_elt_merge<mode>"
+(define_insn "aarch64_mls_n<mode>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(minus:VDQHS
 	  (match_operand:VDQHS 1 "register_operand" "0")
-	  (mult:VDQHS (vec_duplicate:VDQHS
-		  (match_operand:<VEL> 2 "register_operand" "<h_con>"))
-		(match_operand:VDQHS 3 "register_operand" "w"))))]
+	  (mult:VDQHS
+	    (vec_duplicate:VDQHS
+	      (match_operand:<VEL> 3 "register_operand" "<h_con>"))
+	    (match_operand:VDQHS 2 "register_operand" "w"))))]
   "TARGET_SIMD"
-  "mls\t%0.<Vtype>, %3.<Vtype>, %2.<Vetype>[0]"
+  "mls\t%0.<Vtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
@@ -1823,17 +1825,17 @@
 }
 )
 
-(define_insn "*aarch64_<su>mlal<mode>"
+(define_insn "aarch64_<su>mlal<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (plus:<VWIDE>
           (mult:<VWIDE>
             (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_BHSI 1 "register_operand" "w"))
+              (match_operand:VD_BHSI 2 "register_operand" "w"))
             (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_BHSI 2 "register_operand" "w")))
-          (match_operand:<VWIDE> 3 "register_operand" "0")))]
+              (match_operand:VD_BHSI 3 "register_operand" "w")))
+          (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
-  "<su>mlal\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>mlal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 

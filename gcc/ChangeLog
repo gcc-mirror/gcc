@@ -1,3 +1,54 @@
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* doc/cpp.texi (__cplusplus): Document value for -std=c++23
+	or -std=gnu++23.
+	* doc/invoke.texi: Document -std=c++23 and -std=gnu++23.
+	* dwarf2out.c (highest_c_language): Recognise C++20 and C++23.
+	(gen_compile_unit_die): Recognise C++23.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98839
+	* dwarf2asm.c (dw2_assemble_integer): Cast DWARF2_ADDR_SIZE to int
+	in comparison.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98681
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	Use UINTVAL (shft_amnt) and UINTVAL (mask) instead of INTVAL (shft_amnt)
+	and INTVAL (mask).  Add && INTVAL (mask) > 0 condition.
+
+2021-01-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_binary_rhs): Handle
+	VEC_WIDEN_{PLUS,MINUS}_{LO,HI}_EXPR.
+
+2021-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98726
+	* tree.h (vector_cst_int_elt): Remove.
+	* tree.c (vector_cst_int_elt): Use poly_wide_int for computations,
+	make static.
+
+2021-01-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_reduc_scalar): Use move instructions
+	for V64DFmode min/max reductions.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2asm.c (dw2_assemble_integer): Handle size twice as large
+	as DWARF2_ADDR_SIZE if x is not a scalar int by emitting it as
+	two halves, one with x and the other with const0_rtx, ordered
+	depending on endianity.
+
+2021-01-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimplify.c (gimplify_decl_expr): Skip asan marking calls for
+	temporaries not seen in binding block, and not about to be
+	added as gimple variables.
+
 2021-01-25  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/98646

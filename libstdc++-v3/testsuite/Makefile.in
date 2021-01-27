@@ -380,7 +380,8 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 lists_of_files = \
    testsuite_files \
    testsuite_files_interactive \
-   testsuite_files_performance
+   testsuite_files_performance \
+   testsuite_files_simd
 
 extract_symvers = $(glibcxx_builddir)/scripts/extract_symvers
 baseline_subdir := $(shell $(CXX) $(baseline_subdir_switch))
@@ -710,6 +711,19 @@ check-performance: testsuite_files_performance ${performance_script}
 	  CXXFLAGS='$(CXXFLAGS)'; export CXXFLAGS; \
 	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
+# Runs the simd tests.
+check-simd: $(srcdir)/experimental/simd/generate_makefile.sh \
+	    ${glibcxx_srcdir}/scripts/check_simd \
+	    testsuite_files_simd \
+	    ${glibcxx_builddir}/scripts/testsuite_flags
+	${glibcxx_srcdir}/scripts/check_simd "${glibcxx_srcdir}" "${glibcxx_builddir}" "$(CXXFLAGS)" | \
+	  while read subdir; do \
+	    $(MAKE) -C "$${subdir}"; \
+	    tail -n20 $${subdir}/simd_testsuite.sum | \
+	      grep -A20 -B1 'Summary ===' >> .simd.summary; \
+	  done; \
+	  cat .simd.summary && rm .simd.summary
+
 check-debug: site.exp
 	outputdir=debug; export outputdir; \
 	if test ! -d $${outputdir}; then \
@@ -742,7 +756,7 @@ check-performance-parallel: testsuite_files_performance ${performance_script}
 
 # To remove directories.
 clean-local:
-	rm -rf de fr debug parallel binaries normal*
+	rm -rf de fr debug parallel binaries normal* simd
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

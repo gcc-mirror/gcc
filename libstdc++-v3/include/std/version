@@ -167,7 +167,7 @@
 #endif
 
 #if __cplusplus > 201703L
-// c++2a
+// c++20
 #define __cpp_lib_atomic_flag_test 201907L
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
@@ -256,7 +256,12 @@
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif
-#endif // C++2a
+
+#if __cplusplus > 202002L
+// c++2b
+#define __cpp_lib_string_contains 202011L
+#endif // C++2b
+#endif // C++20
 #endif // C++17
 #endif // C++14
 #endif // C++11

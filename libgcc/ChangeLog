@@ -1,3 +1,10 @@
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov.h (gcov_topn_add_value): Do not train when
+	we have a merged profile with a negative number of total
+	value.
+
 2021-01-25  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/98739

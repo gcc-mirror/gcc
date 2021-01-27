@@ -1,3 +1,10 @@
+2021-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 3dd5df686.
+	* testsuite/libphobos.phobos/phobos.exp: Add compiler flag
+	-fversion=Linux_Pre_2639 if target is linux_pre_2639.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
 2021-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98806

@@ -1,3 +1,21 @@
+2021-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97474
+	* call.c (type_passed_as): Don't mark invisiref restrict.
+
+2021-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97566
+	PR c++/98463
+	* class.c (layout_class_type): An empty field gets size 0.
+	(is_empty_field): New.
+	(check_bases): Check it.
+	* cp-tree.h (is_empty_field): Declare it.
+	* constexpr.c (cxx_eval_store_expression): Check it.
+	(cx_check_missing_mem_inits): Likewise.
+	* init.c (perform_member_init): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+
 2021-01-25  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/98646
