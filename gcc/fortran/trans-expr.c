@@ -5567,7 +5567,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     CLASS_DATA (fsym)->attr.class_pointer
 				     || CLASS_DATA (fsym)->attr.allocatable);
 	}
-      else if (UNLIMITED_POLY (fsym) && e->ts.type != BT_CLASS)
+      else if (UNLIMITED_POLY (fsym) && e->ts.type != BT_CLASS
+	       && gfc_expr_attr (e).flavor != FL_PROCEDURE)
 	{
 	  /* The intrinsic type needs to be converted to a temporary
 	     CLASS object for the unlimited polymorphic formal.  */
@@ -10807,7 +10808,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		       || gfc_is_class_array_ref (expr1, NULL)
 		       || gfc_is_class_scalar_expr (expr1)
 		       || gfc_is_class_array_ref (expr2, NULL)
-		       || gfc_is_class_scalar_expr (expr2));
+		       || gfc_is_class_scalar_expr (expr2))
+		   && lhs_attr.flavor != FL_PROCEDURE;
 
   realloc_flag = flag_realloc_lhs
 		 && gfc_is_reallocatable_lhs (expr1)
