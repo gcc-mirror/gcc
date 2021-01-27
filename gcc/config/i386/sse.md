@@ -13041,7 +13041,7 @@
 	(eq:VI124_128
 	  (match_operand:VI124_128 1 "vector_operand" "%0,x")
 	  (match_operand:VI124_128 2 "vector_operand" "xBm,xm")))]
-  "TARGET_SSE2 && !TARGET_XOP
+  "TARGET_SSE2
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    pcmpeq<ssemodesuffix>\t{%2, %0|%0, %2}
@@ -13143,7 +13143,7 @@
 	(gt:VI124_128
 	  (match_operand:VI124_128 1 "register_operand" "0,x")
 	  (match_operand:VI124_128 2 "vector_operand" "xBm,xm")))]
-  "TARGET_SSE2 && !TARGET_XOP"
+  "TARGET_SSE2"
   "@
    pcmpgt<ssemodesuffix>\t{%2, %0|%0, %2}
    vpcmpgt<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
