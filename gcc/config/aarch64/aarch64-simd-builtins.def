@@ -240,6 +240,10 @@
   BUILTIN_VQW (TERNOP, smlsl_hi, 0, NONE)
   BUILTIN_VQW (TERNOPU, umlsl_hi, 0, NONE)
 
+  /* Implemented by aarch64_<su>mlal_hi<mode>.  */
+  BUILTIN_VQW (TERNOP, smlal_hi, 0, NONE)
+  BUILTIN_VQW (TERNOPU, umlal_hi, 0, NONE)
+
   BUILTIN_VSQN_HSDI (UNOPUS, sqmovun, 0, NONE)
 
   /* Implemented by aarch64_sqxtun2<mode>.  */
