@@ -5449,10 +5449,13 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   comparison of PARM_DECLs in cp_tree_equal and alias specializations
-   in structrual_comptypes.  */
+/* Nonzero if we are inside spec_hasher::equal, which affects
+   comparison of PARM_DECLs in cp_tree_equal.  */
 extern int comparing_specializations;
+
+/* Nonzero if we want different dependent aliases to compare as unequal.
+   FIXME we should always do this except during deduction/ordering.  */
+extern int comparing_dependent_aliases;
 
 /* When comparing specializations permit context _FROM to match _TO.  */
 extern tree map_context_from;

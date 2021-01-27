@@ -3847,12 +3847,7 @@ cp_tree_equal (tree t1, tree t2)
 	 template.  */
 
       if (comparing_specializations
-	  && DECL_CONTEXT (t1) != DECL_CONTEXT (t2)
-	  /* Module duplicate checking can have t1 = new, t2 =
-	     existing, and they should be considered matching at this
-	     point.  */
-	  && !(DECL_CONTEXT (t1) == map_context_from
-	       && DECL_CONTEXT (t2) == map_context_to))
+	  && DECL_CONTEXT (t1) != DECL_CONTEXT (t2))
 	/* When comparing hash table entries, only an exact match is
 	   good enough; we don't want to replace 'this' with the
 	   version from another function.  But be more flexible
