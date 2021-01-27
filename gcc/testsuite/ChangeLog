@@ -1,3 +1,61 @@
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_c++2a):
+	Check for C++2a or C++23.
+	(check_effective_target_c++20_down): New.
+	(check_effective_target_c++23_only): New.
+	(check_effective_target_c++23): New.
+	* g++.dg/cpp23/cplusplus.C: New.
+
+2021-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97474
+	* g++.dg/torture/pr97474.C: New test.
+
+2021-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97566
+	* g++.dg/cpp2a/no_unique_address10.C: New test.
+	* g++.dg/cpp2a/no_unique_address9.C: New test.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/m128-check.h (CHECK_EXP): Remove
+	optimize ("no-strict-aliasing") attribute.
+	* gcc.target/powerpc/sse-andnps-1.c (TEST): Copy e into float[4]
+	array to avoid violating TBAA.
+	* gcc.target/powerpc/sse2-andpd-1.c (TEST): Copy e.d into double[2]
+	array to avoid violating TBAA.
+	* gcc.target/powerpc/sse-andps-1.c (TEST): Copy e.f into float[4]
+	array to avoid violating TBAA.
+	* gcc.target/powerpc/sse2-andnpd-1.c (TEST): Copy e into double[2]
+	array to avoid violating TBAA.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98681
+	* gcc.c-torture/execute/pr98681.c: New test.
+
+2021-01-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/67539
+	* gfortran.dg/elemental_assignment_1.f90: New test.
+
+2021-01-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/modules/modules.exp: Remove unused CXX_MODULE_PATH;
+	add previously missing space in '$ident link'.
+
+2021-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98807
+	* gcc.dg/pr98807.c: Add -Wno-psabi -w to dg-options.
+
+2021-01-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/asan1.adb: New test.
+	* gnat.dg/asan1_pkg.ads: New additional source.
+
 2021-01-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/70070

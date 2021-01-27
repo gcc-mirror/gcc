@@ -1,3 +1,13 @@
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* c-common.h (cxx_dialect): Add cxx23 as a dialect.
+	* c.opt: Add options for -std=c++23, std=c++2b, -std=gnu++23
+	and -std=gnu++2b
+	* c-opts.c (set_std_cxx23): New.
+	(c_common_handle_option): Set options when -std=c++23 is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx20): Likewise.
+
 2021-01-25  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/98646

@@ -1,3 +1,11 @@
+2021-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 609c3ce2d.
+	* d-compiler.cc (Compiler::loadModule): Rename to ...
+	(Compiler::onParseModule): ... this.
+	(Compiler::onImport): New function.
+	* d-lang.cc (d_parse_file): Remove call to Compiler::loadModule.
+
 2021-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 3a7ebef73.
