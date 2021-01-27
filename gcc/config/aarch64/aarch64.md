@@ -5918,10 +5918,10 @@
     {
       case 0:
 	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
-	return "bfxil\\t%0, %1, 0, %3";
+	return "bfxil\\t%w0, %w1, 0, %3";
       case 1:
 	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
-	return "bfxil\\t%0, %2, 0, %3";
+	return "bfxil\\t%w0, %w2, 0, %3";
       default:
 	gcc_unreachable ();
     }
