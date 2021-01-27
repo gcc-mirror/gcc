@@ -415,7 +415,7 @@ ctor_for_folding (tree decl)
       gcc_assert (!TREE_PUBLIC (decl));
       /* Unless this is called during FE folding.  */
       if (cfun
-	  && (cfun->curr_properties & (PROP_trees | PROP_rtl)) == 0
+	  && (cfun->curr_properties & (PROP_gimple | PROP_rtl)) == 0
 	  && TREE_READONLY (decl)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && DECL_INITIAL (decl))
