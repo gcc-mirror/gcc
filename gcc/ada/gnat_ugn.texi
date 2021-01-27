@@ -8581,6 +8581,18 @@ marker is specified, the callgraph is decorated with information about
 dynamically allocated objects.
 @end table
 
+@geindex -fdiagnostics-format (gcc)
+
+
+@table @asis
+
+@item @code{-fdiagnostics-format=json}
+
+Makes GNAT emit warning and error messages as JSON. Inhibits printing of
+text warning and errors messages except if @code{-gnatv} or
+@code{-gnatl} are present.
+@end table
+
 @geindex -fdump-scos (gcc)
 
 

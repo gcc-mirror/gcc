@@ -915,6 +915,11 @@ package Opt is
    --  directory if these files already exist or in the source directory
    --  if not.
 
+   JSON_Output : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in JSON format. Set to true when the
+   --  backend option "-fdiagnostics-format=json" is found on the command line.
+
    Keep_Going : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  When True signals to ignore compilation errors and keep processing

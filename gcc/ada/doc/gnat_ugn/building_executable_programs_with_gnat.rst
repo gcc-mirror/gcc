@@ -1233,6 +1233,13 @@ Alphabetical List of All Switches
   marker is specified, the callgraph is decorated with information about
   dynamically allocated objects.
 
+.. index:: -fdiagnostics-format   (gcc)
+
+:switch:`-fdiagnostics-format=json`
+  Makes GNAT emit warning and error messages as JSON. Inhibits printing of
+  text warning and errors messages except if :switch:`-gnatv` or
+  :switch:`-gnatl` are present.
+
 
 .. index:: -fdump-scos  (gcc)
 

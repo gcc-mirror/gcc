@@ -70,6 +70,7 @@ package Back_End is
    --    Opt.Suppress_Control_Float_Optimizations
    --    Opt.Generate_SCO
    --    Opt.Generate_SCO_Instance_Table
+   --    Opt.JSON_Output
    --    Opt.Stack_Checking_Enabled
    --    Opt.No_Stdinc
    --    Opt.No_Stdlib

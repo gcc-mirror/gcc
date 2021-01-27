@@ -281,6 +281,14 @@ package body Back_End is
             elsif Switch_Chars (First .. Last) = "fpreserve-control-flow" then
                Opt.Suppress_Control_Flow_Optimizations := True;
 
+            --  Back end switch -fdiagnostics-format=json tells the frontend to
+            --  output its error and warning messages in the same format GCC
+            --  uses when passed -fdiagnostics-format=json.
+
+            elsif Switch_Chars (First .. Last) = "fdiagnostics-format=json"
+            then
+               Opt.JSON_Output := True;
+
             --  Back end switch -fdump-scos, which exists primarily for C, is
             --  also accepted for Ada as a synonym of -gnateS.
 
