@@ -55,7 +55,7 @@ extern Nat Serious_Errors_Detected;
 
 #define Compiler_Abort		comperr__compiler_abort
 
-extern int Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_NORETURN;
+extern void Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_NORETURN;
 
 /* debug: */
 
@@ -103,7 +103,7 @@ extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, unsigned char);
 
 extern void Error_Msg_N			(String_Pointer, Node_Id);
 extern void Error_Msg_NE		(String_Pointer, Node_Id, Entity_Id);
-extern void Set_Identifier_Casing	(Char *, const Char *);
+extern void Set_Identifier_Casing	(void *, const void *);
 
 /* err_vars: */
 
@@ -145,7 +145,7 @@ extern Node_Id Asm_Input_Value		(void);
 extern Node_Id Asm_Output_Constraint	(void);
 extern Node_Id Asm_Output_Variable	(void);
 extern Node_Id Asm_Template		(Node_Id);
-extern char *Clobber_Get_Next		(void);
+extern void *Clobber_Get_Next		(void);
 extern void Clobber_Setup		(Node_Id);
 extern Boolean Is_Asm_Volatile		(Node_Id);
 extern void Next_Asm_Input		(void);

@@ -7993,7 +7993,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    }
 
 	  Clobber_Setup (gnat_node);
-	  while ((clobber = Clobber_Get_Next ()))
+	  while ((clobber = (char *) Clobber_Get_Next ()))
 	    gnu_clobbers
 	      = tree_cons (NULL_TREE,
 			   build_string (strlen (clobber) + 1, clobber),
