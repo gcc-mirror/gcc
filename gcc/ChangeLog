@@ -1,3 +1,8 @@
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* common.opt: Add missing equal symbol.
+
 2021-01-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from master:
