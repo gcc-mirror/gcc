@@ -3073,6 +3073,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 #endif // C++20
 
+#if __cplusplus > 202002L
+      bool
+      contains(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+
+      bool
+      contains(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+
+      bool
+      contains(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+#endif // C++23
+
       // Allow basic_stringbuf::__xfer_bufptrs to call _M_length:
       template<typename, typename, typename> friend class basic_stringbuf;
     };
@@ -5997,6 +6011,21 @@ _GLIBCXX_END_NAMESPACE_CXX11
       ends_with(const _CharT* __x) const noexcept
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 #endif // C++20
+
+#if __cplusplus >= 202011L \
+  || (__cplusplus == 202002L && !defined __STRICT_ANSI__)
+      bool
+      contains(basic_string_view<_CharT, _Traits> __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+
+      bool
+      contains(_CharT __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+
+      bool
+      contains(const _CharT* __x) const noexcept
+      { return __sv_type(this->data(), this->size()).contains(__x); }
+#endif // C++23
 
 # ifdef _GLIBCXX_TM_TS_INTERNAL
       friend void

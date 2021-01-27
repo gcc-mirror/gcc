@@ -352,6 +352,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->ends_with(basic_string_view(__x)); }
 #endif // C++20
 
+#if __cplusplus > 202002L
+#define __cpp_lib_string_contains 202011L
+      constexpr bool
+      contains(basic_string_view __x) const noexcept
+      { return this->find(__x) != npos; }
+
+      constexpr bool
+      contains(_CharT __x) const noexcept
+      { return this->find(__x) != npos; }
+
+      constexpr bool
+      contains(const _CharT* __x) const noexcept
+      { return this->find(__x) != npos; }
+#endif // C++23
+
       // [string.view.find], searching
 
       constexpr size_type
