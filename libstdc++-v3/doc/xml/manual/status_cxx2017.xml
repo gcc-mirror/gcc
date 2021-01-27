@@ -3113,7 +3113,7 @@ since C++14 and the implementation is complete.
         is supported if <code>__ALTIVEC__</code> is defined and <code>sizeof(T)
         &lt; 8</code>. Additionally, <code>double</code> is supported if
         <code>__VSX__</code> is defined, and any <code>T</code> with <code>
-        sizeof(T) &le; 8</code> is supported if <code>__POWER8_VECTOR__</code>
+        sizeof(T) &lt;= 8</code> is supported if <code>__POWER8_VECTOR__</code>
         is defined.
 
         On x86, given an extended ABI tag <code>Abi</code>,
