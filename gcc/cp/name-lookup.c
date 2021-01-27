@@ -5729,6 +5729,16 @@ lookup_using_decl (tree scope, name_lookup &lookup)
       /* Naming a class member.  This is awkward in C++20, because we
 	 might be naming an enumerator of an unrelated class.  */
 
+      tree npscope = scope;
+      if (PACK_EXPANSION_P (scope))
+	npscope = PACK_EXPANSION_PATTERN (scope);
+
+      if (!MAYBE_CLASS_TYPE_P (npscope))
+	{
+	  error ("%qT is not a class, namespace, or enumeration", npscope);
+	  return NULL_TREE;
+	}
+
       /* You cannot using-decl a destructor.  */
       if (TREE_CODE (lookup.name) == BIT_NOT_EXPR)
 	{
@@ -5737,14 +5747,13 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	}
 
       /* Using T::T declares inheriting ctors, even if T is a typedef.  */
-      if (MAYBE_CLASS_TYPE_P (scope)
-	  && (lookup.name == TYPE_IDENTIFIER (scope)
-	      || constructor_name_p (lookup.name, scope)))
+      if (lookup.name == TYPE_IDENTIFIER (npscope)
+	  || constructor_name_p (lookup.name, npscope))
 	{
 	  if (!TYPE_P (current))
 	    {
 	      error ("non-member using-declaration names constructor of %qT",
-		     scope);
+		     npscope);
 	      return NULL_TREE;
 	    }
 	  maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
@@ -5752,88 +5761,79 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	  CLASSTYPE_NON_AGGREGATE (current) = true;
     	}
 
-      if (!MAYBE_CLASS_TYPE_P (scope))
-	;
+      if (!TYPE_P (current) && cxx_dialect < cxx20)
+	{
+	  error ("using-declaration for member at non-class scope");
+	  return NULL_TREE;
+	}
+
+      bool depscope = dependent_scope_p (scope);
+
+      if (depscope)
+	/* Leave binfo null.  */;
       else if (TYPE_P (current))
 	{
-	  dependent_p = dependent_scope_p (scope);
-	  if (!dependent_p)
-	    {
-	      binfo = lookup_base (current, scope, ba_any, &b_kind, tf_none);
-	      gcc_checking_assert (b_kind >= bk_not_base);
+	  binfo = lookup_base (current, scope, ba_any, &b_kind, tf_none);
+	  gcc_checking_assert (b_kind >= bk_not_base);
 
-	      if (lookup.name == ctor_identifier)
+	  if (b_kind == bk_not_base && any_dependent_bases_p ())
+	    /* Treat as-if dependent.  */
+	    depscope = true;
+	  else if (lookup.name == ctor_identifier
+		   && (b_kind < bk_proper_base || !binfo_direct_p (binfo)))
+	    {
+	      if (any_dependent_bases_p ())
+		depscope = true;
+	      else
 		{
-		  /* Even if there are dependent bases, SCOPE will not
-		     be direct base, no matter.  */
-		  if (b_kind < bk_proper_base || !binfo_direct_p (binfo))
-		    {
-		      error ("%qT is not a direct base of %qT", scope, current);
-		      return NULL_TREE;
-		    }
+		  error ("%qT is not a direct base of %qT", scope, current);
+		  return NULL_TREE;
 		}
-	      else if (b_kind < bk_proper_base)
-		binfo = TYPE_BINFO (scope);
-	      else if (IDENTIFIER_CONV_OP_P (lookup.name)
-		       && dependent_type_p (TREE_TYPE (lookup.name)))
-		dependent_p = true;
 	    }
+
+	  if (b_kind < bk_proper_base)
+	    binfo = TYPE_BINFO (scope);
 	}
       else
 	binfo = TYPE_BINFO (scope);
 
+      dependent_p = (depscope
+		     || (IDENTIFIER_CONV_OP_P (lookup.name)
+			 && dependent_type_p (TREE_TYPE (lookup.name))));
+
       if (!dependent_p)
+	lookup.value = lookup_member (binfo, lookup.name, /*protect=*/2,
+				      /*want_type=*/false, tf_none);
+
+      if (!depscope && b_kind < bk_proper_base)
 	{
-	  if (binfo)
-	    lookup.value = lookup_member (binfo, lookup.name, /*protect=*/2,
-					  /*want_type=*/false, tf_none);
-
-	  tree saved_value = lookup.value;
-	  if (lookup.value
-	      && b_kind < bk_proper_base)
+	  if (cxx_dialect >= cxx20 && lookup.value
+	      && TREE_CODE (lookup.value) == CONST_DECL)
 	    {
-	      if (cxx_dialect >= cxx20
-		  && TREE_CODE (lookup.value) == CONST_DECL)
-		{
-		  /* Using an unrelated enum; check access here rather
-		     than separately for class and non-class using.  */
-		  perform_or_defer_access_check
-		    (binfo, lookup.value, lookup.value, tf_warning_or_error);
-		  /* And then if this is a copy from handle_using_decl, look
-		     through to the original enumerator.  */
-		  if (CONST_DECL_USING_P (lookup.value))
-		    lookup.value = DECL_ABSTRACT_ORIGIN (lookup.value);
-		}
-	      else
-		lookup.value = NULL_TREE;
+	      /* Using an unrelated enum; check access here rather
+		 than separately for class and non-class using.  */
+	      perform_or_defer_access_check
+		(binfo, lookup.value, lookup.value, tf_warning_or_error);
+	      /* And then if this is a copy from handle_using_decl, look
+		 through to the original enumerator.  */
+	      if (CONST_DECL_USING_P (lookup.value))
+		lookup.value = DECL_ABSTRACT_ORIGIN (lookup.value);
 	    }
-
-	  if (!lookup.value)
+	  else if (!TYPE_P (current))
 	    {
-	      if (!TYPE_P (current))
-		{
-		  error ("using-declaration for member at non-class scope");
-		  return NULL_TREE;
-		}
-
-	      if (b_kind < bk_proper_base)
-		{
-		  if (b_kind == bk_not_base && any_dependent_bases_p ())
-		    /* Treat as-if dependent.  */
-		    dependent_p = true;
-		  else
-		    {
-		      auto_diagnostic_group g;
-		      error_not_base_type (scope, current);
-		      if (saved_value && DECL_IMPLICIT_TYPEDEF_P (saved_value)
-			  && (TREE_CODE (TREE_TYPE (saved_value))
-			      == ENUMERAL_TYPE))
-			inform (input_location,
-				"did you mean %<using enum %T::%D%>?",
-				scope, lookup.name);
-		      return NULL_TREE;
-		    }
-		}
+	      error ("using-declaration for member at non-class scope");
+	      return NULL_TREE;
+	    }
+	  else
+	    {
+	      auto_diagnostic_group g;
+	      error_not_base_type (scope, current);
+	      if (lookup.value && DECL_IMPLICIT_TYPEDEF_P (lookup.value)
+		  && TREE_CODE (TREE_TYPE (lookup.value)) == ENUMERAL_TYPE)
+		inform (input_location,
+			"did you mean %<using enum %T::%D%>?",
+			scope, lookup.name);
+	      return NULL_TREE;
 	    }
 	}
     }
@@ -6455,6 +6455,8 @@ finish_nonmember_using_decl (tree scope, tree name)
   else
     {
       add_decl_expr (using_decl);
+      if (DECL_DEPENDENT_P (using_decl))
+	lookup.value = using_decl;
       push_using_decl_bindings (&lookup, name, NULL_TREE);
     }
 }

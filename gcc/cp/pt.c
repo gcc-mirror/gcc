@@ -18130,22 +18130,33 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
 	  {
-	    /* We cannot have a member-using decl here (until 'using
-	       enum T' is a thing).  */
-	    gcc_checking_assert (!DECL_DEPENDENT_P (decl));
-
-	    /* This must be a non-dependent using-decl, and we'll have
-	       used the names it found during template parsing.  We do
-	       not want to do the lookup again, because we might not
-	       find the things we found then.  (Again, using enum T
-	       might mean we have to do things here.)  */
 	    tree scope = USING_DECL_SCOPE (decl);
-	    gcc_checking_assert (scope
-				 == tsubst (scope, args, complain, in_decl));
-	    /* We still need to push the bindings so that we can look up
-	       this name later.  */
-	    push_using_decl_bindings (DECL_NAME (decl),
-				      USING_DECL_DECLS (decl));
+	    if (DECL_DEPENDENT_P (decl))
+	      {
+		scope = tsubst (scope, args, complain, in_decl);
+		if (!MAYBE_CLASS_TYPE_P (scope)
+		    && TREE_CODE (scope) != ENUMERAL_TYPE)
+		  {
+		    if (complain & tf_error)
+		      error_at (DECL_SOURCE_LOCATION (decl), "%qT is not a "
+				"class, namespace, or enumeration", scope);
+		    return error_mark_node;
+		  }
+		finish_nonmember_using_decl (scope, DECL_NAME (decl));
+	      }
+	    else
+	      {
+		/* This is a non-dependent using-decl, and we'll have
+		   used the names it found during template parsing.  We do
+		   not want to do the lookup again, because we might not
+		   find the things we found then.  */
+		gcc_checking_assert (scope == tsubst (scope, args,
+						      complain, in_decl));
+		/* We still need to push the bindings so that we can look up
+		   this name later.  */
+		push_using_decl_bindings (DECL_NAME (decl),
+					  USING_DECL_DECLS (decl));
+	      }
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
