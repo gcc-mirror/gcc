@@ -483,6 +483,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	  /* Define this when supporting context-sensitive keywords.  */
       if (!flag_iso)
 	rs6000_define_or_undefine_macro (define_p, "__APPLE_ALTIVEC__");
+      if (rs6000_aix_extabi)
+	rs6000_define_or_undefine_macro (define_p, "__EXTABI__");
     }
   /* Note that the OPTION_MASK_VSX flag is automatically turned on in
      the following conditions:

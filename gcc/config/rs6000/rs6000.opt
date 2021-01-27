@@ -344,6 +344,7 @@ mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output.
 
+; Altivec ABI
 mabi=altivec
 Target RejectNegative Var(rs6000_altivec_abi) Save
 Use the AltiVec ABI extensions.
@@ -352,6 +353,16 @@ mabi=no-altivec
 Target RejectNegative Var(rs6000_altivec_abi, 0)
 Do not use the AltiVec ABI extensions.
 
+; AIX Extended vector ABI
+mabi=vec-extabi
+Target RejectNegative Var(rs6000_aix_extabi, 1) Save
+Use the AIX Vector Extended ABI.
+
+mabi=vec-default
+Target RejectNegative Var(rs6000_aix_extabi, 0)
+Do not use the AIX Vector Extended ABI.
+
+; PPC64 Linux ELF ABI
 mabi=elfv1
 Target RejectNegative Var(rs6000_elf_abi, 1) Save
 Use the ELFv1 ABI.
