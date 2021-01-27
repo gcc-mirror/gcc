@@ -7539,9 +7539,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 			 && expr->value.function.esym->attr.elemental)
 			|| (expr->value.function.isym != NULL
 			    && expr->value.function.isym->elemental)
+			|| (gfc_expr_attr (expr).proc_pointer
+			    && gfc_expr_attr (expr).elemental)
 			|| gfc_inline_intrinsic_function_p (expr));
-	  else
-	    gcc_assert (ss_type == GFC_SS_INTRINSIC);
 
 	  need_tmp = 1;
 	  if (expr->ts.type == BT_CHARACTER
