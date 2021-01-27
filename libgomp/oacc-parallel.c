@@ -541,8 +541,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 				  &api_info);
     }
 
-  tgt = gomp_map_vars_openacc (acc_dev, aq, mapnum, hostaddrs, sizes, kinds,
-			       nca_info);
+  tgt = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
+			(struct goacc_ncarray_info *) nca_info, true, 0);
   free (nca_info);
 
   if (profiling_p)
@@ -558,7 +558,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
 				  &api_info);
     }
-  
+
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
@@ -585,11 +585,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 				  &api_info);
     }
 
-  /* If running synchronously, unmap immediately.  */
-  if (aq == NULL)
-    gomp_unmap_vars (tgt, true);
-  else
-    gomp_unmap_vars_async (tgt, true, aq);
+  /* If running synchronously (aq == NULL), this will unmap immediately.  */
+  goacc_unmap_vars (tgt, true, aq);
 
   if (profiling_p)
     {
@@ -732,7 +729,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
     {
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;
-      tgt = gomp_map_vars_openacc (NULL, NULL, 0, NULL, NULL, NULL, NULL);
+      tgt = goacc_map_vars (NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL,
+			    true, 0);
       tgt->prev = thr->mapped_data;
       thr->mapped_data = tgt;
 
@@ -749,8 +747,8 @@ GOACC_data_start (int flags_m, size_t mapnum,
     }
 
   gomp_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
-  tgt = gomp_map_vars_openacc (acc_dev, NULL, mapnum, hostaddrs, sizes, kinds,
-			       nca_info);
+  tgt = goacc_map_vars (acc_dev, NULL, mapnum, hostaddrs, NULL, sizes, kinds,
+			nca_info, true, 0);
   free (nca_info);
   gomp_debug (0, "  %s: mappings prepared\n", __FUNCTION__);
   tgt->prev = thr->mapped_data;
@@ -827,7 +825,7 @@ GOACC_data_end (void)
 
   gomp_debug (0, "  %s: restore mappings\n", __FUNCTION__);
   thr->mapped_data = tgt->prev;
-  gomp_unmap_vars (tgt, true);
+  goacc_unmap_vars (tgt, true, NULL);
   gomp_debug (0, "  %s: mappings restored\n", __FUNCTION__);
 
   if (profiling_p)
