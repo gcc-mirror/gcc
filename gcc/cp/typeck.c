@@ -3326,7 +3326,15 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
     {
       /* Retain the type if we know the operand is a pointer.  */
       if (TREE_TYPE (expr) && INDIRECT_TYPE_P (TREE_TYPE (expr)))
-	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+	{
+	  if (expr == current_class_ptr
+	      || (TREE_CODE (expr) == NOP_EXPR
+		  && TREE_OPERAND (expr, 0) == current_class_ptr
+		  && (same_type_ignoring_top_level_qualifiers_p
+			(TREE_TYPE (expr), TREE_TYPE (current_class_ptr)))))
+	    return current_class_ref;
+	  return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+	}
       if (type_dependent_expression_p (expr))
 	return build_min_nt_loc (loc, INDIRECT_REF, expr);
       expr = build_non_dependent_expr (expr);
