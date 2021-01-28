@@ -527,9 +527,7 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	      /* Might be beginning of `p` extension.  */
 	      if (std_ext_p)
 		{
-		  *major_version = version;
-		  *minor_version = 0;
-		  *explicit_version_p = true;
+		  get_default_version (ext, major_version, minor_version);
 		  return p;
 		}
 	      else
