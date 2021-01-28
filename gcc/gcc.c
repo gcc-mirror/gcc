@@ -9909,12 +9909,14 @@ print_multilib_info (void)
 	  last_path_len = p - this_path;
 	}
 
-      /* If this directory requires any default arguments, we can skip
-	 it.  We will already have printed a directory identical to
-	 this one which does not require that default argument.  */
+      /* If all required arguments are default arguments, and no default
+	 arguments appear in the ! argument list, then we can skip it.
+	 We will already have printed a directory identical to this one
+	 which does not require that default argument.  */
       if (! skip)
 	{
 	  const char *q;
+	  bool default_arg_ok = false;
 
 	  q = p + 1;
 	  while (*q != ';')
@@ -9946,16 +9948,29 @@ print_multilib_info (void)
 		     list.  */
 		  if (not_arg)
 		    {
-		      skip = 0;
+		      default_arg_ok = false;
 		      break;
 		    }
-		  else
-		    skip = 1;
+
+		  default_arg_ok = true;
+		}
+	      else if (!not_arg)
+		{
+		  /* Stop checking if any required argument is not provided by
+		     default arguments.  */
+		  default_arg_ok = false;
+		  break;
 		}
 
 	      if (*q == ' ')
 		++q;
 	    }
+
+	  /* Make sure all default argument is OK for this multi-lib set.  */
+	  if (default_arg_ok)
+	    skip = 1;
+	  else
+	    skip = 0;
 	}
 
       if (! skip)
