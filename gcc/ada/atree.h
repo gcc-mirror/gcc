@@ -70,7 +70,7 @@ extern Node_Id Current_Error_Node;
    these even-lower-level getters.  */
 
 extern Field_Offset *Node_Offsets_Ptr;
-extern slot *Slots_Ptr;
+extern any_slot *Slots_Ptr;
 
 INLINE Union_Id Get_1_Bit_Field (Node_Id N, Field_Offset Offset);
 INLINE Union_Id Get_2_Bit_Field (Node_Id N, Field_Offset Offset);

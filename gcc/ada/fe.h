@@ -122,7 +122,7 @@ extern Uint Error_Msg_Uint_2;
 
 extern Entity_Id Get_Local_Raise_Call_Entity	(void);
 extern Entity_Id Get_RT_Exception_Entity	(int);
-extern void Get_RT_Exception_Name		(int);
+extern void Get_RT_Exception_Name		(enum RT_Exception_Code);
 extern void Warn_If_No_Local_Raise		(int);
 
 /* exp_code:  */

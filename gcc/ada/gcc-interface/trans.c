@@ -76,7 +76,7 @@
 
 /* Pointers to front-end tables accessed through macros.  */
 Field_Offset *Node_Offsets_Ptr;
-slot *Slots_Ptr;
+any_slot *Slots_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
 struct Elist_Header *Elists_Ptr;
@@ -280,7 +280,7 @@ gigi (Node_Id gnat_root,
       int max_gnat_node,
       int number_name ATTRIBUTE_UNUSED,
       Field_Offset *node_offsets_ptr,
-      slot *slots_ptr,
+      any_slot *slots_ptr,
       Node_Id *next_node_ptr,
       Node_Id *prev_node_ptr,
       struct Elist_Header *elists_ptr,
@@ -752,7 +752,7 @@ build_raise_check (int check, enum exception_info_kind kind)
 
   strcpy (Name_Buffer, pfx);
   Name_Len = sizeof (pfx) - 1;
-  Get_RT_Exception_Name (check);
+  Get_RT_Exception_Name ((enum RT_Exception_Code) check);
 
   if (kind == exception_simple)
     {

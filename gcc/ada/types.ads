@@ -930,6 +930,7 @@ package Types is
       SE_Object_Too_Large,               -- 35
       PE_Stream_Operation_Not_Allowed,   -- 36
       PE_Build_In_Place_Mismatch);       -- 37
+   pragma Convention (C, RT_Exception_Code);
 
    Last_Reason_Code : constant :=
      RT_Exception_Code'Pos (RT_Exception_Code'Last);
