@@ -1,3 +1,12 @@
+2021-01-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/98766
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Use maybe_le when
+	comparing against type size with param_avoid_fma_max_bits.
+
 2021-01-26  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/98739

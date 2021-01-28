@@ -1,3 +1,11 @@
+2021-01-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/98766
+	* gcc.dg/pr98766.c: New test.
+
 2021-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/thunk2.adb, gnat.dg/thunk2.ads: New test.
