@@ -602,6 +602,9 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   /* Call malloc.  */
   gfc_start_block (&block2);
 
+  if (size == NULL_TREE)
+    size = build_int_cst (size_type_node, 1);
+
   size = fold_convert (size_type_node, size);
   size = fold_build2_loc (input_location, MAX_EXPR, size_type_node, size,
 			  build_int_cst (size_type_node, 1));
