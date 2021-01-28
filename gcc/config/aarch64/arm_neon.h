@@ -7077,120 +7077,70 @@ __extension__ extern __inline int16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_s8 (int8x8_t __a)
 {
-  int16_t __result;
-  __asm__ ("saddlv %h0,%1.8b"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_saddlvv8qi (__a);
 }
 
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_s16 (int16x4_t __a)
 {
-  int32_t __result;
-  __asm__ ("saddlv %s0,%1.4h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_saddlvv4hi (__a);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_u8 (uint8x8_t __a)
 {
-  uint16_t __result;
-  __asm__ ("uaddlv %h0,%1.8b"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uaddlvv8qi_uu (__a);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_u16 (uint16x4_t __a)
 {
-  uint32_t __result;
-  __asm__ ("uaddlv %s0,%1.4h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uaddlvv4hi_uu (__a);
 }
 
 __extension__ extern __inline int16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_s8 (int8x16_t __a)
 {
-  int16_t __result;
-  __asm__ ("saddlv %h0,%1.16b"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_saddlvv16qi (__a);
 }
 
 __extension__ extern __inline int32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_s16 (int16x8_t __a)
 {
-  int32_t __result;
-  __asm__ ("saddlv %s0,%1.8h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_saddlvv8hi (__a);
 }
 
 __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_s32 (int32x4_t __a)
 {
-  int64_t __result;
-  __asm__ ("saddlv %d0,%1.4s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_saddlvv4si (__a);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_u8 (uint8x16_t __a)
 {
-  uint16_t __result;
-  __asm__ ("uaddlv %h0,%1.16b"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uaddlvv16qi_uu (__a);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_u16 (uint16x8_t __a)
 {
-  uint32_t __result;
-  __asm__ ("uaddlv %s0,%1.8h"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uaddlvv8hi_uu (__a);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlvq_u32 (uint32x4_t __a)
 {
-  uint64_t __result;
-  __asm__ ("uaddlv %d0,%1.4s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uaddlvv4si_uu (__a);
 }
 
 __extension__ extern __inline float32x2_t
@@ -10281,18 +10231,14 @@ __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_s32 (int32x2_t __a)
 {
-  int64_t __result;
-  __asm__ ("saddlp %0.1d, %1.2s" : "=w"(__result) : "w"(__a) : );
-  return __result;
+  return __builtin_aarch64_saddlvv2si (__a);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddlv_u32 (uint32x2_t __a)
 {
-  uint64_t __result;
-  __asm__ ("uaddlp %0.1d, %1.2s" : "=w"(__result) : "w"(__a) : );
-  return __result;
+  return __builtin_aarch64_uaddlvv2si_uu (__a);
 }
 
 __extension__ extern __inline int16x4_t

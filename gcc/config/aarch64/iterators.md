@@ -215,6 +215,9 @@
 ;; Advanced SIMD modes for Integer reduction across lanes (zero/sign extended).
 (define_mode_iterator VDQV_E [V8QI V16QI V4HI V8HI])
 
+;; Advanced SIMD modes for Integer widening reduction across lanes.
+(define_mode_iterator VDQV_L [V8QI V16QI V4HI V8HI V4SI V2SI])
+
 ;; All double integer narrow-able modes.
 (define_mode_iterator VDN [V4HI V2SI DI])
 
@@ -492,6 +495,8 @@
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
+    UNSPEC_SADDLV	; Used in aarch64-simd.md.
+    UNSPEC_UADDLV	; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
     UNSPEC_UMAXV	; Used in aarch64-simd.md.
@@ -1302,6 +1307,20 @@
 			  (V2SI "2d") (V16QI "8h")
 			  (V8HI "4s") (V4SI "2d")
 			  (V8HF "4s") (V4SF "2d")])
+
+;; Widened scalar register suffixes.
+(define_mode_attr Vwstype [(V8QI "h") (V4HI "s")
+			  (V2SI "") (V16QI "h")
+			  (V8HI "s") (V4SI "d")])
+;; Add a .1d for V2SI.
+(define_mode_attr Vwsuf [(V8QI "") (V4HI "")
+			  (V2SI ".1d") (V16QI "")
+			  (V8HI "") (V4SI "")])
+
+;; Scalar mode of widened vector reduction.
+(define_mode_attr VWIDE_S [(V8QI "HI") (V4HI "SI")
+			  (V2SI "DI") (V16QI "HI")
+			  (V8HI "SI") (V4SI "DI")])
 
 ;; Widened mode with half the element register suffixes for VD_BHSI/VQW/VQ_HSF.
 (define_mode_attr Vwhalf [(V8QI "4h") (V4HI "2s")
@@ -2184,6 +2203,8 @@
 
 (define_int_iterator SVE_INT_ADDV [UNSPEC_SADDV UNSPEC_UADDV])
 
+(define_int_iterator USADDLV [UNSPEC_SADDLV UNSPEC_UADDLV])
+
 (define_int_iterator LOGICALF [UNSPEC_ANDF UNSPEC_IORF UNSPEC_XORF])
 
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
@@ -2934,6 +2955,8 @@
 ;; "s" for signed operations and "u" for unsigned ones.
 (define_int_attr su [(UNSPEC_SADDV "s")
 		     (UNSPEC_UADDV "u")
+		     (UNSPEC_SADDLV "s")
+		     (UNSPEC_UADDLV "u")
 		     (UNSPEC_UNPACKSHI "s")
 		     (UNSPEC_UNPACKUHI "u")
 		     (UNSPEC_UNPACKSLO "s")

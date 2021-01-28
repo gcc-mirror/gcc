@@ -2695,6 +2695,15 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
+(define_insn "aarch64_<su>addlv<mode>"
+ [(set (match_operand:<VWIDE_S> 0 "register_operand" "=w")
+       (unspec:<VWIDE_S> [(match_operand:VDQV_L 1 "register_operand" "w")]
+		    USADDLV))]
+ "TARGET_SIMD"
+ "<su>addl<vp>\\t%<Vwstype>0<Vwsuf>, %1.<Vtype>"
+  [(set_attr "type" "neon_reduc_add<q>")]
+)
+
 ;; ADDV with result zero-extended to SI/DImode (for popcount).
 (define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
  [(set (match_operand:GPI 0 "register_operand" "=w")
