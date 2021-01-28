@@ -1602,7 +1602,9 @@ template <typename _To, typename _From>
   _GLIBCXX_SIMD_INTRINSIC constexpr _To
   __bit_cast(const _From __x)
   {
-    // TODO: implement with / replace by __builtin_bit_cast ASAP
+#if __has_builtin(__builtin_bit_cast)
+    return __builtin_bit_cast(_To, __x);
+#else
     static_assert(sizeof(_To) == sizeof(_From));
     constexpr bool __to_is_vectorizable
       = is_arithmetic_v<_To> || is_enum_v<_To>;
@@ -1633,6 +1635,7 @@ template <typename _To, typename _From>
 			 reinterpret_cast<const char*>(&__x), sizeof(_To));
 	return __r;
       }
+#endif
   }
 
 // }}}
@@ -2903,6 +2906,58 @@ template <typename _Tp, typename _Up, typename _Ap,
     using _RM = typename _R::mask_type;
     return {__private_init, _RM::abi_type::_MaskImpl::template _S_convert<
 			      typename _RM::simd_type::value_type>(__x)};
+  }
+
+template <typename _To, typename _Up, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  _To
+  simd_bit_cast(const simd<_Up, _Abi>& __x)
+  {
+    using _Tp = typename _To::value_type;
+    using _ToMember = typename _SimdTraits<_Tp, typename _To::abi_type>::_SimdMember;
+    using _From = simd<_Up, _Abi>;
+    using _FromMember = typename _SimdTraits<_Up, _Abi>::_SimdMember;
+    // with concepts, the following should be constraints
+    static_assert(sizeof(_To) == sizeof(_From));
+    static_assert(is_trivially_copyable_v<_Tp> && is_trivially_copyable_v<_Up>);
+    static_assert(is_trivially_copyable_v<_ToMember> && is_trivially_copyable_v<_FromMember>);
+#if __has_builtin(__builtin_bit_cast)
+    return {__private_init, __builtin_bit_cast(_ToMember, __data(__x))};
+#else
+    return {__private_init, __bit_cast<_ToMember>(__data(__x))};
+#endif
+  }
+
+template <typename _To, typename _Up, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  _To
+  simd_bit_cast(const simd_mask<_Up, _Abi>& __x)
+  {
+    using _From = simd_mask<_Up, _Abi>;
+    static_assert(sizeof(_To) == sizeof(_From));
+    static_assert(is_trivially_copyable_v<_From>);
+    // _To can be simd<T, A>, specifically simd<T, fixed_size<N>> in which case _To is not trivially
+    // copyable.
+    if constexpr (is_simd_v<_To>)
+      {
+	using _Tp = typename _To::value_type;
+	using _ToMember = typename _SimdTraits<_Tp, typename _To::abi_type>::_SimdMember;
+	static_assert(is_trivially_copyable_v<_ToMember>);
+#if __has_builtin(__builtin_bit_cast)
+	return {__private_init, __builtin_bit_cast(_ToMember, __x)};
+#else
+	return {__private_init, __bit_cast<_ToMember>(__x)};
+#endif
+      }
+    else
+      {
+	static_assert(is_trivially_copyable_v<_To>);
+#if __has_builtin(__builtin_bit_cast)
+	return __builtin_bit_cast(_To, __x);
+#else
+	return __bit_cast<_To>(__x);
+#endif
+      }
   }
 } // namespace __proposed
 
