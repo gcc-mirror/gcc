@@ -9,8 +9,9 @@
  */
 module core.sys.windows.dhcpcsdk;
 version (Windows):
+@system:
 
-private import core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.w32api, core.sys.windows.windef;
 
 /*static assert (_WIN32_WINNT >= 0x500,
 "core.sys.windows.dhcpcsdk is available only if version Windows2000, WindowsXP, Windows2003

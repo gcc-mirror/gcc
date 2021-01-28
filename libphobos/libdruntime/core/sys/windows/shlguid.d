@@ -8,8 +8,9 @@
  */
 module core.sys.windows.shlguid;
 version (Windows):
+@system:
 
-private import core.sys.windows.basetyps, core.sys.windows.w32api;
+import core.sys.windows.basetyps, core.sys.windows.w32api;
 
 // FIXME: clean up Windows version support
 

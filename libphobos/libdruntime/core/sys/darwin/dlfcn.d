@@ -33,7 +33,7 @@ struct Dl_info
     void*        dli_saddr;
 }
 
-int dladdr(in void* addr, Dl_info* info);
+int dladdr(const scope void* addr, Dl_info* info);
 
 enum RTLD_NOLOAD = 0x10;
 enum RTLD_NODELETE = 0x80;

@@ -14,7 +14,7 @@
  */
 module core.sys.posix.sys.wait;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.sys.types; // for id_t, pid_t
 public import core.sys.posix.signal;    // for siginfo_t (XSI)
 //public import core.sys.posix.resource; // for rusage (XSI)
@@ -30,6 +30,7 @@ else version (WatchOS)
 
 version (Posix):
 extern (C) nothrow @nogc:
+@system:
 
 //
 // Required
@@ -52,6 +53,8 @@ pid_t waitpid(pid_t, int*, int);
 
 version (CRuntime_Glibc)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -80,6 +83,8 @@ version (CRuntime_Glibc)
 }
 else version (Darwin)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -102,6 +107,8 @@ else version (Darwin)
 }
 else version (FreeBSD)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -124,6 +131,8 @@ else version (FreeBSD)
 }
 else version (NetBSD)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -146,6 +155,8 @@ else version (NetBSD)
 }
 else version (OpenBSD)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -169,6 +180,8 @@ else version (OpenBSD)
 }
 else version (DragonFlyBSD)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -191,6 +204,8 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
+    @safe pure:
+
     enum WNOHANG        = 64;
     enum WUNTRACED      = 4;
 
@@ -204,6 +219,8 @@ else version (Solaris)
 }
 else version (CRuntime_Bionic)
 {
+    @safe pure:
+
     enum WNOHANG   = 1;
     enum WUNTRACED = 2;
 
@@ -216,6 +233,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -229,6 +248,8 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
+    @safe pure:
+
     enum WNOHANG        = 1;
     enum WUNTRACED      = 2;
 
@@ -326,8 +347,30 @@ else version (FreeBSD)
     enum WSTOPPED       = WUNTRACED;
     enum WCONTINUED     = 4;
     enum WNOWAIT        = 8;
+    enum WEXITED        = 16;
+    enum WTRAPPED       = 32;
 
-    // http://www.freebsd.org/projects/c99/
+    enum idtype_t
+    {
+        P_UID,
+        P_GID,
+        P_SID,
+        P_JAILID,
+        P_PID,
+        P_PPID,
+        P_PGID,
+        P_CID,
+        P_ALL,
+        P_LWPID,
+        P_TASKID,
+        P_PROJID,
+        P_POOLID,
+        P_CTID,
+        P_CPUID,
+        P_PSETID
+    }
+
+    int waitid(idtype_t, id_t, siginfo_t*, int);
 }
 else version (NetBSD)
 {

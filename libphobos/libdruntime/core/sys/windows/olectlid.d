@@ -9,5 +9,5 @@
 module core.sys.windows.olectlid;
 version (Windows):
 
-private import core.sys.windows.basetyps;
+import core.sys.windows.basetyps;
 

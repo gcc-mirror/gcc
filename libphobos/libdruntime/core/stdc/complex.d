@@ -149,14 +149,14 @@ creal   csqrtl(creal z);
  ///
  real   cargl(creal z);
 
- ///
- double cimag(cdouble z);
- ///
- float  cimagf(cfloat z);
- ///
- real   cimagl(creal z);
+///
+pragma(inline, true) double cimag(cdouble z) { return z.im; }
+///
+pragma(inline, true) float  cimagf(cfloat z) { return z.im; }
+///
+pragma(inline, true) real   cimagl(creal z)  { return z.im; }
 
- ///
+///
 cdouble conj(cdouble z);
 ///
 cfloat  conjf(cfloat z);
@@ -170,8 +170,12 @@ cfloat  cprojf(cfloat z);
 ///
 creal   cprojl(creal z);
 
-// double creal(cdouble z);
+// Note: `creal` is a keyword in D and so this function is inaccessible, use `creald` instead
+//pragma(inline, true) double creal(cdouble z) { return z.re; }
+
 ///
- float  crealf(cfloat z);
- ///
- real   creall(creal z);
+pragma(inline, true) double creald(cdouble z) { return z.re; }
+///
+pragma(inline, true) float  crealf(cfloat z) { return z.re; }
+///
+pragma(inline, true) real   creall(creal z)  { return z.re; }

@@ -1013,9 +1013,6 @@ public:
 	void function(void*) xdtor;
 	void function(void*) xpostblit;
 	uint m_align;
-	version (X86_64)
-	    TypeInfo m_arg1;
-	    TypeInfo m_arg2;
 	immutable(void)* xgetRTInfo;  */
 
   void visit (TypeInfoStructDeclaration *d)
@@ -1090,19 +1087,6 @@ public:
 
     /* uint m_align;  */
     this->layout_field (build_integer_cst (ti->alignsize (), d_uint_type));
-
-    if (global.params.is64bit)
-      {
-	/* TypeInfo m_arg1;  */
-	tree arg1type = (sd->arg1type) ? build_typeinfo (d->loc, sd->arg1type)
-	  : null_pointer_node;
-	this->layout_field (arg1type);
-
-	/* TypeInfo m_arg2;  */
-	tree arg2type = (sd->arg2type) ? build_typeinfo (d->loc, sd->arg2type)
-	  : null_pointer_node;
-	this->layout_field (arg2type);
-      }
 
     /* immutable(void)* xgetRTInfo;  */
     if (sd->getRTInfo)

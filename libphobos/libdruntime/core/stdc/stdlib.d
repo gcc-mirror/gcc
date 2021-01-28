@@ -14,7 +14,7 @@
 
 module core.stdc.stdlib;
 
-private import core.stdc.config;
+import core.stdc.config;
 public import core.stdc.stddef; // for wchar_t
 
 version (OSX)

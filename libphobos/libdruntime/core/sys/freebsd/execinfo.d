@@ -14,6 +14,8 @@ nothrow:
 
 version (GNU)
     version = BacktraceExternal;
+version (LDC)
+    version = BacktraceExternal;
 
 version (BacktraceExternal)
 {

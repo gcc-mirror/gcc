@@ -55,7 +55,7 @@ struct dl_phdr_info
     char*           dlpi_name;
     ElfW!"Phdr"*    dlpi_phdr;
     ElfW!"Half"     dlpi_phnum;
-};
+}
 
 
 private alias int function(dl_phdr_info*, size_t, void *) dl_iterate_phdr_cb;

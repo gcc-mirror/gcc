@@ -9,16 +9,17 @@
  */
 module core.sys.windows.aclui;
 version (Windows):
+@system:
 pragma(lib, "aclui");
 
-private import core.sys.windows.w32api;
+import core.sys.windows.w32api;
 /*
 static assert (_WIN32_WINNT >= 0x500,
     "core.sys.windows.aclui is available only if version Windows2000, WindowsXP, Windows2003 "
     "or WindowsVista is set");
 */
 import core.sys.windows.accctrl, core.sys.windows.commctrl, core.sys.windows.objbase;
-private import core.sys.windows.basetyps, core.sys.windows.prsht, core.sys.windows.unknwn, core.sys.windows.windef,
+import core.sys.windows.basetyps, core.sys.windows.prsht, core.sys.windows.unknwn, core.sys.windows.windef,
   core.sys.windows.winuser;
 
 

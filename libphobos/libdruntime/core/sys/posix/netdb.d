@@ -14,7 +14,7 @@
  */
 module core.sys.posix.netdb;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.stdc.inttypes;         // for uint32_t
 public import core.sys.posix.netinet.in_; // for in_port_t, in_addr_t
 public import core.sys.posix.sys.types;   // for ino_t
@@ -33,6 +33,7 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 //
 // Required

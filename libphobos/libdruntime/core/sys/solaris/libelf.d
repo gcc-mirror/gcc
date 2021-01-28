@@ -131,7 +131,7 @@ int elf_getshnum(Elf*, size_t*);
 int elf_getshdrnum(Elf*, size_t*);
 int elf_getshstrndx(Elf*, size_t*);
 int elf_getshdrstrndx(Elf*, size_t*);
-c_ulong elf_hash(in char*);
+c_ulong elf_hash(const scope char*);
 uint elf_sys_encoding();
 long elf32_checksum(Elf*);
 Elf_Kind elf_kind(Elf*);
@@ -149,8 +149,8 @@ char* elf_rawfile(Elf*, size_t*);
 char* elf_strptr(Elf*, size_t, size_t);
 off_t elf_update(Elf*, Elf_Cmd);
 uint elf_version(uint);
-Elf_Data* elf32_xlatetof(Elf_Data*, in Elf_Data*, uint);
-Elf_Data* elf32_xlatetom(Elf_Data*, in Elf_Data*, uint);
+Elf_Data* elf32_xlatetof(Elf_Data*, const scope Elf_Data*, uint);
+Elf_Data* elf32_xlatetom(Elf_Data*, const scope Elf_Data*, uint);
 
 version (D_LP64)
 {
@@ -161,6 +161,6 @@ Elf64_Shdr* elf64_getshdr(Elf_Scn*);
 long elf64_checksum(Elf*);
 Elf64_Ehdr* elf64_newehdr(Elf*);
 Elf64_Phdr* elf64_newphdr(Elf*, size_t);
-Elf_Data* elf64_xlatetof(Elf_Data*, in Elf_Data*, uint);
-Elf_Data* elf64_xlatetom(Elf_Data*, in Elf_Data*, uint);
+Elf_Data* elf64_xlatetof(Elf_Data*, const scope Elf_Data*, uint);
+Elf_Data* elf64_xlatetom(Elf_Data*, const scope Elf_Data*, uint);
 }
