@@ -15,4 +15,4 @@ void func()
   result2 = vceqzq_p64 (v2);
 }
 
-/* { dg-final { scan-assembler-times "vceq\.i32\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+\n" 2 } } */
+/* { dg-final { scan-assembler-times "vceq\.i32\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+, #0\n" 2 } } */
