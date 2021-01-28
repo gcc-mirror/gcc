@@ -6984,122 +6984,10 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
-/* Set field ELT_RTX of TARGET to VAL.  */
-
-void
-rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
-{
-  machine_mode mode = GET_MODE (target);
-  machine_mode inner_mode = GET_MODE_INNER (mode);
-  rtx reg = gen_reg_rtx (mode);
-  rtx mask, mem, x;
-  int width = GET_MODE_SIZE (inner_mode);
-  int i;
-
-  val = force_reg (GET_MODE (val), val);
-
-  if (VECTOR_MEM_VSX_P (mode))
-    {
-      if (!CONST_INT_P (elt_rtx))
-	{
-	  rs6000_expand_vector_set_var (target, val, elt_rtx);
-	  return;
-	}
-
-      rtx insn = NULL_RTX;
-
-      if (mode == V2DFmode)
-	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
-
-      else if (mode == V2DImode)
-	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
-
-      else if (TARGET_P9_VECTOR && TARGET_POWERPC64)
-	{
-	  if (mode == V4SImode)
-	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
-	  else if (mode == V8HImode)
-	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
-	  else if (mode == V16QImode)
-	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
-	  else if (mode == V4SFmode)
-	    insn = gen_vsx_set_v4sf_p9 (target, target, val, elt_rtx);
-	}
-
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return;
-	}
-    }
-
-  gcc_assert (CONST_INT_P (elt_rtx));
-
-  /* Simplify setting single element vectors like V1TImode.  */
-  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
-      && INTVAL (elt_rtx) == 0)
-    {
-      emit_move_insn (target, gen_lowpart (mode, val));
-      return;
-    }
-
-  /* Load single variable value.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
-  emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
-  x = gen_rtx_UNSPEC (VOIDmode,
-		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2,
-					  gen_rtx_SET (reg, mem),
-					  x)));
-
-  /* Linear sequence.  */
-  mask = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
-  for (i = 0; i < 16; ++i)
-    XVECEXP (mask, 0, i) = GEN_INT (i);
-
-  /* Set permute mask to insert element into target.  */
-  for (i = 0; i < width; ++i)
-    XVECEXP (mask, 0, INTVAL (elt_rtx) * width + i) = GEN_INT (i + 0x10);
-  x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
-
-  if (BYTES_BIG_ENDIAN)
-    x = gen_rtx_UNSPEC (mode,
-			gen_rtvec (3, target, reg,
-				   force_reg (V16QImode, x)),
-			UNSPEC_VPERM);
-  else
-    {
-      if (TARGET_P9_VECTOR)
-	x = gen_rtx_UNSPEC (mode,
-			    gen_rtvec (3, reg, target,
-				       force_reg (V16QImode, x)),
-			    UNSPEC_VPERMR);
-      else
-	{
-	  /* Invert selector.  We prefer to generate VNAND on P8 so
-	     that future fusion opportunities can kick in, but must
-	     generate VNOR elsewhere.  */
-	  rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
-	  rtx iorx = (TARGET_P8_VECTOR
-		      ? gen_rtx_IOR (V16QImode, notx, notx)
-		      : gen_rtx_AND (V16QImode, notx, notx));
-	  rtx tmp = gen_reg_rtx (V16QImode);
-	  emit_insn (gen_rtx_SET (tmp, iorx));
-
-	  /* Permute with operands reversed and adjusted selector.  */
-	  x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
-			      UNSPEC_VPERM);
-	}
-    }
-
-  emit_insn (gen_rtx_SET (target, x));
-}
-
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
    is variable and also counts by vector element size for p9 and above.  */
 
-void
+static void
 rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
@@ -7146,7 +7034,7 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
    is variable and also counts by vector element size for p8.  */
 
-void
+static void
 rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
@@ -7242,18 +7130,126 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
     gen_vector_select_v16qi (target_v16qi, target_v16qi, val_perm, mask_perm));
 }
 
-/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
-   is variable and also counts by vector element size.  */
+/* Set field ELT_RTX of TARGET to VAL.  */
 
 void
-rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
+rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 {
   machine_mode mode = GET_MODE (target);
   machine_mode inner_mode = GET_MODE_INNER (mode);
-  if (TARGET_P9_VECTOR || GET_MODE_SIZE (inner_mode) == 8)
-    rs6000_expand_vector_set_var_p9 (target, val, idx);
+  rtx reg = gen_reg_rtx (mode);
+  rtx mask, mem, x;
+  int width = GET_MODE_SIZE (inner_mode);
+  int i;
+
+  val = force_reg (GET_MODE (val), val);
+
+  if (VECTOR_MEM_VSX_P (mode))
+    {
+      if (!CONST_INT_P (elt_rtx))
+	{
+	  /* For V2DI/V2DF, could leverage the P9 version to generate xxpermdi
+	     when elt_rtx is variable.  */
+	  if ((TARGET_P9_VECTOR && TARGET_POWERPC64) || width == 8)
+	    {
+	      rs6000_expand_vector_set_var_p9 (target, val, elt_rtx);
+	      return;
+	    }
+	  else if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+	    {
+	      rs6000_expand_vector_set_var_p8 (target, val, elt_rtx);
+	      return;
+	    }
+	}
+
+      rtx insn = NULL_RTX;
+
+      if (mode == V2DFmode)
+	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
+
+      else if (mode == V2DImode)
+	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
+
+      else if (TARGET_P9_VECTOR && TARGET_POWERPC64)
+	{
+	  if (mode == V4SImode)
+	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
+	  else if (mode == V8HImode)
+	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V16QImode)
+	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V4SFmode)
+	    insn = gen_vsx_set_v4sf_p9 (target, target, val, elt_rtx);
+	}
+
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
+  gcc_assert (CONST_INT_P (elt_rtx));
+
+  /* Simplify setting single element vectors like V1TImode.  */
+  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
+      && INTVAL (elt_rtx) == 0)
+    {
+      emit_move_insn (target, gen_lowpart (mode, val));
+      return;
+    }
+
+  /* Load single variable value.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
+  emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
+  x = gen_rtx_UNSPEC (VOIDmode,
+		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2,
+					  gen_rtx_SET (reg, mem),
+					  x)));
+
+  /* Linear sequence.  */
+  mask = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+  for (i = 0; i < 16; ++i)
+    XVECEXP (mask, 0, i) = GEN_INT (i);
+
+  /* Set permute mask to insert element into target.  */
+  for (i = 0; i < width; ++i)
+    XVECEXP (mask, 0, INTVAL (elt_rtx) * width + i) = GEN_INT (i + 0x10);
+  x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
+
+  if (BYTES_BIG_ENDIAN)
+    x = gen_rtx_UNSPEC (mode,
+			gen_rtvec (3, target, reg,
+				   force_reg (V16QImode, x)),
+			UNSPEC_VPERM);
   else
-    rs6000_expand_vector_set_var_p8 (target, val, idx);
+    {
+      if (TARGET_P9_VECTOR)
+	x = gen_rtx_UNSPEC (mode,
+			    gen_rtvec (3, reg, target,
+				       force_reg (V16QImode, x)),
+			    UNSPEC_VPERMR);
+      else
+	{
+	  /* Invert selector.  We prefer to generate VNAND on P8 so
+	     that future fusion opportunities can kick in, but must
+	     generate VNOR elsewhere.  */
+	  rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
+	  rtx iorx = (TARGET_P8_VECTOR
+		      ? gen_rtx_IOR (V16QImode, notx, notx)
+		      : gen_rtx_AND (V16QImode, notx, notx));
+	  rtx tmp = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_rtx_SET (tmp, iorx));
+
+	  /* Permute with operands reversed and adjusted selector.  */
+	  x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
+			      UNSPEC_VPERM);
+	}
+    }
+
+  emit_insn (gen_rtx_SET (target, x));
 }
 
 /* Extract field ELT from VEC into TARGET.  */

@@ -1,4 +1,6 @@
-/* { dg-options "-O2 -maltivec" } */
+/* { dg-do run } */
+/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-O2 -mvsx" } */
 
 #include <stddef.h>
 #include <altivec.h>

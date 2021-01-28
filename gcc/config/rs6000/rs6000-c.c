@@ -1600,7 +1600,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
 	}
 
-      if (TARGET_P8_VECTOR)
+      if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
 	{
 	  stmt = build_array_ref (loc, stmt, arg2);
 	  stmt = fold_build2 (MODIFY_EXPR, TREE_TYPE (arg0), stmt,
