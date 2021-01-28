@@ -50,9 +50,14 @@ testui2_cst(unsigned int x, vector unsigned int v)
 
 /* Each test has lvx (8).  cst tests have additional lvewx. (4) */
 /* var tests have no stwx and stvx.  cst tests have stw (4).*/
-/* { dg-final { scan-assembler-times {\mstvx\M|\mstwx\M|\mstw\M|\mstxvw4x\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstwx\M|\mstw\M|\mstxvw4x\M} 4 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 8 { target le } } } */
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 4 { target be } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 4 { target { be && lp64 } } } } */
 
-/* { dg-final { scan-assembler-times {\mlvewx\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 12 } } */
+/* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 12 { target lp64 } } } */
+
+/* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstwx\M|\mstw\M|\mstxvw4x\M} 12 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 8 { target { be && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target ilp32 } } } */

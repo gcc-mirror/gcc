@@ -2219,6 +2219,11 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
     }
   if (maybe_ne (offset, 0))
     mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
+  /* Avoid passing VALUE RTXen as mem_addr to canon_true_dependence
+     which will over and over re-create proper RTL and re-apply the
+     offset above.  See PR80960 where we almost allocate 1.6GB of PLUS
+     RTXen that way.  */
+  mem_addr = get_addr (mem_addr);
 
   if (group_id >= 0)
     {

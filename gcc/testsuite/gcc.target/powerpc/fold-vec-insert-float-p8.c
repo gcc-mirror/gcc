@@ -19,12 +19,18 @@ testf_cst (float f, vector float vf)
   return vec_insert (f, vf, 12);
 }
 
-/* { dg-final { scan-assembler-times {\mstvx\M|\mstxv\M|\mstxvd2x\M} 0 } } */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstxv\M|\mstxvd2x\M} 0 { target lp64 } } } */
 /* cst tests has stfs instead of stfsx. */
-/* { dg-final { scan-assembler-times {\mstfs\M|\mstfsx\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mstfs\M|\mstfsx\M} 1 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mlvx\M|\mlxv\M|\mlxvd2x\M|\mlxvw4x\M} 2 } } */
 
 /* cst test has a lvewx,vperm combo */
 /* { dg-final { scan-assembler-times {\mlvewx\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 3 { target lp64 } } } */
+
+/* -m32 codegen. */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstxv\M|\mstxvd2x\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstfs\M|\mstfsx\M} 2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 1 { target ilp32 } } } */
+
 

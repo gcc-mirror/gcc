@@ -6984,122 +6984,10 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
-/* Set field ELT_RTX of TARGET to VAL.  */
-
-void
-rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
-{
-  machine_mode mode = GET_MODE (target);
-  machine_mode inner_mode = GET_MODE_INNER (mode);
-  rtx reg = gen_reg_rtx (mode);
-  rtx mask, mem, x;
-  int width = GET_MODE_SIZE (inner_mode);
-  int i;
-
-  val = force_reg (GET_MODE (val), val);
-
-  if (VECTOR_MEM_VSX_P (mode))
-    {
-      if (!CONST_INT_P (elt_rtx))
-	{
-	  rs6000_expand_vector_set_var (target, val, elt_rtx);
-	  return;
-	}
-
-      rtx insn = NULL_RTX;
-
-      if (mode == V2DFmode)
-	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
-
-      else if (mode == V2DImode)
-	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
-
-      else if (TARGET_P9_VECTOR && TARGET_POWERPC64)
-	{
-	  if (mode == V4SImode)
-	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
-	  else if (mode == V8HImode)
-	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
-	  else if (mode == V16QImode)
-	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
-	  else if (mode == V4SFmode)
-	    insn = gen_vsx_set_v4sf_p9 (target, target, val, elt_rtx);
-	}
-
-      if (insn)
-	{
-	  emit_insn (insn);
-	  return;
-	}
-    }
-
-  gcc_assert (CONST_INT_P (elt_rtx));
-
-  /* Simplify setting single element vectors like V1TImode.  */
-  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
-      && INTVAL (elt_rtx) == 0)
-    {
-      emit_move_insn (target, gen_lowpart (mode, val));
-      return;
-    }
-
-  /* Load single variable value.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
-  emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
-  x = gen_rtx_UNSPEC (VOIDmode,
-		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2,
-					  gen_rtx_SET (reg, mem),
-					  x)));
-
-  /* Linear sequence.  */
-  mask = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
-  for (i = 0; i < 16; ++i)
-    XVECEXP (mask, 0, i) = GEN_INT (i);
-
-  /* Set permute mask to insert element into target.  */
-  for (i = 0; i < width; ++i)
-    XVECEXP (mask, 0, INTVAL (elt_rtx) * width + i) = GEN_INT (i + 0x10);
-  x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
-
-  if (BYTES_BIG_ENDIAN)
-    x = gen_rtx_UNSPEC (mode,
-			gen_rtvec (3, target, reg,
-				   force_reg (V16QImode, x)),
-			UNSPEC_VPERM);
-  else
-    {
-      if (TARGET_P9_VECTOR)
-	x = gen_rtx_UNSPEC (mode,
-			    gen_rtvec (3, reg, target,
-				       force_reg (V16QImode, x)),
-			    UNSPEC_VPERMR);
-      else
-	{
-	  /* Invert selector.  We prefer to generate VNAND on P8 so
-	     that future fusion opportunities can kick in, but must
-	     generate VNOR elsewhere.  */
-	  rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
-	  rtx iorx = (TARGET_P8_VECTOR
-		      ? gen_rtx_IOR (V16QImode, notx, notx)
-		      : gen_rtx_AND (V16QImode, notx, notx));
-	  rtx tmp = gen_reg_rtx (V16QImode);
-	  emit_insn (gen_rtx_SET (tmp, iorx));
-
-	  /* Permute with operands reversed and adjusted selector.  */
-	  x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
-			      UNSPEC_VPERM);
-	}
-    }
-
-  emit_insn (gen_rtx_SET (target, x));
-}
-
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
    is variable and also counts by vector element size for p9 and above.  */
 
-void
+static void
 rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
@@ -7146,7 +7034,7 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
    is variable and also counts by vector element size for p8.  */
 
-void
+static void
 rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
@@ -7242,18 +7130,126 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
     gen_vector_select_v16qi (target_v16qi, target_v16qi, val_perm, mask_perm));
 }
 
-/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
-   is variable and also counts by vector element size.  */
+/* Set field ELT_RTX of TARGET to VAL.  */
 
 void
-rs6000_expand_vector_set_var (rtx target, rtx val, rtx idx)
+rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 {
   machine_mode mode = GET_MODE (target);
   machine_mode inner_mode = GET_MODE_INNER (mode);
-  if (TARGET_P9_VECTOR || GET_MODE_SIZE (inner_mode) == 8)
-    rs6000_expand_vector_set_var_p9 (target, val, idx);
+  rtx reg = gen_reg_rtx (mode);
+  rtx mask, mem, x;
+  int width = GET_MODE_SIZE (inner_mode);
+  int i;
+
+  val = force_reg (GET_MODE (val), val);
+
+  if (VECTOR_MEM_VSX_P (mode))
+    {
+      if (!CONST_INT_P (elt_rtx))
+	{
+	  /* For V2DI/V2DF, could leverage the P9 version to generate xxpermdi
+	     when elt_rtx is variable.  */
+	  if ((TARGET_P9_VECTOR && TARGET_POWERPC64) || width == 8)
+	    {
+	      rs6000_expand_vector_set_var_p9 (target, val, elt_rtx);
+	      return;
+	    }
+	  else if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+	    {
+	      rs6000_expand_vector_set_var_p8 (target, val, elt_rtx);
+	      return;
+	    }
+	}
+
+      rtx insn = NULL_RTX;
+
+      if (mode == V2DFmode)
+	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
+
+      else if (mode == V2DImode)
+	insn = gen_vsx_set_v2di (target, target, val, elt_rtx);
+
+      else if (TARGET_P9_VECTOR && TARGET_POWERPC64)
+	{
+	  if (mode == V4SImode)
+	    insn = gen_vsx_set_v4si_p9 (target, target, val, elt_rtx);
+	  else if (mode == V8HImode)
+	    insn = gen_vsx_set_v8hi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V16QImode)
+	    insn = gen_vsx_set_v16qi_p9 (target, target, val, elt_rtx);
+	  else if (mode == V4SFmode)
+	    insn = gen_vsx_set_v4sf_p9 (target, target, val, elt_rtx);
+	}
+
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
+  gcc_assert (CONST_INT_P (elt_rtx));
+
+  /* Simplify setting single element vectors like V1TImode.  */
+  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
+      && INTVAL (elt_rtx) == 0)
+    {
+      emit_move_insn (target, gen_lowpart (mode, val));
+      return;
+    }
+
+  /* Load single variable value.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
+  emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
+  x = gen_rtx_UNSPEC (VOIDmode,
+		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2,
+					  gen_rtx_SET (reg, mem),
+					  x)));
+
+  /* Linear sequence.  */
+  mask = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+  for (i = 0; i < 16; ++i)
+    XVECEXP (mask, 0, i) = GEN_INT (i);
+
+  /* Set permute mask to insert element into target.  */
+  for (i = 0; i < width; ++i)
+    XVECEXP (mask, 0, INTVAL (elt_rtx) * width + i) = GEN_INT (i + 0x10);
+  x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
+
+  if (BYTES_BIG_ENDIAN)
+    x = gen_rtx_UNSPEC (mode,
+			gen_rtvec (3, target, reg,
+				   force_reg (V16QImode, x)),
+			UNSPEC_VPERM);
   else
-    rs6000_expand_vector_set_var_p8 (target, val, idx);
+    {
+      if (TARGET_P9_VECTOR)
+	x = gen_rtx_UNSPEC (mode,
+			    gen_rtvec (3, reg, target,
+				       force_reg (V16QImode, x)),
+			    UNSPEC_VPERMR);
+      else
+	{
+	  /* Invert selector.  We prefer to generate VNAND on P8 so
+	     that future fusion opportunities can kick in, but must
+	     generate VNOR elsewhere.  */
+	  rtx notx = gen_rtx_NOT (V16QImode, force_reg (V16QImode, x));
+	  rtx iorx = (TARGET_P8_VECTOR
+		      ? gen_rtx_IOR (V16QImode, notx, notx)
+		      : gen_rtx_AND (V16QImode, notx, notx));
+	  rtx tmp = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_rtx_SET (tmp, iorx));
+
+	  /* Permute with operands reversed and adjusted selector.  */
+	  x = gen_rtx_UNSPEC (mode, gen_rtvec (3, reg, target, tmp),
+			      UNSPEC_VPERM);
+	}
+    }
+
+  emit_insn (gen_rtx_SET (target, x));
 }
 
 /* Extract field ELT from VEC into TARGET.  */
@@ -27342,56 +27338,127 @@ rs6000_globalize_decl_name (FILE * stream, tree decl)
    library before you can switch the real*16 type at compile time.
 
    We use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change this name.  We
-   only do this if the default is that long double is IBM extended double, and
-   the user asked for IEEE 128-bit.  */
+   only do this transformation if the __float128 type is enabled.  This
+   prevents us from doing the transformation on older 32-bit ports that might
+   have enabled using IEEE 128-bit floating point as the default long double
+   type.  */
 
 static tree
 rs6000_mangle_decl_assembler_name (tree decl, tree id)
 {
-  if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
+  if (TARGET_FLOAT128_TYPE && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_IS_UNDECLARED_BUILTIN (decl))
+      && DECL_IS_UNDECLARED_BUILTIN (decl)
+      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
     {
       size_t len = IDENTIFIER_LENGTH (id);
       const char *name = IDENTIFIER_POINTER (id);
+      char *newname = NULL;
 
-      if (name[len - 1] == 'l')
+      /* See if it is one of the built-in functions with an unusual name.  */
+      switch (DECL_FUNCTION_CODE (decl))
 	{
-	  bool uses_ieee128_p = false;
-	  tree type = TREE_TYPE (decl);
-	  machine_mode ret_mode = TYPE_MODE (type);
+	case BUILT_IN_DREML:
+	  newname = xstrdup ("__remainderieee128");
+	  break;
 
-	  /* See if the function returns a IEEE 128-bit floating point type or
-	     complex type.  */
-	  if (ret_mode == TFmode || ret_mode == TCmode)
-	    uses_ieee128_p = true;
-	  else
+	case BUILT_IN_GAMMAL:
+	  newname = xstrdup ("__lgammaieee128");
+	  break;
+
+	case BUILT_IN_GAMMAL_R:
+	case BUILT_IN_LGAMMAL_R:
+	  newname = xstrdup ("__lgammaieee128_r");
+	  break;
+
+	case BUILT_IN_NEXTTOWARD:
+	  newname = xstrdup ("__nexttoward_to_ieee128");
+	  break;
+
+	case BUILT_IN_NEXTTOWARDF:
+	  newname = xstrdup ("__nexttowardf_to_ieee128");
+	  break;
+
+	case BUILT_IN_NEXTTOWARDL:
+	  newname = xstrdup ("__nexttowardieee128");
+	  break;
+
+	case BUILT_IN_POW10L:
+	  newname = xstrdup ("__exp10ieee128");
+	  break;
+
+	case BUILT_IN_SCALBL:
+	  newname = xstrdup ("__scalbieee128");
+	  break;
+
+	case BUILT_IN_SIGNIFICANDL:
+	  newname = xstrdup ("__significandieee128");
+	  break;
+
+	case BUILT_IN_SINCOSL:
+	  newname = xstrdup ("__sincosieee128");
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* Update the __builtin_*printf and __builtin_*scanf functions.  */
+      if (!newname)
+	{
+	  size_t printf_len = strlen ("printf");
+	  size_t scanf_len = strlen ("scanf");
+
+	  if (len >= printf_len
+	      && strcmp (name + len - printf_len, "printf") == 0)
+	    newname = xasprintf ("__%sieee128", name);
+
+	  else if (len >= scanf_len
+		   && strcmp (name + len - scanf_len, "scanf") == 0)
+	    newname = xasprintf ("__isoc99_%sieee128", name);
+
+	  else if (name[len - 1] == 'l')
 	    {
-	      function_args_iterator args_iter;
-	      tree arg;
+	      bool uses_ieee128_p = false;
+	      tree type = TREE_TYPE (decl);
+	      machine_mode ret_mode = TYPE_MODE (type);
 
-	      /* See if the function passes a IEEE 128-bit floating point type
-		 or complex type.  */
-	      FOREACH_FUNCTION_ARGS (type, arg, args_iter)
+	      /* See if the function returns a IEEE 128-bit floating point type or
+		 complex type.  */
+	      if (ret_mode == TFmode || ret_mode == TCmode)
+		uses_ieee128_p = true;
+	      else
 		{
-		  machine_mode arg_mode = TYPE_MODE (arg);
-		  if (arg_mode == TFmode || arg_mode == TCmode)
+		  function_args_iterator args_iter;
+		  tree arg;
+
+		  /* See if the function passes a IEEE 128-bit floating point type
+		     or complex type.  */
+		  FOREACH_FUNCTION_ARGS (type, arg, args_iter)
 		    {
-		      uses_ieee128_p = true;
-		      break;
+		      machine_mode arg_mode = TYPE_MODE (arg);
+		      if (arg_mode == TFmode || arg_mode == TCmode)
+			{
+			  uses_ieee128_p = true;
+			  break;
+			}
 		    }
 		}
-	    }
 
-	  /* If we passed or returned an IEEE 128-bit floating point type,
-	     change the name.  */
-	  if (uses_ieee128_p)
-	    {
-	      char *name2 = (char *) alloca (len + 4);
-	      memcpy (name2, name, len - 1);
-	      strcpy (name2 + len - 1, "f128");
-	      id = get_identifier (name2);
+	      /* If we passed or returned an IEEE 128-bit floating point type,
+		 change the name.  Use __<name>ieee128, instead of <name>l.  */
+	      if (uses_ieee128_p)
+		newname = xasprintf ("__%.*sieee128", (int)(len - 1), name);
 	    }
+	}
+
+      if (newname)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "Map %s => %s\n", name, newname);
+
+	  id = get_identifier (newname);
+	  free (newname);
 	}
     }
 

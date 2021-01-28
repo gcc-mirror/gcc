@@ -1,3 +1,137 @@
+2021-01-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97684
+	* ira.c (ira): Call ira_set_pseudo_classes before
+	update_equiv_regs when it is necessary.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98853
+	* config/aarch64/aarch64.md (*aarch64_bfxilsi_uxtw): Use
+	%w0, %w1 and %2 instead of %0, %1 and %2.
+
+2021-01-27  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl: New script to generate
+	define_insn_and_split patterns so combine can arrange fused
+	instructions next to each other.
+	* config/rs6000/fusion.md: New file, generated fused instruction
+	patterns for combine.
+	* config/rs6000/predicates.md (const_m1_to_1_operand): New predicate.
+	(non_update_memory_operand): New predicate.
+	* config/rs6000/rs6000-cpus.def: Add OPTION_MASK_P10_FUSION and
+	OPTION_MASK_P10_FUSION_LD_CMPI to ISA_3_1_MASKS_SERVER and
+	POWERPC_MASKS.
+	* config/rs6000/rs6000-protos.h (address_is_non_pfx_d_or_x): Add
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Automatically set OPTION_MASK_P10_FUSION and
+	OPTION_MASK_P10_FUSION_LD_CMPI if target is power10.
+	(rs600_opt_masks): Allow -mpower10-fusion
+	in function attributes.
+	(address_is_non_pfx_d_or_x): New function.
+	* config/rs6000/rs6000.h: Add MASK_P10_FUSION.
+	* config/rs6000/rs6000.md: Include fusion.md.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion
+	and -mpower10-fusion-ld-cmpi.
+	* config/rs6000/t-rs6000: Add dependencies involving fusion.md.
+
+2021-01-27  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlal
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>mlal<mode>):
+	Rename to...
+	(aarch64_<su>mlal<mode>): This.
+	* config/aarch64/arm_neon.h (vmlal_s8): Use RTL builtin
+	instead of inline asm.
+	(vmlal_s16): Likewise.
+	(vmlal_s32): Likewise.
+	(vmlal_u8): Likewise.
+	(vmlal_u16): Likewise.
+	(vmlal_u32): Likewise.
+
+2021-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98854
+	* tree-vect-slp.c (vect_build_slp_tree_2): Also build
+	PHIs from scalars when the number of CTORs matches the
+	number of children.
+
+2021-01-27  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add mls_n builtin
+	generator macro.
+	* config/aarch64/aarch64-simd.md (*aarch64_mls_elt_merge<mode>):
+	Rename to...
+	(aarch64_mls_n<mode>): This.
+	* config/aarch64/arm_neon.h (vmls_n_s16): Use RTL builtin
+	instead of asm.
+	(vmls_n_s32): Likewise.
+	(vmls_n_u16): Likewise.
+	(vmls_n_u32): Likewise.
+	(vmlsq_n_s16): Likewise.
+	(vmlsq_n_s32): Likewise.
+	(vmlsq_n_u16): Likewise.
+	(vmlsq_n_u32): Likewise.
+
+2021-01-27  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add mls builtin
+	generator macro.
+	* config/aarch64/arm_neon.h (vmls_s8): Use RTL builtin rather
+	than asm.
+	(vmls_s16): Likewise.
+	(vmls_s32): Likewise.
+	(vmls_u8): Likewise.
+	(vmls_u16): Likewise.
+	(vmls_u32): Likewise.
+	(vmlsq_s8): Likewise.
+	(vmlsq_s16): Likewise.
+	(vmlsq_s32): Likewise.
+	(vmlsq_u8): Likewise.
+	(vmlsq_u16): Likewise.
+	(vmlsq_u32): Likewise.
+
+2021-01-27  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add mla_n builtin
+	generator macro.
+	* config/aarch64/aarch64-simd.md (*aarch64_mla_elt_merge<mode>):
+	Rename to...
+	(aarch64_mla_n<mode>): This.
+	* config/aarch64/arm_neon.h (vmla_n_s16): Use RTL builtin
+	instead of asm.
+	(vmla_n_s32): Likewise.
+	(vmla_n_u16): Likewise.
+	(vmla_n_u32): Likewise.
+	(vmlaq_n_s16): Likewise.
+	(vmlaq_n_s32): Likewise.
+	(vmlaq_n_u16): Likewise.
+	(vmlaq_n_u32): Likewise.
+
+2021-01-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98833
+	* config/i386/sse.md (sse2_gt<mode>3): Drop !TARGET_XOP in condition.
+	(*sse2_eq<mode>3): Ditto.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-pass.h (PROP_trees): Rename to ...
+	(PROP_gimple): ... this.
+	* cfgexpand.c (pass_data_expand): Replace PROP_trees with PROP_gimple.
+	* passes.c (execute_function_dump, execute_function_todo,
+	execute_one_ipa_transform_pass, execute_one_pass): Likewise.
+	* varpool.c (ctor_for_folding): Likewise.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97260
+	* varpool.c: Include tree-pass.h.
+	(ctor_for_folding): In GENERIC return DECL_INITIAL for TREE_READONLY
+	non-TREE_SIDE_EFFECTS automatic variables.
+
 2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
 
 	* doc/cpp.texi (__cplusplus): Document value for -std=c++23

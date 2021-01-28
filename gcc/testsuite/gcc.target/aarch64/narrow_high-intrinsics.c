@@ -112,7 +112,7 @@ ONE (vmovn_high, uint32x4_t, uint32x2_t, uint64x2_t, u64)
 /* { dg-final { scan-assembler-times "rsubhn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "raddhn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\trshrn2 v" 6} }  */
-/* { dg-final { scan-assembler-times "\\tshrn2 v" 6} }  */
+/* { dg-final { scan-assembler-times "\\tshrn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "sqshrun2\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "sqrshrun2\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "sqshrn2\\tv" 3} }  */

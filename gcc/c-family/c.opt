@@ -2208,15 +2208,15 @@ Conform to the ISO 2017 C++ standard.
 
 std=c++2a
 C++ ObjC++ Alias(std=c++20) Undocumented
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++2b
 C++ ObjC++ Alias(std=c++23)
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c++23
 C++ ObjC++ Undocumented
@@ -2294,11 +2294,11 @@ Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
 C++ ObjC++ Alias(std=gnu++20) Undocumented
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++2b
 C++ ObjC++ Alias(std=gnu++23)

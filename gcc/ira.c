@@ -5566,6 +5566,15 @@ ira (FILE *f)
   if (warn_clobbered)
     generate_setjmp_warnings ();
 
+  /* update_equiv_regs can use reg classes of pseudos and they are set up in
+     register pressure sensitive scheduling and loop invariant motion and in
+     live range shrinking.  This info can become obsolete if we add new pseudos
+     since the last set up.  Recalculate it again if the new pseudos were
+     added.  */
+  if (resize_reg_info () && (flag_sched_pressure || flag_live_range_shrinkage
+			     || flag_ira_loop_pressure))
+    ira_set_pseudo_classes (true, ira_dump_file);
+
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
@@ -5609,9 +5618,6 @@ ira (FILE *f)
       gcc_assert (max_regno_before_rm != max_reg_num ());
       regstat_recompute_for_max_regno ();
     }
-
-  if (resize_reg_info () && flag_ira_loop_pressure)
-    ira_set_pseudo_classes (true, ira_dump_file);
 
   setup_reg_equiv ();
   grow_reg_equivs ();

@@ -30,6 +30,6 @@ testf_cst (float f, vector float vf)
 
 /* { dg-final { scan-assembler-times {\mstfs\M} 2 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 2 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mlvewx\M} 2 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 2 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mxxperm\M} 2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlvewx\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 0 { target ilp32 } } } */

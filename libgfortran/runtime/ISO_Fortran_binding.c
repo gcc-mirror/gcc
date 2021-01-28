@@ -391,7 +391,12 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
 	  if (i == 0)
 	    dv->dim[i].sm = dv->elem_len;
 	  else
-	    dv->dim[i].sm = (CFI_index_t)(dv->elem_len * extents[i - 1]);
+	    {
+	      CFI_index_t extents_product = 1;
+	      for (int j = 0; j < i; j++)
+		extents_product *= extents[j];
+	      dv->dim[i].sm = (CFI_index_t)(dv->elem_len * extents_product);
+	    }
 	}
     }
 
