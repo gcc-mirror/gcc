@@ -453,12 +453,12 @@ DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains", m_ZNVER2 | m_ZNVE
 /* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if false, unaligned loads are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal",
-          ~(m_NEHALEM | m_SANDYBRIDGE | m_GENERIC))
+          ~(m_NEHALEM | m_SANDYBRIDGE))
 
 /* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if false, unaligned stores are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal",
-	  ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_ZNVER1 | m_GENERIC))
+	  ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_ZNVER1))
 
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX256 ops are split into two AVX128 ops.  */
 DEF_TUNE (X86_TUNE_AVX256_SPLIT_REGS, "avx256_split_regs",m_BDVER | m_BTVER2
