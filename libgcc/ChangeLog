@@ -1,3 +1,12 @@
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/savms64.h: Add .note.GNU-stack section on Linux.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/resms64.h: Likewise.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+
 2021-01-26  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/98739

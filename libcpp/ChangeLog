@@ -1,3 +1,8 @@
+2021-01-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98833
+	* lex.c (search_line_sse2): Replace builtins with == operator.
+
 2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
 
 	* include/cpplib.h (c_lang): Add CXX23 and GNUCXX23.

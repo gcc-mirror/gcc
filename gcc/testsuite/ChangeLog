@@ -1,3 +1,69 @@
+2021-01-27  Harris Snyder  <hsnyder@structura.bio>
+
+	* gfortran.dg/ISO_Fortran_binding_18.c: New test.
+	* gfortran.dg/ISO_Fortran_binding_18.f90: New test.
+
+2021-01-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97684
+	* gcc.target/i386/pr97684.c: New.
+
+2021-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97874
+	* g++.dg/lookup/using4.C: No error in C++20.
+	* g++.dg/cpp0x/decltype37.C: Adjust message.
+	* g++.dg/template/crash75.C: Adjust message.
+	* g++.dg/template/crash76.C: Adjust message.
+	* g++.dg/cpp0x/inh-ctor36.C: New test.
+	* g++.dg/cpp1z/inh-ctor39.C: New test.
+	* g++.dg/cpp2a/using-enum-7.C: New test.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98853
+	* gcc.c-torture/execute/pr98853-1.c: New test.
+	* gcc.c-torture/execute/pr98853-2.c: New test.
+
+2021-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98854
+	* gcc.dg/vect/bb-slp-pr98854.c: New testcase.
+
+2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93924
+	PR fortran/93925
+	* gfortran.dg/proc_ptr_52.f90 : New test.
+
+2021-01-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98833
+	* gcc.target/i386/pr98833.c: New test.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/m128-check.h (CHECK_EXP): Remove
+	optimize ("no-strict-aliasing") attribute.
+	* gcc.target/i386/sse-andnps-1.c (TEST): Copy e into float[4]
+	array to avoid violating TBAA.
+	* gcc.target/i386/sse2-andpd-1.c (TEST): Copy e.d into double[2]
+	array to avoid violating TBAA.
+	* gcc.target/i386/sse-andps-1.c (TEST): Copy e.f into float[4]
+	array to avoid violating TBAA.
+	* gcc.target/i386/sse2-andnpd-1.c (TEST): Copy e into double[2]
+	array to avoid violating TBAA.
+
+2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98472
+	* gfortran.dg/elemental_function_5.f90 : New test.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97260
+	* gcc.dg/tree-ssa/pr97260.c: New test.
+
 2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_c++2a):

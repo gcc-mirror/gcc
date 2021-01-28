@@ -1,3 +1,190 @@
+2021-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Replace invalid entity.
+	* doc/html/*: Regenerate.
+
+2021-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/simd/generate_makefile.sh: Use printf
+	instead of echo when printing escape characters.
+
+2021-01-27  Matthias Kretz  <kretz@kde.org>
+
+	* scripts/check_simd: New file. This script is called from the
+	the check-simd target. It determines a set of compiler flags and
+	simulator setups for calling generate_makefile.sh and passes the
+	information back to the check-simd target, which recurses to the
+	generated Makefiles.
+	* scripts/create_testsuite_files: Remove files below simd/tests/
+	from testsuite_files and place them in testsuite_files_simd.
+	* testsuite/Makefile.am: Add testsuite_files_simd. Add
+	check-simd target.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/experimental/simd/driver.sh: New file. This script
+	compiles and runs a given simd test, logging its output and
+	status. It uses the timeout command to implement compile and
+	test timeouts.
+	* testsuite/experimental/simd/generate_makefile.sh: New file.
+	This script generates a Makefile which uses driver.sh to compile
+	and run the tests and collect the logs into a single log file.
+	* testsuite/experimental/simd/tests/abs.cc: New file. Tests
+	abs(simd).
+	* testsuite/experimental/simd/tests/algorithms.cc: New file.
+	Tests min/max(simd, simd).
+	* testsuite/experimental/simd/tests/bits/conversions.h: New
+	file. Contains functions to support tests involving conversions.
+	* testsuite/experimental/simd/tests/bits/make_vec.h: New file.
+	Support functions make_mask and make_vec.
+	* testsuite/experimental/simd/tests/bits/mathreference.h: New
+	file. Support functions to supply precomputed math function
+	reference data.
+	* testsuite/experimental/simd/tests/bits/metahelpers.h: New
+	file. Support code for SFINAE testing.
+	* testsuite/experimental/simd/tests/bits/simd_view.h: New file.
+	* testsuite/experimental/simd/tests/bits/test_values.h: New
+	file. Test functions to easily drive a test with simd objects
+	initialized from a given list of values and a range of random
+	values.
+	* testsuite/experimental/simd/tests/bits/ulp.h: New file.
+	Support code to determine the ULP distance of simd objects.
+	* testsuite/experimental/simd/tests/bits/verify.h: New file.
+	Test framework for COMPARE'ing simd objects and instantiating
+	the test templates with value_type and ABI tag.
+	* testsuite/experimental/simd/tests/broadcast.cc: New file. Test
+	simd broadcasts.
+	* testsuite/experimental/simd/tests/casts.cc: New file. Test
+	simd casts.
+	* testsuite/experimental/simd/tests/fpclassify.cc: New file.
+	Test floating-point classification functions.
+	* testsuite/experimental/simd/tests/frexp.cc: New file. Test
+	frexp(simd).
+	* testsuite/experimental/simd/tests/generator.cc: New file. Test
+	simd generator constructor.
+	* testsuite/experimental/simd/tests/hypot3_fma.cc: New file.
+	Test 3-arg hypot(simd,simd,simd) and fma(simd,simd,sim).
+	* testsuite/experimental/simd/tests/integer_operators.cc: New
+	file. Test integer operators.
+	* testsuite/experimental/simd/tests/ldexp_scalbn_scalbln_modf.cc:
+	New file. Test ldexp(simd), scalbn(simd), scalbln(simd), and
+	modf(simd).
+	* testsuite/experimental/simd/tests/loadstore.cc: New file. Test
+	(converting) simd loads and stores.
+	* testsuite/experimental/simd/tests/logarithm.cc: New file. Test
+	log*(simd).
+	* testsuite/experimental/simd/tests/mask_broadcast.cc: New file.
+	Test simd_mask broadcasts.
+	* testsuite/experimental/simd/tests/mask_conversions.cc: New
+	file. Test simd_mask conversions.
+	* testsuite/experimental/simd/tests/mask_implicit_cvt.cc: New
+	file. Test simd_mask implicit conversions.
+	* testsuite/experimental/simd/tests/mask_loadstore.cc: New file.
+	Test simd_mask loads and stores.
+	* testsuite/experimental/simd/tests/mask_operator_cvt.cc: New
+	file. Test simd_mask operators convert as specified.
+	* testsuite/experimental/simd/tests/mask_operators.cc: New file.
+	Test simd_mask compares, subscripts, and negation.
+	* testsuite/experimental/simd/tests/mask_reductions.cc: New
+	file. Test simd_mask reductions.
+	* testsuite/experimental/simd/tests/math_1arg.cc: New file. Test
+	1-arg math functions on simd.
+	* testsuite/experimental/simd/tests/math_2arg.cc: New file. Test
+	2-arg math functions on simd.
+	* testsuite/experimental/simd/tests/operator_cvt.cc: New file.
+	Test implicit conversions on simd binary operators behave as
+	specified.
+	* testsuite/experimental/simd/tests/operators.cc: New file. Test
+	simd compares, subscripts, not, unary minus, plus, minus,
+	multiplies, divides, increment, and decrement.
+	* testsuite/experimental/simd/tests/reductions.cc: New file.
+	Test reduce(simd).
+	* testsuite/experimental/simd/tests/remqo.cc: New file. Test
+	remqo(simd).
+	* testsuite/experimental/simd/tests/simd.cc: New file. Basic
+	sanity checks of simd types.
+	* testsuite/experimental/simd/tests/sincos.cc: New file. Test
+	sin(simd) and cos(simd).
+	* testsuite/experimental/simd/tests/split_concat.cc: New file.
+	Test split(simd) and concat(simd, simd).
+	* testsuite/experimental/simd/tests/splits.cc: New file. Test
+	split(simd_mask).
+	* testsuite/experimental/simd/tests/trigonometric.cc: New file.
+	Test remaining trigonometric functions on simd.
+	* testsuite/experimental/simd/tests/trunc_ceil_floor.cc: New
+	file. Test trunc(simd), ceil(simd), and floor(simd).
+	* testsuite/experimental/simd/tests/where.cc: New file. Test
+	masked operations using where.
+
+2021-01-27  Matthias Kretz  <kretz@kde.org>
+
+	* doc/xml/manual/status_cxx2017.xml: Add implementation status
+	of the Parallelism TS 2. Document implementation-defined types
+	and behavior.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/simd: New file. New header for
+	Parallelism TS 2.
+	* include/experimental/bits/numeric_traits.h: New file.
+	Implementation of P1841R1 using internal naming. Addition of
+	missing IEC559 functionality query.
+	* include/experimental/bits/simd.h: New file. Definition of the
+	public simd interfaces and general implementation helpers.
+	* include/experimental/bits/simd_builtin.h: New file.
+	Implementation of the _VecBuiltin simd_abi.
+	* include/experimental/bits/simd_converter.h: New file. Generic
+	simd conversions.
+	* include/experimental/bits/simd_detail.h: New file. Internal
+	macros for the simd implementation.
+	* include/experimental/bits/simd_fixed_size.h: New file. Simd
+	fixed_size ABI specific implementations.
+	* include/experimental/bits/simd_math.h: New file. Math
+	overloads for simd.
+	* include/experimental/bits/simd_neon.h: New file. Simd NEON
+	specific implementations.
+	* include/experimental/bits/simd_ppc.h: New file. Implement bit
+	shifts to avoid invalid results for integral types smaller than
+	int.
+	* include/experimental/bits/simd_scalar.h: New file. Simd scalar
+	ABI specific implementations.
+	* include/experimental/bits/simd_x86.h: New file. Simd x86
+	specific implementations.
+	* include/experimental/bits/simd_x86_conversions.h: New file.
+	x86 specific conversion optimizations. The conversion patterns
+	work around missing conversion patterns in the compiler and
+	should be removed as soon as PR85048 is resolved.
+	* testsuite/experimental/simd/standard_abi_usable.cc: New file.
+	Test that all (not all fixed_size<N>, though) standard simd and
+	simd_mask types are usable.
+	* testsuite/experimental/simd/standard_abi_usable_2.cc: New
+	file. As above but with -ffast-math.
+	* testsuite/libstdc++-dg/conformance.exp: Don't build simd tests
+	from the standard test loop. Instead use
+	check_vect_support_and_set_flags to build simd tests with the
+	relevant machine flags.
+
+2021-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66414
+	* include/bits/string_view.tcc
+	(basic_string_view::find(const CharT*, size_type, size_type)):
+	Optimize.
+
+2021-01-27  Paul Fee  <paul.f.fee@gmail.com>
+
+	* include/bits/basic_string.h (basic_string::contains): New
+	member functions.
+	* include/std/string_view (basic_string_view::contains):
+	Likewise.
+	* include/std/version (__cpp_lib_string_contains): Define.
+	* testsuite/21_strings/basic_string/operations/starts_with/char/1.cc:
+	Remove trailing whitespace.
+	* testsuite/21_strings/basic_string/operations/starts_with/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/operations/contains/char/1.cc: New test.
+	* testsuite/21_strings/basic_string/operations/contains/wchar_t/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/1.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/contains/char/2.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/contains/wchar_t/1.cc: New test.
+
 2021-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/Makefile.in: Regenerate.

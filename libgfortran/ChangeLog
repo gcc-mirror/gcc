@@ -1,3 +1,8 @@
+2021-01-27  Harris Snyder  <hsnyder@structura.bio>
+
+	* runtime/ISO_Fortran_binding.c (CFI_establish): fixed
+	strides for rank >2 arrays.
+
 2021-01-15  Harris Snyder  <hsnyder@structura.bio>
 
 	* runtime/ISO_Fortran_binding.c (CFI_establish): Fixed signed
