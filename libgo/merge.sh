@@ -163,7 +163,7 @@ done
 (cd ${NEWDIR}/src && find . -name 'modules.txt' -print) | while read f; do
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f
-  libgofile=go/`echo $f | sed -e 's|cmd/vendor/|/|' | sed -e 's|/vendor/|/|'`
+  libgofile=go/$f
   merge $f ${oldfile} ${newfile} ${libgofile}
 done
 

@@ -143,7 +143,7 @@ func futexsleep1(addr *uint32, val uint32, ns int64) {
 		utp = &ut
 	}
 	ret := sys_umtx_op(addr, _UMTX_OP_WAIT_UINT_PRIVATE, val, unsafe.Sizeof(*utp), utp)
-	if ret >= 0 || ret == -_EINTR {
+	if ret >= 0 || ret == -_EINTR || ret == -_ETIMEDOUT {
 		return
 	}
 	print("umtx_wait addr=", addr, " val=", val, " ret=", ret, "\n")

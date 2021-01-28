@@ -656,7 +656,7 @@ noinst_DATA += zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
-s-zstdpkglist: Makefile
+s-zstdpkglist: Makefile libgo-packages.txt
 	rm -f zstdpkglist.go.tmp
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
