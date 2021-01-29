@@ -239,6 +239,13 @@ package body Sem_Type is
          Get_First_Interp (N, I, It);
          while Present (It.Nam) loop
 
+            --  Avoid making duplicate entries in overloads
+
+            if Name = It.Nam
+              and then Base_Type (It.Typ) = Base_Type (T)
+            then
+               return;
+
             --  A user-defined subprogram hides another declared at an outer
             --  level, or one that is use-visible. So return if previous
             --  definition hides new one (which is either in an outer
@@ -248,7 +255,7 @@ package body Sem_Type is
             --  If this is a universal operation, retain the operator in case
             --  preference rule applies.
 
-            if (((Ekind (Name) = E_Function or else Ekind (Name) = E_Procedure)
+            elsif ((Ekind (Name) in E_Function | E_Procedure
                    and then Ekind (Name) = Ekind (It.Nam))
                  or else (Ekind (Name) = E_Operator
                            and then Ekind (It.Nam) = E_Function))
@@ -291,13 +298,6 @@ package body Sem_Type is
                   All_Interp.Table (I).Nam := Name;
                   return;
                end if;
-
-            --  Avoid making duplicate entries in overloads
-
-            elsif Name = It.Nam
-              and then Base_Type (It.Typ) = Base_Type (T)
-            then
-               return;
 
             --  Otherwise keep going
 
@@ -2226,16 +2226,6 @@ package body Sem_Type is
          end if;
       end if;
    end Disambiguate;
-
-   ---------------------
-   -- End_Interp_List --
-   ---------------------
-
-   procedure End_Interp_List is
-   begin
-      All_Interp.Table (All_Interp.Last) := No_Interp;
-      All_Interp.Increment_Last;
-   end End_Interp_List;
 
    -------------------------
    -- Entity_Matches_Spec --

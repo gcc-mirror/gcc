@@ -1461,8 +1461,6 @@ package body Sem_Ch4 is
          else
             Remove_Abstract_Operations (N);
          end if;
-
-         End_Interp_List;
       end if;
 
       --  Check the accessibility level for actuals for explicitly aliased
@@ -2790,8 +2788,6 @@ package body Sem_Ch4 is
             Error_Msg_N ("no legal interpretation for indexed component", N);
             Set_Is_Overloaded (N, False);
          end if;
-
-         End_Interp_List;
       end Process_Overloaded_Indexed_Component;
 
    --  Start of processing for Analyze_Indexed_Component_Form

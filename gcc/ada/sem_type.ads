@@ -130,9 +130,6 @@ package Sem_Type is
    --  always Boolean, and we use Opnd_Type, which is a candidate type for one
    --  of the operands of N, to check visibility.
 
-   procedure End_Interp_List;
-   --  End the list of interpretations of current node
-
    procedure Get_First_Interp
      (N  : Node_Id;
       I  : out Interp_Index;

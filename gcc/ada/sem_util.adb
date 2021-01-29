@@ -15044,8 +15044,6 @@ package body Sem_Util is
             Get_Next_Interp (I, It);
          end loop;
 
-         End_Interp_List;
-
       else
          --  Prefix is unambiguous: mark the original prefix (which might
          --  Come_From_Source) as a reference, since the new (relocated) one
