@@ -172,6 +172,10 @@
   BUILTIN_VQW (TERNOP, sabal2, 0, NONE)
   BUILTIN_VQW (TERNOPU, uabal2, 0, NONE)
 
+  /* Implemented by aarch64_<sur>abdl2<mode>.  */
+  BUILTIN_VQW (BINOP, sabdl2, 0, NONE)
+  BUILTIN_VQW (BINOPU, uabdl2, 0, NONE)
+
   /* Implemented by aarch64_<sur><addsub>hn<mode>.  */
   BUILTIN_VQN (BINOP, addhn, 0, NONE)
   BUILTIN_VQN (BINOP, subhn, 0, NONE)

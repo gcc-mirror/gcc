@@ -818,10 +818,10 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
-(define_insn "aarch64_<sur>abdl2<mode>_3"
+(define_insn "aarch64_<sur>abdl2<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VDQV_S 1 "register_operand" "w")
-			  (match_operand:VDQV_S 2 "register_operand" "w")]
+	(unspec:<VDBLW> [(match_operand:VQW 1 "register_operand" "w")
+			 (match_operand:VQW 2 "register_operand" "w")]
 	ABDL2))]
   "TARGET_SIMD"
   "<sur>abdl2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
@@ -897,8 +897,8 @@
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);
-    emit_insn (gen_aarch64_<sur>abdl2v16qi_3 (reduc, operands[1],
-					       operands[2]));
+    emit_insn (gen_aarch64_<sur>abdl2v16qi (reduc, operands[1],
+					    operands[2]));
     emit_insn (gen_aarch64_<sur>abalv8qi (reduc, reduc,
 					  gen_lowpart (V8QImode, operands[1]),
 					  gen_lowpart (V8QImode,
