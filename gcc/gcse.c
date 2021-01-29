@@ -3982,9 +3982,9 @@ update_ld_motion_stores (struct gcse_expr * expr)
 bool
 gcse_or_cprop_is_too_expensive (const char *pass)
 {
-  int memory_request = (n_basic_blocks_for_fn (cfun)
-			* SBITMAP_SET_SIZE (max_reg_num ())
-			* sizeof (SBITMAP_ELT_TYPE));
+  unsigned HOST_WIDE_INT memory_request
+    = ((unsigned HOST_WIDE_INT)n_basic_blocks_for_fn (cfun)
+       * SBITMAP_SET_SIZE (max_reg_num ()) * sizeof (SBITMAP_ELT_TYPE));
   
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
@@ -4007,11 +4007,12 @@ gcse_or_cprop_is_too_expensive (const char *pass)
 
   /* If allocating memory for the dataflow bitmaps would take up too much
      storage it's better just to disable the optimization.  */
-  if (memory_request > param_max_gcse_memory)
+  if (memory_request > (unsigned HOST_WIDE_INT)param_max_gcse_memory)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers; "
-	       "increase %<--param max-gcse-memory%> above %d",
+	       "increase %<--param max-gcse-memory%> above "
+	       HOST_WIDE_INT_PRINT_UNSIGNED,
 	       pass, n_basic_blocks_for_fn (cfun), max_reg_num (),
 	       memory_request);
 
