@@ -4064,6 +4064,7 @@ import_entity_module (unsigned index)
     /* This is an index for an exported entity.  */
     return (*modules)[0];
 
+  /* Do not include the current TU (not an off-by-one error).  */
   unsigned pos = 1;
   unsigned len = modules->length () - pos;
   while (len)
@@ -14480,6 +14481,7 @@ struct module_state_config {
   const char *dialect_str;
   unsigned num_imports;
   unsigned num_partitions;
+  unsigned num_entities;
   unsigned ordinary_locs;
   unsigned macro_locs;
   unsigned ordinary_loc_align;
@@ -14487,7 +14489,7 @@ struct module_state_config {
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
-     num_imports (0), num_partitions (0),
+     num_imports (0), num_partitions (0), num_entities (0),
      ordinary_locs (0), macro_locs (0), ordinary_loc_align (0)
   {
   }
@@ -15286,9 +15288,7 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
   dump () && dump ("Reading entities");
   dump.indent ();
 
-  vec_safe_reserve (entity_ary, count);
-  unsigned ix;
-  for (ix = 0; ix != count; ix++)
+  for (binding_slot *slot = entity_ary->begin () + entity_lwm; count--; slot++)
     {
       unsigned snum = sec.u ();
       if (snum && (snum - lwm) >= (hwm - lwm))
@@ -15296,13 +15296,9 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
       if (sec.get_overrun ())
 	break;
 
-      binding_slot slot;
-      slot.u.binding = NULL_TREE;
       if (snum)
-	slot.set_lazy (snum << 2);
-      entity_ary->quick_push (slot);
+	slot->set_lazy (snum << 2);
     }
-  entity_num = ix;
 
   dump.outdent ();
   if (!sec.end (from ()))
@@ -17301,6 +17297,7 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.num_imports);
   cfg.u (config.num_partitions);
+  cfg.u (config.num_entities);
 
   cfg.u (config.ordinary_locs);
   cfg.u (config.macro_locs);
@@ -17484,6 +17481,7 @@ module_state::read_config (module_state_config &config)
 
   config.num_imports = cfg.u ();
   config.num_partitions = cfg.u ();
+  config.num_entities = cfg.u ();
 
   config.ordinary_locs = cfg.u ();
   config.macro_locs = cfg.u ();
@@ -17717,6 +17715,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Write the entitites.  None happens if we contain namespaces or
      nothing. */
+  config.num_entities = counts[MSC_entities];
   if (counts[MSC_entities])
     write_entities (to, sccs, counts[MSC_entities], &crc);
 
@@ -17817,6 +17816,21 @@ module_state::read_initial (cpp_reader *reader)
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
   gcc_checking_assert (this != (*modules)[0]);
+
+  {
+    /* Allocate space in the entities array now -- that array must be
+       monotionically in step with the modules array.  */
+    entity_lwm = vec_safe_length (entity_ary);
+    entity_num = config.num_entities;
+    gcc_checking_assert (modules->length () == 1
+			 || modules->last ()->entity_lwm <= entity_lwm);
+    vec_safe_reserve (entity_ary, config.num_entities);
+
+    binding_slot slot;
+    slot.u.binding = NULL_TREE;
+    for (unsigned count = config.num_entities; count--;)
+      entity_ary->quick_push (slot);
+  }
 
   /* We'll run out of other resources before we run out of module
      indices.  */
@@ -17939,8 +17953,8 @@ module_state::read_language (bool outermost)
 
   function_depth++; /* Prevent unexpected GCs.  */
 
-  /* Read the entity table.  */
-  entity_lwm = vec_safe_length (entity_ary);
+  if (counts[MSC_entities] != entity_num)
+    ok = false;
   if (ok && counts[MSC_entities]
       && !read_entities (counts[MSC_entities],
 			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
