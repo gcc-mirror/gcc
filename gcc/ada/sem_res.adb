@@ -3749,6 +3749,19 @@ package body Sem_Res is
 
          begin
             case Nkind (N) is
+
+               --  Do not consider object name appearing in the prefix of
+               --  attribute Address as a read.
+
+               when N_Attribute_Reference =>
+
+                  --  Prefix of attribute Address denotes an object, program
+                  --  unit, or label; none of them needs to be flagged here.
+
+                  if Attribute_Name (N) = Name_Address then
+                     return Skip;
+                  end if;
+
                --  Do not consider nested function calls because they have
                --  already been processed during their own resolution.
 
