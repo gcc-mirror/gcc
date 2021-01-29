@@ -3004,6 +3004,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  if (lastcomp->u.c.component->ts.type == BT_CLASS)
 			    {
 			      data = gfc_class_data_get (inner);
+			      gcc_assert (POINTER_TYPE_P (TREE_TYPE (data)));
+			      data = build_fold_indirect_ref (data);
 			      size = gfc_class_vtab_size_get (inner);
 			    }
 			  else  /* BT_DERIVED.  */
@@ -3012,8 +3014,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      size = TYPE_SIZE_UNIT (TREE_TYPE (inner));
 			    }
 
-			  OMP_CLAUSE_DECL (node)
-			    = build_fold_indirect_ref (data);
+			  OMP_CLAUSE_DECL (node) = data;
 			  OMP_CLAUSE_SIZE (node) = size;
 			  node2 = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);
@@ -3021,7 +3022,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 						   openacc
 						   ? GOMP_MAP_ATTACH_DETACH
 						   : GOMP_MAP_ALWAYS_POINTER);
-			  OMP_CLAUSE_DECL (node2) = data;
+			  OMP_CLAUSE_DECL (node2) = build_fold_addr_expr (data);
 			  OMP_CLAUSE_SIZE (node2) = size_int (0);
 			}
 		      else
