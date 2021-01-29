@@ -4007,14 +4007,14 @@ gcse_or_cprop_is_too_expensive (const char *pass)
 
   /* If allocating memory for the dataflow bitmaps would take up too much
      storage it's better just to disable the optimization.  */
-  if (memory_request > (unsigned HOST_WIDE_INT)param_max_gcse_memory)
+  if (memory_request / 1024 > (unsigned HOST_WIDE_INT)param_max_gcse_memory)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers; "
 	       "increase %<--param max-gcse-memory%> above "
 	       HOST_WIDE_INT_PRINT_UNSIGNED,
 	       pass, n_basic_blocks_for_fn (cfun), max_reg_num (),
-	       memory_request);
+	       memory_request / 1024);
 
       return true;
     }

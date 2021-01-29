@@ -13075,7 +13075,7 @@ should be removed when the delay slot code is rewritten to maintain the
 control-flow graph.
 
 @item max-gcse-memory
-The approximate maximum amount of memory that can be allocated in
+The approximate maximum amount of memory in @code{kB} that can be allocated in
 order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization is not done.
