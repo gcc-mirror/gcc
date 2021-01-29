@@ -839,6 +839,17 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
+(define_insn "aarch64_<sur>abal2<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(match_operand:VQW 2 "register_operand" "w")
+			  (match_operand:VQW 3 "register_operand" "w")
+			 (match_operand:<VWIDE> 1 "register_operand" "0")]
+	ABAL2))]
+  "TARGET_SIMD"
+  "<sur>abal2\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
+  [(set_attr "type" "neon_arith_acc<q>")]
+)
+
 (define_insn "aarch64_<sur>adalp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
 	(unspec:<VDBLW> [(match_operand:VDQV_S 2 "register_operand" "w")
