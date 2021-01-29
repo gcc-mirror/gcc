@@ -3748,24 +3748,30 @@ package body Sem_Res is
             Id : Entity_Id;
 
          begin
-            --  Do not consider nested function calls because they have already
-            --  been processed during their own resolution.
+            case Nkind (N) is
+               --  Do not consider nested function calls because they have
+               --  already been processed during their own resolution.
 
-            if Nkind (N) = N_Function_Call then
-               return Skip;
-
-            elsif Is_Entity_Name (N) and then Present (Entity (N)) then
-               Id := Entity (N);
-
-               if Is_Object (Id)
-                 and then Is_Effectively_Volatile_For_Reading (Id)
-               then
-                  Error_Msg_N
-                    ("volatile object cannot appear in this context (SPARK "
-                     & "RM 7.1.3(10))", N);
+               when N_Function_Call =>
                   return Skip;
-               end if;
-            end if;
+
+               when N_Identifier | N_Expanded_Name =>
+                  Id := Entity (N);
+
+                  if Present (Id)
+                    and then Is_Object (Id)
+                    and then Is_Effectively_Volatile_For_Reading (Id)
+                  then
+                     Error_Msg_N
+                       ("volatile object cannot appear in this context"
+                        & " (SPARK RM 7.1.3(10))", N);
+                  end if;
+
+                  return Skip;
+
+               when others =>
+                  null;
+            end case;
 
             return OK;
          end Flag_Object;
