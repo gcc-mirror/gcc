@@ -1,3 +1,9 @@
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	* gfortran.dg/goacc/derived-classtypes-1.f95: New test.
+
 2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline

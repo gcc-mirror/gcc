@@ -1,3 +1,10 @@
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Fix dereferencing for
+	BT_DERIVED members.
+
 2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
