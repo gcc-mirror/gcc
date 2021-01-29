@@ -13,9 +13,6 @@ import (
 //extern sysconf
 func sysconf(int32) _C_long
 
-//extern getsystemcfg
-func getsystemcfg(int32) uint64
-
 type mOS struct {
 	waitsema uintptr // semaphore for parking on locks
 }
