@@ -24559,7 +24559,9 @@ cp_parser_class_name (cp_parser *parser,
       where we first want to look up A<T>::a in the class of the object
       expression, as per [basic.lookup.classref].  */
   tree scope = parser->scope ? parser->scope : parser->context->object_type;
-  if (scope == error_mark_node)
+  /* This only checks parser->scope to avoid duplicate errors; if
+     ->object_type is erroneous, go on to give a parse error.  */
+  if (parser->scope == error_mark_node)
     return error_mark_node;
 
   /* Any name names a type if we're following the `typename' keyword
