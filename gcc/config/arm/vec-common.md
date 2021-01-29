@@ -301,7 +301,7 @@
 	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w,w")
 		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dm")]
 	 VSHLQ))]
-  "ARM_HAVE_<MODE>_ARITH"
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
   "@
    vshl.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
    * return neon_output_shift_immediate (\"vshl\", 'i', &operands[2], <MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode), true);"
@@ -312,7 +312,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
 		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "")))]
-  "ARM_HAVE_<MODE>_ARITH"
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
 {
   emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], operands[2]));
   DONE;
@@ -325,7 +325,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "ARM_HAVE_<MODE>_ARITH"
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
 {
   if (s_register_operand (operands[2], <MODE>mode))
     {
@@ -343,7 +343,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand")
 	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "ARM_HAVE_<MODE>_ARITH"
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
 {
   if (s_register_operand (operands[2], <MODE>mode))
     {
