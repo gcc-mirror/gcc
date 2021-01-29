@@ -1,3 +1,109 @@
+2021-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* stor-layout.c (finalize_type_size): If we reset TYPE_USER_ALIGN in
+	the main variant, maybe reset it in its variants too.
+	* tree.c (check_base_type): Return true only if TYPE_USER_ALIGN match.
+	(check_aligned_type): Check if TYPE_USER_ALIGN match.
+
+2021-01-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/98730
+	* config/arm/arm.c (arm_rtx_costs_internal): Adjust cost of vector
+	of constant zero for comparisons.
+
+2021-01-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): Add
+	support for mapping built-in function names for long double
+	built-in functions if long double is IEEE 128-bit.
+
+2021-01-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlsl_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mlsl_n<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vmlsl_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmlsl_n_s32): Likewise.
+	(vmlsl_n_u16): Likewise.
+	(vmlsl_n_u32): Likewise.
+
+2021-01-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlal_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mlal_n<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vmlal_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmlal_n_s32): Likewise.
+	(vmlal_n_u16): Likewise.
+	(vmlal_n_u32): Likewise.
+
+2021-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (shrn2): Define
+	builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_shrn2<mode>_insn_le):
+	Define.
+	(aarch64_shrn2<mode>_insn_be): Likewise.
+	(aarch64_shrn2<mode>): Likewise.
+	* config/aarch64/arm_neon.h (vshrn_high_n_s16): Reimlplement
+	using builtins.
+	(vshrn_high_n_s32): Likewise.
+	(vshrn_high_n_s64): Likewise.
+	(vshrn_high_n_u16): Likewise.
+	(vshrn_high_n_u32): Likewise.
+	(vshrn_high_n_u64): Likewise.
+
+2021-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (shrn): Define
+	builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_shrn<mode>_insn_le):
+	Define.
+	(aarch64_shrn<mode>_insn_be): Likewise.
+	(aarch64_shrn<mode>): Likewise.
+	* config/aarch64/arm_neon.h (vshrn_n_s16): Reimplement using
+	builtins.
+	(vshrn_n_s32): Likewise.
+	(vshrn_n_s64): Likewise.
+	(vshrn_n_u16): Likewise.
+	(vshrn_n_u32): Likewise.
+	(vshrn_n_u64): Likewise.
+	* config/aarch64/iterators.md (vn_mode): New mode attribute.
+
+2021-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/80960
+	* dse.c (check_mem_read_rtx): Call get_addr on the
+	offsetted address.
+
+2021-01-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/98799
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Don't generate VIEW_CONVERT_EXPR for fcode ALTIVEC_BUILTIN_VEC_INSERT
+	when -m32.
+	* config/rs6000/rs6000-protos.h (rs6000_expand_vector_set_var):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Remove the
+	wrapper call rs6000_expand_vector_set_var for cleanup.  Call
+	rs6000_expand_vector_set_var_p9 and rs6000_expand_vector_set_var_p8
+	directly.
+	(rs6000_expand_vector_set_var): Delete.
+	(rs6000_expand_vector_set_var_p9): Make static.
+	(rs6000_expand_vector_set_var_p8): Make static.
+
+2021-01-28  Xing GUO  <higuoxing@gmail.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parsing_subset_version): Fix -march option parsing
+	when `p` extension exists.
+
 2021-01-27  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97684

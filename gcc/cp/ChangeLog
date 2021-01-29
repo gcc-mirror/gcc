@@ -1,3 +1,28 @@
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98841
+	* typeck.c (build_x_indirect_ref): For *this, return current_class_ref.
+
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33661
+	PR c++/98847
+	* decl.c (cp_finish_decl): For register vars with asmspec in templates
+	call set_user_assembler_name and set DECL_HARD_REGISTER.
+	* pt.c (tsubst_expr): When instantiating DECL_HARD_REGISTER vars,
+	pass asmspec_tree to cp_finish_decl.
+
+2021-01-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98770
+	* module.cc (trees_out::decl_value): Swap is_typedef & TYPE_NAME
+	check order.
+	(trees_in::decl_value): Do typedef frobbing only when installing
+	a new typedef, adjust is_matching_decl call.  Swap is_typedef
+	& TYPE_NAME check.
+	(trees_in::is_matching_decl): Add is_typedef parm. Adjust variable
+	names and deal with typedef checking.
+
 2021-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97874

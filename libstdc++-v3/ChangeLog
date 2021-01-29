@@ -1,3 +1,21 @@
+2021-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/numeric_traits.h: Update copyright
+	dates.
+	* include/experimental/bits/simd.h: Likewise.
+	* include/experimental/bits/simd_builtin.h: Likewise.
+	* include/experimental/bits/simd_converter.h: Likewise.
+	* include/experimental/bits/simd_detail.h: Likewise.
+	* include/experimental/bits/simd_fixed_size.h: Likewise.
+	* include/experimental/bits/simd_math.h: Likewise.
+	* include/experimental/bits/simd_neon.h: Likewise.
+	* include/experimental/bits/simd_ppc.h: Likewise.
+	* include/experimental/bits/simd_scalar.h: Likewise.
+	* include/experimental/bits/simd_x86.h: Likewise.
+	* include/experimental/bits/simd_x86_conversions.h: Likewise.
+	* include/experimental/simd: Likewise.
+	* testsuite/experimental/simd/*: Likewise.
+
 2021-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Replace invalid entity.
