@@ -1301,6 +1301,7 @@ diagnostic_manager::prune_path (checker_path *path,
   path->maybe_log (get_logger (), "path");
   prune_for_sm_diagnostic (path, sm, sval, state);
   prune_interproc_events (path);
+  consolidate_conditions (path);
   finish_pruning (path);
   path->maybe_log (get_logger (), "pruned");
 }
@@ -1654,6 +1655,151 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 
     }
   while (changed);
+}
+
+/* Return true iff event IDX within PATH is on the same line as REF_EXP_LOC.  */
+
+static bool
+same_line_as_p (const expanded_location &ref_exp_loc,
+		checker_path *path, unsigned idx)
+{
+  const checker_event *ev = path->get_checker_event (idx);
+  expanded_location idx_exp_loc = expand_location (ev->get_location ());
+  gcc_assert (ref_exp_loc.file);
+  if (idx_exp_loc.file == NULL)
+    return false;
+  if (strcmp (ref_exp_loc.file, idx_exp_loc.file))
+    return false;
+  return ref_exp_loc.line == idx_exp_loc.line;
+}
+
+/* This path-readability optimization reduces the verbosity of compound
+   conditional statements (without needing to reconstruct the AST, which
+   has already been lost).
+
+   For example, it converts:
+
+    |   61 |   if (cp[0] != '\0' && cp[0] != '#')
+    |      |      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |      |              |    |
+    |      |      |              |    (6) ...to here
+    |      |      |              (7) following ‘true’ branch...
+    |      |      (5) following ‘true’ branch...
+    |   62 |     {
+    |   63 |       alias = cp++;
+    |      |               ~~~~
+    |      |                 |
+    |      |                 (8) ...to here
+
+   into:
+
+    |   61 |   if (cp[0] != '\0' && cp[0] != '#')
+    |      |      ~
+    |      |      |
+    |      |      (5) following ‘true’ branch...
+    |   62 |     {
+    |   63 |       alias = cp++;
+    |      |               ~~~~
+    |      |                 |
+    |      |                 (6) ...to here
+
+   by combining events 5-8 into new events 5-6.
+
+   Find runs of consecutive (start_cfg_edge_event, end_cfg_edge_event) pairs
+   in which all events apart from the final end_cfg_edge_event are on the same
+   line, and for which either all the CFG edges are TRUE edges, or all are
+   FALSE edges.
+
+   Consolidate each such run into a
+     (start_consolidated_cfg_edges_event, end_consolidated_cfg_edges_event)
+   pair.  */
+
+void
+diagnostic_manager::consolidate_conditions (checker_path *path) const
+{
+  /* Don't simplify edges if we're debugging them.  */
+  if (flag_analyzer_verbose_edges)
+    return;
+
+  for (unsigned start_idx = 0; start_idx < path->num_events () - 1; start_idx++)
+    {
+      if (path->cfg_edge_pair_at_p (start_idx))
+	{
+	  const checker_event *old_start_ev
+	    = path->get_checker_event (start_idx);
+	  expanded_location start_exp_loc
+	    = expand_location (old_start_ev->get_location ());
+	  if (start_exp_loc.file == NULL)
+	    continue;
+	  if (!same_line_as_p (start_exp_loc, path, start_idx + 1))
+	    continue;
+
+	  /* Are we looking for a run of all TRUE edges, or all FALSE edges?  */
+	  gcc_assert (old_start_ev->m_kind == EK_START_CFG_EDGE);
+	  const start_cfg_edge_event *old_start_cfg_ev
+	    = (const start_cfg_edge_event *)old_start_ev;
+	  const cfg_superedge& first_cfg_sedge
+	    = old_start_cfg_ev->get_cfg_superedge ();
+	  bool edge_sense;
+	  if (first_cfg_sedge.true_value_p ())
+	    edge_sense = true;
+	  else if (first_cfg_sedge.false_value_p ())
+	    edge_sense = false;
+	  else
+	    continue;
+
+	  /* Find a run of CFG start/end event pairs from
+	       [start_idx, next_idx)
+	     where all apart from the final event are on the same line,
+	     and all are either TRUE or FALSE edges, matching the initial.  */
+	  unsigned next_idx = start_idx + 2;
+	  while (path->cfg_edge_pair_at_p (next_idx)
+		 && same_line_as_p (start_exp_loc, path, next_idx))
+	    {
+	      const checker_event *iter_ev
+		= path->get_checker_event (next_idx);
+	      gcc_assert (iter_ev->m_kind == EK_START_CFG_EDGE);
+	      const start_cfg_edge_event *iter_cfg_ev
+		= (const start_cfg_edge_event *)iter_ev;
+	      const cfg_superedge& iter_cfg_sedge
+		= iter_cfg_ev->get_cfg_superedge ();
+	      if (edge_sense)
+		{
+		  if (!iter_cfg_sedge.true_value_p ())
+		    break;
+		}
+	      else
+		{
+		  if (!iter_cfg_sedge.false_value_p ())
+		    break;
+		}
+	      next_idx += 2;
+	    }
+
+	  /* If we have more than one pair in the run, consolidate.  */
+	  if (next_idx > start_idx + 2)
+	    {
+	      const checker_event *old_end_ev
+		= path->get_checker_event (next_idx - 1);
+	      log ("consolidating CFG edge events %i-%i into %i-%i",
+		   start_idx, next_idx - 1, start_idx, start_idx +1);
+	      start_consolidated_cfg_edges_event *new_start_ev
+		= new start_consolidated_cfg_edges_event
+		(old_start_ev->get_location (),
+		 old_start_ev->get_fndecl (),
+		 old_start_ev->get_stack_depth (),
+		 edge_sense);
+	      checker_event *new_end_ev
+		= new end_consolidated_cfg_edges_event
+		(old_end_ev->get_location (),
+		 old_end_ev->get_fndecl (),
+		 old_end_ev->get_stack_depth ());
+	      path->replace_event (start_idx, new_start_ev);
+	      path->replace_event (start_idx + 1, new_end_ev);
+	      path->delete_events (start_idx + 2, next_idx - (start_idx + 2));
+	    }
+	}
+    }
 }
 
 /* Final pass of diagnostic_manager::prune_path.
