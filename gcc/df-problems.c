@@ -1917,8 +1917,7 @@ df_mir_alloc (bitmap all_blocks)
 	  bitmap_initialize (&bb_info->gen, &problem_data->mir_bitmaps);
 	  bitmap_initialize (&bb_info->in, &problem_data->mir_bitmaps);
 	  bitmap_initialize (&bb_info->out, &problem_data->mir_bitmaps);
-	  bitmap_set_range (&bb_info->in, 0, DF_REG_SIZE (df));
-	  bitmap_set_range (&bb_info->out, 0, DF_REG_SIZE (df));
+	  bb_info->con_visited = false;
 	}
     }
 
@@ -1941,9 +1940,8 @@ df_mir_reset (bitmap all_blocks)
       gcc_assert (bb_info);
 
       bitmap_clear (&bb_info->in);
-      bitmap_set_range (&bb_info->in, 0, DF_REG_SIZE (df));
       bitmap_clear (&bb_info->out);
-      bitmap_set_range (&bb_info->out, 0, DF_REG_SIZE (df));
+      bb_info->con_visited = false;
     }
 }
 
@@ -2021,6 +2019,7 @@ df_mir_confluence_0 (basic_block bb)
   class df_mir_bb_info *bb_info = df_mir_get_bb_info (bb->index);
 
   bitmap_clear (&bb_info->in);
+  bb_info->con_visited = true;
 }
 
 
@@ -2029,11 +2028,26 @@ df_mir_confluence_0 (basic_block bb)
 static bool
 df_mir_confluence_n (edge e)
 {
-  bitmap op1 = &df_mir_get_bb_info (e->dest->index)->in;
-  bitmap op2 = &df_mir_get_bb_info (e->src->index)->out;
-
   if (e->flags & EDGE_FAKE)
     return false;
+
+  df_mir_bb_info *src_info = df_mir_get_bb_info (e->src->index);
+  /* If SRC was not visited yet then we'll and with all-ones which
+     means no changes.  Do not consider DST con_visited by this
+     operation alone either.  */
+  if (!src_info->con_visited)
+    return false;
+
+  df_mir_bb_info *dst_info = df_mir_get_bb_info (e->dest->index);
+  bitmap op1 = &dst_info->in;
+  bitmap op2 = &src_info->out;
+  /* If DEST was not visited yet just copy the SRC bitmap.  */
+  if (!dst_info->con_visited)
+    {
+      dst_info->con_visited = true;
+      bitmap_copy (op1, op2);
+      return true;
+    }
 
   /* A register is must-initialized at the entry of a basic block iff it is
      must-initialized at the exit of all the predecessors.  */
