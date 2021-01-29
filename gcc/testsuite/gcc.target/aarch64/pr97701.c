@@ -11,7 +11,7 @@ void e(signed f, int g, char h, char i, char j) {
       for (long m = f + 6LL; m < (h ? h : i); m += 2)
         for (int n = 0; n < 16; n += 3LL) {
           for (int o = g; o; o++)
-            a[k][l][m][n][o] = b[k][l][m][n][o] = d[k] ? 2 : 0;
+            a[k][l][m][n][o] = b[k][l][m][n][o] = d[k] ? 2 : 1;
           c[k][l][m][0] = 0;
         }
 }
