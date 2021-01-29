@@ -232,13 +232,14 @@ public:
   bool is_export_p (tree name, basic_block bb = NULL);
   bool def_chain_in_export_p (tree name, basic_block bb);
   bitmap exports (basic_block bb);
+  void set_range_invariant (tree name);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
 private:
   bitmap_obstack m_bitmaps;
   vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
-  bitmap all_outgoing;		// All outgoing ranges combined. 
+  bitmap m_maybe_variant;	// Names which might have outgoing ranges.
   void maybe_add_gori (tree name, basic_block bb);
   void calculate_gori (basic_block bb);
 };
@@ -251,7 +252,7 @@ gori_map::gori_map ()
   m_outgoing.create (0);
   m_outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
   bitmap_obstack_initialize (&m_bitmaps);
-  all_outgoing = BITMAP_ALLOC (&m_bitmaps);
+  m_maybe_variant = BITMAP_ALLOC (&m_bitmaps);
 }
 
 // Free any memory the GORI map allocated.
@@ -280,8 +281,16 @@ gori_map::is_export_p (tree name, basic_block bb)
 {
   // If no BB is specified, test if it is exported anywhere in the IL.
   if (!bb)
-    return bitmap_bit_p (all_outgoing, SSA_NAME_VERSION (name));
+    return bitmap_bit_p (m_maybe_variant, SSA_NAME_VERSION (name));
   return bitmap_bit_p (exports (bb), SSA_NAME_VERSION (name));
+}
+
+// Clear the m_maybe_variant bit so ranges will not be tracked for NAME.
+
+void
+gori_map::set_range_invariant (tree name)
+{
+  bitmap_clear_bit (m_maybe_variant, SSA_NAME_VERSION (name));
 }
 
 // Return true if any element in the def chain of NAME is in the
@@ -348,7 +357,7 @@ gori_map::calculate_gori (basic_block bb)
       maybe_add_gori (name, gimple_bb (stmt));
     }
   // Add this bitmap to the aggregate list of all outgoing names.
-  bitmap_ior_into (all_outgoing, m_outgoing[bb->index]);
+  bitmap_ior_into (m_maybe_variant, m_outgoing[bb->index]);
 }
 
 // Dump the table information for BB to file F.
@@ -447,7 +456,7 @@ gori_compute::gori_compute ()
   m_gori_map = new gori_map;
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
-  // all_outgoing bitmap which will help eliminate processing of names
+  // m_maybe_variant bitmap which will help eliminate processing of names
   // which never have their ranges adjusted.
   for (x = 0; x < lim ; x++)
     {
@@ -994,6 +1003,14 @@ gori_compute::has_edge_range_p (tree name, edge e)
 
   return (m_gori_map->is_export_p (name, e->src)
 	  || m_gori_map->def_chain_in_export_p (name, e->src));
+}
+
+// Clear the m_maybe_variant bit so ranges will not be tracked for NAME.
+
+void
+gori_compute::set_range_invariant (tree name)
+{
+  m_gori_map->set_range_invariant (name);
 }
 
 // Dump what is known to GORI computes to listing file F.

@@ -72,6 +72,7 @@ public:
   ~gori_compute ();
   bool outgoing_edge_range_p (irange &r, edge e, tree name);
   bool has_edge_range_p (tree name, edge e = NULL);
+  void set_range_invariant (tree name);
   void dump (FILE *f);
 protected:
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
