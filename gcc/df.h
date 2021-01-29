@@ -922,6 +922,7 @@ struct df_mir_bb_info
   /* The results of the dataflow problem.  */
   bitmap_head in;    /* At the top of the block.  */
   bitmap_head out;   /* At the bottom of the block.  */
+  bool con_visited;  /* Visited by con_fun_{0,n}.  */
 };
 
 
