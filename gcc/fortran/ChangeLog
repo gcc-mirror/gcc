@@ -1,3 +1,12 @@
+2021-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86470
+	* trans.c (gfc_call_malloc): Allocate area of size 1 if passed
+	size is NULL (as documented).
+
 2020-12-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
