@@ -16,12 +16,11 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_HIR_TYPE_CHECK_TOPLEVEL
-#define RUST_HIR_TYPE_CHECK_TOPLEVEL
+#ifndef RUST_HIR_TYPE_CHECK_IMPLITEM_H
+#define RUST_HIR_TYPE_CHECK_IMPLITEM_H
 
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
-#include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-tyty.h"
@@ -29,66 +28,13 @@
 namespace Rust {
 namespace Resolver {
 
-class TypeCheckTopLevel : public TypeCheckBase
+class TypeCheckTopLevelImplItem : public TypeCheckBase
 {
 public:
-  static void Resolve (HIR::Item *item)
+  static void Resolve (HIR::InherentImplItem *item)
   {
-    TypeCheckTopLevel resolver;
+    TypeCheckTopLevelImplItem resolver;
     item->accept_vis (resolver);
-  }
-
-  void visit (HIR::TupleStruct &struct_decl)
-  {
-    std::vector<TyTy::StructFieldType *> fields;
-
-    size_t idx = 0;
-    struct_decl.iterate ([&] (HIR::TupleField &field) mutable -> bool {
-      TyTy::TyBase *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
-      TyTy::StructFieldType *ty_field
-	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     std::to_string (idx), field_type);
-      fields.push_back (ty_field);
-      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
-      idx++;
-      return true;
-    });
-
-    TyTy::TyBase *type
-      = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), std::move (fields));
-
-    context->insert_type (struct_decl.get_mappings (), type);
-  }
-
-  void visit (HIR::StructStruct &struct_decl)
-  {
-    std::vector<TyTy::StructFieldType *> fields;
-    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
-      TyTy::TyBase *field_type
-	= TypeCheckType::Resolve (field.get_field_type ().get ());
-      TyTy::StructFieldType *ty_field
-	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type);
-      fields.push_back (ty_field);
-      context->insert_type (field.get_mappings (), ty_field->get_field_type ());
-      return true;
-    });
-
-    TyTy::TyBase *type
-      = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), std::move (fields));
-
-    context->insert_type (struct_decl.get_mappings (), type);
-  }
-
-  void visit (HIR::StaticItem &var)
-  {
-    TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
-    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
-
-    context->insert_type (var.get_mappings (), type->combine (expr_type));
   }
 
   void visit (HIR::ConstantItem &constant)
@@ -135,20 +81,69 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
-  void visit (HIR::InherentImpl &impl_block)
+private:
+  TypeCheckTopLevelImplItem () : TypeCheckBase () {}
+};
+
+class TypeCheckImplItem : public TypeCheckBase
+{
+public:
+  static void Resolve (HIR::InherentImplItem *item, TyTy::TyBase *self)
   {
-    TypeCheckType::Resolve (impl_block.get_type ().get ());
-    for (auto &impl_item : impl_block.get_impl_items ())
+    TypeCheckImplItem resolver (self);
+    item->accept_vis (resolver);
+  }
+
+  void visit (HIR::Function &function)
+  {
+    TyTy::TyBase *lookup;
+    if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       {
-	TypeCheckTopLevelImplItem::Resolve (impl_item.get ());
+	rust_error_at (function.locus, "failed to lookup function type");
+	return;
       }
+
+    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (function.get_locus (),
+		       "found invalid type for function [%s]",
+		       lookup->as_string ().c_str ());
+	return;
+      }
+
+    // need to get the return type from this
+    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
+    auto expected_ret_tyty = resolve_fn_type->return_type ();
+    context->push_return_type (expected_ret_tyty);
+
+    TypeCheckExpr::Resolve (function.function_body.get ());
+    if (function.function_body->has_expr ())
+      {
+	auto resolved
+	  = TypeCheckExpr::Resolve (function.function_body->expr.get ());
+
+	auto ret_resolved = expected_ret_tyty->combine (resolved);
+	if (ret_resolved == nullptr)
+	  {
+	    rust_error_at (function.function_body->expr->get_locus_slow (),
+			   "failed to resolve final expression");
+	    return;
+	  }
+
+	context->peek_return_type ()->append_reference (
+	  ret_resolved->get_ref ());
+      }
+
+    context->pop_return_type ();
   }
 
 private:
-  TypeCheckTopLevel () : TypeCheckBase () {}
+  TypeCheckImplItem (TyTy::TyBase *self) : TypeCheckBase (), self (self) {}
+
+  TyTy::TyBase *self;
 };
 
 } // namespace Resolver
 } // namespace Rust
 
-#endif // RUST_HIR_TYPE_CHECK_TOPLEVEL
+#endif // RUST_HIR_TYPE_CHECK_IMPLITEM_H

@@ -20,6 +20,8 @@
 #define RUST_AST_RESOLVE_TOPLEVEL_H
 
 #include "rust-ast-resolve-base.h"
+#include "rust-ast-resolve-type.h"
+#include "rust-ast-resolve-implitem.h"
 #include "rust-ast-full.h"
 
 namespace Rust {
@@ -33,8 +35,6 @@ public:
     ResolveTopLevel resolver;
     item->accept_vis (resolver);
   };
-
-  ~ResolveTopLevel () {}
 
   void visit (AST::TupleStruct &struct_decl)
   {
@@ -86,6 +86,17 @@ public:
 	resolver->insert_resolved_name (function.get_node_id (),
 					function.get_node_id ());
       }
+  }
+
+  void visit (AST::InherentImpl &impl_block)
+  {
+    if (!ResolveType::go (impl_block.get_type ().get (),
+			  impl_block.get_node_id ()))
+      return;
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      ResolveToplevelImplItem::go (impl_item.get (),
+				   impl_block.get_type ().get ());
   }
 
 private:

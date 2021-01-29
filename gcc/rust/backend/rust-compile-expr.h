@@ -481,6 +481,11 @@ public:
 						      expr.get_locus ());
   }
 
+  void visit (HIR::PathInExpression &expr)
+  {
+    translated = ResolvePathRef::Compile (&expr, ctx);
+  }
+
 private:
   CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 

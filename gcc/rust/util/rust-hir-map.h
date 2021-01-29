@@ -109,6 +109,10 @@ public:
   void insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item);
   HIR::Item *lookup_hir_item (CrateNum crateNum, HirId id);
 
+  void insert_hir_implitem (CrateNum crateNum, HirId id,
+			    HIR::InherentImplItem *item);
+  HIR::InherentImplItem *lookup_hir_implitem (CrateNum crateNum, HirId id);
+
   void insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (CrateNum crateNum, HirId id);
 
@@ -170,6 +174,8 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
   std::map<CrateNum, std::map<HirId, HIR::StructExprField *> >
     hirStructFieldMappings;
+  std::map<CrateNum, std::map<HirId, HIR::InherentImplItem *> >
+    hirImplItemMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

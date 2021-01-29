@@ -27,7 +27,6 @@ namespace HIR {
 // forward decls
 class BlockExpr;
 class TypePath;
-class MacroInvocationSemi;
 
 // A type generic parameter (as opposed to a lifetime generic parameter)
 class TypeParam : public GenericParam
@@ -569,6 +568,8 @@ class Method : public InherentImplItem, public TraitImplItem
 
   std::unique_ptr<BlockExpr> expr;
 
+  Analysis::NodeMapping mappings;
+
   Location locus;
 
 public:
@@ -588,14 +589,15 @@ public:
   bool has_visibility () const { return !vis.is_error (); }
 
   // Mega-constructor with all possible fields
-  Method (Identifier method_name, FunctionQualifiers qualifiers,
+  Method (Analysis::NodeMapping mappings, Identifier method_name,
+	  FunctionQualifiers qualifiers,
 	  std::vector<std::unique_ptr<GenericParam> > generic_params,
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
 	  std::vector<Attribute> outer_attrs, Location locus = Location ())
-    : outer_attrs (std::move (outer_attrs)), vis (std::move (vis)),
-      qualifiers (std::move (qualifiers)),
+    : mappings (mappings), outer_attrs (std::move (outer_attrs)),
+      vis (std::move (vis)), qualifiers (std::move (qualifiers)),
       method_name (std::move (method_name)),
       generic_params (std::move (generic_params)),
       self_param (std::move (self_param)),
@@ -609,9 +611,10 @@ public:
 
   // Copy constructor with clone
   Method (Method const &other)
-    : outer_attrs (other.outer_attrs), vis (other.vis),
-      qualifiers (other.qualifiers), method_name (other.method_name),
-      self_param (other.self_param), function_params (other.function_params),
+    : mappings (other.mappings), outer_attrs (other.outer_attrs),
+      vis (other.vis), qualifiers (other.qualifiers),
+      method_name (other.method_name), self_param (other.self_param),
+      function_params (other.function_params),
       return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause), expr (other.expr->clone_block_expr ()),
       locus (other.locus)
@@ -624,6 +627,7 @@ public:
   // Overloaded assignment operator to clone
   Method &operator= (Method const &other)
   {
+    mappings = other.mappings;
     method_name = other.method_name;
     outer_attrs = other.outer_attrs;
     vis = other.vis;
@@ -649,6 +653,13 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_mappings () const { return mappings; };
+
+  Analysis::NodeMapping get_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1266,6 +1277,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2096,6 +2112,11 @@ public:
 
   std::string get_identifier () { return identifier; }
 
+  Analysis::NodeMapping get_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2767,6 +2788,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  std::unique_ptr<Type> &get_type () { return trait_type; };
+
 protected:
   // Mega-constructor
   Impl (Analysis::NodeMapping mappings,
@@ -2863,6 +2886,16 @@ public:
   InherentImpl &operator= (InherentImpl &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items ()
+  {
+    return impl_items;
+  };
+
+  const std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items () const
+  {
+    return impl_items;
+  };
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -3300,7 +3333,6 @@ protected:
 
 // Replaced with forward decls - defined in "rust-macro.h"
 class MacroItem;
-class MacroInvocationSemi;
 class MacroRulesDefinition;
 } // namespace HIR
 } // namespace Rust

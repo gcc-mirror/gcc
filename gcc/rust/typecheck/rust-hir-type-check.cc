@@ -39,6 +39,13 @@ TypeResolution::Resolve (HIR::Crate &crate)
   auto context = TypeCheckContext::get ();
 
   context->iterate ([&] (HirId id, TyTy::TyBase *ty) mutable -> bool {
+    if (ty->get_kind () == TyTy::TypeKind::ERROR)
+      {
+	rust_error_at (mappings->lookup_location (id),
+		       "failure in type resolution");
+	return false;
+      }
+
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;

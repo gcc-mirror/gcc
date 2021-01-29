@@ -16,12 +16,11 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_COMPILE_ITEM
-#define RUST_COMPILE_ITEM
+#ifndef RUST_COMPILE_IMPLITEM_H
+#define RUST_COMPILE_IMPLITEM_H
 
 #include "rust-compile-base.h"
 #include "rust-compile-tyty.h"
-#include "rust-compile-implitem.h"
 #include "rust-compile-var-decl.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
@@ -30,69 +29,14 @@
 namespace Rust {
 namespace Compile {
 
-class CompileItem : public HIRCompileBase
+class CompileInherentImplItem : public HIRCompileBase
 {
 public:
-  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true)
+  static void Compile (HIR::Type *base, HIR::InherentImplItem *item,
+		       Context *ctx, bool compile_fns)
   {
-    CompileItem compiler (ctx, compile_fns);
+    CompileInherentImplItem compiler (base, ctx, compile_fns);
     item->accept_vis (compiler);
-  }
-
-  void visit (HIR::TupleStruct &struct_decl)
-  {
-    TyTy::TyBase *resolved = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (
-	  struct_decl.get_mappings ().get_hirid (), &resolved))
-      {
-	rust_fatal_error (struct_decl.get_locus (),
-			  "Failed to lookup type for struct decl");
-	return;
-      }
-
-    TyTyResolveCompile::compile (ctx, resolved);
-  }
-
-  void visit (HIR::StructStruct &struct_decl)
-  {
-    TyTy::TyBase *resolved = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (
-	  struct_decl.get_mappings ().get_hirid (), &resolved))
-      {
-	rust_fatal_error (struct_decl.get_locus (),
-			  "Failed to lookup type for struct decl");
-	return;
-      }
-
-    TyTyResolveCompile::compile (ctx, resolved);
-  }
-
-  void visit (HIR::StaticItem &var)
-  {
-    TyTy::TyBase *resolved_type = nullptr;
-    bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
-					      &resolved_type);
-    rust_assert (ok);
-
-    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
-
-    std::string name = var.get_identifier ();
-    // FIXME need name mangling
-    std::string asm_name = "__" + var.get_identifier ();
-
-    bool is_external = false;
-    bool is_hidden = false;
-    bool in_unique_section = true;
-
-    Bvariable *static_global
-      = ctx->get_backend ()->global_variable (name, asm_name, type, is_external,
-					      is_hidden, in_unique_section,
-					      var.get_locus ());
-    ctx->get_backend ()->global_variable_set_init (static_global, value);
-
-    ctx->insert_var_decl (var.get_mappings ().get_hirid (), static_global);
-    ctx->push_var (static_global);
   }
 
   void visit (HIR::ConstantItem &constant)
@@ -106,6 +50,7 @@ public:
     ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
+    std::string ident = base->as_string () + "::" + constant.get_identifier ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_identifier (), value, constant.get_locus ());
 
@@ -150,12 +95,15 @@ public:
     unsigned int flags = 0;
     bool is_main_fn = function.function_name.compare ("main") == 0;
 
+    std::string fn_identifier
+      = base->as_string () + "::" + function.function_name;
+
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string asm_name = function.function_name;
+    std::string asm_name = fn_identifier;
     if (!is_main_fn)
       {
 	// FIXME need name mangling
@@ -163,7 +111,7 @@ public:
       }
 
     Bfunction *fndecl
-      = ctx->get_backend ()->function (compiled_fn_type, function.function_name,
+      = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, function.get_locus ());
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
@@ -301,22 +249,16 @@ public:
     ctx->push_function (fndecl);
   }
 
-  void visit (HIR::InherentImpl &impl_block)
-  {
-    for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (impl_block.get_type ().get (),
-					impl_item.get (), ctx, compile_fns);
-  }
-
 private:
-  CompileItem (Context *ctx, bool compile_fns)
-    : HIRCompileBase (ctx), compile_fns (compile_fns)
+  CompileInherentImplItem (HIR::Type *base, Context *ctx, bool compile_fns)
+    : HIRCompileBase (ctx), base (base), compile_fns (compile_fns)
   {}
 
+  HIR::Type *base;
   bool compile_fns;
 };
 
 } // namespace Compile
 } // namespace Rust
 
-#endif // RUST_COMPILE_ITEM
+#endif // RUST_COMPILE_IMPLITEM_H

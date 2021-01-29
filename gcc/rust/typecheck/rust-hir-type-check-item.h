@@ -21,6 +21,7 @@
 
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
+#include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-stmt.h"
 #include "rust-tyty-visitor.h"
@@ -35,6 +36,21 @@ public:
   {
     TypeCheckItem resolver;
     item->accept_vis (resolver);
+  }
+
+  void visit (HIR::InherentImpl &impl_block)
+  {
+    TyTy::TyBase *self = nullptr;
+    if (!context->lookup_type (
+	  impl_block.get_type ()->get_mappings ().get_hirid (), &self))
+      {
+	rust_error_at (impl_block.get_locus (),
+		       "failed to resolve Self for InherentImpl");
+	return;
+      }
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      TypeCheckImplItem::Resolve (impl_item.get (), self);
   }
 
   void visit (HIR::Function &function)

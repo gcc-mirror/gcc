@@ -23,6 +23,7 @@
 
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-type.h"
+#include "rust-ast-lower-implitem.h"
 #include "rust-ast-lower-stmt.h"
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
@@ -280,6 +281,46 @@ public:
       }
 
     translated = fn;
+  }
+
+  void visit (AST::InherentImpl &impl_block)
+  {
+    std::vector<HIR::Attribute> inner_attrs;
+    std::vector<HIR::Attribute> outer_attrs;
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+    HIR::Type *trait_type
+      = ASTLoweringType::translate (impl_block.get_type ().get ());
+
+    std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
+    for (auto &impl_item : impl_block.get_impl_items ())
+      {
+	HIR::InherentImplItem *lowered
+	  = ASTLowerImplItem::translate (impl_item.get ());
+	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::InherentImpl (mapping, std::move (impl_items),
+			       std::move (generic_params),
+			       std::unique_ptr<HIR::Type> (trait_type),
+			       where_clause, vis, std::move (inner_attrs),
+			       std::move (outer_attrs),
+			       impl_block.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       impl_block.get_locus ());
   }
 
 private:

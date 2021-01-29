@@ -38,8 +38,10 @@ public:
 
     if (resolver.infered == nullptr)
       {
-	resolver.infered
-	  = new TyTy::UnitType (expr->get_mappings ().get_hirid ());
+	rust_error_at (expr->get_locus_slow (),
+		       "failed to resolve type for %s\n",
+		       expr->as_string ().c_str ());
+	return nullptr;
       }
 
     auto ref = expr->get_mappings ().get_hirid ();
@@ -767,6 +769,35 @@ public:
       }
 
     infered = resolved->get_field_type ();
+  }
+
+  void visit (HIR::PathInExpression &expr)
+  {
+    NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+
+    // then lookup the reference_node_id
+    NodeId ref_node_id;
+    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+      {
+	if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "Failed to lookup reference for node: %s",
+			   expr.as_string ().c_str ());
+	    return;
+	  }
+      }
+
+    // node back to HIR
+    HirId ref;
+    if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				       ref_node_id, &ref))
+      {
+	rust_error_at (expr.get_locus (), "reverse lookup failure");
+	return;
+      }
+
+    context->lookup_type (ref, &infered);
   }
 
 private:

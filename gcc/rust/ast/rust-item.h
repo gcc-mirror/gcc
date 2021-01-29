@@ -698,6 +698,8 @@ class Method : public InherentImplItem, public TraitImplItem
 
   Location locus;
 
+  NodeId node_id;
+
 public:
   // Returns whether the method is in an error state.
   bool is_error () const
@@ -746,7 +748,8 @@ public:
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
-      function_body (std::move (function_body)), locus (locus)
+      function_body (std::move (function_body)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // TODO: add constructor with less fields
@@ -769,6 +772,8 @@ public:
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
+
+    node_id = other.node_id;
   }
 
   // Overloaded assignment operator to clone
@@ -798,6 +803,8 @@ public:
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
+
+    node_id = other.node_id;
 
     return *this;
   }
@@ -859,6 +866,14 @@ public:
     rust_assert (has_where_clause ());
     return where_clause;
   }
+
+  Identifier get_method_name () const { return method_name; }
+
+  NodeId get_node_id () const { return node_id; }
+
+  Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1502,6 +1517,8 @@ public:
   Function &operator= (Function &&other) = default;
 
   Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2535,6 +2552,8 @@ public:
   bool is_unnamed () const { return identifier == "_"; }
 
   Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 

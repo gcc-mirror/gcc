@@ -55,7 +55,6 @@ public:
   //  virtual void visit(TraitItem& trait_item) {}
   //  virtual void visit(InherentImplItem& inherent_impl_item) {}
   //  virtual void visit(TraitImplItem& trait_impl_item) {}
-  virtual void visit (HIR::MacroInvocationSemi &macro) {}
 
   // rust-path.h
   virtual void visit (HIR::PathInExpression &path) {}

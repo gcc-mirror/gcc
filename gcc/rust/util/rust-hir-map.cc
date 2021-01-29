@@ -259,6 +259,30 @@ Mappings::lookup_hir_item (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_implitem (CrateNum crateNum, HirId id,
+			       HIR::InherentImplItem *item)
+{
+  rust_assert (lookup_hir_implitem (crateNum, id) == nullptr);
+
+  hirImplItemMappings[crateNum][id] = item;
+  nodeIdToHirMappings[crateNum][item->get_impl_mappings ().get_nodeid ()] = id;
+}
+
+HIR::InherentImplItem *
+Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id)
+{
+  auto it = hirImplItemMappings.find (crateNum);
+  if (it == hirImplItemMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
 {
   hirExprMappings[crateNum][id] = expr;

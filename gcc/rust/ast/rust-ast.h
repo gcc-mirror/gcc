@@ -1333,6 +1333,8 @@ public:
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
+
+  virtual Location get_locus_slow () const = 0;
 };
 
 // Abstract base class for items used in a trait impl
@@ -1458,6 +1460,10 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override { return get_locus (); }
 
 protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const

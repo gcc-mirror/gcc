@@ -28,14 +28,19 @@ namespace Resolver {
 class ResolveType : public ResolverBase
 {
 public:
-  static void go (AST::Type *type, NodeId parent)
+  static bool go (AST::Type *type, NodeId parent)
   {
     ResolveType resolver (parent);
     type->accept_vis (resolver);
+    if (!resolver.ok)
+      rust_error_at (type->get_locus_slow (), "unresolved type");
+
+    return resolver.ok;
   };
 
   void visit (AST::BareFunctionType &fntype)
   {
+    ok = true;
     for (auto &param : fntype.get_function_params ())
       ResolveType::go (param.get_type ().get (), fntype.get_node_id ());
 
@@ -45,6 +50,7 @@ public:
 
   void visit (AST::TupleType &tuple)
   {
+    ok = true;
     if (tuple.is_unit_type ())
       {
 	resolved_node = resolver->get_unit_type_node_id ();
@@ -65,6 +71,8 @@ public:
 		       path.as_string ().c_str ());
 	return;
       }
+
+    ok = true;
     resolver->insert_resolved_type (path.get_node_id (), resolved_node);
     resolver->insert_new_definition (path.get_node_id (),
 				     Definition{path.get_node_id (), parent});
@@ -76,7 +84,9 @@ public:
   }
 
 private:
-  ResolveType (NodeId parent) : ResolverBase (parent) {}
+  ResolveType (NodeId parent) : ResolverBase (parent), ok (false) {}
+
+  bool ok;
 };
 
 } // namespace Resolver

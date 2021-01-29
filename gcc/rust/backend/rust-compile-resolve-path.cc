@@ -55,6 +55,10 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
       return;
     }
 
+  // might be a constant
+  if (ctx->lookup_const_decl (ref, &resolved))
+    return;
+
   // this might be a variable reference or a function reference
   Bvariable *var = nullptr;
   if (ctx->lookup_var_decl (ref, &var))

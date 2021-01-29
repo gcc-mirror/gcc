@@ -18,6 +18,7 @@
 
 #include "rust-ast-lower.h"
 #include "rust-ast-lower-item.h"
+#include "rust-ast-lower-implitem.h"
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-block.h"
 

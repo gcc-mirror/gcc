@@ -117,6 +117,12 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
+  void visit (AST::InherentImpl &impl_block)
+  {
+    for (auto &impl_item : impl_block.get_impl_items ())
+      impl_item->accept_vis (*this);
+  }
+
 private:
   ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}
 };

@@ -1256,6 +1256,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
+
+  virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 };
 
 // Abstract base class for items used in a trait impl
@@ -1276,122 +1278,6 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
-};
-
-/* A macro invocation item (or statement) HIR node (i.e. semi-coloned macro
- * invocation) */
-class MacroInvocationSemi : public MacroItem,
-			    public TraitItem,
-			    public InherentImplItem,
-			    public TraitImplItem
-{
-  SimplePath path;
-  // all delim types except curly must have invocation end with a semicolon
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
-  Location locus;
-
-public:
-  std::string as_string () const override;
-
-  MacroInvocationSemi (Analysis::NodeMapping mappings, SimplePath macro_path,
-		       DelimType delim_type,
-		       std::vector<std::unique_ptr<TokenTree> > token_trees,
-		       std::vector<Attribute> outer_attribs, Location locus)
-    : MacroItem (std::move (mappings), std::move (outer_attribs)),
-      path (std::move (macro_path)), delim_type (delim_type),
-      token_trees (std::move (token_trees)), locus (locus)
-  {}
-  /* TODO: possible issue with Item and TraitItem hierarchies both having outer
-   * attributes
-   * - storage inefficiency at least.
-   * Best current idea is to make Item preferred and have TraitItem get virtual
-   * functions for attributes or something. Or just redo the "composition"
-   * approach, but then this prevents polymorphism and would entail redoing
-   * quite a bit of the parser. */
-
-  // Move constructors
-  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
-  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  // Clones this macro invocation semi.
-  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
-  {
-    return std::unique_ptr<MacroInvocationSemi> (
-      clone_macro_invocation_semi_impl ());
-  }
-
-protected:
-  // Copy constructor with vector clone
-  MacroInvocationSemi (MacroInvocationSemi const &other)
-    : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), path (other.path), delim_type (other.delim_type),
-      locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // Overloaded assignment operator to vector clone
-  MacroInvocationSemi &operator= (MacroInvocationSemi const &other)
-  {
-    MacroItem::operator= (other);
-    TraitItem::operator= (other);
-    InherentImplItem::operator= (other);
-    TraitImplItem::operator= (other);
-    path = other.path;
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  MacroInvocationSemi *clone_macro_invocation_semi_impl () const
-  {
-    return new MacroInvocationSemi (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocationSemi *clone_item_impl () const override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocationSemi *clone_inherent_impl_item_impl () const override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocationSemi *clone_trait_impl_item_impl () const override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
-
-  // FIXME: remove if item impl virtual override works properly
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  /*MacroInvocationSemi* clone_statement_impl() const override {
-      return clone_macro_invocation_semi_impl ();
-  }*/
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MacroInvocationSemi *clone_trait_item_impl () const override
-  {
-    return clone_macro_invocation_semi_impl ();
-  }
 };
 
 // A crate HIR object - holds all the data for a single compilation unit

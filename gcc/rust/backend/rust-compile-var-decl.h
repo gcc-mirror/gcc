@@ -38,8 +38,6 @@ public:
     return compiler.translated;
   }
 
-  virtual ~CompileVarDecl () {}
-
   void visit (HIR::LetStmt &stmt)
   {
     locus = stmt.get_locus ();
