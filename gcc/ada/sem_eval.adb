@@ -4983,7 +4983,7 @@ package body Sem_Eval is
          end if;
       end Check_Elab_Call;
 
-      Modulus : Uint;
+      Modulus, Val : Uint;
 
    begin
       if Compile_Time_Known_Value (Left)
@@ -4994,23 +4994,25 @@ package body Sem_Eval is
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
-            declare
-               Modulus : Uint;
-            begin
-               if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
-               else
-                  Modulus := Uint_2 ** RM_Size (Typ);
-               end if;
+            if Is_Modular_Integer_Type (Typ) then
+               Modulus := Einfo.Modulus (Typ);
+            else
+               Modulus := Uint_2 ** RM_Size (Typ);
+            end if;
 
-               --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+            --  Fold Shift_Left (X, Y) by computing
+            --  (X * 2**Y) rem modulus [- Modulus]
 
-               Fold_Uint
-                 (N,
-                  (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
-                    rem Modulus,
-                  Static => Static);
-            end;
+            Val := (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                     rem Modulus;
+
+            if Is_Modular_Integer_Type (Typ)
+              or else Val < Modulus / Uint_2
+            then
+               Fold_Uint (N, Val, Static => Static);
+            else
+               Fold_Uint (N, Val - Modulus, Static => Static);
+            end if;
 
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
@@ -5042,7 +5044,7 @@ package body Sem_Eval is
             Check_Elab_Call;
 
             declare
-               Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
+               Two_Y : constant Uint := Uint_2 ** Expr_Value (Right);
             begin
                if Is_Modular_Integer_Type (Typ) then
                   Modulus := Einfo.Modulus (Typ);
