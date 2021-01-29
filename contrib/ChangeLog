@@ -1,3 +1,8 @@
+2021-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/85574
+	* compare-lto: Deal with PE-COFF executables specifically.
+
 2021-01-07  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Sync from master.
