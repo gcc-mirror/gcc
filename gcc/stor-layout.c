@@ -1926,6 +1926,7 @@ finalize_type_size (tree type)
      However, where strict alignment is not required, avoid
      over-aligning structures, since most compilers do not do this
      alignment.  */
+  bool tua_cleared_p = false;
   if (TYPE_MODE (type) != BLKmode
       && TYPE_MODE (type) != VOIDmode
       && (STRICT_ALIGNMENT || !AGGREGATE_TYPE_P (type)))
@@ -1937,7 +1938,9 @@ finalize_type_size (tree type)
       if (mode_align >= TYPE_ALIGN (type))
 	{
 	  SET_TYPE_ALIGN (type, mode_align);
-	  TYPE_USER_ALIGN (type) = 0;
+	  /* Remember that we're about to reset this flag.  */
+	  tua_cleared_p = TYPE_USER_ALIGN (type);
+	  TYPE_USER_ALIGN (type) = false;
 	}
     }
 
@@ -1991,14 +1994,21 @@ finalize_type_size (tree type)
 
       /* Copy it into all variants.  */
       for (variant = TYPE_MAIN_VARIANT (type);
-	   variant != 0;
+	   variant != NULL_TREE;
 	   variant = TYPE_NEXT_VARIANT (variant))
 	{
 	  TYPE_SIZE (variant) = size;
 	  TYPE_SIZE_UNIT (variant) = size_unit;
 	  unsigned valign = align;
 	  if (TYPE_USER_ALIGN (variant))
-	    valign = MAX (valign, TYPE_ALIGN (variant));
+	    {
+	      valign = MAX (valign, TYPE_ALIGN (variant));
+	      /* If we reset TYPE_USER_ALIGN on the main variant, we might
+		 need to reset it on the variants too.  TYPE_MODE will be set
+		 to MODE in this variant, so we can use that.  */
+	      if (tua_cleared_p && GET_MODE_ALIGNMENT (mode) >= valign)
+		TYPE_USER_ALIGN (variant) = false;
+	    }
 	  else
 	    TYPE_USER_ALIGN (variant) = user_align;
 	  SET_TYPE_ALIGN (variant, valign);

@@ -1,3 +1,9 @@
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (-std=c++2a, -std=c++20, -std=gnu++2a, -std=gnu++20): Remove
+	draft from description.
+	(-std=c++2b): Fix a pasto, 2020 -> 2023.
+
 2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
 
 	* c-common.h (cxx_dialect): Add cxx23 as a dialect.

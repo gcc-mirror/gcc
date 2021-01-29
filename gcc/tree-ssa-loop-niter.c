@@ -2407,6 +2407,11 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
   affine_iv iv0, iv1;
   bool safe;
 
+  /* The condition at a fake exit (if it exists) does not control its
+     execution.  */
+  if (exit->flags & EDGE_FAKE)
+    return false;
+
   /* Nothing to analyze if the loop is known to be infinite.  */
   if (loop_constraint_set_p (loop, LOOP_C_INFINITE))
     return false;

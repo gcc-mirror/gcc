@@ -6,8 +6,6 @@
 #include <altivec.h>
 #include "pr79251.h"
 
-TEST_VEC_INSERT_ALL (test)
-
 /* { dg-final { scan-assembler-not {\mstxw\M} } } */
 /* { dg-final { scan-assembler-times {\mlvsl\M} 10 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mlvsr\M} 10 { target lp64 } } } */

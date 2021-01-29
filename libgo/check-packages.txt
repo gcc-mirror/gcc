@@ -80,6 +80,7 @@ flag
 fmt
 go/ast
 go/build
+go/build/constraint
 go/constant
 go/doc
 go/format
@@ -107,6 +108,7 @@ image/jpeg
 image/png
 index/suffixarray
 internal/cpu
+internal/execabs
 internal/fmtsort
 internal/poll
 internal/profile

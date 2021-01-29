@@ -1,3 +1,77 @@
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98841
+	* g++.dg/warn/effc5.C: New test.
+
+2021-01-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94775
+	* g++.dg/cpp0x/alignas19.C: New test.
+	* g++.dg/warn/Warray-bounds15.C: New test.
+
+2021-01-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/98730
+	* gcc.target/arm/simd/vceqzq_p64.c: Update expected result.
+
+2021-01-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/ISO_Fortran_binding_18.c: Include
+	../../../libgfortran/ISO_Fortran_binding.h rather than
+	ISO_Fortran_binding.h.
+
+2021-01-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-longdouble-math.c: New test.
+	* gcc.target/powerpc/float128-longdouble-stdio.c: New test.
+	* gcc.target/powerpc/float128-math.c: Adjust test for new name
+	being generated.  Add support for running test on power10.  Add
+	support for running if long double defaults to 64-bits.
+
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33661
+	PR c++/98847
+	* g++.target/i386/pr98847.C: New test.
+
+2021-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Fix shrn2 scan.
+
+2021-01-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98770
+	* g++.dg/modules/pr98770_a.C: New.
+	* g++.dg/modules/pr98770_b.C: New.
+
+2021-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86470
+	* gfortran.dg/gomp/pr86470.f90: New test.
+
+2021-01-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/98827
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Adjust ilp32.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Likewise.
+	* gcc.target/powerpc/pr79251.p8.c: Likewise.
+	* gcc.target/powerpc/pr79251.p9.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-7.c: Likewise.
+	* gcc.target/powerpc/pr79251-run.c: Build and run with vsx
+	option.
+
+2021-01-28  Xing GUO  <higuoxing@gmail.com>
+
+	* gcc.target/riscv/attribute-18.c: New test.
+
 2021-01-27  Harris Snyder  <hsnyder@structura.bio>
 
 	* gfortran.dg/ISO_Fortran_binding_18.c: New test.

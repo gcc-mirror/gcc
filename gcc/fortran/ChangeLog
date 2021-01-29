@@ -1,3 +1,9 @@
+2021-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86470
+	* trans.c (gfc_call_malloc): Allocate area of size 1 if passed
+	size is NULL (as documented).
+
 2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93924

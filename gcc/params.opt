@@ -514,8 +514,8 @@ Common Joined UInteger Var(param_max_gcse_insertion_ratio) Init(20) Param Optimi
 The maximum ratio of insertions to deletions of expressions in GCSE.
 
 -param=max-gcse-memory=
-Common Joined UInteger Var(param_max_gcse_memory) Init(134217728) Param Optimization
-The maximum amount of memory to be allocated by GCSE.
+Common Joined UInteger Var(param_max_gcse_memory) Init(131072) Param Optimization
+The maximum amount of memory to be allocated by GCSE, in kilobytes.
 
 -param=max-goto-duplication-insns=
 Common Joined UInteger Var(param_max_goto_duplication_insns) Init(8) Param Optimization
