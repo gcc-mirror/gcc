@@ -2995,10 +2995,12 @@ package body Sem_Eval is
    --  static if both operands are potentially static (RM 4.9(7), 4.9(20)).
 
    procedure Eval_Logical_Op (N : Node_Id) is
-      Left  : constant Node_Id := Left_Opnd (N);
-      Right : constant Node_Id := Right_Opnd (N);
-      Stat  : Boolean;
-      Fold  : Boolean;
+      Left      : constant Node_Id := Left_Opnd (N);
+      Right     : constant Node_Id := Right_Opnd (N);
+      Left_Int  : Uint := No_Uint;
+      Right_Int : Uint := No_Uint;
+      Stat      : Boolean;
+      Fold      : Boolean;
 
    begin
       --  If not foldable we are done
@@ -3011,64 +3013,88 @@ package body Sem_Eval is
 
       --  Compile time evaluation of logical operation
 
-      declare
-         Left_Int  : constant Uint := Expr_Value (Left);
-         Right_Int : constant Uint := Expr_Value (Right);
+      if Is_Modular_Integer_Type (Etype (N)) then
+         Left_Int  := Expr_Value (Left);
+         Right_Int := Expr_Value (Right);
 
-      begin
-         if Is_Modular_Integer_Type (Etype (N)) then
-            declare
-               Left_Bits  : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
-               Right_Bits : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
+         declare
+            Left_Bits  : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
+            Right_Bits : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
 
-            begin
-               To_Bits (Left_Int, Left_Bits);
-               To_Bits (Right_Int, Right_Bits);
+         begin
+            To_Bits (Left_Int, Left_Bits);
+            To_Bits (Right_Int, Right_Bits);
 
-               --  Note: should really be able to use array ops instead of
-               --  these loops, but they break the build with a cryptic error
-               --  during the bind of gnat1 likely due to a wrong computation
-               --  of a date or checksum.
-
-               if Nkind (N) = N_Op_And then
-                  for J in Left_Bits'Range loop
-                     Left_Bits (J) := Left_Bits (J) and Right_Bits (J);
-                  end loop;
-
-               elsif Nkind (N) = N_Op_Or then
-                  for J in Left_Bits'Range loop
-                     Left_Bits (J) := Left_Bits (J) or Right_Bits (J);
-                  end loop;
-
-               else
-                  pragma Assert (Nkind (N) = N_Op_Xor);
-
-                  for J in Left_Bits'Range loop
-                     Left_Bits (J) := Left_Bits (J) xor Right_Bits (J);
-                  end loop;
-               end if;
-
-               Fold_Uint (N, From_Bits (Left_Bits, Etype (N)), Stat);
-            end;
-
-         else
-            pragma Assert (Is_Boolean_Type (Etype (N)));
+            --  Note: should really be able to use array ops instead of
+            --  these loops, but they break the build with a cryptic error
+            --  during the bind of gnat1 likely due to a wrong computation
+            --  of a date or checksum.
 
             if Nkind (N) = N_Op_And then
-               Fold_Uint (N,
-                 Test (Is_True (Left_Int) and then Is_True (Right_Int)), Stat);
+               for J in Left_Bits'Range loop
+                  Left_Bits (J) := Left_Bits (J) and Right_Bits (J);
+               end loop;
 
             elsif Nkind (N) = N_Op_Or then
-               Fold_Uint (N,
-                 Test (Is_True (Left_Int) or else Is_True (Right_Int)), Stat);
+               for J in Left_Bits'Range loop
+                  Left_Bits (J) := Left_Bits (J) or Right_Bits (J);
+               end loop;
 
             else
                pragma Assert (Nkind (N) = N_Op_Xor);
-               Fold_Uint (N,
-                 Test (Is_True (Left_Int) xor Is_True (Right_Int)), Stat);
+
+               for J in Left_Bits'Range loop
+                  Left_Bits (J) := Left_Bits (J) xor Right_Bits (J);
+               end loop;
             end if;
+
+            Fold_Uint (N, From_Bits (Left_Bits, Etype (N)), Stat);
+         end;
+
+      else
+         pragma Assert (Is_Boolean_Type (Etype (N)));
+
+         if Compile_Time_Known_Value (Left)
+           and then Compile_Time_Known_Value (Right)
+         then
+            Right_Int := Expr_Value (Right);
+            Left_Int  := Expr_Value (Left);
          end if;
-      end;
+
+         if Nkind (N) = N_Op_And then
+
+            --  If Left or Right are not compile time known values it means
+            --  that the result is always False as per
+            --  Test_Expression_Is_Foldable.
+            --  Note that in this case, both Right_Int and Left_Int are set
+            --  to No_Uint, so need to test for both.
+
+            if Right_Int = No_Uint then
+               Fold_Uint (N, Uint_0, Stat);
+            else
+               Fold_Uint (N,
+                 Test (Is_True (Left_Int) and then Is_True (Right_Int)), Stat);
+            end if;
+         elsif Nkind (N) = N_Op_Or then
+
+            --  If Left or Right are not compile time known values it means
+            --  that the result is always True. as per
+            --  Test_Expression_Is_Foldable.
+            --  Note that in this case, both Right_Int and Left_Int are set
+            --  to No_Uint, so need to test for both.
+
+            if Right_Int = No_Uint then
+               Fold_Uint (N, Uint_1, Stat);
+            else
+               Fold_Uint (N,
+                 Test (Is_True (Left_Int) or else Is_True (Right_Int)), Stat);
+            end if;
+         else
+            pragma Assert (Nkind (N) = N_Op_Xor);
+            Fold_Uint (N,
+              Test (Is_True (Left_Int) xor Is_True (Right_Int)), Stat);
+         end if;
+      end if;
    end Eval_Logical_Op;
 
    ------------------------
@@ -7191,6 +7217,38 @@ package body Sem_Eval is
          else
             Fold := Compile_Time_Known_Value (Op1)
                       and then Compile_Time_Known_Value (Op2);
+         end if;
+
+         if not Fold
+           and then not Is_Modular_Integer_Type (Etype (N))
+         then
+            case Nkind (N) is
+               when N_Op_And =>
+
+                  --  (False and XXX) = (XXX and False) = False
+
+                  Fold :=
+                    (Compile_Time_Known_Value (Op1)
+                       and then Is_False (Expr_Value (Op1))
+                       and then Side_Effect_Free (Op2))
+                      or else (Compile_Time_Known_Value (Op2)
+                                and then Is_False (Expr_Value (Op2))
+                                and then Side_Effect_Free (Op1));
+
+               when N_Op_Or =>
+
+                  --  (True and XXX) = (XXX and True) = True
+
+                  Fold :=
+                    (Compile_Time_Known_Value (Op1)
+                       and then Is_True (Expr_Value (Op1))
+                       and then Side_Effect_Free (Op2))
+                      or else (Compile_Time_Known_Value (Op2)
+                                and then Is_True (Expr_Value (Op2))
+                                and then Side_Effect_Free (Op1));
+
+               when others => null;
+            end case;
          end if;
 
          return;

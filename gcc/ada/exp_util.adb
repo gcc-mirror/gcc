@@ -13460,15 +13460,25 @@ package body Exp_Util is
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
-         --  membership tests and short circuit forms.
+         --  short circuit forms.
 
          when N_Binary_Op
-            | N_Membership_Test
             | N_Short_Circuit
          =>
             return Side_Effect_Free (Left_Opnd  (N), Name_Req, Variable_Ref)
                      and then
                    Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
+
+         --  Membership tests may have either Right_Opnd or Alternatives set
+
+         when N_Membership_Test =>
+            return Side_Effect_Free (Left_Opnd (N), Name_Req, Variable_Ref)
+                     and then
+                   (if Present (Right_Opnd (N))
+                    then Side_Effect_Free
+                           (Right_Opnd (N), Name_Req, Variable_Ref)
+                    else Side_Effect_Free
+                           (Alternatives (N), Name_Req, Variable_Ref));
 
          --  An explicit dereference is side effect free only if it is
          --  a side effect free prefixed reference.
