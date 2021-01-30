@@ -2409,6 +2409,7 @@ remove_partial_avx_dependency (void)
     }
 
   df_process_deferred_rescans ();
+  df_clear_flags (DF_DEFER_INSN_RESCAN);
   bitmap_obstack_release (NULL);
   BITMAP_FREE (convert_bbs);
 
