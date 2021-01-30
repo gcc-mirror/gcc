@@ -2997,7 +2997,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  if (lastcomp->u.c.component->ts.type == BT_DERIVED
 		      || lastcomp->u.c.component->ts.type == BT_CLASS)
 		    {
-		      if (sym_attr.pointer || (openacc && sym_attr.allocatable))
+		      bool pointer
+			= (lastcomp->u.c.component->ts.type == BT_CLASS
+			   ? sym_attr.class_pointer : sym_attr.pointer);
+		      if (pointer || (openacc && sym_attr.allocatable))
 			{
 			  tree data, size;
 
