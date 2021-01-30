@@ -16,7 +16,7 @@
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 10 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvw4x\M} 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstb|sth|stw|stfs|stfd\M} 22 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstb|sth|stw|stfs|stfd\M} 12 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxvw4x\M} 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxvd2x\M} 4 { target ilp32 } } } */
 
