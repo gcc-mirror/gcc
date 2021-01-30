@@ -50,11 +50,11 @@ package Exp_Util is
    --    of statements, the actions are simply inserted into the list before
    --    the associated statement.
 
-   --    For an expression occurring in a declaration (declarations always
-   --    appear in lists), the actions are similarly inserted into the list
-   --    just before the associated declaration. ???Declarations do not always
-   --    appear in lists; in particular, a library unit declaration does not
-   --    appear in a list, and Insert_Action will crash in that case.
+   --    For an expression occurring in a declaration the actions are similarly
+   --    inserted into the list just before the associated declaration. (But
+   --    note that although declarations usually appear in lists, they don't
+   --    always; in particular, a library unit declaration does not appear in
+   --    a list, and Insert_Action will crash in that case.)
 
    --  The following special cases arise:
 
@@ -477,7 +477,7 @@ package Exp_Util is
    --
    --  The Name_Req flag is set to ensure that the result is suitable for use
    --  in a context requiring a name (for example, the prefix of an attribute
-   --  reference) (can't this just be a qualification in Ada 2012???).
+   --  reference).
    --
    --  The Renaming_Req flag is set to produce an object renaming declaration
    --  rather than an object declaration. This is valid only if the expression

@@ -1006,8 +1006,8 @@ package Errout is
    Size_Too_Small_Message : constant String :=
      "size for& too small, minimum allowed is ^";
    --  This message is printed in Freeze and Sem_Ch13. We also test for it in
-   --  the body of this package (see Special_Msg_Delete) ???which is somewhat
-   --  questionable. The Is_Size_Too_Small_Message function tests for it by
-   --  testing a prefix. The function and constant should be kept in synch.
+   --  the body of this package (see Special_Msg_Delete).
+   --  Function Is_Size_Too_Small_Message tests for it by testing a prefix.
+   --  The function and constant should be kept in synch.
 
 end Errout;
