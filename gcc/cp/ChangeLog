@@ -1,3 +1,9 @@
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* tree.c (build_vec_init_expr): Don't call build_vec_init_elt
+	if we got a CONSTRUCTOR.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.c (cp_parser_elaborated_type_specifier): Test

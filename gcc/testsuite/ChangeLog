@@ -1,3 +1,17 @@
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* g++.dg/cpp0x/initlist-array13.C: New test.
+
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-29  Bin Cheng  <bin.cheng@linux.alibaba.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97627
+	* g++.dg/pr97627.C: New testcase.
+
 2021-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-29  Bin Cheng  <bin.cheng@linux.alibaba.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97627
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions):
+	Do not analyze fake edges.
+
 2021-01-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backported from master:
