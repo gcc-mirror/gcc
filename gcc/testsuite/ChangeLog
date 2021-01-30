@@ -1,3 +1,73 @@
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98331
+	* gcc.dg/pr98331.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33661
+	PR c++/98847
+	* g++.target/i386/pr98847.C: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98853
+	* gcc.c-torture/execute/pr98853-1.c: New test.
+	* gcc.c-torture/execute/pr98853-2.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98681
+	* gcc.c-torture/execute/pr98681.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95693
+	* g++.dg/ubsan/pr95693.C: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90248
+	* gcc.dg/tree-ssa/copy-sign-1.c: Don't expect any copysign
+	builtins.
+	* gcc.dg/pr90248.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98255
+	* gcc.dg/pr98255.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98672
+	* g++.dg/cpp1y/constexpr-98672.C: New test.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98463
+	* g++.dg/cpp2a/no_unique_address8.C: New test.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97474
+	* g++.dg/torture/pr97474.C: New test.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98642
+	* g++.dg/cpp1z/elide5.C: New test.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* g++.dg/cpp0x/initlist-array13.C: New test.
+
+2021-01-29  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97627
+	* g++.dg/pr97627.C: New testcase.
+
 2021-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

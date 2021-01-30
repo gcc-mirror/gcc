@@ -1,3 +1,59 @@
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33661
+	PR c++/98847
+	* decl.c (cp_finish_decl): For register vars with asmspec in templates
+	call set_user_assembler_name and set DECL_HARD_REGISTER.
+	* pt.c (tsubst_expr): When instantiating DECL_HARD_REGISTER vars,
+	pass asmspec_tree to cp_finish_decl.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95693
+	* init.c (build_zero_init_1): Revert the 2018-03-06 change to
+	return build_zero_cst for reference types.
+	* typeck2.c (process_init_constructor_record): Instead call
+	build_zero_cst here during error recovery instead of build_zero_init.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98672
+	* constexpr.c (check_for_return_continue_data): Add break_stmt member.
+	(check_for_return_continue): Also look for BREAK_STMT.  Handle
+	SWITCH_STMT by ignoring break_stmt from its body.
+	(potential_constant_expression_1) <case FOR_STMT>,
+	<case WHILE_STMT>: If the condition isn't constant true, check if
+	the loop body can contain a return stmt.
+	<case SWITCH_STMT>: Adjust check_for_return_continue_data initializer.
+	<case IF_STMT>: If recursion with tf_none is successful,
+	merge *jump_target from the branches - returns with highest priority,
+	breaks or continues lower.  If then branch is potentially constant and
+	doesn't return, check the else branch if it could return, break or
+	continue.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98463
+	* constexpr.c (get_or_insert_ctor_field): Add check.
+	(cxx_eval_store_expression): Handle discontinuity of refs.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97474
+	* call.c (type_passed_as): Don't mark invisiref restrict.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98642
+	* typeck2.c (split_nonconstant_init_1): Don't copy a list-init
+	constructor call.
+
+2021-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63707
+	* tree.c (build_vec_init_expr): Don't call build_vec_init_elt
+	if we got a CONSTRUCTOR.
+
 2021-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98790
