@@ -1,3 +1,76 @@
+2021-01-29  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR testsuite/98870
+	* gcc.target/powerpc/ppc-fortran/ieee128-math.f90: Fix the
+	expected result.
+
+2021-01-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr91903.c: Fix dg-require stanza.
+
+2021-01-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97701
+	* gcc.target/aarch64/pr97701.c: Modify.
+
+2021-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/combined-conditionals-1.c: New test.
+
+2021-01-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97701
+	* gcc.target/aarch64/pr97701.c: New.
+
+2021-01-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pr91903.c: New test.
+	* gcc.target/powerpc/builtins-1.fold.h: Update.
+	* gcc.target/powerpc/builtins-2.c: Update.
+
+2021-01-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98843
+	* g++.dg/modules/pr98843_a.C: New.
+	* g++.dg/modules/pr98843_b.H: New.
+	* g++.dg/modules/pr98843_c.C: New.
+
+2021-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vaddlv_1.c: New test.
+
+2021-01-29  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97627
+	* g++.dg/pr97627.C: New testcase.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98849
+	* gcc.c-torture/compile/pr98849.c: New test.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98331
+	* gcc.dg/pr98331.c: New test.
+
+2021-01-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr79251.p8.c: Move TEST_VEC_INSERT_ALL
+	to ...
+	* gcc.target/powerpc/pr79251.h: ...this.
+	* gcc.target/powerpc/pr79251.p9.c: Likewise.
+	* gcc.target/powerpc/pr79251-run.c: Move run_test to pr79251.h.
+	Rename to...
+	* gcc.target/powerpc/pr79251-run.p8.c: ...this.
+	* gcc.target/powerpc/pr79251-run.p9.c: New test.
+
+2021-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96137
+	* g++.dg/parse/error63.C: New test.
+
 2021-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98841

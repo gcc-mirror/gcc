@@ -1,3 +1,23 @@
+2021-01-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98843
+	* module.cc (module_state_config): Add num_entities field.
+	(module_state::read_entities): The entity_ary span is
+	already allocated.
+	(module_state::write_config): Write num_entities.
+	(module_state::read_config): Read num_entities.
+	(module_state::write): Set config's num_entities.
+	(module_state::read_initial): Allocate the entity ary
+	span here.
+	(module_state::read_language): Do not set entity_lwm
+	here.
+
+2021-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96137
+	* parser.c (cp_parser_class_name): If parser->scope is
+	error_mark_node, return it, otherwise continue.
+
 2021-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98841

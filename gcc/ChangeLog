@@ -1,3 +1,189 @@
+2021-01-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97701
+	* lra-constraints.c (in_class_p): Don't narrow class only for REG
+	or MEM.
+
+2021-01-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_expand_binup_builtin): Add
+	clauses for CODE_FOR_vsx_xvcvuxddp_scale and
+	CODE_FOR_vsx_xvcvsxddp_scale to the parameter checking code.
+
+2021-01-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/98866
+	* gimple-range-gori.h (gori_compute:set_range_invariant): New.
+	* gimple-range-gori.cc (gori_map::set_range_invariant): New.
+	(gori_map::m_maybe_invariant): Rename from all_outgoing.
+	(gori_map::gori_map): Rename all_outgoing to m_maybe_invariant.
+	(gori_map::is_export_p): Ditto.
+	(gori_map::calculate_gori): Ditto.
+	(gori_compute::set_range_invariant): New.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Set range
+	invariant for pointers evaluating to [1, +INF].
+
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98863
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Do not perform DF analysis.
+	(pass_data_remove_partial_avx_dependency): Remove
+	TODO_df_finish.
+
+2021-01-29  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mull_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mull_n<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vmull_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmull_n_s32): Likewise.
+	(vmull_n_u16): Likewise.
+	(vmull_n_u32): Likewise.
+
+2021-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sabdl2, uabdl2):
+	Define builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abdl2<mode>_3):
+	Rename to...
+	(aarch64_<sur>abdl2<mode>): ... This.
+	(<sur>sadv16qi): Adjust use of above.
+	* config/aarch64/arm_neon.h (vabdl_high_s8): Reimplement using
+	builtin.
+	(vabdl_high_s16): Likewise.
+	(vabdl_high_s32): Likewise.
+	(vabdl_high_u8): Likewise.
+	(vabdl_high_u16): Likewise.
+	(vabdl_high_u32): Likewise.
+
+2021-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sabal2): Define
+	builtin.
+	(uabal2): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abal2<mode>): New
+	pattern.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_SABAL2 and
+	UNSPEC_UABAL2.
+	* config/aarch64/arm_neon.h (vabal_high_s8): Reimplement using
+	builtin.
+	(vabal_high_s16): Likewise.
+	(vabal_high_s32): Likewise.
+	(vabal_high_u8): Likewise.
+	(vabal_high_u16): Likewise.
+	(vabal_high_u32): Likewise.
+	* config/aarch64/iterators.md (ABAL2): New mode iterator.
+	(sur): Handle UNSPEC_SABAL2, UNSPEC_UABAL2.
+
+2021-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sabal): Define
+	builtin.
+	(uabal): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abal<mode>_4):
+	Rename to...
+	(aarch64_<sur>abal<mode>): ... This
+	(<sur>sadv16qi): Adust use of the above.
+	* config/aarch64/arm_neon.h (vabal_s8): Reimplement using
+	builtin.
+	(vabal_s16): Likewise.
+	(vabal_s32): Likewise.
+	(vabal_u8): Likewise.
+	(vabal_u16): Likewise.
+	(vabal_u32): Likewise.
+
+2021-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (saddlv, uaddlv):
+	Define builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>addlv<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vaddlv_s8): Reimplement using
+	builtin.
+	(vaddlv_s16): Likewise.
+	(vaddlv_u8): Likewise.
+	(vaddlv_u16): Likewise.
+	(vaddlvq_s8): Likewise.
+	(vaddlvq_s16): Likewise.
+	(vaddlvq_s32): Likewise.
+	(vaddlvq_u8): Likewise.
+	(vaddlvq_u16): Likewise.
+	(vaddlvq_u32): Likewise.
+	(vaddlv_s32): Likewise.
+	(vaddlv_u32): Likewise.
+	* config/aarch64/iterators.md (VDQV_L): New mode iterator.
+	(unspec): Add UNSPEC_SADDLV, UNSPEC_UADDLV.
+	(Vwstype): New mode attribute.
+	(Vwsuf): Likewise.
+	(VWIDE_S): Likewise.
+	(USADDLV): New int iterator.
+	(su): Handle UNSPEC_SADDLV, UNSPEC_UADDLV.
+
+2021-01-29  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlsl_lane[q]
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_vec_<su>mlsl_lane<Qlane>):
+	Define.
+	* config/aarch64/arm_neon.h (vmlsl_lane_s16): Use RTL builtin
+	instead of inline asm.
+	(vmlsl_lane_s32): Likewise.
+	(vmlsl_lane_u16): Likewise.
+	(vmlsl_lane_u32): Likewise.
+	(vmlsl_laneq_s16): Likewise.
+	(vmlsl_laneq_s32): Likewise.
+	(vmlsl_laneq_u16): Likewise.
+	(vmlsl_laneq_u32): Likewise.
+
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (--param max-gcse-memory): Document unit
+	of size.
+	* gcse.c (gcse_or_cprop_is_too_expensive): Adjust.
+	* params.opt (--param max-gcse-memory): Adjust default and
+	document unit of size.
+
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98863
+	* gcse.c (gcse_or_cprop_is_too_expensive): Use unsigned
+	HOST_WIDE_INT for the memory estimate.
+
+2021-01-29  Bin Cheng  <bin.cheng@linux.alibaba.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97627
+	* tree-ssa-loop-niter.c (number_of_iterations_exit_assumptions):
+	Do not analyze fake edges.
+
+2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98144
+	* df.h (df_mir_bb_info): Add con_visited member.
+	* df-problems.c (df_mir_alloc): Initialize con_visited,
+	do not fully populate IN and OUT.
+	(df_mir_reset): Likewise.
+	(df_mir_confluence_0): Set con_visited.
+	(df_mir_confluence_n): Properly handle implicitely
+	fully populated IN and OUT as designated by con_visited
+	and update con_visited accordingly.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98849
+	* config/arm/vec-common.md (mve_vshlq_<supf><mode>,
+	vashl<mode>3, vashr<mode>3, vlshr<mode>3): Add
+	&& !TARGET_REALLY_IWMMXT to conditions.
+
+2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98331
+	* cfgbuild.c (find_bb_boundaries): Reset debug_insn when seeing
+	a BARRIER.
+
 2021-01-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94775
