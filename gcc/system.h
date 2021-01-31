@@ -528,6 +528,10 @@ extern void *realloc (void *, size_t);
 #include <inttypes.h>
 #endif
 
+#ifndef SIZE_MAX
+# define SIZE_MAX INTTYPE_MAXIMUM (size_t)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
