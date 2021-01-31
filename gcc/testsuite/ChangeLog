@@ -1,3 +1,19 @@
+2021-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr79251.p8.c: Update ilp32 store counts.
+	* gcc.target/powerpc/pr79251.p9.c: Same.
+
+2021-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/20051216-1.c: New test.
+
+2021-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98243
+	* gcc.dg/gomp/simd-2.c: Add -msse2 on x86.  Restrict
+	scan-tree-dump-times to x86 and aarch64 targets.
+	* gcc.dg/gomp/simd-3.c: Likewise.
+
 2021-01-29  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR testsuite/98870

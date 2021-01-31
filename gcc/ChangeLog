@@ -1,3 +1,35 @@
+2021-01-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_2logical): New function to
+	generate patterns for logical-logical fusion.
+	* config/rs6000/fusion.md: Regenerated patterns.
+	* config/rs6000/rs6000-cpus.def: Add
+	OPTION_MASK_P10_FUSION_2LOGICAL.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Enable logical-logical fusion for p10.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-2logical.
+
+2021-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.opt: Add periods to new AIX options.
+
+2021-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.opt (mabi=vec-extabi): New.
+	(mabi=vec-default): New.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__EXTABI__ for AIX Vector extended ABI.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print AIX Vector
+	extabi info.
+	(conditional_register_usage): If AIX vec_extabi enabled, vs20-vs31
+	are non-volatile.
+	* doc/invoke.texi (PowerPC mabi): Add AIX vec-extabi and vec-default.
+
+2021-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-features.c (remove_partial_avx_dependency): Clear
+	DF_DEFER_INSN_RESCAN after calling df_process_deferred_rescans.
+
 2021-01-29  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/97701
