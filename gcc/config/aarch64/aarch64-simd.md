@@ -818,6 +818,17 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
+
+(define_insn "aarch64_<sur>abdl<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(match_operand:VD_BHSI 1 "register_operand" "w")
+			 (match_operand:VD_BHSI 2 "register_operand" "w")]
+	ABDL))]
+  "TARGET_SIMD"
+  "<sur>abdl\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_abd<q>")]
+)
+
 (define_insn "aarch64_<sur>abdl2<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
 	(unspec:<VDBLW> [(match_operand:VQW 1 "register_operand" "w")

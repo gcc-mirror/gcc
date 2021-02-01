@@ -6873,72 +6873,42 @@ __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_s8 (int8x8_t __a, int8x8_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sabdl %0.8h, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabdlv8qi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_s16 (int16x4_t __a, int16x4_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sabdl %0.4s, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabdlv4hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_s32 (int32x2_t __a, int32x2_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("sabdl %0.2d, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sabdlv2si (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  uint16x8_t __result;
-  __asm__ ("uabdl %0.8h, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabdlv8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("uabdl %0.4s, %1.4h, %2.4h"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabdlv4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("uabdl %0.2d, %1.2s, %2.2s"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_uabdlv2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
