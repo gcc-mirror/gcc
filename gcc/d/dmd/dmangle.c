@@ -176,7 +176,7 @@ public:
     {
         visit((Type *)t);
         if (t->dim)
-            buf->printf("%llu", t->dim->toInteger());
+            buf->print(t->dim->toInteger());
         if (t->next)
             visitWithMask(t->next, t->mod);
     }
@@ -274,7 +274,8 @@ public:
         visit((Type *)t);
         const char *name = t->ident->toChars();
         size_t len = strlen(name);
-        buf->printf("%u%s", (unsigned)len, name);
+        buf->print(len);
+        buf->writestring(name);
     }
 
     void visit(TypeEnum *t)
@@ -396,7 +397,7 @@ public:
             s->error("excessive length %llu for symbol, possible recursive expansion?", len);
         else
         {
-            buf->printf("%llu", (ulonglong)len);
+            buf->print(len);
             buf->write(id, len);
         }
     }
@@ -614,9 +615,15 @@ public:
     void visit(IntegerExp *e)
     {
         if ((sinteger_t)e->value < 0)
-            buf->printf("N%lld", -e->value);
+        {
+            buf->writeByte('N');
+            buf->print(-e->value);
+        }
         else
-            buf->printf("i%lld",  e->value);
+        {
+            buf->writeByte('i');
+            buf->print(e->value);
+        }
     }
 
     void visit(RealExp *e)
@@ -738,7 +745,8 @@ public:
         }
         buf->reserve(1 + 11 + 2 * qlen);
         buf->writeByte(m);
-        buf->printf("%d_", (int)qlen); // nbytes <= 11
+        buf->print(qlen);
+        buf->writeByte('_');    // nbytes <= 11
 
         for (utf8_t *p = (utf8_t *)buf->data + buf->offset, *pend = p + 2 * qlen;
              p < pend; p += 2, ++q)
@@ -754,7 +762,8 @@ public:
     void visit(ArrayLiteralExp *e)
     {
         size_t dim = e->elements ? e->elements->dim : 0;
-        buf->printf("A%u", dim);
+        buf->writeByte('A');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             e->getElement(i)->accept(this);
@@ -764,7 +773,8 @@ public:
     void visit(AssocArrayLiteralExp *e)
     {
         size_t dim = e->keys->dim;
-        buf->printf("A%u", dim);
+        buf->writeByte('A');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             (*e->keys)[i]->accept(this);
@@ -775,7 +785,8 @@ public:
     void visit(StructLiteralExp *e)
     {
         size_t dim = e->elements ? e->elements->dim : 0;
-        buf->printf("S%u", dim);
+        buf->writeByte('S');
+        buf->print(dim);
         for (size_t i = 0; i < dim; i++)
         {
             Expression *ex = (*e->elements)[i];
