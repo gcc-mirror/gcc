@@ -274,6 +274,9 @@ struct attr_access
   /* Return the access mode corresponding to the character code.  */
   static access_mode from_mode_char (char);
 
+  /* Reset front end-specific attribute access data from attributes.  */
+  static void free_lang_data (tree);
+
   /* The character codes corresponding to all the access modes.  */
   static constexpr char mode_chars[5] = { '-', 'r', 'w', 'x', '^' };
 
