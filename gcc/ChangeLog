@@ -1,3 +1,7 @@
+2021-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system.h (SIZE_MAX): Define if not already defined.
+
 2021-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/98331
