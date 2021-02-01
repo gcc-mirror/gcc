@@ -1627,7 +1627,7 @@ convert_scalars_to_vector (bool timode_p)
     bitmap_initialize (&candidates[i], &bitmap_default_obstack);
 
   calculate_dominance_info (CDI_DOMINATORS);
-  df_set_flags (DF_DEFER_INSN_RESCAN);
+  df_set_flags (DF_DEFER_INSN_RESCAN | DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
   df_analyze ();
 
