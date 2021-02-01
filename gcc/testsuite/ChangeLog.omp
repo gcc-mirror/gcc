@@ -1,3 +1,7 @@
+2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/clauses-2.c: Adjust testcase.
+
 2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-loop-annotation-21.c: New.
