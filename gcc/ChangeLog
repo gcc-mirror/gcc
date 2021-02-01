@@ -1,3 +1,7 @@
+2021-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system.h (SIZE_MAX): Define if not already defined.
+
 2021-01-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_2logical): New function to
