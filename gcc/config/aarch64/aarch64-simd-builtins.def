@@ -50,10 +50,10 @@
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
   BUILTIN_VD_BHSI (BINOP, addp, 0, NONE)
   VAR1 (UNOP, addp, 0, NONE, di)
-  BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, ALL)
-  BUILTIN_VDQ_BHSI (UNOP, clz, 2, ALL)
-  BUILTIN_VS (UNOP, ctz, 2, ALL)
-  BUILTIN_VB (UNOP, popcount, 2, ALL)
+  BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, NONE)
+  BUILTIN_VDQ_BHSI (UNOP, clz, 2, NONE)
+  BUILTIN_VS (UNOP, ctz, 2, NONE)
+  BUILTIN_VB (UNOP, popcount, 2, NONE)
 
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0, NONE)
@@ -284,14 +284,14 @@
   BUILTIN_VD_HSI (BINOP, smull_n, 0, NONE)
   BUILTIN_VD_HSI (BINOPU, umull_n, 0, NONE)
 
-  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_lane_, 0, ALL)
-  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_lane_, 0, ALL)
-  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_laneq_, 0, ALL)
-  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_laneq_, 0, ALL)
-  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_lane_, 0, ALL)
-  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_lane_, 0, ALL)
-  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_laneq_, 0, ALL)
-  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_laneq_, 0, ALL)
+  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_lane_, 0, NONE)
+  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_lane_, 0, NONE)
+  BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_laneq_, 0, NONE)
+  BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_laneq_, 0, NONE)
+  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_lane_, 0, NONE)
+  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_lane_, 0, NONE)
+  BUILTIN_VD_HSI (TERNOPU_LANE, vec_umult_laneq_, 0, NONE)
+  BUILTIN_VD_HSI (QUADOPU_LANE, vec_umlal_laneq_, 0, NONE)
 
   BUILTIN_VD_HSI (QUADOP_LANE, vec_smlsl_lane_, 0, NONE)
   BUILTIN_VD_HSI (QUADOP_LANE, vec_smlsl_laneq_, 0, NONE)
@@ -315,25 +315,25 @@
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_lane, 0, NONE)
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_laneq, 0, NONE)
 
-  BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, ALL)
+  BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, NONE)
   /* Implemented by aarch64_<sur>shl<mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, ALL)
-  BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, ALL)
-  BUILTIN_VSDQ_I_DI (BINOP, srshl, 0, ALL)
-  BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0, ALL)
+  BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, NONE)
+  BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, NONE)
+  BUILTIN_VSDQ_I_DI (BINOP, srshl, 0, NONE)
+  BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0, NONE)
 
   /* Implemented by aarch64_<sur><dotprod>{_lane}{q}<dot_mode>.  */
   BUILTIN_VB (TERNOP, sdot, 0, NONE)
   BUILTIN_VB (TERNOPU, udot, 0, NONE)
   BUILTIN_VB (TERNOP_SSUS, usdot, 0, NONE)
-  BUILTIN_VB (QUADOP_LANE, sdot_lane, 0, ALL)
-  BUILTIN_VB (QUADOPU_LANE, udot_lane, 0, ALL)
-  BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0, ALL)
-  BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0, ALL)
-  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_lane, 0, ALL)
-  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_laneq, 0, ALL)
-  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_lane, 0, ALL)
-  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_laneq, 0, ALL)
+  BUILTIN_VB (QUADOP_LANE, sdot_lane, 0, NONE)
+  BUILTIN_VB (QUADOPU_LANE, udot_lane, 0, NONE)
+  BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0, NONE)
+  BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0, NONE)
+  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_lane, 0, NONE)
+  BUILTIN_VB (QUADOPSSUS_LANE_QUADTUP, usdot_laneq, 0, NONE)
+  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_lane, 0, NONE)
+  BUILTIN_VB (QUADOPSSSU_LANE_QUADTUP, sudot_laneq, 0, NONE)
 
   /* Implemented by aarch64_fcadd<rot><mode>.   */
   BUILTIN_VHSDF (BINOP, fcadd90, 0, FP)
@@ -354,24 +354,24 @@
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, ALL)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, ALL)
 
-  BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, ALL)
-  VAR1 (SHIFTIMM, ashr_simd, 0, ALL, di)
-  BUILTIN_VDQ_I (SHIFTIMM, lshr, 3, ALL)
-  VAR1 (USHIFTIMM, lshr_simd, 0, ALL, di)
+  BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, NONE)
+  VAR1 (SHIFTIMM, ashr_simd, 0, NONE, di)
+  BUILTIN_VDQ_I (SHIFTIMM, lshr, 3, NONE)
+  VAR1 (USHIFTIMM, lshr_simd, 0, NONE, di)
   /* Implemented by aarch64_<sur>shr_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTIMM, srshr_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (USHIFTIMM, urshr_n, 0, ALL)
+  BUILTIN_VSDQ_I_DI (SHIFTIMM, srshr_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (USHIFTIMM, urshr_n, 0, NONE)
   /* Implemented by aarch64_<sur>sra_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTACC, ssra_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usra_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (SHIFTACC, srsra_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, ursra_n, 0, ALL)
+  BUILTIN_VSDQ_I_DI (SHIFTACC, ssra_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (USHIFTACC, usra_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (SHIFTACC, srsra_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (USHIFTACC, ursra_n, 0, NONE)
   /* Implemented by aarch64_<sur>shll_n<mode>.  */
-  BUILTIN_VD_BHSI (SHIFTIMM, sshll_n, 0, ALL)
-  BUILTIN_VD_BHSI (USHIFTIMM, ushll_n, 0, ALL)
+  BUILTIN_VD_BHSI (SHIFTIMM, sshll_n, 0, NONE)
+  BUILTIN_VD_BHSI (USHIFTIMM, ushll_n, 0, NONE)
   /* Implemented by aarch64_<sur>shll2_n<mode>.  */
-  BUILTIN_VQW (SHIFTIMM, sshll2_n, 0, ALL)
-  BUILTIN_VQW (SHIFTIMM, ushll2_n, 0, ALL)
+  BUILTIN_VQW (SHIFTIMM, sshll2_n, 0, NONE)
+  BUILTIN_VQW (SHIFTIMM, ushll2_n, 0, NONE)
   /* Implemented by aarch64_<sur>q<r>shr<u>n_n<mode>.  */
   BUILTIN_VSQN_HSDI (SHIFTIMM, sqshrun_n, 0, NONE)
   BUILTIN_VSQN_HSDI (SHIFTIMM, sqrshrun_n, 0, NONE)
@@ -387,11 +387,11 @@
   BUILTIN_VQN (SHIFT2IMM, sqrshrn2_n, 0, NONE)
   BUILTIN_VQN (USHIFT2IMM, uqrshrn2_n, 0, NONE)
   /* Implemented by aarch64_<sur>s<lr>i_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, ALL)
-  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, ALL)
-  VAR2 (SHIFTINSERTP, ssli_n, 0, ALL, di, v2di)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usli_n, 0, ALL)
+  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, NONE)
+  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, NONE)
+  VAR2 (SHIFTINSERTP, ssli_n, 0, NONE, di, v2di)
+  BUILTIN_VSDQ_I_DI (USHIFTACC, usli_n, 0, NONE)
   /* Implemented by aarch64_<sur>qshl<u>_n<mode>.  */
   BUILTIN_VSDQ_I (SHIFTIMM_USS, sqshlu_n, 0, NONE)
   BUILTIN_VSDQ_I (SHIFTIMM, sqshl_n, 0, NONE)
@@ -550,9 +550,9 @@
   VAR1 (UNOP, floatunsv4si, 2, FP, v4sf)
   VAR1 (UNOP, floatunsv2di, 2, FP, v2df)
 
-  VAR5 (UNOPU, bswap, 2, ALL, v4hi, v8hi, v2si, v4si, v2di)
+  VAR5 (UNOPU, bswap, 2, NONE, v4hi, v8hi, v2si, v4si, v2di)
 
-  BUILTIN_VB (UNOP, rbit, 0, ALL)
+  BUILTIN_VB (UNOP, rbit, 0, NONE)
 
   /* Implemented by
      aarch64_<PERMUTE:perm_insn><mode>.  */
@@ -616,9 +616,9 @@
   VAR1 (TERNOP, fnma, 4, FP, hf)
 
   /* Implemented by aarch64_simd_bsl<mode>.  */
-  BUILTIN_VDQQH (BSL_P, simd_bsl, 0, ALL)
-  VAR2 (BSL_P, simd_bsl,0, ALL, di, v2di)
-  BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0, ALL)
+  BUILTIN_VDQQH (BSL_P, simd_bsl, 0, NONE)
+  VAR2 (BSL_P, simd_bsl,0, NONE, di, v2di)
+  BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0, NONE)
   BUILTIN_VALLDIF (BSL_S, simd_bsl, 0, ALL)
 
   /* Implemented by aarch64_crypto_aes<op><mode>.  */
@@ -763,15 +763,15 @@
   /* Implemented by aarch64_crypto_sha512su1qv2di.  */
   VAR1 (TERNOPU, crypto_sha512su1q, 0, NONE, v2di)
   /* Implemented by eor3q<mode>4.  */
-  BUILTIN_VQ_I (TERNOPU, eor3q, 4, ALL)
-  BUILTIN_VQ_I (TERNOP, eor3q, 4, ALL)
+  BUILTIN_VQ_I (TERNOPU, eor3q, 4, NONE)
+  BUILTIN_VQ_I (TERNOP, eor3q, 4, NONE)
   /* Implemented by aarch64_rax1qv2di.  */
-  VAR1 (BINOPU, rax1q, 0, ALL, v2di)
+  VAR1 (BINOPU, rax1q, 0, NONE, v2di)
   /* Implemented by aarch64_xarqv2di.  */
-  VAR1 (TERNOPUI, xarq, 0, ALL, v2di)
+  VAR1 (TERNOPUI, xarq, 0, NONE, v2di)
   /* Implemented by bcaxq<mode>4.  */
-  BUILTIN_VQ_I (TERNOPU, bcaxq, 4, ALL)
-  BUILTIN_VQ_I (TERNOP, bcaxq, 4, ALL)
+  BUILTIN_VQ_I (TERNOPU, bcaxq, 4, NONE)
+  BUILTIN_VQ_I (TERNOP, bcaxq, 4, NONE)
 
   /* Implemented by aarch64_fml<f16mac1>l<f16quad>_low<mode>.  */
   VAR1 (TERNOP, fmlal_low, 0, FP, v2sf)
