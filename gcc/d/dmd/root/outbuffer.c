@@ -325,6 +325,37 @@ void OutBuffer::printf(const char *format, ...)
     va_end(ap);
 }
 
+/**************************************
+ * Convert `u` to a string and append it to the buffer.
+ * Params:
+ *  u = integral value to append
+ */
+void OutBuffer::print(unsigned long long u)
+{
+    unsigned long long value = u;
+    char buf[20];
+    const unsigned radix = 10;
+
+    size_t i = sizeof(buf);
+    do
+    {
+        if (value < radix)
+        {
+            unsigned char x = (unsigned char)value;
+            buf[--i] = (char)(x + '0');
+            break;
+        }
+        else
+        {
+            unsigned char x = (unsigned char)(value % radix);
+            value = value / radix;
+            buf[--i] = (char)(x + '0');
+        }
+    } while (value);
+
+    write(buf + i, sizeof(buf) - i);
+}
+
 void OutBuffer::bracket(char left, char right)
 {
     reserve(2);
