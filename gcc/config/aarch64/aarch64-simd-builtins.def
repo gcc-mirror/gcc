@@ -816,8 +816,8 @@
 
   /* Implemented by aarch64_bfdot{_lane}{q}<mode>.  */
   VAR2 (TERNOP, bfdot, 0, AUTO_FP, v2sf, v4sf)
-  VAR2 (QUADOP_LANE_PAIR, bfdot_lane, 0, ALL, v2sf, v4sf)
-  VAR2 (QUADOP_LANE_PAIR, bfdot_laneq, 0, ALL, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_lane, 0, AUTO_FP, v2sf, v4sf)
+  VAR2 (QUADOP_LANE_PAIR, bfdot_laneq, 0, AUTO_FP, v2sf, v4sf)
 
   /* Implemented by aarch64_bfmmlaqv4sf  */
   VAR1 (TERNOP, bfmmlaq, 0, AUTO_FP, v4sf)
@@ -825,10 +825,10 @@
   /* Implemented by aarch64_bfmlal<bt>{_lane{q}}v4sf  */
   VAR1 (TERNOP, bfmlalb, 0, FP, v4sf)
   VAR1 (TERNOP, bfmlalt, 0, FP, v4sf)
-  VAR1 (QUADOP_LANE, bfmlalb_lane, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, bfmlalt_lane, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, ALL, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, FP, v4sf)
 
   /* Implemented by aarch64_vget_lo/hi_halfv8bf.  */
   VAR1 (UNOP, vget_lo_half, 0, AUTO_FP, v8bf)
