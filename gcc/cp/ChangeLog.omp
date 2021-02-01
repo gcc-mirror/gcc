@@ -1,3 +1,8 @@
+2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* semantics.cc (finish_omp_clauses):  Adjust to allow duplicate
+	mapped variables for OpenMP.
+
 2022-02-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.ccc (cp_parser_omp_clause_map): Update call to
