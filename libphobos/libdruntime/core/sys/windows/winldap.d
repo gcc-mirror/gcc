@@ -9,6 +9,7 @@
  */
 module core.sys.windows.winldap;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
@@ -30,7 +31,7 @@ version (ANSI) {} else version = Unicode;
 */
 
 import core.sys.windows.schannel, core.sys.windows.winber;
-private import core.sys.windows.wincrypt, core.sys.windows.windef;
+import core.sys.windows.wincrypt, core.sys.windows.windef;
 
 //align(4):
 
@@ -460,7 +461,7 @@ struct LDAPVLVInfo {
  * Under Microsoft WinLDAP the function ldap_error is only stub.
  * This macro uses LDAP structure to get error string and pass it to the user.
  */
-private extern (C) int printf(in char* format, ...);
+private extern (C) int printf(const scope char* format, ...);
 int ldap_perror(LDAP* handle, char* message) {
     return printf("%s: %s\n", message, handle.ld_error);
 }
@@ -491,111 +492,111 @@ extern (C) {
     ULONG ldap_controls_freeW(LDAPControlW**);
     ULONG ldap_free_controlsA(LDAPControlA**);
     ULONG ldap_free_controlsW(LDAPControlW**);
-    ULONG ldap_sasl_bindA(LDAP*, PCHAR, PCHAR, BERVAL*, PLDAPControlA*,
+    ULONG ldap_sasl_bindA(LDAP*, PCSTR, PCSTR, BERVAL*, PLDAPControlA*,
       PLDAPControlA*, int*);
-    ULONG ldap_sasl_bindW(LDAP*, PWCHAR, PWCHAR, BERVAL*, PLDAPControlW*,
+    ULONG ldap_sasl_bindW(LDAP*, PCWSTR, PCWSTR, BERVAL*, PLDAPControlW*,
       PLDAPControlW*, int*);
-    ULONG ldap_sasl_bind_sA(LDAP*, PCHAR, PCHAR, BERVAL*, PLDAPControlA*,
+    ULONG ldap_sasl_bind_sA(LDAP*, PCSTR, PCSTR, BERVAL*, PLDAPControlA*,
       PLDAPControlA*, PBERVAL*);
-    ULONG ldap_sasl_bind_sW(LDAP*, PWCHAR, PWCHAR, BERVAL*, PLDAPControlW*,
+    ULONG ldap_sasl_bind_sW(LDAP*, PCWSTR, PCWSTR, BERVAL*, PLDAPControlW*,
       PLDAPControlW*, PBERVAL*);
-    ULONG ldap_simple_bindA(LDAP*, PCHAR, PCHAR);
-    ULONG ldap_simple_bindW(LDAP*, PWCHAR, PWCHAR);
-    ULONG ldap_simple_bind_sA(LDAP*, PCHAR, PCHAR);
-    ULONG ldap_simple_bind_sW(LDAP*, PWCHAR, PWCHAR);
+    ULONG ldap_simple_bindA(LDAP*, PSTR, PSTR);
+    ULONG ldap_simple_bindW(LDAP*, PWSTR, PWSTR);
+    ULONG ldap_simple_bind_sA(LDAP*, PSTR, PSTR);
+    ULONG ldap_simple_bind_sW(LDAP*, PWSTR, PWSTR);
     ULONG ldap_unbind(LDAP*);
     ULONG ldap_unbind_s(LDAP*);
-    ULONG ldap_search_extA(LDAP*, PCHAR, ULONG, PCHAR, PCHAR[], ULONG,
+    ULONG ldap_search_extA(LDAP*, PCSTR, ULONG, PCSTR, PZPSTR, ULONG,
+      PLDAPControlA*, PLDAPControlA*, ULONG, ULONG, ULONG*);
+    ULONG ldap_search_extW(LDAP*, PCWSTR, ULONG, PCWSTR, PZPWSTR, ULONG,
       PLDAPControlW*, PLDAPControlW*, ULONG, ULONG, ULONG*);
-    ULONG ldap_search_extW(LDAP*, PWCHAR, ULONG, PWCHAR, PWCHAR[], ULONG,
-      PLDAPControlW*, PLDAPControlW*, ULONG, ULONG, ULONG*);
-    ULONG ldap_search_ext_sA(LDAP*, PCHAR, ULONG, PCHAR, PCHAR[], ULONG,
-      PLDAPControlA*, PLDAPControlA*, LDAP_TIMEVAL*, ULONG, LDAPMessage**);
-    ULONG ldap_search_ext_sW(LDAP*, PWCHAR, ULONG, PWCHAR, PWCHAR[], ULONG,
-      PLDAPControlW*, PLDAPControlW*, LDAP_TIMEVAL*, ULONG, LDAPMessage**);
-    ULONG ldap_searchA(LDAP*, PCHAR, ULONG, PCHAR, PCHAR[], ULONG);
-    ULONG ldap_searchW(LDAP*, PWCHAR, ULONG, PWCHAR, PWCHAR[], ULONG);
-    ULONG ldap_search_sA(LDAP*, PCHAR, ULONG, PCHAR, PCHAR[], ULONG,
-      LDAPMessage**);
-    ULONG ldap_search_sW(LDAP*, PWCHAR, ULONG, PWCHAR, PWCHAR[], ULONG,
-      LDAPMessage**);
-    ULONG ldap_search_stA(LDAP*, PCHAR, ULONG, PCHAR, PCHAR[], ULONG,
-      LDAP_TIMEVAL*, LDAPMessage**);
-    ULONG ldap_search_stW(LDAP*, PWCHAR, ULONG, PWCHAR, PWCHAR[], ULONG,
-      LDAP_TIMEVAL*, LDAPMessage**);
-    ULONG ldap_compare_extA(LDAP*, PCHAR, PCHAR, PCHAR, BerValue*,
+    ULONG ldap_search_ext_sA(LDAP*, PCSTR, ULONG, PCSTR, PZPSTR, ULONG,
+      PLDAPControlA*, PLDAPControlA*, LDAP_TIMEVAL*, ULONG, PLDAPMessage*);
+    ULONG ldap_search_ext_sW(LDAP*, PCWSTR, ULONG, PCWSTR, PZPWSTR, ULONG,
+      PLDAPControlW*, PLDAPControlW*, LDAP_TIMEVAL*, ULONG, PLDAPMessage*);
+    ULONG ldap_searchA(LDAP*, PCSTR, ULONG, PCSTR, PZPSTR, ULONG);
+    ULONG ldap_searchW(LDAP*, PCWSTR, ULONG, PCWSTR, PZPWSTR, ULONG);
+    ULONG ldap_search_sA(LDAP*, PCSTR, ULONG, PCSTR, PZPSTR, ULONG,
+      PLDAPMessage*);
+    ULONG ldap_search_sW(LDAP*, PCWSTR, ULONG, PCWSTR, PZPWSTR, ULONG,
+      PLDAPMessage*);
+    ULONG ldap_search_stA(LDAP*, PCSTR, ULONG, PCSTR, PZPSTR, ULONG,
+      LDAP_TIMEVAL*, PLDAPMessage*);
+    ULONG ldap_search_stW(LDAP*, PCWSTR, ULONG, PCWSTR, PZPWSTR, ULONG,
+      LDAP_TIMEVAL*, PLDAPMessage*);
+    ULONG ldap_compare_extA(LDAP*, PCSTR, PCSTR, PCSTR, BerValue*,
       PLDAPControlA*, PLDAPControlA*, ULONG*);
-    ULONG ldap_compare_extW(LDAP*, PWCHAR, PWCHAR, PWCHAR, BerValue*,
+    ULONG ldap_compare_extW(LDAP*, PCWSTR, PCWSTR, PCWSTR, BerValue*,
       PLDAPControlW*, PLDAPControlW*, ULONG*);
-    ULONG ldap_compare_ext_sA(LDAP*, PCHAR, PCHAR, PCHAR, BerValue*,
+    ULONG ldap_compare_ext_sA(LDAP*, PCSTR, PCSTR, PCSTR, BerValue*,
       PLDAPControlA*, PLDAPControlA*);
-    ULONG ldap_compare_ext_sW(LDAP*, PWCHAR, PWCHAR, PWCHAR, BerValue*,
+    ULONG ldap_compare_ext_sW(LDAP*, PCWSTR, PCWSTR, PCWSTR, BerValue*,
       PLDAPControlW*, PLDAPControlW*);
-    ULONG ldap_compareA(LDAP*, PCHAR, PCHAR, PCHAR);
-    ULONG ldap_compareW(LDAP*, PWCHAR, PWCHAR, PWCHAR);
-    ULONG ldap_compare_sA(LDAP*, PCHAR, PCHAR, PCHAR);
-    ULONG ldap_compare_sW(LDAP*, PWCHAR, PWCHAR, PWCHAR);
-    ULONG ldap_modify_extA(LDAP*, PCHAR, LDAPModA*[], PLDAPControlA*,
+    ULONG ldap_compareA(LDAP*, PCSTR, PCSTR, PCSTR);
+    ULONG ldap_compareW(LDAP*, PCWSTR, PCWSTR, PCWSTR);
+    ULONG ldap_compare_sA(LDAP*, PCSTR, PCSTR, PCSTR);
+    ULONG ldap_compare_sW(LDAP*, PCWSTR, PCWSTR, PCWSTR);
+    ULONG ldap_modify_extA(LDAP*, PCSTR, LDAPModA**, PLDAPControlA*,
       PLDAPControlA*, ULONG*);
-    ULONG ldap_modify_extW(LDAP*, PWCHAR, LDAPModW*[], PLDAPControlW*,
+    ULONG ldap_modify_extW(LDAP*, PCWSTR, LDAPModW**, PLDAPControlW*,
       PLDAPControlW*, ULONG*);
-    ULONG ldap_modify_ext_sA(LDAP*, PCHAR, LDAPModA*[], PLDAPControlA*,
+    ULONG ldap_modify_ext_sA(LDAP*, PCSTR, LDAPModA**, PLDAPControlA*,
       PLDAPControlA*);
-    ULONG ldap_modify_ext_sW(LDAP*, PWCHAR, LDAPModW*[], PLDAPControlW*,
+    ULONG ldap_modify_ext_sW(LDAP*, PCWSTR, LDAPModW**, PLDAPControlW*,
       PLDAPControlW*);
-    ULONG ldap_modifyA(LDAP*, PCHAR, LDAPModA*[]);
-    ULONG ldap_modifyW(LDAP*, PWCHAR, LDAPModW*[]);
-    ULONG ldap_modify_sA(LDAP*, PCHAR, LDAPModA*[]);
-    ULONG ldap_modify_sW(LDAP*, PWCHAR, LDAPModW*[]);
-    ULONG ldap_rename_extA(LDAP*, PCHAR, PCHAR, PCHAR, INT, PLDAPControlA*,
+    ULONG ldap_modifyA(LDAP*, PSTR, LDAPModA**);
+    ULONG ldap_modifyW(LDAP*, PWSTR, LDAPModW**);
+    ULONG ldap_modify_sA(LDAP*, PSTR, LDAPModA**);
+    ULONG ldap_modify_sW(LDAP*, PWSTR, LDAPModW**);
+    ULONG ldap_rename_extA(LDAP*, PCSTR, PCSTR, PCSTR, INT, PLDAPControlA*,
       PLDAPControlA*, ULONG*);
-    ULONG ldap_rename_extW(LDAP*, PWCHAR, PWCHAR, PWCHAR, INT, PLDAPControlW*,
+    ULONG ldap_rename_extW(LDAP*, PCWSTR, PCWSTR, PCWSTR, INT, PLDAPControlW*,
       PLDAPControlW*, ULONG*);
-    ULONG ldap_rename_ext_sA(LDAP*, PCHAR, PCHAR, PCHAR, INT,
+    ULONG ldap_rename_ext_sA(LDAP*, PCSTR, PCSTR, PCSTR, INT,
       PLDAPControlA*, PLDAPControlA*);
-    ULONG ldap_rename_ext_sW(LDAP*, PWCHAR, PWCHAR, PWCHAR, INT,
+    ULONG ldap_rename_ext_sW(LDAP*, PCWSTR, PCWSTR, PCWSTR, INT,
       PLDAPControlW*, PLDAPControlW*);
-    ULONG ldap_add_extA(LDAP*, PCHAR, LDAPModA*[], PLDAPControlA*,
+    ULONG ldap_add_extA(LDAP*, PCSTR, LDAPModA**, PLDAPControlA*,
       PLDAPControlA*, ULONG*);
-    ULONG ldap_add_extW(LDAP*, PWCHAR, LDAPModW*[], PLDAPControlW*,
+    ULONG ldap_add_extW(LDAP*, PCWSTR, LDAPModW**, PLDAPControlW*,
       PLDAPControlW*, ULONG*);
-    ULONG ldap_add_ext_sA(LDAP*, PCHAR, LDAPModA*[], PLDAPControlA*,
+    ULONG ldap_add_ext_sA(LDAP*, PCSTR, LDAPModA**, PLDAPControlA*,
       PLDAPControlA*);
-    ULONG ldap_add_ext_sW(LDAP*, PWCHAR, LDAPModW*[], PLDAPControlW*,
+    ULONG ldap_add_ext_sW(LDAP*, PCWSTR, LDAPModW**, PLDAPControlW*,
       PLDAPControlW*);
-    ULONG ldap_addA(LDAP*, PCHAR, LDAPModA*[]);
-    ULONG ldap_addW(LDAP*, PWCHAR, LDAPModW*[]);
-    ULONG ldap_add_sA(LDAP*, PCHAR, LDAPModA*[]);
-    ULONG ldap_add_sW(LDAP*, PWCHAR, LDAPModW*[]);
-    ULONG ldap_delete_extA(LDAP*, PCHAR, PLDAPControlA*, PLDAPControlA*,
+    ULONG ldap_addA(LDAP*, PSTR, LDAPModA**);
+    ULONG ldap_addW(LDAP*, PWSTR, LDAPModW**);
+    ULONG ldap_add_sA(LDAP*, PSTR, LDAPModA**);
+    ULONG ldap_add_sW(LDAP*, PWSTR, LDAPModW**);
+    ULONG ldap_delete_extA(LDAP*, PCSTR, PLDAPControlA*, PLDAPControlA*,
       ULONG*);
-    ULONG ldap_delete_extW(LDAP*, PWCHAR, PLDAPControlW*, PLDAPControlW*,
+    ULONG ldap_delete_extW(LDAP*, PCWSTR, PLDAPControlW*, PLDAPControlW*,
       ULONG*);
-    ULONG ldap_delete_ext_sA(LDAP*, PCHAR, PLDAPControlA*, PLDAPControlA*);
-    ULONG ldap_delete_ext_sW(LDAP*, PWCHAR, PLDAPControlW*, PLDAPControlW*);
-    ULONG ldap_deleteA(LDAP*, PCHAR);
-    ULONG ldap_deleteW(LDAP*, PWCHAR);
-    ULONG ldap_delete_sA(LDAP*, PCHAR);
-    ULONG ldap_delete_sW(LDAP*, PWCHAR);
-    ULONG ldap_extended_operationA(LDAP*, PCHAR, BerValue*, PLDAPControlA*,
+    ULONG ldap_delete_ext_sA(LDAP*, PCSTR, PLDAPControlA*, PLDAPControlA*);
+    ULONG ldap_delete_ext_sW(LDAP*, PCWSTR, PLDAPControlW*, PLDAPControlW*);
+    ULONG ldap_deleteA(LDAP*, PCSTR);
+    ULONG ldap_deleteW(LDAP*, PCWSTR);
+    ULONG ldap_delete_sA(LDAP*, PCSTR);
+    ULONG ldap_delete_sW(LDAP*, PCWSTR);
+    ULONG ldap_extended_operationA(LDAP*, PCSTR, BerValue*, PLDAPControlA*,
       PLDAPControlA*, ULONG*);
-    ULONG ldap_extended_operationW(LDAP*, PWCHAR, BerValue*, PLDAPControlW*,
+    ULONG ldap_extended_operationW(LDAP*, PCWSTR, BerValue*, PLDAPControlW*,
       PLDAPControlW*, ULONG*);
-    ULONG ldap_extended_operation_sA(LDAP*, PCHAR, BerValue*, PLDAPControlA*,
+    ULONG ldap_extended_operation_sA(LDAP*, PSTR, BerValue*, PLDAPControlA*,
       PLDAPControlA*, PCHAR*, BerValue**);
-    ULONG ldap_extended_operation_sW(LDAP*, PWCHAR, BerValue*, PLDAPControlW*,
+    ULONG ldap_extended_operation_sW(LDAP*, PWSTR, BerValue*, PLDAPControlW*,
       PLDAPControlW*, PWCHAR*, BerValue**);
     ULONG ldap_close_extended_op(LDAP*, ULONG);
     ULONG ldap_abandon(LDAP*, ULONG);
     ULONG ldap_result(LDAP*, ULONG, ULONG, LDAP_TIMEVAL*, LDAPMessage**);
     ULONG ldap_msgfree(LDAPMessage*);
-    ULONG ldap_parse_resultA(LDAP*, LDAPMessage*, ULONG*, PCHAR*, PCHAR*,
-      PCHAR**, PLDAPControlA**, BOOLEAN);
-    ULONG ldap_parse_resultW(LDAP*, LDAPMessage*, ULONG*, PWCHAR*, PWCHAR*,
-      PWCHAR**, PLDAPControlW**, BOOLEAN);
-    ULONG ldap_parse_extended_resultA(LDAP, LDAPMessage*, PCHAR*, BerValue**,
+    ULONG ldap_parse_resultA(LDAP*, LDAPMessage*, ULONG*, PSTR*, PSTR*,
+      PZPSTR*, PLDAPControlA**, BOOLEAN);
+    ULONG ldap_parse_resultW(LDAP*, LDAPMessage*, ULONG*, PWSTR*, PWSTR*,
+      PZPWSTR*, PLDAPControlW**, BOOLEAN);
+    ULONG ldap_parse_extended_resultA(LDAP, LDAPMessage*, PSTR*, BerValue**,
       BOOLEAN);
-    ULONG ldap_parse_extended_resultW(LDAP, LDAPMessage*, PWCHAR*, BerValue**,
+    ULONG ldap_parse_extended_resultW(LDAP, LDAPMessage*, PWSTR*, BerValue**,
       BOOLEAN);
     PCHAR ldap_err2stringA(ULONG);
     PWCHAR ldap_err2stringW(ULONG);
@@ -614,10 +615,10 @@ extern (C) {
     PWCHAR ldap_next_attributeW(LDAP*, LDAPMessage*, BerElement*);
     VOID ldap_memfreeA(PCHAR);
     VOID ldap_memfreeW(PWCHAR);
-    PCHAR* ldap_get_valuesA(LDAP*, LDAPMessage*, PCHAR);
-    PWCHAR* ldap_get_valuesW(LDAP*, LDAPMessage*, PWCHAR);
-    BerValue** ldap_get_values_lenA(LDAP*, LDAPMessage*, PCHAR);
-    BerValue** ldap_get_values_lenW(LDAP*, LDAPMessage*, PWCHAR);
+    PCHAR* ldap_get_valuesA(LDAP*, LDAPMessage*, PCSTR);
+    PWCHAR* ldap_get_valuesW(LDAP*, LDAPMessage*, PCWSTR);
+    BerValue** ldap_get_values_lenA(LDAP*, LDAPMessage*, PCSTR);
+    BerValue** ldap_get_values_lenW(LDAP*, LDAPMessage*, PCWSTR);
     ULONG ldap_count_valuesA(PCHAR*);
     ULONG ldap_count_valuesW(PWCHAR*);
     ULONG ldap_count_values_len(BerValue**);
@@ -626,16 +627,16 @@ extern (C) {
     ULONG ldap_value_free_len(BerValue**);
     PCHAR ldap_get_dnA(LDAP*, LDAPMessage*);
     PWCHAR ldap_get_dnW(LDAP*, LDAPMessage*);
-    PCHAR ldap_explode_dnA(PCHAR, ULONG);
-    PWCHAR ldap_explode_dnW(PWCHAR, ULONG);
-    PCHAR ldap_dn2ufnA(PCHAR);
-    PWCHAR ldap_dn2ufnW(PWCHAR);
-    ULONG ldap_ufn2dnA(PCHAR, PCHAR*);
-    ULONG ldap_ufn2dnW(PWCHAR, PWCHAR*);
+    PCHAR ldap_explode_dnA(PCSTR, ULONG);
+    PWCHAR ldap_explode_dnW(PCWSTR, ULONG);
+    PCHAR ldap_dn2ufnA(PCSTR);
+    PWCHAR ldap_dn2ufnW(PCWSTR);
+    ULONG ldap_ufn2dnA(PCSTR, PSTR*);
+    ULONG ldap_ufn2dnW(PCWSTR, PWSTR*);
     ULONG ldap_parse_referenceA(LDAP*, LDAPMessage*, PCHAR**);
     ULONG ldap_parse_referenceW(LDAP*, LDAPMessage*, PWCHAR**);
-    ULONG ldap_check_filterA(LDAP*, PCHAR);
-    ULONG ldap_check_filterW(LDAP*, PWCHAR);
+    ULONG ldap_check_filterA(LDAP*, PSTR);
+    ULONG ldap_check_filterW(LDAP*, PWSTR);
     ULONG ldap_create_page_controlA(PLDAP, ULONG, BerValue*, UCHAR,
       PLDAPControlA*);
     ULONG ldap_create_page_controlW(PLDAP, ULONG, BerValue*, UCHAR,
@@ -644,8 +645,8 @@ extern (C) {
       PLDAPControlA*);
     ULONG ldap_create_sort_controlW(PLDAP, PLDAPSortKeyW*, UCHAR,
     PLDAPControlW*);
-    INT ldap_create_vlv_controlA(LDAP*, LDAPVLVInfo*, UCHAR, LDAPControlA**);
-    INT ldap_create_vlv_controlW(LDAP*, LDAPVLVInfo*, UCHAR, LDAPControlW**);
+    INT ldap_create_vlv_controlA(LDAP*, LDAPVLVInfo*, UCHAR, PLDAPControlA*);
+    INT ldap_create_vlv_controlW(LDAP*, LDAPVLVInfo*, UCHAR, PLDAPControlW*);
     ULONG ldap_encode_sort_controlA(PLDAP, PLDAPSortKeyA*, PLDAPControlA,
       BOOLEAN);
     ULONG ldap_encode_sort_controlW(PLDAP, PLDAPSortKeyW*, PLDAPControlW,
@@ -660,31 +661,31 @@ extern (C) {
     ULONG ldap_parse_page_controlW(PLDAP, PLDAPControlW*, ULONG*, BerValue**);
     ULONG ldap_parse_sort_controlA(PLDAP, PLDAPControlA*, ULONG*, PCHAR*);
     ULONG ldap_parse_sort_controlW(PLDAP, PLDAPControlW*, ULONG*, PWCHAR*);
-    INT ldap_parse_vlv_controlA(LDAP*, LDAPControlA**, uint*, uint*,
-      BerValue**, int*);
-    INT ldap_parse_vlv_controlW(LDAP*, LDAPControlW**, uint*, uint*,
-      BerValue**, int*);
-    PLDAPSearch ldap_search_init_pageA(PLDAP, PCHAR, ULONG, PCHAR, PCHAR[],
+    INT ldap_parse_vlv_controlA(PLDAP, PLDAPControlA*, PULONG, PULONG,
+      BerValue**, PINT);
+    INT ldap_parse_vlv_controlW(PLDAP, PLDAPControlW*, PULONG, PULONG,
+      BerValue**, PINT);
+    PLDAPSearch ldap_search_init_pageA(PLDAP, PCSTR, ULONG, PCSTR, PZPSTR,
       ULONG, PLDAPControlA*, PLDAPControlA*, ULONG, ULONG, PLDAPSortKeyA*);
-    PLDAPSearch ldap_search_init_pageW(PLDAP, PWCHAR, ULONG, PWCHAR, PWCHAR[],
+    PLDAPSearch ldap_search_init_pageW(PLDAP, PCWSTR, ULONG, PCWSTR, PZPWSTR,
       ULONG, PLDAPControlW*, PLDAPControlW*, ULONG, ULONG, PLDAPSortKeyW*);
     ULONG ldap_search_abandon_page(PLDAP, PLDAPSearch);
     LDAP ldap_conn_from_msg(LDAP*, LDAPMessage*);
     INT LdapUnicodeToUTF8(LPCWSTR, int, LPSTR, int);
     INT LdapUTF8ToUnicode(LPCSTR, int, LPWSTR, int);
-    deprecated {
-        ULONG ldap_bindA(LDAP*, PCHAR, PCHAR, ULONG);
-        ULONG ldap_bindW(LDAP*, PWCHAR, PWCHAR, ULONG);
-        ULONG ldap_bind_sA(LDAP*, PCHAR, PCHAR, ULONG);
-        ULONG ldap_bind_sW(LDAP*, PWCHAR, PWCHAR, ULONG);
-        ULONG ldap_modrdnA(LDAP*, PCHAR, PCHAR);
-        ULONG ldap_modrdnW(LDAP*, PWCHAR, PWCHAR);
-        ULONG ldap_modrdn_sA(LDAP*, PCHAR, PCHAR);
-        ULONG ldap_modrdn_sW(LDAP*, PWCHAR, PWCHAR);
-        ULONG ldap_modrdn2A(LDAP*, PCHAR, PCHAR, INT);
-        ULONG ldap_modrdn2W(LDAP*, PWCHAR, PWCHAR, INT);
-        ULONG ldap_modrdn2_sA(LDAP*, PCHAR, PCHAR, INT);
-        ULONG ldap_modrdn2_sW(LDAP*, PWCHAR, PWCHAR, INT);
+    ULONG ldap_bindA(LDAP*, PSTR, PCHAR, ULONG);
+    ULONG ldap_bindW(LDAP*, PWSTR, PWCHAR, ULONG);
+    ULONG ldap_bind_sA(LDAP*, PSTR, PCHAR, ULONG);
+    ULONG ldap_bind_sW(LDAP*, PWSTR, PWCHAR, ULONG);
+    deprecated ("For LDAP 3 or later, use the ldap_rename_ext or ldap_rename_ext_s functions") {
+        ULONG ldap_modrdnA(LDAP*, PCSTR, PCSTR);
+        ULONG ldap_modrdnW(LDAP*, PCWSTR, PCWSTR);
+        ULONG ldap_modrdn_sA(LDAP*, PCSTR, PCSTR);
+        ULONG ldap_modrdn_sW(LDAP*, PCWSTR, PCWSTR);
+        ULONG ldap_modrdn2A(LDAP*, PCSTR, PCSTR, INT);
+        ULONG ldap_modrdn2W(LDAP*, PCWSTR, PCWSTR, INT);
+        ULONG ldap_modrdn2_sA(LDAP*, PCSTR, PCSTR, INT);
+        ULONG ldap_modrdn2_sW(LDAP*, PCWSTR, PCWSTR, INT);
     }
 }
 

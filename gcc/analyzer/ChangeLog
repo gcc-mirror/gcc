@@ -1,3 +1,25 @@
+2021-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (event_kind_to_string): Handle
+	EK_START_CONSOLIDATED_CFG_EDGES and
+	EK_END_CONSOLIDATED_CFG_EDGES.
+	(start_consolidated_cfg_edges_event::get_desc): New.
+	(checker_path::cfg_edge_pair_at_p): New.
+	* checker-path.h (enum event_kind): Add
+	EK_START_CONSOLIDATED_CFG_EDGES and
+	EK_END_CONSOLIDATED_CFG_EDGES.
+	(class start_consolidated_cfg_edges_event): New class.
+	(class end_consolidated_cfg_edges_event): New class.
+	(checker_path::delete_events): New.
+	(checker_path::replace_event): New.
+	(checker_path::cfg_edge_pair_at_p): New decl.
+	* diagnostic-manager.cc (diagnostic_manager::prune_path): Call
+	consolidate_conditions.
+	(same_line_as_p): New.
+	(diagnostic_manager::consolidate_conditions): New.
+	* diagnostic-manager.h
+	(diagnostic_manager::consolidate_conditions): New decl.
+
 2021-01-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (is_std_named_call_p): New decl.

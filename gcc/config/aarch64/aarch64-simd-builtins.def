@@ -172,6 +172,10 @@
   BUILTIN_VQW (TERNOP, sabal2, 0, NONE)
   BUILTIN_VQW (TERNOPU, uabal2, 0, NONE)
 
+  /* Implemented by aarch64_<sur>abdl<mode>.  */
+  BUILTIN_VD_BHSI (BINOP, sabdl, 0, NONE)
+  BUILTIN_VD_BHSI (BINOPU, uabdl, 0, NONE)
+
   /* Implemented by aarch64_<sur>abdl2<mode>.  */
   BUILTIN_VQW (BINOP, sabdl2, 0, NONE)
   BUILTIN_VQW (BINOPU, uabdl2, 0, NONE)
@@ -389,6 +393,10 @@
 
   /* Implemented by aarch64_xtn2<mode>.  */
   BUILTIN_VQN (UNOP, xtn2, 0, NONE)
+
+  /* Implemented by vec_unpack<su>_hi_<mode>.  */
+  BUILTIN_VQW (UNOP, vec_unpacks_hi_, 10, NONE)
+  BUILTIN_VQW (UNOPU, vec_unpacku_hi_, 10, NONE)
 
   /* Implemented by aarch64_reduc_plus_<mode>.  */
   BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, NONE)

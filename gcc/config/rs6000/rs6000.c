@@ -2512,6 +2512,9 @@ rs6000_debug_reg_global (void)
   if (rs6000_altivec_abi)
     fprintf (stderr, DEBUG_FMT_S, "altivec_abi", "true");
 
+  if (rs6000_aix_extabi)
+    fprintf (stderr, DEBUG_FMT_S, "AIX vec-extabi", "true");
+
   if (rs6000_darwin64_abi)
     fprintf (stderr, DEBUG_FMT_S, "darwin64_abi", "true");
 
@@ -4436,6 +4439,9 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_POWER10 &&
       (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
+
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
 
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
@@ -9815,7 +9821,7 @@ rs6000_conditional_register_usage (void)
 	call_used_regs[i] = 1;
 
       /* AIX reserves VR20:31 in non-extended ABI mode.  */
-      if (TARGET_XCOFF)
+      if (TARGET_XCOFF && !rs6000_aix_extabi)
 	for (i = FIRST_ALTIVEC_REGNO + 20; i < FIRST_ALTIVEC_REGNO + 32; ++i)
 	  fixed_regs[i] = call_used_regs[i] = 1;
     }

@@ -1,3 +1,29 @@
+2021-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* libdruntime/MERGE: Merge upstream druntime e4aae28e.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Refresh module list.
+	(DRUNTIME_DSOURCES_BIONIC): Add core/sys/bionic/err.d.
+	(DRUNTIME_DSOURCES_DARWIN): Add core/sys/darwin/err.d,
+	core/sys/darwin/ifaddrs.d, core/sys/darwin/mach/nlist.d,
+	core/sys/darwin/mach/stab.d, and core/sys/darwin/sys/attr.d.
+	(DRUNTIME_DSOURCES_DRAGONFLYBSD): Add core/sys/dragonflybsd/err.d.
+	(DRUNTIME_DSOURCES_FREEBSD): Add core/sys/freebsd/err.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/err.d.
+	(DRUNTIME_DSOURCES_NETBSD): Add core/sys/netbsd/err.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/err.d.
+	(DRUNTIME_DSOURCES_POSIX): Add core/sys/posix/locale.d,
+	core/sys/posix/stdc/time.d, core/sys/posix/string.d, and
+	core/sys/posix/strings.d.
+	(DRUNTIME_DSOURCES_SOLARIS): Add core/sys/solaris/err.d.
+	(DRUNTIME_DSOURCES_WINDOWS): Add core/sys/windows/sdkddkver.d,
+	and core/sys/windows/stdc/time.d
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/elf_shared.d (sizeofTLS): New function.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Use
+	__traits(getMember) to get internal fields.
+
 2021-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos 3dd5df686.

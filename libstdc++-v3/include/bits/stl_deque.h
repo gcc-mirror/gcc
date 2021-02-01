@@ -352,9 +352,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       friend difference_type
       operator-(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       {
-	return difference_type(_S_buffer_size())
-	  * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
-	  + (__y._M_last - __y._M_cur);
+	if (__builtin_expect(__x._M_node || __y._M_node, true))
+	  return difference_type(_S_buffer_size())
+	    * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	    + (__y._M_last - __y._M_cur);
+
+	return 0;
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -366,9 +369,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	operator-(const _Self& __x,
 		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
 	{
-	  return difference_type(_S_buffer_size())
-	    * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
-	    + (__y._M_last - __y._M_cur);
+	  if (__builtin_expect(__x._M_node || __y._M_node, true))
+	    return difference_type(_S_buffer_size())
+	      * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	      + (__y._M_last - __y._M_cur);
+
+	  return 0;
 	}
 
       friend _Self

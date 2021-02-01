@@ -8,10 +8,11 @@
  */
 module core.sys.windows.wtsapi32;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "wtsapi32");
-private import core.sys.windows.w32api;
+import core.sys.windows.w32api;
 import core.sys.windows.windef;
 
 enum {

@@ -238,6 +238,15 @@ version (Shared)
         }
     }
 
+    size_t sizeOfTLS() nothrow @nogc
+    {
+        auto tdsos = initTLSRanges();
+        size_t sum;
+        foreach (ref tdso; *tdsos)
+            sum += tdso._tlsRange.length;
+        return sum;
+    }
+
     // interface for core.thread to inherit loaded libraries
     void* pinLoadedLibraries() nothrow @nogc
     {
@@ -338,6 +347,15 @@ else
             foreach (rng; *rngs)
                 dg(rng.ptr, rng.ptr + rng.length);
         }
+    }
+
+    size_t sizeOfTLS() nothrow @nogc
+    {
+        auto rngs = initTLSRanges();
+        size_t sum;
+        foreach (rng; *rngs)
+            sum += rng.length;
+        return sum;
     }
 }
 

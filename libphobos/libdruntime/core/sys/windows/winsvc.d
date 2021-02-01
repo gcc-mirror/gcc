@@ -9,11 +9,12 @@
  */
 module core.sys.windows.winsvc;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "advapi32");
 
-private import core.sys.windows.w32api, core.sys.windows.windef;
+import core.sys.windows.w32api, core.sys.windows.windef;
 
 // FIXME: check Windows version support
 

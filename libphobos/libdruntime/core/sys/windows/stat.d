@@ -6,6 +6,7 @@ module core.sys.windows.stat;
 version (Windows):
 
 extern (C) nothrow @nogc:
+@system:
 
 // Posix version is in core.sys.posix.sys.stat
 

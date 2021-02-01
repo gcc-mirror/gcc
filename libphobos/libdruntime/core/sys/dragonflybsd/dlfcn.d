@@ -50,7 +50,7 @@ struct Dl_info {
     void            *dli_fbase;     /* Base address of shared object. */
     const(char)     *dli_sname;     /* Name of nearest symbol. */
     void            *dli_saddr;     /* Address of nearest symbol. */
-};
+}
 
 
 /*
@@ -59,13 +59,13 @@ struct Dl_info {
 struct Dl_serpath {
     char *          dls_name;       /* single search path entry */
     uint            dls_flags;      /* path information */
-};
+}
 
 struct Dl_serinfo {
     size_t          dls_size;       /* total buffer size */
     uint            dls_cnt;        /* number of path entries */
     Dl_serpath[1]   dls_serpath;    /* there may be more than one */
-};
+}
 
 /*-
  * The actual type declared by this typedef is immaterial, provided that
@@ -78,7 +78,7 @@ struct Dl_serinfo {
  */
 struct __dlfunc_arg {
     int     __dlfunc_dummy;
-};
+}
 
 alias dlfunc_t = void function(__dlfunc_arg);
 

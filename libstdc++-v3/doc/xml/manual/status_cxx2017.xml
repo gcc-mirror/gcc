@@ -457,7 +457,7 @@ Feature-testing recommendations for C++</link>.
 	P0185R1
 	</link>
       </entry>
-      <entry align="center"> 7 (<code>__is_swappable</code> available since 6.1)</entry>
+      <entry align="center"> 7.1 (<code>__is_swappable</code> available since 6.1)</entry>
       <entry><code> __cpp_lib_is_swappable >= 201603 </code></entry>
     </row>
 
@@ -641,7 +641,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry><code> __has_include(&lt;execution&gt;) </code>,
+      <entry><code> __has_include(&lt;execution&gt;)</code>,
 	     <code> __cpp_lib_execution >= 201603 </code>,
 	     <code> __cpp_lib_parallel_algorithm >= 201603 </code>
              (requires linking with <code>-ltbb</code>, see Note 3)
@@ -702,7 +702,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 8.1 </entry>
-      <entry><code> __has_include(&lt;filesystem&gt;) </code>,
+      <entry><code> __has_include(&lt;filesystem&gt;)</code>,
 	     <code> __cpp_lib_filesystem >= 201603 </code>
 	     (GCC 8.x requires linking with <code>-lstdc++fs</code>)
       </entry>
@@ -787,15 +787,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> Elementary string conversions </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html">
 	P0067R5
 	</link>
       </entry>
-      <entry align="center"> 8.1 (only integral types supported) </entry>
-      <entry><code> __has_include(&lt;charconv&gt;) </code>
+      <entry align="center"> 11.1 (integral types supported since 8.1) </entry>
+      <entry><code> __has_include(&lt;charconv&gt;)</code>,
              <code> __cpp_lib_to_chars >= 201611 </code></entry>
     </row>
 
@@ -1182,18 +1181,16 @@ since C++14 and the implementation is complete.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.8</entry>
       <entry>Primitive numeric output conversion</entry>
       <entry>Partial</entry>
-      <entry>Only integer types supported, not floating-point types</entry>
+      <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.9</entry>
       <entry>Primitive numeric input conversion</entry>
       <entry>Partial</entry>
-      <entry>Only integer types supported, not floating-point types</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3</entry>
@@ -2508,10 +2505,11 @@ since C++14 and the implementation is complete.
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>33.4.6.2</entry>
       <entry>Function <code>call_once</code></entry>
-      <entry>Broken</entry>
-      <entry>See <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      <entry>Y</entry>
+      <entry>Exception support is broken on non-Linux targets.
+	See <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
-	66146</link>
+	66146</link>.
       </entry>
     </row>
     <row>

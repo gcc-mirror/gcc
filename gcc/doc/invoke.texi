@@ -27509,9 +27509,10 @@ SVR4 ABI)@.
 @item -mabi=@var{abi-type}
 @opindex mabi
 Extend the current ABI with a particular extension, or remove such extension.
-Valid values are @samp{altivec}, @samp{no-altivec},
+Valid values are: @samp{altivec}, @samp{no-altivec},
 @samp{ibmlongdouble}, @samp{ieeelongdouble},
-@samp{elfv1}, @samp{elfv2}@.
+@samp{elfv1}, @samp{elfv2},
+and for AIX: @samp{vec-extabi}, @samp{vec-default}@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble

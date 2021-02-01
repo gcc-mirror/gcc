@@ -8,6 +8,7 @@
  */
 module core.sys.windows.winbase;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "kernel32");
@@ -33,7 +34,7 @@ int wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int);
 */
 
 import core.sys.windows.windef, core.sys.windows.winver;
-private import core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.winnt;
+import core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.winnt;
 
 // FIXME:
 //alias void va_list;
@@ -1285,9 +1286,17 @@ struct WIN32_STREAM_ID {
 }
 alias WIN32_STREAM_ID* LPWIN32_STREAM_ID;
 
-enum FINDEX_INFO_LEVELS {
-    FindExInfoStandard,
-    FindExInfoMaxInfoLevel
+static if (_WIN32_WINNT >= 0x601) {
+    enum FINDEX_INFO_LEVELS {
+        FindExInfoStandard,
+        FindExInfoBasic,
+        FindExInfoMaxInfoLevel,
+    }
+} else {
+    enum FINDEX_INFO_LEVELS {
+        FindExInfoStandard,
+        FindExInfoMaxInfoLevel,
+    }
 }
 
 enum FINDEX_SEARCH_OPS {
@@ -1579,6 +1588,14 @@ static if (_WIN32_WINNT >= 0x410) {
      *  and DDK functions (version compatibility not established)
      */
     alias DWORD EXECUTION_STATE;
+}
+
+// CreateSymbolicLink
+static if (_WIN32_WINNT >= 0x600) {
+    enum {
+        SYMBOLIC_LINK_FLAG_DIRECTORY = 0x1,
+        SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE = 0x2
+    }
 }
 
 // Callbacks
@@ -2242,6 +2259,7 @@ WINBASEAPI BOOL WINAPI SetEvent(HANDLE);
     BOOL IsValidAcl(PACL);
     BOOL IsValidSecurityDescriptor(PSECURITY_DESCRIPTOR);
     BOOL IsValidSid(PSID);
+    BOOL CreateWellKnownSid(WELL_KNOWN_SID_TYPE, PSID, PSID, PDWORD);
     BOOL LockFileEx(HANDLE, DWORD, DWORD, DWORD, DWORD, LPOVERLAPPED);
     BOOL LogonUserA(LPSTR, LPSTR, LPSTR, DWORD, DWORD, PHANDLE);
     BOOL LogonUserW(LPWSTR, LPWSTR, LPWSTR, DWORD, DWORD, PHANDLE);
@@ -2471,6 +2489,11 @@ WINBASEAPI BOOL WINAPI SetEvent(HANDLE);
     static if (_WIN32_WINNT >= 0x510) {
         VOID RestoreLastError(DWORD);
     }
+
+    static if (_WIN32_WINNT >= 0x600) {
+        BOOL CreateSymbolicLinkA(LPCSTR, LPCSTR, DWORD);
+        BOOL CreateSymbolicLinkW(LPCWSTR, LPCWSTR, DWORD);
+    }
 }
 
 // For compatibility with old core.sys.windows.windows:
@@ -2656,6 +2679,10 @@ version (Unicode) {
         alias GetDllDirectoryW GetDllDirectory;
     }
 
+    static if (_WIN32_WINNT >= 0x600) {
+        alias CreateSymbolicLinkW CreateSymbolicLink;
+    }
+
 } else {
     //alias STARTUPINFOA STARTUPINFO;
     alias WIN32_FIND_DATAA WIN32_FIND_DATA;
@@ -2829,6 +2856,10 @@ version (Unicode) {
         alias GetDllDirectoryA GetDllDirectory;
         alias SetDllDirectoryA SetDllDirectory;
         alias SetFirmwareEnvironmentVariableA SetFirmwareEnvironmentVariable;
+    }
+
+    static if (_WIN32_WINNT >= 0x600) {
+        alias CreateSymbolicLinkA CreateSymbolicLink;
     }
 }
 

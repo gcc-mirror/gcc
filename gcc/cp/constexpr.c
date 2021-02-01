@@ -3760,6 +3760,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
       new_ctx = *ctx;
+      new_ctx.object = t;
       new_ctx.ctor = build_constructor (elem_type, NULL);
       ctx = &new_ctx;
     }

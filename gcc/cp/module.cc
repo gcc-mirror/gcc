@@ -14801,7 +14801,7 @@ module_state::read_cluster (unsigned snum)
   dump.indent ();
 
   /* We care about structural equality.  */
-  comparing_specializations++;
+  comparing_dependent_aliases++;
 
   /* First seed the imports.  */
   while (tree import = sec.tree_node ())
@@ -14976,7 +14976,7 @@ module_state::read_cluster (unsigned snum)
 #undef cfun
   cfun = old_cfun;
   current_function_decl = old_cfd;
-  comparing_specializations--;
+  comparing_dependent_aliases--;
 
   dump.outdent ();
   dump () && dump ("Read section:%u", snum);

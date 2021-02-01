@@ -1709,6 +1709,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 
 /* Restricts tree and type comparisons.  */
 int comparing_specializations;
+int comparing_dependent_aliases;
 
 /* Returns true iff two spec_entry nodes are equivalent.  */
 
@@ -1718,6 +1719,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
   int equal;
 
   ++comparing_specializations;
+  ++comparing_dependent_aliases;
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
@@ -1732,6 +1734,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
       tree c2 = e2->spec ? get_constraints (e2->spec) : NULL_TREE;
       equal = equivalent_constraints (c1, c2);
     }
+  --comparing_dependent_aliases;
   --comparing_specializations;
 
   return equal;
@@ -6516,7 +6519,11 @@ complex_alias_template_p (const_tree tmpl)
 tree
 dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 {
-  if (!TYPE_P (t) || !typedef_variant_p (t))
+  if (t == error_mark_node)
+    return NULL_TREE;
+  gcc_assert (TYPE_P (t));
+
+  if (!typedef_variant_p (t))
     return NULL_TREE;
 
   tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t);
@@ -9166,6 +9173,18 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
   if (class_nttp_const_wrapper_p (ot))
     ot = TREE_OPERAND (ot, 0);
 
+  /* DR 1558: Don't treat an alias template specialization with dependent
+     arguments as equivalent to its underlying type when used as a template
+     argument; we need them to be distinct so that we substitute into the
+     specialization arguments at instantiation time.  And aliases can't be
+     equivalent without being ==, so we don't need to look any deeper.
+
+     During partial ordering, however, we need to treat them normally so we can
+     order uses of the same alias with different cv-qualification (79960).  */
+  auto cso = make_temp_override (comparing_dependent_aliases);
+  if (!partial_order)
+    ++comparing_dependent_aliases;
+
   if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (ot) == TREE_VEC)
     /* For member templates */
     return TREE_CODE (ot) == TREE_CODE (nt) && comp_template_args (ot, nt);
@@ -9183,21 +9202,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     {
       if (!(TYPE_P (nt) && TYPE_P (ot)))
 	return false;
-      /* Don't treat an alias template specialization with dependent
-	 arguments as equivalent to its underlying type when used as a
-	 template argument; we need them to be distinct so that we
-	 substitute into the specialization arguments at instantiation
-	 time.  And aliases can't be equivalent without being ==, so
-	 we don't need to look any deeper.
-
-         During partial ordering, however, we need to treat them normally so
-         that we can order uses of the same alias with different
-         cv-qualification (79960).  */
-      if (!partial_order
-	  && (TYPE_ALIAS_P (nt) || TYPE_ALIAS_P (ot)))
-	return false;
-      else
-	return same_type_p (ot, nt);
+      return same_type_p (ot, nt);
     }
   else
     {
@@ -14903,10 +14908,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  {
 	    DECL_ORIGINAL_TYPE (r) = NULL_TREE;
 	    set_underlying_type (r);
-	    if (TYPE_DECL_ALIAS_P (r))
-	      /* An alias template specialization can be dependent
-		 even if its underlying type is not.  */
-	      TYPE_DEPENDENT_P_VALID (TREE_TYPE (r)) = false;
 	  }
 
 	layout_decl (r, 0);
@@ -21135,6 +21136,17 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
     return error_mark_node;
   tree r = instantiate_template (tmpl, args, complain);
   pop_tinst_level ();
+
+  if (tree d = dependent_alias_template_spec_p (TREE_TYPE (r), nt_opaque))
+    {
+      /* An alias template specialization can be dependent
+	 even if its underlying type is not.  */
+      TYPE_DEPENDENT_P (d) = true;
+      TYPE_DEPENDENT_P_VALID (d) = true;
+      /* Sometimes a dependent alias spec is equivalent to its expansion,
+	 sometimes not.  So always use structural_comptypes.  */
+      SET_TYPE_STRUCTURAL_EQUALITY (d);
+    }
 
   return r;
 }

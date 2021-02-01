@@ -15,7 +15,7 @@
  */
 module core.sys.posix.time;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.stdc.time;
 public import core.sys.posix.sys.types;
 public import core.sys.posix.signal; // for sigevent
@@ -33,19 +33,20 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 //
 // Required (defined in core.stdc.time)
 //
 /*
-char* asctime(in tm*);
+char* asctime(const scope tm*);
 clock_t clock();
-char* ctime(in time_t*);
+char* ctime(const scope time_t*);
 double difftime(time_t, time_t);
-tm* gmtime(in time_t*);
-tm* localtime(in time_t*);
+tm* gmtime(const scope time_t*);
+tm* localtime(const scope time_t*);
 time_t mktime(tm*);
-size_t strftime(char*, size_t, in char*, in tm*);
+size_t strftime(char*, size_t, const scope char*, const scope tm*);
 time_t time(time_t*);
 */
 
@@ -114,7 +115,7 @@ int clock_getcpuclockid(pid_t, clockid_t*);
 // Clock Selection (CS)
 //
 /*
-int clock_nanosleep(clockid_t, int, in timespec*, timespec*);
+int clock_nanosleep(clockid_t, int, const scope timespec*, timespec*);
 */
 
 //
@@ -189,13 +190,13 @@ timer_t
 
 int clock_getres(clockid_t, timespec*);
 int clock_gettime(clockid_t, timespec*);
-int clock_settime(clockid_t, in timespec*);
-int nanosleep(in timespec*, timespec*);
+int clock_settime(clockid_t, const scope timespec*);
+int nanosleep(const scope timespec*, timespec*);
 int timer_create(clockid_t, sigevent*, timer_t*);
 int timer_delete(timer_t);
 int timer_gettime(timer_t, itimerspec*);
 int timer_getoverrun(timer_t);
-int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 */
 
 version (CRuntime_Glibc)
@@ -225,17 +226,17 @@ version (CRuntime_Glibc)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (Darwin)
 {
-    int nanosleep(in timespec*, timespec*);
+    int nanosleep(const scope timespec*, timespec*);
 }
 else version (FreeBSD)
 {
@@ -264,13 +265,13 @@ else version (FreeBSD)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (DragonFlyBSD)
 {
@@ -290,13 +291,13 @@ else version (DragonFlyBSD)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (NetBSD)
 {
@@ -314,13 +315,13 @@ else version (NetBSD)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (OpenBSD)
 {
@@ -338,13 +339,13 @@ else version (OpenBSD)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (Solaris)
 {
@@ -365,16 +366,16 @@ else version (Solaris)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int clock_nanosleep(clockid_t, int, in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int clock_nanosleep(clockid_t, int, const scope timespec*, timespec*);
 
-    int nanosleep(in timespec*, timespec*);
+    int nanosleep(const scope timespec*, timespec*);
 
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_getoverrun(timer_t);
     int timer_gettime(timer_t, itimerspec*);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (CRuntime_Bionic)
 {
@@ -396,12 +397,12 @@ else version (CRuntime_Bionic)
 
     int clock_getres(int, timespec*);
     int clock_gettime(int, timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(int, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (CRuntime_Musl)
 {
@@ -426,18 +427,18 @@ else version (CRuntime_Musl)
     enum CLOCK_SGI_CYCLE = 10;
     enum CLOCK_TAI = 11;
 
-    int nanosleep(in timespec*, timespec*);
+    int nanosleep(const scope timespec*, timespec*);
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int clock_nanosleep(clockid_t, int, in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int clock_nanosleep(clockid_t, int, const scope timespec*, timespec*);
     int clock_getcpuclockid(pid_t, clockid_t *);
 
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
     int timer_getoverrun(timer_t);
 }
 else version (CRuntime_UClibc)
@@ -459,13 +460,13 @@ else version (CRuntime_UClibc)
 
     int clock_getres(clockid_t, timespec*);
     int clock_gettime(clockid_t, timespec*);
-    int clock_settime(clockid_t, in timespec*);
-    int nanosleep(in timespec*, timespec*);
+    int clock_settime(clockid_t, const scope timespec*);
+    int nanosleep(const scope timespec*, timespec*);
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
     int timer_gettime(timer_t, itimerspec*);
     int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, in itimerspec*, itimerspec*);
+    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else
 {
@@ -476,81 +477,81 @@ else
 // Thread-Safe Functions (TSF)
 //
 /*
-char* asctime_r(in tm*, char*);
-char* ctime_r(in time_t*, char*);
-tm*   gmtime_r(in time_t*, tm*);
-tm*   localtime_r(in time_t*, tm*);
+char* asctime_r(const scope tm*, char*);
+char* ctime_r(const scope time_t*, char*);
+tm*   gmtime_r(const scope time_t*, tm*);
+tm*   localtime_r(const scope time_t*, tm*);
 */
 
 version (CRuntime_Glibc)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (Darwin)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (FreeBSD)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (NetBSD)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (OpenBSD)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (DragonFlyBSD)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (Solaris)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm* gmtime_r(in time_t*, tm*);
-    tm* localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm* gmtime_r(const scope time_t*, tm*);
+    tm* localtime_r(const scope time_t*, tm*);
 }
 else version (CRuntime_Bionic)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm* gmtime_r(in time_t*, tm*);
-    tm* localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm* gmtime_r(const scope time_t*, tm*);
+    tm* localtime_r(const scope time_t*, tm*);
 }
 else version (CRuntime_Musl)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (CRuntime_UClibc)
 {
-    char* asctime_r(in tm*, char*);
-    char* ctime_r(in time_t*, char*);
-    tm*   gmtime_r(in time_t*, tm*);
-    tm*   localtime_r(in time_t*, tm*);
+    char* asctime_r(const scope tm*, char*);
+    char* ctime_r(const scope time_t*, char*);
+    tm*   gmtime_r(const scope time_t*, tm*);
+    tm*   localtime_r(const scope time_t*, tm*);
 }
 else
 {
@@ -566,8 +567,8 @@ getdate_err
 int daylight;
 int timezone;
 
-tm* getdate(in char*);
-char* strptime(in char*, in char*, tm*);
+tm* getdate(const scope char*);
+char* strptime(const scope char*, const scope char*, tm*);
 */
 
 version (CRuntime_Glibc)
@@ -575,44 +576,44 @@ version (CRuntime_Glibc)
     extern __gshared int    daylight;
     extern __gshared c_long timezone;
 
-    tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (Darwin)
 {
     extern __gshared c_long timezone;
     extern __gshared int    daylight;
 
-    tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (FreeBSD)
 {
-    //tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    //tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (NetBSD)
 {
-    tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (OpenBSD)
 {
-    //tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    //tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (DragonFlyBSD)
 {
-    //tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    //tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (Solaris)
 {
     extern __gshared c_long timezone, altzone;
     extern __gshared int daylight;
 
-    tm* getdate(in char*);
-    char* __strptime_dontzero(in char*, in char*, tm*);
+    tm* getdate(const scope char*);
+    char* __strptime_dontzero(const scope char*, const scope char*, tm*);
     alias __strptime_dontzero strptime;
 }
 else version (CRuntime_Bionic)
@@ -620,23 +621,23 @@ else version (CRuntime_Bionic)
     extern __gshared int    daylight;
     extern __gshared c_long timezone;
 
-    char* strptime(in char*, in char*, tm*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (CRuntime_Musl)
 {
     extern __gshared int daylight;
     extern __gshared c_long timezone;
 
-    tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else version (CRuntime_UClibc)
 {
     extern __gshared int    daylight;
     extern __gshared c_long timezone;
 
-    tm*   getdate(in char*);
-    char* strptime(in char*, in char*, tm*);
+    tm*   getdate(const scope char*);
+    char* strptime(const scope char*, const scope char*, tm*);
 }
 else
 {
