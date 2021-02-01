@@ -1950,10 +1950,10 @@
         (plus:<VWIDE>
           (mult:<VWIDE>
             (ANY_EXTEND:<VWIDE>
-              (vec_duplicate:VD_HSI
-	              (match_operand:<VEL> 3 "register_operand" "<h_con>")))
+              (match_operand:VD_HSI 2 "register_operand" "w"))
             (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_HSI 2 "register_operand" "w")))
+              (vec_duplicate:VD_HSI
+	              (match_operand:<VEL> 3 "register_operand" "<h_con>"))))
           (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
   "<su>mlal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vetype>[0]"
@@ -1980,10 +1980,10 @@
           (match_operand:<VWIDE> 1 "register_operand" "0")
           (mult:<VWIDE>
             (ANY_EXTEND:<VWIDE>
-              (vec_duplicate:VD_HSI
-	              (match_operand:<VEL> 3 "register_operand" "<h_con>")))
+              (match_operand:VD_HSI 2 "register_operand" "w"))
             (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_HSI 2 "register_operand" "w")))))]
+              (vec_duplicate:VD_HSI
+	              (match_operand:<VEL> 3 "register_operand" "<h_con>"))))))]
   "TARGET_SIMD"
   "<su>mlsl\t%0.<Vwtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
@@ -2078,10 +2078,10 @@
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (mult:<VWIDE>
           (ANY_EXTEND:<VWIDE>
-            (vec_duplicate:<VCOND>
-	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))
+            (match_operand:VD_HSI 1 "register_operand" "w"))
           (ANY_EXTEND:<VWIDE>
-            (match_operand:VD_HSI 1 "register_operand" "w"))))]
+            (vec_duplicate:<VCOND>
+	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))))]
   "TARGET_SIMD"
   "<su>mull\t%0.<Vwtype>, %1.<Vtype>, %2.<Vetype>[0]"
   [(set_attr "type" "neon_mul_<Vetype>_scalar_long")]
