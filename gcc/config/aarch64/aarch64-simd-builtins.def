@@ -344,15 +344,15 @@
   BUILTIN_VHSDF (TERNOP, fcmla90, 0, FP)
   BUILTIN_VHSDF (TERNOP, fcmla180, 0, FP)
   BUILTIN_VHSDF (TERNOP, fcmla270, 0, FP)
-  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane0, 0, ALL)
-  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane90, 0, ALL)
-  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane180, 0, ALL)
-  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane270, 0, ALL)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane0, 0, FP)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane90, 0, FP)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane180, 0, FP)
+  BUILTIN_VHSDF (QUADOP_LANE_PAIR, fcmla_lane270, 0, FP)
 
-  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane0, 0, ALL)
-  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0, ALL)
-  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, ALL)
-  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, ALL)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane0, 0, FP)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0, FP)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, FP)
+  BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, FP)
 
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, NONE)
   VAR1 (SHIFTIMM, ashr_simd, 0, NONE, di)
@@ -684,16 +684,16 @@
   BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_laneq, 0, NONE)
 
   /* Implemented by <FCVT_F2FIXED/FIXED2F:fcvt_fixed_insn><*><*>3.  */
-  BUILTIN_VSDQ_HSDI (SHIFTIMM, scvtf, 3, ALL)
-  BUILTIN_VSDQ_HSDI (FCVTIMM_SUS, ucvtf, 3, ALL)
-  BUILTIN_VHSDF_HSDF (SHIFTIMM, fcvtzs, 3, ALL)
-  BUILTIN_VHSDF_HSDF (SHIFTIMM_USS, fcvtzu, 3, ALL)
-  VAR1 (SHIFTIMM, scvtfsi, 3, ALL, hf)
-  VAR1 (SHIFTIMM, scvtfdi, 3, ALL, hf)
-  VAR1 (FCVTIMM_SUS, ucvtfsi, 3, ALL, hf)
-  VAR1 (FCVTIMM_SUS, ucvtfdi, 3, ALL, hf)
-  BUILTIN_GPI (SHIFTIMM, fcvtzshf, 3, ALL)
-  BUILTIN_GPI (SHIFTIMM_USS, fcvtzuhf, 3, ALL)
+  BUILTIN_VSDQ_HSDI (SHIFTIMM, scvtf, 3, FP)
+  BUILTIN_VSDQ_HSDI (FCVTIMM_SUS, ucvtf, 3, FP)
+  BUILTIN_VHSDF_HSDF (SHIFTIMM, fcvtzs, 3, FP)
+  BUILTIN_VHSDF_HSDF (SHIFTIMM_USS, fcvtzu, 3, FP)
+  VAR1 (SHIFTIMM, scvtfsi, 3, FP, hf)
+  VAR1 (SHIFTIMM, scvtfdi, 3, FP, hf)
+  VAR1 (FCVTIMM_SUS, ucvtfsi, 3, FP, hf)
+  VAR1 (FCVTIMM_SUS, ucvtfdi, 3, FP, hf)
+  BUILTIN_GPI (SHIFTIMM, fcvtzshf, 3, FP)
+  BUILTIN_GPI (SHIFTIMM_USS, fcvtzuhf, 3, FP)
 
   /* Implemented by aarch64_rsqrte<mode>.  */
   BUILTIN_VHSDF_HSDF (UNOP, rsqrte, 0, FP)
@@ -784,29 +784,29 @@
   VAR1 (TERNOP, fmlalq_high, 0, FP, v4sf)
   VAR1 (TERNOP, fmlslq_high, 0, FP, v4sf)
   /* Implemented by aarch64_fml<f16mac1>l_lane_lowv2sf.  */
-  VAR1 (QUADOP_LANE, fmlal_lane_low, 0, ALL, v2sf)
-  VAR1 (QUADOP_LANE, fmlsl_lane_low, 0, ALL, v2sf)
+  VAR1 (QUADOP_LANE, fmlal_lane_low, 0, FP, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_lane_low, 0, FP, v2sf)
   /* Implemented by aarch64_fml<f16mac1>l_laneq_lowv2sf.  */
-  VAR1 (QUADOP_LANE, fmlal_laneq_low, 0, ALL, v2sf)
-  VAR1 (QUADOP_LANE, fmlsl_laneq_low, 0, ALL, v2sf)
+  VAR1 (QUADOP_LANE, fmlal_laneq_low, 0, FP, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_laneq_low, 0, FP, v2sf)
   /* Implemented by aarch64_fml<f16mac1>lq_lane_lowv4sf.  */
-  VAR1 (QUADOP_LANE, fmlalq_lane_low, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, fmlslq_lane_low, 0, ALL, v4sf)
+  VAR1 (QUADOP_LANE, fmlalq_lane_low, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_lane_low, 0, FP, v4sf)
   /* Implemented by aarch64_fml<f16mac1>lq_laneq_lowv4sf.  */
-  VAR1 (QUADOP_LANE, fmlalq_laneq_low, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, fmlslq_laneq_low, 0, ALL, v4sf)
+  VAR1 (QUADOP_LANE, fmlalq_laneq_low, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_laneq_low, 0, FP, v4sf)
   /* Implemented by aarch64_fml<f16mac1>l_lane_highv2sf.  */
-  VAR1 (QUADOP_LANE, fmlal_lane_high, 0, ALL, v2sf)
-  VAR1 (QUADOP_LANE, fmlsl_lane_high, 0, ALL, v2sf)
+  VAR1 (QUADOP_LANE, fmlal_lane_high, 0, FP, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_lane_high, 0, FP, v2sf)
   /* Implemented by aarch64_fml<f16mac1>l_laneq_highv2sf.  */
-  VAR1 (QUADOP_LANE, fmlal_laneq_high, 0, ALL, v2sf)
-  VAR1 (QUADOP_LANE, fmlsl_laneq_high, 0, ALL, v2sf)
+  VAR1 (QUADOP_LANE, fmlal_laneq_high, 0, FP, v2sf)
+  VAR1 (QUADOP_LANE, fmlsl_laneq_high, 0, FP, v2sf)
   /* Implemented by aarch64_fml<f16mac1>lq_lane_highv4sf.  */
-  VAR1 (QUADOP_LANE, fmlalq_lane_high, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, fmlslq_lane_high, 0, ALL, v4sf)
+  VAR1 (QUADOP_LANE, fmlalq_lane_high, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_lane_high, 0, FP, v4sf)
   /* Implemented by aarch64_fml<f16mac1>lq_laneq_highv4sf.  */
-  VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, ALL, v4sf)
-  VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, ALL, v4sf)
+  VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, FP, v4sf)
+  VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, FP, v4sf)
 
   /* Implemented by aarch64_<frintnzs_op><mode>.  */
   BUILTIN_VSFDF (UNOP, frint32z, 0, FP)
