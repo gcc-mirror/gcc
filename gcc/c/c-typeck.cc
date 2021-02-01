@@ -17147,7 +17147,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      }
 	    else if (bitmap_bit_p (&map_head, DECL_UID (t))
 		     && !bitmap_bit_p (&map_field_head, DECL_UID (t))
-		     && ort != C_ORT_OMP
+		     && ort != C_ORT_OMP && ort != C_ORT_OMP_TARGET
 		     && ort != C_ORT_OMP_EXIT_DATA)
 	      {
 		if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
