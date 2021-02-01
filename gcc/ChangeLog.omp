@@ -1,3 +1,18 @@
+2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.cc (install_var_field): Add new 'tree key_expr = NULL_TREE'
+	default parameter. Set splay-tree lookup key to key_expr instead of
+	var if key_expr is non-NULL. Adjust call to install_parm_decl.
+	Update comments.
+	(scan_sharing_clauses): Use clause tree expression as splay-tree key
+	for map/to/from and OpenACC firstprivate cases when installing the
+	variable field into the send/receive record type.
+	(maybe_lookup_field_in_outer_ctx): Add code to search through
+	construct clauses instead of entirely based on splay-tree lookup.
+	(lower_oacc_reductions): Adjust to find map-clause of reduction
+	variable, then create receiver-ref.
+	(lower_omp_target): Adjust to lookup var field using clause expression.
+
 2021-01-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* dwarf2out.cc (gen_subprogram_die): Check offload attributes only.
