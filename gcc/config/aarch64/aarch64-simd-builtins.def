@@ -43,8 +43,8 @@
    help describe the attributes (for example, pure) for the intrinsic
    function.  */
 
-  BUILTIN_VDC (COMBINE, combine, 0, ALL)
-  VAR1 (COMBINEP, combine, 0, ALL, di)
+  BUILTIN_VDC (COMBINE, combine, 0, AUTO_FP)
+  VAR1 (COMBINEP, combine, 0, NONE, di)
   BUILTIN_VB (BINOP, pmul, 0, NONE)
   BUILTIN_VHSDF_HSDF (BINOP, fmulx, 0, FP)
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
@@ -556,12 +556,12 @@
 
   /* Implemented by
      aarch64_<PERMUTE:perm_insn><mode>.  */
-  BUILTIN_VALL (BINOP, zip1, 0, ALL)
-  BUILTIN_VALL (BINOP, zip2, 0, ALL)
-  BUILTIN_VALL (BINOP, uzp1, 0, ALL)
-  BUILTIN_VALL (BINOP, uzp2, 0, ALL)
-  BUILTIN_VALL (BINOP, trn1, 0, ALL)
-  BUILTIN_VALL (BINOP, trn2, 0, ALL)
+  BUILTIN_VALL (BINOP, zip1, 0, AUTO_FP)
+  BUILTIN_VALL (BINOP, zip2, 0, AUTO_FP)
+  BUILTIN_VALL (BINOP, uzp1, 0, AUTO_FP)
+  BUILTIN_VALL (BINOP, uzp2, 0, AUTO_FP)
+  BUILTIN_VALL (BINOP, trn1, 0, AUTO_FP)
+  BUILTIN_VALL (BINOP, trn2, 0, AUTO_FP)
 
   BUILTIN_GPF_F16 (UNOP, frecpe, 0, FP)
   BUILTIN_GPF_F16 (UNOP, frecpx, 0, FP)
@@ -619,7 +619,7 @@
   BUILTIN_VDQQH (BSL_P, simd_bsl, 0, NONE)
   VAR2 (BSL_P, simd_bsl,0, NONE, di, v2di)
   BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0, NONE)
-  BUILTIN_VALLDIF (BSL_S, simd_bsl, 0, ALL)
+  BUILTIN_VALLDIF (BSL_S, simd_bsl, 0, AUTO_FP)
 
   /* Implemented by aarch64_crypto_aes<op><mode>.  */
   VAR1 (BINOPU, crypto_aese, 0, NONE, v16qi)
