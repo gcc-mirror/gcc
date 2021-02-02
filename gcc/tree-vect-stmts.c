@@ -10085,14 +10085,6 @@ vectorizable_condition (vec_info *vinfo,
 
   /* Transform.  */
 
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-      vec_oprnds2.create (1);
-      vec_oprnds3.create (1);
-    }
-
   /* Handle def.  */
   scalar_dest = gimple_assign_lhs (stmt);
   if (reduction_type != EXTRACT_LAST_REDUCTION)
@@ -10480,11 +10472,6 @@ vectorizable_comparison (vec_info *vinfo,
     }
 
   /* Transform.  */
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-    }
 
   /* Handle def.  */
   lhs = gimple_assign_lhs (stmt);

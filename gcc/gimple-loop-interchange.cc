@@ -1940,7 +1940,10 @@ prepare_data_references (class loop *loop, vec<data_reference_p> *datarefs)
           delete bb_refs;
         }
       else if (bb_refs->is_empty ())
-	delete bb_refs;
+	{
+	  bb_refs->release ();
+	  delete bb_refs;
+	}
       else
 	bb->aux = bb_refs;
     }
@@ -1954,7 +1957,10 @@ prepare_data_references (class loop *loop, vec<data_reference_p> *datarefs)
 
       bb_refs = (vec<data_reference_p> *) bb->aux;
       if (loop_nest && flow_bb_inside_loop_p (loop_nest, bb))
-	datarefs->safe_splice (*bb_refs);
+	{
+	  datarefs->safe_splice (*bb_refs);
+	  bb_refs->release ();
+	}
       else
 	free_data_refs (*bb_refs);
 
