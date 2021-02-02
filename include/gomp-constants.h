@@ -342,6 +342,12 @@ enum gomp_map_kind
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
 
+/* Flag values for requires-directive features, must match corresponding
+   OMP_REQUIRES_* values in gcc/omp-general.h.  */
+#define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10
+#define GOMP_REQUIRES_UNIFIED_SHARED_MEMORY 0x20
+#define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
+
 /* HSA specific data structures.  */
 
 /* Identifiers of device-specific target arguments.  */

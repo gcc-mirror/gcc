@@ -2475,6 +2475,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  break;
 	}
 
+      if (flag_openmp
+	  && lookup_attribute ("omp declare target",
+			       DECL_ATTRIBUTES (current_function_decl)))
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
       if (DECL_DECLARED_INLINE_P (current_function_decl))
         tv = TV_PARSE_INLINE;
       else
@@ -19625,6 +19631,10 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 static tree
 c_parser_omp_target_data (location_t loc, c_parser *parser, bool *if_p)
 {
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				"#pragma omp target data");
@@ -19767,6 +19777,10 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
       return NULL_TREE;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				"#pragma omp target enter data");
@@ -19852,6 +19866,10 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
       c_parser_skip_to_pragma_eol (parser, false);
       return NULL_TREE;
     }
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
@@ -21440,7 +21458,7 @@ c_parser_omp_requires (c_parser *parser)
 	      c_parser_skip_to_pragma_eol (parser, false);
 	      return;
 	    }
-	  if (p)
+	  if (this_req == OMP_REQUIRES_DYNAMIC_ALLOCATORS)
 	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
 			    "supported yet", p);
 	  if (p)

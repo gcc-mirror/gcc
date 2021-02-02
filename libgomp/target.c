@@ -31,6 +31,7 @@
 #include "gomp-constants.h"
 #include <limits.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>  /* For PRIu64.  */
@@ -95,6 +96,16 @@ static int num_devices;
 
 /* Number of GOMP_OFFLOAD_CAP_OPENMP_400 devices.  */
 static int num_devices_openmp;
+
+/* Mask of requires directive clause values, summarized from .gnu.gomp.requires
+   section. Offload plugins are queried with this mask to see if all required
+   features are supported.  */
+static unsigned int gomp_requires_mask;
+
+/* Start/end of .gnu.gomp.requires section of program, defined in
+   crtoffloadbegin/end.o.  */
+extern const unsigned int __requires_mask_table[];
+extern const unsigned int __requires_mask_table_end[];
 
 /* Similar to gomp_realloc, but release register_lock before gomp_fatal.  */
 
@@ -2384,6 +2395,20 @@ gomp_init_device (struct gomp_device_descr *devicep)
       gomp_fatal ("device initialization failed");
     }
 
+  unsigned int features = gomp_requires_mask;
+  if (!devicep->supported_features_func (&features))
+    {
+      char buf[64], *end = buf + sizeof (buf), *p = buf;
+      if (features & GOMP_REQUIRES_UNIFIED_ADDRESS)
+	p += snprintf (p, end - p, "unified_address");
+      if (features & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+	p += snprintf (p, end - p, "%sunified_shared_memory",
+		       (p == buf ? "" : ", "));
+      if (features & GOMP_REQUIRES_REVERSE_OFFLOAD)
+	p += snprintf (p, end - p, "%sreverse_offload", (p == buf ? "" : ", "));
+      gomp_error ("device does not support required features: %s", buf);
+    }
+
   /* Load to device all images registered by the moment.  */
   for (i = 0; i < num_offload_images; i++)
     {
@@ -3664,6 +3689,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (get_num_devices);
   DLSYM (init_device);
   DLSYM (fini_device);
+  DLSYM (supported_features);
   DLSYM (load_image);
   DLSYM (unload_image);
   DLSYM (alloc);
@@ -3773,6 +3799,28 @@ gomp_target_init (void)
 
   if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_DISABLED)
     return;
+
+  gomp_requires_mask = 0;
+  const unsigned int *mask_ptr = __requires_mask_table;
+  bool error_emitted = false;
+  while (mask_ptr != __requires_mask_table_end)
+    {
+      if (gomp_requires_mask == 0)
+	gomp_requires_mask = *mask_ptr;
+      else if (gomp_requires_mask != *mask_ptr)
+	{
+	  if (!error_emitted)
+	    {
+	      gomp_error ("requires-directive clause inconsistency between "
+			  "compilation units detected");
+	      error_emitted = true;
+	    }
+	  /* This is inconsistent, but still merge to query for all features
+	     later.  */
+	  gomp_requires_mask |= *mask_ptr;
+	}
+      mask_ptr++;
+    }
 
   cur = OFFLOAD_PLUGINS;
   if (*cur)
