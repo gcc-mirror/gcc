@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -316,7 +316,36 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
       if (flag_new_inheriting_ctors)
 	diag_decl = strip_inheriting_ctors (diag_decl);
       if (complain & tf_error)
-	complain_about_access (decl, diag_decl, true);
+	{
+	  /* We will usually want to point to the same place as
+	     diag_decl but not always.  */
+	  tree diag_location = diag_decl;
+	  access_kind parent_access = ak_none;
+
+	  /* See if any of BASETYPE_PATH's parents had private access
+	     to DECL.  If they did, that will tell us why we don't.  */
+	  tree parent_binfo = get_parent_with_private_access (decl,
+							      basetype_path);
+
+	  /* If a parent had private access, then the diagnostic
+	     location DECL should be that of the parent class, since it
+	     failed to give suitable access by using a private
+	     inheritance.  But if DECL was actually defined in the parent,
+	     it wasn't privately inherited, and so we don't need to do
+	     this, and complain_about_access will figure out what to
+	     do.  */
+	  if (parent_binfo != NULL_TREE
+	      && (context_for_name_lookup (decl)
+		  != BINFO_TYPE (parent_binfo)))
+	    {
+	      diag_location = TYPE_NAME (BINFO_TYPE (parent_binfo));
+	      parent_access = ak_private;
+	    }
+
+	  /* Finally, generate an error message.  */
+	  complain_about_access (decl, diag_decl, diag_location, true,
+				 parent_access);
+	}
       if (afi)
 	afi->record_access_failure (basetype_path, decl, diag_decl);
       return false;
@@ -2107,14 +2136,24 @@ check_accessibility_of_qualified_id (tree decl,
       /* If the reference is to a non-static member of the
 	 current class, treat it as if it were referenced through
 	 `this'.  */
-      tree ct;
       if (DECL_NONSTATIC_MEMBER_P (decl)
-	  && current_class_ptr
-	  && DERIVED_FROM_P (scope, ct = current_nonlambda_class_type ()))
-	qualifying_type = ct;
+	  && current_class_ptr)
+	if (tree current = current_nonlambda_class_type ())
+	  {
+	    if (dependent_type_p (current))
+	    /* In general we can't know whether this access goes through
+	       `this' until instantiation time.  Punt now, or else we might
+	       create a deferred access check that's not relative to `this'
+	       when it ought to be.  We'll check this access again after
+	       substitution, e.g. from tsubst_qualified_id.  */
+	      return true;
+
+	    if (DERIVED_FROM_P (scope, current))
+	      qualifying_type = current;
+	  }
       /* Otherwise, use the type indicated by the
 	 nested-name-specifier.  */
-      else
+      if (!qualifying_type)
 	qualifying_type = nested_name_specifier;
     }
   else
@@ -2204,8 +2243,7 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
-      if ((type_dependent_expression_p (expr)
-	   || !shared_member_p (expr))
+      if (!shared_member_p (expr)
 	  && current_class_ptr
 	  && DERIVED_FROM_P (qualifying_class,
 			     current_nonlambda_class_type ()))
@@ -3220,6 +3258,19 @@ begin_class_definition (tree t)
       t = make_class_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t);
     }
+
+  if (modules_p ())
+    {
+      if (!module_may_redeclare (TYPE_NAME (t)))
+	{
+	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
+	  return error_mark_node;
+	}
+      set_instantiating_module (TYPE_NAME (t));
+      set_defining_module (TYPE_NAME (t));
+    }
+
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
@@ -4506,7 +4557,8 @@ expand_or_defer_fn_1 (tree fn)
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
       /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
-      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+      if (!DECL_DECLARED_CONSTEXPR_P (fn)
+	  && !(modules_p () && DECL_DECLARED_INLINE_P (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
@@ -6377,6 +6429,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool allocate_seen = false;
+  bool detach_seen = false;
+  bool mergeable_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -7394,6 +7448,42 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	    }
 	  break;
+	case OMP_CLAUSE_DETACH:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (detach_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"too many %qs clauses on a task construct",
+			"detach");
+	      remove = true;
+	      break;
+	    }
+	  else if (error_operand_p (t))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  else
+	    {
+	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+	      if (!type_dependent_expression_p (t)
+		  && (!INTEGRAL_TYPE_P (type)
+		      || TREE_CODE (type) != ENUMERAL_TYPE
+		      || TYPE_NAME (type) == NULL_TREE
+		      || (DECL_NAME (TYPE_NAME (type))
+			  != get_identifier ("omp_event_handle_t"))))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<detach%> clause event handle "
+			    "has type %qT rather than "
+			    "%<omp_event_handle_t%>",
+			    type);
+		  remove = true;
+		}
+	      detach_seen = true;
+	      cxx_mark_addressable (t);
+	    }
+	  break;
 
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_TO:
@@ -7925,7 +8015,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
@@ -7942,6 +8031,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  break;
+
+	case OMP_CLAUSE_MERGEABLE:
+	  mergeable_seen = true;
 	  break;
 
 	case OMP_CLAUSE_TILE:
@@ -8181,6 +8274,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
+	case OMP_CLAUSE_DETACH:
+	  if (mergeable_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<detach%> clause must not be used together with "
+			"%<mergeable%> clause");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)
 	    {
@@ -8339,6 +8443,19 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"clauses", omp_clause_printable_decl (t));
 	      remove = true;
 	    }
+	}
+
+      if (detach_seen
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+	  && OMP_CLAUSE_DECL (c) == t)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "the event handle of a %<detach%> clause "
+		    "should not be in a data-sharing clause");
+	  remove = true;
 	}
 
       /* We're interested in the base element, not arrays.  */
@@ -9991,6 +10108,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       return error_mark_node;
     }
 
+  /* decltype is an unevaluated context.  */
+  cp_unevaluated u;
+
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
@@ -10006,9 +10126,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      ++cp_unevaluated_operand;
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      --cp_unevaluated_operand;
       if (expr == error_mark_node)
 	return error_mark_node;
     }
@@ -10747,6 +10865,10 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
 
   tree ret = build_min (BIT_CAST_EXPR, type, arg);
   SET_EXPR_LOCATION (ret, loc);
+
+  if (!processing_template_decl && CLASS_TYPE_P (type))
+    ret = get_target_expr_sfinae (ret, complain);
+
   return ret;
 }
 

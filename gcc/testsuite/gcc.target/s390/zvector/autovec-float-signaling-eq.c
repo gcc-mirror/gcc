@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=z14 -mzvector -mzarch" } */
+/* { dg-options "-O3 -march=z14 -mzvector -mzarch -fexceptions -fnon-call-exceptions" } */
 
 #include "autovec.h"
 

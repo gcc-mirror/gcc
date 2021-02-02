@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -1849,6 +1849,31 @@ operator_cast::op1_range (irange &r, tree type,
 {
   tree lhs_type = lhs.type ();
   gcc_checking_assert (types_compatible_p (op2.type(), type));
+
+  // If we are calculating a pointer, shortcut to what we really care about.
+  if (POINTER_TYPE_P (type))
+    {
+      // Conversion from other pointers or a constant (including 0/NULL)
+      // are straightforward.
+      if (POINTER_TYPE_P (lhs.type ())
+	  || (lhs.singleton_p ()
+	      && TYPE_PRECISION (lhs.type ()) >= TYPE_PRECISION (type)))
+	{
+	  r = lhs;
+	  range_cast (r, type);
+	}
+      else
+	{
+	  // If the LHS is not a pointer nor a singleton, then it is
+	  // either VARYING or non-zero.
+	  if (!lhs.contains_p (build_zero_cst (lhs.type ())))
+	    r.set_nonzero (type);
+	  else
+	    r.set_varying (type);
+	}
+      r.intersect (op2);
+      return true;
+    }
 
   if (truncating_cast_p (op2, lhs))
     {

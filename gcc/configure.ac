@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2020 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -225,6 +225,48 @@ elif test "${with_sysroot+set}" = set; then
   if test "${gcc_gxx_without_sysroot}"; then
     gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
+  fi
+fi
+
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+AC_ARG_WITH(gxx-libcxx-include-dir,
+[AS_HELP_STRING([--with-gxx-libcxx-include-dir=DIR],
+                [specifies directory to find libc++ header files])],
+[case "${withval}" in
+yes)	AC_MSG_ERROR(bad value ${withval} given for libc++ include directory) ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac])
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 1,
+            [Define if the -stdlib= option should be enabled.])
+else
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 0)
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
   fi
 fi
 
@@ -1242,7 +1284,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer
+  for lang in $subdirs c-family common analyzer rtl-ssa
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
@@ -1290,6 +1332,15 @@ AC_SEARCH_LIBS(kstat_open, kstat)
 EXTRA_GCC_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(EXTRA_GCC_LIBS)
+
+# Solaris needs libsocket and libnsl for socket functions before 11.4.
+# C++ needs those for libcody.
+save_LIBS="$LIBS"
+LIBS=
+AX_LIB_SOCKET_NSL
+NETLIBS="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(NETLIBS)
 
 # Some systems put ldexp and frexp in libm instead of libc; assume
 # they're both in the same place.  jcf-dump needs them.
@@ -5365,8 +5416,12 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
   gcc_cv_as_gdwarf_5_flag,
-  [elf,2,36,0], [--gdwarf-5], [$insn],,
-  [AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
+  [elf,2,36,0], [--gdwarf-5], [$insn],
+  [if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi],[AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf-5 option.])])
 
  dwarf4_debug_info_size=0x46
@@ -6274,6 +6329,9 @@ case "$target:$tm_file" in
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
+     *le-*-freebsd*)
+     emul_name="-melf64lppc_fbsd"
+      ;;
      *-*-freebsd*)
      emul_name="-melf64ppc_fbsd"
       ;;
@@ -6921,7 +6979,12 @@ changequote([,])dnl
 	$ok || continue
 
 	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
-	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	if test "x$language" = xc && test -n "$all_lang_makefrags"; then
+	    # Put c/Make-lang.in fragment first to match serialization languages order.
+	    all_lang_makefrags="\$(srcdir)/$gcc_subdir/Make-lang.in $all_lang_makefrags"
+	else
+	    all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	fi
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
 	    all_opt_files="$all_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -7093,6 +7156,8 @@ AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_gxx_include_dir_add_sysroot)
+AC_SUBST(gcc_gxx_libcxx_include_dir)
+AC_SUBST(gcc_gxx_libcxx_include_dir_add_sysroot)
 AC_SUBST(host_exeext)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_include_list)
@@ -7372,9 +7437,9 @@ AC_MSG_RESULT($ld_pushpopstate_support)
 # gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
 # float_t from that, this behavior can be configured with
 # --enable-s390-excess-float-precision. When given as enabled, that flag selects
-# the old model. When omitted, native builds will derive the flag from the
-# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
-# model. In any other case, it defaults to the new model.
+# the old model. When omitted, native builds and cross compiles that have target
+# libc headers will detect whether libc clamps float_t to double and in that
+# case maintain the old model. Otherwise, they will default to the new model.
 AC_ARG_ENABLE(s390-excess-float-precision,
   [AS_HELP_STRING([--enable-s390-excess-float-precision],
 		  [on s390 targets, evaluate float with double precision
@@ -7383,20 +7448,42 @@ AC_ARG_ENABLE(s390-excess-float-precision,
 
 case $target in
   s390*-linux*)
-  if test "$target" = "$host" -a "$host" = "$build" -a \
-      x"$enable_s390_excess_float_precision" = xauto; then
-    AC_CACHE_CHECK([for glibc clamping float_t to double],
-      gcc_cv_float_t_clamped_to_double,
-      [AC_RUN_IFELSE([AC_LANG_SOURCE([
+  if test x"$enable_s390_excess_float_precision" = xauto; then
+    # Can we autodetect the behavior of the target libc?
+    if test "$target" = "$host" -a "$host" = "$build"; then
+      enable_s390_excess_float_precision=autodetect
+    elif test "x$with_headers" != xno; then
+      # cross build. are target headers available?
+      # carefully coerce the build-system compiler to use target headers
+      saved_CXXFLAGS="$CXXFLAGS"
+      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+]])], [enable_s390_excess_float_precision=autodetect], [])
+      CXXFLAGS="$saved_CXXFLAGS"
+    fi
+
+    if test x"$enable_s390_excess_float_precision" = xautodetect; then
+      saved_CXXFLAGS="$CXXFLAGS"
+      if ! test "$target" = "$host" -a "$host" = "$build"; then
+        CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+	unset CROSS_TEST_CXXFLAGS
+      fi
+      AC_CACHE_CHECK([for glibc clamping float_t to double],
+        gcc_cv_float_t_clamped_to_double, [
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #define __FLT_EVAL_METHOD__ 0
 #include <math.h>
-int main() {
-  return !(sizeof(float_t) == sizeof(double));
-}])],
-        [gcc_cv_float_t_clamped_to_double=yes],
-        [gcc_cv_float_t_clamped_to_double=no])])
-    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
-      enable_s390_excess_float_precision=yes
+int dummy[sizeof(float_t) == sizeof(double) ? 1 : -1];
+]])],
+          [gcc_cv_float_t_clamped_to_double=yes],
+          [gcc_cv_float_t_clamped_to_double=no])])
+      CXXFLAGS="$saved_CXXFLAGS"
+      enable_s390_excess_float_precision="$gcc_cv_float_t_clamped_to_double"
+    else
+      # no way to detect behavior of target libc, default to new model
+      enable_s390_excess_float_precision=no
     fi
   fi
 

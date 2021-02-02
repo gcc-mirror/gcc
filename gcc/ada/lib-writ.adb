@@ -1724,7 +1724,7 @@ package body Lib.Writ is
 
       --  scope
 
-      Write_Info_Name (Scope (IS_Id));
+      Write_Info_Name (IS_Scope (IS_Id));
       Write_Info_Char (' ');
 
       --  line

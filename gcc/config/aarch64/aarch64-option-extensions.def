@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -228,5 +228,8 @@ AARCH64_OPT_EXTENSION("bf16", AARCH64_FL_BF16, \
 
 /* Enabling/Disabling "flagm" only changes "flagm".  */
 AARCH64_OPT_EXTENSION("flagm", AARCH64_FL_FLAGM, 0, 0, false, "flagm")
+
+/* Enabling/Disabling "pauth" only changes "pauth".  */
+AARCH64_OPT_EXTENSION("pauth", AARCH64_FL_PAUTH, 0, 0, false, "paca pacg")
 
 #undef AARCH64_OPT_EXTENSION

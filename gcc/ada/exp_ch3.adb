@@ -697,6 +697,11 @@ package body Exp_Ch3 is
 
               and then not GNATprove_Mode
 
+              --  DIC checks for components of controlled types are done later
+              --  (see Exp_Ch7.Make_Deep_Array_Body).
+
+              and then not Is_Controlled (Comp_Type)
+
               and then Present (DIC_Procedure (Comp_Type))
 
               and then not Has_Null_Body (DIC_Procedure (Comp_Type))
@@ -9019,13 +9024,13 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized statically "
+                    ("objects of the type cannot be initialized statically "
                      & "by default??", Parent (E));
                end if;
             end if;
 
          else
-            Error_Msg_N ("Object cannot be initialized statically??", E);
+            Error_Msg_N ("object cannot be initialized statically??", E);
          end if;
       end if;
    end Initialization_Warning;

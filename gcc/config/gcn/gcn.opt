@@ -1,6 +1,6 @@
 ; Options for the GCN port of the compiler.
 
-; Copyright (C) 2016-2020 Free Software Foundation, Inc.
+; Copyright (C) 2016-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -43,31 +43,31 @@ Target RejectNegative Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR
 Specify the name of the target GPU.
 
 m32
-Target Report RejectNegative InverseMask(ABI64)
+Target RejectNegative InverseMask(ABI64)
 Generate code for a 32-bit ABI.
 
 m64
-Target Report RejectNegative Mask(ABI64)
+Target RejectNegative Mask(ABI64)
 Generate code for a 64-bit ABI.
 
 mgomp
-Target Report RejectNegative
+Target RejectNegative
 Enable OpenMP GPU offloading.
 
 bool flag_bypass_init_error = false
 
 mbypass-init-error
-Target Report RejectNegative Var(flag_bypass_init_error)
+Target RejectNegative Var(flag_bypass_init_error)
 
 bool flag_worker_partitioning = false
 
 macc-experimental-workers
-Target Report Var(flag_worker_partitioning) Init(0)
+Target Var(flag_worker_partitioning) Init(0)
 
 int stack_size_opt = -1
 
 mstack-size=
-Target Report RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
+Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
 -mstack-size=<number>	Set the private segment size per wave-front, in bytes.
 
 Wopenacc-dims

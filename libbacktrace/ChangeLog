@@ -1,3 +1,22 @@
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (%_dwz): If dwz fails, use uncompressed debug info.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR debug/98716
+	* dwarf.c (read_v2_paths): Allocate zero entry for dirs and
+	filenames.
+	(read_line_program): Remove parameter u, change caller.  Don't
+	subtract one from dirs and filenames index.
+	(read_function_entry): Don't subtract one from filenames index.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
@@ -1710,7 +1729,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2020 Free Software Foundation, Inc.
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -7005,9 +7005,12 @@ delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
 @end deftypefn
 
-@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val}, poly_value_estimate_kind @var{kind})
 Return an estimate of the runtime value of @var{val}, for use in
-things like cost calculations or profiling frequencies.  The default
+things like cost calculations or profiling frequencies.  @var{kind} is used
+to ask for the minimum, maximum, and likely estimates of the value through
+the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and
+@code{POLY_VALUE_LIKELY} values.  The default
 implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 

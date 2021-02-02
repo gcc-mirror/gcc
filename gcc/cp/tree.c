@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -787,7 +787,15 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
   tree slot;
   bool value_init = false;
-  tree elt_init = build_vec_init_elt (type, init, complain);
+  tree elt_init;
+  if (init && TREE_CODE (init) == CONSTRUCTOR)
+    {
+      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (init));
+      /* We built any needed constructor calls in digest_init.  */
+      elt_init = init;
+    }
+  else
+    elt_init = build_vec_init_elt (type, init, complain);
 
   if (init == void_type_node)
     {
@@ -1332,10 +1340,12 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
-	  gcc_checking_assert (TYPE_DEPENDENT_P_VALID (type)
-			       || !dependent_type_p (type));
+	  /* If we already know the dependentness, tell the array type
+	     constructor.  This is important for module streaming, as we cannot
+	     dynamically determine that on read in.  */
 	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
-				      TYPE_DEPENDENT_P (type));
+				      TYPE_DEPENDENT_P_VALID (type)
+				      ? int (TYPE_DEPENDENT_P (type)) : -1);
 
 	  /* Keep the typedef name.  */
 	  if (TYPE_NAME (t) != TYPE_NAME (type))
@@ -3974,6 +3984,17 @@ cp_tree_equal (tree t1, tree t2)
       return same_type_p (TRAIT_EXPR_TYPE1 (t1), TRAIT_EXPR_TYPE1 (t2))
 	&& cp_tree_equal (TRAIT_EXPR_TYPE2 (t1), TRAIT_EXPR_TYPE2 (t2));
 
+    case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
+      /* Used for location wrappers with possibly NULL types.  */
+      if (!TREE_TYPE (t1) || !TREE_TYPE (t2))
+	{
+	  if (TREE_TYPE (t1) || TREE_TYPE (t2))
+	    return false;
+	  break;
+	}
+      /* FALLTHROUGH  */
+
     case CAST_EXPR:
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
@@ -3981,10 +4002,8 @@ cp_tree_equal (tree t1, tree t2)
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
     case NEW_EXPR:
-    CASE_CONVERT:
-    case NON_LVALUE_EXPR:
-    case VIEW_CONVERT_EXPR:
     case BIT_CAST_EXPR:
+    CASE_CONVERT:
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       /* Now compare operands as usual.  */
@@ -5132,16 +5151,26 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 
   if (TYPE_P (*tp))
     {
-      /* Walk into template args without looking through typedefs.  */
-      if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
-	WALK_SUBTREE (TI_ARGS (ti));
-      /* Don't look through typedefs; walk_tree_fns that want to look through
-	 typedefs (like min_vis_r) need to do that themselves.  */
-      if (typedef_variant_p (*tp))
+      /* If *WALK_SUBTREES_P is 1, we're interested in the syntactic form of
+	 the argument, so don't look through typedefs, but do walk into
+	 template arguments for alias templates (and non-typedefed classes).
+
+	 If *WALK_SUBTREES_P > 1, we're interested in type identity or
+	 equivalence, so look through typedefs, ignoring template arguments for
+	 alias templates, and walk into template args of classes.
+
+	 See find_abi_tags_r for an example of setting *WALK_SUBTREES_P to 2
+	 when that's the behavior the walk_tree_fn wants.  */
+      if (*walk_subtrees_p == 1 && typedef_variant_p (*tp))
 	{
+	  if (tree ti = TYPE_ALIAS_TEMPLATE_INFO (*tp))
+	    WALK_SUBTREE (TI_ARGS (ti));
 	  *walk_subtrees_p = 0;
 	  return NULL_TREE;
 	}
+
+      if (tree ti = TYPE_TEMPLATE_INFO (*tp))
+	WALK_SUBTREE (TI_ARGS (ti));
     }
 
   /* Not one of the easy cases.  We must explicitly go through the
@@ -5149,12 +5178,15 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   result = NULL_TREE;
   switch (code)
     {
+    case TEMPLATE_TYPE_PARM:
+      if (template_placeholder_p (*tp))
+	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (*tp));
+      /* Fall through.  */
     case DEFERRED_PARSE:
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case UNBOUND_CLASS_TEMPLATE:
     case TEMPLATE_PARM_INDEX:
-    case TEMPLATE_TYPE_PARM:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
       /* None of these have subtrees other than those already walked
@@ -5910,6 +5942,15 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
       return true;
     }
   return false;
+}
+
+/* Release memory we no longer need after parsing.  */
+void
+cp_tree_c_finish_parsing ()
+{
+  if (previous_class_level)
+    invalidate_class_lookup_cache ();
+  deleted_copy_types = NULL;
 }
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

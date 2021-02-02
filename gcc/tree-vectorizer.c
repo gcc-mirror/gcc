@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -525,6 +525,19 @@ vec_info::add_stmt (gimple *stmt)
   return res;
 }
 
+/* Record that STMT belongs to the vectorizable region.  Create a new
+   stmt_vec_info and mark VECINFO as being related and return the new
+   stmt_vec_info.  */
+
+stmt_vec_info
+vec_info::add_pattern_stmt (gimple *stmt, stmt_vec_info stmt_info)
+{
+  stmt_vec_info res = new_stmt_vec_info (stmt);
+  set_vinfo_for_stmt (stmt, res, false);
+  STMT_VINFO_RELATED_STMT (res) = stmt_info;
+  return res;
+}
+
 /* If STMT has an associated stmt_vec_info, return that vec_info, otherwise
    return null.  It is safe to call this function on any statement, even if
    it might not be part of the vectorizable region.  */
@@ -702,12 +715,12 @@ vec_info::new_stmt_vec_info (gimple *stmt)
 /* Associate STMT with INFO.  */
 
 void
-vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
+vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info, bool check_ro)
 {
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
-      gcc_assert (!stmt_vec_info_ro);
+      gcc_assert (!check_ro || !stmt_vec_info_ro);
       gcc_checking_assert (info);
       uid = stmt_vec_infos.length () + 1;
       gimple_set_uid (stmt, uid);

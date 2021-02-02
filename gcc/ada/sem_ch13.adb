@@ -64,6 +64,7 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Table;
 with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
@@ -2012,9 +2013,9 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("incompatible interfacing aspects given for &", E);
                   Error_Msg_Sloc := Sloc (Expo);
-                  Error_Msg_N ("\aspect `Export` #", E);
+                  Error_Msg_N ("\aspect Export #", E);
                   Error_Msg_Sloc := Sloc (Imp);
-                  Error_Msg_N ("\aspect `Import` #", E);
+                  Error_Msg_N ("\aspect Import #", E);
                end if;
 
                --  A variable is most likely modified from the outside. Take
@@ -2096,8 +2097,8 @@ package body Sem_Ch13 is
                if A_Id = Aspect_External_Name then
                   if No (Expo) and then No (Imp) then
                      Error_Msg_N
-                       ("aspect `External_Name` requires aspect `Import` or "
-                        & "`Export`", Aspect);
+                       ("aspect External_Name requires aspect Import or "
+                        & "Export", Aspect);
                   end if;
 
                --  Otherwise ensure that aspect Link_Name applies to aspect
@@ -2107,8 +2108,8 @@ package body Sem_Ch13 is
                   pragma Assert (A_Id = Aspect_Link_Name);
                   if No (Expo) and then No (Imp) then
                      Error_Msg_N
-                       ("aspect `Link_Name` requires aspect `Import` or "
-                        & "`Export`", Aspect);
+                       ("aspect Link_Name requires aspect Import or Export",
+                        Aspect);
                   end if;
                end if;
             end Analyze_Aspect_External_Link_Name;
@@ -2594,8 +2595,9 @@ package body Sem_Ch13 is
                   for Asp in Pre_Post_Aspects loop
                      if Has_Aspect (E, Asp) then
                         Error_Msg_N
-                          ("this aspect not allowed for static expression "
-                             & "functions", Find_Aspect (E, Asp));
+                          ("this aspect is not allowed for a static "
+                           & "expression function",
+                           Find_Aspect (E, Asp));
 
                         return;
                      end if;
@@ -2659,7 +2661,7 @@ package body Sem_Ch13 is
 
                elsif Within_Protected_Type (E) then
                   Error_Msg_N
-                    ("aspect% not applicable to protected operations", Id);
+                    ("aspect% not applicable to protected operation", Id);
                   return;
 
                else
@@ -3375,7 +3377,7 @@ package body Sem_Ch13 is
 
                         else
                            Error_Msg_N
-                             ("main subprogram CPU is out of range", Expr);
+                             ("main subprogram 'C'P'U is out of range", Expr);
                         end if;
 
                      --  For the Priority aspect
@@ -3408,15 +3410,11 @@ package body Sem_Ch13 is
                      --  System.Tasking, but this package does not trigger the
                      --  required initialization of the run-time library.
 
-                     declare
-                        Discard : Entity_Id;
-                     begin
-                        if Restricted_Profile then
-                           Discard := RTE (RE_Activate_Restricted_Tasks);
-                        else
-                           Discard := RTE (RE_Activate_Tasks);
-                        end if;
-                     end;
+                     if Restricted_Profile then
+                        Discard_Node (RTE (RE_Activate_Restricted_Tasks));
+                     else
+                        Discard_Node (RTE (RE_Activate_Tasks));
+                     end if;
 
                      --  Handling for these aspects in subprograms is complete
 
@@ -4149,7 +4147,8 @@ package body Sem_Ch13 is
                         --  Must not be parenthesized
 
                         if Paren_Count (Expr) /= 0 then
-                           Error_Msg_F ("extra parentheses ignored", Expr);
+                           Error_Msg -- CODEFIX
+                             ("redundant parentheses", First_Sloc (Expr));
                         end if;
 
                         --  List of arguments is list of aggregate expressions
@@ -4204,14 +4203,14 @@ package body Sem_Ch13 is
                   elsif A_Id = Aspect_Default_Value
                     and then not Is_Scalar_Type (E)
                   then
-                     Error_Msg_N ("aspect% can only be applied to scalar type",
-                                  Id);
+                     Error_Msg_N
+                       ("aspect% can only be applied to scalar type", Id);
                      goto Continue;
 
                   elsif A_Id = Aspect_Default_Component_Value then
                      if not Is_Array_Type (E) then
-                        Error_Msg_N ("aspect% can only be applied to array " &
-                                     "type", Id);
+                        Error_Msg_N
+                          ("aspect% can only be applied to array type", Id);
                         goto Continue;
 
                      elsif not Is_Scalar_Type (Component_Type (E)) then
@@ -4426,14 +4425,25 @@ package body Sem_Ch13 is
 
                   if Nkind (Parent (N)) = N_Compilation_Unit then
                      Error_Msg_Name_1 := Nam;
-                     Error_Msg_N ("incorrect placement of aspect `%`", E);
+                     Error_Msg_N ("incorrect placement of aspect %", E);
                      goto Continue;
                   end if;
 
-                  if Nkind (Expr) /= N_Aggregate then
+                  if Nkind (Expr) /= N_Aggregate
+                    or else Null_Record_Present (Expr)
+                  then
                      Error_Msg_Name_1 := Nam;
                      Error_Msg_NE
-                       ("wrong syntax for aspect `%` for &", Id, E);
+                       ("wrong syntax for aspect % for &", Id, E);
+                     goto Continue;
+                  end if;
+
+                  --  Check that the expression is a proper aggregate (no
+                  --  parentheses).
+
+                  if Paren_Count (Expr) /= 0 then
+                     Error_Msg -- CODEFIX
+                       ("redundant parentheses", First_Sloc (Expr));
                      goto Continue;
                   end if;
 
@@ -4456,7 +4466,7 @@ package body Sem_Ch13 is
                      then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_NE
-                          ("wrong syntax for aspect `%` for &", Id, E);
+                          ("wrong syntax for aspect % for &", Id, E);
                         goto Continue;
                      end if;
 
@@ -6619,7 +6629,7 @@ package body Sem_Ch13 is
             --  come from an aspect specification.
 
             if not Is_Task_Type (U_Ent) then
-               Error_Msg_N ("CPU can only be defined for task", Nam);
+               Error_Msg_N ("'C'P'U can only be defined for task", Nam);
 
             elsif Duplicate_Clause then
                null;
@@ -6710,7 +6720,7 @@ package body Sem_Ch13 is
 
             else
                Error_Msg_NE
-                 ("Default Iterator must be a primitive of&", Func, U_Ent);
+                 ("Default_Iterator must be a primitive of&", Func, U_Ent);
             end if;
          end Default_Iterator;
 
@@ -7764,7 +7774,7 @@ package body Sem_Ch13 is
                                      | N_Implicit_Label_Declaration
             then
                Error_Msg_N
-                 ("this declaration not allowed in machine code subprogram",
+                 ("this declaration is not allowed in machine code subprogram",
                   DeclO);
             end if;
 
@@ -7963,7 +7973,7 @@ package body Sem_Ch13 is
             end if;
 
             if Nkind (Choice) = N_Others_Choice then
-               Error_Msg_N ("others choice not allowed here", Choice);
+               Error_Msg_N ("OTHERS choice not allowed here", Choice);
                Err := True;
 
             elsif Nkind (Choice) = N_Range then
@@ -9141,7 +9151,7 @@ package body Sem_Ch13 is
                     or else Etype (Expression (Expr)) /= Typ
                   then
                      Error_Msg_N
-                       ("expression must denaote subtype", Expression (Expr));
+                       ("expression must denote subtype", Expression (Expr));
                      return False_Range;
                   end if;
 
@@ -15086,27 +15096,39 @@ package body Sem_Ch13 is
    function Parse_Aspect_Stable_Properties
      (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List
    is
-      L  : List_Id;
-      Id : Node_Id;
-
       function Extract_Entity (Expr : Node_Id) return Entity_Id;
-      --  Given an element of a Stable_Properties aspect spec,
-      --  return the associated entity.
+      --  Given an element of a Stable_Properties aspect spec, return the
+      --  associated entity.
       --  This function updates the Negated flag as a side-effect.
 
+      --------------------
+      -- Extract_Entity --
+      --------------------
+
       function Extract_Entity (Expr : Node_Id) return Entity_Id is
-         Name : Node_Id := Expr;
+         Name : Node_Id;
       begin
          if Nkind (Expr) = N_Op_Not then
             Negated := True;
             Name := Right_Opnd (Expr);
+         else
+            Name := Expr;
          end if;
+
          if Nkind (Name) in N_Has_Entity then
             return Entity (Name);
          else
             return Empty;
          end if;
       end Extract_Entity;
+
+      --  Local variables
+
+      L  : List_Id;
+      Id : Node_Id;
+
+   --  Start of processing for Parse_Aspect_Stable_Properties
+
    begin
       Negated := False;
 
@@ -15120,7 +15142,7 @@ package body Sem_Ch13 is
             for I in Result'Range loop
                Result (I) := Extract_Entity (Id);
 
-               if not Present (Result (I)) then
+               if No (Result (I)) then
                   pragma Assert (Serious_Errors_Detected > 0);
                   goto Ignore_Aspect;
                end if;
@@ -15145,14 +15167,13 @@ package body Sem_Ch13 is
       Assign_Indexed_Subp : Node_Id := Empty;
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("Aspect Aggregate is an Ada_2020 feature", N);
+      Error_Msg_Ada_2020_Feature ("aspect Aggregate", Sloc (N));
 
-      elsif Nkind (N) /= N_Aggregate
+      if Nkind (N) /= N_Aggregate
         or else Present (Expressions (N))
         or else No (Component_Associations (N))
       then
-         Error_Msg_N ("Aspect Aggregate requires an aggregate "
+         Error_Msg_N ("aspect Aggregate requires an aggregate "
                         & "with component associations", N);
          return;
       end if;
@@ -15224,13 +15245,14 @@ package body Sem_Ch13 is
                  ("NOT modifier not allowed for Stable_Properties aspect"
                   & " of a type", PF_Arg);
             else
-               Error_Msg_N ("Mixed use of NOT modifiers", PF_Arg);
+               Error_Msg_N ("mixed use of NOT modifiers", PF_Arg);
             end if;
          end Modifier_Error;
 
          PF_Name : Node_Id := PF_Arg;
 
-         --  Start of processing for Check_Property_Function_Arg
+      --  Start of processing for Check_Property_Function_Arg
+
       begin
          if Nkind (PF_Arg) = N_Op_Not then
             PF_Name := Right_Opnd (PF_Arg);
@@ -15257,14 +15279,14 @@ package body Sem_Ch13 is
          if Nkind (PF_Name) not in
            N_Identifier | N_Operator_Symbol | N_Selected_Component
          then
-            Error_Msg_N ("Bad property function name", PF_Name);
+            Error_Msg_N ("bad property function name", PF_Name);
          end if;
       end Check_Property_Function_Arg;
 
+   --  Start of processing for Validate_Aspect_Stable_Properties
+
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("Aspect Stable_Properties is an Ada_2020 feature", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("aspect Stable_Properties", Sloc (N));
 
       if (not Is_Aspect_Of_Type) and then (not Is_Subprogram (E)) then
          Error_Msg_N ("Stable_Properties aspect can only be specified for "
@@ -15273,13 +15295,13 @@ package body Sem_Ch13 is
          if Is_Aspect_Of_Type then
             if not Is_Tagged_Type (E) then
                Error_Msg_N
-                 ("Stable_Properties'Class aspect cannot be specified for "
+                 ("Stable_Properties''Class aspect cannot be specified for "
                   & "an untagged type", N);
             end if;
          else
             if not Is_Dispatching_Operation (E) then
                Error_Msg_N
-                 ("Stable_Properties'Class aspect cannot be specified for "
+                 ("Stable_Properties''Class aspect cannot be specified for "
                   & "a subprogram that is not a primitive subprogram "
                   & "of a tagged type", N);
             end if;
@@ -15291,7 +15313,7 @@ package body Sem_Ch13 is
             or else Null_Record_Present (N)
             or else not Present (Expressions (N))
          then
-            Error_Msg_N ("Bad Stable_Properties aspect specification", N);
+            Error_Msg_N ("bad Stable_Properties aspect specification", N);
             return;
          end if;
 
@@ -15300,7 +15322,7 @@ package body Sem_Ch13 is
          begin
             while Present (PF_Arg) loop
                Check_Property_Function_Arg (PF_Arg);
-               PF_Arg := Next (PF_Arg);
+               Next (PF_Arg);
             end loop;
          end;
       else
@@ -15344,7 +15366,7 @@ package body Sem_Ch13 is
             --  First or Last (Container) => Cursor
 
             if Etype (Ent) /= Cursor then
-               Error_Msg_N ("primitive for First must yield a curosr", N);
+               Error_Msg_N ("primitive for First must yield a cursor", N);
             end if;
 
          elsif Nam = Name_Next then
@@ -16202,303 +16224,6 @@ package body Sem_Ch13 is
          end;
       end loop;
    end Validate_Address_Clauses;
-
-   ---------------------------
-   -- Validate_Independence --
-   ---------------------------
-
-   procedure Validate_Independence is
-      SU   : constant Uint := UI_From_Int (System_Storage_Unit);
-      N    : Node_Id;
-      E    : Entity_Id;
-      IC   : Boolean;
-      Comp : Entity_Id;
-      Addr : Node_Id;
-      P    : Node_Id;
-
-      procedure Check_Array_Type (Atyp : Entity_Id);
-      --  Checks if the array type Atyp has independent components, and
-      --  if not, outputs an appropriate set of error messages.
-
-      procedure No_Independence;
-      --  Output message that independence cannot be guaranteed
-
-      function OK_Component (C : Entity_Id) return Boolean;
-      --  Checks one component to see if it is independently accessible, and
-      --  if so yields True, otherwise yields False if independent access
-      --  cannot be guaranteed. This is a conservative routine, it only
-      --  returns True if it knows for sure, it returns False if it knows
-      --  there is a problem, or it cannot be sure there is no problem.
-
-      procedure Reason_Bad_Component (C : Entity_Id);
-      --  Outputs continuation message if a reason can be determined for
-      --  the component C being bad.
-
-      ----------------------
-      -- Check_Array_Type --
-      ----------------------
-
-      procedure Check_Array_Type (Atyp : Entity_Id) is
-         Ctyp : constant Entity_Id := Component_Type (Atyp);
-
-      begin
-         --  OK if no alignment clause, no pack, and no component size
-
-         if not Has_Component_Size_Clause (Atyp)
-           and then not Has_Alignment_Clause (Atyp)
-           and then not Is_Packed (Atyp)
-         then
-            return;
-         end if;
-
-         --  Case where component size is greater than or equal to the maximum
-         --  integer size and the alignment of the array is at least as large
-         --  as the alignment of the component. We are OK in this situation.
-
-         if Known_Component_Size (Atyp)
-           and then Component_Size (Atyp) >= System_Max_Integer_Size
-           and then Known_Alignment (Atyp)
-           and then Known_Alignment (Ctyp)
-           and then Alignment (Atyp) >= Alignment (Ctyp)
-         then
-            return;
-         end if;
-
-         --  Check actual component size
-
-         if not Known_Component_Size (Atyp)
-           or else not Addressable (Component_Size (Atyp))
-           or else Component_Size (Atyp) mod Esize (Ctyp) /= 0
-         then
-            No_Independence;
-
-            --  Bad component size, check reason
-
-            if Has_Component_Size_Clause (Atyp) then
-               P := Get_Attribute_Definition_Clause
-                      (Atyp, Attribute_Component_Size);
-
-               if Present (P) then
-                  Error_Msg_Sloc := Sloc (P);
-                  Error_Msg_N ("\because of Component_Size clause#", N);
-                  return;
-               end if;
-            end if;
-
-            if Is_Packed (Atyp) then
-               P := Get_Rep_Pragma (Atyp, Name_Pack);
-
-               if Present (P) then
-                  Error_Msg_Sloc := Sloc (P);
-                  Error_Msg_N ("\because of pragma Pack#", N);
-                  return;
-               end if;
-            end if;
-
-            --  No reason found, just return
-
-            return;
-         end if;
-
-         --  Array type is OK independence-wise
-
-         return;
-      end Check_Array_Type;
-
-      ---------------------
-      -- No_Independence --
-      ---------------------
-
-      procedure No_Independence is
-      begin
-         if Pragma_Name (N) = Name_Independent then
-            Error_Msg_NE ("independence cannot be guaranteed for&", N, E);
-         else
-            Error_Msg_NE
-              ("independent components cannot be guaranteed for&", N, E);
-         end if;
-      end No_Independence;
-
-      ------------------
-      -- OK_Component --
-      ------------------
-
-      function OK_Component (C : Entity_Id) return Boolean is
-         Rec  : constant Entity_Id := Scope (C);
-         Ctyp : constant Entity_Id := Etype (C);
-
-      begin
-         --  OK if no component clause, no Pack, and no alignment clause
-
-         if No (Component_Clause (C))
-           and then not Is_Packed (Rec)
-           and then not Has_Alignment_Clause (Rec)
-         then
-            return True;
-         end if;
-
-         --  Here we look at the actual component layout. A component is
-         --  addressable if its size is a multiple of the Esize of the
-         --  component type, and its starting position in the record has
-         --  appropriate alignment, and the record itself has appropriate
-         --  alignment to guarantee the component alignment.
-
-         --  Make sure sizes are static, always assume the worst for any
-         --  cases where we cannot check static values.
-
-         if not (Known_Static_Esize (C)
-                  and then
-                 Known_Static_Esize (Ctyp))
-         then
-            return False;
-         end if;
-
-         --  Size of component must be addressable or greater than the maximum
-         --  integer size and a multiple of bytes.
-
-         if not Addressable (Esize (C))
-           and then Esize (C) < System_Max_Integer_Size
-         then
-            return False;
-         end if;
-
-         --  Check size is proper multiple
-
-         if Esize (C) mod Esize (Ctyp) /= 0 then
-            return False;
-         end if;
-
-         --  Check alignment of component is OK
-
-         if not Known_Component_Bit_Offset (C)
-           or else Component_Bit_Offset (C) < Uint_0
-           or else Component_Bit_Offset (C) mod Esize (Ctyp) /= 0
-         then
-            return False;
-         end if;
-
-         --  Check alignment of record type is OK
-
-         if not Known_Alignment (Rec)
-           or else (Alignment (Rec) * SU) mod Esize (Ctyp) /= 0
-         then
-            return False;
-         end if;
-
-         --  All tests passed, component is addressable
-
-         return True;
-      end OK_Component;
-
-      --------------------------
-      -- Reason_Bad_Component --
-      --------------------------
-
-      procedure Reason_Bad_Component (C : Entity_Id) is
-         Rec  : constant Entity_Id := Scope (C);
-         Ctyp : constant Entity_Id := Etype (C);
-
-      begin
-         --  If component clause present assume that's the problem
-
-         if Present (Component_Clause (C)) then
-            Error_Msg_Sloc := Sloc (Component_Clause (C));
-            Error_Msg_N ("\because of Component_Clause#", N);
-            return;
-         end if;
-
-         --  If pragma Pack clause present, assume that's the problem
-
-         if Is_Packed (Rec) then
-            P := Get_Rep_Pragma (Rec, Name_Pack);
-
-            if Present (P) then
-               Error_Msg_Sloc := Sloc (P);
-               Error_Msg_N ("\because of pragma Pack#", N);
-               return;
-            end if;
-         end if;
-
-         --  See if record has bad alignment clause
-
-         if Has_Alignment_Clause (Rec)
-           and then Known_Alignment (Rec)
-           and then (Alignment (Rec) * SU) mod Esize (Ctyp) /= 0
-         then
-            P := Get_Attribute_Definition_Clause (Rec, Attribute_Alignment);
-
-            if Present (P) then
-               Error_Msg_Sloc := Sloc (P);
-               Error_Msg_N ("\because of Alignment clause#", N);
-            end if;
-         end if;
-
-         --  Couldn't find a reason, so return without a message
-
-         return;
-      end Reason_Bad_Component;
-
-   --  Start of processing for Validate_Independence
-
-   begin
-      for J in Independence_Checks.First .. Independence_Checks.Last loop
-         N  := Independence_Checks.Table (J).N;
-         E  := Independence_Checks.Table (J).E;
-         IC := Pragma_Name (N) = Name_Independent_Components;
-
-         --  Deal with component case
-
-         if Ekind (E) in E_Component | E_Discriminant then
-            if not OK_Component (E) then
-               No_Independence;
-               Reason_Bad_Component (E);
-               goto Continue;
-            end if;
-         end if;
-
-         --  Deal with record with Independent_Components
-
-         if IC and then Is_Record_Type (E) then
-            Comp := First_Component_Or_Discriminant (E);
-            while Present (Comp) loop
-               if not OK_Component (Comp) then
-                  No_Independence;
-                  Reason_Bad_Component (Comp);
-                  goto Continue;
-               end if;
-
-               Next_Component_Or_Discriminant (Comp);
-            end loop;
-         end if;
-
-         --  Deal with address clause case
-
-         if Is_Object (E) then
-            Addr := Address_Clause (E);
-
-            if Present (Addr) then
-               No_Independence;
-               Error_Msg_Sloc := Sloc (Addr);
-               Error_Msg_N ("\because of Address clause#", N);
-               goto Continue;
-            end if;
-         end if;
-
-         --  Deal with independent components for array type
-
-         if IC and then Is_Array_Type (E) then
-            Check_Array_Type (E);
-         end if;
-
-         --  Deal with independent components for array object
-
-         if IC and then Is_Object (E) and then Is_Array_Type (Etype (E)) then
-            Check_Array_Type (Etype (E));
-         end if;
-
-      <<Continue>> null;
-      end loop;
-   end Validate_Independence;
 
    ------------------------------
    -- Validate_Iterable_Aspect --

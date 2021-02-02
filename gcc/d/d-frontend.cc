@@ -1,5 +1,5 @@
 /* d-frontend.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -139,26 +139,6 @@ Loc::equals (const Loc &loc)
 
 /* Implements back-end specific interfaces used by the frontend.  */
 
-/* Determine return style of function - whether in registers or through a
-   hidden pointer to the caller's stack.  */
-
-RET
-retStyle (TypeFunction *tf)
-{
-  /* Need the backend type to determine this, but this is called from the
-     frontend before semantic processing is finished.  An accurate value
-     is not currently needed anyway.  */
-  if (tf->isref)
-    return RETregs;
-
-  Type *tn = tf->next->toBasetype ();
-
-  if (tn->ty == Tstruct || tn->ty == Tsarray)
-    return RETstack;
-
-  return RETregs;
-}
-
 /* Determine if function FD is a builtin one that we can evaluate in CTFE.  */
 
 BUILTIN
@@ -195,7 +175,7 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
   /* Builtin should be successfully evaluated.
      Will only return NULL if we can't convert it.  */
   if (TREE_CONSTANT (result) && TREE_CODE (result) != CALL_EXPR)
-    e = d_eval_constant_expression (result);
+    e = d_eval_constant_expression (loc, result);
 
   return e;
 }

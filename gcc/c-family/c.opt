@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2020 Free Software Foundation, Inc.
+; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -1647,7 +1647,7 @@ C++ ObjC++ Var(flag_no_gnu_keywords, 0)
 Recognize GNU-defined keywords.
 
 fgnu-runtime
-ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
+ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
 Generate code for GNU runtime environment.
 
 fgnu89-inline
@@ -1691,7 +1691,7 @@ ffriend-injection
 C++ ObjC++ WarnRemoved
 
 fkeep-inline-dllexport
-C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
 Don't emit dllexported inline functions unless needed.
 
 flabels-ok
@@ -1780,7 +1780,7 @@ C++ ObjC++ Var(flag_new_ttp)
 Implement resolution of DR 150 for matching of template template arguments.
 
 fnext-runtime
-ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime)
+ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime)
 Generate code for NeXT (Apple Mac OS X) runtime environment.
 
 fnil-receivers
@@ -1821,7 +1821,7 @@ C++ ObjC++ Optimization Var(flag_nothrow_opt)
 Treat a throw() exception specification as noexcept to improve code size.
 
 fobjc-abi-version=
-ObjC ObjC++ LTO Joined Report RejectNegative UInteger Var(flag_objc_abi)
+ObjC ObjC++ LTO Joined RejectNegative UInteger Var(flag_objc_abi)
 Specify which ABI to use for Objective-C family code and meta-data generation.
 
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
@@ -2208,11 +2208,19 @@ Conform to the ISO 2017 C++ standard.
 
 std=c++2a
 C++ ObjC++ Alias(std=c++20) Undocumented
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
+
+std=c++2b
+C++ ObjC++ Alias(std=c++23)
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+
+std=c++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -2285,12 +2293,20 @@ C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
-C++ ObjC++ Alias(std=gnu++20)
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+C++ ObjC++ Alias(std=gnu++20) Undocumented
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++2b
+C++ ObjC++ Alias(std=gnu++23)
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC
@@ -2355,6 +2371,20 @@ Conform to the ISO 2017 C standard (published in 2018).
 std=iso9899:2018
 C ObjC Alias(std=c17)
 Conform to the ISO 2017 C standard (published in 2018).
+
+stdlib=
+Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)
+-stdlib=[libstdc++|libc++]	The standard library to be used for C++ headers
+and runtime.
+
+Enum
+Name(stdlib_kind) Type(int)
+
+EnumValue
+Enum(stdlib_kind) String(libstdc++) Value(1)
+
+EnumValue
+Enum(stdlib_kind) String(libc++) Value(2)
 
 traditional
 Driver

@@ -1,3 +1,64 @@
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* c-decl.c (free_attr_access_data): New function.
+	(c_parse_final_cleanups): Call free_attr_access_data.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_detach): New.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DETACH clause.
+	(OMP_TASK_CLAUSE_MASK): Add mask for PRAGMA_OMP_CLAUSE_DETACH.
+	* c-typeck.c (c_finish_omp_clauses): Handle PRAGMA_OMP_CLAUSE_DETACH
+	clause.  Prevent use of detach with mergeable and overriding the
+	data sharing mode of the event handle.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): For reduction build array with
+	unqualified element type and then call c_build_qualified_type on the
+	ARRAY_TYPE.
+
+2021-01-07  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_compound_statement): Only
+	reallocate loop array if it is too small.
+
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98047
+	* c-typeck.c (build_modify_expr): Drop qualifiers.
+
+2020-12-16  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98260
+	* c-parser.c (c_parser_expression): Look into
+	nop expression when marking expressions as read.
+
+2020-12-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98204
+	* c-typeck.c (pointer_diff): Do not emit a top-level
+	sanitization.
+	(build_binary_op): Likewise.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_allocate): New.
+	(c_parser_omp_construct): Call it.
+
+2020-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/98200
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Return
+	early on error.
+
+2020-12-07  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/97981
+	* c-typeck.c (convert_lvalue_to_rvalue): Move the code
+	that drops qualifiers to the end of the function.
+
 2020-11-26  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/65455
@@ -7396,7 +7457,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2020 Free Software Foundation, Inc.
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

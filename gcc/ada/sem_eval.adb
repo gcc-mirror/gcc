@@ -43,6 +43,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Elab; use Sem_Elab;
@@ -124,7 +125,7 @@ package body Sem_Eval is
 
    type CV_Cache_Array is array (CV_Range) of CV_Entry;
 
-   CV_Cache : CV_Cache_Array := (others => (Node_High_Bound, Uint_0));
+   CV_Cache : CV_Cache_Array;
    --  This is the actual cache, with entries consisting of node/value pairs,
    --  and the impossible value Node_High_Bound used for unset entries.
 
@@ -1854,6 +1855,12 @@ package body Sem_Eval is
          elsif K in
            N_Character_Literal | N_Real_Literal | N_String_Literal | N_Null
          then
+            return True;
+
+         --  Evaluate static discriminants, to eliminate dead paths and
+         --  redundant discriminant checks.
+
+         elsif Is_Static_Discriminant_Component (Op) then
             return True;
          end if;
       end if;
@@ -3818,6 +3825,24 @@ package body Sem_Eval is
       Warn_On_Known_Condition (N);
    end Eval_Relational_Op;
 
+   -----------------------------
+   -- Eval_Selected_Component --
+   -----------------------------
+
+   procedure Eval_Selected_Component (N : Node_Id) is
+   begin
+      --  If an attribute reference or a LHS, nothing to do.
+      --  Also do not fold if N is an [in] out subprogram parameter.
+      --  Fold will perform the other relevant tests.
+
+      if Nkind (Parent (N)) /= N_Attribute_Reference
+        and then Is_LHS (N) = No
+        and then not Is_Actual_Out_Or_In_Out_Parameter (N)
+      then
+         Fold (N);
+      end if;
+   end Eval_Selected_Component;
+
    ----------------
    -- Eval_Shift --
    ----------------
@@ -4359,8 +4384,62 @@ package body Sem_Eval is
    --  processing is to check for a non-static context for the operand.
 
    procedure Eval_Unchecked_Conversion (N : Node_Id) is
+      Target_Type  : constant Entity_Id := Etype (N);
+      Operand      : constant Node_Id   := Expression (N);
+      Operand_Type : constant Entity_Id := Etype (Operand);
+
    begin
-      Check_Non_Static_Context (Expression (N));
+      Check_Non_Static_Context (Operand);
+
+      --  If we have a conversion of a compile time known value to a target
+      --  type and the value is in range of the target type, then we can simply
+      --  replace the construct by an integer literal of the correct type. We
+      --  only apply this to discrete types being converted. Possibly it may
+      --  apply in other cases, but it is too much trouble to worry about.
+
+      --  Note that we do not do this transformation if the Kill_Range_Check
+      --  flag is set, since then the value may be outside the expected range.
+      --  This happens in the Normalize_Scalars case.
+
+      --  We also skip this if either the target or operand type is biased
+      --  because in this case, the unchecked conversion is supposed to
+      --  preserve the bit pattern, not the integer value.
+
+      if Is_Integer_Type (Target_Type)
+        and then not Has_Biased_Representation (Target_Type)
+        and then Is_Discrete_Type (Operand_Type)
+        and then not Has_Biased_Representation (Operand_Type)
+        and then Compile_Time_Known_Value (Operand)
+        and then not Kill_Range_Check (N)
+      then
+         declare
+            Val : constant Uint := Expr_Rep_Value (Operand);
+
+         begin
+            if Compile_Time_Known_Value (Type_Low_Bound (Target_Type))
+                 and then
+               Compile_Time_Known_Value (Type_High_Bound (Target_Type))
+                 and then
+               Val >= Expr_Value (Type_Low_Bound (Target_Type))
+                 and then
+               Val <= Expr_Value (Type_High_Bound (Target_Type))
+            then
+               Rewrite (N, Make_Integer_Literal (Sloc (N), Val));
+
+               --  If Address is the target type, just set the type to avoid a
+               --  spurious type error on the literal when Address is a visible
+               --  integer type.
+
+               if Is_Descendant_Of_Address (Target_Type) then
+                  Set_Etype (N, Target_Type);
+               else
+                  Analyze_And_Resolve (N, Target_Type);
+               end if;
+
+               return;
+            end if;
+         end;
+      end if;
    end Eval_Unchecked_Conversion;
 
    --------------------
@@ -4432,6 +4511,15 @@ package body Sem_Eval is
 
       elsif Kind = N_Unchecked_Type_Conversion then
          return Expr_Rep_Value (Expression (N));
+
+      --  Static discriminant value
+
+      elsif Is_Static_Discriminant_Component (N) then
+         return Expr_Rep_Value
+                  (Get_Discriminant_Value
+                     (Entity (Selector_Name (N)),
+                      Etype (Prefix (N)),
+                      Discriminant_Constraint (Etype (Prefix (N)))));
 
       else
          raise Program_Error;
@@ -4519,6 +4607,15 @@ package body Sem_Eval is
 
       elsif Kind = N_Unchecked_Type_Conversion then
          Val := Expr_Value (Expression (N));
+
+      --  Static discriminant value
+
+      elsif Is_Static_Discriminant_Component (N) then
+         Val := Expr_Value
+                  (Get_Discriminant_Value
+                     (Entity (Selector_Name (N)),
+                      Etype (Prefix (N)),
+                      Discriminant_Constraint (Etype (Prefix (N)))));
 
       else
          raise Program_Error;
@@ -4747,6 +4844,32 @@ package body Sem_Eval is
       end if;
    end Flag_Non_Static_Expr;
 
+   ----------
+   -- Fold --
+   ----------
+
+   procedure Fold (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (N);
+   begin
+      --  If not known at compile time or if already a literal, nothing to do
+
+      if Nkind (N) in N_Numeric_Or_String_Literal
+        or else not Compile_Time_Known_Value (N)
+      then
+         null;
+
+      elsif Is_Discrete_Type (Typ) then
+         Fold_Uint (N, Expr_Value (N), Static => Is_Static_Expression (N));
+
+      elsif Is_Real_Type (Typ) then
+         Fold_Ureal (N, Expr_Value_R (N), Static => Is_Static_Expression (N));
+
+      elsif Is_String_Type (Typ) then
+         Fold_Str
+           (N, Strval (Expr_Value_S (N)), Static => Is_Static_Expression (N));
+      end if;
+   end Fold;
+
    ----------------
    -- Fold_Dummy --
    ----------------
@@ -4785,7 +4908,7 @@ package body Sem_Eval is
       Static     : Boolean := False;
       Check_Elab : Boolean := False)
    is
-      Typ : constant Entity_Id := Etype (Left);
+      Typ : constant Entity_Id := Base_Type (Etype (Left));
 
       procedure Check_Elab_Call;
       --  Add checks related to calls in elaboration code

@@ -1,6 +1,6 @@
 @c markers: BUG TODO
 
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -709,7 +709,8 @@ loop.
 The pass is implemented in @file{tree-vectorizer.c} (the main driver),
 @file{tree-vect-loop.c} and @file{tree-vect-loop-manip.c} (loop specific parts
 and general loop utilities), @file{tree-vect-slp} (loop-aware SLP
-functionality), @file{tree-vect-stmts.c} and @file{tree-vect-data-refs.c}.
+functionality), @file{tree-vect-stmts.c}, @file{tree-vect-data-refs.c} and
+@file{tree-vect-slp-patterns.c} containing the SLP pattern matcher.
 Analysis of data references is in @file{tree-data-ref.c}.
 
 SLP Vectorization.  This pass performs vectorization of straight-line code. The

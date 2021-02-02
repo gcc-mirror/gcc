@@ -1,6 +1,6 @@
 ; Options for the 64-bit flavor of AIX.
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -20,11 +20,11 @@
 ; <http://www.gnu.org/licenses/>.
 
 maix64
-Target Report RejectNegative Negative(maix32) Mask(64BIT) Var(rs6000_isa_flags)
+Target RejectNegative Negative(maix32) Mask(64BIT) Var(rs6000_isa_flags)
 Compile for 64-bit pointers.
 
 maix32
-Target Report RejectNegative Negative(maix64) InverseMask(64BIT) Var(rs6000_isa_flags)
+Target RejectNegative Negative(maix64) InverseMask(64BIT) Var(rs6000_isa_flags)
 Compile for 32-bit pointers.
 
 mcmodel=
@@ -45,7 +45,7 @@ EnumValue
 Enum(rs6000_cmodel) String(large) Value(CMODEL_LARGE)
 
 mpe
-Target Report RejectNegative Var(internal_nothing_1) Save
+Target RejectNegative Var(internal_nothing_1) Save
 Support message passing with the Parallel Environment.
 
 posix

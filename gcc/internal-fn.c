@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -110,10 +110,8 @@ init_internal_fns ()
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define vec_cond_mask_direct { 0, 0, false }
-#define vec_cond_direct { 0, 0, false }
-#define vec_condu_direct { 0, 0, false }
-#define vec_condeq_direct { 0, 0, false }
+#define vec_cond_mask_direct { 1, 0, false }
+#define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
 #define vec_set_direct { 3, 3, false }
@@ -2766,7 +2764,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[6];
   insn_code icode;
@@ -2802,15 +2800,11 @@ expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     emit_move_insn (target, ops[0].value);
 }
 
-#define expand_vec_cond_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condu_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condeq_optab_fn expand_vect_cond_optab_fn
-
 /* Expand VCOND_MASK optab internal function.
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[4];
 
@@ -2843,8 +2837,6 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   if (!rtx_equal_p (ops[0].value, target))
     emit_move_insn (target, ops[0].value);
 }
-
-#define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
 
 /* Expand VEC_SET internal functions.  */
 
@@ -3570,10 +3562,8 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_mask_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condu_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condeq_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_cond_mask_optab_supported_p convert_optab_supported_p
+#define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p

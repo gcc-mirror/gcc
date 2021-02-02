@@ -1,5 +1,5 @@
 /* Shrink-wrapping related optimizations.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -494,7 +494,7 @@ can_get_prologue (basic_block pro, HARD_REG_SET prologue_clobbered)
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, pro->preds)
-    if (e->flags & (EDGE_COMPLEX | EDGE_CROSSING)
+    if (e->flags & EDGE_COMPLEX
 	&& !dominated_by_p (CDI_DOMINATORS, e->src, pro))
       return false;
 

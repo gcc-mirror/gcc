@@ -1,6 +1,6 @@
 /* Intrinsics for Loongson MultiMedia extension Instructions operations.
 
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

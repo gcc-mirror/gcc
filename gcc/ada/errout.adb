@@ -612,6 +612,25 @@ package body Errout is
       end;
    end Error_Msg;
 
+   ----------------------------------
+   -- Error_Msg_Ada_2005_Extension --
+   ----------------------------------
+
+   procedure Error_Msg_Ada_2005_Extension (Extension : String) is
+      Loc : constant Source_Ptr := Token_Ptr;
+   begin
+      if Ada_Version < Ada_2005 then
+         Error_Msg (Extension & " is an Ada 2005 extension", Loc);
+
+         if No (Ada_Version_Pragma) then
+            Error_Msg ("\unit must be compiled with -gnat05 switch", Loc);
+         else
+            Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
+            Error_Msg ("\incompatible with Ada version set#", Loc);
+         end if;
+      end if;
+   end Error_Msg_Ada_2005_Extension;
+
    --------------------------------
    -- Error_Msg_Ada_2012_Feature --
    --------------------------------

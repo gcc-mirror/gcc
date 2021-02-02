@@ -1,5 +1,5 @@
 ; Options for the TILEPro port of the compiler.
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ; Contributed by Walter Lee (walt@tilera.com)
 ;
 ; This file is part of GCC.
@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 m32
-Target Report RejectNegative
+Target RejectNegative
 Compile with 32 bit longs and pointers, which is the only supported
 behavior and thus the flag is ignored.
 

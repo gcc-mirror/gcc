@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -186,7 +186,7 @@ namespace __gnu_debug
 		   std::pair<difference_type, _Distance_precision>& __dist,
 		   bool __check_dereferenceable) const
     {
-      if (!_M_can_compare(__rhs))
+      if (_M_singular() || __rhs._M_singular() || !_M_can_compare(__rhs))
 	return false;
 
       /* Determine iterators order */
@@ -217,7 +217,8 @@ namespace __gnu_debug
 		   std::pair<difference_type,
 			     _Distance_precision>& __dist) const
     {
-      if (!this->_M_can_compare(__rhs))
+      if (this->_M_singular() || __rhs._M_singular()
+	  || !this->_M_can_compare(__rhs))
 	return false;
 
       /* Determine iterators order */

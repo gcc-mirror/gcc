@@ -1,0 +1,170 @@
+2021-01-12  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: Remove auto parallelize, swallow Makesub.in. Don't
+	check compiler name here.
+	* Makesub.in: Delete.
+	* build-aux/config.guess: Delete.
+	* build-aux/config.sub: Delete.
+	* build-aux/install-sh: Delete.
+	* dox.cfg.in: Delete.
+	* gdbinit.in: Delete.
+	* internal.hh (BuildNote): Delete.
+	* fatal.cc (BuildNote): Delete.
+	* config.m4: Remove unneeded fns.
+	* configure.ac: Remove unneccessary checks and configures.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
+2021-01-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/98506
+	* resolver.cc: Only use fstatat when _POSIX_C_SOURCE >= 200809L.
+
+2021-01-04  Nathan Sidwell  <nathan@acm.org>
+
+	* client.cc (Client::ProcessResponse): Remove std::move
+	inside ?:
+
+2021-01-04  Mateusz Wajchęprzełóż  <mati271828@gmail.com>
+
+	* resolver.cc (IsAbsDir): Fix string indexing.
+
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LDFLAGS): Drop -L..
+	* tests/01-serialize/connect.cc: Delete.
+	* tests/01-serialize/decoder.cc: Delete.
+	* tests/01-serialize/encoder.cc: Delete.
+	* tests/02-comms/client-1.cc: Delete.
+	* tests/02-comms/pivot-1.cc: Delete.
+	* tests/02-comms/server-1.cc: Delete.
+	* tests/Makesub.in: Delete.
+	* tests/jouster: Delete.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98412
+	* client.cc: Include cstdlib.
+	* server.cc: Include cstdlib.
+
+2020-12-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* netserver.cc: Include <netinet/in.h>.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (RANLIB): New var.
+	* Makesub.in (libcody.a): Apply RANLIB.
+	* configure.ac: Call AC_PROG_RANLIB.
+	* configure: Rebuilt.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* buffer.cc (MessageBuffer::AppendInteger): Workaround
+	to_string's non-ubiquity.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	* netclient.cc: Add netinet.h.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Add --enable-host-shared.
+	* Makefile.in: Add FLAGPIC.
+	* configure: Regenerated.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* fatal.cc (HCF): Remove nop breakpoint lander.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* cody.hh: Allow user to set CODY_NETWORKING.
+
+2020-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Compute is_release.
+	(NMS_ENABLE_CHECKING): Simplify but not computing ac_assert_checking
+	and ac_valgrind_checking the code doesn't use.
+	* configure: Regenerated.
+
+2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* internal.hh: Define fallback macros for __has_builtin and
+	__has_include. Use __has_builtin for __builtin_FILE and
+	__builtin_LINE. Define alias for std::source_location.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Use libcpp's enable-checking code.
+	* configure: Rebuilt.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Replace V+="..." with V="$V..."
+	* configure: Rebuilt.
+
+2020-12-15  Marek Polacek  <polacek@redhat.com>
+
+	* buffer.cc (MessageBuffer::Lex): Remove unused variable.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: Disable some flags.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Avoid var+=...
+	* configure: Rebuilt
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* config.m4: Avoid non-dash idiom
+	* configure: Rebuilt.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: New.
+	* CMakeLists.txt: New.
+	* CODING.md: New.
+	* CONTRIB.md: New.
+	* LICENSE: New.
+	* LICENSE.gcc: New.
+	* Makefile.in: New.
+	* Makesub.in: New.
+	* README.md: New.
+	* buffer.cc: New.
+	* build-aux/config.guess: New.
+	* build-aux/config.sub: New.
+	* build-aux/install-sh: New.
+	* client.cc: New.
+	* cmake/libcody-config-ix.cmake
+	* cody.hh: New.
+	* config.h.in: New.
+	* config.m4: New.
+	* configure: New.
+	* configure.ac: New.
+	* dox.cfg.in: New.
+	* fatal.cc: New.
+	* gdbinit.in: New.
+	* internal.hh: New.
+	* netclient.cc: New.
+	* netserver.cc: New.
+	* packet.cc: New.
+	* resolver.cc: New.
+	* server.cc: New.
+	* tests/01-serialize/connect.cc: New.
+	* tests/01-serialize/decoder.cc: New.
+	* tests/01-serialize/encoder.cc: New.
+	* tests/02-comms/client-1.cc: New.
+	* tests/02-comms/pivot-1.cc: New.
+	* tests/02-comms/server-1.cc: New.
+	* tests/Makesub.in: New.
+	* tests/jouster: New.
+
+
+Copyright (C) 2020-2021 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

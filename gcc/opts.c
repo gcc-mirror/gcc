@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -2522,7 +2522,9 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_parseable_fixits:
-      dc->parseable_fixits_p = value;
+      dc->extra_output_kind = (value
+			       ? EXTRA_DIAGNOSTIC_OUTPUT_fixits_v1
+			       : EXTRA_DIAGNOSTIC_OUTPUT_none);
       break;
 
     case OPT_fdiagnostics_column_unit_:
@@ -3284,6 +3286,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_o:
       case OPT_d:
       case OPT_dumpbase:
+      case OPT_dumpbase_ext:
       case OPT_dumpdir:
       case OPT_quiet:
       case OPT_version:

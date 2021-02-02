@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -119,6 +119,8 @@ static const struct lang_flags lang_defaults[] =
   /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      0,   1,     0 },
   /* GNUCXX20 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
   /* CXX20    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* GNUCXX23 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
+  /* CXX23    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1,      1,   1,     0 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0,      0,   0,     0 }
 };
 
@@ -540,9 +542,14 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX20
+      /* C++23 is not yet a standard.  For now, use an invalid
+       * year/month, 202100L, which is larger than 202002L.  */
+      if (CPP_OPTION (pfile, lang) == CLK_CXX23
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX23)
+	_cpp_define_builtin (pfile, "__cplusplus 202100L");
+      else if (CPP_OPTION (pfile, lang) == CLK_CXX20
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX20)
-	_cpp_define_builtin (pfile, "__cplusplus 201709L");
+	_cpp_define_builtin (pfile, "__cplusplus 202002L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX17
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX17)
 	_cpp_define_builtin (pfile, "__cplusplus 201703L");

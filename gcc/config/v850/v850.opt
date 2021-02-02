@@ -1,6 +1,6 @@
 ; Options for the NEC V850 port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -25,34 +25,34 @@ Variable
 int small_memory_max[(int)SMALL_MEMORY_max] = { 0, 0, 0 }
 
 mapp-regs
-Target Report Mask(APP_REGS)
+Target Mask(APP_REGS)
 Use registers r2 and r5.
 
 mbig-switch
-Target Report Mask(BIG_SWITCH)
+Target Mask(BIG_SWITCH)
 Use 4 byte entries in switch tables.
 
 mdebug
-Target Report Mask(DEBUG)
+Target Mask(DEBUG)
 Enable backend debugging.
 
 mdisable-callt
-Target Report Mask(DISABLE_CALLT)
+Target Mask(DISABLE_CALLT)
 Do not use the callt instruction (default).
 
 mep
-Target Report Mask(EP)
+Target Mask(EP)
 Reuse r30 on a per function basis.
 
 mghs
 Target RejectNegative InverseMask(GCC_ABI) MaskExists
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Prohibit PC relative function calls.
 
 mprolog-function
-Target Report Mask(PROLOG_FUNCTION)
+Target Mask(PROLOG_FUNCTION)
 Use stubs for function prologues.
 
 msda=
@@ -63,7 +63,7 @@ msda-
 Target RejectNegative Joined Undocumented Alias(msda=)
 
 msmall-sld
-Target Report Mask(SMALL_SLD)
+Target Mask(SMALL_SLD)
 Enable the use of the short load instructions.
 
 mspace
@@ -78,22 +78,22 @@ mtda-
 Target RejectNegative Joined Undocumented Alias(mtda=)
 
 mno-strict-align
-Target Report Mask(NO_STRICT_ALIGN)
+Target Mask(NO_STRICT_ALIGN)
 Do not enforce strict alignment.
 
 mjump-tables-in-data-section
-Target Report Mask(JUMP_TABLES_IN_DATA_SECTION)
+Target Mask(JUMP_TABLES_IN_DATA_SECTION)
 Put jump tables for switch statements into the .data section rather than the .code section.
 
 mUS-bit-set
-Target Report Mask(US_BIT_SET)
+Target Mask(US_BIT_SET)
 
 mv850
-Target Report RejectNegative Mask(V850)
+Target RejectNegative Mask(V850)
 Compile for the v850 processor.
 
 mv850e
-Target Report RejectNegative Mask(V850E)
+Target RejectNegative Mask(V850E)
 Compile for the v850e processor.
 
 mv850e1
@@ -105,22 +105,22 @@ Target RejectNegative Mask(V850E1)
 Compile for the v850es variant of the v850e1.
 
 mv850e2
-Target Report RejectNegative Mask(V850E2)
+Target RejectNegative Mask(V850E2)
 Compile for the v850e2 processor.
 
 mv850e2v3
-Target Report RejectNegative Mask(V850E2V3)
+Target RejectNegative Mask(V850E2V3)
 Compile for the v850e2v3 processor.
 
 mv850e3v5
-Target Report RejectNegative Mask(V850E3V5)
+Target RejectNegative Mask(V850E3V5)
 Compile for the v850e3v5 processor.
 
 mv850e2v4
 Target RejectNegative Mask(V850E3V5) MaskExists
 
 mloop
-Target Report Mask(LOOP)
+Target Mask(LOOP)
 Enable v850e3v5 loop instructions.
 
 mzda=
@@ -131,29 +131,29 @@ mzda-
 Target RejectNegative Joined Undocumented Alias(mzda=)
 
 mrelax
-Target Report Mask(RELAX)
+Target Mask(RELAX)
 Enable relaxing in the assembler.
 
 mlong-jumps
-Target Report Mask(BIG_SWITCH) MaskExists
+Target Mask(BIG_SWITCH) MaskExists
 Prohibit PC relative jumps.
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT)
+Target RejectNegative Mask(SOFT_FLOAT)
 Inhibit the use of hardware floating point instructions.
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT) MaskExists
+Target RejectNegative InverseMask(SOFT_FLOAT) MaskExists
 Allow the use of hardware floating point instructions for V850E2V3 and up.
 
 mrh850-abi
-Target RejectNegative Report InverseMask(GCC_ABI) MaskExists
+Target RejectNegative InverseMask(GCC_ABI) MaskExists
 Enable support for the RH850 ABI.  This is the default.
 
 mgcc-abi
-Target RejectNegative Report Mask(GCC_ABI)
+Target RejectNegative Mask(GCC_ABI)
 Enable support for the old GCC ABI.
 
 m8byte-align
-Target Report Mask(8BYTE_ALIGN)
+Target Mask(8BYTE_ALIGN)
 Support alignments of up to 64-bits.

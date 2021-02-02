@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2020 Free Software Foundation, Inc.
+# Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -173,14 +173,8 @@ proc scan-assembler-symbol-section { args } {
     set testcase [testname-for-summary]
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].s"
-    set symbol_pattern [lindex $args 0]
-    set expected_section_pattern [lindex $args 1]
     dg-scan-symbol-section \
-    "scan-assembler-symbol-section" \
-    $testcase \
-    $output_file \
-    $symbol_pattern \
-    $expected_section_pattern
+	"scan-assembler-symbol-section" $testcase $output_file $args
 }
 
 # Check that symbols are emitted in the desired section.
@@ -227,22 +221,44 @@ proc scan-assembler-symbol-section { args } {
 proc scan-symbol-section { args } {
     set testcase [testname-for-summary]
     set output_file [lindex $args 0]
-    set symbol_pattern [lindex $args 1]
-    set expected_section_pattern [lindex $args 2]
     dg-scan-symbol-section \
-    "scan-symbol-section" \
-    $testcase \
-    $output_file \
-    $symbol_pattern \
-    $expected_section_pattern
+	"scan-symbol-section" $testcase $output_file $args
 }
 
-# Check that symbols are emitted in the desired section.
+# Check that symbols are emitted in the desired section.  The ORIG_ARGS is
+# the list of arguments provided by dg-final to scan-symbol-section or
+# scan-assembler-symbol-section.  The first element in ORIG_ARGS is the
+# regular expression to look for in the file.  The second element, if
+# present, is a DejaGNU target selector.
 #
-# Avoid calling this function directly. In tests, use scan-symbol-section,
+# Avoid calling this function directly.  In tests, use scan-symbol-section,
 # scan-assembler-symbol-section, or scan-lto-assembler-symbol-section instead.
 
-proc dg-scan-symbol-section { name testcase output_file symbol_pattern expected_section_pattern } {
+proc dg-scan-symbol-section { name testcase output_file orig_args } {
+    if { [llength $orig_args] < 2 } {
+	error "$name: too few arguments"
+        return
+    }
+    if { [llength $orig_args] > 4 } {
+	error "$name: too many arguments"
+	return
+    }
+    switch $name {
+	"scan-symbol-section" { set arg_incr 1 }
+	default { set arg_incr 0 }
+    }
+    if { [llength $orig_args] >= 3 } {
+	switch [dg-process-target [lindex $orig_args [expr 2 + $arg_incr]]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    set symbol_pattern [lindex $orig_args [expr 0 + $arg_incr]]
+    set expected_section_pattern [lindex $orig_args [expr 1 + $arg_incr]]
+
     set printable_symbol_pattern [make_pattern_printable $symbol_pattern]
     set printable_expected_section_pattern [make_pattern_printable $expected_section_pattern]
 
@@ -303,7 +319,7 @@ proc dg-scan-symbol-section { name testcase output_file symbol_pattern expected_
 proc parse_section_of_symbols { filename result } {
     upvar $result up_result
 
-    set section_pattern {^\s*(?:(\.section|\.csect)\s+(.*)|(\.const|\.data|\.text)\s*)$}
+    set section_pattern {^\s*(?:(?:\.section|\.csect)\s+(.*)|(\.const|\.data|\.text)\s*)$}
     set label_pattern {^(\S+):$}
 
     set fd [open $filename r]
@@ -314,9 +330,11 @@ proc parse_section_of_symbols { filename result } {
         } elseif { [regexp -- $section_pattern $line dummy section_directive_arguments full_section_directive] } {
             if { $full_section_directive eq "" } {
                 # Example: .section .text,"ax",progbits
+                # Example: .section ".text",#alloc,#execinstr,#progbits
                 # Example: .section __TEXT,__text
                 set arguments [split $section_directive_arguments ","]
                 set current_section [string trim [lindex $arguments 0]]
+                set current_section [string trim $current_section {"}]
                 set arg_1 [string trim [lindex $arguments 1]]
                 if { [regexp {^_} $arg_1] } {
                     # The second argument looks like a Mach-O section name.

@@ -2298,11 +2298,8 @@ package body Sem_Res is
       --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         if Comes_From_Source (N)
-            and then N = Original_Node (N)
-         then
+         if Comes_From_Source (N) and then N = Original_Node (N) then
             Resolve_Declare_Expression (N, Typ);
-
          else
             Resolve (Expression (N), Typ);
          end if;
@@ -4683,7 +4680,7 @@ package body Sem_Res is
                   elsif Ada_Version >= Ada_2005 then
                      Apply_Compile_Time_Constraint_Error
                        (N      => A,
-                        Msg    => "(Ada 2005) null not allowed in "
+                        Msg    => "(Ada 2005) NULL not allowed in "
                                   & "null-excluding formal??",
                         Reason => CE_Null_Not_Allowed);
                   end if;
@@ -5451,9 +5448,12 @@ package body Sem_Res is
 
                --  Do not apply Ada 2005 accessibility checks on a class-wide
                --  allocator if the type given in the allocator is a formal
-               --  type. A run-time check will be performed in the instance.
+               --  type or within a formal package. A run-time check will be
+               --  performed in the instance.
 
-               elsif not Is_Generic_Type (Exp_Typ) then
+               elsif not Is_Generic_Type (Exp_Typ)
+                 and then not In_Generic_Formal_Package (Exp_Typ)
+               then
                   Error_Msg_N
                     ("type in allocator has deeper level than designated "
                      & "class-wide type", E);
@@ -7122,10 +7122,9 @@ package body Sem_Res is
             --  on expression functions.
 
             elsif In_Assertion_Expr /= 0 then
-               if Present (Body_Id) then
-                  Cannot_Inline
-                    ("cannot inline & (in assertion expression)?", N, Nam_UA);
-               end if;
+               Cannot_Inline
+                 ("cannot inline & (in assertion expression)?", N, Nam_UA,
+                  Suppress_Info => No (Body_Id));
 
             --  Calls cannot be inlined inside default expressions
 
@@ -7468,7 +7467,8 @@ package body Sem_Res is
      (N   : Node_Id;
       Typ : Entity_Id)
    is
-      Decl : Node_Id;
+      Decl                 : Node_Id;
+      Need_Transient_Scope : Boolean := False;
    begin
       --  Install the scope created for local declarations, if
       --  any. The syntax allows a Declare_Expression with no
@@ -7477,7 +7477,6 @@ package body Sem_Res is
       --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
-
       while Present (Decl) loop
          exit when Nkind (Decl)
                      in N_Object_Declaration | N_Object_Renaming_Declaration;
@@ -7485,11 +7484,35 @@ package body Sem_Res is
       end loop;
 
       if Present (Decl) then
-         Push_Scope (Scope (Defining_Identifier (Decl)));
+
+         --  Need to establish a transient scope in case Expression (N)
+         --  requires actions to be wrapped.
+
+         declare
+            Node : Node_Id;
+         begin
+            Node := First (Actions (N));
+            while Present (Node) loop
+               if Nkind (Node) = N_Object_Declaration
+                 and then Requires_Transient_Scope
+                            (Etype (Defining_Identifier (Node)))
+               then
+                  Need_Transient_Scope := True;
+                  exit;
+               end if;
+
+               Next (Node);
+            end loop;
+         end;
+
+         if Need_Transient_Scope then
+            Establish_Transient_Scope (Decl, True);
+         else
+            Push_Scope (Scope (Defining_Identifier (Decl)));
+         end if;
 
          declare
             E : Entity_Id := First_Entity (Current_Scope);
-
          begin
             while Present (E) loop
                Set_Current_Entity (E);
@@ -9822,13 +9845,13 @@ package body Sem_Res is
 
          if Nkind (Parent (N)) in N_Subprogram_Call then
             Error_Msg_N
-              ("null is not allowed as argument for an access parameter", N);
+              ("NULL is not allowed as argument for an access parameter", N);
 
          --  Standard message for all other cases (are there any?)
 
          else
             Error_Msg_N
-              ("null cannot be of an anonymous access type", N);
+              ("NULL cannot be of an anonymous access type", N);
          end if;
       end if;
 
@@ -9875,7 +9898,7 @@ package body Sem_Res is
          else
             Insert_Action
               (Compile_Time_Constraint_Error (N,
-                 "(Ada 2005) null not allowed in null-excluding objects??"),
+                 "(Ada 2005) NULL not allowed in null-excluding objects??"),
                Make_Raise_Constraint_Error (Loc,
                  Reason => CE_Access_Check_Failed));
          end if;
@@ -10276,7 +10299,7 @@ package body Sem_Res is
       elsif Typ = Universal_Integer or else Typ = Any_Modular then
          if Parent_Is_Boolean then
             Error_Msg_N
-              ("operand of not must be enclosed in parentheses",
+              ("operand of NOT must be enclosed in parentheses",
                Right_Opnd (N));
          else
             Error_Msg_N
@@ -10889,30 +10912,34 @@ package body Sem_Res is
          Set_Etype (N, Base_Type (Typ));
       end if;
 
-      --  Note: No Eval processing is required, because the prefix is of a
-      --  record type, or protected type, and neither can possibly be static.
+      --  Eval_Selected_Component may e.g. fold statically known discriminants.
 
-      --  If the record type is atomic and the component is not, then this is
-      --  worth a warning before Ada 2020, since we have a situation where the
-      --  access to the component may cause extra read/writes of the atomic
-      --  object, or partial word accesses, both of which may be unexpected.
+      Eval_Selected_Component (N);
 
-      if Nkind (N) = N_Selected_Component
-        and then Is_Atomic_Ref_With_Address (N)
-        and then not Is_Atomic (Entity (S))
-        and then not Is_Atomic (Etype (Entity (S)))
-        and then Ada_Version < Ada_2020
-      then
-         Error_Msg_N
-           ("??access to non-atomic component of atomic record",
-            Prefix (N));
-         Error_Msg_N
-           ("\??may cause unexpected accesses to atomic object",
-            Prefix (N));
+      if Nkind (N) = N_Selected_Component then
+
+         --  If the record type is atomic and the component is not, then this
+         --  is worth a warning before Ada 2020, since we have a situation
+         --  where the access to the component may cause extra read/writes of
+         --  the atomic object, or partial word accesses, both of which may be
+         --  unexpected.
+
+         if Is_Atomic_Ref_With_Address (N)
+           and then not Is_Atomic (Entity (S))
+           and then not Is_Atomic (Etype (Entity (S)))
+           and then Ada_Version < Ada_2020
+         then
+            Error_Msg_N
+              ("??access to non-atomic component of atomic record",
+               Prefix (N));
+            Error_Msg_N
+              ("\??may cause unexpected accesses to atomic object",
+               Prefix (N));
+         end if;
+
+         Resolve_Implicit_Dereference (Prefix (N));
+         Analyze_Dimension (N);
       end if;
-
-      Resolve_Implicit_Dereference (Prefix (N));
-      Analyze_Dimension (N);
    end Resolve_Selected_Component;
 
    -------------------

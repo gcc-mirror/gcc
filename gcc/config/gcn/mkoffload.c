@@ -1,6 +1,6 @@
 /* Offload image generation tool for AMD GCN.
 
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -755,11 +755,6 @@ main (int argc, char **argv)
   FILE *cfile = stdout;
   const char *outname = 0;
 
-  const char *gcn_s1_name;
-  const char *gcn_s2_name;
-  const char *gcn_o_name;
-  const char *gcn_cfile_name;
-
   progname = "mkoffload";
   diagnostic_initialize (global_dc, 0);
 
@@ -905,144 +900,157 @@ main (int argc, char **argv)
   if (!dumppfx)
     dumppfx = outname;
 
-  const char *mko_dumpbase = concat (dumppfx, ".mkoffload", NULL);
-  const char *hsaco_dumpbase = concat (dumppfx, ".mkoffload.hsaco", NULL);
   gcn_dumpbase = concat (dumppfx, ".c", NULL);
 
+  const char *gcn_cfile_name;
   if (save_temps)
-    {
-      gcn_s1_name = concat (mko_dumpbase, ".1.s", NULL);
-      gcn_s2_name = concat (mko_dumpbase, ".2.s", NULL);
-      gcn_o_name = hsaco_dumpbase;
-      gcn_cfile_name = gcn_dumpbase;
-    }
+    gcn_cfile_name = gcn_dumpbase;
   else
-    {
-      gcn_s1_name = make_temp_file (".mkoffload.1.s");
-      gcn_s2_name = make_temp_file (".mkoffload.2.s");
-      gcn_o_name = make_temp_file (".mkoffload.hsaco");
-      gcn_cfile_name = make_temp_file (".c");
-    }
-  obstack_ptr_grow (&files_to_cleanup, gcn_s1_name);
-  obstack_ptr_grow (&files_to_cleanup, gcn_s2_name);
-  obstack_ptr_grow (&files_to_cleanup, gcn_o_name);
+    gcn_cfile_name = make_temp_file (".c");
   obstack_ptr_grow (&files_to_cleanup, gcn_cfile_name);
-
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
-  obstack_ptr_grow (&cc_argv_obstack, "");
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
-  obstack_ptr_grow (&cc_argv_obstack, mko_dumpbase);
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
-  obstack_ptr_grow (&cc_argv_obstack, "");
-
-  obstack_ptr_grow (&cc_argv_obstack, "-o");
-  obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
-  obstack_ptr_grow (&cc_argv_obstack, NULL);
-  const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
-
-  /* Build arguments for assemble/link pass.  */
-  struct obstack ld_argv_obstack;
-  obstack_init (&ld_argv_obstack);
-  obstack_ptr_grow (&ld_argv_obstack, driver);
-
-  /* Extract early-debug information from the input objects.
-     This loop finds all the inputs that end ".o" and aren't the output.  */
-  int dbgcount = 0;
-  for (int ix = 1; ix != argc; ix++)
-    {
-      if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
-	++ix;
-      else
-	{
-	  if (strcmp (argv[ix] + strlen(argv[ix]) - 2, ".o") == 0)
-	    {
-	      char *dbgobj;
-	      if (save_temps)
-		{
-		  char buf[10];
-		  sprintf (buf, "%d", dbgcount++);
-		  dbgobj = concat (dumppfx, ".mkoffload.dbg", buf, ".o", NULL);
-		}
-	      else
-		dbgobj = make_temp_file (".mkoffload.dbg.o");
-
-	      /* If the copy fails then just ignore it.  */
-	      if (copy_early_debug_info (argv[ix], dbgobj))
-		{
-		  obstack_ptr_grow (&ld_argv_obstack, dbgobj);
-		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
-		}
-	      else
-		free (dbgobj);
-	    }
-	}
-    }
-  obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
-  obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
-
-  for (int i = 1; i < argc; i++)
-    if (strncmp (argv[i], "-l", 2) == 0
-	|| strncmp (argv[i], "-Wl", 3) == 0
-	|| strncmp (argv[i], "-march", 6) == 0)
-      obstack_ptr_grow (&ld_argv_obstack, argv[i]);
-
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
-  obstack_ptr_grow (&cc_argv_obstack, "");
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
-  obstack_ptr_grow (&cc_argv_obstack, hsaco_dumpbase);
-  obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
-  obstack_ptr_grow (&cc_argv_obstack, "");
-
-  obstack_ptr_grow (&ld_argv_obstack, "-o");
-  obstack_ptr_grow (&ld_argv_obstack, gcn_o_name);
-  obstack_ptr_grow (&ld_argv_obstack, NULL);
-  const char **ld_argv = XOBFINISH (&ld_argv_obstack, const char **);
-
-  /* Clean up unhelpful environment variables.  */
-  char *execpath = getenv ("GCC_EXEC_PREFIX");
-  char *cpath = getenv ("COMPILER_PATH");
-  char *lpath = getenv ("LIBRARY_PATH");
-  unsetenv ("GCC_EXEC_PREFIX");
-  unsetenv ("COMPILER_PATH");
-  unsetenv ("LIBRARY_PATH");
-
-  /* Run the compiler pass.  */
-  fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true,  ".gcc_args");
-  obstack_free (&cc_argv_obstack, NULL);
-
-  in = fopen (gcn_s1_name, "r");
-  if (!in)
-    fatal_error (input_location, "cannot open intermediate gcn asm file");
-
-  out = fopen (gcn_s2_name, "w");
-  if (!out)
-    fatal_error (input_location, "cannot open '%s'", gcn_s2_name);
 
   cfile = fopen (gcn_cfile_name, "w");
   if (!cfile)
     fatal_error (input_location, "cannot open '%s'", gcn_cfile_name);
 
-  process_asm (in, out, cfile);
+  /* Currently, we only support offloading in 64-bit configurations.  */
+  if (offload_abi == OFFLOAD_ABI_LP64)
+    {
+      const char *mko_dumpbase = concat (dumppfx, ".mkoffload", NULL);
+      const char *hsaco_dumpbase = concat (dumppfx, ".mkoffload.hsaco", NULL);
 
-  fclose (in);
-  fclose (out);
+      const char *gcn_s1_name;
+      const char *gcn_s2_name;
+      const char *gcn_o_name;
+      if (save_temps)
+	{
+	  gcn_s1_name = concat (mko_dumpbase, ".1.s", NULL);
+	  gcn_s2_name = concat (mko_dumpbase, ".2.s", NULL);
+	  gcn_o_name = hsaco_dumpbase;
+	}
+      else
+	{
+	  gcn_s1_name = make_temp_file (".mkoffload.1.s");
+	  gcn_s2_name = make_temp_file (".mkoffload.2.s");
+	  gcn_o_name = make_temp_file (".mkoffload.hsaco");
+	}
+      obstack_ptr_grow (&files_to_cleanup, gcn_s1_name);
+      obstack_ptr_grow (&files_to_cleanup, gcn_s2_name);
+      obstack_ptr_grow (&files_to_cleanup, gcn_o_name);
 
-  /* Run the assemble/link pass.  */
-  fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
-  obstack_free (&ld_argv_obstack, NULL);
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
+      obstack_ptr_grow (&cc_argv_obstack, "");
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
+      obstack_ptr_grow (&cc_argv_obstack, mko_dumpbase);
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
+      obstack_ptr_grow (&cc_argv_obstack, "");
 
-  in = fopen (gcn_o_name, "r");
-  if (!in)
-    fatal_error (input_location, "cannot open intermediate gcn obj file");
+      obstack_ptr_grow (&cc_argv_obstack, "-o");
+      obstack_ptr_grow (&cc_argv_obstack, gcn_s1_name);
+      obstack_ptr_grow (&cc_argv_obstack, NULL);
+      const char **cc_argv = XOBFINISH (&cc_argv_obstack, const char **);
 
-  process_obj (in, cfile);
+      /* Build arguments for assemble/link pass.  */
+      struct obstack ld_argv_obstack;
+      obstack_init (&ld_argv_obstack);
+      obstack_ptr_grow (&ld_argv_obstack, driver);
 
-  fclose (in);
+      /* Extract early-debug information from the input objects.
+	 This loop finds all the inputs that end ".o" and aren't the output.  */
+      int dbgcount = 0;
+      for (int ix = 1; ix != argc; ix++)
+	{
+	  if (!strcmp (argv[ix], "-o") && ix + 1 != argc)
+	    ++ix;
+	  else
+	    {
+	      if (strcmp (argv[ix] + strlen(argv[ix]) - 2, ".o") == 0)
+		{
+		  char *dbgobj;
+		  if (save_temps)
+		    {
+		      char buf[10];
+		      sprintf (buf, "%d", dbgcount++);
+		      dbgobj = concat (dumppfx, ".mkoffload.dbg", buf, ".o", NULL);
+		    }
+		  else
+		    dbgobj = make_temp_file (".mkoffload.dbg.o");
+
+		  /* If the copy fails then just ignore it.  */
+		  if (copy_early_debug_info (argv[ix], dbgobj))
+		    {
+		      obstack_ptr_grow (&ld_argv_obstack, dbgobj);
+		      obstack_ptr_grow (&files_to_cleanup, dbgobj);
+		    }
+		  else
+		    free (dbgobj);
+		}
+	    }
+	}
+      obstack_ptr_grow (&ld_argv_obstack, gcn_s2_name);
+      obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
+
+      for (int i = 1; i < argc; i++)
+	if (strncmp (argv[i], "-l", 2) == 0
+	    || strncmp (argv[i], "-Wl", 3) == 0
+	    || strncmp (argv[i], "-march", 6) == 0)
+	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
+
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
+      obstack_ptr_grow (&cc_argv_obstack, "");
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpbase");
+      obstack_ptr_grow (&cc_argv_obstack, hsaco_dumpbase);
+      obstack_ptr_grow (&cc_argv_obstack, "-dumpbase-ext");
+      obstack_ptr_grow (&cc_argv_obstack, "");
+
+      obstack_ptr_grow (&ld_argv_obstack, "-o");
+      obstack_ptr_grow (&ld_argv_obstack, gcn_o_name);
+      obstack_ptr_grow (&ld_argv_obstack, NULL);
+      const char **ld_argv = XOBFINISH (&ld_argv_obstack, const char **);
+
+      /* Clean up unhelpful environment variables.  */
+      char *execpath = getenv ("GCC_EXEC_PREFIX");
+      char *cpath = getenv ("COMPILER_PATH");
+      char *lpath = getenv ("LIBRARY_PATH");
+      unsetenv ("GCC_EXEC_PREFIX");
+      unsetenv ("COMPILER_PATH");
+      unsetenv ("LIBRARY_PATH");
+
+      /* Run the compiler pass.  */
+      fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true, ".gcc_args");
+      obstack_free (&cc_argv_obstack, NULL);
+
+      in = fopen (gcn_s1_name, "r");
+      if (!in)
+	fatal_error (input_location, "cannot open intermediate gcn asm file");
+
+      out = fopen (gcn_s2_name, "w");
+      if (!out)
+	fatal_error (input_location, "cannot open '%s'", gcn_s2_name);
+
+      process_asm (in, out, cfile);
+
+      fclose (in);
+      fclose (out);
+
+      /* Run the assemble/link pass.  */
+      fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
+      obstack_free (&ld_argv_obstack, NULL);
+
+      in = fopen (gcn_o_name, "r");
+      if (!in)
+	fatal_error (input_location, "cannot open intermediate gcn obj file");
+
+      process_obj (in, cfile);
+
+      fclose (in);
+
+      xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
+      xputenv (concat ("COMPILER_PATH=", cpath, NULL));
+      xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
+    }
+
   fclose (cfile);
-
-  xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
-  xputenv (concat ("COMPILER_PATH=", cpath, NULL));
-  xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
 
   compile_native (gcn_cfile_name, outname, collect_gcc, fPIC, fpic);
 

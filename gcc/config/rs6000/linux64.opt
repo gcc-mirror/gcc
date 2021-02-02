@@ -1,6 +1,6 @@
 ; Options for 64-bit PowerPC Linux.
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -20,7 +20,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mprofile-kernel
-Target Report Var(profile_kernel) Save
+Target Var(profile_kernel) Save
 Call mcount for profiling before a function prologue.
 
 mcmodel=

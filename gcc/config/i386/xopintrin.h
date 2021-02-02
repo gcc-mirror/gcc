@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -206,6 +206,12 @@ extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __arti
 _mm_cmov_si128(__m128i __A, __m128i __B, __m128i __C)
 {
   return  (__m128i) __builtin_ia32_vpcmov (__A, __B, __C);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cmov_si256(__m256i __A, __m256i __B, __m256i __C)
+{
+  return  (__m256i) __builtin_ia32_vpcmov256 (__A, __B, __C);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))

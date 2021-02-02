@@ -1,5 +1,5 @@
 ;; ARM Cortex-M7 pipeline description
-;; Copyright (C) 2014-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -54,7 +54,7 @@
 ;; Simple alu with inline shift operation.
 (define_insn_reservation "cortex_m7_alu_shift" 2
    (and (eq_attr "tune" "cortexm7")
-	(eq_attr "type" "alu_shift_imm,alus_shift_imm"))
+	(eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm"))
    "cm7_i0|cm7_i1,(cm7_a0|cm7_a1)+cm7_shf+cm7_branch")
 
 ;; Only one ALU can be used for DSP instructions.

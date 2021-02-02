@@ -14,7 +14,7 @@
  */
 module core.sys.posix.sys.mman;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.sys.types; // for off_t, mode_t
 
 version (OSX)
@@ -45,6 +45,7 @@ version (X86_64)  version = X86_Any;
 
 version (Posix):
 extern (C) nothrow @nogc:
+@system:
 
 //
 // Advisory Information (ADV)
@@ -511,7 +512,7 @@ else version (CRuntime_Bionic)
     enum MS_ASYNC       = 1;
     enum MS_INVALIDATE  = 2;
 
-    int msync(in void*, size_t, int);
+    int msync(const scope void*, size_t, int);
 }
 else version (CRuntime_Musl)
 {
@@ -694,59 +695,59 @@ else
 // Range Memory Locking (MLR)
 //
 /*
-int mlock(in void*, size_t);
-int munlock(in void*, size_t);
+int mlock(const scope void*, size_t);
+int munlock(const scope void*, size_t);
 */
 
 version (CRuntime_Glibc)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (Darwin)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (FreeBSD)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (NetBSD)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (OpenBSD)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (DragonFlyBSD)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (Solaris)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (CRuntime_Bionic)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (CRuntime_Musl)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else version (CRuntime_UClibc)
 {
-    int mlock(in void*, size_t);
-    int munlock(in void*, size_t);
+    int mlock(const scope void*, size_t);
+    int munlock(const scope void*, size_t);
 }
 else
 {
@@ -790,7 +791,7 @@ else version (Solaris)
 }
 else version (CRuntime_Bionic)
 {
-    int mprotect(in void*, size_t, int);
+    int mprotect(const scope void*, size_t, int);
 }
 else version (CRuntime_Musl)
 {
@@ -809,57 +810,57 @@ else
 // Shared Memory Objects (SHM)
 //
 /*
-int shm_open(in char*, int, mode_t);
-int shm_unlink(in char*);
+int shm_open(const scope char*, int, mode_t);
+int shm_unlink(const scope char*);
 */
 
 version (CRuntime_Glibc)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (Darwin)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (FreeBSD)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (NetBSD)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (OpenBSD)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (DragonFlyBSD)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (Solaris)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (CRuntime_Bionic)
 {
 }
 else version (CRuntime_Musl)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else version (CRuntime_UClibc)
 {
-    int shm_open(in char*, int, mode_t);
-    int shm_unlink(in char*);
+    int shm_open(const scope char*, int, mode_t);
+    int shm_unlink(const scope char*);
 }
 else
 {
@@ -879,7 +880,7 @@ struct posix_typed_mem_info
     size_t posix_tmi_length;
 }
 
-int posix_mem_offset(in void*, size_t, off_t *, size_t *, int *);
+int posix_mem_offset(const scope void*, size_t, off_t *, size_t *, int *);
 int posix_typed_mem_get_info(int, struct posix_typed_mem_info *);
-int posix_typed_mem_open(in char*, int, int);
+int posix_typed_mem_open(const scope char*, int, int);
 */

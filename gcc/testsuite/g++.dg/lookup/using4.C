@@ -10,6 +10,6 @@ template <class T>
 struct Bar : public Foo<T> {
         void foo()
         {
-                using Foo<T>::i;	// { dg-error "member at non-class scope" }
+                using Foo<T>::i;	// { dg-error "member at non-class scope" "" { target c++17_down } }
         }
 };

@@ -8,10 +8,11 @@
  */
 module core.sys.windows.lmwksta;
 version (Windows):
+@system:
 pragma(lib, "netapi32");
 
 import core.sys.windows.lmuseflg;
-private import core.sys.windows.lmcons, core.sys.windows.windef;
+import core.sys.windows.lmcons, core.sys.windows.windef;
 
 pragma(lib, "Netapi32");
 

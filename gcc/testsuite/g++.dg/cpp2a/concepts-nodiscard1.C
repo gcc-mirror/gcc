@@ -1,6 +1,6 @@
 // PR c++/98019
 // { dg-do compile { target c++20 } }
-// { dg-excess-errors *-*-* }
+// Don't give [[nodiscard]] warning for an expression requirement.
 
 template <class T, class U> concept same_as = __is_same_as (T, U);
 

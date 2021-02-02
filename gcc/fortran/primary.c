@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1189,6 +1189,61 @@ got_delim:
 
   if (match_substring (NULL, 0, &e->ref, false) != MATCH_NO)
     e->expr_type = EXPR_SUBSTRING;
+
+  /* Substrings with constant starting and ending points are eligible as
+     designators (F2018, section 9.1).  Simplify substrings to make them usable
+     e.g. in data statements.  */
+  if (e->expr_type == EXPR_SUBSTRING
+      && e->ref && e->ref->type == REF_SUBSTRING
+      && e->ref->u.ss.start->expr_type == EXPR_CONSTANT
+      && (e->ref->u.ss.end == NULL
+	  || e->ref->u.ss.end->expr_type == EXPR_CONSTANT))
+    {
+      gfc_expr *res;
+      ptrdiff_t istart, iend;
+      size_t length;
+      bool equal_length = false;
+
+      /* Basic checks on substring starting and ending indices.  */
+      if (!gfc_resolve_substring (e->ref, &equal_length))
+	return MATCH_ERROR;
+
+      length = e->value.character.length;
+      istart = gfc_mpz_get_hwi (e->ref->u.ss.start->value.integer);
+      if (e->ref->u.ss.end == NULL)
+	iend = length;
+      else
+	iend = gfc_mpz_get_hwi (e->ref->u.ss.end->value.integer);
+
+      if (istart <= iend)
+	{
+	  if (istart < 1)
+	    {
+	      gfc_error ("Substring start index (%ld) at %L below 1",
+			 (long) istart, &e->ref->u.ss.start->where);
+	      return MATCH_ERROR;
+	    }
+	  if (iend > (ssize_t) length)
+	    {
+	      gfc_error ("Substring end index (%ld) at %L exceeds string "
+			 "length", (long) iend, &e->ref->u.ss.end->where);
+	      return MATCH_ERROR;
+	    }
+	  length = iend - istart + 1;
+	}
+      else
+	length = 0;
+
+      res = gfc_get_constant_expr (BT_CHARACTER, e->ts.kind, &e->where);
+      res->value.character.string = gfc_get_wide_string (length + 1);
+      res->value.character.length = length;
+      if (length > 0)
+	memcpy (res->value.character.string,
+		&e->value.character.string[istart - 1],
+		length * sizeof (gfc_char_t));
+      res->value.character.string[length] = '\0';
+      e = res;
+    }
 
   *result = e;
 
@@ -3003,26 +3058,36 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	  continue;
 	}
 
-      /* If it was not found, try the default initializer if there's any;
+      /* If it was not found, apply NULL expression to set the component as
+	 unallocated. Then try the default initializer if there's any;
 	 otherwise, it's an error unless this is a deferred parameter.  */
       if (!comp_iter)
 	{
-	  if (comp->initializer)
+	  /* F2018 7.5.10: If an allocatable component has no corresponding
+	     component-data-source, then that component has an allocation
+	     status of unallocated....  */
+	  if (comp->attr.allocatable
+	      || (comp->ts.type == BT_CLASS
+		  && CLASS_DATA (comp)->attr.allocatable))
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
+				   "allocatable component %qs given in the "
+				   "structure constructor at %C", comp->name))
+		return false;
+	      value = gfc_get_null_expr (&gfc_current_locus);
+	    }
+	  /* ....(Preceeding sentence) If a component with default
+	     initialization has no corresponding component-data-source, then
+	     the default initialization is applied to that component.  */
+	  else if (comp->initializer)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2003, "Structure constructor "
 				   "with missing optional arguments at %C"))
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
 	    }
-	  else if (comp->attr.allocatable
-		   || (comp->ts.type == BT_CLASS
-		       && CLASS_DATA (comp)->attr.allocatable))
-	    {
-	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-				   "allocatable component %qs given in the "
-				   "structure constructor at %C", comp->name))
-		return false;
-	    }
+	  /* Do not trap components such as the string length for deferred
+	     length character components.  */
 	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"

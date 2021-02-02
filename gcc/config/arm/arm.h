@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -1150,6 +1150,46 @@ extern const int arm_arch_cde_coproc_bits[];
 
 #define ARM_HAVE_V8HF_ARITH (ARM_HAVE_NEON_V8HF_ARITH || TARGET_HAVE_MVE_FLOAT)
 #define ARM_HAVE_V4SF_ARITH (ARM_HAVE_NEON_V4SF_ARITH || TARGET_HAVE_MVE_FLOAT)
+
+/* The conditions under which vector modes are supported by load/store
+   instructions using Neon.  */
+
+#define ARM_HAVE_NEON_V8QI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V16QI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4HI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V8HI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V2SI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4SI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4HF_LDST TARGET_NEON_FP16INST
+#define ARM_HAVE_NEON_V8HF_LDST TARGET_NEON_FP16INST
+#define ARM_HAVE_NEON_V4BF_LDST TARGET_BF16_SIMD
+#define ARM_HAVE_NEON_V8BF_LDST TARGET_BF16_SIMD
+#define ARM_HAVE_NEON_V2SF_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V4SF_LDST TARGET_NEON
+#define ARM_HAVE_NEON_DI_LDST TARGET_NEON
+#define ARM_HAVE_NEON_V2DI_LDST TARGET_NEON
+
+/* The conditions under which vector modes are supported by load/store
+   instructions by any vector extension.  */
+
+#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST || TARGET_REALLY_IWMMXT)
+
+#define ARM_HAVE_V16QI_LDST (ARM_HAVE_NEON_V16QI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_V8HI_LDST (ARM_HAVE_NEON_V8HI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_V4SI_LDST (ARM_HAVE_NEON_V4SI_LDST || TARGET_HAVE_MVE)
+#define ARM_HAVE_DI_LDST ARM_HAVE_NEON_DI_LDST
+#define ARM_HAVE_V2DI_LDST ARM_HAVE_NEON_V2DI_LDST
+
+#define ARM_HAVE_V4HF_LDST ARM_HAVE_NEON_V4HF_LDST
+#define ARM_HAVE_V2SF_LDST ARM_HAVE_NEON_V2SF_LDST
+
+#define ARM_HAVE_V4BF_LDST ARM_HAVE_NEON_V4BF_LDST
+#define ARM_HAVE_V8BF_LDST ARM_HAVE_NEON_V8BF_LDST
+
+#define ARM_HAVE_V8HF_LDST (ARM_HAVE_NEON_V8HF_LDST || TARGET_HAVE_MVE_FLOAT)
+#define ARM_HAVE_V4SF_LDST (ARM_HAVE_NEON_V4SF_LDST || TARGET_HAVE_MVE_FLOAT)
 
 /* The register numbers in sequence, for passing to arm_gen_load_multiple.  */
 extern int arm_regs_in_sequence[];

@@ -153,10 +153,14 @@ am__DEPENDENCIES_1 =
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_1 = compatibility-ldbl.lo
 am__objects_2 = compatibility.lo compatibility-debug_list.lo \
 	compatibility-debug_list-2.lo $(am__objects_1)
-am__objects_3 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_3 = compatibility-ldbl-alt128-cxx11.lo
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@am__objects_4 =  \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.lo \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(am__objects_3)
+am__objects_5 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
 	compatibility-thread-c++0x.lo compatibility-chrono.lo \
-	compatibility-condvar.lo
-am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_3)
+	compatibility-condvar.lo $(am__objects_4)
+am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 @VTV_CYGMIN_FALSE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
 @VTV_CYGMIN_TRUE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
@@ -311,6 +315,8 @@ LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LONG_DOUBLE_128_FLAGS = @LONG_DOUBLE_128_FLAGS@
+LONG_DOUBLE_ALT128_COMPAT_FLAGS = @LONG_DOUBLE_ALT128_COMPAT_FLAGS@
 LONG_DOUBLE_COMPAT_FLAGS = @LONG_DOUBLE_COMPAT_FLAGS@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
@@ -450,11 +456,13 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_TRUE@WERROR_FLAG = -Werror
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
+@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@LDBL_128_FLAGS = 
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@LDBL_128_FLAGS = $(LONG_DOUBLE_128_FLAGS)
 
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(HWCAP_CFLAGS) -frandom-seed=$@
+	$(SECTION_FLAGS) $(HWCAP_CFLAGS) -frandom-seed=$@ $(LDBL_128_FLAGS)
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
@@ -483,6 +491,15 @@ SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir)
 
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
+@ENABLE_DUAL_ABI_FALSE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_cxx11_sources = 
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_cxx11_sources = \
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128-cxx11.cc
+
+@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@ldbl_alt128_compat_sources = 
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@ldbl_alt128_compat_sources = \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	compatibility-ldbl-alt128.cc \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	${ldbl_alt128_compat_cxx11_sources}
+
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
 
@@ -497,7 +514,8 @@ cxx11_sources = \
 	compatibility-atomic-c++0x.cc \
 	compatibility-thread-c++0x.cc \
 	compatibility-chrono.cc \
-	compatibility-condvar.cc
+	compatibility-condvar.cc \
+	${ldbl_alt128_compat_sources}
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 libstdc___la_LIBADD = \
@@ -520,6 +538,17 @@ libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
+@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = $(LTCXXCOMPILE)
+
+# Use special rules for compatibility-ldbl.cc compilation, as we need to
+# pass -mlong-double-64, and not use -mabi={ieee,ibm}longdouble.
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(LTCXXCOMPILE))
+
+@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@CXXCOMPILE64 = $(CXXCOMPILE)
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@CXXCOMPILE64 = \
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@@GLIBCXX_LDBL_COMPAT_TRUE@  $(filter-out -mabi=ieeelongdouble -mabi=ibmlongdouble,$(CXXCOMPILE))
+
 
 # A note on compatibility and static libraries.
 #
@@ -962,13 +991,21 @@ vpath % $(top_srcdir)/src/c++11
 vpath % $(top_srcdir)/src/c++17
 vpath % $(top_srcdir)/src/c++20
 @ENABLE_FILESYSTEM_TS_TRUE@vpath % $(top_srcdir)/src/filesystem
-
-# Use special rules for compatibility-ldbl.cc compilation, as we need to
-# pass -mlong-double-64.
 @GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.lo: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+@GLIBCXX_LDBL_COMPAT_TRUE@	$(LTCXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
 @GLIBCXX_LDBL_COMPAT_TRUE@compatibility-ldbl.o: compatibility-ldbl.cc
-@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+@GLIBCXX_LDBL_COMPAT_TRUE@	$(CXXCOMPILE64) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
+
+# Use special rules for compatibility-ldbl-alt128.cc compilation, as we need to
+# ensure it is compiled with the correct flag.
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128.lo: compatibility-ldbl-alt128.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128.o: compatibility-ldbl-alt128.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128-cxx11.lo: compatibility-ldbl-alt128-cxx11.cc
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@compatibility-ldbl-alt128-cxx11.o: compatibility-ldbl-alt128-cxx11.cc
+@ENABLE_DUAL_ABI_TRUE@@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) $(LONG_DOUBLE_ALT128_COMPAT_FLAGS) -std=gnu++11 -c $<
 
 # Use special rules for C++11 files/objects.
 compatibility-c++0x.lo: compatibility-c++0x.cc

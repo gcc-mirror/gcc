@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Fixed point I/O
---  ---------------
+--  -------------------
+--  - Fixed point I/O -
+--  -------------------
 
 --  The following text documents implementation details of the fixed point
 --  input/output routines in the GNAT runtime. The first part describes the
@@ -40,7 +41,7 @@
 --  Subsequently these are reduced to implementation constraints and the impact
 --  of these constraints on a few possible approaches to input/output is given.
 --  Based on this analysis, a specific implementation is selected for use in
---  the GNAT runtime. Finally, the chosen algorithm is analyzed numerically in
+--  the GNAT runtime. Finally the chosen algorithms are analyzed numerically in
 --  order to provide user-level documentation on limits for range and precision
 --  of fixed point types as well as accuracy of input/output conversions.
 
@@ -68,7 +69,7 @@
 --  Operations
 --  ----------
 
---  'Image and 'Wide_Image (see RM 3.5(34))
+--  [Wide_[Wide_]]Image attribute (see RM 3.5(27.1/2))
 
 --          These attributes return a decimal real literal best approximating
 --          the value (rounded away from zero if halfway between) with a
@@ -88,7 +89,7 @@
 --          attributes, although it would be nice to be able to output more
 --          than S'Aft digits after the decimal point for values of subtype S.
 
---  'Value and 'Wide_Value attribute (RM 3.5(40-55))
+--  [Wide_[Wide_]]Value attribute (RM 3.5(39.1/2))
 
 --          Since the input can be given in any base in the range 2..16,
 --          accurate conversion to a fixed point number may require
@@ -121,7 +122,7 @@
 --  be less than 2.0**(-53).
 
 --  In GNAT, Fine_Delta is 2.0**(-63), and Duration for example is a 64-bit
---  type. This means that a floating-point type with 63 bits of mantissa needs
+--  type. This means that a floating-point type with 64 bits of mantissa needs
 --  to be used, which is only generally available on the x86 architecture. It
 --  would still be possible to use multi-precision floating point to perform
 --  calculations using longer mantissas, but this is a much harder approach.
@@ -137,8 +138,20 @@
 
 --  Fixed-precision integer arithmetic has the advantage of simplicity and
 --  speed. For the most common fixed point types this would be a perfect
---  solution. The downside however may be a too limited set of acceptable
+--  solution. The downside however may be a restricted set of acceptable
 --  fixed point types.
+
+--  Implementation Choices
+--  ----------------------
+
+--  The current implementation in the GNAT runtime uses fixed-precision integer
+--  arithmetic for fixed point types whose Small is the ratio of two integers
+--  whose magnitude is bounded relatively to the size of the mantissa, with a
+--  two-tiered approach for 32-bit and 64-bit fixed point types. For the other
+--  fixed point types, the implementation uses floating-point arithmetic.
+
+--  The exact requirements of the algorithms are analyzed and documented along
+--  with the implementation in their respective units.
 
 with Interfaces;
 with Ada.Text_IO.Fixed_Aux;
@@ -147,8 +160,9 @@ with System.Img_Fixed_32; use System.Img_Fixed_32;
 with System.Img_Fixed_64; use System.Img_Fixed_64;
 with System.Val_Fixed_32; use System.Val_Fixed_32;
 with System.Val_Fixed_64; use System.Val_Fixed_64;
+with System.Val_LLF;      use System.Val_LLF;
 
-package body Ada.Text_IO.Fixed_IO is
+package body Ada.Text_IO.Fixed_IO with SPARK_Mode => Off is
 
    --  Note: we still use the floating-point I/O routines for types whose small
    --  is not the ratio of two sufficiently small integers. This will result in
@@ -164,6 +178,9 @@ package body Ada.Text_IO.Fixed_IO is
    package Aux64 is new
      Ada.Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
 
+   package Aux_Long_Long_Float is new
+     Ada.Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+
    --  Throughout this generic body, we distinguish between the case where type
    --  Int32 is OK and where type Int64 is OK. These boolean constants are used
    --  to test for this, such that only code for the relevant case is included
@@ -171,7 +188,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  static (although it is not a static expressions in the RM sense).
 
    OK_Get_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -182,7 +199,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -196,7 +213,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -207,7 +224,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -266,7 +283,7 @@ package body Ada.Text_IO.Fixed_IO is
                                -Num'Small_Numerator,
                                -Num'Small_Denominator));
       else
-         Float_Aux.Get (File, Long_Long_Float (Item), Width);
+         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
       end if;
 
    exception
@@ -278,7 +295,7 @@ package body Ada.Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -300,7 +317,7 @@ package body Ada.Text_IO.Fixed_IO is
                                 -Num'Small_Numerator,
                                 -Num'Small_Denominator));
       else
-         Float_Aux.Gets (From, Long_Long_Float (Item), Last);
+         Aux_Long_Long_Float.Gets (From, Long_Long_Float (Item), Last);
       end if;
 
    exception
@@ -328,7 +345,8 @@ package body Ada.Text_IO.Fixed_IO is
                     -Num'Small_Numerator, -Num'Small_Denominator,
                     For0, Num'Aft);
       else
-         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Item), Fore, Aft, Exp);
       end if;
    end Put;
 
@@ -358,7 +376,7 @@ package body Ada.Text_IO.Fixed_IO is
                      -Num'Small_Numerator, -Num'Small_Denominator,
                      For0, Num'Aft);
       else
-         Float_Aux.Puts (To, Long_Long_Float (Item), Aft, Exp);
+         Aux_Long_Long_Float.Puts (To, Long_Long_Float (Item), Aft, Exp);
       end if;
    end Put;
 

@@ -5,13 +5,13 @@
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2015.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011, 2016.
-# Roland Illig <roland.illig@gmx.de>, 2015, 2017-2020.
+# Roland Illig <roland.illig@gmx.de>, 2015, 2017-2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 10.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-07-20 18:08+0000\n"
-"PO-Revision-Date: 2020-07-23 20:00+0200\n"
+"PO-Revision-Date: 2021-01-20 00:01+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -6541,7 +6541,7 @@ msgstr "Bei möglichen Verstößen gegen Sequenzpunktregeln warnen."
 #: c-family/c.opt:1088
 #, no-c-format
 msgid "Warn if a local declaration hides an instance variable."
-msgstr "Warnen, wenn eine lokale Deklaration von %qE eine Instanzvariable verdeckt."
+msgstr "Warnen, wenn eine lokale Deklaration eine Instanzvariable verdeckt."
 
 #: c-family/c.opt:1092 c-family/c.opt:1096
 #, no-c-format
@@ -18508,11 +18508,10 @@ msgstr "Durchschnittliche Anzahl der Iterationen einer Schleife."
 msgid "Maximum number of bits for which we avoid creating FMAs."
 msgstr "Höchstzahl der Bits, für die keine FMAs erzeugt werden."
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93759
 #: params.opt:75
 #, no-c-format
 msgid "Set the estimated probability in percentage for builtin expect. The default value is 90% probability."
-msgstr "Wahrscheinlichkeit in Prozent für das eingebaute »expect«. Vorgabewert ist 90 %% Wahrscheinlichkeit. (Wegen GCC-Fehler 93759 muss ich hier Stand 2020-02-15 noch ein %p schreiben; A.d.Ü.)"
+msgstr "Wahrscheinlichkeit in Prozent für das eingebaute »expect«. Vorgabewert ist 90 % Wahrscheinlichkeit."
 
 #: params.opt:79
 #, no-c-format
@@ -27624,8 +27623,8 @@ msgstr[1] "%G%qD schreibt %wu Bytes in eine Region der Größe %wu"
 #: tree-ssa-strlen.c:2171
 msgid "%Gwriting %wu byte into a region of size %wu"
 msgid_plural "%Gwriting %wu bytes into a region of size %wu"
-msgstr[0] "Schreiben von %wu Byte in eine Region der Größe %wu"
-msgstr[1] "Schreiben von %wu Bytes in eine Region der Größe %wu"
+msgstr[0] "%GSchreiben von %wu Byte in eine Region der Größe %wu"
+msgstr[1] "%GSchreiben von %wu Bytes in eine Region der Größe %wu"
 
 #: tree-ssa-strlen.c:2181
 msgid "%G%qD writing %wu byte into a region of size between %wu and %wu"
@@ -27636,8 +27635,8 @@ msgstr[1] "%G%qD schreibt %wu Bytes in eine Region der Größe zwischen %wu und 
 #: tree-ssa-strlen.c:2189
 msgid "%Gwriting %wu byte into a region of size between %wu and %wu"
 msgid_plural "%Gwriting %wu bytes into a region of size between %wu and %wu"
-msgstr[0] "Schreiben von %wu Byte in eine Region der Größe zwischen %wu und %wu"
-msgstr[1] "Schreiben von %wu Bytes in eine Region der Größe zwischen %wu und %wu"
+msgstr[0] "%GSchreiben von %wu Byte in eine Region der Größe zwischen %wu und %wu"
+msgstr[1] "%GSchreiben von %wu Bytes in eine Region der Größe zwischen %wu und %wu"
 
 #: tree-ssa-strlen.c:2199
 msgid "%G%qD writing between %wu and %wu bytes into a region of size %wu"
@@ -27645,7 +27644,7 @@ msgstr "%G%qD schreibt zwischen %wu und %wu Bytes in eine Region der Größe %wu
 
 #: tree-ssa-strlen.c:2205
 msgid "%Gwriting between %wu and %wu bytes into a region of size %wu"
-msgstr "Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu"
+msgstr "%GSchreiben von %wu bis %wu Bytes in eine Region der Größe %wu"
 
 #: tree-ssa-strlen.c:2213
 msgid "%G%qD writing between %wu and %wu bytes into a region of size between %wu and %wu"
@@ -27653,7 +27652,7 @@ msgstr "%G%qD schreibt zwischen %wu und %wu Bytes in eine Region der Größe zwi
 
 #: tree-ssa-strlen.c:2219
 msgid "%Gwriting between %wu and %wu bytes into a region of size between %wu and %wu"
-msgstr "%wu bis %wu Bytes werden in eine Region der Größe zwischen %wu und %wu geschrieben"
+msgstr "%G%wu bis %wu Bytes werden in eine Region der Größe zwischen %wu und %wu geschrieben"
 
 #: tree-ssa-strlen.c:2256
 #, gcc-internal-format
@@ -53543,7 +53542,7 @@ msgstr "hier als %q#D redeklariert"
 #: cp/pt.c:6192
 #, gcc-internal-format
 msgid "declaration of template parameter %q+#D with different constraints"
-msgstr "Deklaration von Templateparameter %q+D mit unterschiedlichen Einschränkungen"
+msgstr "Deklaration von Templateparameter %q+#D mit unterschiedlichen Einschränkungen"
 
 #: cp/pt.c:6195 cp/pt.c:6244
 #, gcc-internal-format

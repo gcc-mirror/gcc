@@ -1,5 +1,5 @@
 /* A state machine for detecting misuses of the malloc/free API.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #if ENABLE_ANALYZER
 
@@ -49,14 +51,38 @@ namespace ana {
 
 namespace {
 
-class api;
+/* This state machine and its various support classes track allocations
+   and deallocations.
+
+   It has a few standard allocation/deallocation pairs (e.g. new/delete),
+   and also supports user-defined ones via
+   __attribute__ ((malloc(DEALLOCATOR))).
+
+   There can be more than one valid deallocator for a given allocator,
+   for example:
+     __attribute__ ((malloc (fclose)))
+     __attribute__ ((malloc (freopen, 3)))
+     FILE* fopen (const char*, const char*);
+   A deallocator_set represents a particular set of valid deallocators.
+
+   We track the expected deallocator_set for a value, but not the allocation
+   function - there could be more than one allocator per deallocator_set.
+   For example, there could be dozens of allocators for "free" beyond just
+   malloc e.g. calloc, xstrdup, etc.  We don't want to explode the number
+   of states by tracking individual allocators in the exploded graph;
+   we merely want to track "this value expects to have 'free' called on it".
+   Perhaps we can reconstruct which allocator was used later, when emitting
+   the path, if it's necessary for precision of wording of diagnostics.  */
+
+class deallocator;
+class deallocator_set;
 class malloc_state_machine;
 
 /* An enum for discriminating between different kinds of allocation_state.  */
 
 enum resource_state
 {
-  /* States that are independent of api.  */
+  /* States that are independent of allocator/deallocator.  */
 
   /* The start state.  */
   RS_START,
@@ -71,28 +97,33 @@ enum resource_state
   /* Stop state, for pointers we don't want to track any more.  */
   RS_STOP,
 
-  /* States that relate to a specific api.  */
+  /* States that relate to a specific deallocator_set.  */
 
-  /* State for a pointer returned from the api's allocator that hasn't
+  /* State for a pointer returned from an allocator that hasn't
      been checked for NULL.
      It could be a pointer to heap-allocated memory, or could be NULL.  */
   RS_UNCHECKED,
 
-  /* State for a pointer returned from the api's allocator,
+  /* State for a pointer returned from an allocator,
      known to be non-NULL.  */
   RS_NONNULL,
 
-  /* State for a pointer passed to the api's deallocator.  */
+  /* State for a pointer passed to a deallocator.  */
   RS_FREED
 };
 
-/* Custom state subclass, which can optionally refer to an an api.  */
+/* Custom state subclass, which can optionally refer to an a
+   deallocator_set.  */
 
 struct allocation_state : public state_machine::state
 {
   allocation_state (const char *name, unsigned id,
-		    enum resource_state rs, const api *a)
-  : state (name, id), m_rs (rs), m_api (a)
+		    enum resource_state rs,
+		    const deallocator_set *deallocators,
+		    const deallocator *deallocator)
+  : state (name, id), m_rs (rs),
+    m_deallocators (deallocators),
+    m_deallocator (deallocator)
   {}
 
   void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
@@ -100,7 +131,8 @@ struct allocation_state : public state_machine::state
   const allocation_state *get_nonnull () const;
 
   enum resource_state m_rs;
-  const api *m_api;
+  const deallocator_set *m_deallocators;
+  const deallocator *m_deallocator;
 };
 
 /* An enum for choosing which wording to use in various diagnostics
@@ -109,52 +141,186 @@ struct allocation_state : public state_machine::state
 enum wording
 {
   WORDING_FREED,
-  WORDING_DELETED
+  WORDING_DELETED,
+  WORDING_DEALLOCATED
 };
 
-/* Represents a particular family of API calls for allocating/deallocating
-   heap memory that should be matched e.g.
-   - malloc/free
-   - scalar new/delete
-   - vector new[]/delete[]
-   etc.
+/* Base class representing a deallocation function,
+   either a built-in one we know about, or one exposed via
+   __attribute__((malloc(DEALLOCATOR))).  */
 
-   We track the expected deallocation function, but not the allocation
-   function - there could be more than one allocator per deallocator.  For
-   example, there could be dozens of allocators for "free" beyond just
-   malloc e.g. calloc, xstrdup, etc.  We don't want to explode the number
-   of states by tracking individual allocators in the exploded graph;
-   we merely want to track "this value expects to have 'free' called on it".
-   Perhaps we can reconstruct which allocator was used later, when emitting
-   the path, if it's necessary for precision of wording of diagnostics.  */
-
-struct api
+struct deallocator
 {
-  api (malloc_state_machine *sm,
-       const char *name,
-       const char *dealloc_funcname,
-       enum wording wording);
+  hashval_t hash () const;
+  void dump_to_pp (pretty_printer *pp) const;
+  static int cmp (const deallocator *a, const deallocator *b);
+  static int cmp_ptr_ptr (const void *, const void *);
 
-  /* An internal name for identifying this API in dumps.  */
+  /* Name to use in diagnostics.  */
   const char *m_name;
-
-  /* The name of the deallocation function, for use in diagnostics.  */
-  const char *m_dealloc_funcname;
 
   /* Which wording to use in diagnostics.  */
   enum wording m_wording;
 
-  /* Pointers to api-specific states.
+  /* State for a value passed to one of the deallocators.  */
+  state_machine::state_t m_freed;
+
+protected:
+  deallocator (malloc_state_machine *sm,
+	       const char *name,
+	       enum wording wording);
+};
+
+/* Subclass representing a predefined deallocator.
+   e.g. "delete []", without needing a specific FUNCTION_DECL
+   ahead of time.  */
+
+struct standard_deallocator : public deallocator
+{
+  standard_deallocator (malloc_state_machine *sm,
+			const char *name,
+			enum wording wording);
+};
+
+/* Subclass representing a user-defined deallocator
+   via __attribute__((malloc(DEALLOCATOR))) given
+   a specific FUNCTION_DECL.  */
+
+struct custom_deallocator : public deallocator
+{
+  custom_deallocator (malloc_state_machine *sm,
+		      tree deallocator_fndecl,
+		      enum wording wording)
+  : deallocator (sm, IDENTIFIER_POINTER (DECL_NAME (deallocator_fndecl)),
+		 wording)
+  {
+  }
+};
+
+/* Base class representing a set of possible deallocators.
+   Often this will be just a single deallocator, but some
+   allocators have multiple valid deallocators (e.g. the result of
+   "fopen" can be closed by either "fclose" or "freopen").  */
+
+struct deallocator_set
+{
+  deallocator_set (malloc_state_machine *sm,
+		   enum wording wording);
+  virtual ~deallocator_set () {}
+
+  virtual bool contains_p (const deallocator *d) const = 0;
+  virtual const deallocator *maybe_get_single () const = 0;
+  virtual void dump_to_pp (pretty_printer *pp) const = 0;
+  void dump () const;
+
+  /* Which wording to use in diagnostics.  */
+  enum wording m_wording;
+
+  /* Pointers to states.
      These states are owned by the state_machine base class.  */
 
-  /* State for an unchecked result from this api's allocator.  */
+  /* State for an unchecked result from an allocator using this set.  */
   state_machine::state_t m_unchecked;
 
-  /* State for a known non-NULL result from this apis's allocator.  */
+  /* State for a known non-NULL result from such an allocator.  */
   state_machine::state_t m_nonnull;
+};
 
-  /* State for a value passed to this api's deallocator.  */
-  state_machine::state_t m_freed;
+/* Subclass of deallocator_set representing a set of deallocators
+   defined by one or more __attribute__((malloc(DEALLOCATOR))).  */
+
+struct custom_deallocator_set : public deallocator_set
+{
+  typedef const auto_vec <const deallocator *> *key_t;
+
+  custom_deallocator_set (malloc_state_machine *sm,
+			  const auto_vec <const deallocator *> *vec,
+			  //const char *name,
+			  //const char *dealloc_funcname,
+			  //unsigned arg_idx,
+			  enum wording wording);
+
+  bool contains_p (const deallocator *d) const FINAL OVERRIDE;
+  const deallocator *maybe_get_single () const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+
+  auto_vec <const deallocator *> m_deallocator_vec;
+};
+
+/* Subclass of deallocator_set representing a set of deallocators
+   with a single standard_deallocator, e.g. "delete []".  */
+
+struct standard_deallocator_set : public deallocator_set
+{
+  standard_deallocator_set (malloc_state_machine *sm,
+			    const char *name,
+			    enum wording wording);
+
+  bool contains_p (const deallocator *d) const FINAL OVERRIDE;
+  const deallocator *maybe_get_single () const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+
+  standard_deallocator m_deallocator;
+};
+
+/* Traits class for ensuring uniqueness of deallocator_sets within
+   malloc_state_machine.  */
+
+struct deallocator_set_map_traits
+{
+  typedef custom_deallocator_set::key_t key_type;
+  typedef custom_deallocator_set *value_type;
+  typedef custom_deallocator_set *compare_type;
+
+  static inline hashval_t hash (const key_type &k)
+  {
+    gcc_assert (k != NULL);
+    gcc_assert (k != reinterpret_cast<key_type> (1));
+
+    hashval_t result = 0;
+    unsigned i;
+    const deallocator *d;
+    FOR_EACH_VEC_ELT (*k, i, d)
+      result ^= d->hash ();
+    return result;
+  }
+  static inline bool equal_keys (const key_type &k1, const key_type &k2)
+  {
+    if (k1->length () != k2->length ())
+      return false;
+
+    for (unsigned i = 0; i < k1->length (); i++)
+      if ((*k1)[i] != (*k2)[i])
+	return false;
+
+    return true;
+  }
+  template <typename T>
+  static inline void remove (T &)
+  {
+    /* empty; the nodes are handled elsewhere.  */
+  }
+  template <typename T>
+  static inline void mark_deleted (T &entry)
+  {
+    entry.m_key = reinterpret_cast<key_type> (1);
+  }
+  template <typename T>
+  static inline void mark_empty (T &entry)
+  {
+    entry.m_key = NULL;
+  }
+  template <typename T>
+  static inline bool is_deleted (const T &entry)
+  {
+    return entry.m_key == reinterpret_cast<key_type> (1);
+  }
+  template <typename T>
+  static inline bool is_empty (const T &entry)
+  {
+    return entry.m_key == NULL;
+  }
+  static const bool empty_zero_p = false;
 };
 
 /* A state machine for detecting misuses of the malloc/free API.
@@ -167,9 +333,12 @@ public:
   typedef allocation_state custom_data_t;
 
   malloc_state_machine (logger *logger);
+  ~malloc_state_machine ();
 
   state_t
-  add_state (const char *name, enum resource_state rs, const api *a);
+  add_state (const char *name, enum resource_state rs,
+	     const deallocator_set *deallocators,
+	     const deallocator *deallocator);
 
   bool inherited_state_p () const FINAL OVERRIDE { return false; }
 
@@ -214,9 +383,9 @@ public:
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const FINAL OVERRIDE;
 
-  api m_malloc;
-  api m_scalar_new;
-  api m_vector_new;
+  standard_deallocator_set m_free;
+  standard_deallocator_set m_scalar_delete;
+  standard_deallocator_set m_vector_delete;
 
   /* States that are independent of api.  */
 
@@ -232,31 +401,192 @@ public:
   state_t m_stop;
 
 private:
+  const custom_deallocator_set *
+  get_or_create_custom_deallocator_set (tree allocator_fndecl);
+  custom_deallocator_set *
+  maybe_create_custom_deallocator_set (tree allocator_fndecl);
+  const deallocator *
+  get_or_create_deallocator (tree deallocator_fndecl);
+
   void on_allocator_call (sm_context *sm_ctxt,
 			  const gcall *call,
-			  const api &ap) const;
+			  const deallocator_set *deallocators,
+			  bool returns_nonnull = false) const;
   void on_deallocator_call (sm_context *sm_ctxt,
 			    const supernode *node,
 			    const gcall *call,
-			    const api &ap) const;
+			    const deallocator *d,
+			    unsigned argno) const;
   void on_zero_assignment (sm_context *sm_ctxt,
 			   const gimple *stmt,
 			   tree lhs) const;
+
+  /* A map for consolidating deallocators so that they are
+     unique per deallocator FUNCTION_DECL.  */
+  typedef hash_map<tree, deallocator *> deallocator_map_t;
+  deallocator_map_t m_deallocator_map;
+
+  /* Memoized lookups from FUNCTION_DECL to custom_deallocator_set *.  */
+  typedef hash_map<tree, custom_deallocator_set *> deallocator_set_cache_t;
+  deallocator_set_cache_t m_custom_deallocator_set_cache;
+
+  /* A map for consolidating custom_deallocator_set instances.  */
+  typedef hash_map<custom_deallocator_set::key_t,
+		   custom_deallocator_set *,
+		   deallocator_set_map_traits> custom_deallocator_set_map_t;
+  custom_deallocator_set_map_t m_custom_deallocator_set_map;
+
+  /* Record of dynamically-allocated objects,  for cleanup.  */
+  auto_vec <custom_deallocator_set *> m_dynamic_sets;
+  auto_vec <custom_deallocator *> m_dynamic_deallocators;
 };
 
-/* struct api.  */
+/* struct deallocator.  */
 
-api::api (malloc_state_machine *sm,
-	  const char *name,
-	  const char *dealloc_funcname,
-	  enum wording wording)
+deallocator::deallocator (malloc_state_machine *sm,
+			  const char *name,
+			  enum wording wording)
 : m_name (name),
-  m_dealloc_funcname (dealloc_funcname),
   m_wording (wording),
-  m_unchecked (sm->add_state ("unchecked", RS_UNCHECKED, this)),
-  m_nonnull (sm->add_state ("nonnull", RS_NONNULL, this)),
-  m_freed (sm->add_state ("freed", RS_FREED, this))
+  m_freed (sm->add_state ("freed", RS_FREED, NULL, this))
 {
+}
+
+hashval_t
+deallocator::hash () const
+{
+  return (hashval_t)m_freed->get_id ();
+}
+
+void
+deallocator::dump_to_pp (pretty_printer *pp) const
+{
+  pp_printf (pp, "%qs", m_name);
+}
+
+int
+deallocator::cmp (const deallocator *a, const deallocator *b)
+{
+  return (int)a->m_freed->get_id () - (int)b->m_freed->get_id ();
+}
+
+int
+deallocator::cmp_ptr_ptr (const void *a, const void *b)
+{
+  return cmp (*(const deallocator * const *)a,
+	      *(const deallocator * const *)b);
+}
+
+
+/* struct standard_deallocator : public deallocator.  */
+
+standard_deallocator::standard_deallocator (malloc_state_machine *sm,
+					    const char *name,
+					    enum wording wording)
+: deallocator (sm, name, wording)
+{
+}
+
+/* struct deallocator_set.  */
+
+deallocator_set::deallocator_set (malloc_state_machine *sm,
+				  enum wording wording)
+: m_wording (wording),
+  m_unchecked (sm->add_state ("unchecked", RS_UNCHECKED, this, NULL)),
+  m_nonnull (sm->add_state ("nonnull", RS_NONNULL, this, NULL))
+{
+}
+
+/* Dump a description of this deallocator_set to stderr.  */
+
+DEBUG_FUNCTION void
+deallocator_set::dump () const
+{
+  pretty_printer pp;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+/* struct custom_deallocator_set : public deallocator_set.  */
+
+custom_deallocator_set::
+custom_deallocator_set (malloc_state_machine *sm,
+			const auto_vec <const deallocator *> *vec,
+			enum wording wording)
+: deallocator_set (sm, wording),
+  m_deallocator_vec (vec->length ())
+{
+  unsigned i;
+  const deallocator *d;
+  FOR_EACH_VEC_ELT (*vec, i, d)
+    m_deallocator_vec.safe_push (d);
+}
+
+bool
+custom_deallocator_set::contains_p (const deallocator *d) const
+{
+  unsigned i;
+  const deallocator *cd;
+  FOR_EACH_VEC_ELT (m_deallocator_vec, i, cd)
+    if (cd == d)
+      return true;
+  return false;
+}
+
+const deallocator *
+custom_deallocator_set::maybe_get_single () const
+{
+  if (m_deallocator_vec.length () == 1)
+    return m_deallocator_vec[0];
+  return NULL;
+}
+
+void
+custom_deallocator_set::dump_to_pp (pretty_printer *pp) const
+{
+  pp_character (pp, '{');
+  unsigned i;
+  const deallocator *d;
+  FOR_EACH_VEC_ELT (m_deallocator_vec, i, d)
+    {
+      if (i > 0)
+	pp_string (pp, ", ");
+      d->dump_to_pp (pp);
+    }
+  pp_character (pp, '}');
+}
+
+/* struct standard_deallocator_set : public deallocator_set.  */
+
+standard_deallocator_set::standard_deallocator_set (malloc_state_machine *sm,
+						    const char *name,
+						    enum wording wording)
+: deallocator_set (sm, wording),
+  m_deallocator (sm, name, wording)
+{
+}
+
+bool
+standard_deallocator_set::contains_p (const deallocator *d) const
+{
+  return d == &m_deallocator;
+}
+
+const deallocator *
+standard_deallocator_set::maybe_get_single () const
+{
+  return &m_deallocator;
+}
+
+void
+standard_deallocator_set::dump_to_pp (pretty_printer *pp) const
+{
+  pp_character (pp, '{');
+  pp_string (pp, m_deallocator.m_name);
+  pp_character (pp, '}');
 }
 
 /* Return STATE cast to the custom state subclass, or NULL for the start state.
@@ -289,6 +619,14 @@ get_rs (state_machine::state_t state)
     return astate->m_rs;
   else
     return RS_START;
+}
+
+/* Return true if STATE is the start state.  */
+
+static bool
+start_p (state_machine::state_t state)
+{
+  return get_rs (state) == RS_START;
 }
 
 /* Return true if STATE is an unchecked result from an allocator.  */
@@ -383,10 +721,10 @@ class mismatching_deallocation : public malloc_diagnostic
 {
 public:
   mismatching_deallocation (const malloc_state_machine &sm, tree arg,
-			    const api *expected_dealloc,
-			    const api *actual_dealloc)
+			    const deallocator_set *expected_deallocators,
+			    const deallocator *actual_dealloc)
   : malloc_diagnostic (sm, arg),
-    m_expected_dealloc (expected_dealloc),
+    m_expected_deallocators (expected_deallocators),
     m_actual_dealloc (actual_dealloc)
   {}
 
@@ -400,11 +738,18 @@ public:
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
-			 "%qE should have been deallocated with %qs"
-			 " but was deallocated with %qs",
-			 m_arg, m_expected_dealloc->m_dealloc_funcname,
-			 m_actual_dealloc->m_dealloc_funcname);
+    if (const deallocator *expected_dealloc
+	  = m_expected_deallocators->maybe_get_single ())
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+			   "%qE should have been deallocated with %qs"
+			   " but was deallocated with %qs",
+			   m_arg, expected_dealloc->m_name,
+			   m_actual_dealloc->m_name);
+    else
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+			   "%qs called on %qE returned from a mismatched"
+			   " allocation function",
+			   m_actual_dealloc->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -413,9 +758,13 @@ public:
     if (unchecked_p (change.m_new_state))
       {
 	m_alloc_event = change.m_event_id;
-	return change.formatted_print ("allocated here"
-				       " (expects deallocation with %qs)",
-				       m_expected_dealloc->m_dealloc_funcname);
+	if (const deallocator *expected_dealloc
+	    = m_expected_deallocators->maybe_get_single ())
+	  return change.formatted_print ("allocated here"
+					 " (expects deallocation with %qs)",
+					 expected_dealloc->m_name);
+	else
+	  return change.formatted_print ("allocated here");
       }
     return malloc_diagnostic::describe_state_change (change);
   }
@@ -423,19 +772,28 @@ public:
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
     if (m_alloc_event.known_p ())
-      return ev.formatted_print
-	("deallocated with %qs here;"
-	 " allocation at %@ expects deallocation with %qs",
-	 m_actual_dealloc->m_dealloc_funcname, &m_alloc_event,
-	 m_expected_dealloc->m_dealloc_funcname);
+      {
+	if (const deallocator *expected_dealloc
+	    = m_expected_deallocators->maybe_get_single ())
+	  return ev.formatted_print
+	    ("deallocated with %qs here;"
+	     " allocation at %@ expects deallocation with %qs",
+	     m_actual_dealloc->m_name, &m_alloc_event,
+	     expected_dealloc->m_name);
+	else
+	  return ev.formatted_print
+	    ("deallocated with %qs here;"
+	     " allocated at %@",
+	     m_actual_dealloc->m_name, &m_alloc_event);
+      }
     return ev.formatted_print ("deallocated with %qs here",
-			       m_actual_dealloc->m_dealloc_funcname);
+			       m_actual_dealloc->m_name);
   }
 
 private:
   diagnostic_event_id_t m_alloc_event;
-  const api *m_expected_dealloc;
-  const api *m_actual_dealloc;
+  const deallocator_set *m_expected_deallocators;
+  const deallocator *m_actual_dealloc;
 };
 
 /* Concrete subclass for reporting double-free diagnostics.  */
@@ -455,7 +813,7 @@ public:
     diagnostic_metadata m;
     m.add_cwe (415); /* CWE-415: Double Free.  */
     return warning_meta (rich_loc, m, OPT_Wanalyzer_double_free,
-			 "double-%<%s%> of %qE", m_funcname, m_arg);
+			 "double-%qs of %qE", m_funcname, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -765,9 +1123,12 @@ class use_after_free : public malloc_diagnostic
 {
 public:
   use_after_free (const malloc_state_machine &sm, tree arg,
-		  const api *a)
-  : malloc_diagnostic (sm, arg), m_api (a)
-  {}
+		  const deallocator *deallocator)
+  : malloc_diagnostic (sm, arg),
+    m_deallocator (deallocator)
+  {
+    gcc_assert (deallocator);
+  }
 
   const char *get_kind () const FINAL OVERRIDE { return "use_after_free"; }
 
@@ -778,7 +1139,7 @@ public:
     m.add_cwe (416);
     return warning_meta (rich_loc, m, OPT_Wanalyzer_use_after_free,
 			 "use after %<%s%> of %qE",
-			 m_api->m_dealloc_funcname, m_arg);
+			 m_deallocator->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -787,7 +1148,7 @@ public:
     if (freed_p (change.m_new_state))
       {
 	m_free_event = change.m_event_id;
-	switch (m_api->m_wording)
+	switch (m_deallocator->m_wording)
 	  {
 	  default:
 	    gcc_unreachable ();
@@ -795,6 +1156,8 @@ public:
 	    return label_text::borrow ("freed here");
 	  case WORDING_DELETED:
 	    return label_text::borrow ("deleted here");
+	  case WORDING_DEALLOCATED:
+	    return label_text::borrow ("deallocated here");
 	  }
       }
     return malloc_diagnostic::describe_state_change (change);
@@ -802,9 +1165,9 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    const char *funcname = m_api->m_dealloc_funcname;
+    const char *funcname = m_deallocator->m_name;
     if (m_free_event.known_p ())
-      switch (m_api->m_wording)
+      switch (m_deallocator->m_wording)
 	{
 	default:
 	  gcc_unreachable ();
@@ -814,6 +1177,10 @@ public:
 	case WORDING_DELETED:
 	  return ev.formatted_print ("use after %<%s%> of %qE; deleted at %@",
 				     funcname, ev.m_expr, &m_free_event);
+	case WORDING_DEALLOCATED:
+	  return ev.formatted_print ("use after %<%s%> of %qE;"
+				     " deallocated at %@",
+				     funcname, ev.m_expr, &m_free_event);
 	}
     else
       return ev.formatted_print ("use after %<%s%> of %qE",
@@ -822,7 +1189,7 @@ public:
 
 private:
   diagnostic_event_id_t m_free_event;
-  const api *m_api;
+  const deallocator *m_deallocator;
 };
 
 class malloc_leak : public malloc_diagnostic
@@ -848,7 +1215,8 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (unchecked_p (change.m_new_state))
+    if (unchecked_p (change.m_new_state)
+	|| (start_p (change.m_old_state) && nonnull_p (change.m_new_state)))
       {
 	m_alloc_event = change.m_event_id;
 	return label_text::borrow ("allocated here");
@@ -969,40 +1337,161 @@ void
 allocation_state::dump_to_pp (pretty_printer *pp) const
 {
   state_machine::state::dump_to_pp (pp);
-  if (m_api)
-    pp_printf (pp, " (%s)", m_api->m_name);
+  if (m_deallocators)
+    {
+      pp_string (pp, " (");
+      m_deallocators->dump_to_pp (pp);
+      pp_character (pp, ')');
+    }
 }
 
-/* Given a allocation_state for an api, get the "nonnull" state
-   for the corresponding allocator.  */
+/* Given a allocation_state for a deallocator_set, get the "nonnull" state
+   for the corresponding allocator(s).  */
 
 const allocation_state *
 allocation_state::get_nonnull () const
 {
-  gcc_assert (m_api);
-  return as_a_allocation_state (m_api->m_nonnull);
+  gcc_assert (m_deallocators);
+  return as_a_allocation_state (m_deallocators->m_nonnull);
 }
 
 /* malloc_state_machine's ctor.  */
 
 malloc_state_machine::malloc_state_machine (logger *logger)
 : state_machine ("malloc", logger),
-  m_malloc (this, "malloc", "free", WORDING_FREED),
-  m_scalar_new (this, "new", "delete", WORDING_DELETED),
-  m_vector_new (this, "new[]", "delete[]", WORDING_DELETED)
+  m_free (this, "free", WORDING_FREED),
+  m_scalar_delete (this, "delete", WORDING_DELETED),
+  m_vector_delete (this, "delete[]", WORDING_DELETED)
 {
   gcc_assert (m_start->get_id () == 0);
-  m_null = add_state ("null", RS_FREED, NULL);
-  m_non_heap = add_state ("non-heap", RS_NON_HEAP, NULL);
-  m_stop = add_state ("stop", RS_STOP, NULL);
+  m_null = add_state ("null", RS_FREED, NULL, NULL);
+  m_non_heap = add_state ("non-heap", RS_NON_HEAP, NULL, NULL);
+  m_stop = add_state ("stop", RS_STOP, NULL, NULL);
+}
+
+malloc_state_machine::~malloc_state_machine ()
+{
+  unsigned i;
+  custom_deallocator_set *set;
+  FOR_EACH_VEC_ELT (m_dynamic_sets, i, set)
+    delete set;
+  custom_deallocator *d;
+  FOR_EACH_VEC_ELT (m_dynamic_deallocators, i, d)
+    delete d;
 }
 
 state_machine::state_t
 malloc_state_machine::add_state (const char *name, enum resource_state rs,
-				 const api *a)
+				 const deallocator_set *deallocators,
+				 const deallocator *deallocator)
 {
   return add_custom_state (new allocation_state (name, alloc_state_id (),
-						 rs, a));
+						 rs, deallocators,
+						 deallocator));
+}
+
+/* If ALLOCATOR_FNDECL has any "__attribute__((malloc(FOO)))",
+   return a custom_deallocator_set for them, consolidating them
+   to ensure uniqueness of the sets.
+
+   Return NULL if it has no such attributes.  */
+
+const custom_deallocator_set *
+malloc_state_machine::
+get_or_create_custom_deallocator_set (tree allocator_fndecl)
+{
+  /* Early rejection of decls without attributes.  */
+  tree attrs = DECL_ATTRIBUTES (allocator_fndecl);
+  if (!attrs)
+    return NULL;
+
+  /* Otherwise, call maybe_create_custom_deallocator_set,
+     memoizing the result.  */
+  if (custom_deallocator_set **slot
+      = m_custom_deallocator_set_cache.get (allocator_fndecl))
+    return *slot;
+  custom_deallocator_set *set
+    = maybe_create_custom_deallocator_set (allocator_fndecl);
+  m_custom_deallocator_set_cache.put (allocator_fndecl, set);
+  return set;
+}
+
+/* Given ALLOCATOR_FNDECL, a FUNCTION_DECL with attributes,
+   look for any "__attribute__((malloc(FOO)))" and return a
+   custom_deallocator_set for them, consolidating them
+   to ensure uniqueness of the sets.
+
+   Return NULL if it has no such attributes.
+
+   Subroutine of get_or_create_custom_deallocator_set which
+   memoizes the result.  */
+
+custom_deallocator_set *
+malloc_state_machine::
+maybe_create_custom_deallocator_set (tree allocator_fndecl)
+{
+  tree attrs = DECL_ATTRIBUTES (allocator_fndecl);
+  gcc_assert (attrs);
+
+  /* Look for instances of __attribute__((malloc(FOO))).  */
+  auto_vec<const deallocator *> deallocator_vec;
+  for (tree allocs = attrs;
+       (allocs = lookup_attribute ("malloc", allocs));
+       allocs = TREE_CHAIN (allocs))
+    {
+      tree args = TREE_VALUE (allocs);
+      if (!args)
+	continue;
+      if (TREE_VALUE (args))
+	{
+	  const deallocator *d
+	    = get_or_create_deallocator (TREE_VALUE (args));
+	  deallocator_vec.safe_push (d);
+	}
+    }
+
+  /* If there weren't any deallocators, bail.  */
+  if (deallocator_vec.length () == 0)
+    return NULL;
+
+  /* Consolidate, so that we reuse existing deallocator_set
+     instances.  */
+  deallocator_vec.qsort (deallocator::cmp_ptr_ptr);
+  custom_deallocator_set **slot
+    = m_custom_deallocator_set_map.get (&deallocator_vec);
+  if (slot)
+    return *slot;
+  custom_deallocator_set *set
+    = new custom_deallocator_set (this, &deallocator_vec, WORDING_DEALLOCATED);
+  m_custom_deallocator_set_map.put (&set->m_deallocator_vec, set);
+  m_dynamic_sets.safe_push (set);
+  return set;
+}
+
+/* Get the deallocator for DEALLOCATOR_FNDECL, creating it if necessary.  */
+
+const deallocator *
+malloc_state_machine::get_or_create_deallocator (tree deallocator_fndecl)
+{
+  deallocator **slot = m_deallocator_map.get (deallocator_fndecl);
+  if (slot)
+    return *slot;
+
+  /* Reuse "free".  */
+  deallocator *d;
+  if (is_named_call_p (deallocator_fndecl, "free")
+      || is_std_named_call_p (deallocator_fndecl, "free"))
+    d = &m_free.m_deallocator;
+  else
+    {
+      custom_deallocator *cd
+	= new custom_deallocator (this, deallocator_fndecl,
+				  WORDING_DEALLOCATED);
+      m_dynamic_deallocators.safe_push (cd);
+      d = cd;
+    }
+  m_deallocator_map.put (deallocator_fndecl, d);
+  return d;
 }
 
 /* Implementation of state_machine::on_stmt vfunc for malloc_state_machine.  */
@@ -1024,23 +1513,25 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_named_call_p (callee_fndecl, "strdup", call, 1)
 	    || is_named_call_p (callee_fndecl, "strndup", call, 2))
 	  {
-	    on_allocator_call (sm_ctxt, call, m_malloc);
+	    on_allocator_call (sm_ctxt, call, &m_free);
 	    return true;
 	  }
 
 	if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	  on_allocator_call (sm_ctxt, call, m_scalar_new);
+	  on_allocator_call (sm_ctxt, call, &m_scalar_delete);
 	else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	  on_allocator_call (sm_ctxt, call, m_vector_new);
+	  on_allocator_call (sm_ctxt, call, &m_vector_delete);
 	else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
 		 || is_named_call_p (callee_fndecl, "operator delete", call, 2))
 	  {
-	    on_deallocator_call (sm_ctxt, node, call, m_scalar_new);
+	    on_deallocator_call (sm_ctxt, node, call,
+				 &m_scalar_delete.m_deallocator, 0);
 	    return true;
 	  }
 	else if (is_named_call_p (callee_fndecl, "operator delete []", call, 1))
 	  {
-	    on_deallocator_call (sm_ctxt, node, call, m_vector_new);
+	    on_deallocator_call (sm_ctxt, node, call,
+				 &m_vector_delete.m_deallocator, 0);
 	    return true;
 	  }
 
@@ -1057,8 +1548,24 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_std_named_call_p (callee_fndecl, "free", call, 1)
 	    || is_named_call_p (callee_fndecl, "__builtin_free", call, 1))
 	  {
-	    on_deallocator_call (sm_ctxt, node, call, m_malloc);
+	    on_deallocator_call (sm_ctxt, node, call,
+				 &m_free.m_deallocator, 0);
 	    return true;
+	  }
+
+	/* Cast away const-ness for cache-like operations.  */
+	malloc_state_machine *mutable_this
+	  = const_cast <malloc_state_machine *> (this);
+
+	/* Handle "__attribute__((malloc(FOO)))".   */
+	if (const deallocator_set *deallocators
+	      = mutable_this->get_or_create_custom_deallocator_set
+		  (callee_fndecl))
+	  {
+	    tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (callee_fndecl));
+	    bool returns_nonnull
+	      = lookup_attribute ("returns_nonnull", attrs);
+	    on_allocator_call (sm_ctxt, call, deallocators, returns_nonnull);
 	  }
 
 	/* Handle "__attribute__((nonnull))".   */
@@ -1103,6 +1610,16 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	      BITMAP_FREE (nonnull_args);
 	    }
 	}
+
+	/* Check for this after nonnull, so that if we have both
+	   then we transition to "freed", rather than "checked".  */
+	unsigned dealloc_argno = fndecl_dealloc_argno (callee_fndecl);
+	if (dealloc_argno != UINT_MAX)
+	  {
+	    const deallocator *d
+	      = mutable_this->get_or_create_deallocator (callee_fndecl);
+	    on_deallocator_call (sm_ctxt, node, call, d, dealloc_argno);
+	  }
       }
 
   if (tree lhs = sm_ctxt->is_zero_assignment (stmt))
@@ -1162,7 +1679,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt->warn (node, stmt, arg,
 			     new use_after_free (*this, diag_arg,
-						 astate->m_api));
+						 astate->m_deallocator));
 	      sm_ctxt->set_next_state (stmt, arg, m_stop);
 	    }
 	}
@@ -1170,18 +1687,24 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
   return false;
 }
 
-/* Handle a call to an allocator.  */
+/* Handle a call to an allocator.
+   RETURNS_NONNULL is true if CALL is to a fndecl known to have
+   __attribute__((returns_nonnull)).  */
 
 void
 malloc_state_machine::on_allocator_call (sm_context *sm_ctxt,
 					 const gcall *call,
-					 const api &ap) const
+					 const deallocator_set *deallocators,
+					 bool returns_nonnull) const
 {
   tree lhs = gimple_call_lhs (call);
   if (lhs)
     {
       if (sm_ctxt->get_state (call, lhs) == m_start)
-	sm_ctxt->set_next_state (call, lhs, ap.m_unchecked);
+	sm_ctxt->set_next_state (call, lhs,
+				 (returns_nonnull
+				  ? deallocators->m_nonnull
+				  : deallocators->m_unchecked));
     }
   else
     {
@@ -1193,40 +1716,42 @@ void
 malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
 					   const supernode *node,
 					   const gcall *call,
-					   const api &ap) const
+					   const deallocator *d,
+					   unsigned argno) const
 {
-  tree arg = gimple_call_arg (call, 0);
+  if (argno >= gimple_call_num_args (call))
+    return;
+  tree arg = gimple_call_arg (call, argno);
   tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
   state_t state = sm_ctxt->get_state (call, arg);
 
   /* start/unchecked/nonnull -> freed.  */
   if (state == m_start)
-    sm_ctxt->set_next_state (call, arg, ap.m_freed);
+    sm_ctxt->set_next_state (call, arg, d->m_freed);
   else if (unchecked_p (state) || nonnull_p (state))
     {
       const allocation_state *astate = as_a_allocation_state (state);
-
-      if (astate->m_api != &ap)
+      gcc_assert (astate->m_deallocators);
+      if (!astate->m_deallocators->contains_p (d))
 	{
 	  /* Wrong allocator.  */
-	  pending_diagnostic *d
+	  pending_diagnostic *pd
 	    = new mismatching_deallocation (*this, diag_arg,
-					    astate->m_api, &ap);
-	  sm_ctxt->warn (node, call, arg, d);
+					    astate->m_deallocators,
+					    d);
+	  sm_ctxt->warn (node, call, arg, pd);
 	}
-      sm_ctxt->set_next_state (call, arg, ap.m_freed);
+      sm_ctxt->set_next_state (call, arg, d->m_freed);
     }
 
   /* Keep state "null" as-is, rather than transitioning to "freed";
      we don't want to complain about double-free of NULL.  */
-
-  else if (state == ap.m_freed)
+  else if (state == d->m_freed)
     {
       /* freed -> stop, with warning.  */
       sm_ctxt->warn (node, call, arg,
-		     new double_free (*this, diag_arg,
-				      ap.m_dealloc_funcname));
+		     new double_free (*this, diag_arg, d->m_name));
       sm_ctxt->set_next_state (call, arg, m_stop);
     }
   else if (state == m_non_heap)
@@ -1234,7 +1759,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
       /* non-heap -> stop, with warning.  */
       sm_ctxt->warn (node, call, arg,
 		     new free_of_non_heap (*this, diag_arg,
-					   ap.m_dealloc_funcname));
+					   d->m_name));
       sm_ctxt->set_next_state (call, arg, m_stop);
     }
 }

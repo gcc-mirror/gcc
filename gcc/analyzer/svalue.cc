@@ -1,5 +1,5 @@
 /* Symbolic values.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -507,6 +507,22 @@ region_svalue::accept (visitor *v) const
 {
   v->visit_region_svalue (this);
   m_reg->accept (v);
+}
+
+/* Implementation of svalue::implicitly_live_p vfunc for region_svalue.  */
+
+bool
+region_svalue::implicitly_live_p (const svalue_set &,
+				  const region_model *model) const
+{
+  /* Pointers into clusters that have escaped should be treated as live.  */
+  const region *base_reg = get_pointee ()->get_base_region ();
+  const store *store = model->get_store ();
+  if (const binding_cluster *c = store->get_cluster (base_reg))
+    if (c->escaped_p ())
+	return true;
+
+  return false;
 }
 
 /* Evaluate the condition LHS OP RHS.

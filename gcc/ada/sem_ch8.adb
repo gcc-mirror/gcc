@@ -772,6 +772,31 @@ package body Sem_Ch8 is
       --  Obtain the name of the object from node Nod which is being renamed by
       --  the object renaming declaration N.
 
+      function Find_Raise_Node (N : Node_Id) return Traverse_Result;
+      --  Process one node in search for N_Raise_xxx_Error nodes.
+      --  Return Abandon if found, OK otherwise.
+
+      ---------------------
+      -- Find_Raise_Node --
+      ---------------------
+
+      function Find_Raise_Node (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) in N_Raise_xxx_Error then
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Find_Raise_Node;
+
+      ------------------------
+      -- No_Raise_xxx_Error --
+      ------------------------
+
+      function No_Raise_xxx_Error is new Traverse_Func (Find_Raise_Node);
+      --  Traverse tree to look for a N_Raise_xxx_Error node and returns
+      --  Abandon if so and OK if none found.
+
       ------------------------------
       -- Check_Constrained_Object --
       ------------------------------
@@ -1454,10 +1479,11 @@ package body Sem_Ch8 is
       then
          Error_Msg_N ("incompatible types in renaming", Nam);
 
-      --  AI12-0383: Names that denote values can be renamed
+      --  AI12-0383: Names that denote values can be renamed.
+      --  Ignore (accept) N_Raise_xxx_Error nodes in this context.
 
-      elsif Ada_Version < Ada_2020 then
-         Error_Msg_N ("value in renaming requires -gnat2020", Nam);
+      elsif No_Raise_xxx_Error (Nam) = OK then
+         Error_Msg_Ada_2020_Feature ("value in renaming", Sloc (Nam));
       end if;
 
       Set_Etype (Id, T2);
@@ -7867,7 +7893,7 @@ package body Sem_Ch8 is
 
                      elsif Warn_On_Obsolescent_Feature and then False then
                         Error_Msg_N
-                          ("applying 'Class to an untagged incomplete type"
+                          ("applying ''Class to an untagged incomplete type"
                            & " is an obsolescent feature (RM J.11)?r?", N);
                      end if;
                   end if;

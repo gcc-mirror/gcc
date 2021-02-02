@@ -1,0 +1,78 @@
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* configure.ac: Include ../config/ax_lib_socket_nsl.m4.
+	(NETLIBS): Determine using AX_LIB_SOCKET_NSL.
+	* configure: Regenerate.
+	* Makefile.in (NETLIBS): Define.
+	(g++-mapper-server$(exeext)): Add $(NETLIBS).
+
+2021-01-04  Nathan Sidwell  <nathan@acm.org>
+
+	* resolver.cc (module_resolver::cmi_response): Remove
+	std::move of temporary.
+
+2020-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98324
+	* Makefile.in: Add FLAGPIE.
+	* configure.ac: Add --enable-default-pie support.
+	* configure: Rebuilt.
+
+2020-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR other/98409
+	* Makefile.in: Fix exeext variable case.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* server.cc (crash_signal): Don't use strsignal.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* configure.ac: Check for sys/mman.h.
+	* resolver.cc: Don't assume mmap, O_CLOEXEC are available.  Use
+	xmalloc.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2020-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.in (version): Remove variable.
+	(gcc_version): New variable.
+	(libexecsubdir): Use $(gcc_version) instead of $(version).
+	* configure: Regenerated.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (INSTALL): Replace with ...
+	(INSTALL_PROGRAM): ... this.
+	(INSTALL_STRIP_PROGRAM): New.
+	(install-strip): New target.
+	(install): Use INSTALL_PROGRAM.
+	* configure.ac: Add INSTALL_PROGRAM.
+	* configure: Regenerated.
+
+2020-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (install): Do not use -p, use mkinstalldirs.
+	(clean): Fix typo.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in: New.
+	* config.h.in: New.
+	* configure: New.
+	* configure.ac: New.
+	* resolver.cc: New.
+	* resolver.h: New.
+	* server.cc: New.
+
+
+Copyright (C) 2020-2021 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

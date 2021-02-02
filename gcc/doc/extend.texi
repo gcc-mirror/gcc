@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -3257,39 +3257,91 @@ as they may return pointers to storage containing pointers to existing
 objects.
 
 Associating a function with a @var{deallocator} helps detect calls to
-mismatched allocation and deallocation functions and diagnose them
-under the control of options such as @option{-Wmismatched-dealloc}.
-To indicate that an allocation function both satisifies the nonaliasing
-property and has a deallocator associated with it, both the plain form
-of the attribute and the one with the @var{deallocator} argument must
-be used.
+mismatched allocation and deallocation functions and diagnose them under
+the control of options such as @option{-Wmismatched-dealloc}.  To indicate
+that an allocation function both satisifies the nonaliasing property and
+has a deallocator associated with it, both the plain form of the attribute
+and the one with the @var{deallocator} argument must be used.  The same
+function can be both an allocator and a deallocator.  Since inlining one
+of the associated functions but not the other could result in apparent
+mismatches, this form of attribute @code{malloc} is not accepted on inline
+functions.  For the same reason, using the attribute prevents both
+the allocation and deallocation functions from being expanded inline.
 
 For example, besides stating that the functions return pointers that do
-not alias any others, the following declarations make the @code{fclose}
-and @code{frepen} functions suitable deallocators for pointers returned
-from all the functions that return them, and the @code{pclose} function
-as the only other suitable deallocator besides @code{freopen} for pointers
-returned from @code{popen}.  The deallocator functions must declared
-before they can be referenced in the attribute.
+not alias any others, the following declarations make @code{fclose}
+a suitable deallocator for pointers returned from all functions except
+@code{popen}, and @code{pclose} as the only suitable deallocator for
+pointers returned from @code{popen}.  The deallocator functions must
+declared before they can be referenced in the attribute.
 
 @smallexample
-int   fclose (FILE*);
-FILE* freopen (const char*, const char*, FILE*);
-int   pclose (FILE*);
+int fclose (FILE*);
+int pclose (FILE*);
 
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fdopen (int);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fopen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* fmemopen(void *, size_t, const char *);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
-  FILE* freopen (const char*, const char*, FILE*);
-__attribute__ ((malloc, malloc (pclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (pclose (1))))
   FILE* popen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose), malloc (freopen, 3)))
+__attribute__ ((malloc, malloc (fclose (1))))
   FILE* tmpfile (void);
 @end smallexample
+
+The warnings guarded by @option{-fanalyzer} respect allocation and
+deallocation pairs marked with the @code{malloc}.  In particular:
+
+@itemize @bullet
+
+@item
+The analyzer will emit a @option{-Wanalyzer-mismatching-deallocation}
+diagnostic if there is an execution path in which the result of an
+allocation call is passed to a different deallocator.
+
+@item
+The analyzer will emit a @option{-Wanalyzer-double-free}
+diagnostic if there is an execution path in which a value is passed
+more than once to a deallocation call.
+
+@item
+The analyzer will consider the possibility that an allocation function
+could fail and return NULL.  It will emit
+@option{-Wanalyzer-possible-null-dereference} and
+@option{-Wanalyzer-possible-null-argument} diagnostics if there are
+execution paths in which an unchecked result of an allocation call is
+dereferenced or passed to a function requiring a non-null argument.
+If the allocator always returns non-null, use
+@code{__attribute__ ((returns_nonnull))} to suppress these warnings.
+For example:
+@smallexample
+char *xstrdup (const char *)
+  __attribute__((malloc (free), returns_nonnull));
+@end smallexample
+
+@item
+The analyzer will emit a @option{-Wanalyzer-use-after-free}
+diagnostic if there is an execution path in which the memory passed
+by pointer to a deallocation call is used after the deallocation.
+
+@item
+The analyzer will emit a @option{-Wanalyzer-malloc-leak} diagnostic if
+there is an execution path in which the result of an allocation call
+is leaked (without being passed to the deallocation function).
+
+@item
+The analyzer will emit a @option{-Wanalyzer-free-of-non-heap} diagnostic
+if a deallocation function is used on a global or on-stack variable.
+
+@end itemize
+
+The analyzer assumes that deallocators can gracefully handle the @code{NULL}
+pointer.  If this is not the case, the deallocator can be marked with
+@code{__attribute__((nonnull))} so that @option{-fanalyzer} can emit
+a @option{-Wanalyzer-possible-null-argument} diagnostic for code paths
+in which the deallocator is called with NULL.
 
 @item no_icf
 @cindex @code{no_icf} function attribute
@@ -21642,6 +21694,126 @@ integer value between 0 and 255 inclusive.
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
                                          const int)
 @end smallexample
+
+Vector Integer Multiply/Divide/Modulo
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mulh (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mulh (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer
+value in word element @code{i} of a is multiplied by the integer value in word
+element @code{i} of b. The high-order 32 bits of the 64-bit product are placed
+into word element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mulh (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The high-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector unsigned long long
+@exdent vec_mul (vector unsigned long long a, vector unsigned long long b)
+@exdent vector signed long long
+@exdent vec_mul (vector signed long long a, vector signed long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The low-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_div (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_div (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer quotient is placed into the word element @code{i} of
+the vector returned. If an attempt is made to perform any of the divisions
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_div (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_div (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer quotient is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform any of the divisions 0x8000_0000_0000_0000 ÷ -1 or <anything> ÷ 0 then
+the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_dive (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_dive (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is shifted left by 32 bits, then divided by the
+integer in word element @code{i} of b. The unique integer quotient is placed
+into the word element @code{i} of the vector returned. If the quotient cannot
+be represented in 32 bits, or if an attempt is made to perform any of the
+divisions <anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_dive (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_dive (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is shifted left by 64 bits, then divided by
+the integer in doubleword element @code{i} of b. The unique integer quotient is
+placed into the doubleword element @code{i} of the vector returned. If the
+quotient cannot be represented in 64 bits, or if an attempt is made to perform
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mod (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mod (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer remainder is placed into the word element @code{i} of
+the vector returned.  If an attempt is made to perform any of the divisions
+0x8000_0000 ÷ -1 or <anything> ÷ 0 then the remainder is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mod (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mod (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer remainder is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform <anything> ÷ 0 then the remainder is undefined.
+
 Generate PCV from specified Mask size, as if implemented by the
 @code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
 immediate value is either 0, 1, 2 or 3.

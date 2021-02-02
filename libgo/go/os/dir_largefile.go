@@ -11,5 +11,5 @@ package os
 
 import "syscall"
 
-//extern readdir64_r
-func libc_readdir_r(*syscall.DIR, *syscall.Dirent, **syscall.Dirent) syscall.Errno
+//extern readdir64
+func libc_readdir(*syscall.DIR) *syscall.Dirent

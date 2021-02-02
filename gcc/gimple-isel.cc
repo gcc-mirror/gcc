@@ -1,5 +1,5 @@
 /* Schedule GIMPLE vector statements.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "optabs.h"
 #include "gimple-fold.h"
+#include "internal-fn.h"
 
 /* Expand all ARRAY_REF(VIEW_CONVERT_EXPR) gimple assignments into calls to
    internal function based on vector type of selected expansion.
@@ -154,6 +155,7 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
       return gimple_build_assign (lhs, tem3);
     }
 
+  bool can_compute_op0 = true;
   gcc_assert (!COMPARISON_CLASS_P (op0));
   if (TREE_CODE (op0) == SSA_NAME)
     {
@@ -184,10 +186,27 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 
 	  tree op0_type = TREE_TYPE (op0);
 	  tree op0a_type = TREE_TYPE (op0a);
-	  if (used_vec_cond_exprs >= 2
+	  if (TREE_CODE_CLASS (tcode) == tcc_comparison)
+	    can_compute_op0 = expand_vec_cmp_expr_p (op0a_type, op0_type,
+						     tcode);
+
+	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
+
+	  if (can_compute_op0
+	      && integer_minus_onep (op1)
+	      && integer_zerop (op2)
+	      && TYPE_MODE (TREE_TYPE (lhs)) == TYPE_MODE (TREE_TYPE (op0)))
+	    {
+	      tree conv_op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), op0);
+	      gassign *new_stmt = gimple_build_assign (lhs, conv_op);
+	      gsi_replace (gsi, new_stmt, true);
+	      return new_stmt;
+	    }
+
+	  if (can_compute_op0
+	      && used_vec_cond_exprs >= 2
 	      && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
-		  != CODE_FOR_nothing)
-	      && expand_vec_cmp_expr_p (op0a_type, op0_type, tcode))
+		  != CODE_FOR_nothing))
 	    {
 	      /* Keep the SSA name and use vcond_mask.  */
 	      tcode = TREE_CODE (op0);
@@ -232,7 +251,10 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	     Try changing it to NE_EXPR.  */
 	  tcode = NE_EXPR;
 	}
-      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+      if ((tcode == EQ_EXPR || tcode == NE_EXPR)
+	  && direct_internal_fn_supported_p (IFN_VCONDEQ, TREE_TYPE (lhs),
+					     TREE_TYPE (op0a),
+					     OPTIMIZE_FOR_BOTH))
 	{
 	  tree tcode_tree = build_int_cst (integer_type_node, tcode);
 	  return gimple_build_call_internal (IFN_VCONDEQ, 5, op0a, op0b, op1,
@@ -240,7 +262,15 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	}
     }
 
-  gcc_assert (icode != CODE_FOR_nothing);
+  if (icode == CODE_FOR_nothing)
+    {
+      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0))
+		  && can_compute_op0
+		  && (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
+		      != CODE_FOR_nothing));
+      return gimple_build_call_internal (IFN_VCOND_MASK, 3, op0, op1, op2);
+    }
+
   tree tcode_tree = build_int_cst (integer_type_node, tcode);
   return gimple_build_call_internal (unsignedp ? IFN_VCONDU : IFN_VCOND,
 				     5, op0a, op0b, op1, op2, tcode_tree);

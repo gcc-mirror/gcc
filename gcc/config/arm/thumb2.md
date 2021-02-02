@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -1261,7 +1261,9 @@
    (set_attr "shift" "1")
    (set_attr "length" "2")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
+                        (if_then_else (match_operand 3 "alu_shift_operator_lsl_1_to_4")
+                          (const_string "alu_shift_imm_lsl_1to4")
+                          (const_string "alu_shift_imm_other"))
 		      (const_string "alu_shift_reg")))]
 )
 
@@ -1530,7 +1532,7 @@
   "orn%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
-   (set_attr "type" "alu_shift_imm")]
+   (set_attr "autodetect_type" "alu_shift_operator4")]
 )
 
 (define_peephole2

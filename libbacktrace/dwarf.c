@@ -1,5 +1,5 @@
 /* dwarf.c -- Get file/line information from DWARF for backtraces.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -2344,19 +2344,20 @@ read_v2_paths (struct backtrace_state *state, struct unit *u,
       ++hdr->dirs_count;
     }
 
-  hdr->dirs = NULL;
-  if (hdr->dirs_count != 0)
-    {
-      hdr->dirs = ((const char **)
-		   backtrace_alloc (state,
-				    hdr->dirs_count * sizeof (const char *),
-				    hdr_buf->error_callback,
-				    hdr_buf->data));
-      if (hdr->dirs == NULL)
-	return 0;
-    }
+  /* The index of the first entry in the list of directories is 1.  Index 0 is
+     used for the current directory of the compilation.  To simplify index
+     handling, we set entry 0 to the compilation unit directory.  */
+  ++hdr->dirs_count;
+  hdr->dirs = ((const char **)
+	       backtrace_alloc (state,
+				hdr->dirs_count * sizeof (const char *),
+				hdr_buf->error_callback,
+				hdr_buf->data));
+  if (hdr->dirs == NULL)
+    return 0;
 
-  i = 0;
+  hdr->dirs[0] = u->comp_dir;
+  i = 1;
   while (*hdr_buf->buf != '\0')
     {
       if (hdr_buf->reported_underflow)
@@ -2383,6 +2384,10 @@ read_v2_paths (struct backtrace_state *state, struct unit *u,
       ++hdr->filenames_count;
     }
 
+  /* The index of the first entry in the list of file names is 1.  Index 0 is
+     used for the DW_AT_name of the compilation unit.  To simplify index
+     handling, we set entry 0 to the compilation unit file name.  */
+  ++hdr->filenames_count;
   hdr->filenames = ((const char **)
 		    backtrace_alloc (state,
 				     hdr->filenames_count * sizeof (char *),
@@ -2390,7 +2395,8 @@ read_v2_paths (struct backtrace_state *state, struct unit *u,
 				     hdr_buf->data));
   if (hdr->filenames == NULL)
     return 0;
-  i = 0;
+  hdr->filenames[0] = u->filename;
+  i = 1;
   while (*hdr_buf->buf != '\0')
     {
       const char *filename;
@@ -2404,7 +2410,7 @@ read_v2_paths (struct backtrace_state *state, struct unit *u,
 	return 0;
       dir_index = read_uleb128 (hdr_buf);
       if (IS_ABSOLUTE_PATH (filename)
-	  || (dir_index == 0 && u->comp_dir == NULL))
+	  || (dir_index < hdr->dirs_count && hdr->dirs[dir_index] == NULL))
 	hdr->filenames[i] = filename;
       else
 	{
@@ -2413,10 +2419,8 @@ read_v2_paths (struct backtrace_state *state, struct unit *u,
 	  size_t filename_len;
 	  char *s;
 
-	  if (dir_index == 0)
-	    dir = u->comp_dir;
-	  else if (dir_index - 1 < hdr->dirs_count)
-	    dir = hdr->dirs[dir_index - 1];
+	  if (dir_index < hdr->dirs_count)
+	    dir = hdr->dirs[dir_index];
 	  else
 	    {
 	      dwarf_buf_error (hdr_buf,
@@ -2704,8 +2708,8 @@ read_line_header (struct backtrace_state *state, struct dwarf_data *ddata,
 
 static int
 read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
-		   struct unit *u, const struct line_header *hdr,
-		   struct dwarf_buf *line_buf, struct line_vector *vec)
+		   const struct line_header *hdr, struct dwarf_buf *line_buf,
+		   struct line_vector *vec)
 {
   uint64_t address;
   unsigned int op_index;
@@ -2715,8 +2719,8 @@ read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
 
   address = 0;
   op_index = 0;
-  if (hdr->filenames_count > 0)
-    reset_filename = hdr->filenames[0];
+  if (hdr->filenames_count > 1)
+    reset_filename = hdr->filenames[1];
   else
     reset_filename = "";
   filename = reset_filename;
@@ -2781,10 +2785,8 @@ read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
 		    size_t f_len;
 		    char *p;
 
-		    if (dir_index == 0 && hdr->version < 5)
-		      dir = u->comp_dir;
-		    else if (dir_index - 1 < hdr->dirs_count)
-		      dir = hdr->dirs[dir_index - 1];
+		    if (dir_index < hdr->dirs_count)
+		      dir = hdr->dirs[dir_index];
 		    else
 		      {
 			dwarf_buf_error (line_buf,
@@ -2851,14 +2853,14 @@ read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
 		  filename = "";
 		else
 		  {
-		    if (fileno - 1 >= hdr->filenames_count)
+		    if (fileno >= hdr->filenames_count)
 		      {
 			dwarf_buf_error (line_buf,
 					 ("invalid file number in "
 					  "line number program"));
 			return 0;
 		      }
-		    filename = hdr->filenames[fileno - 1];
+		    filename = hdr->filenames[fileno];
 		  }
 	      }
 	      break;
@@ -2948,7 +2950,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   if (!read_line_header (state, ddata, u, is_dwarf64, &line_buf, hdr))
     goto fail;
 
-  if (!read_line_program (state, ddata, u, hdr, &line_buf, &vec))
+  if (!read_line_program (state, ddata, hdr, &line_buf, &vec))
     goto fail;
 
   if (line_buf.reported_underflow)
@@ -3289,7 +3291,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 			function->caller_filename = "";
 		      else
 			{
-			  if (val.u.uint - 1 >= lhdr->filenames_count)
+			  if (val.u.uint >= lhdr->filenames_count)
 			    {
 			      dwarf_buf_error (unit_buf,
 					       ("invalid file number in "
@@ -3297,7 +3299,7 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 			      return 0;
 			    }
 			  function->caller_filename =
-			    lhdr->filenames[val.u.uint - 1];
+			    lhdr->filenames[val.u.uint];
 			}
 		    }
 		  break;

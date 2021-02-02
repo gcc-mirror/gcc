@@ -17,4 +17,4 @@ program test_qp
 end
 
 ! { dg-final { scan-assembler-not {\mbl logl\M}    } }
-! { dg-final { scan-assembler     {\mbl logf128\M} } }
+! { dg-final { scan-assembler     {\mbl __logieee128\M} } }

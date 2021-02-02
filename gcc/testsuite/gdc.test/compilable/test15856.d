@@ -1,4 +1,4 @@
-// REQUIRED_ARGS: -transition=checkimports -de
+// REQUIRED_ARGS: -de
 // PERMUTE_ARGS:
 /*
 TEST_PUTPUT:

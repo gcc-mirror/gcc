@@ -1,5 +1,5 @@
 /* IA-32 common hooks.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2051,7 +2051,7 @@ const pta processor_alias_table[] =
 };
 
 /* NB: processor_alias_table stops at the "generic" entry.  */
-int const pta_size = ARRAY_SIZE (processor_alias_table) - 6;
+unsigned int const pta_size = ARRAY_SIZE (processor_alias_table) - 6;
 unsigned int const num_arch_names = ARRAY_SIZE (processor_alias_table);
 
 /* Provide valid option values for -march and -mtune options.  */

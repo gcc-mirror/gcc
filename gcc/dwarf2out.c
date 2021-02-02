@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -4733,7 +4733,9 @@ int
 reset_indirect_string (indirect_string_node **h, void *)
 {
   struct indirect_string_node *node = *h;
-  if (node->form == DW_FORM_strp || node->form == dwarf_FORM (DW_FORM_strx))
+  if (node->form == DW_FORM_strp
+      || node->form == DW_FORM_line_strp
+      || node->form == dwarf_FORM (DW_FORM_strx))
     {
       free (node->label);
       node->label = NULL;
@@ -12250,10 +12252,50 @@ output_file_names (void)
     {
       if (dwarf_version >= 5)
 	{
-	  dw2_asm_output_data (1, 0, "Directory entry format count");
-	  dw2_asm_output_data_uleb128 (0, "Directories count");
-	  dw2_asm_output_data (1, 0, "File name entry format count");
-	  dw2_asm_output_data_uleb128 (0, "File names count");
+	  const char *comp_dir = comp_dir_string ();
+	  if (comp_dir == NULL)
+	    comp_dir = "";
+	  dw2_asm_output_data (1, 1, "Directory entry format count");
+	  enum dwarf_form str_form = DW_FORM_string;
+	  if (DWARF5_USE_DEBUG_LINE_STR)
+	    str_form = DW_FORM_line_strp;
+	  dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+	  dw2_asm_output_data_uleb128 (str_form, "%s",
+				       get_DW_FORM_name (str_form));
+	  dw2_asm_output_data_uleb128 (1, "Directories count");
+	  if (str_form == DW_FORM_string)
+	    dw2_asm_output_nstring (comp_dir, -1, "Directory Entry: %#x", 0);
+	  else
+	    output_line_string (str_form, comp_dir, "Directory Entry", 0);
+	  const char *filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+	  if (filename0 == NULL)
+	    filename0 = "";
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data (1, 4, "File name entry format count");
+#else
+	  dw2_asm_output_data (1, 2, "File name entry format count");
+#endif
+	  dw2_asm_output_data_uleb128 (DW_LNCT_path, "DW_LNCT_path");
+	  dw2_asm_output_data_uleb128 (str_form, "%s",
+				       get_DW_FORM_name (str_form));
+	  dw2_asm_output_data_uleb128 (DW_LNCT_directory_index,
+				       "DW_LNCT_directory_index");
+	  dw2_asm_output_data_uleb128 (DW_FORM_data1, "%s",
+				       get_DW_FORM_name (DW_FORM_data1));
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data_uleb128 (DW_LNCT_timestamp, "DW_LNCT_timestamp");
+	  dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+	  dw2_asm_output_data_uleb128 (DW_LNCT_size, "DW_LNCT_size");
+	  dw2_asm_output_data_uleb128 (DW_FORM_udata, "DW_FORM_udata");
+#endif
+	  dw2_asm_output_data_uleb128 (1, "File names count");
+
+	  output_line_string (str_form, filename0, "File Entry", 0);
+	  dw2_asm_output_data (1, 0, NULL);
+#ifdef VMS_DEBUGGING_INFO
+	  dw2_asm_output_data_uleb128 (0, NULL);
+	  dw2_asm_output_data_uleb128 (0, NULL);
+#endif
 	}
       else
 	{
@@ -12709,22 +12751,27 @@ output_one_line_info_table (dw_line_info_table *table)
   dw2_asm_output_data (1, DW_LNE_end_sequence, NULL);
 }
 
+static unsigned int output_line_info_generation;
+
 /* Output the source line number correspondence information.  This
    information goes into the .debug_line section.  */
 
 static void
 output_line_info (bool prologue_only)
 {
-  static unsigned int generation;
   char l1[MAX_ARTIFICIAL_LABEL_BYTES], l2[MAX_ARTIFICIAL_LABEL_BYTES];
   char p1[MAX_ARTIFICIAL_LABEL_BYTES], p2[MAX_ARTIFICIAL_LABEL_BYTES];
   bool saw_one = false;
   int opc;
 
-  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL, generation);
-  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL, generation++);
+  ASM_GENERATE_INTERNAL_LABEL (l1, LINE_NUMBER_BEGIN_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (l2, LINE_NUMBER_END_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (p1, LN_PROLOG_AS_LABEL,
+			       output_line_info_generation);
+  ASM_GENERATE_INTERNAL_LABEL (p2, LN_PROLOG_END_LABEL,
+			       output_line_info_generation++);
 
   if (!XCOFF_DEBUGGING_INFO)
     {
@@ -18245,10 +18292,11 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case PLACEHOLDER_EXPR:
       /* This case involves extracting fields from an object to determine the
 	 position of other fields. It is supposed to appear only as the first
-         operand of COMPONENT_REF nodes and to reference precisely the type
-         that the context allows.  */
+	 operand of COMPONENT_REF nodes and to reference precisely the type
+	 that the context allows or its enclosing type.  */
       if (context != NULL
-          && TREE_TYPE (loc) == context->context_type
+	  && (TREE_TYPE (loc) == context->context_type
+	      || TREE_TYPE (loc) == TYPE_CONTEXT (context->context_type))
 	  && want_address >= 1)
 	{
 	  if (dwarf_version >= 3 || !dwarf_strict)
@@ -24444,6 +24492,10 @@ static char *producer_string;
 static const char *
 highest_c_language (const char *lang1, const char *lang2)
 {
+  if (strcmp ("GNU C++23", lang1) == 0 || strcmp ("GNU C++23", lang2) == 0)
+    return "GNU C++23";
+  if (strcmp ("GNU C++20", lang1) == 0 || strcmp ("GNU C++20", lang2) == 0)
+    return "GNU C++20";
   if (strcmp ("GNU C++17", lang1) == 0 || strcmp ("GNU C++17", lang2) == 0)
     return "GNU C++17";
   if (strcmp ("GNU C++14", lang1) == 0 || strcmp ("GNU C++14", lang2) == 0)
@@ -24549,7 +24601,8 @@ gen_compile_unit_die (const char *filename)
 	  else if (strcmp (language_string, "GNU C++14") == 0)
 	    language = DW_LANG_C_plus_plus_14;
 	  else if (strcmp (language_string, "GNU C++17") == 0
-		   || strcmp (language_string, "GNU C++20") == 0)
+		   || strcmp (language_string, "GNU C++20") == 0
+		   || strcmp (language_string, "GNU C++23") == 0)
 	    /* For now.  */
 	    language = DW_LANG_C_plus_plus_14;
 	}
@@ -26704,6 +26757,13 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	      gen_type_die_for_member (type, decl,
 				       get_context_die (TYPE_CONTEXT (type)));
 	    }
+	  if (TREE_CODE (decl) == CONST_DECL)
+	    {
+	      /* Individual enumerators of an enum type do not get output here
+		 (see gen_decl_die), so we cannot call force_decl_die.  */
+	      if (!is_fortran () && !is_ada () && !is_dlang ())
+		return;
+	    }
 	  if (TREE_CODE (decl) == NAMELIST_DECL)
 	    at_import_die = gen_namelist_decl (DECL_NAME (decl),
 					 get_context_die (DECL_CONTEXT (decl)),
@@ -28581,6 +28641,10 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
   macinfo_label_base += macinfo_label_base_adj;
 }
 
+/* As init_sections_and_labels may get called multiple times, have a
+   generation count for labels.  */
+static unsigned init_sections_and_labels_generation;
+
 /* Initialize the various sections and labels for dwarf output and prefix
    them with PREFIX if non-NULL.  Returns the generation (zero based
    number of times function was called).  */
@@ -28588,10 +28652,6 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 static unsigned
 init_sections_and_labels (bool early_lto_debug)
 {
-  /* As we may get called multiple times have a generation count for
-     labels.  */
-  static unsigned generation = 0;
-
   if (early_lto_debug)
     {
       if (!dwarf_split_debug_info)
@@ -28626,7 +28686,7 @@ init_sections_and_labels (bool early_lto_debug)
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
 				       DEBUG_SKELETON_ABBREV_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 
 	  /* Somewhat confusing detail: The skeleton_[abbrev|info] sections
 	     stay in the main .o, but the skeleton_line goes into the split
@@ -28636,14 +28696,14 @@ init_sections_and_labels (bool early_lto_debug)
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
 				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_offsets_section
 	    = get_section (DEBUG_LTO_DWO_STR_OFFSETS_SECTION,
 			   SECTION_DEBUG | SECTION_EXCLUDE,
 			   NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
 				       DEBUG_SKELETON_INFO_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_dwo_section = get_section (DEBUG_LTO_STR_DWO_SECTION,
 					       DEBUG_STR_DWO_SECTION_FLAGS,
 					       NULL);
@@ -28659,7 +28719,8 @@ init_sections_and_labels (bool early_lto_debug)
       debug_line_section = get_section (DEBUG_LTO_LINE_SECTION,
 					SECTION_DEBUG | SECTION_EXCLUDE, NULL);
       ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
-				   DEBUG_LINE_SECTION_LABEL, generation);
+				   DEBUG_LINE_SECTION_LABEL,
+				   init_sections_and_labels_generation);
 
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
@@ -28703,7 +28764,7 @@ init_sections_and_labels (bool early_lto_debug)
 						       SECTION_DEBUG, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_abbrev_section_label,
 				       DEBUG_SKELETON_ABBREV_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 
 	  /* Somewhat confusing detail: The skeleton_[abbrev|info] sections
 	     stay in the main .o, but the skeleton_line goes into the
@@ -28713,13 +28774,13 @@ init_sections_and_labels (bool early_lto_debug)
 			     SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_line_section_label,
 				       DEBUG_SKELETON_LINE_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_str_offsets_section
 	    = get_section (DEBUG_DWO_STR_OFFSETS_SECTION,
 			   SECTION_DEBUG | SECTION_EXCLUDE, NULL);
 	  ASM_GENERATE_INTERNAL_LABEL (debug_skeleton_info_section_label,
 				       DEBUG_SKELETON_INFO_SECTION_LABEL,
-				       generation);
+				       init_sections_and_labels_generation);
 	  debug_loc_section = get_section (dwarf_version >= 5
 					   ? DEBUG_DWO_LOCLISTS_SECTION
 					   : DEBUG_DWO_LOC_SECTION,
@@ -28759,31 +28820,37 @@ init_sections_and_labels (bool early_lto_debug)
     }
 
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
-			       DEBUG_ABBREV_SECTION_LABEL, generation);
+			       DEBUG_ABBREV_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
-			       DEBUG_INFO_SECTION_LABEL, generation);
+			       DEBUG_INFO_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   info_section_emitted = false;
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
-			       DEBUG_LINE_SECTION_LABEL, generation);
+			       DEBUG_LINE_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   /* There are up to 4 unique ranges labels per generation.
      See also output_rnglists.  */
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, generation * 4);
+			       DEBUG_RANGES_SECTION_LABEL,
+			       init_sections_and_labels_generation * 4);
   if (dwarf_version >= 5 && dwarf_split_debug_info)
     ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
 				 DEBUG_RANGES_SECTION_LABEL,
-				 1 + generation * 4);
+				 1 + init_sections_and_labels_generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
-			       DEBUG_ADDR_SECTION_LABEL, generation);
+			       DEBUG_ADDR_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
 			       (dwarf_strict && dwarf_version < 5)
 			       ? DEBUG_MACINFO_SECTION_LABEL
-			       : DEBUG_MACRO_SECTION_LABEL, generation);
+			       : DEBUG_MACRO_SECTION_LABEL,
+			       init_sections_and_labels_generation);
   ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL,
-			       generation);
+			       init_sections_and_labels_generation);
 
-  ++generation;
-  return generation - 1;
+  ++init_sections_and_labels_generation;
+  return init_sections_and_labels_generation - 1;
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -29457,8 +29524,9 @@ prune_unused_types_update_strings (dw_die_ref die)
 	s->refcount++;
 	/* Avoid unnecessarily putting strings that are used less than
 	   twice in the hash table.  */
-	if (s->refcount
-	    == ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2))
+	if (s->form != DW_FORM_line_strp
+	    && (s->refcount
+		== ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) ? 1 : 2)))
 	  {
 	    indirect_string_node **slot
 	      = debug_str_hash->find_slot_with_hash (s->str,
@@ -31305,6 +31373,33 @@ reset_dies (dw_die_ref die)
   FOR_EACH_CHILD (die, c, reset_dies (c));
 }
 
+/* reset_indirect_string removed the references coming from DW_AT_name
+   and DW_AT_comp_dir attributes on compilation unit DIEs.  Readd them as
+   .debug_line_str strings again.  */
+
+static void
+adjust_name_comp_dir (dw_die_ref die)
+{
+  for (int i = 0; i < 2; i++)
+    {
+      dwarf_attribute attr_kind = i ? DW_AT_comp_dir : DW_AT_name;
+      dw_attr_node *a = get_AT (die, attr_kind);
+      if (a == NULL || a->dw_attr_val.val_class != dw_val_class_str)
+	continue;
+
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      struct indirect_string_node *node
+	= find_AT_string_in_table (a->dw_attr_val.v.val_str->str,
+				   debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = DW_FORM_line_strp;
+      a->dw_attr_val.v.val_str = node;
+    }
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -31378,6 +31473,12 @@ dwarf2out_finish (const char *filename)
 	{
 	  debug_line_str_hash->traverse<void *, reset_indirect_string> (NULL);
 	  debug_line_str_hash = NULL;
+	  if (asm_outputs_debug_line_str ())
+	    {
+	      adjust_name_comp_dir (comp_unit_die ());
+	      for (limbo_die_node *node = cu_die_list; node; node = node->next)
+		adjust_name_comp_dir (node->die);
+	    }
 	}
     }
 
@@ -32371,6 +32472,8 @@ dwarf2out_c_finalize (void)
   base_types.release ();
   XDELETEVEC (producer_string);
   producer_string = NULL;
+  output_line_info_generation = 0;
+  init_sections_and_labels_generation = 0;
 }
 
 #include "gt-dwarf2out.h"

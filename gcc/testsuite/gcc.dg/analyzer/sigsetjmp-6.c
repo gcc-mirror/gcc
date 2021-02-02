@@ -6,7 +6,7 @@
 
 extern int foo (int) __attribute__ ((__pure__));
 
-static jmp_buf env;
+static sigjmp_buf env;
 
 static void inner (void)
 {

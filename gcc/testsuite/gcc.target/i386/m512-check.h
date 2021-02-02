@@ -77,10 +77,10 @@ CHECK_EXP (union512i_uq, unsigned long long, "0x%llx")
 CHECK_FP_EXP (union512, float, ESP_FLOAT, "%f")
 CHECK_FP_EXP (union512d, double, ESP_DOUBLE, "%f")
 
-#define CHECK_ROUGH_EXP(UINON_TYPE, VALUE_TYPE, FMT)		\
+#define CHECK_ROUGH_EXP(UNION_TYPE, VALUE_TYPE, FMT)		\
 static int							\
 __attribute__((noinline, unused))				\
-check_rough_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v,	\
+check_rough_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v,	\
 			  VALUE_TYPE eps)			\
 {								\
   int i;							\

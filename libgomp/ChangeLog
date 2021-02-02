@@ -1,3 +1,142 @@
+2021-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp.texi (omp_fulfill_event): New entry.
+
+2021-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_task): Rename priority argument to priority_arg,
+	add priority automatic variable and modify that variable.  Instead of
+	clearing detach argument when GOMP_TASK_FLAG_DETACH bit is not set,
+	check flags for that bit.
+
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98476
+	* testsuite/libgomp.fortran/is_device_ptr-1.f90: New test.
+
+2021-01-18  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt (riscv64*-*-linux*): Add linux to config_path.
+
+2021-01-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems/sem.h (gomp_sem_getcount): New function.
+
+2021-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/sem.h (gomp_sem_getcount): New function.
+	* config/posix/sem.h (gomp_sem_getcount): New function.
+	* config/posix/sem.c (gomp_sem_getcount): New function.
+	* config/accel/sem.h (gomp_sem_getcount): New function.
+	* task.c (task_fulfilled_p): Use gomp_sem_getcount.
+	(omp_fulfill_event): Likewise.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* fortran.c (omp_fulfill_event_): New.
+	* libgomp.h (struct gomp_task): Add detach and completion_sem fields.
+	(struct gomp_team): Add task_detach_queue and task_detach_count
+	fields.
+	* libgomp.map (OMP_5.0.1): Add omp_fulfill_event and omp_fulfill_event_.
+	* libgomp_g.h (GOMP_task): Add extra argument.
+	* omp.h.in (enum omp_event_handle_t): New.
+	(omp_fulfill_event): New.
+	* omp_lib.f90.in (omp_event_handle_kind): New.
+	(omp_fulfill_event): New.
+	* omp_lib.h.in (omp_event_handle_kind): New.
+	(omp_fulfill_event): Declare.
+	* priority_queue.c (priority_tree_find): New.
+	(priority_list_find): New.
+	(priority_queue_find): New.
+	* priority_queue.h (priority_queue_predicate): New.
+	(priority_queue_find): New.
+	* task.c (gomp_init_task): Initialize detach field.
+	(task_fulfilled_p): New.
+	(GOMP_task): Add detach argument.  Ignore detach argument if
+	GOMP_TASK_FLAG_DETACH not set in flags.  Initialize completion_sem
+	field.	Copy address of completion_sem into detach argument and
+	into the start of the data record.  Wait for detach event if task
+	not deferred.
+	(gomp_barrier_handle_tasks): Queue tasks with unfulfilled events.
+	Remove completed tasks and requeue dependent tasks.
+	(omp_fulfill_event): New.
+	* team.c (gomp_new_team): Initialize task_detach_queue and
+	task_detach_count fields.
+	(free_team): Free task_detach_queue field.
+	* testsuite/libgomp.c-c++-common/task-detach-1.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-2.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-3.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-4.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-5.c: New testcase.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: New testcase.
+	* testsuite/libgomp.fortran/task-detach-1.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-2.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-3.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-4.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-5.f90: New testcase.
+	* testsuite/libgomp.fortran/task-detach-6.f90: New testcase.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70454
+	* configure.tgt: For i?86 and x86_64 determine if -march=i486 needs to
+	be added through preprocessor check on
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+
+2021-01-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* plugin/configfrag.ac (PLUGIN_NVPTX): Restrict to supported
+	configurations.
+	* configure: Regenerate.
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Remove 64-bit
+	check.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2021-01-05  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (SOFTSTACK_CACHE_LIMIT): New define.
+	(struct ptx_device): Add omp_stacks struct.
+	(nvptx_open_device): Initialise cached-stacks housekeeping info.
+	(nvptx_close_device): Free cached stacks block and mutex.
+	(nvptx_stacks_free): New function.
+	(nvptx_alloc): Add SUPPRESS_ERRORS parameter.
+	(GOMP_OFFLOAD_alloc): Add strategies for freeing soft-stacks block.
+	(nvptx_stacks_alloc): Rename to...
+	(nvptx_stacks_acquire): This.  Cache stacks block between runs if same
+	size or smaller is required.
+	(nvptx_stacks_free): Remove.
+	(GOMP_OFFLOAD_run): Call nvptx_stacks_acquire and lock stacks block
+	during kernel execution.
+
+2021-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2020-12-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi (Top): Avoid bad "up" link.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/task-6.c: New test.
+
+2020-12-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c: Include hsa_ext_amd.h.
+	(HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT): Delete redundant definition.
+
+2020-12-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/scan-1.f90: New test.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865
@@ -14397,7 +14536,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

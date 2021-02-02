@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -39,6 +39,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Debug Information:: Expressions representing debugging information.
 * Insns::             Expression types for entire insns.
 * Calls::             RTL representation of function call insns.
+* RTL SSA::           An on-the-side SSA form for RTL
 * Sharing::           Some expressions are unique; others *must* be copied.
 * Reading RTL::       Reading textual RTL from a file.
 @end menu
@@ -1718,13 +1719,13 @@ of code @code{const_double} and therefore a syntactic alias has been
 provided:
 
 @smallexample
-(const_double_zero)
+(const_double_zero:@var{m})
 @end smallexample
 
 standing for:
 
 @smallexample
-(const_double 0 0 @dots{})
+(const_double:@var{m} 0 0 @dots{})
 @end smallexample
 
 for matching the floating-point value zero, possibly the only useful one.
@@ -4443,6 +4444,792 @@ function.  Similarly, if registers other than those in
 @code{CALL_USED_REGISTERS} are clobbered by the called function, insns
 containing a single @code{clobber} follow immediately after the call to
 indicate which registers.
+
+@node RTL SSA
+@section On-the-Side SSA Form for RTL
+@cindex SSA, RTL form
+@cindex RTL SSA
+
+The patterns of an individual RTL instruction describe which registers
+are inputs to that instruction and which registers are outputs from
+that instruction.  However, it is often useful to know where the
+definition of a register input comes from and where the result of
+a register output is used.  One way of obtaining this information
+is to use the RTL SSA form, which provides a Static Single Assignment
+representation of the RTL instructions.
+
+The RTL SSA code is located in the @file{rtl-ssa} subdirectory of the GCC
+source tree.  This section only gives a brief overview of it; please
+see the comments in the source code for more details.
+
+@menu
+* Using RTL SSA::             What a pass needs to do to use the RTL SSA form
+* RTL SSA Instructions::      How instructions are represented and organized
+* RTL SSA Basic Blocks::      How instructions are grouped into blocks
+* RTL SSA Resources::         How registers and memory are represented
+* RTL SSA Accesses::          How register and memory accesses are represented
+* RTL SSA Phi Nodes::         How multiple sources are combined into one
+* RTL SSA Access Lists::      How accesses are chained together
+* Changing RTL Instructions:: How to use the RTL SSA framework to change insns
+@end menu
+
+@node Using RTL SSA
+@subsection Using RTL SSA in a pass
+
+A pass that wants to use the RTL SSA form should start with the following:
+
+@smallexample
+#define INCLUDE_ALGORITHM
+#define INCLUDE_FUNCTIONAL
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "backend.h"
+#include "rtl.h"
+#include "df.h"
+#include "rtl-ssa.h"
+@end smallexample
+
+All the RTL SSA code is contained in the @code{rtl_ssa} namespace,
+so most passes will then want to do:
+
+@smallexample
+using namespace rtl_ssa;
+@end smallexample
+
+However, this is purely a matter of taste, and the examples in the rest of
+this section do not require it.
+
+The RTL SSA represention is an optional on-the-side feature that applies
+on top of the normal RTL instructions.  It is currently local to individual
+RTL passes and is not maintained across passes.
+
+However, in order to allow the RTL SSA information to be preserved across
+passes in future, @samp{crtl->ssa} points to the current function's
+SSA form (if any).  Passes that want to use the RTL SSA form should
+first do:
+
+@smallexample
+crtl->ssa = new rtl_ssa::function_info (@var{fn});
+@end smallexample
+
+where @var{fn} is the function that the pass is processing.
+(Passes that are @code{using namespace rtl_ssa} do not need
+the @samp{rtl_ssa::}.)
+
+Once the pass has finished with the SSA form, it should do the following:
+
+@smallexample
+free_dominance_info (CDI_DOMINATORS);
+if (crtl->ssa->perform_pending_updates ())
+  cleanup_cfg (0);
+
+delete crtl->ssa;
+crtl->ssa = nullptr;
+@end smallexample
+
+The @code{free_dominance_info} call is necessary because
+dominance information is not currently maintained between RTL passes.
+The next two lines commit any changes to the RTL instructions that
+were queued for later; see the comment above the declaration of
+@code{perform_pending_updates} for details.  The final two lines
+discard the RTL SSA form and free the associated memory.
+
+@node RTL SSA Instructions
+@subsection RTL SSA Instructions
+
+@cindex RPO
+@cindex reverse postorder
+@cindex instructions, RTL SSA
+@findex rtl_ssa::insn_info
+RTL SSA instructions are represented by an @code{rtl_ssa::insn_info}.
+These instructions are chained together in a single list that follows
+a reverse postorder (RPO) traversal of the function.  This means that
+if any path through the function can execute an instruction @var{I1}
+and then later execute an instruction @var{I2} for the first time,
+@var{I1} appears before @var{I2} in the list@footnote{Note that this
+order is different from the order of the underlying RTL instructions,
+which follow machine code order instead.}.
+
+Two RTL SSA instructions can be compared to find which instruction
+occurs earlier than the other in the RPO@.  One way to do this is
+to use the C++ comparison operators, such as:
+
+@example
+*@var{insn1} < *@var{insn2}
+@end example
+
+Another way is to use the @code{compare_with} function:
+
+@example
+@var{insn1}->compare_with (@var{insn2})
+@end example
+
+This expression is greater than zero if @var{insn1} comes after @var{insn2}
+in the RPO, less than zero if @var{insn1} comes before @var{insn2} in the
+RPO, or zero if @var{insn1} and @var{insn2} are the same.  This order is
+maintained even if instructions are added to the function or moved around.
+
+The main purpose of @code{rtl_ssa::insn_info} is to hold
+SSA information about an instruction.  However, it also caches
+certain properties of the instruction, such as whether it is an
+inline assembly instruction, whether it has volatile accesses, and so on.
+
+@node RTL SSA Basic Blocks
+@subsection RTL SSA Basic Blocks
+
+@cindex basic blocks, RTL SSA
+@findex basic_block
+@findex rtl_ssa::bb_info
+RTL SSA instructions (@pxref{RTL SSA Instructions}) are organized into
+basic blocks, with each block being represented by an @code{rtl_ssa:bb_info}.
+There is a one-to-one mapping between these @code{rtl_ssa:bb_info}
+structures and the underlying CFG @code{basic_block} structures
+(@pxref{Basic Blocks}).
+
+@cindex ``real'' instructions, RTL SSA
+@anchor{real RTL SSA insns}
+If a CFG basic block @var{bb} contains an RTL instruction @var{insn},
+the RTL SSA represenation of @var{bb} also contains an RTL SSA representation
+of @var{insn}@footnote{Note that this excludes non-instruction things like
+@code{note}s and @code{barrier}s that also appear in the chain of RTL
+instructions.}.  Within RTL SSA, these instructions are referred to as
+``real'' instructions.  These real instructions fall into two groups:
+debug instructions and nondebug instructions.  Only nondebug instructions
+should affect code generation decisions.
+
+In addition, each RTL SSA basic block has two ``artificial''
+instructions: a ``head'' instruction that comes before all the real
+instructions and an ``end'' instruction that comes after all real
+instructions.  These instructions exist to represent things that
+are conceptually defined or used at the start and end of a basic block.
+The instructions always exist, even if they do not currently do anything.
+
+Like instructions, these blocks are chained together in a reverse
+postorder.  This list includes the entry block (which always comes
+first) and the exit block (which always comes last).
+
+@cindex extended basic blocks, RTL SSA
+@findex rtl_ssa::ebb_info
+RTL SSA basic blocks are chained together into ``extended basic blocks''
+(EBBs), represented by an @code{rtl_ssa::ebb_info}.  Extended basic
+blocks contain one or more basic blocks.  They have the property
+that if a block @var{bby} comes immediately after a block @var{bbx}
+in an EBB, then @var{bby} can only be reached by @var{bbx}; in other words,
+@var{bbx} is the sole predecessor of @var{bby}.
+
+Each extended basic block starts with an artificial ``phi node''
+instruction.  This instruction defines all phi nodes for the EBB
+(@pxref{RTL SSA Phi Nodes}).  (Individual blocks in an EBB do not
+need phi nodes because their live values can only come from one source.)
+
+The contents of a function are therefore represented using a
+four-level hierarchy:
+
+@itemize @bullet
+@item
+functions (@code{rtl_ssa::function_info}), which contain @dots{}
+
+@item
+extended basic blocks (@code{rtl_ssa::ebb_info}), which contain @dots{}
+
+@item
+basic blocks (@code{rtl_ssa::bb_info}), which contain @dots{}
+
+@item
+instructions (@code{rtl_ssa::insn_info})
+@end itemize
+
+In dumps, a basic block is identified as @code{bb@var{n}}, where @var{n}
+is the index of the associated CFG @code{basic_block} structure.
+An EBB is in turn identified by the index of its first block.
+For example, an EBB that contains @samp{bb10}, @code{bb5}, @code{bb6}
+and @code{bb9} is identified as @var{ebb10}.
+
+@node RTL SSA Resources
+@subsection RTL SSA Resources
+
+The RTL SSA form tracks two types of ``resource'': registers and memory.
+Each hard and pseudo register is a separate resource.  Memory is a
+single unified resource, like it is in GIMPLE (@pxref{GIMPLE}).
+
+Each resource has a unique identifier.  The unique identifier for a
+register is simply its register number.  The unique identifier for
+memory is a special register number called @code{MEM_REGNO}.
+
+Since resource numbers so closely match register numbers, it is sometimes
+convenient to refer to them simply as register numbers, or ``regnos''
+for short.  However, the RTL SSA form also provides an abstraction
+of resources in the form of @code{rtl_ssa::resource_info}.
+This is a lightweight class that records both the regno of a resource
+and the @code{machine_mode} that the resource has (@pxref{Machine Modes}).
+It has functions for testing whether a resource is a register or memory.
+In principle it could be extended to other kinds of resource in future.
+
+@node RTL SSA Accesses
+@subsection RTL SSA Register and Memory Accesses
+
+In the RTL SSA form, most reads or writes of a resource are
+represented as a @code{rtl_ssa::access_info}@footnote{The exceptions
+are call clobbers, which are generally represented separately.
+See the comment above @code{rtl_ssa::insn_info} for details.}.
+These @code{rtl_ssa::access_info}s are organized into the following
+class hierarchy:
+
+@findex rtl_ssa::access_info
+@findex rtl_ssa::use_info
+@findex rtl_ssa::def_info
+@findex rtl_ssa::clobber_info
+@findex rtl_ssa::set_info
+@findex rtl_ssa::phi_info
+@smallexample
+rtl_ssa::access_info
+  |
+  +-- rtl_ssa::use_info
+  |
+  +-- rtl_ssa::def_info
+        |
+        +-- rtl_ssa::clobber_info
+        |
+        +-- rtl_ssa::set_info
+              |
+              +-- rtl_ssa::phi_info
+@end smallexample
+
+A @code{rtl_ssa::use_info} represents a read or use of a resource and
+a @code{rtl_ssa::def_info} represents a write or definition of a resource.
+As in the main RTL representation, there are two basic types of
+definition: clobbers and sets.  The difference is that a clobber
+leaves the register with an unspecified value that cannot be used
+or relied on by later instructions, while a set leaves the register
+with a known value that later instructions could use if they wanted to.
+A @code{rtl_ssa::clobber_info} represents a clobber and
+a @code{rtl_ssa::set_info} represent a set.
+
+Each @code{rtl_ssa::use_info} records which single @code{rtl_ssa::set_info}
+provides the value of the resource; this is null if the resource is
+completely undefined at the point of use.  Each @code{rtl_ssa::set_info}
+in turn records all the @code{rtl_ssa::use_info}s that use its value.
+
+If a value of a resource can come from multiple sources,
+a @code{rtl_ssa::phi_info} brings those multiple sources together
+into a single definition (@pxref{RTL SSA Phi Nodes}).
+
+@node RTL SSA Phi Nodes
+@subsection RTL SSA Phi Nodes
+
+@cindex phi nodes, RTL SSA
+@findex rtl_ssa::phi_info
+If a resource is live on entry to an extended basic block and if the
+resource's value can come from multiple sources, the extended basic block
+has a ``phi node'' that collects together these multiple sources.
+The phi node conceptually has one input for each incoming edge of
+the extended basic block, with the input specifying the value of
+the resource on that edge.  For example, suppose a function contains
+the following RTL:
+
+@smallexample
+;; Basic block bb3
+@dots{}
+(set (reg:SI R1) (const_int 0))  ;; A
+(set (pc) (label_ref bb5))
+
+;; Basic block bb4
+@dots{}
+(set (reg:SI R1) (const_int 1))  ;; B
+;; Fall through
+
+;; Basic block bb5
+;; preds: bb3, bb4
+;; live in: R1 @dots{}
+(code_label bb5)
+@dots{}
+(set (reg:SI @var{R2})
+     (plus:SI (reg:SI R1) @dots{}))  ;; C
+@end smallexample
+
+The value of R1 on entry to block 5 can come from either A or B@.
+The extended basic block that contains block 5 would therefore have a
+phi node with two inputs: the first input would have the value of
+R1 defined by A and the second input would have the value of
+R1 defined by B@.  This phi node would then provide the value of
+R1 for C (assuming that R1 does not change again between
+the start of block 5 and C).
+
+Since RTL is not a ``native'' SSA representation, these phi nodes
+simply collect together definitions that already exist.  Each input
+to a phi node for a resource @var{R} is itself a definition of
+resource @var{R} (or is null if the resource is completely
+undefined for a particular incoming edge).  This is in contrast
+to a native SSA representation like GIMPLE, where the phi inputs
+can be arbitrary expressions.  As a result, RTL SSA phi nodes
+never involve ``hidden'' moves: all moves are instead explicit.
+
+Phi nodes are represented as a @code{rtl_ssa::phi_node}.
+Each input to a phi node is represented as an @code{rtl_ssa::use_info}.
+
+@node RTL SSA Access Lists
+@subsection RTL SSA Access Lists
+
+All the definitions of a resource are chained together in reverse postorder.
+In general, this list can contain an arbitrary mix of both sets
+(@code{rtl_ssa::set_info}) and clobbers (@code{rtl_ssa::clobber_info}).
+However, it is often useful to skip over all intervening clobbers
+of a resource in order to find the next set.  The list is constructed
+in such a way that this can be done in amortized constant time.
+
+All uses (@code{rtl_ssa::use_info}) of a given set are also chained
+together into a list.  This list of uses is divided into three parts:
+
+@enumerate
+@item
+uses by ``real'' nondebug instructions (@pxref{real RTL SSA insns})
+
+@item
+uses by real debug instructions
+
+@item
+uses by phi nodes (@pxref{RTL SSA Phi Nodes})
+@end enumerate
+
+The first and second parts individually follow reverse postorder.
+The third part has no particular order.
+
+@cindex degenerate phi node, RTL SSA
+The last use by a real nondebug instruction always comes earlier in
+the reverse postorder than the next definition of the resource (if any).
+This means that the accesses follow a linear sequence of the form:
+
+@itemize @bullet
+@item
+first definition of resource R
+
+@itemize @bullet
+@item
+first use by a real nondebug instruction of the first definition of resource R
+
+@item
+@dots{}
+
+@item
+last use by a real nondebug instruction of the first definition of resource R
+@end itemize
+
+@item
+second definition of resource R
+
+@itemize @bullet
+@item
+first use by a real nondebug instruction of the second definition of resource R
+
+@item
+@dots{}
+
+@item
+last use by a real nondebug instruction of the second definition of resource R
+@end itemize
+
+@item
+@dots{}
+
+@item
+last definition of resource R
+
+@itemize @bullet
+@item
+first use by a real nondebug instruction of the last definition of resource R
+
+@item
+@dots{}
+
+@item
+last use by a real nondebug instruction of the last definition of resource R
+@end itemize
+@end itemize
+
+(Note that clobbers never have uses; only sets do.)
+
+This linear view is easy to achieve when there is only a single definition
+of a resource, which is commonly true for pseudo registers.  However,
+things are more complex  if code has a structure like the following:
+
+@smallexample
+// ebb2, bb2
+R = @var{va};        // A
+if (@dots{})
+  @{
+    // ebb2, bb3
+    use1 (R);  // B
+    @dots{}
+    R = @var{vc};    // C
+  @}
+else
+  @{
+    // ebb4, bb4
+    use2 (R);  // D
+  @}
+@end smallexample
+
+The list of accesses would begin as follows:
+
+@itemize @bullet
+@item
+definition of R by A
+
+@itemize @bullet
+@item
+use of A's definition of R by B
+@end itemize
+
+@item
+definition of R by C
+@end itemize
+
+The next access to R is in D, but the value of R that D uses comes from
+A rather than C@.
+
+This is resolved by adding a phi node for @code{ebb4}.  All inputs to this
+phi node have the same value, which in the example above is A's definition
+of R@.  In other circumstances, it would not be necessary to create a phi
+node when all inputs are equal, so these phi nodes are referred to as
+``degenerate'' phi nodes.
+
+The full list of accesses to R is therefore:
+
+@itemize @bullet
+@item
+definition of R by A
+
+@itemize @bullet
+@item
+use of A's definition of R by B
+@end itemize
+
+@item
+definition of R by C
+
+@item
+definition of R by ebb4's phi instruction, with the input coming from A
+
+@itemize @bullet
+@item
+use of the ebb4's R phi definition of R by B
+@end itemize
+@end itemize
+
+Note that A's definition is also used by ebb4's phi node, but this
+use belongs to the third part of the use list described above and
+so does not form part of the linear sequence.
+
+It is possible to ``look through'' any degenerate phi to the ultimate
+definition using the function @code{look_through_degenerate_phi}.
+Note that the input to a degenerate phi is never itself provided
+by a degenerate phi.
+
+At present, the SSA form takes this principle one step further
+and guarantees that, for any given resource @var{res}, one of the
+following is true:
+
+@itemize
+@item
+The resource has a single definition @var{def}, which is not a phi node.
+Excluding uses of undefined registers, all uses of @var{res} by real
+nondebug instructions use the value provided by @var{def}.
+
+@item
+Excluding uses of undefined registers, all uses of @var{res} use
+values provided by definitions that occur earlier in the same
+extended basic block.  These definitions might come from phi nodes
+or from real instructions.
+@end itemize
+
+@node Changing RTL Instructions
+@subsection Using the RTL SSA framework to change instructions
+
+@findex rtl_ssa::insn_change
+There are various routines that help to change a single RTL instruction
+or a group of RTL instructions while keeping the RTL SSA form up-to-date.
+This section first describes the process for changing a single instruction,
+then goes on to describe the differences when changing multiple instructions.
+
+@menu
+* Changing One RTL SSA Instruction::
+* Changing Multiple RTL SSA Instructions::
+@end menu
+
+@node Changing One RTL SSA Instruction
+@subsubsection Changing One RTL SSA Instruction
+
+Before making a change, passes should first use a statement like the
+following:
+
+@smallexample
+auto attempt = crtl->ssa->new_change_attempt ();
+@end smallexample
+
+Here, @code{attempt} is an RAII object that should remain in scope
+for the entire change attempt.  It automatically frees temporary
+memory related to the changes when it goes out of scope.
+
+Next, the pass should create an @code{rtl_ssa::insn_change} object
+for the instruction that it wants to change.  This object specifies
+several things:
+
+@itemize @bullet
+@item
+what the instruction's new list of uses should be (@code{new_uses}).
+By default this is the same as the instruction's current list of uses.
+
+@item
+what the instruction's new list of definitions should be (@code{new_defs}).
+By default this is the same as the instruction's current list of
+definitions.
+
+@item
+where the instruction should be located (@code{move_range}).
+This is a range of instructions after which the instruction could
+be placed, represented as an @code{rtl_ssa::insn_range}.
+By default the instruction must remain at its current position.
+@end itemize
+
+If a pass was attempting to change all these properties of an instruction
+@code{insn}, it might do something like this:
+
+@smallexample
+rtl_ssa::insn_change change (insn);
+change.new_defs = @dots{};
+change.new_uses = @dots{};
+change.move_range = @dots{};
+@end smallexample
+
+This @code{rtl_ssa::insn_change} only describes something that the
+pass @emph{might} do; at this stage, nothing has actually changed.
+
+As noted above, the default @code{move_range} requires the instruction
+to remain where it is.  At the other extreme, it is possible to allow
+the instruction to move anywhere within its extended basic block,
+provided that all the new uses and definitions can be performed
+at the new location.  The way to do this is:
+
+@smallexample
+change.move_range = insn->ebb ()->insn_range ();
+@end smallexample
+
+In either case, the next step is to make sure that move range is
+consistent with the new uses and definitions.  The way to do this is:
+
+@smallexample
+if (!rtl_ssa::restrict_movement (change))
+  return false;
+@end smallexample
+
+This function tries to limit @code{move_range} to a range of instructions
+at which @code{new_uses} and @code{new_defs} can be correctly performed.
+It returns true on success or false if no suitable location exists.
+
+The pass should also tentatively change the pattern of the instruction
+to whatever form the pass wants the instruction to have.  This should use
+the facilities provided by @file{recog.c}.  For example:
+
+@smallexample
+rtl_insn *rtl = insn->rtl ();
+insn_change_watermark watermark;
+validate_change (rtl, &PATTERN (rtl), new_pat, 1);
+@end smallexample
+
+will tentatively replace @code{insn}'s pattern with @code{new_pat}.
+
+These changes and the construction of the @code{rtl_ssa::insn_change}
+can happen in either order or be interleaved.
+
+After the tentative changes to the instruction are complete,
+the pass should check whether the new pattern matches a target
+instruction or satisfies the requirements of an inline asm:
+
+@smallexample
+if (!rtl_ssa::recog (change))
+  return false;
+@end smallexample
+
+This step might change the instruction pattern further in order to
+make it match.  It might also add new definitions or restrict the range
+of the move.  For example, if the new pattern did not match in its original
+form, but could be made to match by adding a clobber of the flags
+register, @code{rtl_ssa::recog} will check whether the flags register
+is free at an appropriate point.  If so, it will add a clobber of the
+flags register to @code{new_defs} and restrict @code{move_range} to
+the locations at which the flags register can be safely clobbered.
+
+Even if the proposed new instruction is valid according to
+@code{rtl_ssa::recog}, the change might not be worthwhile.
+For example, when optimizing for speed, the new instruction might
+turn out to be slower than the original one.  When optimizing for
+size, the new instruction might turn out to be bigger than the
+original one.
+
+Passes should check for this case using @code{change_is_worthwhile}.
+For example:
+
+@smallexample
+if (!rtl_ssa::change_is_worthwhile (change))
+  return false;
+@end smallexample
+
+If the change passes this test too then the pass can perform the change using:
+
+@smallexample
+confirm_change_group ();
+crtl->ssa->change_insn (change);
+@end smallexample
+
+Putting all this together, the change has the following form:
+
+@smallexample
+auto attempt = crtl->ssa->new_change_attempt ();
+
+rtl_ssa::insn_change change (insn);
+change.new_defs = @dots{};
+change.new_uses = @dots{};
+change.move_range = @dots{};
+
+if (!rtl_ssa::restrict_movement (change))
+  return false;
+
+insn_change_watermark watermark;
+// Use validate_change etc. to change INSN's pattern.
+@dots{}
+if (!rtl_ssa::recog (change)
+    || !rtl_ssa::change_is_worthwhile (change))
+  return false;
+
+confirm_change_group ();
+crtl->ssa->change_insn (change);
+@end smallexample
+
+@node Changing Multiple RTL SSA Instructions
+@subsubsection Changing Multiple RTL SSA Instructions
+
+The process for changing multiple instructions is similar
+to the process for changing single instructions
+(@pxref{Changing One RTL SSA Instruction}).  The pass should
+again start the change attempt with:
+
+@smallexample
+auto attempt = crtl->ssa->new_change_attempt ();
+@end smallexample
+
+and keep @code{attempt} in scope for the duration of the change
+attempt.  It should then construct an @code{rtl_ssa::insn_change}
+for each change that it wants to make.
+
+After this, it should combine the changes into a sequence of
+@code{rtl_ssa::insn_change} pointers.  This sequence must be in
+reverse postorder; the instructions will remain strictly in the
+order that the sequence specifies.
+
+For example, if a pass is changing exactly two instructions,
+it might do:
+
+@smallexample
+rtl_ssa::insn_change *changes[] = @{ &change1, change2 @};
+@end smallexample
+
+where @code{change1}'s instruction must come before @code{change2}'s.
+Alternatively, if the pass is changing a variable number of
+instructions, it might build up the sequence in a
+@code{vec<rtl_ssa::insn_change *>}.
+
+By default, @code{rtl_ssa::restrict_movement} assumes that all
+instructions other than the one passed to it will remain in their
+current positions and will retain their current uses and definitions.
+When changing multiple instructions, it is usually more effective
+to ignore the other instructions that are changing.  The sequencing
+described above ensures that the changing instructions remain
+in the correct order with respect to each other.
+The way to do this is:
+
+@smallexample
+if (!rtl_ssa::restrict_movement (change, insn_is_changing (changes)))
+  return false;
+@end smallexample
+
+Similarly, when @code{rtl_ssa::restrict_movement} is detecting
+whether a register can be clobbered, it by default assumes that
+all other instructions will remain in their current positions and
+retain their current form.  It is again more effective to ignore
+changing instructions (which might, for example, no longer need
+to clobber the flags register).  The way to do this is:
+
+@smallexample
+if (!rtl_ssa::recog (change, insn_is_changing (changes)))
+  return false;
+@end smallexample
+
+When changing multiple instructions, the important question is usually
+not whether each individual change is worthwhile, but whether the changes
+as a whole are worthwhile.  The way to test this is:
+
+@smallexample
+if (!rtl_ssa::changes_are_worthwhile (changes))
+  return false;
+@end smallexample
+
+The process for changing single instructions makes sure that one
+@code{rtl_ssa::insn_change} in isolation is valid.  But when changing
+multiple instructions, it is also necessary to test whether the
+sequence as a whole is valid.  For example, it might be impossible
+to satisfy all of the @code{move_range}s at once.
+
+Therefore, once the pass has a sequence of changes that are
+individually correct, it should use:
+
+@smallexample
+if (!crtl->ssa->verify_insn_changes (changes))
+  return false;
+@end smallexample
+
+to check whether the sequence as a whole is valid.  If all checks pass,
+the final step is:
+
+@smallexample
+confirm_change_group ();
+crtl->ssa->change_insns (changes);
+@end smallexample
+
+Putting all this together, the process for a two-instruction change is:
+
+@smallexample
+auto attempt = crtl->ssa->new_change_attempt ();
+
+rtl_ssa::insn_change change (insn1);
+change1.new_defs = @dots{};
+change1.new_uses = @dots{};
+change1.move_range = @dots{};
+
+rtl_ssa::insn_change change (insn2);
+change2.new_defs = @dots{};
+change2.new_uses = @dots{};
+change2.move_range = @dots{};
+
+rtl_ssa::insn_change *changes[] = @{ &change1, change2 @};
+
+auto is_changing = insn_is_changing (changes);
+if (!rtl_ssa::restrict_movement (change1, is_changing)
+    || !rtl_ssa::restrict_movement (change2, is_changing))
+  return false;
+
+insn_change_watermark watermark;
+// Use validate_change etc. to change INSN1's and INSN2's patterns.
+@dots{}
+if (!rtl_ssa::recog (change1, is_changing)
+    || !rtl_ssa::recog (change2, is_changing)
+    || !rtl_ssa::changes_are_worthwhile (changes)
+    || !crtl->ssa->verify_insn_changes (changes))
+  return false;
+
+confirm_change_group ();
+crtl->ssa->change_insns (changes);
+@end smallexample
 
 @node Sharing
 @section Structure Sharing Assumptions

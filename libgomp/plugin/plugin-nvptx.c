@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -48,6 +48,15 @@
 #include <unistd.h>
 #include <assert.h>
 #include <errno.h>
+
+/* An arbitrary fixed limit (128MB) for the size of the OpenMP soft stacks
+   block to cache between kernel invocations.  For soft-stacks blocks bigger
+   than this, we will free the block before attempting another GPU memory
+   allocation (i.e. in GOMP_OFFLOAD_alloc).  Otherwise, if an allocation fails,
+   we will free the cached soft-stacks block anyway then retry the
+   allocation.  If that fails too, we lose.  */
+
+#define SOFTSTACK_CACHE_LIMIT 134217728
 
 #if CUDA_VERSION < 6000
 extern CUresult cuGetErrorString (CUresult, const char **);
@@ -307,6 +316,14 @@ struct ptx_device
   struct ptx_free_block *free_blocks;
   pthread_mutex_t free_blocks_lock;
 
+  /* OpenMP stacks, cached between kernel invocations.  */
+  struct
+    {
+      CUdeviceptr ptr;
+      size_t size;
+      pthread_mutex_t lock;
+    } omp_stacks;
+
   struct ptx_device *next;
 };
 
@@ -514,6 +531,10 @@ nvptx_open_device (int n)
   ptx_dev->free_blocks = NULL;
   pthread_mutex_init (&ptx_dev->free_blocks_lock, NULL);
 
+  ptx_dev->omp_stacks.ptr = 0;
+  ptx_dev->omp_stacks.size = 0;
+  pthread_mutex_init (&ptx_dev->omp_stacks.lock, NULL);
+
   return ptx_dev;
 }
 
@@ -534,6 +555,11 @@ nvptx_close_device (struct ptx_device *ptx_dev)
   pthread_mutex_destroy (&ptx_dev->free_blocks_lock);
   pthread_mutex_destroy (&ptx_dev->image_lock);
 
+  pthread_mutex_destroy (&ptx_dev->omp_stacks.lock);
+
+  if (ptx_dev->omp_stacks.ptr)
+    CUDA_CALL (cuMemFree, ptx_dev->omp_stacks.ptr);
+
   if (!ptx_dev->ctx_shared)
     CUDA_CALL (cuCtxDestroy, ptx_dev->ctx);
 
@@ -545,15 +571,6 @@ static int
 nvptx_get_num_devices (void)
 {
   int n;
-
-  /* PR libgomp/65099: Currently, we only support offloading in 64-bit
-     configurations.  */
-  if (sizeof (void *) != 8)
-    {
-      GOMP_PLUGIN_debug (0, "Disabling nvptx offloading;"
-			 " only 64-bit configurations are supported\n");
-      return 0;
-    }
 
   /* This function will be called before the plugin has been initialized in
      order to enumerate available devices, but CUDA API routines can't be used
@@ -999,12 +1016,40 @@ goacc_profiling_acc_ev_alloc (struct goacc_thread *thr, void *dp, size_t s)
   GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info, api_info);
 }
 
+/* Free the cached soft-stacks block if it is above the SOFTSTACK_CACHE_LIMIT
+   size threshold, or if FORCE is true.  */
+
+static void
+nvptx_stacks_free (struct ptx_device *ptx_dev, bool force)
+{
+  pthread_mutex_lock (&ptx_dev->omp_stacks.lock);
+  if (ptx_dev->omp_stacks.ptr
+      && (force || ptx_dev->omp_stacks.size > SOFTSTACK_CACHE_LIMIT))
+    {
+      CUresult r = CUDA_CALL_NOCHECK (cuMemFree, ptx_dev->omp_stacks.ptr);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemFree error: %s", cuda_error (r));
+      ptx_dev->omp_stacks.ptr = 0;
+      ptx_dev->omp_stacks.size = 0;
+    }
+  pthread_mutex_unlock (&ptx_dev->omp_stacks.lock);
+}
+
 static void *
-nvptx_alloc (size_t s)
+nvptx_alloc (size_t s, bool suppress_errors)
 {
   CUdeviceptr d;
 
-  CUDA_CALL_ERET (NULL, cuMemAlloc, &d, s);
+  CUresult r = CUDA_CALL_NOCHECK (cuMemAlloc, &d, s);
+  if (suppress_errors && r == CUDA_ERROR_OUT_OF_MEMORY)
+    return NULL;
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("nvptx_alloc error: %s", cuda_error (r));
+      return NULL;
+    }
+
+  /* NOTE: We only do profiling stuff if the memory allocation succeeds.  */
   struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
   bool profiling_p
     = __builtin_expect (thr != NULL && thr->prof_info != NULL, false);
@@ -1352,6 +1397,8 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
   ptx_dev->free_blocks = NULL;
   pthread_mutex_unlock (&ptx_dev->free_blocks_lock);
 
+  nvptx_stacks_free (ptx_dev, false);
+
   while (blocks)
     {
       tmp = blocks->next;
@@ -1360,7 +1407,16 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
       blocks = tmp;
     }
 
-  return nvptx_alloc (size);
+  void *d = nvptx_alloc (size, true);
+  if (d)
+    return d;
+  else
+    {
+      /* Memory allocation failed.  Try freeing the stacks block, and
+	 retrying.  */
+      nvptx_stacks_free (ptx_dev, true);
+      return nvptx_alloc (size, false);
+    }
 }
 
 bool
@@ -1866,26 +1922,36 @@ nvptx_stacks_size ()
   return 128 * 1024;
 }
 
-/* Return contiguous storage for NUM stacks, each SIZE bytes.  */
+/* Return contiguous storage for NUM stacks, each SIZE bytes.  The lock for
+   the storage should be held on entry, and remains held on exit.  */
 
 static void *
-nvptx_stacks_alloc (size_t size, int num)
+nvptx_stacks_acquire (struct ptx_device *ptx_dev, size_t size, int num)
 {
-  CUdeviceptr stacks;
-  CUresult r = CUDA_CALL_NOCHECK (cuMemAlloc, &stacks, size * num);
+  if (ptx_dev->omp_stacks.ptr && ptx_dev->omp_stacks.size >= size * num)
+    return (void *) ptx_dev->omp_stacks.ptr;
+
+  /* Free the old, too-small stacks.  */
+  if (ptx_dev->omp_stacks.ptr)
+    {
+      CUresult r = CUDA_CALL_NOCHECK (cuCtxSynchronize, );
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuCtxSynchronize error: %s\n", cuda_error (r));
+      r = CUDA_CALL_NOCHECK (cuMemFree, ptx_dev->omp_stacks.ptr);
+      if (r != CUDA_SUCCESS)
+	GOMP_PLUGIN_fatal ("cuMemFree error: %s", cuda_error (r));
+    }
+
+  /* Make new and bigger stacks, and remember where we put them and how big
+     they are.  */
+  CUresult r = CUDA_CALL_NOCHECK (cuMemAlloc, &ptx_dev->omp_stacks.ptr,
+				  size * num);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuMemAlloc error: %s", cuda_error (r));
-  return (void *) stacks;
-}
 
-/* Release storage previously allocated by nvptx_stacks_alloc.  */
+  ptx_dev->omp_stacks.size = size * num;
 
-static void
-nvptx_stacks_free (void *p, int num)
-{
-  CUresult r = CUDA_CALL_NOCHECK (cuMemFree, (CUdeviceptr) p);
-  if (r != CUDA_SUCCESS)
-    GOMP_PLUGIN_fatal ("cuMemFree error: %s", cuda_error (r));
+  return (void *) ptx_dev->omp_stacks.ptr;
 }
 
 void
@@ -1922,7 +1988,9 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
   nvptx_adjust_launch_bounds (tgt_fn, ptx_dev, &teams, &threads);
 
   size_t stack_size = nvptx_stacks_size ();
-  void *stacks = nvptx_stacks_alloc (stack_size, teams * threads);
+
+  pthread_mutex_lock (&ptx_dev->omp_stacks.lock);
+  void *stacks = nvptx_stacks_acquire (ptx_dev, stack_size, teams * threads);
   void *fn_args[] = {tgt_vars, stacks, (void *) stack_size};
   size_t fn_args_size = sizeof fn_args;
   void *config[] = {
@@ -1944,7 +2012,8 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 		       maybe_abort_msg);
   else if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuCtxSynchronize error: %s", cuda_error (r));
-  nvptx_stacks_free (stacks, teams * threads);
+
+  pthread_mutex_unlock (&ptx_dev->omp_stacks.lock);
 }
 
 /* TODO: Implement GOMP_OFFLOAD_async_run. */

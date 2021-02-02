@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -654,8 +654,8 @@ extern unsigned char ix86_arch_features[X86_ARCH_LAST];
 
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 
-extern unsigned char x86_prefetch_sse;
-#define TARGET_PREFETCH_SSE	x86_prefetch_sse
+extern unsigned char ix86_prefetch_sse;
+#define TARGET_PREFETCH_SSE	ix86_prefetch_sse
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 
@@ -829,15 +829,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    SFmode, DFmode and XFmode) in the current excess precision
    configuration.  */
 #define X87_ENABLE_ARITH(MODE)				\
-  (flag_unsafe_math_optimizations			\
-   || flag_excess_precision == EXCESS_PRECISION_FAST	\
+  (ix86_unsafe_math_optimizations			\
+   || ix86_excess_precision == EXCESS_PRECISION_FAST	\
    || (MODE) == XFmode)
 
 /* Likewise, whether to allow direct conversions from integer mode
    IMODE (HImode, SImode or DImode) to MODE.  */
 #define X87_ENABLE_FLOAT(MODE, IMODE)			\
-  (flag_unsafe_math_optimizations			\
-   || flag_excess_precision == EXCESS_PRECISION_FAST	\
+  (ix86_unsafe_math_optimizations			\
+   || ix86_excess_precision == EXCESS_PRECISION_FAST	\
    || (MODE) == XFmode					\
    || ((MODE) == DFmode && (IMODE) == SImode)		\
    || (IMODE) == HImode)
@@ -1162,22 +1162,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
      1,    1,     1,    1,    1,    1,    1,    1,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
      1,   1,   1,   1,   1,   1,   1,   1 }
-
-/* Order in which to allocate registers.  Each register must be
-   listed once, even those in FIXED_REGISTERS.  List frame pointer
-   late and fixed registers last.  Note that, in general, we prefer
-   registers listed in CALL_USED_REGISTERS, keeping the others
-   available for storage of persistent values.
-
-   The ADJUST_REG_ALLOC_ORDER actually overwrite the order,
-   so this is just empty initializer for array.  */
-
-#define REG_ALLOC_ORDER							\
-{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,			\
-  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,	\
-  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
-  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
-  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75 }
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -2578,7 +2562,7 @@ public:
 };
 
 extern const pta processor_alias_table[];
-extern int const pta_size;
+extern unsigned int const pta_size;
 extern unsigned int const num_arch_names;
 #endif
 

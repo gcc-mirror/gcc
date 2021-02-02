@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -391,10 +391,10 @@ search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
       mask = -1;
 
     start:
-      t  = __builtin_ia32_pcmpeqb128(data, repl_nl);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_cr);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_bs);
-      t |= __builtin_ia32_pcmpeqb128(data, repl_qm);
+      t  = data == repl_nl;
+      t |= data == repl_cr;
+      t |= data == repl_bs;
+      t |= data == repl_qm;
       found = __builtin_ia32_pmovmskb128 (t);
       found &= mask;
     }

@@ -1,6 +1,6 @@
 ; Cygwin- and MinGW-specific options.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -27,7 +27,7 @@ Target RejectNegative
 Generate code for a DLL.
 
 mnop-fun-dllimport
-Target Report Var(TARGET_NOP_FUN_DLLIMPORT)
+Target Var(TARGET_NOP_FUN_DLLIMPORT)
 Ignore dllimport for functions.
 
 mthreads
@@ -51,14 +51,14 @@ Target Condition({defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)})
 Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement.
 
 fset-stack-executable
-Common Report Var(flag_setstackexecutable) Init(1) Optimization
+Common Var(flag_setstackexecutable) Init(1) Optimization
 For nested functions on stack executable permission is set.
 
 posix
 Driver
 
 fwritable-relocated-rdata
-Common Report Var(flag_writable_rel_rdata) Init(0)
+Common Var(flag_writable_rel_rdata) Init(0)
 Put relocated read-only data into .data section.
 
 ; Retain blank line above

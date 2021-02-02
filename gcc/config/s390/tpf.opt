@@ -1,6 +1,6 @@
 ; Options for the TPF-OS port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,29 +19,29 @@
 ; <http://www.gnu.org/licenses/>.
 
 mtpf-trace
-Target Report Mask(TPF_PROFILING)
+Target Mask(TPF_PROFILING)
 Enable TPF-OS tracing code.
 
 mtpf-trace-hook-prologue-check=
-Target RejectNegative Report Joined UInteger Var(s390_tpf_trace_hook_prologue_check) Init(TPF_TRACE_PROLOGUE_CHECK)
+Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_check) Init(TPF_TRACE_PROLOGUE_CHECK)
 Set the trace check address for prologue tpf hook
 
 mtpf-trace-hook-prologue-target=
-Target RejectNegative Report Joined UInteger Var(s390_tpf_trace_hook_prologue_target) Init(TPF_TRACE_PROLOGUE_TARGET)
+Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_target) Init(TPF_TRACE_PROLOGUE_TARGET)
 Set the trace jump address for prologue tpf hook
 
 mtpf-trace-hook-epilogue-check=
-Target RejectNegative Report Joined UInteger Var(s390_tpf_trace_hook_epilogue_check) Init(TPF_TRACE_EPILOGUE_CHECK)
+Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_check) Init(TPF_TRACE_EPILOGUE_CHECK)
 Set the trace check address for epilogue tpf hook
 
 mtpf-trace-hook-epilogue-target=
-Target RejectNegative Report Joined UInteger Var(s390_tpf_trace_hook_epilogue_target) Init(TPF_TRACE_EPILOGUE_TARGET)
+Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_target) Init(TPF_TRACE_EPILOGUE_TARGET)
 Set the trace jump address for epilogue tpf hook
 
 mtpf-trace-skip
-Target Report Var(s390_tpf_trace_skip) Init(0)
+Target Var(s390_tpf_trace_skip) Init(0)
 Set the prologue and epilogue hook addresses to TPF_TRACE_PROLOGUE_SKIP_TARGET and TPF_TRACE_EPILOGUE_SKIP_TARGET. Equivalent to using -mtpf-trace-hook-prologue-target=TPF_TRACE_PROLOGUE_SKIP_TARGET and -mtpf-trace-hook-epilogue-target=TPF_TRACE_EPILOGUE_SKIP_TARGET
 
 mmain
-Target Report
+Target
 Specify main object for TPF-OS.

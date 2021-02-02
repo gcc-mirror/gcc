@@ -1,6 +1,6 @@
 /* Subroutines used to generate function calls and handle built-in
    instructions on IBM RS/6000.
-   Copyright (C) 1991-2020 Free Software Foundation, Inc.
+   Copyright (C) 1991-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1069,6 +1069,40 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
   { VSX_BUILTIN_VEC_DIV, VSX_BUILTIN_UDIV_V2DI,
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI, 0 },
+
+  { VSX_BUILTIN_VEC_DIV, P10V_BUILTIN_DIVS_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { VSX_BUILTIN_VEC_DIV, P10V_BUILTIN_DIVU_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, 0 },
+  { VSX_BUILTIN_VEC_DIV, P10V_BUILTIN_DIVS_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { VSX_BUILTIN_VEC_DIV, P10V_BUILTIN_DIVU_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+
+  { P10_BUILTIN_VEC_DIVE, P10V_BUILTIN_DIVES_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { P10_BUILTIN_VEC_DIVE, P10V_BUILTIN_DIVEU_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, 0 },
+  { P10_BUILTIN_VEC_DIVE, P10V_BUILTIN_DIVES_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P10_BUILTIN_VEC_DIVE, P10V_BUILTIN_DIVEU_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+
+  { P10_BUILTIN_VEC_MOD, P10V_BUILTIN_MODS_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { P10_BUILTIN_VEC_MOD, P10V_BUILTIN_MODU_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, 0 },
+  { P10_BUILTIN_VEC_MOD, P10V_BUILTIN_MODS_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P10_BUILTIN_VEC_MOD, P10V_BUILTIN_MODU_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+
   { VSX_BUILTIN_VEC_DOUBLE, VSX_BUILTIN_XVCVSXDDP,
     RS6000_BTI_V2DF, RS6000_BTI_V2DI, 0, 0 },
   { VSX_BUILTIN_VEC_DOUBLE, VSX_BUILTIN_XVCVUXDDP,
@@ -1909,6 +1943,17 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_bool_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_VMINUB, ALTIVEC_BUILTIN_VMINUB,
     RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, RS6000_BTI_bool_V16QI, 0 },
+  { P10_BUILTIN_VEC_MULH, P10V_BUILTIN_MULHS_V4SI,
+    RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { P10_BUILTIN_VEC_MULH, P10V_BUILTIN_MULHU_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, 0 },
+  { P10_BUILTIN_VEC_MULH, P10V_BUILTIN_MULHS_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P10_BUILTIN_VEC_MULH, P10V_BUILTIN_MULHU_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+
   { ALTIVEC_BUILTIN_VEC_MULE, ALTIVEC_BUILTIN_VMULEUB,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_MULE, ALTIVEC_BUILTIN_VMULESB,
@@ -9519,7 +9564,9 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs)
+      || icode == CODE_FOR_altivec_vctuxs
+      || icode == CODE_FOR_vsx_xvcvuxddp_scale
+      || icode == CODE_FOR_vsx_xvcvsxddp_scale)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
@@ -14438,6 +14485,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     case P10V_BUILTIN_XXGENPCVM_V8HI:
     case P10V_BUILTIN_XXGENPCVM_V4SI:
     case P10V_BUILTIN_XXGENPCVM_V2DI:
+    case P10V_BUILTIN_DIVEU_V4SI:
+    case P10V_BUILTIN_DIVEU_V2DI:
+    case P10V_BUILTIN_DIVU_V4SI:
+    case P10V_BUILTIN_DIVU_V2DI:
+    case P10V_BUILTIN_MODU_V2DI:
+    case P10V_BUILTIN_MODU_V4SI:
+    case P10V_BUILTIN_MULHU_V2DI:
+    case P10V_BUILTIN_MULHU_V4SI:
       h.uns_p[0] = 1;
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;

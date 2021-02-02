@@ -1,5 +1,5 @@
 /* Handling for the known behavior of various specific functions.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -434,6 +434,15 @@ region_model::impl_call_strlen (const call_details &cd)
     }
   /* Otherwise an unknown value.  */
   return true;
+}
+
+/* Handle calls to functions referenced by
+   __attribute__((malloc(FOO))).  */
+
+void
+region_model::impl_deallocation_call (const call_details &cd)
+{
+  impl_call_free (cd);
 }
 
 } // namespace ana

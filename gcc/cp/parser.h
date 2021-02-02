@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -58,7 +58,8 @@ struct GTY (()) cp_token {
      deleted.  */
   bool purged_p : 1;
   bool tree_check_p : 1;
-  /* 4 unused bits.  */
+  bool main_source_p : 1;
+  /* 3 unused bits.  */
 
   /* The location at which this token was found.  */
   location_t location;

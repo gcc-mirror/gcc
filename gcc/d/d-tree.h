@@ -1,5 +1,5 @@
 /* d-tree.h -- Definitions and declarations for code generation.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -496,7 +496,7 @@ extern void d_init_builtins (void);
 extern void d_register_builtin_type (tree, const char *);
 extern void d_build_builtins_module (Module *);
 extern void d_maybe_set_builtin (Module *);
-extern Expression *d_eval_constant_expression (tree);
+extern Expression *d_eval_constant_expression (const Loc &, tree);
 extern void d_init_versions (void);
 
 /* In d-codegen.cc.  */

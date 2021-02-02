@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1135,7 +1135,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "mmx_<plusminus_insn><mode>3"
+(define_expand "mmx_<insn><mode>3"
   [(set (match_operand:MMXMODEI8 0 "register_operand")
 	(plusminus:MMXMODEI8
 	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand")
@@ -1143,7 +1143,7 @@
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_expand "<plusminus_insn><mode>3"
+(define_expand "<insn><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
 	(plusminus:MMXMODEI
 	  (match_operand:MMXMODEI 1 "register_operand")
@@ -1151,7 +1151,7 @@
   "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*mmx_<plusminus_insn><mode>3"
+(define_insn "*mmx_<insn><mode>3"
   [(set (match_operand:MMXMODEI8 0 "register_operand" "=y,x,Yv")
         (plusminus:MMXMODEI8
 	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand" "<comm>0,0,Yv")
@@ -1167,7 +1167,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "mmx_<plusminus_insn><mode>3"
+(define_expand "mmx_<insn><mode>3"
   [(set (match_operand:MMXMODE12 0 "register_operand")
 	(sat_plusminus:MMXMODE12
 	  (match_operand:MMXMODE12 1 "register_mmxmem_operand")
@@ -1175,7 +1175,7 @@
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*mmx_<plusminus_insn><mode>3"
+(define_insn "*mmx_<insn><mode>3"
   [(set (match_operand:MMXMODE12 0 "register_operand" "=y,x,Yv")
         (sat_plusminus:MMXMODE12
 	  (match_operand:MMXMODE12 1 "register_mmxmem_operand" "<comm>0,0,Yv")
@@ -1508,7 +1508,7 @@
 	  (match_operand:DI 2 "nonmemory_operand")))]
   "TARGET_MMX_WITH_SSE")
 
-(define_insn "mmx_<shift_insn><mode>3"
+(define_insn "mmx_<insn><mode>3"
   [(set (match_operand:MMXMODE248 0 "register_operand" "=y,x,Yv")
         (any_lshift:MMXMODE248
 	  (match_operand:MMXMODE248 1 "register_operand" "0,0,Yv")
@@ -1527,7 +1527,7 @@
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "<shift_insn><mode>3"
+(define_expand "<insn><mode>3"
   [(set (match_operand:MMXMODE248 0 "register_operand")
         (any_lshift:MMXMODE248
 	  (match_operand:MMXMODE248 1 "register_operand")

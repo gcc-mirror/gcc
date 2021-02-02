@@ -1,3 +1,198 @@
+2021-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98918
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value):
+	Fold the initial value of *UNKNOWN_PTR to an UNKNOWN value.
+	(region_model_manager::get_field_region): Fold the value
+	of UNKNOWN_PTR->FIELD to *UNKNOWN_PTR_OF_&FIELD_TYPE.
+
+2021-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (event_kind_to_string): Handle
+	EK_START_CONSOLIDATED_CFG_EDGES and
+	EK_END_CONSOLIDATED_CFG_EDGES.
+	(start_consolidated_cfg_edges_event::get_desc): New.
+	(checker_path::cfg_edge_pair_at_p): New.
+	* checker-path.h (enum event_kind): Add
+	EK_START_CONSOLIDATED_CFG_EDGES and
+	EK_END_CONSOLIDATED_CFG_EDGES.
+	(class start_consolidated_cfg_edges_event): New class.
+	(class end_consolidated_cfg_edges_event): New class.
+	(checker_path::delete_events): New.
+	(checker_path::replace_event): New.
+	(checker_path::cfg_edge_pair_at_p): New decl.
+	* diagnostic-manager.cc (diagnostic_manager::prune_path): Call
+	consolidate_conditions.
+	(same_line_as_p): New.
+	(diagnostic_manager::consolidate_conditions): New.
+	* diagnostic-manager.h
+	(diagnostic_manager::consolidate_conditions): New decl.
+
+2021-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (is_std_named_call_p): New decl.
+	* diagnostic-manager.cc (path_builder::get_sm): New.
+	(state_change_event_creator::state_change_event_creator): Add "pb"
+	param.
+	(state_change_event_creator::on_global_state_change): Don't consider
+	state changes affecting other state_machines.
+	(state_change_event_creator::on_state_change): Likewise.
+	(state_change_event_creator::m_pb): New field.
+	(diagnostic_manager::add_events_for_eedge): Pass pb to visitor
+	ctor.
+	* region-model-impl-calls.cc
+	(region_model::impl_deallocation_call): New.
+	* region-model.cc: Include "attribs.h".
+	(region_model::on_call_post): Handle fndecls referenced by
+	__attribute__((deallocated_by(FOO))).
+	* region-model.h (region_model::impl_deallocation_call): New decl.
+	* sm-malloc.cc: Include "stringpool.h" and "attribs.h".  Add
+	leading comment.
+	(class api): Delete.
+	(enum resource_state): Update comment for change from api to
+	deallocator and deallocator_set.
+	(allocation_state::allocation_state): Drop api param.  Add
+	"deallocators" and "deallocator".
+	(allocation_state::m_api): Drop field in favor of...
+	(allocation_state::m_deallocators): New field.
+	(allocation_state::m_deallocator): New field.
+	(enum wording): Add WORDING_DEALLOCATED.
+	(struct deallocator): New.
+	(struct standard_deallocator): New.
+	(struct custom_deallocator): New.
+	(struct deallocator_set): New.
+	(struct custom_deallocator_set): New.
+	(struct standard_deallocator_set): New.
+	(struct deallocator_set_map_traits): New.
+	(malloc_state_machine::m_malloc): Drop field
+	(malloc_state_machine::m_scalar_new): Likewise.
+	(malloc_state_machine::m_vector_new): Likewise.
+	(malloc_state_machine::m_free): New field
+	(malloc_state_machine::m_scalar_delete): Likewise.
+	(malloc_state_machine::m_vector_delete): Likewise.
+	(malloc_state_machine::deallocator_map_t): New typedef.
+	(malloc_state_machine::m_deallocator_map): New field.
+	(malloc_state_machine::deallocator_set_cache_t): New typedef.
+	(malloc_state_machine::m_custom_deallocator_set_cache): New field.
+	(malloc_state_machine::custom_deallocator_set_map_t): New typedef.
+	(malloc_state_machine::m_custom_deallocator_set_map): New field.
+	(malloc_state_machine::m_dynamic_sets): New field.
+	(malloc_state_machine::m_dynamic_deallocators): New field.
+	(api::api): Delete.
+	(deallocator::deallocator): New ctor.
+	(deallocator::hash): New.
+	(deallocator::dump_to_pp): New.
+	(deallocator::cmp): New.
+	(deallocator::cmp_ptr_ptr): New.
+	(standard_deallocator::standard_deallocator): New ctor.
+	(deallocator_set::deallocator_set): New ctor.
+	(deallocator_set::dump): New.
+	(custom_deallocator_set::custom_deallocator_set): New ctor.
+	(custom_deallocator_set::contains_p): New.
+	(custom_deallocator_set::maybe_get_single): New.
+	(custom_deallocator_set::dump_to_pp): New.
+	(standard_deallocator_set::standard_deallocator_set): New ctor.
+	(standard_deallocator_set::contains_p): New.
+	(standard_deallocator_set::maybe_get_single): New.
+	(standard_deallocator_set::dump_to_pp): New.
+	(start_p): New.
+	(class mismatching_deallocation): Update for conversion from api
+	to deallocator_set and deallocator.
+	(double_free::emit): Use %qs.
+	(class use_after_free): Update for conversion from api to
+	deallocator_set and deallocator.
+	(malloc_leak::describe_state_change): Only emit "allocated here" on
+	a start->nonnull transition, rather than on other transitions to
+	nonnull.
+	(allocation_state::dump_to_pp): Update for conversion from api to
+	deallocator_set.
+	(allocation_state::get_nonnull): Likewise.
+	(malloc_state_machine::malloc_state_machine): Likewise.
+	(malloc_state_machine::~malloc_state_machine): New.
+	(malloc_state_machine::add_state): Update for conversion from api
+	to deallocator_set.
+	(malloc_state_machine::get_or_create_custom_deallocator_set): New.
+	(malloc_state_machine::maybe_create_custom_deallocator_set): New.
+	(malloc_state_machine::get_or_create_deallocator): New.
+	(malloc_state_machine::on_stmt): Update for conversion from api
+	to deallocator_set.  Handle "__attribute__((malloc(FOO)))", and
+	the special attribute set on FOO.
+	(malloc_state_machine::on_allocator_call): Update for conversion
+	from api to deallocator_set.  Add "returns_nonnull" param and use
+	it to affect which state to transition to.
+	(malloc_state_machine::on_deallocator_call): Update for conversion
+	from api to deallocator_set.
+
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (strongly_connected_components::to_json): New.
+	(worklist::to_json): New.
+	(exploded_graph::to_json): JSON-ify the worklist.
+	* exploded-graph.h (strongly_connected_components::to_json): New
+	decl.
+	(worklist::to_json): New decl.
+	* store.cc (store::to_json): Fix comment.
+	* supergraph.cc (supernode::to_json): Fix reference to
+	"returning_call" in comment.  Add optional "fun" to JSON.
+	(edge_kind_to_string): New.
+	(superedge::to_json): Add "kind" to JSON.
+
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98679
+	* analyzer.h (region_offset::operator==): Make const.
+	* pending-diagnostic.h (pending_diagnostic::equal_p): Likewise.
+	* store.h (binding_cluster::for_each_value): Likewise.
+	(binding_cluster::for_each_binding): Likewise.
+
+2021-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98628
+	* store.cc (binding_cluster::make_unknown_relative_to): Don't mark
+	dereferenced unknown pointers as having escaped.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98580
+	* region.cc (decl_region::get_svalue_for_initializer): Gracefully
+	handle when LTO writes out DECL_INITIAL as error_mark_node.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97074
+	* store.cc (binding_cluster::can_merge_p): Add "out_store" param
+	and pass to calls to binding_cluster::make_unknown_relative_to.
+	(binding_cluster::make_unknown_relative_to): Add "out_store"
+	param.  Use it to mark base regions that are pointed to by
+	pointers that become unknown as having escaped.
+	(store::can_merge_p): Pass out_store to
+	binding_cluster::can_merge_p.
+	* store.h (binding_cluster::can_merge_p): Add "out_store" param.
+	(binding_cluster::make_unknown_relative_to): Likewise.
+	* svalue.cc (region_svalue::implicitly_live_p): New vfunc.
+	* svalue.h (region_svalue::implicitly_live_p): New vfunc decl.
+
+2021-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98564
+	* engine.cc (exploded_path::feasible_p): Add missing call to
+	bitmap_clear.
+
+2021-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97072
+	* region-model-reachability.cc (reachable_regions::init_cluster):
+	Convert symbolic region handling to a switch statement.  Add cases
+	to handle SK_UNKNOWN and SK_CONJURED.
+
+2021-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98293
+	* store.cc (binding_map::apply_ctor_to_region): When "index" is
+	NULL, iterate through the fields for RECORD_TYPEs, rather than
+	creating an INTEGER_CST index.
+
 2020-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer-pass.cc: Include "analyzer/analyzer.h" for the
@@ -3892,7 +4087,7 @@
 	* Initial creation
 
 
-Copyright (C) 2019-2020 Free Software Foundation, Inc.
+Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

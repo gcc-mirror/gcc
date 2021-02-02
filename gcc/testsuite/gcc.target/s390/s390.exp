@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2020 Free Software Foundation, Inc.
+# Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ if ![istarget s390*-*-*] then {
 load_lib gcc-dg.exp
 load_lib target-supports.exp
 load_lib gfortran-dg.exp
+load_lib atomic-dg.exp
 
 # Return 1 if the the assembler understands .machine and .machinemode.  The
 # target attribute needs that feature to work.
@@ -197,7 +198,7 @@ proc check_effective_target_s390_z14_hw { } {
 	int main (void)
 	{
 	    int x = 0;
-	    asm ("msgrkc %%0,%%0,%%0" : "+r" (x) : );
+	    asm ("msgrkc %0,%0,%0" : "+r" (x) : );
 	    return x;
 	}
     }] "-march=z14 -m64 -mzarch" ] } { return 0 } else { return 1 }
@@ -250,6 +251,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch13/*.{c,S}]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
 
+# Some md tests require libatomic
+atomic_init
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
@@ -294,4 +297,5 @@ foreach t [list $srcdir/$subdir/pr80080-3.c] {
 }
 
 # All done.
+atomic_finish
 dg-finish

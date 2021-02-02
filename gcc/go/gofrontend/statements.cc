@@ -4538,7 +4538,7 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 					      Type::make_nil_type(), NULL))
     {
       go_error_at(this->val_->location(),
-		  "cannot switch on value whose type that may not be compared");
+		  "cannot switch on value whose type may not be compared");
       return Statement::make_error_statement(loc);
     }
 
@@ -5291,21 +5291,22 @@ Select_clauses::Select_clause::traverse(Traverse* traverse)
 void
 Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 				     Block* b, Temporary_statement* scases,
-				     size_t index, Temporary_statement* recvok)
+				     int index, Temporary_statement* recvok)
 {
   Location loc = this->location_;
 
-  Expression* scase = Expression::make_temporary_reference(scases, loc);
-  Expression* index_expr = Expression::make_integer_ul(index, NULL, loc);
-  scase = Expression::make_array_index(scase, index_expr, NULL, NULL, loc);
+  this->set_case_index(index);
 
   if (this->is_default_)
     {
       go_assert(this->channel_ == NULL && this->val_ == NULL);
-      this->lower_default(b, scase);
       this->is_lowered_ = true;
       return;
     }
+
+  Expression* scase = Expression::make_temporary_reference(scases, loc);
+  Expression* index_expr = Expression::make_integer_sl(index, NULL, loc);
+  scase = Expression::make_array_index(scase, index_expr, NULL, NULL, loc);
 
   // Evaluate the channel before the select statement.
   Temporary_statement* channel_temp = Statement::make_temporary(NULL,
@@ -5324,15 +5325,6 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
   // through here.
   this->is_lowered_ = true;
   this->val_ = NULL;
-}
-
-// Lower a default clause in a select statement.
-
-void
-Select_clauses::Select_clause::lower_default(Block* b, Expression* scase)
-{
-  Location loc = this->location_;
-  this->set_case(b, scase, Expression::make_nil(loc), NULL, caseDefault);
 }
 
 // Lower a send clause in a select statement.
@@ -5366,7 +5358,7 @@ Select_clauses::Select_clause::lower_send(Block* b, Expression* scase,
   Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
   valaddr = Expression::make_cast(unsafe_pointer_type, valaddr, loc);
 
-  this->set_case(b, scase, chanref, valaddr, caseSend);
+  this->set_case(b, scase, chanref, valaddr);
 }
 
 // Lower a receive clause in a select statement.
@@ -5392,7 +5384,7 @@ Select_clauses::Select_clause::lower_recv(Gogo* gogo, Named_object* function,
   Type* unsafe_pointer_type = Type::make_pointer_type(Type::make_void_type());
   valaddr = Expression::make_cast(unsafe_pointer_type, valaddr, loc);
 
-  this->set_case(b, scase, chanref, valaddr, caseRecv);
+  this->set_case(b, scase, chanref, valaddr);
 
   // If the block of statements is executed, arrange for the received
   // value to move from VAL to the place where the statements expect
@@ -5447,8 +5439,7 @@ void
 Select_clauses::Select_clause::set_case(Block* b,
 					Expression* scase,
 					Expression* chanref,
-					Expression* elem,
-					int kind)
+					Expression* elem)
 {
   Location loc = this->location_;
   Struct_type* scase_type = scase->type()->struct_type();
@@ -5469,14 +5460,6 @@ Select_clauses::Select_clause::set_case(Block* b,
       s = Statement::make_assignment(ref, elem, loc);
       b->add_statement(s);
     }
-
-  field_index = 2;
-  go_assert(scase_type->field(field_index)->is_field_name("kind"));
-  Type* uint16_type = Type::lookup_integer_type("uint16");
-  Expression* k = Expression::make_integer_ul(kind, uint16_type, loc);
-  ref = Expression::make_field_reference(scase->copy(), field_index, loc);
-  s = Statement::make_assignment(ref, k, loc);
-  b->add_statement(s);
 }
 
 // Determine types.
@@ -5577,6 +5560,19 @@ Select_clauses::Select_clause::dump_clause(
 
 // Class Select_clauses.
 
+// Whether there is a default case.
+
+bool
+Select_clauses::has_default() const
+{
+  for (Clauses::const_iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)
+    if (p->is_default())
+      return true;
+  return false;
+}
+
 // Traversal.
 
 int
@@ -5594,17 +5590,60 @@ Select_clauses::traverse(Traverse* traverse)
 
 // Lowering.  Here we pull out the channel and the send values, to
 // enforce the order of evaluation.  We also add explicit send and
-// receive statements to the clauses.
+// receive statements to the clauses.  This builds the entries in the
+// local array of scase values.  It sets *P_SEND_COUNT and
+// *P_RECV_COUNT.
 
 void
 Select_clauses::lower(Gogo* gogo, Named_object* function, Block* b,
-		      Temporary_statement* scases, Temporary_statement* recvok)
+		      Temporary_statement* scases, Temporary_statement* recvok,
+		      int *p_send_count, int *p_recv_count)
 {
-  size_t i = 0;
+  int send_count = 0;
+  int recv_count = 0;
+  bool has_default = false;
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
-       ++p, ++i)
-    p->lower(gogo, function, b, scases, i, recvok);
+       ++p)
+    {
+      if (p->is_default())
+	has_default = true;
+      else if (p->is_send())
+	++send_count;
+      else
+	++recv_count;
+    }
+
+  *p_send_count = send_count;
+  *p_recv_count = recv_count;
+
+  int send_index = 0;
+  int recv_index = send_count;
+  for (Clauses::iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)
+    {
+      int index;
+      if (p->is_default())
+	index = -1;
+      else if (p->is_send())
+	{
+	  index = send_index;
+	  ++send_index;
+	}
+      else
+	{
+	  index = recv_index;
+	  ++recv_index;
+	}
+
+      p->lower(gogo, function, b, scases, index, recvok);
+    }
+
+  go_assert(send_index == send_count);
+  go_assert(recv_index == send_count + recv_count);
+  go_assert(static_cast<size_t>(recv_index + (has_default ? 1 : 0))
+	    == this->size());
 }
 
 // Determine types.
@@ -5664,7 +5703,8 @@ Select_clauses::get_backend(Translate_context* context,
        p != this->clauses_.end();
        ++p, ++i)
     {
-      Expression* index_expr = Expression::make_integer_ul(i, int_type,
+      Expression* index_expr = Expression::make_integer_sl(p->case_index(),
+							   int_type,
 							   location);
       cases[i].push_back(index_expr->get_backend(context));
 
@@ -5749,6 +5789,7 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   Block* b = new Block(enclosing, loc);
 
   int ncases = this->clauses_->size();
+  bool has_default = this->clauses_->has_default();
 
   // Zero-case select.  Just block the execution.
   if (ncases == 0)
@@ -5766,10 +5807,12 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
 
   // Two-case select with one default case.  It is a non-blocking
   // send/receive.
-  if (ncases == 2
-      && (this->clauses_->at(0).is_default()
-          || this->clauses_->at(1).is_default()))
+  if (ncases == 2 && has_default)
     return this->lower_two_case(b);
+
+  // We don't allocate an entry in scases for the default case.
+  if (has_default)
+    --ncases;
 
   Type* scase_type = Channel_type::select_case_type();
   Expression* ncases_expr =
@@ -5803,7 +5846,10 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   b->add_statement(recvok);
 
   // Initialize the scases array.
-  this->clauses_->lower(gogo, function, b, scases, recvok);
+  int send_count;
+  int recv_count;
+  this->clauses_->lower(gogo, function, b, scases, recvok, &send_count,
+			&recv_count);
 
   // Build the call to selectgo.  Later, in do_get_backend, we will
   // build a switch on the result that branches to the various cases.
@@ -5817,11 +5863,18 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   order_ref = Expression::make_unary(OPERATOR_AND, order_ref, loc);
   order_ref = Expression::make_cast(unsafe_pointer_type, order_ref, loc);
 
-  Expression* count_expr = Expression::make_integer_ul(ncases, int_type, loc);
+  Expression* send_count_expr = Expression::make_integer_sl(send_count,
+							    int_type,
+							    loc);
+  Expression* recv_count_expr = Expression::make_integer_sl(recv_count,
+							    int_type,
+							    loc);
+  Expression* block_expr = Expression::make_boolean(!has_default, loc);
 
-  Call_expression* call = Runtime::make_call(Runtime::SELECTGO, loc, 3,
+  Call_expression* call = Runtime::make_call(Runtime::SELECTGO, loc, 5,
 					     scases_ref, order_ref,
-					     count_expr);
+					     send_count_expr, recv_count_expr,
+					     block_expr);
 
   Expression* result = Expression::make_call_result(call, 0);
   Expression* ref = Expression::make_temporary_reference(this->index_, loc);

@@ -1,5 +1,5 @@
 /* Parser for C and Objective-C.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -10615,8 +10615,14 @@ c_parser_expression (c_parser *parser)
       c_parser_consume_token (parser);
       expr_loc = c_parser_peek_token (parser)->location;
       lhsval = expr.value;
-      while (TREE_CODE (lhsval) == COMPOUND_EXPR)
-	lhsval = TREE_OPERAND (lhsval, 1);
+      while (TREE_CODE (lhsval) == COMPOUND_EXPR
+	     || TREE_CODE (lhsval) == NOP_EXPR)
+	{
+	  if (TREE_CODE (lhsval) == COMPOUND_EXPR)
+	    lhsval = TREE_OPERAND (lhsval, 1);
+	  else
+	    lhsval = TREE_OPERAND (lhsval, 0);
+	}
       if (DECL_P (lhsval) || handled_component_p (lhsval))
 	mark_exp_read (lhsval);
       next = c_parser_expr_no_commas (parser, NULL);
@@ -15971,6 +15977,56 @@ c_parser_omp_clause_uniform (c_parser *parser, tree list)
   return list;
 }
 
+/* OpenMP 5.0:
+   detach ( event-handle ) */
+
+static tree
+c_parser_omp_clause_detach (c_parser *parser, tree list)
+{
+  matching_parens parens;
+  location_t clause_loc = c_parser_peek_token (parser)->location;
+
+  if (!parens.require_open (parser))
+    return list;
+
+  if (c_parser_next_token_is_not (parser, CPP_NAME)
+      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+    {
+      c_parser_error (parser, "expected identifier");
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+
+  tree t = lookup_name (c_parser_peek_token (parser)->value);
+  if (t == NULL_TREE)
+    {
+      undeclared_variable (c_parser_peek_token (parser)->location,
+			   c_parser_peek_token (parser)->value);
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+  c_parser_consume_token (parser);
+
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+  if (!INTEGRAL_TYPE_P (type)
+      || TREE_CODE (type) != ENUMERAL_TYPE
+      || TYPE_NAME (type) != get_identifier ("omp_event_handle_t"))
+    {
+      error_at (clause_loc, "%<detach%> clause event handle "
+			    "has type %qT rather than "
+			    "%<omp_event_handle_t%>",
+			    type);
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+
+  tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DETACH);
+  OMP_CLAUSE_DECL (u) = t;
+  OMP_CLAUSE_CHAIN (u) = list;
+  parens.skip_until_found_close (parser);
+  return u;
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
@@ -16236,6 +16292,10 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_DEFAULT:
 	  clauses = c_parser_omp_clause_default (parser, clauses, false);
 	  c_name = "default";
+	  break;
+	case PRAGMA_OMP_CLAUSE_DETACH:
+	  clauses = c_parser_omp_clause_detach (parser, clauses);
+	  c_name = "detach";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FIRSTPRIVATE:
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
@@ -17248,6 +17308,55 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
   add_stmt (stmt);
 
   return stmt;
+}
+
+/* OpenMP 5.0:
+   # pragma omp allocate (list)  [allocator(allocator)]  */
+
+static void
+c_parser_omp_allocate (location_t loc, c_parser *parser)
+{
+  tree allocator = NULL_TREE;
+  tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ALLOCATE, NULL_TREE);
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      matching_parens parens;
+      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      c_parser_consume_token (parser);
+      if (strcmp ("allocator", p) != 0)
+	error_at (c_parser_peek_token (parser)->location,
+		  "expected %<allocator%>");
+      else if (parens.require_open (parser))
+	{
+	  location_t expr_loc = c_parser_peek_token (parser)->location;
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+	  allocator = expr.value;
+	  allocator = c_fully_fold (allocator, false, NULL);
+	  tree orig_type
+	    = expr.original_type ? expr.original_type : TREE_TYPE (allocator);
+	  orig_type = TYPE_MAIN_VARIANT (orig_type);
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (allocator))
+	      || TREE_CODE (orig_type) != ENUMERAL_TYPE
+	      || TYPE_NAME (orig_type)
+		 != get_identifier ("omp_allocator_handle_t"))
+	    {
+	      error_at (expr_loc, "%<allocator%> clause allocator expression "
+				"has type %qT rather than "
+				"%<omp_allocator_handle_t%>",
+				TREE_TYPE (allocator));
+	      allocator = NULL_TREE;
+	    }
+	  parens.skip_until_found_close (parser);
+	}
+    }
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (allocator)
+    for (tree c = nl; c != NULL_TREE; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+
+  sorry_at (loc, "%<#pragma omp allocate%> not yet supported");
 }
 
 /* OpenMP 2.5:
@@ -19135,7 +19244,8 @@ c_parser_omp_single (location_t loc, c_parser *parser, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DETACH))
 
 static tree
 c_parser_omp_task (location_t loc, c_parser *parser, bool *if_p)
@@ -21537,6 +21647,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       strcpy (p_name, "#pragma wait");
       stmt = c_parser_oacc_wait (loc, parser, p_name);
       break;
+    case PRAGMA_OMP_ALLOCATE:
+      c_parser_omp_allocate (loc, parser);
+      return;
     case PRAGMA_OMP_ATOMIC:
       c_parser_omp_atomic (loc, parser, false);
       return;

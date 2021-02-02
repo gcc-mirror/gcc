@@ -11162,7 +11162,7 @@ package body Exp_Ch4 is
                   --  because the selected component may be a reference to the
                   --  object being initialized, whose discriminant is not yet
                   --  set. This only happens in complex cases involving changes
-                  --  or representation.
+                  --  of representation.
 
                   if Disc = Entity (Selector_Name (N))
                     and then (Is_Entity_Name (Dval)
@@ -11174,15 +11174,7 @@ package body Exp_Ch4 is
                      --  constrained by an outer discriminant, which cannot
                      --  be optimized away.
 
-                     if Denotes_Discriminant
-                          (Dval, Check_Concurrent => True)
-                     then
-                        exit Discr_Loop;
-
-                     elsif Nkind (Original_Node (Dval)) = N_Selected_Component
-                       and then
-                         Denotes_Discriminant
-                           (Selector_Name (Original_Node (Dval)), True)
+                     if Denotes_Discriminant (Dval, Check_Concurrent => True)
                      then
                         exit Discr_Loop;
 
@@ -12556,9 +12548,9 @@ package body Exp_Ch4 is
            and then Nkind (Parent (N)) = N_Attribute_Reference
            and then Attribute_Name (Parent (N)) = Name_Round
          then
-            Set_Rounded_Result (N);
             Set_Etype (N, Etype (Parent (N)));
             Target_Type := Etype (N);
+            Set_Rounded_Result (N);
          end if;
 
          if Is_Fixed_Point_Type (Target_Type) then
@@ -12813,56 +12805,6 @@ package body Exp_Ch4 is
 
          Rewrite (N, Relocate_Node (Operand));
          return;
-      end if;
-
-      --  If we have a conversion of a compile time known value to a target
-      --  type and the value is in range of the target type, then we can simply
-      --  replace the construct by an integer literal of the correct type. We
-      --  only apply this to discrete types being converted. Possibly it may
-      --  apply in other cases, but it is too much trouble to worry about.
-
-      --  Note that we do not do this transformation if the Kill_Range_Check
-      --  flag is set, since then the value may be outside the expected range.
-      --  This happens in the Normalize_Scalars case.
-
-      --  We also skip this if either the target or operand type is biased
-      --  because in this case, the unchecked conversion is supposed to
-      --  preserve the bit pattern, not the integer value.
-
-      if Is_Integer_Type (Target_Type)
-        and then not Has_Biased_Representation (Target_Type)
-        and then Is_Discrete_Type (Operand_Type)
-        and then not Has_Biased_Representation (Operand_Type)
-        and then Compile_Time_Known_Value (Operand)
-        and then not Kill_Range_Check (N)
-      then
-         declare
-            Val : constant Uint := Expr_Rep_Value (Operand);
-
-         begin
-            if Compile_Time_Known_Value (Type_Low_Bound (Target_Type))
-                 and then
-               Compile_Time_Known_Value (Type_High_Bound (Target_Type))
-                 and then
-               Val >= Expr_Value (Type_Low_Bound (Target_Type))
-                 and then
-               Val <= Expr_Value (Type_High_Bound (Target_Type))
-            then
-               Rewrite (N, Make_Integer_Literal (Sloc (N), Val));
-
-               --  If Address is the target type, just set the type to avoid a
-               --  spurious type error on the literal when Address is a visible
-               --  integer type.
-
-               if Is_Descendant_Of_Address (Target_Type) then
-                  Set_Etype (N, Target_Type);
-               else
-                  Analyze_And_Resolve (N, Target_Type);
-               end if;
-
-               return;
-            end if;
-         end;
       end if;
 
       --  Generate an extra temporary for cases unsupported by the C backend
@@ -13375,7 +13317,8 @@ package body Exp_Ch4 is
       --  will be to universal real, and our real type comes from the Round
       --  attribute (as well as an indication that we must round the result)
 
-      if Nkind (Parent (Conv)) = N_Attribute_Reference
+      if Etype (Conv) = Universal_Real
+        and then Nkind (Parent (Conv)) = N_Attribute_Reference
         and then Attribute_Name (Parent (Conv)) = Name_Round
       then
          Set_Etype (N, Base_Type (Etype (Parent (Conv))));

@@ -1,3 +1,66 @@
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* Makefile.in: Enable -fprofile-reproducible=parallel-runs
+	for profiledbootstrap.
+
+2021-01-22  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-01-22  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
+2021-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS: Fix spacing.
+
+2021-01-12  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* MAINTAINERS (Write After Approval): Add myself
+
+2021-01-06  Nick Alcock  <nick.alcock@oracle.com>
+
+	* Makefile.def: Sync with binutils-gdb:
+	(dependencies): all-ld depends on all-libctf.
+	(host_modules): libctf is no longer no_install.
+	No longer no_check.  Checking depends on all-ld.
+	* Makefile.in: Regenerated.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* libtool.m4: Match gnu* along other GNU systems.
+	* libgo/config/libtool.m4: Match gnu* along other GNU systems.
+	* libgo/configure: Re-generate.
+
+2021-01-04  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* MAINTAINERS: Update my email address.
+
+2020-12-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.def
+	* Makefile.in
+	* Makefile.tpl
+	* configure
+	* configure.ac
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.def: Add libcody.
+	* configure.ac: Add libcody.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+2020-12-14  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* .dir-locals.el (c-mode): Set 'fill-column' to 80 columns.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

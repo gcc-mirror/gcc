@@ -36,6 +36,7 @@ with System.Img_Fixed_32; use System.Img_Fixed_32;
 with System.Img_Fixed_64; use System.Img_Fixed_64;
 with System.Val_Fixed_32; use System.Val_Fixed_32;
 with System.Val_Fixed_64; use System.Val_Fixed_64;
+with System.Val_LLF;      use System.Val_LLF;
 with System.WCh_Con;      use System.WCh_Con;
 with System.WCh_WtS;      use System.WCh_WtS;
 
@@ -55,6 +56,9 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    package Aux64 is new
      Ada.Wide_Wide_Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
 
+   package Aux_Long_Long_Float is new
+     Ada.Wide_Wide_Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+
    --  Throughout this generic body, we distinguish between the case where type
    --  Int32 is OK and where type Int64 is OK. These boolean constants are used
    --  to test for this, such that only code for the relevant case is included
@@ -62,7 +66,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  static (although it is not a static expressions in the RM sense).
 
    OK_Get_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -73,7 +77,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -87,7 +91,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -98,7 +102,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -157,7 +161,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
                                -Num'Small_Numerator,
                                -Num'Small_Denominator));
       else
-         Float_Aux.Get (File, Long_Long_Float (Item), Width);
+         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
       end if;
 
    exception
@@ -169,7 +173,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -197,7 +201,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
                                 -Num'Small_Numerator,
                                 -Num'Small_Denominator));
       else
-         Float_Aux.Gets (S, Long_Long_Float (Item), Last);
+         Aux_Long_Long_Float.Gets (S, Long_Long_Float (Item), Last);
       end if;
 
    exception
@@ -225,7 +229,8 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
                     -Num'Small_Numerator, -Num'Small_Denominator,
                     For0, Num'Aft);
       else
-         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Item), Fore, Aft, Exp);
       end if;
    end Put;
 
@@ -236,7 +241,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
@@ -257,7 +262,7 @@ package body Ada.Wide_Wide_Text_IO.Fixed_IO is
                      -Num'Small_Numerator, -Num'Small_Denominator,
                      For0, Num'Aft);
       else
-         Float_Aux.Puts (S, Long_Long_Float (Item), Aft, Exp);
+         Aux_Long_Long_Float.Puts (S, Long_Long_Float (Item), Aft, Exp);
       end if;
 
       for J in S'Range loop

@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2620,6 +2620,14 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
       && TREE_CODE (op0) == SSA_NAME
       && TREE_CODE (op1) == INTEGER_CST)
     code = maybe_optimize_mod_cmp (code, &op0, &op1);
+
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (op0))
+      && (code == LT_EXPR || code == LE_EXPR
+	  || code == GT_EXPR || code == GE_EXPR)
+      && integer_zerop (op1)
+      && TREE_CODE (op0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (code, &op0, &op1);
 
   last2 = last = get_last_insn ();
 
@@ -5956,14 +5964,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      else if (gimple_debug_begin_stmt_p (stmt))
 		val = GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT ();
 	      else if (gimple_debug_inline_entry_p (stmt))
-		{
-		  tree block = gimple_block (stmt);
-
-		  if (block)
-		    val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
-		  else
-		    goto delink_debug_stmt;
-		}
+		val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
 	      else
 		gcc_unreachable ();
 
@@ -6502,7 +6503,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec
     | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
-  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( PROP_ssa | PROP_gimple ), /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };

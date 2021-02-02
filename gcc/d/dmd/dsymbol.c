@@ -531,7 +531,9 @@ Dsymbol *Dsymbol::search_correct(Identifier *ident)
 {
     if (global.gag)
         return NULL;            // don't do it for speculative compiles; too time consuming
-
+    // search for exact name first
+    if (Dsymbol *s = search(Loc(), ident, IgnoreErrors))
+        return s;
     return (Dsymbol *)speller(ident->toChars(), &symbol_search_fp, (void *)this, idchars);
 }
 
@@ -760,7 +762,7 @@ void Dsymbol::deprecation(const char *format, ...)
     va_end(ap);
 }
 
-void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
+bool Dsymbol::checkDeprecated(Loc loc, Scope *sc)
 {
     if (global.params.useDeprecated != DIAGNOSTICoff && isDeprecated())
     {
@@ -768,17 +770,17 @@ void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
         for (Dsymbol *sp = sc->parent; sp; sp = sp->parent)
         {
             if (sp->isDeprecated())
-                goto L1;
+                return false;
         }
 
         for (Scope *sc2 = sc; sc2; sc2 = sc2->enclosing)
         {
             if (sc2->scopesym && sc2->scopesym->isDeprecated())
-                goto L1;
+                return false;
 
             // If inside a StorageClassDeclaration that is deprecated
             if (sc2->stc & STCdeprecated)
-                goto L1;
+                return false;
         }
 
         const char *message = NULL;
@@ -793,20 +795,11 @@ void Dsymbol::checkDeprecated(Loc loc, Scope *sc)
             deprecation(loc, "is deprecated - %s", message);
         else
             deprecation(loc, "is deprecated");
+
+        return true;
     }
 
-  L1:
-    Declaration *d = isDeclaration();
-    if (d && d->storage_class & STCdisable)
-    {
-        if (!(sc->func && sc->func->storage_class & STCdisable))
-        {
-            if (d->toParent() && d->isPostBlitDeclaration())
-                d->toParent()->error(loc, "is not copyable because it is annotated with @disable");
-            else
-                error(loc, "is not callable because it is annotated with @disable");
-        }
-    }
+    return false;
 }
 
 /**********************************
@@ -1103,7 +1096,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
             if ((flags & IgnorePrivateImports) && prots[i] == Prot::private_)
                 continue;
 
-            int sflags = flags & (IgnoreErrors | IgnoreAmbiguous | IgnoreSymbolVisibility); // remember these in recursive searches
+            int sflags = flags & (IgnoreErrors | IgnoreAmbiguous); // remember these in recursive searches
             Dsymbol *ss = (*importedScopes)[i];
 
             //printf("\tscanning import '%s', prots = %d, isModule = %p, isImport = %p\n", ss->toChars(), prots[i], ss->isModule(), ss->isImport());
@@ -1117,9 +1110,7 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
             {
                 if (flags & SearchImportsOnly)
                     continue;
-                // compatibility with -transition=import (Bugzilla 15925)
-                // SearchLocalsOnly should always get set for new lookup rules
-                sflags |= (flags & SearchLocalsOnly);
+                sflags |= SearchLocalsOnly;
             }
 
             /* Don't find private members if ss is a module
@@ -1198,19 +1189,6 @@ Dsymbol *ScopeDsymbol::search(const Loc &loc, Identifier *ident, int flags)
                 if (!s->isOverloadSet())
                     a = mergeOverloadSet(ident, a, s);
                 s = a;
-            }
-
-            // TODO: remove once private symbol visibility has been deprecated
-            if (!(flags & IgnoreErrors) && s->prot().kind == Prot::private_ &&
-                !s->isOverloadable() && !s->parent->isTemplateMixin() && !s->parent->isNspace())
-            {
-                AliasDeclaration *ad;
-                // accessing private selective and renamed imports is
-                // deprecated by restricting the symbol visibility
-                if (s->isImport() || ((ad = s->isAliasDeclaration()) != NULL && ad->_import != NULL))
-                {}
-                else
-                    error(loc, "%s %s is private", s->kind(), s->toPrettyChars());
             }
             //printf("\tfound in imports %s.%s\n", toChars(), s.toChars());
             return s;

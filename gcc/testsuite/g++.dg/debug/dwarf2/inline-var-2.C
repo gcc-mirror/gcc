@@ -1,6 +1,7 @@
 // { dg-do compile { target c++17 } }
 // { dg-options "-O -gdwarf-5 -dA -gno-strict-dwarf" }
 // { dg-require-weak "" }
+// { dg-skip-if "AIX DWARF5" { powerpc-ibm-aix* } }
 // { dg-final { scan-assembler-not "DW_TAG_member" } }
 
 inline int a;

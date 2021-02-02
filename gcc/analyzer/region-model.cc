@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
+#include "attribs.h"
 
 #if ENABLE_ANALYZER
 
@@ -915,6 +916,14 @@ region_model::on_call_post (const gcall *call,
 	{
 	  call_details cd (call, this, ctxt);
 	  impl_call_operator_delete (cd);
+	  return;
+	}
+      /* Was this fndecl referenced by
+	 __attribute__((malloc(FOO)))?  */
+      if (lookup_attribute ("*dealloc", DECL_ATTRIBUTES (callee_fndecl)))
+	{
+	  call_details cd (call, this, ctxt);
+	  impl_deallocation_call (cd);
 	  return;
 	}
     }

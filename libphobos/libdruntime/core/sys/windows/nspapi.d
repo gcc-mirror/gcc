@@ -9,10 +9,11 @@
  */
 module core.sys.windows.nspapi;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
-private import core.sys.windows.basetyps, core.sys.windows.windef;
+import core.sys.windows.basetyps, core.sys.windows.windef;
 
 // FIXME: check types of constants
 

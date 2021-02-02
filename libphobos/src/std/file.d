@@ -164,6 +164,16 @@ class FileException : Exception
      +/
     immutable uint errno;
 
+    private this(in char[] name, in char[] msg, string file, size_t line, uint errno) @safe pure
+    {
+        if (msg.empty)
+            super(name.idup, file, line);
+        else
+            super(text(name, ": ", msg), file, line);
+
+        this.errno = errno;
+    }
+
     /++
         Constructor which takes an error message.
 
@@ -175,12 +185,7 @@ class FileException : Exception
      +/
     this(in char[] name, in char[] msg, string file = __FILE__, size_t line = __LINE__) @safe pure
     {
-        if (msg.empty)
-            super(name.idup, file, line);
-        else
-            super(text(name, ": ", msg), file, line);
-
-        errno = 0;
+        this(name, msg, file, line, 0);
     }
 
     /++
@@ -200,8 +205,7 @@ class FileException : Exception
                           string file = __FILE__,
                           size_t line = __LINE__) @safe
     {
-        this(name, sysErrorString(errno), file, line);
-        this.errno = errno;
+        this(name, sysErrorString(errno), file, line, errno);
     }
     else version (Posix) this(in char[] name,
                              uint errno = .errno,
@@ -209,8 +213,7 @@ class FileException : Exception
                              size_t line = __LINE__) @trusted
     {
         import std.exception : errnoString;
-        this(name, errnoString(errno), file, line);
-        this.errno = errno;
+        this(name, errnoString(errno), file, line, errno);
     }
 }
 

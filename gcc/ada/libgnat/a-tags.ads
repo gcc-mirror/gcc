@@ -65,6 +65,7 @@
 --    length depends on the number of interfaces covered by a tagged type.
 
 with System.Storage_Elements;
+with Ada.Unchecked_Conversion;
 
 package Ada.Tags is
    pragma Preelaborate;
@@ -501,10 +502,6 @@ private
    --  dispatch table, return the tagged kind of a type in the context of
    --  concurrency and limitedness.
 
-   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean;
-   --  Given the tag of an object and the tag associated to a type, return
-   --  true if Obj is in Typ'Class.
-
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
    --  Ada 2005 (AI-251): General routine that checks if a given object
    --  implements a tagged type. Its common usage is to check if Obj is in
@@ -622,5 +619,50 @@ private
    pragma No_Strict_Aliasing (Addr_Ptr);
    --  This type is used by the frontend to generate the code that handles
    --  dispatch table slots of types declared at the local level.
+
+   -------------------
+   -- CW_Membership --
+   -------------------
+
+   function To_Address is
+     new Ada.Unchecked_Conversion (Tag, System.Address);
+
+   function To_Addr_Ptr is
+      new Ada.Unchecked_Conversion (System.Address, Addr_Ptr);
+
+   function To_Type_Specific_Data_Ptr is
+     new Ada.Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
+
+   --  Canonical implementation of Classwide Membership corresponding to:
+
+   --     Obj in Typ'Class
+
+   --  Each dispatch table contains a reference to a table of ancestors (stored
+   --  in the first part of the Tags_Table) and a count of the level of
+   --  inheritance "Idepth".
+
+   --  Obj is in Typ'Class if Typ'Tag is in the table of ancestors that are
+   --  contained in the dispatch table referenced by Obj'Tag . Knowing the
+   --  level of inheritance of both types, this can be computed in constant
+   --  time by the formula:
+
+   --   TSD (Obj'tag).Tags_Table (TSD (Obj'tag).Idepth - TSD (Typ'tag).Idepth)
+   --     = Typ'tag
+
+   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean is
+     (declare
+         Obj_TSD_Ptr : constant Addr_Ptr :=
+           To_Addr_Ptr (To_Address (Obj_Tag) - DT_Typeinfo_Ptr_Size);
+         Typ_TSD_Ptr : constant Addr_Ptr :=
+           To_Addr_Ptr (To_Address (Typ_Tag) - DT_Typeinfo_Ptr_Size);
+         Obj_TSD     : constant Type_Specific_Data_Ptr :=
+           To_Type_Specific_Data_Ptr (Obj_TSD_Ptr.all);
+         Typ_TSD     : constant Type_Specific_Data_Ptr :=
+           To_Type_Specific_Data_Ptr (Typ_TSD_Ptr.all);
+         Pos         : constant Integer := Obj_TSD.Idepth - Typ_TSD.Idepth;
+      begin
+         Pos >= 0 and then Obj_TSD.Tags_Table (Pos) = Typ_Tag);
+   --  Given the tag of an object and the tag associated to a type, return
+   --  true if Obj is in Typ'Class.
 
 end Ada.Tags;

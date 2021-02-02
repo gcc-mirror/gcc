@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Tool for canonical RISC-V architecture string.
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
 # Contributed by Andrew Waterman (andrew@sifive.com).
 #
 # This file is part of GCC.
@@ -74,8 +74,20 @@ def arch_canonicalize(arch):
   # becasue we just append extensions list to the arch string.
   std_exts += list(filter(lambda x:len(x) == 1, long_exts))
 
+  def longext_sort (exts):
+    if not exts.startswith("zxm") and exts.startswith("z"):
+      # If "Z" extensions are named, they should be ordered first by CANONICAL.
+      if exts[1] not in CANONICAL_ORDER:
+        raise Exception("Unsupported extension `%s`" % exts)
+      canonical_sort = CANONICAL_ORDER.index(exts[1])
+    else:
+      canonical_sort = -1
+    return (exts.startswith("x"), exts.startswith("zxm"),
+            LONG_EXT_PREFIXES.index(exts[0]), canonical_sort, exts[1:])
+
   # Multi-letter extension must be in lexicographic order.
-  long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts)))
+  long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts),
+                          key=longext_sort))
 
   # Put extensions in canonical order.
   for ext in CANONICAL_ORDER:

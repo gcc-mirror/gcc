@@ -31,41 +31,42 @@
 
 --  This package contains the routines for Ada.Text_IO.Float_IO that are
 --  shared among separate instantiations of this package. The routines in
---  this package are identical semantically to those in Float_IO itself,
---  except that generic parameter Num has been replaced by Long_Long_Float,
---  and the default parameters have been removed because they are supplied
+--  this package are identical semantically to those in Float_IO, except
+--  that the default parameters have been removed because they are supplied
 --  explicitly by the calls from within the generic template. This package
---  is also used by Ada.Text_IO.Fixed_IO, and Ada.Text_IO.Decimal_IO.
+--  is also used by Ada.Text_IO.Fixed_IO and Ada.Text_IO.Decimal_IO.
 
-private package Ada.Text_IO.Float_Aux is
+private generic
 
-   procedure Load_Real
-     (File : File_Type;
-      Buf  : out String;
-      Ptr  : in out Natural);
-   --  This is an auxiliary routine that is used to load a possibly signed
-   --  real literal value from the input file into Buf, starting at Ptr + 1.
+   type Num is digits <>;
+
+   with function Scan
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer) return Num;
+
+package Ada.Text_IO.Float_Aux is
 
    procedure Get
      (File  : File_Type;
-      Item  : out Long_Long_Float;
+      Item  : out Num;
       Width : Field);
 
    procedure Put
      (File : File_Type;
-      Item : Long_Long_Float;
+      Item : Num;
       Fore : Field;
       Aft  : Field;
       Exp  : Field);
 
    procedure Gets
      (From : String;
-      Item : out Long_Long_Float;
+      Item : out Num;
       Last : out Positive);
 
    procedure Puts
      (To   : out String;
-      Item : Long_Long_Float;
+      Item : Num;
       Aft  : Field;
       Exp  : Field);
 

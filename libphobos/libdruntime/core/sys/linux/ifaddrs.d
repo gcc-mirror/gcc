@@ -22,6 +22,7 @@ version (linux):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 struct ifaddrs
 {
@@ -46,7 +47,7 @@ struct ifaddrs
 
     /// Address specific data
     void* ifa_data;
-};
+}
 
 /// Returns: linked list of ifaddrs structures describing interfaces
 int getifaddrs(ifaddrs** );

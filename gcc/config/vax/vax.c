@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1235,6 +1235,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 {
   rtx hi[3], lo[3];
   const char *pattern_hi, *pattern_lo;
+  bool push_p;
 
   switch (mode)
     {
@@ -1345,19 +1346,13 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
       return "movq %1,%0";
 
     case E_SImode:
+      push_p = push_operand (operands[0], SImode);
+
       if (symbolic_operand (operands[1], SImode))
-	{
-	  if (push_operand (operands[0], SImode))
-	    return "pushab %a1";
-	  return "movab %a1,%0";
-	}
+	return push_p ? "pushab %a1" : "movab %a1,%0";
 
       if (operands[1] == const0_rtx)
-	{
-	  if (push_operand (operands[1], SImode))
-	    return "pushl %1";
-	  return "clrl %0";
-	}
+	return push_p ? "pushl %1" : "clrl %0";
 
       if (CONST_INT_P (operands[1])
 	  && (unsigned HOST_WIDE_INT) INTVAL (operands[1]) >= 64)
@@ -1383,9 +1378,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	  if (i >= -0x8000 && i < 0)
 	    return "cvtwl %1,%0";
 	}
-      if (push_operand (operands[0], SImode))
-	return "pushl %1";
-      return "movl %1,%0";
+      return push_p ? "pushl %1" : "movl %1,%0";
 
     case E_HImode:
       if (CONST_INT_P (operands[1]))
@@ -2042,12 +2035,14 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
     }
   else
     {
-      /* If are adding the same value together, that's really a multiply by 2,
-	 and that's just a left shift of 1.  */
+      /* If we are adding a value to itself, that's really a multiply by 2,
+	 and that's just a left shift by 1.  If subtracting, it's just 0.  */
       if (rtx_equal_p (operands[1], operands[2]))
 	{
-	  gcc_assert (code != MINUS);
-	  emit_insn (gen_ashldi3 (operands[0], operands[1], const1_rtx));
+	  if (code == PLUS)
+	    emit_insn (gen_ashldi3 (operands[0], operands[1], const1_rtx));
+	  else
+	    emit_move_insn (operands[0], const0_rtx);
 	  return;
 	}
 
@@ -2066,6 +2061,19 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
       else
 	operands[2] = fixup_mathdi_operand (operands[2], DImode);
 
+      /* If we are adding or subtracting 0, then this is a move.  */
+      if (code == PLUS && operands[1] == const0_rtx)
+	{
+	  temp = operands[2];
+	  operands[2] = operands[1];
+	  operands[1] = temp;
+	}
+      if (operands[2] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+
       /* If we are subtracting not from ourselves [d = a - b], and because the
 	 carry ops are two operand only, we would need to do a move prior to
 	 the subtract.  And if d == b, we would need a temp otherwise
@@ -2082,7 +2090,6 @@ vax_expand_addsub_di_operands (rtx * operands, enum rtx_code code)
 	{
 	  if (code == MINUS && CONSTANT_P (operands[1]))
 	    {
-	      temp = gen_reg_rtx (DImode);
 	      emit_insn (gen_sbcdi3 (operands[0], const0_rtx, operands[2]));
 	      code = PLUS;
 	      gen_insn = gen_adcdi3;

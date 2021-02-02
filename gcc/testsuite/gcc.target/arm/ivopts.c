@@ -11,6 +11,6 @@ tr5 (short array[], int n)
 }
 
 /* { dg-final { scan-tree-dump-times "PHI <" 1 "ivopts"} } */
-/* { dg-final { object-size text <= 20 { target { arm_thumb2_ok_no_arm_v8_1_lob } } } } */
+/* { dg-final { object-size text <= 20 { target { arm_thumb2_no_arm_v8_1_lob } } } } */
 /* { dg-final { object-size text <= 32 { target { arm_nothumb && { ! arm_iwmmxt_ok } } } } } */
 /* { dg-final { object-size text <= 36 { target { arm_nothumb && arm_iwmmxt_ok }  } } } */

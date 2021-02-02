@@ -999,7 +999,7 @@ package body Impunit is
 
       for J in Non_Imp_File_Names_12'Range loop
          if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J).Fname then
-            return Non_Imp_File_Names_95 (J).RMdef
+            return Non_Imp_File_Names_12 (J).RMdef
               and then Ada_Version >= Ada_2012;
          end if;
       end loop;

@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -599,11 +599,14 @@ ignore_overflows (tree expr, tree orig)
 }
 
 /* Fold away simple conversions, but make sure TREE_OVERFLOW is set
-   properly.  */
+   properly and propagate TREE_NO_WARNING if folding EXPR results
+   in the same expression code.  */
 
 tree
 cp_fold_convert (tree type, tree expr)
 {
+  bool nowarn = TREE_NO_WARNING (expr);
+
   tree conv;
   if (TREE_TYPE (expr) == type)
     conv = expr;
@@ -626,6 +629,10 @@ cp_fold_convert (tree type, tree expr)
       conv = fold_convert (type, expr);
       conv = ignore_overflows (conv, expr);
     }
+
+  if (nowarn && TREE_CODE (expr) == TREE_CODE (conv))
+    TREE_NO_WARNING (conv) = nowarn;
+
   return conv;
 }
 
@@ -1031,6 +1038,9 @@ cp_get_callee_fndecl_nofold (tree call)
 static void
 maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 {
+  if (!warn_unused_result || c_inhibit_evaluation_warnings)
+    return;
+
   tree call = expr;
   if (TREE_CODE (expr) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (expr);

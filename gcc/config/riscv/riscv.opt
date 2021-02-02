@@ -1,6 +1,6 @@
 ; Options for the RISC-V port of the compiler
 ;
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -26,11 +26,11 @@ Target RejectNegative Joined UInteger Var(riscv_branch_cost)
 -mbranch-cost=N	Set the cost of branches to roughly N instructions.
 
 mplt
-Target Report Var(TARGET_PLT) Init(1)
+Target Var(TARGET_PLT) Init(1)
 When generating -fpic code, allow the use of PLTs. Ignored for fno-pic.
 
 mabi=
-Target Report RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
+Target RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
 Specify integer and floating-point calling convention.
 
 mpreferred-stack-boundary=
@@ -63,15 +63,15 @@ EnumValue
 Enum(abi_type) String(lp64d) Value(ABI_LP64D)
 
 mfdiv
-Target Report Mask(FDIV)
+Target Mask(FDIV)
 Use hardware floating-point divide and square root instructions.
 
 mdiv
-Target Report Mask(DIV)
+Target Mask(DIV)
 Use hardware instructions for integer division.
 
 march=
-Target Report RejectNegative Joined
+Target RejectNegative Joined
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
 lower-case.
 
@@ -88,7 +88,7 @@ Target Joined Separate UInteger Var(g_switch_value) Init(8)
 -msmall-data-limit=N	Put global and static data smaller than <number> bytes into a special section (on some targets).
 
 msave-restore
-Target Report Mask(SAVE_RESTORE)
+Target Mask(SAVE_RESTORE)
 Use smaller but slower prologue and epilogue code.
 
 mshorten-memrefs
@@ -98,11 +98,11 @@ memory accesses to be generated as compressed instructions.  Currently targets
 32-bit integer load/stores.
 
 mcmodel=
-Target Report RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
+Target RejectNegative Joined Enum(code_model) Var(riscv_cmodel) Init(TARGET_DEFAULT_CMODEL)
 Specify the code model.
 
 mstrict-align
-Target Report Mask(STRICT_ALIGN) Save
+Target Mask(STRICT_ALIGN) Save
 Do not generate unaligned memory accesses.
 
 Enum
@@ -116,7 +116,7 @@ EnumValue
 Enum(code_model) String(medany) Value(CM_MEDANY)
 
 mexplicit-relocs
-Target Report Mask(EXPLICIT_RELOCS)
+Target Mask(EXPLICIT_RELOCS)
 Use %reloc() operators, rather than assembly macros, to load addresses.
 
 mrelax
@@ -139,7 +139,7 @@ Mask(RVC)
 Mask(RVE)
 
 mriscv-attribute
-Target Report Var(riscv_emit_attribute_p) Init(-1)
+Target Var(riscv_emit_attribute_p) Init(-1)
 Emit RISC-V ELF attribute.
 
 malign-data=
@@ -201,5 +201,5 @@ EnumValue
 Enum(isa_spec_class) String(20191213) Value(ISA_SPEC_CLASS_20191213)
 
 misa-spec=
-Target Report RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
+Target RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
 Set the version of RISC-V ISA spec.

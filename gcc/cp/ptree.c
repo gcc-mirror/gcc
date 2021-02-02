@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -58,6 +58,42 @@ cxx_print_decl (FILE *file, tree node, int indent)
     }
 
   bool need_indent = true;
+
+  if (TREE_CODE (node) == FUNCTION_DECL
+      || TREE_CODE (node) == VAR_DECL
+      || TREE_CODE (node) == TYPE_DECL
+      || TREE_CODE (node) == TEMPLATE_DECL
+      || TREE_CODE (node) == CONCEPT_DECL
+      || TREE_CODE (node) == NAMESPACE_DECL)
+    {
+      unsigned m = 0;
+      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_IMPORT_P (node))
+	m = get_importing_module (node, true);
+
+      if (const char *name = m == ~0u ? "" : module_name (m, true))
+	{
+	  if (need_indent)
+	    indent_to (file, indent + 3);
+	  fprintf (file, " module %d:%s", m, name);
+	  need_indent = false;
+	}
+
+      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_PURVIEW_P (node))
+	{
+	  if (need_indent)
+	    indent_to (file, indent + 3);
+	  fprintf (file, " purview");
+	  need_indent = false;
+	}
+    }
+
+  if (DECL_MODULE_EXPORT_P (node))
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " exported");
+      need_indent = false;
+    }
 
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
     {

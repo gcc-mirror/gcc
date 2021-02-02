@@ -1,6 +1,6 @@
 // -*- C++ -*- Libstdc++ version details header.
 
-// Copyright (C) 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2018-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -167,7 +167,7 @@
 #endif
 
 #if __cplusplus > 201703L
-// c++2a
+// c++20
 #define __cpp_lib_atomic_flag_test 201907L
 #define __cpp_lib_atomic_float 201711L
 #define __cpp_lib_atomic_ref 201806L
@@ -199,6 +199,9 @@
 #define __cpp_lib_assume_aligned 201811L
 #if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
 # define __cpp_lib_atomic_wait 201907L
+# if __cpp_aligned_new
+#  define __cpp_lib_barrier 201907L
+# endif
 #endif
 #define __cpp_lib_bind_front 201907L
 #if __has_builtin(__builtin_bit_cast)
@@ -253,7 +256,12 @@
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif
-#endif // C++2a
+
+#if __cplusplus > 202002L
+// c++2b
+#define __cpp_lib_string_contains 202011L
+#endif // C++2b
+#endif // C++20
 #endif // C++17
 #endif // C++14
 #endif // C++11

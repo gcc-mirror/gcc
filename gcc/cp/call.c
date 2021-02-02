@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -761,11 +761,25 @@ alloc_conversions (size_t n)
   return (conversion **) conversion_obstack_alloc (n * sizeof (conversion *));
 }
 
+/* True iff the active member of conversion::u for code CODE is NEXT.  */
+
+static inline bool
+has_next (conversion_kind code)
+{
+  return !(code == ck_identity
+	   || code == ck_ambig
+	   || code == ck_list
+	   || code == ck_aggr);
+}
+
 static conversion *
 build_conv (conversion_kind code, tree type, conversion *from)
 {
   conversion *t;
   conversion_rank rank = CONVERSION_RANK (from);
+
+  /* Only call this function for conversions that use u.next.  */
+  gcc_assert (from == NULL || has_next (code));
 
   /* Note that the caller is responsible for filling in t->cand for
      user-defined conversions.  */
@@ -863,10 +877,7 @@ static conversion *
 next_conversion (conversion *conv)
 {
   if (conv == NULL
-      || conv->kind == ck_identity
-      || conv->kind == ck_ambig
-      || conv->kind == ck_list
-      || conv->kind == ck_aggr)
+      || !has_next (conv->kind))
     return NULL;
   return conv->u.next;
 }
@@ -879,10 +890,7 @@ strip_standard_conversion (conversion *conv)
 {
   while (conv
 	 && conv->kind != ck_user
-	 && conv->kind != ck_ambig
-	 && conv->kind != ck_list
-	 && conv->kind != ck_aggr
-	 && conv->kind != ck_identity)
+	 && has_next (conv->kind))
     conv = next_conversion (conv);
   return conv;
 }
@@ -1266,13 +1274,15 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	(TREE_TYPE (to), TREE_TYPE (from), NULL_TREE, c_cast_p, flags,
 	 complain);
 
-      if (part_conv)
+      if (!part_conv)
+	conv = NULL;
+      else if (part_conv->kind == ck_identity)
+	/* Leave conv alone.  */;
+      else
 	{
 	  conv = build_conv (part_conv->kind, to, conv);
 	  conv->rank = part_conv->rank;
 	}
-      else
-	conv = NULL;
 
       return conv;
     }
@@ -4025,9 +4035,9 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
        creating a garbage BASELINK; constructors can't be inherited.  */
     ctors = get_class_binding (totype, complete_ctor_identifier);
 
+  tree to_nonref = non_reference (totype);
   if (MAYBE_CLASS_TYPE_P (fromtype))
     {
-      tree to_nonref = non_reference (totype);
       if (same_type_ignoring_top_level_qualifiers_p (to_nonref, fromtype) ||
 	  (CLASS_TYPE_P (to_nonref) && CLASS_TYPE_P (fromtype)
 	   && DERIVED_FROM_P (to_nonref, fromtype)))
@@ -4110,6 +4120,22 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       tree conversion_path = TREE_PURPOSE (conv_fns);
       struct z_candidate *old_candidates;
+
+      /* If LOOKUP_NO_CONVERSION, don't consider a conversion function that
+	 would need an addional user-defined conversion, i.e. if the return
+	 type differs in class-ness from the desired type.  So we avoid
+	 considering operator bool when calling a copy constructor.
+
+	 This optimization avoids the failure in PR97600, and is allowed by
+	 [temp.inst]/9: "If the function selected by overload resolution can be
+	 determined without instantiating a class template definition, it is
+	 unspecified whether that instantiation actually takes place."	*/
+      tree convtype = non_reference (TREE_TYPE (conv_fns));
+      if ((flags & LOOKUP_NO_CONVERSION)
+	  && !WILDCARD_TYPE_P (convtype)
+	  && (CLASS_TYPE_P (to_nonref)
+	      != CLASS_TYPE_P (convtype)))
+	continue;
 
       /* If we are called to convert to a reference type, we are trying to
 	 find a direct binding, so don't even consider temporaries.  If
@@ -6357,6 +6383,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      print_z_candidates (loc, candidates);
 	    }
 	  result = error_mark_node;
+	  if (overload)
+	    *overload = error_mark_node;
 	}
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL)
 	{
@@ -7114,27 +7142,45 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 /* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL
    in the diagnostics.
 
-   If ISSUE_ERROR is true, then issue an error about the
-   access, followed by a note showing the declaration.
-   Otherwise, just show the note.  */
+   If ISSUE_ERROR is true, then issue an error about the access, followed
+   by a note showing the declaration.  Otherwise, just show the note.
+
+   DIAG_DECL and DIAG_LOCATION will almost always be the same.
+   DIAG_LOCATION is just another DECL.  NO_ACCESS_REASON is an optional
+   parameter used to specify why DECL wasn't accessible (e.g. ak_private
+   would be because DECL was private).  If not using NO_ACCESS_REASON,
+   then it must be ak_none, and the access failure reason will be
+   figured out by looking at the protection of DECL.  */
 
 void
-complain_about_access (tree decl, tree diag_decl, bool issue_error)
+complain_about_access (tree decl, tree diag_decl, tree diag_location,
+		       bool issue_error, access_kind no_access_reason)
 {
-  if (TREE_PRIVATE (decl))
+  /* If we have not already figured out why DECL is inaccessible...  */
+  if (no_access_reason == ak_none)
+    {
+      /* Examine the access of DECL to find out why.  */
+      if (TREE_PRIVATE (decl))
+	no_access_reason = ak_private;
+      else if (TREE_PROTECTED (decl))
+	no_access_reason = ak_protected;
+    }
+
+  /* Now generate an error message depending on calculated access.  */
+  if (no_access_reason == ak_private)
     {
       if (issue_error)
 	error ("%q#D is private within this context", diag_decl);
-      inform (DECL_SOURCE_LOCATION (diag_decl),
-	      "declared private here");
+      inform (DECL_SOURCE_LOCATION (diag_location), "declared private here");
     }
-  else if (TREE_PROTECTED (decl))
+  else if (no_access_reason == ak_protected)
     {
       if (issue_error)
 	error ("%q#D is protected within this context", diag_decl);
-      inform (DECL_SOURCE_LOCATION (diag_decl),
-	      "declared protected here");
+      inform (DECL_SOURCE_LOCATION (diag_location), "declared protected here");
     }
+  /* Couldn't figure out why DECL is inaccesible, so just say it's
+     inaccessible.  */
   else
     {
       if (issue_error)
@@ -8217,11 +8263,7 @@ type_passed_as (tree type)
 {
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
-    {
-      type = build_reference_type (type);
-      /* There are no other pointers to this temporary.  */
-      type = cp_build_qualified_type (type, TYPE_QUAL_RESTRICT);
-    }
+    type = build_reference_type (type);
   else if (targetm.calls.promote_prototypes (NULL_TREE)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
@@ -8397,17 +8439,75 @@ call_copy_ctor (tree a, tsubst_flags_t complain)
   return r;
 }
 
-/* Return true iff T refers to a base or potentially-overlapping field, which
-   cannot be used for return by invisible reference.  We avoid doing C++17
-   mandatory copy elision when this is true.
+/* Return the base constructor corresponding to COMPLETE_CTOR or NULL_TREE.  */
 
-   This returns true even if the type of T has no tail padding that other data
-   could be allocated into, because that depends on the particular ABI.
-   unsafe_copy_elision_p, below, does consider whether there is padding.  */
+static tree
+base_ctor_for (tree complete_ctor)
+{
+  tree clone;
+  FOR_EACH_CLONE (clone, DECL_CLONED_FUNCTION (complete_ctor))
+    if (DECL_BASE_CONSTRUCTOR_P (clone))
+      return clone;
+  return NULL_TREE;
+}
 
-bool
+/* Try to make EXP suitable to be used as the initializer for a base subobject,
+   and return whether we were successful.  EXP must have already been cleared
+   by unsafe_copy_elision_p{,_opt}.  */
+
+static bool
+make_base_init_ok (tree exp)
+{
+  if (TREE_CODE (exp) == TARGET_EXPR)
+    exp = TARGET_EXPR_INITIAL (exp);
+  while (TREE_CODE (exp) == COMPOUND_EXPR)
+    exp = TREE_OPERAND (exp, 1);
+  if (TREE_CODE (exp) == COND_EXPR)
+    {
+      bool ret = make_base_init_ok (TREE_OPERAND (exp, 2));
+      if (tree op1 = TREE_OPERAND (exp, 1))
+	{
+	  bool r1 = make_base_init_ok (op1);
+	  /* If unsafe_copy_elision_p was false, the arms should match.  */
+	  gcc_assert (r1 == ret);
+	}
+      return ret;
+    }
+  if (TREE_CODE (exp) != AGGR_INIT_EXPR)
+    /* A trivial copy is OK.  */
+    return true;
+  if (!AGGR_INIT_VIA_CTOR_P (exp))
+    /* unsafe_copy_elision_p_opt must have said this is OK.  */
+    return true;
+  tree fn = cp_get_callee_fndecl_nofold (exp);
+  if (DECL_BASE_CONSTRUCTOR_P (fn))
+    return true;
+  gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (fn));
+  fn = base_ctor_for (fn);
+  if (!fn || DECL_HAS_VTT_PARM_P (fn))
+    /* The base constructor has more parameters, so we can't just change the
+       call target.  It would be possible to splice in the appropriate
+       arguments, but probably not worth the complexity.  */
+    return false;
+  AGGR_INIT_EXPR_FN (exp) = build_address (fn);
+  return true;
+}
+
+/* Return 2 if T refers to a base, 1 if a potentially-overlapping field,
+   neither of which can be used for return by invisible reference.  We avoid
+   doing C++17 mandatory copy elision for either of these cases.
+
+   This returns non-zero even if the type of T has no tail padding that other
+   data could be allocated into, because that depends on the particular ABI.
+   unsafe_copy_elision_p_opt does consider whether there is padding.  */
+
+int
 unsafe_return_slot_p (tree t)
 {
+  /* Check empty bases separately, they don't have fields.  */
+  if (is_empty_base_ref (t))
+    return 2;
+
   STRIP_NOPS (t);
   if (TREE_CODE (t) == ADDR_EXPR)
     t = TREE_OPERAND (t, 0);
@@ -8418,27 +8518,20 @@ unsafe_return_slot_p (tree t)
   if (!CLASS_TYPE_P (TREE_TYPE (t)))
     /* The middle-end will do the right thing for scalar types.  */
     return false;
-  return (DECL_FIELD_IS_BASE (t)
-	  || lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (t)));
+  if (DECL_FIELD_IS_BASE (t))
+    return 2;
+  if (lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (t)))
+    return 1;
+  return 0;
 }
 
-/* We can't elide a copy from a function returning by value to a
-   potentially-overlapping subobject, as the callee might clobber tail padding.
-   Return true iff this could be that case.  */
+/* True IFF EXP is a prvalue that represents return by invisible reference.  */
 
 static bool
-unsafe_copy_elision_p (tree target, tree exp)
+init_by_return_slot_p (tree exp)
 {
   /* Copy elision only happens with a TARGET_EXPR.  */
   if (TREE_CODE (exp) != TARGET_EXPR)
-    return false;
-  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
-  /* It's safe to elide the copy for a class with no tail padding.  */
-  if (!is_empty_class (type)
-      && tree_int_cst_equal (TYPE_SIZE (type), CLASSTYPE_SIZE (type)))
-    return false;
-  /* It's safe to elide the copy if we aren't initializing a base object.  */
-  if (!unsafe_return_slot_p (target))
     return false;
   tree init = TARGET_EXPR_INITIAL (exp);
   /* build_compound_expr pushes COMPOUND_EXPR inside TARGET_EXPR.  */
@@ -8447,14 +8540,56 @@ unsafe_copy_elision_p (tree target, tree exp)
   if (TREE_CODE (init) == COND_EXPR)
     {
       /* We'll end up copying from each of the arms of the COND_EXPR directly
-	 into the target, so look at them. */
+	 into the target, so look at them.  */
       if (tree op = TREE_OPERAND (init, 1))
-	if (unsafe_copy_elision_p (target, op))
+	if (init_by_return_slot_p (op))
 	  return true;
-      return unsafe_copy_elision_p (target, TREE_OPERAND (init, 2));
+      return init_by_return_slot_p (TREE_OPERAND (init, 2));
     }
   return (TREE_CODE (init) == AGGR_INIT_EXPR
 	  && !AGGR_INIT_VIA_CTOR_P (init));
+}
+
+/* We can't elide a copy from a function returning by value to a
+   potentially-overlapping subobject, as the callee might clobber tail padding.
+   Return true iff this could be that case.
+
+   Places that use this function (or _opt) to decide to elide a copy should
+   probably use make_safe_copy_elision instead.  */
+
+static bool
+unsafe_copy_elision_p (tree target, tree exp)
+{
+  return unsafe_return_slot_p (target) && init_by_return_slot_p (exp);
+}
+
+/* As above, but for optimization allow more cases that are actually safe.  */
+
+static bool
+unsafe_copy_elision_p_opt (tree target, tree exp)
+{
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
+  /* It's safe to elide the copy for a class with no tail padding.  */
+  if (!is_empty_class (type)
+      && tree_int_cst_equal (TYPE_SIZE (type), CLASSTYPE_SIZE (type)))
+    return false;
+  return unsafe_copy_elision_p (target, exp);
+}
+
+/* Try to make EXP suitable to be used as the initializer for TARGET,
+   and return whether we were successful.  */
+
+bool
+make_safe_copy_elision (tree target, tree exp)
+{
+  int uns = unsafe_return_slot_p (target);
+  if (!uns)
+    return true;
+  if (init_by_return_slot_p (exp))
+    return false;
+  if (uns == 1)
+    return true;
+  return make_base_init_ok (exp);
 }
 
 /* True IFF the result of the conversion C is a prvalue.  */
@@ -9102,7 +9237,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    /* See unsafe_copy_elision_p.  */
 		    || unsafe_return_slot_p (fa));
 
-      bool unsafe = unsafe_copy_elision_p (fa, arg);
+      bool unsafe = unsafe_copy_elision_p_opt (fa, arg);
       bool eliding_temp = (TREE_CODE (arg) == TARGET_EXPR && !unsafe);
 
       /* [class.copy]: the copy constructor is implicitly defined even if the
@@ -9119,6 +9254,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	cp_warn_deprecated_use (fn, complain);
+
+      if (eliding_temp && DECL_BASE_CONSTRUCTOR_P (fn)
+	  && !make_base_init_ok (arg))
+	unsafe = true;
 
       /* If we're creating a temp and we already have one, don't create a
 	 new one.  If we're not creating a temp but we get one, use
@@ -10438,6 +10577,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		free (pretty_name);
 	    }
 	  call = error_mark_node;
+	  if (fn_p)
+	    *fn_p = error_mark_node;
 	}
       else
 	{
@@ -10595,10 +10736,7 @@ is_subseq (conversion *ics1, conversion *ics2)
 	ics2 = next_conversion (ics2);
 
       if (ics2->kind == ck_user
-	  || ics2->kind == ck_ambig
-	  || ics2->kind == ck_aggr
-	  || ics2->kind == ck_list
-	  || ics2->kind == ck_identity)
+	  || !has_next (ics2->kind))
 	/* At this point, ICS1 cannot be a proper subsequence of
 	   ICS2.  We can get a USER_CONV when we are comparing the
 	   second standard conversion sequence of two user conversion

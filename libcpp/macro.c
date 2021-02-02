@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro and #define handling.)
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -3708,6 +3708,7 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
   macro->count = 0;
   macro->fun_like = 0;
+  macro->imported_p = false;
   macro->extra_tokens = 0;
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->buffer && pfile->buffer->sysp != 0;
@@ -3791,6 +3792,8 @@ cpp_macro *
 cpp_get_deferred_macro (cpp_reader *pfile, cpp_hashnode *node,
 			location_t loc)
 {
+  gcc_checking_assert (node->type == NT_USER_MACRO);
+
   node->value.macro = pfile->cb.user_deferred_macro (pfile, loc, node);
 
   if (!node->value.macro)
@@ -3807,11 +3810,9 @@ get_deferred_or_lazy_macro (cpp_reader *pfile, cpp_hashnode *node,
   if (!macro)
     {
       macro = cpp_get_deferred_macro (pfile, node, loc);
-      if (!macro)
-	return NULL;
+      gcc_checking_assert (!macro || !macro->lazy);
     }
-
-  if (macro->lazy)
+  else if (macro->lazy)
     {
       pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
       macro->lazy = 0;

@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -57,6 +57,16 @@ CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
+# In non-release builds, use a date-related module version.
+ifneq ($(DEVPHASE_c),)
+# Some date's don't grok 'r', if so, simply use today's
+# date (don't bootstrap at midnight).
+MODULE_VERSION := $(shell date -r $(srcdir)/cp/module.cc '+%y%m%d-%H%M' \
+  2>/dev/null || date '+%y%m%d-0000' 2>/dev/null || echo 0)
+
+CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
+endif
+
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) cp/g++spec.o
 xg++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
@@ -84,7 +94,8 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \
 	cp/lambda.o cp/lex.o cp/logic.o \
-	cp/mangle.o cp/method.o cp/module.o \
+	cp/mangle.o cp/mapper-client.o cp/mapper-resolver.o \
+	cp/method.o cp/module.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
 	cp/rtti.o \
@@ -110,20 +121,21 @@ cp-warn = $(STRICT_WARN)
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
 cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
-	$(CXX_OBJS) $(BACKEND) $(LIBDEPS) 
+	$(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) 
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final; then \
 	   cp ../prev-gcc/cc1plus-checksum.c cc1plus-checksum.c; \
 	else \
-	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
+	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) \
                      checksum-options > cc1plus-checksum.c.tmp &&	   \
 	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
 	fi
 
-cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS) $(c++.prev)
+cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
 	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(NETLIBS) \
+		$(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.c++),end)
 
 ifeq ($(ENABLE_MAINTAINER_RULES), true)

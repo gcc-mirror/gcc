@@ -6802,7 +6802,9 @@ package body Einfo is
 
    procedure Set_Stores_Attribute_Old_Prefix (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Constant);
+      pragma Assert (Is_Type (Id)
+                      or else (Ekind (Id) in E_Constant
+                                           | E_Variable));
       Set_Flag270 (Id, V);
    end Set_Stores_Attribute_Old_Prefix;
 

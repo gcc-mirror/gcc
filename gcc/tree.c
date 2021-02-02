@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -297,14 +297,15 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_TO_DECLARE  */
   1, /* OMP_CLAUSE_LINK  */
-  2, /* OMP_CLAUSE_FROM  */
-  2, /* OMP_CLAUSE_TO  */
-  2, /* OMP_CLAUSE_MAP  */
+  1, /* OMP_CLAUSE_DETACH  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
   1, /* OMP_CLAUSE_USE_DEVICE_ADDR  */
   1, /* OMP_CLAUSE_IS_DEVICE_PTR  */
   1, /* OMP_CLAUSE_INCLUSIVE  */
   1, /* OMP_CLAUSE_EXCLUSIVE  */
+  2, /* OMP_CLAUSE_FROM  */
+  2, /* OMP_CLAUSE_TO  */
+  2, /* OMP_CLAUSE_MAP  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -382,14 +383,15 @@ const char * const omp_clause_code_name[] =
   "uniform",
   "to",
   "link",
-  "from",
-  "to",
-  "map",
+  "detach",
   "use_device_ptr",
   "use_device_addr",
   "is_device_ptr",
   "inclusive",
   "exclusive",
+  "from",
+  "to",
+  "map",
   "_cache_",
   "gang",
   "async",
@@ -6571,7 +6573,8 @@ check_base_type (const_tree cand, const_tree base)
 			        TYPE_ATTRIBUTES (base)))
     return false;
   /* Check alignment.  */
-  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base))
+  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base)
+      && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base))
     return true;
   /* Atomic types increase minimal alignment.  We must to do so as well
      or we get duplicated canonical types. See PR88686.  */
@@ -6606,6 +6609,7 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == align
+	  && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base)
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base))
 	  && check_lang_type (cand, base));
@@ -10736,7 +10740,7 @@ build_common_builtin_nodes (void)
   if (!builtin_decl_explicit_p (BUILT_IN_CLEAR_CACHE))
     local_define_builtin ("__builtin___clear_cache", ftype,
 			  BUILT_IN_CLEAR_CACHE,
-			  "__builtin___clear_cache",
+			  "__clear_cache",
 			  ECF_NOTHROW);
 
   local_define_builtin ("__builtin_nonlocal_goto", ftype,
@@ -11077,13 +11081,13 @@ build_opaque_vector_type (tree innertype, poly_int64 nunits)
 
 /* Return the value of element I of VECTOR_CST T as a wide_int.  */
 
-wide_int
+static poly_wide_int
 vector_cst_int_elt (const_tree t, unsigned int i)
 {
   /* First handle elements that are directly encoded.  */
   unsigned int encoded_nelts = vector_cst_encoded_nelts (t);
   if (i < encoded_nelts)
-    return wi::to_wide (VECTOR_CST_ENCODED_ELT (t, i));
+    return wi::to_poly_wide (VECTOR_CST_ENCODED_ELT (t, i));
 
   /* Identify the pattern that contains element I and work out the index of
      the last encoded element for that pattern.  */
@@ -11094,13 +11098,13 @@ vector_cst_int_elt (const_tree t, unsigned int i)
 
   /* If there are no steps, the final encoded value is the right one.  */
   if (!VECTOR_CST_STEPPED_P (t))
-    return wi::to_wide (VECTOR_CST_ENCODED_ELT (t, final_i));
+    return wi::to_poly_wide (VECTOR_CST_ENCODED_ELT (t, final_i));
 
   /* Otherwise work out the value from the last two encoded elements.  */
   tree v1 = VECTOR_CST_ENCODED_ELT (t, final_i - npatterns);
   tree v2 = VECTOR_CST_ENCODED_ELT (t, final_i);
-  wide_int diff = wi::to_wide (v2) - wi::to_wide (v1);
-  return wi::to_wide (v2) + (count - 2) * diff;
+  poly_wide_int diff = wi::to_poly_wide (v2) - wi::to_poly_wide (v1);
+  return wi::to_poly_wide (v2) + (count - 2) * diff;
 }
 
 /* Return the value of element I of VECTOR_CST T.  */
@@ -12240,6 +12244,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_TO_DECLARE:
 	case OMP_CLAUSE_LINK:
+	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
@@ -12610,8 +12615,43 @@ tree_nonartificial_location (tree exp)
     return EXPR_LOCATION (exp);
 }
 
+/* Return the location into which EXP has been inlined.  Analogous
+   to tree_nonartificial_location() above but not limited to artificial
+   functions declared inline.  If SYSTEM_HEADER is true, return
+   the macro expansion point of the location if it's in a system header */
 
-/* These are the hash table functions for the hash table of OPTIMIZATION_NODEq
+location_t
+tree_inlined_location (tree exp, bool system_header /* = true */)
+{
+  location_t loc = UNKNOWN_LOCATION;
+
+  tree block = TREE_BLOCK (exp);
+
+  while (block && TREE_CODE (block) == BLOCK
+	 && BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      tree ao = BLOCK_ABSTRACT_ORIGIN (block);
+      if (TREE_CODE (ao) == FUNCTION_DECL)
+	loc = BLOCK_SOURCE_LOCATION (block);
+      else if (TREE_CODE (ao) != BLOCK)
+	break;
+
+      block = BLOCK_SUPERCONTEXT (block);
+    }
+
+  if (loc == UNKNOWN_LOCATION)
+    {
+      loc = EXPR_LOCATION (exp);
+      if (system_header)
+	/* Only consider macro expansion when the block traversal failed
+	   to find a location.  Otherwise it's not relevant.  */
+	return expansion_point_location_if_in_system_header (loc);
+    }
+
+  return loc;
+}
+
+/* These are the hash table functions for the hash table of OPTIMIZATION_NODE
    nodes.  */
 
 /* Return the hash code X, an OPTIMIZATION_NODE or TARGET_OPTION code.  */
@@ -13989,8 +14029,7 @@ vector_element_bits (const_tree type)
 {
   gcc_checking_assert (VECTOR_TYPE_P (type));
   if (VECTOR_BOOLEAN_TYPE_P (type))
-    return vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (type)),
-				TYPE_VECTOR_SUBPARTS (type));
+    return TYPE_PRECISION (TREE_TYPE (type));
   return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
 }
 
@@ -15384,6 +15423,75 @@ verify_type_context (location_t loc, type_context_kind context,
   gcc_assert (TYPE_P (type));
   return (!targetm.verify_type_context
 	  || targetm.verify_type_context (loc, context, type, silent_p));
+}
+
+/* Return that NEW_ASM and DELETE_ASM name a valid pair of new and
+   delete operators.  */
+
+bool
+valid_new_delete_pair_p (tree new_asm, tree delete_asm)
+{
+  const char *new_name = IDENTIFIER_POINTER (new_asm);
+  const char *delete_name = IDENTIFIER_POINTER (delete_asm);
+  unsigned int new_len = IDENTIFIER_LENGTH (new_asm);
+  unsigned int delete_len = IDENTIFIER_LENGTH (delete_asm);
+
+  if (new_len < 5 || delete_len < 6)
+    return false;
+  if (new_name[0] == '_')
+    ++new_name, --new_len;
+  if (new_name[0] == '_')
+    ++new_name, --new_len;
+  if (delete_name[0] == '_')
+    ++delete_name, --delete_len;
+  if (delete_name[0] == '_')
+    ++delete_name, --delete_len;
+  if (new_len < 4 || delete_len < 5)
+    return false;
+  /* *_len is now just the length after initial underscores.  */
+  if (new_name[0] != 'Z' || new_name[1] != 'n')
+    return false;
+  if (delete_name[0] != 'Z' || delete_name[1] != 'd')
+    return false;
+  /* _Znw must match _Zdl, _Zna must match _Zda.  */
+  if ((new_name[2] != 'w' || delete_name[2] != 'l')
+      && (new_name[2] != 'a' || delete_name[2] != 'a'))
+    return false;
+  /* 'j', 'm' and 'y' correspond to size_t.  */
+  if (new_name[3] != 'j' && new_name[3] != 'm' && new_name[3] != 'y')
+    return false;
+  if (delete_name[3] != 'P' || delete_name[4] != 'v')
+    return false;
+  if (new_len == 4
+      || (new_len == 18 && !memcmp (new_name + 4, "RKSt9nothrow_t", 14)))
+    {
+      /* _ZnXY or _ZnXYRKSt9nothrow_t matches
+	 _ZdXPv, _ZdXPvY and _ZdXPvRKSt9nothrow_t.  */
+      if (delete_len == 5)
+	return true;
+      if (delete_len == 6 && delete_name[5] == new_name[3])
+	return true;
+      if (delete_len == 19 && !memcmp (delete_name + 5, "RKSt9nothrow_t", 14))
+	return true;
+    }
+  else if ((new_len == 19 && !memcmp (new_name + 4, "St11align_val_t", 15))
+	   || (new_len == 33
+	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
+    {
+      /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
+	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
+	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
+      if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
+	return true;
+      if (delete_len == 21
+	  && delete_name[5] == new_name[3]
+	  && !memcmp (delete_name + 6, "St11align_val_t", 15))
+	return true;
+      if (delete_len == 34
+	  && !memcmp (delete_name + 5, "St11align_val_tRKSt9nothrow_t", 29))
+	return true;
+    }
+  return false;
 }
 
 #if CHECKING_P

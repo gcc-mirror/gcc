@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
 #include "attr-fnspec.h"
+#include "demangle.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -4413,8 +4414,8 @@ access_ref::inform_access (access_mode mode) const
 	 MAXREF on which the result is based.  */
       const offset_int orng[] =
 	{
-	 offrng[0] - maxref.offrng[0],
-	 wi::smax (offrng[1] - maxref.offrng[1], offrng[0]),
+	  offrng[0] - maxref.offrng[0],
+	  wi::smax (offrng[1] - maxref.offrng[1], offrng[0]),
 	};
 
       /* Add the final PHI's offset to that of each of the arguments
@@ -4492,12 +4493,15 @@ access_ref::inform_access (access_mode mode) const
 	      /* Strip the SSA_NAME suffix from the variable name and
 		 recreate an identifier with the VLA's original name.  */
 	      ref = gimple_call_lhs (stmt);
-	      ref = SSA_NAME_IDENTIFIER (ref);
-	      const char *id = IDENTIFIER_POINTER (ref);
-	      size_t len = strcspn (id, ".$");
-	      if (!len)
-		len = strlen (id);
-	      ref = get_identifier_with_length (id, len);
+	      if (SSA_NAME_IDENTIFIER (ref))
+		{
+		  ref = SSA_NAME_IDENTIFIER (ref);
+		  const char *id = IDENTIFIER_POINTER (ref);
+		  size_t len = strcspn (id, ".$");
+		  if (!len)
+		    len = strlen (id);
+		  ref = get_identifier_with_length (id, len);
+		}
 	    }
 	  else
 	    {
@@ -4556,13 +4560,13 @@ access_ref::inform_access (access_mode mode) const
       return;
     }
 
-  if (DECL_P (ref))
+  if (allocfn == NULL_TREE)
     {
       if (*offstr)
-	inform (loc, "at offset %s into source object %qD of size %s",
+	inform (loc, "at offset %s into source object %qE of size %s",
 		offstr, ref, sizestr);
       else
-	inform (loc, "source object %qD of size %s", ref,  sizestr);
+	inform (loc, "source object %qE of size %s", ref, sizestr);
 
       return;
     }
@@ -4738,9 +4742,7 @@ check_access (tree exp, tree dstwrite,
       && TREE_CODE (range[0]) == INTEGER_CST
       && tree_int_cst_lt (maxobjsize, range[0]))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       maybe_warn_for_bound (OPT_Wstringop_overflow_, loc, exp, func, range,
 			    NULL_TREE, pad);
       return false;
@@ -4766,9 +4768,7 @@ check_access (tree exp, tree dstwrite,
 	      || (pad && pad->dst.ref && TREE_NO_WARNING (pad->dst.ref)))
 	    return false;
 
-	  location_t loc = tree_nonartificial_location (exp);
-	  loc = expansion_point_location_if_in_system_header (loc);
-
+	  location_t loc = tree_inlined_location (exp);
 	  bool warned = false;
 	  if (dstwrite == slen && at_least_one)
 	    {
@@ -4821,9 +4821,7 @@ check_access (tree exp, tree dstwrite,
 	 PAD is nonnull and BNDRNG is valid.  */
       get_size_range (maxread, range, pad ? pad->src.bndrng : NULL);
 
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       tree size = dstsize;
       if (pad && pad->mode == access_read_only)
 	size = wide_int_to_tree (sizetype, pad->src.sizrng[1]);
@@ -4882,9 +4880,7 @@ check_access (tree exp, tree dstwrite,
 	  || (pad && pad->src.ref && TREE_NO_WARNING (pad->src.ref)))
 	return false;
 
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       const bool read
 	= mode == access_read_only || mode == access_read_write;
       const bool maybe = pad && pad->dst.parmarray;
@@ -5105,6 +5101,8 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
     x = TREE_OPERAND (x, 0);
 
   tree type = TREE_TYPE (x);
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
 
    if (TREE_CODE (x) != INTEGER_CST
       && TREE_CODE (x) != SSA_NAME)
@@ -6381,9 +6379,7 @@ check_strncat_sizes (tree exp, tree objsize)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (objsize)
       && tree_int_cst_equal (objsize, maxread))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
 		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxread);
@@ -6456,9 +6452,7 @@ expand_builtin_strncat (tree exp, rtx)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (destsize)
       && tree_int_cst_equal (destsize, maxread))
     {
-      location_t loc = tree_nonartificial_location (exp);
-      loc = expansion_point_location_if_in_system_header (loc);
-
+      location_t loc = tree_inlined_location (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
 		  "%K%qD specified bound %E equals destination size",
 		  exp, get_callee_fndecl (exp), maxread);
@@ -7040,9 +7034,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
       || !check_nul_terminated_array (exp, arg2, arg3))
     return NULL_RTX;
 
-  location_t loc = tree_nonartificial_location (exp);
-  loc = expansion_point_location_if_in_system_header (loc);
-
+  location_t loc = tree_inlined_location (exp);
   tree len1 = c_strlen (arg1, 1);
   tree len2 = c_strlen (arg2, 1);
 
@@ -12970,7 +12962,9 @@ fndecl_alloc_p (tree fndecl, bool all_alloc)
 	case BUILT_IN_ALLOCA:
 	case BUILT_IN_ALLOCA_WITH_ALIGN:
 	  return all_alloc;
+	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
+	case BUILT_IN_GOMP_ALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -13023,6 +13017,16 @@ call_dealloc_argno (tree exp)
   if (!fndecl)
     return UINT_MAX;
 
+  return fndecl_dealloc_argno (fndecl);
+}
+
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or UINT_MAX
+   if it isn't.  */
+
+unsigned
+fndecl_dealloc_argno (tree fndecl)
+{
   /* A call to operator delete isn't recognized as one to a built-in.  */
   if (DECL_IS_OPERATOR_DELETE_P (fndecl))
     return 0;
@@ -13065,12 +13069,150 @@ call_dealloc_argno (tree exp)
   return UINT_MAX;
 }
 
-/* Return true if STMT is a call to a deallocation function.  */
+/* Return true if DELC doesn't refer to an operator delete that's
+   suitable to call with a pointer returned from the operator new
+   described by NEWC.  */
 
-static inline bool
-call_dealloc_p (tree exp)
+static bool
+new_delete_mismatch_p (const demangle_component &newc,
+		       const demangle_component &delc)
 {
-  return call_dealloc_argno (exp) != UINT_MAX;
+  if (newc.type != delc.type)
+    return true;
+
+  switch (newc.type)
+    {
+    case DEMANGLE_COMPONENT_NAME:
+      {
+	int len = newc.u.s_name.len;
+	const char *news = newc.u.s_name.s;
+	const char *dels = delc.u.s_name.s;
+	if (len != delc.u.s_name.len || memcmp (news, dels, len))
+	  return true;
+
+	if (news[len] == 'n')
+	  {
+	    if (news[len + 1] == 'a')
+	      return dels[len] != 'd' || dels[len + 1] != 'a';
+	    if (news[len + 1] == 'w')
+	      return dels[len] != 'd' || dels[len + 1] != 'l';
+	  }
+	return false;
+      }
+
+    case DEMANGLE_COMPONENT_OPERATOR:
+      /* Operator mismatches are handled above.  */
+      return false;
+
+    case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
+      if (newc.u.s_extended_operator.args != delc.u.s_extended_operator.args)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_extended_operator.name,
+				    *delc.u.s_extended_operator.name);
+
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+      if (newc.u.s_fixed.accum != delc.u.s_fixed.accum
+	  || newc.u.s_fixed.sat != delc.u.s_fixed.sat)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_fixed.length,
+				    *delc.u.s_fixed.length);
+
+    case DEMANGLE_COMPONENT_CTOR:
+      if (newc.u.s_ctor.kind != delc.u.s_ctor.kind)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_ctor.name,
+				    *delc.u.s_ctor.name);
+
+    case DEMANGLE_COMPONENT_DTOR:
+      if (newc.u.s_dtor.kind != delc.u.s_dtor.kind)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_dtor.name,
+				    *delc.u.s_dtor.name);
+
+    case DEMANGLE_COMPONENT_BUILTIN_TYPE:
+      {
+	/* The demangler API provides no better way to compare built-in
+	   types except to by comparing their demangled names. */
+	size_t nsz, dsz;
+	demangle_component *pnc = const_cast<demangle_component *>(&newc);
+	demangle_component *pdc = const_cast<demangle_component *>(&delc);
+	char *nts = cplus_demangle_print (0, pnc, 16, &nsz);
+	char *dts = cplus_demangle_print (0, pdc, 16, &dsz);
+	if (!nts != !dts)
+	  return true;
+	bool mismatch = strcmp (nts, dts);
+	free (nts);
+	free (dts);
+	return mismatch;
+      }
+
+    case DEMANGLE_COMPONENT_SUB_STD:
+      if (newc.u.s_string.len != delc.u.s_string.len)
+	return true;
+      return memcmp (newc.u.s_string.string, delc.u.s_string.string,
+		     newc.u.s_string.len);
+
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
+    case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
+      return newc.u.s_number.number != delc.u.s_number.number;
+
+    case DEMANGLE_COMPONENT_CHARACTER:
+      return newc.u.s_character.character != delc.u.s_character.character;
+
+    case DEMANGLE_COMPONENT_DEFAULT_ARG:
+    case DEMANGLE_COMPONENT_LAMBDA:
+      if (newc.u.s_unary_num.num != delc.u.s_unary_num.num)
+	return true;
+      return new_delete_mismatch_p (*newc.u.s_unary_num.sub,
+				    *delc.u.s_unary_num.sub);
+    default:
+      break;
+    }
+
+  if (!newc.u.s_binary.left != !delc.u.s_binary.left)
+    return true;
+
+  if (!newc.u.s_binary.left)
+    return false;
+
+  if (new_delete_mismatch_p (*newc.u.s_binary.left, *delc.u.s_binary.left)
+      || !newc.u.s_binary.right != !delc.u.s_binary.right)
+    return true;
+
+  if (newc.u.s_binary.right)
+    return new_delete_mismatch_p (*newc.u.s_binary.right,
+				  *delc.u.s_binary.right);
+  return false;
+}
+
+/* Return true if DELETE_DECL is an operator delete that's not suitable
+   to call with a pointer returned fron NEW_DECL.  */
+
+static bool
+new_delete_mismatch_p (tree new_decl, tree delete_decl)
+{
+  tree new_name = DECL_ASSEMBLER_NAME (new_decl);
+  tree delete_name = DECL_ASSEMBLER_NAME (delete_decl);
+
+  /* valid_new_delete_pair_p() returns a conservative result (currently
+     it only handles global operators).  A true result is reliable but
+     a false result doesn't necessarily mean the operators don't match.  */
+  if (valid_new_delete_pair_p (new_name, delete_name))
+    return false;
+
+  /* For anything not handled by valid_new_delete_pair_p() such as member
+     operators compare the individual demangled components of the mangled
+     name.  */
+  const char *new_str = IDENTIFIER_POINTER (new_name);
+  const char *del_str = IDENTIFIER_POINTER (delete_name);
+
+  void *np = NULL, *dp = NULL;
+  demangle_component *ndc = cplus_demangle_v3_components (new_str, 0, &np);
+  demangle_component *ddc = cplus_demangle_v3_components (del_str, 0, &dp);
+  bool mismatch = new_delete_mismatch_p (*ndc, *ddc);
+  free (np);
+  free (dp);
+  return mismatch;
 }
 
 /* ALLOC_DECL and DEALLOC_DECL are pair of allocation and deallocation
@@ -13080,18 +13222,17 @@ call_dealloc_p (tree exp)
 static bool
 matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 {
+  /* Set to alloc_kind_t::builtin if ALLOC_DECL is associated with
+     a built-in deallocator.  */
+  enum class alloc_kind_t { none, builtin, user }
+  alloc_dealloc_kind = alloc_kind_t::none;
+
   if (DECL_IS_OPERATOR_NEW_P (alloc_decl))
     {
       if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
-	{
-	  /* Return true iff both functions are of the same array or
-	     singleton form and false otherwise.  */
-	  tree alloc_id = DECL_NAME (alloc_decl);
-	  tree dealloc_id = DECL_NAME (dealloc_decl);
-	  const char *alloc_fname = IDENTIFIER_POINTER (alloc_id);
-	  const char *dealloc_fname = IDENTIFIER_POINTER (dealloc_id);
-	  return !strchr (alloc_fname, '[') == !strchr (dealloc_fname, '[');
-	}
+	/* Return true iff both functions are of the same array or
+	   singleton form and false otherwise.  */
+	return !new_delete_mismatch_p (alloc_decl, dealloc_decl);
 
       /* Return false for deallocation functions that are known not
 	 to match.  */
@@ -13110,7 +13251,9 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	case BUILT_IN_ALLOCA_WITH_ALIGN:
 	  return false;
 
+	case BUILT_IN_ALIGNED_ALLOC:
 	case BUILT_IN_CALLOC:
+	case BUILT_IN_GOMP_ALLOC:
 	case BUILT_IN_MALLOC:
 	case BUILT_IN_REALLOC:
 	case BUILT_IN_STRDUP:
@@ -13121,6 +13264,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
 	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
 	    return true;
+
+	  alloc_dealloc_kind = alloc_kind_t::builtin;
 	  break;
 
 	default:
@@ -13128,30 +13273,151 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	}
     }
 
-  /* If DEALLOC_DECL has internal "*dealloc" attribute scan the list of
-     its associated allocation functions for ALLOC_DECL.  If it's found
-     they are a matching pair, otherwise they're not.  */
-  tree attrs = DECL_ATTRIBUTES (dealloc_decl);
-  if (!attrs)
-    return false;
+  /* Set if DEALLOC_DECL both allocates and deallocates.  */
+  alloc_kind_t realloc_kind = alloc_kind_t::none;
 
-  for (tree funs = attrs;
-       (funs = lookup_attribute ("*dealloc", funs));
-       funs = TREE_CHAIN (funs))
+  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_NORMAL))
     {
-      tree args = TREE_VALUE (funs);
+      built_in_function dealloc_code = DECL_FUNCTION_CODE (dealloc_decl);
+      if (dealloc_code == BUILT_IN_REALLOC)
+	realloc_kind = alloc_kind_t::builtin;
+
+      for (tree amats = DECL_ATTRIBUTES (alloc_decl);
+	   (amats = lookup_attribute ("malloc", amats));
+	   amats = TREE_CHAIN (amats))
+	{
+	  tree args = TREE_VALUE (amats);
+	  if (!args)
+	    continue;
+
+	  tree fndecl = TREE_VALUE (args);
+	  if (!fndecl || !DECL_P (fndecl))
+	    continue;
+
+	  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+	      && dealloc_code == DECL_FUNCTION_CODE (fndecl))
+	    return true;
+	}
+    }
+
+  const bool alloc_builtin = fndecl_built_in_p (alloc_decl, BUILT_IN_NORMAL);
+  alloc_kind_t realloc_dealloc_kind = alloc_kind_t::none;
+
+  /* If DEALLOC_DECL has an internal "*dealloc" attribute scan the list
+     of its associated allocation functions for ALLOC_DECL.
+     If the corresponding ALLOC_DECL is found they're a matching pair,
+     otherwise they're not.
+     With DDATS set to the Deallocator's *Dealloc ATtributes...  */
+  for (tree ddats = DECL_ATTRIBUTES (dealloc_decl);
+       (ddats = lookup_attribute ("*dealloc", ddats));
+       ddats = TREE_CHAIN (ddats))
+    {
+      tree args = TREE_VALUE (ddats);
       if (!args)
 	continue;
 
-      tree fname = TREE_VALUE (args);
-      if (!fname)
+      tree alloc = TREE_VALUE (args);
+      if (!alloc)
 	continue;
 
-      if (fname == DECL_NAME (alloc_decl))
+      if (alloc == DECL_NAME (dealloc_decl))
+	realloc_kind = alloc_kind_t::user;
+
+      if (DECL_P (alloc))
+	{
+	  gcc_checking_assert (fndecl_built_in_p (alloc, BUILT_IN_NORMAL));
+
+	  switch (DECL_FUNCTION_CODE (alloc))
+	    {
+	    case BUILT_IN_ALIGNED_ALLOC:
+	    case BUILT_IN_CALLOC:
+	    case BUILT_IN_GOMP_ALLOC:
+	    case BUILT_IN_MALLOC:
+	    case BUILT_IN_REALLOC:
+	    case BUILT_IN_STRDUP:
+	    case BUILT_IN_STRNDUP:
+	      realloc_dealloc_kind = alloc_kind_t::builtin;
+	      break;
+	    default:
+	      break;
+	    }
+
+	  if (!alloc_builtin)
+	    continue;
+
+	  if (DECL_FUNCTION_CODE (alloc) != DECL_FUNCTION_CODE (alloc_decl))
+	    continue;
+
+	  return true;
+	}
+
+      if (alloc == DECL_NAME (alloc_decl))
 	return true;
     }
 
-  return false;
+  if (realloc_kind == alloc_kind_t::none)
+    return false;
+
+  hash_set<tree> common_deallocs;
+  /* Special handling for deallocators.  Iterate over both the allocator's
+     and the reallocator's associated deallocator functions looking for
+     the first one in common.  If one is found, the de/reallocator is
+     a match for the allocator even though the latter isn't directly
+     associated with the former.  This simplifies declarations in system
+     headers.
+     With AMATS set to the Allocator's Malloc ATtributes,
+     and  RMATS set to Reallocator's Malloc ATtributes...  */
+  for (tree amats = DECL_ATTRIBUTES (alloc_decl),
+	 rmats = DECL_ATTRIBUTES (dealloc_decl);
+       (amats = lookup_attribute ("malloc", amats))
+	 || (rmats = lookup_attribute ("malloc", rmats));
+       amats = amats ? TREE_CHAIN (amats) : NULL_TREE,
+	 rmats = rmats ? TREE_CHAIN (rmats) : NULL_TREE)
+    {
+      if (tree args = amats ? TREE_VALUE (amats) : NULL_TREE)
+	if (tree adealloc = TREE_VALUE (args))
+	  {
+	    if (DECL_P (adealloc)
+		&& fndecl_built_in_p (adealloc, BUILT_IN_NORMAL))
+	      {
+		built_in_function fncode = DECL_FUNCTION_CODE (adealloc);
+		if (fncode == BUILT_IN_FREE || fncode == BUILT_IN_REALLOC)
+		  {
+		    if (realloc_kind == alloc_kind_t::builtin)
+		      return true;
+		    alloc_dealloc_kind = alloc_kind_t::builtin;
+		  }
+		continue;
+	      }
+
+	    common_deallocs.add (adealloc);
+	  }
+
+      if (tree args = rmats ? TREE_VALUE (rmats) : NULL_TREE)
+	if (tree ddealloc = TREE_VALUE (args))
+	  {
+	    if (DECL_P (ddealloc)
+		&& fndecl_built_in_p (ddealloc, BUILT_IN_NORMAL))
+	      {
+		built_in_function fncode = DECL_FUNCTION_CODE (ddealloc);
+		if (fncode == BUILT_IN_FREE || fncode == BUILT_IN_REALLOC)
+		  {
+		    if (alloc_dealloc_kind == alloc_kind_t::builtin)
+		      return true;
+		    realloc_dealloc_kind = alloc_kind_t::builtin;
+		  }
+		continue;
+	      }
+
+	    if (common_deallocs.add (ddealloc))
+	      return true;
+	  }
+    }
+
+  /* Succeed only if ALLOC_DECL and the reallocator DEALLOC_DECL share
+     a built-in deallocator.  */
+  return  (alloc_dealloc_kind == alloc_kind_t::builtin
+	   && realloc_dealloc_kind == alloc_kind_t::builtin);
 }
 
 /* Return true if DEALLOC_DECL is a function suitable to deallocate
@@ -13167,15 +13433,39 @@ matching_alloc_calls_p (gimple *alloc, tree dealloc_decl)
   return matching_alloc_calls_p (alloc_decl, dealloc_decl);
 }
 
-/* Diagnose a call to FNDECL to deallocate a pointer referenced by
-   AREF that includes a nonzero offset.  Such a pointer cannot refer
-   to the beginning of an allocated object.  A negative offset may
-   refer to it only if the target pointer is unknown.  */
+/* Diagnose a call EXP to deallocate a pointer referenced by AREF if it
+   includes a nonzero offset.  Such a pointer cannot refer to the beginning
+   of an allocated object.  A negative offset may refer to it only if
+   the target pointer is unknown.  */
 
 static bool
-warn_dealloc_offset (location_t loc, tree exp, tree fndecl,
-		     const access_ref &aref)
+warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
 {
+  if (aref.deref || aref.offrng[0] <= 0 || aref.offrng[1] <= 0)
+    return false;
+
+  tree dealloc_decl = get_callee_fndecl (exp);
+  if (!dealloc_decl)
+    return false;
+
+  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+      && !DECL_IS_REPLACEABLE_OPERATOR (dealloc_decl))
+    {
+      /* A call to a user-defined operator delete with a pointer plus offset
+	 may be valid if it's returned from an unknown function (i.e., one
+	 that's not operator new).  */
+      if (TREE_CODE (aref.ref) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (aref.ref);
+	  if (is_gimple_call (def_stmt))
+	    {
+	      tree alloc_decl = gimple_call_fndecl (def_stmt);
+	      if (!alloc_decl || !DECL_IS_OPERATOR_NEW_P (alloc_decl))
+		return false;
+	    }
+	}
+    }
+
   char offstr[80];
   offstr[0] = '\0';
   if (wi::fits_shwi_p (aref.offrng[0]))
@@ -13192,7 +13482,7 @@ warn_dealloc_offset (location_t loc, tree exp, tree fndecl,
 
   if (!warning_at (loc, OPT_Wfree_nonheap_object,
 		   "%K%qD called on pointer %qE with nonzero offset%s",
-		   exp, fndecl, aref.ref, offstr))
+		   exp, dealloc_decl, aref.ref, offstr))
     return false;
 
   if (DECL_P (aref.ref))
@@ -13202,9 +13492,16 @@ warn_dealloc_offset (location_t loc, tree exp, tree fndecl,
       gimple *def_stmt = SSA_NAME_DEF_STMT (aref.ref);
       if (is_gimple_call (def_stmt))
 	{
+	  location_t def_loc = gimple_location (def_stmt);
 	  tree alloc_decl = gimple_call_fndecl (def_stmt);
-	  inform (gimple_location (def_stmt),
-		  "returned from a call to %qD", alloc_decl);
+	  if (alloc_decl)
+	    inform (def_loc,
+		    "returned from %qD", alloc_decl);
+	  else if (tree alloc_fntype = gimple_call_fntype (def_stmt))
+	    inform (def_loc,
+		    "returned from %qT", alloc_fntype);
+	  else
+	    inform (def_loc,  "obtained here");
 	}
     }
 
@@ -13240,8 +13537,7 @@ maybe_emit_free_warning (tree exp)
     return;
 
   tree dealloc_decl = get_callee_fndecl (exp);
-  location_t loc = tree_nonartificial_location (exp);
-  loc = expansion_point_location_if_in_system_header (loc);
+  location_t loc = tree_inlined_location (exp);
 
   if (DECL_P (ref) || EXPR_P (ref))
     {
@@ -13251,18 +13547,18 @@ maybe_emit_free_warning (tree exp)
 			 "%K%qD called on unallocated object %qD",
 			 exp, dealloc_decl, ref))
 	{
-	  inform (DECL_SOURCE_LOCATION (ref),
-		  "declared here");
+	  loc = (DECL_P (ref)
+		 ? DECL_SOURCE_LOCATION (ref)
+		 : EXPR_LOCATION (ref));
+	  inform (loc, "declared here");
 	  return;
 	}
 
       /* Diagnose freeing a pointer that includes a positive offset.
 	 Such a pointer cannot refer to the beginning of an allocated
 	 object.  A negative offset may refer to it.  */
-      if (!aref.deref
-	  && aref.sizrng[0] != aref.sizrng[1]
-	  && aref.offrng[0] > 0 && aref.offrng[1] > 0
-	  && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+      if (aref.sizrng[0] != aref.sizrng[1]
+	  && warn_dealloc_offset (loc, exp, aref))
 	return;
     }
   else if (CONSTANT_CLASS_P (ref))
@@ -13295,9 +13591,7 @@ maybe_emit_free_warning (tree exp)
 	    {
 	      if (matching_alloc_calls_p (def_stmt, dealloc_decl))
 		{
-		  if (!aref.deref
-		      && aref.offrng[0] > 0 && aref.offrng[1] > 0
-		      && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+		  if (warn_dealloc_offset (loc, exp, aref))
 		    return;
 		}
 	      else
@@ -13320,16 +13614,14 @@ maybe_emit_free_warning (tree exp)
 				 "%K%qD called on pointer to "
 				 "an unallocated object",
 				 exp, dealloc_decl);
-	  else if (!aref.deref
-		   && aref.offrng[0] > 0 && aref.offrng[1] > 0
-		   && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+	  else if (warn_dealloc_offset (loc, exp, aref))
 	    return;
 
 	  if (warned)
 	    {
 	      tree fndecl = gimple_call_fndecl (def_stmt);
 	      inform (gimple_location (def_stmt),
-		      "returned from a call to %qD", fndecl);
+		      "returned from %qD", fndecl);
 	      return;
 	    }
 	}
@@ -13341,7 +13633,7 @@ maybe_emit_free_warning (tree exp)
 	      && !aref.deref
 	      && aref.sizrng[0] != aref.sizrng[1]
 	      && aref.offrng[0] > 0 && aref.offrng[1] > 0
-	      && warn_dealloc_offset (loc, exp, dealloc_decl, aref))
+	      && warn_dealloc_offset (loc, exp, aref))
 	    return;
 	}
     }

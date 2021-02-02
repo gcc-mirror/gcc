@@ -21,6 +21,7 @@ import os
 import re
 
 changelog_locations = {
+    'c++tools',
     'config',
     'contrib',
     'contrib/header-tools',
@@ -51,6 +52,7 @@ changelog_locations = {
     'libatomic',
     'libbacktrace',
     'libcc1',
+    'libcody',
     'libcpp',
     'libcpp/po',
     'libdecnumber',
@@ -172,6 +174,24 @@ REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
 DATE_FORMAT = '%Y-%m-%d'
 
 
+def decode_path(path):
+    # When core.quotepath is true (default value), utf8 chars are encoded like:
+    # "b/ko\304\215ka.txt"
+    #
+    # The upstream bug is fixed:
+    # https://github.com/gitpython-developers/GitPython/issues/1099
+    #
+    # but we still need a workaround for older versions of the library.
+    # Please take a look at the explanation of the transformation:
+    # https://stackoverflow.com/questions/990169/how-do-convert-unicode-escape-sequences-to-unicode-characters-in-a-python-string
+
+    if path.startswith('"') and path.endswith('"'):
+        return (path.strip('"').encode('utf8').decode('unicode-escape')
+                .encode('latin-1').decode('utf8'))
+    else:
+        return path
+
+
 class Error:
     def __init__(self, message, line=None):
         self.message = message
@@ -194,6 +214,7 @@ class ChangeLogEntry:
         self.lines = []
         self.files = []
         self.file_patterns = []
+        self.opened_parentheses = 0
 
     def parse_file_names(self):
         # Whether the content currently processed is between a star prefix the
@@ -203,8 +224,14 @@ class ChangeLogEntry:
         for line in self.lines:
             # If this line matches the star prefix, start the location
             # processing on the information that follows the star.
+            # Note that we need to skip macro names that can be in form of:
+            #
+            # * config/i386/i386.md (*fix_trunc<mode>_i387_1,
+            # *add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0,
+            # *fist<mode>2_<rounding>_1, *<code><mode>3_1):
+            #
             m = star_prefix_regex.match(line)
-            if m:
+            if m and len(m.group('spaces')) == 1:
                 in_location = True
                 line = m.group('content')
 
@@ -274,6 +301,10 @@ class GitCommit:
         self.revert_commit = None
         self.commit_to_info_hook = commit_to_info_hook
 
+        # Skip Update copyright years commits
+        if self.info.lines and self.info.lines[0] == 'Update copyright years.':
+            return
+
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
             m = revert_regex.match(line)
@@ -284,7 +315,7 @@ class GitCommit:
             self.info = self.commit_to_info_hook(self.revert_commit)
 
         project_files = [f for f in self.info.modified_files
-                         if self.is_changelog_filename(f[0])
+                         if self.is_changelog_filename(f[0], allow_suffix=True)
                          or f[0] in misc_files]
         ignored_files = [f for f in self.info.modified_files
                          if self.in_ignored_location(f[0])]
@@ -304,6 +335,7 @@ class GitCommit:
             self.parse_changelog()
             self.parse_file_names()
             self.check_for_empty_description()
+            self.check_for_broken_parentheses()
             self.deduce_changelog_locations()
             self.check_file_patterns()
             if not self.errors:
@@ -319,8 +351,14 @@ class GitCommit:
         return [x[0] for x in self.info.modified_files if x[1] == 'A']
 
     @classmethod
-    def is_changelog_filename(cls, path):
-        return path.endswith('/ChangeLog') or path == 'ChangeLog'
+    def is_changelog_filename(cls, path, allow_suffix=False):
+        basename = os.path.basename(path)
+        if basename == 'ChangeLog':
+            return True
+        elif allow_suffix and basename.startswith('ChangeLog'):
+            return True
+        else:
+            return False
 
     @classmethod
     def find_changelog_location(cls, name):
@@ -466,7 +504,8 @@ class GitCommit:
                 else:
                     m = star_prefix_regex.match(line)
                     if m:
-                        if len(m.group('spaces')) != 1:
+                        if (len(m.group('spaces')) != 1 and
+                                last_entry.opened_parentheses == 0):
                             msg = 'one space should follow asterisk'
                             self.errors.append(Error(msg, line))
                         else:
@@ -478,6 +517,7 @@ class GitCommit:
                                         msg = f'empty group "{needle}" found'
                                         self.errors.append(Error(msg, line))
                             last_entry.lines.append(line)
+                            self.process_parentheses(last_entry, line)
                     else:
                         if last_entry.is_empty:
                             msg = 'first line should start with a tab, ' \
@@ -485,6 +525,18 @@ class GitCommit:
                             self.errors.append(Error(msg, line))
                         else:
                             last_entry.lines.append(line)
+                            self.process_parentheses(last_entry, line)
+
+    def process_parentheses(self, last_entry, line):
+        for c in line:
+            if c == '(':
+                last_entry.opened_parentheses += 1
+            elif c == ')':
+                if last_entry.opened_parentheses == 0:
+                    msg = 'bad wrapping of parenthesis'
+                    self.errors.append(Error(msg, line))
+                else:
+                    last_entry.opened_parentheses -= 1
 
     def parse_file_names(self):
         for entry in self.changelog_entries:
@@ -507,6 +559,12 @@ class GitCommit:
                      or item_parenthesis_regex.match(entry.lines[i+1]))):
                     msg = 'missing description of a change'
                     self.errors.append(Error(msg, line))
+
+    def check_for_broken_parentheses(self):
+        for entry in self.changelog_entries:
+            if entry.opened_parentheses != 0:
+                msg = 'bad parentheses wrapping'
+                self.errors.append(Error(msg, entry.lines[0]))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.info.modified_files:

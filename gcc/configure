@@ -675,6 +675,8 @@ host_xm_defines
 host_xm_include_list
 host_xm_file_list
 host_exeext
+gcc_gxx_libcxx_include_dir_add_sysroot
+gcc_gxx_libcxx_include_dir
 gcc_gxx_include_dir_add_sysroot
 gcc_gxx_include_dir
 gcc_config_arguments
@@ -792,6 +794,7 @@ ZSTD_LIB
 ZSTD_INCLUDE
 DL_LIB
 LDEXP_LIB
+NETLIBS
 EXTRA_GCC_LIBS
 GNAT_LIBEXC
 COLLECT2_LIBS
@@ -937,6 +940,7 @@ with_native_system_header_dir
 with_build_sysroot
 with_sysroot
 with_gxx_include_dir
+with_gxx_libcxx_include_dir
 with_cpp_install_dir
 enable_generated_files_in_srcdir
 with_gnu_ld
@@ -1801,6 +1805,8 @@ Optional Packages:
   --with-sysroot[=DIR]    search for usr/lib, usr/include, et al, within DIR
   --with-gxx-include-dir=DIR
                           specifies directory to put g++ header files
+  --with-gxx-libcxx-include-dir=DIR
+                          specifies directory to find libc++ header files
   --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR
                           (relative to PREFIX) as well as PREFIX/bin
@@ -3728,6 +3734,52 @@ elif test "${with_sysroot+set}" = set; then
   if test "${gcc_gxx_without_sysroot}"; then
     gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
+  fi
+fi
+
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+
+# Check whether --with-gxx-libcxx-include-dir was given.
+if test "${with_gxx_libcxx_include_dir+set}" = set; then :
+  withval=$with_gxx_libcxx_include_dir; case "${withval}" in
+yes)	as_fn_error $? "bad value ${withval} given for libc++ include directory" "$LINENO" 5 ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac
+fi
+
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+
+$as_echo "#define ENABLE_STDLIB_OPTION 1" >>confdefs.h
+
+else
+  $as_echo "#define ENABLE_STDLIB_OPTION 0" >>confdefs.h
+
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
   fi
 fi
 
@@ -9812,6 +9864,170 @@ if test "$ac_res" != no; then :
 fi
 
 EXTRA_GCC_LIBS="$LIBS"
+LIBS="$save_LIBS"
+
+
+# Solaris needs libsocket and libnsl for socket functions before 11.4.
+# C++ needs those for libcody.
+save_LIBS="$LIBS"
+LIBS=
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing gethostbyname" >&5
+$as_echo_n "checking for library containing gethostbyname... " >&6; }
+if ${ac_cv_search_gethostbyname+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gethostbyname ();
+int
+main ()
+{
+return gethostbyname ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' nsl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_gethostbyname=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_gethostbyname+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_gethostbyname+:} false; then :
+
+else
+  ac_cv_search_gethostbyname=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_gethostbyname" >&5
+$as_echo "$ac_cv_search_gethostbyname" >&6; }
+ac_res=$ac_cv_search_gethostbyname
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing socket" >&5
+$as_echo_n "checking for library containing socket... " >&6; }
+if ${ac_cv_search_socket+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char socket ();
+int
+main ()
+{
+return socket ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' socket; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_socket=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_socket+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_socket+:} false; then :
+
+else
+  ac_cv_search_socket=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_socket" >&5
+$as_echo "$ac_cv_search_socket" >&6; }
+ac_res=$ac_cv_search_socket
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
+$as_echo_n "checking for socket in -lsocket... " >&6; }
+if ${ac_cv_lib_socket_socket+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsocket -lnsl $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char socket ();
+int
+main ()
+{
+return socket ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_socket_socket=yes
+else
+  ac_cv_lib_socket_socket=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_socket" >&5
+$as_echo "$ac_cv_lib_socket_socket" >&6; }
+if test "x$ac_cv_lib_socket_socket" = xyes; then :
+  LIBS="-lsocket -lnsl $LIBS"
+fi
+
+fi
+
+
+NETLIBS="$LIBS"
 LIBS="$save_LIBS"
 
 
@@ -18366,16 +18582,6 @@ freebsd* | dragonfly*)
   esac
   ;;
 
-gnu*)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  hardcode_into_libs=yes
-  ;;
-
 haiku*)
   version_type=linux
   need_lib_prefix=no
@@ -18497,7 +18703,7 @@ linux*oldld* | linux*aout* | linux*coff*)
 # project, but have not yet been accepted: they are GCC-local changes
 # for the time being.  (See
 # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -19186,7 +19392,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19189 "configure"
+#line 19405 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19292,7 +19498,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19295 "configure"
+#line 19511 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28869,7 +29075,11 @@ fi
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_gdwarf_5_flag=yes
+	if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -30185,6 +30395,9 @@ case "$target:$tm_file" in
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
+     *le-*-freebsd*)
+     emul_name="-melf64lppc_fbsd"
+      ;;
      *-*-freebsd*)
      emul_name="-melf64ppc_fbsd"
       ;;
@@ -30965,7 +31178,12 @@ do
 	$ok || continue
 
 	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
-	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	if test "x$language" = xc && test -n "$all_lang_makefrags"; then
+	    # Put c/Make-lang.in fragment first to match serialization languages order.
+	    all_lang_makefrags="\$(srcdir)/$gcc_subdir/Make-lang.in $all_lang_makefrags"
+	else
+	    all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	fi
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
 	    all_opt_files="$all_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -31108,6 +31326,8 @@ fi
 
 
 # Substitute configuration variables
+
+
 
 
 
@@ -31852,9 +32072,9 @@ $as_echo "$ld_pushpopstate_support" >&6; }
 # gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
 # float_t from that, this behavior can be configured with
 # --enable-s390-excess-float-precision. When given as enabled, that flag selects
-# the old model. When omitted, native builds will derive the flag from the
-# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
-# model. In any other case, it defaults to the new model.
+# the old model. When omitted, native builds and cross compiles that have target
+# libc headers will detect whether libc clamps float_t to double and in that
+# case maintain the old model. Otherwise, they will default to the new model.
 # Check whether --enable-s390-excess-float-precision was given.
 if test "${enable_s390_excess_float_precision+set}" = set; then :
   enableval=$enable_s390_excess_float_precision;
@@ -31865,42 +32085,63 @@ fi
 
 case $target in
   s390*-linux*)
-  if test "$target" = "$host" -a "$host" = "$build" -a \
-      x"$enable_s390_excess_float_precision" = xauto; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for glibc clamping float_t to double" >&5
+  if test x"$enable_s390_excess_float_precision" = xauto; then
+    # Can we autodetect the behavior of the target libc?
+    if test "$target" = "$host" -a "$host" = "$build"; then
+      enable_s390_excess_float_precision=autodetect
+    elif test "x$with_headers" != xno; then
+      # cross build. are target headers available?
+      # carefully coerce the build-system compiler to use target headers
+      saved_CXXFLAGS="$CXXFLAGS"
+      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  enable_s390_excess_float_precision=autodetect
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      CXXFLAGS="$saved_CXXFLAGS"
+    fi
+
+    if test x"$enable_s390_excess_float_precision" = xautodetect; then
+      saved_CXXFLAGS="$CXXFLAGS"
+      if ! test "$target" = "$host" -a "$host" = "$build"; then
+        CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+	unset CROSS_TEST_CXXFLAGS
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for glibc clamping float_t to double" >&5
 $as_echo_n "checking for glibc clamping float_t to double... " >&6; }
 if ${gcc_cv_float_t_clamped_to_double+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #define __FLT_EVAL_METHOD__ 0
 #include <math.h>
-int main() {
-  return !(sizeof(float_t) == sizeof(double));
-}
+int dummy[sizeof(float_t) == sizeof(double) ? 1 : -1];
+
 _ACEOF
-if ac_fn_cxx_try_run "$LINENO"; then :
+if ac_fn_cxx_try_compile "$LINENO"; then :
   gcc_cv_float_t_clamped_to_double=yes
 else
   gcc_cv_float_t_clamped_to_double=no
 fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_float_t_clamped_to_double" >&5
 $as_echo "$gcc_cv_float_t_clamped_to_double" >&6; }
-    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
-      enable_s390_excess_float_precision=yes
+      CXXFLAGS="$saved_CXXFLAGS"
+      enable_s390_excess_float_precision="$gcc_cv_float_t_clamped_to_double"
+    else
+      # no way to detect behavior of target libc, default to new model
+      enable_s390_excess_float_precision=no
     fi
   fi
 
@@ -33262,7 +33503,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "depdir":C) $SHELL $ac_aux_dir/mkinstalldirs $DEPDIR ;;
     "gccdepdir":C)
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer
+  for lang in $subdirs c-family common analyzer rtl-ssa
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done ;;

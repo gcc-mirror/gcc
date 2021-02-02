@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -169,7 +169,7 @@ public:
     return m_offset;
   }
 
-  bool operator== (const region_offset &other)
+  bool operator== (const region_offset &other) const
   {
     return (m_base_region == other.m_base_region
 	    && m_offset == other.m_offset
@@ -205,6 +205,7 @@ extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 extern bool is_named_call_p (tree fndecl, const char *funcname);
 extern bool is_named_call_p (tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
+extern bool is_std_named_call_p (tree fndecl, const char *funcname);
 extern bool is_std_named_call_p (tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);

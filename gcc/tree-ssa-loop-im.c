@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2254,7 +2254,8 @@ sm_seq_push_down (vec<seq_entry> &seq, unsigned ptr, unsigned *at)
 static int
 sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		 vec<seq_entry> &seq, bitmap refs_not_in_seq,
-		 bitmap refs_not_supported, bool forked)
+		 bitmap refs_not_supported, bool forked,
+		 bitmap fully_visited)
 {
   if (!vdef)
     for (gimple_stmt_iterator gsi = gsi_last_bb (bb); !gsi_end_p (gsi);
@@ -2276,7 +2277,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	/* This handles the perfect nest case.  */
 	return sm_seq_valid_bb (loop, single_pred (bb), vdef,
 				seq, refs_not_in_seq, refs_not_supported,
-				forked);
+				forked, fully_visited);
       return 0;
     }
   do
@@ -2314,7 +2315,10 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	    return sm_seq_valid_bb (loop, gimple_phi_arg_edge (phi, 0)->src,
 				    gimple_phi_arg_def (phi, 0), seq,
 				    refs_not_in_seq, refs_not_supported,
-				    false);
+				    false, fully_visited);
+	  if (bitmap_bit_p (fully_visited,
+			    SSA_NAME_VERSION (gimple_phi_result (phi))))
+	    return 1;
 	  auto_vec<seq_entry> first_edge_seq;
 	  auto_bitmap tem_refs_not_in_seq (&lim_bitmap_obstack);
 	  int eret;
@@ -2323,7 +2327,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 				  gimple_phi_arg_def (phi, 0),
 				  first_edge_seq,
 				  tem_refs_not_in_seq, refs_not_supported,
-				  true);
+				  true, fully_visited);
 	  if (eret != 1)
 	    return -1;
 	  /* Simplify our lives by pruning the sequence of !sm_ord.  */
@@ -2338,7 +2342,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	      bitmap_copy (tem_refs_not_in_seq, refs_not_in_seq);
 	      eret = sm_seq_valid_bb (loop, e->src, vuse, edge_seq,
 				      tem_refs_not_in_seq, refs_not_supported,
-				      true);
+				      true, fully_visited);
 	      if (eret != 1)
 		return -1;
 	      /* Simplify our lives by pruning the sequence of !sm_ord.  */
@@ -2419,6 +2423,8 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		  seq[new_idx].from = NULL_TREE;
 		}
 	    }
+	  bitmap_set_bit (fully_visited,
+			  SSA_NAME_VERSION (gimple_phi_result (phi)));
 	  return 1;
 	}
       lim_aux_data *data = get_lim_data (def);
@@ -2494,12 +2500,15 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       seq.create (4);
       auto_bitmap refs_not_in_seq (&lim_bitmap_obstack);
       bitmap_copy (refs_not_in_seq, mem_refs);
+      auto_bitmap fully_visited;
       int res = sm_seq_valid_bb (loop, e->src, NULL_TREE,
 				 seq, refs_not_in_seq,
-				 refs_not_supported, false);
+				 refs_not_supported, false,
+				 fully_visited);
       if (res != 1)
 	{
 	  bitmap_copy (refs_not_supported, mem_refs);
+	  seq.release ();
 	  break;
 	}
       sms.safe_push (std::make_pair (e, seq));

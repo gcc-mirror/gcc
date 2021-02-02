@@ -28,15 +28,11 @@ in
 body
 {
     auto m = ensureMonitor(cast(Object) owner);
-    auto i = m.impl;
-    if (i is null)
+    if (m.impl is null)
     {
         atomicOp!("+=")(m.refs, cast(size_t) 1);
-        ownee.__monitor = owner.__monitor;
-        return;
     }
-    // If m.impl is set (ie. if this is a user-created monitor), assume
-    // the monitor is garbage collected and simply copy the reference.
+    // Assume the monitor is garbage collected and simply copy the reference.
     ownee.__monitor = owner.__monitor;
 }
 
@@ -55,6 +51,26 @@ extern (C) void _d_monitordelete(Object h, bool det)
     {
         // refcount == 0 means unshared => no synchronization required
         disposeEvent(cast(Monitor*) m, h);
+        deleteMonitor(cast(Monitor*) m);
+        setMonitor(h, null);
+    }
+}
+
+// does not call dispose events, for internal use only
+extern (C) void _d_monitordelete_nogc(Object h) @nogc
+{
+    auto m = getMonitor(h);
+    if (m is null)
+        return;
+
+    if (m.impl)
+    {
+        // let the GC collect the monitor
+        setMonitor(h, null);
+    }
+    else if (!atomicOp!("-=")(m.refs, cast(size_t) 1))
+    {
+        // refcount == 0 means unshared => no synchronization required
         deleteMonitor(cast(Monitor*) m);
         setMonitor(h, null);
     }

@@ -6,4 +6,4 @@
   int iVar;
 }
 @property int FooBar /* { dg-error "expected ';' at end of input" } */
-		     /* { dg-error "-:expected '@end' at end of input" "" { target *-*-* } .+1 } */
+		     /* { dg-error "expected '@end' at end of input" "" { target *-*-* } .-1 } */

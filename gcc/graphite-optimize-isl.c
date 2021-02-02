@@ -1,5 +1,5 @@
 /* A scheduling optimizer for Graphite
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Tobias Grosser <tobias@grosser.es>.
 
 This file is part of GCC.

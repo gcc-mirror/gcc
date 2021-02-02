@@ -9,6 +9,7 @@
 
 module core.sys.windows.vfw;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "vfw32");

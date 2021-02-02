@@ -1,5 +1,5 @@
 /* go-sha1.cc -- Go frontend interface to gcc backend.
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

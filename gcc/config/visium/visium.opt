@@ -1,5 +1,5 @@
 ; Options for Visium.
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -29,7 +29,7 @@ Target RejectNegative
 Link with libc.a and libsim.a.
 
 mfpu
-Target Report Mask(FPU)
+Target Mask(FPU)
 Use hardware FP (default).
 
 mhard-float
@@ -61,11 +61,11 @@ EnumValue
 Enum(visium_processor_type) String(gr6) Value(PROCESSOR_GR6)
 
 msv-mode
-Target RejectNegative Report Mask(SV_MODE)
+Target RejectNegative Mask(SV_MODE)
 Generate code for the supervisor mode (default).
 
 muser-mode
-Target RejectNegative Report InverseMask(SV_MODE)
+Target RejectNegative InverseMask(SV_MODE)
 Generate code for the user mode.
 
 menable-trampolines

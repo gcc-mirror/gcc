@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -90,10 +90,7 @@ extern void split_subsi (rtx *);
 extern void arc_split_move (rtx *);
 extern const char *arc_short_long (rtx_insn *insn, const char *, const char *);
 extern rtx arc_regno_use_in (unsigned int, rtx);
-extern bool arc_scheduling_not_expected (void);
-extern bool arc_sets_cc_p (rtx_insn *insn);
 extern int arc_label_align (rtx_insn *label);
-extern bool arc_need_delay (rtx_insn *insn);
 extern bool arc_text_label (rtx_insn *insn);
 
 extern bool arc_short_comparison_p (rtx, int);

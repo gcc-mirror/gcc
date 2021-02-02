@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -757,10 +757,8 @@ ix86_target_macros (void)
   if (TARGET_LONG_DOUBLE_128)
     cpp_define (parse_in, "__LONG_DOUBLE_128__");
 
-  if (TARGET_128BIT_LONG_DOUBLE)
-    cpp_define (parse_in, "__SIZEOF_FLOAT80__=16");
-  else
-    cpp_define (parse_in, "__SIZEOF_FLOAT80__=12");
+  cpp_define_formatted (parse_in, "__SIZEOF_FLOAT80__=%d",
+			GET_MODE_SIZE (XFmode));
 
   cpp_define (parse_in, "__SIZEOF_FLOAT128__=16");
 
@@ -780,8 +778,7 @@ ix86_target_macros (void)
   cpp_define (parse_in, "__SEG_GS");
 
   if (flag_cf_protection != CF_NONE)
-    cpp_define_formatted (parse_in, "__CET__=%d",
-			  flag_cf_protection & ~CF_SET);
+    cpp_define_formatted (parse_in, "__CET__=%d", flag_cf_protection & ~CF_SET);
 }
 
 

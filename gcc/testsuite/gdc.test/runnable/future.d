@@ -1,4 +1,8 @@
 /* PERMUTE_ARGS:
+TEST_OUTPUT:
+---
+runnable/future.d(15): Deprecation: `@__future` base class method `future.A.msg` is being overridden by `future.B.msg`; rename the latter
+---
  */
 
 class A

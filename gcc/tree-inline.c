@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -1819,12 +1819,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  /* If the inlined function has too many debug markers,
 	     don't copy them.  */
 	  if (id->src_cfun->debug_marker_count
-	      > param_max_debug_marker_count)
+	      > param_max_debug_marker_count
+	      || id->reset_location)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
-	  if (id->reset_location)
-	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -3169,7 +3168,14 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
     }
 
   if (gimple_debug_nonbind_marker_p (stmt))
-    return;
+    {
+      if (id->call_stmt && !gimple_block (stmt))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gsi_remove (&gsi, true);
+	}
+      return;
+    }
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
@@ -4834,9 +4840,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       gimple_call_set_fndecl (stmt, edge->callee->decl);
       update_stmt (stmt);
       id->src_node->remove ();
-      expand_call_inline (bb, stmt, id, to_purge);
+      successfully_inlined = expand_call_inline (bb, stmt, id, to_purge);
       maybe_remove_unused_call_args (cfun, stmt);
-      return true;
+      /* This used to return true even though we do fail to inline in
+	 some cases.  See PR98525.  */
+      goto egress;
     }
   fn = cg_edge->callee->decl;
   cg_edge->callee->get_untransformed_body ();
@@ -6207,6 +6215,12 @@ tree_function_versioning (tree old_decl, tree new_decl,
   auto_vec<gimple *, 10> init_stmts;
   tree vars = NULL_TREE;
 
+  /* We can get called recursively from expand_call_inline via clone
+     materialization.  While expand_call_inline maintains input_location
+     we cannot tolerate it to leak into the materialized clone.  */
+  location_t saved_location = input_location;
+  input_location = UNKNOWN_LOCATION;
+
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
@@ -6508,6 +6522,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   gcc_assert (!id.debug_stmts.exists ());
   pop_cfun ();
+  input_location = saved_location;
   return;
 }
 

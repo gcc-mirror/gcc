@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
 
@@ -2698,9 +2698,13 @@ again:
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
+	      stmt_vec_info pattern_stmt_info
+		= STMT_VINFO_RELATED_STMT (stmt_info);
+	      if (STMT_VINFO_SLP_VECT_ONLY (pattern_stmt_info))
+		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
+
 	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-	      stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
-	      STMT_SLP_TYPE (stmt_info) = loop_vect;
+	      STMT_SLP_TYPE (pattern_stmt_info) = loop_vect;
 	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
 		   !gsi_end_p (pi); gsi_next (&pi))
 		STMT_SLP_TYPE (loop_vinfo->lookup_stmt (gsi_stmt (pi)))
@@ -2769,43 +2773,56 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 
   /* Check whether the (fractional) cost per scalar iteration is lower
      or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
-  poly_widest_int rel_new = (new_loop_vinfo->vec_inside_cost
-			     * poly_widest_int (old_vf));
-  poly_widest_int rel_old = (old_loop_vinfo->vec_inside_cost
-			     * poly_widest_int (new_vf));
-  if (maybe_lt (rel_old, rel_new))
-    {
-      /* When old_loop_vinfo uses a variable vectorization factor,
-	 we know that it has a lower cost for at least one runtime VF.
-	 However, we don't know how likely that VF is.
+  poly_int64 rel_new = new_loop_vinfo->vec_inside_cost * old_vf;
+  poly_int64 rel_old = old_loop_vinfo->vec_inside_cost * new_vf;
 
-	 One option would be to compare the costs for the estimated VFs.
-	 The problem is that that can put too much pressure on the cost
-	 model.  E.g. if the estimated VF is also the lowest possible VF,
-	 and if old_loop_vinfo is 1 unit worse than new_loop_vinfo
-	 for the estimated VF, we'd then choose new_loop_vinfo even
-	 though (a) new_loop_vinfo might not actually be better than
-	 old_loop_vinfo for that VF and (b) it would be significantly
-	 worse at larger VFs.
+  HOST_WIDE_INT est_rel_new_min
+    = estimated_poly_value (rel_new, POLY_VALUE_MIN);
+  HOST_WIDE_INT est_rel_new_max
+    = estimated_poly_value (rel_new, POLY_VALUE_MAX);
 
-	 Here we go for a hacky compromise: pick new_loop_vinfo if it is
-	 no more expensive than old_loop_vinfo even after doubling the
-	 estimated old_loop_vinfo VF.  For all but trivial loops, this
-	 ensures that we only pick new_loop_vinfo if it is significantly
-	 better than old_loop_vinfo at the estimated VF.  */
-      if (rel_new.is_constant ())
-	return false;
+  HOST_WIDE_INT est_rel_old_min
+    = estimated_poly_value (rel_old, POLY_VALUE_MIN);
+  HOST_WIDE_INT est_rel_old_max
+    = estimated_poly_value (rel_old, POLY_VALUE_MAX);
 
-      HOST_WIDE_INT new_estimated_vf = estimated_poly_value (new_vf);
-      HOST_WIDE_INT old_estimated_vf = estimated_poly_value (old_vf);
-      widest_int estimated_rel_new = (new_loop_vinfo->vec_inside_cost
-				      * widest_int (old_estimated_vf));
-      widest_int estimated_rel_old = (old_loop_vinfo->vec_inside_cost
-				      * widest_int (new_estimated_vf));
-      return estimated_rel_new * 2 <= estimated_rel_old;
-    }
-  if (known_lt (rel_new, rel_old))
+  /* Check first if we can make out an unambigous total order from the minimum
+     and maximum estimates.  */
+  if (est_rel_new_min < est_rel_old_min
+      && est_rel_new_max < est_rel_old_max)
     return true;
+  else if (est_rel_old_min < est_rel_new_min
+	   && est_rel_old_max < est_rel_new_max)
+    return false;
+  /* When old_loop_vinfo uses a variable vectorization factor,
+     we know that it has a lower cost for at least one runtime VF.
+     However, we don't know how likely that VF is.
+
+     One option would be to compare the costs for the estimated VFs.
+     The problem is that that can put too much pressure on the cost
+     model.  E.g. if the estimated VF is also the lowest possible VF,
+     and if old_loop_vinfo is 1 unit worse than new_loop_vinfo
+     for the estimated VF, we'd then choose new_loop_vinfo even
+     though (a) new_loop_vinfo might not actually be better than
+     old_loop_vinfo for that VF and (b) it would be significantly
+     worse at larger VFs.
+
+     Here we go for a hacky compromise: pick new_loop_vinfo if it is
+     no more expensive than old_loop_vinfo even after doubling the
+     estimated old_loop_vinfo VF.  For all but trivial loops, this
+     ensures that we only pick new_loop_vinfo if it is significantly
+     better than old_loop_vinfo at the estimated VF.  */
+
+  if (est_rel_old_min != est_rel_new_min
+      || est_rel_old_max != est_rel_new_max)
+    {
+      HOST_WIDE_INT est_rel_new_likely
+	= estimated_poly_value (rel_new, POLY_VALUE_LIKELY);
+      HOST_WIDE_INT est_rel_old_likely
+	= estimated_poly_value (rel_old, POLY_VALUE_LIKELY);
+
+      return est_rel_new_likely * 2 <= est_rel_old_likely;
+    }
 
   /* If there's nothing to choose between the loop bodies, see whether
      there's a difference in the prologue and epilogue costs.  */
@@ -2831,6 +2848,45 @@ vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
 		     GET_MODE_NAME (new_loop_vinfo->vector_mode),
 		     GET_MODE_NAME (old_loop_vinfo->vector_mode));
   return true;
+}
+
+/* If LOOP_VINFO is already a main loop, return it unmodified.  Otherwise
+   try to reanalyze it as a main loop.  Return the loop_vinfo on success
+   and null on failure.  */
+
+static loop_vec_info
+vect_reanalyze_as_main_loop (loop_vec_info loop_vinfo, unsigned int *n_stmts)
+{
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    return loop_vinfo;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "***** Reanalyzing as a main loop with vector mode %s\n",
+		     GET_MODE_NAME (loop_vinfo->vector_mode));
+
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  vec_info_shared *shared = loop_vinfo->shared;
+  opt_loop_vec_info main_loop_vinfo = vect_analyze_loop_form (loop, shared);
+  gcc_assert (main_loop_vinfo);
+
+  main_loop_vinfo->vector_mode = loop_vinfo->vector_mode;
+
+  bool fatal = false;
+  bool res = vect_analyze_loop_2 (main_loop_vinfo, fatal, n_stmts);
+  loop->aux = NULL;
+  if (!res)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Failed to analyze main loop with vector"
+			 " mode %s\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
+      delete main_loop_vinfo;
+      return NULL;
+    }
+  LOOP_VINFO_VECTORIZABLE_P (main_loop_vinfo) = 1;
+  return main_loop_vinfo;
 }
 
 /* Function vect_analyze_loop.
@@ -2980,9 +3036,25 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      if (vinfos.is_empty ()
 		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
 		{
-		  delete first_loop_vinfo;
-		  first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
+		  loop_vec_info main_loop_vinfo
+		    = vect_reanalyze_as_main_loop (loop_vinfo, &n_stmts);
+		  if (main_loop_vinfo == loop_vinfo)
+		    {
+		      delete first_loop_vinfo;
+		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		    }
+		  else if (main_loop_vinfo
+			   && vect_joust_loop_vinfos (main_loop_vinfo,
+						      first_loop_vinfo))
+		    {
+		      delete first_loop_vinfo;
+		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		      delete loop_vinfo;
+		      loop_vinfo
+			= opt_loop_vec_info::success (main_loop_vinfo);
+		    }
+		  else
+		    delete main_loop_vinfo;
 		}
 	    }
 
@@ -4380,8 +4452,8 @@ have_whole_vector_shift (machine_mode mode)
 /* Function vect_model_reduction_cost.
 
    Models cost for a reduction operation, including the vector ops
-   generated within the strip-mine loop, the initial definition before
-   the loop, and the epilogue code that must be generated.  */
+   generated within the strip-mine loop in some cases, the initial
+   definition before the loop, and the epilogue code that must be generated.  */
 
 static void
 vect_model_reduction_cost (loop_vec_info loop_vinfo,
@@ -4444,10 +4516,6 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
       prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
 					 scalar_to_vec, stmt_info, 0,
 					 vect_prologue);
-
-      /* Cost of reduction op inside loop.  */
-      inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
-				      stmt_info, 0, vect_body);
     }
 
   /* Determine cost of epilogue code.
@@ -5261,8 +5329,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       tree scalar_type_unsigned = make_unsigned_type (scalar_precision);
-      tree vectype_unsigned = build_vector_type
-	(scalar_type_unsigned, TYPE_VECTOR_SUBPARTS (vectype));
+      tree vectype_unsigned = get_same_sized_vectype (scalar_type_unsigned,
+						vectype);
 
       /* First we need to create a vector (ZERO_VEC) of zeros and another
 	 vector (MAX_INDEX_VEC) filled with the last matching index, which we
@@ -6851,8 +6919,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 cases, so we need to check that this is ok.  One exception is when
 	 vectorizing an outer-loop: the inner-loop is executed sequentially,
 	 and therefore vectorizing reductions in the inner-loop during
-	 outer-loop vectorization is safe.  */
-      if (needs_fold_left_reduction_p (scalar_type, orig_code))
+	 outer-loop vectorization is safe.  Likewise when we are vectorizing
+	 a series of reductions using SLP and the VF is one the reductions
+	 are performed in scalar order.  */
+      if (slp_node
+	  && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	  && known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1u))
+	;
+      else if (needs_fold_left_reduction_p (scalar_type, orig_code))
 	{
 	  /* When vectorizing a reduction chain w/o SLP the reduction PHI
 	     is not directy used in stmt.  */
@@ -6925,8 +6999,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       cr_index_scalar_type = make_unsigned_type (scalar_precision);
-      cr_index_vector_type = build_vector_type (cr_index_scalar_type,
-						nunits_out);
+      cr_index_vector_type = get_same_sized_vectype (cr_index_scalar_type,
+						vectype_out);
 
       if (direct_internal_fn_supported_p (IFN_REDUC_MAX, cr_index_vector_type,
 					  OPTIMIZE_FOR_SPEED))
@@ -7190,6 +7264,15 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   vect_model_reduction_cost (loop_vinfo, stmt_info, reduc_fn,
 			     reduction_type, ncopies, cost_vec);
+  /* Cost the reduction op inside the loop if transformed via
+     vect_transform_reduction.  Otherwise this is costed by the
+     separate vectorizable_* routines.  */
+  if (single_defuse_cycle
+      || code == DOT_PROD_EXPR
+      || code == WIDEN_SUM_EXPR
+      || code == SAD_EXPR)
+    record_stmt_cost (cost_vec, ncopies, vector_stmt, stmt_info, 0, vect_body);
+
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -8416,7 +8499,7 @@ vectorizable_live_operation (vec_info *vinfo,
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   imm_use_iterator imm_iter;
-  tree lhs, lhs_type, bitsize, vec_bitsize;
+  tree lhs, lhs_type, bitsize;
   tree vectype = (slp_node
 		  ? SLP_TREE_VECTYPE (slp_node)
 		  : STMT_VINFO_VECTYPE (stmt_info));
@@ -8559,7 +8642,6 @@ vectorizable_live_operation (vec_info *vinfo,
   lhs_type = TREE_TYPE (lhs);
 
   bitsize = vector_element_bits_tree (vectype);
-  vec_bitsize = TYPE_SIZE (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
   tree vec_lhs, bitstart;
@@ -8583,7 +8665,7 @@ vectorizable_live_operation (vec_info *vinfo,
       vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get the last lane in the vector.  */
-      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
+      bitstart = int_const_binop (MULT_EXPR, bitsize, bitsize_int (nunits - 1));
     }
 
   if (loop_vinfo)

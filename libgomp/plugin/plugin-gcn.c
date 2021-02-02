@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <hsa.h>
+#include <hsa_ext_amd.h>
 #include <dlfcn.h>
 #include <signal.h>
 #include "libgomp-plugin.h"
@@ -45,11 +46,6 @@
 #include "oacc-plugin.h"
 #include "oacc-int.h"
 #include <assert.h>
-
-/* Additional definitions not in HSA 1.1.
-   FIXME: this needs to be updated in hsa.h for upstream, but the only source
-          right now is the ROCr source which may cause license issues.  */
-#define HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT 0xA002
 
 /* These probably won't be in elf.h for a while.  */
 #ifndef R_AMDGPU_NONE

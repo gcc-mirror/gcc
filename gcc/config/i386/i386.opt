@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -49,6 +49,16 @@ int recip_mask_explicit
 TargetSave
 int x_recip_mask_explicit
 
+;; A copy of flag_excess_precision as a target variable that should
+;; force a different DECL_FUNCTION_SPECIFIC_TARGET upon
+;; flag_excess_precision changes.
+TargetVariable
+enum excess_precision ix86_excess_precision = EXCESS_PRECISION_DEFAULT
+
+;; Similarly for flag_unsafe_math_optimizations.
+TargetVariable
+bool ix86_unsafe_math_optimizations = false
+
 ;; Definitions to add to the cl_target_option structure
 ;; -march= processor
 TargetSave
@@ -95,8 +105,8 @@ TargetSave
 unsigned char arch_specified
 
 ;; -mcmodel= model
-TargetSave
-enum cmodel x_ix86_cmodel
+TargetVariable
+enum cmodel ix86_cmodel = CM_32
 
 ;; -mabi=
 TargetSave
@@ -123,24 +133,24 @@ TargetSave
 int x_ix86_force_drap
 
 ;; -mincoming-stack-boundary=
-TargetSave
-int x_ix86_incoming_stack_boundary_arg
+TargetVariable
+int ix86_incoming_stack_boundary_arg
 
 ;; -maddress-mode=
-TargetSave
-enum pmode x_ix86_pmode
+TargetVariable
+enum pmode ix86_pmode = PMODE_SI
 
 ;; -mpreferred-stack-boundary=
-TargetSave
-int x_ix86_preferred_stack_boundary_arg
+TargetVariable
+int ix86_preferred_stack_boundary_arg
 
 ;; -mrecip=
 TargetSave
 const char *x_ix86_recip_name
 
 ;; -mregparm=
-TargetSave
-int x_ix86_regparm
+TargetVariable
+int ix86_regparm
 
 ;; -mlarge-data-threshold=
 TargetSave
@@ -179,40 +189,40 @@ TargetSave
 int x_ix86_tune_no_default
 
 ;; -mveclibabi=
-TargetSave
-enum ix86_veclibabi x_ix86_veclibabi_type
+TargetVariable
+enum ix86_veclibabi ix86_veclibabi_type = ix86_veclibabi_type_none
 
 ;; x86 options
 m128bit-long-double
-Target RejectNegative Report Mask(128BIT_LONG_DOUBLE) Save
+Target RejectNegative Mask(128BIT_LONG_DOUBLE) Save
 sizeof(long double) is 16.
 
 m80387
-Target Report Mask(80387) Save
+Target Mask(80387) Save
 Use hardware fp.
 
 m96bit-long-double
-Target RejectNegative Report InverseMask(128BIT_LONG_DOUBLE) Save
+Target RejectNegative InverseMask(128BIT_LONG_DOUBLE) Save
 sizeof(long double) is 12.
 
 mlong-double-80
-Target Report RejectNegative Negative(mlong-double-64) InverseMask(LONG_DOUBLE_64) Save
+Target RejectNegative Negative(mlong-double-64) InverseMask(LONG_DOUBLE_64) Save
 Use 80-bit long double.
 
 mlong-double-64
-Target Report RejectNegative Negative(mlong-double-128) Mask(LONG_DOUBLE_64) InverseMask(LONG_DOUBLE_128) Save
+Target RejectNegative Negative(mlong-double-128) Mask(LONG_DOUBLE_64) InverseMask(LONG_DOUBLE_128) Save
 Use 64-bit long double.
 
 mlong-double-128
-Target Report RejectNegative Negative(mlong-double-80) Mask(LONG_DOUBLE_128) InverseMask(LONG_DOUBLE_64) Save
+Target RejectNegative Negative(mlong-double-80) Mask(LONG_DOUBLE_128) InverseMask(LONG_DOUBLE_64) Save
 Use 128-bit long double.
 
 maccumulate-outgoing-args
-Target Report Mask(ACCUMULATE_OUTGOING_ARGS) Save
+Target Mask(ACCUMULATE_OUTGOING_ARGS) Save
 Reserve space for outgoing arguments in the function prologue.
 
 malign-double
-Target Report Mask(ALIGN_DOUBLE) Save
+Target Mask(ALIGN_DOUBLE) Save
 Align some doubles on dword boundary.
 
 malign-functions=
@@ -228,7 +238,7 @@ Target RejectNegative Joined UInteger
 Loop code aligned to this power of 2.
 
 malign-stringops
-Target RejectNegative Report InverseMask(NO_ALIGN_STRINGOPS, ALIGN_STRINGOPS) Save
+Target RejectNegative InverseMask(NO_ALIGN_STRINGOPS, ALIGN_STRINGOPS) Save
 Align destination of the string operations.
 
 malign-data=
@@ -315,15 +325,15 @@ mcpu=
 Target RejectNegative Joined Undocumented Alias(mtune=) Warn(%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead)
 
 mfancy-math-387
-Target RejectNegative Report InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
+Target RejectNegative InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
 Generate sin, cos, sqrt for FPU.
 
 mforce-drap
-Target Report Var(ix86_force_drap)
+Target Var(ix86_force_drap)
 Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack.
 
 mfp-ret-in-387
-Target Report Mask(FLOAT_RETURNS) Save
+Target Mask(FLOAT_RETURNS) Save
 Return values of functions in FPU registers.
 
 mfpmath=
@@ -360,50 +370,50 @@ Target RejectNegative Mask(80387) Save
 Use hardware fp.
 
 mieee-fp
-Target Report Mask(IEEE_FP) Save
+Target Mask(IEEE_FP) Save
 Use IEEE math for fp comparisons.
 
 minline-all-stringops
-Target Report Mask(INLINE_ALL_STRINGOPS) Save
+Target Mask(INLINE_ALL_STRINGOPS) Save
 Inline all known string operations.
 
 minline-stringops-dynamically
-Target Report Mask(INLINE_STRINGOPS_DYNAMICALLY) Save
+Target Mask(INLINE_STRINGOPS_DYNAMICALLY) Save
 Inline memset/memcpy string operations, but perform inline version only for small blocks.
 
 mintel-syntax
 Target Undocumented Alias(masm=, intel, att) Warn(%<-mintel-syntax%> and %<-mno-intel-syntax%> are deprecated; use %<-masm=intel%> and %<-masm=att%> instead)
 
 mms-bitfields
-Target Report Mask(MS_BITFIELD_LAYOUT) Save
+Target Mask(MS_BITFIELD_LAYOUT) Save
 Use native (MS) bitfield layout.
 
 mno-align-stringops
-Target RejectNegative Report Mask(NO_ALIGN_STRINGOPS) Undocumented Save
+Target RejectNegative Mask(NO_ALIGN_STRINGOPS) Undocumented Save
 
 mno-fancy-math-387
-Target RejectNegative Report Mask(NO_FANCY_MATH_387) Undocumented Save
+Target RejectNegative Mask(NO_FANCY_MATH_387) Undocumented Save
 
 mno-push-args
-Target RejectNegative Report Mask(NO_PUSH_ARGS) Undocumented Save
+Target RejectNegative Mask(NO_PUSH_ARGS) Undocumented Save
 
 mno-red-zone
-Target RejectNegative Report Mask(NO_RED_ZONE) Undocumented Save
+Target RejectNegative Mask(NO_RED_ZONE) Undocumented Save
 
 momit-leaf-frame-pointer
-Target Report Mask(OMIT_LEAF_FRAME_POINTER) Save
+Target Mask(OMIT_LEAF_FRAME_POINTER) Save
 Omit the frame pointer in leaf functions.
 
 mpc32
-Target RejectNegative Report
+Target RejectNegative
 Set 80387 floating-point precision to 32-bit.
 
 mpc64
-Target RejectNegative Report
+Target RejectNegative
 Set 80387 floating-point precision to 64-bit.
 
 mpc80
-Target RejectNegative Report
+Target RejectNegative
 Set 80387 floating-point precision to 80-bit.
 
 mpreferred-stack-boundary=
@@ -415,11 +425,11 @@ Target RejectNegative Joined UInteger Var(ix86_incoming_stack_boundary_arg)
 Assume incoming stack aligned to this power of 2.
 
 mpush-args
-Target Report InverseMask(NO_PUSH_ARGS, PUSH_ARGS) Save
+Target InverseMask(NO_PUSH_ARGS, PUSH_ARGS) Save
 Use push instructions to save outgoing arguments.
 
 mred-zone
-Target RejectNegative Report InverseMask(NO_RED_ZONE, RED_ZONE) Save
+Target RejectNegative InverseMask(NO_RED_ZONE, RED_ZONE) Save
 Use red-zone in the x86-64 code.
 
 mregparm=
@@ -427,7 +437,7 @@ Target RejectNegative Joined UInteger Var(ix86_regparm)
 Number of registers used to pass integer arguments.
 
 mrtd
-Target Report Mask(RTD) Save
+Target Mask(RTD) Save
 Alternate calling convention.
 
 msoft-float
@@ -439,11 +449,11 @@ Target RejectNegative Mask(SSEREGPARM) Save
 Use SSE register passing conventions for SF and DF mode.
 
 mstackrealign
-Target Report Var(ix86_force_align_arg_pointer)
+Target Var(ix86_force_align_arg_pointer)
 Realign stack in prologue.
 
 mstack-arg-probe
-Target Report Mask(STACK_PROBE) Save
+Target Mask(STACK_PROBE) Save
 Enable stack probing.
 
 mmemcpy-strategy=
@@ -501,7 +511,7 @@ EnumValue
 Enum(tls_dialect) String(gnu2) Value(TLS_DIALECT_GNU2)
 
 mtls-direct-seg-refs
-Target Report Mask(TLS_DIRECT_SEG_REFS)
+Target Mask(TLS_DIRECT_SEG_REFS)
 Use direct references against %gs when accessing tls data.
 
 mtune=
@@ -520,7 +530,7 @@ mdump-tune-features
 Target RejectNegative Var(ix86_dump_tunes)
 
 miamcu
-Target Report Mask(IAMCU)
+Target Mask(IAMCU)
 Generate code that conforms to Intel MCU psABI.
 
 mabi=
@@ -538,7 +548,7 @@ EnumValue
 Enum(calling_abi) String(ms) Value(MS_ABI)
 
 mcall-ms2sysv-xlogues
-Target Report Mask(CALL_MS2SYSV_XLOGUES) Save
+Target Mask(CALL_MS2SYSV_XLOGUES) Save
 Use libgcc stubs to save and restore registers clobbered by 64-bit Microsoft to System V ABI calls.
 
 mveclibabi=
@@ -556,28 +566,28 @@ EnumValue
 Enum(ix86_veclibabi) String(acml) Value(ix86_veclibabi_type_acml)
 
 mvect8-ret-in-mem
-Target Report Mask(VECT8_RETURNS) Save
+Target Mask(VECT8_RETURNS) Save
 Return 8-byte vectors in memory.
 
 mrecip
-Target Report Mask(RECIP) Save
+Target Mask(RECIP) Save
 Generate reciprocals instead of divss and sqrtss.
 
 mrecip=
-Target Report RejectNegative Joined Var(ix86_recip_name)
+Target RejectNegative Joined Var(ix86_recip_name)
 Control generation of reciprocal estimates.
 
 mcld
-Target Report Mask(CLD) Save
+Target Mask(CLD) Save
 Generate cld instruction in the function prologue.
 
 mvzeroupper
-Target Report Mask(VZEROUPPER) Save
+Target Mask(VZEROUPPER) Save
 Generate vzeroupper instruction before a transfer of control flow out of
 the function.
 
 mstv
-Target Report Mask(STV) Save
+Target Mask(STV) Save
 Disable Scalar to Vector optimization pass transforming 64-bit integer
 computations into a vector ones.
 
@@ -591,7 +601,7 @@ Target Alias(mprefer-vector-width=, 128, 256)
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
 mprefer-vector-width=
-Target Report RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE) Save
+Target RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE) Save
 Use given register vector width instructions instead of maximum register width in the auto-vectorizer.
 
 Enum
@@ -613,63 +623,63 @@ Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
 ;; ISA support
 
 m32
-Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(m64) InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 32bit i386 code.
 
 m64
-Target RejectNegative Negative(mx32) Report Mask(ABI_64) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(mx32) Mask(ABI_64) Var(ix86_isa_flags) Save
 Generate 64bit x86-64 code.
 
 mx32
-Target RejectNegative Negative(m16) Report Mask(ABI_X32) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(m16) Mask(ABI_X32) Var(ix86_isa_flags) Save
 Generate 32bit x86-64 code.
 
 m16
-Target RejectNegative Negative(m32) Report Mask(CODE16) InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(m32) Mask(CODE16) InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 16bit i386 code.
 
 mmmx
-Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save
+Target Mask(ISA_MMX) Var(ix86_isa_flags) Save
 Support MMX built-in functions.
 
 m3dnow
-Target Report Mask(ISA_3DNOW) Var(ix86_isa_flags) Save
+Target Mask(ISA_3DNOW) Var(ix86_isa_flags) Save
 Support 3DNow! built-in functions.
 
 m3dnowa
-Target Report Mask(ISA_3DNOW_A) Var(ix86_isa_flags) Save
+Target Mask(ISA_3DNOW_A) Var(ix86_isa_flags) Save
 Support Athlon 3Dnow! built-in functions.
 
 msse
-Target Report Mask(ISA_SSE) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE) Var(ix86_isa_flags) Save
 Support MMX and SSE built-in functions and code generation.
 
 msse2
-Target Report Mask(ISA_SSE2) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE2) Var(ix86_isa_flags) Save
 Support MMX, SSE and SSE2 built-in functions and code generation.
 
 msse3
-Target Report Mask(ISA_SSE3) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE3) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation.
 
 mssse3
-Target Report Mask(ISA_SSSE3) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSSE3) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation.
 
 msse4.1
-Target Report Mask(ISA_SSE4_1) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE4_1) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation.
 
 msse4.2
-Target Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse4
-Target RejectNegative Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
+Target RejectNegative Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
 
 mno-sse4
-Target RejectNegative Report InverseMask(ISA_SSE4_1) Var(ix86_isa_flags) Save
+Target RejectNegative InverseMask(ISA_SSE4_1) Var(ix86_isa_flags) Save
 Do not support SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse5
@@ -677,262 +687,262 @@ Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
 ;; Deprecated
 
 mavx
-Target Report Mask(ISA_AVX) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation.
 
 mavx2
-Target Report Mask(ISA_AVX2) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation.
 
 mavx512f
-Target Report Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation.
 
 mavx512pf
-Target Report Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation.
 
 mavx512er
-Target Report Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation.
 
 mavx512cd
-Target Report Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation.
 
 mavx512dq
-Target Report Mask(ISA_AVX512DQ) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512DQ) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation.
 
 mavx512bw
-Target Report Mask(ISA_AVX512BW) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512BW) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation.
 
 mavx512vl
-Target Report Mask(ISA_AVX512VL) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512VL) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation.
 
 mavx512ifma
-Target Report Mask(ISA_AVX512IFMA) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512IFMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation.
 
 mavx512vbmi
-Target Report Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
 
 mavx5124fmaps
-Target Report Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation.
 
 mavx5124vnniw
-Target Report Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
 
 mavx512vpopcntdq
-Target Report Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation.
 
 mavx512vbmi2
-Target Report Mask(ISA_AVX512VBMI2) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512VBMI2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation.
 
 mavx512vnni
-Target Report Mask(ISA_AVX512VNNI) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512VNNI) Var(ix86_isa_flags) Save
 Support AVX512VNNI built-in functions and code generation.
 
 mavx512bitalg
-Target Report Mask(ISA_AVX512BITALG) Var(ix86_isa_flags) Save
+Target Mask(ISA_AVX512BITALG) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation.
 
 mavx512vp2intersect
-Target Report Mask(ISA2_AVX512VP2INTERSECT) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX512VP2INTERSECT) Var(ix86_isa_flags2) Save
 Support AVX512VP2INTERSECT built-in functions and code generation.
 
 mfma
-Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
+Target Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
 
 msse4a
-Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE4A) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation.
 
 mfma4
-Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) Save
+Target Mask(ISA_FMA4) Var(ix86_isa_flags) Save
 Support FMA4 built-in functions and code generation.
 
 mxop
-Target Report Mask(ISA_XOP) Var(ix86_isa_flags) Save
+Target Mask(ISA_XOP) Var(ix86_isa_flags) Save
 Support XOP built-in functions and code generation.
 
 mlwp
-Target Report Mask(ISA_LWP) Var(ix86_isa_flags) Save
+Target Mask(ISA_LWP) Var(ix86_isa_flags) Save
 Support LWP built-in functions and code generation.
 
 mabm
-Target Report Mask(ISA_ABM) Var(ix86_isa_flags) Save
+Target Mask(ISA_ABM) Var(ix86_isa_flags) Save
 Support code generation of Advanced Bit Manipulation (ABM) instructions.
 
 mpopcnt
-Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
+Target Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
 mpconfig
-Target Report Mask(ISA2_PCONFIG) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_PCONFIG) Var(ix86_isa_flags2) Save
 Support PCONFIG built-in functions and code generation.
 
 mwbnoinvd
-Target Report Mask(ISA2_WBNOINVD) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_WBNOINVD) Var(ix86_isa_flags2) Save
 Support WBNOINVD built-in functions and code generation.
 
 mptwrite
-Target Report Mask(ISA2_PTWRITE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_PTWRITE) Var(ix86_isa_flags2) Save
 Support PTWRITE built-in functions and code generation.
 
 muintr
-Target Report Mask(ISA2_UINTR) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_UINTR) Var(ix86_isa_flags2) Save
 Support UINTR built-in functions and code generation.
 
 msgx
-Target Report Mask(ISA2_SGX) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.
 
 mrdpid
-Target Report Mask(ISA2_RDPID) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
 mgfni
-Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
+Target Mask(ISA_GFNI) Var(ix86_isa_flags) Save
 Support GFNI built-in functions and code generation.
 
 mvaes
-Target Report Mask(ISA2_VAES) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_VAES) Var(ix86_isa_flags2) Save
 Support VAES built-in functions and code generation.
 
 mvpclmulqdq
-Target Report Mask(ISA_VPCLMULQDQ) Var(ix86_isa_flags) Save
+Target Mask(ISA_VPCLMULQDQ) Var(ix86_isa_flags) Save
 Support VPCLMULQDQ built-in functions and code generation.
 
 mbmi
-Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
+Target Mask(ISA_BMI) Var(ix86_isa_flags) Save
 Support BMI built-in functions and code generation.
 
 mbmi2
-Target Report Mask(ISA_BMI2) Var(ix86_isa_flags) Save
+Target Mask(ISA_BMI2) Var(ix86_isa_flags) Save
 Support BMI2 built-in functions and code generation.
 
 mlzcnt
-Target Report Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
+Target Mask(ISA_LZCNT) Var(ix86_isa_flags) Save
 Support LZCNT built-in function and code generation.
 
 mhle
-Target Report Mask(ISA2_HLE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_HLE) Var(ix86_isa_flags2) Save
 Support Hardware Lock Elision prefixes.
 
 mrdseed
-Target Report Mask(ISA_RDSEED) Var(ix86_isa_flags) Save
+Target Mask(ISA_RDSEED) Var(ix86_isa_flags) Save
 Support RDSEED instruction.
 
 mprfchw
-Target Report Mask(ISA_PRFCHW) Var(ix86_isa_flags) Save
+Target Mask(ISA_PRFCHW) Var(ix86_isa_flags) Save
 Support PREFETCHW instruction.
 
 madx
-Target Report Mask(ISA_ADX) Var(ix86_isa_flags) Save
+Target Mask(ISA_ADX) Var(ix86_isa_flags) Save
 Support flag-preserving add-carry instructions.
 
 mclflushopt
-Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
+Target Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
 Support CLFLUSHOPT instructions.
 
 mclwb
-Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
+Target Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
 
 mpcommit
 Target WarnRemoved
 
 mfxsr
-Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
+Target Mask(ISA_FXSR) Var(ix86_isa_flags) Save
 Support FXSAVE and FXRSTOR instructions.
 
 mxsave
-Target Report Mask(ISA_XSAVE) Var(ix86_isa_flags) Save
+Target Mask(ISA_XSAVE) Var(ix86_isa_flags) Save
 Support XSAVE and XRSTOR instructions.
 
 mxsaveopt
-Target Report Mask(ISA_XSAVEOPT) Var(ix86_isa_flags) Save
+Target Mask(ISA_XSAVEOPT) Var(ix86_isa_flags) Save
 Support XSAVEOPT instruction.
 
 mxsavec
-Target Report Mask(ISA_XSAVEC) Var(ix86_isa_flags) Save
+Target Mask(ISA_XSAVEC) Var(ix86_isa_flags) Save
 Support XSAVEC instructions.
 
 mxsaves
-Target Report Mask(ISA_XSAVES) Var(ix86_isa_flags) Save
+Target Mask(ISA_XSAVES) Var(ix86_isa_flags) Save
 Support XSAVES and XRSTORS instructions.
 
 mtbm
-Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
+Target Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation.
 
 mcx16
-Target Report Mask(ISA2_CX16) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_CX16) Var(ix86_isa_flags2) Save
 Support code generation of cmpxchg16b instruction.
 
 msahf
-Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) Save
+Target Mask(ISA_SAHF) Var(ix86_isa_flags) Save
 Support code generation of sahf instruction in 64bit x86-64 code.
 
 mmovbe
-Target Report Mask(ISA2_MOVBE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_MOVBE) Var(ix86_isa_flags2) Save
 Support code generation of movbe instruction.
 
 mcrc32
-Target Report Mask(ISA_CRC32) Var(ix86_isa_flags) Save
+Target Mask(ISA_CRC32) Var(ix86_isa_flags) Save
 Support code generation of crc32 instruction.
 
 maes
-Target Report Mask(ISA_AES) Var(ix86_isa_flags) Save
+Target Mask(ISA_AES) Var(ix86_isa_flags) Save
 Support AES built-in functions and code generation.
 
 msha
-Target Report Mask(ISA_SHA) Var(ix86_isa_flags) Save
+Target Mask(ISA_SHA) Var(ix86_isa_flags) Save
 Support SHA1 and SHA256 built-in functions and code generation.
 
 mpclmul
-Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) Save
+Target Mask(ISA_PCLMUL) Var(ix86_isa_flags) Save
 Support PCLMUL built-in functions and code generation.
 
 msse2avx
-Target Report Var(ix86_sse2avx)
+Target Var(ix86_sse2avx)
 Encode SSE instructions with VEX prefix.
 
 mfsgsbase
-Target Report Mask(ISA_FSGSBASE) Var(ix86_isa_flags) Save
+Target Mask(ISA_FSGSBASE) Var(ix86_isa_flags) Save
 Support FSGSBASE built-in functions and code generation.
 
 mrdrnd
-Target Report Mask(ISA_RDRND) Var(ix86_isa_flags) Save
+Target Mask(ISA_RDRND) Var(ix86_isa_flags) Save
 Support RDRND built-in functions and code generation.
 
 mf16c
-Target Report Mask(ISA_F16C) Var(ix86_isa_flags) Save
+Target Mask(ISA_F16C) Var(ix86_isa_flags) Save
 Support F16C built-in functions and code generation.
 
 mprefetchwt1
-Target Report Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
+Target Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
 Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
-Target Report Var(flag_fentry)
+Target Save Var(flag_fentry)
 Emit profiling counter call at function entry before prologue.
 
 mrecord-mcount
-Target Report Var(flag_record_mcount)
+Target Var(flag_record_mcount)
 Generate __mcount_loc section with all mcount or __fentry__ calls.
 
 mnop-mcount
-Target Report Var(flag_nop_mcount)
+Target Var(flag_nop_mcount)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
@@ -945,23 +955,23 @@ Target RejectNegative Joined Var(fentry_section)
 Set name of section to record mrecord-mcount calls.
 
 mskip-rax-setup
-Target Report Var(flag_skip_rax_setup)
+Target Var(flag_skip_rax_setup)
 Skip setting up RAX register when passing variable arguments.
 
 m8bit-idiv
-Target Report Mask(USE_8BIT_IDIV) Save
+Target Mask(USE_8BIT_IDIV) Save
 Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check.
 
 mavx256-split-unaligned-load
-Target Report Mask(AVX256_SPLIT_UNALIGNED_LOAD) Save
+Target Mask(AVX256_SPLIT_UNALIGNED_LOAD) Save
 Split 32-byte AVX unaligned load.
 
 mavx256-split-unaligned-store
-Target Report Mask(AVX256_SPLIT_UNALIGNED_STORE) Save
+Target Mask(AVX256_SPLIT_UNALIGNED_STORE) Save
 Split 32-byte AVX unaligned store.
 
 mrtm
-Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
+Target Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
@@ -969,15 +979,15 @@ Target WarnRemoved
 Removed in GCC 9.  This switch has no effect.
 
 mmwaitx
-Target Report Mask(ISA2_MWAITX) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_MWAITX) Var(ix86_isa_flags2) Save
 Support MWAITX and MONITORX built-in functions and code generation.
 
 mclzero
-Target Report Mask(ISA2_CLZERO) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_CLZERO) Var(ix86_isa_flags2) Save
 Support CLZERO built-in functions and code generation.
 
 mpku
-Target Report Mask(ISA_PKU) Var(ix86_isa_flags) Save
+Target Mask(ISA_PKU) Var(ix86_isa_flags) Save
 Support PKU built-in functions and code generation.
 
 mstack-protector-guard=
@@ -995,55 +1005,55 @@ EnumValue
 Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 
 mstack-protector-guard-reg=
-Target RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
+Target Save RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
 Use the given base register for addressing the stack-protector guard.
 
 TargetVariable
 addr_space_t ix86_stack_protector_guard_reg = ADDR_SPACE_GENERIC
 
 mstack-protector-guard-offset=
-Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
+Target Save RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
 Use the given offset for addressing the stack-protector guard.
 
 TargetVariable
 HOST_WIDE_INT ix86_stack_protector_guard_offset = 0
 
 mstack-protector-guard-symbol=
-Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
+Target Save RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
 Use the given symbol for addressing the stack-protector guard.
 
 mmitigate-rop
 Target WarnRemoved
 
 mgeneral-regs-only
-Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
+Target RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
 Generate code which uses only the general registers.
 
 mshstk
-Target Report Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
+Target Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
 Enable shadow stack built-in functions from Control-flow Enforcement
 Technology (CET).
 
 mcet-switch
-Target Report Undocumented Var(flag_cet_switch) Init(0)
+Target Undocumented Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
 
 mmanual-endbr
-Target Report Var(flag_manual_endbr) Init(0)
+Target Var(flag_manual_endbr) Init(0)
 Insert ENDBR instruction at function entry only via cf_check attribute
 for CET instrumentation.
 
 mforce-indirect-call
-Target Report Var(flag_force_indirect_call) Init(0)
+Target Var(flag_force_indirect_call) Init(0)
 Make all function calls indirect.
 
 mindirect-branch=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_indirect_branch) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(ix86_indirect_branch) Init(indirect_branch_keep)
 Convert indirect call and jump to call and return thunks.
 
 mfunction-return=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_function_return) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(ix86_function_return) Init(indirect_branch_keep)
 Convert function return to call and return thunk.
 
 Enum
@@ -1063,27 +1073,27 @@ EnumValue
 Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
 
 mindirect-branch-register
-Target Report Var(ix86_indirect_branch_register) Init(0)
+Target Var(ix86_indirect_branch_register) Init(0)
 Force indirect call and jump via register.
 
 mmovdiri
-Target Report Mask(ISA_MOVDIRI) Var(ix86_isa_flags) Save
+Target Mask(ISA_MOVDIRI) Var(ix86_isa_flags) Save
 Support MOVDIRI built-in functions and code generation.
 
 mmovdir64b
-Target Report Mask(ISA2_MOVDIR64B) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_MOVDIR64B) Var(ix86_isa_flags2) Save
 Support MOVDIR64B built-in functions and code generation.
 
 mwaitpkg
-Target Report Mask(ISA2_WAITPKG) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_WAITPKG) Var(ix86_isa_flags2) Save
 Support WAITPKG built-in functions and code generation.
 
 mcldemote
-Target Report Mask(ISA2_CLDEMOTE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_CLDEMOTE) Var(ix86_isa_flags2) Save
 Support CLDEMOTE built-in functions and code generation.
 
 minstrument-return=
-Target Report RejectNegative Joined Enum(instrument_return) Var(ix86_instrument_return) Init(instrument_return_none)
+Target RejectNegative Joined Enum(instrument_return) Var(ix86_instrument_return) Init(instrument_return_none)
 Instrument function exit in instrumented functions with __fentry__.
 
 Enum
@@ -1100,55 +1110,55 @@ EnumValue
 Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
 
 mrecord-return
-Target Report Var(ix86_flag_record_return) Init(0)
+Target Var(ix86_flag_record_return) Init(0)
 Generate a __return_loc section pointing to all return instrumentation code.
 
 mavx512bf16
-Target Report Mask(ISA2_AVX512BF16) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX512BF16) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
 AVX512BF16 built-in functions and code generation.
 
 menqcmd
-Target Report Mask(ISA2_ENQCMD) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_ENQCMD) Var(ix86_isa_flags2) Save
 Support ENQCMD built-in functions and code generation.
 
 mserialize
-Target Report Mask(ISA2_SERIALIZE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_SERIALIZE) Var(ix86_isa_flags2) Save
 Support SERIALIZE built-in functions and code generation.
 
 mtsxldtrk
-Target Report Mask(ISA2_TSXLDTRK) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_TSXLDTRK) Var(ix86_isa_flags2) Save
 Support TSXLDTRK built-in functions and code generation.
 
 mamx-tile
-Target Report Mask(ISA2_AMX_TILE) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AMX_TILE) Var(ix86_isa_flags2) Save
 Support AMX-TILE built-in functions and code generation.
 
 mamx-int8
-Target Report Mask(ISA2_AMX_INT8) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AMX_INT8) Var(ix86_isa_flags2) Save
 Support AMX-INT8 built-in functions and code generation.
 
 mamx-bf16
-Target Report Mask(ISA2_AMX_BF16) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AMX_BF16) Var(ix86_isa_flags2) Save
 Support AMX-BF16 built-in functions and code generation.
 
 mhreset
-Target Report Mask(ISA2_HRESET) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_HRESET) Var(ix86_isa_flags2) Save
 Support HRESET built-in functions and code generation.
 
 mkl
-Target Report Mask(ISA2_KL) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_KL) Var(ix86_isa_flags2) Save
 Support KL built-in functions and code generation.
 
 mwidekl
-Target Report Mask(ISA2_WIDEKL) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_WIDEKL) Var(ix86_isa_flags2) Save
 Support WIDEKL built-in functions and code generation.
 
 mavxvnni
-Target Report Mask(ISA2_AVXVNNI) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVXVNNI) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
 AVXVNNI built-in functions and code generation.
 
 mneeded
-Target Report Var(ix86_needed) Save
+Target Var(ix86_needed) Save
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property.

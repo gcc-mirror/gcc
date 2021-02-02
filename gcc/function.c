@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1785,12 +1785,16 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	{
 	  error_for_asm (insn, "impossible constraint in %<asm%>");
 	  /* For asm goto, instead of fixing up all the edges
-	     just clear the template and clear input operands
-	     (asm goto doesn't have any output operands).  */
+	     just clear the template and clear input and output operands
+	     and strip away clobbers.  */
 	  if (JUMP_P (insn))
 	    {
 	      rtx asm_op = extract_asm_operands (PATTERN (insn));
+	      PATTERN (insn) = asm_op;
+	      PUT_MODE (asm_op, VOIDmode);
 	      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
+	      ASM_OPERANDS_OUTPUT_CONSTRAINT (asm_op) = "";
+	      ASM_OPERANDS_OUTPUT_IDX (asm_op) = 0;
 	      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
 	      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
 	    }

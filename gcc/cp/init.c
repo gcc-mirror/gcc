@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -187,7 +187,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (NULLPTR_TYPE_P (type))
     init = build_int_cst (type, 0);
   else if (SCALAR_TYPE_P (type))
-    init = fold (convert (type, integer_zero_node));
+    init = build_zero_cst (type);
   else if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
     {
       tree field;
@@ -288,10 +288,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
   else if (VECTOR_TYPE_P (type))
     init = build_zero_cst (type);
   else
-    {
-      gcc_assert (TYPE_REF_P (type));
-      init = build_zero_cst (type);
-    }
+    gcc_assert (TYPE_REF_P (type));
 
   /* In all cases, the initializer is a constant.  */
   if (init)
@@ -880,7 +877,7 @@ perform_member_init (tree member, tree init)
 	}
       if (init == error_mark_node)
 	return;
-      if (DECL_SIZE (member) && integer_zerop (DECL_SIZE (member))
+      if (is_empty_field (member)
 	  && !TREE_SIDE_EFFECTS (init))
 	/* Don't add trivial initialization of an empty base/field, as they
 	   might not be ordered the way the back-end expects.  */
@@ -1922,7 +1919,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   in an exception region.  */;
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
-			    flags, complain);
+			    flags, complain | tf_no_cleanup);
 
       if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
 	/* We need to protect the initialization of a catch parm with a

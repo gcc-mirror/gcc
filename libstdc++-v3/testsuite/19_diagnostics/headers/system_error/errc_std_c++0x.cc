@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ void test01()
   TEST_ERRC(bad_address);
   TEST_ERRC(bad_file_descriptor);
 
-#ifdef _GLIBCXX_HAVE_EBADMSG
+#ifdef EBADMSG
   TEST_ERRC(bad_message);
 #endif
 
@@ -54,7 +54,7 @@ void test01()
   TEST_ERRC(function_not_supported);
   TEST_ERRC(host_unreachable);
 
-#ifdef _GLIBCXX_HAVE_EIDRM
+#ifdef EIDRM
   TEST_ERRC(identifier_removed);
 #endif
 
@@ -72,23 +72,23 @@ void test01()
   TEST_ERRC(no_buffer_space);
   TEST_ERRC(no_child_process);
 
-#ifdef _GLIBCXX_HAVE_ENOLINK
+#ifdef ENOLINK
   TEST_ERRC(no_link);
 #endif
 
   TEST_ERRC(no_lock_available);
 
-#ifdef _GLIBCXX_HAVE_ENODATA
+#ifdef ENODATA
   TEST_ERRC(no_message_available);
 #endif
 
-#ifdef _GLIBCXX_HAVE_ENOMSG
+#ifdef ENOMSG
   TEST_ERRC(no_message);
 #endif
   TEST_ERRC(no_protocol_option);
   TEST_ERRC(no_space_on_device);
 
-#ifdef _GLIBCXX_HAVE_ENOSR
+#ifdef ENOSR
   TEST_ERRC(no_stream_resources);
 #endif
 
@@ -99,15 +99,15 @@ void test01()
   TEST_ERRC(not_a_directory);
   TEST_ERRC(not_a_socket);
 
-#ifdef _GLIBCXX_HAVE_ENOSTR
+#ifdef ENOSTR
   TEST_ERRC(not_a_stream);
 #endif
 
-  TEST_ERRC(not_connected); 
+  TEST_ERRC(not_connected);
   TEST_ERRC(not_enough_memory);
   TEST_ERRC(not_supported);
 
-#ifdef _GLIBCXX_HAVE_ECANCELED
+#ifdef ECANCELED
   TEST_ERRC(operation_canceled);
 #endif
 
@@ -116,31 +116,31 @@ void test01()
   TEST_ERRC(operation_not_supported);
   TEST_ERRC(operation_would_block);
 
-#ifdef _GLIBCXX_HAVE_EOWNERDEAD
+#ifdef EOWNERDEAD
   TEST_ERRC(owner_dead);
 #endif
 
   TEST_ERRC(permission_denied);
 
-#ifdef _GLIBCXX_HAVE_EPROTO
+#ifdef EPROTO
   TEST_ERRC(protocol_error);
 #endif
 
   TEST_ERRC(protocol_not_supported);
   TEST_ERRC(read_only_file_system);
   TEST_ERRC(resource_deadlock_would_occur);
-  TEST_ERRC(resource_unavailable_try_again); 
+  TEST_ERRC(resource_unavailable_try_again);
   TEST_ERRC(result_out_of_range);
 
-#ifdef _GLIBCXX_HAVE_ENOTRECOVERABLE
+#ifdef ENOTRECOVERABLE
   TEST_ERRC(state_not_recoverable);
 #endif
 
-#ifdef _GLIBCXX_HAVE_ETIME
+#ifdef ETIME
   TEST_ERRC(stream_timeout);
 #endif
 
-#ifdef _GLIBCXX_HAVE_ETXTBSY
+#ifdef ETXTBSY
   TEST_ERRC(text_file_busy);
 #endif
 
@@ -150,7 +150,7 @@ void test01()
   TEST_ERRC(too_many_links);
   TEST_ERRC(too_many_symbolic_link_levels);
 
-#ifdef _GLIBCXX_HAVE_EOVERFLOW
+#ifdef EOVERFLOW
   TEST_ERRC(value_too_large);
 #endif
 

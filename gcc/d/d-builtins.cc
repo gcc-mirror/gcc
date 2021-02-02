@@ -1,5 +1,5 @@
 /* d-builtins.cc -- GCC builtins support for D.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -311,7 +311,7 @@ build_frontend_type (tree type)
 		  return NULL;
 		}
 
-	      args->push (Parameter::create (sc, targ, NULL, NULL));
+	      args->push (Parameter::create (sc, targ, NULL, NULL, NULL));
 	    }
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
@@ -332,11 +332,12 @@ build_frontend_type (tree type)
 }
 
 /* Attempt to convert GCC evaluated CST to a D Frontend Expression.
+   LOC is the location in the source file where this CST is being evaluated.
    This is used for getting the CTFE value out of a const-folded builtin,
    returns NULL if it cannot convert CST.  */
 
 Expression *
-d_eval_constant_expression (tree cst)
+d_eval_constant_expression (const Loc &loc, tree cst)
 {
   STRIP_TYPE_NOPS (cst);
   Type *type = build_frontend_type (TREE_TYPE (cst));
@@ -353,23 +354,23 @@ d_eval_constant_expression (tree cst)
 	  real_value re = TREE_REAL_CST (TREE_REALPART (cst));
 	  real_value im = TREE_REAL_CST (TREE_IMAGPART (cst));
 	  complex_t value = complex_t (ldouble (re), ldouble (im));
-	  return ComplexExp::create (Loc (), value, type);
+	  return ComplexExp::create (loc, value, type);
 	}
       else if (code == INTEGER_CST)
 	{
 	  dinteger_t value = TREE_INT_CST_LOW (cst);
-	  return IntegerExp::create (Loc (), value, type);
+	  return IntegerExp::create (loc, value, type);
 	}
       else if (code == REAL_CST)
 	{
 	  real_value value = TREE_REAL_CST (cst);
-	  return RealExp::create (Loc (), ldouble (value), type);
+	  return RealExp::create (loc, ldouble (value), type);
 	}
       else if (code == STRING_CST)
 	{
 	  const void *string = TREE_STRING_POINTER (cst);
 	  size_t len = TREE_STRING_LENGTH (cst);
-	  return StringExp::create (Loc (), CONST_CAST (void *, string), len);
+	  return StringExp::create (loc, CONST_CAST (void *, string), len);
 	}
       else if (code == VECTOR_CST)
 	{
@@ -380,17 +381,31 @@ d_eval_constant_expression (tree cst)
 	  for (size_t i = 0; i < nunits; i++)
 	    {
 	      Expression *elem
-		= d_eval_constant_expression (VECTOR_CST_ELT (cst, i));
+		= d_eval_constant_expression (loc, VECTOR_CST_ELT (cst, i));
 	      if (elem == NULL)
 		return NULL;
 
 	      (*elements)[i] = elem;
 	    }
 
-	  Expression *e = ArrayLiteralExp::create (Loc (), elements);
+	  Expression *e = ArrayLiteralExp::create (loc, elements);
 	  e->type = type->isTypeVector ()->basetype;
 
-	  return VectorExp::create (Loc (), e, type);
+	  return VectorExp::create (loc, e, type);
+	}
+      else if (code == ADDR_EXPR)
+	{
+	  /* Special handling for trees constructed by build_string_literal.
+	     What we receive is an `&"string"[0]' expression, strip off the
+	     outer ADDR_EXPR and ARRAY_REF to get to the underlying CST.  */
+	  tree pointee = TREE_OPERAND (cst, 0);
+
+	  if (TREE_CODE (pointee) != ARRAY_REF
+	      || TREE_OPERAND (pointee, 1) != integer_zero_node
+	      || TREE_CODE (TREE_OPERAND (pointee, 0)) != STRING_CST)
+	    return NULL;
+
+	  return d_eval_constant_expression (loc, TREE_OPERAND (pointee, 0));
 	}
     }
 

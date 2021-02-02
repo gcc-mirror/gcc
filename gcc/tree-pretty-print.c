@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1264,6 +1264,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
     case OMP_CLAUSE_FINALIZE:
       pp_string (pp, "finalize");
+      break;
+    case OMP_CLAUSE_DETACH:
+      pp_string (pp, "detach(");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause), spc, flags,
+			 false);
+      pp_right_paren (pp);
       break;
 
     default:
@@ -2649,6 +2655,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
       /* Binary arithmetic and logic expressions.  */
+    case WIDEN_PLUS_EXPR:
+    case WIDEN_MINUS_EXPR:
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case MULT_EXPR:
@@ -3580,6 +3588,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VEC_SERIES_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
     case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
@@ -4096,6 +4108,12 @@ op_symbol_code (enum tree_code code)
 
     case WIDEN_LSHIFT_EXPR:
       return "w<<";
+
+    case WIDEN_PLUS_EXPR:
+      return "w+";
+
+    case WIDEN_MINUS_EXPR:
+      return "w-";
 
     case POINTER_PLUS_EXPR:
       return "+";

@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -197,6 +197,8 @@
     UNSPEC_REV
     UNSPEC_RBIT
     UNSPEC_SABAL
+    UNSPEC_SABAL2
+    UNSPEC_SABDL
     UNSPEC_SABDL2
     UNSPEC_SADALP
     UNSPEC_SCVTF
@@ -218,6 +220,8 @@
     UNSPEC_TLSLE32
     UNSPEC_TLSLE48
     UNSPEC_UABAL
+    UNSPEC_UABAL2
+    UNSPEC_UABDL
     UNSPEC_UABDL2
     UNSPEC_UADALP
     UNSPEC_UCVTF
@@ -226,6 +230,7 @@
     UNSPEC_SSP_SYSREG
     UNSPEC_SP_SET
     UNSPEC_SP_TEST
+    UNSPEC_RSHRN
     UNSPEC_RSQRT
     UNSPEC_RSQRTE
     UNSPEC_RSQRTS
@@ -873,7 +878,7 @@
   {
     const char *ret = NULL;
     if (aarch64_return_address_signing_enabled ()
-	&& TARGET_ARMV8_3
+	&& (TARGET_PAUTH)
 	&& !crtl->calls_eh_return)
       {
 	if (aarch64_ra_sign_key == AARCH64_KEY_B)
@@ -2474,7 +2479,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -2486,7 +2491,7 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "*add_<optab><ALLX:mode>_<GPI:mode>"
@@ -3121,7 +3126,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "sub\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -3134,7 +3139,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "sub\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "*sub_<optab><ALLX:mode>_<GPI:mode>"
@@ -3535,7 +3540,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "neg\\t%<w>0, %<w>1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 ;; zero_extend version of above
@@ -3547,7 +3552,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "neg\\t%w0, %w1, <shift> %2"
-  [(set_attr "type" "alu_shift_imm")]
+  [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
 (define_insn "mul<mode>3"
@@ -5724,10 +5729,10 @@
     {
       case 0:
 	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
-	return "bfxil\\t%0, %1, 0, %3";
+	return "bfxil\\t%w0, %w1, 0, %3";
       case 1:
 	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
-	return "bfxil\\t%0, %2, 0, %3";
+	return "bfxil\\t%w0, %w2, 0, %3";
       default:
 	gcc_unreachable ();
     }

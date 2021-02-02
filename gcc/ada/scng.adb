@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Csets;    use Csets;
+with Errout;   use Errout;
 with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -1299,19 +1300,15 @@ package body Scng is
                return;
             end if;
 
+         --  AI12-0125-03 : @ is target_name
+
          when '@' =>
-            if Ada_Version < Ada_2020 then
-               Error_Msg ("target_name is an Ada 202x feature", Scan_Ptr);
-               Scan_Ptr := Scan_Ptr + 1;
+            Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
 
-            else
-               --  AI12-0125-03 : @ is target_name
-
-               Accumulate_Checksum ('@');
-               Scan_Ptr := Scan_Ptr + 1;
-               Token := Tok_At_Sign;
-               return;
-            end if;
+            Accumulate_Checksum ('@');
+            Scan_Ptr := Scan_Ptr + 1;
+            Token := Tok_At_Sign;
+            return;
 
          --  Asterisk (can be multiplication operator or double asterisk which
          --  is the exponentiation compound delimiter).

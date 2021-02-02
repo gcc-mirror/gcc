@@ -1,5 +1,5 @@
 /* Prologue stub for 64-bit ms/sysv clobbers: save
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
 This file is part of GCC.
@@ -57,3 +57,8 @@ MS2SYSV_STUB_END(savms64_17)
 MS2SYSV_STUB_END(savms64_18)
 
 #endif /* __x86_64__ */
+
+#if defined(__ELF__) && defined(__linux__)
+	.section .note.GNU-stack,"",@progbits
+	.previous
+#endif

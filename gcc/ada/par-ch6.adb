@@ -426,11 +426,7 @@ package body Ch6 is
          --  Ada 2005 (AI-318-02)
 
          if Token = Tok_Access then
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SC
-                 ("anonymous access result type is an Ada 2005 extension");
-               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("anonymous access result type");
 
             Result_Node := P_Access_Definition (Result_Not_Null);
 
@@ -598,10 +594,7 @@ package body Ch6 is
             --  Ada 2005 (AI-248): Parse a null procedure declaration
 
             elsif Token = Tok_Null then
-               if Ada_Version < Ada_2005 then
-                  Error_Msg_SP ("null procedures are an Ada 2005 extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-               end if;
+               Error_Msg_Ada_2005_Extension ("null procedure");
 
                Scan; -- past NULL
 
@@ -1064,11 +1057,7 @@ package body Ch6 is
          --  Ada 2005 (AI-318-02)
 
          if Token = Tok_Access then
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SC
-                 ("anonymous access result type is an Ada 2005 extension");
-               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("anonymous access result type");
 
             Result_Node := P_Access_Definition (Result_Not_Null);
 
@@ -1631,9 +1620,8 @@ package body Ch6 is
          --  the time being.
 
          elsif Token = Tok_With then
-            if Ada_Version < Ada_2020 then
-               Error_Msg_SP ("aspect on formal parameter requires -gnat2020");
-            end if;
+            Error_Msg_Ada_2020_Feature
+              ("aspect on formal parameter", Token_Ptr);
 
             P_Aspect_Specifications (Specification_Node, False);
 
@@ -1770,7 +1758,8 @@ package body Ch6 is
    --
    --  EXTENDED_RETURN_STATEMENT ::=
    --    return DEFINING_IDENTIFIER : [aliased] RETURN_SUBTYPE_INDICATION
-   --                                           [:= EXPRESSION] [do
+   --                                           [:= EXPRESSION]
+   --                                           [ASPECT_SPECIFICATION] [do
    --      HANDLED_SEQUENCE_OF_STATEMENTS
    --    end return];
    --
@@ -1916,6 +1905,7 @@ package body Ch6 is
       Ret_Sloc : constant Source_Ptr := Token_Ptr;
       Ret_Strt : constant Column_Number := Start_Column;
       Ret_Node : Node_Id;
+      Decl     : Node_Id;
 
    --  Start of processing for P_Return_Statement
 
@@ -1948,15 +1938,15 @@ package body Ch6 is
          --  Extended_return_statement (Ada 2005 only -- AI-318):
 
          else
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SP
-                 (" extended_return_statement is an Ada 2005 extension");
-               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("extended return statement");
 
             Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
-            Set_Return_Object_Declarations
-              (Ret_Node, New_List (P_Return_Object_Declaration));
+            Decl := P_Return_Object_Declaration;
+            Set_Return_Object_Declarations (Ret_Node, New_List (Decl));
+
+            if Token = Tok_With then
+               P_Aspect_Specifications (Decl, False);
+            end if;
 
             if Token = Tok_Do then
                Push_Scope_Stack;

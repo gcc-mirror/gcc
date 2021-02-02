@@ -1,3 +1,9 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail77.d(11): Error: cannot cast expression `& i` of type `int*` to `ubyte[4]`
+---
+*/
 void test()
 {
     int i;

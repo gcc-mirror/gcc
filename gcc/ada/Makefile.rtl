@@ -596,7 +596,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-fatgen$(objext) \
   s-fatlfl$(objext) \
   s-fatllf$(objext) \
-  s-fatsfl$(objext) \
   s-ficobl$(objext) \
   s-filatt$(objext) \
   s-fileio$(objext) \
@@ -713,7 +712,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-pooglo$(objext) \
   s-pooloc$(objext) \
   s-poosiz$(objext) \
-  s-powtab$(objext) \
+  s-powflt$(objext) \
+  s-powlfl$(objext) \
+  s-powllf$(objext) \
   s-purexc$(objext) \
   s-putima$(objext) \
   s-rannum$(objext) \
@@ -756,7 +757,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
   s-valenu$(objext) \
+  s-valflt$(objext) \
   s-valint$(objext) \
+  s-vallfl$(objext) \
+  s-valllf$(objext) \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
@@ -2164,10 +2168,15 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-stchop.adb<libgnat/s-stchop__rtems.adb \
   s-interr.adb<libgnarl/s-interr__hwint.adb
+
   ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
     EH_MECHANISM=-arm
   else
     EH_MECHANISM=-gcc
+  endif
+
+  ifeq ($(strip $(filter-out riscv%,$(target_cpu))),)
+    LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
 endif
 
@@ -2379,12 +2388,14 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-arm
   THREADSLIB = -lpthread

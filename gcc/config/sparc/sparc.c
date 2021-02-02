@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for SPARC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -12941,6 +12941,12 @@ sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
      order of the permutation.  */
   if (vmode != V8QImode)
     return false;
+
+  rtx nop0 = force_reg (vmode, op0);
+  if (op0 == op1)
+    op1 = nop0;
+  op0 = nop0;
+  op1 = force_reg (vmode, op1);
 
   unsigned int i, mask;
   for (i = mask = 0; i < 8; ++i)

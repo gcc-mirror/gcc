@@ -1,5 +1,5 @@
 /* Definitions for -*- C++ -*- parsing and type checking.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1931,6 +1931,38 @@ public:
   }
   ~temp_override() { overridden_variable = saved_value; }
 };
+
+/* Wrapping a template parameter in type_identity_t hides it from template
+   argument deduction.  */
+#if __cpp_lib_type_identity
+using std::type_identity_t;
+#else
+template <typename T>
+struct type_identity { typedef T type; };
+template <typename T>
+using type_identity_t = typename type_identity<T>::type;
+#endif
+
+/* Object generator function for temp_override, so you don't need to write the
+   type of the object as a template argument.
+
+   Use as auto x = make_temp_override (flag); */
+
+template <typename T>
+inline temp_override<T>
+make_temp_override (T& var)
+{
+  return { var };
+}
+
+/* Likewise, but use as auto x = make_temp_override (flag, value); */
+
+template <typename T>
+inline temp_override<T>
+make_temp_override (T& var, type_identity_t<T> overrider)
+{
+  return { var, overrider };
+}
 
 /* The cached class binding level, from the most recently exited
    class, or NULL if none.  */
@@ -5417,10 +5449,17 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   comparison of PARM_DECLs in cp_tree_equal and alias specializations
-   in structrual_comptypes.  */
+/* Nonzero if we are inside spec_hasher::equal, which affects
+   comparison of PARM_DECLs in cp_tree_equal.  */
 extern int comparing_specializations;
+
+/* Nonzero if we want different dependent aliases to compare as unequal.
+   FIXME we should always do this except during deduction/ordering.  */
+extern int comparing_dependent_aliases;
+
+/* When comparing specializations permit context _FROM to match _TO.  */
+extern tree map_context_from;
+extern tree map_context_to;
 
 /* In parser.c.  */
 
@@ -5594,6 +5633,10 @@ extern bool flag_noexcept_type;
 extern GTY(()) tree static_aggregates;
 /* Likewise, for thread local storage.  */
 extern GTY(()) tree tls_aggregates;
+
+/* A hash-map mapping from variable decls to the dynamic initializer for
+   the decl.  This is currently only used by OpenMP.  */
+extern GTY(()) decl_tree_map *dynamic_initializers;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 
@@ -6196,6 +6239,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
      arguments.  */
   tree tldcl, targs;
 
+  /* For modules we need to know (a) the modules on the path of
+     instantiation and (b) the transitive imports along that path.
+     Note that these two bitmaps may be inherited from NEXT, if this
+     decl is in the same module as NEXT (or has no new information).  */
+  bitmap path;
+  bitmap visible;
+
  private:
   /* Return TRUE iff the original node is a split list.  */
   bool split_list_p () const { return targs; }
@@ -6291,6 +6341,7 @@ extern cp_parameter_declarator *no_parameters;
 
 /* Various dump ids.  */
 extern int class_dump_id;
+extern int module_dump_id;
 extern int raw_dump_id;
 
 /* in call.c */
@@ -6328,6 +6379,13 @@ extern tree build_new_op			(const op_location_t &,
 						 enum tree_code,
 						 int, tree, tree, tree, tree *,
 						 tsubst_flags_t);
+/* Wrapper that leaves out the usually-null op3 and overload parms.  */
+inline tree build_new_op (const op_location_t &loc, enum tree_code code,
+			  int flags, tree arg1, tree arg2,
+			  tsubst_flags_t complain)
+{
+  return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL, complain);
+}
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
@@ -6379,7 +6437,8 @@ class access_failure_info
   tree m_diag_decl;
 };
 
-extern void complain_about_access		(tree, tree, bool);
+extern void complain_about_access		(tree, tree, tree, bool,
+						 access_kind);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -6416,7 +6475,8 @@ extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
 extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
-extern bool unsafe_return_slot_p		(tree);
+extern int unsafe_return_slot_p			(tree);
+extern bool make_safe_copy_elision		(tree, tree);
 extern bool cp_warn_deprecated_use		(tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
@@ -6429,6 +6489,7 @@ extern tree build_base_path			(enum tree_code, tree,
 extern tree convert_to_base			(tree, tree, bool, bool,
 						 tsubst_flags_t);
 extern tree convert_to_base_statically		(tree, tree);
+extern bool is_empty_base_ref			(tree);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
@@ -6457,6 +6518,7 @@ extern int same_signature_p			(const_tree, const_tree);
 extern tree lookup_vfn_in_binfo			(tree, tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
 extern void unreverse_member_declarations	(tree);
+extern bool is_empty_field			(tree);
 extern void invalidate_class_lookup_cache	(void);
 extern void maybe_note_name_used_in_class	(tree, tree);
 extern void note_name_declared_in_class		(tree, tree);
@@ -6497,6 +6559,7 @@ extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
+extern void build_cdtor_clones 			(tree, bool, bool, bool);
 extern void clone_cdtor				(tree, bool);
 extern tree copy_operator_fn			(tree, tree_code code);
 extern void adjust_clone_args			(tree);
@@ -6849,6 +6912,10 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
+extern uintptr_t module_token_pre (cpp_reader *, const cpp_token *, uintptr_t);
+extern uintptr_t module_token_cdtor (cpp_reader *, uintptr_t);
+extern uintptr_t module_token_lang (int type, int keyword, tree value,
+				    location_t, uintptr_t);
 
 /* in method.c */
 extern void init_method				(void);
@@ -6974,7 +7041,7 @@ extern void maybe_check_all_macros (cpp_reader *);
 extern void finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
-extern bitmap module_visible_instantiation_path (bitmap *);
+extern bitmap visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
 extern void module_preprocess_options (cpp_reader *);
@@ -7185,8 +7252,8 @@ extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
 						 void *);
-extern tree match_mergeable_specialization	(bool is_decl, tree tmpl,
-						 tree args, tree spec);
+extern tree match_mergeable_specialization	(bool is_decl, spec_entry *,
+						 bool insert = true);
 extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
 extern void add_mergeable_specialization        (tree tmpl, tree args,
 						 tree spec, unsigned);
@@ -7212,6 +7279,7 @@ extern unsigned get_pseudo_tinfo_index		(tree);
 extern tree get_pseudo_tinfo_type		(unsigned);
 
 /* in search.c */
+extern tree get_parent_with_private_access 	(tree decl, tree binfo);
 extern bool accessible_base_p			(tree, tree, bool);
 extern tree lookup_base                         (tree, tree, base_access,
 						 base_kind *, tsubst_flags_t);
@@ -7250,7 +7318,7 @@ extern tree adjust_result_of_qualified_name_lookup
 						(tree, tree, tree);
 extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
-extern int shared_member_p			(tree);
+extern bool shared_member_p			(tree);
 extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
 extern bool maybe_check_overriding_exception_spec (tree, tree);
 
@@ -7570,7 +7638,7 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
-extern tree make_binding_vec			(tree, unsigned clusters);
+extern tree make_binding_vec			(tree, unsigned clusters CXX_MEM_STAT_INFO);
 inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
@@ -7795,7 +7863,7 @@ extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
 extern tree spaceship_type			(tree, tsubst_flags_t = tf_warning_or_error);
-extern tree genericize_spaceship		(tree, tree, tree);
+extern tree genericize_spaceship		(location_t, tree, tree, tree);
 extern tree cp_build_binary_op                  (const op_location_t &,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);
@@ -7912,6 +7980,9 @@ extern tree mangle_template_parm_object		(tree);
 extern char *get_mangled_vtable_map_var_name    (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
+extern void mangle_module_substitution		(int);
+extern void mangle_identifier			(char, tree);
+extern tree mangle_module_global_init		(int);
 
 /* in dump.c */
 extern bool cp_dump_tree			(void *, tree);
@@ -8069,6 +8140,8 @@ extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
 
+extern void note_failed_type_completion_for_satisfaction (tree);
+
 /* A structural hasher for ATOMIC_CONSTRs.  */
 
 struct atom_hasher : default_hash_traits<tree>
@@ -8171,6 +8244,8 @@ struct uid_sensitive_constexpr_evaluation_checker
   uid_sensitive_constexpr_evaluation_checker ();
   bool evaluation_restricted_p () const;
 };
+
+void cp_tree_c_finish_parsing ();
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

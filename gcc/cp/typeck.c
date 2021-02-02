@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -154,6 +154,7 @@ complete_type_or_maybe_complain (tree type, tree value, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
+      note_failed_type_completion_for_satisfaction (type);
       return NULL_TREE;
     }
   else
@@ -1250,6 +1251,8 @@ structural_comptypes (tree t1, tree t2, int strict)
   /* Both should be types that are not obviously the same.  */
   gcc_checking_assert (t1 != t2 && TYPE_P (t1) && TYPE_P (t2));
 
+  /* Suppress typename resolution under spec_hasher::equal in place of calling
+     push_to_top_level there.  */
   if (!comparing_specializations)
     {
       /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
@@ -1482,7 +1485,7 @@ structural_comptypes (tree t1, tree t2, int strict)
     return false;
 
  check_alias:
-  if (comparing_specializations)
+  if (comparing_dependent_aliases)
     {
       /* Don't treat an alias template specialization with dependent
 	 arguments as equivalent to its underlying type when used as a
@@ -1517,11 +1520,6 @@ comptypes (tree t1, tree t2, int strict)
   /* Suppress errors caused by previously reported errors.  */
   if (t1 == error_mark_node || t2 == error_mark_node)
     return false;
-
-  if (strict == COMPARE_STRICT && comparing_specializations
-      && (t1 != TYPE_CANONICAL (t1) || t2 != TYPE_CANONICAL (t2)))
-    /* If comparing_specializations, treat dependent aliases as distinct.  */
-    strict = COMPARE_STRUCTURAL;
 
   if (strict == COMPARE_STRICT)
     {
@@ -2979,7 +2977,8 @@ complain_about_unrecognized_member (tree access_path, tree name,
 		    TREE_CODE (access_path) == TREE_BINFO
 		    ? TREE_TYPE (access_path) : object_type,
 		    name, afi.get_diag_decl ());
-	  complain_about_access (afi.get_decl (), afi.get_diag_decl (), false);
+	  complain_about_access (afi.get_decl (), afi.get_diag_decl (),
+				 afi.get_diag_decl (), false, ak_none);
 	}
     }
   else
@@ -3324,7 +3323,15 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
     {
       /* Retain the type if we know the operand is a pointer.  */
       if (TREE_TYPE (expr) && INDIRECT_TYPE_P (TREE_TYPE (expr)))
-	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+	{
+	  if (expr == current_class_ptr
+	      || (TREE_CODE (expr) == NOP_EXPR
+		  && TREE_OPERAND (expr, 0) == current_class_ptr
+		  && (same_type_ignoring_top_level_qualifiers_p
+			(TREE_TYPE (expr), TREE_TYPE (current_class_ptr)))))
+	    return current_class_ref;
+	  return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+	}
       if (type_dependent_expression_p (expr))
 	return build_min_nt_loc (loc, INDIRECT_REF, expr);
       expr = build_non_dependent_expr (expr);
@@ -5984,7 +5991,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
 
-  if (!complete_type_or_else (target_type, NULL_TREE))
+  if (!complete_type_or_maybe_complain (target_type, NULL_TREE, complain))
     return error_mark_node;
 
   if (VOID_TYPE_P (target_type))
@@ -8860,7 +8867,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
        LOOKUP_ONLYCONVERTING.  */
     newrhs = convert_for_initialization (lhs, olhstype, newrhs, LOOKUP_NORMAL,
 					 ICR_INIT, NULL_TREE, 0,
-                                         complain);
+					 complain | tf_no_cleanup);
   else
     newrhs = convert_for_assignment (olhstype, newrhs, ICR_ASSIGN,
 				     NULL_TREE, 0, complain, LOOKUP_IMPLICIT);

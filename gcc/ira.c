@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -5111,6 +5111,15 @@ move_unallocated_pseudos (void)
       {
 	int idx = i - first_moveable_pseudo;
 	rtx other_reg = pseudo_replaced_reg[idx];
+	/* The iterating range [first_moveable_pseudo, last_moveable_pseudo)
+	   covers every new pseudo created in find_moveable_pseudos,
+	   regardless of the validation with it is successful or not.
+	   So we need to skip the pseudos which were used in those failed
+	   validations to avoid unexpected DF info and consequent ICE.
+	   We only set pseudo_replaced_reg[] when the validation is successful
+	   in find_moveable_pseudos, it's enough to check it here.  */
+	if (!other_reg)
+	  continue;
 	rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
 	/* The use must follow all definitions of OTHER_REG, so we can
 	   insert the new definition immediately after any of them.  */
@@ -5424,12 +5433,22 @@ ira (FILE *f)
 	  for (int i = 0; i < recog_data.n_operands; i++)
 	    if (recog_data.operand_type[i] != OP_IN)
 	      {
+		bool skip_p = false;
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  if (EDGE_CRITICAL_P (e)
+		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+		      && (e->flags & EDGE_ABNORMAL))
+		    {
+		      skip_p = true;
+		      break;
+		    }
+		if (skip_p)
+		  break;
 		output_jump_reload_p = true;
 		FOR_EACH_EDGE (e, ei, bb->succs)
 		  if (EDGE_CRITICAL_P (e)
 		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		    {
-		      ira_assert (!(e->flags & EDGE_ABNORMAL));
 		      start_sequence ();
 		      /* We need to put some no-op insn here.  We can
 			 not put a note as commit_edges insertion will
@@ -5547,6 +5566,15 @@ ira (FILE *f)
   if (warn_clobbered)
     generate_setjmp_warnings ();
 
+  /* update_equiv_regs can use reg classes of pseudos and they are set up in
+     register pressure sensitive scheduling and loop invariant motion and in
+     live range shrinking.  This info can become obsolete if we add new pseudos
+     since the last set up.  Recalculate it again if the new pseudos were
+     added.  */
+  if (resize_reg_info () && (flag_sched_pressure || flag_live_range_shrinkage
+			     || flag_ira_loop_pressure))
+    ira_set_pseudo_classes (true, ira_dump_file);
+
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
@@ -5590,9 +5618,6 @@ ira (FILE *f)
       gcc_assert (max_regno_before_rm != max_reg_num ());
       regstat_recompute_for_max_regno ();
     }
-
-  if (resize_reg_info () && flag_ira_loop_pressure)
-    ira_set_pseudo_classes (true, ira_dump_file);
 
   setup_reg_equiv ();
   grow_reg_equivs ();

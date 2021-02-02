@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -159,7 +159,8 @@ static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
 			       const_rtx, machine_mode, rtx,
 			       bool, bool, bool);
-static int compare_base_symbol_refs (const_rtx, const_rtx);
+static int compare_base_symbol_refs (const_rtx, const_rtx,
+				     HOST_WIDE_INT * = NULL);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
 
@@ -1837,7 +1838,11 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
-      return compare_base_symbol_refs (x, y) == 1;
+      {
+	HOST_WIDE_INT distance = 0;
+	return (compare_base_symbol_refs (x, y, &distance) == 1
+		&& distance == 0);
+      }
 
     case ENTRY_VALUE:
       /* This is magic, don't go through canonicalization et al.  */
@@ -2172,10 +2177,20 @@ compare_base_decls (tree base1, tree base2)
   return ret;
 }
 
-/* Same as compare_base_decls but for SYMBOL_REF.  */
+/* Compare SYMBOL_REFs X_BASE and Y_BASE.
+
+   - Return 1 if Y_BASE - X_BASE is constant, adding that constant
+     to *DISTANCE if DISTANCE is nonnull.
+
+   - Return 0 if no accesses based on X_BASE can alias Y_BASE.
+
+   - Return -1 if one of the two results applies, but we can't tell
+     which at compile time.  Update DISTANCE in the same way as
+     for a return value of 1, for the case in which that holds.  */
 
 static int
-compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
+compare_base_symbol_refs (const_rtx x_base, const_rtx y_base,
+			  HOST_WIDE_INT *distance)
 {
   tree x_decl = SYMBOL_REF_DECL (x_base);
   tree y_decl = SYMBOL_REF_DECL (y_base);
@@ -2192,8 +2207,8 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
 	  std::swap (x_decl, y_decl);
 	  std::swap (x_base, y_base);
 	}
-      /* We handle specially only section anchors and assume that other
- 	 labels may overlap with user variables in an arbitrary way.  */
+      /* We handle specially only section anchors.  Other symbols are
+	 either equal (via aliasing) or refer to different objects.  */
       if (!SYMBOL_REF_HAS_BLOCK_INFO_P (y_base))
         return -1;
       /* Anchors contains static VAR_DECLs and CONST_DECLs.  We are safe
@@ -2222,14 +2237,13 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
     {
       if (SYMBOL_REF_BLOCK (x_base) != SYMBOL_REF_BLOCK (y_base))
 	return 0;
-      if (SYMBOL_REF_BLOCK_OFFSET (x_base) == SYMBOL_REF_BLOCK_OFFSET (y_base))
-	return binds_def ? 1 : -1;
-      if (SYMBOL_REF_ANCHOR_P (x_base) != SYMBOL_REF_ANCHOR_P (y_base))
-	return -1;
-      return 0;
+      if (distance)
+	*distance += (SYMBOL_REF_BLOCK_OFFSET (y_base)
+		      - SYMBOL_REF_BLOCK_OFFSET (x_base));
+      return binds_def ? 1 : -1;
     }
-  /* In general we assume that memory locations pointed to by different labels
-     may overlap in undefined ways.  */
+  /* Either the symbols are equal (via aliasing) or they refer to
+     different objects.  */
   return -1;
 }
 
@@ -2513,11 +2527,12 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 
   if (GET_CODE (x) == SYMBOL_REF && GET_CODE (y) == SYMBOL_REF)
     {
-      int cmp = compare_base_symbol_refs (x,y);
+      HOST_WIDE_INT distance = 0;
+      int cmp = compare_base_symbol_refs (x, y, &distance);
 
       /* If both decls are the same, decide by offsets.  */
       if (cmp == 1)
-        return offset_overlap_p (c, xsize, ysize);
+	return offset_overlap_p (c + distance, xsize, ysize);
       /* Assume a potential overlap for symbolic addresses that went
 	 through alignment adjustments (i.e., that have negative
 	 sizes), because we can't know how far they are from each
@@ -2526,7 +2541,7 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 	return -1;
       /* If decls are different or we know by offsets that there is no overlap,
 	 we win.  */
-      if (!cmp || !offset_overlap_p (c, xsize, ysize))
+      if (!cmp || !offset_overlap_p (c + distance, xsize, ysize))
 	return 0;
       /* Decls may or may not be different and offsets overlap....*/
       return -1;

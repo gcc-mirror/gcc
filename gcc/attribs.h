@@ -1,5 +1,5 @@
 /* Declarations and definitions dealing with attribute handling.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -274,6 +274,9 @@ struct attr_access
   /* Return the access mode corresponding to the character code.  */
   static access_mode from_mode_char (char);
 
+  /* Reset front end-specific attribute access data from attributes.  */
+  static void free_lang_data (tree);
+
   /* The character codes corresponding to all the access modes.  */
   static constexpr char mode_chars[5] = { '-', 'r', 'w', 'x', '^' };
 
@@ -309,5 +312,7 @@ typedef hash_map<rdwr_access_hash, attr_access> rdwr_map;
 extern void init_attr_rdwr_indices (rdwr_map *, tree);
 extern attr_access *get_parm_access (rdwr_map &, tree,
 				     tree = current_function_decl);
+
+extern unsigned fndecl_dealloc_argno (tree fndecl);
 
 #endif // GCC_ATTRIBS_H

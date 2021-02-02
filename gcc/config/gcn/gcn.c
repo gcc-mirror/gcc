@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -2137,10 +2137,6 @@ gcn_conditional_register_usage (void)
     fixed_regs[cfun->machine->args.reg[WORK_ITEM_ID_Y_ARG]] = 1;
   if (cfun->machine->args.reg[WORK_ITEM_ID_Z_ARG] >= 0)
     fixed_regs[cfun->machine->args.reg[WORK_ITEM_ID_Z_ARG]] = 1;
-
-  if (TARGET_GCN5_PLUS)
-    /* v0 is always zero, for global nul-offsets.  */
-    fixed_regs[VGPR_REGNO (0)] = 1;
 }
 
 /* Determine if a load or store is valid, according to the register classes
@@ -3986,13 +3982,14 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
   for (unsigned int i = 0; i < nelt; ++i)
     perm[i] = sel[i] & (2 * nelt - 1);
 
+  src0 = force_reg (vmode, src0);
+  src1 = force_reg (vmode, src1);
+
   /* Make life a bit easier by swapping operands if necessary so that
      the first element always comes from src0.  */
   if (perm[0] >= nelt)
     {
-      rtx temp = src0;
-      src0 = src1;
-      src1 = temp;
+      std::swap (src0, src1);
 
       for (unsigned int i = 0; i < nelt; ++i)
 	if (perm[i] < nelt)
@@ -4254,7 +4251,8 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
-		     && mode == V64DImode)
+		     && (mode == V64DImode
+			 || mode == V64DFmode))
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
 			&& mode == V64DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
@@ -4501,6 +4499,8 @@ gcn_md_reorg (void)
       df_insn_rescan_all ();
     }
 
+  df_live_add_problem ();
+  df_live_set_all_dirty ();
   df_analyze ();
 
   /* This pass ensures that the EXEC register is set correctly, according
@@ -4521,6 +4521,17 @@ gcn_md_reorg (void)
       bool curr_exec_known = true;
       int64_t curr_exec = 0;	/* 0 here means 'the value is that of EXEC
 				   after last_exec_def is executed'.  */
+
+      bitmap live_in = DF_LR_IN (bb);
+      bool exec_live_on_entry = false;
+      if (bitmap_bit_p (live_in, EXEC_LO_REG)
+	  || bitmap_bit_p (live_in, EXEC_HI_REG))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "EXEC reg is live on entry to block %d\n",
+		     (int) bb->index);
+	  exec_live_on_entry = true;
+	}
 
       FOR_BB_INSNS_SAFE (bb, insn, curr)
 	{
@@ -4660,6 +4671,8 @@ gcn_md_reorg (void)
 			 exec_lo_def_p == exec_hi_def_p ? "full" : "partial",
 			 INSN_UID (insn));
 	    }
+
+	  exec_live_on_entry = false;
 	}
 
       COPY_REG_SET (&live, DF_LR_OUT (bb));
@@ -4669,7 +4682,7 @@ gcn_md_reorg (void)
 	 at the end of the block.  */
       if ((REGNO_REG_SET_P (&live, EXEC_LO_REG)
 	   || REGNO_REG_SET_P (&live, EXEC_HI_REG))
-	  && (!curr_exec_known || !curr_exec_explicit))
+	  && (!curr_exec_known || !curr_exec_explicit || exec_live_on_entry))
 	{
 	  rtx_insn *end_insn = BB_END (bb);
 

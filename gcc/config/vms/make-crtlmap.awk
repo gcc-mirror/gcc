@@ -1,5 +1,5 @@
 # Generate the VMS crtl map
-#	Copyright (C) 2011-2020 Free Software Foundation, Inc.
+#	Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 BEGIN {
     is_first = 1;

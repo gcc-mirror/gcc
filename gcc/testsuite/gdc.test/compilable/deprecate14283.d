@@ -1,11 +1,5 @@
 // REQUIRED_ARGS: -dw
 // PERMUTE_ARGS:
-/*
-TEST_OUTPUT:
----
----
-*/
-
 class C
 {
     void bug()

@@ -13,28 +13,27 @@ void  free (void*);
 void* malloc (size_t);
 void* realloc (void*, size_t);
 
-int   fclose (FILE*);
-FILE* freopen (const char*, const char*, FILE*);
-int   pclose (FILE*);
+/* Declare functions with the minimum attributes malloc how they're
+   likely going to be declared in <stdio.h>.  */
+               int   fclose (FILE*);
+A (fclose)     FILE* fdopen (int);
+A (fclose)     FILE* fopen (const char*, const char*);
+A (fclose)     FILE* fmemopen(void *, size_t, const char *);
+A (fclose)     FILE* freopen (const char*, const char*, FILE*);
+A (freopen, 3) FILE* freopen (const char*, const char*, FILE*);
+A (fclose)     FILE* tmpfile (void);
 
-A (fclose) A (freopen, 3)
-  FILE* fdopen (int);
-A (fclose) A (freopen, 3)
-  FILE* fopen (const char*, const char*);
-A (fclose) A (freopen, 3)
-  FILE* fmemopen(void *, size_t, const char *);
-A (fclose) A (freopen, 3)
-  FILE* freopen (const char*, const char*, FILE*);
-A (pclose) A (freopen, 3)
-  FILE* popen (const char*, const char*);
-A (fclose) A (freopen, 3)
-  FILE* tmpfile (void);
+A (fclose)     FILE* open_memstream (char**, size_t*);
+A (fclose)     FILE* open_wmemstream (char**, size_t*);
+
+               int   pclose (FILE*);
+A (pclose)     FILE* popen (const char*, const char*);
+
+               void  release (void*);
+A (release)    FILE* acquire (void);
 
 void sink (FILE*);
 
-
-            void  release (void*);
-A (release) FILE* acquire (void);
 
 void nowarn_fdopen (void)
 {
@@ -68,18 +67,18 @@ void nowarn_fdopen (void)
 void warn_fdopen (void)
 {
   {
-    FILE *q = fdopen (0);     // { dg-message "returned from a call to 'fdopen'" "note" }
+    FILE *q = fdopen (0);     // { dg-message "returned from 'fdopen'" "note" }
     sink (q);
     release (q);              // { dg-warning "'release' called on pointer returned from a mismatched allocation function" }
   }
   {
-    FILE *q = fdopen (0);     // { dg-message "returned from a call to 'fdopen'" "note" }
+    FILE *q = fdopen (0);     // { dg-message "returned from 'fdopen'" "note" }
     sink (q);
     free (q);                 // { dg-warning "'free' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *q = fdopen (0);     // { dg-message "returned from a call to 'fdopen'" "note" }
+    FILE *q = fdopen (0);     // { dg-message "returned from 'fdopen'" "note" }
     sink (q);
     q = realloc (q, 7);       // { dg-warning "'realloc' called on pointer returned from a mismatched allocation function" }
     sink (q);
@@ -132,29 +131,27 @@ void warn_fopen (void)
 }
 
 
-void test_popen (void)
+void test_freopen (FILE *p[])
 {
   {
-    FILE *p = popen ("1", "r");
-    sink (p);
-    pclose (p);
+    FILE *q = freopen ("1", "r", p[0]);
+    sink (q);
+    fclose (q);
+  }
+  {
+    FILE *q = freopen ("2", "r", p[1]);
+    sink (q);
+    q = freopen ("3", "r", q);
+    sink (q);
+    fclose (q);
   }
 
   {
-    FILE *p;
-    p = popen ("2", "r");     // { dg-message "returned from a call to 'popen'" "note" }
-    sink (p);
-    fclose (p);               // { dg-warning "'fclose' called on pointer returned from a mismatched allocation function" }
-  }
-
-  {
-    /* freopen() can close a stream open by popen() but pclose() can't
-       close the stream returned from freopen().  */
-    FILE *p = popen ("2", "r");
-    sink (p);
-    p = freopen ("3", "r", p);  // { dg-message "returned from a call to 'freopen'" "note" }
-    sink (p);
-    pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
+    FILE *q;
+    q = freopen ("3", "r", p[2]); // { dg-message "returned from 'freopen'" }
+    sink (q);
+    q = realloc (q, 7);       // { dg-warning "'realloc' called on pointer returned from a mismatched allocation function" }
+    sink (q);
   }
 }
 
@@ -176,9 +173,87 @@ void test_tmpfile (void)
   }
 
   {
-    FILE *p = tmpfile ();     // { dg-message "returned from a call to 'tmpfile'" "note" }
+    FILE *p = tmpfile ();     // { dg-message "returned from 'tmpfile'" "note" }
     sink (p);
     pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
+  }
+}
+
+
+void test_open_memstream (char **bufp, size_t *sizep)
+{
+  {
+    FILE *p = open_memstream (bufp, sizep);
+    sink (p);
+    fclose (p);
+  }
+
+  {
+    FILE *p = open_memstream (bufp, sizep);
+    sink (p);
+    p = freopen ("1", "r", p);
+    sink (p);
+    fclose (p);
+  }
+
+  {
+    FILE *p;
+    p = open_memstream (bufp, sizep);   // { dg-message "returned from 'open_memstream'" "note" }
+    sink (p);
+    pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
+  }
+
+  {
+    FILE *p;
+    p = open_memstream (bufp, sizep);   // { dg-message "returned from 'open_memstream'" "note" }
+    sink (p);
+    free (p);                 // { dg-warning "'free' called on pointer returned from a mismatched allocation function" }
+  }
+
+  {
+    FILE *p;
+    p = open_memstream (bufp, sizep);   // { dg-message "returned from 'open_memstream'" "note" }
+    sink (p);
+    release (p);              // { dg-warning "'release' called on pointer returned from a mismatched allocation function" }
+  }
+}
+
+
+void test_open_wmemstream (char **bufp, size_t *sizep)
+{
+  {
+    FILE *p = open_wmemstream (bufp, sizep);
+    sink (p);
+    fclose (p);
+  }
+
+  {
+    FILE *p = open_wmemstream (bufp, sizep);
+    sink (p);
+    p = freopen ("1", "r", p);
+    sink (p);
+    fclose (p);
+  }
+
+  {
+    FILE *p;
+    p = open_wmemstream (bufp, sizep);  // { dg-message "returned from 'open_wmemstream'" "note" }
+    sink (p);
+    pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
+  }
+
+  {
+    FILE *p;
+    p = open_wmemstream (bufp, sizep);  // { dg-message "returned from 'open_wmemstream'" "note" }
+    sink (p);
+    free (p);                 // { dg-warning "'free' called on pointer returned from a mismatched allocation function" }
+  }
+
+  {
+    FILE *p;
+    p = open_wmemstream (bufp, sizep);  // { dg-message "returned from 'open_wmemstream'" "note" }
+    sink (p);
+    release (p);              // { dg-warning "'release' called on pointer returned from a mismatched allocation function" }
   }
 }
 
@@ -186,19 +261,19 @@ void test_tmpfile (void)
 void warn_malloc (void)
 {
   {
-    FILE *p = malloc (100);   // { dg-message "returned from a call to 'malloc'" "note" }
+    FILE *p = malloc (100);   // { dg-message "returned from 'malloc'" "note" }
     sink (p);
     fclose (p);               // { dg-warning "'fclose' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *p = malloc (100);   // { dg-message "returned from a call to 'malloc'" "note" }
+    FILE *p = malloc (100);   // { dg-message "returned from 'malloc'" "note" }
     sink (p);
     p = freopen ("1", "r", p);// { dg-warning "'freopen' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *p = malloc (100);   // { dg-message "returned from a call to 'malloc'" "note" }
+    FILE *p = malloc (100);   // { dg-message "returned from 'malloc'" "note" }
     sink (p);
     pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
   }
@@ -219,32 +294,32 @@ void test_acquire (void)
   }
 
   {
-    FILE *p = acquire ();     // { dg-message "returned from a call to 'acquire'" "note" }
+    FILE *p = acquire ();     // { dg-message "returned from 'acquire'" "note" }
     sink (p);
     fclose (p);               // { dg-warning "'fclose' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *p = acquire ();     // { dg-message "returned from a call to 'acquire'" "note" }
+    FILE *p = acquire ();     // { dg-message "returned from 'acquire'" "note" }
     sink (p);
     pclose (p);               // { dg-warning "'pclose' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *p = acquire ();     // { dg-message "returned from a call to 'acquire'" "note" }
+    FILE *p = acquire ();     // { dg-message "returned from 'acquire'" "note" }
     sink (p);
     p = freopen ("1", "r", p);  // { dg-warning "'freopen' called on pointer returned from a mismatched allocation function" }
     sink (p);
   }
 
   {
-    FILE *p = acquire ();     // { dg-message "returned from a call to 'acquire'" "note" }
+    FILE *p = acquire ();     // { dg-message "returned from 'acquire'" "note" }
     sink (p);
     free (p);               // { dg-warning "'free' called on pointer returned from a mismatched allocation function" }
   }
 
   {
-    FILE *p = acquire ();     // { dg-message "returned from a call to 'acquire'" "note" }
+    FILE *p = acquire ();     // { dg-message "returned from 'acquire'" "note" }
     sink (p);
     p = realloc (p, 123);     // { dg-warning "'realloc' called on pointer returned from a mismatched allocation function" }
     sink (p);

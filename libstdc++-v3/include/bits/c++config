@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -425,8 +425,28 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // GLIBCXX_ABI Deprecated
 // Define if compatibility should be provided for -mlong-double-64.
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
+// Define if compatibility should be provided for alternative 128-bit long
+// double formats.
+#undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 
-// Inline namespace for long double 128 mode.
+// Inline namespaces for long double 128 modes.
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+  && defined __LONG_DOUBLE_IEEE128__
+namespace std
+{
+  // Namespaces for 128-bit IEEE long double format on 64-bit POWER LE.
+  inline namespace __gnu_cxx_ieee128 { }
+  inline namespace __gnu_cxx11_ieee128 { }
+}
+# define _GLIBCXX_NAMESPACE_LDBL __gnu_cxx_ieee128::
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL namespace __gnu_cxx_ieee128 {
+# define _GLIBCXX_END_NAMESPACE_LDBL }
+# define _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 __gnu_cxx11_ieee128::
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 namespace __gnu_cxx11_ieee128 {
+# define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 }
+
+#else // _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && IEEE128
+
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
 namespace std
 {
@@ -440,6 +460,7 @@ namespace std
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL
 # define _GLIBCXX_END_NAMESPACE_LDBL
 #endif
+
 #if _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_NAMESPACE_CXX11
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -449,6 +470,8 @@ namespace std
 # define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_BEGIN_NAMESPACE_LDBL
 # define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_END_NAMESPACE_LDBL
 #endif
+
+#endif // _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && IEEE128
 
 // Debug Mode implies checking assertions.
 #if defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_ASSERTIONS)
@@ -523,6 +546,15 @@ namespace std
 # define _GLIBCXX_END_EXTERN_C }
 
 #define _GLIBCXX_USE_ALLOCATOR_NEW
+
+#ifdef __SIZEOF_INT128__
+#if ! defined __GLIBCXX_TYPE_INT_N_0 && ! defined __STRICT_ANSI__
+// If __int128 is supported, we expect __GLIBCXX_TYPE_INT_N_0 to be defined
+// unless the compiler is in strict mode. If it's not defined and the strict
+// macro is not defined, something is wrong.
+#warning "__STRICT_ANSI__ seems to have been undefined; this is not supported"
+#endif
+#endif
 
 #else // !__cplusplus
 # define _GLIBCXX_BEGIN_EXTERN_C
@@ -648,9 +680,26 @@ namespace std
 # define __cpp_lib_char8_t 201907L
 #endif
 
-/* Define if __float128 is supported on this host. */
+/* Define if __float128 is supported on this host.  */
 #if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
-#define _GLIBCXX_USE_FLOAT128
+/* For powerpc64 don't use __float128 when it's the same type as long double. */
+# if !(defined(_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT) && defined(__LONG_DOUBLE_IEEE128__))
+#  define _GLIBCXX_USE_FLOAT128
+# endif
+#endif
+
+// Define if float has the IEEE binary32 format.
+#if __FLT_MANT_DIG__ == 24 \
+  && __FLT_MIN_EXP__ == -125 \
+  && __FLT_MAX_EXP__ == 128
+# define _GLIBCXX_FLOAT_IS_IEEE_BINARY32 1
+#endif
+
+// Define if double has the IEEE binary64 format.
+#if __DBL_MANT_DIG__ == 53 \
+  && __DBL_MIN_EXP__ == -1021 \
+  && __DBL_MAX_EXP__ == 1024
+# define _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 1
 #endif
 
 #ifdef __has_builtin
@@ -684,7 +733,7 @@ namespace std
 
 #undef _GLIBCXX_HAS_BUILTIN
 
-#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED && __cplusplus >= 201402L
 # define __glibcxx_assert_1(_Condition)		\
     if (__builtin_is_constant_evaluated())	\
      {						\

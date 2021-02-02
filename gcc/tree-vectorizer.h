@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
+#include "internal-fn.h"
 
 
 /* Used for naming of new temporaries.  */
@@ -114,6 +115,8 @@ typedef hash_map<tree_operand_hash,
   SLP
  ************************************************************************/
 typedef struct _slp_tree *slp_tree;
+typedef vec<std::pair<unsigned, unsigned> > lane_permutation_t;
+typedef vec<unsigned> load_permutation_t;
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
@@ -134,11 +137,11 @@ struct _slp_tree {
 
   /* Load permutation relative to the stores, NULL if there is no
      permutation.  */
-  vec<unsigned> load_permutation;
+  load_permutation_t load_permutation;
   /* Lane permutation of the operands scalar lanes encoded as pairs
      of { operand number, lane number }.  The number of elements
      denotes the number of output lanes.  */
-  vec<std::pair<unsigned, unsigned> > lane_permutation;
+  lane_permutation_t lane_permutation;
 
   tree vectype;
   /* Vectorized stmt/s.  */
@@ -362,6 +365,7 @@ public:
   ~vec_info ();
 
   stmt_vec_info add_stmt (gimple *);
+  stmt_vec_info add_pattern_stmt (gimple *, stmt_vec_info);
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
@@ -407,7 +411,7 @@ public:
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
-  void set_vinfo_for_stmt (gimple *, stmt_vec_info);
+  void set_vinfo_for_stmt (gimple *, stmt_vec_info, bool = true);
   void free_stmt_vec_infos ();
   void free_stmt_vec_info (stmt_vec_info);
 };
@@ -2005,8 +2009,13 @@ extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 				      vec<tree>, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern bool vect_update_shared_vectype (stmt_vec_info, tree);
+extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
+extern void vect_free_slp_tree (slp_tree);
 
 /* In tree-vect-patterns.c.  */
+extern void
+vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
+
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
    in the future.  */
@@ -2017,5 +2026,85 @@ unsigned vectorize_loops (void);
 void vect_free_loop_info_assumptions (class loop *);
 gimple *vect_loop_vectorized_call (class loop *, gcond **cond = NULL);
 bool vect_stmt_dominates_stmt_p (gimple *, gimple *);
+
+/* SLP Pattern matcher types, tree-vect-slp-patterns.c.  */
+
+/* Forward declaration of possible two operands operation that can be matched
+   by the complex numbers pattern matchers.  */
+enum _complex_operation : unsigned;
+
+/* All possible load permute values that could result from the partial data-flow
+   analysis.  */
+typedef enum _complex_perm_kinds {
+   PERM_UNKNOWN,
+   PERM_EVENODD,
+   PERM_ODDEVEN,
+   PERM_ODDODD,
+   PERM_EVENEVEN,
+   /* Can be combined with any other PERM values.  */
+   PERM_TOP
+} complex_perm_kinds_t;
+
+/* A pair with a load permute and a corresponding complex_perm_kind which gives
+   information about the load it represents.  */
+typedef std::pair<complex_perm_kinds_t, load_permutation_t>
+  complex_load_perm_t;
+
+/* Cache from nodes to the load permutation they represent.  */
+typedef hash_map <slp_tree, complex_load_perm_t>
+  slp_tree_to_load_perm_map_t;
+
+/* Vector pattern matcher base class.  All SLP pattern matchers must inherit
+   from this type.  */
+
+class vect_pattern
+{
+  protected:
+    /* The number of arguments that the IFN requires.  */
+    unsigned m_num_args;
+
+    /* The internal function that will be used when a pattern is created.  */
+    internal_fn m_ifn;
+
+    /* The current node being inspected.  */
+    slp_tree *m_node;
+
+    /* The list of operands to be the children for the node produced when the
+       internal function is created.  */
+    vec<slp_tree> m_ops;
+
+    /* Default constructor where NODE is the root of the tree to inspect.  */
+    vect_pattern (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
+    {
+      this->m_ifn = ifn;
+      this->m_node = node;
+      this->m_ops.create (0);
+      this->m_ops.safe_splice (*m_ops);
+    }
+
+  public:
+
+    /* Create a new instance of the pattern matcher class of the given type.  */
+    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+
+    /* Build the pattern from the data collected so far.  */
+    virtual void build (vec_info *) = 0;
+
+    /* Default destructor.  */
+    virtual ~vect_pattern ()
+    {
+	this->m_ops.release ();
+    }
+};
+
+/* Function pointer to create a new pattern matcher from a generic type.  */
+typedef vect_pattern* (*vect_pattern_decl_t) (slp_tree_to_load_perm_map_t *,
+					      slp_tree *);
+
+/* List of supported pattern matchers.  */
+extern vect_pattern_decl_t slp_patterns[];
+
+/* Number of supported pattern matchers.  */
+extern size_t num__slp_patterns;
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

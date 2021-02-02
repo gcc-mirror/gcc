@@ -1,5 +1,5 @@
 /* Thread library support for -fsplit-stack.  */
-/* Copyright (C) 2009-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -38,6 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef inhibit_libc
 
 #include <errno.h>
+#include <signal.h>
 #include <pthread.h>
 
 #include "generic-morestack.h"
@@ -52,6 +53,9 @@ extern int pthread_key_create (pthread_key_t *, void (*) (void *))
   __attribute__ ((weak));
 
 extern int pthread_setspecific (pthread_key_t, const void *)
+  __attribute__ ((weak));
+
+extern int pthread_sigmask (int, const sigset_t *, sigset_t *)
   __attribute__ ((weak));
 
 /* The key for the list of stack segments to free when the thread
@@ -70,6 +74,16 @@ static pthread_once_t create_key_once = PTHREAD_ONCE_INIT;
 static void
 free_segments (void* arg)
 {
+  /* We must block signals in case the signal handler tries to split
+     the stack.  We leave them blocked while the thread exits.  */
+  if (pthread_sigmask)
+    {
+      sigset_t mask;
+
+      sigfillset (&mask);
+      pthread_sigmask (SIG_BLOCK, &mask, NULL);
+    }
+
   __morestack_release_segments ((struct stack_segment **) arg, 1);
 }
 

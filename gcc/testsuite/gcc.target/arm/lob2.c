@@ -2,7 +2,7 @@
    if a non-inlineable function call takes place inside the loop.  */
 /* { dg-do compile } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main -mthumb -O3 --save-temps" } */
+/* { dg-options "-march=armv8.1-m.main+fp -mthumb -O3 --save-temps" } */
 #include <stdlib.h>
 #include "lob.h"
 

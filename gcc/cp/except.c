@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -1101,7 +1101,7 @@ maybe_noexcept_warning (tree fn)
       && (!DECL_IN_SYSTEM_HEADER (fn)
 	  || global_dc->dc_warn_system_headers))
     {
-      temp_override<bool> s (global_dc->dc_warn_system_headers, true);
+      auto s = make_temp_override (global_dc->dc_warn_system_headers, true);
       auto_diagnostic_group d;
       if (warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
 		   "because of a call to %qD", fn))

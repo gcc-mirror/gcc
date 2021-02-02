@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -669,6 +669,8 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_WAITPKG);
       if (ecx & bit_SHSTK)
 	set_feature (FEATURE_SHSTK);
+      if (ecx & bit_KL)
+	has_kl = 1;
       if (edx & bit_SERIALIZE)
 	set_feature (FEATURE_SERIALIZE);
       if (edx & bit_TSXLDTRK)
@@ -677,6 +679,8 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_PCONFIG);
       if (edx & bit_IBT)
 	set_feature (FEATURE_IBT);
+      if (edx & bit_UINTR)
+	set_feature (FEATURE_UINTR);
       if (amx_usable)
 	{
 	  if (edx & bit_AMX_TILE)
@@ -686,8 +690,6 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (edx & bit_AMX_BF16)
 	    set_feature (FEATURE_AMX_BF16);
 	}
-      if (ecx & bit_KL)
-	has_kl = 1;
       if (avx512_usable)
 	{
 	  if (ebx & bit_AVX512F)
@@ -722,17 +724,20 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
-	  if (edx & bit_UINTR)
-	    set_feature (FEATURE_UINTR);
+	}
 
-	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
-	  if (eax & bit_AVX512BF16)
-	    set_feature (FEATURE_AVX512BF16);
-	  if (eax & bit_HRESET)
-	    set_feature (FEATURE_HRESET);
+      __cpuid_count (7, 1, eax, ebx, ecx, edx);
+      if (eax & bit_HRESET)
+	set_feature (FEATURE_HRESET);
+      if (avx_usable)
+	{
 	  if (eax & bit_AVXVNNI)
 	    set_feature (FEATURE_AVXVNNI);
-
+	}
+      if (avx512_usable)
+	{
+	  if (eax & bit_AVX512BF16)
+	    set_feature (FEATURE_AVX512BF16);
 	}
     }
 

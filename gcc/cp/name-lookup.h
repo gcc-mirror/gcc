@@ -1,5 +1,5 @@
 /* Declarations for -*- C++ -*- name lookup routines.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -457,7 +457,7 @@ extern tree *find_member_slot (tree klass, tree name);
 extern tree *add_member_slot (tree klass, tree name);
 extern void resort_type_member_vec (void *, void *,
 				    gt_pointer_operator, void *);
-extern void set_class_bindings (tree, unsigned extra = 0);
+extern vec<tree, va_gc> *set_class_bindings (tree, int extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
@@ -478,6 +478,37 @@ extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
+extern void push_using_decl_bindings (tree, tree);
 extern void discard_operator_bindings (tree);
+
+/* Lower level interface for modules. */
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+					tree *mvec);
+extern void add_mergeable_namespace_entity (tree *slot, tree decl);
+extern tree lookup_class_binding (tree ctx, tree name);
+extern bool import_module_binding (tree ctx, tree name, unsigned mod,
+				   unsigned snum);
+extern bool set_module_binding (tree ctx, tree name, unsigned mod,
+				int mod_glob_flag,
+				tree value, tree type, tree visible);
+extern void add_module_decl (tree ctx, tree name, tree decl);
+
+enum WMB_Flags
+{
+  WMB_None = 0,
+  WMB_Dups = 1 << 0,
+  WMB_Export = 1 << 1,
+  WMB_Using = 1 << 2,
+  WMB_Hidden = 1 << 3,
+};
+
+extern unsigned walk_module_binding (tree binding, bitmap partitions,
+				     bool (*)(tree decl, WMB_Flags, void *data),
+				     void *data);
+extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
+				    location_t, bool visible_p, bool inline_p);
+extern void note_pending_specializations (tree ns, tree name, bool is_header);
+extern void load_pending_specializations (tree ns, tree name);
+extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

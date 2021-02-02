@@ -1,6 +1,6 @@
 ; Options for the SH port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -175,19 +175,19 @@ Target RejectNegative Condition(SUPPORT_SH4AL)
 Generate SH4al-dsp code.
 
 maccumulate-outgoing-args
-Target Report Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
+Target Var(TARGET_ACCUMULATE_OUTGOING_ARGS) Init(1)
 Reserve space for outgoing arguments in the function prologue.
 
 mb
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
+Target RejectNegative InverseMask(LITTLE_ENDIAN)
 Generate code in big endian mode.
 
 mbigtable
-Target Report RejectNegative Mask(BIGTABLE)
+Target RejectNegative Mask(BIGTABLE)
 Generate 32-bit offsets in switch tables.
 
 mbitops
-Target Report RejectNegative Mask(BITOPS)
+Target RejectNegative Mask(BITOPS)
 Generate bit instructions.
 
 mbranch-cost=
@@ -195,15 +195,15 @@ Target RejectNegative Joined UInteger Var(sh_branch_cost) Init(-1)
 Cost to assume for a branch insn.
 
 mzdcbranch
-Target Report Var(TARGET_ZDCBRANCH)
+Target Var(TARGET_ZDCBRANCH)
 Assume that zero displacement conditional branches are fast.
 
 mcbranch-force-delay-slot
-Target Report RejectNegative Var(TARGET_CBRANCH_FORCE_DELAY_SLOT) Init(0)
+Target RejectNegative Var(TARGET_CBRANCH_FORCE_DELAY_SLOT) Init(0)
 Force the usage of delay slots for conditional branches.
 
 mdalign
-Target Report RejectNegative Mask(ALIGN_DOUBLE)
+Target RejectNegative Mask(ALIGN_DOUBLE)
 Align doubles at 64-bit boundaries.
 
 mdiv=
@@ -215,7 +215,7 @@ Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
 Specify name for 32 bit signed division function.
 
 mfdpic
-Target Report Var(TARGET_FDPIC) Init(0)
+Target Var(TARGET_FDPIC) Init(0)
 Generate ELF FDPIC code.
 
 mfmovd
@@ -227,7 +227,7 @@ Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed.
 
 mhitachi
-Target Report RejectNegative Mask(HITACHI)
+Target RejectNegative Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
 mieee
@@ -235,33 +235,33 @@ Target Var(TARGET_IEEE)
 Increase the IEEE compliance for floating-point comparisons.
 
 minline-ic_invalidate
-Target Report Var(TARGET_INLINE_IC_INVALIDATE)
+Target Var(TARGET_INLINE_IC_INVALIDATE)
 Inline code to invalidate instruction cache entries after setting up nested function trampolines.
 
 misize
-Target Report RejectNegative Mask(DUMPISIZE)
+Target RejectNegative Mask(DUMPISIZE)
 Annotate assembler instructions with estimated addresses.
 
 ml
-Target Report RejectNegative Mask(LITTLE_ENDIAN)
+Target RejectNegative Mask(LITTLE_ENDIAN)
 Generate code in little endian mode.
 
 mnomacsave
-Target Report RejectNegative Mask(NOMACSAVE)
+Target RejectNegative Mask(NOMACSAVE)
 Mark MAC register as call-clobbered.
 
 ;; ??? This option is not useful, but is retained in case there are people
 ;; who are still relying on it.  It may be deleted in the future.
 mpadstruct
-Target Report RejectNegative Mask(PADSTRUCT)
+Target RejectNegative Mask(PADSTRUCT)
 Make structs a multiple of 4 bytes (warning: ABI altered).
 
 mprefergot
-Target Report RejectNegative Mask(PREFERGOT)
+Target RejectNegative Mask(PREFERGOT)
 Emit function-calls using global offset table when generating PIC.
 
 mrelax
-Target Report RejectNegative Mask(RELAX)
+Target RejectNegative Mask(RELAX)
 Shorten address references during linking.
 
 mrenesas
@@ -269,11 +269,11 @@ Target Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
 matomic-model=
-Target Report RejectNegative Joined Var(sh_atomic_model_str)
+Target RejectNegative Joined Var(sh_atomic_model_str)
 Specify the model for atomic operations.
 
 mtas
-Target Report RejectNegative Var(TARGET_ENABLE_TAS)
+Target RejectNegative Var(TARGET_ENABLE_TAS)
 Use tas.b instruction for __atomic_test_and_set.
 
 multcost=
@@ -299,5 +299,5 @@ Target Var(TARGET_FSRRA)
 Enable the use of the fsrra instruction.
 
 mlra
-Target Report Var(sh_lra_flag) Init(0) Save
+Target Var(sh_lra_flag) Init(0) Save
 Use LRA instead of reload (transitional).

@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility
-;;  Copyright (C) 2015-2020 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2021 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -737,16 +737,16 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "*mov_tf_to_fprx2_0"
-  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "=f") 0)
+(define_insn "*tf_to_fprx2_0"
+  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "+f") 0)
 	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 0))]
   "TARGET_VXE"
   ; M4 == 1 corresponds to %v0[0] = %v1[0]; %v0[1] = %v0[1];
   "vpdi\t%v0,%v1,%v0,1"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "*mov_tf_to_fprx2_1"
-  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "=f") 8)
+(define_insn "*tf_to_fprx2_1"
+  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "+f") 8)
 	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 8))]
   "TARGET_VXE"
   ; M4 == 5 corresponds to %V0[0] = %v1[1]; %V0[1] = %V0[1];

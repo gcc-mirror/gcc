@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, VAX Version
-;; Copyright (C) 1987-2020 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -58,7 +58,6 @@
 
 (define_mode_iterator VAXcc [CC CCN CCNZ CCZ])
 (define_mode_iterator VAXccnz [CCN CCNZ CCZ])
-(define_mode_attr cc [(CC "cc") (CCN "ccn") (CCNZ "ccnz") (CCZ "ccz")])
 
 (define_code_iterator any_extract [sign_extract zero_extract])
 
@@ -67,7 +66,7 @@
 (include "predicates.md")
 
 ;; Make instructions that set the N, N+Z, and Z condition codes respectively.
-(define_subst "subst_<cc>"
+(define_subst "subst_<mode>"
   [(set (match_operand 0 "")
 	(match_operand 1 ""))
    (clobber (reg:CC VAX_PSL_REGNUM))]
@@ -78,14 +77,14 @@
    (set (match_dup 0)
 	(match_dup 1))])
 
-(define_subst "subst_f<cc>"
-  [(set (match_operand 0 "")
-	(match_operand 1 ""))
+(define_subst "subst_f<VAXccnz:mode>"
+  [(set (match_operand:VAXfp 0 "")
+	(match_operand:VAXfp 1 ""))
    (clobber (reg:CC VAX_PSL_REGNUM))]
   ""
   [(set (reg:VAXccnz VAX_PSL_REGNUM)
 	(compare:VAXccnz (match_dup 1)
-			 (const_double_zero)))
+			 (const_double_zero:VAXfp)))
    (set (match_dup 0)
 	(match_dup 1))])
 
@@ -2174,7 +2173,7 @@
 (define_insn_and_split "*cbranch<VAXint:mode>4_<VAXcc:mode>"
   [(set (pc)
 	(if_then_else
-	  (match_operator 0 "vax_<cc>_comparison_operator"
+	  (match_operator 0 "vax_<VAXcc:mode>_comparison_operator"
 			  [(match_operand:VAXint 1 "general_operand" "nrmT")
 			   (match_operand:VAXint 2 "general_operand" "nrmT")])
 	  (label_ref (match_operand 3 "" ""))
@@ -2206,7 +2205,7 @@
 (define_insn_and_split "*cbranch<VAXfp:mode>4_<VAXccnz:mode>"
   [(set (pc)
 	(if_then_else
-	  (match_operator 0 "vax_<cc>_comparison_operator"
+	  (match_operator 0 "vax_<VAXccnz:mode>_comparison_operator"
 			  [(match_operand:VAXfp 1 "general_operand" "gF")
 			   (match_operand:VAXfp 2 "general_operand" "gF")])
 	  (label_ref (match_operand 3 "" ""))
@@ -2226,7 +2225,7 @@
 
 (define_insn "*branch_<mode>"
   [(set (pc)
-	(if_then_else (match_operator 0 "vax_<cc>_comparison_operator"
+	(if_then_else (match_operator 0 "vax_<mode>_comparison_operator"
 				      [(reg:VAXcc VAX_PSL_REGNUM)
 				       (const_int 0)])
 		      (label_ref (match_operand 1 "" ""))
@@ -2237,7 +2236,7 @@
 ;; Recognize reversed jumps.
 (define_insn "*branch_<mode>_reversed"
   [(set (pc)
-	(if_then_else (match_operator 0 "vax_<cc>_comparison_operator"
+	(if_then_else (match_operator 0 "vax_<mode>_comparison_operator"
 				      [(reg:VAXcc VAX_PSL_REGNUM)
 				       (const_int 0)])
 		      (pc)
@@ -2816,7 +2815,7 @@
       rtx index = gen_reg_rtx (SImode);
       emit_insn (gen_addsi3 (index,
 			     operands[0],
-			     GEN_INT (-INTVAL (operands[1]))));
+			     gen_int_mode (-INTVAL (operands[1]), SImode)));
       operands[0] = index;
     }
 

@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1081,7 +1081,8 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 		return NULL_RTX;
 	    }
 	}
-      rtx remainder = expand_divmod (1, TRUNC_MOD_EXPR, word_mode, sum, op1,
+      rtx remainder = expand_divmod (1, TRUNC_MOD_EXPR, word_mode, sum,
+				     gen_int_mode (INTVAL (op1), word_mode),
 				     NULL_RTX, 1, OPTAB_DIRECT);
       if (remainder == NULL_RTX)
 	return NULL_RTX;
@@ -1099,7 +1100,8 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 		return NULL_RTX;
 	    }
 	  mask = expand_simple_binop (word_mode, AND, mask,
-				      GEN_INT (1 - INTVAL (op1)),
+				      gen_int_mode (1 - INTVAL (op1),
+						    word_mode),
 				      NULL_RTX, 1, OPTAB_DIRECT);
 	  if (mask == NULL_RTX)
 	    return NULL_RTX;
@@ -6068,11 +6070,8 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 
   if (targetm.vectorize.vec_perm_const != NULL)
     {
-      v0 = force_reg (mode, v0);
       if (single_arg_p)
 	v1 = v0;
-      else
-	v1 = force_reg (mode, v1);
 
       if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
 	return target;
@@ -6092,6 +6091,11 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 					       v1_qi, qimode_indices))
 	return gen_lowpart (mode, target_qi);
     }
+
+  v0 = force_reg (mode, v0);
+  if (single_arg_p)
+    v1 = v0;
+  v1 = force_reg (mode, v1);
 
   /* Otherwise expand as a fully variable permuation.  */
 

@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 20, 2020
+GNAT Reference Manual , Dec 11, 2020
 
 AdaCore
 
-Copyright @copyright{} 2008-2020, Free Software Foundation
+Copyright @copyright{} 2008-2021, Free Software Foundation
 @end quotation
 
 @end copying
@@ -8159,8 +8159,8 @@ package Math_Functions is
    function Sqrt (Arg : Float) return Float;
    pragma Test_Case (Name     => "Test 1",
                      Mode     => Nominal,
-                     Requires => Arg < 10000,
-                     Ensures  => Sqrt'Result < 10);
+                     Requires => Arg < 10000.0,
+                     Ensures  => Sqrt'Result < 10.0);
    ...
 end Math_Functions;
 @end example

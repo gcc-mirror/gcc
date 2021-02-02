@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -88,20 +88,38 @@ reachable_regions::init_cluster (const region *base_reg)
   if (m_store->escaped_p (base_reg))
     add (base_reg, true);
 
-  /* If BASE_REG is *INIT_VAL(REG) for some other REG, see if REG is
-     unbound and untouched.  If so, then add BASE_REG as a root.  */
   if (const symbolic_region *sym_reg = base_reg->dyn_cast_symbolic_region ())
     {
       const svalue *ptr = sym_reg->get_pointer ();
-      if (const initial_svalue *init_sval = ptr->dyn_cast_initial_svalue ())
+      switch (ptr->get_kind ())
 	{
-	  const region *init_sval_reg = init_sval->get_region ();
-	  const region *other_base_reg = init_sval_reg->get_base_region ();
-	  const binding_cluster *other_cluster
-	    = m_store->get_cluster (other_base_reg);
-	  if (other_cluster == NULL
-	      || !other_cluster->touched_p ())
+	default:
+	  break;
+	case SK_INITIAL:
+	  {
+	    /* If BASE_REG is *INIT_VAL(REG) for some other REG, see if REG is
+	       unbound and untouched.  If so, then add BASE_REG as a root.  */
+	    const initial_svalue *init_sval
+	      = as_a <const initial_svalue *> (ptr);
+	    const region *init_sval_reg = init_sval->get_region ();
+	    const region *other_base_reg = init_sval_reg->get_base_region ();
+	    const binding_cluster *other_cluster
+	      = m_store->get_cluster (other_base_reg);
+	    if (other_cluster == NULL
+		|| !other_cluster->touched_p ())
+	      add (base_reg, true);
+	  }
+	  break;
+
+	case SK_UNKNOWN:
+	case SK_CONJURED:
+	  {
+	    /* If this cluster is due to dereferencing an unknown/conjured
+	       pointer, any values written through the pointer could still
+	       be live.  */
 	    add (base_reg, true);
+	  }
+	  break;
 	}
     }
 }

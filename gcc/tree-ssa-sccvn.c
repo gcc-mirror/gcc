@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -304,12 +304,23 @@ static vn_nary_op_t last_inserted_nary;
 static vn_tables_t valid_info;
 
 
-/* Valueization hook.  Valueize NAME if it is an SSA name, otherwise
-   just return it.  */
+/* Valueization hook for simplify_replace_tree.  Valueize NAME if it is
+   an SSA name, otherwise just return it.  */
 tree (*vn_valueize) (tree);
-tree vn_valueize_wrapper (tree t, void* context ATTRIBUTE_UNUSED)
+static tree
+vn_valueize_for_srt (tree t, void* context ATTRIBUTE_UNUSED)
 {
-  return vn_valueize (t);
+  basic_block saved_vn_context_bb = vn_context_bb;
+  /* Look for sth available at the definition block of the argument.
+     This avoids inconsistencies between availability there which
+     decides if the stmt can be removed and availability at the
+     use site.  The SSA property ensures that things available
+     at the definition are also available at uses.  */
+  if (!SSA_NAME_IS_DEFAULT_DEF (t))
+    vn_context_bb = gimple_bb (SSA_NAME_DEF_STMT (t));
+  tree res = vn_valueize (t);
+  vn_context_bb = saved_vn_context_bb;
+  return res;
 }
 
 
@@ -543,7 +554,8 @@ vn_get_stmt_kind (gimple *stmt)
 		     || code == IMAGPART_EXPR
 		     || code == VIEW_CONVERT_EXPR
 		     || code == BIT_FIELD_REF)
-		    && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
+		    && (TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME
+			|| is_gimple_min_invariant (TREE_OPERAND (rhs1, 0))))
 		  return VN_NARY;
 
 		/* Fallthrough.  */
@@ -1096,7 +1108,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      poly_offset_int woffset
 		= wi::sext (wi::to_poly_offset (op->op0)
 			    - wi::to_poly_offset (op->op1),
-			    TYPE_PRECISION (TREE_TYPE (op->op0)));
+			    TYPE_PRECISION (sizetype));
 	      woffset *= wi::to_offset (op->op2) * vn_ref_op_align_unit (op);
 	      woffset <<= LOG2_BITS_PER_UNIT;
 	      offset += woffset;
@@ -4669,7 +4681,7 @@ visit_copy (tree lhs, tree rhs)
    is the same.  */
 
 static tree
-valueized_wider_op (tree wide_type, tree op)
+valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
 {
   if (TREE_CODE (op) == SSA_NAME)
     op = vn_valueize (op);
@@ -4683,7 +4695,7 @@ valueized_wider_op (tree wide_type, tree op)
     return tem;
 
   /* Or the op is truncated from some existing value.  */
-  if (TREE_CODE (op) == SSA_NAME)
+  if (allow_truncate && TREE_CODE (op) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (op);
       if (is_gimple_assign (def)
@@ -4748,12 +4760,15 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  || gimple_assign_rhs_code (def) == MULT_EXPR))
 	    {
 	      tree ops[3] = {};
+	      /* When requiring a sign-extension we cannot model a
+		 previous truncation with a single op so don't bother.  */
+	      bool allow_truncate = TYPE_UNSIGNED (TREE_TYPE (rhs1));
 	      /* Either we have the op widened available.  */
-	      ops[0] = valueized_wider_op (type,
-					   gimple_assign_rhs1 (def));
+	      ops[0] = valueized_wider_op (type, gimple_assign_rhs1 (def),
+					   allow_truncate);
 	      if (ops[0])
-		ops[1] = valueized_wider_op (type,
-					     gimple_assign_rhs2 (def));
+		ops[1] = valueized_wider_op (type, gimple_assign_rhs2 (def),
+					     allow_truncate);
 	      if (ops[0] && ops[1])
 		{
 		  ops[0] = vn_nary_op_lookup_pieces
@@ -6994,7 +7009,7 @@ process_bb (rpo_elim &avail, basic_block bb,
       if (bb->loop_father->nb_iterations)
 	bb->loop_father->nb_iterations
 	  = simplify_replace_tree (bb->loop_father->nb_iterations,
-				   NULL_TREE, NULL_TREE, &vn_valueize_wrapper);
+				   NULL_TREE, NULL_TREE, &vn_valueize_for_srt);
     }
 
   /* Value-number all defs in the basic-block.  */
@@ -7870,6 +7885,9 @@ pass_fre::execute (function *fun)
 
   if (iterate_p)
     loop_optimizer_finalize ();
+
+  if (scev_initialized_p ())
+    scev_reset_htab ();
 
   /* For late FRE after IVOPTs and unrolling, see if we can
      remove some TREE_ADDRESSABLE and rewrite stuff into SSA.  */

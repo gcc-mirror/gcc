@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Table;
 with Types; use Types;
 with Sem_Disp; use Sem_Disp;
 with Uintp; use Uintp;
@@ -237,36 +236,6 @@ package Sem_Ch13 is
    --  alignments of objects have been back annotated). It goes through the
    --  table of saved address clauses checking for suspicious alignments and
    --  if necessary issuing warnings.
-
-   procedure Validate_Independence;
-   --  This is called after the back end has been called (and thus after the
-   --  layout of components has been back annotated). It goes through the
-   --  table of saved pragma Independent[_Component] entries, checking that
-   --  independence can be achieved, and if necessary issuing error messages.
-
-   -------------------------------------
-   -- Table for Validate_Independence --
-   -------------------------------------
-
-   --  If a legal pragma Independent or Independent_Components is given for
-   --  an entity, then an entry is made in this table, to be checked by a
-   --  call to Validate_Independence after back annotation of layout is done.
-
-   type Independence_Check_Record is record
-      N : Node_Id;
-      --  The pragma Independent or Independent_Components
-
-      E : Entity_Id;
-      --  The entity to which it applies
-   end record;
-
-   package Independence_Checks is new Table.Table (
-     Table_Component_Type => Independence_Check_Record,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 20,
-     Table_Increment      => 200,
-     Table_Name           => "Independence_Checks");
 
    -----------------------------------
    -- Handling of Aspect Visibility --

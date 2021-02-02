@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1757,7 +1757,7 @@ default_slow_unaligned_access (machine_mode, unsigned int)
 /* The default implementation of TARGET_ESTIMATED_POLY_VALUE.  */
 
 HOST_WIDE_INT
-default_estimated_poly_value (poly_int64 x)
+default_estimated_poly_value (poly_int64 x, poly_value_estimate_kind)
 {
   return x.coeffs[0];
 }

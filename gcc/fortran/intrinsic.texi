@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2021 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
@@ -3696,7 +3696,7 @@ Collective subroutine
 dynamic type and type parameters on all images of the current team. If it
 is an array, it shall have the same shape on all images.
 @item @var{SOURCE_IMAGE} @tab a scalar integer expression.
-It shall have the same the same value on all images and refer to an
+It shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable
@@ -3753,7 +3753,7 @@ Collective subroutine
 @item @var{A}            @tab shall be an integer, real or character variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
-present, it shall have the same the same value on all images and refer to an
+present, it shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable
@@ -3810,7 +3810,7 @@ Collective subroutine
 @item @var{A}            @tab shall be an integer, real or character variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
-present, it shall have the same the same value on all images and refer to an
+present, it shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable
@@ -3881,7 +3881,7 @@ all images and with regards to the arguments mathematically commutative and
 associative.  Note that @var{OPERATOR} may not be an elemental function, unless
 it is an intrisic function.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
-present, it shall have the same the same value on all images and refer to an
+present, it shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable
@@ -3943,14 +3943,14 @@ Technical Specification (TS) 18508 or later
 Collective subroutine
 
 @item @emph{Syntax}:
-@code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
+@code{CALL CO_SUM(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
 @item @var{A}            @tab shall be an integer, real or complex variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
-present, it shall have the same the same value on all images and refer to an
+present, it shall have the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable
 @item @var{ERRMSG}       @tab (optional) a scalar character variable

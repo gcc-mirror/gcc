@@ -222,6 +222,9 @@ runtime_m(void)
 }
 
 // Set g.
+
+void runtime_setg(G*) __attribute__ ((no_split_stack));
+
 void
 runtime_setg(G* gp)
 {

@@ -415,7 +415,7 @@ Jiufu Guo					<guojiufu@linux.ibm.com>
 Xuepeng Guo					<terry.xpguo@gmail.com>
 Wei Guozhi					<carrot@google.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
-Andrew Haley		                        <aph@redhat.com>
+Andrew Haley					<aph@redhat.com>
 Frederik Harwath				<frederik@codesourcery.com>
 Stuart Hastings					<stuart@apple.com>
 Michael Haubenwallner				<michael.haubenwallner@ssi-schaefer.com>
@@ -428,6 +428,7 @@ George Helffrich				<george@gcc.gnu.org>
 Daniel Hellstrom				<daniel@gaisler.com>
 Fergus Henderson				<fjh@cs.mu.oz.au>
 Stuart Henderson				<shenders@gcc.gnu.org>
+Marius Hillenbrand				<mhillen@linux.ibm.com>
 Matthew Hiller					<hiller@redhat.com>
 Kazu Hirata					<kazu@codesourcery.com>
 Manfred Hollstein				<mh@suse.com>
@@ -450,6 +451,7 @@ Daniel Jacobowitz				<drow@false.org>
 Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
+Qian Jianhua					<qianjh@cn.fujitsu.com>
 Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
 Kean Johnston					<jkj@sco.com>
@@ -463,7 +465,7 @@ Andi Kleen					<andi@firstfloor.org>
 Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
-Boris Kolpackov                                 <boris@codesynthesis.com>
+Boris Kolpackov					<boris@codesynthesis.com>
 Dave Korn					<dave.korn.cygwin@gmail.com>
 Julia Koval					<julia.koval@intel.com>
 Hongtao Liu					<hongtao.liu@intel.com>
@@ -478,7 +480,7 @@ Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
-Jerome Lambourg                                 <lambourg@adacore.com>
+Jerome Lambourg					<lambourg@adacore.com>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -579,7 +581,7 @@ Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>
 Yvan Roux					<yvan.roux@linaro.org>
-Maciej W. Rozycki				<macro@linux-mips.org>
+Maciej W. Rozycki				<macro@orcam.me.uk>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
 Hariharan Sandanagobalane			<hariharan.gcc@gmail.com>
@@ -624,7 +626,7 @@ Dinar Temirbulatov				<dtemirbulatov@gmail.com>
 Kresten Krab Thorup				<krab@gcc.gnu.org>
 Kai Tietz					<ktietz70@googlemail.com>
 Ilya Tocar					<tocarip@gmail.com>
-Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
+Philipp Tomsich					<philipp.tomsich@vrull.eu>
 Daniel Towner					<dant@picochip.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
@@ -656,6 +658,7 @@ Kevin Williams					<kevin.williams@inria.fr>
 Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
+Jonathan Wright					<jonathan.wright@arm.com>
 Mingjie Xing					<mingjie.xing@gmail.com>
 Chenghua Xu					<paul.hua.gm@gmail.com>
 Canqun Yang					<canqun@nudt.edu.cn>

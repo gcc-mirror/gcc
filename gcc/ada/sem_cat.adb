@@ -1068,7 +1068,8 @@ package body Sem_Cat is
            and then not Private_Present (P)
            and then not Is_Remote_Call_Interface (E)
          then
-            Error_Msg_N ("public child of rci unit must also be rci unit", N);
+            Error_Msg_N
+              ("public child of 'R'C'I unit must also be 'R'C'I unit", N);
          end if;
       end if;
    end Validate_Categorization_Dependency;
@@ -1580,21 +1581,21 @@ package body Sem_Cat is
          if Comes_From_Source (E) then
             if Is_Limited_Type (E) then
                Error_Msg_N
-                 ("limited type not allowed in rci unit", Parent (E));
+                 ("limited type not allowed in 'R'C'I unit", Parent (E));
                Explain_Limited_Type (E, Parent (E));
 
             elsif Ekind (E) in E_Generic_Function
                              | E_Generic_Package
                              | E_Generic_Procedure
             then
-               Error_Msg_N ("generic declaration not allowed in rci unit",
+               Error_Msg_N ("generic declaration not allowed in 'R'C'I unit",
                  Parent (E));
 
             elsif (Ekind (E) = E_Function or else Ekind (E) = E_Procedure)
               and then Has_Pragma_Inline (E)
             then
                Error_Msg_N
-                 ("inlined subprogram not allowed in rci unit", Parent (E));
+                 ("inlined subprogram not allowed in 'R'C'I unit", Parent (E));
 
             --  Inner packages that are renamings need not be checked. Generic
             --  RCI packages are subject to the checks, but entities that come

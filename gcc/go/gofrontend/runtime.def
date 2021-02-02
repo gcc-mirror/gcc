@@ -195,8 +195,8 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 // Run a select, returning the index of the selected clause and
 // whether that channel received a value.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
-	       R2(INT, BOOL))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo",
+	       P5(POINTER, POINTER, INT, INT, BOOL), R2(INT, BOOL))
 
 // Non-blocking send a value on a channel, used for two-case select
 // statement with a default case.
@@ -241,14 +241,6 @@ DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 // Close.
 DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
-
-// Copy.
-DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy",
-	       P5(POINTER, INT, POINTER, INT, UINTPTR), R1(INT))
-
-// Copy from string.
-DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy",
-	       P3(POINTER, INT, STRING), R1(INT))
 
 // Copy of value containing pointers.
 DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -64,6 +64,8 @@ extern void gomp_sem_post (gomp_sem_t *sem);
 
 extern void gomp_sem_destroy (gomp_sem_t *sem);
 
+extern int gomp_sem_getcount (gomp_sem_t *sem);
+
 #else /* HAVE_BROKEN_POSIX_SEMAPHORES  */
 
 typedef sem_t gomp_sem_t;
@@ -83,6 +85,14 @@ static inline void gomp_sem_post (gomp_sem_t *sem)
 static inline void gomp_sem_destroy (gomp_sem_t *sem)
 {
   sem_destroy (sem);
+}
+
+static inline int gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int val;
+  if (sem_getvalue (sem, &val) < 0)
+    return -1;
+  return val;  
 }
 #endif /* doesn't HAVE_BROKEN_POSIX_SEMAPHORES  */
 #endif /* GOMP_SEM_H  */

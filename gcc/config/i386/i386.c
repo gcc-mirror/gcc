@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -347,7 +347,7 @@ enum processor_type ix86_tune;
 enum processor_type ix86_arch;
 
 /* True if processor has SSE prefetch instruction.  */
-unsigned char x86_prefetch_sse;
+unsigned char ix86_prefetch_sse;
 
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
@@ -20794,8 +20794,38 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
 #endif
 
-      if (!TARGET_PECOFF && flag_pic)
-	fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+      if (!TARGET_PECOFF)
+	{
+	  switch (ix86_cmodel)
+	    {
+	    case CM_LARGE:
+	      /* NB: R10 is caller-saved.  Although it can be used as a
+		 static chain register, it is preserved when calling
+		 mcount for nested functions.  */
+	      fprintf (file, "1:\tmovabsq\t$%s, %%r10\n\tcall\t*%%r10\n",
+		       mcount_name);
+	      break;
+	    case CM_LARGE_PIC:
+#ifdef NO_PROFILE_COUNTERS
+	      fprintf (file, "1:\tmovabsq\t$_GLOBAL_OFFSET_TABLE_-1b, %%r11\n");
+	      fprintf (file, "\tleaq\t1b(%%rip), %%r10\n");
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tmovabsq\t$%s@PLTOFF, %%r11\n", mcount_name);
+	      fprintf (file, "\taddq\t%%r11, %%r10\n");
+	      fprintf (file, "\tcall\t*%%r10\n");
+#else
+	      sorry ("profiling %<-mcmodel=large%> with PIC is not supported");
+#endif
+	      break;
+	    case CM_SMALL_PIC:
+	    case CM_MEDIUM_PIC:
+	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+	      break;
+	    default:
+	      x86_print_call_or_nop (file, mcount_name);
+	      break;
+	    }
+	}
       else
 	x86_print_call_or_nop (file, mcount_name);
     }
@@ -23001,7 +23031,7 @@ ix86_init_libfuncs (void)
    apparently at random.  */
 
 static enum flt_eval_method
-ix86_excess_precision (enum excess_precision_type type)
+ix86_get_excess_precision (enum excess_precision_type type)
 {
   switch (type)
     {
@@ -23527,7 +23557,7 @@ ix86_run_selftests (void)
 #define TARGET_MD_ASM_ADJUST ix86_md_asm_adjust
 
 #undef TARGET_C_EXCESS_PRECISION
-#define TARGET_C_EXCESS_PRECISION ix86_excess_precision
+#define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_SETUP_INCOMING_VARARGS

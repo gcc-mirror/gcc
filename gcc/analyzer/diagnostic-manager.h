@@ -1,5 +1,5 @@
 /* Classes for saving, deduplicating, and emitting analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -175,6 +175,7 @@ private:
 				state_machine::state_t state) const;
   void update_for_unsuitable_sm_exprs (tree *expr) const;
   void prune_interproc_events (checker_path *path) const;
+  void consolidate_conditions (checker_path *path) const;
   void finish_pruning (checker_path *path) const;
 
   engine *m_eng;

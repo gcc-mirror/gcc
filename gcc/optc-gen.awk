@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -332,8 +332,6 @@ for (i = 0; i < n_opts; i++) {
 				  print "#error Ignored option with Warn"
         if (var_name(flags[i]) != "")
 				  print "#error Ignored option with Var"
-        if (flag_set_p("Report", flags[i]))
-				  print "#error Ignored option with Report"
       }
     else if (flag_set_p("Deprecated", flags[i]))
         print "#error Deprecated was replaced with WarnRemoved"
@@ -341,8 +339,6 @@ for (i = 0; i < n_opts; i++) {
 			  alias_data = "NULL, NULL, OPT_SPECIAL_warn_removed"
         if (warn_message != "NULL")
 				  print "#error WarnRemoved option with Warn"
-        if (flag_set_p("Report", flags[i]))
-				  print "#error WarnRemoved option with Report"
       }
 		else
 			alias_data = "NULL, NULL, N_OPTS"

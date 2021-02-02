@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -4885,6 +4885,8 @@ gfc_resolve_dim_arg (gfc_expr *dim)
    base symbol.  We traverse the list of reference structures, setting
    the stored reference to references.  Component references can
    provide an additional array specification.  */
+static void
+resolve_assoc_var (gfc_symbol* sym, bool resolve_target);
 
 static void
 find_array_spec (gfc_expr *e)
@@ -4893,6 +4895,13 @@ find_array_spec (gfc_expr *e)
   gfc_component *c;
   gfc_ref *ref;
   bool class_as = false;
+
+  if (e->symtree->n.sym->assoc)
+    {
+      if (e->symtree->n.sym->assoc->target)
+	gfc_resolve_expr (e->symtree->n.sym->assoc->target);
+      resolve_assoc_var (e->symtree->n.sym, false);
+    }
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
     {
@@ -5059,8 +5068,8 @@ resolve_array_ref (gfc_array_ref *ar)
 }
 
 
-static bool
-resolve_substring (gfc_ref *ref, bool *equal_length)
+bool
+gfc_resolve_substring (gfc_ref *ref, bool *equal_length)
 {
   int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
 
@@ -5268,7 +5277,7 @@ gfc_resolve_ref (gfc_expr *expr)
 
       case REF_SUBSTRING:
 	equal_length = false;
-	if (!resolve_substring (*prev, &equal_length))
+	if (!gfc_resolve_substring (*prev, &equal_length))
 	  return false;
 
 	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
@@ -11054,7 +11063,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   /* Make sure there is a vtable and, in particular, a _copy for the
      rhs type.  */
-  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+  if (lhs->ts.type == BT_CLASS && rhs->ts.type != BT_CLASS)
     gfc_find_vtab (&rhs->ts);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
@@ -11776,8 +11785,9 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      gfc_resolve_omp_do_blocks (code, ns);
 	      break;
 	    case EXEC_SELECT_TYPE:
-	      /* Blocks are handled in resolve_select_type because we have
-		 to transform the SELECT TYPE into ASSOCIATE first.  */
+	    case EXEC_SELECT_RANK:
+	      /* Blocks are handled in resolve_select_type/rank because we
+		 have to transform the SELECT TYPE into ASSOCIATE first.  */
 	      break;
             case EXEC_DO_CONCURRENT:
 	      gfc_do_concurrent_flag = 1;
@@ -11895,6 +11905,9 @@ start:
 	case EXEC_ASSIGN:
 	  if (!t)
 	    break;
+
+	  if (code->expr1->ts.type == BT_CLASS)
+	   gfc_find_vtab (&code->expr2->ts);
 
 	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
 	     the LHS.  */
@@ -12184,6 +12197,7 @@ start:
 	case EXEC_OMP_DO_SIMD:
 	case EXEC_OMP_MASTER:
 	case EXEC_OMP_ORDERED:
+	case EXEC_OMP_SCAN:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SIMD:
 	case EXEC_OMP_SINGLE:
@@ -12432,7 +12446,8 @@ resolve_charlen (gfc_charlen *cl)
 	}
 
       /* cl->length has been resolved.  It should have an integer type.  */
-      if (cl->length->ts.type != BT_INTEGER || cl->length->rank != 0)
+      if (cl->length
+	  && (cl->length->ts.type != BT_INTEGER || cl->length->rank != 0))
 	{
 	  gfc_error ("Scalar INTEGER expression expected at %L",
 		     &cl->length->where);
@@ -14011,7 +14026,8 @@ resolve_typebound_procedure (gfc_symtree* stree)
       /* Check for F08:C465.  */
       if ((!proc->attr.subroutine && !proc->attr.function)
 	  || (proc->attr.proc != PROC_MODULE
-	      && proc->attr.if_source != IFSRC_IFBODY)
+	      && proc->attr.if_source != IFSRC_IFBODY
+	      && !proc->attr.module_procedure)
 	  || proc->attr.abstract)
 	{
 	  gfc_error ("%qs must be a module procedure or an external "
@@ -14379,7 +14395,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   /* F2008, C448.  */
   if (c->ts.type == BT_CLASS)
     {
-      if (CLASS_DATA (c))
+      if (c->attr.class_ok && CLASS_DATA (c))
 	{
 	  attr = &(CLASS_DATA (c)->attr);
 
@@ -14708,6 +14724,10 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
         && c->attr.pointer
         && sym != c->ts.u.derived)
     add_dt_to_dt_list (c->ts.u.derived);
+
+  if (c->as && c->as->type != AS_DEFERRED
+      && (c->attr.pointer || c->attr.allocatable))
+    return false;
 
   if (!gfc_resolve_array_spec (c->as,
                                !(c->attr.pointer || c->attr.proc_pointer
@@ -16167,6 +16187,13 @@ check_data_variable (gfc_data_variable *var, locus *where)
 			 "initial-data-target", where);
 	      return false;
 	    }
+	}
+
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.allocatable)
+	{
+	  gfc_error ("DATA element %qs at %L cannot have the ALLOCATABLE "
+		     "attribute", ref->u.c.component->name, &e->where);
+	  return false;
 	}
     }
 

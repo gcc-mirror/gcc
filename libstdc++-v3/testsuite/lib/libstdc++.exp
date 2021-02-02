@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1004,6 +1004,11 @@ proc check_v3_target_debug_mode { } {
     }]
 }
 
+# Define "debug-mode" as an effective-target keyword.
+proc check_effective_target_debug-mode { } {
+    return [check_v3_target_debug_mode]
+}
+
 # Return 1 if normal mode is active, 0 otherwise.
 # i.e. neither Debug Mode nor Parallel Mode is active.
 proc check_v3_target_normal_mode { } {
@@ -1124,7 +1129,7 @@ proc check_effective_target_gthreads { } {
 proc check_v3_target_gthreads_timed { } {
     return [check_v3_target_prop_cached et_gthreads_timed {
 	if [check_v3_target_gthreads] {
-	    set cond "defined _GTHREAD_USE_MUTEX_TIMEDLOCK"
+	    set cond "_GTHREAD_USE_MUTEX_TIMEDLOCK"
 	    return [v3_check_preprocessor_condition gthreads_timed $cond]
 	} else {
 	    return 0
@@ -1315,6 +1320,14 @@ proc check_effective_target_futex { } {
     return [check_v3_target_prop_cached et_futex {
 	set cond "_GLIBCXX_HAVE_LINUX_FUTEX"
 	return [v3_check_preprocessor_condition futex $cond]
+    }]
+}
+
+# Return 1 if float and double have the IEEE binary32 and binary64 formats.
+proc check_effective_target_ieee-floats { } {
+    return [check_v3_target_prop_cached et_ieee_floats {
+	set cond "_GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64"
+	return [v3_check_preprocessor_condition ieee_floats $cond]
     }]
 }
 

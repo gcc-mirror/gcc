@@ -25,4 +25,6 @@ riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.c
 
 PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 
-$(common_out_file): $(srcdir)/config/riscv/riscv-cores.def
+$(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \
+    $(srcdir)/config/riscv/riscv-protos.h \
+    $(srcdir)/config/riscv/riscv-subset.h

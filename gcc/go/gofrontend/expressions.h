@@ -549,6 +549,16 @@ class Expression
   location() const
   { return this->location_; }
 
+  // Set the location of an expression and all its subexpressions.
+  // This is used for const declarations where the expression is
+  // copied from an earlier declaration.
+  void
+  set_location(Location loc);
+
+  // For set_location.  This should really be a local class in
+  // Expression, but it needs types defined in gogo.h.
+  friend class Set_location;
+
   // Return whether this is a constant expression.
   bool
   is_constant() const

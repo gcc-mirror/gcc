@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c and other code to write to asm_out_file.
    These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -548,7 +548,7 @@ extern void switch_to_other_text_partition (void);
 extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
-extern void switch_to_section (section *);
+extern void switch_to_section (section *, tree = nullptr);
 extern void output_section_asm_op (const void *);
 
 extern void record_tm_clone_pair (tree, tree);

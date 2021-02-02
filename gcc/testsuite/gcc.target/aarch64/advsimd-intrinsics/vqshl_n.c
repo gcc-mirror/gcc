@@ -2,24 +2,6 @@
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"
 
-/* Expected values of cumulative_saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,64,2) = 1;
-
 /* Expected results.  */
 VECT_VAR_DECL(expected,int,8,8) [] = { 0xc0, 0xc4, 0xc8, 0xcc,
 				       0xd0, 0xd4, 0xd8, 0xdc };
@@ -50,24 +32,6 @@ VECT_VAR_DECL(expected,uint,32,4) [] = { 0xffffffff, 0xffffffff,
 					 0xffffffff, 0xffffffff };
 VECT_VAR_DECL(expected,uint,64,2) [] = { 0xffffffffffffffff,
 					 0xffffffffffffffff };
-
-/* Expected values of cumulative_saturation flag with max positive input.  */
-int VECT_VAR(expected_cumulative_sat_max,int,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_max,int,64,2) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_max,uint,64,2) = 1;
 
 /* Expected results with max positive input.  */
 VECT_VAR_DECL(expected_max,int,8,8) [] = { 0x7f, 0x7f, 0x7f, 0x7f,
@@ -110,21 +74,20 @@ VECT_VAR_DECL(expected_max,uint,64,2) [] = { 0xffffffffffffffff,
 FNNAME (INSN)
 {
   /* Basic test: v2=vqshl_n(v1,v), then store the result.  */
-#define TEST_VQSHL_N2(INSN, Q, T1, T2, W, N, V, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_VQSHL_N2(INSN, Q, T1, T2, W, N, V, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_n_##T2##W(VECT_VAR(vector, T1, W, N),			\
 			V);						\
   vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),				\
-		    VECT_VAR(vector_res, T1, W, N));			\
-  CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		    VECT_VAR(vector_res, T1, W, N))
 
   /* Two auxliary macros are necessary to expand INSN */
-#define TEST_VQSHL_N1(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQSHL_N2(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQSHL_N1(INSN, T3, Q, T1, T2, W, N, CMT) \
+  TEST_VQSHL_N2(INSN, T3, Q, T1, T2, W, N, CMT)
 
-#define TEST_VQSHL_N(T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)	\
-  TEST_VQSHL_N1(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQSHL_N(T3, Q, T1, T2, W, N, CMT)	\
+  TEST_VQSHL_N1(INSN, T3, Q, T1, T2, W, N, CMT)
 
   DECL_VARIABLE_ALL_VARIANTS(vector);
   DECL_VARIABLE_ALL_VARIANTS(vector_res);
@@ -135,23 +98,23 @@ FNNAME (INSN)
 
   /* Choose shift amount arbitrarily.  */
 #define CMT ""
-  TEST_VQSHL_N(, int, s, 8, 8, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, int, s, 16, 4, 1, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, int, s, 32, 2, 1, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, int, s, 64, 1, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, uint, u, 8, 8, 3, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, uint, u, 16, 4, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, uint, u, 32, 2, 3, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(, uint, u, 64, 1, 3, expected_cumulative_sat, CMT);
+  TEST_VQSHL_N(, int, s, 8, 8, 2, CMT);
+  TEST_VQSHL_N(, int, s, 16, 4, 1, CMT);
+  TEST_VQSHL_N(, int, s, 32, 2, 1, CMT);
+  TEST_VQSHL_N(, int, s, 64, 1, 2, CMT);
+  TEST_VQSHL_N(, uint, u, 8, 8, 3, CMT);
+  TEST_VQSHL_N(, uint, u, 16, 4, 2, CMT);
+  TEST_VQSHL_N(, uint, u, 32, 2, 3, CMT);
+  TEST_VQSHL_N(, uint, u, 64, 1, 3, CMT);
 
-  TEST_VQSHL_N(q, int, s, 8, 16, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, int, s, 16, 8, 1, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, int, s, 32, 4, 1, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, int, s, 64, 2, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, uint, u, 8, 16, 3, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, uint, u, 16, 8, 2, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, uint, u, 32, 4, 3, expected_cumulative_sat, CMT);
-  TEST_VQSHL_N(q, uint, u, 64, 2, 3, expected_cumulative_sat, CMT);
+  TEST_VQSHL_N(q, int, s, 8, 16, 2, CMT);
+  TEST_VQSHL_N(q, int, s, 16, 8, 1, CMT);
+  TEST_VQSHL_N(q, int, s, 32, 4, 1, CMT);
+  TEST_VQSHL_N(q, int, s, 64, 2, 2, CMT);
+  TEST_VQSHL_N(q, uint, u, 8, 16, 3, CMT);
+  TEST_VQSHL_N(q, uint, u, 16, 8, 2, CMT);
+  TEST_VQSHL_N(q, uint, u, 32, 4, 3, CMT);
+  TEST_VQSHL_N(q, uint, u, 64, 2, 3, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, CMT);
@@ -191,23 +154,23 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (with max input)"
-  TEST_VQSHL_N(, int, s, 8, 8, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, int, s, 16, 4, 1, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, int, s, 32, 2, 1, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, int, s, 64, 1, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, uint, u, 8, 8, 3, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, uint, u, 16, 4, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, uint, u, 32, 2, 3, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(, uint, u, 64, 1, 3, expected_cumulative_sat_max, CMT);
+  TEST_VQSHL_N(, int, s, 8, 8, 2, CMT);
+  TEST_VQSHL_N(, int, s, 16, 4, 1, CMT);
+  TEST_VQSHL_N(, int, s, 32, 2, 1, CMT);
+  TEST_VQSHL_N(, int, s, 64, 1, 2, CMT);
+  TEST_VQSHL_N(, uint, u, 8, 8, 3, CMT);
+  TEST_VQSHL_N(, uint, u, 16, 4, 2, CMT);
+  TEST_VQSHL_N(, uint, u, 32, 2, 3, CMT);
+  TEST_VQSHL_N(, uint, u, 64, 1, 3, CMT);
 
-  TEST_VQSHL_N(q, int, s, 8, 16, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, int, s, 16, 8, 1, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, int, s, 32, 4, 1, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, int, s, 64, 2, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, uint, u, 8, 16, 3, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, uint, u, 16, 8, 2, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, uint, u, 32, 4, 3, expected_cumulative_sat_max, CMT);
-  TEST_VQSHL_N(q, uint, u, 64, 2, 3, expected_cumulative_sat_max, CMT);
+  TEST_VQSHL_N(q, int, s, 8, 16, 2, CMT);
+  TEST_VQSHL_N(q, int, s, 16, 8, 1, CMT);
+  TEST_VQSHL_N(q, int, s, 32, 4, 1, CMT);
+  TEST_VQSHL_N(q, int, s, 64, 2, 2, CMT);
+  TEST_VQSHL_N(q, uint, u, 8, 16, 3, CMT);
+  TEST_VQSHL_N(q, uint, u, 16, 8, 2, CMT);
+  TEST_VQSHL_N(q, uint, u, 32, 4, 3, CMT);
+  TEST_VQSHL_N(q, uint, u, 64, 2, 3, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_max, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_max, CMT);

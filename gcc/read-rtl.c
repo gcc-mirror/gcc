@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1658,6 +1658,15 @@ rtx_reader::read_rtx_code (const char *code_name)
       return_rtx = rtx_alloc (code);
       memset (return_rtx, 0, RTX_CODE_SIZE (code));
       PUT_CODE (return_rtx, code);
+      c = read_skip_spaces ();
+      if (c == ':')
+	{
+	  file_location loc = read_name (&name);
+	  record_potential_iterator_use (&modes, loc, return_rtx, 0,
+					 name.string);
+	}
+      else
+	unread_char (c);
       return return_rtx;
     }
 

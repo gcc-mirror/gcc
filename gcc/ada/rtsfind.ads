@@ -239,8 +239,6 @@ package Rtsfind is
       System_Exp_Mod,
       System_Exp_Uns,
       System_Fat_Flt,
-      System_Fat_IEEE_Long_Float,
-      System_Fat_IEEE_Short_Float,
       System_Fat_LFlt,
       System_Fat_LLF,
       System_Fat_SFlt,
@@ -434,13 +432,15 @@ package Rtsfind is
       System_Val_Fixed_32,
       System_Val_Fixed_64,
       System_Val_Fixed_128,
+      System_Val_Flt,
       System_Val_Int,
+      System_Val_LFlt,
+      System_Val_LLF,
       System_Val_LLI,
       System_Val_LLLI,
       System_Val_LLU,
       System_Val_LLLU,
       System_Val_Name,
-      System_Val_Real,
       System_Val_Uns,
       System_Val_WChar,
       System_Version_Control,
@@ -925,17 +925,9 @@ package Rtsfind is
 
      RE_Attr_Float,                      -- System.Fat_Flt
 
-     RE_Attr_IEEE_Long,                  -- System.Fat_IEEE_Long_Float
-     RE_Fat_IEEE_Long,                   -- System.Fat_IEEE_Long_Float
-
-     RE_Attr_IEEE_Short,                 -- System.Fat_IEEE_Short_Float
-     RE_Fat_IEEE_Short,                  -- System.Fat_IEEE_Short_Float
-
      RE_Attr_Long_Float,                 -- System.Fat_LFlt
 
      RE_Attr_Long_Long_Float,            -- System.Fat_LLF
-
-     RE_Attr_Short_Float,                -- System.Fat_SFlt
 
      RE_Attr_VAX_D_Float,                -- System.Fat_VAX_D_Float
      RE_Fat_VAX_D,                       -- System.Fat_VAX_D_Float
@@ -949,7 +941,6 @@ package Rtsfind is
      RE_Add_Offset_To_Address,           -- System.Finalization_Masters
      RE_Attach,                          -- System.Finalization_Masters
      RE_Base_Pool,                       -- System.Finalization_Masters
-     RE_Detach,                          -- System.Finalization_Masters
      RE_Finalization_Master,             -- System.Finalization_Masters
      RE_Finalization_Master_Ptr,         -- System.Finalization_Masters
      RE_Set_Base_Pool,                   -- System.Finalization_Masters
@@ -2045,7 +2036,13 @@ package Rtsfind is
 
      RE_Value_Fixed128,                  -- System_Val_Fixed_128
 
+     RE_Value_Float,                     -- System_Val_Flt
+
      RE_Value_Integer,                   -- System.Val_Int
+
+     RE_Value_Long_Float,                -- System_Val_LFlt
+
+     RE_Value_Long_Long_Float,           -- System_Val_LLF
 
      RE_Value_Long_Long_Integer,         -- System.Val_LLI
 
@@ -2054,8 +2051,6 @@ package Rtsfind is
      RE_Value_Long_Long_Unsigned,        -- System.Val_LLU
 
      RE_Value_Long_Long_Long_Unsigned,   -- System.Val_LLLU
-
-     RE_Value_Real,                      -- System.Val_Real
 
      RE_Value_Unsigned,                  -- System.Val_Uns
 
@@ -2610,17 +2605,9 @@ package Rtsfind is
 
      RE_Attr_Float                       => System_Fat_Flt,
 
-     RE_Attr_IEEE_Long                   => System_Fat_IEEE_Long_Float,
-     RE_Fat_IEEE_Long                    => System_Fat_IEEE_Long_Float,
-
-     RE_Attr_IEEE_Short                  => System_Fat_IEEE_Short_Float,
-     RE_Fat_IEEE_Short                   => System_Fat_IEEE_Short_Float,
-
      RE_Attr_Long_Float                  => System_Fat_LFlt,
 
      RE_Attr_Long_Long_Float             => System_Fat_LLF,
-
-     RE_Attr_Short_Float                 => System_Fat_SFlt,
 
      RE_Attr_VAX_D_Float                 => System_Fat_VAX_D_Float,
      RE_Fat_VAX_D                        => System_Fat_VAX_D_Float,
@@ -2634,7 +2621,6 @@ package Rtsfind is
      RE_Add_Offset_To_Address            => System_Finalization_Masters,
      RE_Attach                           => System_Finalization_Masters,
      RE_Base_Pool                        => System_Finalization_Masters,
-     RE_Detach                           => System_Finalization_Masters,
      RE_Finalization_Master              => System_Finalization_Masters,
      RE_Finalization_Master_Ptr          => System_Finalization_Masters,
      RE_Set_Base_Pool                    => System_Finalization_Masters,
@@ -3730,7 +3716,13 @@ package Rtsfind is
 
      RE_Value_Fixed128                   => System_Val_Fixed_128,
 
+     RE_Value_Float                      => System_Val_Flt,
+
      RE_Value_Integer                    => System_Val_Int,
+
+     RE_Value_Long_Float                 => System_Val_LFlt,
+
+     RE_Value_Long_Long_Float            => System_Val_LLF,
 
      RE_Value_Long_Long_Integer          => System_Val_LLI,
 
@@ -3739,8 +3731,6 @@ package Rtsfind is
      RE_Value_Long_Long_Unsigned         => System_Val_LLU,
 
      RE_Value_Long_Long_Long_Unsigned    => System_Val_LLLU,
-
-     RE_Value_Real                       => System_Val_Real,
 
      RE_Value_Unsigned                   => System_Val_Uns,
 

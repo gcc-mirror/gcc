@@ -6652,8 +6652,8 @@ expression. The following is an example of use within a package spec:
      function Sqrt (Arg : Float) return Float;
      pragma Test_Case (Name     => "Test 1",
                        Mode     => Nominal,
-                       Requires => Arg < 10000,
-                       Ensures  => Sqrt'Result < 10);
+                       Requires => Arg < 10000.0,
+                       Ensures  => Sqrt'Result < 10.0);
      ...
   end Math_Functions;
 

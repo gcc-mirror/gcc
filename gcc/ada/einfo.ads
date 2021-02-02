@@ -4503,8 +4503,8 @@ package Einfo is
 --       stored discriminants for the record (sub)type.
 
 --    Stores_Attribute_Old_Prefix (Flag270)
---       Defined in constants. Set when the constant has been generated to save
---       the value of attribute 'Old's prefix.
+--       Defined in constants, variables, and types which are created during
+--       expansion in order to save the value of attribute 'Old's prefix.
 
 --    Strict_Alignment (Flag145) [implementation base type only]
 --       Defined in all type entities. Indicates that the type is by-reference

@@ -883,9 +883,8 @@ package body Exp_Ch6 is
    is
       Loc : constant Source_Ptr := Sloc (Func_Body);
 
-      Proc_Decl : constant Node_Id   :=
-                    Next (Unit_Declaration_Node (Func_Id));
-      --  It is assumed that the next node following the declaration of the
+      Proc_Decl : constant Node_Id := Prev (Unit_Declaration_Node (Func_Id));
+      --  It is assumed that the node before the declaration of the
       --  corresponding subprogram spec is the declaration of the procedure
       --  form.
 
@@ -3492,8 +3491,7 @@ package body Exp_Ch6 is
       --  of the dimension I/O packages.
 
       if Ada_Version >= Ada_2012
-        and then
-           Nkind (Call_Node) in N_Procedure_Call_Statement | N_Function_Call
+        and then Nkind (Call_Node) in N_Subprogram_Call
         and then Present (Parameter_Associations (Call_Node))
       then
          Expand_Put_Call_With_Symbol (Call_Node);
@@ -6247,9 +6245,24 @@ package body Exp_Ch6 is
             --  Call the _Postconditions procedure if the related subprogram
             --  has contract assertions that need to be verified on exit.
 
+            --  Also, mark the successful return to signal that postconditions
+            --  need to be evaluated when finalization occurs.
+
             if Ekind (Spec_Id) = E_Procedure
               and then Present (Postconditions_Proc (Spec_Id))
             then
+               --  Generate:
+               --
+               --    Return_Success_For_Postcond := True;
+               --    _postconditions;
+
+               Insert_Action (Stmt,
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     New_Occurrence_Of
+                      (Get_Return_Success_For_Postcond (Spec_Id), Loc),
+                   Expression => New_Occurrence_Of (Standard_True, Loc)));
+
                Insert_Action (Stmt,
                  Make_Procedure_Call_Statement (Loc,
                    Name =>
@@ -6571,6 +6584,7 @@ package body Exp_Ch6 is
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
+      Typ       : Entity_Id;
 
    begin
       --  Deal with case of protected subprogram. Do not generate protected
@@ -6645,10 +6659,12 @@ package body Exp_Ch6 is
       --  are not needed by the C generator (and this also produces cleaner
       --  output).
 
+      Typ := Get_Fullest_View (Etype (Subp));
+
       if Transform_Function_Array
         and then Nkind (Specification (N)) = N_Function_Specification
-        and then Is_Array_Type (Etype (Subp))
-        and then Is_Constrained (Etype (Subp))
+        and then Is_Array_Type (Typ)
+        and then Is_Constrained (Typ)
         and then not Is_Unchecked_Conversion_Instance (Subp)
       then
          Build_Procedure_Form (N);
@@ -6674,9 +6690,24 @@ package body Exp_Ch6 is
       --  Call the _Postconditions procedure if the related subprogram has
       --  contract assertions that need to be verified on exit.
 
+      --  Also, mark the successful return to signal that postconditions need
+      --  to be evaluated when finalization occurs.
+
       if Ekind (Scope_Id) in E_Entry | E_Entry_Family | E_Procedure
         and then Present (Postconditions_Proc (Scope_Id))
       then
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond := True;
+         --    _postconditions;
+
+         Insert_Action (N,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc)));
+
          Insert_Action (N,
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc)));
@@ -7563,6 +7594,41 @@ package body Exp_Ch6 is
 
          Force_Evaluation (Exp, Mode => Strict);
 
+         --  Save the return value or a pointer to the return value since we
+         --  may need to call postconditions after finalization when cleanup
+         --  actions are present.
+
+         --  Generate:
+         --
+         --    Result_Object_For_Postcond := [Exp]'Unrestricted_Access;
+
+         Insert_Action (Exp,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Result_Object_For_Postcond (Scope_Id), Loc),
+             Expression =>
+               (if Is_Elementary_Type (Etype (R_Type)) then
+                   New_Copy_Tree (Exp)
+                else
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Unrestricted_Access,
+                     Prefix         => New_Copy_Tree (Exp)))));
+
+         --  Mark the successful return to signal that postconditions need to
+         --  be evaluated when finalization occurs.
+
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond := True;
+
+         Insert_Action (Exp,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc)));
+
          --  Generate call to _Postconditions
 
          Insert_Action (Exp,
@@ -8091,6 +8157,7 @@ package body Exp_Ch6 is
 
                if True then
                   Result := Is_Controlled (T)
+                    and then not Is_Generic_Actual_Type (T)
                     and then Present (Enclosing_Subprogram (T))
                     and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
                     and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;
@@ -9275,7 +9342,7 @@ package body Exp_Ch6 is
       Tmp_Id    : Entity_Id;
 
    begin
-      --  No action of the call has already been processed
+      --  No action if the call has already been processed
 
       if Is_Expanded_Build_In_Place_Call (BIP_Func_Call) then
          return;
@@ -9950,7 +10017,7 @@ package body Exp_Ch6 is
    procedure Warn_BIP (Func_Call : Node_Id) is
    begin
       if Debug_Flag_Underscore_BB then
-         Error_Msg_N ("build-in-place function call?", Func_Call);
+         Error_Msg_N ("build-in-place function call??", Func_Call);
       end if;
    end Warn_BIP;
 

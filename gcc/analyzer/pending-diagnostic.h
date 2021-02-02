@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -157,7 +157,7 @@ class pending_diagnostic
   /* Compare for equality with OTHER, which might be of a different
      subclass.  */
 
-  bool equal_p (const pending_diagnostic &other)
+  bool equal_p (const pending_diagnostic &other) const
   {
     /* Check for pointer equality on the IDs from get_kind.  */
     if (get_kind () != other.get_kind ())

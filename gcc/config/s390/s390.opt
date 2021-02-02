@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -44,11 +44,11 @@ Variable
 long s390_cost_pointer
 
 m31
-Target Report RejectNegative Negative(m64) InverseMask(64BIT)
+Target RejectNegative Negative(m64) InverseMask(64BIT)
 31 bit ABI.
 
 m64
-Target Report RejectNegative Negative(m31) Mask(64BIT)
+Target RejectNegative Negative(m31) Mask(64BIT)
 64 bit ABI.
 
 march=
@@ -119,27 +119,27 @@ EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
 
 mbackchain
-Target Report Mask(BACKCHAIN) Save
+Target Mask(BACKCHAIN) Save
 Maintain backchain pointer.
 
 mdebug
-Target Report Mask(DEBUG_ARG) Save
+Target Mask(DEBUG_ARG) Save
 Additional debug prints.
 
 mesa
-Target Report RejectNegative Negative(mzarch) InverseMask(ZARCH)
+Target RejectNegative Negative(mzarch) InverseMask(ZARCH)
 ESA/390 architecture.
 
 mhard-dfp
-Target Report Mask(HARD_DFP) Save
+Target Mask(HARD_DFP) Save
 Enable decimal floating point hardware support.
 
 mhard-float
-Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT) Save
+Target RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT) Save
 Enable hardware floating point.
 
 mhotpatch=
-Target RejectNegative Report Joined Var(s390_deferred_options) Defer
+Target RejectNegative Joined Var(s390_deferred_options) Defer
 Takes two non-negative integer numbers separated by a comma.
 Prepend the function label with the number of two-byte Nop
 instructions indicated by the first.  Append Nop instructions
@@ -149,31 +149,31 @@ label.  Nop instructions of the largest possible size are used
 size.  Using 0 for both values disables hotpatching.
 
 mlong-double-128
-Target Report RejectNegative Negative(mlong-double-64) Mask(LONG_DOUBLE_128)
+Target RejectNegative Negative(mlong-double-64) Mask(LONG_DOUBLE_128)
 Use 128-bit long double.
 
 mlong-double-64
-Target Report RejectNegative Negative(mlong-double-128) InverseMask(LONG_DOUBLE_128)
+Target RejectNegative Negative(mlong-double-128) InverseMask(LONG_DOUBLE_128)
 Use 64-bit long double.
 
 mhtm
-Target Report Mask(OPT_HTM) Save
+Target Mask(OPT_HTM) Save
 Use hardware transactional execution instructions.
 
 mvx
-Target Report Mask(OPT_VX) Save
+Target Mask(OPT_VX) Save
 Use hardware vector facility instructions and enable the vector ABI.
 
 mpacked-stack
-Target Report Mask(PACKED_STACK) Save
+Target Mask(PACKED_STACK) Save
 Use packed stack layout.
 
 msmall-exec
-Target Report Mask(SMALL_EXEC) Save
+Target Mask(SMALL_EXEC) Save
 Use bras for executable < 64k.
 
 msoft-float
-Target Report RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT) Save
+Target RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT) Save
 Disable hardware floating point.
 
 mstack-guard=
@@ -197,11 +197,11 @@ Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_
 Schedule code for given CPU.
 
 mmvcle
-Target Report Mask(MVCLE) Save
+Target Mask(MVCLE) Save
 Use the mvcle instruction for block moves.
 
 mzvector
-Target Report Mask(ZVECTOR) Save
+Target Mask(ZVECTOR) Save
 Enable the z vector language extension providing the context-sensitive
 vector macro and enable the Altivec-style builtins in vecintrin.h.
 
@@ -214,31 +214,31 @@ Target RejectNegative Joined UInteger Var(s390_warn_framesize) Save
 Warn if a single function's framesize exceeds the given framesize.
 
 mzarch
-Target Report RejectNegative Negative(mesa) Mask(ZARCH)
+Target RejectNegative Negative(mesa) Mask(ZARCH)
 z/Architecture.
 
 mbranch-cost=
-Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1) Save
+Target Joined RejectNegative UInteger Var(s390_branch_cost) Init(1) Save
 Set the branch costs for conditional branch instructions.  Reasonable
 values are small, non-negative integers.  The default branch cost is
 1.
 
 mlra
-Target Report Var(s390_lra_flag) Init(1) Save
+Target Var(s390_lra_flag) Init(1) Save
 Use LRA instead of reload.
 
 mpic-data-is-text-relative
-Target Report Var(s390_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
+Target Var(s390_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
 Assume data segments are relative to text segment.
 
 
 mindirect-branch=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch) Init(indirect_branch_keep)
 Wrap all indirect branches into execute in order to disable branch
 prediction.
 
 mindirect-branch-jump=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_jump) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_jump) Init(indirect_branch_keep)
 Wrap indirect table jumps and computed gotos into execute in order to
 disable branch prediction.  Using thunk or thunk-extern with this
 option requires the thunks to be considered signal handlers to order to
@@ -246,22 +246,22 @@ generate correct CFI.  For environments where unwinding (e.g. for
 exceptions) is required please use thunk-inline instead.
 
 mindirect-branch-call=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_call) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_call) Init(indirect_branch_keep)
 Wrap all indirect calls into execute in order to disable branch prediction.
 
 mfunction-return=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_function_return) Init(indirect_branch_keep)
 Wrap all indirect return branches into execute in order to disable branch
 prediction.
 
 mfunction-return-mem=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_mem) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_mem) Init(indirect_branch_keep)
 Wrap indirect return branches into execute in order to disable branch
 prediction. This affects only branches where the return address is
 going to be restored from memory.
 
 mfunction-return-reg=
-Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_reg) Init(indirect_branch_keep)
+Target RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_reg) Init(indirect_branch_keep)
 Wrap indirect return branches into execute in order to disable branch
 prediction. This affects only branches where the return address
 doesn't need to be restored from memory.
@@ -283,7 +283,7 @@ EnumValue
 Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
 
 mindirect-branch-table
-Target Report Var(s390_indirect_branch_table) Init(TARGET_DEFAULT_INDIRECT_BRANCH_TABLE)
+Target Var(s390_indirect_branch_table) Init(TARGET_DEFAULT_INDIRECT_BRANCH_TABLE)
 Generate sections .s390_indirect_jump, .s390_indirect_call,
 .s390_return_reg, and .s390_return_mem to contain the indirect branch
 locations which have been patched as part of using one of the
@@ -292,21 +292,21 @@ consist of an array of 32 bit elements. Each entry holds the offset
 from the entry to the patched location.
 
 mfentry
-Target Report Var(flag_fentry)
+Target Var(flag_fentry)
 Emit profiling counter call at function entry before prologue. The compiled
 code will require a 64-bit CPU and glibc 2.29 or newer to run.
 
 mrecord-mcount
-Target Report Var(flag_record_mcount)
+Target Var(flag_record_mcount)
 Generate __mcount_loc section with all _mcount and __fentry__ calls.
 
 mnop-mcount
-Target Report Var(flag_nop_mcount)
+Target Var(flag_nop_mcount)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
 mvx-long-double-fma
-Target Report Undocumented Var(flag_vx_long_double_fma)
+Target Undocumented Var(flag_vx_long_double_fma)
 Emit fused multiply-add instructions for long doubles in vector registers
 (wfmaxb, wfmsxb, wfnmaxb, wfnmsxb).  Reassociation pass does not handle
 fused multiply-adds, therefore code generated by the middle-end is prone to

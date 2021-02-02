@@ -1,6 +1,6 @@
 ; Options for the HP PA-RISC port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -42,23 +42,23 @@ Target Ignore
 Does nothing.  Preserved for backward compatibility.
 
 mcaller-copies
-Target Report Mask(CALLER_COPIES)
+Target Mask(CALLER_COPIES)
 Caller copies function arguments passed by hidden reference.
 
 mcoherent-ldcw
-Target Report Var(TARGET_COHERENT_LDCW) Init(1)
+Target Var(TARGET_COHERENT_LDCW) Init(1)
 Use ldcw/ldcd coherent cache-control hint.
 
 mdisable-fpregs
-Target Report Mask(DISABLE_FPREGS)
+Target Mask(DISABLE_FPREGS)
 Disable FP regs.
 
 mdisable-indexing
-Target Report Mask(DISABLE_INDEXING)
+Target Mask(DISABLE_INDEXING)
 Disable indexed addressing.
 
 mfast-indirect-calls
-Target Report Mask(FAST_INDIRECT_CALLS)
+Target Mask(FAST_INDIRECT_CALLS)
 Generate fast indirect calls.
 
 mfixed-range=
@@ -66,7 +66,7 @@ Target RejectNegative Joined Var(pa_deferred_options) Defer
 Specify range of registers to make fixed.
 
 mgas
-Target Report Mask(GAS)
+Target Mask(GAS)
 Assume code will be assembled by GAS.
 
 mjump-in-delay
@@ -79,11 +79,11 @@ Target RejectNegative
 Enable linker optimizations.
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Always generate long calls.
 
 mlong-load-store
-Target Report Mask(LONG_LOAD_STORE)
+Target Mask(LONG_LOAD_STORE)
 Emit long load/store sequences.
 
 mnosnake
@@ -91,11 +91,11 @@ Target RejectNegative
 Generate PA1.0 code.
 
 mno-space-regs
-Target RejectNegative Report Mask(NO_SPACE_REGS)
+Target RejectNegative Mask(NO_SPACE_REGS)
 Disable space regs.
 
 mordered
-Target Report Var(TARGET_ORDERED) Init(0)
+Target Var(TARGET_ORDERED) Init(0)
 Assume memory references are ordered and barriers are not needed.
 
 mpa-risc-1-0
@@ -111,7 +111,7 @@ Target RejectNegative Mask(PA_20)
 Generate PA2.0 code (requires binutils 2.10 or later).
 
 mportable-runtime
-Target Report Mask(PORTABLE_RUNTIME)
+Target Mask(PORTABLE_RUNTIME)
 Use portable calling conventions.
 
 mschedule=
@@ -140,7 +140,7 @@ EnumValue
 Enum(pa_schedule) String(7300) Value(PROCESSOR_7300)
 
 msoft-float
-Target Report Mask(SOFT_FLOAT)
+Target Mask(SOFT_FLOAT)
 Use software floating point.
 
 msnake
@@ -148,5 +148,5 @@ Target RejectNegative
 Generate PA1.1 code.
 
 mspace-regs
-Target RejectNegative Report InverseMask(NO_SPACE_REGS)
+Target RejectNegative InverseMask(NO_SPACE_REGS)
 Do not disable space regs.

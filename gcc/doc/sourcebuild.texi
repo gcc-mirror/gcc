@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1799,8 +1799,7 @@ variant of the ABI for the ARM Architecture (as selected with
 @code{-mfloat-abi=hard}).
 
 @item arm_softfloat
-ARM target uses the soft-float ABI with no floating-point instructions
-used whatsoever (as selected with @code{-mfloat-abi=soft}).
+ARM target uses emulated floating point operations.
 
 @item arm_hard_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
@@ -2058,6 +2057,11 @@ ARM target supports the @code{-mfloat-abi=hard} option.
 ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
 Some multilibs may be incompatible with these options.
+
+@item arm_thumb2_no_arm_v8_1_lob
+ARM target where Thumb-2 is used without options but does not support
+executing the Armv8.1-M Mainline Low Overhead Loop instructions
+@code{DLS} and @code{LE}.
 
 @item arm_thumb2_ok_no_arm_v8_1_lob
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
@@ -2924,6 +2928,14 @@ Passes if @var{regex} matches text in the test's demangled assembler output.
 Passes if @var{regex} does not match text in the test's demangled assembler
 output.
 
+@item scan-assembler-symbol-section @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}.  The caller needs to
+allow for @code{USER_LABEL_PREFIX} and different section name conventions.
+
+@item scan-symbol-section @var{filename} @var{functions} @var{section} [@{ target/xfail @var{selector} @}]
+Passes if @var{functions} are all in @var{section}in @var{filename}.
+The same caveats as for @code{scan-assembler-symbol-section} apply.
+
 @item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
 Passes if @var{symbol} is defined as a hidden symbol in the test's
 assembly output.
@@ -3085,6 +3097,10 @@ Check line counts in @command{gcov} tests.
 @item run-gcov [branches] [calls] @{ @var{opts} @var{sourcefile} @}
 Check branch and/or call counts, in addition to line counts, in
 @command{gcov} tests.
+
+@item run-gcov-pytest @{ @var{sourcefile} @var{pytest_file} @}
+Check output of @command{gcov} intermediate format with a pytest
+script.
 @end table
 
 @subsubsection Clean up generated test files

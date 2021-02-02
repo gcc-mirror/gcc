@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -171,4 +171,185 @@
     emit_insn (gen_mve_vec_set<mode>_internal (operands[0], operands[1],
 					       GEN_INT (elem), operands[0]));
   DONE;
+})
+
+(define_expand "and<mode>3"
+  [(set (match_operand:VDQ 0 "s_register_operand" "")
+	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "")
+		 (match_operand:VDQ 2 "neon_inv_logic_op2" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
+
+(define_expand "ior<mode>3"
+  [(set (match_operand:VDQ 0 "s_register_operand" "")
+	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "")
+		 (match_operand:VDQ 2 "neon_logic_op2" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
+
+(define_expand "xor<mode>3"
+  [(set (match_operand:VDQ 0 "s_register_operand" "")
+	(xor:VDQ (match_operand:VDQ 1 "s_register_operand" "")
+		 (match_operand:VDQ 2 "s_register_operand" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
+
+(define_expand "one_cmpl<mode>2"
+  [(set (match_operand:VDQ 0 "s_register_operand")
+	(not:VDQ (match_operand:VDQ 1 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
+
+(define_expand "neg<mode>2"
+  [(set (match_operand:VDQWH 0 "s_register_operand" "")
+	(neg:VDQWH (match_operand:VDQWH 1 "s_register_operand" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
+
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF [(match_operand:VF 1 "register_operand")
+		    (match_operand:VF 2 "register_operand")]
+		   VCADD))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+)
+
+;; The complex mul operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:VQ_HSF 0 "register_operand")
+        (unspec:VQ_HSF [(match_operand:VQ_HSF 1 "register_operand")
+			(match_operand:VQ_HSF 2 "register_operand")]
+		       VCMUL_OP))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT))
+   && !BYTES_BIG_ENDIAN"
+{
+  rtx res1 = gen_reg_rtx (<MODE>mode);
+  if (TARGET_COMPLEX)
+    {
+      rtx tmp = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+      emit_insn (gen_arm_vcmla<rotsplit1><mode> (res1, tmp,
+						 operands[2], operands[1]));
+    }
+  else
+    emit_insn (gen_arm_vcmla<rotsplit1><mode> (res1, CONST0_RTX (<MODE>mode),
+					       operands[2], operands[1]));
+
+  emit_insn (gen_arm_vcmla<rotsplit2><mode> (operands[0], res1,
+					     operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "arm_vcmla<rot><mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(plus:VF (match_operand:VF 1 "register_operand")
+		 (unspec:VF [(match_operand:VF 2 "register_operand")
+			     (match_operand:VF 3 "register_operand")]
+			     VCMLA)))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+)
+
+;; The complex mla/mls operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cml<fcmac1><conj_op><mode>4"
+  [(set (match_operand:VF 0 "register_operand")
+	(plus:VF (match_operand:VF 1 "register_operand")
+		 (unspec:VF [(match_operand:VF 2 "register_operand")
+			     (match_operand:VF 3 "register_operand")]
+			    VCMLA_OP)))]
+  "(TARGET_COMPLEX || (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT
+		      && ARM_HAVE_<MODE>_ARITH)) && !BYTES_BIG_ENDIAN"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_arm_vcmla<rotsplit1><mode> (tmp, operands[1],
+					     operands[3], operands[2]));
+  emit_insn (gen_arm_vcmla<rotsplit2><mode> (operands[0], tmp,
+					     operands[3], operands[2]));
+  DONE;
+})
+
+(define_expand "movmisalign<mode>"
+ [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
+	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
+	 UNSPEC_MISALIGNED_ACCESS))]
+ "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN && unaligned_access"
+{
+ rtx adjust_mem;
+ /* This pattern is not permitted to fail during expansion: if both arguments
+    are non-registers (e.g. memory := constant, which can be created by the
+    auto-vectorizer), force operand 1 into a register.  */
+ if (!s_register_operand (operands[0], <MODE>mode)
+     && !s_register_operand (operands[1], <MODE>mode))
+   operands[1] = force_reg (<MODE>mode, operands[1]);
+
+ if (s_register_operand (operands[0], <MODE>mode))
+   adjust_mem = operands[1];
+ else
+   adjust_mem = operands[0];
+
+ /* Legitimize address.  */
+ if (!neon_vector_mem_operand (adjust_mem, 2, true))
+   XEXP (adjust_mem, 0) = force_reg (Pmode, XEXP (adjust_mem, 0));
+})
+
+(define_insn "mve_vshlq_<supf><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w,w")
+		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dm")]
+	 VSHLQ))]
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "@
+   vshl.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
+   * return neon_output_shift_immediate (\"vshl\", 'i', &operands[2], <MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode), true);"
+  [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
+)
+
+(define_expand "vashl<mode>3"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "")
+	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
+		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "")))]
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+{
+  emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+;; When operand 2 is an immediate, use the normal expansion to match
+;; gen_vashr<mode>3_imm for Neon and gen_mve_vshrq_n_s<mode>_imm for
+;; MVE.
+(define_expand "vashr<mode>3"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+{
+  if (s_register_operand (operands[2], <MODE>mode))
+    {
+      rtx neg = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_mve_vshlq_s<mode> (operands[0], operands[1], neg));
+      DONE;
+    }
+})
+
+;; When operand 2 is an immediate, use the normal expansion to match
+;; gen_vashr<mode>3_imm for Neon and gen_mve_vshrq_n_u<mode>_imm for
+;; MVE.
+(define_expand "vlshr<mode>3"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
+  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+{
+  if (s_register_operand (operands[2], <MODE>mode))
+    {
+      rtx neg = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], neg));
+      DONE;
+    }
 })

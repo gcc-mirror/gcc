@@ -145,6 +145,20 @@ int Declaration::checkModify(Loc loc, Scope *sc, Type *, Expression *e1, int fla
         }
     }
 
+    if (e1 && e1->op == TOKthis && isField())
+    {
+        VarDeclaration *vthis = e1->isThisExp()->var;
+        for (Scope *scx = sc; scx; scx = scx->enclosing)
+        {
+            if (scx->func == vthis->parent && (scx->flags & SCOPEcontract))
+            {
+                if (!flag)
+                    error(loc, "cannot modify parameter `this` in contract");
+                return 2;   // do not report type related errors
+            }
+        }
+    }
+
     if (v && (isCtorinit() || isField()))
     {
         // It's only modifiable if inside the right constructor
@@ -153,6 +167,51 @@ int Declaration::checkModify(Loc loc, Scope *sc, Type *, Expression *e1, int fla
         return modifyFieldVar(loc, sc, v, e1) ? 2 : 1;
     }
     return 1;
+}
+
+/**
+ * Issue an error if an attempt to call a disabled method is made
+ *
+ * If the declaration is disabled but inside a disabled function,
+ * returns `true` but do not issue an error message.
+ *
+ * Params:
+ *   loc = Location information of the call
+ *   sc  = Scope in which the call occurs
+ *   isAliasedDeclaration = if `true` searches overload set
+ *
+ * Returns:
+ *   `true` if this `Declaration` is `@disable`d, `false` otherwise.
+ */
+bool Declaration::checkDisabled(Loc loc, Scope *sc, bool isAliasedDeclaration)
+{
+    if (!(storage_class & STCdisable))
+        return false;
+
+    if (sc->func && (sc->func->storage_class & STCdisable))
+        return true;
+
+    Dsymbol *p = toParent();
+    if (p && isPostBlitDeclaration())
+    {
+        p->error(loc, "is not copyable because it is annotated with `@disable`");
+        return true;
+    }
+
+    // if the function is @disabled, maybe there
+    // is an overload in the overload set that isn't
+    if (isAliasedDeclaration)
+    {
+        FuncDeclaration *fd = isFuncDeclaration();
+        if (fd)
+        {
+            for (FuncDeclaration *ovl = fd; ovl; ovl = (FuncDeclaration *)ovl->overnext)
+                if (!(ovl->storage_class & STCdisable))
+                    return false;
+        }
+    }
+    error(loc, "cannot be used because it is annotated with `@disable`");
+    return true;
 }
 
 Dsymbol *Declaration::search(const Loc &loc, Identifier *ident, int flags)
@@ -224,7 +283,7 @@ Type *TupleDeclaration::getType()
         {
             Type *t = (*types)[i];
             //printf("type = %s\n", t->toChars());
-            Parameter *arg = new Parameter(0, t, NULL, NULL);
+            Parameter *arg = new Parameter(0, t, NULL, NULL, NULL);
             (*args)[i] = arg;
             if (!t->deco)
                 hasdeco = 0;

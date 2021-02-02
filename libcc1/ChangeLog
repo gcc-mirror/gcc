@@ -1,3 +1,14 @@
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98380
+	* configure.ac: Set darwin_dynamic_lookup=no instead to empty
+	string.
+	* configure: Regenerated.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

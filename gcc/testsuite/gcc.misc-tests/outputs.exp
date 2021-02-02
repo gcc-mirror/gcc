@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@ if !$skip_lto {
     set ltop [check_linker_plugin_available]
 }
 
+# Check for GNU LD.  Some files like .ld1_args depend on this.
+set gld [check_effective_target_gld]
+
 # Prepare additional options to be used for linking.
 # We do not compile to an executable, because that requires naming an output.
 set link_options ""
@@ -65,6 +68,12 @@ foreach i { ldflags libs ldscript } {
 }
 if {[board_info $dest exists output_format]} {
     append link_options " additional_flags=-Wl,-oformat,[board_info $dest output_format]"
+}
+
+# Avoid possible influence from the make jobserver,
+# otherwise ltrans0.ltrans_args files may be missing.
+if [info exists env(MAKEFLAGS)] {
+    unsetenv MAKEFLAGS
 }
 
 # For the test named TEST, run the compiler with SOURCES and OPTS, and
@@ -130,6 +139,7 @@ proc outest { test sources opts dirs outputs } {
 	foreach og $olist {
 	    if { [string index $og 0] == "!" } {
 		global gspd ltop
+		global gld
 		set cond [expr $og]
 		continue
 	    }
@@ -181,7 +191,10 @@ proc outest { test sources opts dirs outputs } {
 	file delete $f
 	# collect2 may create <execname>.cdtor* files in -save-temps link tests,
 	# ??? without regard to aux output naming conventions.
-	if ![string match "*.cdtor.*" $f] then {
+	# Limit this exception to targets that define EH_FRAME_THROUGH_COLLECT2.
+	if { !(([istarget powerpc*-*-aix*] || [is_target hppa*-*-hpux*])
+	       && ([string match "*.cdtor.*" $f]
+		   || [string match "*.gcc_args" $f])) } {
 	    lappend outb $f
 	}
     }
@@ -283,6 +296,12 @@ outest "$b exe savetmp unnamed2" $mult "-save-temps $oaout" {} {{a--1.i a--1.s a
 outest "$b exe savetmp named0" $sing "-o $b-0.exe -save-temps" {} {{-0.i -0.s -0.o -0.exe}}
 outest "$b exe savetmp namedb" $sing "-o $b.exe -save-temps" {} {{--0.i --0.s --0.o .exe}}
 outest "$b exe savetmp named2" $mult "-o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .exe}}
+
+# Additional files are created when an @file is used
+outest "$b exe savetmp namedb" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
 
 # Setting the main output to a dir selects it as the default aux&dump
 # location.
@@ -638,6 +657,7 @@ outest "$b lto sing named" $sing "-o $b.exe -O2 -flto -fno-use-linker-plugin -fl
 outest "$b lto mult named" $mult "-o $b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe}}
 outest "$b lto sing nameddir" $sing "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 outest "$b lto mult nameddir" $mult "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
+outest "$b lto sing unnamed" $sing "@/dev/null -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
 }
 
 # -dumpbase without -dumpdir.  The trailing dumppfx dash after it is
@@ -703,20 +723,20 @@ outest "$b lto sing empty dumpdir empty dumpbase namedb" $sing "-dumpdir \"\" -d
 outest "$b lto mult empty dumpdir empty dumpbase namedb" $mult "-dumpdir \"\" -dumpbase \"\" -o dir/$b.exe -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{.exe} {-1.c.???i.icf !$ltop -1.c.???r.final !0 -2.c.???i.icf !$ltop -2.c.???r.final !0 .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su}}
 
 # Now -flto with -save-temps, not exhaustive.
-outest "$b lto st sing empty dumpbase unnamed" $sing "-dumpbase \"\" -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args $aout}}
-outest "$b lto st mult empty dumpbase unnamed" $mult "-dumpbase \"\" -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args $aout}}
-outest "$b lto st sing dumpdir empty dumpbase named" $sing "-dumpdir dir/ -dumpbase \"\" -o $b-0.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop -0.lto_wrapper_args !0 -0.wpa.???i.icf -0.ltrans.out -0.ltrans_args !!$ltop -0.res !0 -0.ltrans0.o -0.ltrans0.ltrans.???r.final -0.ltrans0.ltrans.su -0.ltrans0.ltrans.s -0.ltrans0.ltrans.o -0.ltrans0.ltrans_args} {-0.exe}}
-outest "$b lto st mult dumpdir empty dumpbase named" $mult "-dumpdir dir/ -dumpbase \"\" -o $b-1.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop -1.lto_wrapper_args !0 -1.wpa.???i.icf -1.ltrans.out -1.ltrans_args !!$ltop -1.res !0 -1.ltrans0.o -1.ltrans0.ltrans.???r.final -1.ltrans0.ltrans.su -1.ltrans0.ltrans.s -1.ltrans0.ltrans.o -1.ltrans0.ltrans_args} {-1.exe}}
-outest "$b lto st sing empty dumpbase namedb" $sing "-dumpbase \"\" -o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .exe} {}}
-outest "$b lto st mult empty dumpbase namedb" $mult "-dumpbase \"\" -o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .exe} {}}
+outest "$b lto st sing empty dumpbase unnamed" $sing "-dumpbase \"\" -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.ltrans0.ltrans.args.0 a.wpa.args.0 $aout}}
+outest "$b lto st mult empty dumpbase unnamed" $mult "-dumpbase \"\" -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.ltrans0.ltrans.args.0 a.wpa.args.0 $aout}}
+outest "$b lto st sing dumpdir empty dumpbase named" $sing "-dumpdir dir/ -dumpbase \"\" -o $b-0.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop -0.lto_wrapper_args !0 -0.wpa.???i.icf -0.ltrans.out -0.ltrans_args !!$ltop -0.res !0 -0.ltrans0.o -0.ltrans0.ltrans.???r.final -0.ltrans0.ltrans.su -0.ltrans0.ltrans.s -0.ltrans0.ltrans.o -0.ltrans0.ltrans_args -0.ltrans0.ltrans.args.0 -0.wpa.args.0} {-0.exe}}
+outest "$b lto st mult dumpdir empty dumpbase named" $mult "-dumpdir dir/ -dumpbase \"\" -o $b-1.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop -1.lto_wrapper_args !0 -1.wpa.???i.icf -1.ltrans.out -1.ltrans_args !!$ltop -1.res !0 -1.ltrans0.o -1.ltrans0.ltrans.???r.final -1.ltrans0.ltrans.su -1.ltrans0.ltrans.s -1.ltrans0.ltrans.o -1.ltrans0.ltrans_args -1.ltrans0.ltrans.args.0 -1.wpa.args.0} {-1.exe}}
+outest "$b lto st sing empty dumpbase namedb" $sing "-dumpbase \"\" -o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-0.i -0.s -0.o -0.c.???i.icf !$ltop -0.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .ltrans0.ltrans.args.0 .wpa.args.0 .exe} {}}
+outest "$b lto st mult empty dumpbase namedb" $mult "-dumpbase \"\" -o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{-1.i -1.s -1.o -1.c.???i.icf !$ltop -1.c.???r.final !0 -2.i -2.s -2.o -2.c.???i.icf !$ltop -2.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .ltrans0.ltrans.args.0 .wpa.args.0 .exe} {}}
 
 # lto save-temps without -dumpbase.
-outest "$b lto st sing unnamed" $sing "-save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--0.i a--0.s a--0.o a--0.c.???i.icf !$ltop a--0.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args $aout}}
-outest "$b lto st mult unnamed" $mult "-save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--1.i a--1.s a--1.o a--1.c.???i.icf !$ltop a--1.c.???r.final !0 a--2.i a--2.s a--2.o a--2.c.???i.icf !$ltop a--2.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args $aout}}
-outest "$b lto st sing dumpdir named" $sing "-dumpdir dir/$b- -o $b-0.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.i --0.s --0.o --0.c.???i.icf !$ltop --0.c.???r.final !!$ltop -lto_wrapper_args !0 -wpa.???i.icf -ltrans.out -ltrans_args !!$ltop -res !0 -ltrans0.o -ltrans0.ltrans.???r.final -ltrans0.ltrans.su -ltrans0.ltrans.s -ltrans0.ltrans.o -ltrans0.ltrans_args} {-0.exe}}
-outest "$b lto st mult dumpdir named" $mult "-dumpdir dir/$b- -o $b-1.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.i --1.s --1.o --1.c.???i.icf !$ltop --1.c.???r.final !0 --2.i --2.s --2.o --2.c.???i.icf !$ltop --2.c.???r.final !!$ltop -lto_wrapper_args !0 -wpa.???i.icf -ltrans.out -ltrans_args !!$ltop -res !0 -ltrans0.o -ltrans0.ltrans.???r.final -ltrans0.ltrans.su -ltrans0.ltrans.s -ltrans0.ltrans.o -ltrans0.ltrans_args} {-1.exe}}
-outest "$b lto st sing namedb" $sing "-o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.i --0.s --0.o --0.c.???i.icf !$ltop --0.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .exe} {}}
-outest "$b lto st mult namedb" $mult "-o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.i --1.s --1.o --1.c.???i.icf !$ltop --1.c.???r.final !0 --2.i --2.s --2.o --2.c.???i.icf !$ltop --2.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .exe} {}}
+outest "$b lto st sing unnamed" $sing "-save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--0.i a--0.s a--0.o a--0.c.???i.icf !$ltop a--0.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.ltrans0.ltrans.args.0 a.wpa.args.0 $aout}}
+outest "$b lto st mult unnamed" $mult "-save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--1.i a--1.s a--1.o a--1.c.???i.icf !$ltop a--1.c.???r.final !0 a--2.i a--2.s a--2.o a--2.c.???i.icf !$ltop a--2.c.???r.final !!$ltop a.lto_wrapper_args !0 a.wpa.???i.icf a.ltrans.out a.ltrans_args !!$ltop a.res !0 a.ltrans0.o a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a.ltrans0.ltrans.s a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.ltrans0.ltrans.args.0 a.wpa.args.0 $aout}}
+outest "$b lto st sing dumpdir named" $sing "-dumpdir dir/$b- -o $b-0.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.i --0.s --0.o --0.c.???i.icf !$ltop --0.c.???r.final !!$ltop -lto_wrapper_args !0 -wpa.???i.icf -ltrans.out -ltrans_args !!$ltop -res !0 -ltrans0.o -ltrans0.ltrans.???r.final -ltrans0.ltrans.su -ltrans0.ltrans.s -ltrans0.ltrans.o -ltrans0.ltrans_args -ltrans0.ltrans.args.0 -wpa.args.0} {-0.exe}}
+outest "$b lto st mult dumpdir named" $mult "-dumpdir dir/$b- -o $b-1.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.i --1.s --1.o --1.c.???i.icf !$ltop --1.c.???r.final !0 --2.i --2.s --2.o --2.c.???i.icf !$ltop --2.c.???r.final !!$ltop -lto_wrapper_args !0 -wpa.???i.icf -ltrans.out -ltrans_args !!$ltop -res !0 -ltrans0.o -ltrans0.ltrans.???r.final -ltrans0.ltrans.su -ltrans0.ltrans.s -ltrans0.ltrans.o -ltrans0.ltrans_args -ltrans0.ltrans.args.0 -wpa.args.0} {-1.exe}}
+outest "$b lto st sing namedb" $sing "-o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.i --0.s --0.o --0.c.???i.icf !$ltop --0.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .ltrans0.ltrans.args.0 .wpa.args.0 .exe} {}}
+outest "$b lto st mult namedb" $mult "-o dir/$b.exe -save-temps -O2 -flto -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.i --1.s --1.o --1.c.???i.icf !$ltop --1.c.???r.final !0 --2.i --2.s --2.o --2.c.???i.icf !$ltop --2.c.???r.final !!$ltop .lto_wrapper_args !0 .wpa.???i.icf .ltrans.out .ltrans_args !!$ltop .res !0 .ltrans0.o .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .ltrans0.ltrans.s .ltrans0.ltrans.o .ltrans0.ltrans_args .ltrans0.ltrans.args.0 .wpa.args.0 .exe} {}}
 
 # !$skip_lto
 }

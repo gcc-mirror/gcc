@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -3081,7 +3081,9 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 
   if (!node->thunk && !node->former_thunk_p ())
     {
-      while (node2 && node->decl != node2->decl)
+      while (node2
+	     && node->decl != node2->decl
+	     && node->decl != node2->former_clone_of)
 	node2 = node2->clone_of;
       return node2 != NULL;
     }

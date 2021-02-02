@@ -14,7 +14,7 @@
  */
 module core.sys.posix.netinet.tcp;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 
 version (OSX)
     version = Darwin;

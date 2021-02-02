@@ -1,5 +1,5 @@
 /* Code sinking for trees
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -390,12 +390,15 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 		 with the use.  */
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
-		  /* In case the PHI node post-dominates the current insert location
-		     we can disregard it.  But make sure it is not dominating
-		     it as well as can happen in a CFG cycle.  */
+		  /* In case the PHI node post-dominates the current insert
+		     location we can disregard it.  But make sure it is not
+		     dominating it as well as can happen in a CFG cycle.  */
 		  if (commondom != bb
 		      && !dominated_by_p (CDI_DOMINATORS, commondom, bb)
-		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb))
+		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb)
+		      /* If the blocks are possibly within the same irreducible
+			 cycle the above check breaks down.  */
+		      && !(bb->flags & commondom->flags & BB_IRREDUCIBLE_LOOP))
 		    continue;
 		  bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
 		}
@@ -407,7 +410,8 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 		continue;
 	      /* There is no easy way to disregard defs not on the path from
 		 frombb to commondom so just consider them all.  */
-	      commondom = nearest_common_dominator (CDI_DOMINATORS, bb, commondom);
+	      commondom = nearest_common_dominator (CDI_DOMINATORS,
+						    bb, commondom);
 	      if (commondom == frombb)
 		return false;
 	    }

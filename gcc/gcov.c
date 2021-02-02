@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2020 Free Software Foundation, Inc.
+   Copyright (C) 1990-2021 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -293,7 +293,7 @@ public:
   /* Index of source file where the function is defined.  */
   unsigned src;
 
-  /* Vector of line information.  */
+  /* Vector of line information (used only for group functions).  */
   vector<line_info> lines;
 
   /* Next function.  */
@@ -371,6 +371,9 @@ public:
   /* Register a new function.  */
   void add_function (function_info *fn);
 
+  /* Debug the source file.  */
+  void debug ();
+
   /* Index of the source_info in sources vector.  */
   unsigned index;
 
@@ -426,6 +429,31 @@ source_info::get_functions_at_location (unsigned line_num) const
     std::sort (slot->begin (), slot->end (), function_line_start_cmp ());
 
   return slot;
+}
+
+void source_info::debug ()
+{
+  fprintf (stderr, "source_info: %s\n", name);
+  for (vector<function_info *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
+    {
+      function_info *fn = *it;
+      fprintf (stderr, "  function_info: %s\n", fn->get_name ());
+      for (vector<block_info>::iterator bit = fn->blocks.begin ();
+	   bit != fn->blocks.end (); bit++)
+	{
+	  fprintf (stderr, "    block_info id=%d, count=%" PRId64 " \n",
+		   bit->id, bit->count);
+	}
+    }
+
+  for (unsigned lineno = 1; lineno < lines.size (); ++lineno)
+    {
+      line_info &line = lines[lineno];
+      fprintf (stderr, "  line_info=%d, count=%" PRId64 "\n", lineno, line.count);
+    }
+
+  fprintf (stderr, "\n");
 }
 
 class name_map
@@ -578,6 +606,10 @@ static int flag_human_readable_numbers = 0;
 /* Output summary info for each function.  */
 
 static int flag_function_summary = 0;
+
+/* Print debugging dumps.  */
+
+static int flag_debug = 0;
 
 /* Object directory file prefix.  This is the directory/file where the
    graph and data files are looked for, if nonzero.  */
@@ -896,6 +928,7 @@ print_usage (int error_p)
   fnotice (file, "  -c, --branch-counts             Output counts of branches taken\n\
                                     rather than percentages\n");
   fnotice (file, "  -d, --display-progress          Display progress information\n");
+  fnotice (file, "  -D, --debug			    Display debugging dumps\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
   fnotice (file, "  -j, --json-format               Output JSON intermediate format\n\
@@ -930,7 +963,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2020 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2021 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\
@@ -963,6 +996,7 @@ static const struct option options[] =
   { "hash-filenames",	    no_argument,       NULL, 'x' },
   { "use-colors",	    no_argument,       NULL, 'k' },
   { "use-hotness-colors",   no_argument,       NULL, 'q' },
+  { "debug",		    no_argument,       NULL, 'D' },
   { 0, 0, 0, 0 }
 };
 
@@ -973,7 +1007,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhHijklmno:pqrs:tuvwx";
+  const char *opts = "abcdDfhHijklmno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -1043,6 +1077,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 't':
 	  flag_use_stdout = 1;
+	  break;
+	case 'D':
+	  flag_debug = 1;
 	  break;
 	case 'v':
 	  print_version ();
@@ -1165,21 +1202,22 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
   json::array *lineso = new json::array ();
   root->set ("lines", lineso);
 
-  function_info *last_non_group_fn = NULL;
+  vector<function_info *> last_non_group_fns;
 
   for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
       vector<function_info *> *fns = src->get_functions_at_location (line_num);
 
       if (fns != NULL)
-	/* Print first group functions that begin on the line.  */
+	/* Print info for all group functions that begin on the line.  */
 	for (vector<function_info *>::iterator it2 = fns->begin ();
 	     it2 != fns->end (); it2++)
 	  {
 	    if (!(*it2)->is_group)
-	      last_non_group_fn = *it2;
+	      last_non_group_fns.push_back (*it2);
 
 	    vector<line_info> &lines = (*it2)->lines;
+	    /* The LINES array is allocated only for group functions.  */
 	    for (unsigned i = 0; i < lines.size (); i++)
 	      {
 		line_info *line = &lines[i];
@@ -1190,9 +1228,17 @@ output_json_intermediate_file (json::array *json_files, source_info *src)
 
       /* Follow with lines associated with the source file.  */
       if (line_num < src->lines.size ())
-	output_intermediate_json_line (lineso, &src->lines[line_num], line_num,
-				       (last_non_group_fn != NULL
-					? last_non_group_fn->m_name : NULL));
+	{
+	  unsigned size = last_non_group_fns.size ();
+	  function_info *last_fn = size > 0 ? last_non_group_fns[size - 1] : NULL;
+	  const char *fname = last_fn ? last_fn->m_name : NULL;
+	  output_intermediate_json_line (lineso, &src->lines[line_num], line_num,
+					 fname);
+
+	  /* Pop ending function from stack.  */
+	  if (last_fn != NULL && last_fn->end_line == line_num)
+	    last_non_group_fns.pop_back ();
+	}
     }
 }
 
@@ -1457,6 +1503,8 @@ generate_results (const char *file_name)
 	}
 
       accumulate_line_counts (src);
+      if (flag_debug)
+	src->debug ();
 
       if (!flag_use_stdout)
 	file_summary (&src->coverage);
@@ -1795,6 +1843,8 @@ read_graph_file (void)
 	      arc = XCNEW (arc_info);
 
 	      arc->dst = &fn->blocks[dest];
+	      /* Set id in order to find EXIT_BLOCK.  */
+	      arc->dst->id = dest;
 	      arc->src = src_blk;
 
 	      arc->count = 0;

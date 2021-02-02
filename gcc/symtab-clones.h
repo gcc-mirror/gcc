@@ -1,5 +1,5 @@
 /* Representation of adjustment made to virtual clones in the symbol table.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -83,7 +83,7 @@ inline void
 clone_info::release ()
 {
   if (symtab->m_clones)
-    delete (symtab->m_clones);
+    ggc_delete (symtab->m_clones);
   symtab->m_clones = NULL;
 }
 

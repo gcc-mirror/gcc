@@ -31,7 +31,7 @@ STRUCTURE OF THE G++ TESTSUITE
   g++.gb  	Tests by Gerald Baumgartner
   g++.jason	Tests by Jason Merill
   g++.jeff	Tests by Jeffrey A Law
-  g++.martin	Tests by Martin v. Löwis
+  g++.martin	Tests by Martin v. LÃ¶wis
   g++.mike	Tests by Mike Stump
   g++.niklas	Tests by Niklas Hallqvist
   g++.ns  	Tests for namespaces
@@ -61,7 +61,7 @@ where
 		testsuite directory.
 
 
-Copyright (C) 1998-2020 Free Software Foundation, Inc.
+Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

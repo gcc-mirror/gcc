@@ -1,6 +1,6 @@
 ; Options for the Renesas M32R port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -30,11 +30,11 @@ Variable
 enum m32r_sdata m32r_sdata_selected = M32R_SDATA_DEFAULT
 
 m32rx
-Target Report RejectNegative Mask(M32RX)
+Target RejectNegative Mask(M32RX)
 Compile for the m32rx.
 
 m32r2
-Target Report RejectNegative Mask(M32R2)
+Target RejectNegative Mask(M32R2)
 Compile for the m32r2.
 
 m32r
@@ -42,15 +42,15 @@ Target RejectNegative
 Compile for the m32r.
 
 malign-loops
-Target Report Mask(ALIGN_LOOPS)
+Target Mask(ALIGN_LOOPS)
 Align all loops to 32 byte boundary.
 
 mbranch-cost=1
-Target Report RejectNegative Mask(BRANCH_COST)
+Target RejectNegative Mask(BRANCH_COST)
 Prefer branches over conditional execution.
 
 mbranch-cost=2
-Target Report RejectNegative InverseMask(BRANCH_COST)
+Target RejectNegative InverseMask(BRANCH_COST)
 Give branches their default cost.
 
 mdebug
@@ -66,11 +66,11 @@ Target RejectNegative Joined UInteger Var(m32r_cache_flush_trap) Init(CACHE_FLUS
 Specify cache flush trap number.
 
 missue-rate=1
-Target Report RejectNegative Mask(LOW_ISSUE_RATE)
+Target RejectNegative Mask(LOW_ISSUE_RATE)
 Only issue one instruction per cycle.
 
 missue-rate=2
-Target Report RejectNegative InverseMask(LOW_ISSUE_RATE)
+Target RejectNegative InverseMask(LOW_ISSUE_RATE)
 Allow two instructions to be issued per cycle.
 
 mmodel=

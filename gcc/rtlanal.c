@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "rtlanal.h"
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
@@ -1454,6 +1455,41 @@ set_of (const_rtx pat, const_rtx insn)
   return data.found;
 }
 
+/* Check whether instruction pattern PAT contains a SET with the following
+   properties:
+
+   - the SET is executed unconditionally; and
+   - either:
+     - the destination of the SET is a REG that contains REGNO; or
+     - both:
+       - the destination of the SET is a SUBREG of such a REG; and
+       - writing to the subreg clobbers all of the SUBREG_REG
+	 (in other words, read_modify_subreg_p is false).
+
+   If PAT does have a SET like that, return the set, otherwise return null.
+
+   This is intended to be an alternative to single_set for passes that
+   can handle patterns with multiple_sets.  */
+rtx
+simple_regno_set (rtx pat, unsigned int regno)
+{
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int last = XVECLEN (pat, 0) - 1;
+      for (int i = 0; i < last; ++i)
+	if (rtx set = simple_regno_set (XVECEXP (pat, 0, i), regno))
+	  return set;
+
+      pat = XVECEXP (pat, 0, last);
+    }
+
+  if (GET_CODE (pat) == SET
+      && covers_regno_no_parallel_p (SET_DEST (pat), regno))
+    return pat;
+
+  return nullptr;
+}
+
 /* Add all hard register in X to *PSET.  */
 void
 find_all_hard_regs (const_rtx x, HARD_REG_SET *pset)
@@ -1667,10 +1703,6 @@ noop_move_p (const rtx_insn *insn)
 
   if (INSN_CODE (insn) == NOOP_MOVE_INSN_CODE)
     return 1;
-
-  /* Insns carrying these notes are useful later on.  */
-  if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
-    return 0;
 
   /* Check the code to be executed for COND_EXEC.  */
   if (GET_CODE (pat) == COND_EXEC)
@@ -2052,6 +2084,287 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
       (*fun) (pbody, data);
       return;
     }
+}
+
+/* Try to add a description of REG X to this object, stopping once
+   the REF_END limit has been reached.  FLAGS is a bitmask of
+   rtx_obj_reference flags that describe the context.  */
+
+void
+rtx_properties::try_to_add_reg (const_rtx x, unsigned int flags)
+{
+  if (REG_NREGS (x) != 1)
+    flags |= rtx_obj_flags::IS_MULTIREG;
+  machine_mode mode = GET_MODE (x);
+  unsigned int start_regno = REGNO (x);
+  unsigned int end_regno = END_REGNO (x);
+  for (unsigned int regno = start_regno; regno < end_regno; ++regno)
+    if (ref_iter != ref_end)
+      *ref_iter++ = rtx_obj_reference (regno, flags, mode,
+				       regno - start_regno);
+}
+
+/* Add a description of destination X to this object.  FLAGS is a bitmask
+   of rtx_obj_reference flags that describe the context.
+
+   This routine accepts all rtxes that can legitimately appear in a
+   SET_DEST.  */
+
+void
+rtx_properties::try_to_add_dest (const_rtx x, unsigned int flags)
+{
+  /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
+     each of whose first operand is a register.  */
+  if (__builtin_expect (GET_CODE (x) == PARALLEL, 0))
+    {
+      for (int i = XVECLEN (x, 0) - 1; i >= 0; --i)
+	if (rtx dest = XEXP (XVECEXP (x, 0, i), 0))
+	  try_to_add_dest (dest, flags);
+      return;
+    }
+
+  unsigned int base_flags = flags & rtx_obj_flags::STICKY_FLAGS;
+  flags |= rtx_obj_flags::IS_WRITE;
+  for (;;)
+    if (GET_CODE (x) == ZERO_EXTRACT)
+      {
+	try_to_add_src (XEXP (x, 1), base_flags);
+	try_to_add_src (XEXP (x, 2), base_flags);
+	flags |= rtx_obj_flags::IS_READ;
+	x = XEXP (x, 0);
+      }
+    else if (GET_CODE (x) == STRICT_LOW_PART)
+      {
+	flags |= rtx_obj_flags::IS_READ;
+	x = XEXP (x, 0);
+      }
+    else if (GET_CODE (x) == SUBREG)
+      {
+	flags |= rtx_obj_flags::IN_SUBREG;
+	if (read_modify_subreg_p (x))
+	  flags |= rtx_obj_flags::IS_READ;
+	x = SUBREG_REG (x);
+      }
+    else
+      break;
+
+  if (MEM_P (x))
+    {
+      if (ref_iter != ref_end)
+	*ref_iter++ = rtx_obj_reference (MEM_REGNO, flags, GET_MODE (x));
+
+      unsigned int addr_flags = base_flags | rtx_obj_flags::IN_MEM_STORE;
+      if (flags & rtx_obj_flags::IS_READ)
+	addr_flags |= rtx_obj_flags::IN_MEM_LOAD;
+      try_to_add_src (XEXP (x, 0), addr_flags);
+      return;
+    }
+
+  if (__builtin_expect (REG_P (x), 1))
+    {
+      /* We want to keep sp alive everywhere -  by making all
+	 writes to sp also use sp. */
+      if (REGNO (x) == STACK_POINTER_REGNUM)
+	flags |= rtx_obj_flags::IS_READ;
+      try_to_add_reg (x, flags);
+      return;
+    }
+}
+
+/* Try to add a description of source X to this object, stopping once
+   the REF_END limit has been reached.  FLAGS is a bitmask of
+   rtx_obj_reference flags that describe the context.
+
+   This routine accepts all rtxes that can legitimately appear in a SET_SRC.  */
+
+void
+rtx_properties::try_to_add_src (const_rtx x, unsigned int flags)
+{
+  unsigned int base_flags = flags & rtx_obj_flags::STICKY_FLAGS;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      rtx_code code = GET_CODE (x);
+      if (code == REG)
+	try_to_add_reg (x, flags | rtx_obj_flags::IS_READ);
+      else if (code == MEM)
+	{
+	  if (MEM_VOLATILE_P (x))
+	    has_volatile_refs = true;
+
+	  if (!MEM_READONLY_P (x) && ref_iter != ref_end)
+	    {
+	      auto mem_flags = flags | rtx_obj_flags::IS_READ;
+	      *ref_iter++ = rtx_obj_reference (MEM_REGNO, mem_flags,
+					       GET_MODE (x));
+	    }
+
+	  try_to_add_src (XEXP (x, 0),
+			  base_flags | rtx_obj_flags::IN_MEM_LOAD);
+	  iter.skip_subrtxes ();
+	}
+      else if (code == SUBREG)
+	{
+	  try_to_add_src (SUBREG_REG (x), flags | rtx_obj_flags::IN_SUBREG);
+	  iter.skip_subrtxes ();
+	}
+      else if (code == UNSPEC_VOLATILE)
+	has_volatile_refs = true;
+      else if (code == ASM_INPUT || code == ASM_OPERANDS)
+	{
+	  has_asm = true;
+	  if (MEM_VOLATILE_P (x))
+	    has_volatile_refs = true;
+	}
+      else if (code == PRE_INC
+	       || code == PRE_DEC
+	       || code == POST_INC
+	       || code == POST_DEC
+	       || code == PRE_MODIFY
+	       || code == POST_MODIFY)
+	{
+	  has_pre_post_modify = true;
+
+	  unsigned int addr_flags = (base_flags
+				     | rtx_obj_flags::IS_PRE_POST_MODIFY
+				     | rtx_obj_flags::IS_READ);
+	  try_to_add_dest (XEXP (x, 0), addr_flags);
+	  if (code == PRE_MODIFY || code == POST_MODIFY)
+	    iter.substitute (XEXP (XEXP (x, 1), 1));
+	  else
+	    iter.skip_subrtxes ();
+	}
+      else if (code == CALL)
+	has_call = true;
+    }
+}
+
+/* Try to add a description of instruction pattern PAT to this object,
+   stopping once the REF_END limit has been reached.  */
+
+void
+rtx_properties::try_to_add_pattern (const_rtx pat)
+{
+  switch (GET_CODE (pat))
+    {
+    case COND_EXEC:
+      try_to_add_src (COND_EXEC_TEST (pat));
+      try_to_add_pattern (COND_EXEC_CODE (pat));
+      break;
+
+    case PARALLEL:
+      {
+	int last = XVECLEN (pat, 0) - 1;
+	for (int i = 0; i < last; ++i)
+	  try_to_add_pattern (XVECEXP (pat, 0, i));
+	try_to_add_pattern (XVECEXP (pat, 0, last));
+	break;
+      }
+
+    case ASM_OPERANDS:
+      for (int i = 0, len = ASM_OPERANDS_INPUT_LENGTH (pat); i < len; ++i)
+	try_to_add_src (ASM_OPERANDS_INPUT (pat, i));
+      break;
+
+    case CLOBBER:
+      try_to_add_dest (XEXP (pat, 0), rtx_obj_flags::IS_CLOBBER);
+      break;
+
+    case SET:
+      try_to_add_dest (SET_DEST (pat));
+      try_to_add_src (SET_SRC (pat));
+      break;
+
+    default:
+      /* All the other possibilities never store and can use a normal
+	 rtx walk.  This includes:
+
+	 - USE
+	 - TRAP_IF
+	 - PREFETCH
+	 - UNSPEC
+	 - UNSPEC_VOLATILE.  */
+      try_to_add_src (pat);
+      break;
+    }
+}
+
+/* Try to add a description of INSN to this object, stopping once
+   the REF_END limit has been reached.  INCLUDE_NOTES is true if the
+   description should include REG_EQUAL and REG_EQUIV notes; all such
+   references will then be marked with rtx_obj_flags::IN_NOTE.
+
+   For calls, this description includes all accesses in
+   CALL_INSN_FUNCTION_USAGE.  It also include all implicit accesses
+   to global registers by the target function.  However, it does not
+   include clobbers performed by the target function; callers that want
+   this information should instead use the function_abi interface.  */
+
+void
+rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
+{
+  if (CALL_P (insn))
+    {
+      /* Adding the global registers first removes a situation in which
+	 a fixed-form clobber of register R could come before a real set
+	 of register R.  */
+      if (!hard_reg_set_empty_p (global_reg_set))
+	{
+	  unsigned int flags = (rtx_obj_flags::IS_READ
+				| rtx_obj_flags::IS_WRITE);
+	  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	    if (global_regs[regno] && ref_iter != ref_end)
+	      *ref_iter++ = rtx_obj_reference (regno, flags,
+					       reg_raw_mode[regno], 0);
+	}
+      if (ref_iter != ref_end && !RTL_CONST_CALL_P (insn))
+	{
+	  auto mem_flags = rtx_obj_flags::IS_READ;
+	  if (!RTL_PURE_CALL_P (insn))
+	    mem_flags |= rtx_obj_flags::IS_WRITE;
+	  *ref_iter++ = rtx_obj_reference (MEM_REGNO, mem_flags, BLKmode);
+	}
+      try_to_add_pattern (PATTERN (insn));
+      for (rtx link = CALL_INSN_FUNCTION_USAGE (insn); link;
+	   link = XEXP (link, 1))
+	{
+	  rtx x = XEXP (link, 0);
+	  if (GET_CODE (x) == CLOBBER)
+	    try_to_add_dest (XEXP (x, 0), rtx_obj_flags::IS_CLOBBER);
+	  else if (GET_CODE (x) == USE)
+	    try_to_add_src (XEXP (x, 0));
+	}
+    }
+  else
+    try_to_add_pattern (PATTERN (insn));
+
+  if (include_notes)
+    for (rtx note = REG_NOTES (insn); note; note = XEXP (note, 1))
+      if (REG_NOTE_KIND (note) == REG_EQUAL
+	  || REG_NOTE_KIND (note) == REG_EQUIV)
+	try_to_add_note (XEXP (note, 0));
+}
+
+/* Grow the storage by a bit while keeping the contents of the first
+   START elements.  */
+
+void
+vec_rtx_properties_base::grow (ptrdiff_t start)
+{
+  /* The same heuristic that vec uses.  */
+  ptrdiff_t new_elems = (ref_end - ref_begin) * 3 / 2;
+  if (ref_begin == m_storage)
+    {
+      ref_begin = XNEWVEC (rtx_obj_reference, new_elems);
+      if (start)
+	memcpy (ref_begin, m_storage, start * sizeof (rtx_obj_reference));
+    }
+  else
+    ref_begin = reinterpret_cast<rtx_obj_reference *>
+      (xrealloc (ref_begin, new_elems * sizeof (rtx_obj_reference)));
+  ref_iter = ref_begin + start;
+  ref_end = ref_begin + new_elems;
 }
 
 /* Return nonzero if X's old contents don't survive after INSN.
@@ -6620,4 +6933,16 @@ add_auto_inc_notes (rtx_insn *insn, rtx x)
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  add_auto_inc_notes (insn, XVECEXP (x, i, j));
     }
+}
+
+/* Return true if X is register asm.  */
+
+bool
+register_asm_p (const_rtx x)
+{
+  return (REG_P (x)
+	  && REG_EXPR (x) != NULL_TREE
+	  && HAS_DECL_ASSEMBLER_NAME_P (REG_EXPR (x))
+	  && DECL_ASSEMBLER_NAME_SET_P (REG_EXPR (x))
+	  && DECL_REGISTER (REG_EXPR (x)));
 }

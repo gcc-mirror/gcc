@@ -195,7 +195,8 @@ package body Sem_Ch5 is
                    or else Is_Protected_Component (Ent)
                then
                   Error_Msg_N
-                    ("protected function cannot modify protected object", N);
+                    ("protected function cannot modify its protected object",
+                     N);
                   return;
                end if;
             end;
@@ -705,7 +706,8 @@ package body Sem_Ch5 is
                     and then Convention (S) = Convention_Protected
                   then
                      Error_Msg_N
-                       ("protected function cannot modify protected object",
+                       ("protected function cannot modify its protected " &
+                        "object",
                         Lhs);
                   end if;
 
@@ -771,7 +773,7 @@ package body Sem_Ch5 is
 
       if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
          Error_Msg_N
-           ("protected function cannot modify protected object", Lhs);
+           ("protected function cannot modify its protected object", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand side
@@ -954,7 +956,7 @@ package body Sem_Ch5 is
             Apply_Compile_Time_Constraint_Error
               (N      => Rhs,
                Msg    =>
-                 "(Ada 2005) null not allowed in null-excluding objects??",
+                 "(Ada 2005) NULL not allowed in null-excluding objects??",
                Reason => CE_Null_Not_Allowed);
 
             --  We still mark this as a possible modification, that's necessary
@@ -1387,25 +1389,13 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Case_Statement (N : Node_Id) is
-      Exp            : Node_Id;
-      Exp_Type       : Entity_Id;
-      Exp_Btype      : Entity_Id;
-      Last_Choice    : Nat;
-
-      Others_Present : Boolean;
-      --  Indicates if Others was present
-
-      pragma Warnings (Off, Last_Choice);
-      --  Don't care about assigned value
+      Exp : constant Node_Id := Expression (N);
 
       Statements_Analyzed : Boolean := False;
       --  Set True if at least some statement sequences get analyzed. If False
       --  on exit, means we had a serious error that prevented full analysis of
       --  the case statement, and as a result it is not a good idea to output
       --  warning messages about unreachable code.
-
-      Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
-      --  Recursively save value of this global, will be restored on exit
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when the
@@ -1490,11 +1480,20 @@ package body Sem_Ch5 is
          Analyze_Statements (Statements (Alternative));
       end Process_Statements;
 
+      --  Local variables
+
+      Exp_Type  : Entity_Id;
+      Exp_Btype : Entity_Id;
+
+      Others_Present : Boolean;
+      --  Indicates if Others was present
+
+      Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
+      --  Recursively save value of this global, will be restored on exit
+
    --  Start of processing for Analyze_Case_Statement
 
    begin
-      Unblocked_Exit_Count := 0;
-      Exp := Expression (N);
       Analyze (Exp);
 
       --  The expression must be of any discrete type. In rare cases, the
@@ -1558,7 +1557,9 @@ package body Sem_Ch5 is
          Exp_Type := Exp_Btype;
       end if;
 
-      --  Call instantiated procedures to analyzwe and check discrete choices
+      --  Call instantiated procedures to analyze and check discrete choices
+
+      Unblocked_Exit_Count := 0;
 
       Analyze_Choices (Alternatives (N), Exp_Type);
       Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
@@ -1773,8 +1774,6 @@ package body Sem_Ch5 is
    --  on which they depend will not be available at the freeze point.
 
    procedure Analyze_If_Statement (N : Node_Id) is
-      E : Node_Id;
-
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
@@ -1838,6 +1837,11 @@ package body Sem_Ch5 is
             Analyze_Statements (Tstm);
          end if;
       end Analyze_Cond_Then;
+
+      --  Local variables
+
+      E : Node_Id;
+      --  For iterating over elsif parts
 
    --  Start of processing for Analyze_If_Statement
 
@@ -2620,7 +2624,10 @@ package body Sem_Ch5 is
       end if;
 
       if Present (Iterator_Filter (N)) then
-         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
+         --  Preanalyze the filter. Expansion will take place when enclosing
+         --  loop is expanded.
+
+         Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -3017,6 +3024,9 @@ package body Sem_Ch5 is
             begin
                Set_Iterator_Specification (Scheme, I_Spec);
                Set_Loop_Parameter_Specification (Scheme, Empty);
+               Set_Iterator_Filter (I_Spec,
+                 Relocate_Node (Iterator_Filter (N)));
+
                Analyze_Iterator_Specification (I_Spec);
 
                --  In a generic context, analyze the original domain of
@@ -3089,7 +3099,10 @@ package body Sem_Ch5 is
          Check_Predicate_Use (Entity (Subtype_Mark (DS)));
       end if;
 
-      Make_Index (DS, N);
+      if Nkind (DS) not in N_Raise_xxx_Error then
+         Make_Index (DS, N);
+      end if;
+
       Set_Ekind (Id, E_Loop_Parameter);
 
       --  A quantified expression which appears in a pre- or post-condition may

@@ -1,3 +1,112 @@
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (-std=c++2a, -std=c++20, -std=gnu++2a, -std=gnu++20): Remove
+	draft from description.
+	(-std=c++2b): Fix a pasto, 2020 -> 2023.
+
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* c-common.h (cxx_dialect): Add cxx23 as a dialect.
+	* c.opt: Add options for -std=c++23, std=c++2b, -std=gnu++23
+	and -std=gnu++2b
+	* c-opts.c (set_std_cxx23): New.
+	(c_common_handle_option): Set options when -std=c++23 is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx20): Likewise.
+
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* c-common.c (check_nonnull_arg): Adjust warning text.
+
+2021-01-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	assume SSA_NAME_IDENTIFIER evaluates to nonzero.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DETACH.
+	Redefine PRAGMA_OACC_CLAUSE_DETACH.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98597
+	* c-pretty-print.c: Include options.h.
+	(c_fold_indirect_ref_for_warn): New function.
+	(print_mem_ref): Use it.  If it returns something that has compatible
+	type and is TBAA compatible with zero offset, print it and return,
+	otherwise print it using offsetof syntax or array ref syntax.  Fix up
+	printing if MEM_REFs first operand is ADDR_EXPR, or when the first
+	argument has pointer to array type.  Print pointers using the standard
+	formatting.
+
+2021-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/98597
+	PR c/98592
+	* c-pretty-print.c (print_mem_ref): Avoid assuming MEM_REF operand
+	has pointer type.  Remove redundant code.  Avoid calling
+	gimple_canonical_types_compatible_p.
+
+2021-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98578
+	* c-pretty-print.c (print_mem_ref): Strip array from access type.
+	Avoid assuming acces type's size is constant.  Correct condition
+	guarding the printing of a parenthesis.
+
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95768
+	* c-pretty-print.c (c_pretty_printer::primary_expression): For
+	SSA_NAMEs print VLA names and GIMPLE defining statements.
+	(print_mem_ref): New function.
+	(c_pretty_printer::unary_expression): Call it.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95582
+	* c-attribs.c (c_common_attribute_table): Add entry for
+	signed_bool_precision.
+	(handle_signed_bool_precision_attribute): New.
+
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt: Add -stdlib= option and enumerations for
+	libstdc++ and libc++.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Remove usage of Report.
+
+2020-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98166
+	PR c++/57111
+	PR middle-end/98160
+	* c-attribs.c (maybe_add_noinline): New function.
+	(handle_malloc_attribute): Call it.  Use ATTR_FLAG_INTERNAL.
+	Implicitly add attribute noinline to functions not declared inline
+	and warn on those.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.c (omp_pragmas): Add 'allocate'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ALLOCATE.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-pragma.c (omp_pragmas): Remove "master".
+	(omp_pragmas_simd): Add "master".
+
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98126
+	* c-common.c (verify_tree_lim_r): New function.
+	(verify_sequence_points): Use it.  Use nullptr instead of 0.
+
 2020-12-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90629
@@ -11806,7 +11915,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2020 Free Software Foundation, Inc.
+Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -9,8 +9,9 @@
  */
 module core.sys.windows.dlgs;
 version (Windows):
+@system:
 
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 enum : ushort {
     FILEOPENORD      = 1536,

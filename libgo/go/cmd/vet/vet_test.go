@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"internal/testenv"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -33,7 +32,7 @@ func TestMain(m *testing.M) {
 }
 
 func testMain(m *testing.M) int {
-	dir, err := ioutil.TempDir("", "vet_test")
+	dir, err := os.MkdirTemp("", "vet_test")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -349,7 +348,7 @@ var (
 func wantedErrors(file, short string) (errs []wantedError) {
 	cache := make(map[string]*regexp.Regexp)
 
-	src, err := ioutil.ReadFile(file)
+	src, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -9002,7 +9002,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   else
     {
       /* An optional target.  */
-      if (arg2->expr->ts.type == BT_CLASS)
+      if (arg2->expr->ts.type == BT_CLASS
+	  && arg2->expr->expr_type != EXPR_FUNCTION)
 	gfc_add_data_component (arg2->expr);
 
       if (scalar)
@@ -9023,6 +9024,11 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	      && arg2->expr->symtree->n.sym->attr.dummy)
 	    arg2se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg2se.expr);
+	  if (arg2->expr->ts.type == BT_CLASS)
+	    {
+	      arg2se.expr = gfc_evaluate_now (arg2se.expr, &arg2se.pre);
+	      arg2se.expr = gfc_class_data_get (arg2se.expr);
+	    }
 	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
 	  gfc_add_block_to_block (&se->post, &arg1se.post);
 	  gfc_add_block_to_block (&se->pre, &arg2se.pre);

@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -267,6 +267,10 @@
 (define_mode_iterator VSX_MM [V16QI V8HI V4SI V2DI V1TI])
 (define_mode_iterator VSX_MM4 [V16QI V8HI V4SI V2DI])
 
+;; Longer vec int modes for rotate/mask ops
+;; and Vector Integer Multiply/Divide/Modulo Instructions
+(define_mode_iterator VIlong [V2DI V4SI])
+
 ;; Constants for creating unspecs
 (define_c_enum "unspec"
   [UNSPEC_VSX_CONCAT
@@ -363,6 +367,8 @@
    UNSPEC_INSERTR
    UNSPEC_REPLACE_ELT
    UNSPEC_REPLACE_UN
+   UNSPEC_VDIVES
+   UNSPEC_VDIVEU
   ])
 
 (define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
@@ -1623,28 +1629,35 @@
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  rtx op3 = gen_reg_rtx (DImode);
-  rtx op4 = gen_reg_rtx (DImode);
-  rtx op5 = gen_reg_rtx (DImode);
-  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
-  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  if (TARGET_POWERPC64)
-    emit_insn (gen_muldi3 (op5, op3, op4));
+
+  if (TARGET_POWER10)
+    emit_insn (gen_mulv2di3 (op0, op1, op2) );
+
   else
     {
-      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
-      emit_move_insn (op5, ret);
+      rtx op3 = gen_reg_rtx (DImode);
+      rtx op4 = gen_reg_rtx (DImode);
+      rtx op5 = gen_reg_rtx (DImode);
+      emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+      emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+      if (TARGET_POWERPC64)
+	emit_insn (gen_muldi3 (op5, op3, op4));
+      else
+	{
+	  rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+	  emit_move_insn (op5, ret);
+	}
+      emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+      emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+      if (TARGET_POWERPC64)
+	emit_insn (gen_muldi3 (op3, op3, op4));
+      else
+	{
+	  rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+	  emit_move_insn (op3, ret);
+	}
+      emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
     }
-  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
-  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  if (TARGET_POWERPC64)
-    emit_insn (gen_muldi3 (op3, op3, op4));
-  else
-    {
-      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
-      emit_move_insn (op3, ret);
-    }
-  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }
   [(set_attr "type" "mul")])
@@ -1718,37 +1731,46 @@
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   rtx op2 = operands[2];
-  rtx op3 = gen_reg_rtx (DImode);
-  rtx op4 = gen_reg_rtx (DImode);
-  rtx op5 = gen_reg_rtx (DImode);
-  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
-  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  if (TARGET_POWERPC64)
-    emit_insn (gen_udivdi3 (op5, op3, op4));
-  else
-    {
-      rtx libfunc = optab_libfunc (udiv_optab, DImode);
-      rtx target = emit_library_call_value (libfunc,
-					    op5, LCT_NORMAL, DImode,
-					    op3, DImode,
-					    op4, DImode);
-      emit_move_insn (op5, target);
-    }
-  emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
-  emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  if (TARGET_POWERPC64)
-    emit_insn (gen_udivdi3 (op3, op3, op4));
-  else
-    {
-      rtx libfunc = optab_libfunc (udiv_optab, DImode);
-      rtx target = emit_library_call_value (libfunc,
-					    op3, LCT_NORMAL, DImode,
-					    op3, DImode,
-					    op4, DImode);
-      emit_move_insn (op3, target);
-    }
-  emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
-  DONE;
+
+    if (TARGET_POWER10)
+      emit_insn (gen_udivv2di3 (op0, op1, op2) );
+    else
+      {
+	rtx op3 = gen_reg_rtx (DImode);
+	rtx op4 = gen_reg_rtx (DImode);
+	rtx op5 = gen_reg_rtx (DImode);
+
+	emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
+	emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
+
+	if (TARGET_POWERPC64)
+	  emit_insn (gen_udivdi3 (op5, op3, op4));
+	else
+	  {
+	    rtx libfunc = optab_libfunc (udiv_optab, DImode);
+	    rtx target = emit_library_call_value (libfunc,
+						  op5, LCT_NORMAL, DImode,
+						  op3, DImode,
+						  op4, DImode);
+	    emit_move_insn (op5, target);
+	  }
+	emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
+	emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
+
+	if (TARGET_POWERPC64)
+	  emit_insn (gen_udivdi3 (op3, op3, op4));
+	else
+	  {
+	    rtx libfunc = optab_libfunc (udiv_optab, DImode);
+	    rtx target = emit_library_call_value (libfunc,
+						  op3, LCT_NORMAL, DImode,
+						  op3, DImode,
+						  op4, DImode);
+	    emit_move_insn (op3, target);
+	  }
+	emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
+      }
+    DONE;
 }
   [(set_attr "type" "div")])
 
@@ -6104,3 +6126,92 @@
   "TARGET_POWER10"
   "vexpand<wd>m %0,%1"
   [(set_attr "type" "vecsimple")])
+
+(define_insn "dives_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+        (unspec:VIlong [(match_operand:VIlong 1 "vsx_register_operand" "v")
+		        (match_operand:VIlong 2 "vsx_register_operand" "v")]
+        UNSPEC_VDIVES))]
+  "TARGET_POWER10"
+  "vdives<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "diveu_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+        (unspec:VIlong [(match_operand:VIlong 1 "vsx_register_operand" "v")
+			(match_operand:VIlong 2 "vsx_register_operand" "v")]
+	UNSPEC_VDIVEU))]
+  "TARGET_POWER10"
+  "vdiveu<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "div<mode>3"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(div:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
+		    (match_operand:VIlong 2 "vsx_register_operand" "v")))]
+  "TARGET_POWER10"
+  "vdivs<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "udiv<mode>3"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(udiv:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
+		    (match_operand:VIlong 2 "vsx_register_operand" "v")))]
+  "TARGET_POWER10"
+  "vdivu<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "mods_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(mod:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
+		    (match_operand:VIlong 2 "vsx_register_operand" "v")))]
+  "TARGET_POWER10"
+  "vmods<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "modu_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(umod:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
+		     (match_operand:VIlong 2 "vsx_register_operand" "v")))]
+  "TARGET_POWER10"
+  "vmodu<wd> %0,%1,%2"
+  [(set_attr "type" "vecdiv")
+   (set_attr "size" "<bits>")])
+
+(define_insn "mulhs_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(mult:VIlong (ashiftrt
+		       (match_operand:VIlong 1 "vsx_register_operand" "v")
+		       (const_int 32))
+		     (ashiftrt
+		       (match_operand:VIlong 2 "vsx_register_operand" "v")
+		       (const_int 32))))]
+  "TARGET_POWER10"
+  "vmulhs<wd> %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+(define_insn "mulhu_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(us_mult:VIlong (ashiftrt
+			  (match_operand:VIlong 1 "vsx_register_operand" "v")
+			  (const_int 32))
+			(ashiftrt
+			  (match_operand:VIlong 2 "vsx_register_operand" "v")
+			  (const_int 32))))]
+  "TARGET_POWER10"
+  "vmulhu<wd> %0,%1,%2"
+  [(set_attr "type" "veccomplex")])
+
+;; Vector multiply low double word
+(define_insn "mulv2di3"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
+	(mult:V2DI (match_operand:V2DI 1 "vsx_register_operand" "v")
+		   (match_operand:V2DI 2 "vsx_register_operand" "v")))]
+  "TARGET_POWER10"
+  "vmulld %0,%1,%2"
+  [(set_attr "type" "veccomplex")])

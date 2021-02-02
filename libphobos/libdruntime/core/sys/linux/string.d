@@ -14,6 +14,7 @@ version (linux):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 static if (__USE_GNU)
 {

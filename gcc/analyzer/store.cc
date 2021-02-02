@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -524,10 +524,27 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
   unsigned ix;
   tree index;
   tree val;
+  tree parent_type = parent_reg->get_type ();
+  tree field;
+  if (TREE_CODE (parent_type) == RECORD_TYPE)
+    field = TYPE_FIELDS (parent_type);
+  else
+    field = NULL_TREE;
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), ix, index, val)
     {
       if (!index)
-	index = build_int_cst (integer_type_node, ix);
+	{
+	  /* If index is NULL, then iterate through the fields for
+	     a RECORD_TYPE, or use an INTEGER_CST otherwise.
+	     Compare with similar logic in output_constructor.  */
+	  if (field)
+	    {
+	      index = field;
+	      field = DECL_CHAIN (field);
+	    }
+	  else
+	    index = build_int_cst (integer_type_node, ix);
+	}
       else if (TREE_CODE (index) == RANGE_EXPR)
 	{
 	  tree min_index = TREE_OPERAND (index, 0);
@@ -1160,6 +1177,7 @@ bool
 binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 			      const binding_cluster *cluster_b,
 			      binding_cluster *out_cluster,
+			      store *out_store,
 			      store_manager *mgr,
 			      model_merger *merger)
 {
@@ -1180,14 +1198,14 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
     {
       gcc_assert (cluster_b != NULL);
       gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
-      out_cluster->make_unknown_relative_to (cluster_b, mgr);
+      out_cluster->make_unknown_relative_to (cluster_b, out_store, mgr);
       return true;
     }
   if (cluster_b == NULL)
     {
       gcc_assert (cluster_a != NULL);
       gcc_assert (cluster_a->m_base_region == out_cluster->m_base_region);
-      out_cluster->make_unknown_relative_to (cluster_a, mgr);
+      out_cluster->make_unknown_relative_to (cluster_a, out_store, mgr);
       return true;
     }
 
@@ -1281,6 +1299,7 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 
 void
 binding_cluster::make_unknown_relative_to (const binding_cluster *other,
+					   store *out_store,
 					   store_manager *mgr)
 {
   for (map_t::iterator iter = other->m_map.begin ();
@@ -1292,6 +1311,24 @@ binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 	= mgr->get_svalue_manager ()->get_or_create_unknown_svalue
 	  (iter_sval->get_type ());
       m_map.put (iter_key, unknown_sval);
+
+      /* For any pointers in OTHER, the merger means that the
+	 concrete pointer becomes an unknown value, which could
+	 show up as a false report of a leak when considering what
+	 pointers are live before vs after.
+	 Avoid this by marking the base regions they point to as having
+	 escaped.  */
+      if (const region_svalue *region_sval
+	  = iter_sval->dyn_cast_region_svalue ())
+	{
+	  const region *base_reg
+	    = region_sval->get_pointee ()->get_base_region ();
+	  if (!base_reg->symbolic_for_unknown_ptr_p ())
+	    {
+	      binding_cluster *c = out_store->get_or_create_cluster (base_reg);
+	      c->mark_as_escaped ();
+	    }
+	}
     }
 }
 
@@ -1703,7 +1740,7 @@ store::dump (bool simple) const
    {PARENT_REGION_DESC: {BASE_REGION_DESC: object for binding_map,
 			 ... for each cluster within parent region},
     ...for each parent region,
-    "called_unknown_function": true/false}.  */
+    "called_unknown_fn": true/false}.  */
 
 json::object *
 store::to_json () const
@@ -2075,7 +2112,7 @@ store::can_merge_p (const store *store_a, const store *store_b,
       binding_cluster *out_cluster
 	= out_store->get_or_create_cluster (base_reg);
       if (!binding_cluster::can_merge_p (cluster_a, cluster_b,
-					 out_cluster, mgr, merger))
+					 out_cluster, out_store, mgr, merger))
 	return false;
     }
   return true;

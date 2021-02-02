@@ -1,4 +1,15 @@
-// RUNNABLE_PHOBOS_TEST
+/* RUNNABLE_PHOBOS_TEST
+TEST_OUTPUT:
+---
+This actually gets evaluated!
+()
+(bool)
+(bool, short)
+(bool, short, int)
+Alias Test instantiated
+Alias Test instantiated
+---
+*/
 import std.stdio;
 import core.stdc.stdio;
 
@@ -1074,22 +1085,27 @@ struct Foo7469d(T...) { }
 struct Foo7469e(int a, T...) { }
 struct Foo7469f(T, int k=1) { }
 struct Foo7469g(T, int k=1) { }
+struct Foo7469h(uint x) { }
+
+import core.demangle : demangleType;
 
 void test7469()
 {
-    static assert(Foo7469a!(3 )    .mangleof[$-28 .. $] == "17__T8Foo7469aVii3Z8Foo7469a");
-    static assert(Foo7469a!(3u)    .mangleof[$-28 .. $] == "17__T8Foo7469aVii3Z8Foo7469a");
-    static assert(Foo7469b!(3u)    .mangleof[$-28 .. $] == "17__T8Foo7469bVii3Z8Foo7469b");
-    static assert(Foo7469b!(3 )    .mangleof[$-28 .. $] == "17__T8Foo7469bVii3Z8Foo7469b");
-    static assert(Foo7469c!(3 )    .mangleof[$-28 .. $] == "17__T8Foo7469cVii3Z8Foo7469c");
-    static assert(Foo7469c!(3u)    .mangleof[$-28 .. $] == "17__T8Foo7469cVki3Z8Foo7469c");
-    static assert(Foo7469d!(3 )    .mangleof[$-28 .. $] == "17__T8Foo7469dVii3Z8Foo7469d");
-    static assert(Foo7469d!(3u)    .mangleof[$-28 .. $] == "17__T8Foo7469dVki3Z8Foo7469d");
-    static assert(Foo7469e!(3u, 5u).mangleof[$-32 .. $] == "21__T8Foo7469eVii3Vki5Z8Foo7469e");
-    static assert(Foo7469f!(int, 1).mangleof[$-30 .. $] == "19__T8Foo7469fTiVii1Z8Foo7469f");
-    static assert(Foo7469f!(int)   .mangleof[$-30 .. $] == "19__T8Foo7469fTiVii1Z8Foo7469f");
-    static assert(Foo7469g!(int)   .mangleof[$-30 .. $] == "19__T8Foo7469gTiVii1Z8Foo7469g");
-    static assert(Foo7469g!(int, 1).mangleof[$-30 .. $] == "19__T8Foo7469gTiVii1Z8Foo7469g");
+    static assert(demangleType(Foo7469a!(3 )    .mangleof) == "template4.Foo7469a!(3).Foo7469a");
+    static assert(demangleType(Foo7469a!(3u)    .mangleof) == "template4.Foo7469a!(3).Foo7469a");
+    static assert(demangleType(Foo7469b!(3u)    .mangleof) == "template4.Foo7469b!(3).Foo7469b");
+    static assert(demangleType(Foo7469b!(3 )    .mangleof) == "template4.Foo7469b!(3).Foo7469b");
+    static assert(demangleType(Foo7469c!(3 )    .mangleof) == "template4.Foo7469c!(3).Foo7469c");
+    static assert(demangleType(Foo7469c!(3u)    .mangleof) == "template4.Foo7469c!(3u).Foo7469c");
+    static assert(demangleType(Foo7469d!(3 )    .mangleof) == "template4.Foo7469d!(3).Foo7469d");
+    static assert(demangleType(Foo7469d!(3u)    .mangleof) == "template4.Foo7469d!(3u).Foo7469d");
+    static assert(demangleType(Foo7469e!(3u, 5u).mangleof) == "template4.Foo7469e!(3, 5u).Foo7469e");
+    static assert(demangleType(Foo7469f!(int, 1).mangleof) == "template4.Foo7469f!(int, 1).Foo7469f");
+    static assert(demangleType(Foo7469f!(int)   .mangleof) == "template4.Foo7469f!(int, 1).Foo7469f");
+    static assert(demangleType(Foo7469g!(int)   .mangleof) == "template4.Foo7469g!(int, 1).Foo7469g");
+    static assert(demangleType(Foo7469g!(int, 1).mangleof) == "template4.Foo7469g!(int, 1).Foo7469g");
+    static assert(demangleType(Foo7469h!(3 )    .mangleof) == "template4.Foo7469h!(3u).Foo7469h");
+    static assert(demangleType(Foo7469h!(3u)    .mangleof) == "template4.Foo7469h!(3u).Foo7469h");
 }
 
 /******************************************/

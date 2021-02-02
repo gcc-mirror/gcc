@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -117,6 +117,9 @@ struct GTY(()) globals {
 
   /* True if the mangling will be different in C++17 mode.  */
   bool need_cxx17_warning;
+
+  /* True if we mangled a module name.  */
+  bool mod;
 };
 
 static GTY (()) globals G;
@@ -832,6 +835,62 @@ write_encoding (const tree decl)
     }
 }
 
+/* Interface to substitution and identifer mangling, used by the
+   module name mangler.  */
+
+void
+mangle_module_substitution (int v)
+{
+  if (v < 10)
+    {
+      write_char ('_');
+      write_char ('0' + v);
+    }
+  else
+    {
+      write_char ('W');
+      write_unsigned_number (v - 10);
+      write_char ('_');
+    }
+}
+
+void
+mangle_identifier (char c, tree id)
+{
+  if (c)
+    write_char (c);
+  write_source_name (id);
+}
+
+/* If the outermost non-namespace context (including DECL itself) is
+   a module-linkage decl, mangle the module information.  For module
+   global initializers we need to include the partition part.
+
+   <module-name> ::= W <module-id>+ E
+   <module-id> :: <unqualified-name>
+               || _ <digit>  ;; short backref
+	       || W <number> _  ;; long backref
+               || P <module-id> ;; partition introducer
+*/
+
+static void
+write_module (int m, bool include_partition)
+{
+  G.mod = true;
+
+  write_char ('W');
+  mangle_module (m, include_partition);
+  write_char ('E');
+}
+
+static void
+maybe_write_module (tree decl)
+{
+  int m = get_originating_module (decl, true);
+  if (m >= 0)
+    write_module (m, false);
+}
+
 /* Lambdas can have a bit more context for mangling, specifically VAR_DECL
    or PARM_DECL context, which doesn't belong in DECL_CONTEXT.  */
 
@@ -893,6 +952,9 @@ write_name (tree decl, const int ignore_local_scope)
 	 TYPE_DECL for the main variant.  */
       decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
+
+  if (modules_p ())
+    maybe_write_module (decl);
 
   context = decl_mangling_context (decl);
 
@@ -2806,16 +2868,20 @@ write_member_name (tree member)
 {
   if (identifier_p (member))
     {
-      if (abi_version_at_least (11) && IDENTIFIER_ANY_OP_P (member))
+      if (IDENTIFIER_ANY_OP_P (member))
 	{
-	  write_string ("on");
+	  if (abi_version_at_least (11))
+	    write_string ("on");
 	  if (abi_warn_or_compat_version_crosses (11))
 	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (member);
     }
   else if (DECL_P (member))
-    write_unqualified_name (member);
+    {
+      gcc_assert (!DECL_OVERLOADED_OPERATOR_P (member));
+      write_unqualified_name (member);
+    }
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
     {
       tree name = TREE_OPERAND (member, 0);
@@ -3100,6 +3166,7 @@ write_expression (tree expr)
 	write_expression (member);
       else
 	{
+	  gcc_assert (code != BASELINK || BASELINK_QUALIFIED_P (expr));
 	  write_string ("sr");
 	  write_type (scope);
 	  write_member_name (member);
@@ -3282,7 +3349,15 @@ write_expression (tree expr)
     }
   else if (dependent_name (expr))
     {
-      write_unqualified_id (dependent_name (expr));
+      tree name = dependent_name (expr);
+      if (IDENTIFIER_ANY_OP_P (name))
+	{
+	  if (abi_version_at_least (15))
+	    write_string ("on");
+	  if (abi_warn_or_compat_version_crosses (15))
+	    G.need_abi_warning = 1;
+	}
+      write_unqualified_id (name);
     }
   else
     {
@@ -3825,20 +3900,22 @@ start_mangling (const tree entity)
   G.entity = entity;
   G.need_abi_warning = false;
   G.need_cxx17_warning = false;
+  G.mod = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
 }
 
-/* Done with mangling. If WARN is true, and the name of G.entity will
-   be mangled differently in a future version of the ABI, issue a
-   warning.  */
+/* Done with mangling.  Release the data.  */
 
 static void
 finish_mangling_internal (void)
 {
   /* Clear all the substitutions.  */
   vec_safe_truncate (G.substitutions, 0);
+
+  if (G.mod)
+    mangle_module_fini ();
 
   /* Null-terminate the string.  */
   write_char ('\0');
@@ -3882,6 +3959,20 @@ init_mangle (void)
   subst_identifiers[SUBID_BASIC_ISTREAM] = get_identifier ("basic_istream");
   subst_identifiers[SUBID_BASIC_OSTREAM] = get_identifier ("basic_ostream");
   subst_identifiers[SUBID_BASIC_IOSTREAM] = get_identifier ("basic_iostream");
+}
+
+/* Generate a mangling for MODULE's global initializer fn.  */
+
+tree
+mangle_module_global_init (int module)
+{
+  start_mangling (NULL_TREE);
+
+  write_string ("_ZGI");
+  write_module (module, true);
+  write_char ('v');
+
+  return finish_mangling_get_identifier ();
 }
 
 /* Generate the mangled name of DECL.  */

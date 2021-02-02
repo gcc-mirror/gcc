@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512vpopcntdq" } */
+/* { dg-require-effective-target avx512vpopcntdq } */
 
 #define AVX512VPOPCNTDQ
 

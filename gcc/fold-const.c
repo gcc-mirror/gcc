@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "asan.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -8197,7 +8198,7 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 
 	  gcc_assert (TREE_CODE (type) == RECORD_TYPE || mask == NULL);
 	  if (ptr != NULL)
-	    memset (ptr, '\0', MIN (total_bytes - off, len));
+	    memset (ptr, '\0', MIN (total_bytes - o, len));
 	  for (cnt = 0; ; cnt++)
 	    {
 	      tree val = NULL_TREE, field = NULL_TREE;
@@ -8256,6 +8257,7 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		    {
 		      cnt--;
 		      field = fld;
+		      pos = int_byte_position (field);
 		      val = build_zero_cst (TREE_TYPE (fld));
 		      if (TREE_CODE (val) == CONSTRUCTOR)
 			to_free = val;
@@ -8265,11 +8267,33 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 		  && TYPE_DOMAIN (TREE_TYPE (field))
 		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
-		return 0;
-	      if (DECL_SIZE_UNIT (field) == NULL_TREE
-		  || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
-		return 0;
-	      fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
+		{
+		  if (mask || off != -1)
+		    return 0;
+		  if (val == NULL_TREE)
+		    continue;
+		  if (TREE_CODE (TREE_TYPE (val)) != ARRAY_TYPE)
+		    return 0;
+		  fieldsize = int_size_in_bytes (TREE_TYPE (val));
+		  if (fieldsize < 0
+		      || (int) fieldsize != fieldsize
+		      || (pos + fieldsize) > INT_MAX)
+		    return 0;
+		  if (pos + fieldsize > total_bytes)
+		    {
+		      if (ptr != NULL && total_bytes < len)
+			memset (ptr + total_bytes, '\0',
+				MIN (pos + fieldsize, len) - total_bytes);
+		      total_bytes = pos + fieldsize;
+		    }
+		}
+	      else
+		{
+		  if (DECL_SIZE_UNIT (field) == NULL_TREE
+		      || !tree_fits_shwi_p (DECL_SIZE_UNIT (field)))
+		    return 0;
+		  fieldsize = tree_to_shwi (DECL_SIZE_UNIT (field));
+		}
 	      if (fieldsize == 0)
 		continue;
 
@@ -8319,11 +8343,11 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 			return 0;
 		      HOST_WIDE_INT repr_size = int_size_in_bytes (repr_type);
 		      gcc_assert (repr_size > 0 && repr_size <= len);
-		      if (pos + repr_size <= len)
+		      if (pos + repr_size <= o + len)
 			rpos = pos;
 		      else
 			{
-			  rpos = len - repr_size;
+			  rpos = o + len - repr_size;
 			  gcc_assert (rpos <= pos);
 			}
 		    }
@@ -8438,12 +8462,31 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		  || (pos >= off
 		      && (pos + fieldsize <= (HOST_WIDE_INT) off + len)))
 		{
-		  if (!native_encode_initializer (val, ptr ? ptr + pos - o
-							   : NULL,
-						  fieldsize,
-						  off == -1 ? -1 : 0,
-						  mask ? mask + pos : NULL))
+		  int fldsize = fieldsize;
+		  if (off == -1)
+		    {
+		      tree fld = DECL_CHAIN (field);
+		      while (fld)
+			{
+			  if (TREE_CODE (fld) == FIELD_DECL)
+			    break;
+			  fld = DECL_CHAIN (fld);
+			}
+		      if (fld == NULL_TREE)
+			fldsize = len - pos;
+		    }
+		  r = native_encode_initializer (val, ptr ? ptr + pos - o
+							  : NULL,
+						 fldsize,
+						 off == -1 ? -1 : 0,
+						 mask ? mask + pos : NULL);
+		  if (!r)
 		    return 0;
+		  if (off == -1
+		      && fldsize != fieldsize
+		      && r > fieldsize
+		      && pos + r > total_bytes)
+		    total_bytes = pos + r;
 		}
 	      else
 		{
@@ -9350,8 +9393,17 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  tree arg00 = TREE_OPERAND (arg0, 0);
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 
-	  return fold_build_pointer_plus_loc
-		   (loc, fold_convert_loc (loc, type, arg00), arg01);
+	  /* If -fsanitize=alignment, avoid this optimization in GENERIC
+	     when the pointed type needs higher alignment than
+	     the p+ first operand's pointed type.  */
+	  if (!in_gimple_form
+	      && sanitize_flags_p (SANITIZE_ALIGNMENT)
+	      && (min_align_of_type (TREE_TYPE (type))
+		  > min_align_of_type (TREE_TYPE (TREE_TYPE (arg00)))))
+	    return NULL_TREE;
+
+	  arg00 = fold_convert_loc (loc, type, arg00);
+	  return fold_build_pointer_plus_loc (loc, arg00, arg01);
 	}
 
       /* Convert (T1)(~(T2)X) into ~(T1)X if T1 and T2 are integral types

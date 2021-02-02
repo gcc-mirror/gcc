@@ -200,8 +200,7 @@ TEST_PREFETCH (prfb_vnum_0, uint8_t,
 
 /*
 ** prfb_vnum_1:
-**	incb	x0
-**	prfb	pldl1keep, p0, \[x0\]
+**	prfb	pldl1keep, p0, \[x0, #1, mul vl\]
 **	ret
 */
 TEST_PREFETCH (prfb_vnum_1, uint16_t,
@@ -209,24 +208,44 @@ TEST_PREFETCH (prfb_vnum_1, uint16_t,
 	       svprfb_vnum (p0, x0, 1, SV_PLDL1KEEP))
 
 /*
-** prfb_vnum_2:
-**	incb	x0, all, mul #2
-**	prfb	pldl1keep, p0, \[x0\]
+** prfb_vnum_31:
+**	prfb	pldl1keep, p0, \[x0, #31, mul vl\]
 **	ret
 */
-TEST_PREFETCH (prfb_vnum_2, uint32_t,
-	       svprfb_vnum (p0, x0, 2, SV_PLDL1KEEP),
-	       svprfb_vnum (p0, x0, 2, SV_PLDL1KEEP))
+TEST_PREFETCH (prfb_vnum_31, uint16_t,
+	       svprfb_vnum (p0, x0, 31, SV_PLDL1KEEP),
+	       svprfb_vnum (p0, x0, 31, SV_PLDL1KEEP))
 
 /*
-** prfb_vnum_3:
-**	incb	x0, all, mul #3
-**	prfb	pldl1keep, p0, \[x0\]
+** prfb_vnum_32:
+**	cntd	(x[0-9]+)
+**	lsl	(x[0-9]+), \1, #?8
+**	add	(x[0-9]+), (\2, x0|x0, \2)
+**	prfb	pldl1keep, p0, \[\3\]
 **	ret
 */
-TEST_PREFETCH (prfb_vnum_3, uint64_t,
-	       svprfb_vnum (p0, x0, 3, SV_PLDL1KEEP),
-	       svprfb_vnum (p0, x0, 3, SV_PLDL1KEEP))
+TEST_PREFETCH (prfb_vnum_32, uint16_t,
+	       svprfb_vnum (p0, x0, 32, SV_PLDL1KEEP),
+	       svprfb_vnum (p0, x0, 32, SV_PLDL1KEEP))
+
+/*
+** prfb_vnum_m32:
+**	prfb	pldl1keep, p0, \[x0, #-32, mul vl\]
+**	ret
+*/
+TEST_PREFETCH (prfb_vnum_m32, uint16_t,
+	       svprfb_vnum (p0, x0, -32, SV_PLDL1KEEP),
+	       svprfb_vnum (p0, x0, -32, SV_PLDL1KEEP))
+
+/*
+** prfb_vnum_m33:
+**	...
+**	prfb	pldl1keep, p0, \[x[0-9]+\]
+**	ret
+*/
+TEST_PREFETCH (prfb_vnum_m33, uint16_t,
+	       svprfb_vnum (p0, x0, -33, SV_PLDL1KEEP),
+	       svprfb_vnum (p0, x0, -33, SV_PLDL1KEEP))
 
 /*
 ** prfb_vnum_x1:

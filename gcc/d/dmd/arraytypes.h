@@ -61,3 +61,5 @@ typedef Array<class ReturnStatement *> ReturnStatements;
 typedef Array<class GotoStatement *> GotoStatements;
 
 typedef Array<class TemplateInstance *> TemplateInstances;
+
+typedef Array<struct Ensure> Ensures;

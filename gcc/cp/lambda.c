@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1114,6 +1114,8 @@ maybe_add_lambda_conv_op (tree type)
     while (src)
       {
 	tree new_node = copy_node (src);
+	/* We set DECL_CONTEXT of NEW_NODE to the statfn below.
+	   Notice this is creating a recursive type!  */
 
 	/* Clear TREE_ADDRESSABLE on thunk arguments.  */
 	TREE_ADDRESSABLE (new_node) = 0;
@@ -1393,6 +1395,12 @@ record_lambda_scope (tree lambda)
 {
   LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
   LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
+  if (lambda_scope)
+    {
+      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+      gcc_checking_assert (closure);
+      maybe_attach_decl (lambda_scope, TYPE_NAME (closure));
+    }
 }
 
 /* This lambda is an instantiation of a lambda in a template default argument

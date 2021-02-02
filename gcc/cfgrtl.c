@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3417,6 +3417,53 @@ fixup_abnormal_edges (void)
     }
 
   return inserted;
+}
+
+/* Delete the unconditional jump INSN and adjust the CFG correspondingly.
+   Note that the INSN should be deleted *after* removing dead edges, so
+   that the kept edge is the fallthrough edge for a (set (pc) (pc))
+   but not for a (set (pc) (label_ref FOO)).  */
+
+void
+update_cfg_for_uncondjump (rtx_insn *insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  gcc_assert (BB_END (bb) == insn);
+
+  purge_dead_edges (bb);
+
+  if (current_ir_type () != IR_RTL_CFGLAYOUT)
+    {
+      if (!find_fallthru_edge (bb->succs))
+	{
+	  auto barrier = next_nonnote_nondebug_insn (insn);
+	  if (!barrier || !BARRIER_P (barrier))
+	    emit_barrier_after (insn);
+	}
+      return;
+    }
+
+  delete_insn (insn);
+  if (EDGE_COUNT (bb->succs) == 1)
+    {
+      rtx_insn *insn;
+
+      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+
+      /* Remove barriers from the footer if there are any.  */
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
+	if (BARRIER_P (insn))
+	  {
+	    if (PREV_INSN (insn))
+	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	    else
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
+	    if (NEXT_INSN (insn))
+	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	  }
+	else if (LABEL_P (insn))
+	  break;
+    }
 }
 
 /* Cut the insns from FIRST to LAST out of the insns stream.  */

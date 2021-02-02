@@ -1,6 +1,6 @@
 // <experimental/utility> -*- C++ -*-
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_UTILITY
 #define _GLIBCXX_EXPERIMENTAL_UTILITY 1
 
+#if __cplusplus >= 201402L
 #include <utility>
 #include <bits/uses_allocator.h>
 #include <experimental/bits/lfts_config.h>
@@ -47,4 +48,5 @@ inline namespace fundamentals_v2 {
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif
+#endif // C++14
+#endif // _GLIBCXX_EXPERIMENTAL_UTILITY

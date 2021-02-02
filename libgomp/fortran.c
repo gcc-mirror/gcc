@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -602,6 +602,12 @@ int32_t
 omp_get_max_task_priority_ (void)
 {
   return omp_get_max_task_priority ();
+}
+
+void
+omp_fulfill_event_ (intptr_t event)
+{
+  omp_fulfill_event ((omp_event_handle_t) event);
 }
 
 void

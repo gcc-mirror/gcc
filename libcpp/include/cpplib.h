@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -173,7 +173,8 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
+	     CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -826,7 +827,10 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 
-  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+  /* Imported C++20 macro (from a header unit).  */
+  unsigned int imported_p : 1;
+
+  /* 0 bits spare (32-bit). 32 on 64-bit target.  */
 
   union cpp_exp_u
   {
@@ -921,9 +925,11 @@ struct GTY(()) cpp_hashnode {
 
   /* 5 bits spare.  */
 
-  /* On a 64-bit system there would be 32-bits of padding to the value
+  /* The deferred cookie is applicable to NT_USER_MACRO or NT_VOID.
+     The latter for when a macro had a prevailing undef.
+     On a 64-bit system there would be 32-bits of padding to the value
      field.  So placing the deferred index here is not costly.   */
-  unsigned deferred;			/* Deferred index, (unless zero).  */
+  unsigned deferred;			/* Deferred cookie  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };

@@ -466,7 +466,7 @@ package body Sem_Prag is
             if Nkind (Case_Guard) = N_Others_Choice then
                if Others_Seen then
                   Error_Msg_N
-                    ("only one others choice allowed in contract cases",
+                    ("only one OTHERS choice allowed in contract cases",
                      Case_Guard);
                else
                   Others_Seen := True;
@@ -474,7 +474,7 @@ package body Sem_Prag is
 
             elsif Others_Seen then
                Error_Msg_N
-                 ("others must be the last choice in contract cases", N);
+                 ("OTHERS must be the last choice in contract cases", N);
             end if;
 
             --  Preanalyze the case guard and consequence
@@ -545,15 +545,30 @@ package body Sem_Prag is
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser or the analysis of the
-      --  pragma failed to produce an aggregate.
+      --  pragma failed to produce an aggregate, e.g. when the contract is
+      --  "null" or a "(null record)".
 
-      pragma Assert (Nkind (CCases) = N_Aggregate);
+      pragma Assert
+        (if Nkind (CCases) = N_Aggregate
+         then Null_Record_Present (CCases)
+           xor (Present (Component_Associations (CCases))
+                  or
+                Present (Expressions (CCases)))
+         else Nkind (CCases) = N_Null);
 
       --  Only CASE_GUARD => CONSEQUENCE clauses are allowed
 
-      if Present (Component_Associations (CCases))
+      if Nkind (CCases) = N_Aggregate
+        and then Present (Component_Associations (CCases))
         and then No (Expressions (CCases))
       then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (CCases) /= 0 then
+            Error_Msg -- CODEFIX
+              ("redundant parentheses", First_Sloc (CCases));
+         end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -1267,9 +1282,9 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access type should be handled
-            --  like a variable, as the underlying memory pointed-to can be
-            --  modified. Use Adjusted_Kind to do this adjustment.
+            --  A constant or IN parameter of access-to-variable type should be
+            --  handled like a variable, as the underlying memory pointed-to
+            --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
@@ -1277,7 +1292,7 @@ package body Sem_Prag is
             if Ekind (Item_Id) in E_Constant
                                 | E_Generic_In_Parameter
                                 | E_In_Parameter
-              and then Is_Access_Type (Etype (Item_Id))
+              and then Is_Access_Variable (Etype (Item_Id))
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -1975,7 +1990,7 @@ package body Sem_Prag is
          --  clause as this will lead to misleading errors.
 
          if Has_Extra_Parentheses (Deps) then
-            return;
+            goto Leave;
          end if;
 
          if Present (Component_Associations (Deps)) then
@@ -2066,7 +2081,7 @@ package body Sem_Prag is
 
          else
             Error_Msg_N ("malformed dependency relation", Deps);
-            return;
+            goto Leave;
          end if;
 
       --  The top level dependency relation is malformed. This is a syntax
@@ -8861,7 +8876,7 @@ package body Sem_Prag is
                Error_Pragma ("at least one parameter required for pragma%");
 
             elsif Ekind (Formal) /= E_Out_Parameter then
-               Error_Pragma ("first parameter must have mode out for pragma%");
+               Error_Pragma ("first parameter must have mode OUT for pragma%");
 
             else
                Set_Is_Valued_Procedure (Ent);
@@ -11747,7 +11762,7 @@ package body Sem_Prag is
                   if Nkind (Prop) = N_Others_Choice then
                      if Others_Seen then
                         SPARK_Msg_N
-                          ("only one others choice allowed in option External",
+                          ("only one OTHERS choice allowed in option External",
                            Prop);
                      else
                         Others_Seen := True;
@@ -11755,7 +11770,7 @@ package body Sem_Prag is
 
                   elsif Others_Seen then
                      SPARK_Msg_N
-                       ("others must be the last property in option External",
+                       ("OTHERS must be the last property in option External",
                         Prop);
 
                   --  The only remaining legal options are the four predefined
@@ -12903,30 +12918,31 @@ package body Sem_Prag is
 
          --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
 
-         --  RM_ASSERTION_KIND ::= Assert               |
-         --                        Static_Predicate     |
-         --                        Dynamic_Predicate    |
-         --                        Pre                  |
-         --                        Pre'Class            |
-         --                        Post                 |
-         --                        Post'Class           |
-         --                        Type_Invariant       |
-         --                        Type_Invariant'Class
+         --  RM_ASSERTION_KIND ::= Assert                     |
+         --                        Static_Predicate           |
+         --                        Dynamic_Predicate          |
+         --                        Pre                        |
+         --                        Pre'Class                  |
+         --                        Post                       |
+         --                        Post'Class                 |
+         --                        Type_Invariant             |
+         --                        Type_Invariant'Class       |
+         --                        Default_Initial_Condition
 
-         --  ID_ASSERTION_KIND ::= Assert_And_Cut            |
-         --                        Assume                    |
-         --                        Contract_Cases            |
-         --                        Debug                     |
-         --                        Default_Initial_Condition |
-         --                        Ghost                     |
-         --                        Initial_Condition         |
-         --                        Loop_Invariant            |
-         --                        Loop_Variant              |
-         --                        Postcondition             |
-         --                        Precondition              |
-         --                        Predicate                 |
-         --                        Refined_Post              |
-         --                        Statement_Assertions
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       |
+         --                        Assume               |
+         --                        Contract_Cases       |
+         --                        Debug                |
+         --                        Ghost                |
+         --                        Initial_Condition    |
+         --                        Loop_Invariant       |
+         --                        Loop_Variant         |
+         --                        Postcondition        |
+         --                        Precondition         |
+         --                        Predicate            |
+         --                        Refined_Post         |
+         --                        Statement_Assertions |
+         --                        Subprogram_Variant
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions
@@ -21363,16 +21379,11 @@ package body Sem_Prag is
                --  package does not trigger the required initialization of the
                --  run-time library.
 
-               declare
-                  Discard : Entity_Id;
-                  pragma Warnings (Off, Discard);
-               begin
-                  if Restricted_Profile then
-                     Discard := RTE (RE_Activate_Restricted_Tasks);
-                  else
-                     Discard := RTE (RE_Activate_Tasks);
-                  end if;
-               end;
+               if Restricted_Profile then
+                  Discard_Node (RTE (RE_Activate_Restricted_Tasks));
+               else
+                  Discard_Node (RTE (RE_Activate_Tasks));
+               end if;
 
             --  Task or Protected, must be of type Integer
 
@@ -28492,35 +28503,69 @@ package body Sem_Prag is
                         Constit, Encapsulating_State (Constit_Id));
                   end if;
 
-               --  The only other source of legal constituents is the body
-               --  state space of the related package.
-
                else
-                  if Present (Body_States) then
-                     State_Elmt := First_Elmt (Body_States);
-                     while Present (State_Elmt) loop
+                  declare
+                     Pack_Id   : Entity_Id;
+                     Placement : State_Space_Kind;
+                  begin
+                     --  Find where the constituent lives with respect to the
+                     --  state space.
 
-                        --  Consume a valid constituent to signal that it has
-                        --  been encountered.
+                     Find_Placement_In_State_Space
+                       (Item_Id   => Constit_Id,
+                        Placement => Placement,
+                        Pack_Id   => Pack_Id);
 
-                        if Node (State_Elmt) = Constit_Id then
-                           Remove_Elmt (Body_States, State_Elmt);
-                           Collect_Constituent;
-                           return;
+                     --  The constituent is part of the visible state of a
+                     --  private child package, but lacks a Part_Of indicator.
+
+                     if Placement = Visible_State_Space
+                       and then Is_Child_Unit (Pack_Id)
+                       and then not Is_Generic_Unit (Pack_Id)
+                       and then Is_Private_Descendant (Pack_Id)
+                     then
+                        Error_Msg_Name_1 := Chars (State_Id);
+                        SPARK_Msg_NE
+                          ("& cannot act as constituent of state %",
+                           Constit, Constit_Id);
+                        Error_Msg_Sloc :=
+                          Sloc (Enclosing_Declaration (Constit_Id));
+                        SPARK_Msg_NE
+                          ("\missing Part_Of indicator # should specify "
+                           & "encapsulator &",
+                           Constit, State_Id);
+
+                     --  The only other source of legal constituents is the
+                     --  body state space of the related package.
+
+                     else
+                        if Present (Body_States) then
+                           State_Elmt := First_Elmt (Body_States);
+                           while Present (State_Elmt) loop
+
+                              --  Consume a valid constituent to signal that it
+                              --  has been encountered.
+
+                              if Node (State_Elmt) = Constit_Id then
+                                 Remove_Elmt (Body_States, State_Elmt);
+                                 Collect_Constituent;
+                                 return;
+                              end if;
+
+                              Next_Elmt (State_Elmt);
+                           end loop;
                         end if;
 
-                        Next_Elmt (State_Elmt);
-                     end loop;
-                  end if;
+                        --  At this point it is known that the constituent is
+                        --  not part of the package hidden state and cannot be
+                        --  used in a refinement (SPARK RM 7.2.2(9)).
 
-                  --  At this point it is known that the constituent is not
-                  --  part of the package hidden state and cannot be used in
-                  --  a refinement (SPARK RM 7.2.2(9)).
-
-                  Error_Msg_Name_1 := Chars (Spec_Id);
-                  SPARK_Msg_NE
-                    ("cannot use & in refinement, constituent is not a hidden "
-                     & "state of package %", Constit, Constit_Id);
+                        Error_Msg_Name_1 := Chars (Spec_Id);
+                        SPARK_Msg_NE
+                          ("cannot use & in refinement, constituent is not a "
+                           & "hidden state of package %", Constit, Constit_Id);
+                     end if;
+                  end;
                end if;
             end Match_Constituent;
 
@@ -28942,6 +28987,20 @@ package body Sem_Prag is
          --  in the refinement clause.
 
          Report_Unused_Constituents (Part_Of_Constits);
+
+         --  Avoid a cascading error reporting a missing refinement by adding a
+         --  dummy constituent.
+
+         if No (Refinement_Constituents (State_Id)) then
+            Set_Refinement_Constituents (State_Id, New_Elmt_List (Any_Id));
+         end if;
+
+         --  At this point the refinement might be dummy, but must be
+         --  well-formed, to prevent cascaded errors.
+
+         pragma Assert (Has_Null_Refinement (State_Id)
+                          xor
+                        Has_Non_Null_Refinement (State_Id));
       end Analyze_Refinement_Clause;
 
       -----------------------------
@@ -29126,15 +29185,30 @@ package body Sem_Prag is
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser of the analysis of the
-      --  pragma failed to produce an aggregate.
+      --  pragma failed to produce an aggregate, e.g. when the contract is
+      --  "null" or a "(null record)".
 
-      pragma Assert (Nkind (Variants) = N_Aggregate);
+      pragma Assert
+        (if Nkind (Variants) = N_Aggregate
+         then Null_Record_Present (Variants)
+           xor (Present (Component_Associations (Variants))
+                  or
+                Present (Expressions (Variants)))
+         else Nkind (Variants) = N_Null);
 
       --  Only "change_direction => discrete_expression" clauses are allowed
 
-      if Present (Component_Associations (Variants))
+      if Nkind (Variants) = N_Aggregate
+        and then Present (Component_Associations (Variants))
         and then No (Expressions (Variants))
       then
+
+         --  Check that the expression is a proper aggregate (no parentheses)
+
+         if Paren_Count (Variants) /= 0 then
+            Error_Msg -- CODEFIX
+              ("redundant parentheses", First_Sloc (Variants));
+         end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
          --  clauses. This falls out of the general rule of aspects pertaining
@@ -30174,13 +30248,23 @@ package body Sem_Prag is
          Formal := First_Entity (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
+
+               --  IN parameters can act as output when the related type is
+               --  access-to-variable.
+
+               if Ekind (Formal) = E_In_Parameter
+                 and then Is_Access_Variable (Etype (Formal))
+               then
+                  Append_New_Elmt (Formal, Subp_Outputs);
+               end if;
+
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
             if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
                Append_New_Elmt (Formal, Subp_Outputs);
 
-               --  Out parameters can act as inputs when the related type is
+               --  OUT parameters can act as inputs when the related type is
                --  tagged, unconstrained array, unconstrained record, or record
                --  with unconstrained components.
 
@@ -30215,7 +30299,7 @@ package body Sem_Prag is
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
       --  Subprogram declaration or stand-alone body case, look for pragmas
-      --  Depends and Global
+      --  Depends and Global.
 
       else
          Depends := Get_Pragma (Spec_Id, Pragma_Depends);
@@ -30459,11 +30543,11 @@ package body Sem_Prag is
 
          if From_Aspect_Specification (Prag) then
             Error_Msg_N
-              ("aspect % cannot apply to a stand alone expression function",
+              ("aspect % cannot apply to a standalone expression function",
                Prag);
          else
             Error_Msg_N
-              ("pragma % cannot apply to a stand alone expression function",
+              ("pragma % cannot apply to a standalone expression function",
                Prag);
          end if;
       end Expression_Function_Error;
@@ -30597,8 +30681,10 @@ package body Sem_Prag is
       --  The pragma appears inside the statements of a subprogram body. This
       --  placement is the result of subprogram contract expansion.
 
-      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
-         return Parent (Context);
+      elsif Is_Statement (Context)
+        and then Present (Enclosing_HSS (Context))
+      then
+         return Parent (Enclosing_HSS (Context));
 
       --  The pragma appears inside the declarative part of a package body
 

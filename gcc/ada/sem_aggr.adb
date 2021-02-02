@@ -2949,7 +2949,7 @@ package body Sem_Aggr is
                   while Present (Choice) loop
                      Analyze_And_Resolve (Choice, Key_Type);
                      if not Is_Static_Expression (Choice) then
-                        Error_Msg_N ("Choice must be static", Choice);
+                        Error_Msg_N ("choice must be static", Choice);
                      end if;
 
                      Next (Choice);
@@ -2994,7 +2994,7 @@ package body Sem_Aggr is
 
             if Present (Component_Associations (N)) then
                if Present (Expressions (N)) then
-                  Error_Msg_N ("Container aggregate cannot be "
+                  Error_Msg_N ("container aggregate cannot be "
                     & "both positional and named", N);
                   return;
                end if;
@@ -3035,10 +3035,7 @@ package body Sem_Aggr is
       Base : constant Node_Id := Expression (N);
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnat2020", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("delta aggregate", Sloc (N));
 
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);
@@ -3075,7 +3072,7 @@ package body Sem_Aggr is
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
 
                elsif Nkind (Choice) = N_Subtype_Indication then
                   Resolve_Discrete_Subtype_Indication
@@ -3122,7 +3119,7 @@ package body Sem_Aggr is
 
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
 
                elsif Is_Entity_Name (Choice)
                  and then Is_Type (Entity (Choice))
@@ -3848,10 +3845,7 @@ package body Sem_Aggr is
          --  by default, then set flag on the new association to indicate that
          --  the original association was for such a box-initialized component.
 
-         if Resolve_Record_Aggregate.Is_Box_Present
-           and then not Is_Box_Present
-           and then Is_Box_Init_By_Default  -- ???
-         then
+         if Is_Box_Init_By_Default then
             Set_Was_Default_Init_Box_Association (Last (Assoc_List));
          end if;
       end Add_Association;
@@ -5390,7 +5384,7 @@ package body Sem_Aggr is
                     ("OTHERS must represent at least one component", Selectr);
 
                elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
-                  Error_Msg_N ("others choice is redundant?", Box_Node);
+                  Error_Msg_N ("OTHERS choice is redundant?", Box_Node);
                   Error_Msg_N
                     ("\previous choices cover all components?", Box_Node);
                end if;
@@ -5557,7 +5551,7 @@ package body Sem_Aggr is
          --  because the association may be a null array range.
 
          Error_Msg_N
-           ("(Ada 2005) null not allowed in null-excluding component??", Expr);
+           ("(Ada 2005) NULL not allowed in null-excluding component??", Expr);
          Error_Msg_N
            ("\Constraint_Error will be raised at run time??", Expr);
 

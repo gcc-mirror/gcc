@@ -3344,7 +3344,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.K`
   *Suppress warnings on redefinition of names in standard.*
 
-  This switch activates warnings for declarations that declare a name that
+  This switch disables warnings for declarations that declare a name that
   is defined in package Standard.
 
 

@@ -1,3 +1,9 @@
+2021-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/index.rst: Remove "Alpha" warning.
+	* docs/index.rst: Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+
 2020-11-25  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/94982
@@ -3082,7 +3088,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2020 Free Software Foundation, Inc.
+Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

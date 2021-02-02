@@ -1,3 +1,7 @@
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* lang.opt: Remove usage of Report.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911
@@ -6477,7 +6481,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2020 Free Software Foundation, Inc.
+Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

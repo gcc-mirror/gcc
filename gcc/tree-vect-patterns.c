@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -1578,6 +1578,10 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   tree lhs = gimple_assign_lhs (last_stmt);
   tree type = TREE_TYPE (lhs);
   tree_code code = gimple_assign_rhs_code (last_stmt);
+
+  /* Punt for reductions where we don't handle the type conversions.  */
+  if (STMT_VINFO_DEF_TYPE (last_stmt_info) == vect_reduction_def)
+    return NULL;
 
   /* Keep the first operand of a COND_EXPR as-is: only the other two
      operands are interesting.  */
@@ -4067,7 +4071,7 @@ vect_recog_bool_pattern (vec_info *vinfo,
       || rhs_code == VIEW_CONVERT_EXPR)
     {
       if (! INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	  || TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
+	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
       if (vectype == NULL_TREE)
@@ -4961,10 +4965,19 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
 	unsigned int const_shift = TREE_INT_CST_LOW (shift);
 	if (code == LSHIFT_EXPR)
 	  {
+	    /* Avoid creating an undefined shift.
+
+	       ??? We could instead use min_output_precision as-is and
+	       optimize out-of-range shifts to zero.  However, only
+	       degenerate testcases shift away all their useful input data,
+	       and it isn't natural to drop input operations in the middle
+	       of vectorization.  This sort of thing should really be
+	       handled before vectorization.  */
+	    operation_precision = MAX (stmt_info->min_output_precision,
+				       const_shift + 1);
 	    /* We need CONST_SHIFT fewer bits of the input.  */
-	    operation_precision = stmt_info->min_output_precision;
 	    min_input_precision = (MAX (operation_precision, const_shift)
-				    - const_shift);
+				   - const_shift);
 	  }
 	else
 	  {
@@ -5281,7 +5294,7 @@ const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);
 
 /* Mark statements that are involved in a pattern.  */
 
-static inline void
+void
 vect_mark_pattern_stmts (vec_info *vinfo,
 			 stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
                          tree pattern_vectype)

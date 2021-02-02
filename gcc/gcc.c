@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1232,6 +1232,7 @@ static const char *cpp_unique_options =
  %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
+ %{Mmodules} %{Mno-modules}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
  %{remap} %{%:debug-level-gt(2):-dD}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
@@ -2195,6 +2196,32 @@ open_at_file (void)
      in_at_file = true;
 }
 
+/* Create a temporary @file name.  */
+
+static char *make_at_file (void)
+{
+  static int fileno = 0;
+  char filename[20];
+  const char *base, *ext;
+
+  if (!save_temps_flag)
+    return make_temp_file ("");
+
+  base = dumpbase;
+  if (!(base && *base))
+    base = dumpdir;
+  if (!(base && *base))
+    base = "a";
+
+  sprintf (filename, ".args.%d", fileno++);
+  ext = filename;
+
+  if (base == dumpdir && dumpdir_trailing_dash_added)
+    ext++;
+
+  return concat (base, ext, NULL);
+}
+
 /* Close the temporary @file and add @file to the argument list.  */
 
 static void
@@ -2210,7 +2237,7 @@ close_at_file (void)
     return;
 
   char **argv = (char **) alloca (sizeof (char *) * (n_args + 1));
-  char *temp_file = make_temp_file ("");
+  char *temp_file = make_at_file ();
   char *at_argument = concat ("@", temp_file, NULL);
   FILE *f = fopen (temp_file, "w");
   int status;
@@ -4784,44 +4811,12 @@ process_command (unsigned int decoded_options_count,
       if (decoded_options[j].opt_index == OPT_SPECIAL_input_file)
 	{
 	  const char *arg = decoded_options[j].arg;
-          const char *p = strrchr (arg, '@');
-          char *fname;
-	  long offset;
-	  int consumed;
+
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  arg = convert_filename (arg, 0, access (arg, F_OK));
 #endif
-	  /* For LTO static archive support we handle input file
-	     specifications that are composed of a filename and
-	     an offset like FNAME@OFFSET.  */
-	  if (p
-	      && p != arg
-	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
-	      && strlen (p) == (unsigned int)consumed)
-	    {
-              fname = (char *)xmalloc (p - arg + 1);
-              memcpy (fname, arg, p - arg);
-              fname[p - arg] = '\0';
-	      /* Only accept non-stdin and existing FNAME parts, otherwise
-		 try with the full name.  */
-	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
-		{
-		  free (fname);
-		  fname = xstrdup (arg);
-		}
-	    }
-	  else
-	    fname = xstrdup (arg);
+	  add_infile (arg, spec_lang);
 
-          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
-	    {
-	      bool resp = fname[0] == '@' && access (fname + 1, F_OK) < 0;
-	      error ("%s: %m", fname + resp);
-	    }
-          else
-	    add_infile (arg, spec_lang);
-
-          free (fname);
 	  continue;
 	}
 
@@ -8662,7 +8657,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2020 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2021 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

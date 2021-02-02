@@ -3344,3 +3344,140 @@ index f51453f019a..d10ecf483f4 100644
 +
 --
 2.29.2
+
+=== 0001-Add-horse.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ koníček.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 koníček.txt
+
+diff --git a/koníček.txt b/koníček.txt
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ b/koníček.txt
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+=== 0001-Add-horse2.patch ===
+From 2884248d07e4e2c922e137365253e2e521c425b0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 21 Dec 2020 10:14:46 +0100
+Subject: [PATCH] Add horse.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ChangeLog:
+
+	* koníček.txt: New file.
+---
+ "kon\303\255\304\215ek.txt" | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 "kon\303\255\304\215ek.txt"
+
+diff --git "a/kon\303\255\304\215ek.txt" "b/kon\303\255\304\215ek.txt"
+new file mode 100644
+index 00000000000..56c67f58752
+--- /dev/null
++++ "b/kon\303\255\304\215ek.txt"
+@@ -0,0 +1 @@
++I'm a horse.
+-- 
+2.29.2
+
+=== 0001-fix-old-ChangeLog.patch ===
+From fd498465b2801203089616be9a0e3c1f4fc065a0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 11:45:37 +0100
+Subject: [PATCH] Fix a changelog.
+
+---
+ gcc/ChangeLog-2020 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/ChangeLog-2020 b/gcc/ChangeLog-2020
+index 6553720acad..2c170ef014a 100644
+--- a/gcc/ChangeLog-2020
++++ b/gcc/ChangeLog-2020
+@@ -1 +1,2 @@
+ 
++
+ 
+-- 
+2.29.2
+=== 0001-Add-macro.patch ===
+From 9b7eedc932fe594547fb060b36dfd9e4178c4f9b Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 16:26:45 +0100
+Subject: [PATCH 1/2] Add macro.
+
+gcc/ChangeLog:
+
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*fist<mode>2_<rounding>_1, *<code><mode>3_1, *<code>di3_doubleword):
+	Use ix86_pre_reload_split instead of can_create_pseudo_p in condition.
+	* config/i386/sse.md
+	(*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*fist<mode>2_<rounding>_1): This should also work.
+---
+ gcc/config/i386/i386.md | 1 +
+ gcc/config/i386/sse.md  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index b60784a2908..ac63591b33f 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -1 +1,2 @@
+ 
++
+
+diff --git a/gcc/config/i386/sse.md b/gcc/config/i386/sse.md
+index 7f03fc491c3..0e17997db26 100644
+--- a/gcc/config/i386/sse.md
++++ b/gcc/config/i386/sse.md
+@@ -1 +1,2 @@
+ 
++
+
+-- 
+2.29.2
+
+=== 0002-Wrong-macro-changelog.patch ===
+From 3542802111d4c6752ac7233ef96655b7fb78aae4 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 16:54:58 +0100
+Subject: [PATCH 2/2] Wrong macro changelog
+
+gcc/ChangeLog:
+
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1,
+	(foo): Change it.
+---
+ gcc/config/i386/i386.md | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index ac63591b33f..ff4d61764e7 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.29.2

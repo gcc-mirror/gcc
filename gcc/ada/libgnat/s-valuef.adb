@@ -43,7 +43,11 @@ package body System.Value_F is
    --  supported values for the base of the literal. Given that the largest
    --  supported base is 16, this gives a limit of 2**(Int'Size - 5).
 
-   package Impl is new Value_R (Uns, Floating => False);
+   pragma Assert (Int'Size <= Uns'Size);
+   --  We need an unsigned type large enough to represent the mantissa
+
+   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Round => True);
+   --  We use the Extra digit for ordinary fixed-point types
 
    function Integer_To_Fixed
      (Str    : String;

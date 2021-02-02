@@ -1,5 +1,5 @@
 /* Classes for managing a directed graph of <point, state> pairs.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -622,6 +622,8 @@ public:
 
   void dump () const;
 
+  json::array *to_json () const;
+
 private:
   struct per_node_data
   {
@@ -663,6 +665,8 @@ public:
   {
     return m_scc.get_scc_id (snode.m_index);
   }
+
+  json::object *to_json () const;
 
 private:
   class key_t

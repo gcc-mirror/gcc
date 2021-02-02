@@ -648,7 +648,7 @@ package body Exp_Dbug is
       --  Fixed-point case: generate GNAT encodings when asked to
 
       if Is_Fixed_Point_Type (E)
-        and then GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+        and then GNAT_Encodings = DWARF_GNAT_Encodings_All
       then
          Get_External_Name (E, True, "XF_");
          Add_Real_To_Buffer (Delta_Value (E));

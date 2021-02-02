@@ -880,7 +880,7 @@ package body Exp_Imgv is
    --      xx = [Long_Long_[Long_]]Unsigned
 
    --    For floating-point types
-   --      xx = Real
+   --      xx = [Long_[Long_]]Float
 
    --  For decimal fixed-point types, typ'Value (X) expands into
 
@@ -1008,10 +1008,10 @@ package body Exp_Imgv is
             then
                Vid := RE_Value_Fixed128;
             else
-               Vid := RE_Value_Real;
+               Vid := RE_Value_Long_Float;
             end if;
 
-            if Vid /= RE_Value_Real then
+            if Vid /= RE_Value_Long_Float then
                Append_To (Args,
                  Make_Integer_Literal (Loc, -Norm_Num (Small_Value (Rtyp))));
 
@@ -1031,7 +1031,27 @@ package body Exp_Imgv is
          end;
 
       elsif Is_Floating_Point_Type (Rtyp) then
-         Vid := RE_Value_Real;
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+            Vid := RE_Value_Float;
+
+         --  If Long_Float and Long_Long_Float are the same type, then use the
+         --  implementation of the former, which is faster and more accurate.
+
+         elsif Rtyp = Standard_Long_Float
+           or else (Rtyp = Standard_Long_Long_Float
+                     and then
+                    Standard_Long_Long_Float_Size = Standard_Long_Float_Size)
+         then
+            Vid := RE_Value_Long_Float;
+
+         elsif Rtyp = Standard_Long_Long_Float then
+            Vid := RE_Value_Long_Long_Float;
+
+         else
+            raise Program_Error;
+         end if;
 
       --  Only other possibility is user-defined enumeration type
 

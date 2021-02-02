@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -161,6 +161,8 @@ static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
+static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
+						    bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -274,6 +276,8 @@ const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "signed_bool_precision",  1, 1, false, true, false, true,
+			      handle_signed_bool_precision_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -893,6 +897,43 @@ validate_attr_arg (tree node[2], tree name, tree newarg)
 }
 
 /* Attribute handlers common to C front ends.  */
+
+/* Handle a "signed_bool_precision" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
+					int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (!flag_gimple)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != BOOLEAN_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute only supported on "
+	       "boolean types", name);
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT prec = HOST_WIDE_INT_M1U;
+  if (tree_fits_uhwi_p (TREE_VALUE (args)))
+    prec = tree_to_uhwi (TREE_VALUE (args));
+  if (prec > MAX_FIXED_MODE_SIZE)
+    {
+      warning (OPT_Wattributes, "%qE attribute with unsupported boolean "
+	       "precision", name);
+      return NULL_TREE;
+    }
+
+  tree new_type = build_nonstandard_boolean_type (prec);
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
 
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -3130,12 +3171,64 @@ handle_no_profile_instrument_function_attribute (tree *node, tree name, tree,
   return NULL_TREE;
 }
 
+/* If ALLOC_DECL and DEALLOC_DECL are a pair of user-defined functions,
+   if they are declared inline issue warnings and return null.  Otherwise
+   create attribute noinline, install it in ALLOC_DECL, and return it.
+   Otherwise return null. */
+
+static tree
+maybe_add_noinline (tree name, tree alloc_decl, tree dealloc_decl,
+		    bool *no_add_attrs)
+{
+  if (fndecl_built_in_p (alloc_decl) || fndecl_built_in_p (dealloc_decl))
+    return NULL_TREE;
+
+  /* When inlining (or optimization) is enabled and the allocator and
+     deallocator are not built-in functions, ignore the attribute on
+     functions declared inline since it could lead to false positives
+     when inlining one or the other call would wind up calling
+     a mismatched allocator or  deallocator.  */
+  if ((optimize && DECL_DECLARED_INLINE_P (alloc_decl))
+      || lookup_attribute ("always_inline", DECL_ATTRIBUTES (alloc_decl)))
+    {
+      warning (OPT_Wattributes,
+	       "%<%E (%E)%> attribute ignored on functions "
+	       "declared %qs", name, DECL_NAME (dealloc_decl), "inline");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if ((optimize && DECL_DECLARED_INLINE_P (dealloc_decl))
+      || lookup_attribute ("always_inline", DECL_ATTRIBUTES (dealloc_decl)))
+    {
+      warning (OPT_Wattributes,
+	       "%<%E (%E)%> attribute ignored with deallocation "
+	       "functions declared %qs",
+	       name, DECL_NAME (dealloc_decl), "inline");
+      inform (DECL_SOURCE_LOCATION (dealloc_decl),
+	      "deallocation function declared here" );
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Disable inlining for non-standard deallocators to avoid false
+     positives due to mismatches between the inlined implementation
+     of one and not the other pair of functions.  */
+  tree attr = tree_cons (get_identifier ("noinline"), NULL_TREE, NULL_TREE);
+  decl_attributes (&alloc_decl, attr, 0);
+  return attr;
+}
+
 /* Handle the "malloc" attribute.  */
 
 static tree
-handle_malloc_attribute (tree *node, tree name, tree args,
-			 int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_malloc_attribute (tree *node, tree name, tree args, int flags,
+			 bool *no_add_attrs)
 {
+  if (flags & ATTR_FLAG_INTERNAL)
+    /* Recursive call.  */
+    return NULL_TREE;
+
   tree fndecl = *node;
 
   if (TREE_CODE (*node) != FUNCTION_DECL)
@@ -3174,11 +3267,21 @@ handle_malloc_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
-  /* In C++ the argument may be wrapped in a cast to disambiguate one
-     of a number of overloads (such as operator delete).  Strip it.  */
   STRIP_NOPS (dealloc);
   if (TREE_CODE (dealloc) == ADDR_EXPR)
-    dealloc = TREE_OPERAND (dealloc, 0);
+    {
+      /* In C++ the argument may be wrapped in a cast to disambiguate
+	 one of a number of overloads (such as operator delete).  To
+	 make things interesting, the cast looks different between
+	 different C++ versions.  Strip it and install the attribute
+	 with the disambiguated function.  */
+      dealloc = TREE_OPERAND (dealloc, 0);
+
+      *no_add_attrs = true;
+      tree attr = tree_cons (NULL_TREE, dealloc, TREE_CHAIN (args));
+      attr = build_tree_list (name, attr);
+      return decl_attributes (node, attr, 0);
+    }
 
   if (TREE_CODE (dealloc) != FUNCTION_DECL)
     {
@@ -3233,10 +3336,21 @@ handle_malloc_attribute (tree *node, tree name, tree args,
 	  return NULL_TREE;
 	}
 
-      *no_add_attrs = false;
-      tree attr_free = build_tree_list (NULL_TREE, DECL_NAME (fndecl));
-      attr_free = build_tree_list (get_identifier ("*dealloc"), attr_free);
-      decl_attributes (&dealloc, attr_free, 0);
+      /* Disable inlining for non-standard deallocators to avoid false
+	 positives (or warn if either function is explicitly inline).  */
+      tree at_noinline =
+	maybe_add_noinline (name, fndecl, dealloc, no_add_attrs);
+      if (*no_add_attrs)
+	return NULL_TREE;
+
+      /* Add attribute *dealloc to the deallocator function associating
+	 it with this one.  Ideally, the attribute would reference
+	 the DECL of the deallocator but since that changes for each
+	 redeclaration, use DECL_NAME instead.  (DECL_ASSEMBLER_NAME
+	 need not be set set this point and setting it here is too early.  */
+      tree attrs = build_tree_list (NULL_TREE, DECL_NAME (fndecl));
+      attrs = tree_cons (get_identifier ("*dealloc"), attrs, at_noinline);
+      decl_attributes (&dealloc, attrs, 0);
       return NULL_TREE;
     }
 
@@ -3248,15 +3362,21 @@ handle_malloc_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  /* As above, disable inlining for non-standard deallocators to avoid
+     false positives (or warn).  */
+  tree at_noinline =
+    maybe_add_noinline (name, fndecl, dealloc, no_add_attrs);
+  if (*no_add_attrs)
+    return NULL_TREE;
+
   /* It's valid to declare the same function with multiple instances
      of attribute malloc, each naming the same or different deallocator
      functions, and each referencing either the same or a different
      positional argument.  */
-  *no_add_attrs = false;
-  tree attr_free = tree_cons (NULL_TREE, argpos, NULL_TREE);
-  attr_free = tree_cons (NULL_TREE, DECL_NAME (fndecl), attr_free);
-  attr_free = build_tree_list (get_identifier ("*dealloc"), attr_free);
-  decl_attributes (&dealloc, attr_free, 0);
+  tree attrs = tree_cons (NULL_TREE, argpos, NULL_TREE);
+  attrs = tree_cons (NULL_TREE, DECL_NAME (fndecl), attrs);
+  attrs = tree_cons (get_identifier ("*dealloc"), attrs, at_noinline);
+  decl_attributes (&dealloc, attrs, 0);
   return NULL_TREE;
 }
 
@@ -3274,11 +3394,13 @@ handle_dealloc_attribute (tree *node, tree name, tree args, int,
   if (!attrs)
     return NULL_TREE;
 
-  tree arg_fname = TREE_VALUE (args);
+  tree arg = TREE_VALUE (args);
   args = TREE_CHAIN (args);
-  tree arg_pos = args ? TREE_VALUE (args) : NULL_TREE;
+  tree arg_pos = args ? TREE_VALUE (args) : integer_zero_node;
 
-  gcc_checking_assert (TREE_CODE (arg_fname) == IDENTIFIER_NODE);
+  gcc_checking_assert ((DECL_P (arg)
+			&& fndecl_built_in_p (arg, BUILT_IN_NORMAL))
+		       || TREE_CODE (arg) == IDENTIFIER_NODE);
 
   const char* const namestr = IDENTIFIER_POINTER (name);
   for (tree at = attrs; (at = lookup_attribute (namestr, at));
@@ -3290,12 +3412,12 @@ handle_dealloc_attribute (tree *node, tree name, tree args, int,
 
       tree pos = TREE_CHAIN (alloc);
       alloc = TREE_VALUE (alloc);
-      pos = pos ? TREE_VALUE (pos) : NULL_TREE;
-      gcc_checking_assert (TREE_CODE (alloc) == IDENTIFIER_NODE);
+      pos = pos ? TREE_VALUE (pos) : integer_zero_node;
+      gcc_checking_assert ((DECL_P (alloc)
+			    && fndecl_built_in_p (alloc, BUILT_IN_NORMAL))
+			   || TREE_CODE (alloc) == IDENTIFIER_NODE);
 
-      if (alloc == arg_fname
-	  && ((!pos && !arg_pos)
-	      || (pos && arg_pos && tree_int_cst_equal (pos, arg_pos))))
+      if (alloc == arg && tree_int_cst_equal (pos, arg_pos))
 	{
 	  /* The function already has the attribute either without any
 	     arguments or with the same arguments as the attribute that's

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2020 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -1036,8 +1036,10 @@ for (i = 0; i < n_target_save; i++) {
 	type = var;
 	sub("^.*[ *]", "", name)
 	sub(" *" name "$", "", type)
-	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$")
+	if (target_save_decl[i] ~ "^const char \\*+[_" alnum "]+$") {
 		var_target_str[n_target_str++] = name;
+		string_options_names[name]++
+	}
 	else {
 		if (target_save_decl[i] ~ " .*\\[.+\\]+$") {
 			size = name;
@@ -1441,6 +1443,8 @@ checked_options["unroll_only_small_loops"]++
 checked_options["TARGET_ALIGN_CALL"]++
 checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
 checked_options["arc_size_opt_level"]++
+# arm exceptions
+checked_options["arm_fp16_format"]++
 
 for (i = 0; i < n_opts; i++) {
 	name = var_name(flags[i]);
@@ -1451,7 +1455,7 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 	checked_options[name]++
 
-	if (name in string_options_names) {
+	if (name in string_options_names || ("x_" name) in string_options_names) {
 	  print "  if (ptr1->x_" name " != ptr2->x_" name "";
 	  print "      && (!ptr1->x_" name" || !ptr2->x_" name
 	  print "          || strcmp (ptr1->x_" name", ptr2->x_" name ")))";

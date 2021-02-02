@@ -1,5 +1,5 @@
 /* Functions related to building -*- C++ -*- classes and their related objects.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -494,8 +494,6 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     target_type = ptr_target_type;
 
-  expr = build1 (NOP_EXPR, ptr_target_type, expr);
-
   if (!integer_zerop (offset))
     {
       offset = fold_convert (sizetype, offset);
@@ -505,6 +503,8 @@ build_base_path (enum tree_code code,
     }
   else
     null_test = NULL;
+
+  expr = build1 (NOP_EXPR, ptr_target_type, expr);
 
  indout:
   if (!want_pointer)
@@ -659,6 +659,33 @@ convert_to_base_statically (tree expr, tree base)
   return expr;
 }
 
+/* True IFF EXPR is a reference to an empty base class "subobject", as built in
+   convert_to_base_statically.  We look for the result of the fold_convert
+   call, a NOP_EXPR from one pointer type to another, where the target is an
+   empty base of the original type.  */
+
+bool
+is_empty_base_ref (tree expr)
+{
+  if (TREE_CODE (expr) == INDIRECT_REF)
+    expr = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (expr) != NOP_EXPR)
+    return false;
+  tree type = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (type))
+    return false;
+  type = TREE_TYPE (type);
+  if (!is_empty_class (type))
+    return false;
+  STRIP_NOPS (expr);
+  tree fromtype = TREE_TYPE (expr);
+  if (!POINTER_TYPE_P (fromtype))
+    return false;
+  fromtype = TREE_TYPE (fromtype);
+  return (CLASS_TYPE_P (fromtype)
+	  && !same_type_ignoring_top_level_qualifiers_p (fromtype, type)
+	  && DERIVED_FROM_P (type, fromtype));
+}
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -1480,6 +1507,10 @@ mark_or_check_tags (tree t, tree *tp, abi_tag_data *p, bool val)
 static tree
 find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1500,6 +1531,10 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 static tree
 mark_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1800,15 +1835,13 @@ check_bases (tree t,
 	  else if (CLASSTYPE_REPEATED_BASE_P (t))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
-	    /* ...either has no non-static data members in the most-derived
-	       class and at most one base class with non-static data
-	       members, or has no base classes with non-static data
-	       members.  FIXME This was reworded in DR 1813.  */
+	    /* ...has all non-static data members and bit-fields in the class
+	       and its base classes first declared in the same class.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
 		  && !(DECL_FIELD_IS_BASE (basefield)
-		       && integer_zerop (DECL_SIZE (basefield))))
+		       && is_empty_field (basefield)))
 		{
 		  if (field)
 		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -4191,6 +4224,25 @@ field_poverlapping_p (tree decl)
 			   DECL_ATTRIBUTES (decl));
 }
 
+/* Return true iff DECL is an empty field, either for an empty base or a
+   [[no_unique_address]] data member.  */
+
+bool
+is_empty_field (tree decl)
+{
+  if (TREE_CODE (decl) != FIELD_DECL)
+    return false;
+
+  bool r = (is_empty_class (TREE_TYPE (decl))
+	    && (DECL_FIELD_IS_BASE (decl)
+		|| field_poverlapping_p (decl)));
+
+  /* Empty fields should have size zero.  */
+  gcc_checking_assert (!r || integer_zerop (DECL_SIZE (decl)));
+
+  return r;
+}
+
 /* Record all of the empty subobjects of DECL_OR_BINFO.  */
 
 static void
@@ -4920,7 +4972,7 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-static void
+void
 build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
 		    bool update_methods)
 {
@@ -6577,7 +6629,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	  /* end_of_class doesn't always give dsize, but it does in the case of
 	     a class with virtual bases, which is when dsize > nvsize.  */
 	  tree dsize = end_of_class (type, /*vbases*/true);
-	  if (tree_int_cst_le (dsize, nvsize))
+	  if (CLASSTYPE_EMPTY_P (type))
+	    DECL_SIZE (field) = DECL_SIZE_UNIT (field) = size_zero_node;
+	  else if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
 	      DECL_SIZE (field) = CLASSTYPE_SIZE (type);
@@ -6758,6 +6812,8 @@ layout_class_type (tree t, tree *virtuals_p)
 
       TYPE_CONTEXT (base_t) = t;
       DECL_CONTEXT (base_d) = t;
+
+      set_instantiating_module (base_d);
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
@@ -8738,6 +8794,7 @@ build_self_reference (void)
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_SELF_REFERENCE_P (decl);
   set_underlying_type (decl);
+  set_instantiating_module (decl);  
 
   if (processing_template_decl)
     decl = push_template_decl (decl);

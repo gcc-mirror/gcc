@@ -1,5 +1,5 @@
 /* Header file for SSA iterators.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,28 +77,31 @@ struct imm_use_iterator
        !end_readonly_imm_use_p (&(ITER));			\
        (void) ((DEST) = next_readonly_imm_use (&(ITER))))
 
-/* Use this iterator to visit each stmt which has a use of SSAVAR.  */
+/* Forward declare for use in the class below.  */
+static inline void end_imm_use_stmt_traverse (imm_use_iterator *);
+
+/* arrange to automatically call, upon descruction, end_imm_use_stmt_traverse
+   with a given pointer to imm_use_iterator.  */
+struct auto_end_imm_use_stmt_traverse
+{
+  imm_use_iterator *imm;
+  auto_end_imm_use_stmt_traverse (imm_use_iterator *imm)
+  : imm (imm) {}
+  ~auto_end_imm_use_stmt_traverse ()
+  { end_imm_use_stmt_traverse (imm); }
+};
+
+/* Use this iterator to visit each stmt which has a use of SSAVAR.  The
+   destructor of the auto_end_imm_use_stmt_traverse object deals with removing
+   ITER from SSAVAR's IMM_USE list even when leaving the scope early.  */
 
 #define FOR_EACH_IMM_USE_STMT(STMT, ITER, SSAVAR)		\
-  for ((STMT) = first_imm_use_stmt (&(ITER), (SSAVAR));		\
+  for (struct auto_end_imm_use_stmt_traverse			\
+	 auto_end_imm_use_stmt_traverse				\
+	   ((((STMT) = first_imm_use_stmt (&(ITER), (SSAVAR))),	\
+	     &(ITER)));						\
        !end_imm_use_stmt_p (&(ITER));				\
        (void) ((STMT) = next_imm_use_stmt (&(ITER))))
-
-/* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to
-   do so will result in leaving a iterator marker node in the immediate
-   use list, and nothing good will come from that.   */
-#define BREAK_FROM_IMM_USE_STMT(ITER)				\
-   {								\
-     end_imm_use_stmt_traverse (&(ITER));			\
-     break;							\
-   }
-
-/* Similarly for return.  */
-#define RETURN_FROM_IMM_USE_STMT(ITER, VAL)			\
-  {								\
-    end_imm_use_stmt_traverse (&(ITER));			\
-    return (VAL);						\
-  }
 
 /* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to
    get access to each occurrence of ssavar on the stmt returned by

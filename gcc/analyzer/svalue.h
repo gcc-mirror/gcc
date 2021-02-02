@@ -1,5 +1,5 @@
 /* Symbolic values.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -194,6 +194,8 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+  bool implicitly_live_p (const svalue_set &,
+			  const region_model *) const FINAL OVERRIDE;
 
   const region * get_pointee () const { return m_reg; }
 

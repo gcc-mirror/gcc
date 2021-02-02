@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1069,6 +1069,53 @@
   return true;
 })
 
+/* Return true if operand is a float vector constant that is all ones. */
+(define_predicate "float_vector_all_ones_operand"
+  (match_code "const_vector,mem")
+{
+  mode = GET_MODE (op);
+  if (!FLOAT_MODE_P (mode)
+      || (MEM_P (op)
+	  && (!SYMBOL_REF_P (XEXP (op, 0))
+	      || !CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))))
+    return false;
+
+  if (MEM_P (op))
+    {
+      op = get_pool_constant (XEXP (op, 0));
+      if (GET_CODE (op) != CONST_VECTOR)
+	return false;
+
+      if (GET_MODE (op) != mode
+	 && INTEGRAL_MODE_P (GET_MODE (op))
+	 && op == CONSTM1_RTX (GET_MODE (op)))
+	return true;
+    }
+
+  rtx first = XVECEXP (op, 0, 0);
+  for (int i = 1; i != GET_MODE_NUNITS (GET_MODE (op)); i++)
+    {
+      rtx tmp = XVECEXP (op, 0, i);
+      if (!rtx_equal_p (tmp, first))
+	return false;
+    }
+  if (GET_MODE (first) == E_SFmode)
+    {
+      long l;
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (first), l);
+      return (l & 0xffffffff) == 0xffffffff;
+    }
+  else if (GET_MODE (first) == E_DFmode)
+    {
+      long l[2];
+      REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (first), l);
+      return ((l[0] & 0xffffffff) == 0xffffffff
+	     && (l[1] & 0xffffffff) == 0xffffffff);
+    }
+  else
+    return false;
+})
+
 /* Return true if operand is a vector constant that is all ones. */
 (define_predicate "vector_all_ones_operand"
   (and (match_code "const_vector")
@@ -1592,6 +1639,38 @@
     {
       for (i = 1; i < nelt; ++i)
 	if (INTVAL (XVECEXP (op, 0, i)) != (elt + i - (i & 1) * nelt))
+	  return false;
+    }
+  else
+    return false;
+
+  return true;
+})
+
+;; Return true if OP is a parallel for an pmovz{bw,wd,dq} vec_select,
+;; where one of the two operands of the vec_concat is const0_operand.
+(define_predicate "pmovzx_parallel"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int nelt = XVECLEN (op, 0);
+  int elt, i;
+
+  if (nelt < 2)
+    return false;
+
+  /* Check that the permutation is suitable for pmovz{bw,wd,dq}.
+     For example { 0 16 1 17 2 18 3 19 4 20 5 21 6 22 7 23 }.  */
+  elt = INTVAL (XVECEXP (op, 0, 0));
+  if (elt == 0)
+    {
+      for (i = 1; i < nelt; ++i)
+	if ((i & 1) != 0)
+	  {
+	    if (INTVAL (XVECEXP (op, 0, i)) < nelt)
+	      return false;
+	  }
+	else if (INTVAL (XVECEXP (op, 0, i)) != i / 2)
 	  return false;
     }
   else

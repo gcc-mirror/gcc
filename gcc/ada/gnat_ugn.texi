@@ -21,11 +21,11 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 20, 2020
+GNAT User's Guide for Native Platforms , Dec 11, 2020
 
 AdaCore
 
-Copyright @copyright{} 2008-2020, Free Software Foundation
+Copyright @copyright{} 2008-2021, Free Software Foundation
 @end quotation
 
 @end copying
@@ -381,7 +381,7 @@ Performance Considerations
 * Optimization Levels:: 
 * Debugging Optimized Code:: 
 * Inlining of Subprograms:: 
-* Floating_Point_Operations:: 
+* Floating Point Operations:: 
 * Vectorization of loops:: 
 * Other Optimization Switches:: 
 * Optimization and Strict Aliasing:: 
@@ -11507,7 +11507,7 @@ not included in this check.
 
 @emph{Suppress warnings on redefinition of names in standard.}
 
-This switch activates warnings for declarations that declare a name that
+This switch disables warnings for declarations that declare a name that
 is defined in package Standard.
 @end table
 
@@ -19652,7 +19652,7 @@ some guidelines on debugging optimized code.
 * Optimization Levels:: 
 * Debugging Optimized Code:: 
 * Inlining of Subprograms:: 
-* Floating_Point_Operations:: 
+* Floating Point Operations:: 
 * Vectorization of loops:: 
 * Other Optimization Switches:: 
 * Optimization and Strict Aliasing:: 
@@ -20001,7 +20001,7 @@ Note that if you use @code{-g} you can then use the @code{strip} program
 on the resulting executable,
 which removes both debugging information and global symbols.
 
-@node Inlining of Subprograms,Floating_Point_Operations,Debugging Optimized Code,Performance Considerations
+@node Inlining of Subprograms,Floating Point Operations,Debugging Optimized Code,Performance Considerations
 @anchor{gnat_ugn/gnat_and_program_execution id32}@anchor{185}@anchor{gnat_ugn/gnat_and_program_execution inlining-of-subprograms}@anchor{100}
 @subsubsection Inlining of Subprograms
 
@@ -20140,9 +20140,9 @@ automatically assume that @code{-O3} is better than @code{-O2}, and
 indeed you should use @code{-O3} only if tests show that it actually
 improves performance for your program.
 
-@node Floating_Point_Operations,Vectorization of loops,Inlining of Subprograms,Performance Considerations
+@node Floating Point Operations,Vectorization of loops,Inlining of Subprograms,Performance Considerations
 @anchor{gnat_ugn/gnat_and_program_execution floating-point-operations}@anchor{186}@anchor{gnat_ugn/gnat_and_program_execution id33}@anchor{187}
-@subsubsection Floating_Point_Operations
+@subsubsection Floating Point Operations
 
 
 @geindex Floating-Point Operations
@@ -20188,7 +20188,7 @@ Note that the ABI has the same form for both floating-point models,
 so it is permissible to mix units compiled with and without these
 switches.
 
-@node Vectorization of loops,Other Optimization Switches,Floating_Point_Operations,Performance Considerations
+@node Vectorization of loops,Other Optimization Switches,Floating Point Operations,Performance Considerations
 @anchor{gnat_ugn/gnat_and_program_execution id34}@anchor{188}@anchor{gnat_ugn/gnat_and_program_execution vectorization-of-loops}@anchor{189}
 @subsubsection Vectorization of loops
 

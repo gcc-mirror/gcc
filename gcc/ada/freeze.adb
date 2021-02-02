@@ -5642,7 +5642,7 @@ package body Freeze is
                   Has_Rep_Pragma (E, Name_Atomic_Components)
                then
                   Error_Msg_N
-                    ("stand alone atomic constant must be " &
+                    ("standalone atomic constant must be " &
                      "imported (RM C.6(13))", E);
 
                elsif Has_Rep_Pragma (E, Name_Volatile)
@@ -5650,7 +5650,7 @@ package body Freeze is
                      Has_Rep_Pragma (E, Name_Volatile_Components)
                then
                   Error_Msg_N
-                    ("stand alone volatile constant must be " &
+                    ("standalone volatile constant must be " &
                      "imported (RM C.6(13))", E);
                end if;
             end if;
@@ -9225,10 +9225,12 @@ package body Freeze is
          Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
       end if;
 
+      Retype := Get_Fullest_View (Etype (E));
+
       if Transform_Function_Array
         and then Nkind (Parent (E)) = N_Function_Specification
-        and then Is_Array_Type (Etype (E))
-        and then Is_Constrained (Etype (E))
+        and then Is_Array_Type (Retype)
+        and then Is_Constrained (Retype)
         and then not Is_Unchecked_Conversion_Instance (E)
         and then not Rewritten_For_C (E)
       then

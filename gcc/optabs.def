@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -290,6 +290,14 @@ OPTAB_D (atan_optab, "atan$a2")
 OPTAB_D (atanh_optab, "atanh$a2")
 OPTAB_D (copysign_optab, "copysign$F$a3")
 OPTAB_D (xorsign_optab, "xorsign$F$a3")
+OPTAB_D (cadd90_optab, "cadd90$a3")
+OPTAB_D (cadd270_optab, "cadd270$a3")
+OPTAB_D (cmul_optab, "cmul$a3")
+OPTAB_D (cmul_conj_optab, "cmul_conj$a3")
+OPTAB_D (cmla_optab, "cmla$a4")
+OPTAB_D (cmla_conj_optab, "cmla_conj$a4")
+OPTAB_D (cmls_optab, "cmls$a4")
+OPTAB_D (cmls_conj_optab, "cmls_conj$a4")
 OPTAB_D (cos_optab, "cos$a2")
 OPTAB_D (cosh_optab, "cosh$a2")
 OPTAB_D (exp10_optab, "exp10$a2")

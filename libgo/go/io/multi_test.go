@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	. "io"
-	"io/ioutil"
 	"runtime"
 	"strings"
 	"testing"
@@ -143,7 +142,7 @@ func testMultiWriter(t *testing.T, sink interface {
 	}
 }
 
-// writerFunc is an io.Writer implemented by the underlying func.
+// writerFunc is an Writer implemented by the underlying func.
 type writerFunc func(p []byte) (int, error)
 
 func (f writerFunc) Write(p []byte) (int, error) {
@@ -197,7 +196,7 @@ func TestMultiReaderCopy(t *testing.T) {
 	slice := []Reader{strings.NewReader("hello world")}
 	r := MultiReader(slice...)
 	slice[0] = nil
-	data, err := ioutil.ReadAll(r)
+	data, err := ReadAll(r)
 	if err != nil || string(data) != "hello world" {
 		t.Errorf("ReadAll() = %q, %v, want %q, nil", data, err, "hello world")
 	}
@@ -218,7 +217,7 @@ func TestMultiWriterCopy(t *testing.T) {
 	}
 }
 
-// readerFunc is an io.Reader implemented by the underlying func.
+// readerFunc is an Reader implemented by the underlying func.
 type readerFunc func(p []byte) (int, error)
 
 func (f readerFunc) Read(p []byte) (int, error) {
@@ -262,7 +261,7 @@ func TestMultiReaderFlatten(t *testing.T) {
 }
 
 // byteAndEOFReader is a Reader which reads one byte (the underlying
-// byte) and io.EOF at once in its Read call.
+// byte) and EOF at once in its Read call.
 type byteAndEOFReader byte
 
 func (b byteAndEOFReader) Read(p []byte) (n int, err error) {
@@ -277,7 +276,7 @@ func (b byteAndEOFReader) Read(p []byte) (n int, err error) {
 
 // This used to yield bytes forever; issue 16795.
 func TestMultiReaderSingleByteWithEOF(t *testing.T) {
-	got, err := ioutil.ReadAll(LimitReader(MultiReader(byteAndEOFReader('a'), byteAndEOFReader('b')), 10))
+	got, err := ReadAll(LimitReader(MultiReader(byteAndEOFReader('a'), byteAndEOFReader('b')), 10))
 	if err != nil {
 		t.Fatal(err)
 	}

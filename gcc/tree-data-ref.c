@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -97,6 +97,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "ssa.h"
 #include "internal-fn.h"
+#include "range-op.h"
+#include "vr-values.h"
 
 static struct datadep_stats
 {
@@ -141,7 +143,7 @@ tree_fold_divides_p (const_tree a, const_tree b)
 /* Returns true iff A divides B.  */
 
 static inline bool
-int_divides_p (int a, int b)
+int_divides_p (lambda_int a, lambda_int b)
 {
   return ((b % a) == 0);
 }
@@ -581,26 +583,196 @@ debug_ddrs (vec<ddr_p> ddrs)
   dump_ddrs (stderr, ddrs);
 }
 
+/* If RESULT_RANGE is nonnull, set *RESULT_RANGE to the range of
+   OP0 CODE OP1, where:
+
+   - OP0 CODE OP1 has integral type TYPE
+   - the range of OP0 is given by OP0_RANGE and
+   - the range of OP1 is given by OP1_RANGE.
+
+   Independently of RESULT_RANGE, try to compute:
+
+     DELTA = ((sizetype) OP0 CODE (sizetype) OP1)
+	     - (sizetype) (OP0 CODE OP1)
+
+   as a constant and subtract DELTA from the ssizetype constant in *OFF.
+   Return true on success, or false if DELTA is not known at compile time.
+
+   Truncation and sign changes are known to distribute over CODE, i.e.
+
+     (itype) (A CODE B) == (itype) A CODE (itype) B
+
+   for any integral type ITYPE whose precision is no greater than the
+   precision of A and B.  */
+
+static bool
+compute_distributive_range (tree type, value_range &op0_range,
+			    tree_code code, value_range &op1_range,
+			    tree *off, value_range *result_range)
+{
+  gcc_assert (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type));
+  if (result_range)
+    {
+      range_operator *op = range_op_handler (code, type);
+      op->fold_range (*result_range, type, op0_range, op1_range);
+    }
+
+  /* The distributive property guarantees that if TYPE is no narrower
+     than SIZETYPE,
+
+       (sizetype) (OP0 CODE OP1) == (sizetype) OP0 CODE (sizetype) OP1
+
+     and so we can treat DELTA as zero.  */
+  if (TYPE_PRECISION (type) >= TYPE_PRECISION (sizetype))
+    return true;
+
+  /* If overflow is undefined, we can assume that:
+
+       X == (ssizetype) OP0 CODE (ssizetype) OP1
+
+     is within the range of TYPE, i.e.:
+
+       X == (ssizetype) (TYPE) X
+
+     Distributing the (TYPE) truncation over X gives:
+
+       X == (ssizetype) (OP0 CODE OP1)
+
+     Casting both sides to sizetype and distributing the sizetype cast
+     over X gives:
+
+       (sizetype) OP0 CODE (sizetype) OP1 == (sizetype) (OP0 CODE OP1)
+
+     and so we can treat DELTA as zero.  */
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    return true;
+
+  /* Compute the range of:
+
+       (ssizetype) OP0 CODE (ssizetype) OP1
+
+     The distributive property guarantees that this has the same bitpattern as:
+
+       (sizetype) OP0 CODE (sizetype) OP1
+
+     but its range is more conducive to analysis.  */
+  range_cast (op0_range, ssizetype);
+  range_cast (op1_range, ssizetype);
+  value_range wide_range;
+  range_operator *op = range_op_handler (code, ssizetype);
+  bool saved_flag_wrapv = flag_wrapv;
+  flag_wrapv = 1;
+  op->fold_range (wide_range, ssizetype, op0_range, op1_range);
+  flag_wrapv = saved_flag_wrapv;
+  if (wide_range.num_pairs () != 1 || !range_int_cst_p (&wide_range))
+    return false;
+
+  wide_int lb = wide_range.lower_bound ();
+  wide_int ub = wide_range.upper_bound ();
+
+  /* Calculate the number of times that each end of the range overflows or
+     underflows TYPE.  We can only calculate DELTA if the numbers match.  */
+  unsigned int precision = TYPE_PRECISION (type);
+  if (!TYPE_UNSIGNED (type))
+    {
+      wide_int type_min = wi::mask (precision - 1, true, lb.get_precision ());
+      lb -= type_min;
+      ub -= type_min;
+    }
+  wide_int upper_bits = wi::mask (precision, true, lb.get_precision ());
+  lb &= upper_bits;
+  ub &= upper_bits;
+  if (lb != ub)
+    return false;
+
+  /* OP0 CODE OP1 overflows exactly arshift (LB, PRECISION) times, with
+     negative values indicating underflow.  The low PRECISION bits of LB
+     are clear, so DELTA is therefore LB (== UB).  */
+  *off = wide_int_to_tree (ssizetype, wi::to_wide (*off) - lb);
+  return true;
+}
+
+/* Return true if (sizetype) OP == (sizetype) (TO_TYPE) OP,
+   given that OP has type FROM_TYPE and range RANGE.  Both TO_TYPE and
+   FROM_TYPE are integral types.  */
+
+static bool
+nop_conversion_for_offset_p (tree to_type, tree from_type, value_range &range)
+{
+  gcc_assert (INTEGRAL_TYPE_P (to_type)
+	      && INTEGRAL_TYPE_P (from_type)
+	      && !TYPE_OVERFLOW_TRAPS (to_type)
+	      && !TYPE_OVERFLOW_TRAPS (from_type));
+
+  /* Converting to something no narrower than sizetype and then to sizetype
+     is equivalent to converting directly to sizetype.  */
+  if (TYPE_PRECISION (to_type) >= TYPE_PRECISION (sizetype))
+    return true;
+
+  /* Check whether TO_TYPE can represent all values that FROM_TYPE can.  */
+  if (TYPE_PRECISION (from_type) < TYPE_PRECISION (to_type)
+      && (TYPE_UNSIGNED (from_type) || !TYPE_UNSIGNED (to_type)))
+    return true;
+
+  /* For narrowing conversions, we could in principle test whether
+     the bits in FROM_TYPE but not in TO_TYPE have a fixed value
+     and apply a constant adjustment.
+
+     For other conversions (which involve a sign change) we could
+     check that the signs are always equal, and apply a constant
+     adjustment if the signs are negative.
+
+     However, both cases should be rare.  */
+  return range_fits_type_p (&range, TYPE_PRECISION (to_type),
+			    TYPE_SIGN (to_type));
+}
+
 static void
-split_constant_offset (tree exp, tree *var, tree *off,
+split_constant_offset (tree type, tree *var, tree *off,
+		       value_range *result_range,
 		       hash_map<tree, std::pair<tree, tree> > &cache,
 		       unsigned *limit);
 
-/* Helper function for split_constant_offset.  Expresses OP0 CODE OP1
-   (the type of the result is TYPE) as VAR + OFF, where OFF is a nonzero
-   constant of type ssizetype, and returns true.  If we cannot do this
-   with OFF nonzero, OFF and VAR are set to NULL_TREE instead and false
-   is returned.  */
+/* Helper function for split_constant_offset.  If TYPE is a pointer type,
+   try to express OP0 CODE OP1 as:
+
+     POINTER_PLUS <*VAR, (sizetype) *OFF>
+
+   where:
+
+   - *VAR has type TYPE
+   - *OFF is a constant of type ssizetype.
+
+   If TYPE is an integral type, try to express (sizetype) (OP0 CODE OP1) as:
+
+     *VAR + (sizetype) *OFF
+
+   where:
+
+   - *VAR has type sizetype
+   - *OFF is a constant of type ssizetype.
+
+   In both cases, OP0 CODE OP1 has type TYPE.
+
+   Return true on success.  A false return value indicates that we can't
+   do better than set *OFF to zero.
+
+   When returning true, set RESULT_RANGE to the range of OP0 CODE OP1,
+   if RESULT_RANGE is nonnull and if we can do better than assume VR_VARYING.
+
+   CACHE caches {*VAR, *OFF} pairs for SSA names that we've previously
+   visited.  LIMIT counts down the number of SSA names that we are
+   allowed to process before giving up.  */
 
 static bool
 split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
-			 tree *var, tree *off,
+			 tree *var, tree *off, value_range *result_range,
 			 hash_map<tree, std::pair<tree, tree> > &cache,
 			 unsigned *limit)
 {
   tree var0, var1;
   tree off0, off1;
-  enum tree_code ocode = code;
+  value_range op0_range, op1_range;
 
   *var = NULL_TREE;
   *off = NULL_TREE;
@@ -608,35 +780,42 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   switch (code)
     {
     case INTEGER_CST:
-      *var = build_int_cst (type, 0);
+      *var = size_int (0);
       *off = fold_convert (ssizetype, op0);
+      if (result_range)
+	result_range->set (op0, op0);
       return true;
 
     case POINTER_PLUS_EXPR:
-      ocode = PLUS_EXPR;
-      /* FALLTHROUGH */
+      split_constant_offset (op0, &var0, &off0, nullptr, cache, limit);
+      split_constant_offset (op1, &var1, &off1, nullptr, cache, limit);
+      *var = fold_build2 (POINTER_PLUS_EXPR, type, var0, var1);
+      *off = size_binop (PLUS_EXPR, off0, off1);
+      return true;
+
     case PLUS_EXPR:
     case MINUS_EXPR:
-      if (TREE_CODE (op1) == INTEGER_CST)
-	{
-	  split_constant_offset (op0, &var0, &off0, cache, limit);
-	  *var = var0;
-	  *off = size_binop (ocode, off0, fold_convert (ssizetype, op1));
-	  return true;
-	}
-      split_constant_offset (op0, &var0, &off0, cache, limit);
-      split_constant_offset (op1, &var1, &off1, cache, limit);
-      *var = fold_build2 (code, type, var0, var1);
-      *off = size_binop (ocode, off0, off1);
+      split_constant_offset (op0, &var0, &off0, &op0_range, cache, limit);
+      split_constant_offset (op1, &var1, &off1, &op1_range, cache, limit);
+      *off = size_binop (code, off0, off1);
+      if (!compute_distributive_range (type, op0_range, code, op1_range,
+				       off, result_range))
+	return false;
+      *var = fold_build2 (code, sizetype, var0, var1);
       return true;
 
     case MULT_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST)
 	return false;
 
-      split_constant_offset (op0, &var0, &off0, cache, limit);
-      *var = fold_build2 (MULT_EXPR, type, var0, op1);
+      split_constant_offset (op0, &var0, &off0, &op0_range, cache, limit);
+      op1_range.set (op1, op1);
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
+      if (!compute_distributive_range (type, op0_range, code, op1_range,
+				       off, result_range))
+	return false;
+      *var = fold_build2 (MULT_EXPR, sizetype, var0,
+			  fold_convert (sizetype, op1));
       return true;
 
     case ADDR_EXPR:
@@ -658,13 +837,10 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 	if (poffset)
 	  {
-	    split_constant_offset (poffset, &poffset, &off1, cache, limit);
+	    split_constant_offset (poffset, &poffset, &off1, nullptr,
+				   cache, limit);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
-	    if (POINTER_TYPE_P (TREE_TYPE (base)))
-	      base = fold_build_pointer_plus (base, poffset);
-	    else
-	      base = fold_build2 (PLUS_EXPR, TREE_TYPE (base), base,
-				  fold_convert (TREE_TYPE (base), poffset));
+	    base = fold_build_pointer_plus (base, poffset);
 	  }
 
 	var0 = fold_convert (type, base);
@@ -723,6 +899,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		  return false;
 		*var = e.first;
 		*off = e.second;
+		/* The caller sets the range in this case.  */
 		return true;
 	      }
 	    e = std::make_pair (op0, ssize_int (0));
@@ -736,72 +913,80 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	var1 = gimple_assign_rhs2 (def_stmt);
 
 	bool res = split_constant_offset_1 (type, var0, subcode, var1,
-					    var, off, cache, limit);
+					    var, off, nullptr, cache, limit);
 	if (res && use_cache)
 	  *cache.get (op0) = std::make_pair (*var, *off);
+	/* The caller sets the range in this case.  */
 	return res;
       }
     CASE_CONVERT:
       {
-	/* We must not introduce undefined overflow, and we must not change
-	   the value.  Hence we're okay if the inner type doesn't overflow
-	   to start with (pointer or signed), the outer type also is an
-	   integer or pointer and the outer precision is at least as large
-	   as the inner.  */
+	/* We can only handle the following conversions:
+
+	   - Conversions from one pointer type to another pointer type.
+
+	   - Conversions from one non-trapping integral type to another
+	     non-trapping integral type.  In this case, the recursive
+	     call makes sure that:
+
+	       (sizetype) OP0
+
+	     can be expressed as a sizetype operation involving VAR and OFF,
+	     and all we need to do is check whether:
+
+	       (sizetype) OP0 == (sizetype) (TYPE) OP0
+
+	   - Conversions from a non-trapping sizetype-size integral type to
+	     a like-sized pointer type.  In this case, the recursive call
+	     makes sure that:
+
+	       (sizetype) OP0 == *VAR + (sizetype) *OFF
+
+	     and we can convert that to:
+
+	       POINTER_PLUS <(TYPE) *VAR, (sizetype) *OFF>
+
+	   - Conversions from a sizetype-sized pointer type to a like-sized
+	     non-trapping integral type.  In this case, the recursive call
+	     makes sure that:
+
+	       OP0 == POINTER_PLUS <*VAR, (sizetype) *OFF>
+
+	     where the POINTER_PLUS and *VAR have the same precision as
+	     TYPE (and the same precision as sizetype).  Then:
+
+	       (sizetype) (TYPE) OP0 == (sizetype) *VAR + (sizetype) *OFF.  */
 	tree itype = TREE_TYPE (op0);
 	if ((POINTER_TYPE_P (itype)
 	     || (INTEGRAL_TYPE_P (itype) && !TYPE_OVERFLOW_TRAPS (itype)))
-	    && TYPE_PRECISION (type) >= TYPE_PRECISION (itype)
-	    && (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type)))
+	    && (POINTER_TYPE_P (type)
+		|| (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type)))
+	    && (POINTER_TYPE_P (type) == POINTER_TYPE_P (itype)
+		|| (TYPE_PRECISION (type) == TYPE_PRECISION (sizetype)
+		    && TYPE_PRECISION (itype) == TYPE_PRECISION (sizetype))))
 	  {
-	    if (INTEGRAL_TYPE_P (itype) && TYPE_OVERFLOW_WRAPS (itype)
-		&& (TYPE_PRECISION (type) > TYPE_PRECISION (itype)
-		    || TYPE_UNSIGNED (itype) != TYPE_UNSIGNED (type)))
+	    if (POINTER_TYPE_P (type))
 	      {
-		/* Split the unconverted operand and try to prove that
-		   wrapping isn't a problem.  */
-		tree tmp_var, tmp_off;
-		split_constant_offset (op0, &tmp_var, &tmp_off, cache, limit);
-
-		/* See whether we have an known range [A, B] for tmp_var.  */
-		wide_int var_min, var_max;
-		signop sgn = TYPE_SIGN (itype);
-		if (TREE_CODE (tmp_var) == SSA_NAME)
-		  {
-		    value_range_kind vr_type
-		      = get_range_info (tmp_var, &var_min, &var_max);
-		    wide_int var_nonzero = get_nonzero_bits (tmp_var);
-		    if (intersect_range_with_nonzero_bits (vr_type, &var_min,
-							   &var_max,
-							   var_nonzero,
-							   sgn) != VR_RANGE)
-		      return false;
-		  }
-		else if (determine_value_range (tmp_var, &var_min, &var_max)
-			 != VR_RANGE)
-		  return false;
-
-		/* See whether the range of OP0 (i.e. TMP_VAR + TMP_OFF)
-		   is known to be [A + TMP_OFF, B + TMP_OFF], with all
-		   operations done in ITYPE.  The addition must overflow
-		   at both ends of the range or at neither.  */
-		wi::overflow_type overflow[2];
-		unsigned int prec = TYPE_PRECISION (itype);
-		wide_int woff = wi::to_wide (tmp_off, prec);
-		wide_int op0_min = wi::add (var_min, woff, sgn, &overflow[0]);
-		wi::add (var_max, woff, sgn, &overflow[1]);
-		if ((overflow[0] != wi::OVF_NONE) != (overflow[1] != wi::OVF_NONE))
-		  return false;
-
-		/* Calculate (ssizetype) OP0 - (ssizetype) TMP_VAR.  */
-		widest_int diff = (widest_int::from (op0_min, sgn)
-				   - widest_int::from (var_min, sgn));
-		var0 = tmp_var;
-		*off = wide_int_to_tree (ssizetype, diff);
+		split_constant_offset (op0, var, off, nullptr, cache, limit);
+		*var = fold_convert (type, *var);
+	      }
+	    else if (POINTER_TYPE_P (itype))
+	      {
+		split_constant_offset (op0, var, off, nullptr, cache, limit);
+		*var = fold_convert (sizetype, *var);
 	      }
 	    else
-	      split_constant_offset (op0, &var0, off, cache, limit);
-	    *var = fold_convert (type, var0);
+	      {
+		split_constant_offset (op0, var, off, &op0_range,
+				       cache, limit);
+		if (!nop_conversion_for_offset_p (type, itype, op0_range))
+		  return false;
+		if (result_range)
+		  {
+		    *result_range = op0_range;
+		    range_cast (*result_range, type);
+		  }
+	      }
 	    return true;
 	  }
 	return false;
@@ -812,32 +997,79 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
     }
 }
 
-/* Expresses EXP as VAR + OFF, where off is a constant.  The type of OFF
-   will be ssizetype.  */
+/* If EXP has pointer type, try to express it as:
+
+     POINTER_PLUS <*VAR, (sizetype) *OFF>
+
+   where:
+
+   - *VAR has the same type as EXP
+   - *OFF is a constant of type ssizetype.
+
+   If EXP has an integral type, try to express (sizetype) EXP as:
+
+     *VAR + (sizetype) *OFF
+
+   where:
+
+   - *VAR has type sizetype
+   - *OFF is a constant of type ssizetype.
+
+   If EXP_RANGE is nonnull, set it to the range of EXP.
+
+   CACHE caches {*VAR, *OFF} pairs for SSA names that we've previously
+   visited.  LIMIT counts down the number of SSA names that we are
+   allowed to process before giving up.  */
 
 static void
-split_constant_offset (tree exp, tree *var, tree *off,
+split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
 		       hash_map<tree, std::pair<tree, tree> > &cache,
 		       unsigned *limit)
 {
-  tree type = TREE_TYPE (exp), op0, op1, e, o;
+  tree type = TREE_TYPE (exp), op0, op1;
   enum tree_code code;
 
-  *var = exp;
-  *off = ssize_int (0);
-
-  if (tree_is_chrec (exp)
-      || get_gimple_rhs_class (TREE_CODE (exp)) == GIMPLE_TERNARY_RHS)
-    return;
-
   code = TREE_CODE (exp);
-  extract_ops_from_tree (exp, &code, &op0, &op1);
-  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache, limit))
+  if (exp_range)
     {
-      *var = e;
-      *off = o;
+      *exp_range = type;
+      if (code == SSA_NAME)
+	{
+	  wide_int var_min, var_max;
+	  value_range_kind vr_kind = get_range_info (exp, &var_min, &var_max);
+	  wide_int var_nonzero = get_nonzero_bits (exp);
+	  vr_kind = intersect_range_with_nonzero_bits (vr_kind,
+						       &var_min, &var_max,
+						       var_nonzero,
+						       TYPE_SIGN (type));
+	  if (vr_kind == VR_RANGE)
+	    *exp_range = value_range (type, var_min, var_max);
+	}
+    }
+
+  if (!tree_is_chrec (exp)
+      && get_gimple_rhs_class (TREE_CODE (exp)) != GIMPLE_TERNARY_RHS)
+    {
+      extract_ops_from_tree (exp, &code, &op0, &op1);
+      if (split_constant_offset_1 (type, op0, code, op1, var, off,
+				   exp_range, cache, limit))
+	return;
+    }
+
+  *var = exp;
+  if (INTEGRAL_TYPE_P (type))
+    *var = fold_convert (sizetype, *var);
+  *off = ssize_int (0);
+  if (exp_range && code != SSA_NAME)
+    {
+      wide_int var_min, var_max;
+      if (determine_value_range (exp, &var_min, &var_max) == VR_RANGE)
+	*exp_range = value_range (type, var_min, var_max);
     }
 }
+
+/* Expresses EXP as VAR + OFF, where OFF is a constant.  VAR has the same
+   type as EXP while OFF has type ssizetype.  */
 
 void
 split_constant_offset (tree exp, tree *var, tree *off)
@@ -846,7 +1078,8 @@ split_constant_offset (tree exp, tree *var, tree *off)
   static hash_map<tree, std::pair<tree, tree> > *cache;
   if (!cache)
     cache = new hash_map<tree, std::pair<tree, tree> > (37);
-  split_constant_offset (exp, var, off, *cache, &limit);
+  split_constant_offset (exp, var, off, nullptr, *cache, &limit);
+  *var = fold_convert (TREE_TYPE (exp), *var);
   cache->empty ();
 }
 
@@ -1053,6 +1286,23 @@ access_fn_component_p (tree op)
     case COMPONENT_REF:
       return TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0))) == RECORD_TYPE;
 
+    default:
+      return false;
+    }
+}
+
+/* Returns whether BASE can have a access_fn_component_p with BASE
+   as base.  */
+
+static bool
+base_supports_access_fn_components_p (tree base)
+{
+  switch (TREE_CODE (TREE_TYPE (base)))
+    {
+    case COMPLEX_TYPE:
+    case ARRAY_TYPE:
+    case RECORD_TYPE:
+      return true;
     default:
       return false;
     }
@@ -3039,8 +3289,13 @@ initialize_data_dependence_relation (struct data_reference *a,
 		      && full_seq.start_b + full_seq.length == num_dimensions_b
 		      && DR_UNCONSTRAINED_BASE (a) == DR_UNCONSTRAINED_BASE (b)
 		      && operand_equal_p (base_a, base_b, OEP_ADDRESS_OF)
-		      && types_compatible_p (TREE_TYPE (base_a),
-					     TREE_TYPE (base_b))
+		      && (types_compatible_p (TREE_TYPE (base_a),
+					      TREE_TYPE (base_b))
+			  || (!base_supports_access_fn_components_p (base_a)
+			      && !base_supports_access_fn_components_p (base_b)
+			      && operand_equal_p
+				   (TYPE_SIZE (TREE_TYPE (base_a)),
+				    TYPE_SIZE (TREE_TYPE (base_b)), 0)))
 		      && (!loop_nest.exists ()
 			  || (object_address_invariant_in_loop_p
 			      (loop_nest[0], base_a))));
@@ -3669,9 +3924,14 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
+      HOST_WIDE_INT chrec_right;
       if (!cst_and_fits_in_hwi (CHREC_RIGHT (chrec)))
 	return chrec_dont_know;
-      A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
+      chrec_right = int_cst_value (CHREC_RIGHT (chrec));
+      /* We want to be able to negate without overflow.  */
+      if (chrec_right == HOST_WIDE_INT_MIN)
+	return chrec_dont_know;
+      A[index][0] = mult * chrec_right;
       return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 
     case PLUS_EXPR:
@@ -3938,17 +4198,28 @@ lambda_vector_first_nz (lambda_vector vec1, int n, int start)
 /* Add a multiple of row R1 of matrix MAT with N columns to row R2:
    R2 = R2 + CONST1 * R1.  */
 
-static void
+static bool
 lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2,
 		       lambda_int const1)
 {
   int i;
 
   if (const1 == 0)
-    return;
+    return true;
 
   for (i = 0; i < n; i++)
-    mat[r2][i] += const1 * mat[r1][i];
+    {
+      bool ovf;
+      lambda_int tem = mul_hwi (mat[r1][i], const1, &ovf);
+      if (ovf)
+	return false;
+      lambda_int tem2 = add_hwi (mat[r2][i], tem, &ovf);
+      if (ovf || tem2 == HOST_WIDE_INT_MIN)
+	return false;
+      mat[r2][i] = tem2;
+    }
+
+  return true;
 }
 
 /* Multiply vector VEC1 of length SIZE by a constant CONST1,
@@ -4003,7 +4274,7 @@ lambda_vector_equal (lambda_vector vec1, lambda_vector vec2, int size)
    Ref: Algorithm 2.1 page 33 in "Loop Transformations for
    Restructuring Compilers" Utpal Banerjee.  */
 
-static void
+static bool
 lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 			     lambda_matrix S, lambda_matrix U)
 {
@@ -4021,24 +4292,26 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 	    {
 	      while (S[i][j] != 0)
 		{
-		  lambda_int sigma, factor, a, b;
+		  lambda_int factor, a, b;
 
 		  a = S[i-1][j];
 		  b = S[i][j];
-		  sigma = (a * b < 0) ? -1: 1;
-		  a = abs_hwi (a);
-		  b = abs_hwi (b);
-		  factor = sigma * (a / b);
+		  gcc_assert (a != HOST_WIDE_INT_MIN);
+		  factor = a / b;
 
-		  lambda_matrix_row_add (S, n, i, i-1, -factor);
+		  if (!lambda_matrix_row_add (S, n, i, i-1, -factor))
+		    return false;
 		  std::swap (S[i], S[i-1]);
 
-		  lambda_matrix_row_add (U, m, i, i-1, -factor);
+		  if (!lambda_matrix_row_add (U, m, i, i-1, -factor))
+		    return false;
 		  std::swap (U[i], U[i-1]);
 		}
 	    }
 	}
     }
+
+  return true;
 }
 
 /* Determines the overlapping elements due to accesses CHREC_A and
@@ -4054,7 +4327,7 @@ analyze_subscript_affine_affine (tree chrec_a,
 				 tree *last_conflicts)
 {
   unsigned nb_vars_a, nb_vars_b, dim;
-  HOST_WIDE_INT gamma, gcd_alpha_beta;
+  lambda_int gamma, gcd_alpha_beta;
   lambda_matrix A, U, S;
   struct obstack scratch_obstack;
 
@@ -4155,7 +4428,13 @@ analyze_subscript_affine_affine (tree chrec_a,
     }
 
   /* U.A = S */
-  lambda_matrix_right_hermite (A, dim, 1, S, U);
+  if (!lambda_matrix_right_hermite (A, dim, 1, S, U))
+    {
+      *overlaps_a = conflict_fn_not_known ();
+      *overlaps_b = conflict_fn_not_known ();
+      *last_conflicts = chrec_dont_know;
+      goto end_analyze_subs_aa;
+    }
 
   if (S[0][0] < 0)
     {

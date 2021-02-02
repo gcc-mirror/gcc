@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -2883,6 +2883,24 @@ BU_P10V_AV_3 (VSRDB_V8HI, "vsrdb_v8hi", CONST, vsrdb_v8hi)
 BU_P10V_AV_3 (VSRDB_V4SI, "vsrdb_v4si", CONST, vsrdb_v4si)
 BU_P10V_AV_3 (VSRDB_V2DI, "vsrdb_v2di", CONST, vsrdb_v2di)
 
+BU_P10V_AV_2 (DIVES_V4SI, "vdivesw", CONST, dives_v4si)
+BU_P10V_AV_2 (DIVES_V2DI, "vdivesd", CONST, dives_v2di)
+BU_P10V_AV_2 (DIVEU_V4SI, "vdiveuw", CONST, diveu_v4si)
+BU_P10V_AV_2 (DIVEU_V2DI, "vdiveud", CONST, diveu_v2di)
+BU_P10V_AV_2 (DIVS_V4SI, "vdivsw", CONST, divv4si3)
+BU_P10V_AV_2 (DIVS_V2DI, "vdivsd", CONST, divv2di3)
+BU_P10V_AV_2 (DIVU_V4SI, "vdivuw", CONST, udivv4si3)
+BU_P10V_AV_2 (DIVU_V2DI, "vdivud", CONST, udivv2di3)
+BU_P10V_AV_2 (MODS_V2DI, "vmodsd", CONST, mods_v2di)
+BU_P10V_AV_2 (MODS_V4SI, "vmodsw", CONST, mods_v4si)
+BU_P10V_AV_2 (MODU_V2DI, "vmodud", CONST, modu_v2di)
+BU_P10V_AV_2 (MODU_V4SI, "vmoduw", CONST, modu_v4si)
+BU_P10V_AV_2 (MULHS_V2DI, "vmulhsd", CONST, mulhs_v2di)
+BU_P10V_AV_2 (MULHS_V4SI, "vmulhsw", CONST, mulhs_v4si)
+BU_P10V_AV_2 (MULHU_V2DI, "vmulhud", CONST, mulhu_v2di)
+BU_P10V_AV_2 (MULHU_V4SI, "vmulhuw", CONST, mulhu_v4si)
+BU_P10V_AV_2 (MULLD_V2DI, "vmulld", CONST, mulv2di3)
+
 BU_P10V_VSX_1 (VXXSPLTIW_V4SI, "vxxspltiw_v4si", CONST, xxspltiw_v4si)
 BU_P10V_VSX_1 (VXXSPLTIW_V4SF, "vxxspltiw_v4sf", CONST, xxspltiw_v4sf)
 
@@ -2958,6 +2976,9 @@ BU_P10_OVERLOAD_1 (VSTRIL_P, "stril_p")
 BU_P10_OVERLOAD_1 (XVTLSBB_ZEROS, "xvtlsbb_all_zeros")
 BU_P10_OVERLOAD_1 (XVTLSBB_ONES, "xvtlsbb_all_ones")
 
+BU_P10_OVERLOAD_2 (MULH, "mulh")
+BU_P10_OVERLOAD_2 (DIVE, "dive")
+BU_P10_OVERLOAD_2 (MOD, "mod")
 
 BU_P10_OVERLOAD_1 (MTVSRBM, "mtvsrbm")
 BU_P10_OVERLOAD_1 (MTVSRHM, "mtvsrhm")

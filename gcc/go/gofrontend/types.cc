@@ -4602,7 +4602,7 @@ class Sink_type : public Type
   { go_unreachable(); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_unreachable(); }
 };
 
@@ -5712,7 +5712,7 @@ class Call_multiple_result_type : public Type
   { go_assert(saw_errors()); }
 
   void
-  do_mangled_name(Gogo*, std::string*) const
+  do_mangled_name(Gogo*, std::string*, bool*) const
   { go_assert(saw_errors()); }
 
  private:
@@ -8845,7 +8845,22 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
   if (!this->may_receive_)
     ret->append("<-");
   ret->push_back(' ');
+
+  bool need_paren = false;
+  if (this->may_send_
+      && this->may_receive_
+      && this->element_type_->channel_type() != NULL
+      && this->element_type_->unalias()->named_type() == NULL
+      && !this->element_type_->channel_type()->may_send())
+    {
+      ret->push_back('(');
+      need_paren = true;
+    }
+
   this->append_reflection(this->element_type_, gogo, ret);
+
+  if (need_paren)
+    ret->push_back(')');
 }
 
 // Export.
@@ -8905,14 +8920,10 @@ Channel_type::select_case_type()
     {
       Type* unsafe_pointer_type =
 	Type::make_pointer_type(Type::make_void_type());
-      Type* uint16_type = Type::lookup_integer_type("uint16");
-      Type* int64_type = Type::lookup_integer_type("int64");
       scase_type =
-	Type::make_builtin_struct_type(4,
+	Type::make_builtin_struct_type(2,
 				       "c", unsafe_pointer_type,
-				       "elem", unsafe_pointer_type,
-				       "kind", uint16_type,
-				       "releasetime", int64_type);
+				       "elem", unsafe_pointer_type);
       scase_type->set_is_struct_incomparable();
     }
   return scase_type;
@@ -8984,8 +8995,11 @@ Interface_type::finalize_methods()
       else if (this->find_method(p->name()) == NULL)
 	this->all_methods_->push_back(*p);
       else
-	go_error_at(p->location(), "duplicate method %qs",
-		 Gogo::message_name(p->name()).c_str());
+	{
+	  go_error_at(p->location(), "duplicate method %qs",
+		      Gogo::message_name(p->name()).c_str());
+	  this->set_is_error();
+	}
     }
 
   std::vector<Named_type*> seen;
@@ -9001,7 +9015,10 @@ Interface_type::finalize_methods()
       if (it == NULL)
 	{
 	  if (!t->is_error())
-	    go_error_at(tl, "interface contains embedded non-interface");
+	    {
+	      go_error_at(tl, "interface contains embedded non-interface");
+	      this->set_is_error();
+	    }
 	  continue;
 	}
       if (it == this)
@@ -9009,6 +9026,7 @@ Interface_type::finalize_methods()
 	  if (!issued_recursive_error)
 	    {
 	      go_error_at(tl, "invalid recursive interface");
+	      this->set_is_error();
 	      issued_recursive_error = true;
 	    }
 	  continue;
@@ -9027,6 +9045,7 @@ Interface_type::finalize_methods()
 	      if (*q == nt)
 		{
 		  go_error_at(tl, "inherited interface loop");
+		  this->set_is_error();
 		  break;
 		}
 	    }
@@ -9049,8 +9068,11 @@ Interface_type::finalize_methods()
 							       q->type(), tl));
 	      else if (!Type::are_identical(q->type(), oldm->type(),
 					    Type::COMPARE_TAGS, NULL))
-		go_error_at(tl, "duplicate method %qs",
-			    Gogo::message_name(q->name()).c_str());
+		{
+		  go_error_at(tl, "duplicate method %qs",
+			      Gogo::message_name(q->name()).c_str());
+		  this->set_is_error();
+		}
 	    }
 	}
 

@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -361,6 +361,31 @@ show_array_ref (gfc_array_ref * ar)
     }
 
   fputc (')', dumpfile);
+  if (ar->codimen == 0)
+    return;
+
+  /* Show coarray part of the reference, if any.  */
+  fputc ('[',dumpfile);
+  for (i = ar->dimen; i < ar->dimen + ar->codimen; i++)
+    {
+      if (ar->dimen_type[i] == DIMEN_STAR)
+	fputc('*',dumpfile);
+      else if (ar->dimen_type[i] == DIMEN_THIS_IMAGE)
+	fputs("THIS_IMAGE", dumpfile);
+      else
+	{
+	  show_expr (ar->start[i]);
+	  if (ar->end[i])
+	    {
+	      fputc(':', dumpfile);
+	      show_expr (ar->end[i]);
+	    }
+	}
+      if (i != ar->dimen + ar->codimen - 1)
+	fputs (" , ", dumpfile);
+
+    }
+  fputc (']',dumpfile);
 }
 
 
@@ -1600,6 +1625,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_ADDR: type = "USE_DEVICE_ADDR"; break;
 	  case OMP_LIST_NONTEMPORAL: type = "NONTEMPORAL"; break;
+	  case OMP_LIST_SCAN_IN: type = "INCLUSIVE"; break;
+	  case OMP_LIST_SCAN_EX: type = "EXCLUSIVE"; break;
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -1698,6 +1725,12 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     {
       fputs (" PRIORITY(", dumpfile);
       show_expr (omp_clauses->priority);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->detach)
+    {
+      fputs (" DETACH(", dumpfile);
+      show_expr (omp_clauses->detach);
       fputc (')', dumpfile);
     }
   for (i = 0; i < OMP_IF_LAST; i++)
@@ -1803,6 +1836,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
     case EXEC_OMP_PARALLEL_SECTIONS: name = "PARALLEL SECTIONS"; break;
     case EXEC_OMP_PARALLEL_WORKSHARE: name = "PARALLEL WORKSHARE"; break;
+    case EXEC_OMP_SCAN: name = "SCAN"; break;
     case EXEC_OMP_SECTIONS: name = "SECTIONS"; break;
     case EXEC_OMP_SIMD: name = "SIMD"; break;
     case EXEC_OMP_SINGLE: name = "SINGLE"; break;
@@ -1873,6 +1907,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SCAN:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
@@ -1933,7 +1968,7 @@ show_omp_node (int level, gfc_code *c)
   if (c->op == EXEC_OACC_CACHE || c->op == EXEC_OACC_UPDATE
       || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA
       || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
-      || c->op == EXEC_OMP_TARGET_EXIT_DATA
+      || c->op == EXEC_OMP_TARGET_EXIT_DATA || c->op == EXEC_OMP_SCAN
       || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -3073,6 +3108,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
+    case EXEC_OMP_SCAN:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_SINGLE:
@@ -3629,4 +3665,15 @@ gfc_dump_global_symbols (FILE *f)
     fprintf (f, "empty\n");
   else
     gfc_traverse_gsymbol (gfc_gsym_root, show_global_symbol, (void *) f);
+}
+
+/* Show an array ref.  */
+
+void debug (gfc_array_ref *ar)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_array_ref (ar);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
 }

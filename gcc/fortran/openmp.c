@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
 This file is part of GCC.
@@ -91,6 +91,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->hint);
   gfc_free_expr (c->num_tasks);
   gfc_free_expr (c->priority);
+  gfc_free_expr (c->detach);
   for (i = 0; i < OMP_IF_LAST; i++)
     gfc_free_expr (c->if_exprs[i]);
   gfc_free_expr (c->async_expr);
@@ -446,6 +447,39 @@ cleanup:
   gfc_free_omp_namelist (head);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
+}
+
+/* Match detach(event-handle).  */
+
+static match
+gfc_match_omp_detach (gfc_expr **expr)
+{
+  locus old_loc = gfc_current_locus;
+
+  if (gfc_match ("detach ( ") != MATCH_YES)
+    goto syntax_error;
+
+  if (gfc_match_variable (expr, 0) != MATCH_YES)
+    goto syntax_error;
+
+  if ((*expr)->ts.type != BT_INTEGER || (*expr)->ts.kind != gfc_c_intptr_kind)
+    {
+      gfc_error ("%qs at %L should be of type "
+		 "integer(kind=omp_event_handle_kind)",
+		 (*expr)->symtree->n.sym->name, &(*expr)->where);
+      return MATCH_ERROR;
+    }
+
+  if (gfc_match_char (')') != MATCH_YES)
+    goto syntax_error;
+
+  return MATCH_YES;
+
+syntax_error:
+   gfc_error ("Syntax error in OpenMP detach clause at %C");
+   gfc_current_locus = old_loc;
+   return MATCH_ERROR;
+
 }
 
 /* Match depend(sink : ...) construct a namelist from it.  */
@@ -807,6 +841,7 @@ enum omp_mask1
   OMP_CLAUSE_ATOMIC,  /* OpenMP 5.0.  */
   OMP_CLAUSE_CAPTURE,  /* OpenMP 5.0.  */
   OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -840,7 +875,6 @@ enum omp_mask2
   OMP_CLAUSE_IF_PRESENT,
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
-  OMP_CLAUSE_DETACH,
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1378,6 +1412,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		gfc_current_locus = old_loc;
 	    }
 	  if ((mask & OMP_CLAUSE_DETACH)
+	      && !openacc
+	      && !c->detach
+	      && gfc_match_omp_detach (&c->detach) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_DETACH)
+	      && openacc
 	      && gfc_match ("detach ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
 					   OMP_MAP_DETACH, false,
@@ -2763,7 +2803,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
    | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL | OMP_CLAUSE_MERGEABLE	\
-   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION)
+   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION	\
+   | OMP_CLAUSE_DETACH)
 #define OMP_TASKLOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF		\
@@ -3883,6 +3924,42 @@ error:
 
 
 match
+gfc_match_omp_scan (void)
+{
+  bool incl;
+  gfc_omp_clauses *c = gfc_get_omp_clauses ();
+  gfc_gobble_whitespace ();
+  if ((incl = (gfc_match ("inclusive") == MATCH_YES))
+      || gfc_match ("exclusive") == MATCH_YES)
+    {
+      if (gfc_match_omp_variable_list (" (", &c->lists[incl ? OMP_LIST_SCAN_IN
+							    : OMP_LIST_SCAN_EX],
+				       false) != MATCH_YES)
+	{
+	  gfc_free_omp_clauses (c);
+	  return MATCH_ERROR;
+	}
+    }
+  else
+    {
+      gfc_error ("Expected INCLUSIVE or EXCLUSIVE clause at %C");
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
+  if (gfc_match_omp_eos () != MATCH_YES)
+    {
+      gfc_error ("Unexpected junk after !$OMP SCAN at %C");
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
+
+  new_st.op = EXEC_OMP_SCAN;
+  new_st.ext.omp_clauses = c;
+  return MATCH_YES;
+}
+
+
+match
 gfc_match_omp_sections (void)
 {
   return match_omp (EXEC_OMP_SECTIONS, OMP_SECTIONS_CLAUSES);
@@ -4296,13 +4373,7 @@ gfc_match_omp_barrier (void)
 match
 gfc_match_omp_taskgroup (void)
 {
-  gfc_omp_clauses *c;
-  if (gfc_match_omp_clauses (&c, OMP_CLAUSE_TASK_REDUCTION, true, true)
-      != MATCH_YES)
-    return MATCH_ERROR;
-  new_st.op = EXEC_OMP_TASKGROUP;
-  new_st.ext.omp_clauses = c;
-  return MATCH_YES;
+  return match_omp (EXEC_OMP_TASKGROUP, OMP_CLAUSE_TASK_REDUCTION);
 }
 
 
@@ -4628,7 +4699,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   static const char *clause_names[]
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
 	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
-	"TO", "FROM", "REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
+	"TO", "FROM", "INCLUSIVE", "EXCLUSIVE",
+	"REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
@@ -4865,6 +4937,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
 		     &n->where);
       }
+  if (omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]
+      && code->op != EXEC_OMP_DO
+      && code->op != EXEC_OMP_SIMD
+      && code->op != EXEC_OMP_DO_SIMD
+      && code->op != EXEC_OMP_PARALLEL_DO
+      && code->op != EXEC_OMP_PARALLEL_DO_SIMD)
+    gfc_error ("%<inscan%> REDUCTION clause on construct other than DO, SIMD, "
+	       "DO SIMD, PARALLEL DO, PARALLEL DO SIMD at %L",
+	       &omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where);
 
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE
@@ -4982,6 +5063,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	n->sym->mark = 1;
     }
 
+  bool has_inscan = false, has_notinscan = false;
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
@@ -5019,6 +5101,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			    n->sym->name, &n->where);
 		if (n->sym->attr.associate_var)
 		  gfc_error ("ASSOCIATE name %qs in SHARED clause at %L",
+			     n->sym->name, &n->where);
+		if (omp_clauses->detach
+		    && n->sym == omp_clauses->detach->symtree->n.sym)
+		  gfc_error ("DETACH event handle %qs in SHARED clause at %L",
 			     n->sym->name, &n->where);
 	      }
 	    break;
@@ -5259,22 +5345,25 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		}
 	    break;
 	  case OMP_LIST_IS_DEVICE_PTR:
-	    if (!n->sym->attr.dummy)
-	      gfc_error ("Non-dummy object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.allocatable
-		|| (n->sym->ts.type == BT_CLASS
-		    && CLASS_DATA (n->sym)->attr.allocatable))
-	      gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.pointer
-		|| (n->sym->ts.type == BT_CLASS
-		    && CLASS_DATA (n->sym)->attr.pointer))
-	      gfc_error ("POINTER object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
-	    if (n->sym->attr.value)
-	      gfc_error ("VALUE object %qs in %s clause at %L",
-			 n->sym->name, name, &n->where);
+	    for (n = omp_clauses->lists[list]; n != NULL; n = n->next)
+	      {
+		if (!n->sym->attr.dummy)
+		  gfc_error ("Non-dummy object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.allocatable
+		    || (n->sym->ts.type == BT_CLASS
+			&& CLASS_DATA (n->sym)->attr.allocatable))
+		  gfc_error ("ALLOCATABLE object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.pointer
+		    || (n->sym->ts.type == BT_CLASS
+			&& CLASS_DATA (n->sym)->attr.pointer))
+		  gfc_error ("POINTER object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+		if (n->sym->attr.value)
+		  gfc_error ("VALUE object %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
+	      }
 	    break;
 	  case OMP_LIST_USE_DEVICE_PTR:
 	  case OMP_LIST_USE_DEVICE_ADDR:
@@ -5289,6 +5378,17 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				     || list == OMP_LIST_REDUCTION_TASK
 				     || list == OMP_LIST_IN_REDUCTION
 				     || list == OMP_LIST_TASK_REDUCTION);
+		if (list == OMP_LIST_REDUCTION_INSCAN)
+		  has_inscan = true;
+		else if (is_reduction)
+		  has_notinscan = true;
+		if (has_inscan && has_notinscan && is_reduction)
+		  {
+		    gfc_error ("%<inscan%> and non-%<inscan%> %<reduction%> "
+			       "clauses on the same construct %L",
+			       &n->where);
+		    break;
+		  }
 		if (n->sym->attr.threadprivate)
 		  gfc_error ("THREADPRIVATE object %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
@@ -5335,7 +5435,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    default:
 		      break;
 		    }
-
+		if (omp_clauses->detach
+		    && (list == OMP_LIST_PRIVATE
+			|| list == OMP_LIST_FIRSTPRIVATE
+			|| list == OMP_LIST_LASTPRIVATE)
+		    && n->sym == omp_clauses->detach->symtree->n.sym)
+		  gfc_error ("DETACH event handle %qs in %s clause at %L",
+			     n->sym->name, name, &n->where);
 		switch (list)
 		  {
 		  case OMP_LIST_REDUCTION_INSCAN:
@@ -5554,6 +5660,38 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    break;
 	  }
       }
+  /* OpenMP 5.1: use_device_ptr acts like use_device_addr, except for
+     type(c_ptr).  */
+  if (omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR])
+    {
+      gfc_omp_namelist *n_prev, *n_next, *n_addr;
+      n_addr = omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR];
+      for (; n_addr && n_addr->next; n_addr = n_addr->next)
+	;
+      n_prev = NULL;
+      n = omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR];
+      while (n)
+	{
+	  n_next = n->next;
+	  if (n->sym->ts.type != BT_DERIVED
+	      || n->sym->ts.u.derived->ts.f90_type != BT_VOID)
+	    {
+	      n->next = NULL;
+	      if (n_addr)
+		n_addr->next = n;
+	      else
+		omp_clauses->lists[OMP_LIST_USE_DEVICE_ADDR] = n;
+	      n_addr = n;
+	      if (n_prev)
+		n_prev->next = n_next;
+	      else
+		omp_clauses->lists[OMP_LIST_USE_DEVICE_PTR] = n_next;
+	    }
+	  else
+	    n_prev = n;
+	  n = n_next;
+	}
+    }
   if (omp_clauses->safelen_expr)
     resolve_positive_int_expr (omp_clauses->safelen_expr, "SAFELEN");
   if (omp_clauses->simdlen_expr)
@@ -5632,6 +5770,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
     }
+  if (!openacc && omp_clauses->mergeable && omp_clauses->detach)
+    gfc_error ("%<DETACH%> clause at %L must not be used together with "
+	       "%<MERGEABLE%> clause", &omp_clauses->detach->where);
 }
 
 
@@ -6151,6 +6292,28 @@ gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 	}
       if (i < omp_current_do_collapse || omp_current_do_collapse <= 0)
 	omp_current_do_collapse = 1;
+      if (code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
+	{
+	  locus *loc
+	    = &code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN]->where;
+	  if (code->ext.omp_clauses->ordered)
+	    gfc_error ("ORDERED clause specified together with %<inscan%> "
+		       "REDUCTION clause at %L", loc);
+	  if (code->ext.omp_clauses->sched_kind != OMP_SCHED_NONE)
+	    gfc_error ("SCHEDULE clause specified together with %<inscan%> "
+		       "REDUCTION clause at %L", loc);
+	  if (!c->block
+	      || !c->block->next
+	      || !c->block->next->next
+	      || c->block->next->next->op != EXEC_OMP_SCAN
+	      || !c->block->next->next->next
+	      || c->block->next->next->next->next)
+	    gfc_error ("With INSCAN at %L, expected loop body with !$OMP SCAN "
+		       "between two structured-block-sequences", loc);
+	  else
+	    /* Mark as checked; flag will be unset later.  */
+	    c->block->next->next->ext.omp_clauses->if_present = true;
+	}
     }
   gfc_resolve_blocks (code->block, ns);
   omp_current_do_collapse = 0;
@@ -6534,6 +6697,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_DISTRIBUTE_SIMD;
     case EXEC_OMP_DO_SIMD:
       return ST_OMP_DO_SIMD;
+    case EXEC_OMP_SCAN:
+      return ST_OMP_SCAN;
     case EXEC_OMP_SIMD:
       return ST_OMP_SIMD;
     case EXEC_OMP_TARGET:
@@ -6972,7 +7137,7 @@ gfc_resolve_oacc_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
    of each directive.  */
 
 void
-gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
+gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
 {
   resolve_omp_directive_inside_oacc_region (code);
 
@@ -7045,6 +7210,14 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 	  && mpz_sgn (code->ext.omp_clauses->hint->value.integer) != 0)
 	gfc_error ("OMP CRITICAL at %L with HINT clause requires a NAME, "
 		   "except when omp_sync_hint_none is used", &code->loc);
+      break;
+    case EXEC_OMP_SCAN:
+      /* Flag is only used to checking, hence, it is unset afterwards.  */
+      if (!code->ext.omp_clauses->if_present)
+	gfc_error ("Unexpected !$OMP SCAN at %L outside loop construct with "
+		   "%<inscan%> REDUCTION clause", &code->loc);
+      code->ext.omp_clauses->if_present = false;
+      resolve_omp_clauses (code, code->ext.omp_clauses, ns);
       break;
     default:
       break;

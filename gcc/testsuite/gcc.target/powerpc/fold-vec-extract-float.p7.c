@@ -12,7 +12,8 @@
 /* { dg-final { scan-assembler-times {\mxscvspdp\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mli\M} 1 } } */
 /* -m32 as an add in place of an addi. */
-/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 2 } } */
+/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M|\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 1 } } */
 /* -m32 uses rlwinm in place of rldic */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 1 } } */

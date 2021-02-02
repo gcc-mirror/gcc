@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -738,7 +738,9 @@ enum cxx_dialect {
   /* C++17 */
   cxx17,
   /* C++20 */
-  cxx20
+  cxx20,
+  /* C++23 */
+  cxx23
 };
 
 /* The C++ dialect being used. C++98 is the default.  */

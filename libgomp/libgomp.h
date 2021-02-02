@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -545,6 +545,9 @@ struct gomp_task
      entries and the gomp_task in which they reside.  */
   struct priority_node pnode[3];
 
+  bool detach;
+  gomp_sem_t completion_sem;
+
   struct gomp_task_icv icv;
   void (*fn) (void *);
   void *fn_data;
@@ -684,6 +687,10 @@ struct gomp_team
   unsigned int task_running_count;
   int work_share_cancelled;
   int team_cancelled;
+
+  /* Tasks waiting for their completion event to be fulfilled.  */
+  struct priority_queue task_detach_queue;
+  unsigned int task_detach_count;
 
   /* This array contains structures for implicit tasks.  */
   struct gomp_task implicit_task[];

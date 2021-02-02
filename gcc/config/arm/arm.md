@@ -1,5 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright (C) 1991-2020 Free Software Foundation, Inc.
+;;  Copyright (C) 1991-2021 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -336,7 +336,8 @@
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
     "adc_imm, adc_reg, adcs_imm, adcs_reg, adr, alu_ext, alu_imm, alu_sreg,\
-    alu_shift_imm, alu_shift_reg, alu_dsp_reg, alus_ext, alus_imm, alus_sreg,\
+    alu_shift_imm_lsl_1to4, alu_shift_imm_other, alu_shift_reg, alu_dsp_reg,\
+    alus_ext, alus_imm, alus_sreg,\
     alus_shift_imm, alus_shift_reg, bfm, csel, rev, logic_imm, logic_reg,\
     logic_shift_imm, logic_shift_reg, logics_imm, logics_reg,\
     logics_shift_imm, logics_shift_reg, extend, shift_imm, float, fcsel,\
@@ -1370,7 +1371,7 @@
    (set_attr "arch" "32,a")
    (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator2")] 
 )
 
 (define_insn "*addsi3_carryin_clobercc"
@@ -1679,7 +1680,7 @@
   [(set_attr "conds" "use")
    (set_attr "arch" "*,a,t2")
    (set_attr "predicable" "yes")
-   (set_attr "type" "adc_reg,adc_imm,alu_shift_imm")]
+   (set_attr "type" "adc_reg,adc_imm,alu_shift_imm_lsl_1to4")]
 )
 
 ;; Special canonicalization of the above when operand1 == (const_int 1):
@@ -1727,7 +1728,7 @@
   "rsc%?\\t%0, %4, %1%S3"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator3")]
 )
 
 (define_insn "cmpsi3_carryin_<CC_EXTEND>out"
@@ -1811,7 +1812,7 @@
    (set_attr "arch" "32,a")
    (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator2")]
 )
 
 (define_insn "*subsi3_carryin_shift_alt"
@@ -1828,7 +1829,7 @@
    (set_attr "arch" "32,a")
    (set_attr "shift" "3")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator2")]
 )
 
 ;; No RSC in Thumb2
@@ -1844,7 +1845,7 @@
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator2")]
 )
 
 (define_insn "*rsbsi3_carryin_shift_alt"
@@ -1859,7 +1860,7 @@
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator2")]
 )
 
 ; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
@@ -4646,7 +4647,7 @@
    (set_attr "predicable_short_it" "yes,yes,no,no")
    (set_attr "length" "4")
    (set_attr "shift" "1")
-   (set_attr "type" "alu_shift_reg,alu_shift_imm,alu_shift_imm,alu_shift_reg")]
+   (set_attr "autodetect_type" "alu_shift_operator3")]
 )
 
 (define_insn "*shiftsi3_compare0"
@@ -9503,7 +9504,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
    (set_attr "arch" "a,t2")
-   (set_attr "type" "alu_shift_imm")])
+   (set_attr "autodetect_type" "alu_shift_mul_op3")])
 
 (define_insn "*<arith_shift_insn>_shiftsi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
@@ -9517,7 +9518,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "shift" "3")
    (set_attr "arch" "a,t2,a")
-   (set_attr "type" "alu_shift_imm,alu_shift_imm,alu_shift_reg")])
+   (set_attr "autodetect_type" "alu_shift_operator2")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -10856,7 +10857,9 @@
    (set_attr "length" "4,8")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 3 "const_int_operand" "")
-                                        (const_string "alu_shift_imm" )
+                                (if_then_else (match_operand 5 "alu_shift_operator_lsl_1_to_4")
+                                              (const_string "alu_shift_imm_lsl_1to4")
+                                              (const_string "alu_shift_imm_other"))
                                         (const_string "alu_shift_reg"))
                           (const_string "multiple")])]
 )
@@ -10921,7 +10924,9 @@
    (set_attr "length" "4,8")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 3 "const_int_operand" "")
-                                        (const_string "alu_shift_imm" )
+                                (if_then_else (match_operand 5 "alu_shift_operator_lsl_1_to_4")
+                                              (const_string "alu_shift_imm_lsl_1to4")
+                                              (const_string "alu_shift_imm_other"))
                                         (const_string "alu_shift_reg"))
                           (const_string "multiple")])]
 )

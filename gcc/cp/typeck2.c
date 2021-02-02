@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -569,17 +569,30 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 				  NULL_TREE);
 
+		  /* We may need to add a copy constructor call if
+		     the field has [[no_unique_address]].  */
 		  if (unsafe_return_slot_p (sub))
 		    {
-		      /* We may need to add a copy constructor call if
-			 the field has [[no_unique_address]].  */
+		      /* But not if the initializer is an implicit ctor call
+			 we just built in digest_init.  */
+		      if (TREE_CODE (value) == TARGET_EXPR
+			  && TARGET_EXPR_LIST_INIT_P (value)
+			  && make_safe_copy_elision (sub, value))
+			goto build_init;
+
+		      tree name = (DECL_FIELD_IS_BASE (field_index)
+				   ? base_ctor_identifier
+				   : complete_ctor_identifier);
 		      releasing_vec args = make_tree_vector_single (value);
 		      code = build_special_member_call
-			(sub, complete_ctor_identifier, &args, inner_type,
+			(sub, name, &args, inner_type,
 			 LOOKUP_NORMAL, tf_warning_or_error);
 		    }
 		  else
-		    code = build2 (INIT_EXPR, inner_type, sub, value);
+		    {
+		    build_init:
+		      code = build2 (INIT_EXPR, inner_type, sub, value);
+		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
@@ -1466,7 +1479,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree next;
-      tree type;
 
       if (TREE_CODE (field) != FIELD_DECL
 	  || (DECL_ARTIFICIAL (field)
@@ -1477,10 +1489,10 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	continue;
 
       /* If this is a bitfield, first convert to the declared type.  */
-      type = TREE_TYPE (field);
+      tree fldtype = TREE_TYPE (field);
       if (DECL_BIT_FIELD_TYPE (field))
-	type = DECL_BIT_FIELD_TYPE (field);
-      if (type == error_mark_node)
+	fldtype = DECL_BIT_FIELD_TYPE (field);
+      if (fldtype == error_mark_node)
 	return PICFLAG_ERRONEOUS;
 
       next = NULL_TREE;
@@ -1496,8 +1508,8 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 			  || identifier_p (ce->index));
 	      if (ce->index == field || ce->index == DECL_NAME (field))
 		next = ce->value;
-	      else if (ANON_AGGR_TYPE_P (type)
-		       && search_anon_aggr (type,
+	      else if (ANON_AGGR_TYPE_P (fldtype)
+		       && search_anon_aggr (fldtype,
 					    TREE_CODE (ce->index) == FIELD_DECL
 					    ? DECL_NAME (ce->index)
 					    : ce->index))
@@ -1525,7 +1537,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	  if (ce)
 	    {
 	      gcc_assert (ce->value);
-	      next = massage_init_elt (type, next, nested, flags, complain);
+	      next = massage_init_elt (fldtype, next, nested, flags, complain);
 	      ++idx;
 	    }
 	}
@@ -1551,25 +1563,24 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      && find_placeholders (next))
 	    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
 	}
-      else if (type_build_ctor_call (TREE_TYPE (field)))
+      else if (type_build_ctor_call (fldtype))
 	{
 	  /* If this type needs constructors run for
 	     default-initialization, we can't rely on the back end to do it
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
-	  next = massage_init_elt (TREE_TYPE (field), next, nested, flags,
-				   complain);
+	  next = massage_init_elt (fldtype, next, nested, flags, complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
+	      && !cp_unevaluated_operand
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 	}
       else
 	{
-	  const_tree fldtype = TREE_TYPE (field);
 	  if (TYPE_REF_P (fldtype))
 	    {
 	      if (complain & tf_error)
@@ -1593,14 +1604,19 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	  /* Warn when some struct elements are implicitly initialized
 	     to zero.  */
 	  if ((complain & tf_warning)
+	      && !cp_unevaluated_operand
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 
-	  if (!zero_init_p (fldtype)
-	      || skipped < 0)
-	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
-				    /*static_storage_p=*/false);
+	  if (!zero_init_p (fldtype) || skipped < 0)
+	    {
+	      if (TYPE_REF_P (fldtype))
+		next = build_zero_cst (fldtype);
+	      else
+		next = build_zero_init (fldtype, /*nelts=*/NULL_TREE,
+					/*static_storage_p=*/false);
+	    }
 	  else
 	    {
 	      /* The default zero-initialization is fine for us; don't
@@ -1610,7 +1626,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    }
 	}
 
-      if (DECL_SIZE (field) && integer_zerop (DECL_SIZE (field))
+      if (is_empty_field (field)
 	  && !TREE_SIDE_EFFECTS (next))
 	/* Don't add trivial initialization of an empty base/field to the
 	   constructor, as they might not be ordered the way the back-end
@@ -1618,7 +1634,7 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	continue;
 
       /* If this is a bitfield, now convert to the lowered type.  */
-      if (type != TREE_TYPE (field))
+      if (fldtype != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
       picflags |= picflag_from_initializer (next);
       CONSTRUCTOR_APPEND_ELT (v, field, next);
