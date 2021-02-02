@@ -8143,11 +8143,16 @@ package body Exp_Ch4 is
             Sindic : constant Node_Id :=
                        Subtype_Indication (Component_Definition (N));
          begin
-            --  Unconstrained nominal type. In the case of a constraint
-            --  present, the node kind would have been N_Subtype_Indication.
+            --  If the component declaration includes a subtype indication
+            --  it is not an unchecked_union. Otherwise verify that it carries
+            --  the Unchecked_Union flag and is either a record or a private
+            --  type. A Record_Subtype declared elsewhere does not qualify,
+            --  even if its parent type carries the flag.
 
             return Nkind (Sindic) in N_Expanded_Name | N_Identifier
-              and then Is_Unchecked_Union (Base_Type (Etype (Sindic)));
+              and then Is_Unchecked_Union (Base_Type (Etype (Sindic)))
+              and then (Ekind (Entity (Sindic)) in
+                         E_Private_Type | E_Record_Type);
          end Unconstrained_UU_In_Component_Declaration;
 
          -----------------------------------------
