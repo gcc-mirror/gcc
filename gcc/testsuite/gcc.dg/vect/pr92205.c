@@ -10,4 +10,4 @@ int b(int n, unsigned char *a)
   return d;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target { vect_unpack && { ! vect_no_bitwise } } } } } */
