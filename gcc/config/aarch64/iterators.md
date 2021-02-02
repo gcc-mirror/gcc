@@ -522,6 +522,7 @@
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
     UNSPEC_SQXTUN	; Used in aarch64-simd.md.
+    UNSPEC_SQXTUN2	; Used in aarch64-simd.md.
     UNSPEC_SQXTN	; Used in aarch64-simd.md.
     UNSPEC_UQXTN	; Used in aarch64-simd.md.
     UNSPEC_SSRA		; Used in aarch64-simd.md.

@@ -9105,36 +9105,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_high_s16 (uint8x8_t __a, int16x8_t __b)
 {
-  uint8x16_t __result = vcombine_u8 (__a, vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.16b, %1.8h"
-           : "+w"(__result)
-           : "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqxtun2v8hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_high_s32 (uint16x4_t __a, int32x4_t __b)
 {
-  uint16x8_t __result = vcombine_u16 (__a, vcreate_u16 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.8h, %1.4s"
-           : "+w"(__result)
-           : "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqxtun2v4si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqmovun_high_s64 (uint32x2_t __a, int64x2_t __b)
 {
-  uint32x4_t __result = vcombine_u32 (__a, vcreate_u32 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.4s, %1.2d"
-           : "+w"(__result)
-           : "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqxtun2v2di_uus (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
