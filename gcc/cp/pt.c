@@ -16196,6 +16196,16 @@ tsubst_baselink (tree baselink, tree object_type,
       if (IDENTIFIER_CONV_OP_P (name))
 	name = make_conv_op_name (optype);
 
+      /* See maybe_dependent_member_ref.  */
+      if (dependent_scope_p (qualifying_scope))
+	{
+	  if (template_id_p)
+	    name = build2 (TEMPLATE_ID_EXPR, unknown_type_node, name,
+			   template_args);
+	  return build_qualified_name (NULL_TREE, qualifying_scope, name,
+				       /* ::template */false);
+	}
+
       if (name == complete_dtor_identifier)
 	/* Treat as-if non-dependent below.  */
 	dependent_p = false;

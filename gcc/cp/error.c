@@ -2352,7 +2352,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
-	    if (!is_this_parameter (ob))
+	    if (!is_this_parameter (ob)
+		&& !is_dummy_object (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
 		if (TYPE_REF_P (TREE_TYPE (ob)))
