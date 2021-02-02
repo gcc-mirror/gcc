@@ -3545,7 +3545,7 @@ gfc_check_omp_requires (gfc_namespace *ns, int ref_omp_requires)
       if ((ref_omp_requires & OMP_REQ_REVERSE_OFFLOAD)
 	  && !(ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
 	gfc_error ("Program unit at %L has OpenMP device constructs/routines "
-		   "but does not set !$OMP REQUIRES REVERSE_OFFSET but other "
+		   "but does not set !$OMP REQUIRES REVERSE_OFFLOAD but other "
 		   "program units do", &ns->proc_name->declared_at);
       if ((ref_omp_requires & OMP_REQ_UNIFIED_ADDRESS)
 	  && !(ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS))
@@ -3732,7 +3732,8 @@ gfc_match_omp_requires (void)
       else
 	goto error;
 
-      if (requires_clause & ~OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+      /* Currently, everything except 'dynamic_allocators' is allowed.  */
+      if (requires_clause == OMP_REQ_DYNAMIC_ALLOCATORS)
 	gfc_error_now ("Sorry, %qs clause at %L on REQUIRES directive is not "
 		       "yet supported", clause, &old_loc);
       if (!gfc_omp_requires_add_clause (requires_clause, clause, &old_loc, NULL))

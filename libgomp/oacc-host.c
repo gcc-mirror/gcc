@@ -71,6 +71,12 @@ host_fini_device (int n __attribute__ ((unused)))
   return true;
 }
 
+static bool
+host_supported_features (unsigned int *n)
+{
+  return (*n == 0);
+}
+
 static unsigned
 host_version (void)
 {
@@ -297,6 +303,7 @@ static struct gomp_device_descr host_dispatch =
     .get_num_devices_func = host_get_num_devices,
     .init_device_func = host_init_device,
     .fini_device_func = host_fini_device,
+    .supported_features_func = host_supported_features,
     .version_func = host_version,
     .load_image_func = host_load_image,
     .unload_image_func = host_unload_image,

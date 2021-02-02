@@ -233,6 +233,14 @@ GOMP_OFFLOAD_fini_device (int device)
   return true;
 }
 
+/* Indicate which GOMP_REQUIRES_* features are supported, currently none.  */
+
+extern "C" bool
+GOMP_OFFLOAD_supported_features (unsigned int *mask)
+{
+  return (*mask == 0);
+}
+
 static bool
 get_target_table (int device, int &num_funcs, int &num_vars, void **&table)
 {

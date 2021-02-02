@@ -122,6 +122,7 @@ extern int GOMP_OFFLOAD_get_type (void);
 extern int GOMP_OFFLOAD_get_num_devices (void);
 extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
+extern bool GOMP_OFFLOAD_supported_features (unsigned *);
 extern unsigned GOMP_OFFLOAD_version (void);
 extern int GOMP_OFFLOAD_load_image (int, unsigned, const void *,
 				    struct addr_pair **);

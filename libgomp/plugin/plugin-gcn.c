@@ -4064,4 +4064,12 @@ GOMP_OFFLOAD_openacc_destroy_thread_data (void *data)
   free (data);
 }
 
+/* Indicate which GOMP_REQUIRES_* features are supported, currently none.  */
+
+bool
+GOMP_OFFLOAD_supported_features (unsigned int *mask)
+{
+  return (*mask == 0);
+}
+
 /* }}} */

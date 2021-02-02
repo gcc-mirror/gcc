@@ -22,10 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
+#include "tree.h"
 #include "gfortran.h"
 #include <setjmp.h>
 #include "match.h"
 #include "parse.h"
+#include "omp-general.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */
@@ -6567,6 +6569,23 @@ done:
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
     gfc_check_omp_requires (gfc_current_ns, omp_requires);
+
+  if (omp_requires)
+    {
+      omp_requires_mask = (enum omp_requires) OMP_REQUIRES_TARGET_USED;
+      if (omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_REVERSE_OFFLOAD);
+      if (omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_ADDRESS);
+      if (omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+    }
 
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
