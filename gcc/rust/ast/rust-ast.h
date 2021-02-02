@@ -846,14 +846,7 @@ class ExprWithoutBlock;
 // Base expression AST node - abstract
 class Expr
 {
-  // TODO: move outer attribute data to derived classes?
-  std::vector<Attribute> outer_attrs;
-
 public:
-  // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-
   // Unique pointer custom clone function
   std::unique_ptr<Expr> clone_expr () const
   {
@@ -869,8 +862,7 @@ public:
    * overrided in subclasses of ExprWithoutBlock */
   virtual ExprWithoutBlock *as_expr_without_block () const { return nullptr; }
 
-  // TODO: make pure virtual if move out outer attributes to derived classes
-  virtual std::string as_string () const;
+  virtual std::string as_string () const = 0;
 
   virtual ~Expr () {}
 
@@ -890,9 +882,7 @@ public:
 
 protected:
   // Constructor
-  Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : outer_attrs (std::move (outer_attribs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Clone function implementation as pure virtual method
@@ -900,10 +890,7 @@ protected:
 
   // TODO: think of less hacky way to implement this kind of thing
   // Sets outer attributes.
-  void set_outer_attrs (std::vector<Attribute> outer_attrs_to_set)
-  {
-    outer_attrs = std::move (outer_attrs_to_set);
-  }
+  virtual void set_outer_attrs (std::vector<Attribute>) = 0;
 
   NodeId node_id;
 };
@@ -912,12 +899,6 @@ protected:
 class ExprWithoutBlock : public Expr
 {
 protected:
-  // Constructor
-  ExprWithoutBlock (std::vector<Attribute> outer_attribs
-		    = std::vector<Attribute> ())
-    : Expr (std::move (outer_attribs))
-  {}
-
   // pure virtual clone implementation
   virtual ExprWithoutBlock *clone_expr_without_block_impl () const = 0;
 
@@ -952,15 +933,13 @@ public:
  */
 class IdentifierExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   Identifier ident;
   Location locus;
 
 public:
-  IdentifierExpr (Identifier ident, Location locus = Location (),
-		  std::vector<Attribute> outer_attrs
-		  = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attrs)), ident (std::move (ident)),
-      locus (locus)
+  IdentifierExpr (Identifier ident, std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), ident (std::move (ident)), locus (locus)
   {}
 
   std::string as_string () const override { return ident; }
@@ -981,6 +960,11 @@ public:
   // "Error state" if ident is empty, so base stripping on this.
   void mark_for_strip () override { ident = {}; }
   bool is_marked_for_strip () const override { return ident.empty (); }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   // Clone method implementation
@@ -1677,22 +1661,7 @@ public:
 
 // Base path expression AST node - abstract
 class PathExpr : public ExprWithoutBlock
-{
-protected:
-  PathExpr (std::vector<Attribute> outer_attribs)
-    : ExprWithoutBlock (std::move (outer_attribs))
-  {}
-
-public:
-  // TODO: think of a better and less hacky way to allow this
-
-  /* Replaces the outer attributes of this path expression with the given outer
-   * attributes. */
-  void replace_outer_attrs (std::vector<Attribute> outer_attrs)
-  {
-    set_outer_attrs (std::move (outer_attrs));
-  }
-};
+{};
 } // namespace AST
 } // namespace Rust
 

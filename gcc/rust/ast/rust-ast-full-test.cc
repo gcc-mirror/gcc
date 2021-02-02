@@ -109,6 +109,47 @@ frag_spec_to_str (MacroFragSpec frag_spec)
     }
 }
 
+enum AttrMode 
+{
+  OUTER,
+  INNER
+};
+
+std::string get_mode_dump_desc (AttrMode mode) {
+  switch (mode) {
+    case OUTER:
+      return "outer attributes";
+    case INNER:
+      return "inner attributes";
+    default:
+      gcc_unreachable ();
+      return "";
+  }
+}
+
+// Adds lines below adding attributes
+std::string append_attributes (std::vector<Attribute> attrs, AttrMode mode) {
+  indent_spaces (enter);
+
+  std::string str = "\n" + indent_spaces (stay) + get_mode_dump_desc (mode) + ": ";
+  //str += "\n" + indent_spaces (stay) + "inner attributes: ";
+  if (attrs.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      /* note that this does not print them with outer or "inner attribute" 
+       * syntax - just prints the body */
+      for (const auto &attr : attrs)
+	str += "\n" + indent_spaces (stay) + attr.as_string ();
+    }
+
+  indent_spaces (out);
+  
+  return str;
+}
+
 std::string
 Crate::as_string () const
 {
@@ -156,7 +197,7 @@ Crate::as_string () const
 	    {
 	      fprintf (stderr, "something really terrible has gone wrong - "
 			       "null pointer item in crate.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + item->as_string ();
@@ -236,7 +277,7 @@ DelimTokenTree::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"token tree in delim token tree.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += tree->as_string ();
@@ -405,7 +446,7 @@ ModuleBodied::as_string () const
 	    {
 	      fprintf (stderr, "something really terrible has gone wrong - "
 			       "null pointer item in crate.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + item->as_string ();
@@ -444,7 +485,7 @@ StaticItem::as_string () const
     {
       fprintf (stderr, "something really terrible has gone wrong - null "
 		       "pointer type in static item.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
   str += "\n" + indent_spaces (stay) + "Type: " + type->as_string ();
 
@@ -453,7 +494,7 @@ StaticItem::as_string () const
     {
       fprintf (stderr, "something really terrible has gone wrong - null "
 		       "pointer expr in static item.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
   str += "\n" + indent_spaces (stay) + "Expression: " + expr->as_string ();
 
@@ -499,7 +540,7 @@ TupleStruct::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -545,7 +586,7 @@ ConstantItem::as_string () const
     {
       fprintf (stderr, "something really terrible has gone wrong - null "
 		       "pointer type in const item.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
   str += "\n  Type: " + type->as_string ();
 
@@ -554,7 +595,7 @@ ConstantItem::as_string () const
     {
       fprintf (stderr, "something really terrible has gone wrong - null "
 		       "pointer expr in const item.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
   str += "\n  Expression: " + const_expr->as_string ();
 
@@ -585,7 +626,7 @@ InherentImpl::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in inherent impl.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -663,7 +704,7 @@ Method::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in method.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -725,7 +766,7 @@ StructStruct::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -775,7 +816,7 @@ UseDeclaration::as_string () const
 	stderr,
 	"something really terrible has gone wrong - null pointer use tree in "
 	"use declaration.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
 
   str += "use " + use_tree->as_string ();
@@ -835,7 +876,7 @@ UseTreeList::as_string () const
 	  fprintf (stderr,
 		   "something really terrible has gone wrong - null pointer "
 		   "tree in use tree list.");
-	  return "nullptr_POINTER_MARK";
+	  return "NULL_POINTER_MARK";
 	}
 
       for (; i != e; i++)
@@ -900,7 +941,7 @@ Enum::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -934,7 +975,7 @@ Enum::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"enum item in enum.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + item->as_string ();
@@ -950,9 +991,7 @@ Trait::as_string () const
   std::string str = VisItem::as_string ();
 
   if (has_unsafe)
-    {
       str += "unsafe ";
-    }
 
   str += "trait " + name;
 
@@ -973,7 +1012,7 @@ Trait::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -996,7 +1035,7 @@ Trait::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"type param bound in trait.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + bound->as_string ();
@@ -1005,13 +1044,9 @@ Trait::as_string () const
 
   str += "\n Where clause: ";
   if (!has_where_clause ())
-    {
       str += "none";
-    }
   else
-    {
       str += where_clause.as_string ();
-    }
 
   str += "\n Trait items: ";
   if (!has_trait_items ())
@@ -1029,7 +1064,7 @@ Trait::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"trait item in trait.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + item->as_string ();
@@ -1063,7 +1098,7 @@ Union::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in union.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -1072,13 +1107,9 @@ Union::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   // struct fields
   str += "\n Struct fields (variants): ";
@@ -1089,9 +1120,7 @@ Union::as_string () const
   else
     {
       for (const auto &field : variants)
-	{
 	  str += "\n  " + field.as_string ();
-	}
     }
 
   return str;
@@ -1114,7 +1143,7 @@ Function::as_string () const
 	    stderr,
 	    "something really terrible has gone wrong - null pointer return "
 	    "type in function.");
-	  return "nullptr_POINTER_MARK";
+	  return "NULL_POINTER_MARK";
 	}
 
       str += return_type->as_string () + " ";
@@ -1139,7 +1168,7 @@ Function::as_string () const
 	  fprintf (stderr,
 		   "something really terrible has gone wrong - null pointer "
 		   "generic param in function item.");
-	  return "nullptr_POINTER_MARK";
+	  return "NULL_POINTER_MARK";
 	}
 
       for (; i != e; i++)
@@ -1181,7 +1210,7 @@ Function::as_string () const
 	stderr,
 	"something really terrible has gone wrong - null pointer function "
 	"body in function.");
-      return "nullptr_POINTER_MARK";
+      return "NULL_POINTER_MARK";
     }
   str += function_body->as_string () + "\n";
 
@@ -1212,8 +1241,20 @@ BlockExpr::as_string () const
 {
   std::string istr = indent_spaces (enter);
   std::string str = istr + "BlockExpr:\n" + istr;
+  
   // get outer attributes
-  str += "{\n" + indent_spaces (stay) + Expr::as_string ();
+  str += "{\n" + indent_spaces (stay) + "outer attributes: ";
+  if (outer_attrs.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	str += "\n" + indent_spaces (stay) + attr.as_string ();
+    }
 
   // inner attributes
   str += "\n" + indent_spaces (stay) + "inner attributes: ";
@@ -1246,7 +1287,7 @@ BlockExpr::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"stmt in block expr.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n" + indent_spaces (stay) + stmt->as_string ();
@@ -1400,7 +1441,7 @@ MacroInvocationSemi::as_string () const
 	  fprintf (stderr,
 		   "something really terrible has gone wrong - null pointer "
 		   "token tree in macro invocation semi.");
-	  return "nullptr_POINTER_MARK";
+	  return "NULL_POINTER_MARK";
 	}
 
       std::string s;
@@ -1425,9 +1466,7 @@ ExternBlock::as_string () const
 
   str += "extern ";
   if (has_abi ())
-    {
       str += "\"" + abi + "\" ";
-    }
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -1576,7 +1615,27 @@ ClosureParam::as_string () const
 std::string
 ClosureExpr::as_string () const
 {
-  std::string str ("ClosureExpr:\n Has move: ");
+  std::string str = "ClosureExpr:";
+
+  str += append_attributes (outer_attrs, OUTER);
+
+#if 0
+  // outer attributes
+  str += "\n outer attributes: ";
+  if (outer_attrs.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	  str += "\n  " + attr.as_string ();
+    }
+#endif
+
+  str += "\n Has move: ";
   if (has_move)
     str += "true";
   else
@@ -1643,6 +1702,9 @@ QualifiedPathInExpression::as_string () const
 std::string
 BorrowExpr::as_string () const
 {
+  /* TODO: find way to incorporate outer attrs - may have to represent in 
+   * different style (i.e. something more like BorrowExpr: \n outer attrs) */
+
   std::string str ("&");
 
   if (double_borrow)
@@ -1659,6 +1721,9 @@ BorrowExpr::as_string () const
 std::string
 ReturnExpr::as_string () const
 {
+  /* TODO: find way to incorporate outer attrs - may have to represent in 
+   * different style (i.e. something more like BorrowExpr: \n outer attrs) */
+
   std::string str ("return ");
 
   if (has_returned_expr ())
@@ -1672,7 +1737,11 @@ GroupedExpr::as_string () const
 {
   std::string str ("Grouped expr:");
 
+  // outer attrs
+  str += append_attributes (outer_attrs, OUTER);
+
   // inner attributes
+#if 0
   str += "\n inner attributes: ";
   if (inner_attrs.empty ())
     {
@@ -1685,6 +1754,8 @@ GroupedExpr::as_string () const
       for (const auto &attr : inner_attrs)
 	str += "\n  " + attr.as_string ();
     }
+#endif
+  str += append_attributes (inner_attrs, INNER);
 
   str += "\n Expr in parens: " + expr_in_parens->as_string ();
 
@@ -1700,6 +1771,7 @@ RangeToExpr::as_string () const
 std::string
 ContinueExpr::as_string () const
 {
+  // TODO: rewrite format to allow outer attributes
   std::string str ("continue ");
 
   if (has_label ())
@@ -1711,6 +1783,7 @@ ContinueExpr::as_string () const
 std::string
 NegationExpr::as_string () const
 {
+  // TODO: rewrite formula to allow outer attributes
   std::string str;
 
   switch (negation_type)
@@ -1745,6 +1818,7 @@ RangeFullExpr::as_string () const
 std::string
 ArrayIndexExpr::as_string () const
 {
+  // TODO: rewrite formula to allow outer attributes
   return array_expr->as_string () + "[" + index_expr->as_string () + "]";
 }
 
@@ -1775,7 +1849,8 @@ AsyncBlockExpr::as_string () const
   std::string str = "AsyncBlockExpr: ";
 
   // get outer attributes
-  str += "\n " + Expr::as_string ();
+  //str += "\n " + Expr::as_string ();
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Has move: ";
   str += has_move ? "true" : "false";
@@ -1786,6 +1861,7 @@ AsyncBlockExpr::as_string () const
 std::string
 ComparisonExpr::as_string () const
 {
+  // TODO: rewrite to better reflect non-literal expressions
   std::string str (main_or_left_expr->as_string ());
 
   switch (expr_type)
@@ -1820,12 +1896,14 @@ ComparisonExpr::as_string () const
 std::string
 MethodCallExpr::as_string () const
 {
-  std::string str ("MethodCallExpr: \n Object (receiver) expr: ");
+  std::string str = "MethodCallExpr: ";
 
+  str += append_attributes (outer_attrs, OUTER);
+  
+  str += "\n Object (receiver) expr: \n";
   str += receiver->as_string ();
 
   str += "\n Method path segment: \n";
-
   str += method_name.as_string ();
 
   str += "\n Call params:";
@@ -1850,24 +1928,28 @@ MethodCallExpr::as_string () const
 std::string
 TupleIndexExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   return tuple_expr->as_string () + "." + std::to_string (tuple_index);
 }
 
 std::string
 DereferenceExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   return "*" + main_or_left_expr->as_string ();
 }
 
 std::string
 FieldAccessExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   return receiver->as_string () + "." + field;
 }
 
 std::string
 LazyBooleanExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   std::string str (main_or_left_expr->as_string ());
 
   switch (expr_type)
@@ -1890,12 +1972,14 @@ LazyBooleanExpr::as_string () const
 std::string
 RangeFromToExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   return from->as_string () + ".." + to->as_string ();
 }
 
 std::string
 RangeToInclExpr::as_string () const
 {
+  // TODO: rewrite dump to better reflect non-literal exprs
   return "..=" + to->as_string ();
 }
 
@@ -1907,7 +1991,8 @@ UnsafeBlockExpr::as_string () const
   str += istr + "{";
 
   // get outer attributes
-  str += "\n" + indent_spaces (stay) + Expr::as_string ();
+  //str += "\n" + indent_spaces (stay) + Expr::as_string ();
+  str += append_attributes (outer_attrs, OUTER);
 
   return str + "\n" + indent_spaces (out) + "}\n" + expr->as_string ();
 }
@@ -1925,6 +2010,8 @@ ClosureExprInner::as_string () const
 std::string
 IfExpr::as_string () const
 {
+  /* TODO: can if exprs have outer attributes? i thought no, but can't find it
+   * in docs */
   std::string str ("IfExpr: ");
 
   str += "\n Condition expr: " + condition->as_string ();
@@ -1967,6 +2054,8 @@ IfExprConseqIfLet::as_string () const
 std::string
 IfLetExpr::as_string () const
 {
+  /* TODO: can if let exprs have outer attributes? i thought no, but can't find 
+   * it in docs */
   std::string str ("IfLetExpr: ");
 
   str += "\n Condition match arm patterns: ";
@@ -2020,12 +2109,14 @@ IfLetExprConseqIfLet::as_string () const
 std::string
 RangeFromToInclExpr::as_string () const
 {
+  // TODO: rewrite to allow dumps with non-literal exprs
   return from->as_string () + "..=" + to->as_string ();
 }
 
 std::string
 ErrorPropagationExpr::as_string () const
 {
+  // TODO: rewrite to allow dumps with non-literal exprs
   return main_or_left_expr->as_string () + "?";
 }
 
@@ -2152,8 +2243,11 @@ ArithmeticOrLogicalExpr::as_string () const
 std::string
 CallExpr::as_string () const
 {
-  std::string str ("CallExpr: \n Function expr: ");
+  std::string str = "CallExpr: ";
 
+  str += append_attributes (outer_attrs, OUTER);
+  
+  str += "\n Function expr: ";
   str += function->as_string ();
 
   str += "\n Call params:";
@@ -2178,7 +2272,9 @@ CallExpr::as_string () const
 std::string
 WhileLoopExpr::as_string () const
 {
-  std::string str ("WhileLoopExpr: ");
+  std::string str = "WhileLoopExpr: ";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Label: ";
   if (!has_loop_label ())
@@ -2196,7 +2292,9 @@ WhileLoopExpr::as_string () const
 std::string
 WhileLetLoopExpr::as_string () const
 {
-  std::string str ("WhileLetLoopExpr: ");
+  std::string str = "WhileLetLoopExpr: ";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Label: ";
   if (!has_loop_label ())
@@ -2225,7 +2323,9 @@ WhileLetLoopExpr::as_string () const
 std::string
 LoopExpr::as_string () const
 {
-  std::string str ("LoopExpr: (infinite loop)");
+  std::string str = "LoopExpr: (infinite loop)";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Label: ";
   if (!has_loop_label ())
@@ -2241,9 +2341,13 @@ LoopExpr::as_string () const
 std::string
 ArrayExpr::as_string () const
 {
-  std::string str ("ArrayExpr:");
+  std::string str = "ArrayExpr:";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   // inner attributes
+  str += append_attributes (inner_attrs, INNER);
+  #if 0
   str += "\n inner attributes: ";
   if (inner_attrs.empty ())
     {
@@ -2256,6 +2360,7 @@ ArrayExpr::as_string () const
       for (const auto &attr : inner_attrs)
 	str += "\n  " + attr.as_string ();
     }
+  #endif
 
   str += "\n Array elems: ";
   if (!has_array_elems ())
@@ -2269,12 +2374,14 @@ ArrayExpr::as_string () const
 std::string
 AwaitExpr::as_string () const
 {
+  // TODO: rewrite dump to allow non-literal exprs
   return awaited_expr->as_string () + ".await";
 }
 
 std::string
 BreakExpr::as_string () const
 {
+  // TODO: rewrite dump to allow outer attrs, non-literal exprs
   std::string str ("break ");
 
   if (has_label ())
@@ -2296,6 +2403,8 @@ std::string
 MatchArm::as_string () const
 {
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "Outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -2308,6 +2417,7 @@ MatchArm::as_string () const
       for (const auto &attr : outer_attrs)
 	str += "\n " + attr.as_string ();
     }
+#endif
 
   str += "\nPatterns: ";
   if (match_arm_patterns.empty ())
@@ -2365,9 +2475,13 @@ MatchExpr::as_string () const
 {
   std::string str ("MatchExpr:");
 
+  str += append_attributes (outer_attrs, OUTER);
+
   str += "\n Scrutinee expr: " + branch_value->as_string ();
 
   // inner attributes
+  str += append_attributes (inner_attrs, INNER);
+#if 0
   str += "\n inner attributes: ";
   if (inner_attrs.empty ())
     {
@@ -2378,10 +2492,9 @@ MatchExpr::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   // match arms
   str += "\n Match arms: ";
@@ -2403,7 +2516,11 @@ TupleExpr::as_string () const
 {
   std::string str ("TupleExpr:");
 
+  str += append_attributes (outer_attrs, OUTER);
+
   // inner attributes
+  str += append_attributes (inner_attrs, INNER);
+#if 0
   str += "\n inner attributes: ";
   if (inner_attrs.empty ())
     {
@@ -2414,10 +2531,9 @@ TupleExpr::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   str += "\n Tuple elements: ";
   if (tuple_elems.empty ())
@@ -2427,9 +2543,7 @@ TupleExpr::as_string () const
   else
     {
       for (const auto &elem : tuple_elems)
-	{
 	  str += "\n  " + elem->as_string ();
-	}
     }
 
   return str;
@@ -2443,13 +2557,9 @@ ExprStmtWithoutBlock::as_string () const
   str += indent_spaces (stay);
 
   if (expr == nullptr)
-    {
       str += "none (this shouldn't happen and is probably an error)";
-    }
   else
-    {
       str += expr->as_string ();
-    }
   indent_spaces (out);
 
   return str;
@@ -2458,6 +2568,7 @@ ExprStmtWithoutBlock::as_string () const
 std::string
 FunctionParam::as_string () const
 {
+  // TODO: rewrite dump to allow non-literal types
   return param_name->as_string () + " : " + type->as_string ();
 }
 
@@ -2482,17 +2593,13 @@ FunctionQualifiers::as_string () const
     }
 
   if (has_unsafe)
-    {
       str += "unsafe ";
-    }
 
   if (has_extern)
     {
       str += "extern";
       if (extern_abi != "")
-	{
-	  str += " \"" + extern_abi + "\"";
-	}
+	      str += " \"" + extern_abi + "\"";
     }
 
   return str;
@@ -2505,13 +2612,9 @@ TraitBound::as_string () const
 
   str += "\n Has opening question mark: ";
   if (opening_question_mark)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n For lifetimes: ";
   if (!has_for_lifetimes ())
@@ -2521,9 +2624,7 @@ TraitBound::as_string () const
   else
     {
       for (const auto &lifetime : for_lifetimes)
-	{
 	  str += "\n  " + lifetime.as_string ();
-	}
     }
 
   str += "\n Type path: " + type_path.as_string ();
@@ -2562,9 +2663,7 @@ MacroMatcher::as_string () const
   else
     {
       for (const auto &match : matches)
-	{
-	  str += "\n  " + match->as_string ();
-	}
+	      str += "\n  " + match->as_string ();
     }
 
   return str;
@@ -2577,13 +2676,9 @@ LifetimeParam::as_string () const
 
   str += "\n Outer attribute: ";
   if (!has_outer_attribute ())
-    {
       str += "none";
-    }
   else
-    {
       str += outer_attr.as_string ();
-    }
 
   str += "\n Lifetime: " + lifetime.as_string ();
 
@@ -2595,9 +2690,7 @@ LifetimeParam::as_string () const
   else
     {
       for (const auto &bound : lifetime_bounds)
-	{
-	  str += "\n  " + bound.as_string ();
-	}
+	      str += "\n  " + bound.as_string ();
     }
 
   return str;
@@ -2612,12 +2705,12 @@ MacroMatchFragment::as_string () const
 std::string
 QualifiedPathInType::as_string () const
 {
+  /* TODO: this may need adjusting if segments (e.g. with functions) can't be 
+   * literalised */
   std::string str = path_type.as_string ();
 
   for (const auto &segment : segments)
-    {
       str += "::" + segment->as_string ();
-    }
 
   return str;
 }
@@ -2635,20 +2728,14 @@ MacroMatchRepetition::as_string () const
   else
     {
       for (const auto &match : matches)
-	{
 	  str += "\n  " + match->as_string ();
-	}
     }
 
   str += "\n Sep: ";
   if (!has_sep ())
-    {
       str += "none";
-    }
   else
-    {
       str += sep->as_string ();
-    }
 
   str += "\n Op: ";
   switch (op)
@@ -2676,9 +2763,7 @@ std::string
 Lifetime::as_string () const
 {
   if (is_error ())
-    {
       return "error lifetime";
-    }
 
   switch (lifetime_type)
     {
@@ -2696,17 +2781,15 @@ Lifetime::as_string () const
 std::string
 TypePath::as_string () const
 {
+  /* TODO: this may need to be rewritten if a segment (e.g. function) can't be 
+   * literalised */
   std::string str;
 
   if (has_opening_scope_resolution)
-    {
       str = "::";
-    }
 
   for (const auto &segment : segments)
-    {
       str += segment->as_string () + "::";
-    }
 
   // kinda hack - remove last 2 '::' characters
   str.erase (str.length () - 2);
@@ -2721,13 +2804,9 @@ TypeParam::as_string () const
 
   str += "\n Outer attribute: ";
   if (!has_outer_attribute ())
-    {
       str += "none";
-    }
   else
-    {
       str += outer_attr.as_string ();
-    }
 
   str += "\n Identifier: " + type_representation;
 
@@ -2739,20 +2818,14 @@ TypeParam::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	{
 	  str += "\n  " + bound->as_string ();
-	}
     }
 
   str += "\n Type: ";
   if (!has_type ())
-    {
       str += "none";
-    }
   else
-    {
       str += type->as_string ();
-    }
 
   return str;
 }
@@ -2761,9 +2834,7 @@ SimplePath
 PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
 {
   if (!has_segments ())
-    {
       return SimplePath::create_empty ();
-    }
 
   // create vector of reserved size (to minimise reallocations)
   std::vector<SimplePathSegment> simple_segments;
@@ -2774,9 +2845,7 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
       // return empty path if doesn't meet simple path segment requirements
       if (segment.is_error () || segment.has_generic_args ()
 	  || segment.as_string () == "Self")
-	{
 	  return SimplePath::create_empty ();
-	}
 
       // create segment and add to vector
       std::string segment_str = segment.as_string ();
@@ -2787,13 +2856,10 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
   // kind of a HACK to get locus depending on opening scope resolution
   Location locus = Linemap::unknown_location ();
   if (with_opening_scope_resolution)
-    {
       locus = simple_segments[0].get_locus () - 2; // minus 2 chars for ::
-    }
   else
-    {
       locus = simple_segments[0].get_locus ();
-    }
+  // FIXME: this hack probably doesn't actually work
 
   return SimplePath (std::move (simple_segments), with_opening_scope_resolution,
 		     locus);
@@ -2803,9 +2869,7 @@ SimplePath
 TypePath::as_simple_path () const
 {
   if (segments.empty ())
-    {
       return SimplePath::create_empty ();
-    }
 
   // create vector of reserved size (to minimise reallocations)
   std::vector<SimplePathSegment> simple_segments;
@@ -2816,9 +2880,7 @@ TypePath::as_simple_path () const
       // return empty path if doesn't meet simple path segment requirements
       if (segment == nullptr || segment->is_error ()
 	  || !segment->is_ident_only () || segment->as_string () == "Self")
-	{
 	  return SimplePath::create_empty ();
-	}
 
       // create segment and add to vector
       std::string segment_str = segment->as_string ();
@@ -2833,11 +2895,10 @@ TypePath::as_simple_path () const
 std::string
 PathExprSegment::as_string () const
 {
+  // TODO: rewrite dump to work with non-literalisable types
   std::string ident_str = segment_name.as_string ();
   if (has_generic_args ())
-    {
       ident_str += "::<" + generic_args.as_string () + ">";
-    }
 
   return ident_str;
 }
@@ -2895,23 +2956,22 @@ GenericArgs::as_string () const
 std::string
 GenericArgsBinding::as_string () const
 {
+  // TODO: rewrite to work with non-literalisable types
   return identifier + " = " + type->as_string ();
 }
 
 std::string
 ForLoopExpr::as_string () const
 {
-  std::string str ("ForLoopExpr: ");
+  std::string str = "ForLoopExpr: ";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Label: ";
   if (!has_loop_label ())
-    {
       str += "none";
-    }
   else
-    {
       str += loop_label.as_string ();
-    }
 
   str += "\n Pattern: " + pattern->as_string ();
 
@@ -2925,14 +2985,11 @@ ForLoopExpr::as_string () const
 std::string
 RangePattern::as_string () const
 {
+  // TODO: maybe rewrite to work with non-linearisable bounds
   if (has_ellipsis_syntax)
-    {
       return lower->as_string () + "..." + upper->as_string ();
-    }
   else
-    {
       return lower->as_string () + "..=" + upper->as_string ();
-    }
 }
 
 std::string
@@ -2941,9 +2998,7 @@ RangePatternBoundLiteral::as_string () const
   std::string str;
 
   if (has_minus)
-    {
       str += "-";
-    }
 
   str += literal.as_string ();
 
@@ -2956,9 +3011,7 @@ SlicePattern::as_string () const
   std::string str ("SlicePattern: ");
 
   for (const auto &pattern : items)
-    {
       str += "\n " + pattern->as_string ();
-    }
 
   return str;
 }
@@ -2969,9 +3022,7 @@ TuplePatternItemsMultiple::as_string () const
   std::string str;
 
   for (const auto &pattern : patterns)
-    {
       str += "\n " + pattern->as_string ();
-    }
 
   return str;
 }
@@ -2989,9 +3040,7 @@ TuplePatternItemsRanged::as_string () const
   else
     {
       for (const auto &lower : lower_patterns)
-	{
 	  str += "\n  " + lower->as_string ();
-	}
     }
 
   str += "\n Upper patterns: ";
@@ -3002,9 +3051,7 @@ TuplePatternItemsRanged::as_string () const
   else
     {
       for (const auto &upper : upper_patterns)
-	{
 	  str += "\n  " + upper->as_string ();
-	}
     }
 
   return str;
@@ -3020,6 +3067,8 @@ std::string
 StructPatternField::as_string () const
 {
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str ("Outer attributes: ");
   if (outer_attrs.empty ())
     {
@@ -3030,10 +3079,9 @@ StructPatternField::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   return str;
 }
@@ -3046,14 +3094,10 @@ StructPatternFieldIdent::as_string () const
   str += "\n";
 
   if (has_ref)
-    {
       str += "ref ";
-    }
 
   if (has_mut)
-    {
       str += "mut ";
-    }
 
   str += ident;
 
@@ -3063,6 +3107,7 @@ StructPatternFieldIdent::as_string () const
 std::string
 StructPatternFieldTuplePat::as_string () const
 {
+  // TODO: maybe rewrite to work with non-linearisable patterns
   std::string str = StructPatternField::as_string ();
 
   str += "\n";
@@ -3075,6 +3120,7 @@ StructPatternFieldTuplePat::as_string () const
 std::string
 StructPatternFieldIdentPat::as_string () const
 {
+  // TODO: maybe rewrite to work with non-linearisable patterns
   std::string str = StructPatternField::as_string ();
 
   str += "\n";
@@ -3096,20 +3142,14 @@ StructPatternElements::as_string () const
   else
     {
       for (const auto &field : fields)
-	{
 	  str += "\n   " + field->as_string ();
-	}
     }
 
   str += "\n  Etc: ";
   if (has_struct_pattern_etc)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   return str;
 }
@@ -3123,13 +3163,9 @@ StructPattern::as_string () const
 
   str += "\n Struct pattern elems: ";
   if (!has_struct_pattern_elems ())
-    {
       str += "none";
-    }
   else
-    {
       str += elems.as_string ();
-    }
 
   return str;
 }
@@ -3140,9 +3176,7 @@ LiteralPattern::as_string () const
   std::string str;
 
   if (has_minus)
-    {
       str += "-";
-    }
 
   return str + lit.as_string ();
 }
@@ -3150,17 +3184,14 @@ LiteralPattern::as_string () const
 std::string
 ReferencePattern::as_string () const
 {
+  // TODO: maybe rewrite to work with non-linearisable patterns
   std::string str ("&");
 
   if (has_two_amps)
-    {
       str += "&";
-    }
 
   if (is_mut)
-    {
       str += "mut ";
-    }
 
   str += pattern->as_string ();
 
@@ -3170,24 +3201,19 @@ ReferencePattern::as_string () const
 std::string
 IdentifierPattern::as_string () const
 {
+  // TODO: maybe rewrite to work with non-linearisable patterns
   std::string str;
 
   if (is_ref)
-    {
       str += "ref ";
-    }
 
   if (is_mut)
-    {
       str += "mut ";
-    }
 
   str += variable_ident;
 
   if (has_pattern_to_bind ())
-    {
       str += " @ " + to_bind->as_string ();
-    }
 
   return str;
 }
@@ -3198,9 +3224,7 @@ TupleStructItemsNoRange::as_string () const
   std::string str;
 
   for (const auto &pattern : patterns)
-    {
       str += "\n  " + pattern->as_string ();
-    }
 
   return str;
 }
@@ -3217,9 +3241,7 @@ TupleStructItemsRange::as_string () const
   else
     {
       for (const auto &lower : lower_patterns)
-	{
 	  str += "\n   " + lower->as_string ();
-	}
     }
 
   str += "\n  Upper patterns: ";
@@ -3230,9 +3252,7 @@ TupleStructItemsRange::as_string () const
   else
     {
       for (const auto &upper : upper_patterns)
-	{
 	  str += "\n   " + upper->as_string ();
-	}
     }
 
   return str;
@@ -3253,39 +3273,21 @@ TupleStructPattern::as_string () const
 std::string
 LetStmt::as_string () const
 {
-  // outer attributes
-  std::string str = "Outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      indent_spaces (enter);
-      for (const auto &attr : outer_attrs)
-	{
-	  str += "\n" + indent_spaces (stay) + attr.as_string ();
-	}
-      indent_spaces (out);
-    }
+  // TODO: rewrite to work with non-linearisable types and exprs
+  std::string str = append_attributes (outer_attrs, OUTER);
 
   str += "\n" + indent_spaces (stay) + "let " + variables_pattern->as_string ();
 
   if (has_type ())
-    {
       str += " : " + type->as_string ();
-    }
 
   if (has_init_expr ())
-    {
       str += " = " + init_expr->as_string ();
-    }
 
   return str;
 }
 
+#if 0
 // Used to get outer attributes for expressions.
 std::string
 Expr::as_string () const
@@ -3301,22 +3303,18 @@ Expr::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   return str;
 }
+#endif
 
 // hopefully definition here will prevent circular dependency issue
 TraitBound *
 TypePath::to_trait_bound (bool in_parens) const
 {
-  // create clone FIXME is this required? or is copy constructor automatically
-  // called?
-  TypePath copy (*this);
-  return new TraitBound (std::move (copy), copy.get_locus (), in_parens);
+  return new TraitBound (TypePath (*this), get_locus (), in_parens);
 }
 
 std::string
@@ -3328,6 +3326,7 @@ InferredType::as_string () const
 std::string
 TypeCastExpr::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs and types
   return main_or_left_expr->as_string () + " as "
 	 + type_to_convert_to->as_string ();
 }
@@ -3344,9 +3343,7 @@ ImplTraitType::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	{
 	  str += "\n  " + bound->as_string ();
-	}
     }
 
   return str;
@@ -3355,17 +3352,14 @@ ImplTraitType::as_string () const
 std::string
 ReferenceType::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   std::string str ("&");
 
   if (has_lifetime ())
-    {
       str += lifetime.as_string () + " ";
-    }
 
   if (has_mut)
-    {
       str += "mut ";
-    }
 
   str += type->as_string ();
 
@@ -3375,6 +3369,7 @@ ReferenceType::as_string () const
 std::string
 RawPointerType::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   std::string str ("*");
 
   switch (pointer_type)
@@ -3400,13 +3395,9 @@ TraitObjectType::as_string () const
   std::string str ("TraitObjectType: \n Has dyn dispatch: ");
 
   if (has_dyn)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n TypeParamBounds: ";
   if (type_param_bounds.empty ())
@@ -3416,9 +3407,7 @@ TraitObjectType::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	{
 	  str += "\n  " + bound->as_string ();
-	}
     }
 
   return str;
@@ -3436,9 +3425,7 @@ BareFunctionType::as_string () const
   else
     {
       for (const auto &for_lifetime : for_lifetimes)
-	{
 	  str += "\n  " + for_lifetime.as_string ();
-	}
     }
 
   str += "\n Qualifiers: " + function_qualifiers.as_string ();
@@ -3451,30 +3438,20 @@ BareFunctionType::as_string () const
   else
     {
       for (const auto &param : params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
     }
 
   str += "\n Is variadic: ";
   if (is_variadic)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n Return type: ";
   if (!has_return_type ())
-    {
       str += "none (void)";
-    }
   else
-    {
       str += return_type->as_string ();
-    }
 
   return str;
 }
@@ -3490,6 +3467,7 @@ ImplTraitTypeOneBound::as_string () const
 std::string
 TypePathSegmentGeneric::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   return TypePathSegment::as_string () + "<" + generic_args.as_string () + ">";
 }
 
@@ -3499,13 +3477,9 @@ TraitObjectTypeOneBound::as_string () const
   std::string str ("TraitObjectTypeOneBound: \n Has dyn dispatch: ");
 
   if (has_dyn)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n TraitBound: " + trait_bound.as_string ();
 
@@ -3515,6 +3489,7 @@ TraitObjectTypeOneBound::as_string () const
 std::string
 TypePathFunction::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   std::string str ("(");
 
   if (has_inputs ())
@@ -3533,9 +3508,7 @@ TypePathFunction::as_string () const
   str += ")";
 
   if (has_return_type ())
-    {
       str += " -> " + return_type->as_string ();
-    }
 
   return str;
 }
@@ -3543,24 +3516,28 @@ TypePathFunction::as_string () const
 std::string
 TypePathSegmentFunction::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   return TypePathSegment::as_string () + function_path.as_string ();
 }
 
 std::string
 ArrayType::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types and exprs
   return "[" + elem_type->as_string () + "; " + size->as_string () + "]";
 }
 
 std::string
 SliceType::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   return "[" + elem_type->as_string () + "]";
 }
 
 std::string
 TupleType::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable types
   std::string str ("(");
 
   if (!is_unit_type ())
@@ -3584,7 +3561,7 @@ TupleType::as_string () const
 std::string
 StructExpr::as_string () const
 {
-  std::string str = ExprWithoutBlock::as_string ();
+  std::string str = append_attributes (outer_attrs, OUTER);
   indent_spaces (enter);
   str += "\n" + indent_spaces (stay) + "StructExpr:";
   indent_spaces (enter);
@@ -3611,9 +3588,7 @@ StructExprTuple::as_string () const
 
       // debug - null pointer check
       if (*i == nullptr)
-	{
 	  return "ERROR_MARK_STRING - nullptr struct expr tuple field";
-	}
 
       str += '(';
       for (; i != e; i++)
@@ -3649,11 +3624,14 @@ StructExprTuple::as_string () const
 std::string
 StructExprStruct::as_string () const
 {
+  // TODO: doesn't this require data from StructExpr?
   std::string str ("StructExprStruct (or subclass): ");
 
   str += "\n Path: " + get_struct_name ().as_string ();
 
   // inner attributes
+  str += append_attributes (inner_attrs, INNER);
+#if 0
   str += "\n inner attributes: ";
   if (inner_attrs.empty ())
     {
@@ -3666,6 +3644,7 @@ StructExprStruct::as_string () const
       for (const auto &attr : inner_attrs)
 	str += "\n  " + attr.as_string ();
     }
+#endif
 
   return str;
 }
@@ -3689,12 +3668,14 @@ StructExprFieldWithVal::as_string () const
 std::string
 StructExprFieldIdentifierValue::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   return field_name + " : " + StructExprFieldWithVal::as_string ();
 }
 
 std::string
 StructExprFieldIndexValue::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   return std::to_string (index) + " : " + StructExprFieldWithVal::as_string ();
 }
 
@@ -3726,7 +3707,7 @@ StructExprStructFields::as_string () const
 std::string
 EnumExprStruct::as_string () const
 {
-  std::string str ("StructExprStruct (or subclass): ");
+  std::string str ("EnumExprStruct (or subclass): ");
 
   str += "\n Path: " + get_enum_variant_path ().as_string ();
 
@@ -3754,12 +3735,14 @@ EnumExprFieldWithVal::as_string () const
 std::string
 EnumExprFieldIdentifierValue::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   return field_name + " : " + EnumExprFieldWithVal::as_string ();
 }
 
 std::string
 EnumExprFieldIndexValue::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   return std::to_string (index) + " : " + EnumExprFieldWithVal::as_string ();
 }
 
@@ -3767,6 +3750,8 @@ std::string
 EnumItem::as_string () const
 {
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -3779,6 +3764,7 @@ EnumItem::as_string () const
       for (const auto &attr : outer_attrs)
 	str += "\n  " + attr.as_string ();
     }
+#endif
 
   str += "\n" + variant_name;
 
@@ -3816,7 +3802,11 @@ EnumItemTuple::as_string () const
 std::string
 TupleField::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
+
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -3827,15 +3817,12 @@ TupleField::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   if (has_visibility ())
-    {
       str += "\n" + visibility.as_string ();
-    }
 
   str += " " + field_type->as_string ();
 
@@ -3873,7 +3860,10 @@ EnumItemStruct::as_string () const
 std::string
 StructField::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -3884,15 +3874,12 @@ StructField::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   if (has_visibility ())
-    {
       str += "\n" + visibility.as_string ();
-    }
 
   str += " " + field_name + " : " + field_type->as_string ();
 
@@ -3902,6 +3889,7 @@ StructField::as_string () const
 std::string
 EnumItemDiscriminant::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
   std::string str = EnumItem::as_string ();
 
   // add equal and expression
@@ -3939,6 +3927,8 @@ std::string
 ExternalStaticItem::as_string () const
 {
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -3951,6 +3941,7 @@ ExternalStaticItem::as_string () const
       for (const auto &attr : outer_attrs)
 	str += "\n  " + attr.as_string ();
     }
+#endif
 
   // start visibility on new line and with a space
   str += "\n" + visibility.as_string () + " ";
@@ -3973,6 +3964,8 @@ std::string
 ExternalFunctionItem::as_string () const
 {
   // outer attributes
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -3985,6 +3978,7 @@ ExternalFunctionItem::as_string () const
       for (const auto &attr : outer_attrs)
 	str += "\n  " + attr.as_string ();
     }
+#endif
 
   // start visibility on new line and with a space
   str += "\n" + visibility.as_string () + " ";
@@ -4011,7 +4005,7 @@ ExternalFunctionItem::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in external function item.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -4061,6 +4055,8 @@ ExternalFunctionItem::as_string () const
 std::string
 NamedFunctionParam::as_string () const
 {
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
 
   if (!has_outer_attrs ())
@@ -4072,6 +4068,7 @@ NamedFunctionParam::as_string () const
       for (const auto &attr : outer_attrs)
 	str += "\n " + attr.as_string ();
     }
+#endif
 
   str += "\n" + name;
 
@@ -4098,6 +4095,8 @@ attr.as_string();
 std::string
 TraitItemFunc::as_string () const
 {
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -4108,22 +4107,17 @@ TraitItemFunc::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   str += "\n" + decl.as_string ();
 
   str += "\n Definition (block expr): ";
   if (has_definition ())
-    {
       str += block_expr->as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -4150,7 +4144,7 @@ TraitFunctionDecl::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait function decl.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -4161,9 +4155,7 @@ TraitFunctionDecl::as_string () const
   if (has_params ())
     {
       for (const auto &param : function_params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
     }
   else
     {
@@ -4172,23 +4164,15 @@ TraitFunctionDecl::as_string () const
 
   str += "\n Return type: ";
   if (has_return_type ())
-    {
       str += return_type->as_string ();
-    }
   else
-    {
       str += "none (void)";
-    }
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -4196,6 +4180,8 @@ TraitFunctionDecl::as_string () const
 std::string
 TraitItemMethod::as_string () const
 {
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -4206,22 +4192,17 @@ TraitItemMethod::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   str += "\n" + decl.as_string ();
 
   str += "\n Definition (block expr): ";
   if (has_definition ())
-    {
       str += block_expr->as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -4248,7 +4229,7 @@ TraitMethodDecl::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait function decl.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + param->as_string ();
@@ -4261,9 +4242,7 @@ TraitMethodDecl::as_string () const
   if (has_params ())
     {
       for (const auto &param : function_params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
     }
   else
     {
@@ -4272,23 +4251,15 @@ TraitMethodDecl::as_string () const
 
   str += "\n Return type: ";
   if (has_return_type ())
-    {
       str += return_type->as_string ();
-    }
   else
-    {
       str += "none (void)";
-    }
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -4296,6 +4267,9 @@ TraitMethodDecl::as_string () const
 std::string
 TraitItemConst::as_string () const
 {
+  // TODO: rewrite to work with non-linearisable exprs
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -4306,17 +4280,14 @@ TraitItemConst::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   str += "\nconst " + name + " : " + type->as_string ();
 
   if (has_expression ())
-    {
       str += " = " + expr->as_string ();
-    }
 
   return str;
 }
@@ -4324,6 +4295,8 @@ TraitItemConst::as_string () const
 std::string
 TraitItemType::as_string () const
 {
+  std::string str = append_attributes (outer_attrs, OUTER);
+#if 0
   std::string str = "outer attributes: ";
   if (outer_attrs.empty ())
     {
@@ -4334,10 +4307,9 @@ TraitItemType::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
+#endif
 
   str += "\ntype " + name;
 
@@ -4357,7 +4329,7 @@ TraitItemType::as_string () const
 		stderr,
 		"something really terrible has gone wrong - null pointer "
 		"type param bound in trait item type.");
-	      return "nullptr_POINTER_MARK";
+	      return "NULL_POINTER_MARK";
 	    }
 
 	  str += "\n  " + bound->as_string ();
@@ -4370,6 +4342,7 @@ TraitItemType::as_string () const
 std::string
 SelfParam::as_string () const
 {
+  // TODO: rewrite to allow non-linearisable types
   if (is_error ())
     {
       return "error";
@@ -4382,9 +4355,7 @@ SelfParam::as_string () const
 	  std::string str;
 
 	  if (is_mut)
-	    {
 	      str += "mut ";
-	    }
 
 	  str += "self : ";
 
@@ -4398,9 +4369,7 @@ SelfParam::as_string () const
 	  std::string str = "&" + lifetime.as_string () + " ";
 
 	  if (is_mut)
-	    {
 	      str += "mut ";
-	    }
 
 	  str += "self";
 
@@ -4412,9 +4381,7 @@ SelfParam::as_string () const
 	  std::string str = "&";
 
 	  if (is_mut)
-	    {
 	      str += " mut ";
-	    }
 
 	  str += "self";
 
@@ -4426,9 +4393,7 @@ SelfParam::as_string () const
 	  std::string str;
 
 	  if (is_mut)
-	    {
 	      str += "mut ";
-	    }
 
 	  str += "self";
 
@@ -4440,6 +4405,7 @@ SelfParam::as_string () const
 std::string
 ArrayElemsCopied::as_string () const
 {
+  // TODO: rewrite to allow non-linearisable exprs
   return elem_to_copy->as_string () + "; " + num_copies->as_string ();
 }
 
@@ -4453,9 +4419,7 @@ LifetimeWhereClauseItem::as_string () const
   str += "\nLifetime bounds: ";
 
   for (const auto &bound : lifetime_bounds)
-    {
       str += "\n " + bound.as_string ();
-    }
 
   return str;
 }
@@ -4472,9 +4436,7 @@ TypeBoundWhereClauseItem::as_string () const
   else
     {
       for (const auto &for_lifetime : for_lifetimes)
-	{
 	  str += "\n " + for_lifetime.as_string ();
-	}
     }
 
   str += "\nType: " + bound_type->as_string ();
@@ -4485,9 +4447,7 @@ TypeBoundWhereClauseItem::as_string () const
     {
       // debug null pointer check
       if (bound == nullptr)
-	{
-	  return "nullptr_POINTER_MARK - type param bounds";
-	}
+	  return "NULL_POINTER_MARK - type param bounds";
 
       str += "\n " + bound->as_string ();
     }
@@ -4508,7 +4468,7 @@ ArrayElemsValues::as_string () const
 	  fprintf (stderr,
 		   "something really terrible has gone wrong - null pointer "
 		   "expr in array elems values.");
-	  return "nullptr_POINTER_MARK";
+	  return "NULL_POINTER_MARK";
 	}
 
       str += "\n  " + expr->as_string ();
@@ -4520,6 +4480,7 @@ ArrayElemsValues::as_string () const
 std::string
 MaybeNamedParam::as_string () const
 {
+  // TODO: rewrite to allow using non-linearisable types in dump
   std::string str;
 
   switch (param_kind)
@@ -4838,7 +4799,7 @@ MacroParser::parse_path_meta_item ()
 			   "failed to parse literal in attribute");
 	    return nullptr;
 	  }
-	LiteralExpr expr (std::move (lit), locus);
+	LiteralExpr expr (std::move (lit), {}, locus);
 	// stream_pos++;
 	/* shouldn't be required anymore due to parsing literal actually
 	 * skipping the token */
@@ -4893,9 +4854,8 @@ MacroParser::parse_meta_item_seq ()
       meta_items.push_back (std::move (inner));
 
       if (peek_token ()->get_id () != COMMA)
-	{
 	  break;
-	}
+
       skip_token ();
     }
 
@@ -5056,7 +5016,7 @@ std::unique_ptr<MetaItemLitExpr>
 MacroParser::parse_meta_item_lit ()
 {
   Location locus = peek_token ()->get_locus ();
-  LiteralExpr lit_expr (parse_literal (), locus);
+  LiteralExpr lit_expr (parse_literal (), {}, locus);
   return std::unique_ptr<MetaItemLitExpr> (
     new MetaItemLitExpr (std::move (lit_expr)));
 }
@@ -5294,7 +5254,7 @@ Attribute
 MetaNameValueStr::to_attribute () const
 {
   LiteralExpr lit_expr (str, Literal::LitType::STRING,
-			PrimitiveCoreType::CORETYPE_UNKNOWN, Location ());
+			PrimitiveCoreType::CORETYPE_UNKNOWN, {}, Location ());
   return Attribute (SimplePath::from_str (ident),
 		    std::unique_ptr<AttrInputLiteral> (
 		      new AttrInputLiteral (std::move (lit_expr))));

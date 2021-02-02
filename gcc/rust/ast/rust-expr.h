@@ -13,12 +13,7 @@ namespace AST {
 // AST node for an expression with an accompanying block - abstract
 class ExprWithBlock : public Expr
 {
-  // TODO: should this mean that a BlockExpr should be a member variable?
 protected:
-  ExprWithBlock (std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : Expr (std::move (outer_attrs))
-  {}
-
   // pure virtual clone implementation
   virtual ExprWithBlock *clone_expr_with_block_impl () const = 0;
 
@@ -41,6 +36,7 @@ public:
 // Literals? Or literal base?
 class LiteralExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   Literal literal;
   Location locus;
 
@@ -50,15 +46,15 @@ public:
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
 
   LiteralExpr (std::string value_as_string, Literal::LitType type,
-	       PrimitiveCoreType type_hint, Location locus,
-	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attrs)),
+	       PrimitiveCoreType type_hint,
+	       std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
       literal (std::move (value_as_string), type, type_hint), locus (locus)
   {}
 
-  LiteralExpr (Literal literal, Location locus,
-	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attrs)), literal (std::move (literal)),
+  LiteralExpr (Literal literal,
+	       std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), literal (std::move (literal)),
       locus (locus)
   {}
 
@@ -78,6 +74,11 @@ public:
   // Invalid if literal is in error state, so base stripping on that.
   void mark_for_strip () override { literal = Literal::create_error (); }
   bool is_marked_for_strip () const override { return literal.is_error (); }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -196,20 +197,21 @@ public:
   Location locus;
 
 protected:
-  /* Variable must be protected to allow derived classes to use it as a first
-   * class citizen */
+  /* Variables must be protected to allow derived classes to use them as first
+   * class citizens */
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> main_or_left_expr;
 
   // Constructor (only for initialisation of expr purposes)
   OperatorExpr (std::unique_ptr<Expr> main_or_left_expr,
 		std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)), locus (locus),
+    : locus (locus), outer_attrs (std::move (outer_attribs)),
       main_or_left_expr (std::move (main_or_left_expr))
   {}
 
   // Copy constructor (only for initialisation of expr purposes)
   OperatorExpr (OperatorExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus)
+    : locus (other.locus), outer_attrs (other.outer_attrs)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.main_or_left_expr != nullptr)
@@ -221,7 +223,7 @@ protected:
   {
     ExprWithoutBlock::operator= (other);
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.main_or_left_expr != nullptr)
@@ -246,6 +248,11 @@ public:
   {
     return main_or_left_expr == nullptr;
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -859,6 +866,7 @@ protected:
 // Expression in parentheses (i.e. like literally just any 3 + (2 * 6))
 class GroupedExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
   std::unique_ptr<Expr> expr_in_parens;
   Location locus;
@@ -869,17 +877,22 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
   GroupedExpr (std::unique_ptr<Expr> parenthesised_expr,
 	       std::vector<Attribute> inner_attribs,
 	       std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       expr_in_parens (std::move (parenthesised_expr)), locus (locus)
   {}
 
   // Copy constructor includes clone for expr_in_parens
   GroupedExpr (GroupedExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), inner_attrs (other.inner_attrs),
       locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
@@ -893,7 +906,7 @@ public:
     ExprWithoutBlock::operator= (other);
     inner_attrs = other.inner_attrs;
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.expr_in_parens != nullptr)
@@ -1090,9 +1103,9 @@ protected:
 // Array definition-ish expression
 class ArrayExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
   std::unique_ptr<ArrayElems> internal_elements;
-
   Location locus;
 
   // TODO: find another way to store this to save memory?
@@ -1104,6 +1117,11 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
   // Returns whether array expr has array elems or if it is just empty.
   bool has_array_elems () const { return internal_elements != nullptr; }
 
@@ -1111,14 +1129,14 @@ public:
   ArrayExpr (std::unique_ptr<ArrayElems> array_elems,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       internal_elements (std::move (array_elems)), locus (locus)
   {}
 
   // Copy constructor requires cloning ArrayElems for polymorphism to hold
   ArrayExpr (ArrayExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), inner_attrs (other.inner_attrs),
       locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     if (other.has_array_elems ())
@@ -1132,7 +1150,7 @@ public:
     inner_attrs = other.inner_attrs;
     locus = other.locus;
     marked_for_strip = other.marked_for_strip;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     if (other.has_array_elems ())
       internal_elements = other.internal_elements->clone_array_elems ();
@@ -1178,9 +1196,9 @@ protected:
  * implementation */
 class ArrayIndexExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> array_expr;
   std::unique_ptr<Expr> index_expr;
-
   Location locus;
 
 public:
@@ -1189,14 +1207,14 @@ public:
   ArrayIndexExpr (std::unique_ptr<Expr> array_expr,
 		  std::unique_ptr<Expr> array_index_expr,
 		  std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       array_expr (std::move (array_expr)),
       index_expr (std::move (array_index_expr)), locus (locus)
   {}
 
   // Copy constructor requires special cloning due to unique_ptr
   ArrayIndexExpr (ArrayIndexExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.array_expr != nullptr)
@@ -1209,7 +1227,7 @@ public:
   ArrayIndexExpr &operator= (ArrayIndexExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference (only required if error state)
@@ -1259,6 +1277,11 @@ public:
     return index_expr;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1271,11 +1294,9 @@ protected:
 // AST representation of a tuple
 class TupleExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
-
   std::vector<std::unique_ptr<Expr> > tuple_elems;
-  // replaces (inlined version of) TupleElements
-
   Location locus;
 
   // TODO: find another way to store this to save memory?
@@ -1287,17 +1308,22 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
   TupleExpr (std::vector<std::unique_ptr<Expr> > tuple_elements,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       tuple_elems (std::move (tuple_elements)), locus (locus)
   {}
 
   // copy constructor with vector clone
   TupleExpr (TupleExpr const &other)
-    : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), inner_attrs (other.inner_attrs),
       locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     tuple_elems.reserve (other.tuple_elems.size ());
@@ -1309,6 +1335,7 @@ public:
   TupleExpr &operator= (TupleExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
+    outer_attrs = other.outer_attrs;
     inner_attrs = other.inner_attrs;
     locus = other.locus;
     marked_for_strip = other.marked_for_strip;
@@ -1359,6 +1386,7 @@ protected:
 // AST representation of a tuple indexing expression
 class TupleIndexExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> tuple_expr;
   // TupleIndex is a decimal int literal with no underscores or suffix
   TupleIndex tuple_index;
@@ -1374,13 +1402,13 @@ public:
 
   TupleIndexExpr (std::unique_ptr<Expr> tuple_expr, TupleIndex index,
 		  std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       tuple_expr (std::move (tuple_expr)), tuple_index (index), locus (locus)
   {}
 
   // Copy constructor requires a clone for tuple_expr
   TupleIndexExpr (TupleIndexExpr const &other)
-    : ExprWithoutBlock (other), tuple_index (other.tuple_index),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), tuple_index (other.tuple_index),
       locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
@@ -1394,7 +1422,7 @@ public:
     ExprWithoutBlock::operator= (other);
     tuple_index = other.tuple_index;
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.tuple_expr != nullptr)
@@ -1425,6 +1453,11 @@ public:
     return tuple_expr;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1437,13 +1470,14 @@ protected:
 // Base struct/tuple/union value creator AST node (abstract)
 class StructExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   PathInExpression struct_name;
 
 protected:
   // Protected constructor to allow initialising struct_name
   StructExpr (PathInExpression struct_path,
 	      std::vector<Attribute> outer_attribs)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       struct_name (std::move (struct_path))
   {}
 
@@ -1459,6 +1493,11 @@ public:
     struct_name = PathInExpression::create_error ();
   }
   bool is_marked_for_strip () const override { return struct_name.is_error (); }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 };
 
 // Actual AST node of the struct creator (with no fields). Not abstract!
@@ -1936,13 +1975,14 @@ protected:
 // Base AST node representing creation of an enum variant instance - abstract
 class EnumVariantExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   PathInExpression enum_variant_path;
 
 protected:
   // Protected constructor for initialising enum_variant_path
   EnumVariantExpr (PathInExpression path_to_enum_variant,
 		   std::vector<Attribute> outer_attribs)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       enum_variant_path (std::move (path_to_enum_variant))
   {}
 
@@ -1962,6 +2002,11 @@ public:
   {
     return enum_variant_path.is_error ();
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 };
 
 /* Base AST node for a single enum expression field (in enum instance creation)
@@ -2183,7 +2228,6 @@ protected:
 class EnumExprTuple : public EnumVariantExpr
 {
   std::vector<std::unique_ptr<Expr> > values;
-
   Location locus;
 
 public:
@@ -2282,10 +2326,9 @@ class Function;
 // Function call expression AST node
 class CallExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> function;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
-
   Location locus;
 
 public:
@@ -2296,14 +2339,14 @@ public:
   CallExpr (std::unique_ptr<Expr> function_expr,
 	    std::vector<std::unique_ptr<Expr> > function_params,
 	    std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       function (std::move (function_expr)),
       params (std::move (function_params)), locus (locus)
   {}
 
   // copy constructor requires clone
   CallExpr (CallExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.function != nullptr)
@@ -2319,7 +2362,7 @@ public:
   {
     ExprWithoutBlock::operator= (other);
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.function != nullptr)
@@ -2373,6 +2416,11 @@ public:
     return function;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2385,11 +2433,10 @@ protected:
 // Method call expression AST node
 class MethodCallExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
-
   Location locus;
 
 public:
@@ -2399,7 +2446,7 @@ public:
 		  PathExprSegment method_path,
 		  std::vector<std::unique_ptr<Expr> > method_params,
 		  std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       receiver (std::move (call_receiver)),
       method_name (std::move (method_path)), params (std::move (method_params)),
       locus (locus)
@@ -2407,7 +2454,7 @@ public:
 
   // copy constructor required due to cloning
   MethodCallExpr (MethodCallExpr const &other)
-    : ExprWithoutBlock (other), method_name (other.method_name),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), method_name (other.method_name),
       locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
@@ -2425,7 +2472,7 @@ public:
     ExprWithoutBlock::operator= (other);
     method_name = other.method_name;
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.receiver != nullptr)
@@ -2470,6 +2517,11 @@ public:
   const PathExprSegment &get_method_name () const { return method_name; }
   PathExprSegment &get_method_name () { return method_name; }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2483,9 +2535,9 @@ protected:
 // Struct or union field access expression AST node
 class FieldAccessExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> receiver;
   Identifier field;
-
   Location locus;
 
 public:
@@ -2494,14 +2546,14 @@ public:
   FieldAccessExpr (std::unique_ptr<Expr> field_access_receiver,
 		   Identifier field_name, std::vector<Attribute> outer_attribs,
 		   Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       receiver (std::move (field_access_receiver)),
       field (std::move (field_name)), locus (locus)
   {}
 
   // Copy constructor required due to unique_ptr cloning
   FieldAccessExpr (FieldAccessExpr const &other)
-    : ExprWithoutBlock (other), field (other.field), locus (other.locus)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), field (other.field), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.receiver != nullptr)
@@ -2514,7 +2566,7 @@ public:
     ExprWithoutBlock::operator= (other);
     field = other.field;
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.receiver != nullptr)
@@ -2546,6 +2598,11 @@ public:
   }
 
   Identifier get_field_name () const { return field; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2645,17 +2702,15 @@ public:
 // Base closure definition expression AST node - abstract
 class ClosureExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   bool has_move;
   std::vector<ClosureParam> params; // may be empty
-  /* also note a double pipe "||" can be used for empty params - does not need a
-   * space */
-
   Location locus;
 
 protected:
   ClosureExpr (std::vector<ClosureParam> closure_params, bool has_move,
 	       std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attribs)), has_move (has_move),
+    : outer_attrs (std::move (outer_attribs)), has_move (has_move),
       params (std::move (closure_params)), locus (locus)
   {}
 
@@ -2668,6 +2723,11 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<ClosureParam> &get_params () const { return params; }
   std::vector<ClosureParam> &get_params () { return params; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2746,13 +2806,10 @@ protected:
 // A block AST node
 class BlockExpr : public ExprWithBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
-
-  // bool has_statements;
   std::vector<std::unique_ptr<Stmt> > statements;
-  // bool has_expr;
-  std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
-
+  std::unique_ptr<ExprWithoutBlock> expr; 
   Location locus;
   bool marked_for_strip = false;
 
@@ -2769,7 +2826,7 @@ public:
 	     std::unique_ptr<ExprWithoutBlock> block_expr,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
       locus (locus)
@@ -2777,7 +2834,7 @@ public:
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
-    : ExprWithBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), inner_attrs (other.inner_attrs),
       locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
@@ -2796,7 +2853,7 @@ public:
     inner_attrs = other.inner_attrs;
     locus = other.locus;
     marked_for_strip = other.marked_for_strip;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2860,6 +2917,11 @@ public:
 
   // Removes the tail expression from the block.
   void strip_tail_expr () { expr = nullptr; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2970,7 +3032,7 @@ protected:
 // AST node representing continue expression within loops
 class ContinueExpr : public ExprWithoutBlock
 {
-  // bool has_label;
+  std::vector<Attribute> outer_attrs;
   Lifetime label;
   Location locus;
 
@@ -2984,10 +3046,9 @@ public:
   bool has_label () const { return !label.is_error (); }
 
   // Constructor for a ContinueExpr with a label.
-  ContinueExpr (Location locus, Lifetime label = Lifetime::error (),
-		std::vector<Attribute> outer_attribs
-		= std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attribs)), label (std::move (label)),
+  ContinueExpr (Lifetime label,
+		std::vector<Attribute> outer_attribs, Location locus)
+    : outer_attrs (std::move (outer_attribs)), label (std::move (label)),
       locus (locus)
   {}
 
@@ -2999,6 +3060,11 @@ public:
   // Can't think of any invalid invariants, so store boolean.
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3013,12 +3079,9 @@ protected:
 // AST node representing break expression within loops
 class BreakExpr : public ExprWithoutBlock
 {
-  // bool has_label;
+  std::vector<Attribute> outer_attrs;
   Lifetime label;
-
-  // bool has_break_expr;
   std::unique_ptr<Expr> break_expr;
-
   Location locus;
 
   // TODO: find another way to store this to save memory?
@@ -3035,17 +3098,17 @@ public:
   bool has_break_expr () const { return break_expr != nullptr; }
 
   // Constructor for a break expression
-  BreakExpr (Location locus, Lifetime break_label = Lifetime::error (),
-	     std::unique_ptr<Expr> expr_in_break = nullptr,
-	     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attribs)),
+  BreakExpr (Lifetime break_label,
+	     std::unique_ptr<Expr> expr_in_break,
+	     std::vector<Attribute> outer_attribs, Location locus)
+    : outer_attrs (std::move (outer_attribs)),
       label (std::move (break_label)), break_expr (std::move (expr_in_break)),
       locus (locus)
   {}
 
   // Copy constructor defined to use clone for unique pointer
   BreakExpr (BreakExpr const &other)
-    : ExprWithoutBlock (other), label (other.label), locus (other.locus),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), label (other.label), locus (other.locus),
       marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
@@ -3060,7 +3123,7 @@ public:
     label = other.label;
     locus = other.locus;
     marked_for_strip = other.marked_for_strip;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to protect from null pointer dereference
     if (other.break_expr != nullptr)
@@ -3091,6 +3154,11 @@ public:
     return break_expr;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3107,13 +3175,14 @@ class RangeExpr : public ExprWithoutBlock
 
 protected:
   // outer attributes not allowed before range expressions
-  RangeExpr (Location locus)
-    : ExprWithoutBlock (std::vector<Attribute> ()), locus (locus)
-  {}
+  RangeExpr (Location locus) : locus (locus) {}
 
 public:
   Location get_locus () const { return locus; }
   Location get_locus_slow () const final override { return get_locus (); }
+
+  // should never be called - error if called
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { rust_assert (false); }
 };
 
 // Range from (inclusive) and to (exclusive) expression AST node object
@@ -3501,8 +3570,8 @@ protected:
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> return_expr;
-
   Location locus;
 
   // TODO: find another way to store this to save memory?
@@ -3516,15 +3585,15 @@ public:
   bool has_returned_expr () const { return return_expr != nullptr; }
 
   // Constructor for ReturnExpr.
-  ReturnExpr (Location locus, std::unique_ptr<Expr> returned_expr = nullptr,
-	      std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attribs)),
+  ReturnExpr (std::unique_ptr<Expr> returned_expr,
+	      std::vector<Attribute> outer_attribs, Location locus)
+    : outer_attrs (std::move (outer_attribs)),
       return_expr (std::move (returned_expr)), locus (locus)
   {}
 
   // Copy constructor with clone
   ReturnExpr (ReturnExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus),
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), locus (other.locus),
       marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
@@ -3538,7 +3607,7 @@ public:
     ExprWithoutBlock::operator= (other);
     locus = other.locus;
     marked_for_strip = other.marked_for_strip;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to protect from null pointer dereference
     if (other.return_expr != nullptr)
@@ -3569,6 +3638,11 @@ public:
     return return_expr;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3584,6 +3658,7 @@ class MacroInvocation;
 // An unsafe block AST node
 class UnsafeBlockExpr : public ExprWithBlock
 {
+  std::vector<Attribute> outer_attrs;
   // Or just have it extend BlockExpr
   std::unique_ptr<BlockExpr> expr;
   Location locus;
@@ -3593,13 +3668,13 @@ public:
 
   UnsafeBlockExpr (std::unique_ptr<BlockExpr> block_expr,
 		   std::vector<Attribute> outer_attribs, Location locus)
-    : ExprWithBlock (std::move (outer_attribs)), expr (std::move (block_expr)),
+    : outer_attrs (std::move (outer_attribs)), expr (std::move (block_expr)),
       locus (locus)
   {}
 
   // Copy constructor with clone
   UnsafeBlockExpr (UnsafeBlockExpr const &other)
-    : ExprWithBlock (other), locus (other.locus)
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
@@ -3611,7 +3686,7 @@ public:
   {
     ExprWithBlock::operator= (other);
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.expr != nullptr)
@@ -3641,6 +3716,11 @@ public:
     rust_assert (expr != nullptr);
     return expr;
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3679,9 +3759,8 @@ class BaseLoopExpr : public ExprWithBlock
 {
 protected:
   // protected to allow subclasses better use of them
-  // bool has_loop_label;
+  std::vector<Attribute> outer_attrs;
   LoopLabel loop_label;
-
   std::unique_ptr<BlockExpr> loop_block;
 
 private:
@@ -3693,14 +3772,14 @@ protected:
 		LoopLabel loop_label = LoopLabel::error (),
 		std::vector<Attribute> outer_attribs
 		= std::vector<Attribute> ())
-    : ExprWithBlock (std::move (outer_attribs)),
+    : outer_attrs (std::move (outer_attribs)),
       loop_label (std::move (loop_label)), loop_block (std::move (loop_block)),
       locus (locus)
   {}
 
   // Copy constructor for BaseLoopExpr with clone
   BaseLoopExpr (BaseLoopExpr const &other)
-    : ExprWithBlock (other), loop_label (other.loop_label), locus (other.locus)
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), loop_label (other.loop_label), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.loop_block != nullptr)
@@ -3713,7 +3792,7 @@ protected:
     ExprWithBlock::operator= (other);
     loop_label = other.loop_label;
     locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     // guard to prevent null dereference (only required if error state)
     if (other.loop_block != nullptr)
@@ -3744,6 +3823,11 @@ public:
     rust_assert (loop_block != nullptr);
     return loop_block;
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 };
 
 // 'Loop' expression (i.e. the infinite loop) AST node
@@ -3989,7 +4073,6 @@ class IfExpr : public ExprWithBlock
 {
   std::unique_ptr<Expr> condition;
   std::unique_ptr<BlockExpr> if_block;
-
   Location locus;
 
 public:
@@ -3997,8 +4080,7 @@ public:
 
   IfExpr (std::unique_ptr<Expr> condition, std::unique_ptr<BlockExpr> if_block,
 	  Location locus)
-    : ExprWithBlock (std::vector<Attribute> ()),
-      condition (std::move (condition)), if_block (std::move (if_block)),
+    : condition (std::move (condition)), if_block (std::move (if_block)),
       locus (locus)
   {}
   // outer attributes are never allowed on IfExprs
@@ -4078,6 +4160,9 @@ public:
   {
     return if_block == nullptr && condition == nullptr;
   }
+
+  // this should never be called
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { rust_assert (false); }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -4209,7 +4294,6 @@ protected:
 // Basic "if let" expression AST node with no else
 class IfLetExpr : public ExprWithBlock
 {
-  // MatchArmPatterns patterns;
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
   std::unique_ptr<Expr> value;
   std::unique_ptr<BlockExpr> if_block;
@@ -4221,8 +4305,7 @@ public:
   IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
 	     Location locus)
-    : ExprWithBlock (std::vector<Attribute> ()),
-      match_arm_patterns (std::move (match_arm_patterns)),
+    : match_arm_patterns (std::move (match_arm_patterns)),
       value (std::move (value)), if_block (std::move (if_block)), locus (locus)
   {}
   // outer attributes not allowed on if let exprs either
@@ -4314,6 +4397,9 @@ public:
   {
     return match_arm_patterns;
   }
+
+  // this should never be called
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { rust_assert (false); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4826,15 +4912,10 @@ protected:
 // Match expression AST node
 class MatchExpr : public ExprWithBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> branch_value;
   std::vector<Attribute> inner_attrs;
-
-  // bool has_match_arms;
-  // MatchArms match_arms;
-  // std::vector<std::unique_ptr<MatchCase> > match_arms; // inlined from
-  // MatchArms
   std::vector<MatchCase> match_arms;
-
   Location locus;
 
 public:
@@ -4844,11 +4925,10 @@ public:
   bool has_match_arms () const { return !match_arms.empty (); }
 
   MatchExpr (std::unique_ptr<Expr> branch_value,
-	     // std::vector<std::unique_ptr<MatchCase> > match_arms,
 	     std::vector<MatchCase> match_arms,
 	     std::vector<Attribute> inner_attrs,
 	     std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithBlock (std::move (outer_attrs)),
+    : outer_attrs (std::move (outer_attrs)),
       branch_value (std::move (branch_value)),
       inner_attrs (std::move (inner_attrs)),
       match_arms (std::move (match_arms)), locus (locus)
@@ -4856,16 +4936,12 @@ public:
 
   // Copy constructor requires clone due to unique_ptr
   MatchExpr (MatchExpr const &other)
-    : ExprWithBlock (other), inner_attrs (other.inner_attrs),
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), inner_attrs (other.inner_attrs),
       match_arms (other.match_arms), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.branch_value != nullptr)
       branch_value = other.branch_value->clone_expr ();
-
-    /*match_arms.reserve (other.match_arms.size ());
-    for (const auto &e : other.match_arms)
-      match_arms.push_back (e->clone_match_case ());*/
   }
 
   // Overloaded assignment operator to clone due to unique_ptr
@@ -4874,7 +4950,7 @@ public:
     ExprWithBlock::operator= (other);
     inner_attrs = other.inner_attrs;
     match_arms = other.match_arms;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference (only required if error state)
@@ -4882,10 +4958,6 @@ public:
       branch_value = other.branch_value->clone_expr ();
     else
       branch_value = nullptr;
-
-    /*match_arms.reserve (other.match_arms.size ());
-    for (const auto &e : other.match_arms)
-      match_arms.push_back (e->clone_match_case ());*/
 
     return *this;
   }
@@ -4906,6 +4978,11 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_scrutinee_expr ()
@@ -4929,6 +5006,7 @@ protected:
 // Await expression AST node (pseudo-member variable access)
 class AwaitExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> awaited_expr;
   Location locus;
 
@@ -4936,13 +5014,13 @@ public:
   // TODO: ensure outer attributes are actually allowed
   AwaitExpr (std::unique_ptr<Expr> awaited_expr,
 	     std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attrs)),
+    : outer_attrs (std::move (outer_attrs)),
       awaited_expr (std::move (awaited_expr)), locus (locus)
   {}
 
   // copy constructor with clone
   AwaitExpr (AwaitExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.awaited_expr != nullptr)
@@ -4953,6 +5031,7 @@ public:
   AwaitExpr &operator= (AwaitExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference (only required if error state)
@@ -4986,6 +5065,11 @@ public:
     return awaited_expr;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4999,6 +5083,7 @@ protected:
 class AsyncBlockExpr : public ExprWithBlock
 {
   // TODO: should this extend BlockExpr rather than be a composite of it?
+  std::vector<Attribute> outer_attrs;
   bool has_move;
   std::unique_ptr<BlockExpr> block_expr;
   Location locus;
@@ -5006,13 +5091,13 @@ class AsyncBlockExpr : public ExprWithBlock
 public:
   AsyncBlockExpr (std::unique_ptr<BlockExpr> block_expr, bool has_move,
 		  std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithBlock (std::move (outer_attrs)), has_move (has_move),
+    : outer_attrs (std::move (outer_attrs)), has_move (has_move),
       block_expr (std::move (block_expr)), locus (locus)
   {}
 
   // copy constructor with clone
   AsyncBlockExpr (AsyncBlockExpr const &other)
-    : ExprWithBlock (other), has_move (other.has_move), locus (other.locus)
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), has_move (other.has_move), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.block_expr != nullptr)
@@ -5023,6 +5108,7 @@ public:
   AsyncBlockExpr &operator= (AsyncBlockExpr const &other)
   {
     ExprWithBlock::operator= (other);
+    outer_attrs = other.outer_attrs;
     has_move = other.has_move;
     locus = other.locus;
 
@@ -5056,6 +5142,11 @@ public:
     rust_assert (block_expr != nullptr);
     return block_expr;
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

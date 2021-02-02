@@ -360,6 +360,7 @@ class MacroInvocation : public TypeNoBounds,
 			public Pattern,
 			public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   /*SimplePath path;
   DelimTokenTree token_tree;*/
   MacroInvocData invoc_data;
@@ -375,7 +376,7 @@ public:
   {}*/
   MacroInvocation (MacroInvocData invoc_data,
 		   std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attrs)),
+    : outer_attrs (std::move (outer_attrs)),
       invoc_data (std::move (invoc_data)), locus (locus)
   {}
 
@@ -390,6 +391,11 @@ public:
   {
     return invoc_data.is_marked_for_strip ();
   }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

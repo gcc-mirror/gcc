@@ -791,7 +791,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	  }
 
 	// create actual LiteralExpr
-	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (),
+	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (), {},
 				   t->get_locus ());
 
 	std::unique_ptr<AST::AttrInputLiteral> attr_input_lit (
@@ -6361,9 +6361,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression ()
 
   segments.shrink_to_fit ();
 
-  return AST::PathInExpression (std::move (segments), locus,
-				has_opening_scope_resolution,
-				std::vector<AST::Attribute> ());
+  return AST::PathInExpression (std::move (segments), {}, locus,
+				has_opening_scope_resolution);
 }
 
 /* Parses a single path in expression path segment (including generic
@@ -6476,8 +6475,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_expression (
 
   // FIXME: outer attr parsing
   return AST::QualifiedPathInExpression (std::move (qual_path_type),
-					 std::move (segments), locus,
-					 std::vector<AST::Attribute> ());
+					 std::move (segments), {}, locus);
 }
 
 // Parses the type syntactical construction at the start of a qualified path.
@@ -7377,8 +7375,7 @@ Parser<ManagedTokenSource>::parse_literal_expr (
   // create literal based on stuff in switch
   return std::unique_ptr<AST::LiteralExpr> (
     new AST::LiteralExpr (std::move (literal_value), std::move (type),
-			  t->get_type_hint (), t->get_locus (),
-			  std::move (outer_attrs)));
+			  t->get_type_hint (), std::move (outer_attrs), t->get_locus ()));
 }
 
 // Parses a return expression (including any expression to return).
@@ -7406,8 +7403,8 @@ Parser<ManagedTokenSource>::parse_return_expr (
   // FIXME: ensure this doesn't ruin the middle of any expressions or anything
 
   return std::unique_ptr<AST::ReturnExpr> (
-    new AST::ReturnExpr (locus, std::move (returned_expr),
-			 std::move (outer_attrs)));
+    new AST::ReturnExpr (std::move (returned_expr),
+			 std::move (outer_attrs), locus));
 }
 
 /* Parses a break expression (including any label to break to AND any return
@@ -7442,8 +7439,8 @@ Parser<ManagedTokenSource>::parse_break_expr (
   std::unique_ptr<AST::Expr> return_expr = parse_expr ();
 
   return std::unique_ptr<AST::BreakExpr> (
-    new AST::BreakExpr (locus, std::move (label), std::move (return_expr),
-			std::move (outer_attrs)));
+    new AST::BreakExpr (std::move (label), std::move (return_expr),
+			std::move (outer_attrs), locus));
 }
 
 // Parses a continue expression (including any label to continue from).
@@ -7474,7 +7471,7 @@ Parser<ManagedTokenSource>::parse_continue_expr (
     }
 
   return std::unique_ptr<AST::ContinueExpr> (
-    new AST::ContinueExpr (locus, std::move (label), std::move (outer_attrs)));
+    new AST::ContinueExpr (std::move (label), std::move (outer_attrs), locus));
 }
 
 // Parses a loop label used in loop expressions.
@@ -11488,7 +11485,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	    // lexer.skip_token();
 
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    expr = std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -11539,7 +11536,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	// lexer.skip_token();
 
 	// HACK: replace outer attributes in path
-	path.replace_outer_attrs (std::move (outer_attrs));
+	path.set_outer_attrs (std::move (outer_attrs));
 	std::unique_ptr<AST::PathInExpression> expr (
 	  new AST::PathInExpression (std::move (path)));
 
@@ -12047,11 +12044,11 @@ Parser<ManagedTokenSource>::null_denotation (
 		      /* HACK: may have to become permanent, but this is my
 		       * current identifier expression */
 		      return std::unique_ptr<AST::IdentifierExpr> (
-			new AST::IdentifierExpr (tok->get_str (),
+			new AST::IdentifierExpr (tok->get_str (), {},
 						 tok->get_locus ()));
 		    }
 		  // HACK: add outer attrs to path
-		  path.replace_outer_attrs (std::move (outer_attrs));
+		  path.set_outer_attrs (std::move (outer_attrs));
 		  return std::unique_ptr<AST::PathInExpression> (
 		    new AST::PathInExpression (std::move (path)));
 		}
@@ -12069,11 +12066,11 @@ Parser<ManagedTokenSource>::null_denotation (
 		    /* HACK: may have to become permanent, but this is my
 		     * current identifier expression */
 		    return std::unique_ptr<AST::IdentifierExpr> (
-		      new AST::IdentifierExpr (tok->get_str (),
+		      new AST::IdentifierExpr (tok->get_str (), {},
 					       tok->get_locus ()));
 		  }
 		// HACK: add outer attrs to path
-		path.replace_outer_attrs (std::move (outer_attrs));
+		path.set_outer_attrs (std::move (outer_attrs));
 		return std::unique_ptr<AST::PathInExpression> (
 		  new AST::PathInExpression (std::move (path)));
 	      }
@@ -12087,10 +12084,10 @@ Parser<ManagedTokenSource>::null_denotation (
 		/* HACK: may have to become permanent, but this is my current
 		 * identifier expression */
 		return std::unique_ptr<AST::IdentifierExpr> (
-		  new AST::IdentifierExpr (tok->get_str (), tok->get_locus ()));
+		  new AST::IdentifierExpr (tok->get_str (), {}, tok->get_locus ()));
 	      }
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -12105,33 +12102,34 @@ Parser<ManagedTokenSource>::null_denotation (
 	// HACK: add outer attrs to path
 	AST::QualifiedPathInExpression path
 	  = parse_qualified_path_in_expression (true);
-	path.replace_outer_attrs (std::move (outer_attrs));
+	path.set_outer_attrs (std::move (outer_attrs));
 	return std::unique_ptr<AST::QualifiedPathInExpression> (
 	  new AST::QualifiedPathInExpression (std::move (path)));
       }
+    // FIXME: for literal exprs, should outer attrs be passed in or just ignored?
     case INT_LITERAL:
       // we should check the range, but ignore for now
       // encode as int?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::INT,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case FLOAT_LITERAL:
       // encode as float?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::FLOAT,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case STRING_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::STRING,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case TRUE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_type_hint (),
-			      tok->get_locus ()));
+			      {}, tok->get_locus ()));
     case FALSE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("false", AST::Literal::BOOL,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
       case LEFT_PAREN: { // have to parse whole expression if inside brackets
 	/* recursively invoke parse_expression with lowest priority possible as
 	 * it it were a top-level expression. */
@@ -12170,7 +12168,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_MINUS, std::vector<AST::Attribute> (),
+	  = parse_expr (LBP_UNARY_MINUS, {},
 			entered_from_unary);
 
 	if (expr == nullptr)
@@ -12195,7 +12193,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_EXCLAM, std::vector<AST::Attribute> (),
+	  = parse_expr (LBP_UNARY_EXCLAM, {},
 			entered_from_unary);
 
 	if (expr == nullptr)
@@ -12222,7 +12220,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	entered_from_unary.entered_from_unary = true;
 	entered_from_unary.can_be_struct_expr = false;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_ASTERISK, std::vector<AST::Attribute> (),
+	  = parse_expr (LBP_UNARY_ASTERISK, {},
 			entered_from_unary);
 	// FIXME: allow outer attributes on expression
 	return std::unique_ptr<AST::DereferenceExpr> (
@@ -12245,13 +12243,13 @@ Parser<ManagedTokenSource>::null_denotation (
 	  {
 	    lexer.skip_token ();
 	    expr
-	      = parse_expr (LBP_UNARY_AMP_MUT, std::vector<AST::Attribute> (),
+	      = parse_expr (LBP_UNARY_AMP_MUT, {},
 			    entered_from_unary);
 	    is_mut_borrow = true;
 	  }
 	else
 	  {
-	    expr = parse_expr (LBP_UNARY_AMP, std::vector<AST::Attribute> (),
+	    expr = parse_expr (LBP_UNARY_AMP, {},
 			       entered_from_unary);
 	  }
 
@@ -12272,13 +12270,13 @@ Parser<ManagedTokenSource>::null_denotation (
 	  {
 	    lexer.skip_token ();
 	    expr
-	      = parse_expr (LBP_UNARY_AMP_MUT, std::vector<AST::Attribute> (),
+	      = parse_expr (LBP_UNARY_AMP_MUT, {},
 			    entered_from_unary);
 	    is_mut_borrow = true;
 	  }
 	else
 	  {
-	    expr = parse_expr (LBP_UNARY_AMP, std::vector<AST::Attribute> (),
+	    expr = parse_expr (LBP_UNARY_AMP, {},
 			       entered_from_unary);
 	  }
 
@@ -12317,7 +12315,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	if (tok->get_id () == SELF && path.is_single_segment ())
 	  {
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -12347,7 +12345,7 @@ Parser<ManagedTokenSource>::null_denotation (
 		{
 		  // assume path is returned
 		  // HACK: add outer attributes to path
-		  path.replace_outer_attrs (std::move (outer_attrs));
+		  path.set_outer_attrs (std::move (outer_attrs));
 		  return std::unique_ptr<AST::PathInExpression> (
 		    new AST::PathInExpression (std::move (path)));
 		}
@@ -12360,7 +12358,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	      {
 		// assume path is returned
 		// HACK: add outer attributes to path
-		path.replace_outer_attrs (std::move (outer_attrs));
+		path.set_outer_attrs (std::move (outer_attrs));
 		return std::unique_ptr<AST::PathInExpression> (
 		  new AST::PathInExpression (std::move (path)));
 	      }
@@ -12369,7 +12367,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	  default:
 	    // assume path is returned
 	    // HACK: add outer attributes to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -14115,9 +14113,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
       exprs.push_back (std::move (expr));
 
       if (lexer.peek_token ()->get_id () != COMMA)
-	{
 	  break;
-	}
+
       lexer.skip_token ();
 
       t = lexer.peek_token ();
@@ -14243,7 +14240,7 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
     "current token (just about to return path to null denotation): '%s'\n",
     lexer.peek_token ()->get_token_description ());
 
-  return AST::PathInExpression (std::move (segments), tok->get_locus (), false);
+  return AST::PathInExpression (std::move (segments), {}, tok->get_locus (), false);
 }
 
 // Parses a closure expression with pratt parsing (from null denotation).
