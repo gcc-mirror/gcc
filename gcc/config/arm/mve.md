@@ -1634,17 +1634,25 @@
 ;;
 ;; [vornq_u, vornq_s])
 ;;
-(define_insn "mve_vornq_<supf><mode>"
+(define_insn "mve_vornq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VORNQ))
+	(ior:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand" "w"))
+		   (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vorn %q0, %q1, %q2"
+   "vorn\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
+
+(define_expand "mve_vornq_u<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(ior:MVE_2 (not:MVE_2 (match_operand:MVE_2 2 "s_register_operand"))
+		   (match_operand:MVE_2 1 "s_register_operand")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vorrq_s, vorrq_u])
@@ -2630,9 +2638,8 @@
 (define_insn "mve_vornq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VORNQ_F))
+	(ior:MVE_0 (not:MVE_0 (match_operand:MVE_0 2 "s_register_operand" "w"))
+		   (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vorn %q0, %q1, %q2"

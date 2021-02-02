@@ -1,3 +1,8 @@
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	* dyn-string.c (dyn_string_insert_cstr): Use memcpy instead of strncpy
+	to avoid -Wstringop-truncation.
+
 2021-01-04  Martin Liska  <mliska@suse.cz>
 
 	* strverscmp.c: Convert to utf8 from iso8859.

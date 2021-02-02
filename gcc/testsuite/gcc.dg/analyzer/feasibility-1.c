@@ -60,3 +60,29 @@ int test_6 (int a, int b)
     }
   return problem;
 }
+
+/* As above, but call a static function.
+   Even if the path to the call of called_by_test_6a is falsely rejected
+   as infeasible, it still makes sense to complain about errors within
+   the called function.  */
+
+static void __attribute__((noinline))
+called_by_test_6a (void *ptr)
+{
+  __builtin_free (ptr);
+  __builtin_free (ptr); /* { dg-message "double-'free'" } */
+}
+
+int test_6a (int a, int b, void *ptr)
+{
+  int problem = 0;
+  if (a)
+    problem = 1;
+  if (b)
+    {
+      if (!problem)
+	problem = 2;
+      called_by_test_6a (ptr);
+    }
+  return problem;
+}

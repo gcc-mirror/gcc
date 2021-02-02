@@ -1,3 +1,96 @@
+2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (rshrn, rshrn2):
+	Define builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_rshrn<mode>_insn_le):
+	Define.
+	(aarch64_rshrn<mode>_insn_be): Likewise.
+	(aarch64_rshrn<mode>): Likewise.
+	(aarch64_rshrn2<mode>_insn_le): Likewise.
+	(aarch64_rshrn2<mode>_insn_be): Likewise.
+	(aarch64_rshrn2<mode>): Likewise.
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_RSHRN.
+	* config/aarch64/arm_neon.h (vrshrn_high_n_s16): Reimplement
+	using builtin.
+	(vrshrn_high_n_s32): Likewise.
+	(vrshrn_high_n_s64): Likewise.
+	(vrshrn_high_n_u16): Likewise.
+	(vrshrn_high_n_u32): Likewise.
+	(vrshrn_high_n_u64): Likewise.
+	(vrshrn_n_s16): Likewise.
+	(vrshrn_n_s32): Likewise.
+	(vrshrn_n_s64): Likewise.
+	(vrshrn_n_u16): Likewise.
+	(vrshrn_n_u32): Likewise.
+	(vrshrn_n_u64): Likewise.
+
+2021-02-01  Sergei Trofimovich  <siarheit@google.com>
+
+	PR tree-optimization/98499
+	* ipa-modref.c (analyze_ssa_name_flags): treat RVO
+	conservatively and assume all possible side-effects.
+
+2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (vec_unpacks_hi,
+	vec_unpacku_hi_): Define builtins.
+	* config/aarch64/arm_neon.h (vmovl_high_s8): Reimplement using
+	builtin.
+	(vmovl_high_s16): Likewise.
+	(vmovl_high_s32): Likewise.
+	(vmovl_high_u8): Likewise.
+	(vmovl_high_u16): Likewise.
+	(vmovl_high_u32): Likewise.
+
+2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sabdl, uabdl):
+	Define builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abdl<mode>): New
+	pattern.
+	* config/aarch64/aarch64.md (unspec): Define UNSPEC_SABDL,
+	UNSPEC_UABDL.
+	* config/aarch64/arm_neon.h (vabdl_s8): Reimplemet using
+	builtin.
+	(vabdl_s16): Likewise.
+	(vabdl_s32): Likewise.
+	(vabdl_u8): Likewise.
+	(vabdl_u16): Likewise.
+	(vabdl_u32): Likewise.
+	* config/aarch64/iterators.md (ABDL): New int iterator.
+	(sur): Handle UNSPEC_SABDL, UNSPEC_UABDL.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	* tree.h (BLOCK_VARS): Add comment.
+	(BLOCK_SUBBLOCKS): Same.
+	(BLOCK_SUPERCONTEXT): Same.
+	(BLOCK_ABSTRACT_ORIGIN): Same.
+	(inlined_function_outer_scope_p): Same.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* attribs.c (attr_access::free_lang_data): Define new function.
+	* attribs.h (attr_access::free_lang_data): Declare new function.
+
+2021-02-01  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (auto_vec::auto_vec): Add memory stat parameters
+	and pass them on.
+	* bitmap.h (auto_bitmap::auto_bitmap): Likewise.
+
+2021-02-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mlal_n<mode>,
+	aarch64_<su>mlsl<mode>, aarch64_<su>mlsl_n<mode>): Flip mult operands.
+
+2021-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98863
+	* config/i386/i386-features.c (convert_scalars_to_vector):
+	Set DF_RD_PRUNE_DEAD_DEFS.
+
 2021-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system.h (SIZE_MAX): Define if not already defined.

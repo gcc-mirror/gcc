@@ -249,6 +249,10 @@ region_model_manager::get_or_create_initial_value (const region *reg)
 				 get_or_create_initial_value (original_reg));
     }
 
+  /* INIT_VAL (*UNKNOWN_PTR) -> UNKNOWN_VAL.  */
+  if (reg->symbolic_for_unknown_ptr_p ())
+    return get_or_create_unknown_svalue (reg->get_type ());
+
   if (initial_svalue **slot = m_initial_values_map.get (reg))
     return *slot;
   initial_svalue *initial_sval = new initial_svalue (reg->get_type (), reg);
@@ -814,6 +818,15 @@ const region *
 region_model_manager::get_field_region (const region *parent, tree field)
 {
   gcc_assert (TREE_CODE (field) == FIELD_DECL);
+
+  /* (*UNKNOWN_PTR).field is (*UNKNOWN_PTR_OF_&FIELD_TYPE).  */
+  if (parent->symbolic_for_unknown_ptr_p ())
+    {
+      tree ptr_to_field_type = build_pointer_type (TREE_TYPE (field));
+      const svalue *unknown_ptr_to_field
+	= get_or_create_unknown_svalue (ptr_to_field_type);
+      return get_symbolic_region (unknown_ptr_to_field);
+    }
 
   field_region::key_t key (parent, field);
   if (field_region *reg = m_field_regions.get (key))

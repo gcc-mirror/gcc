@@ -1579,6 +1579,10 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   tree type = TREE_TYPE (lhs);
   tree_code code = gimple_assign_rhs_code (last_stmt);
 
+  /* Punt for reductions where we don't handle the type conversions.  */
+  if (STMT_VINFO_DEF_TYPE (last_stmt_info) == vect_reduction_def)
+    return NULL;
+
   /* Keep the first operand of a COND_EXPR as-is: only the other two
      operands are interesting.  */
   unsigned int first_op = (code == COND_EXPR ? 2 : 1);

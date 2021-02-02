@@ -1,3 +1,103 @@
+2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Adjust rshrn2
+	assembly scan.
+
+2021-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98918
+	* gcc.dg/analyzer/pr98918.c: New test.
+
+2021-02-01  Sergei Trofimovich  <siarheit@google.com>
+
+	PR tree-optimization/98499
+	* g++.dg/pr98499.C: new test.
+
+2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vmovl_high_1.c: New test.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* gcc.dg/pr97172.c: New test.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98835
+	* g++.dg/Wclass-memaccess-6.C: New test.
+
+2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98295
+	* g++.dg/cpp0x/constexpr-98295.C: New test.
+
+2021-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98355
+	* g++.dg/ext/builtin-has-attribute2.C: New test.
+
+2021-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98570
+	* g++.dg/cpp0x/alias-decl-targ1.C: New test.
+
+2021-02-01  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_high.inc:
+	New test template.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_high_lane.inc:
+	New test template.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_high_laneq.inc:
+	New test template.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_high_n.inc:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_high_lane.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_high_laneq.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_high_n.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_high_lane.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_high_laneq.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_high_n.c:
+	New test.
+
+2021-02-01  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_high_lane.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_high_laneq.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_high_n.c:
+	New test.
+
+2021-02-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/smlal-smlsl-mull-optimized.c: New test.
+
+2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/84494
+	* g++.dg/cpp1y/constexpr-84494.C: New test.
+
+2021-02-01  Xing GUO  <higuoxing@gmail.com>
+
+	* gcc.target/riscv/attribute-18.c: Add -mriscv-attribute option.
+
+2021-02-01  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr79251.p8.c: Update store count regex.
+	* gcc.target/powerpc/pr79251.p9.c: Likewise.
+
 2021-01-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-c++-common/attr-used-5.c: Skip for Darwin.

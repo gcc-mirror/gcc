@@ -5459,6 +5459,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      /* If to_rtx is a promoted subreg, we need to zero or sign
 		 extend the value afterwards.  */
 	      if (TREE_CODE (to) == MEM_REF
+		  && TYPE_MODE (TREE_TYPE (from)) != BLKmode
 		  && !REF_REVERSE_STORAGE_ORDER (to)
 		  && known_eq (bitpos, 0)
 		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
