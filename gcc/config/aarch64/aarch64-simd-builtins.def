@@ -705,6 +705,9 @@
   /* Implemented by aarch64_rsqrts<mode>.  */
   BUILTIN_VHSDF_HSDF (BINOP, rsqrts, 0, FP)
 
+  /* Implemented by aarch64_ursqrte<mode>.  */
+  BUILTIN_VDQ_SI (UNOPU, ursqrte, 0, NONE)
+
   /* Implemented by fabd<mode>3.  */
   BUILTIN_VHSDF_HSDF (BINOP, fabd, 3, FP)
 

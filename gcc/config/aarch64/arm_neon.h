@@ -9387,24 +9387,14 @@ __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsqrte_u32 (uint32x2_t __a)
 {
-  uint32x2_t __result;
-  __asm__ ("ursqrte %0.2s,%1.2s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_ursqrtev2si_uu (__a);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsqrteq_u32 (uint32x4_t __a)
 {
-  uint32x4_t __result;
-  __asm__ ("ursqrte %0.4s,%1.4s"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_ursqrtev4si_uu (__a);
 }
 
 __extension__ extern __inline int8x16_t

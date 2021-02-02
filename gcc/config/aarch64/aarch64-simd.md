@@ -755,6 +755,14 @@
   DONE;
 })
 
+(define_insn "aarch64_ursqrte<mode>"
+[(set (match_operand:VDQ_SI 0 "register_operand" "=w")
+      (unspec:VDQ_SI [(match_operand:VDQ_SI 1 "register_operand" "w")]
+		   UNSPEC_RSQRTE))]
+"TARGET_SIMD"
+"ursqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
+[(set_attr "type" "neon_fp_rsqrte_<stype><q>")])
+
 (define_insn "*aarch64_mul3_elt_to_64v2df"
   [(set (match_operand:DF 0 "register_operand" "=w")
      (mult:DF
