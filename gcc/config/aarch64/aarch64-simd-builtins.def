@@ -319,6 +319,11 @@
   BUILTIN_VQ_HSI (QUADOPU_LANE, umlal_hi_lane, 0, NONE)
   BUILTIN_VQ_HSI (QUADOPU_LANE, umlal_hi_laneq, 0, NONE)
 
+  BUILTIN_VQ_HSI (QUADOP_LANE, smlsl_hi_lane, 0, NONE)
+  BUILTIN_VQ_HSI (QUADOP_LANE, smlsl_hi_laneq, 0, NONE)
+  BUILTIN_VQ_HSI (QUADOPU_LANE, umlsl_hi_lane, 0, NONE)
+  BUILTIN_VQ_HSI (QUADOPU_LANE, umlsl_hi_laneq, 0, NONE)
+
   BUILTIN_VSD_HSI (BINOP, sqdmull, 0, NONE)
   BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_lane, 0, NONE)
   BUILTIN_VSD_HSI (TERNOP_LANE, sqdmull_laneq, 0, NONE)
