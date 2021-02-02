@@ -1,7 +1,7 @@
 fn main() {
     let x = 1;
     {
-        let x = true;
+        let mut x = true;
         {
             x = false;
         }

@@ -44,6 +44,12 @@ UnitType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+UnitType::clone ()
+{
+  return new UnitType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -53,7 +59,16 @@ InferType::accept_vis (TyVisitor &vis)
 std::string
 InferType::as_string () const
 {
-  return "[_]";
+  switch (infer_kind)
+    {
+    case GENERAL:
+      return "T?";
+    case INTEGRAL:
+      return "<integer>";
+    case FLOAT:
+      return "<float>";
+    }
+  return "<infer::error>";
 }
 
 TyBase *
@@ -61,6 +76,13 @@ InferType::combine (TyBase *other)
 {
   InferRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+InferType::clone ()
+{
+  return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
+			get_combined_refs ());
 }
 
 void
@@ -78,8 +100,15 @@ ErrorType::as_string () const
 TyBase *
 ErrorType::combine (TyBase *other)
 {
+  // FIXME
   // rust_error_at ();
   return this;
+}
+
+TyBase *
+ErrorType::clone ()
+{
+  return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
 void
@@ -101,6 +130,14 @@ StructFieldType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+StructFieldType::clone ()
+{
+  return new StructFieldType (get_ref (), get_ty_ref (), get_name (),
+			      get_field_type ()->clone (),
+			      get_combined_refs ());
+}
+
 void
 ADTType::accept_vis (TyVisitor &vis)
 {
@@ -110,17 +147,74 @@ ADTType::accept_vis (TyVisitor &vis)
 std::string
 ADTType::as_string () const
 {
+  if (num_fields () == 0)
+    return identifier;
+
   std::string fields_buffer;
   for (auto &field : fields)
-    fields_buffer += field->as_string () + "\n";
+    fields_buffer += field->as_string () + ", ";
 
-  return identifier + "{\n" + fields_buffer + "\n}";
+  return identifier + "{" + fields_buffer + "}";
 }
 
 TyBase *
 ADTType::combine (TyBase *other)
 {
-  return nullptr;
+  ADTRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+ADTType::clone ()
+{
+  std::vector<StructFieldType *> cloned_fields;
+  for (auto &f : fields)
+    cloned_fields.push_back ((StructFieldType *) f->clone ());
+
+  return new ADTType (get_ref (), get_ty_ref (), get_name (), cloned_fields,
+		      get_combined_refs ());
+}
+
+void
+TupleType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+TupleType::as_string () const
+{
+  std::string fields_buffer;
+  iterate_fields ([&] (TyBase *field) mutable -> bool {
+    fields_buffer += field->as_string ();
+    fields_buffer += ", ";
+    return true;
+  });
+  return "(" + fields_buffer + ")";
+}
+
+TyBase *
+TupleType::get_field (size_t index) const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  TyBase *lookup = nullptr;
+  bool ok = context->lookup_type (fields.at (index), &lookup);
+  rust_assert (ok);
+  return lookup;
+}
+
+TyBase *
+TupleType::combine (TyBase *other)
+{
+  TupleRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+TupleType::clone ()
+{
+  return new TupleType (get_ref (), get_ty_ref (), fields,
+			get_combined_refs ());
 }
 
 void
@@ -135,7 +229,9 @@ FnType::as_string () const
   std::string params_str = "";
   for (auto &param : params)
     {
-      params_str += param->as_string ();
+      auto pattern = param.first;
+      auto ty = param.second;
+      params_str += pattern->as_string () + " " + ty->as_string ();
       params_str += ",";
     }
 
@@ -150,23 +246,16 @@ FnType::combine (TyBase *other)
   return r.combine (other);
 }
 
-void
-ParamType::accept_vis (TyVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-std::string
-ParamType::as_string () const
-{
-  return "(" + identifier + " :" + type->as_string () + ")";
-}
-
 TyBase *
-ParamType::combine (TyBase *other)
+FnType::clone ()
 {
-  ParamRules r (this);
-  return r.combine (other);
+  std::vector<std::pair<HIR::Pattern *, TyBase *> > cloned_params;
+  for (auto &p : params)
+    cloned_params.push_back (
+      std::pair<HIR::Pattern *, TyBase *> (p.first, p.second->clone ()));
+
+  return new FnType (get_ref (), get_ty_ref (), cloned_params,
+		     get_return_type ()->clone (), get_combined_refs ());
 }
 
 void
@@ -178,7 +267,8 @@ ArrayType::accept_vis (TyVisitor &vis)
 std::string
 ArrayType::as_string () const
 {
-  return "[" + type->as_string () + ":" + std::to_string (capacity) + "]";
+  return "[" + get_type ()->as_string () + ":" + std::to_string (capacity)
+	 + "]";
 }
 
 TyBase *
@@ -186,6 +276,23 @@ ArrayType::combine (TyBase *other)
 {
   ArrayRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+ArrayType::get_type () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  TyBase *lookup = nullptr;
+  bool ok = context->lookup_type (element_type_id, &lookup);
+  rust_assert (ok);
+  return lookup;
+}
+
+TyBase *
+ArrayType::clone ()
+{
+  return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
+			get_type ()->clone (), get_combined_refs ());
 }
 
 void
@@ -205,6 +312,12 @@ BoolType::combine (TyBase *other)
 {
   BoolRules r (this);
   return r.combine (other);
+}
+
+TyBase *
+BoolType::clone ()
+{
+  return new BoolType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
 void
@@ -240,6 +353,13 @@ IntType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+IntType::clone ()
+{
+  return new IntType (get_ref (), get_ty_ref (), get_kind (),
+		      get_combined_refs ());
+}
+
 void
 UintType::accept_vis (TyVisitor &vis)
 {
@@ -273,6 +393,13 @@ UintType::combine (TyBase *other)
   return r.combine (other);
 }
 
+TyBase *
+UintType::clone ()
+{
+  return new UintType (get_ref (), get_ty_ref (), get_kind (),
+		       get_combined_refs ());
+}
+
 void
 FloatType::accept_vis (TyVisitor &vis)
 {
@@ -300,37 +427,151 @@ FloatType::combine (TyBase *other)
   return r.combine (other);
 }
 
-void
-TypeCheckCallExpr::visit (FnType &type)
+TyBase *
+FloatType::clone ()
 {
-  if (call.num_params () != type.num_params ())
+  return new FloatType (get_ref (), get_ty_ref (), get_kind (),
+			get_combined_refs ());
+}
+
+void
+USizeType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+USizeType::as_string () const
+{
+  return "usize";
+}
+
+TyBase *
+USizeType::combine (TyBase *other)
+{
+  USizeRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+USizeType::clone ()
+{
+  return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
+ISizeType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ISizeType::as_string () const
+{
+  return "isize";
+}
+
+TyBase *
+ISizeType::combine (TyBase *other)
+{
+  ISizeRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+ISizeType::clone ()
+{
+  return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
+TypeCheckCallExpr::visit (ADTType &type)
+{
+  if (call.num_params () != type.num_fields ())
     {
-      rust_error_at (call.get_locus (), "differing number of arguments");
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_fields ());
       return;
     }
 
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-    TyBase *pt = type.param_at (i);
-    auto t = Resolver::TypeCheckExpr::Resolve (p);
-    if (t == nullptr)
+    StructFieldType *field = type.get_field (i);
+    TyBase *field_tyty = field->get_field_type ();
+
+    TyBase *arg = Resolver::TypeCheckExpr::Resolve (p);
+    if (arg == nullptr)
       {
-	rust_error_at (p->get_locus_slow (), "failed to resolve type");
+	rust_error_at (p->get_locus_slow (), "failed to resolve argument type");
 	return false;
       }
 
-    auto res = pt->combine (t);
+    auto res = field_tyty->combine (arg);
     if (res == nullptr)
       return false;
+
+    delete res;
+    i++;
+    return true;
+  });
+
+  if (i != call.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
+
+  resolved = type.clone ();
+}
+
+void
+TypeCheckCallExpr::visit (FnType &type)
+{
+  if (call.num_params () != type.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_params ());
+      return;
+    }
+
+  size_t i = 0;
+  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
+    auto fnparam = type.param_at (i);
+    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param);
+    if (argument_expr_tyty == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "failed to resolve type for argument expr in CallExpr");
+	return false;
+      }
+
+    auto resolved_argument_type = fnparam.second->combine (argument_expr_tyty);
+    if (resolved_argument_type == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "Type Resolution failure on parameter");
+	return false;
+      }
+
+    context->insert_type (param->get_mappings (), resolved_argument_type);
 
     i++;
     return true;
   });
 
   if (i != call.num_params ())
-    return;
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
 
-  resolved = type.get_return_type ();
+  resolved = type.get_return_type ()->clone ();
 }
 
 } // namespace TyTy

@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-diagnostics.h"
 
-#include <algorithm> // for std::find
-
 namespace Rust {
 // Left binding powers of operations.
 enum binding_powers
@@ -12234,10 +12232,9 @@ Parser<ManagedTokenSource>::null_denotation (
 
 	// HACK: as struct expressions should always be value expressions,
 	// cannot be referenced
-	ParseRestrictions entered_from_unary
-	  = {/* can_be_struct_expr = */ false, /* entered_from_unary = */ true};
-	/*entered_from_unary.entered_from_unary = true;
-	entered_from_unary.can_be_struct_expr = false;*/
+	ParseRestrictions entered_from_unary;
+	entered_from_unary.entered_from_unary = true;
+	entered_from_unary.can_be_struct_expr = false;
 
 	if (lexer.peek_token ()->get_id () == MUT)
 	  {

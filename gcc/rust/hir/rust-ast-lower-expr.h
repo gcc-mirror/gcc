@@ -132,7 +132,46 @@ public:
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringExpr () {}
+  void visit (AST::TupleIndexExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *tuple_expr
+      = ASTLoweringExpr::translate (expr.get_tuple_expr ().get (), &terminated);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TupleIndexExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (tuple_expr),
+				 expr.get_tuple_index (),
+				 std::move (outer_attribs), expr.get_locus ());
+  }
+
+  void visit (AST::TupleExpr &expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+    std::vector<std::unique_ptr<HIR::Expr> > tuple_elements;
+    for (auto &e : expr.get_tuple_elems ())
+      {
+	HIR::Expr *t = ASTLoweringExpr::translate (e.get ());
+	tuple_elements.push_back (std::unique_ptr<HIR::Expr> (t));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TupleExpr (std::move (mapping), std::move (tuple_elements),
+			    std::move (inner_attribs),
+			    std::move (outer_attribs), expr.get_locus ());
+  }
 
   void visit (AST::IfExpr &expr)
   {
@@ -465,6 +504,92 @@ public:
 				  expr.get_locus ());
   }
 
+  void visit (AST::NegationExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::NegationExpr::NegationType type;
+    switch (expr.get_negation_type ())
+      {
+      case AST::NegationExpr::NegationType::NEGATE:
+	type = HIR::NegationExpr::NegationType::NEGATE;
+	break;
+      case AST::NegationExpr::NegationType::NOT:
+	type = HIR::NegationExpr::NegationType::NOT;
+	break;
+      }
+
+    HIR::Expr *negated_value
+      = ASTLoweringExpr::translate (expr.get_negated_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    translated
+      = new HIR::NegationExpr (mapping,
+			       std::unique_ptr<HIR::Expr> (negated_value), type,
+			       std::move (outer_attribs), expr.get_locus ());
+  }
+
+  void visit (AST::CompoundAssignmentExpr &expr)
+  {
+    HIR::ArithmeticOrLogicalExpr::ExprType kind
+      = HIR::ArithmeticOrLogicalExpr::ExprType::ADD;
+    switch (expr.get_expr_type ())
+      {
+      case AST::CompoundAssignmentExpr::ExprType::ADD:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::ADD;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::SUBTRACT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::SUBTRACT;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::MULTIPLY:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::MULTIPLY;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::DIVIDE:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::DIVIDE;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::MODULUS:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::MODULUS;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_AND:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_AND;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_OR:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_OR;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::BITWISE_XOR:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::BITWISE_XOR;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::LEFT_SHIFT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::LEFT_SHIFT;
+	break;
+      case AST::CompoundAssignmentExpr::ExprType::RIGHT_SHIFT:
+	kind = HIR::ArithmeticOrLogicalExpr::ExprType::RIGHT_SHIFT;
+	break;
+      }
+
+    HIR::Expr *asignee_expr
+      = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
+    HIR::Expr *value
+      = ASTLoweringExpr::translate (expr.get_right_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    HIR::Expr *operator_expr
+      = new HIR::ArithmeticOrLogicalExpr (mapping, asignee_expr->clone_expr (),
+					  std::unique_ptr<HIR::Expr> (value),
+					  kind, expr.get_locus ());
+    translated
+      = new HIR::AssignmentExpr (mapping,
+				 std::unique_ptr<HIR::Expr> (asignee_expr),
+				 std::unique_ptr<HIR::Expr> (operator_expr),
+				 expr.get_locus ());
+  }
+
   void visit (AST::StructExprStructFields &struct_expr)
   {
     std::vector<HIR::Attribute> inner_attribs;
@@ -503,6 +628,44 @@ public:
 					 std::move (fields),
 					 struct_expr.get_locus (), base,
 					 inner_attribs, outer_attribs);
+  }
+
+  void visit (AST::GroupedExpr &expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *paren_expr
+      = ASTLoweringExpr::translate (expr.get_expr_in_parens ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::GroupedExpr (mapping, std::unique_ptr<HIR::Expr> (paren_expr),
+			      std::move (inner_attribs),
+			      std::move (outer_attribs), expr.get_locus ());
+  }
+
+  void visit (AST::FieldAccessExpr &expr)
+  {
+    std::vector<HIR::Attribute> inner_attribs;
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *receiver
+      = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    translated
+      = new HIR::FieldAccessExpr (mapping,
+				  std::unique_ptr<HIR::Expr> (receiver),
+				  expr.get_field_name (),
+				  std::move (outer_attribs), expr.get_locus ());
   }
 
 private:

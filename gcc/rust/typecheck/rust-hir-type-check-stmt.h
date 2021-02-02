@@ -49,10 +49,19 @@ public:
 
   void visit (HIR::LetStmt &stmt)
   {
+    infered = new TyTy::UnitType (stmt.get_mappings ().get_hirid ());
+
     TyTy::TyBase *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
-      init_expr_ty
-	= TypeCheckExpr::Resolve (stmt.get_init_expr (), is_final_stmt);
+      {
+	init_expr_ty
+	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), is_final_stmt);
+
+	init_expr_ty = init_expr_ty->clone ();
+	auto ref = init_expr_ty->get_ref ();
+	init_expr_ty->set_ref (stmt.get_mappings ().get_hirid ());
+	init_expr_ty->append_reference (ref);
+      }
 
     TyTy::TyBase *specified_ty = nullptr;
     if (stmt.has_type ())
@@ -69,35 +78,34 @@ public:
 	    return;
 	  }
 
-	context->insert_type (stmt.get_mappings ().get_hirid (), combined);
+	context->insert_type (stmt.get_mappings (), combined);
       }
     else
       {
 	// let x:i32;
 	if (specified_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
-				  specified_ty);
+	    context->insert_type (stmt.get_mappings (), specified_ty);
 	  }
 	// let x = 123;
 	else if (init_expr_ty != nullptr)
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
-				  init_expr_ty);
+	    context->insert_type (stmt.get_mappings (), init_expr_ty);
 	  }
 	// let x;
 	else
 	  {
-	    context->insert_type (stmt.get_mappings ().get_hirid (),
-				  new TyTy::InferType (
-				    stmt.get_mappings ().get_hirid ()));
+	    context->insert_type (
+	      stmt.get_mappings (),
+	      new TyTy::InferType (stmt.get_mappings ().get_hirid (),
+				   TyTy::InferType::InferTypeKind::GENERAL));
 	  }
       }
   }
 
 private:
   TypeCheckStmt (bool is_final_stmt)
-    : TypeCheckBase (), is_final_stmt (is_final_stmt)
+    : TypeCheckBase (), infered (nullptr), is_final_stmt (is_final_stmt)
   {}
 
   TyTy::TyBase *infered;

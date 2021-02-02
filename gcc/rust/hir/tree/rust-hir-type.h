@@ -393,6 +393,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
+  const std::vector<std::unique_ptr<Type> > &get_elems () const
+  {
+    return elems;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -785,6 +791,16 @@ public:
   }
 
   Location get_locus () const { return locus; }
+
+  std::unique_ptr<Type> &get_type ()
+  {
+    rust_assert (param_type != nullptr);
+    return param_type;
+  }
+
+  ParamKind get_param_kind () const { return param_kind; }
+
+  Identifier get_name () const { return name; }
 };
 
 /* A function pointer type - can be created via coercion from function items and
@@ -799,9 +815,7 @@ class BareFunctionType : public TypeNoBounds
   std::vector<MaybeNamedParam> params;
   bool is_variadic;
 
-  // bool has_return_type;
-  // BareFunctionReturnType return_type;
-  std::unique_ptr<TypeNoBounds> return_type; // inlined version
+  std::unique_ptr<Type> return_type; // inlined version
 
   Location locus;
 
@@ -816,7 +830,7 @@ public:
 		    std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
-		    std::unique_ptr<TypeNoBounds> type, Location locus)
+		    std::unique_ptr<Type> type, Location locus)
     : TypeNoBounds (mappings), for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), is_variadic (is_variadic),
@@ -828,8 +842,7 @@ public:
     : TypeNoBounds (other.mappings), for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
       is_variadic (other.is_variadic),
-      return_type (other.return_type->clone_type_no_bounds ()),
-      locus (other.locus)
+      return_type (other.return_type->clone_type ()), locus (other.locus)
   {}
 
   // Overload assignment operator to deep copy
@@ -840,7 +853,7 @@ public:
     function_qualifiers = other.function_qualifiers;
     params = other.params;
     is_variadic = other.is_variadic;
-    return_type = other.return_type->clone_type_no_bounds ();
+    return_type = other.return_type->clone_type ();
     locus = other.locus;
 
     return *this;
@@ -855,6 +868,19 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<MaybeNamedParam> &get_function_params () { return params; }
+  const std::vector<MaybeNamedParam> &get_function_params () const
+  {
+    return params;
+  }
+
+  // TODO: would a "vis_type" be better?
+  std::unique_ptr<Type> &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

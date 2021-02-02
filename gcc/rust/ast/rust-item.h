@@ -1819,13 +1819,14 @@ public:
 	       Visibility vis,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_name (std::move (field_name)), field_type (std::move (field_type))
+      field_name (std::move (field_name)), field_type (std::move (field_type)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor
   StructField (StructField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_name (other.field_name)
+      field_name (other.field_name), node_id (other.node_id)
   {
     // guard to prevent null dereference
     if (other.field_type != nullptr)
@@ -1840,6 +1841,7 @@ public:
     field_name = other.field_name;
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+    node_id = other.node_id;
 
     // guard to prevent null dereference
     if (other.field_type != nullptr)
@@ -1961,6 +1963,7 @@ private:
   std::unique_ptr<Type> field_type;
 
   // should this store location info?
+  NodeId node_id;
 
 public:
   // Returns whether tuple field has outer attributes.
@@ -1974,12 +1977,14 @@ public:
   TupleField (std::unique_ptr<Type> field_type, Visibility vis,
 	      std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_type (std::move (field_type))
+      field_type (std::move (field_type)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor with clone
   TupleField (TupleField const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility)
+    : outer_attrs (other.outer_attrs), visibility (other.visibility),
+      node_id (other.node_id)
   {
     // guard to prevent null dereference (only required if error)
     if (other.field_type != nullptr)
@@ -1993,6 +1998,7 @@ public:
   {
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+    node_id = other.node_id;
 
     // guard to prevent null dereference (only required if error)
     if (other.field_type != nullptr)
@@ -2017,6 +2023,8 @@ public:
   }
 
   std::string as_string () const;
+
+  NodeId get_node_id () const { return node_id; };
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
@@ -2054,6 +2062,15 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<TupleField> &get_fields () { return fields; }
   const std::vector<TupleField> &get_fields () const { return fields; }
+
+  void iterate (std::function<bool (TupleField &)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

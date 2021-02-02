@@ -42,24 +42,36 @@ public:
 
   void visit (HIR::LetStmt &stmt)
   {
+    locus = stmt.get_locus ();
     TyTy::TyBase *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
 					      &resolved_type);
     rust_assert (ok);
 
-    ::Btype *translated_type = TyTyResolveCompile::compile (ctx, resolved_type);
+    translated_type = TyTyResolveCompile::compile (ctx, resolved_type);
+    stmt.get_pattern ()->accept_vis (*this);
+  }
 
-    translated = ctx->get_backend ()->local_variable (
-      fndecl, stmt.get_pattern ()->as_string (), translated_type,
-      NULL /*decl_var*/, false /*address_taken*/, stmt.get_locus ());
+  void visit (HIR::IdentifierPattern &pattern)
+  {
+    if (!pattern.is_mut)
+      translated_type = ctx->get_backend ()->immutable_type (translated_type);
+
+    translated
+      = ctx->get_backend ()->local_variable (fndecl, pattern.variable_ident,
+					     translated_type, NULL /*decl_var*/,
+					     false /*address_taken*/, locus);
   }
 
 private:
   CompileVarDecl (Context *ctx, ::Bfunction *fndecl)
-    : HIRCompileBase (ctx), fndecl (fndecl), translated (nullptr)
+    : HIRCompileBase (ctx), fndecl (fndecl), translated_type (nullptr),
+      translated (nullptr)
   {}
 
   ::Bfunction *fndecl;
+  ::Btype *translated_type;
+  Location locus;
   ::Bvariable *translated;
 };
 

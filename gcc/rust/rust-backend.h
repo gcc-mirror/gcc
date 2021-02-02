@@ -98,6 +98,9 @@ public:
   // Get the unnamed boolean type.
   virtual Btype *bool_type () = 0;
 
+  // Get the Host pointer size in bits
+  virtual int get_pointer_size () = 0;
+
   // Get an unnamed integer type with the given signedness and number
   // of bits.
   virtual Btype *integer_type (bool is_unsigned, int bits) = 0;
@@ -111,6 +114,9 @@ public:
 
   // Get a pointer type.
   virtual Btype *pointer_type (Btype *to_type) = 0;
+
+  // make type immutable
+  virtual Btype *immutable_type (Btype *base) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
@@ -253,6 +259,8 @@ public:
 
   // Create a nil pointer expression.
   virtual Bexpression *nil_pointer_expression () = 0;
+
+  virtual Bexpression *unit_expression () = 0;
 
   // Create a reference to a variable.
   virtual Bexpression *var_expression (Bvariable *var, Location) = 0;

@@ -33,12 +33,85 @@ public:
   {
     ASTLoweringType resolver;
     type->accept_vis (resolver);
+
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (),
+      type->get_locus_slow ());
+
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringType () {}
+  void visit (AST::BareFunctionType &fntype)
+  {
+    bool is_variadic = false;
+    std::vector<HIR::LifetimeParam> lifetime_params;
+    HIR::FunctionQualifiers qualifiers (
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
 
-  virtual void visit (AST::TypePathSegment &segment)
+    std::vector<HIR::MaybeNamedParam> named_params;
+    for (auto &param : fntype.get_function_params ())
+      {
+	HIR::MaybeNamedParam::ParamKind kind;
+	switch (param.get_param_kind ())
+	  {
+	  case AST::MaybeNamedParam::ParamKind::UNNAMED:
+	    kind = HIR::MaybeNamedParam::ParamKind::UNNAMED;
+	    break;
+	  case AST::MaybeNamedParam::ParamKind::IDENTIFIER:
+	    kind = HIR::MaybeNamedParam::ParamKind::IDENTIFIER;
+	    break;
+	  case AST::MaybeNamedParam::ParamKind::WILDCARD:
+	    kind = HIR::MaybeNamedParam::ParamKind::WILDCARD;
+	    break;
+	  }
+
+	HIR::Type *param_type
+	  = ASTLoweringType::translate (param.get_type ().get ());
+
+	HIR::MaybeNamedParam p (param.get_name (), kind,
+				std::unique_ptr<HIR::Type> (param_type),
+				param.get_locus ());
+	named_params.push_back (std::move (p));
+      }
+
+    HIR::Type *return_type = nullptr;
+    if (fntype.has_return_type ())
+      {
+	return_type
+	  = ASTLoweringType::translate (fntype.get_return_type ().get ());
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, fntype.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::BareFunctionType (
+      std::move (mapping), std::move (lifetime_params), std::move (qualifiers),
+      std::move (named_params), is_variadic,
+      std::unique_ptr<HIR::Type> (return_type), fntype.get_locus ());
+  }
+
+  void visit (AST::TupleType &tuple)
+  {
+    std::vector<std::unique_ptr<HIR::Type> > elems;
+    for (auto &e : tuple.get_elems ())
+      {
+	HIR::Type *t = ASTLoweringType::translate (e.get ());
+	elems.push_back (std::unique_ptr<HIR::Type> (t));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, tuple.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::TupleType (std::move (mapping), std::move (elems),
+				     tuple.get_locus ());
+  }
+
+  void visit (AST::TypePathSegment &segment)
   {
     HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
     translated_segment
@@ -47,7 +120,7 @@ public:
 				  segment.get_locus ());
   }
 
-  virtual void visit (AST::TypePath &path)
+  void visit (AST::TypePath &path)
   {
     std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
 
@@ -100,10 +173,9 @@ public:
   }
 
 private:
-  ASTLoweringType () : translated (nullptr) {}
+  ASTLoweringType () : translated (nullptr), translated_segment (nullptr) {}
 
   HIR::Type *translated;
-
   HIR::TypePathSegment *translated_segment;
 };
 

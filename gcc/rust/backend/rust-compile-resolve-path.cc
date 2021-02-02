@@ -28,24 +28,43 @@ void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
   // need to look up the reference for this identifier
-  NodeId ref_node_id;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (ctx->get_resolver ()->lookup_resolved_name (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
-      rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
-      return;
+      Resolver::Definition def;
+      if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "unknown reference for resolved name");
+	  return;
+	}
+      ref_node_id = def.parent;
     }
+
+  // this can fail because it might be a Constructor for something
+  // in that case the caller should attempt ResolvePathType::Compile
+  if (ref_node_id == UNKNOWN_NODEID)
+    return;
 
   HirId ref;
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
     {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      rust_error_at (expr.get_locus (), "reverse call path lookup failure");
       return;
     }
 
-  // assumes paths are functions for now
-  Bfunction *fn;
+  // this might be a variable reference or a function reference
+  Bvariable *var = nullptr;
+  if (ctx->lookup_var_decl (ref, &var))
+    {
+      resolved = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+      return;
+    }
+
+  // must be a function call
+  Bfunction *fn = nullptr;
   if (!ctx->lookup_function_decl (ref, &fn))
     {
       // this might fail because its a forward decl so we can attempt to
@@ -54,14 +73,14 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 	expr.get_mappings ().get_crate_num (), ref);
       if (resolved_item == nullptr)
 	{
-	  rust_fatal_error (expr.get_locus (), "failed to lookup forward decl");
+	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");
 	  return;
 	}
 
       CompileItem::compile (resolved_item, ctx);
       if (!ctx->lookup_function_decl (ref, &fn))
 	{
-	  rust_fatal_error (expr.get_locus (), "forward decl was not compiled");
+	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
 	  return;
 	}
     }
@@ -78,7 +97,6 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
   if (!ctx->get_resolver ()->lookup_resolved_type (
 	expr.get_mappings ().get_nodeid (), &ref_node_id))
     {
-      rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
       return;
     }
 
@@ -86,14 +104,14 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
   if (!ctx->get_mappings ()->lookup_node_to_hir (
 	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
     {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      rust_error_at (expr.get_locus (), "reverse lookup failure");
       return;
     }
 
   // assumes paths are functions for now
   if (!ctx->lookup_compiled_types (ref, &resolved))
     {
-      rust_fatal_error (expr.get_locus (), "forward decl was not compiled");
+      rust_error_at (expr.get_locus (), "forward decl was not compiled");
       return;
     }
 }

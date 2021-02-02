@@ -1373,6 +1373,8 @@ public:
     return tuple_elems;
   }
 
+  bool is_unit () const { return tuple_elems.size () == 0; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1641,6 +1643,8 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Identifier get_field_name () const { return field_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

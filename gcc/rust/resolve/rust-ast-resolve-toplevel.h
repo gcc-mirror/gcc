@@ -36,6 +36,13 @@ public:
 
   ~ResolveTopLevel () {}
 
+  void visit (AST::TupleStruct &struct_decl)
+  {
+    resolver->get_type_scope ().insert (struct_decl.get_identifier (),
+					struct_decl.get_node_id (),
+					struct_decl.get_locus ());
+  }
+
   void visit (AST::StructStruct &struct_decl)
   {
     resolver->get_type_scope ().insert (struct_decl.get_identifier (),
@@ -50,6 +57,7 @@ public:
     resolver->insert_new_definition (var.get_node_id (),
 				     Definition{var.get_node_id (),
 						var.get_node_id ()});
+    resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
   }
 
   void visit (AST::ConstantItem &constant)
@@ -67,6 +75,9 @@ public:
     resolver->get_name_scope ().insert (function.get_function_name (),
 					function.get_node_id (),
 					function.get_locus ());
+    resolver->insert_new_definition (function.get_node_id (),
+				     Definition{function.get_node_id (),
+						function.get_node_id ()});
 
     // if this does not get a reference it will be determined to be unused
     // lets give it a fake reference to itself

@@ -32,7 +32,6 @@ public:
   {
     ResolvePathRef resolver (ctx);
     expr->accept_vis (resolver);
-    rust_assert (resolver.resolved != nullptr);
     return resolver.resolved;
   }
 
@@ -51,7 +50,6 @@ public:
   {
     ResolvePathType resolver (ctx);
     expr->accept_vis (resolver);
-    rust_assert (resolver.resolved != nullptr);
     return resolver.resolved;
   }
 

@@ -113,7 +113,7 @@ Resolver::insert_builtin_types (Rib *r)
 		    Linemap::predeclared_location ());
 }
 
-std::vector<AST::TypePath *> &
+std::vector<AST::Type *> &
 Resolver::get_builtin_types ()
 {
   return builtins;
@@ -146,6 +146,8 @@ Resolver::generate_builtins ()
     = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
   auto f64
     = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
+  auto usize = new TyTy::USizeType (mappings->get_next_hir_id ());
+  auto isize = new TyTy::ISizeType (mappings->get_next_hir_id ());
 
   MKBUILTIN_TYPE ("u8", builtins, u8);
   MKBUILTIN_TYPE ("u16", builtins, u16);
@@ -160,6 +162,18 @@ Resolver::generate_builtins ()
   MKBUILTIN_TYPE ("bool", builtins, rbool);
   MKBUILTIN_TYPE ("f32", builtins, f32);
   MKBUILTIN_TYPE ("f64", builtins, f64);
+  MKBUILTIN_TYPE ("usize", builtins, usize);
+  MKBUILTIN_TYPE ("isize", builtins, isize);
+
+  // unit type ()
+  TyTy::UnitType *unit_tyty = new TyTy::UnitType (mappings->get_next_hir_id ());
+  std::vector<std::unique_ptr<AST::Type> > elems;
+  AST::TupleType *unit_type
+    = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());
+  builtins.push_back (unit_type);
+  tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
+			 unit_tyty);
+  set_unit_type_node_id (unit_type->get_node_id ());
 }
 
 void
@@ -306,6 +320,21 @@ void
 ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
   ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+}
+
+void
+ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
+{
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+}
+
+void
+ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
+{
+  AST::IdentifierExpr expr (field.get_field_name (), field.get_locus ());
+  expr.set_node_id (field.get_node_id ());
+
+  ResolveExpr::go (&expr, field.get_node_id ());
 }
 
 } // namespace Resolver

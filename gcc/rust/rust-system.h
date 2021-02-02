@@ -20,6 +20,7 @@
 #ifndef RUST_SYSTEM_H
 #define RUST_SYSTEM_H
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 
 /* Define this so that inttypes.h defines the PRI?64 macros even
@@ -30,7 +31,6 @@
 
 // These must be included before the #poison declarations in system.h.
 
-#include <algorithm>
 #include <string>
 #include <list>
 #include <map>

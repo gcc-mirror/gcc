@@ -24,6 +24,7 @@
 #include "rust-compile-var-decl.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
@@ -31,41 +32,38 @@ namespace Compile {
 class CompileItem : public HIRCompileBase
 {
 public:
-  static void compile (HIR::Item *item, Context *ctx)
+  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true)
   {
-    CompileItem compiler (ctx);
+    CompileItem compiler (ctx, compile_fns);
     item->accept_vis (compiler);
   }
 
-  virtual ~CompileItem () {}
+  void visit (HIR::TupleStruct &struct_decl)
+  {
+    TyTy::TyBase *resolved = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_decl.get_mappings ().get_hirid (), &resolved))
+      {
+	rust_fatal_error (struct_decl.get_locus (),
+			  "Failed to lookup type for struct decl");
+	return;
+      }
+
+    TyTyResolveCompile::compile (ctx, resolved);
+  }
 
   void visit (HIR::StructStruct &struct_decl)
   {
-    std::vector<Backend::Btyped_identifier> fields;
-    struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
-      TyTy::TyBase *resolved_type = nullptr;
-      bool ok
-	= ctx->get_tyctx ()->lookup_type (field.get_mappings ().get_hirid (),
-					  &resolved_type);
-      rust_assert (ok);
+    TyTy::TyBase *resolved = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_decl.get_mappings ().get_hirid (), &resolved))
+      {
+	rust_fatal_error (struct_decl.get_locus (),
+			  "Failed to lookup type for struct decl");
+	return;
+      }
 
-      Btype *compiled_field_ty
-	= TyTyCompile::compile (ctx->get_backend (), resolved_type);
-
-      Backend::Btyped_identifier f (field.field_name, compiled_field_ty,
-				    field.get_locus ());
-      fields.push_back (std::move (f));
-      return true;
-    });
-
-    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
-    Btype *named_struct
-      = ctx->get_backend ()->named_type (struct_decl.get_identifier (),
-					 struct_type_record,
-					 struct_decl.get_locus ());
-    ctx->push_type (named_struct);
-    ctx->insert_compiled_type (struct_decl.get_mappings ().get_hirid (),
-			       named_struct);
+    TyTyResolveCompile::compile (ctx, resolved);
   }
 
   void visit (HIR::StaticItem &var)
@@ -116,6 +114,9 @@ public:
 
   void visit (HIR::Function &function)
   {
+    if (!compile_fns)
+      return;
+
     // items can be forward compiled which means we may not need to invoke this
     // code
     Bfunction *lookup = nullptr;
@@ -127,16 +128,23 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fnType;
+    TyTy::TyBase *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
-					 &fnType))
+					 &fntype_tyty))
       {
 	rust_fatal_error (function.locus, "failed to lookup function type");
 	return;
       }
 
+    if (fntype_tyty->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (function.get_locus (), "invalid TyTy for function item");
+	return;
+      }
+
+    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
     // convert to the actual function type
-    auto compiled_fn_type = TyTyCompile::compile (ctx->get_backend (), fnType);
+    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
     bool is_main_fn = function.function_name.compare ("main") == 0;
@@ -159,18 +167,34 @@ public:
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
-    TyTy::TyBase *tyret = TyTyExtractRetFromFnType::compile (fnType);
-    std::vector<TyTy::ParamType *> typarams
-      = TyTyExtractParamsFromFnType::compile (fnType);
+
+    TyTy::TyBase *tyret = fntype->return_type ();
     std::vector<Bvariable *> param_vars;
 
-    for (auto &it : typarams)
+    size_t i = 0;
+    for (auto &it : fntype->get_params ())
       {
-	auto compiled_param
-	  = TyTyCompileParam::compile (ctx->get_backend (), fndecl, it);
-	param_vars.push_back (compiled_param);
+	HIR::FunctionParam &referenced_param = function.function_params.at (i);
+	auto param_tyty = it.second;
+	auto compiled_param_type
+	  = TyTyResolveCompile::compile (ctx, param_tyty);
 
-	ctx->insert_var_decl (it->get_ref (), compiled_param);
+	Location param_locus
+	  = ctx->get_mappings ()->lookup_location (param_tyty->get_ref ());
+	Bvariable *compiled_param_var
+	  = CompileFnParam::compile (ctx, fndecl, &referenced_param,
+				     compiled_param_type, param_locus);
+	if (compiled_param_var == nullptr)
+	  {
+	    rust_error_at (param_locus, "failed to compile parameter variable");
+	    return;
+	  }
+
+	param_vars.push_back (compiled_param_var);
+
+	ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
+			      compiled_param_var);
+	i++;
       }
 
     if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
@@ -226,7 +250,7 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_function_return_type ())
       {
-	Btype *return_type = TyTyCompile::compile (ctx->get_backend (), tyret);
+	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -246,7 +270,7 @@ public:
       return true;
     });
 
-    if (function_body->has_expr ())
+    if (function_body->has_expr () && function_body->tail_expr_reachable ())
       {
 	// the previous passes will ensure this is a valid return
 	// dead code elimination should remove any bad trailing expressions
@@ -277,7 +301,11 @@ public:
   }
 
 private:
-  CompileItem (Context *ctx) : HIRCompileBase (ctx) {}
+  CompileItem (Context *ctx, bool compile_fns)
+    : HIRCompileBase (ctx), compile_fns (compile_fns)
+  {}
+
+  bool compile_fns;
 };
 
 } // namespace Compile

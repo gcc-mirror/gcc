@@ -26,6 +26,7 @@
 #include "rust-backend.h"
 #include "rust-compile-tyty.h"
 #include "rust-ast-full.h"
+#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Compile {
@@ -223,22 +224,109 @@ public:
 
   void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::UnitType &type) override { gcc_unreachable (); }
-
   void visit (TyTy::InferType &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::FnType &type) override { gcc_unreachable (); }
 
   void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
 
-  void visit (TyTy::ParamType &type) override { gcc_unreachable (); }
+  void visit (TyTy::FnType &type) override
+  {
+    Backend::Btyped_identifier receiver;
+    std::vector<Backend::Btyped_identifier> parameters;
+    std::vector<Backend::Btyped_identifier> results;
+
+    if (!type.get_return_type ()->is_unit ())
+      {
+	auto hir_type = type.get_return_type ();
+	auto ret = TyTyResolveCompile::compile (ctx, hir_type);
+	results.push_back (Backend::Btyped_identifier (
+	  "_", ret,
+	  ctx->get_mappings ()->lookup_location (hir_type->get_ref ())));
+      }
+
+    for (auto &param_pair : type.get_params ())
+      {
+	auto param_tyty = param_pair.second;
+	auto compiled_param_type
+	  = TyTyResolveCompile::compile (ctx, param_tyty);
+
+	auto compiled_param = Backend::Btyped_identifier (
+	  param_pair.first->as_string (), compiled_param_type,
+	  ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
+
+	parameters.push_back (compiled_param);
+      }
+
+    translated = ctx->get_backend ()->function_type (
+      receiver, parameters, results, NULL,
+      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+  }
+
+  void visit (TyTy::UnitType &type) override
+  {
+    translated = ctx->get_backend ()->void_type ();
+  }
 
   void visit (TyTy::ADTType &type) override
   {
-    ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
-    rust_assert (ok);
-    translated = compiled_type;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
+    if (ok)
+      return;
+
+    // create implicit struct
+    std::vector<Backend::Btyped_identifier> fields;
+    for (size_t i = 0; i < type.num_fields (); i++)
+      {
+	TyTy::StructFieldType *field = type.get_field (i);
+	Btype *compiled_field_ty
+	  = TyTyCompile::compile (ctx->get_backend (),
+				  field->get_field_type ());
+
+	Backend::Btyped_identifier f (field->get_name (), compiled_field_ty,
+				      ctx->get_mappings ()->lookup_location (
+					type.get_ty_ref ()));
+	fields.push_back (std::move (f));
+      }
+
+    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *named_struct
+      = ctx->get_backend ()->named_type (type.get_name (), struct_type_record,
+					 ctx->get_mappings ()->lookup_location (
+					   type.get_ty_ref ()));
+
+    ctx->push_type (named_struct);
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
+    translated = named_struct;
+  }
+
+  void visit (TyTy::TupleType &type) override
+  {
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
+    if (ok)
+      return;
+
+    // create implicit struct
+    std::vector<Backend::Btyped_identifier> fields;
+    for (size_t i = 0; i < type.num_fields (); i++)
+      {
+	TyTy::TyBase *field = type.get_field (i);
+	Btype *compiled_field_ty
+	  = TyTyCompile::compile (ctx->get_backend (), field);
+
+	Backend::Btyped_identifier f (std::to_string (i), compiled_field_ty,
+				      ctx->get_mappings ()->lookup_location (
+					type.get_ty_ref ()));
+	fields.push_back (std::move (f));
+      }
+
+    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *named_struct
+      = ctx->get_backend ()->named_type (type.as_string (), struct_type_record,
+					 ctx->get_mappings ()->lookup_location (
+					   type.get_ty_ref ()));
+
+    ctx->push_type (named_struct);
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
+    translated = named_struct;
   }
 
   void visit (TyTy::ArrayType &type) override
@@ -257,7 +345,7 @@ public:
   void visit (TyTy::BoolType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -265,7 +353,7 @@ public:
   void visit (TyTy::IntType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -273,7 +361,7 @@ public:
   void visit (TyTy::UintType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }
@@ -281,7 +369,23 @@ public:
   void visit (TyTy::FloatType &type) override
   {
     ::Btype *compiled_type = nullptr;
-    bool ok = ctx->lookup_compiled_types (type.get_ref (), &compiled_type);
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
+
+  void visit (TyTy::USizeType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
+
+  void visit (TyTy::ISizeType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
   }

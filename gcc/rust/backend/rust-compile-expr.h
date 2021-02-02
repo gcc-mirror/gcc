@@ -38,7 +38,49 @@ public:
     return compiler.translated;
   }
 
-  virtual ~CompileExpr () {}
+  void visit (HIR::TupleIndexExpr &expr)
+  {
+    HIR::Expr *tuple_expr = expr.get_tuple_expr ().get ();
+    TupleIndex index = expr.get_tuple_index ();
+
+    Bexpression *receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
+    translated
+      = ctx->get_backend ()->struct_field_expression (receiver_ref, index,
+						      expr.get_locus ());
+  }
+
+  void visit (HIR::TupleExpr &expr)
+  {
+    if (expr.is_unit ())
+      {
+	translated = ctx->get_backend ()->unit_expression ();
+	return;
+      }
+
+    TyTy::TyBase *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &tyty))
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "did not resolve type for this TupleExpr");
+	return;
+      }
+
+    Btype *tuple_type = TyTyResolveCompile::compile (ctx, tyty);
+    rust_assert (tuple_type != nullptr);
+
+    // this assumes all fields are in order from type resolution
+    std::vector<Bexpression *> vals;
+    for (auto &elem : expr.get_tuple_elems ())
+      {
+	auto e = CompileExpr::Compile (elem.get (), ctx);
+	vals.push_back (e);
+      }
+
+    translated
+      = ctx->get_backend ()->constructor_expression (tuple_type, vals,
+						     expr.get_locus ());
+  }
 
   void visit (HIR::ReturnExpr &expr)
   {
@@ -55,24 +97,7 @@ public:
     ctx->add_statement (s);
   }
 
-  void visit (HIR::CallExpr &expr)
-  {
-    Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
-    rust_assert (fn != nullptr);
-
-    std::vector<Bexpression *> args;
-    expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-      Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-      rust_assert (compiled_expr != nullptr);
-      args.push_back (compiled_expr);
-      return true;
-    });
-
-    auto fncontext = ctx->peek_fn ();
-    translated
-      = ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
-					      nullptr, expr.get_locus ());
-  }
+  void visit (HIR::CallExpr &expr);
 
   void visit (HIR::IdentifierExpr &expr)
   {
@@ -84,10 +109,6 @@ public:
 	rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
 	return;
       }
-
-    printf ("have ast node id %u ref %u for expr [%s]\n",
-	    expr.get_mappings ().get_nodeid (), ref_node_id,
-	    expr.as_string ().c_str ());
 
     // these ref_node_ids will resolve to a pattern declaration but we are
     // interested in the definition that this refers to get the parent id
@@ -106,35 +127,45 @@ public:
 	return;
       }
 
-    // this could be a constant reference
-    if (ctx->lookup_const_decl (ref, &translated))
-      return;
-
-    // must be an identifier
+    Bfunction *fn = nullptr;
     Bvariable *var = nullptr;
-    if (!ctx->lookup_var_decl (ref, &var))
+    if (ctx->lookup_const_decl (ref, &translated))
       {
-	rust_fatal_error (expr.get_locus (),
-			  "failed to lookup compiled variable");
 	return;
       }
-
-    translated = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+    else if (ctx->lookup_function_decl (ref, &fn))
+      {
+	translated
+	  = ctx->get_backend ()->function_code_expression (fn,
+							   expr.get_locus ());
+      }
+    else if (ctx->lookup_var_decl (ref, &var))
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (var, expr.get_locus ());
+      }
+    else
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "failed to lookup compiled reference");
+      }
   }
 
   void visit (HIR::LiteralExpr &expr)
   {
+    auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
       {
 	case HIR::Literal::BOOL: {
-	  bool bval = expr.as_string ().compare ("true") == 0;
+	  bool bval = literal_value->as_string ().compare ("true") == 0;
 	  translated = ctx->get_backend ()->boolean_constant_expression (bval);
 	}
 	return;
 
 	case HIR::Literal::INT: {
 	  mpz_t ival;
-	  if (mpz_init_set_str (ival, expr.as_string ().c_str (), 10) != 0)
+	  if (mpz_init_set_str (ival, literal_value->as_string ().c_str (), 10)
+	      != 0)
 	    {
 	      rust_fatal_error (expr.get_locus (), "bad number in literal");
 	      return;
@@ -157,7 +188,7 @@ public:
 
 	case HIR::Literal::FLOAT: {
 	  mpfr_t fval;
-	  if (mpfr_init_set_str (fval, expr.as_string ().c_str (), 10,
+	  if (mpfr_init_set_str (fval, literal_value->as_string ().c_str (), 10,
 				 MPFR_RNDN)
 	      != 0)
 	    {
@@ -357,6 +388,25 @@ public:
 							 expr.get_locus ());
   }
 
+  void visit (HIR::NegationExpr &expr)
+  {
+    Operator op (OPERATOR_INVALID);
+    switch (expr.get_negation_type ())
+      {
+      case HIR::NegationExpr::NegationType::NEGATE:
+	op = OPERATOR_MINUS;
+	break;
+
+      case HIR::NegationExpr::NegationType::NOT:
+	op = OPERATOR_NOT;
+	break;
+      }
+
+    Bexpression *negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
+    translated = ctx->get_backend ()->unary_expression (op, negated_expr,
+							expr.get_locus ());
+  }
+
   void visit (HIR::IfExpr &expr)
   {
     auto stmt = CompileConditionalBlocks::compile (&expr, ctx);
@@ -399,6 +449,36 @@ public:
     translated
       = ctx->get_backend ()->constructor_expression (type, vals,
 						     struct_expr.get_locus ());
+  }
+
+  void visit (HIR::GroupedExpr &expr)
+  {
+    translated = CompileExpr::Compile (expr.get_expr_in_parens ().get (), ctx);
+  }
+
+  void visit (HIR::FieldAccessExpr &expr)
+  {
+    // resolve the receiver back to ADT type
+    TyTy::TyBase *receiver = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
+      {
+	rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+		       "unresolved type for receiver");
+	return;
+      }
+    rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
+
+    TyTy::ADTType *adt = (TyTy::ADTType *) receiver;
+    size_t index = 0;
+    adt->get_field (expr.get_field_name (), &index);
+
+    Bexpression *struct_ref
+      = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
+
+    translated
+      = ctx->get_backend ()->struct_field_expression (struct_ref, index,
+						      expr.get_locus ());
   }
 
 private:

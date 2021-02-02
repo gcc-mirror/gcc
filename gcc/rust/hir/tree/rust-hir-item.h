@@ -404,13 +404,13 @@ public:
 // A function parameter
 struct FunctionParam
 {
-public:
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
 
   Location locus;
   Analysis::NodeMapping mappings;
 
+public:
   FunctionParam (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Pattern> param_name,
 		 std::unique_ptr<Type> param_type, Location locus)
@@ -448,7 +448,7 @@ public:
 
   Type *get_type () { return type.get (); }
 
-  Analysis::NodeMapping *get_mappings () { return &mappings; }
+  Analysis::NodeMapping &get_mappings () { return mappings; }
 };
 
 // Visibility of item - if the item has it, then it is some form of public
@@ -1604,7 +1604,9 @@ private:
 
   std::unique_ptr<Type> field_type;
 
-  // should this store location info?
+  Location locus;
+
+  Analysis::NodeMapping mappings;
 
 public:
   // Returns whether tuple field has outer attributes.
@@ -1615,16 +1617,18 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   // Complete constructor
-  TupleField (std::unique_ptr<Type> field_type, Visibility vis,
+  TupleField (Analysis::NodeMapping mapping, std::unique_ptr<Type> field_type,
+	      Visibility vis, Location locus,
 	      std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_type (std::move (field_type))
+      field_type (std::move (field_type)), locus (locus), mappings (mapping)
   {}
 
   // Copy constructor with clone
   TupleField (TupleField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_type (other.field_type->clone_type ())
+      field_type (other.field_type->clone_type ()), locus (other.locus),
+      mappings (other.mappings)
   {}
 
   ~TupleField () = default;
@@ -1635,6 +1639,8 @@ public:
     field_type = other.field_type->clone_type ();
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+    locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -1646,13 +1652,13 @@ public:
   // Returns whether tuple field is in an error state.
   bool is_error () const { return field_type == nullptr; }
 
-  // Creates an error state tuple field.
-  static TupleField create_error ()
-  {
-    return TupleField (nullptr, Visibility::create_error ());
-  }
-
   std::string as_string () const;
+
+  Analysis::NodeMapping get_mappings () { return mappings; }
+
+  Location get_locus () const { return locus; }
+
+  std::unique_ptr<HIR::Type> &get_field_type () { return field_type; }
 };
 
 // Rust tuple declared using struct keyword HIR node
@@ -1676,6 +1682,18 @@ public:
   {}
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<TupleField> &get_fields () { return fields; }
+  const std::vector<TupleField> &get_fields () const { return fields; }
+
+  void iterate (std::function<bool (TupleField &)> cb)
+  {
+    for (auto &field : fields)
+      {
+	if (!cb (field))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

@@ -44,6 +44,10 @@ public:
 
   void visit (HIR::StructExprFieldIdentifierValue &field);
 
+  void visit (HIR::StructExprFieldIndexValue &field);
+
+  void visit (HIR::StructExprFieldIdentifier &field);
+
 private:
   TypeCheckStructExpr ()
     : TypeCheckBase (), resolved (nullptr), struct_path_resolved (nullptr)
@@ -53,6 +57,7 @@ private:
   TyTy::ADTType *struct_path_resolved;
   TyTy::TyBase *resolved_field;
   std::set<std::string> fields_assigned;
+  std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
 };
 
 } // namespace Resolver

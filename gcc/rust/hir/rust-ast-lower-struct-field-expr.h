@@ -34,10 +34,13 @@ public:
     field->accept_vis (compiler);
     rust_assert (compiler.translated != nullptr);
 
-    // compiler.mappings->insert_hir_expr (
-    //   compiler.translated->get_mappings ().get_crate_num (),
-    //   compiler.translated->get_mappings ().get_hirid (),
-    //   compiler.translated);
+    compiler.mappings->insert_hir_struct_field (
+      compiler.translated->get_mappings ().get_crate_num (),
+      compiler.translated->get_mappings ().get_hirid (), compiler.translated);
+    compiler.mappings->insert_location (
+      compiler.translated->get_mappings ().get_crate_num (),
+      compiler.translated->get_mappings ().get_hirid (),
+      field->get_locus_slow ());
 
     return compiler.translated;
   }
@@ -45,6 +48,10 @@ public:
   ~ASTLowerStructExprField () {}
 
   void visit (AST::StructExprFieldIdentifierValue &field);
+
+  void visit (AST::StructExprFieldIndexValue &field);
+
+  void visit (AST::StructExprFieldIdentifier &field);
 
 private:
   ASTLowerStructExprField () : translated (nullptr) {}

@@ -33,10 +33,11 @@ public:
 
   ~TypeCheckContext ();
 
+  bool lookup_builtin (NodeId id, TyTy::TyBase **type);
   bool lookup_builtin (std::string name, TyTy::TyBase **type);
   void insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type);
 
-  void insert_type (HirId id, TyTy::TyBase *type);
+  void insert_type (const Analysis::NodeMapping &mappings, TyTy::TyBase *type);
   bool lookup_type (HirId id, TyTy::TyBase **type);
 
   void insert_type_by_node_id (NodeId ref, HirId id);
@@ -45,6 +46,15 @@ public:
   TyTy::TyBase *peek_return_type ();
   void push_return_type (TyTy::TyBase *return_type);
   void pop_return_type ();
+
+  void iterate (std::function<bool (HirId, TyTy::TyBase *)> cb)
+  {
+    for (auto it = resolved.begin (); it != resolved.end (); it++)
+      {
+	if (!cb (it->first, it->second))
+	  return;
+      }
+  }
 
 private:
   TypeCheckContext ();

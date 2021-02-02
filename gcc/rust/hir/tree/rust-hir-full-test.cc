@@ -2033,67 +2033,6 @@ ErrorPropagationExpr::as_string () const
 }
 
 std::string
-CompoundAssignmentExpr::as_string () const
-{
-  std::string operator_str;
-  operator_str.reserve (1);
-
-  // get operator string
-  switch (expr_type)
-    {
-    case ADD:
-      operator_str = "+";
-      break;
-    case SUBTRACT:
-      operator_str = "-";
-      break;
-    case MULTIPLY:
-      operator_str = "*";
-      break;
-    case DIVIDE:
-      operator_str = "/";
-      break;
-    case MODULUS:
-      operator_str = "%";
-      break;
-    case BITWISE_AND:
-      operator_str = "&";
-      break;
-    case BITWISE_OR:
-      operator_str = "|";
-      break;
-    case BITWISE_XOR:
-      operator_str = "^";
-      break;
-    case LEFT_SHIFT:
-      operator_str = "<<";
-      break;
-    case RIGHT_SHIFT:
-      operator_str = ">>";
-      break;
-    default:
-      operator_str = "invalid operator. wtf";
-      break;
-    }
-
-  operator_str += "=";
-
-  std::string str ("CompoundAssignmentExpr: ");
-  if (main_or_left_expr == nullptr || right_expr == nullptr)
-    {
-      str += "error. this is probably a parsing failure.";
-    }
-  else
-    {
-      str += "\n left: " + main_or_left_expr->as_string ();
-      str += "\n right: " + right_expr->as_string ();
-      str += "\n operator: " + operator_str;
-    }
-
-  return str;
-}
-
-std::string
 ArithmeticOrLogicalExpr::as_string () const
 {
   std::string operator_str;
@@ -2133,23 +2072,15 @@ ArithmeticOrLogicalExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      operator_str = "invalid operator. wtf";
+      gcc_unreachable ();
       break;
     }
 
-  std::string str ("ArithmeticOrLogicalExpr: ");
-  if (main_or_left_expr == nullptr || right_expr == nullptr)
-    {
-      str += "error. this is probably a parsing failure.";
-    }
-  else
-    {
-      str += main_or_left_expr->as_string () + " ";
-      str += operator_str + " ";
-      str += right_expr->as_string ();
-    }
+  std::string str = main_or_left_expr->as_string () + " ";
+  str += operator_str + " ";
+  str += right_expr->as_string ();
 
-  return str + "::" + get_mappings ().as_string ();
+  return "( " + str + " (" + get_mappings ().as_string () + "))";
 }
 
 std::string
@@ -5236,12 +5167,6 @@ TypeCastExpr::accept_vis (HIRVisitor &vis)
 
 void
 AssignmentExpr::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-CompoundAssignmentExpr::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

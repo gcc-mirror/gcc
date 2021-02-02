@@ -40,11 +40,12 @@ public:
 
   void visit (HIR::LiteralExpr &expr)
   {
+    auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
       {
 	case HIR::Literal::LitType::INT: {
 	  ok = true;
-	  std::stringstream ss (expr.as_string ());
+	  std::stringstream ss (literal_value->as_string ());
 	  ss >> result;
 	}
 	break;
@@ -70,18 +71,68 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated != nullptr)
-      resolver.context->insert_type (type->get_mappings ().get_hirid (),
-				     resolver.translated);
+      {
+	resolver.context->insert_type (type->get_mappings (),
+				       resolver.translated);
+      }
 
     return resolver.translated;
   }
 
+  void visit (HIR::BareFunctionType &fntype)
+  {
+    TyTy::TyBase *return_type
+      = fntype.has_return_type ()
+	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
+	  : new TyTy::UnitType (fntype.get_mappings ().get_hirid ());
+
+    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    for (auto &param : fntype.get_function_params ())
+      {
+	std::unique_ptr<HIR::Pattern> to_bind;
+
+	bool is_ref = false;
+	bool is_mut = false;
+
+	HIR::Pattern *pattern
+	  = new HIR::IdentifierPattern (param.get_name (), param.get_locus (),
+					is_ref, is_mut, std::move (to_bind));
+
+	TyTy::TyBase *ptype = TypeCheckType::Resolve (param.get_type ().get ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::TyBase *> (pattern, ptype));
+      }
+
+    translated = new TyTy::FnType (fntype.get_mappings ().get_hirid (),
+				   std::move (params), return_type);
+  }
+
+  void visit (HIR::TupleType &tuple)
+  {
+    if (tuple.is_unit_type ())
+      {
+	auto unit_node_id = resolver->get_unit_type_node_id ();
+	if (!context->lookup_builtin (unit_node_id, &translated))
+	  {
+	    rust_error_at (tuple.get_locus (),
+			   "failed to lookup builtin unit type");
+	  }
+	return;
+      }
+
+    std::vector<HirId> fields;
+    for (auto &elem : tuple.get_elems ())
+      {
+	auto field_ty = TypeCheckType::Resolve (elem.get ());
+	fields.push_back (field_ty->get_ref ());
+      }
+
+    translated
+      = new TyTy::TupleType (tuple.get_mappings ().get_hirid (), fields);
+  }
+
   void visit (HIR::TypePath &path)
   {
-    // check if this is already defined or not
-    if (context->lookup_type (path.get_mappings ().get_hirid (), &translated))
-      return;
-
     // lookup the Node this resolves to
     NodeId ref;
     if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
@@ -98,12 +149,13 @@ public:
       {
 	// we got an HIR node
 	if (context->lookup_type (hir_lookup, &translated))
-	  return;
+	  {
+	    translated = translated->clone ();
+	    auto ref = path.get_mappings ().get_hirid ();
+	    translated->set_ref (ref);
+	    return;
+	  }
       }
-
-    // this might be a struct type (TyTy::ADT) reference
-    // TODO
-    printf ("UNREACHABLE %s\n", path.as_string ().c_str ());
     gcc_unreachable ();
   }
 

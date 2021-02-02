@@ -61,7 +61,11 @@ class LiteralExpr : public ExprWithoutBlock
   Location locus;
 
 public:
-  std::string as_string () const override { return literal.as_string (); }
+  std::string as_string () const override
+  {
+    return "( " + literal.as_string () + " (" + get_mappings ().as_string ()
+	   + "))";
+  }
 
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
 
@@ -751,86 +755,6 @@ protected:
   }
 };
 
-/* Binary infix compound assignment (arithmetic or logic then assignment)
- * expressions. */
-class CompoundAssignmentExpr : public OperatorExpr
-{
-public:
-  enum ExprType
-  {
-    ADD,	 // std::ops::AddAssign
-    SUBTRACT,	 // std::ops::SubAssign
-    MULTIPLY,	 // std::ops::MulAssign
-    DIVIDE,	 // std::ops::DivAssign
-    MODULUS,	 // std::ops::RemAssign
-    BITWISE_AND, // std::ops::BitAndAssign
-    BITWISE_OR,	 // std::ops::BitOrAssign
-    BITWISE_XOR, // std::ops::BitXorAssign
-    LEFT_SHIFT,	 // std::ops::ShlAssign
-    RIGHT_SHIFT	 // std::ops::ShrAssign
-  };
-
-private:
-  // Note: overloading trait specified in comments
-  ExprType expr_type;
-  std::unique_ptr<Expr> right_expr;
-
-public:
-  std::string as_string () const override;
-
-  ExprType get_expr_type () const { return expr_type; }
-
-  // Use pointers in constructor to enable polymorphism
-  CompoundAssignmentExpr (Analysis::NodeMapping mappings,
-			  std::unique_ptr<Expr> value_to_assign_to,
-			  std::unique_ptr<Expr> value_to_assign,
-			  ExprType expr_kind, Location locus)
-    : OperatorExpr (std::move (mappings), std::move (value_to_assign_to),
-		    std::vector<Attribute> (), locus),
-      expr_type (expr_kind), right_expr (std::move (value_to_assign))
-  {}
-  // outer attributes not allowed
-
-  // Have clone in copy constructor
-  CompoundAssignmentExpr (CompoundAssignmentExpr const &other)
-    : OperatorExpr (other), expr_type (other.expr_type),
-      right_expr (other.right_expr->clone_expr ())
-  {}
-
-  // Overload assignment operator to clone
-  CompoundAssignmentExpr &operator= (CompoundAssignmentExpr const &other)
-  {
-    OperatorExpr::operator= (other);
-    // main_or_left_expr = other.main_or_left_expr->clone_expr();
-    right_expr = other.right_expr->clone_expr ();
-    expr_type = other.expr_type;
-    // outer_attrs = other.outer_attrs;
-
-    return *this;
-  }
-
-  // move constructors
-  CompoundAssignmentExpr (CompoundAssignmentExpr &&other) = default;
-  CompoundAssignmentExpr &operator= (CompoundAssignmentExpr &&other) = default;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  CompoundAssignmentExpr *clone_expr_impl () const override
-  {
-    return new CompoundAssignmentExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  CompoundAssignmentExpr *clone_expr_without_block_impl () const override
-  {
-    return new CompoundAssignmentExpr (*this);
-  }
-};
-
 // Expression in parentheses (i.e. like literally just any 3 + (2 * 6))
 class GroupedExpr : public ExprWithoutBlock
 {
@@ -879,6 +803,12 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_expr_in_parens ()
+  {
+    rust_assert (expr_in_parens != nullptr);
+    return expr_in_parens;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1233,6 +1163,17 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const
+  {
+    return tuple_elems;
+  }
+  std::vector<std::unique_ptr<Expr> > &get_tuple_elems ()
+  {
+    return tuple_elems;
+  }
+
+  bool is_unit () const { return tuple_elems.size () == 0; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1296,6 +1237,12 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_tuple_expr ()
+  {
+    rust_assert (tuple_expr != nullptr);
+    return tuple_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1473,6 +1420,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Identifier get_field_name () const { return field_name; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1568,6 +1517,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  TupleIndex get_tuple_index () const { return index; };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1640,6 +1591,27 @@ public:
 	if (!cb (field.get ()))
 	  return;
       }
+  }
+
+  std::vector<std::unique_ptr<StructExprField> > &get_fields ()
+  {
+    return fields;
+  };
+
+  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const
+  {
+    return fields;
+  };
+
+  std::vector<std::unique_ptr<StructExprField> > get_fields_as_owner ()
+  {
+    return std::move (fields);
+  };
+
+  void set_fields_as_owner (
+    std::vector<std::unique_ptr<StructExprField> > new_fields)
+  {
+    fields = std::move (new_fields);
   }
 
 protected:
@@ -2353,6 +2325,14 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_receiver_expr ()
+  {
+    rust_assert (receiver != nullptr);
+    return receiver;
+  }
+
+  Identifier get_field_name () const { return field; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2513,11 +2493,10 @@ class BlockExpr : public ExprWithBlock
 public:
   std::vector<Attribute> inner_attrs;
 
-  // bool has_statements;
   std::vector<std::unique_ptr<Stmt> > statements;
-  // bool has_expr;
   std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
 
+  bool tail_reachable;
   Location locus;
 
   std::string as_string () const override;
@@ -2528,15 +2507,17 @@ public:
   // Returns whether the block contains an expression
   bool has_expr () const { return expr != nullptr; }
 
+  bool tail_expr_reachable () const { return tail_reachable; }
+
   BlockExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
-	     std::unique_ptr<ExprWithoutBlock> block_expr,
+	     std::unique_ptr<ExprWithoutBlock> block_expr, bool tail_reachable,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      locus (locus)
+      tail_reachable (tail_reachable), locus (locus)
   {}
 
   // Copy constructor with clone

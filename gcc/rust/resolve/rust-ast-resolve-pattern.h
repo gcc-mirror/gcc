@@ -86,6 +86,8 @@ public:
     resolver->insert_new_definition (pattern.get_node_id (),
 				     Definition{pattern.get_node_id (),
 						parent});
+    resolver->mark_decl_mutability (pattern.get_node_id (),
+				    pattern.get_is_mut ());
   }
 
 private:

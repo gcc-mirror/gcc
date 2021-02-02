@@ -22,6 +22,7 @@
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-full.h"
 #include "rust-ast-resolve-struct-expr-field.h"
+#include "rust-ast-verify-assignee.h"
 
 namespace Rust {
 namespace Resolver {
@@ -35,7 +36,19 @@ public:
     expr->accept_vis (resolver);
   };
 
-  ~ResolveExpr () {}
+  void visit (AST::TupleIndexExpr &expr)
+  {
+    ResolveExpr::go (expr.get_tuple_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::TupleExpr &expr)
+  {
+    if (expr.is_unit ())
+      return;
+
+    for (auto &elem : expr.get_tuple_elems ())
+      ResolveExpr::go (elem.get (), expr.get_node_id ());
+  }
 
   void visit (AST::PathInExpression &expr)
   {
@@ -76,33 +89,54 @@ public:
       ResolveExpr::go (p, expr.get_node_id ());
       return true;
     });
-    // resolver->insert_resolved_name(NodeId refId,NodeId defId)
   }
 
   void visit (AST::AssignmentExpr &expr)
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+
+    // need to verify the assignee
+    VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::IdentifierExpr &expr)
   {
-    if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+    if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+      {
+	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
+	resolver->insert_new_definition (expr.get_node_id (),
+					 Definition{expr.get_node_id (),
+						    parent});
+      }
+    else if (resolver->get_type_scope ().lookup (expr.as_string (),
+						 &resolved_node))
+      {
+	resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
+	resolver->insert_new_definition (expr.get_node_id (),
+					 Definition{expr.get_node_id (),
+						    parent});
+      }
+    else
       {
 	rust_error_at (expr.get_locus (), "failed to find name: %s",
 		       expr.as_string ().c_str ());
-	return;
       }
-
-    resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
-    resolver->insert_new_definition (expr.get_node_id (),
-				     Definition{expr.get_node_id (), parent});
   }
 
   void visit (AST::ArithmeticOrLogicalExpr &expr)
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::CompoundAssignmentExpr &expr)
+  {
+    ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+
+    // need to verify the assignee
+    VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::ComparisonExpr &expr)
@@ -115,6 +149,11 @@ public:
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::NegationExpr &expr)
+  {
+    ResolveExpr::go (expr.get_negated_expr ().get (), expr.get_node_id ());
   }
 
   void visit (AST::IfExpr &expr)
@@ -168,11 +207,29 @@ public:
   {
     ResolveExpr::go (&struct_expr.get_struct_name (),
 		     struct_expr.get_node_id ());
+
+    if (struct_expr.has_struct_base ())
+      {
+	AST::StructBase &base = struct_expr.get_struct_base ();
+	ResolveExpr::go (base.get_base_struct ().get (),
+			 struct_expr.get_node_id ());
+      }
+
     struct_expr.iterate (
       [&] (AST::StructExprField *struct_field) mutable -> bool {
 	ResolveStructExprField::go (struct_field, struct_expr.get_node_id ());
 	return true;
       });
+  }
+
+  void visit (AST::GroupedExpr &expr)
+  {
+    ResolveExpr::go (expr.get_expr_in_parens ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::FieldAccessExpr &expr)
+  {
+    ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
   }
 
 private:

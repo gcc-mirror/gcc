@@ -165,6 +165,8 @@ public:
 
   Btype *bool_type () { return this->make_type (boolean_type_node); }
 
+  int get_pointer_size ();
+
   Btype *integer_type (bool, int);
 
   Btype *float_type (int);
@@ -172,6 +174,8 @@ public:
   Btype *complex_type (int);
 
   Btype *pointer_type (Btype *);
+
+  Btype *immutable_type (Btype *);
 
   Btype *function_type (const Btyped_identifier &,
 			const std::vector<Btyped_identifier> &,
@@ -224,6 +228,8 @@ public:
   {
     return this->make_expression (null_pointer_node);
   }
+
+  Bexpression *unit_expression () { return this->make_expression (void_node); }
 
   Bexpression *var_expression (Bvariable *var, Location);
 
@@ -754,6 +760,12 @@ Gcc_backend::Gcc_backend ()
 
 // Get an unnamed integer type.
 
+int
+Gcc_backend::get_pointer_size ()
+{
+  return POINTER_SIZE;
+}
+
 Btype *
 Gcc_backend::integer_type (bool is_unsigned, int bits)
 {
@@ -844,6 +856,18 @@ Gcc_backend::pointer_type (Btype *to_type)
     return this->error_type ();
   tree type = build_pointer_type (to_type_tree);
   return this->make_type (type);
+}
+
+// Get immutable type
+
+Btype *
+Gcc_backend::immutable_type (Btype *base)
+{
+  tree type_tree = base->get_tree ();
+  if (type_tree == error_mark_node)
+    return this->error_type ();
+  tree constified = build_qualified_type (type_tree, TYPE_QUAL_CONST);
+  return this->make_type (constified);
 }
 
 // Make a function type.

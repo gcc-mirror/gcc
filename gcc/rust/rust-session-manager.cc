@@ -34,6 +34,7 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
+#include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 
 extern Linemap *
@@ -547,6 +548,10 @@ Session::parse_file (const char *filename)
 
   // type resolve
   type_resolution (hir);
+
+  // FIXME this needs an option of itself
+  auto buf = Resolver::TypeResolverDump::go (hir);
+  fprintf (stderr, "%s\n", buf.c_str ());
 
   if (saw_errors ())
     return;
