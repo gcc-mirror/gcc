@@ -25026,8 +25026,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	      pushed_scope = push_scope (class_type);
 	    }
 
-	  tree spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
-	  spec = TREE_PURPOSE (spec);
+	  tree def_parse = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
+	  def_parse = TREE_PURPOSE (def_parse);
 
 	  /* Make sure that any template parameters are in scope.  */
 	  maybe_begin_member_template_processing (decl);
@@ -25044,7 +25044,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 	  /* Now we can parse the noexcept-specifier.  */
-	  spec = cp_parser_late_noexcept_specifier (parser, spec);
+	  tree spec = cp_parser_late_noexcept_specifier (parser, def_parse);
 
 	  if (spec == error_mark_node)
 	    spec = NULL_TREE;
@@ -25052,6 +25052,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  /* Update the fn's type directly -- it might have escaped
 	     beyond this decl :(  */
 	  fixup_deferred_exception_variants (TREE_TYPE (decl), spec);
+	  /* Update any instantiations we've already created.  We must
+	     keep the new noexcept-specifier wrapped in a DEFERRED_NOEXCEPT
+	     so that maybe_instantiate_noexcept can tsubst the NOEXCEPT_EXPR
+	     in the pattern.  */
+	  for (tree i : DEFPARSE_INSTANTIATIONS (def_parse))
+	    DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (i)) = TREE_PURPOSE (spec);
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
@@ -26695,6 +26701,7 @@ cp_parser_save_noexcept (cp_parser *parser)
   /* Save away the noexcept-specifier; we will process it when the
      class is complete.  */
   DEFPARSE_TOKENS (expr) = cp_token_cache_new (first, last);
+  DEFPARSE_INSTANTIATIONS (expr) = nullptr;
   expr = build_tree_list (expr, NULL_TREE);
   return expr;
 }

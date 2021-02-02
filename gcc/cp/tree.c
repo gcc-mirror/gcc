@@ -2738,8 +2738,7 @@ fixup_deferred_exception_variants (tree type, tree raises)
   tree original = TYPE_RAISES_EXCEPTIONS (type);
   tree cr = flag_noexcept_type ? canonical_eh_spec (raises) : NULL_TREE;
 
-  gcc_checking_assert (TREE_CODE (TREE_PURPOSE (original))
-		       == DEFERRED_PARSE);
+  gcc_checking_assert (UNPARSED_NOEXCEPT_SPEC_P (original));
 
   /* Though sucky, this walk will process the canonical variants
      first.  */
