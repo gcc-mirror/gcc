@@ -1885,8 +1885,9 @@ package Opt is
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
-   --  Set to True to generate warnings for suspicious modulus values. The
-   --  default is that this warning is enabled. Modified by -gnatw.m/.M.
+   --  Set to True to generate warnings for suspicious modulus values, as well
+   --  as negative literals of a modular type. The default is that this warning
+   --  is enabled. Modified by -gnatw.m/.M.
 
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT
