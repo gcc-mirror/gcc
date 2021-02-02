@@ -7315,6 +7315,8 @@ extern void record_null_lambda_scope		(tree);
 extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
+extern tree finish_omp_target			(location_t, tree, tree, bool);
+extern void set_omp_target_this_expr		(tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
