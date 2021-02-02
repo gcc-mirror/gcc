@@ -1,3 +1,21 @@
+2021-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98921
+	* dmd/dmangle.c (Mangler::visit (TypeSArray *)): Use buf->print
+	  to format integer value.
+	(Mangler::visit (TypeIdentifier *)): Likewise.
+	(Mangler::toBuffer): Likewise.
+	(Mangler::visit (IntegerExp *)): Likewise.
+	(Mangler::visit (StringExp *)): Likewise.
+	(Mangler::visit (ArrayLiteralExp *)): Likewise.
+	(Mangler::visit (AssocArrayLiteralExp *)): Likewise.
+	(Mangler::visit (StructLiteralExp *)): Likewise.
+	* dmd/root/outbuffer.c (OutBuffer::print): New function.
+	* dmd/root/outbuffer.h (OutBuffer::print): Declare.
+
 2020-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
