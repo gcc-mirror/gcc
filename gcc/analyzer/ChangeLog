@@ -1,3 +1,12 @@
+2021-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98918
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value):
+	Fold the initial value of *UNKNOWN_PTR to an UNKNOWN value.
+	(region_model_manager::get_field_region): Fold the value
+	of UNKNOWN_PTR->FIELD to *UNKNOWN_PTR_OF_&FIELD_TYPE.
+
 2021-01-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (event_kind_to_string): Handle

@@ -1,3 +1,20 @@
+2021-02-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/70303
+	* include/bits/stl_deque.h (std::deque<>::operator-(iterator, iterator)):
+	Return 0 if both iterators are value-initialized.
+	* testsuite/23_containers/deque/70303.cc: New test.
+	* testsuite/23_containers/vector/70303.cc: New test.
+
+2021-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update std::call_once
+	status.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise. Update
+	std::from_chars and std::to_chars status. Fix formatting.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/numeric_traits.h: Update copyright

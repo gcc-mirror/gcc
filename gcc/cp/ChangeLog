@@ -1,3 +1,34 @@
+2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98295
+	* constexpr.c (cxx_eval_array_reference): Also set
+	new_ctx.object when setting new_ctx.ctor.
+
+2021-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98355
+	* parser.c (cp_parser_has_attribute_expression): Use
+	uses_template_parms instead of type_dependent_expression_p.
+
+2021-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98570
+	* cp-tree.h: Declare it.
+	* pt.c (comparing_dependent_aliases): New flag.
+	(template_args_equal, spec_hasher::equal): Set it.
+	(dependent_alias_template_spec_p): Assert that we don't
+	get non-types other than error_mark_node.
+	(instantiate_alias_template): SET_TYPE_STRUCTURAL_EQUALITY
+	on complex alias specializations.  Set TYPE_DEPENDENT_P here.
+	(tsubst_decl): Not here.
+	* module.cc (module_state::read_cluster): Set
+	comparing_dependent_aliases instead of
+	comparing_specializations.
+	* tree.c (cp_tree_equal): Remove comparing_specializations
+	module handling.
+	* typeck.c (structural_comptypes): Adjust.
+	(comptypes): Remove comparing_specializations handling.
+
 2021-01-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98843

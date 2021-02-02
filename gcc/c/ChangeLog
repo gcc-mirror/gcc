@@ -1,3 +1,9 @@
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* c-decl.c (free_attr_access_data): New function.
+	(c_parse_final_cleanups): Call free_attr_access_data.
+
 2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_detach): New.
