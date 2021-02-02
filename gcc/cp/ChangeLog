@@ -1,3 +1,24 @@
+2021-02-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98355
+	* parser.c (cp_parser_has_attribute_expression): Use
+	uses_template_parms instead of type_dependent_expression_p.
+
+2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-08-05  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/96282
+	* constexpr.c (cxx_eval_vec_init_1): Truncate ctx->ctor and
+	then clear CONSTRUCTOR_NO_CLEARING on each appended element
+	initializer if we're initializing a previously zero-initialized
+	array object.
+
 2021-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33661

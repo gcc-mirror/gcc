@@ -1,3 +1,21 @@
+2021-02-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98863
+	* gcse.c (gcse_or_cprop_is_too_expensive): Use unsigned
+	HOST_WIDE_INT for the memory estimate.
+
+2021-02-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-11-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96307
+	* toplev.c (process_options): Remove param_asan_stack checking for kasan
+	option checking.
+
 2021-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system.h (SIZE_MAX): Define if not already defined.
