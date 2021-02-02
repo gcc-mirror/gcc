@@ -23,6 +23,9 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
 
+extern bool
+saw_errors (void);
+
 namespace Rust {
 namespace Resolver {
 
@@ -32,8 +35,14 @@ TypeResolution::Resolve (HIR::Crate &crate)
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckTopLevel::Resolve (it->get ());
 
+  if (saw_errors ())
+    return;
+
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckItem::Resolve (it->get ());
+
+  if (saw_errors ())
+    return;
 
   auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
