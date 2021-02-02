@@ -1,3 +1,9 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/requires-4.c: Remove prune of "not supported yet".
+	* gfortran.dg/gomp/requires-4.f90: Fix REVERSE_OFFLOAD typo.
+	* gfortran.dg/gomp/requires-8.f90: Likewise.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/gomp/clauses-2.c: Adjust testcase.

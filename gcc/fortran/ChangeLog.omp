@@ -1,3 +1,12 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.cc (gfc_check_omp_requires): Fix REVERSE_OFFLOAD typo.
+	(gfc_match_omp_requires): Adjust to only mention "not implemented yet"
+	for OMP_REQUIRES_DYNAMIC_ALLOCATORS.
+	* parse.cc ("tree.h"): Add include.
+	("omp-general.h"): Likewise.
+	(gfc_parse_file): Add code to merge omp_requires to omp_requires_mask.
+
 2020-08-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Permit calls to Fortran intrinsics when annotating loops in

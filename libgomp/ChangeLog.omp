@@ -1,3 +1,17 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_supported_features): New declaration.
+	* libgomp.h (struct gomp_device_descr): New 'supported_features_func'
+	plugin hook field.
+	* oacc-host.c (host_supported_features): New host hook function.
+	(host_dispatch): Initialize 'supported_features_func' host hook.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_supported_features): New function.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_supported_features): Likewise.
+	* target.c (<stdio.h>): Add include of standard header.
+	(gomp_requires_mask): New static variable.
+	(__requires_mask_table): New declaration.
+	(__requires_mask_table_end): Likewise.
+
 2021-01-13  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Adjust for loop

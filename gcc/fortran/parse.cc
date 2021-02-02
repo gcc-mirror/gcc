@@ -6890,6 +6890,23 @@ done:
        gfc_current_ns = gfc_current_ns->sibling)
     gfc_check_omp_requires (gfc_current_ns, omp_requires);
 
+  if (omp_requires)
+    {
+      omp_requires_mask = (enum omp_requires) OMP_REQUIRES_TARGET_USED;
+      if (omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_REVERSE_OFFLOAD);
+      if (omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_ADDRESS);
+      if (omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+    }
+
   /* Populate omp_requires_mask (needed for resolving OpenMP
      metadirectives and declare variant).  */
   switch (omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)

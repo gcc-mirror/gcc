@@ -15354,6 +15354,11 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  /* Otherwise, we're done with the list of declarators.  */
 	  else
 	    {
+	      if (flag_openmp && lookup_attribute ("omp declare target",
+						   DECL_ATTRIBUTES (decl)))
+		omp_requires_mask
+		  = (enum omp_requires) (omp_requires_mask
+					 | OMP_REQUIRES_TARGET_USED);
 	      pop_deferring_access_checks ();
 	      cp_finalize_omp_declare_simd (parser, &odsd);
 	      return;
@@ -43988,6 +43993,10 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 static tree
 cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 {
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				 "#pragma omp target data", pragma_tok);
@@ -44091,6 +44100,10 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
       return true;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				 "#pragma omp target enter data", pragma_tok);
@@ -44181,6 +44194,10 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return true;
     }
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
@@ -46559,9 +46576,6 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 	      return false;
 	    }
-	  if (p && this_req != OMP_REQUIRES_DYNAMIC_ALLOCATORS)
-	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
-			    "supported yet", p);
 	  if (p)
 	    cp_lexer_consume_token (parser->lexer);
 	  if (this_req)

@@ -1,3 +1,8 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-offload.cc (omp_finish_file): Add code to create OpenMP requires
+	mask variable in .gnu.gomp_requires section if needed.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* omp-low.cc (install_var_field): Add new 'tree key_expr = NULL_TREE'

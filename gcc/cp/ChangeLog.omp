@@ -1,3 +1,15 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_simple_declaration): Set
+	OMP_REQUIRES_TARGET_USED in omp_requires_mask if function has
+	"omp declare target" attribute.
+	(cp_parser_omp_target_data): Set OMP_REQUIRES_TARGET_USED in
+	omp_requires_mask.
+	(cp_parser_omp_target_enter_data): Likewise.
+	(cp_parser_omp_target_exit_data): Likewise.
+	(cp_parser_omp_requires): Adjust to only mention "not implemented yet"
+	for OMP_REQUIRES_DYNAMIC_ALLOCATORS.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* semantics.cc (finish_omp_clauses):  Adjust to allow duplicate

@@ -1,3 +1,15 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.cc (c_parser_declaration_or_fndef): Set
+	OMP_REQUIRES_TARGET_USED in omp_requires_mask if function has
+	"omp declare target" attribute.
+	(c_parser_omp_target_data): Set OMP_REQUIRES_TARGET_USED in
+	omp_requires_mask.
+	(c_parser_omp_target_enter_data): Likewise.
+	(c_parser_omp_target_exit_data): Likewise.
+	(c_parser_omp_requires): Adjust to only mention "not implemented yet"
+	for OMP_REQUIRES_DYNAMIC_ALLOCATORS.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Add a "combined" flag for "acc kernels loop" etc directives.

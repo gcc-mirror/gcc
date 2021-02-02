@@ -1,0 +1,4 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_supported_features):
+	New function.

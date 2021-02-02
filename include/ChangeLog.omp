@@ -1,3 +1,9 @@
+2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOMP_REQUIRES_UNIFIED_ADDRESS): New symbol.
+	(GOMP_REQUIRES_UNIFIED_SHARED_MEMORY): Likewise.
+	(GOMP_REQUIRES_REVERSE_OFFLOAD): Likewise.
+
 2020-07-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* dwarf2.def (DW_OP_LLVM_piece_end): New extension operator.
