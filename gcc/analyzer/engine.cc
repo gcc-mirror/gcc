@@ -2348,38 +2348,27 @@ exploded_graph::get_per_function_data (function *fun) const
   return NULL;
 }
 
-/* Return true if NODE and FUN should be traversed directly, rather than
+/* Return true if FUN should be traversed directly, rather than only as
    called via other functions.  */
 
 static bool
-toplevel_function_p (cgraph_node *node, function *fun, logger *logger)
+toplevel_function_p (function *fun, logger *logger)
 {
-  /* TODO: better logic here
-     e.g. only if more than one caller, and significantly complicated.
-     Perhaps some whole-callgraph analysis to decide if it's worth summarizing
-     an edge, and if so, we need summaries.  */
-  if (flag_analyzer_call_summaries)
-    {
-      int num_call_sites = 0;
-      for (cgraph_edge *edge = node->callers; edge; edge = edge->next_caller)
-	++num_call_sites;
-
-      /* For now, if there's more than one in-edge, and we want call
-	 summaries, do it at the top level so that there's a chance
-	 we'll have a summary when we need one.  */
-      if (num_call_sites > 1)
-	{
-	  if (logger)
-	    logger->log ("traversing %qE (%i call sites)",
-			 fun->decl, num_call_sites);
-	  return true;
-	}
-    }
-
-  if (!TREE_PUBLIC (fun->decl))
+  /* Don't directly traverse into functions that have an "__analyzer_"
+     prefix.  Doing so is useful for the analyzer test suite, allowing
+     us to have functions that are called in traversals, but not directly
+     explored, thus testing how the analyzer handles calls and returns.
+     With this, we can have DejaGnu directives that cover just the case
+     of where a function is called by another function, without generating
+     excess messages from the case of the first function being traversed
+     directly.  */
+#define ANALYZER_PREFIX "__analyzer_"
+  if (!strncmp (IDENTIFIER_POINTER (DECL_NAME (fun->decl)), ANALYZER_PREFIX,
+		strlen (ANALYZER_PREFIX)))
     {
       if (logger)
-	logger->log ("not traversing %qE (static)", fun->decl);
+	logger->log ("not traversing %qE (starts with %qs)",
+		     fun->decl, ANALYZER_PREFIX);
       return false;
     }
 
@@ -2387,18 +2376,6 @@ toplevel_function_p (cgraph_node *node, function *fun, logger *logger)
     logger->log ("traversing %qE (all checks passed)", fun->decl);
 
   return true;
-}
-
-/* Callback for walk_tree for finding callbacks within initializers;
-   ensure they are treated as possible entrypoints to the analysis.  */
-
-static tree
-add_any_callbacks (tree *tp, int *, void *data)
-{
-  exploded_graph *eg = (exploded_graph *)data;
-  if (TREE_CODE (*tp) == FUNCTION_DECL)
-    eg->on_escaped_function (*tp);
-  return NULL_TREE;
 }
 
 /* Add initial nodes to EG, with entrypoints for externally-callable
@@ -2414,7 +2391,7 @@ exploded_graph::build_initial_worklist ()
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
   {
     function *fun = node->get_fun ();
-    if (!toplevel_function_p (node, fun, logger))
+    if (!toplevel_function_p (fun, logger))
       continue;
     exploded_node *enode = add_function_entry (fun);
     if (logger)
@@ -2426,19 +2403,6 @@ exploded_graph::build_initial_worklist ()
 	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
       }
   }
-
-  /* Find callbacks that are reachable from global initializers.  */
-  varpool_node *vpnode;
-  FOR_EACH_VARIABLE (vpnode)
-    {
-      tree decl = vpnode->decl;
-      if (!TREE_PUBLIC (decl))
-	continue;
-      tree init = DECL_INITIAL (decl);
-      if (!init)
-	continue;
-      walk_tree (&init, add_any_callbacks, this, NULL);
-    }
 }
 
 /* The main loop of the analysis.
