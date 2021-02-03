@@ -15,6 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// expensive: * [1-9] * *
 #include "bits/verify.h"
 
 template <typename V>

@@ -1,3 +1,8 @@
+2021-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98921
+	* dmd/MERGE: Merge upstream dmd 5e2a81d9c.
+
 2021-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* typeinfo.cc (TypeInfoVisitor::visit (TypeInfoDeclaration *)): Don't

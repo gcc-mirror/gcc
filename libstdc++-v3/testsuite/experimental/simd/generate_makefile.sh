@@ -85,67 +85,112 @@ CXX="$1"
 shift
 
 echo "TESTFLAGS ?=" > "$dst"
-[ -n "$testflags" ] && echo "TESTFLAGS := $testflags \$(TESTFLAGS)" >> "$dst"
-echo CXXFLAGS = "$@" "\$(TESTFLAGS)" >> "$dst"
+echo "test_flags := $testflags \$(TESTFLAGS)" >> "$dst"
+echo CXXFLAGS = "$@" "\$(test_flags)" >> "$dst"
 [ -n "$sim" ] && echo "export GCC_TEST_SIMULATOR = $sim" >> "$dst"
 cat >> "$dst" <<EOF
 srcdir = ${srcdir}
 CXX = ${CXX}
 DRIVER = ${driver}
 DRIVEROPTS ?=
+driveroptions := \$(DRIVEROPTS)
 
 all: simd_testsuite.sum
 
 simd_testsuite.sum: simd_testsuite.log
-	@printf "\n\t\t=== simd_testsuite \$(TESTFLAGS) Summary ===\n\n"\\
+	@printf "\n\t\t=== simd_testsuite \$(test_flags) Summary ===\n\n"\\
 	"# of expected passes:\t\t\$(shell grep -c '^PASS:' \$@)\n"\\
+	"# of unexpected passes:\t\t\$(shell grep -c '^XPASS:' \$@)\n"\\
 	"# of unexpected failures:\t\$(shell grep -c '^FAIL:' \$@)\n"\\
+	"# of expected failures:\t\t\$(shell grep -c '^XFAIL:' \$@)\n"\\
 	"# of unsupported tests:\t\t\$(shell grep -c '^UNSUPPORTED:' \$@)\n"\\
 	  | tee -a \$@
 
 EOF
 
+matches() {
+  eval "case '$1' in
+    $2) return 0;; esac"
+  return 1
+}
+
+cxx_type() {
+  case "$1" in
+    ldouble) echo "long double";;
+    ullong)  echo "unsigned long long";;
+    ulong)   echo "unsigned long";;
+    llong)   echo "long long";;
+    uint)    echo "unsigned int";;
+    ushort)  echo "unsigned short";;
+    uchar)   echo "unsigned char";;
+    schar)   echo "signed char";;
+    *)       echo "$1";;
+  esac
+}
+
+filter_types() {
+  only="$1"
+  skip="$2"
+  shift 2
+  if [ -z "$only" -a -z "$skip" ]; then
+    for x in "$@"; do
+      cxx_type "$x"
+      echo "$x"
+    done
+  elif [ -z "$skip" ]; then
+    for x in "$@"; do
+      if matches "$x" "$only"; then
+        cxx_type "$x"
+        echo "$x"
+      fi
+    done
+  elif [ -z "$only" ]; then
+    for x in "$@"; do
+      matches "$x" "$skip" && continue
+      cxx_type "$x"
+      echo "$x"
+    done
+  else
+    for x in "$@"; do
+      matches "$x" "$skip" && continue
+      if matches "$x" "$only"; then
+        cxx_type "$x"
+        echo "$x"
+      fi
+    done
+  fi
+}
+
 all_types() {
   src="$1"
-  cat <<EOF
-long double
-ldouble
-double
-double
-float
-float
-EOF
-  ([ -n "$src" ] && grep -q "test only floattypes" "$src") || \
-  cat <<EOF
-long long
-llong
-unsigned long long
-ullong
-unsigned long
-ulong
-long
-long
-int
-int
-unsigned int
-uint
-short
-short
-unsigned short
-ushort
-char
-char
-signed char
-schar
-unsigned char
-uchar
-char32_t
-char32_t
-char16_t
-char16_t
-wchar_t
-wchar_t
-EOF
+  only=
+  skip=
+  if [ -n "$src" ]; then
+    only="$(head -n25 "$src"| grep '^//\s*only: [^ ]* \* \* \*')"
+    only="${only#*: }"
+    only="${only%% *}"
+    skip="$(head -n25 "$src"| grep '^//\s*skip: [^ ]* \* \* \*')"
+    skip="${skip#*: }"
+    skip="${skip%% *}"
+  fi
+  filter_types "$only" "$skip" \
+    "ldouble" \
+    "double" \
+    "float" \
+    "llong" \
+    "ullong" \
+    "ulong" \
+    "long" \
+    "int" \
+    "uint" \
+    "short" \
+    "ushort" \
+    "char" \
+    "schar" \
+    "uchar" \
+    "char32_t" \
+    "char16_t" \
+    "wchar_t"
 }
 
 all_tests() {
@@ -196,59 +241,59 @@ EOF
 %-$type.log: %-$type-0.log %-$type-1.log %-$type-2.log %-$type-3.log \
 %-$type-4.log %-$type-5.log %-$type-6.log %-$type-7.log \
 %-$type-8.log %-$type-9.log
-	@cat $^ > \$@
+	@cat \$^ > \$@
 	@cat \$(^:log=sum) > \$(@:log=sum)${rmline}
 
 EOF
     for i in $(seq 0 9); do
       cat <<EOF
 %-$type-$i.log: \$(srcdir)/%.cc
-	@\$(DRIVER) \$(DRIVEROPTS) -t "$t" -a $i -n \$* \$(CXX) \$(CXXFLAGS)
+	@\$(DRIVER) \$(driveroptions) -t "$t" -a $i -n \$* \$(CXX) \$(CXXFLAGS)
 
 EOF
     done
   done
-  echo 'run-%: export GCC_TEST_RUN_EXPENSIVE=yes'
-  all_tests | while read file && read name; do
-    echo "run-$name: $name.log"
-    all_types "$file" | while read t && read type; do
-      echo "run-$name-$type: $name-$type.log"
-      for i in $(seq 0 9); do
-        echo "run-$name-$type-$i: $name-$type-$i.log"
-      done
-    done
-    echo
-  done
   cat <<EOF
-help:
-	@printf "use DRIVEROPTS=<options> to pass the following options:\n"\\
-	"-q, --quiet         Only print failures.\n"\\
-	"-v, --verbose       Print compiler and test output on failure.\n"\\
-	"-k, --keep-failed   Keep executables of failed tests.\n"\\
-	"--sim <executable>  Path to an executable that is prepended to the test\n"\\
-	"                    execution binary (default: the value of\n"\\
-	"                    GCC_TEST_SIMULATOR).\n"\\
-	"--timeout-factor <x>\n"\\
-	"                    Multiply the default timeout with x.\n"\\
-	"--run-expensive     Compile and run tests marked as expensive (default:\n"\\
-	"                    true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).\n"\\
-	"--only <pattern>    Compile and run only tests matching the given pattern.\n\n"
-	@echo "use TESTFLAGS=<flags> to pass additional compiler flags"
-	@echo
-	@echo "The following are some of the valid targets for this Makefile:"
-	@echo "... all"
-	@echo "... clean"
-	@echo "... help"
+run-%: export GCC_TEST_RUN_EXPENSIVE=yes
+run-%: driveroptions += -v
+run-%: %.log
+	@rm \$^ \$(^:log=sum)
+
+help: .make_help.txt
+	@cat \$<
+
+EOF
+  dsthelp="${dst%Makefile}.make_help.txt"
+  cat <<EOF > "$dsthelp"
+use DRIVEROPTS=<options> to pass the following options:
+-q, --quiet         Only print failures.
+-v, --verbose       Print compiler and test output on failure.
+-k, --keep-failed   Keep executables of failed tests.
+--sim <executable>  Path to an executable that is prepended to the test
+                    execution binary (default: the value of
+                    GCC_TEST_SIMULATOR).
+--timeout-factor <x>
+                    Multiply the default timeout with x.
+--run-expensive     Compile and run tests marked as expensive (default:
+                    true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).
+--only <pattern>    Compile and run only tests matching the given pattern.
+
+use TESTFLAGS=<flags> to pass additional compiler flags
+
+The following are some of the valid targets for this Makefile:
+... all
+... clean
+... help"
 EOF
   all_tests | while read file && read name; do
-    printf "\t@echo '... run-${name}'\n"
+    echo "... run-${name}"
     all_types | while read t && read type; do
-      printf "\t@echo '... run-${name}-${type}'\n"
+      echo "... run-${name}-${type}"
       for i in $(seq 0 9); do
-        printf "\t@echo '... run-${name}-${type}-$i'\n"
+        echo "... run-${name}-${type}-$i"
       done
     done
-  done
+  done >> "$dsthelp"
   cat <<EOF
 
 clean:

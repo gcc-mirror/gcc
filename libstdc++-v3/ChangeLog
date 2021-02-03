@@ -1,3 +1,10 @@
+2021-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Remove stray table cell.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-02-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/70303

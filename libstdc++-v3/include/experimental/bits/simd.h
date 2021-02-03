@@ -204,6 +204,33 @@ template <size_t _Np>
 template <size_t _X>
   using _SizeConstant = integral_constant<size_t, _X>;
 
+namespace __detail
+{
+  struct _Minimum
+  {
+    template <typename _Tp>
+      _GLIBCXX_SIMD_INTRINSIC constexpr
+      _Tp
+      operator()(_Tp __a, _Tp __b) const
+      {
+	using std::min;
+	return min(__a, __b);
+      }
+  };
+
+  struct _Maximum
+  {
+    template <typename _Tp>
+      _GLIBCXX_SIMD_INTRINSIC constexpr
+      _Tp
+      operator()(_Tp __a, _Tp __b) const
+      {
+	using std::max;
+	return max(__a, __b);
+      }
+  };
+} // namespace __detail
+
 // unrolled/pack execution helpers
 // __execute_n_times{{{
 template <typename _Fp, size_t... _I>
@@ -477,6 +504,11 @@ constexpr inline bool __support_neon_float =
   false;
 #endif
 
+#ifdef _ARCH_PWR10
+constexpr inline bool __have_power10vec = true;
+#else
+constexpr inline bool __have_power10vec = false;
+#endif
 #ifdef __POWER9_VECTOR__
 constexpr inline bool __have_power9vec = true;
 #else
@@ -1380,12 +1412,34 @@ template <typename _Tp>
   inline constexpr bool __is_vector_type_v = __is_vector_type<_Tp>::value;
 
 // }}}
+// __is_intrinsic_type {{{
+#if _GLIBCXX_SIMD_HAVE_SSE_ABI
+template <typename _Tp>
+  using __is_intrinsic_type = __is_vector_type<_Tp>;
+#else // not SSE (x86)
+template <typename _Tp, typename = void_t<>>
+  struct __is_intrinsic_type : false_type {};
+
+template <typename _Tp>
+  struct __is_intrinsic_type<
+    _Tp, void_t<typename __intrinsic_type<
+	   remove_reference_t<decltype(declval<_Tp>()[0])>, sizeof(_Tp)>::type>>
+    : is_same<_Tp, typename __intrinsic_type<
+		     remove_reference_t<decltype(declval<_Tp>()[0])>,
+		     sizeof(_Tp)>::type> {};
+#endif
+
+template <typename _Tp>
+  inline constexpr bool __is_intrinsic_type_v = __is_intrinsic_type<_Tp>::value;
+
+// }}}
 // _VectorTraits{{{
 template <typename _Tp, typename = void_t<>>
   struct _VectorTraitsImpl;
 
 template <typename _Tp>
-  struct _VectorTraitsImpl<_Tp, enable_if_t<__is_vector_type_v<_Tp>>>
+  struct _VectorTraitsImpl<_Tp, enable_if_t<__is_vector_type_v<_Tp>
+					      || __is_intrinsic_type_v<_Tp>>>
   {
     using type = _Tp;
     using value_type = remove_reference_t<decltype(declval<_Tp>()[0])>;
@@ -1457,7 +1511,8 @@ template <typename _To, typename _From>
   _GLIBCXX_SIMD_INTRINSIC constexpr _To
   __intrin_bitcast(_From __v)
   {
-    static_assert(__is_vector_type_v<_From> && __is_vector_type_v<_To>);
+    static_assert((__is_vector_type_v<_From> || __is_intrinsic_type_v<_From>)
+		    && (__is_vector_type_v<_To> || __is_intrinsic_type_v<_To>));
     if constexpr (sizeof(_To) == sizeof(_From))
       return reinterpret_cast<_To>(__v);
     else if constexpr (sizeof(_From) > sizeof(_To))
@@ -2183,16 +2238,55 @@ template <typename _Tp, size_t _Bytes>
 #endif // _GLIBCXX_SIMD_HAVE_SSE_ABI
 // __intrinsic_type (ARM){{{
 #if _GLIBCXX_SIMD_HAVE_NEON
+template <>
+  struct __intrinsic_type<float, 8, void>
+  { using type = float32x2_t; };
+
+template <>
+  struct __intrinsic_type<float, 16, void>
+  { using type = float32x4_t; };
+
+#if _GLIBCXX_SIMD_HAVE_NEON_A64
+template <>
+  struct __intrinsic_type<double, 8, void>
+  { using type = float64x1_t; };
+
+template <>
+  struct __intrinsic_type<double, 16, void>
+  { using type = float64x2_t; };
+#endif
+
+#define _GLIBCXX_SIMD_ARM_INTRIN(_Bits, _Np)                                   \
+template <>                                                                    \
+  struct __intrinsic_type<__int_with_sizeof_t<_Bits / 8>,                      \
+			  _Np * _Bits / 8, void>                               \
+  { using type = int##_Bits##x##_Np##_t; };                                    \
+template <>                                                                    \
+  struct __intrinsic_type<make_unsigned_t<__int_with_sizeof_t<_Bits / 8>>,     \
+			  _Np * _Bits / 8, void>                               \
+  { using type = uint##_Bits##x##_Np##_t; }
+_GLIBCXX_SIMD_ARM_INTRIN(8, 8);
+_GLIBCXX_SIMD_ARM_INTRIN(8, 16);
+_GLIBCXX_SIMD_ARM_INTRIN(16, 4);
+_GLIBCXX_SIMD_ARM_INTRIN(16, 8);
+_GLIBCXX_SIMD_ARM_INTRIN(32, 2);
+_GLIBCXX_SIMD_ARM_INTRIN(32, 4);
+_GLIBCXX_SIMD_ARM_INTRIN(64, 1);
+_GLIBCXX_SIMD_ARM_INTRIN(64, 2);
+#undef _GLIBCXX_SIMD_ARM_INTRIN
+
 template <typename _Tp, size_t _Bytes>
   struct __intrinsic_type<_Tp, _Bytes,
 			  enable_if_t<__is_vectorizable_v<_Tp> && _Bytes <= 16>>
   {
-    static constexpr int _S_VBytes = _Bytes <= 8 ? 8 : 16;
+    static constexpr int _SVecBytes = _Bytes <= 8 ? 8 : 16;
     using _Ip = __int_for_sizeof_t<_Tp>;
     using _Up = conditional_t<
       is_floating_point_v<_Tp>, _Tp,
       conditional_t<is_unsigned_v<_Tp>, make_unsigned_t<_Ip>, _Ip>>;
-    using type [[__gnu__::__vector_size__(_S_VBytes)]] = _Up;
+    static_assert(!is_same_v<_Tp, _Up> || _SVecBytes != _Bytes,
+		  "should use explicit specialization above");
+    using type = typename __intrinsic_type<_Up, _SVecBytes>::type;
   };
 #endif // _GLIBCXX_SIMD_HAVE_NEON
 
@@ -2223,20 +2317,19 @@ template <typename _Tp, size_t _Bytes>
   struct __intrinsic_type<_Tp, _Bytes,
 			  enable_if_t<__is_vectorizable_v<_Tp> && _Bytes <= 16>>
   {
-    static_assert(!is_same_v<_Tp, long double>,
+    static constexpr bool _S_is_ldouble = is_same_v<_Tp, long double>;
+    // allow _Tp == long double with -mlong-double-64
+    static_assert(!(_S_is_ldouble && sizeof(long double) > sizeof(double)),
 		  "no __intrinsic_type support for long double on PPC");
 #ifndef __VSX__
     static_assert(!is_same_v<_Tp, double>,
 		  "no __intrinsic_type support for double on PPC w/o VSX");
 #endif
-#ifndef __POWER8_VECTOR__
-    static_assert(
-      !(is_integral_v<_Tp> && sizeof(_Tp) > 4),
-      "no __intrinsic_type support for integers larger than 4 Bytes "
-      "on PPC w/o POWER8 vectors");
-#endif
-    using type = typename __intrinsic_type_impl<conditional_t<
-      is_floating_point_v<_Tp>, _Tp, __int_for_sizeof_t<_Tp>>>::type;
+    using type =
+      typename __intrinsic_type_impl<
+		 conditional_t<is_floating_point_v<_Tp>,
+			       conditional_t<_S_is_ldouble, double, _Tp>,
+			       __int_for_sizeof_t<_Tp>>>::type;
   };
 #endif // __ALTIVEC__
 
@@ -3342,7 +3435,7 @@ template <typename _Tp, typename _Ap>
 
 // }}}1
 // reductions [simd.reductions] {{{1
-  template <typename _Tp, typename _Abi, typename _BinaryOperation = plus<>>
+template <typename _Tp, typename _Abi, typename _BinaryOperation = plus<>>
   _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
   reduce(const simd<_Tp, _Abi>& __v,
 	 _BinaryOperation __binary_op = _BinaryOperation())
@@ -3387,6 +3480,61 @@ template <typename _M, typename _V>
   _GLIBCXX_SIMD_INTRINSIC typename _V::value_type
   reduce(const const_where_expression<_M, _V>& __x, bit_xor<> __binary_op)
   { return reduce(__x, 0, __binary_op); }
+
+template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
+  hmin(const simd<_Tp, _Abi>& __v) noexcept
+  {
+    return _Abi::_SimdImpl::_S_reduce(__v, __detail::_Minimum());
+  }
+
+template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
+  hmax(const simd<_Tp, _Abi>& __v) noexcept
+  {
+    return _Abi::_SimdImpl::_S_reduce(__v, __detail::_Maximum());
+  }
+
+template <typename _M, typename _V>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  typename _V::value_type
+  hmin(const const_where_expression<_M, _V>& __x) noexcept
+  {
+    using _Tp = typename _V::value_type;
+    constexpr _Tp __id_elem =
+#ifdef __FINITE_MATH_ONLY__
+      __finite_max_v<_Tp>;
+#else
+      __value_or<__infinity, _Tp>(__finite_max_v<_Tp>);
+#endif
+    _V __tmp = __id_elem;
+    _V::_Impl::_S_masked_assign(__data(__get_mask(__x)), __data(__tmp),
+				__data(__get_lvalue(__x)));
+    return _V::abi_type::_SimdImpl::_S_reduce(__tmp, __detail::_Minimum());
+  }
+
+template <typename _M, typename _V>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  typename _V::value_type
+  hmax(const const_where_expression<_M, _V>& __x) noexcept
+  {
+    using _Tp = typename _V::value_type;
+    constexpr _Tp __id_elem =
+#ifdef __FINITE_MATH_ONLY__
+      __finite_min_v<_Tp>;
+#else
+      [] {
+	if constexpr (__value_exists_v<__infinity, _Tp>)
+	  return -__infinity_v<_Tp>;
+	else
+	  return __finite_min_v<_Tp>;
+      }();
+#endif
+    _V __tmp = __id_elem;
+    _V::_Impl::_S_masked_assign(__data(__get_mask(__x)), __data(__tmp),
+				__data(__get_lvalue(__x)));
+    return _V::abi_type::_SimdImpl::_S_reduce(__tmp, __detail::_Maximum());
+  }
 
 // }}}1
 // algorithms [simd.alg] {{{

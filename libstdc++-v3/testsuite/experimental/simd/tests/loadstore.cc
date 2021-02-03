@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// expensive: * [1-9] * *
+// timeout-factor: 2
 #include "bits/verify.h"
 #include "bits/make_vec.h"
 #include "bits/conversions.h"
