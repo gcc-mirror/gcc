@@ -1,8 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
-// 2007-08-22 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2007-2019 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,19 +21,19 @@
 #include <system_error>
 #include <testsuite_error.h>
 
-// unspecified bool operator positive tests
 int main()
 {
-  std::error_code e1;
-  std::error_code e2(std::make_error_code(std::errc::operation_not_supported));
+  std::error_condition e1;
+  std::error_condition e2(std::errc::operation_not_supported);
 
-  VERIFY( !(e1 != e1) );
-  VERIFY( e1 != e2 );
+  VERIFY( !(e1 < e1) );
+  VERIFY( !(e2 < e2) );
+
+  // e1.category() == e2.category(), so comparison depends on values:
+  VERIFY( (e1 < e2) == (e1.value() < e2.value()) );
 
   const __gnu_test::test_category cat;
-  std::error_code e3(e2.value(), cat);
-  VERIFY( e2 != e3 );
-
-  std::error_code e4(std::make_error_code(std::errc::invalid_argument));
-  VERIFY( e4 != e2 );
+  std::error_condition e3(e2.value(), cat);
+  VERIFY( !(e3 < e3) );
+  VERIFY( (e2 < e3) == (e2.category() < e3.category()) );
 }
