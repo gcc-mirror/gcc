@@ -2285,7 +2285,9 @@ template <typename _Tp, size_t _Bytes>
   struct __intrinsic_type<_Tp, _Bytes,
 			  enable_if_t<__is_vectorizable_v<_Tp> && _Bytes <= 16>>
   {
-    static_assert(!is_same_v<_Tp, long double>,
+    static constexpr bool _S_is_ldouble = is_same_v<_Tp, long double>;
+    // allow _Tp == long double with -mlong-double-64
+    static_assert(!(_S_is_ldouble && sizeof(long double) > sizeof(double)),
 		  "no __intrinsic_type support for long double on PPC");
 #ifndef __VSX__
     static_assert(!is_same_v<_Tp, double>,
@@ -2297,8 +2299,11 @@ template <typename _Tp, size_t _Bytes>
       "no __intrinsic_type support for integers larger than 4 Bytes "
       "on PPC w/o POWER8 vectors");
 #endif
-    using type = typename __intrinsic_type_impl<conditional_t<
-      is_floating_point_v<_Tp>, _Tp, __int_for_sizeof_t<_Tp>>>::type;
+    using type =
+      typename __intrinsic_type_impl<
+		 conditional_t<is_floating_point_v<_Tp>,
+			       conditional_t<_S_is_ldouble, double, _Tp>,
+			       __int_for_sizeof_t<_Tp>>>::type;
   };
 #endif // __ALTIVEC__
 
