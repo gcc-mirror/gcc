@@ -803,7 +803,9 @@ is_known_idempotent_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   /* Skip if the file had a header guard and the macro is defined.
      PCH relies on this appearing before the PCH handler below.  */
-  if (file->cmacro && cpp_macro_p (file->cmacro))
+  if (file->cmacro && cpp_macro_p (file->cmacro)
+      /* Ignore if the idempotency optimization is disabled.  */
+      && (file->pchname || !CPP_OPTION (pfile, no_header_guard_opt)))
     return true;
 
   /* Handle PCH files immediately; don't stack them.  */
@@ -819,6 +821,18 @@ is_known_idempotent_file (cpp_reader *pfile, _cpp_file *file, bool import)
   return false;
 }
 
+/* Mark FILE as a header_unit, if we're spotting idempotency.  */
+
+static void
+maybe_mark_header_unit (cpp_reader *pfile, _cpp_file *file)
+{
+  if (!CPP_OPTION (pfile, no_header_guard_opt))
+    {
+      file->header_unit = +1;
+      _cpp_mark_file_once_only (pfile, file);
+    }
+}
+      
 /* Return TRUE if file has unique contents, so we should read process
    it.  The file's contents must already have been read.  */
 
@@ -927,8 +941,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 			   strlen (buf), true);
       buffer->to_free = buffer->buf;
 
-      file->header_unit = +1;
-      _cpp_mark_file_once_only (pfile, file);
+      maybe_mark_header_unit (pfile, file);
     }
   else
     {
@@ -983,7 +996,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
   if (decrement)
     pfile->line_table->highest_location--;
 
-  if (file->header_unit <= 0)
+  if (!buf)
     /* Add line map and do callbacks.  */
     _cpp_do_file_change (pfile, LC_ENTER, file->path,
 		       /* With preamble injection, start on line zero,
@@ -1126,8 +1139,8 @@ cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
       file->fd = 0;
     }
 
-  file->header_unit = +1;
-  _cpp_mark_file_once_only (pfile, file);
+  maybe_mark_header_unit (pfile, file);
+
   return file->path;
 }
 

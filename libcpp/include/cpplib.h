@@ -528,6 +528,9 @@ struct cpp_options
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
 
+  /* True if header file idempotency should not be optimized.  */
+  bool no_header_guard_opt;
+
   /* Dependency generation.  */
   struct
   {

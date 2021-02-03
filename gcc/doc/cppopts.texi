@@ -266,6 +266,20 @@ standard versions) and C++.
 @opindex fno-canonical-system-headers
 When preprocessing, do not shorten system header paths with canonicalization.
 
+@item -fno-header-guard-opt
+@opindex fno-header-guard-opt
+This disables the preprocessor's optimization of header files that
+have a macro header-guard.  Usually such files are do not appear at
+all in the preprocessed output on their second and subsequent
+inclusion.  This disables that optimization such that they will appear
+in the @code{#} line directive output, but of course their contents
+will be elided by the controlling @code{#if} directive.  This also
+covers C++ 20 include-translated header-unit imports, those will be
+subject to multiple include translations.  This option is useful to
+discover the complete #include graph of a translation unit.  It does
+not apply to idempotent headerfiles marked with @code{#pragma once},
+nor to headers read with @code{#import}.
+
 @item -fmax-include-depth=@var{depth}
 @opindex fmax-include-depth
 Set the maximum depth of the nested #include. The default is 200. 

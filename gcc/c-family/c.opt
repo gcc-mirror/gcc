@@ -1660,6 +1660,10 @@ C++ ObjC++ WarnRemoved
 fhandle-exceptions
 C++ ObjC++ Optimization Alias(fexceptions) Warn({%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)})
 
+fheader-guard-opt
+C ObjC C++ ObjC++
+Enable header file include guard optimization.
+
 fhonor-std
 C++ ObjC++ WarnRemoved
 

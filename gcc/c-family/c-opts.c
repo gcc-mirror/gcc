@@ -477,6 +477,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->extended_identifiers = value;
       break;
 
+    case OPT_fheader_guard_opt:
+      cpp_opts->no_header_guard_opt = !value;
+      break;
+
     case OPT_fmax_include_depth_:
 	cpp_opts->max_include_depth = value;
       break;

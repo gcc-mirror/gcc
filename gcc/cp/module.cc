@@ -19144,22 +19144,28 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   size_t len = strlen (path);
   path = canonicalize_header_name (NULL, loc, true, path, len);
-  auto packet = mapper->IncludeTranslate (path, Cody::Flags::None, len);
   int xlate = false;
-  if (packet.GetCode () == Cody::Client::PC_BOOL)
-    xlate = -int (packet.GetInteger ());
-  else if (packet.GetCode () == Cody::Client::PC_PATHNAME)
-    {
-      /* Record the CMI name for when we do the import.  */
-      module_state *import = get_module (build_string (len, path));
-      import->set_filename (packet);
-      xlate = +1;
-    }
+  auto name_str = build_string (len, path);
+  if (get_module_slot (name_str, nullptr, false, false))
+    /* We've already met this header.  */
+    xlate = +1;
   else
     {
-      gcc_checking_assert (packet.GetCode () == Cody::Client::PC_ERROR);
-      error_at (loc, "cannot determine %<#include%> translation of %s: %s",
-		path, packet.GetString ().c_str ());
+      auto packet = mapper->IncludeTranslate (path, Cody::Flags::None, len);
+      if (packet.GetCode () == Cody::Client::PC_BOOL)
+	xlate = -int (packet.GetInteger ());
+      else if (packet.GetCode () == Cody::Client::PC_PATHNAME)
+	{
+	  /* Record the CMI name for when we do the import.  */
+	  get_module (name_str)->set_filename (packet);
+	  xlate = +1;
+	}
+      else
+	{
+	  gcc_checking_assert (packet.GetCode () == Cody::Client::PC_ERROR);
+	  error_at (loc, "cannot determine %<#include%> translation of %s: %s",
+		    path, packet.GetString ().c_str ());
+	}
     }
 
   bool note = false;
