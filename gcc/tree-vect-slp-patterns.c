@@ -599,7 +599,7 @@ complex_pattern::build (vec_info *vinfo)
 	 the call there.  */
       vect_mark_pattern_stmts (vinfo, stmt_info, call_stmt,
 			       SLP_TREE_VECTYPE (node));
-      STMT_VINFO_SLP_VECT_ONLY (call_stmt_info) = true;
+      STMT_VINFO_SLP_VECT_ONLY_PATTERN (call_stmt_info) = true;
 
       /* Since we are replacing all the statements in the group with the same
 	 thing it doesn't really matter.  So just set it every time a new stmt

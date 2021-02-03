@@ -1,3 +1,98 @@
+2021-02-02  Richard Biener  <rguenther@suse.de>
+
+	* gimple-loop-interchange.cc (prepare_data_references):
+	Release vectors.
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): Likewise.
+	* tree-ssa-loop-im.c (hoist_memory_references): Likewise.
+	* tree-vect-stmts.c (vectorizable_condition): Do not
+	allocate vectors.
+	(vectorizable_comparison): Likewise.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (ursqrte): Define builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_ursqrte<mode>): New pattern.
+	* config/aarch64/arm_neon.h (vrsqrte_u32): Reimplement using builtin.
+	(vrsqrteq_u32): Likewise.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqxtun2): Define builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_sqxtun2<mode>_le): Define.
+	(aarch64_sqxtun2<mode>_be): Likewise.
+	(aarch64_sqxtun2<mode>): Likewise.
+	* config/aarch64/arm_neon.h (vqmovun_high_s16): Reimplement using builtin.
+	(vqmovun_high_s32): Likewise.
+	(vqmovun_high_s64): Likewise.
+	* config/aarch64/iterators.md (UNSPEC_SQXTUN2): Define.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (bfdot_lane, bfdot_laneq): Use
+	AUTO_FP flags.
+	(bfmlalb_lane, bfmlalt_lane, bfmlalb_lane_q, bfmlalt_lane_q): Use FP flags.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (fcmla_lane0, fcmla_lane90,
+	fcmla_lane180, fcmla_lane270, fcmlaq_lane0, fcmlaq_lane90, fcmlaq_lane180,
+	fcmlaq_lane270, scvtf, ucvtf, fcvtzs, fcvtzu, scvtfsi, scvtfdi, ucvtfsi,
+	ucvtfdi, fcvtzshf, fcvtzuhf, fmlal_lane_low, fmlsl_lane_low,
+	fmlal_laneq_low, fmlsl_laneq_low, fmlalq_lane_low, fmlslq_lane_low,
+	fmlalq_laneq_low, fmlslq_laneq_low, fmlal_lane_high, fmlsl_lane_high,
+	fmlal_laneq_high, fmlsl_laneq_high, fmlalq_lane_high, fmlslq_lane_high,
+	fmlalq_laneq_high, fmlslq_laneq_high): Use FP flags.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (FLAG_LOAD): Define.
+	* config/aarch64/aarch64-simd-builtins.def (ld1x2, ld2, ld3, ld4, ld2r,
+	ld3r, ld4r, ld1, ld1x3, ld1x4): Use LOAD flags.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (combine, zip1, zip2,
+	uzp1, uzp2, trn1, trn2, simd_bsl): Use AUTO_FP flags.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (clrsb, clz, ctz, popcount,
+	vec_smult_lane_, vec_smlal_lane_, vec_smult_laneq_, vec_smlal_laneq_,
+	vec_umult_lane_, vec_umlal_lane_, vec_umult_laneq_, vec_umlal_laneq_,
+	ashl, sshl, ushl, srshl, urshl, sdot_lane, udot_lane, sdot_laneq,
+	udot_laneq, usdot_lane, usdot_laneq, sudot_lane, sudot_laneq, ashr,
+	ashr_simd, lshr, lshr_simd, srshr_n, urshr_n, ssra_n, usra_n, srsra_n,
+	ursra_n, sshll_n, ushll_n, sshll2_n, ushll2_n, ssri_n, usri_n, ssli_n,
+	ssli_n, usli_n, bswap, rbit, simd_bsl, eor3q, rax1q, xarq, bcaxq): Use
+	NONE builtin flags.
+
+2021-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98848
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern): Punt if
+	STMT_VINFO_DEF_TYPE (last_stmt_info) is vect_reduction_def.
+
+2021-02-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/98743
+	* expr.c: Check mode before calling store_expr.
+
+2021-02-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (supf): Remove VORNQ_S and VORNQ_U.
+	(VORNQ): Remove.
+	* config/arm/mve.md (mve_vornq_s<mode>): New entry for vorn
+	instruction using expression ior.
+	(mve_vornq_u<mode>): New expander.
+	(mve_vornq_f<mode>): Use ior code instead of unspec.
+	* config/arm/unspecs.md (VORNQ_S, VORNQ_U, VORNQ_F): Remove.
+
+2021-02-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-nested.c (convert_nonlocal_reference_op): Move
+	current_function_decl restore after re-gimplification.
+	(convert_local_reference_op): Likewise.
+
 2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (rshrn, rshrn2):

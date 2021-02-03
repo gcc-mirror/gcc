@@ -1,3 +1,10 @@
+2021-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98929
+	PR c++/96199
+	* error.c (dump_expr): Ignore dummy object.
+	* pt.c (tsubst_baselink): Handle dependent scope.
+
 2021-02-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98295

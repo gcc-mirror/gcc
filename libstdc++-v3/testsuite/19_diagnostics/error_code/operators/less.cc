@@ -29,10 +29,13 @@ int main()
   VERIFY( !(e1 < e1) );
   VERIFY( !(e2 < e2) );
 
-  VERIFY( (e1 < e2) == (e1.value() < e2.value()) );
+  VERIFY( (e1 < e2) == (e1.category() < e2.category()) );
 
   const __gnu_test::test_category cat;
   std::error_code e3(e2.value(), cat);
   VERIFY( !(e3 < e3) );
   VERIFY( (e2 < e3) == (e2.category() < e3.category()) );
+
+  std::error_code e4(std::make_error_code(std::errc::invalid_argument));
+  VERIFY( (e4 < e2) == (e4.value() < e2.value()) );
 }

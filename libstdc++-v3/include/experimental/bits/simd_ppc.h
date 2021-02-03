@@ -30,6 +30,7 @@
 #ifndef __ALTIVEC__
 #error "simd_ppc.h may only be included when AltiVec/VMX is available"
 #endif
+#include <altivec.h>
 
 _GLIBCXX_SIMD_BEGIN_NAMESPACE
 
@@ -115,9 +116,41 @@ template <typename _Abi>
   };
 
 // }}}
+// _MaskImplPpc {{{
+template <typename _Abi>
+  struct _MaskImplPpc : _MaskImplBuiltin<_Abi>
+  {
+    using _Base = _MaskImplBuiltin<_Abi>;
+
+    // _S_popcount {{{
+    template <typename _Tp>
+      _GLIBCXX_SIMD_INTRINSIC static int _S_popcount(simd_mask<_Tp, _Abi> __k)
+      {
+	const auto __kv = __as_vector(__k);
+	if constexpr (__have_power10vec)
+	  {
+	    return vec_cntm(__to_intrin(__kv), 1);
+	  }
+	else if constexpr (sizeof(_Tp) >= sizeof(int))
+	  {
+	    using _Intrin = __intrinsic_type16_t<int>;
+	    const int __sum = -vec_sums(__intrin_bitcast<_Intrin>(__kv), _Intrin())[3];
+	    return __sum / (sizeof(_Tp) / sizeof(int));
+	  }
+	else
+	  {
+	    const auto __summed_to_int = vec_sum4s(__to_intrin(__kv), __intrinsic_type16_t<int>());
+	    return -vec_sums(__summed_to_int, __intrinsic_type16_t<int>())[3];
+	  }
+      }
+
+    // }}}
+  };
+
+// }}}
 
 _GLIBCXX_SIMD_END_NAMESPACE
 #endif // __cplusplus >= 201703L
 #endif // _GLIBCXX_EXPERIMENTAL_SIMD_PPC_H_
 
-// vim: foldmethod=marker sw=2 noet ts=8 sts=2 tw=80
+// vim: foldmethod=marker foldmarker={{{,}}} sw=2 noet ts=8 sts=2 tw=100

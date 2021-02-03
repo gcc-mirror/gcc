@@ -182,7 +182,7 @@ struct _SimdImplScalar
   // _S_reduce {{{2
   template <typename _Tp, typename _BinaryOperation>
     static constexpr inline _Tp
-    _S_reduce(const simd<_Tp, simd_abi::scalar>& __x, _BinaryOperation&)
+    _S_reduce(const simd<_Tp, simd_abi::scalar>& __x, const _BinaryOperation&)
     { return __x._M_data; }
 
   // _S_min, _S_max {{{2

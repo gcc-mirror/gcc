@@ -311,8 +311,7 @@ struct _MaskImplNeonMixin
 		  });
 	      __asint &= __bitsel;
 #ifdef __aarch64__
-	      return vpaddq_s16(vpaddq_s16(vpaddq_s16(__asint, __zero), __zero),
-				__zero)[0];
+	      return vaddvq_s16(__asint);
 #else
 	      return vpadd_s16(
 		vpadd_s16(vpadd_s16(__lo64(__asint), __hi64(__asint)), __zero),
@@ -328,7 +327,7 @@ struct _MaskImplNeonMixin
 		  });
 	      __asint &= __bitsel;
 #ifdef __aarch64__
-	      return vpaddq_s32(vpaddq_s32(__asint, __zero), __zero)[0];
+	      return vaddvq_s32(__asint);
 #else
 	      return vpadd_s32(vpadd_s32(__lo64(__asint), __hi64(__asint)),
 			       __zero)[0];
@@ -351,8 +350,12 @@ struct _MaskImplNeonMixin
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
+#ifdef __aarch64__
+	      return vaddv_s8(__asint);
+#else
 	      return vpadd_s8(vpadd_s8(vpadd_s8(__asint, __zero), __zero),
 			      __zero)[0];
+#endif
 	    }
 	  else if constexpr (sizeof(_Tp) == 2)
 	    {
@@ -362,12 +365,20 @@ struct _MaskImplNeonMixin
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
+#ifdef __aarch64__
+	      return vaddv_s16(__asint);
+#else
 	      return vpadd_s16(vpadd_s16(__asint, __zero), __zero)[0];
+#endif
 	    }
 	  else if constexpr (sizeof(_Tp) == 4)
 	    {
 	      __asint &= __make_vector<_I>(0x1, 0x2);
+#ifdef __aarch64__
+	      return vaddv_s32(__asint);
+#else
 	      return vpadd_s32(__asint, __zero)[0];
+#endif
 	    }
 	  else
 	    __assert_unreachable<_Tp>();

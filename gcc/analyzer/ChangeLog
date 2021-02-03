@@ -1,3 +1,16 @@
+2021-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	PR analyzer/96374
+	* engine.cc (toplevel_function_p): Simplify so that
+	we only reject functions with a "__analyzer_" prefix.
+	(add_any_callbacks): Delete.
+	(exploded_graph::build_initial_worklist): Update for
+	dropped param of toplevel_function_p.
+	(exploded_graph::build_initial_worklist): Don't bother
+	looking for callbacks that are reachable from global
+	initializers.
+
 2021-02-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98918

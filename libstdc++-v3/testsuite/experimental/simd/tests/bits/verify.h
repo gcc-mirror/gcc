@@ -60,6 +60,7 @@ template <class T>
 class verify
 {
   const bool m_failed = false;
+  size_t m_ip = 0;
 
   template <typename T,
 	    typename = decltype(std::declval<std::stringstream&>()
@@ -129,20 +130,21 @@ class verify
 
 public:
   template <typename... Ts>
-    verify(bool ok, size_t ip, const char* file, const int line,
+    [[gnu::always_inline]]
+    verify(bool ok, const char* file, const int line,
 	   const char* func, const char* cond, const Ts&... extra_info)
-    : m_failed(!ok)
+    : m_failed(!ok), m_ip(get_ip())
     {
       if (m_failed)
-	{
+	[&] {
 	  __builtin_fprintf(stderr, "%s:%d: (%s):\nInstruction Pointer: %x\n"
 				    "Assertion '%s' failed.\n",
-			    file, line, func, ip, cond);
+			    file, line, func, m_ip, cond);
 	  (print(extra_info, int()), ...);
-	}
+	}();
     }
 
-  ~verify()
+  [[gnu::always_inline]] ~verify()
   {
     if (m_failed)
       {
@@ -152,26 +154,27 @@ public:
   }
 
   template <typename T>
+    [[gnu::always_inline]]
     const verify&
     operator<<(const T& x) const
     {
       if (m_failed)
-	{
-	  print(x, int());
-	}
+	print(x, int());
       return *this;
     }
 
   template <typename... Ts>
+    [[gnu::always_inline]]
     const verify&
     on_failure(const Ts&... xs) const
     {
       if (m_failed)
-	(print(xs, int()), ...);
+	[&] { (print(xs, int()), ...); }();
       return *this;
     }
 
-  [[gnu::always_inline]] static inline size_t
+  [[gnu::always_inline]] static inline
+  size_t
   get_ip()
   {
     size_t _ip = 0;
@@ -220,24 +223,21 @@ template <typename T>
 
 #define COMPARE(_a, _b)                                                        \
   [&](auto&& _aa, auto&& _bb) {                                                \
-    return verify(std::experimental::all_of(_aa == _bb), verify::get_ip(),     \
-		  __FILE__, __LINE__, __PRETTY_FUNCTION__,                     \
-		  "all_of(" #_a " == " #_b ")", #_a " = ", _aa,                \
+    return verify(std::experimental::all_of(_aa == _bb), __FILE__, __LINE__,   \
+		  __PRETTY_FUNCTION__, #_a " == " #_b, #_a " = ", _aa,         \
 		  "\n" #_b " = ", _bb);                                        \
   }(force_fp_truncation(_a), force_fp_truncation(_b))
 #else
 #define COMPARE(_a, _b)                                                        \
   [&](auto&& _aa, auto&& _bb) {                                                \
-    return verify(std::experimental::all_of(_aa == _bb), verify::get_ip(),     \
-		  __FILE__, __LINE__, __PRETTY_FUNCTION__,                     \
-		  "all_of(" #_a " == " #_b ")", #_a " = ", _aa,                \
+    return verify(std::experimental::all_of(_aa == _bb), __FILE__, __LINE__,   \
+		  __PRETTY_FUNCTION__, #_a " == " #_b, #_a " = ", _aa,         \
 		  "\n" #_b " = ", _bb);                                        \
   }((_a), (_b))
 #endif
 
 #define VERIFY(_test)                                                          \
-  verify(_test, verify::get_ip(), __FILE__, __LINE__, __PRETTY_FUNCTION__,     \
-	 #_test)
+  verify(_test, __FILE__, __LINE__, __PRETTY_FUNCTION__, #_test)
 
   // ulp_distance_signed can raise FP exceptions and thus must be conditionally
   // executed
@@ -245,9 +245,9 @@ template <typename T>
   [&](auto&& _aa, auto&& _bb) {                                                \
     const bool success = std::experimental::all_of(                            \
       vir::test::ulp_distance(_aa, _bb) <= (_allowed_distance));               \
-    return verify(success, verify::get_ip(), __FILE__, __LINE__,               \
-		  __PRETTY_FUNCTION__, "all_of(" #_a " ~~ " #_b ")",           \
-		  #_a " = ", _aa, "\n" #_b " = ", _bb, "\ndistance = ",        \
+    return verify(success, __FILE__, __LINE__, __PRETTY_FUNCTION__,            \
+		  #_a " ~~ " #_b, #_a " = ", _aa, "\n" #_b " = ", _bb,         \
+		  "\ndistance = ",                                             \
 		  success ? 0 : vir::test::ulp_distance_signed(_aa, _bb));     \
   }((_a), (_b))
 

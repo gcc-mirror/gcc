@@ -2700,7 +2700,7 @@ again:
 	    {
 	      stmt_vec_info pattern_stmt_info
 		= STMT_VINFO_RELATED_STMT (stmt_info);
-	      if (STMT_VINFO_SLP_VECT_ONLY (pattern_stmt_info))
+	      if (STMT_VINFO_SLP_VECT_ONLY_PATTERN (pattern_stmt_info))
 		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
 
 	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);

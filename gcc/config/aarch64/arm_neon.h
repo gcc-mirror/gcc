@@ -7152,236 +7152,138 @@ vmla_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
                                                  (int32x2_t) __c);
 }
 
-#define vmlal_high_lane_s16(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t c_ = (c);                                              \
-       int16x8_t b_ = (b);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("smlal2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_lane_s16(int32x4_t __a, int16x8_t __b, int16x4_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_smlal_hi_lanev8hi (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_lane_s32(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t c_ = (c);                                              \
-       int32x4_t b_ = (b);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("smlal2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_lane_s32(int64x2_t __a, int32x4_t __b, int32x2_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_smlal_hi_lanev4si (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_lane_u16(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t c_ = (c);                                             \
-       uint16x8_t b_ = (b);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("umlal2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_lane_u16(uint32x4_t __a, uint16x8_t __b, uint16x4_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_umlal_hi_lanev8hi_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_lane_u32(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t c_ = (c);                                             \
-       uint32x4_t b_ = (b);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("umlal2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_lane_u32(uint64x2_t __a, uint32x4_t __b, uint32x2_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_umlal_hi_lanev4si_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_laneq_s16(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t c_ = (c);                                              \
-       int16x8_t b_ = (b);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("smlal2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_laneq_s16(int32x4_t __a, int16x8_t __b, int16x8_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_smlal_hi_laneqv8hi (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_laneq_s32(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t c_ = (c);                                              \
-       int32x4_t b_ = (b);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("smlal2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_laneq_s32(int64x2_t __a, int32x4_t __b, int32x4_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_smlal_hi_laneqv4si (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_laneq_u16(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t c_ = (c);                                             \
-       uint16x8_t b_ = (b);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("umlal2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_laneq_u16(uint32x4_t __a, uint16x8_t __b, uint16x8_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_umlal_hi_laneqv8hi_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlal_high_laneq_u32(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t c_ = (c);                                             \
-       uint32x4_t b_ = (b);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("umlal2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlal_high_laneq_u32(uint64x2_t __a, uint32x4_t __b, uint32x4_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_umlal_hi_laneqv4si_uuuus (__a, __b, __v, __lane);
+}
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_n_s16 (int32x4_t __a, int16x8_t __b, int16_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("smlal2 %0.4s,%2.8h,%3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_hi_nv8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_n_s32 (int64x2_t __a, int32x4_t __b, int32_t __c)
 {
-  int64x2_t __result;
-  __asm__ ("smlal2 %0.2d,%2.4s,%3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_hi_nv4si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_n_u16 (uint32x4_t __a, uint16x8_t __b, uint16_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("umlal2 %0.4s,%2.8h,%3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_hi_nv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_n_u32 (uint64x2_t __a, uint32x4_t __b, uint32_t __c)
 {
-  uint64x2_t __result;
-  __asm__ ("umlal2 %0.2d,%2.4s,%3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_hi_nv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_s8 (int16x8_t __a, int8x16_t __b, int8x16_t __c)
 {
-  int16x8_t __result;
-  __asm__ ("smlal2 %0.8h,%2.16b,%3.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_hiv16qi (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_s16 (int32x4_t __a, int16x8_t __b, int16x8_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("smlal2 %0.4s,%2.8h,%3.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_hiv8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
 {
-  int64x2_t __result;
-  __asm__ ("smlal2 %0.2d,%2.4s,%3.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlal_hiv4si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_u8 (uint16x8_t __a, uint8x16_t __b, uint8x16_t __c)
 {
-  uint16x8_t __result;
-  __asm__ ("umlal2 %0.8h,%2.16b,%3.16b"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_hiv16qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_u16 (uint32x4_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("umlal2 %0.4s,%2.8h,%3.8h"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_hiv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_high_u32 (uint64x2_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  uint64x2_t __result;
-  __asm__ ("umlal2 %0.2d,%2.4s,%3.4s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlal_hiv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -7696,164 +7598,96 @@ vmls_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
                                                  (int32x2_t) __c);
 }
 
-#define vmlsl_high_lane_s16(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t c_ = (c);                                              \
-       int16x8_t b_ = (b);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("smlsl2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_lane_s16(int32x4_t __a, int16x8_t __b, int16x4_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_smlsl_hi_lanev8hi (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_lane_s32(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t c_ = (c);                                              \
-       int32x4_t b_ = (b);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("smlsl2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_lane_s32(int64x2_t __a, int32x4_t __b, int32x2_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_smlsl_hi_lanev4si (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_lane_u16(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t c_ = (c);                                             \
-       uint16x8_t b_ = (b);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("umlsl2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_lane_u16(uint32x4_t __a, uint16x8_t __b, uint16x4_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_umlsl_hi_lanev8hi_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_lane_u32(a, b, c, d)                                 \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t c_ = (c);                                             \
-       uint32x4_t b_ = (b);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("umlsl2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_lane_u32(uint64x2_t __a, uint32x4_t __b, uint32x2_t __v,
+		    const int __lane)
+{
+  return __builtin_aarch64_umlsl_hi_lanev4si_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_laneq_s16(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x8_t c_ = (c);                                              \
-       int16x8_t b_ = (b);                                              \
-       int32x4_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("smlsl2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_laneq_s16(int32x4_t __a, int16x8_t __b, int16x8_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_smlsl_hi_laneqv8hi (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_laneq_s32(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x4_t c_ = (c);                                              \
-       int32x4_t b_ = (b);                                              \
-       int64x2_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("smlsl2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline int64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_laneq_s32(int64x2_t __a, int32x4_t __b, int32x4_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_smlsl_hi_laneqv4si (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_laneq_u16(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x8_t c_ = (c);                                             \
-       uint16x8_t b_ = (b);                                             \
-       uint32x4_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("umlsl2 %0.4s, %2.8h, %3.h[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "x"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_laneq_u16(uint32x4_t __a, uint16x8_t __b, uint16x8_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_umlsl_hi_laneqv8hi_uuuus (__a, __b, __v, __lane);
+}
 
-#define vmlsl_high_laneq_u32(a, b, c, d)                                \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x4_t c_ = (c);                                             \
-       uint32x4_t b_ = (b);                                             \
-       uint64x2_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("umlsl2 %0.2d, %2.4s, %3.s[%4]"                         \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "w"(c_), "i"(d)                     \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline uint64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vmlsl_high_laneq_u32(uint64x2_t __a, uint32x4_t __b, uint32x4_t __v,
+		     const int __lane)
+{
+  return __builtin_aarch64_umlsl_hi_laneqv4si_uuuus (__a, __b, __v, __lane);
+}
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_high_n_s16 (int32x4_t __a, int16x8_t __b, int16_t __c)
 {
-  int32x4_t __result;
-  __asm__ ("smlsl2 %0.4s, %2.8h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlsl_hi_nv8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_high_n_s32 (int64x2_t __a, int32x4_t __b, int32_t __c)
 {
-  int64x2_t __result;
-  __asm__ ("smlsl2 %0.2d, %2.4s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smlsl_hi_nv4si (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_high_n_u16 (uint32x4_t __a, uint16x8_t __b, uint16_t __c)
 {
-  uint32x4_t __result;
-  __asm__ ("umlsl2 %0.4s, %2.8h, %3.h[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "x"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlsl_hi_nv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_high_n_u32 (uint64x2_t __a, uint32x4_t __b, uint32_t __c)
 {
-  uint64x2_t __result;
-  __asm__ ("umlsl2 %0.2d, %2.4s, %3.s[0]"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b), "w"(__c)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umlsl_hi_nv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
