@@ -477,6 +477,11 @@ constexpr inline bool __support_neon_float =
   false;
 #endif
 
+#ifdef _ARCH_PWR10
+constexpr inline bool __have_power10vec = true;
+#else
+constexpr inline bool __have_power10vec = false;
+#endif
 #ifdef __POWER9_VECTOR__
 constexpr inline bool __have_power9vec = true;
 #else
