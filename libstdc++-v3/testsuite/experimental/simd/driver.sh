@@ -138,28 +138,38 @@ if [ -n "$only" ]; then
 fi
 
 if [ $abi -eq 0 ]; then
-  abi=""
+  abiflag=""
 elif [ $abi -gt 0 -a $abi -lt 10 ]; then
-  abi="-DEXTENDEDTESTS=$((abi-1))"
+  abiflag="-DEXTENDEDTESTS=$((abi-1))"
 else
   echo "Error: The -a argument must be a value between 0 and 9 (inclusive)." >&2
   exit 1
 fi
 
 fail() {
-  echo "FAIL: $src $type $abi ($*)" | tee -a "$sum" "$log"
+  echo "FAIL: $src $type $abiflag ($*)" | tee -a "$sum" "$log"
+}
+
+xpass() {
+  echo "XPASS: $src $type $abiflag ($*)" | tee -a "$sum" "$log"
+}
+
+xfail() {
+  $quiet || echo "XFAIL: $src $type $abiflag ($*)"
+  echo "XFAIL: $src $type $abiflag ($*)" >> "$sum"
+  echo "XFAIL: $src $type $abiflag ($*)" >> "$log"
 }
 
 pass() {
-  $quiet || echo "PASS: $src $type $abi ($*)"
-  echo "PASS: $src $type $abi ($*)" >> "$sum"
-  echo "PASS: $src $type $abi ($*)" >> "$log"
+  $quiet || echo "PASS: $src $type $abiflag ($*)"
+  echo "PASS: $src $type $abiflag ($*)" >> "$sum"
+  echo "PASS: $src $type $abiflag ($*)" >> "$log"
 }
 
 unsupported() {
-  $quiet || echo "UNSUPPORTED: $src $type $abi ($*)"
-  echo "UNSUPPORTED: $src $type $abi ($*)" >> "$sum"
-  echo "UNSUPPORTED: $src $type $abi ($*)" >> "$log"
+  $quiet || echo "UNSUPPORTED: $src $type $abiflag ($*)"
+  echo "UNSUPPORTED: $src $type $abiflag ($*)" >> "$sum"
+  echo "UNSUPPORTED: $src $type $abiflag ($*)" >> "$log"
 }
 
 verify_compilation() {
@@ -173,6 +183,8 @@ verify_compilation() {
       elif ! $quiet; then
         grep -i 'warning:' "$log" | head -n5
       fi
+    elif [ "$xfail" = "compile" ]; then
+      xpass "test for excess errors"
     else
       pass "test for excess errors"
     fi
@@ -181,7 +193,12 @@ verify_compilation() {
       fail "timeout: test for excess errors"
     else
       errors=$(grep -ic 'error:' "$log")
-      fail "excess errors:" $errors
+      if [ "$xfail" = "compile" ]; then
+        xfail "excess errors:" $errors
+        exit 0
+      else
+        fail "excess errors:" $errors
+      fi
     fi
     if $verbose; then
       cat "$log"
@@ -196,11 +213,18 @@ verify_test() {
   failed=$1
   if [ $failed -eq 0 ]; then
     rm "$exe"
-    pass "execution test"
+    if [ "$xfail" = "run" ]; then
+      xpass "execution test"
+    else
+      pass "execution test"
+    fi
   else
     $keep_failed || rm "$exe"
     if [ $failed -eq 124 ]; then
       fail "timeout: execution test"
+    elif [ "$xfail" = "run" ]; then
+      xfail "execution test"
+      exit 0
     else
       fail "execution test"
     fi
@@ -225,16 +249,74 @@ write_log_and_verbose() {
   fi
 }
 
+matches() {
+  eval "case '$1' in
+    $2) return 0;; esac"
+  return 1
+}
+
+test_selector() {
+  string="$1"
+  pat_type="${string%% *}"
+  if matches "$shorttype" "$pat_type"; then
+    string="${string#* }"
+    pat_abi="${string%% *}"
+    if matches "$abi" "$pat_abi"; then
+      string="${string#* }"
+      pat_triplet="${string%% *}"
+      [ -z "$target_triplet" ] && target_triplet=$($CXX -dumpmachine)
+      if matches "$target_triplet" "$pat_triplet"; then
+        pat_flags="${string#* }"
+        if matches "$CXXFLAGS" "$pat_flags"; then
+          return 0
+        fi
+      fi
+    fi
+  fi
+  return 1
+}
+
 rm -f "$log" "$sum"
 touch "$log" "$sum"
 
-if ! $run_expensive && [ -n "$abi" ]; then
-  unsupported "skip expensive tests"
-  exit 0
+skip="$(head -n25 "$src" | grep '^//\s*skip: ')"
+if [ -n "$skip" ]; then
+  skip="$(echo "$skip" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+  if test_selector "$skip"; then
+    # silently skip this test
+    exit 0
+  fi
+fi
+only="$(head -n25 "$src" | grep '^//\s*only: ')"
+if [ -n "$only" ]; then
+  only="$(echo "$only" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+  if ! test_selector "$only"; then
+    # silently skip this test
+    exit 0
+  fi
+fi
+if ! $run_expensive; then
+  expensive="$(head -n25 "$src" | grep '^//\s*expensive: ')"
+  if [ -n "$expensive" ]; then
+    expensive="$(echo "$expensive" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+    if test_selector "$expensive"; then
+      unsupported "skip expensive tests"
+      exit 0
+    fi
+  fi
+fi
+xfail="$(head -n25 "$src" | grep '^//\s*xfail: ')"
+if [ -n "$xfail" ]; then
+  xfail="$(echo "$xfail" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+  if test_selector "${xfail#* }"; then
+    xfail="${xfail%% *}"
+  else
+    unset xfail
+  fi
 fi
 
-write_log_and_verbose "$CXX $src $@ -D_GLIBCXX_SIMD_TESTTYPE=$type $abi -o $exe"
-timeout $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abi -o "$exe" >> "$log" 2>&1
+write_log_and_verbose "$CXX $src $@ -D_GLIBCXX_SIMD_TESTTYPE=$type $abiflag -o $exe"
+timeout $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abiflag -o "$exe" >> "$log" 2>&1
 verify_compilation $?
 if [ -n "$sim" ]; then
   write_log_and_verbose "$sim ./$exe"

@@ -99,53 +99,97 @@ all: simd_testsuite.sum
 simd_testsuite.sum: simd_testsuite.log
 	@printf "\n\t\t=== simd_testsuite \$(TESTFLAGS) Summary ===\n\n"\\
 	"# of expected passes:\t\t\$(shell grep -c '^PASS:' \$@)\n"\\
+	"# of unexpected passes:\t\t\$(shell grep -c '^XPASS:' \$@)\n"\\
 	"# of unexpected failures:\t\$(shell grep -c '^FAIL:' \$@)\n"\\
+	"# of expected failures:\t\t\$(shell grep -c '^XFAIL:' \$@)\n"\\
 	"# of unsupported tests:\t\t\$(shell grep -c '^UNSUPPORTED:' \$@)\n"\\
 	  | tee -a \$@
 
 EOF
 
+matches() {
+  eval "case '$1' in
+    $2) return 0;; esac"
+  return 1
+}
+
+cxx_type() {
+  case "$1" in
+    ldouble) echo "long double";;
+    ullong)  echo "unsigned long long";;
+    ulong)   echo "unsigned long";;
+    llong)   echo "long long";;
+    uint)    echo "unsigned int";;
+    ushort)  echo "unsigned short";;
+    uchar)   echo "unsigned char";;
+    schar)   echo "signed char";;
+    *)       echo "$1";;
+  esac
+}
+
+filter_types() {
+  only="$1"
+  skip="$2"
+  shift 2
+  if [ -z "$only" -a -z "$skip" ]; then
+    for x in "$@"; do
+      cxx_type "$x"
+      echo "$x"
+    done
+  elif [ -z "$skip" ]; then
+    for x in "$@"; do
+      if matches "$x" "$only"; then
+        cxx_type "$x"
+        echo "$x"
+      fi
+    done
+  elif [ -z "$only" ]; then
+    for x in "$@"; do
+      matches "$x" "$skip" && continue
+      cxx_type "$x"
+      echo "$x"
+    done
+  else
+    for x in "$@"; do
+      matches "$x" "$skip" && continue
+      if matches "$x" "$only"; then
+        cxx_type "$x"
+        echo "$x"
+      fi
+    done
+  fi
+}
+
 all_types() {
   src="$1"
-  cat <<EOF
-long double
-ldouble
-double
-double
-float
-float
-EOF
-  ([ -n "$src" ] && grep -q "test only floattypes" "$src") || \
-  cat <<EOF
-long long
-llong
-unsigned long long
-ullong
-unsigned long
-ulong
-long
-long
-int
-int
-unsigned int
-uint
-short
-short
-unsigned short
-ushort
-char
-char
-signed char
-schar
-unsigned char
-uchar
-char32_t
-char32_t
-char16_t
-char16_t
-wchar_t
-wchar_t
-EOF
+  only=
+  skip=
+  if [ -n "$src" ]; then
+    only="$(head -n25 "$src"| grep '^//\s*only: [^ ]* \* \* \*')"
+    only="${only#*: }"
+    only="${only%% *}"
+    skip="$(head -n25 "$src"| grep '^//\s*skip: [^ ]* \* \* \*')"
+    skip="${skip#*: }"
+    skip="${skip%% *}"
+  fi
+  filter_types "$only" "$skip" \
+    "ldouble" \
+    "double" \
+    "float" \
+    "llong" \
+    "ullong" \
+    "ulong" \
+    "long" \
+    "int" \
+    "uint" \
+    "short" \
+    "ushort" \
+    "char" \
+    "schar" \
+    "uchar" \
+    "char32_t" \
+    "char16_t" \
+    "wchar_t"
 }
 
 all_tests() {
