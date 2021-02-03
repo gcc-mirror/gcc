@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // only: float|double|ldouble * * *
+// skip: ldouble * powerpc64* *
 // expensive: * [1-9] * *
 #include "bits/verify.h"
 #include "bits/metahelpers.h"
