@@ -331,7 +331,7 @@ ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
 void
 ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
 {
-  AST::IdentifierExpr expr (field.get_field_name (), field.get_locus ());
+  AST::IdentifierExpr expr (field.get_field_name (), {}, field.get_locus ());
   expr.set_node_id (field.get_node_id ());
 
   ResolveExpr::go (&expr, field.get_node_id ());
