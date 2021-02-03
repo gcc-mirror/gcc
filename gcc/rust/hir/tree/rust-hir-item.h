@@ -297,10 +297,13 @@ private:
 
   Location locus;
 
+  Analysis::NodeMapping mappings;
+
   // Unrestricted constructor used for error state
-  SelfParam (Lifetime lifetime, bool has_ref, bool is_mut, Type *type)
+  SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool has_ref,
+	     bool is_mut, Type *type)
     : has_ref (has_ref), is_mut (is_mut), lifetime (std::move (lifetime)),
-      type (type)
+      type (type), mappings (mappings)
   {}
   // this is ok as no outside classes can ever call this
 
@@ -319,21 +322,23 @@ public:
   }
 
   // Type-based self parameter (not ref, no lifetime)
-  SelfParam (std::unique_ptr<Type> type, bool is_mut, Location locus)
+  SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
+	     bool is_mut, Location locus)
     : has_ref (false), is_mut (is_mut), lifetime (Lifetime::error ()),
-      type (std::move (type)), locus (locus)
+      type (std::move (type)), locus (locus), mappings (mappings)
   {}
 
   // Lifetime-based self parameter (is ref, no type)
-  SelfParam (Lifetime lifetime, bool is_mut, Location locus)
+  SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool is_mut,
+	     Location locus)
     : has_ref (true), is_mut (is_mut), lifetime (std::move (lifetime)),
-      locus (locus)
+      locus (locus), mappings (mappings)
   {}
 
   // Copy constructor requires clone
   SelfParam (SelfParam const &other)
     : has_ref (other.has_ref), is_mut (other.is_mut), lifetime (other.lifetime),
-      locus (other.locus)
+      locus (other.locus), mappings (other.mappings)
   {
     if (other.type != nullptr)
       type = other.type->clone_type ();
@@ -348,6 +353,7 @@ public:
     has_ref = other.has_ref;
     lifetime = other.lifetime;
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -359,6 +365,18 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  bool get_has_ref () const { return has_ref; };
+  bool get_is_mut () const { return is_mut; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type ()
+  {
+    rust_assert (has_type ());
+    return type;
+  }
+
+  Analysis::NodeMapping get_mappings () { return mappings; }
 };
 
 // Qualifiers for function, i.e. const, unsafe, extern etc.
@@ -542,6 +560,8 @@ protected:
 // A method (function belonging to a type)
 class Method : public InherentImplItem, public TraitImplItem
 {
+  Analysis::NodeMapping mappings;
+
   // moved from impl items for consistency
   std::vector<Attribute> outer_attrs;
   Visibility vis;
@@ -566,9 +586,7 @@ class Method : public InherentImplItem, public TraitImplItem
   // bool has_where_clause;
   WhereClause where_clause;
 
-  std::unique_ptr<BlockExpr> expr;
-
-  Analysis::NodeMapping mappings;
+  std::unique_ptr<BlockExpr> function_body;
 
   Location locus;
 
@@ -603,8 +621,8 @@ public:
       self_param (std::move (self_param)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), expr (std::move (function_body)),
-      locus (locus)
+      where_clause (std::move (where_clause)),
+      function_body (std::move (function_body)), locus (locus)
   {}
 
   // TODO: add constructor with less fields
@@ -616,7 +634,8 @@ public:
       method_name (other.method_name), self_param (other.self_param),
       function_params (other.function_params),
       return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause), expr (other.expr->clone_block_expr ()),
+      where_clause (other.where_clause),
+      function_body (other.function_body->clone_block_expr ()),
       locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
@@ -636,7 +655,7 @@ public:
     function_params = other.function_params;
     return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
-    expr = other.expr->clone_block_expr ();
+    function_body = other.function_body->clone_block_expr ();
     locus = other.locus;
 
     generic_params.reserve (other.generic_params.size ());
@@ -660,6 +679,58 @@ public:
   {
     return get_mappings ();
   };
+
+  // Returns whether function has return type - if not, it is void.
+  bool has_function_return_type () const { return return_type != nullptr; }
+
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
+    rust_assert (function_body != nullptr);
+    return function_body;
+  }
+
+  SelfParam &get_self_param () { return self_param; }
+  const SelfParam &get_self_param () const { return self_param; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause ()
+  {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  Identifier get_method_name () const { return method_name; }
+
+  Location get_locus () const { return locus; }
+
+  std::unique_ptr<BlockExpr> &get_function_body () { return function_body; }
+  const std::unique_ptr<BlockExpr> &get_function_body () const
+  {
+    return function_body;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

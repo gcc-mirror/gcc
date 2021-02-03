@@ -91,6 +91,15 @@ public:
     });
   }
 
+  void visit (AST::MethodCallExpr &expr)
+  {
+    ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
+    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
+      ResolveExpr::go (p, expr.get_node_id ());
+      return true;
+    });
+  }
+
   void visit (AST::AssignmentExpr &expr)
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());

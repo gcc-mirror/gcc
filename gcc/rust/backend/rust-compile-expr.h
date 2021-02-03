@@ -99,6 +99,8 @@ public:
 
   void visit (HIR::CallExpr &expr);
 
+  void visit (HIR::MethodCallExpr &expr);
+
   void visit (HIR::IdentifierExpr &expr)
   {
     // need to look up the reference for this identifier

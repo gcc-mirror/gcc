@@ -31,9 +31,9 @@ namespace Resolver {
 class TypeCheckTopLevelImplItem : public TypeCheckBase
 {
 public:
-  static void Resolve (HIR::InherentImplItem *item)
+  static void Resolve (HIR::InherentImplItem *item, TyTy::TyBase *self)
   {
-    TypeCheckTopLevelImplItem resolver;
+    TypeCheckTopLevelImplItem resolver (self);
     item->accept_vis (resolver);
   }
 
@@ -81,8 +81,62 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
+  void visit (HIR::Method &method)
+  {
+    TyTy::TyBase *ret_type = nullptr;
+    if (!method.has_function_return_type ())
+      ret_type = new TyTy::UnitType (method.get_mappings ().get_hirid ());
+    else
+      {
+	auto resolved
+	  = TypeCheckType::Resolve (method.get_return_type ().get ());
+	if (resolved == nullptr)
+	  {
+	    rust_error_at (method.get_locus (),
+			   "failed to resolve return type");
+	    return;
+	  }
+
+	ret_type = resolved->clone ();
+	ret_type->set_ref (
+	  method.get_return_type ()->get_mappings ().get_hirid ());
+      }
+
+    // hold all the params to the fndef
+    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+
+    // add the self param at the front
+    HIR::SelfParam &self_param = method.get_self_param ();
+    HIR::IdentifierPattern *self_pattern
+      = new HIR::IdentifierPattern ("self", self_param.get_locus (),
+				    self_param.get_has_ref (),
+				    self_param.get_is_mut (),
+				    std::unique_ptr<HIR::Pattern> (nullptr));
+    context->insert_type (self_param.get_mappings (), self->clone ());
+    params.push_back (
+      std::pair<HIR::Pattern *, TyTy::TyBase *> (self_pattern, self->clone ()));
+
+    for (auto &param : method.get_function_params ())
+      {
+	// get the name as well required for later on
+	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::TyBase *> (param.get_param_name (),
+						     param_tyty));
+
+	context->insert_type (param.get_mappings (), param_tyty);
+      }
+
+    auto fnType = new TyTy::FnType (method.get_mappings ().get_hirid (), params,
+				    ret_type);
+    context->insert_type (method.get_mappings (), fnType);
+  }
+
 private:
-  TypeCheckTopLevelImplItem () : TypeCheckBase () {}
+  TypeCheckTopLevelImplItem (TyTy::TyBase *self) : TypeCheckBase (), self (self)
+  {}
+
+  TyTy::TyBase *self;
 };
 
 class TypeCheckImplItem : public TypeCheckBase
@@ -99,7 +153,7 @@ public:
     TyTy::TyBase *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       {
-	rust_error_at (function.locus, "failed to lookup function type");
+	rust_error_at (function.get_locus (), "failed to lookup function type");
 	return;
       }
 
@@ -126,6 +180,49 @@ public:
 	if (ret_resolved == nullptr)
 	  {
 	    rust_error_at (function.function_body->expr->get_locus_slow (),
+			   "failed to resolve final expression");
+	    return;
+	  }
+
+	context->peek_return_type ()->append_reference (
+	  ret_resolved->get_ref ());
+      }
+
+    context->pop_return_type ();
+  }
+
+  void visit (HIR::Method &method)
+  {
+    TyTy::TyBase *lookup;
+    if (!context->lookup_type (method.get_mappings ().get_hirid (), &lookup))
+      {
+	rust_error_at (method.get_locus (), "failed to lookup function type");
+	return;
+      }
+
+    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (method.get_locus (),
+		       "found invalid type for function [%s]",
+		       lookup->as_string ().c_str ());
+	return;
+      }
+
+    // need to get the return type from this
+    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
+    auto expected_ret_tyty = resolve_fn_type->return_type ();
+    context->push_return_type (expected_ret_tyty);
+
+    TypeCheckExpr::Resolve (method.get_function_body ().get ());
+    if (method.get_function_body ()->has_expr ())
+      {
+	auto resolved
+	  = TypeCheckExpr::Resolve (method.get_function_body ()->expr.get ());
+
+	auto ret_resolved = expected_ret_tyty->combine (resolved);
+	if (ret_resolved == nullptr)
+	  {
+	    rust_error_at (method.get_function_body ()->expr->get_locus_slow (),
 			   "failed to resolve final expression");
 	    return;
 	  }

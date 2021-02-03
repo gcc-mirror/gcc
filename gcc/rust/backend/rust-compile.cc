@@ -95,6 +95,83 @@ CompileExpr::visit (HIR::CallExpr &expr)
     }
 }
 
+void
+CompileExpr::visit (HIR::MethodCallExpr &expr)
+{
+  // lookup the resolved name
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  if (!ctx->get_resolver ()->lookup_resolved_name (
+	expr.get_mappings ().get_nodeid (), &resolved_node_id))
+    {
+      rust_error_at (expr.get_locus (), "failed to lookup resolved MethodCall");
+      return;
+    }
+
+  // reverse lookup
+  HirId ref;
+  if (!ctx->get_mappings ()->lookup_node_to_hir (
+	expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+    {
+      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      return;
+    }
+
+  // lookup compiled functions
+  Bfunction *fn = nullptr;
+  if (!ctx->lookup_function_decl (ref, &fn))
+    {
+      // this might fail because its a forward decl so we can attempt to
+      // resolve it now
+      HIR::InherentImplItem *resolved_item
+	= ctx->get_mappings ()->lookup_hir_implitem (
+	  expr.get_mappings ().get_crate_num (), ref);
+      if (resolved_item == nullptr)
+	{
+	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");
+	  return;
+	}
+
+      TyTy::TyBase *self_type = nullptr;
+      if (!ctx->get_tyctx ()->lookup_type (
+	    expr.get_receiver ()->get_mappings ().get_hirid (), &self_type))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "failed to resolve type for self param");
+	  return;
+	}
+
+      CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true);
+      if (!ctx->lookup_function_decl (ref, &fn))
+	{
+	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
+	  return;
+	}
+    }
+
+  Bexpression *fn_expr
+    = ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
+
+  std::vector<Bexpression *> args;
+
+  // method receiver
+  Bexpression *self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
+  rust_assert (self != nullptr);
+  args.push_back (self);
+
+  // normal args
+  expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
+    Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
+    rust_assert (compiled_expr != nullptr);
+    args.push_back (compiled_expr);
+    return true;
+  });
+
+  auto fncontext = ctx->peek_fn ();
+  translated
+    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
+					    nullptr, expr.get_locus ());
+}
+
 // rust-compile-block.h
 
 void

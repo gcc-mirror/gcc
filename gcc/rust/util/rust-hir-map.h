@@ -125,6 +125,10 @@ public:
   void insert_hir_param (CrateNum crateNum, HirId id, HIR::FunctionParam *type);
   HIR::FunctionParam *lookup_hir_param (CrateNum crateNum, HirId id);
 
+  void insert_hir_self_param (CrateNum crateNum, HirId id,
+			      HIR::SelfParam *type);
+  HIR::SelfParam *lookup_hir_self_param (CrateNum crateNum, HirId id);
+
   void insert_hir_struct_field (CrateNum crateNum, HirId id,
 				HIR::StructExprField *type);
   HIR::StructExprField *lookup_hir_struct_field (CrateNum crateNum, HirId id);
@@ -152,6 +156,20 @@ public:
     return hirNodesWithinCrate[crate];
   }
 
+  void
+  iterate_impl_items (std::function<bool (HirId, HIR::InherentImplItem *)> cb)
+  {
+    for (auto it = hirImplItemMappings.begin ();
+	 it != hirImplItemMappings.end (); it++)
+      {
+	for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
+	  {
+	    if (!cb (iy->first, iy->second))
+	      return;
+	  }
+      }
+  }
+
 private:
   Mappings ();
 
@@ -176,6 +194,7 @@ private:
     hirStructFieldMappings;
   std::map<CrateNum, std::map<HirId, HIR::InherentImplItem *> >
     hirImplItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

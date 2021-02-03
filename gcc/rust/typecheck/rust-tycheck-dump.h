@@ -73,6 +73,18 @@ public:
     dump += indent () + "}\n";
   }
 
+  void visit (HIR::Method &method)
+  {
+    dump += indent () + "fn " + method.get_method_name () + " "
+	    + type_string (method.get_mappings ()) + "\n";
+    dump += indent () + "{\n";
+
+    HIR::BlockExpr *function_body = method.get_function_body ().get ();
+    function_body->accept_vis (*this);
+
+    dump += indent () + "}\n";
+  }
+
   void visit (HIR::BlockExpr &expr)
   {
     indentation_level++;

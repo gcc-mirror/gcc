@@ -137,11 +137,15 @@ public:
 
   void visit (HIR::InherentImpl &impl_block)
   {
-    TypeCheckType::Resolve (impl_block.get_type ().get ());
-    for (auto &impl_item : impl_block.get_impl_items ())
+    auto self = TypeCheckType::Resolve (impl_block.get_type ().get ());
+    if (self == nullptr)
       {
-	TypeCheckTopLevelImplItem::Resolve (impl_item.get ());
+	rust_error_at (impl_block.get_locus (), "failed to resolve impl type");
+	return;
       }
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self);
   }
 
 private:

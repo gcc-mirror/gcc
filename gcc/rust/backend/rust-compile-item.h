@@ -282,9 +282,18 @@ public:
 
   void visit (HIR::InherentImpl &impl_block)
   {
+    TyTy::TyBase *self_lookup = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  impl_block.get_type ()->get_mappings ().get_hirid (), &self_lookup))
+      {
+	rust_error_at (impl_block.get_locus (),
+		       "failed to resolve type of impl");
+	return;
+      }
+
     for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (impl_block.get_type ().get (),
-					impl_item.get (), ctx, compile_fns);
+      CompileInherentImplItem::Compile (self_lookup, impl_item.get (), ctx,
+					compile_fns);
   }
 
 private:
