@@ -716,6 +716,7 @@ check-simd: $(srcdir)/experimental/simd/generate_makefile.sh \
 	    ${glibcxx_srcdir}/scripts/check_simd \
 	    testsuite_files_simd \
 	    ${glibcxx_builddir}/scripts/testsuite_flags
+	@rm -f .simd.summary
 	${glibcxx_srcdir}/scripts/check_simd "${glibcxx_srcdir}" "${glibcxx_builddir}" "$(CXXFLAGS)" | \
 	  while read subdir; do \
 	    $(MAKE) -C "$${subdir}"; \
