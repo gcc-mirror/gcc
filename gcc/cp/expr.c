@@ -226,17 +226,17 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	     a volatile-qualified type is deprecated unless the assignment
 	     is either a discarded-value expression or appears in an
 	     unevaluated context."  */
-	  if (read_p
-	      && !cp_unevaluated_operand
+	  if (!cp_unevaluated_operand
 	      && (TREE_THIS_VOLATILE (lhs)
 		  || CP_TYPE_VOLATILE_P (TREE_TYPE (lhs)))
 	      && !TREE_THIS_VOLATILE (expr))
 	    {
-	      warning_at (location_of (expr), OPT_Wvolatile,
-			  "using value of simple assignment with %<volatile%>-"
-			  "qualified left operand is deprecated");
-	      /* Make sure not to warn about this assignment again.  */
-	      TREE_THIS_VOLATILE (expr) = true;
+	      if (warning_at (location_of (expr), OPT_Wvolatile,
+			      "using value of simple assignment with "
+			      "%<volatile%>-qualified left operand is "
+			      "deprecated"))
+		/* Make sure not to warn about this assignment again.  */
+		TREE_THIS_VOLATILE (expr) = true;
 	    }
 	  break;
 	}
