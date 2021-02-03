@@ -467,6 +467,11 @@ make_dummy_type (Entity_Id gnat_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
   if (Is_By_Reference_Type (gnat_equiv))
     TYPE_BY_REFERENCE_P (gnu_type) = 1;
+  if (Has_Discriminants (gnat_equiv))
+    decl_attributes (&gnu_type,
+		     tree_cons (get_identifier ("may_alias"), NULL_TREE,
+				NULL_TREE),
+		     ATTR_FLAG_TYPE_IN_PLACE);
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
@@ -516,10 +521,10 @@ build_dummy_unc_pointer_types (Entity_Id gnat_desig_type, tree gnu_desig_type)
     = create_type_stub_decl (create_concat_name (gnat_desig_type, "XUP"),
 			     gnu_fat_type);
   fields = create_field_decl (get_identifier ("P_ARRAY"), gnu_ptr_array,
-			      gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+			      gnu_fat_type, NULL_TREE, NULL_TREE, 0, 1);
   DECL_CHAIN (fields)
     = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
-			 gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+			 gnu_fat_type, NULL_TREE, NULL_TREE, 0, 1);
   finish_fat_pointer_type (gnu_fat_type, fields);
   SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_desig_type);
   /* Suppress debug info until after the type is completed.  */
