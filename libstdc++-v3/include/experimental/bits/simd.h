@@ -2293,12 +2293,6 @@ template <typename _Tp, size_t _Bytes>
     static_assert(!is_same_v<_Tp, double>,
 		  "no __intrinsic_type support for double on PPC w/o VSX");
 #endif
-#ifndef __POWER8_VECTOR__
-    static_assert(
-      !(is_integral_v<_Tp> && sizeof(_Tp) > 4),
-      "no __intrinsic_type support for integers larger than 4 Bytes "
-      "on PPC w/o POWER8 vectors");
-#endif
     using type =
       typename __intrinsic_type_impl<
 		 conditional_t<is_floating_point_v<_Tp>,
