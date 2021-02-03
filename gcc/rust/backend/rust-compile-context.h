@@ -283,8 +283,7 @@ public:
       {
 	TyTy::StructFieldType *field = type.get_field (i);
 	Btype *compiled_field_ty
-	  = TyTyCompile::compile (ctx->get_backend (),
-				  field->get_field_type ());
+	  = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
 	Backend::Btyped_identifier f (field->get_name (), compiled_field_ty,
 				      ctx->get_mappings ()->lookup_location (
