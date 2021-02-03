@@ -7503,10 +7503,8 @@ Parser<ManagedTokenSource>::parse_loop_label ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfExpr>
 Parser<ManagedTokenSource>::parse_if_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED)
+  std::vector<AST::Attribute> outer_attrs)
 {
-  // TODO: make having outer attributes an error?
-
   Location locus = lexer.peek_token ()->get_locus ();
   skip_token (IF);
 
@@ -7525,7 +7523,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
   ParseRestrictions no_struct_expr;
   no_struct_expr.can_be_struct_expr = false;
   std::unique_ptr<AST::Expr> condition
-    = parse_expr (std::vector<AST::Attribute> (), no_struct_expr);
+    = parse_expr ({}, no_struct_expr);
   if (condition == nullptr)
     {
       rust_error_at (lexer.peek_token ()->get_locus (),
@@ -7550,7 +7548,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
     {
       // single selection - end of if expression
       return std::unique_ptr<AST::IfExpr> (
-	new AST::IfExpr (std::move (condition), std::move (if_body), locus));
+	new AST::IfExpr (std::move (condition), std::move (if_body), std::move (outer_attrs), locus));
     }
   else
     {
@@ -7579,7 +7577,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
 	    return std::unique_ptr<AST::IfExprConseqElse> (
 	      new AST::IfExprConseqElse (std::move (condition),
 					 std::move (if_body),
-					 std::move (else_body), locus));
+					 std::move (else_body), std::move (outer_attrs), locus));
 	  }
 	  case IF: {
 	    // multiple selection - else if or else if let
@@ -7601,7 +7599,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
 		return std::unique_ptr<AST::IfExprConseqIfLet> (
 		  new AST::IfExprConseqIfLet (std::move (condition),
 					      std::move (if_body),
-					      std::move (if_let_expr), locus));
+					      std::move (if_let_expr), std::move (outer_attrs), locus));
 	      }
 	    else
 	      {
@@ -7619,7 +7617,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
 		return std::unique_ptr<AST::IfExprConseqIf> (
 		  new AST::IfExprConseqIf (std::move (condition),
 					   std::move (if_body),
-					   std::move (if_expr), locus));
+					   std::move (if_expr), std::move (outer_attrs), locus));
 	      }
 	  }
 	default:
@@ -7639,10 +7637,8 @@ Parser<ManagedTokenSource>::parse_if_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfLetExpr>
 Parser<ManagedTokenSource>::parse_if_let_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED)
+  std::vector<AST::Attribute> outer_attrs)
 {
-  // TODO: make having outer attributes an error?
-
   Location locus = lexer.peek_token ()->get_locus ();
   skip_token (IF);
 
@@ -7679,7 +7675,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
   ParseRestrictions no_struct_expr;
   no_struct_expr.can_be_struct_expr = false;
   std::unique_ptr<AST::Expr> scrutinee_expr
-    = parse_expr (std::vector<AST::Attribute> (), no_struct_expr);
+    = parse_expr ({}, no_struct_expr);
   if (scrutinee_expr == nullptr)
     {
       rust_error_at (
@@ -7709,7 +7705,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
       return std::unique_ptr<AST::IfLetExpr> (
 	new AST::IfLetExpr (std::move (match_arm_patterns),
 			    std::move (scrutinee_expr), std::move (if_let_body),
-			    locus));
+			    std::move (outer_attrs), locus));
     }
   else
     {
@@ -7739,7 +7735,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 	      new AST::IfLetExprConseqElse (std::move (match_arm_patterns),
 					    std::move (scrutinee_expr),
 					    std::move (if_let_body),
-					    std::move (else_body), locus));
+					    std::move (else_body), std::move (outer_attrs), locus));
 	  }
 	  case IF: {
 	    // multiple selection - else if or else if let
@@ -7761,7 +7757,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 		return std::unique_ptr<AST::IfLetExprConseqIfLet> (
 		  new AST::IfLetExprConseqIfLet (
 		    std::move (match_arm_patterns), std::move (scrutinee_expr),
-		    std::move (if_let_body), std::move (if_let_expr), locus));
+		    std::move (if_let_body), std::move (if_let_expr), std::move (outer_attrs), locus));
 	      }
 	    else
 	      {
@@ -7780,7 +7776,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 		  new AST::IfLetExprConseqIf (std::move (match_arm_patterns),
 					      std::move (scrutinee_expr),
 					      std::move (if_let_body),
-					      std::move (if_expr), locus));
+					      std::move (if_expr), std::move (outer_attrs), locus));
 	      }
 	  }
 	default:

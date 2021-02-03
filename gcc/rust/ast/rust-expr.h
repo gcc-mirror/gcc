@@ -4075,6 +4075,7 @@ class IfLetExpr;
 // Base if expression with no "else" or "if let" AST node
 class IfExpr : public ExprWithBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Expr> condition;
   std::unique_ptr<BlockExpr> if_block;
   Location locus;
@@ -4083,14 +4084,14 @@ public:
   std::string as_string () const override;
 
   IfExpr (std::unique_ptr<Expr> condition, std::unique_ptr<BlockExpr> if_block,
-	  Location locus)
-    : condition (std::move (condition)), if_block (std::move (if_block)),
+	  std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), condition (std::move (condition)), if_block (std::move (if_block)),
       locus (locus)
   {}
   // outer attributes are never allowed on IfExprs
 
   // Copy constructor with clone
-  IfExpr (IfExpr const &other) : ExprWithBlock (other), locus (other.locus)
+  IfExpr (IfExpr const &other) : ExprWithBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.condition != nullptr)
@@ -4103,6 +4104,7 @@ public:
   IfExpr &operator= (IfExpr const &other)
   {
     ExprWithBlock::operator= (other);
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference (only required if error state)
@@ -4165,8 +4167,11 @@ public:
     return if_block == nullptr && condition == nullptr;
   }
 
-  // this should never be called
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { rust_assert (false); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -4190,8 +4195,8 @@ public:
 
   IfExprConseqElse (std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> if_block,
-		    std::unique_ptr<BlockExpr> else_block, Location locus)
-    : IfExpr (std::move (condition), std::move (if_block), locus),
+		    std::unique_ptr<BlockExpr> else_block, std::vector<Attribute> outer_attrs, Location locus)
+    : IfExpr (std::move (condition), std::move (if_block), std::move (outer_attrs), locus),
       else_block (std::move (else_block))
   {}
   // again, outer attributes not allowed
@@ -4246,8 +4251,8 @@ public:
 
   IfExprConseqIf (std::unique_ptr<Expr> condition,
 		  std::unique_ptr<BlockExpr> if_block,
-		  std::unique_ptr<IfExpr> conseq_if_expr, Location locus)
-    : IfExpr (std::move (condition), std::move (if_block), locus),
+		  std::unique_ptr<IfExpr> conseq_if_expr, std::vector<Attribute> outer_attrs, Location locus)
+    : IfExpr (std::move (condition), std::move (if_block), std::move (outer_attrs), locus),
       conseq_if_expr (std::move (conseq_if_expr))
   {}
   // outer attributes not allowed
@@ -4298,6 +4303,7 @@ protected:
 // Basic "if let" expression AST node with no else
 class IfLetExpr : public ExprWithBlock
 {
+  std::vector<Attribute> outer_attrs;
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
   std::unique_ptr<Expr> value;
   std::unique_ptr<BlockExpr> if_block;
@@ -4307,7 +4313,7 @@ public:
   std::string as_string () const override;
 
   IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
+	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block, std::vector<Attribute> outer_attrs,
 	     Location locus)
     : match_arm_patterns (std::move (match_arm_patterns)),
       value (std::move (value)), if_block (std::move (if_block)), locus (locus)
@@ -4316,7 +4322,7 @@ public:
 
   // copy constructor with clone
   IfLetExpr (IfLetExpr const &other)
-    : ExprWithBlock (other), locus (other.locus)
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error state)
     if (other.value != nullptr)
@@ -4333,6 +4339,7 @@ public:
   IfLetExpr &operator= (IfLetExpr const &other)
   {
     ExprWithBlock::operator= (other);
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     // guard to prevent null dereference (only required if error state)
@@ -4402,8 +4409,11 @@ public:
     return match_arm_patterns;
   }
 
-  // this should never be called
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { rust_assert (false); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4430,9 +4440,9 @@ public:
 
   IfExprConseqIfLet (std::unique_ptr<Expr> condition,
 		     std::unique_ptr<BlockExpr> if_block,
-		     std::unique_ptr<IfLetExpr> conseq_if_let_expr,
+		     std::unique_ptr<IfLetExpr> conseq_if_let_expr, std::vector<Attribute> outer_attrs,
 		     Location locus)
-    : IfExpr (std::move (condition), std::move (if_block), locus),
+    : IfExpr (std::move (condition), std::move (if_block), std::move (outer_attrs), locus),
       if_let_expr (std::move (conseq_if_let_expr))
   {}
   // outer attributes not allowed
@@ -4487,9 +4497,9 @@ public:
   IfLetExprConseqElse (
     std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-    std::unique_ptr<BlockExpr> else_block, Location locus)
+    std::unique_ptr<BlockExpr> else_block, std::vector<Attribute> outer_attrs, Location locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
-		 std::move (if_block), locus),
+		 std::move (if_block), std::move (outer_attrs), locus),
       else_block (std::move (else_block))
   {}
   // outer attributes not allowed
@@ -4546,9 +4556,9 @@ public:
   IfLetExprConseqIf (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 		     std::unique_ptr<Expr> value,
 		     std::unique_ptr<BlockExpr> if_block,
-		     std::unique_ptr<IfExpr> if_expr, Location locus)
+		     std::unique_ptr<IfExpr> if_expr, std::vector<Attribute> outer_attrs, Location locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
-		 std::move (if_block), locus),
+		 std::move (if_block), std::move (outer_attrs), locus),
       if_expr (std::move (if_expr))
   {}
   // again, outer attributes not allowed
@@ -4604,9 +4614,9 @@ public:
   IfLetExprConseqIfLet (
     std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-    std::unique_ptr<IfLetExpr> if_let_expr, Location locus)
+    std::unique_ptr<IfLetExpr> if_let_expr, std::vector<Attribute> outer_attrs, Location locus)
     : IfLetExpr (std::move (match_arm_patterns), std::move (value),
-		 std::move (if_block), locus),
+		 std::move (if_block), std::move (outer_attrs), locus),
       if_let_expr (std::move (if_let_expr))
   {}
   // outer attributes not allowed

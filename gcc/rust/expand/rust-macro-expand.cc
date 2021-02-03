@@ -1529,12 +1529,15 @@ public:
   }
   void visit (AST::IfExpr &expr) override
   {
-    // TODO: for if expressions, are attributes allowed if it is part of an expression statement?
-    // if so, probably have to add a "does_expr_allow_attrs()" method to Expr and then don't move attrs.
-    // otherwise, that may be useful anyway for better error messages. 
+    // rust playground test shows that IfExpr does support outer attrs, at least when used as statement
 
-    // NOTE: IfExpr literally doesn't support outer attrs, so no strip code
-    // TODO: is this still true? can't find info on page
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     // can't strip condition expr itself, but can strip sub-expressions
     auto &condition_expr = expr.get_condition_expr ();
@@ -1554,7 +1557,13 @@ public:
   }
   void visit (AST::IfExprConseqElse &expr) override
   {
-    // NOTE: IfExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     // can't strip condition expr itself, but can strip sub-expressions
     auto &condition_expr = expr.get_condition_expr ();
@@ -1582,7 +1591,13 @@ public:
   }
   void visit (AST::IfExprConseqIf &expr) override
   {
-    // NOTE: IfExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     // can't strip condition expr itself, but can strip sub-expressions
     auto &condition_expr = expr.get_condition_expr ();
@@ -1610,7 +1625,13 @@ public:
   }
   void visit (AST::IfExprConseqIfLet &expr) override
   {
-    // NOTE: IfExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     // can't strip condition expr itself, but can strip sub-expressions
     auto &condition_expr = expr.get_condition_expr ();
@@ -1639,8 +1660,14 @@ public:
   }
   void visit (AST::IfLetExpr &expr) override
   {
-    // NOTE: IfLetExpr literally doesn't support outer attrs, so no strip code
-
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
+    
     for (auto &pattern : expr.get_patterns ())
       {
 	pattern->accept_vis (*this);
@@ -1667,7 +1694,13 @@ public:
   }
   void visit (AST::IfLetExprConseqElse &expr) override
   {
-    // NOTE: IfLetExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     for (auto &pattern : expr.get_patterns ())
       {
@@ -1703,7 +1736,13 @@ public:
   }
   void visit (AST::IfLetExprConseqIf &expr) override
   {
-    // NOTE: IfLetExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     for (auto &pattern : expr.get_patterns ())
       {
@@ -1739,7 +1778,13 @@ public:
   }
   void visit (AST::IfLetExprConseqIfLet &expr) override
   {
-    // NOTE: IfLetExpr literally doesn't support outer attrs, so no strip code
+    // initial strip test based on outer attrs
+    expander.expand_cfg_attrs (expr.get_outer_attrs ());
+    if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+      {
+	expr.mark_for_strip ();
+	return;
+      }
 
     for (auto &pattern : expr.get_patterns ())
       {
