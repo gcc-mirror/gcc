@@ -25,7 +25,9 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -36,7 +38,8 @@ with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;

@@ -434,7 +434,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   gcc_assert (!is_type
 	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
-	      || (!IN (kind, Numeric_Kind)
+	      || (!Is_In_Numeric_Kind (kind)
 		  && !IN (kind, Enumeration_Kind)
 		  && (!IN (kind, Access_Kind)
 		      || kind == E_Access_Protected_Subprogram_Type
@@ -443,7 +443,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      || type_annotate_only)));
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
-  gcc_assert (!(IN (kind, Discrete_Or_Fixed_Point_Kind)
+  gcc_assert (!(Is_In_Discrete_Or_Fixed_Point_Kind (kind)
 		&& Unknown_RM_Size (gnat_entity)));
 
   /* If we get here, it means we have not yet done anything with this entity.
@@ -4568,7 +4568,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Similarly, if this is a record type or subtype at global level, call
 	 elaborate_expression_2 on any field position.  Skip any fields that
 	 we haven't made trees for to avoid problems with class-wide types.  */
-      if (IN (kind, Record_Kind) && global_bindings_p ())
+      if (Is_In_Record_Kind (kind) && global_bindings_p ())
 	for (gnat_temp = First_Entity (gnat_entity); Present (gnat_temp);
 	     gnat_temp = Next_Entity (gnat_temp))
 	  if (Ekind (gnat_temp) == E_Component && present_gnu_tree (gnat_temp))
@@ -7675,7 +7675,7 @@ typedef struct vinfo
    will be the single field of GNU_RECORD_TYPE and the GCC nodes for the
    discriminants will be on GNU_FIELD_LIST.  The other call to this function
    is a recursive call for the component list of a variant and, in this case,
-   GNU_FIELD_LIST is empty.
+   GNU_FIELD_LIST is empty.  Note that GNAT_COMPONENT_LIST may be Empty.
 
    PACKED is 1 if this is for a packed record or -1 if this is for a record
    with Component_Alignment of Storage_Unit.
@@ -7731,7 +7731,8 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
   gnu_last = tree_last (gnu_field_list);
-  if (Present (Component_Items (gnat_component_list)))
+  if (Present (gnat_component_list)
+      && (Present (Component_Items (gnat_component_list))))
     for (gnat_component_decl
 	   = First_Non_Pragma (Component_Items (gnat_component_list));
 	 Present (gnat_component_decl);
@@ -7788,7 +7789,10 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
       }
 
   /* At the end of the component list there may be a variant part.  */
-  gnat_variant_part = Variant_Part (gnat_component_list);
+  if (Present (gnat_component_list))
+    gnat_variant_part = Variant_Part (gnat_component_list);
+  else
+    gnat_variant_part = Empty;
 
   /* We create a QUAL_UNION_TYPE for the variant part since the variants are
      mutually exclusive and should go in the same memory.  To do this we need

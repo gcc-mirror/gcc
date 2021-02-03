@@ -1,0 +1,309 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                                G E N _ I L                               --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
+------------------------------------------------------------------------------
+
+pragma Warnings (Off); -- with clauses for children
+with Ada.Strings.Text_Output.Formatting;
+use Ada.Strings.Text_Output, Ada.Strings.Text_Output.Formatting;
+with Ada.Strings.Text_Output.Files; use Ada.Strings.Text_Output.Files;
+with Ada.Strings.Text_Output.Utils; use Ada.Strings.Text_Output.Utils;
+with Ada.Characters.Handling;       use Ada.Characters.Handling;
+pragma Warnings (On);
+
+package Gen_IL is -- generate intermediate language
+
+   --  This package and children generates the main intermediate language used
+   --  by the compiler, which is a decorated syntax tree.
+
+   --  Here's what the hand-written and generated code looks like. The make
+   --  files run the gen_il-main.adb program to generate the generated files
+   --  listed below, before building the compiler proper.
+   --
+   --  atree.ads, atree.adb: Rewrite according to low-level
+   --  design notes. Remove package Unchecked_Access.
+   --  Low-level getters and setters go in Atree_Private_Part.
+   --  These are called by the high-level automatically-generated
+   --  getters and setters in Sinfo.Nodes and Einfo.Entities.
+   --  Also used by Atree.Traverse_Func, and by Treepr.
+   --
+   --  sinfo.ads, einfo.ads: Remove getters and setters.
+   --  Remove Write_... routines used by old Treepr.
+   --  Keep commments describing the semantics of all the nodes,
+   --  entities, and fields. These comments are wrong, but only
+   --  a little, and I'm not going to try to fix them. At some
+   --  point, we could remove the comments giving field offsets
+   --  (e.g. "(Flag5-Sem)"), but for now, just note that that's
+   --  obsolete info.
+   --
+   --  einfo.adb, sinfo.adb: Delete.
+   --
+   --  gen_il.ads, gen_il.adb: Mostly empty root package for the
+   --  "generate intermediate language" program, which generates
+   --  all the files mentioned here.
+   --  The main program is gen_il-main.adb.
+   --
+   --  sinfo-utils.ads, sinfo-utils.adb, einfo-utils.ads, einfo-utils.adb:
+   --  Move all handwritten code currently in sinfo&einfo to here,
+   --  if it refers to stuff in sinfo-nodes.ads, einfo-entities.ads
+   --  This includes the "synthesized attributes".
+   --
+   --  gen_il-types.ads: Enumeration type containing one literal for
+   --  each type of interest. That includes all the Node_Kinds and
+   --  Entity_Kinds, plus the subtypes that include multiple
+   --  Node_Kinds and Entity_Kinds (all from the old sinfo/einfo),
+   --  plus all field types (Uint, Ureal, Name_Id, etc).
+   --
+   --  gen_il-fields.ads: Enumeration of all the fields of all node
+   --  and entity types.
+   --
+   --  gen_il-gen.ads, gen_il-gen.adb: Implementation of the "compiler"
+   --  for the "little language".
+   --
+   --  gen_il-gen-gen_nodes.adb: Procedure to generate Sinfo.Nodes
+   --  (by calling procedures in Gen_IL).
+   --  This defines what abstract and concrete node types exist,
+   --  and what fields they have. This and the next one are the
+   --  hard part. I'm planning to generate this semi-automatically.
+   --  But once it's working, we will maintain it by hand.
+   --
+   --  gen_il-gen-gen_entities.adb: Procedure to generate einfo-entities.*.
+   --  This defines what abstract and concrete entity types exist,
+   --  and what fields they have.
+   --
+   --  seinfo.ads: Generated by gen_il-main.adb. Contains declarations shared
+   --  by Sinfo.Nodes and Einfo.Entities.
+   --
+   --  sinfo-nodes.ads, sinfo-nodes.adb: Generated by gen_il-main.adb
+   --  (really by Gen_Nodes). Contains:
+   --
+   --      - Information in comments, such as what fields exist in what
+   --        node kinds, which might be hard to compute by hand for
+   --        inherited fields.
+   --
+   --      - Type Node_Kind. Same as the old Sinfo, but now generated.
+   --        One enumeral for each concrete node type in Gen_Nodes.
+   --
+   --      - One subtype of Node_Kind for each abstract type in Gen_Nodes.
+   --        Same as the old Sinfo, but now generated. E.g.:
+   --
+   --        subtype N_Representation_Clause is Node_Kind range
+   --          N_At_Clause .. N_Attribute_Definition_Clause;
+   --
+   --      - One subtype of Node_Id for each abstract and concrete type,
+   --        with a predicate requiring the right Nkind. E.g.:
+   --
+   --        subtype N_Representation_Clause_Id is
+   --          Node_Id with Predicate =>
+   --            Nkind (N_Representation_Clause_Id) in N_Representation_Clause;
+   --
+   --      - Getters and setters for every node field. If the field is defined
+   --        for all node kinds in one of the above Node_Id subtypes and no
+   --        others, then we use that as the parameter subtype:
+   --
+   --        function Abortable_Part
+   --          (N : N_Asynchronous_Select_Id) return Node_Id with Inline;
+   --
+   --        Otherwise, we use a precondition:
+   --
+   --        function Abstract_Present
+   --          (N : Node_Id) return Flag with Inline, Pre =>
+   --          N in N_Private_Extension_Declaration_Id
+   --             | N_Private_Type_Declaration_Id
+   --             | N_Derived_Type_Definition_Id
+   --             ...
+   --
+   --      - Type Node_Field: Enumeration of all node fields. Used by Treepr,
+   --        and in tables below.
+   --
+   --      - Table of syntactic fields. For each node kind, we have a sequence
+   --        of fields. A field is included if it exists in that node kind,
+   --        and it is syntactic, and it is of type Node_Id or List_Id.
+   --        Used by Traverse_Func.
+   --
+   --      - Table of node sizes, indexed by Node_Kind. Used by Atree when
+   --        allocating and copying nodes.
+   --
+   --      - Table mapping Node_Kinds to the sequence of fields that exist in
+   --        that Node_Kind. Used by Treepr.
+   --
+   --      - Node_Field_Descriptors: Table mapping fields to type and offset.
+   --        Used by Treepr to know where to find each field, and what its
+   --        type is, for printing.
+   --
+   --      - The body contains instantiations of the low-level getters and
+   --        setters declared in Atree, e.g.:
+   --
+   --        function Get_List_Id is new Get_32_Bit_Field (List_Id)
+   --           with Inline;
+   --        procedure Set_List_Id is new Set_32_Bit_Field (List_Id)
+   --           with Inline;
+   --
+   --        and bodies of the high-level getters and setters, e.g.:
+   --
+   --        function Actions
+   --          (N : Node_Id) return List_Id is
+   --        begin
+   --           return Get_List_Id (N, 4);
+   --        end Actions;
+   --
+   --  einfo-entities.ads, einfo-entities.adb: Generated by gen_il-main.adb
+   --  (really by Gen_Entities). Contains the same sort of stuff as
+   --  Sinfo.Nodes, except no table of syntactic fields.
+   --
+   --  nmake.ads, nmake.adb: Same contents as the old version, but generated by
+   --  Gen_IL instead of xnmake.
+   --
+   --  treepr.adb: Rewrite to use the tables in Nodes and Entities.
+   --
+   --  treeprs.ads: Delete. (Was automatically generated.)
+   --  Treepr no longer needs this; it can use 'Image on the
+   --  enumeration types in Nodes and Entities.
+   --
+   --  csinfo.adb, ceinfo.adb, xsinfo.adb, xeinfo.adb, xnmake.adb,
+   --  xtreeprs.adb, nmake.adt, treeprs.adt: Delete.
+
+   --  C++ code:
+   --
+   --  atree.h (hand-written code):
+   --
+   --  This code should be entirely deleted, and replaced with low-level
+   --  getters analogous to the generic getters in Atree.  One getter for each
+   --  field size (currently 1, 2, 4, 8, and 32 bits. No need for setters.
+   --
+   --  ----------------
+   --
+   --  fe.h (hand-written code):
+   --
+   --  There are comments in various places that say that gigi
+   --  does not modify the tree. However, I discovered some stuff
+   --  in fe.h that modifies the tree:
+   --
+   --  #define End_Location                     sinfo__end_location
+   --  #define Set_Has_No_Elaboration_Code sinfo__set_has_no_elaboration_code
+   --  #define Set_Present_Expr         sinfo__set_present_expr
+   --
+   --  #define Set_Alignment                    einfo__set_alignment
+   --  #define Set_Component_Bit_Offset einfo__set_component_bit_offset
+   --  #define Set_Component_Size               einfo__set_component_size
+   --  #define Set_Esize                        einfo__set_esize
+   --  #define Set_Mechanism                    einfo__set_mechanism
+   --  #define Set_Normalized_First_Bit einfo__set_normalized_first_bit
+   --  #define Set_Normalized_Position          einfo__set_normalized_position
+   --  #define Set_RM_Size                      einfo__set_rm_size
+   --
+   --  #define Is_Entity_Name           einfo__utils__is_entity_name
+   --  #define Get_Attribute_Definition_Clause  \
+   --    einfo__utils__get_attribute_definition_clause
+   --
+   --  These setters and some getters need to be changed because the
+   --  setters and getters are moving from Sinfo to Sinfo.Nodes,
+   --  and from Einfo to Einfo.Entities. The last two will be in Einfo.Utils.
+   --
+   --  ----------------
+   --
+   --  sinfo.h (tool-generated code):
+   --
+   --  A bunch of #defines for the node kinds. These can remain the same.
+   --
+   --  A bunch of calls to SUBTYPE (macro defined in gcc-interface/ada.h).
+   --  These can remain the same.
+   --
+   --  A bunch of getters (no setters), like:
+   --
+   --     INLINE Boolean   Abort_Present                  (Node_Id N)
+   --        { return Flag15 (N); }
+   --
+   --  Change this to call the new low-level getters.
+   --  Something like:
+   --
+   --     INLINE Boolean   Abort_Present                  (Node_Id N)
+   --        { return Get_Flag (N, 15); }
+   --
+   --  Generate the low-level getters in the same file, before the above
+   --  high-level getters, one for each field type:
+   --
+   --        Flag
+   --        Node_Id
+   --        List_Id
+   --        Elist_Id
+   --        Name_Id
+   --        String_Id
+   --        Uint
+   --        Ureal
+   --        Node_Kind
+   --        Entity_Kind
+   --        Source_Ptr
+   --        Small_Paren_Count_Type
+   --        Union_Id
+   --        Convention_Id
+   --        Component_Alignment_Kind
+   --        Float_Rep_Kind
+   --        Mechanism_Type
+   --
+   --  These are in types.h.
+   --
+   --  ----------------
+   --
+   --  einfo.h (tool-generated code):
+   --
+   --  Can mostly remain the same, except:
+   --
+   --      Call low-level getters, as for sinfo.h.
+   --
+   --      The getters that are NOT inlined will be moved from
+   --      Einfo to Einfo.Entities.
+   --      I don't understand why some are not inlined (e.g Float_Rep?).
+   --      Most are not inlined because they are synthesized.
+   --      Maybe that should be hand written, and moved to a different file.
+   --      Or maybe Gen_IL should know about these fields.
+   --
+   --      We have code like:
+   --         INLINE B Is_Subprogram_Or_Generic_Subprogram (E Id)
+   --            { return IN (Ekind (Id), Subprogram_Kind) || IN (Ekind (Id),
+   --              Generic_Subprogram_Kind); }
+   --      That should be hand written, and moved to atree.h or fe.h.
+   --      Is_Record_Type requires special treatment, because Record_Kind is
+   --      a nonhierarchical type.
+   --
+   --  Looks like the getters are in alphabetical order.
+   --  Except for the Is_..._Type ones.
+
+   --  Misc declarations used throughout:
+
+   type Root_Int is new Integer;
+   function Image (X : Root_Int) return String;
+   --  Without the extra blank. You can derive from Root_Int or the subtypes
+   --  below, and inherit a convenient Image function that leaves out that
+   --  blank.
+
+   subtype Root_Nat is Root_Int range 0 .. Root_Int'Last;
+   subtype Root_Pos is Root_Int range 1 .. Root_Int'Last;
+
+   function Capitalize (S : String) return String;
+   procedure Capitalize (S : in out String);
+   --  Turns an identifier into Mixed_Case
+
+   type String_Ptr is access all String;
+
+end Gen_IL;

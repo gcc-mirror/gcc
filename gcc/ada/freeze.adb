@@ -28,7 +28,9 @@ with Atree;     use Atree;
 with Checks;    use Checks;
 with Contracts; use Contracts;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Exp_Ch3;   use Exp_Ch3;
@@ -59,7 +61,9 @@ with Sem_Mech;  use Sem_Mech;
 with Sem_Prag;  use Sem_Prag;
 with Sem_Res;   use Sem_Res;
 with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;    use Snames;
 with Stand;     use Stand;
 with Stringt;   use Stringt;
@@ -7545,7 +7549,7 @@ package body Freeze is
 
       Typ := Empty;
 
-      if Nkind (N) in N_Has_Etype then
+      if Nkind (N) in N_Has_Etype and then Present (Etype (N)) then
          if not Is_Frozen (Etype (N)) then
             Typ := Etype (N);
 
@@ -7566,6 +7570,7 @@ package body Freeze is
       --  an initialization procedure from freezing the variable.
 
       if Is_Entity_Name (N)
+        and then Present (Entity (N))
         and then not Is_Frozen (Entity (N))
         and then (Nkind (N) /= N_Identifier
                    or else Comes_From_Source (N)

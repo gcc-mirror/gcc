@@ -65,7 +65,9 @@ with Sem_Eval;
 with Sem_Prag;
 with Sem_Type;
 with Set_Targ;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;    use Sinput;
 with Sinput.L;  use Sinput.L;
 with Snames;    use Snames;
@@ -610,12 +612,6 @@ procedure Gnat1drv is
          Ttypes.Target_Strict_Alignment := True;
       end if;
 
-      --  Increase size of allocated entities if debug flag -gnatd.N is set
-
-      if Debug_Flag_Dot_NN then
-         Atree.Num_Extension_Nodes := Atree.Num_Extension_Nodes + 1;
-      end if;
-
       --  Disable static allocation of dispatch tables if -gnatd.t is enabled.
       --  The front end's layout phase currently treats types that have
       --  discriminant-dependent arrays as not being static even when a
@@ -1092,10 +1088,6 @@ begin
 
       --  Lib.Initialize needs to be called before Scan_Compiler_Arguments,
       --  because it initializes a table filled by Scan_Compiler_Arguments.
-
-      --  Atree.Initialize needs to be called after Scan_Compiler_Arguments,
-      --  because the value specified by the -gnaten switch is used by
-      --  Atree.Initialize.
 
       Osint.Initialize;
       Fmap.Reset_Tables;
@@ -1719,10 +1711,6 @@ begin
    end;
 
    <<End_Of_Program>>
-
-   if Debug_Flag_Dot_AA then
-      Atree.Print_Statistics;
-   end if;
 
 --  The outer exception handler handles an unrecoverable error
 

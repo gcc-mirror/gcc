@@ -75,8 +75,8 @@
 #define ALLOCA_THRESHOLD 1000
 
 /* Pointers to front-end tables accessed through macros.  */
-struct Node *Nodes_Ptr;
-struct Flags *Flags_Ptr;
+Field_Offset *Node_Offsets_Ptr;
+slot *Slots_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
 struct Elist_Header *Elists_Ptr;
@@ -279,8 +279,8 @@ void
 gigi (Node_Id gnat_root,
       int max_gnat_node,
       int number_name ATTRIBUTE_UNUSED,
-      struct Node *nodes_ptr,
-      struct Flags *flags_ptr,
+      Field_Offset *node_offsets_ptr,
+      slot *slots_ptr,
       Node_Id *next_node_ptr,
       Node_Id *prev_node_ptr,
       struct Elist_Header *elists_ptr,
@@ -305,8 +305,8 @@ gigi (Node_Id gnat_root,
 
   max_gnat_nodes = max_gnat_node;
 
-  Nodes_Ptr = nodes_ptr;
-  Flags_Ptr = flags_ptr;
+  Node_Offsets_Ptr = node_offsets_ptr;
+  Slots_Ptr = slots_ptr;
   Next_Node_Ptr = next_node_ptr;
   Prev_Node_Ptr = prev_node_ptr;
   Elists_Ptr = elists_ptr;

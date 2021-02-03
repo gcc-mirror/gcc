@@ -25,7 +25,9 @@
 
 with Aspects;  use Aspects;
 with Atree;    use Atree;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Prag; use Exp_Prag;
@@ -46,7 +48,9 @@ with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;

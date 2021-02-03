@@ -37,7 +37,6 @@
 --  the Wide_Character_Type uses twice the size of a C char, instead of the
 --  size of wchar_t.
 
-with Einfo; use Einfo;
 with Types; use Types;
 
 package Get_Targ is

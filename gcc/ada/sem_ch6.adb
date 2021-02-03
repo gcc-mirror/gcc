@@ -28,7 +28,9 @@ with Atree;     use Atree;
 with Checks;    use Checks;
 with Contracts; use Contracts;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Expander;  use Expander;
@@ -77,7 +79,9 @@ with Sem_Type;  use Sem_Type;
 with Sem_Warn;  use Sem_Warn;
 with Sinput;    use Sinput;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN;  use Sinfo.CN;
 with Snames;    use Snames;
 with Stringt;   use Stringt;
@@ -1844,6 +1848,11 @@ package body Sem_Ch6 is
          --  Visible generic entity is callable within its own body
 
          Set_Ekind          (Gen_Id,  Ekind (Body_Id));
+         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter,
+           Old_Ekind =>
+             (E_Function | E_Procedure |
+                E_Generic_Function | E_Generic_Procedure => True,
+              others => False));
          Set_Ekind          (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
@@ -1920,6 +1929,8 @@ package body Sem_Ch6 is
 
       --  Outside of its body, unit is generic again
 
+      Reinit_Field_To_Zero (Gen_Id, Has_Nested_Subprogram,
+        Old_Ekind => (E_Function | E_Procedure => True, others => False));
       Set_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
 
@@ -4599,6 +4610,18 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
+         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (Body_Id, Needs_No_Actuals,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (Body_Id, Is_Predicate_Function,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (Body_Id, Protected_Subprogram,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+
+         if Ekind (Body_Id) = E_Procedure then
+            Reinit_Field_To_Zero (Body_Id, Receiving_Entry);
+         end if;
+
          Set_Ekind (Body_Id, E_Subprogram_Body);
 
          if Nkind (N) = N_Subprogram_Body_Stub then
@@ -5766,8 +5789,21 @@ package body Sem_Ch6 is
       if Nkind (N) = N_Function_Specification then
          Set_Ekind (Designator, E_Function);
          Set_Mechanism (Designator, Default_Mechanism);
+
       else
-         Set_Ekind (Designator, E_Procedure);
+         case Ekind (Designator) is
+            when E_Subprogram_Body | E_Void =>
+               Reinit_Field_To_Zero
+                 (Designator, Corresponding_Protected_Entry);
+               Set_Ekind (Designator, E_Procedure);
+
+            when E_Procedure | E_Generic_Procedure =>
+               null;
+
+            when others =>
+               pragma Assert (False);
+         end case;
+
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 

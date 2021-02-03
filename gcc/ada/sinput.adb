@@ -31,6 +31,8 @@ with Debug;    use Debug;
 with Opt;      use Opt;
 with Output;   use Output;
 with Scans;    use Scans;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Widechar; use Widechar;
 
 with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;

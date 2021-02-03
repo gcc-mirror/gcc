@@ -27,7 +27,8 @@
 
 with Aspects; use Aspects;
 with Atree;   use Atree;
-with Einfo;   use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Exp_Tss; use Exp_Tss;
 with Namet;   use Namet;
 with Opt;     use Opt;
@@ -2388,7 +2389,7 @@ package Sem_Util is
    --  Initialize/Adjust/Finalize subprogram does not override the inherited
    --  one.
 
-   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean;
+   function Is_Volatile_Full_Access_Object_Ref (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is Volatile_Full_Access.
 
@@ -2397,7 +2398,7 @@ package Sem_Util is
    --  pragma Volatile_Function. Protected functions are treated as volatile
    --  (SPARK RM 7.1.2).
 
-   function Is_Volatile_Object (N : Node_Id) return Boolean;
+   function Is_Volatile_Object_Ref (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to a volatile
    --  object as per RM C.6(8). Note that the test here is for something that
    --  is actually declared as volatile, not for an object that gets treated
@@ -3017,13 +3018,6 @@ package Sem_Util is
    --  Determine whether scope Inner appears within scope Outer or both denote
    --  the same scope. Note that scopes are partially ordered, so Scope_Within
    --  (A, B) and Scope_Within (B, A) may both return False.
-
-   procedure Set_Convention (E : Entity_Id; Val : Convention_Id);
-   --  Same as Basic_Set_Convention, but with an extra check for access types.
-   --  In particular, if E is an access-to-subprogram type, and Val is a
-   --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
-   --  Also, if the Etype of E is set and is an anonymous access type with
-   --  no convention set, this anonymous type inherits the convention of E.
 
    procedure Set_Current_Entity (E : Entity_Id);
    pragma Inline (Set_Current_Entity);

@@ -29,11 +29,13 @@ pragma Style_Checks (All_Checks);
 
 with Atree;    use Atree;
 with Csets;    use Csets;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
 with Stringt;  use Stringt;

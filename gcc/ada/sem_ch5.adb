@@ -27,7 +27,9 @@ with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
@@ -56,7 +58,9 @@ with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -1315,6 +1319,10 @@ package body Sem_Ch5 is
                Set_Identifier (N, Empty);
 
             else
+               if Ekind (Ent) = E_Label then
+                  Reinit_Field_To_Zero (Ent, Enclosing_Scope);
+               end if;
+
                Set_Ekind (Ent, E_Block);
                Generate_Reference (Ent, N, ' ');
                Generate_Definition (Ent);
@@ -3752,6 +3760,7 @@ package body Sem_Ch5 is
             --  parser for generic units.
 
             if Ekind (Ent) = E_Label then
+               Reinit_Field_To_Zero (Ent, Enclosing_Scope);
                Set_Ekind (Ent, E_Loop);
 
                if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then

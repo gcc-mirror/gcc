@@ -24,7 +24,9 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;   use Errout;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -35,7 +37,8 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinput;   use Sinput;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;

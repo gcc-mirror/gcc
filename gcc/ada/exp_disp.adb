@@ -26,7 +26,9 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
@@ -58,7 +60,9 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
@@ -4093,7 +4097,10 @@ package body Exp_Disp is
             Count := Count + 1;
          end loop;
 
-         pragma Assert (Related_Type (Node (Elmt)) = Typ);
+         --  Related_Type (Node (Elmt)) should be equal to Typ here, but we
+         --  can't assert that, because it is sometimes false in illegal
+         --  programs. We can't check Serious_Errors_Detected, because the
+         --  errors have not yet been detected.
 
          Get_External_Name (Node (Elmt));
          Set_Interface_Name (DT,
@@ -4694,8 +4701,8 @@ package body Exp_Disp is
 
       Discard_Names : constant Boolean :=
                         Present (No_Tagged_Streams_Pragma (Typ))
-                          and then (Global_Discard_Names
-                                     or else Einfo.Discard_Names (Typ));
+                          and then
+        (Global_Discard_Names or else Einfo.Entities.Discard_Names (Typ));
 
       --  The following name entries are used by Make_DT to generate a number
       --  of entities related to a tagged type. These entities may be generated

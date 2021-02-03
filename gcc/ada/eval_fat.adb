@@ -23,7 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;   use Errout;
 with Opt;      use Opt;
 with Sem_Util; use Sem_Util;

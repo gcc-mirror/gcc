@@ -26,7 +26,9 @@
 with Alloc;
 with Atree;    use Atree;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;   use Errout;
 with Fname;    use Fname;
 with Lib;      use Lib;
@@ -39,7 +41,8 @@ with Scans;    use Scans;
 with Scn;      use Scn;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Snames;   use Snames;
 with System;   use System;
 

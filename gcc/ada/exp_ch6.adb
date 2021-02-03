@@ -28,7 +28,9 @@ with Aspects;   use Aspects;
 with Checks;    use Checks;
 with Contracts; use Contracts;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;    use Errout;
 with Elists;    use Elists;
 with Expander;  use Expander;
@@ -68,7 +70,9 @@ with Sem_Mech;  use Sem_Mech;
 with Sem_Res;   use Sem_Res;
 with Sem_SCIL;  use Sem_SCIL;
 with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;    use Snames;
 with Stand;     use Stand;
 with Tbuild;    use Tbuild;
@@ -2209,7 +2213,7 @@ package body Exp_Ch6 is
 
          --  Check for volatility mismatch
 
-         if Is_Volatile_Object (Actual) and then not Is_Volatile (E_Formal)
+         if Is_Volatile_Object_Ref (Actual) and then not Is_Volatile (E_Formal)
          then
             if Comes_From_Source (N) then
                Error_Msg_N

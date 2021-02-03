@@ -28,7 +28,8 @@
 with Exp_Tss; use Exp_Tss;
 with Namet;   use Namet;
 with Rtsfind; use Rtsfind;
-with Sinfo;   use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Types;   use Types;
 with Uintp;   use Uintp;
 

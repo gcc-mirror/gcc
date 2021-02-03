@@ -26,7 +26,9 @@
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
@@ -57,7 +59,9 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -5291,7 +5295,7 @@ package body Sem_Ch4 is
                   Set_Parent (Par, Parent (Parent (N)));
 
                   if Try_Object_Operation
-                       (Sinfo.Name (Par), CW_Test_Only => True)
+                       (Sinfo.Nodes.Name (Par), CW_Test_Only => True)
                   then
                      return;
                   end if;

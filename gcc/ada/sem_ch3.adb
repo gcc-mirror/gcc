@@ -29,7 +29,9 @@ with Checks;    use Checks;
 with Contracts; use Contracts;
 with Debug;     use Debug;
 with Elists;    use Elists;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;    use Errout;
 with Eval_Fat;  use Eval_Fat;
 with Exp_Ch3;   use Exp_Ch3;
@@ -72,7 +74,9 @@ with Sem_Type;  use Sem_Type;
 with Sem_Util;  use Sem_Util;
 with Sem_Warn;  use Sem_Warn;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;    use Sinput;
 with Snames;    use Snames;
 with Targparm;  use Targparm;
@@ -1337,7 +1341,20 @@ package body Sem_Ch3 is
            and then Present (Entity (S))
            and then Ekind (Root_Type (Entity (S))) = E_Incomplete_Type
          then
-            Set_Directly_Designated_Type (T, Entity (S));
+            --  The following "if" prevents us from blowing up if the access
+            --  type is illegally completing something else.
+
+            if T in E_Void_Id
+                    | Access_Kind_Id
+                    | E_Private_Type_Id
+                    | E_Limited_Private_Type_Id
+                    | Incomplete_Kind_Id
+            then
+               Set_Directly_Designated_Type (T, Entity (S));
+
+            else
+               pragma Assert (Error_Posted (T));
+            end if;
 
             --  If the designated type is a limited view, we cannot tell if
             --  the full view contains tasks, and there is no way to handle
@@ -1396,45 +1413,47 @@ package body Sem_Ch3 is
          Set_Ekind (T, E_Access_Type);
       end if;
 
-      Full_Desig := Designated_Type (T);
+      if not Error_Posted (T) then
+         Full_Desig := Designated_Type (T);
 
-      if Base_Type (Full_Desig) = T then
-         Error_Msg_N ("access type cannot designate itself", S);
+         if Base_Type (Full_Desig) = T then
+            Error_Msg_N ("access type cannot designate itself", S);
 
-      --  In Ada 2005, the type may have a limited view through some unit in
-      --  its own context, allowing the following circularity that cannot be
-      --  detected earlier.
+         --  In Ada 2005, the type may have a limited view through some unit in
+         --  its own context, allowing the following circularity that cannot be
+         --  detected earlier.
 
-      elsif Is_Class_Wide_Type (Full_Desig) and then Etype (Full_Desig) = T
-      then
-         Error_Msg_N
-           ("access type cannot designate its own class-wide type", S);
+         elsif Is_Class_Wide_Type (Full_Desig) and then Etype (Full_Desig) = T
+         then
+            Error_Msg_N
+              ("access type cannot designate its own class-wide type", S);
 
-         --  Clean up indication of tagged status to prevent cascaded errors
+            --  Clean up indication of tagged status to prevent cascaded errors
 
-         Set_Is_Tagged_Type (T, False);
-      end if;
+            Set_Is_Tagged_Type (T, False);
+         end if;
 
-      Set_Etype (T, T);
+         Set_Etype (T, T);
 
-      --  For SPARK, check that the designated type is compatible with
-      --  respect to volatility with the access type.
+         --  For SPARK, check that the designated type is compatible with
+         --  respect to volatility with the access type.
 
-      if SPARK_Mode /= Off
-         and then Comes_From_Source (T)
-      then
-         --  ??? UNIMPLEMENTED
-         --  In the case where the designated type is incomplete at this point,
-         --  performing this check here is harmless but the check will need to
-         --  be repeated when the designated type is complete.
+         if SPARK_Mode /= Off
+            and then Comes_From_Source (T)
+         then
+            --  ??? UNIMPLEMENTED
+            --  In the case where the designated type is incomplete at this
+            --  point, performing this check here is harmless but the check
+            --  will need to be repeated when the designated type is complete.
 
-         --  The preceding call to Comes_From_Source is needed because the
-         --  FE sometimes introduces implicitly declared access types. See,
-         --  for example, the expansion of nested_po.ads in OA28-015.
+            --  The preceding call to Comes_From_Source is needed because the
+            --  FE sometimes introduces implicitly declared access types. See,
+            --  for example, the expansion of nested_po.ads in OA28-015.
 
-         Check_Volatility_Compatibility
-           (Full_Desig, T, "designated type", "access type",
-            Srcpos_Bearer => T);
+            Check_Volatility_Compatibility
+              (Full_Desig, T, "designated type", "access type",
+               Srcpos_Bearer => T);
+         end if;
       end if;
 
       --  If the type has appeared already in a with_type clause, it is frozen
@@ -4746,6 +4765,10 @@ package body Sem_Ch3 is
 
       --  Now establish the proper kind and type of the object
 
+      if Ekind (Id) = E_Void then
+         Reinit_Field_To_Zero (Id, Next_Inlined_Subprogram);
+      end if;
+
       if Constant_Present (N) then
          Set_Ekind            (Id, E_Constant);
          Set_Is_True_Constant (Id);
@@ -6203,6 +6226,12 @@ package body Sem_Ch3 is
       --  Unconstrained array case
 
       else pragma Assert (Nkind (Def) = N_Unconstrained_Array_Definition);
+
+         if Ekind (T) in Incomplete_Or_Private_Kind then
+            Reinit_Field_To_Zero (T, Stored_Constraint);
+         else
+            pragma Assert (Ekind (T) = E_Void);
+         end if;
 
          Set_Ekind                    (T, E_Array_Type);
          Init_Size_Align              (T);
@@ -12494,6 +12523,10 @@ package body Sem_Ch3 is
       Set_Homonym                   (Full, Save_Homonym);
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
+      if Ekind (Full) in Incomplete_Or_Private_Kind then
+         Reinit_Field_To_Zero (Full, Private_Dependents);
+      end if;
+
       --  Set common attributes for all subtypes: kind, convention, etc.
 
       Set_Ekind            (Full, Subtype_Kind (Ekind (Full_Base)));
@@ -17892,9 +17925,8 @@ package body Sem_Ch3 is
          T := Access_Definition (Related_Nod, Obj_Def);
 
          Set_Is_Local_Anonymous_Access
-           (T,
-            V => (Ada_Version < Ada_2012)
-                   or else (Nkind (P) /= N_Object_Declaration)
+           (T, Ada_Version < Ada_2012
+                   or else Nkind (P) /= N_Object_Declaration
                    or else Is_Library_Level_Entity (Defining_Identifier (P)));
 
       --  Otherwise, the object definition is just a subtype_mark
@@ -19184,6 +19216,20 @@ package body Sem_Ch3 is
       --  abstract, its Etype points back to the specific root type, and it
       --  cannot have any invariants.
 
+      if Ekind (CW_Type) in Incomplete_Or_Private_Kind then
+         Reinit_Field_To_Zero (CW_Type, Private_Dependents);
+
+      elsif Ekind (CW_Type) in Concurrent_Kind then
+         if Ekind (CW_Type) = E_Task_Type then
+            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Checks_OK_Id);
+            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Warnings_OK_Id);
+         end if;
+
+         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
+         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
+         Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+      end if;
+
       Set_Ekind                       (CW_Type, E_Class_Wide_Type);
       Set_Is_Tagged_Type              (CW_Type, True);
       Set_Direct_Primitive_Operations (CW_Type, New_Elmt_List);
@@ -20364,6 +20410,11 @@ package body Sem_Ch3 is
       Discr_Number := Uint_1;
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
+
+         if Ekind (Id) = E_In_Parameter then -- ????Above says E_Void
+            Reinit_Field_To_Zero (Id, Discriminal_Link);
+         end if;
+
          Set_Ekind (Id, E_Discriminant);
          Init_Component_Location (Id);
          Init_Esize (Id);
@@ -20724,7 +20775,7 @@ package body Sem_Ch3 is
                   & "has no discriminants", Full_T);
             end if;
 
-            --  ??????? Do we implement the following properly ?????
+            --  Do we implement the following properly???
             --  If the ancestor subtype of a private extension has constrained
             --  discriminants, then the parent subtype of the full view shall
             --  impose a statically matching constraint on those discriminants
@@ -20803,7 +20854,7 @@ package body Sem_Ch3 is
         and then not Has_Discriminants (Priv_T)
         and then Has_Defaulted_Discriminants (Full_T)
       then
-         Set_Has_Constrained_Partial_View (Full_T);
+         Set_Has_Constrained_Partial_View (Base_Type (Full_T));
          Set_Has_Constrained_Partial_View (Priv_T);
       end if;
 

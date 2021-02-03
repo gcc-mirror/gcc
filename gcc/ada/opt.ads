@@ -1528,7 +1528,7 @@ package Opt is
    Table_Factor : Int := 1;
    --  GNAT
    --  Factor by which all initial table sizes set in Alloc are multiplied.
-   --  Used in Table to calculate initial table sizes (the initial table size
+   --  Used in Table to calculate initial table sizes. The initial table size
    --  is the value in Alloc, used as the Table_Initial parameter value,
    --  multiplied by the factor given here. The default value is used if no
    --  -gnatT switch appears.

@@ -30,7 +30,9 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Eval_Fat;
@@ -66,7 +68,9 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;   use Sinput;
 with System;
 with Stringt;  use Stringt;
@@ -11477,14 +11481,14 @@ package body Sem_Attr is
                     ("access to atomic object cannot yield access-to-" &
                      "non-atomic type", P);
 
-               elsif Is_Volatile_Object (P)
+               elsif Is_Volatile_Object_Ref (P)
                  and then not Is_Volatile (Designated_Type (Typ))
                then
                   Error_Msg_F
                     ("access to volatile object cannot yield access-to-" &
                      "non-volatile type", P);
 
-               elsif Is_Volatile_Full_Access_Object (P)
+               elsif Is_Volatile_Full_Access_Object_Ref (P)
                  and then not Is_Volatile_Full_Access (Designated_Type (Typ))
                then
                   Error_Msg_F

@@ -104,7 +104,7 @@ TEXI2DVI = texi2dvi
 TEXI2PDF = texi2pdf
 GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
-ADAFLAGS = -W -Wall -gnatpg -gnata
+ADAFLAGS = -W -Wall -gnatpg -gnata -gnatU
 FORCE_DEBUG_ADAFLAGS = -g
 NO_INLINE_ADAFLAGS = -fno-inline
 NO_OMIT_ADAFLAGS = -fno-omit-frame-pointer
@@ -332,6 +332,7 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  snames.o stand.o stringt.o styleg.o stylesw.o system.o validsw.o \
  switch.o switch-m.o table.o targparm.o tempdir.o types.o uintp.o \
  uname.o urealp.o usage.o widechar.o \
+ seinfo.o einfo-entities.o einfo-utils.o sinfo-nodes.o sinfo-utils.o \
  $(EXTRA_GNATMAKE_OBJS)
 
 # Make arch match the current multilib so that the RTS selection code
@@ -383,15 +384,20 @@ TOOLS_FLAGS_TO_PASS=		\
 
 GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(LDFLAGS)
 
-# Build directory for the tools. Let's copy the target-dependent
-# sources using the same mechanism as for gnatlib. The other sources are
-# accessed using the vpath directive below
+# Build directory for the tools. We first need to copy the generated files,
+# then the target-dependent sources using the same mechanism as for gnatlib.
+# The other sources are accessed using the vpath directive below
+
+GENERATED_FILES_FOR_TOOLS = \
+  einfo-entities.ads einfo-entities.adb sdefault.adb seinfo.ads \
+  sinfo-nodes.ads sinfo-nodes.adb snames.ads snames.adb
 
 ../stamp-tools:
 	-$(RM) tools/*
 	-$(RMDIR) tools
 	-$(MKDIR) tools
-	-(cd tools; $(LN_S) ../sdefault.adb ../snames.ads ../snames.adb .)
+	-(cd tools; $(foreach FILE,$(GENERATED_FILES_FOR_TOOLS), \
+			     $(LN_S) ../$(FILE) $(FILE);))
 	-$(foreach PAIR,$(TOOLS_TARGET_PAIRS), \
 	          $(RM) tools/$(word 1,$(subst <, ,$(PAIR)));\
 	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \

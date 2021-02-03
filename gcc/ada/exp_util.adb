@@ -28,7 +28,9 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
@@ -57,6 +59,7 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -9183,7 +9186,7 @@ package body Exp_Util is
 
       --  True if object reference with volatile type
 
-      elsif Is_Volatile_Object (N) then
+      elsif Is_Volatile_Object_Ref (N) then
          return True;
 
       --  True if reference to volatile entity
@@ -12203,15 +12206,28 @@ package body Exp_Util is
                if Nkind (Context) in N_Subprogram_Call
                  and then No (Type_Map.Get (Entity (Name (Context))))
                then
-                  New_Ref :=
-                    Convert_To (Type_Of_Formal (Context, Old_Ref), New_Ref);
+                  declare
+                     --  We need to use the Original_Node of the callee, in
+                     --  case it was already modified. Note that we are using
+                     --  Traverse_Proc to walk the tree, and it is defined to
+                     --  walk subtrees in an arbitrary order.
 
-                  --  Do not process the generated type conversion because
-                  --  both the parent type and the derived type are in the
-                  --  Type_Map table. This will clobber the type conversion
-                  --  by resetting its subtype mark.
+                     Callee : constant Entity_Id :=
+                       Entity (Original_Node (Name (Context)));
+                  begin
+                     if No (Type_Map.Get (Callee)) then
+                        New_Ref :=
+                          Convert_To
+                            (Type_Of_Formal (Context, Old_Ref), New_Ref);
 
-                  Result := Skip;
+                        --  Do not process the generated type conversion
+                        --  because both the parent type and the derived type
+                        --  are in the Type_Map table. This will clobber the
+                        --  type conversion by resetting its subtype mark.
+
+                        Result := Skip;
+                     end if;
+                  end;
                end if;
 
             --  Otherwise there is nothing to replace

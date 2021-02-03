@@ -32,7 +32,9 @@ with Aspects;   use Aspects;
 with Atree;     use Atree;
 with Contracts; use Contracts;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Exp_Disp;  use Exp_Disp;
@@ -64,7 +66,9 @@ with Sem_Util;  use Sem_Util;
 with Sem_Warn;  use Sem_Warn;
 with Snames;    use Snames;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;    use Sinput;
 with Style;
 with Uintp;     use Uintp;
@@ -2923,6 +2927,11 @@ package body Sem_Ch7 is
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
+
+            --  Avoid crash caused by previous errors
+
+            elsif No (Etype (Id)) and then Serious_Errors_Detected /= 0 then
+               null;
 
             --  We need to avoid incorrectly marking enumeration literals as
             --  non-visible when a visible use-all-type clause is in effect.

@@ -27,7 +27,9 @@ with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
@@ -51,7 +53,9 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
 with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -4995,7 +4999,7 @@ package body Sem_Eval is
             Check_Elab_Call;
 
             if Is_Modular_Integer_Type (Typ) then
-               Modulus := Einfo.Modulus (Typ);
+               Modulus := Einfo.Entities.Modulus (Typ);
             else
                Modulus := Uint_2 ** RM_Size (Typ);
             end if;
@@ -5023,7 +5027,7 @@ package body Sem_Eval is
                Fold_Uint (N, Expr_Value (Left), Static => Static);
             else
                if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
+                  Modulus := Einfo.Entities.Modulus (Typ);
                else
                   Modulus := Uint_2 ** RM_Size (Typ);
                end if;
@@ -5047,7 +5051,7 @@ package body Sem_Eval is
                Two_Y : constant Uint := Uint_2 ** Expr_Value (Right);
             begin
                if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
+                  Modulus := Einfo.Entities.Modulus (Typ);
                else
                   Modulus := Uint_2 ** RM_Size (Typ);
                end if;

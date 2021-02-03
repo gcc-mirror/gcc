@@ -25,10 +25,13 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Exp_Util; use Exp_Util;
 with Nmake;    use Nmake;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;

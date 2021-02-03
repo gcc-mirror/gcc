@@ -36,7 +36,9 @@ with Checks;    use Checks;
 with Contracts; use Contracts;
 with Csets;     use Csets;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Exp_Dist;  use Exp_Dist;
@@ -76,7 +78,9 @@ with Sem_Type;  use Sem_Type;
 with Sem_Util;  use Sem_Util;
 with Sem_Warn;  use Sem_Warn;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN;  use Sinfo.CN;
 with Sinput;    use Sinput;
 with Stringt;   use Stringt;
@@ -16098,7 +16102,8 @@ package body Sem_Prag is
                begin
                   Set_Is_Exported    (Id2, Is_Exported          (Def_Id));
                   Set_First_Rep_Item (Id2, First_Rep_Item       (Def_Id));
-                  Set_Interface_Name (Id2, Einfo.Interface_Name (Def_Id));
+                  Set_Interface_Name
+                    (Id2, Einfo.Entities.Interface_Name (Def_Id));
                end;
             end if;
          end Export;

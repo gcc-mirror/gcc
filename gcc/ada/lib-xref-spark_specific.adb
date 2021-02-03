@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;       use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Nmake;       use Nmake;
 with SPARK_Xrefs; use SPARK_Xrefs;
 

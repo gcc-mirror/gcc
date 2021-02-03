@@ -25,7 +25,8 @@
 
 with Atree;    use Atree;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Errout;   use Errout;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
@@ -38,7 +39,9 @@ with Output;   use Output;
 with Par;
 with Restrict; use Restrict;
 with Scn;      use Scn;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
 with Stand;    use Stand;

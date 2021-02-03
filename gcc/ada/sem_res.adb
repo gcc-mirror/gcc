@@ -28,7 +28,9 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Debug_A;  use Debug_A;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
@@ -72,7 +74,9 @@ with Sem_Mech; use Sem_Mech;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Stand;    use Stand;
@@ -1285,8 +1289,10 @@ package body Sem_Res is
          Check_Parameterless_Call (Explicit_Actual_Parameter (N));
 
       elsif Nkind (N) = N_Operator_Symbol then
-         Change_Operator_Symbol_To_String_Literal (N);
+         Set_Etype (N, Empty);
+         Set_Entity (N, Empty);
          Set_Is_Overloaded (N, False);
+         Change_Operator_Symbol_To_String_Literal (N);
          Set_Etype (N, Any_String);
       end if;
    end Check_Parameterless_Call;
@@ -4804,7 +4810,7 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Object (A)
+               elsif Is_Volatile_Object_Ref (A)
                  and then not Is_Volatile (Etype (F))
                then
                   Error_Msg_NE
@@ -4813,7 +4819,7 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Full_Access_Object (A)
+               elsif Is_Volatile_Full_Access_Object_Ref (A)
                  and then not Is_Volatile_Full_Access (Etype (F))
                then
                   Error_Msg_NE

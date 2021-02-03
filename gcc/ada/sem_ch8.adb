@@ -25,7 +25,9 @@
 
 with Atree;    use Atree;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
@@ -65,7 +67,9 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
 with Stand;    use Stand;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Style;
@@ -1457,10 +1461,6 @@ package body Sem_Ch8 is
          Set_Ekind (Id, E_Variable);
       end if;
 
-      --  Initialize the object size and alignment. Note that we used to call
-      --  Init_Size_Align here, but that's wrong for objects which have only
-      --  an Esize, not an RM_Size field.
-
       Init_Object_Size_Align (Id);
 
       --  If N comes from source then check that the original node is an
@@ -1545,10 +1545,11 @@ package body Sem_Ch8 is
       --  renamed object is atomic, independent, volatile or VFA. These flags
       --  are set on the renamed object in the RM legality sense.
 
-      Set_Is_Atomic               (Id, Is_Atomic_Object (Nam));
-      Set_Is_Independent          (Id, Is_Independent_Object (Nam));
-      Set_Is_Volatile             (Id, Is_Volatile_Object (Nam));
-      Set_Is_Volatile_Full_Access (Id, Is_Volatile_Full_Access_Object (Nam));
+      Set_Is_Atomic (Id, Is_Atomic_Object (Nam));
+      Set_Is_Independent (Id, Is_Independent_Object (Nam));
+      Set_Is_Volatile (Id, Is_Volatile_Object_Ref (Nam));
+      Set_Is_Volatile_Full_Access
+        (Id, Is_Volatile_Full_Access_Object_Ref (Nam));
 
       --  Treat as volatile if we just set the Volatile flag
 
@@ -3277,6 +3278,9 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
+         Reinit_Field_To_Zero (New_S, Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (New_S, Needs_No_Actuals,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
          Set_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
@@ -6829,7 +6833,17 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      Change_Selected_Component_To_Expanded_Name (N);
+      case Nkind (N) is
+         when N_Selected_Component =>
+            Reinit_Field_To_Zero (N, Is_Prefixed_Call);
+            Change_Selected_Component_To_Expanded_Name (N);
+
+         when N_Expanded_Name =>
+            null;
+
+         when others =>
+            pragma Assert (False);
+      end case;
 
       --  Preserve relevant elaboration-related attributes of the context which
       --  are no longer available or very expensive to recompute once analysis,

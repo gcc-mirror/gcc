@@ -360,6 +360,18 @@ typedef Int Mechanism_Type;
 #define By_Short_Descriptor_NCA  (-18)
 #define By_Short_Descriptor_Last (-18)
 
+typedef char Component_Alignment_Kind;
+#define Calign_Default           0
+#define Calign_Component_Size    1
+#define Calign_Component_Size_4  2
+#define Calign_Storage_Unit      3
+
+typedef char Float_Rep_Kind;
+#define IEEE_Binary              0
+#define AAMP                     1
+
+typedef Nat Small_Paren_Count_Type;
+
 /* Definitions of Reason codes for Raise_xxx_Error nodes */
 #define CE_Access_Check_Failed              0
 #define CE_Access_Parameter_Is_Null         1
@@ -403,3 +415,104 @@ typedef Int Mechanism_Type;
 #define SE_Object_Too_Large                35
 
 #define LAST_REASON_CODE                   37
+
+typedef Nat Field_Offset;
+
+typedef struct
+{
+    unsigned f0 : 1;
+    unsigned f1 : 1;
+    unsigned f2 : 1;
+    unsigned f3 : 1;
+    unsigned f4 : 1;
+    unsigned f5 : 1;
+    unsigned f6 : 1;
+    unsigned f7 : 1;
+    unsigned f8 : 1;
+    unsigned f9 : 1;
+    unsigned f10 : 1;
+    unsigned f11 : 1;
+    unsigned f12 : 1;
+    unsigned f13 : 1;
+    unsigned f14 : 1;
+    unsigned f15 : 1;
+    unsigned f16 : 1;
+    unsigned f17 : 1;
+    unsigned f18 : 1;
+    unsigned f19 : 1;
+    unsigned f20 : 1;
+    unsigned f21 : 1;
+    unsigned f22 : 1;
+    unsigned f23 : 1;
+    unsigned f24 : 1;
+    unsigned f25 : 1;
+    unsigned f26 : 1;
+    unsigned f27 : 1;
+    unsigned f28 : 1;
+    unsigned f29 : 1;
+    unsigned f30 : 1;
+    unsigned f31 : 1;
+} slot_1_bit;
+
+typedef struct
+{
+    unsigned f0 : 2;
+    unsigned f1 : 2;
+    unsigned f2 : 2;
+    unsigned f3 : 2;
+    unsigned f4 : 2;
+    unsigned f5 : 2;
+    unsigned f6 : 2;
+    unsigned f7 : 2;
+    unsigned f8 : 2;
+    unsigned f9 : 2;
+    unsigned f10 : 2;
+    unsigned f11 : 2;
+    unsigned f12 : 2;
+    unsigned f13 : 2;
+    unsigned f14 : 2;
+    unsigned f15 : 2;
+} slot_2_bit;
+
+typedef struct
+{
+    unsigned f0 : 4;
+    unsigned f1 : 4;
+    unsigned f2 : 4;
+    unsigned f3 : 4;
+    unsigned f4 : 4;
+    unsigned f5 : 4;
+    unsigned f6 : 4;
+    unsigned f7 : 4;
+} slot_4_bit;
+
+typedef struct
+{
+    unsigned f0 : 8;
+    unsigned f1 : 8;
+    unsigned f2 : 8;
+    unsigned f3 : 8;
+} slot_8_bit;
+
+typedef Union_Id slot_32_bit;
+
+typedef union
+{
+    slot_1_bit slot_1;
+    slot_2_bit slot_2;
+    slot_4_bit slot_4;
+    slot_8_bit slot_8;
+    slot_32_bit slot_32;
+} slot;
+
+// Slots are 32 bits (???for now, but we might want to make that 64).
+// The first bootstrap stage uses -std=gnu++98, so we can't use
+// static_assert in that case.
+#if __cplusplus >= 201402L
+static_assert(sizeof(slot_1_bit) == 4);
+static_assert(sizeof(slot_2_bit) == 4);
+static_assert(sizeof(slot_4_bit) == 4);
+static_assert(sizeof(slot_8_bit) == 4);
+static_assert(sizeof(slot_32_bit) == 4);
+static_assert(sizeof(slot) == 4);
+#endif

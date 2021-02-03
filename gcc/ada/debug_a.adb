@@ -25,7 +25,8 @@
 
 with Atree;   use Atree;
 with Debug;   use Debug;
-with Sinfo;   use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Sinput;  use Sinput;
 with Output;  use Output;
 

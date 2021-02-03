@@ -26,7 +26,9 @@
 with Aspects;   use Aspects;
 with Atree;     use Atree;
 with Contracts; use Contracts;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;    use Elists;
 with Errout;    use Errout;
 with Expander;  use Expander;
@@ -65,7 +67,9 @@ with Sem_Type;  use Sem_Type;
 with Sem_Util;  use Sem_Util;
 with Sem_Warn;  use Sem_Warn;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN;  use Sinfo.CN;
 with Sinput;    use Sinput;
 with Sinput.L;  use Sinput.L;
@@ -7872,16 +7876,10 @@ package body Sem_Ch12 is
       ----------------------
 
       procedure Copy_Descendants is
-         use Atree.Unchecked_Access;
-         --  This code section is part of the implementation of an untyped
-         --  tree traversal, so it needs direct access to node fields.
-
+         procedure Walk is new
+           Walk_Sinfo_Fields_Pairwise (Copy_Generic_Descendant);
       begin
-         Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-         Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-         Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-         Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
-         Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+         Walk (New_N, N);
       end Copy_Descendants;
 
       -----------------------------
@@ -8481,18 +8479,33 @@ package body Sem_Ch12 is
 
          --  Do not copy the associated node, which points to the generic copy
          --  of the aggregate.
+         --  ????We ought to be able to get rid of all the Union_Id conversions
 
-         declare
-            use Atree.Unchecked_Access;
-            --  This code section is part of the implementation of an untyped
-            --  tree traversal, so it needs direct access to node fields.
+         if Nkind (N) = N_Aggregate then
+            Set_Aggregate_Bounds
+              (New_N,
+               Node_Id (Copy_Generic_Descendant
+                          (Union_Id (Aggregate_Bounds (N)))));
 
-         begin
-            Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-            Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-            Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-            Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
-         end;
+         elsif Nkind (N) = N_Extension_Aggregate then
+            Set_Ancestor_Part
+              (New_N,
+               Node_Id (Copy_Generic_Descendant
+                          (Union_Id (Ancestor_Part (N)))));
+
+         else
+            pragma Assert (False);
+         end if;
+
+         Set_Expressions
+           (New_N,
+            List_Id (Copy_Generic_Descendant (Union_Id (Expressions (N)))));
+         Set_Component_Associations
+           (New_N,
+            List_Id (Copy_Generic_Descendant
+                       (Union_Id (Component_Associations (N)))));
+         Set_Etype
+           (New_N, Node_Id (Copy_Generic_Descendant (Union_Id (Etype (N)))));
 
       --  Allocators do not have an identifier denoting the access type, so we
       --  must locate it through the expression to check whether the views are
@@ -11403,14 +11416,15 @@ package body Sem_Ch12 is
                Actual, Gen_Obj);
             Error_Msg_N ("\with atomic object actual (RM C.6(12))", Actual);
 
-         elsif Is_Volatile_Object (Actual) and then not Is_Volatile (Orig_Ftyp)
+         elsif Is_Volatile_Object_Ref (Actual)
+           and then not Is_Volatile (Orig_Ftyp)
          then
             Error_Msg_NE
               ("cannot instantiate nonvolatile formal & of mode in out",
                Actual, Gen_Obj);
             Error_Msg_N ("\with volatile object actual (RM C.6(12))", Actual);
 
-         elsif Is_Volatile_Full_Access_Object (Actual)
+         elsif Is_Volatile_Full_Access_Object_Ref (Actual)
            and then not Is_Volatile_Full_Access (Orig_Ftyp)
          then
             Error_Msg_NE
@@ -15608,6 +15622,11 @@ package body Sem_Ch12 is
          elsif E = Standard_Standard then
             return True;
 
+         --  E should be an entity, but it is not always
+
+         elsif Nkind (E) not in N_Entity then -- ????
+            return False;
+
          elsif Is_Child_Unit (E)
            and then (Is_Instance_Node (Parent (N2))
                       or else (Nkind (Parent (N2)) = N_Expanded_Name
@@ -16275,10 +16294,6 @@ package body Sem_Ch12 is
             Qual  : Node_Id   := Empty;
             Typ   : Entity_Id := Empty;
 
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
          begin
             N2 := Get_Associated_Node (N);
 
@@ -16341,10 +16356,19 @@ package body Sem_Ch12 is
                end if;
             end if;
 
-            Save_Global_Descendant (Field1 (N));
-            Save_Global_Descendant (Field2 (N));
-            Save_Global_Descendant (Field3 (N));
-            Save_Global_Descendant (Field5 (N));
+            if Nkind (N) = N_Aggregate then
+               Save_Global_Descendant (Union_Id (Aggregate_Bounds (N)));
+
+            elsif Nkind (N) = N_Extension_Aggregate then
+               Save_Global_Descendant (Union_Id (Ancestor_Part (N)));
+
+            else
+               pragma Assert (False);
+            end if;
+
+            Save_Global_Descendant (Union_Id (Expressions (N)));
+            Save_Global_Descendant (Union_Id (Component_Associations (N)));
+            Save_Global_Descendant (Union_Id (Etype (N)));
 
             if Present (Qual) then
                Rewrite (N, Qual);
@@ -16372,16 +16396,9 @@ package body Sem_Ch12 is
          ------------------------------------
 
          procedure Save_References_In_Descendants (N : Node_Id) is
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
+            procedure Walk is new Walk_Sinfo_Fields (Save_Global_Descendant);
          begin
-            Save_Global_Descendant (Field1 (N));
-            Save_Global_Descendant (Field2 (N));
-            Save_Global_Descendant (Field3 (N));
-            Save_Global_Descendant (Field4 (N));
-            Save_Global_Descendant (Field5 (N));
+            Walk (N);
          end Save_References_In_Descendants;
 
          -----------------------------------
@@ -16586,10 +16603,6 @@ package body Sem_Ch12 is
             Context : Node_Id;
             Do_Save : Boolean := True;
 
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
          begin
             --  Do not save global references in pragmas generated from aspects
             --  because the pragmas will be regenerated at instantiation time.
@@ -16621,14 +16634,12 @@ package body Sem_Ch12 is
 
             --  For all other cases, save all global references within the
             --  descendants, but skip the following semantic fields:
-
-            --    Field1 - Next_Pragma
-            --    Field3 - Corresponding_Aspect
-            --    Field5 - Next_Rep_Item
+            --  Next_Pragma, Corresponding_Aspect, Next_Rep_Item.
 
             if Do_Save then
-               Save_Global_Descendant (Field2 (Prag));
-               Save_Global_Descendant (Field4 (Prag));
+               Save_Global_Descendant
+                 (Union_Id (Pragma_Argument_Associations (N)));
+               Save_Global_Descendant (Union_Id (Pragma_Identifier (N)));
             end if;
          end Save_References_In_Pragma;
 

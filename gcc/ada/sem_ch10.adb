@@ -27,7 +27,9 @@ with Aspects;   use Aspects;
 with Atree;     use Atree;
 with Contracts; use Contracts;
 with Debug;     use Debug;
-with Einfo;     use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Errout;    use Errout;
 with Exp_Put_Image;
 with Exp_Util;  use Exp_Util;
@@ -61,7 +63,9 @@ with Sem_Prag;  use Sem_Prag;
 with Sem_Util;  use Sem_Util;
 with Sem_Warn;  use Sem_Warn;
 with Stand;     use Stand;
-with Sinfo;     use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Sinfo.CN;  use Sinfo.CN;
 with Sinput;    use Sinput;
 with Snames;    use Snames;
@@ -2433,8 +2437,10 @@ package body Sem_Ch10 is
 
       --  The syntax rules require a proper body for a subprogram subunit
 
-      if Nkind (Proper_Body (Sinfo.Unit (N))) = N_Subprogram_Declaration then
-         if Null_Present (Specification (Proper_Body (Sinfo.Unit (N)))) then
+      if Nkind (Proper_Body (Sinfo.Nodes.Unit (N))) = N_Subprogram_Declaration
+      then
+         if Null_Present (Specification (Proper_Body (Sinfo.Nodes.Unit (N))))
+         then
             Error_Msg_N
               ("null procedure not allowed as subunit",
                Proper_Body (Unit (N)));

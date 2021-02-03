@@ -26,7 +26,9 @@
 with Atree;    use Atree;
 with Csets;    use Csets;
 with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Einfo; use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils; use Einfo.Utils;
 with Elists;   use Elists;
 with Layout;   use Layout;
 with Namet;    use Namet;
@@ -40,7 +42,9 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Sem_Mech; use Sem_Mech;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Utils; use Sinfo.Utils;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Uintp;    use Uintp;
@@ -1105,7 +1109,7 @@ package body CStand is
       --  Create semantic phase entities
 
       Standard_Void_Type := New_Standard_Entity ("_void_type");
-      Set_Ekind       (Standard_Void_Type, E_Void);
+      pragma Assert (Ekind (Standard_Void_Type) = E_Void); -- it's the default
       Set_Etype       (Standard_Void_Type, Standard_Void_Type);
       Set_Scope       (Standard_Void_Type, Standard_Standard);
 

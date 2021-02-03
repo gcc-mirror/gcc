@@ -23,9 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
+with Einfo.Utils; use Einfo.Utils;
 with Sem;      use Sem;
-with Sinfo;    use Sinfo;
+with Sinfo; use Sinfo;
+with Sinfo.Nodes; use Sinfo.Nodes;
 with Stand;    use Stand;
 with Targparm; use Targparm;
 with Uintp;    use Uintp;
