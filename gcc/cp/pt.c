@@ -1720,6 +1720,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
 
   ++comparing_specializations;
   ++comparing_dependent_aliases;
+  ++processing_template_decl;
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
@@ -1734,6 +1735,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
       tree c2 = e2->spec ? get_constraints (e2->spec) : NULL_TREE;
       equal = equivalent_constraints (c1, c2);
     }
+  --processing_template_decl;
   --comparing_dependent_aliases;
   --comparing_specializations;
 
