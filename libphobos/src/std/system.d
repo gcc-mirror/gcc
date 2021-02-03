@@ -30,6 +30,9 @@ immutable
         win64,     /// Microsoft 64 bit Windows systems
         linux,     /// All Linux Systems, except for Android
         osx,       /// Mac OS X
+        iOS,       /// iOS
+        tvOS,      /// tvOS
+        watchOS,   /// watchOS
         freeBSD,   /// FreeBSD
         netBSD,    /// NetBSD
         dragonFlyBSD, /// DragonFlyBSD
@@ -44,6 +47,9 @@ immutable
     else version (Android) OS os = OS.android;
     else version (linux)   OS os = OS.linux;
     else version (OSX)     OS os = OS.osx;
+    else version (iOS)     OS os = OS.iOS;
+    else version (tvOS)    OS os = OS.tvOS;
+    else version (watchOS) OS os = OS.watchOS;
     else version (FreeBSD) OS os = OS.freeBSD;
     else version (NetBSD)  OS os = OS.netBSD;
     else version (DragonFlyBSD) OS os = OS.dragonFlyBSD;

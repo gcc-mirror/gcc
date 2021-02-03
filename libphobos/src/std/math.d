@@ -167,19 +167,14 @@ version (SystemZ)   version = IBMZ_Any;
 version (RISCV32)   version = RISCV_Any;
 version (RISCV64)   version = RISCV_Any;
 
-version (D_InlineAsm_X86)
-{
-    version = InlineAsm_X86_Any;
-}
-else version (D_InlineAsm_X86_64)
-{
-    version = InlineAsm_X86_Any;
-}
+version (D_InlineAsm_X86)    version = InlineAsm_X86_Any;
+version (D_InlineAsm_X86_64) version = InlineAsm_X86_Any;
 
-version (CRuntime_Microsoft)
+version (InlineAsm_X86_Any) version = InlineAsm_X87;
+version (InlineAsm_X87)
 {
-    version (InlineAsm_X86_Any)
-        version = MSVC_InlineAsm;
+    static assert(real.mant_dig == 64);
+    version (CRuntime_Microsoft) version = InlineAsm_X87_MSVC;
 }
 
 version (X86_64) version = StaticallyHaveSSE;
@@ -3610,7 +3605,7 @@ real log1p(real x) @safe pure nothrow @nogc
 real log2(real x) @safe pure nothrow @nogc
 {
     version (INLINE_YL2X)
-        return core.math.yl2x(x, 1);
+        return core.math.yl2x(x, 1.0L);
     else
     {
         // Special cases are the same as for log.
@@ -4586,19 +4581,21 @@ real round(real x) @trusted nothrow @nogc
  * If the fractional part of x is exactly 0.5, the return value is rounded
  * away from zero.
  *
- * $(BLUE This function is Posix-Only.)
+ * $(BLUE This function is not implemented for Digital Mars C runtime.)
  */
 long lround(real x) @trusted nothrow @nogc
 {
-    version (Posix)
-        return core.stdc.math.llroundl(x);
-    else
+    version (CRuntime_DigitalMars)
         assert(0, "lround not implemented");
+    else
+        return core.stdc.math.llroundl(x);
 }
 
-version (Posix)
+///
+@safe nothrow @nogc unittest
 {
-    @safe nothrow @nogc unittest
+    version (CRuntime_DigitalMars) {}
+    else
     {
         assert(lround(0.49) == 0);
         assert(lround(0.5) == 1);

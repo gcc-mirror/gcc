@@ -166,7 +166,8 @@ DRUNTIME_CSOURCES = core/stdc/errno_.c
 
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/checkedint.d core/cpuid.d core/demangle.d core/exception.d \
-	core/internal/abort.d core/internal/arrayop.d core/internal/convert.d \
+	core/internal/abort.d core/internal/arrayop.d \
+	core/internal/attributes.d core/internal/convert.d \
 	core/internal/hash.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/traits.d core/math.d core/memory.d core/runtime.d \
 	core/simd.d core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
@@ -201,8 +202,8 @@ DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d
 
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/err.d \
-	core/sys/bionic/fcntl.d core/sys/bionic/string.d \
-	core/sys/bionic/unistd.d
+	core/sys/bionic/fcntl.d core/sys/bionic/stdlib.d \
+	core/sys/bionic/string.d core/sys/bionic/unistd.d
 
 DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/dlfcn.d core/sys/darwin/err.d \
@@ -212,32 +213,35 @@ DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/mach/nlist.d core/sys/darwin/mach/port.d \
 	core/sys/darwin/mach/semaphore.d core/sys/darwin/mach/stab.d \
 	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
-	core/sys/darwin/pthread.d core/sys/darwin/string.d \
-	core/sys/darwin/sys/attr.d core/sys/darwin/sys/cdefs.d \
-	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d
+	core/sys/darwin/pthread.d core/sys/darwin/stdlib.d \
+	core/sys/darwin/string.d core/sys/darwin/sys/attr.d \
+	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
+	core/sys/darwin/sys/mman.d core/sys/darwin/sys/sysctl.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/err.d core/sys/dragonflybsd/execinfo.d \
 	core/sys/dragonflybsd/netinet/in_.d core/sys/dragonflybsd/pthread_np.d \
-	core/sys/dragonflybsd/string.d core/sys/dragonflybsd/sys/_bitset.d \
+	core/sys/dragonflybsd/stdlib.d core/sys/dragonflybsd/string.d \
+	core/sys/dragonflybsd/sys/_bitset.d \
 	core/sys/dragonflybsd/sys/_cpuset.d core/sys/dragonflybsd/sys/cdefs.d \
 	core/sys/dragonflybsd/sys/elf.d core/sys/dragonflybsd/sys/elf32.d \
 	core/sys/dragonflybsd/sys/elf64.d \
 	core/sys/dragonflybsd/sys/elf_common.d \
 	core/sys/dragonflybsd/sys/event.d core/sys/dragonflybsd/sys/link_elf.d \
 	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/sys/socket.d \
-	core/sys/dragonflybsd/time.d
+	core/sys/dragonflybsd/sys/sysctl.d core/sys/dragonflybsd/time.d
 
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 	core/sys/freebsd/dlfcn.d core/sys/freebsd/err.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/netinet/in_.d \
-	core/sys/freebsd/pthread_np.d core/sys/freebsd/string.d \
-	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
-	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
-	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
-	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
-	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
-	core/sys/freebsd/sys/mount.d core/sys/freebsd/time.d \
+	core/sys/freebsd/pthread_np.d core/sys/freebsd/stdlib.d \
+	core/sys/freebsd/string.d core/sys/freebsd/sys/_bitset.d \
+	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
+	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
+	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
+	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
+	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
+	core/sys/freebsd/sys/sysctl.d core/sys/freebsd/time.d \
 	core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
@@ -257,18 +261,20 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/err.d core/sys/netbsd/execinfo.d \
-	core/sys/netbsd/string.d core/sys/netbsd/sys/elf.d \
-	core/sys/netbsd/sys/elf32.d core/sys/netbsd/sys/elf64.d \
-	core/sys/netbsd/sys/elf_common.d core/sys/netbsd/sys/event.d \
-	core/sys/netbsd/sys/featuretest.d core/sys/netbsd/sys/link_elf.d \
-	core/sys/netbsd/sys/mman.d core/sys/netbsd/time.d
+	core/sys/netbsd/stdlib.d core/sys/netbsd/string.d \
+	core/sys/netbsd/sys/elf.d core/sys/netbsd/sys/elf32.d \
+	core/sys/netbsd/sys/elf64.d core/sys/netbsd/sys/elf_common.d \
+	core/sys/netbsd/sys/event.d core/sys/netbsd/sys/featuretest.d \
+	core/sys/netbsd/sys/link_elf.d core/sys/netbsd/sys/mman.d \
+	core/sys/netbsd/sys/sysctl.d core/sys/netbsd/time.d
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
-	core/sys/openbsd/err.d core/sys/openbsd/string.d \
-	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
-	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
-	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
-	core/sys/openbsd/sys/mman.d core/sys/openbsd/time.d
+	core/sys/openbsd/err.d core/sys/openbsd/stdlib.d \
+	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
+	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
+	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
+	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
+	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -300,12 +306,13 @@ DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 DRUNTIME_DSOURCES_SOLARIS = core/sys/solaris/dlfcn.d \
 	core/sys/solaris/elf.d core/sys/solaris/err.d \
 	core/sys/solaris/execinfo.d core/sys/solaris/libelf.d \
-	core/sys/solaris/link.d core/sys/solaris/sys/elf.d \
-	core/sys/solaris/sys/elf_386.d core/sys/solaris/sys/elf_SPARC.d \
-	core/sys/solaris/sys/elf_amd64.d core/sys/solaris/sys/elf_notes.d \
-	core/sys/solaris/sys/elftypes.d core/sys/solaris/sys/link.d \
-	core/sys/solaris/sys/priocntl.d core/sys/solaris/sys/procset.d \
-	core/sys/solaris/sys/types.d core/sys/solaris/time.d
+	core/sys/solaris/link.d core/sys/solaris/stdlib.d \
+	core/sys/solaris/sys/elf.d core/sys/solaris/sys/elf_386.d \
+	core/sys/solaris/sys/elf_SPARC.d core/sys/solaris/sys/elf_amd64.d \
+	core/sys/solaris/sys/elf_notes.d core/sys/solaris/sys/elftypes.d \
+	core/sys/solaris/sys/link.d core/sys/solaris/sys/priocntl.d \
+	core/sys/solaris/sys/procset.d core/sys/solaris/sys/types.d \
+	core/sys/solaris/time.d
 
 DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/aclapi.d core/sys/windows/aclui.d \
