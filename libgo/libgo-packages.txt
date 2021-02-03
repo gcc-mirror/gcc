@@ -61,6 +61,7 @@ flag
 fmt
 go/ast
 go/build
+go/build/constraint
 go/constant
 go/doc
 go/format
@@ -112,6 +113,7 @@ index/suffixarray
 internal/bytealg
 internal/cfg
 internal/cpu
+internal/execabs
 internal/fmtsort
 internal/goroot
 internal/goversion

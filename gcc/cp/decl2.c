@@ -2358,9 +2358,6 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
   int this_vis = VISIBILITY_DEFAULT;
   if (! TYPE_P (*tp))
     *walk_subtrees = 0;
-  else if (typedef_variant_p (*tp))
-    /* Look through typedefs despite cp_walk_subtrees.  */
-    this_vis = type_visibility (DECL_ORIGINAL_TYPE (TYPE_NAME (*tp)));
   else if (OVERLOAD_TYPE_P (*tp)
 	   && !TREE_PUBLIC (TYPE_MAIN_DECL (*tp)))
     {
@@ -2378,6 +2375,10 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
 
   if (this_vis > *vis_p)
     *vis_p = this_vis;
+
+  /* Tell cp_walk_subtrees to look through typedefs.  */
+  if (*walk_subtrees == 1)
+    *walk_subtrees = 2;
 
   return NULL;
 }

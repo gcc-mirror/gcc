@@ -1,3 +1,65 @@
+2021-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/85574
+	* compare-lto: Deal with PE-COFF executables specifically.
+
+2021-01-14  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Fix infinite loop for unsupported files.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support wrapping of functions
+	in parentheses that can take multiple lines.
+	* gcc-changelog/test_email.py: Add tests for it.
+	* gcc-changelog/test_patches.txt: Add 2 patches.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Parse also define_insn_and_split and similar
+	directives in .md files.
+	* test_mklog.py: Test.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow modifications of older
+	ChangeLog (or specific) files without need to make a ChangeLog
+	entry.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Port to python3 by guessing encoding
+	(first utf8, then iso8859). Add 2 more ignores: .png and .pyc.
+
+2021-01-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add decode_path function.
+	* gcc-changelog/git_email.py: Use it in order to solve
+	utf8 encoding filename issues.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/test_email.py: Test it.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add AMD and Ulf Adams as external authors.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Use 8 spaces instead of tab to indent.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Add --update-copyright option which adds:
+	"Update copyright years." to ChangeLog files belonging
+	to a modified file.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Skip Update copyright
+	years commits.
+
 2020-12-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add new error for quoted

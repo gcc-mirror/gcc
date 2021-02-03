@@ -49,10 +49,11 @@ macro_regex = re.compile(r'#\s*(define|undef)\s+([a-zA-Z0-9_]+)')
 super_macro_regex = re.compile(r'^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)')
 fn_regex = re.compile(r'([a-zA-Z_][^()\s]*)\s*\([^*]')
 template_and_param_regex = re.compile(r'<[^<>]*>')
+md_def_regex = re.compile(r'\(define.*\s+"(.*)"')
 bugzilla_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/bug?id=%s&' \
                'include_fields=summary'
 
-function_extensions = {'.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def'}
+function_extensions = {'.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def', '.md'}
 
 help_message = """\
 Generate ChangeLog template for PATCH.
@@ -132,6 +133,9 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     diff = PatchSet(data)
 
     for file in diff:
+        # skip files that can't be parsed
+        if file.path == '/dev/null':
+            continue
         changelog = find_changelog(file.path)
         if changelog not in changelogs:
             changelogs[changelog] = []
@@ -200,6 +204,15 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                             for line in hunk:
                                 m = identifier_regex.match(line.value)
                                 if line.is_added or line.is_removed:
+                                    # special-case definition in .md files
+                                    m2 = md_def_regex.match(line.value)
+                                    if extension == '.md' and m2:
+                                        fn = m2.group(1)
+                                        if fn not in functions:
+                                            functions.append(fn)
+                                            last_fn = None
+                                            success = True
+
                                     if not line.value.strip():
                                         continue
                                     modified_visited = True

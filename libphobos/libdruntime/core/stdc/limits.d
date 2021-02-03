@@ -23,7 +23,7 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
-private import core.stdc.config;
+import core.stdc.config;
 
 extern (C):
 @trusted: // Constants only.

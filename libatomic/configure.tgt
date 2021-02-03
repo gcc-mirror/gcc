@@ -81,32 +81,40 @@ case "${target_cpu}" in
 	ARCH=sparc
 	;;
 
-  i[3456]86)
-	case " ${CC} ${CFLAGS} " in
-	  *" -m64 "*|*" -mx32 "*)
-	    ;;
-	  *)
-	    if test -z "$with_arch"; then
-	      XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
-	      XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
-	    fi
-	esac
-	ARCH=x86
-	# ??? Detect when -march=i686 is already enabled.
-	try_ifunc=yes
-	;;
-  x86_64)
-	case " ${CC} ${CFLAGS} " in
-	  *" -m32 "*)
+  i[3456]86 | x86_64)
+	cat > conftestx.c <<EOF
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#error need -march=i486
+#endif
+EOF
+	if ${CC} ${CFLAGS} -E conftestx.c > /dev/null 2>&1; then
+	  :
+	else
+	  if test "${target_cpu}" = x86_64; then
 	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
-	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
-	    ;;
-	  *)
-	    ;;
-	esac
+	  else
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+	  fi
+	  XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	fi
+	cat > conftestx.c <<EOF
+#ifdef __x86_64__
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+#error need -mcx16
+#endif
+#else
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#error need -march=i686
+#endif
+#endif
+EOF
+	if ${CC} ${CFLAGS} -E conftestx.c > /dev/null 2>&1; then
+	  try_ifunc=no
+	else
+	  try_ifunc=yes
+	fi
+	rm -f conftestx.c
 	ARCH=x86
-	# ??? Detect when -mcx16 is already enabled.
-	try_ifunc=yes
 	;;
 
   *)			ARCH="${target_cpu}" ;;

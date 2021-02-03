@@ -32,6 +32,17 @@
 
 using namespace std;
 
+namespace detail
+{
+  long double
+  nextupl(long double x)
+  { return nexttowardl(x, numeric_limits<long double>::infinity()); }
+
+  long double
+  nextdownl(long double x)
+  { return nexttowardl(x, -numeric_limits<long double>::infinity()); }
+}
+
 // The long double overloads of std::to_chars currently just go through printf
 // (except for the hexadecimal formatting).
 
@@ -40,8 +51,8 @@ void
 test01()
 {
   const long double hex_testcases[]
-    = { nextdownl(numeric_limits<long double>::max()),
-	nextupl(numeric_limits<long double>::min()),
+    = { detail::nextdownl(numeric_limits<long double>::max()),
+	detail::nextupl(numeric_limits<long double>::min()),
 	42.0L,
 	0x1.2p+0L,
 	0x1.23p+0L,
@@ -94,7 +105,7 @@ test01()
 
 	  {
 	    // Verify that the nearby values have a different shortest form.
-	    testcase = nextdownl(testcase);
+	    testcase = detail::nextdownl(testcase);
 	    result = to_chars(begin(to_chars_buffer), end(to_chars_buffer),
 			      testcase, chars_format::hex);
 	    VERIFY( result.ec == errc{} );
@@ -103,7 +114,7 @@ test01()
 	    sprintf(printf_buffer, "%La", testcase);
 	    VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
 
-	    testcase = nextupl(nextupl(testcase));
+	    testcase = detail::nextupl(detail::nextupl(testcase));
 	    result = to_chars(begin(to_chars_buffer), end(to_chars_buffer),
 			      testcase, chars_format::hex);
 	    VERIFY( result.ec == errc{} );
@@ -112,7 +123,7 @@ test01()
 	    sprintf(printf_buffer, "%La", testcase);
 	    VERIFY( !strcmp(to_chars_buffer, printf_buffer+strlen("0x")) );
 
-	    testcase = nextdownl(testcase);
+	    testcase = detail::nextdownl(testcase);
 	  }
 
 	for (int precision = -1; precision < 50; precision++)
@@ -173,7 +184,7 @@ test02()
 	  *result.ptr = '\0';
 	  char nearby_buffer[50000];
 	    {
-	      const long double smaller = nextdownl(value);
+	      const long double smaller = detail::nextdownl(value);
 	      result = to_chars(begin(nearby_buffer), end(nearby_buffer),
 				smaller, fmt);
 	      VERIFY( result.ec == errc{} );
@@ -182,7 +193,7 @@ test02()
 	    }
 
 	    {
-	      long double larger = nextupl(value);
+	      long double larger = detail::nextupl(value);
 	      result = to_chars(begin(nearby_buffer), end(nearby_buffer),
 				larger, fmt);
 	      VERIFY( result.ec == errc{} );

@@ -23,6 +23,8 @@
 #include "template.h"
 #include "tokens.h"
 #include "target.h"
+#include "utf.h"
+#include "root/ctfloat.h"
 
 Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
 void unSpeculative(Scope *sc, RootObject *o);
@@ -1245,6 +1247,102 @@ Dsymbol *StructDeclaration::search(const Loc &loc, Identifier *ident, int flags)
     return ScopeDsymbol::search(loc, ident, flags);
 }
 
+/**********************************
+ * Determine if exp is all binary zeros.
+ * Params:
+ *      exp = expression to check
+ * Returns:
+ *      true if it's all binary 0
+ */
+static bool isZeroInit(Expression *exp)
+{
+    switch (exp->op)
+    {
+        case TOKint64:
+            return exp->toInteger() == 0;
+
+        case TOKnull:
+        case TOKfalse:
+            return true;
+
+        case TOKstructliteral:
+        {
+            StructLiteralExp *sle = (StructLiteralExp *) exp;
+            for (size_t i = 0; i < sle->sd->fields.length; i++)
+            {
+                VarDeclaration *field = sle->sd->fields[i];
+                if (field->type->size(field->loc))
+                {
+                    Expression *e = (*sle->elements)[i];
+                    if (e ? !isZeroInit(e)
+                          : !field->type->isZeroInit(field->loc))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        case TOKarrayliteral:
+        {
+            ArrayLiteralExp *ale = (ArrayLiteralExp *) exp;
+
+            const size_t dim = ale->elements ? ale->elements->length : 0;
+
+            if (ale->type->toBasetype()->ty == Tarray) // if initializing a dynamic array
+                return dim == 0;
+
+            for (size_t i = 0; i < dim; i++)
+            {
+                if (!isZeroInit(ale->getElement(i)))
+                    return false;
+            }
+            /* Note that true is returned for all T[0]
+             */
+            return true;
+        }
+
+        case TOKstring:
+        {
+            StringExp *se = exp->toStringExp();
+
+            if (se->type->toBasetype()->ty == Tarray) // if initializing a dynamic array
+                return se->len == 0;
+
+            void *s = se->string;
+            for (size_t i = 0; i < se->len; i++)
+            {
+                dinteger_t val;
+                switch (se->sz)
+                {
+                    case 1:     val = (( utf8_t *)s)[i];    break;
+                    case 2:     val = ((utf16_t *)s)[i];    break;
+                    case 4:     val = ((utf32_t *)s)[i];    break;
+                    default:    assert(0);                  break;
+                }
+                if (val)
+                    return false;
+            }
+            return true;
+        }
+
+        case TOKvector:
+        {
+            VectorExp *ve = (VectorExp *) exp;
+            return isZeroInit(ve->e1);
+        }
+
+        case TOKfloat64:
+        case TOKcomplex80:
+        {
+            return (exp->toReal() == CTFloat::zero) &&
+                   (exp->toImaginary() == CTFloat::zero);
+        }
+
+        default:
+            return false;
+    }
+}
+
 void StructDeclaration::finalizeSize()
 {
     //printf("StructDeclaration::finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
@@ -1301,9 +1399,23 @@ void StructDeclaration::finalizeSize()
         VarDeclaration *vd = fields[i];
         if (vd->_init)
         {
-            // Should examine init to see if it is really all 0's
-            zeroInit = 0;
-            break;
+            if (vd->_init->isVoidInitializer())
+                /* Treat as 0 for the purposes of putting the initializer
+                 * in the BSS segment, or doing a mass set to 0
+                 */
+                continue;
+
+            // Zero size fields are zero initialized
+            if (vd->type->size(vd->loc) == 0)
+                continue;
+
+            // Examine init to see if it is all 0s.
+            Expression *exp = vd->getConstInitializer();
+            if (!exp || !isZeroInit(exp))
+            {
+                zeroInit = 0;
+                break;
+            }
         }
         else if (!vd->type->isZeroInit(loc))
         {

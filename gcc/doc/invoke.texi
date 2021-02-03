@@ -2419,13 +2419,27 @@ The name @samp{gnu++1z} is deprecated.
 
 @item c++20
 @itemx c++2a
-The next revision of the ISO C++ standard, planned for
-2020.  Support is highly experimental, and will almost certainly
-change in incompatible ways in future releases.
+The 2020 ISO C++ standard plus amendments.
+Support is experimental, and could change in incompatible ways in
+future releases.
+The name @samp{c++2a} is deprecated.
 
 @item gnu++20
 @itemx gnu++2a
-GNU dialect of @option{-std=c++20}.  Support is highly experimental,
+GNU dialect of @option{-std=c++20}.
+Support is experimental, and could change in incompatible ways in
+future releases.
+The name @samp{gnu++2a} is deprecated.
+
+@item c++2b
+@itemx c++23
+The next revision of the ISO C++ standard, planned for
+2023.  Support is highly experimental, and will almost certainly
+change in incompatible ways in future releases.
+
+@item gnu++2b
+@itemx gnu++23
+GNU dialect of @option{-std=c++2b}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -2835,7 +2849,8 @@ Version 14, which first appeared in G++ 10, corrects the mangling of
 the nullptr expression.
 
 Version 15, which first appeared in G++ 11, changes the mangling of
-@code{__alignof__} to be distinct from that of @code{alignof}.
+@code{__alignof__} to be distinct from that of @code{alignof}, and
+dependent operator names.
 
 See also @option{-Wabi}.
 
@@ -9153,7 +9168,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-double-free} to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
-can have @code{free} called on it more than once.
+can have a deallocator called on it more than once, either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-exposure-through-output-file
 @opindex Wanalyzer-exposure-through-output-file
@@ -9194,7 +9210,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer allocated via @code{malloc} is leaked.
+pointer allocated via an allocator is leaked: either @code{malloc},
+or a function marked with attribute @code{malloc}.
 
 @item -Wno-analyzer-mismatching-deallocation
 @opindex Wanalyzer-mismatching-deallocation
@@ -9205,7 +9222,10 @@ to disable it.
 
 This diagnostic warns for paths through the code in which the
 wrong deallocation function is called on a pointer value, based on
-which function was used to allocate the pointer value.
+which function was used to allocate the pointer value.  The diagnostic
+will warn about mismatches between @code{free}, scalar @code{delete}
+and vector @code{delete[]}, and those marked as allocator/deallocator
+pairs using attribute @code{malloc}.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
@@ -9320,7 +9340,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-use-after-free} to disable it.
 
 This diagnostic warns for paths through the code in which a
-pointer is used after @code{free} is called on it.
+pointer is used after a deallocator is called on it: either @code{free},
+or a deallocator referenced by attribute @code{malloc}.
 
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -9604,14 +9625,16 @@ possible.
 @itemx -gdwarf-@var{version}
 @opindex gdwarf
 Produce debugging information in DWARF format (if that is supported).
-The value of @var{version} may be either 2, 3, 4 or 5; the default version
-for most targets is 4.  DWARF Version 5 is only experimental.
+The value of @var{version} may be either 2, 3, 4 or 5; the default
+version for most targets is 5 (with the exception of VxWorks, TPF and
+Darwin/Mac OS X, which default to version 2, and AIX, which defaults
+to version 4).
 
 Note that with DWARF Version 2, some ports require and always
 use some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
-for maximum benefit.
+for maximum benefit. Version 5 requires GDB 8.0 or higher.
 
 GCC no longer supports DWARF Version 1, which is substantially
 different than Version 2 and later.  For historical reasons, some
@@ -13052,7 +13075,7 @@ should be removed when the delay slot code is rewritten to maintain the
 control-flow graph.
 
 @item max-gcse-memory
-The approximate maximum amount of memory that can be allocated in
+The approximate maximum amount of memory in @code{kB} that can be allocated in
 order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization is not done.
@@ -26119,6 +26142,26 @@ Currently, the following sets are defined:
 -mcustom-fdivs=255 @gol
 -fsingle-precision-constant}
 
+@option{-mcustom-fpu-cfg=fph2} is equivalent to:
+@gccoptlist{-mcustom-fabss=224 @gol
+-mcustom-fnegs=225 @gol
+-mcustom-fcmpnes=226 @gol
+-mcustom-fcmpeqs=227 @gol
+-mcustom-fcmpges=228 @gol
+-mcustom-fcmpgts=229 @gol
+-mcustom-fcmples=230 @gol
+-mcustom-fcmplts=231 @gol
+-mcustom-fmaxs=232 @gol
+-mcustom-fmins=233 @gol
+-mcustom-round=248 @gol
+-mcustom-fixsi=249 @gol
+-mcustom-floatis=250 @gol
+-mcustom-fsqrts=251 @gol
+-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol}
+
 Custom instruction assignments given by individual
 @option{-mcustom-@var{insn}=} options override those given by
 @option{-mcustom-fpu-cfg=}, regardless of the
@@ -26128,6 +26171,14 @@ Note that you can gain more local control over selection of a FPU
 configuration by using the @code{target("custom-fpu-cfg=@var{name}")}
 function attribute (@pxref{Function Attributes})
 or pragma (@pxref{Function Specific Option Pragmas}).
+
+The name @var{fph2} is an abbreviation for @emph{Nios II Floating Point
+Hardware 2 Component}.  Please note that the custom instructions enabled by
+@option{-mcustom-fmins=233} and @option{-mcustom-fmaxs=234} are only generated
+if @option{-ffinite-math-only} is specified.  The custom instruction enabled by
+@option{-mcustom-round=248} is only generated if @option{-fno-math-errno} is
+specified.  In contrast to the other configurations,
+@option{-fsingle-precision-constant} is not set.
 
 @end table
 
@@ -27458,9 +27509,10 @@ SVR4 ABI)@.
 @item -mabi=@var{abi-type}
 @opindex mabi
 Extend the current ABI with a particular extension, or remove such extension.
-Valid values are @samp{altivec}, @samp{no-altivec},
+Valid values are: @samp{altivec}, @samp{no-altivec},
 @samp{ibmlongdouble}, @samp{ieeelongdouble},
-@samp{elfv1}, @samp{elfv2}@.
+@samp{elfv1}, @samp{elfv2},
+and for AIX: @samp{vec-extabi}, @samp{vec-default}@.
 
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
@@ -32709,6 +32761,26 @@ Recognize EUCJP characters.
 If @env{LANG} is not defined, or if it has some other value, then the
 compiler uses @code{mblen} and @code{mbtowc} as defined by the default locale to
 recognize and translate multibyte characters.
+
+@item GCC_EXTRA_DIAGNOSTIC_OUTPUT
+@findex GCC_EXTRA_DIAGNOSTIC_OUTPUT
+If @env{GCC_EXTRA_DIAGNOSTIC_OUTPUT} is set to one of the following values,
+then additional text will be emitted to stderr when fix-it hints are
+emitted.  @option{-fdiagnostics-parseable-fixits} and
+@option{-fno-diagnostics-parseable-fixits} take precedence over this
+environment variable.
+
+@table @samp
+@item fixits-v1
+Emit parseable fix-it hints, equivalent to
+@option{-fdiagnostics-parseable-fixits}.  In particular, columns are
+expressed as a count of bytes, starting at byte 1 for the initial column.
+
+@item fixits-v2
+As @code{fixits-v1}, but columns are expressed as display columns,
+as per @option{-fdiagnostics-column-unit=display}.
+@end table
+
 @end table
 
 @noindent
@@ -32858,7 +32930,7 @@ not get debugging information for routines in the precompiled header.
 @section C++ Modules
 @cindex speed of compilation
 
-Modules are a C++ 20 language feature.  As the name suggests, it
+Modules are a C++20 language feature.  As the name suggests, they
 provides a modular compilation system, intending to provide both
 faster builds and better library isolation.  The ``Merging Modules''
 paper @uref{https://wg21.link/p1103}, provides the easiest to read set
@@ -32890,7 +32962,7 @@ emitted.
 
 @item Translation-Unit local referencing rules
 Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
-(@uref{https://wg21.link/p2003} add limitations on which entities an
+(@uref{https://wg21.link/p2003}) add limitations on which entities an
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
 

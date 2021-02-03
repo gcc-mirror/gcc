@@ -7627,7 +7627,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 		    count++;
 
 		  if (count > 1)
-		    BREAK_FROM_IMM_USE_STMT (imm_iter);
+		    break;
 		}
 
 	      if (!count)

@@ -49,7 +49,8 @@ void test02()
 }
 
 // Ignore the reasons for deduction/substitution failure in the headers.
-// { dg-prune-output "/include/(functional|bits/invoke.h):" }
+// Arrange for the match to work on installed trees as well as build trees.
+// { dg-prune-output "/(functional|bits/invoke.h):" }
 
 int main()
 {

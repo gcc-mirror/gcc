@@ -40,7 +40,9 @@
 #endif
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, _BadMsgId, _DiffMsgId) \
-  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
+  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular()	\
+			|| (_Lhs.base() == _Iterator()			\
+			    && _Rhs.base() == _Iterator()),		\
 			_M_message(_BadMsgId)				\
 			._M_iterator(_Lhs, #_Lhs)			\
 			._M_iterator(_Rhs, #_Rhs));			\

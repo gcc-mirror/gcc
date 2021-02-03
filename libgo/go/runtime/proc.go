@@ -505,8 +505,29 @@ func lockedOSThread() bool {
 }
 
 var (
-	allgs    []*g
+	// allgs contains all Gs ever created (including dead Gs), and thus
+	// never shrinks.
+	//
+	// Access via the slice is protected by allglock or stop-the-world.
+	// Readers that cannot take the lock may (carefully!) use the atomic
+	// variables below.
 	allglock mutex
+	allgs    []*g
+
+	// allglen and allgptr are atomic variables that contain len(allg) and
+	// &allg[0] respectively. Proper ordering depends on totally-ordered
+	// loads and stores. Writes are protected by allglock.
+	//
+	// allgptr is updated before allglen. Readers should read allglen
+	// before allgptr to ensure that allglen is always <= len(allgptr). New
+	// Gs appended during the race can be missed. For a consistent view of
+	// all Gs, allglock must be held.
+	//
+	// allgptr copies should always be stored as a concrete type or
+	// unsafe.Pointer, not uintptr, to ensure that GC can still reach it
+	// even if it points to a stale array.
+	allglen uintptr
+	allgptr **g
 )
 
 func allgadd(gp *g) {
@@ -516,8 +537,23 @@ func allgadd(gp *g) {
 
 	lock(&allglock)
 	allgs = append(allgs, gp)
-	allglen = uintptr(len(allgs))
+	if &allgs[0] != allgptr {
+		atomicstorep(unsafe.Pointer(&allgptr), unsafe.Pointer(&allgs[0]))
+	}
+	atomic.Storeuintptr(&allglen, uintptr(len(allgs)))
 	unlock(&allglock)
+}
+
+// atomicAllG returns &allgs[0] and len(allgs) for use with atomicAllGIndex.
+func atomicAllG() (**g, uintptr) {
+	length := atomic.Loaduintptr(&allglen)
+	ptr := (**g)(atomic.Loadp(unsafe.Pointer(&allgptr)))
+	return ptr, length
+}
+
+// atomicAllGIndex returns ptr[i] with the allgptr returned from atomicAllG.
+func atomicAllGIndex(ptr **g, i uintptr) *g {
+	return *(**g)(add(unsafe.Pointer(ptr), i*sys.PtrSize))
 }
 
 const (
@@ -1293,7 +1329,7 @@ func mexit(osStack bool) {
 		throw("locked m0 woke up")
 	}
 
-	sigblock()
+	sigblock(true)
 	unminit()
 
 	// Free the gsignal stack.
@@ -1350,6 +1386,10 @@ found:
 			atomic.Xadd(&pendingPreemptSignals, -1)
 		}
 	}
+
+	// Destroy all allocated resources. After this is called, we may no
+	// longer take any locks.
+	mdestroy(m)
 
 	if osStack {
 		// Return from mstart and let the system thread
@@ -1596,7 +1636,7 @@ func needm() {
 	// starting a new m to run Go code via newosproc.
 	var sigmask sigset
 	sigsave(&sigmask)
-	sigblock()
+	sigblock(false)
 
 	// Lock extra list, take head, unlock popped list.
 	// nilokay=false is safe here because of the invariant above,
@@ -1735,7 +1775,7 @@ func dropm() {
 	// Setg(nil) clears g, which is the signal handler's cue not to run Go handlers.
 	// It's important not to try to handle a signal between those two steps.
 	sigmask := mp.sigmask
-	sigblock()
+	sigblock(false)
 	unminit()
 
 	// gccgo sets the stack to Gdead here, because the splitstack
@@ -2692,7 +2732,9 @@ func wakeNetPoller(when int64) {
 	} else {
 		// There are no threads in the network poller, try to get
 		// one there so it can handle new timers.
-		wakep()
+		if GOOS != "plan9" { // Temporary workaround - see issue #42303.
+			wakep()
+		}
 	}
 }
 
@@ -3526,7 +3568,7 @@ func beforefork() {
 	// group. See issue #18600.
 	gp.m.locks++
 	sigsave(&gp.m.sigmask)
-	sigblock()
+	sigblock(false)
 }
 
 // Called from syscall package before fork.
@@ -3936,7 +3978,7 @@ func badunlockosthread() {
 }
 
 func gcount() int32 {
-	n := int32(allglen) - sched.gFree.n - int32(atomic.Load(&sched.ngsys))
+	n := int32(atomic.Loaduintptr(&allglen)) - sched.gFree.n - int32(atomic.Load(&sched.ngsys))
 	for _, _p_ := range allp {
 		n -= _p_.gFree.n
 	}
@@ -4596,7 +4638,6 @@ func checkdead() {
 		case _Grunnable,
 			_Grunning,
 			_Gsyscall:
-			unlock(&allglock)
 			print("runtime: checkdead: find g ", gp.goid, " in status ", s, "\n")
 			throw("checkdead: runnable g")
 		}
@@ -4757,6 +4798,26 @@ func sysmon() {
 			}
 		}
 		mDoFixup()
+		if GOOS == "netbsd" {
+			// netpoll is responsible for waiting for timer
+			// expiration, so we typically don't have to worry
+			// about starting an M to service timers. (Note that
+			// sleep for timeSleepUntil above simply ensures sysmon
+			// starts running again when that timer expiration may
+			// cause Go code to run again).
+			//
+			// However, netbsd has a kernel bug that sometimes
+			// misses netpollBreak wake-ups, which can lead to
+			// unbounded delays servicing timers. If we detect this
+			// overrun, then startm to get something to handle the
+			// timer.
+			//
+			// See issue 42515 and
+			// https://gnats.netbsd.org/cgi-bin/query-pr-single.pl?number=50094.
+			if next, _ := timeSleepUntil(); next < now {
+				startm(nil, false)
+			}
+		}
 		if atomic.Load(&scavenge.sysmonWake) != 0 {
 			// Kick the scavenger awake if someone requested it.
 			wakeScavenger()

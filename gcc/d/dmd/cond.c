@@ -257,7 +257,7 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
         {
             Parameters *params = pparams[j];
             Parameter *p = sfe->aggrfe ? (*sfe->aggrfe->parameters)[i] : sfe->rangefe->prm;
-            params->push(new Parameter(p->storageClass, p->type, p->ident, NULL));
+            params->push(new Parameter(p->storageClass, p->type, p->ident, NULL, NULL));
         }
     }
     Expression *res[2];

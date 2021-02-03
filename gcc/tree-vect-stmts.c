@@ -1120,6 +1120,30 @@ vect_model_load_cost (vec_info *vinfo,
      once per group anyhow.  */
   bool first_stmt_p = (first_stmt_info == stmt_info);
 
+  /* An IFN_LOAD_LANES will load all its vector results, regardless of which
+     ones we actually need.  Account for the cost of unused results.  */
+  if (first_stmt_p && !slp_node && memory_access_type == VMAT_LOAD_STORE_LANES)
+    {
+      unsigned int gaps = DR_GROUP_SIZE (first_stmt_info);
+      stmt_vec_info next_stmt_info = first_stmt_info;
+      do
+	{
+	  gaps -= 1;
+	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+	}
+      while (next_stmt_info);
+      if (gaps)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "vect_model_load_cost: %d unused vectors.\n",
+			     gaps);
+	  vect_get_load_cost (vinfo, stmt_info, ncopies * gaps, false,
+			      &inside_cost, &prologue_cost,
+			      cost_vec, cost_vec, true);
+	}
+    }
+
   /* We assume that the cost of a single load-lanes instruction is
      equivalent to the cost of DR_GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,
@@ -2354,19 +2378,26 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   else
     {
       int cmp = compare_step_with_zero (vinfo, stmt_info);
-      if (cmp < 0)
-	*memory_access_type = get_negative_load_store_type
-	  (vinfo, stmt_info, vectype, vls_type, ncopies);
-      else if (cmp == 0)
+      if (cmp == 0)
 	{
 	  gcc_assert (vls_type == VLS_LOAD);
 	  *memory_access_type = VMAT_INVARIANT;
+	  /* Invariant accesses perform only component accesses, alignment
+	     is irrelevant for them.  */
+	  *alignment_support_scheme = dr_unaligned_supported;
 	}
       else
-	*memory_access_type = VMAT_CONTIGUOUS;
-      *alignment_support_scheme
-	= vect_supportable_dr_alignment (vinfo,
-					 STMT_VINFO_DR_INFO (stmt_info), false);
+	{
+	  if (cmp < 0)
+	    *memory_access_type = get_negative_load_store_type
+	       (vinfo, stmt_info, vectype, vls_type, ncopies);
+	  else
+	    *memory_access_type = VMAT_CONTIGUOUS;
+	  *alignment_support_scheme
+	    = vect_supportable_dr_alignment (vinfo,
+					     STMT_VINFO_DR_INFO (stmt_info),
+					     false);
+	}
     }
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
@@ -7717,11 +7748,11 @@ vectorizable_store (vec_info *vinfo,
 		}
 	    }
 	  next_stmt_info = DR_GROUP_NEXT_ELEMENT (next_stmt_info);
+	  vec_oprnds.release ();
 	  if (slp)
 	    break;
 	}
 
-      vec_oprnds.release ();
       return true;
     }
 
@@ -10054,14 +10085,6 @@ vectorizable_condition (vec_info *vinfo,
 
   /* Transform.  */
 
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-      vec_oprnds2.create (1);
-      vec_oprnds3.create (1);
-    }
-
   /* Handle def.  */
   scalar_dest = gimple_assign_lhs (stmt);
   if (reduction_type != EXTRACT_LAST_REDUCTION)
@@ -10449,11 +10472,6 @@ vectorizable_comparison (vec_info *vinfo,
     }
 
   /* Transform.  */
-  if (!slp_node)
-    {
-      vec_oprnds0.create (1);
-      vec_oprnds1.create (1);
-    }
 
   /* Handle def.  */
   lhs = gimple_assign_lhs (stmt);

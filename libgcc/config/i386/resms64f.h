@@ -55,3 +55,8 @@ MS2SYSV_STUB_END(resms64f_16)
 MS2SYSV_STUB_END(resms64f_17)
 
 #endif /* __x86_64__ */
+
+#if defined(__ELF__) && defined(__linux__)
+	.section .note.GNU-stack,"",@progbits
+	.previous
+#endif

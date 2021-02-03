@@ -51,7 +51,7 @@ FuncDeclaration *buildArrayOp(Identifier *ident, BinExp *exp, Scope *sc)
     Parameter *p = (*fparams)[0];
     // foreach (i; 0 .. p.length)
     Statement *s1 = new ForeachRangeStatement(Loc(), TOKforeach,
-        new Parameter(0, NULL, Id::p, NULL),
+        new Parameter(0, NULL, Id::p, NULL, NULL),
         new IntegerExp(Loc(), 0, Type::tsize_t),
         new ArrayLengthExp(Loc(), new IdentifierExp(Loc(), p->ident)),
         new ExpStatement(Loc(), loopbody),
@@ -422,7 +422,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
         void visit(Expression *e)
         {
             Identifier *id = Identifier::generateId("c", fparams->length);
-            Parameter *param = new Parameter(0, e->type, id, NULL);
+            Parameter *param = new Parameter(0, e->type, id, NULL, NULL);
             fparams->shift(param);
             result = new IdentifierExp(Loc(), id);
         }
@@ -441,7 +441,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
         void visit(ArrayLiteralExp *e)
         {
             Identifier *id = Identifier::generateId("p", fparams->length);
-            Parameter *param = new Parameter(STCconst, e->type, id, NULL);
+            Parameter *param = new Parameter(STCconst, e->type, id, NULL, NULL);
             fparams->shift(param);
             Expression *ie = new IdentifierExp(Loc(), id);
             Expression *index = new IdentifierExp(Loc(), Id::p);
@@ -451,7 +451,7 @@ Expression *buildArrayLoop(Expression *e, Parameters *fparams)
         void visit(SliceExp *e)
         {
             Identifier *id = Identifier::generateId("p", fparams->length);
-            Parameter *param = new Parameter(STCconst, e->type, id, NULL);
+            Parameter *param = new Parameter(STCconst, e->type, id, NULL, NULL);
             fparams->shift(param);
             Expression *ie = new IdentifierExp(Loc(), id);
             Expression *index = new IdentifierExp(Loc(), Id::p);

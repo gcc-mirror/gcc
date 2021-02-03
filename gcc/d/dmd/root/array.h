@@ -28,9 +28,9 @@ struct Array
   public:
     Array()
     {
-        data.ptr = SMALLARRAYCAP ? &smallarray[0] : NULL;
+        data.ptr = NULL;
         length = 0;
-        data.length = SMALLARRAYCAP;
+        data.length = 0;
     }
 
     ~Array()

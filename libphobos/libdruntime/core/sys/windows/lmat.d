@@ -8,9 +8,10 @@
  */
 module core.sys.windows.lmat;
 version (Windows):
+@system:
 pragma(lib, "netapi32");
 
-private import core.sys.windows.lmcons, core.sys.windows.windef;
+import core.sys.windows.lmcons, core.sys.windows.windef;
 
 enum JOB_RUN_PERIODICALLY = 1;
 enum JOB_EXEC_ERROR       = 2;

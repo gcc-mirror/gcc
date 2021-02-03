@@ -1215,6 +1215,10 @@ public:
 
   /* True if this is only suitable for SLP vectorization.  */
   bool slp_vect_only_p;
+
+  /* True if this is a pattern that can only be handled by SLP
+     vectorization.  */
+  bool slp_vect_pattern_only_p;
 };
 
 /* Information about a gather/scatter call.  */
@@ -1301,6 +1305,7 @@ struct gather_scatter_info {
 #define STMT_VINFO_REDUC_VECTYPE(S)     (S)->reduc_vectype
 #define STMT_VINFO_REDUC_VECTYPE_IN(S)  (S)->reduc_vectype_in
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
+#define STMT_VINFO_SLP_VECT_ONLY_PATTERN(S) (S)->slp_vect_pattern_only_p
 
 #define DR_GROUP_FIRST_ELEMENT(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->first_element)

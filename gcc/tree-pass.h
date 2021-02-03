@@ -225,7 +225,7 @@ protected:
 #define PROP_gimple_lomp_dev	(1 << 16)	/* done omp_device_lower */
 #define PROP_rtl_split_insns	(1 << 17)	/* RTL has insns split.  */
 
-#define PROP_trees \
+#define PROP_gimple \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */

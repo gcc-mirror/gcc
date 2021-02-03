@@ -238,24 +238,6 @@ namespace __detail
 	return basic_string<_EcharT>(__first, __last);
     }
 
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  template<typename _Tp>
-    inline std::wstring
-    __wstr_from_utf8(const _Tp& __str)
-    {
-      static_assert(std::is_same_v<typename _Tp::value_type, char>);
-      std::wstring __wstr;
-      // XXX This assumes native wide encoding is UTF-16.
-      std::codecvt_utf8_utf16<wchar_t> __wcvt;
-      const auto __p = __str.data();
-      if (!__str_codecvt_in_all(__p, __p + __str.size(), __wstr, __wcvt))
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-      return __wstr;
-    }
-#endif
-
 } // namespace __detail
   /// @endcond
 
@@ -743,6 +725,37 @@ namespace __detail
     std::__shared_ptr<const _Impl> _M_impl;
   };
 
+  /// @cond undocumented
+namespace __detail
+{
+  [[noreturn]] inline void
+  __throw_conversion_error()
+  {
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	 "Cannot convert character sequence",
+	 std::make_error_code(errc::illegal_byte_sequence)));
+  }
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  template<typename _Tp>
+    inline std::wstring
+    __wstr_from_utf8(const _Tp& __str)
+    {
+      static_assert(std::is_same_v<typename _Tp::value_type, char>);
+      std::wstring __wstr;
+      // XXX This assumes native wide encoding is UTF-16.
+      std::codecvt_utf8_utf16<wchar_t> __wcvt;
+      const auto __p = __str.data();
+      if (!__str_codecvt_in_all(__p, __p + __str.size(), __wstr, __wcvt))
+	__detail::__throw_conversion_error();
+      return __wstr;
+    }
+#endif
+
+} // namespace __detail
+  /// @endcond
+
+
   /** Create a path from a UTF-8-encoded sequence of char
    *
    * @relates std::filesystem::path
@@ -846,9 +859,7 @@ namespace __detail
 	  if (__str_codecvt_out_all(__f, __l, __str, __cvt))
 	    return __str;
 #endif
-	  _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-		"Cannot convert character sequence",
-		std::make_error_code(errc::illegal_byte_sequence)));
+	  __detail::__throw_conversion_error();
 	}
     }
 
@@ -1058,9 +1069,7 @@ namespace __detail
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       } }
 #endif
-      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	    "Cannot convert character sequence",
-	    std::make_error_code(errc::illegal_byte_sequence)));
+      __detail::__throw_conversion_error();
     }
   /// @endcond
 
@@ -1097,9 +1106,7 @@ namespace __detail
     const value_type* __last = __first + _M_pathname.size();
     if (__str_codecvt_out_all(__first, __last, __str, __cvt))
       return __str;
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	  "Cannot convert character sequence",
-	  std::make_error_code(errc::illegal_byte_sequence)));
+    __detail::__throw_conversion_error();
 #else
     return _M_pathname;
 #endif

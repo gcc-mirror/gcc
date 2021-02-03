@@ -8934,7 +8934,7 @@ cp_parser_has_attribute_expression (cp_parser *parser)
     {
       if (oper == error_mark_node)
 	/* Nothing.  */;
-      else if (type_dependent_expression_p (oper))
+      else if (processing_template_decl && uses_template_parms (oper))
 	sorry_at (atloc, "%<__builtin_has_attribute%> with dependent argument "
 		  "not supported yet");
       else
@@ -13726,19 +13726,22 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
       cp_lexer_consume_token (parser->lexer);
       cp_parser_require_pragma_eol (parser, token);
 
-      if ((mp_state != MP_PURVIEW && mp_state != MP_PURVIEW_IMPORTS)
+      if (!(mp_state == MP_PURVIEW || mp_state == MP_PURVIEW_IMPORTS)
 	  || !module_interface_p () || module_partition_p ())
 	error_at (token->location,
-		  "private module fragment not permitted here");
+		  "private module fragment only permitted in purview"
+		  " of module interface or partition");
       else
 	{
 	  mp_state = MP_PRIVATE_IMPORTS;
 	  sorry_at (token->location, "private module fragment");
 	}
     }
-  else if (mp_state != MP_FIRST && mp_state != MP_GLOBAL)
+  else if (!(mp_state == MP_FIRST || mp_state == MP_GLOBAL))
     {
-      error_at (token->location, "module-declaration not permitted here");
+      /* Neither the first declaration, nor in a GMF.  */
+      error_at (token->location, "module-declaration only permitted as first"
+		" declaration, or ending a global module fragment");
     skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }
@@ -21410,6 +21413,7 @@ cp_parser_init_declarator (cp_parser* parser,
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p = cp_parser_friend_p (decl_specifiers);
+  bool static_p = decl_specifiers->storage_class == sc_static;
   tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
@@ -21443,7 +21447,7 @@ cp_parser_init_declarator (cp_parser* parser,
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    flags, &ctor_dtor_or_conv_p,
 			    /*parenthesized_p=*/NULL,
-			    member_p, friend_p, /*static_p=*/false);
+			    member_p, friend_p, static_p);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -22119,7 +22123,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  tree save_ccp = current_class_ptr;
 		  tree save_ccr = current_class_ref;
-		  if (memfn)
+		  if (memfn && !friend_p)
 		    /* DR 1207: 'this' is in scope after the cv-quals.  */
 		    inject_this_parameter (current_class_type, cv_quals);
 
@@ -24555,7 +24559,9 @@ cp_parser_class_name (cp_parser *parser,
       where we first want to look up A<T>::a in the class of the object
       expression, as per [basic.lookup.classref].  */
   tree scope = parser->scope ? parser->scope : parser->context->object_type;
-  if (scope == error_mark_node)
+  /* This only checks parser->scope to avoid duplicate errors; if
+     ->object_type is erroneous, go on to give a parse error.  */
+  if (parser->scope == error_mark_node)
     return error_mark_node;
 
   /* Any name names a type if we're following the `typename' keyword
@@ -24707,7 +24713,6 @@ inject_parm_decls (tree decl)
   if (args && is_this_parameter (args))
     {
       gcc_checking_assert (current_class_ptr == NULL_TREE);
-      current_class_ptr = NULL_TREE;
       current_class_ref = cp_build_fold_indirect_ref (args);
       current_class_ptr = args;
     }
@@ -24964,7 +24969,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       tree pushed_scope = NULL_TREE;
       unsigned ix;
       cp_default_arg_entry *e;
-      tree save_ccp, save_ccr;
 
       if (!type_definition_ok_p || any_erroneous_template_args_p (type))
 	{
@@ -25005,31 +25009,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_funs_with_default_args, 0);
-      /* Now parse any NSDMIs.  */
-      save_ccp = current_class_ptr;
-      save_ccr = current_class_ref;
-      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
-	{
-	  if (class_type != DECL_CONTEXT (decl))
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = DECL_CONTEXT (decl);
-	      pushed_scope = push_scope (class_type);
-	    }
-	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
-	  cp_parser_late_parsing_nsdmi (parser, decl);
-	}
-      vec_safe_truncate (unparsed_nsdmis, 0);
-      current_class_ptr = save_ccp;
-      current_class_ref = save_ccr;
-      if (pushed_scope)
-	pop_scope (pushed_scope);
 
       /* If there are noexcept-specifiers that have not yet been processed,
-	 take care of them now.  */
-      class_type = NULL_TREE;
-      pushed_scope = NULL_TREE;
+	 take care of them now.  Do this before processing NSDMIs as they
+	 may depend on noexcept-specifiers already having been processed.  */
+      tree save_ccp = current_class_ptr;
+      tree save_ccr = current_class_ref;
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
@@ -25047,7 +25032,9 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  /* Make sure that any template parameters are in scope.  */
 	  maybe_begin_member_template_processing (decl);
 
-	  /* Make sure that any member-function parameters are in scope.  */
+	  /* Make sure that any member-function parameters are in scope.
+	     This function doesn't expect ccp to be set.  */
+	  current_class_ptr = current_class_ref = NULL_TREE;
 	  inject_parm_decls (decl);
 
 	  /* 'this' is not allowed in static member functions.  */
@@ -25081,6 +25068,23 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       vec_safe_truncate (unparsed_noexcepts, 0);
+
+      /* Now parse any NSDMIs.  */
+      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
+	{
+	  if (class_type != DECL_CONTEXT (decl))
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = DECL_CONTEXT (decl);
+	      pushed_scope = push_scope (class_type);
+	    }
+	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
+	  cp_parser_late_parsing_nsdmi (parser, decl);
+	}
+      vec_safe_truncate (unparsed_nsdmis, 0);
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
 
@@ -25575,19 +25579,11 @@ cp_parser_class_head (cp_parser* parser,
 
      is valid.  */
 
-  /* Get the list of base-classes, if there is one.  */
+  /* Get the list of base-classes, if there is one.  Defer access checking
+     until the entire list has been seen, as per [class.access.general].  */
+  push_deferring_access_checks (dk_deferred);
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    {
-      /* PR59482: enter the class scope so that base-specifiers are looked
-	 up correctly.  */
-      if (type)
-	pushclass (type);
-      bases = cp_parser_base_clause (parser);
-      /* PR59482: get out of the previously pushed class scope so that the
-	 subsequent pops pop the right thing.  */
-      if (type)
-	popclass ();
-    }
+    bases = cp_parser_base_clause (parser);
   else
     bases = NULL_TREE;
 
@@ -25595,6 +25591,20 @@ cp_parser_class_head (cp_parser* parser,
      If they're invalid, fail.  */
   if (type && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     xref_basetypes (type, bases);
+
+  /* Now that all bases have been seen and attached to the class, check
+     accessibility of the types named in the base-clause.  This must be
+     done relative to the class scope, so that we accept e.g.
+
+       struct A { protected: struct B {}; };
+       struct C : A::B, A {}; // OK: A::B is accessible via base A
+
+     as per [class.access.general].  */
+  if (type)
+    pushclass (type);
+  pop_to_parent_deferring_access_checks ();
+  if (type)
+    popclass ();
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will
@@ -30822,10 +30832,6 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
       start_preparsed_function (member_function, NULL_TREE,
 				SF_PRE_PARSED | SF_INCLASS_INLINE);
 
-      /* Don't do access checking if it is a templated function.  */
-      if (processing_template_decl)
-	push_deferring_access_checks (dk_no_check);
-
       /* #pragma omp declare reduction needs special parsing.  */
       if (DECL_OMP_DECLARE_REDUCTION_P (member_function))
 	{
@@ -30838,9 +30844,6 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 	/* Now, parse the body of the function.  */
 	cp_parser_function_definition_after_declarator (parser,
 							/*inline_p=*/true);
-
-      if (processing_template_decl)
-	pop_deferring_access_checks ();
 
       /* Leave the scope of the containing function.  */
       if (function_scope)
@@ -37409,6 +37412,52 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
 }
 
 /* OpenMP 5.0:
+   detach ( event-handle ) */
+
+static tree
+cp_parser_omp_clause_detach (cp_parser *parser, tree list)
+{
+  matching_parens parens;
+
+  if (!parens.require_open (parser))
+    return list;
+
+  cp_token *token;
+  tree name, decl;
+
+  token = cp_lexer_peek_token (parser->lexer);
+  name = cp_parser_id_expression (parser, /*template_p=*/false,
+					  /*check_dependency_p=*/true,
+					  /*template_p=*/NULL,
+					  /*declarator_p=*/false,
+					  /*optional_p=*/false);
+  if (name == error_mark_node)
+    decl = error_mark_node;
+  else
+    {
+      if (identifier_p (name))
+	decl = cp_parser_lookup_name_simple (parser, name, token->location);
+      else
+	decl = name;
+      if (decl == error_mark_node)
+	cp_parser_name_lookup_error (parser, name, decl, NLE_NULL,
+				     token->location);
+    }
+
+  if (decl == error_mark_node
+      || !parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  tree u = build_omp_clause (token->location, OMP_CLAUSE_DETACH);
+  OMP_CLAUSE_DECL (u) = decl;
+  OMP_CLAUSE_CHAIN (u) = list;
+
+  return u;
+}
+
+/* OpenMP 5.0:
    iterators ( iterators-definition )
 
    iterators-definition:
@@ -38466,6 +38515,10 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_depend (parser, clauses,
 						 token->location);
 	  c_name = "depend";
+	  break;
+	case PRAGMA_OMP_CLAUSE_DETACH:
+	  clauses = cp_parser_omp_clause_detach (parser, clauses);
+	  c_name = "detach";
 	  break;
 	case PRAGMA_OMP_CLAUSE_MAP:
 	  clauses = cp_parser_omp_clause_map (parser, clauses);
@@ -41042,7 +41095,8 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DETACH))
 
 static tree
 cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)

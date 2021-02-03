@@ -12146,6 +12146,27 @@ collect_source_refs (void)
       collect_source_ref (DECL_SOURCE_FILE (decl));
 }
 
+/* Free attribute access data that are not needed by the middle end. */
+
+static void
+free_attr_access_data ()
+{
+  struct cgraph_node *n;
+
+  /* Iterate over all functions declared in the translation unit.  */
+  FOR_EACH_FUNCTION (n)
+    {
+      tree fntype = TREE_TYPE (n->decl);
+      if (!fntype)
+	continue;
+      tree attrs = TYPE_ATTRIBUTES (fntype);
+      if (!attrs)
+	continue;
+
+      attr_access::free_lang_data (attrs);
+    }
+}
+
 /* Perform any final parser cleanups and generate initial debugging
    information.  */
 
@@ -12189,6 +12210,9 @@ c_parse_final_cleanups (void)
   FOR_EACH_VEC_ELT (*all_translation_units, i, t)
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
+
+  if (!in_lto_p)
+    free_attr_access_data ();
 
   timevar_stop (TV_PHASE_DEFERRED);
   timevar_start (TV_PHASE_PARSING);

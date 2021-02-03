@@ -20,6 +20,16 @@ class LabelDsymbol;
 class Initializer;
 class Module;
 class ForeachStatement;
+struct Ensure
+{
+    Identifier *id;
+    Statement *ensure;
+
+    Ensure();
+    Ensure(Identifier *id, Statement *ensure);
+    Ensure syntaxCopy();
+    static Ensures *arraySyntaxCopy(Ensures *a);
+};
 class FuncDeclaration;
 class ExpInitializer;
 class StructDeclaration;
@@ -129,6 +139,7 @@ public:
     void semantic(Scope *sc);
     const char *kind() const;
     d_uns64 size(Loc loc);
+    bool checkDisabled(Loc loc, Scope *sc, bool isAliasedDeclaration = false);
     int checkModify(Loc loc, Scope *sc, Type *t, Expression *e1, int flag);
 
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
@@ -149,6 +160,7 @@ public:
     bool isSynchronized() { return (storage_class & STCsynchronized) != 0; }
     bool isParameter()    { return (storage_class & STCparameter) != 0; }
     bool isDeprecated()   { return (storage_class & STCdeprecated) != 0; }
+    bool isDisabled()     { return (storage_class & STCdisable) != 0; }
     bool isOverride()     { return (storage_class & STCoverride) != 0; }
     bool isResult()       { return (storage_class & STCresult) != 0; }
     bool isField()        { return (storage_class & STCfield) != 0; }
@@ -515,8 +527,10 @@ class FuncDeclaration : public Declaration
 {
 public:
     Types *fthrows;                     // Array of Type's of exceptions (not used)
-    Statement *frequire;
-    Statement *fensure;
+    Statements *frequires;              // in contracts
+    Ensures *fensures;                  // out contracts
+    Statement *frequire;                // lowered in contract
+    Statement *fensure;                 // lowered out contract
     Statement *fbody;
 
     FuncDeclarations foverrides;        // functions this function overrides
@@ -525,8 +539,7 @@ public:
 
     const char *mangleString;           // mangled symbol created from mangleExact()
 
-    Identifier *outId;                  // identifier for out statement
-    VarDeclaration *vresult;            // variable corresponding to outId
+    VarDeclaration *vresult;            // result variable for out contracts
     LabelDsymbol *returnLabel;          // where the return goes
 
     // used to prevent symbols in different
@@ -669,7 +682,7 @@ public:
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, const char *name, StorageClass stc=0);
     static FuncDeclaration *genCfunc(Parameters *args, Type *treturn, Identifier *id, StorageClass stc=0);
     void checkDmain();
-    bool checkNrvo();
+    bool checkNRVO();
 
     FuncDeclaration *isFuncDeclaration() { return this; }
 

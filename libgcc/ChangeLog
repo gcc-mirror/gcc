@@ -1,3 +1,43 @@
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/savms64.h: Add .note.GNU-stack section on Linux.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/resms64.h: Likewise.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov.h (gcov_topn_add_value): Do not train when
+	we have a merged profile with a negative number of total
+	value.
+
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov-merge.c (__gcov_merge_topn): Mark when merging
+	ends with a dropped counter.
+	* libgcov.h (gcov_topn_add_value): Add return value.
+
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/sfp-machine.h (FP_RND_NEAREST, FP_RND_ZERO,
+	FP_RND_PINF, FP_RND_MINF, FP_RND_MASK, FP_EX_OVERFLOW,
+	FP_EX_UNDERFLOW, FP_EX_INEXACT, FP_EX_INVALID, FP_EX_DIVZERO,
+	FP_EX_ALL): New constant macros.
+	(_FP_DECL_EX, FP_ROUNDMODE, FP_INIT_ROUNDMODE,
+	FP_HANDLE_EXCEPTIONS): New macros.
+	(_FP_TININESS_AFTER_ROUNDING): Change to 1.
+
+2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/i386/gnu-unwind.h (x86_gnu_fallback_frame_state): Add the
+	posix siginfo case to struct handler_args. Detect between legacy
+	and siginfo from the second parameter, which is a small sigcode in
+	the legacy case, and a pointer in the siginfo case.
+
 2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/lib1funcs.S (__bswapsi2, __bswapdi2): New

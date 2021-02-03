@@ -119,7 +119,7 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 	  && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
 	{
 	  ok = false;
-	  BREAK_FROM_IMM_USE_STMT (ui2);
+	  break;
 	}
     }
 

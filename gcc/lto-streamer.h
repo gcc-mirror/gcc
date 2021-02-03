@@ -369,6 +369,7 @@ struct lto_section
   int16_t major_version;
   int16_t minor_version;
   unsigned char slim_object;
+  unsigned char _padding;
 
   /* Flags is a private field that is not defined publicly.  */
   uint16_t flags;

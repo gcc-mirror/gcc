@@ -157,7 +157,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     - core.stdc.*: For all gcc library builtins.  */
 
 void
-Compiler::loadModule (Module *m)
+Compiler::onParseModule (Module *m)
 {
   ModuleDeclaration *md = m->md;
 
@@ -179,4 +179,14 @@ Compiler::loadModule (Module *m)
 	  && !strcmp ((*md->packages)[1]->toChars (), "stdc"))
 	d_add_builtin_module (m);
     }
+}
+
+/* A callback function that is called once an imported module is parsed.
+   If the callback returns true, then it tells the front-end that the
+   driver intends on compiling the import.  */
+
+bool
+Compiler::onImport (Module *)
+{
+  return false;
 }

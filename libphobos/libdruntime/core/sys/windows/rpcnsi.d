@@ -10,13 +10,14 @@
  */
 module core.sys.windows.rpcnsi;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "rpcns4");
 
-private import core.sys.windows.basetyps, core.sys.windows.rpcdcep, core.sys.windows.rpcnsi, core.sys.windows.rpcdce,
+import core.sys.windows.basetyps, core.sys.windows.rpcdcep, core.sys.windows.rpcnsi, core.sys.windows.rpcdce,
   core.sys.windows.w32api;
-private import core.sys.windows.windef;  // for HANDLE
+import core.sys.windows.windef;  // for HANDLE
 
 mixin DECLARE_HANDLE!("RPC_NS_HANDLE");
 

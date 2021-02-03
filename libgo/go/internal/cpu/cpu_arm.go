@@ -4,6 +4,8 @@
 
 package cpu
 
+// const CacheLinePadSize = 32
+
 // arm doesn't have a 'cpuid' equivalent, so we rely on HWCAP/HWCAP2.
 // These are initialized by archauxv() and should not be changed after they are
 // initialized.

@@ -8,11 +8,12 @@
  */
 module core.sys.windows.oleauto;
 version (Windows):
+@system:
 pragma(lib, "oleaut32");
 
 import core.sys.windows.oaidl;
-private import core.sys.windows.basetyps, core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
-private import core.sys.windows.winbase; // for SYSTEMTIME
+import core.sys.windows.basetyps, core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
+import core.sys.windows.winbase; // for SYSTEMTIME
 
 align(8):
 enum STDOLE_MAJORVERNUM = 1;
@@ -215,10 +216,10 @@ struct NUMPARSE {
 
 deprecated {  // not actually deprecated, but they aren't converted yet.
               // (will need to reinstate CreateTypeLib as well)
-    interface ICreateTypeInfo {};
-    interface ICreateTypeInfo2 {};
-    interface ICreateTypeLib {};
-    interface ICreateTypeLib2 {};
+    interface ICreateTypeInfo {}
+    interface ICreateTypeInfo2 {}
+    interface ICreateTypeLib {}
+    interface ICreateTypeLib2 {}
 
     alias ICreateTypeInfo LPCREATETYPEINFO;
     alias ICreateTypeInfo2 LPCREATETYPEINFO2;

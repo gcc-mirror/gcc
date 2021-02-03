@@ -42,15 +42,15 @@ alias mat4x4 mat4;
 string definePostfixAliases(string type)
 {
     return "alias " ~ type ~ "!byte "   ~ type ~ "b;\n"
-"alias " ~ type ~ "!ubyte "  ~ type ~ "ub;\n"
-"alias " ~ type ~ "!short "  ~ type ~ "s;\n"
-"alias " ~ type ~ "!ushort " ~ type ~ "us;\n"
-"alias " ~ type ~ "!int "    ~ type ~ "i;\n"
-"alias " ~ type ~ "!uint "   ~ type ~ "ui;\n"
-"alias " ~ type ~ "!long "   ~ type ~ "l;\n"
-"alias " ~ type ~ "!ulong "  ~ type ~ "ul;\n"
-"alias " ~ type ~ "!float "  ~ type ~ "f;\n"
-"alias " ~ type ~ "!double " ~ type ~ "d;\n";
+~ "alias " ~ type ~ "!ubyte "  ~ type ~ "ub;\n"
+~ "alias " ~ type ~ "!short "  ~ type ~ "s;\n"
+~ "alias " ~ type ~ "!ushort " ~ type ~ "us;\n"
+~ "alias " ~ type ~ "!int "    ~ type ~ "i;\n"
+~ "alias " ~ type ~ "!uint "   ~ type ~ "ui;\n"
+~ "alias " ~ type ~ "!long "   ~ type ~ "l;\n"
+~ "alias " ~ type ~ "!ulong "  ~ type ~ "ul;\n"
+~ "alias " ~ type ~ "!float "  ~ type ~ "f;\n"
+~ "alias " ~ type ~ "!double " ~ type ~ "d;\n";
 }
 
 // define a lot of type names

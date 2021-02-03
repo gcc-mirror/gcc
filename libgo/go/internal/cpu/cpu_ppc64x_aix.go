@@ -17,5 +17,5 @@ func osinit() {
 	PPC64.IsPOWER9 = isSet(impl, _IMPL_POWER9)
 }
 
-// getsystemcfg is defined in runtime/os2_aix.go
+//extern getsystemcfg
 func getsystemcfg(label uint) uint

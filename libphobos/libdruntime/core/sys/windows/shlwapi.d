@@ -8,6 +8,7 @@
  */
 module core.sys.windows.shlwapi;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "shlwapi");
@@ -27,7 +28,7 @@ wnsprintf functions are not included.
 */
 
 import core.sys.windows.objbase, core.sys.windows.shlobj;
-private import core.sys.windows.basetyps, core.sys.windows.objidl, core.sys.windows.unknwn, core.sys.windows.windef,
+import core.sys.windows.basetyps, core.sys.windows.objidl, core.sys.windows.unknwn, core.sys.windows.windef,
   core.sys.windows.winbase, core.sys.windows.winreg;
 
 enum DLLVER_PLATFORM_WINDOWS = 0x00000001;

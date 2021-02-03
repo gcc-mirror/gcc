@@ -39,7 +39,7 @@ enum
 
 alias c_ulong Lmid_t;
 
-void* dlmopen(Lmid_t, in char*, int);
+void* dlmopen(Lmid_t, const scope char*, int);
 
 enum
 {
@@ -56,7 +56,7 @@ enum
     RTLD_CONFSET      = 0x10000,
 }
 
-int dldump(in char*, in char*, int);
+int dldump(const scope char*, const scope char*, int);
 
 struct Dl_info
 {

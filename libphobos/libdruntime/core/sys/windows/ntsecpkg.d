@@ -9,6 +9,7 @@
  */
 module core.sys.windows.ntsecpkg;
 version (Windows):
+@system:
 
 import core.sys.windows.windef, core.sys.windows.ntsecapi, core.sys.windows.security, core.sys.windows.ntdef, core.sys.windows.sspi;
 import core.sys.windows.basetyps : GUID;

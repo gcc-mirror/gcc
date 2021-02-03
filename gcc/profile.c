@@ -897,8 +897,16 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 	      node->tp_first_run = 0;
 	    }
 
-          if (dump_file)
-            fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);
+	  /* Drop profile for -fprofile-reproducible=multithreaded.  */
+	  bool drop
+	    = (flag_profile_reproducible == PROFILE_REPRODUCIBILITY_MULTITHREADED);
+	  if (drop)
+	    node->tp_first_run = 0;
+
+	  if (dump_file)
+	    fprintf (dump_file, "Read tp_first_run: %d%s\n", node->tp_first_run,
+		     drop ? "; ignored because profile reproducibility is "
+		     "multi-threaded" : "");
         }
     }
 
@@ -1293,6 +1301,11 @@ branch_prob (bool thunk)
   total_num_edges_instrumented += num_instrumented;
   if (dump_file)
     fprintf (dump_file, "%d instrumentation edges\n", num_instrumented);
+
+  /* Dump function body before it's instrumented.
+     It helps to debug gcov tool.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_function_to_file (cfun->decl, dump_file, dump_flags);
 
   /* Compute two different checksums. Note that we want to compute
      the checksum in only once place, since it depends on the shape

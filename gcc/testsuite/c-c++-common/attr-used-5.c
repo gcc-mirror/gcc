@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "non-ELF target" { *-*-darwin* } } */
 /* { dg-options "-Wall -O2" } */
 
 struct dtv_slotinfo_list

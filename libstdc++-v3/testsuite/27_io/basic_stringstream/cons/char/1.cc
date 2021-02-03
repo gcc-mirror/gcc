@@ -107,7 +107,7 @@ test04()
   sstream ss3(std::string(str), std::ios::out, a);
   VERIFY( ss3.str() == cstr );
   VERIFY( bool(ss3 << 1) );
-  VERIFY( ss3.get() == std::wstringbuf::traits_type::eof() );
+  VERIFY( ss3.get() == std::stringbuf::traits_type::eof() );
 }
 
 int

@@ -1719,13 +1719,13 @@ of code @code{const_double} and therefore a syntactic alias has been
 provided:
 
 @smallexample
-(const_double_zero)
+(const_double_zero:@var{m})
 @end smallexample
 
 standing for:
 
 @smallexample
-(const_double 0 0 @dots{})
+(const_double:@var{m} 0 0 @dots{})
 @end smallexample
 
 for matching the floating-point value zero, possibly the only useful one.

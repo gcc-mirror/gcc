@@ -42,4 +42,6 @@
      %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}} \
    %{static-pie:-Bstatic -pie --no-dynamic-linker -z text}"
 
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
 #endif /* GCC_OR1K_LINUX_H */

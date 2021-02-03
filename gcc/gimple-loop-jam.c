@@ -505,15 +505,13 @@ tree_loop_unroll_and_jam (void)
       if (!unroll_jam_possible_p (outer, loop))
 	continue;
 
-      vec<data_reference_p> datarefs;
-      vec<ddr_p> dependences;
+      vec<data_reference_p> datarefs = vNULL;
+      vec<ddr_p> dependences = vNULL;
       unsigned unroll_factor, profit_unroll, removed;
       class tree_niter_desc desc;
       bool unroll = false;
 
       auto_vec<loop_p, 3> loop_nest;
-      dependences.create (10);
-      datarefs.create (10);
       if (!compute_data_dependences_for_loop (outer, true, &loop_nest,
 					      &datarefs, &dependences))
 	{

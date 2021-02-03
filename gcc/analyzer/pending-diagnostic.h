@@ -157,7 +157,7 @@ class pending_diagnostic
   /* Compare for equality with OTHER, which might be of a different
      subclass.  */
 
-  bool equal_p (const pending_diagnostic &other)
+  bool equal_p (const pending_diagnostic &other) const
   {
     /* Check for pointer equality on the IDs from get_kind.  */
     if (get_kind () != other.get_kind ())

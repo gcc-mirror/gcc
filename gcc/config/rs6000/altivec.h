@@ -750,6 +750,10 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_strir_p(a)	__builtin_vec_strir_p (a)
 #define vec_stril_p(a)	__builtin_vec_stril_p (a)
 
+#define vec_mulh(a, b) __builtin_vec_mulh ((a), (b))
+#define vec_dive(a, b) __builtin_vec_dive ((a), (b))
+#define vec_mod(a, b) __builtin_vec_mod ((a), (b))
+
 /* VSX Mask Manipulation builtin. */
 #define vec_genbm __builtin_vec_mtvsrbm
 #define vec_genhm __builtin_vec_mtvsrhm

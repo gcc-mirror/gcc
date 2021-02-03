@@ -47,3 +47,6 @@ FUNC(f, float, 16, 8, -, vneg)
    functions above.  */
 /* { dg-final { scan-assembler-times {vneg.s[0-9]+  q[0-9]+, q[0-9]+} 6 } } */
 /* { dg-final { scan-assembler-times {vneg.f[0-9]+  q[0-9]+, q[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vldr[bhw].[0-9]+\tq[0-9]+} 8 } } */
+/* { dg-final { scan-assembler-times {vstr[bhw].[0-9]+\tq[0-9]+} 8 } } */
+/* { dg-final { scan-assembler-not {orr\tr[0-9]+, r[0-9]+, r[0-9]+} } } */

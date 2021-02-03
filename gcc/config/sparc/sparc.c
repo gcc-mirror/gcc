@@ -12942,6 +12942,12 @@ sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   if (vmode != V8QImode)
     return false;
 
+  rtx nop0 = force_reg (vmode, op0);
+  if (op0 == op1)
+    op1 = nop0;
+  op0 = nop0;
+  op1 = force_reg (vmode, op1);
+
   unsigned int i, mask;
   for (i = mask = 0; i < 8; ++i)
     mask |= (sel[i] & 0xf) << (28 - i*4);

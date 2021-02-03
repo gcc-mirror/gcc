@@ -250,6 +250,7 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
 {
   enum reg_class rclass, common_class;
   machine_mode reg_mode;
+  rtx src;
   int class_size, hard_regno, nregs, i, j;
   int regno = REGNO (reg);
 
@@ -265,6 +266,7 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
     }
   reg_mode = GET_MODE (reg);
   rclass = get_reg_class (regno);
+  src = curr_insn_set != NULL ? SET_SRC (curr_insn_set) : NULL;
   if (regno < new_regno_start
       /* Do not allow the constraints for reload instructions to
 	 influence the classes of new pseudos.  These reloads are
@@ -273,12 +275,10 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
 	 where other reload pseudos are no longer allocatable.  */
       || (!allow_all_reload_class_changes_p
 	  && INSN_UID (curr_insn) >= new_insn_uid_start
-	  && curr_insn_set != NULL
-	  && ((OBJECT_P (SET_SRC (curr_insn_set))
-	       && ! CONSTANT_P (SET_SRC (curr_insn_set)))
-	      || (GET_CODE (SET_SRC (curr_insn_set)) == SUBREG
-		  && OBJECT_P (SUBREG_REG (SET_SRC (curr_insn_set)))
-		  && ! CONSTANT_P (SUBREG_REG (SET_SRC (curr_insn_set)))))))
+	  && src != NULL
+	  && ((REG_P (src) || MEM_P (src))
+	      || (GET_CODE (src) == SUBREG
+		  && (REG_P (SUBREG_REG (src)) || MEM_P (SUBREG_REG (src)))))))
     /* When we don't know what class will be used finally for reload
        pseudos, we use ALL_REGS.  */
     return ((regno >= new_regno_start && rclass == ALL_REGS)
@@ -3106,8 +3106,13 @@ process_alt_operands (int only_alternative)
 		    && operand_reg[j] != NULL_RTX
 		    && HARD_REGISTER_P (operand_reg[j])
 		    && REG_USERVAR_P (operand_reg[j]))
-		  fatal_insn ("unable to generate reloads for "
-			      "impossible constraints:", curr_insn);
+		  {
+		    /* For asm, let curr_insn_transform diagnose it.  */
+		    if (INSN_CODE (curr_insn) < 0)
+		      return false;
+		    fatal_insn ("unable to generate reloads for "
+				"impossible constraints:", curr_insn);
+		  }
 	      }
 	  if (last_conflict_j < 0)
 	    continue;

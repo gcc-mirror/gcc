@@ -2700,7 +2700,7 @@ again:
 	    {
 	      stmt_vec_info pattern_stmt_info
 		= STMT_VINFO_RELATED_STMT (stmt_info);
-	      if (STMT_VINFO_SLP_VECT_ONLY (pattern_stmt_info))
+	      if (STMT_VINFO_SLP_VECT_ONLY_PATTERN (pattern_stmt_info))
 		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
 
 	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
@@ -2850,6 +2850,45 @@ vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
   return true;
 }
 
+/* If LOOP_VINFO is already a main loop, return it unmodified.  Otherwise
+   try to reanalyze it as a main loop.  Return the loop_vinfo on success
+   and null on failure.  */
+
+static loop_vec_info
+vect_reanalyze_as_main_loop (loop_vec_info loop_vinfo, unsigned int *n_stmts)
+{
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+    return loop_vinfo;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "***** Reanalyzing as a main loop with vector mode %s\n",
+		     GET_MODE_NAME (loop_vinfo->vector_mode));
+
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  vec_info_shared *shared = loop_vinfo->shared;
+  opt_loop_vec_info main_loop_vinfo = vect_analyze_loop_form (loop, shared);
+  gcc_assert (main_loop_vinfo);
+
+  main_loop_vinfo->vector_mode = loop_vinfo->vector_mode;
+
+  bool fatal = false;
+  bool res = vect_analyze_loop_2 (main_loop_vinfo, fatal, n_stmts);
+  loop->aux = NULL;
+  if (!res)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Failed to analyze main loop with vector"
+			 " mode %s\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
+      delete main_loop_vinfo;
+      return NULL;
+    }
+  LOOP_VINFO_VECTORIZABLE_P (main_loop_vinfo) = 1;
+  return main_loop_vinfo;
+}
+
 /* Function vect_analyze_loop.
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
@@ -2997,9 +3036,25 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      if (vinfos.is_empty ()
 		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
 		{
-		  delete first_loop_vinfo;
-		  first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
+		  loop_vec_info main_loop_vinfo
+		    = vect_reanalyze_as_main_loop (loop_vinfo, &n_stmts);
+		  if (main_loop_vinfo == loop_vinfo)
+		    {
+		      delete first_loop_vinfo;
+		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		    }
+		  else if (main_loop_vinfo
+			   && vect_joust_loop_vinfos (main_loop_vinfo,
+						      first_loop_vinfo))
+		    {
+		      delete first_loop_vinfo;
+		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+		      delete loop_vinfo;
+		      loop_vinfo
+			= opt_loop_vec_info::success (main_loop_vinfo);
+		    }
+		  else
+		    delete main_loop_vinfo;
 		}
 	    }
 
@@ -4397,8 +4452,8 @@ have_whole_vector_shift (machine_mode mode)
 /* Function vect_model_reduction_cost.
 
    Models cost for a reduction operation, including the vector ops
-   generated within the strip-mine loop, the initial definition before
-   the loop, and the epilogue code that must be generated.  */
+   generated within the strip-mine loop in some cases, the initial
+   definition before the loop, and the epilogue code that must be generated.  */
 
 static void
 vect_model_reduction_cost (loop_vec_info loop_vinfo,
@@ -4461,10 +4516,6 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
       prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
 					 scalar_to_vec, stmt_info, 0,
 					 vect_prologue);
-
-      /* Cost of reduction op inside loop.  */
-      inside_cost = record_stmt_cost (cost_vec, ncopies, vector_stmt,
-				      stmt_info, 0, vect_body);
     }
 
   /* Determine cost of epilogue code.
@@ -7213,6 +7264,15 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   vect_model_reduction_cost (loop_vinfo, stmt_info, reduc_fn,
 			     reduction_type, ncopies, cost_vec);
+  /* Cost the reduction op inside the loop if transformed via
+     vect_transform_reduction.  Otherwise this is costed by the
+     separate vectorizable_* routines.  */
+  if (single_defuse_cycle
+      || code == DOT_PROD_EXPR
+      || code == WIDEN_SUM_EXPR
+      || code == SAD_EXPR)
+    record_stmt_cost (cost_vec, ncopies, vector_stmt, stmt_info, 0, vect_body);
+
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -8439,7 +8499,7 @@ vectorizable_live_operation (vec_info *vinfo,
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   imm_use_iterator imm_iter;
-  tree lhs, lhs_type, bitsize, vec_bitsize;
+  tree lhs, lhs_type, bitsize;
   tree vectype = (slp_node
 		  ? SLP_TREE_VECTYPE (slp_node)
 		  : STMT_VINFO_VECTYPE (stmt_info));
@@ -8582,7 +8642,6 @@ vectorizable_live_operation (vec_info *vinfo,
   lhs_type = TREE_TYPE (lhs);
 
   bitsize = vector_element_bits_tree (vectype);
-  vec_bitsize = TYPE_SIZE (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
   tree vec_lhs, bitstart;
@@ -8606,7 +8665,7 @@ vectorizable_live_operation (vec_info *vinfo,
       vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get the last lane in the vector.  */
-      bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
+      bitstart = int_const_binop (MULT_EXPR, bitsize, bitsize_int (nunits - 1));
     }
 
   if (loop_vinfo)

@@ -885,7 +885,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 			poly_int64 update_sp_offset)
 {
   int icode = recog_memoized (insn);
-  rtx old_set = single_set (insn);
+  rtx set, old_set = single_set (insn);
   bool validate_p;
   int i;
   rtx substed_operand[MAX_RECOG_OPERANDS];
@@ -1037,6 +1037,35 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
     *id->operand_loc[i] = substed_operand[i];
   for (i = 0; i < static_id->n_dups; i++)
     *id->dup_loc[i] = substed_operand[(int) static_id->dup_num[i]];
+
+  /* Transform plus (plus (hard reg, const), pseudo) to plus (plus (pseudo,
+     const), hard reg) in order to keep insn containing eliminated register
+     after all reloads calculating its offset.  This permits to keep register
+     pressure under control and helps to avoid LRA cycling in patalogical
+     cases.  */
+  if (! replace_p && (set = single_set (insn)) != NULL
+      && GET_CODE (SET_SRC (set)) == PLUS
+      && GET_CODE (XEXP (SET_SRC (set), 0)) == PLUS)
+    {
+      rtx reg1, reg2, op1, op2;
+      
+      reg1 = op1 = XEXP (XEXP (SET_SRC (set), 0), 0);
+      reg2 = op2 = XEXP (SET_SRC (set), 1);
+      if (GET_CODE (reg1) == SUBREG)
+	reg1 = SUBREG_REG (reg1);
+      if (GET_CODE (reg2) == SUBREG)
+	reg2 = SUBREG_REG (reg2);
+      if (REG_P (reg1) && REG_P (reg2)
+	  && REGNO (reg1) < FIRST_PSEUDO_REGISTER
+	  && REGNO (reg2) >= FIRST_PSEUDO_REGISTER
+	  && GET_MODE (reg1) == Pmode
+	  && !have_addptr3_insn (lra_pmode_pseudo, reg1,
+				 XEXP (XEXP (SET_SRC (set), 0), 1)))
+	{
+	  XEXP (XEXP (SET_SRC (set), 0), 0) = op2;
+	  XEXP (SET_SRC (set), 1) = op1;
+	}
+    }
 
   /* If we had a move insn but now we don't, re-recognize it.
      This will cause spurious re-recognition if the old move had a

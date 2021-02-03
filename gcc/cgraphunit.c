@@ -1191,8 +1191,6 @@ analyze_functions (bool first_time)
 	      changed = true;
 	      if (symtab->dump_file)
 		fprintf (symtab->dump_file, " %s", node->dump_asm_name ());
-	      if (!changed && symtab->dump_file)
-		fprintf (symtab->dump_file, "\n");
 	    }
 	  if (node == first_analyzed
 	      || node == first_analyzed_var)

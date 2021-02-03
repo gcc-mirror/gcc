@@ -4,7 +4,7 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fstack-protector-explicit" } */
 
-/* { dg-do compile } */
+/* { dg-do compile { target { ! hppa*-*-* } } } */
 
 int __attribute__((no_stack_protector)) foo()
 {

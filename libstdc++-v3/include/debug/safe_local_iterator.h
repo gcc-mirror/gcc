@@ -32,7 +32,9 @@
 #include <debug/safe_unordered_base.h>
 
 #define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs) \
-  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
+  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular()	\
+			|| (_Lhs.base() == _Iterator{}			\
+			    && _Rhs.base() == _Iterator{}),		\
 			_M_message(__msg_iter_compare_bad)		\
 			._M_iterator(_Lhs, "lhs")			\
 			._M_iterator(_Rhs, "rhs"));			\

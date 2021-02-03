@@ -134,6 +134,7 @@
 #endif
 
 #if __cplusplus > 201703L
+#include <barrier>
 #include <bit>
 #include <compare>
 #include <concepts>
@@ -146,6 +147,7 @@
 #include <span>
 #include <stop_token>
 #include <semaphore>
+#include <source_location>
 #include <syncstream>
 #include <version>
 #endif

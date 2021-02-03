@@ -2352,7 +2352,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
-	    if (!is_this_parameter (ob))
+	    if (!is_this_parameter (ob)
+		&& !is_dummy_object (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
 		if (TYPE_REF_P (TREE_TYPE (ob)))
@@ -2417,32 +2418,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case MEM_REF:
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	  && integer_zerop (TREE_OPERAND (t, 1)))
-	dump_expr (pp, TREE_OPERAND (TREE_OPERAND (t, 0), 0), flags);
-      else
-	{
-	  pp_cxx_star (pp);
-	  if (!integer_zerop (TREE_OPERAND (t, 1)))
-	    {
-	      pp_cxx_left_paren (pp);
-	      if (!integer_onep (TYPE_SIZE_UNIT
-				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0))))))
-		{
-		  pp_cxx_left_paren (pp);
-		  dump_type (pp, ptr_type_node, flags);
-		  pp_cxx_right_paren (pp);
-		}
-	    }
-	  dump_expr (pp, TREE_OPERAND (t, 0), flags);
-	  if (!integer_zerop (TREE_OPERAND (t, 1)))
-	    {
-	      pp_cxx_ws_string (pp, "+");
-	      dump_expr (pp, fold_convert (ssizetype, TREE_OPERAND (t, 1)),
-                         flags);
-	      pp_cxx_right_paren (pp);
-	    }
-	}
+      /* Delegate to the base "C" pretty printer.  */
+      pp->c_pretty_printer::unary_expression (t);
       break;
 
     case TARGET_MEM_REF:

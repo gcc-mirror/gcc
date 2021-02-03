@@ -50,6 +50,9 @@ if !$skip_lto {
     set ltop [check_linker_plugin_available]
 }
 
+# Check for GNU LD.  Some files like .ld1_args depend on this.
+set gld [check_effective_target_gld]
+
 # Prepare additional options to be used for linking.
 # We do not compile to an executable, because that requires naming an output.
 set link_options ""
@@ -65,6 +68,12 @@ foreach i { ldflags libs ldscript } {
 }
 if {[board_info $dest exists output_format]} {
     append link_options " additional_flags=-Wl,-oformat,[board_info $dest output_format]"
+}
+
+# Avoid possible influence from the make jobserver,
+# otherwise ltrans0.ltrans_args files may be missing.
+if [info exists env(MAKEFLAGS)] {
+    unsetenv MAKEFLAGS
 }
 
 # For the test named TEST, run the compiler with SOURCES and OPTS, and
@@ -130,6 +139,7 @@ proc outest { test sources opts dirs outputs } {
 	foreach og $olist {
 	    if { [string index $og 0] == "!" } {
 		global gspd ltop
+		global gld
 		set cond [expr $og]
 		continue
 	    }
@@ -181,7 +191,10 @@ proc outest { test sources opts dirs outputs } {
 	file delete $f
 	# collect2 may create <execname>.cdtor* files in -save-temps link tests,
 	# ??? without regard to aux output naming conventions.
-	if ![string match "*.cdtor.*" $f] then {
+	# Limit this exception to targets that define EH_FRAME_THROUGH_COLLECT2.
+	if { !(([istarget powerpc*-*-aix*] || [is_target hppa*-*-hpux*])
+	       && ([string match "*.cdtor.*" $f]
+		   || [string match "*.gcc_args" $f])) } {
 	    lappend outb $f
 	}
     }
@@ -285,10 +298,10 @@ outest "$b exe savetmp namedb" $sing "-o $b.exe -save-temps" {} {{--0.i --0.s --
 outest "$b exe savetmp named2" $mult "-o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .exe}}
 
 # Additional files are created when an @file is used
-outest "$b exe savetmp namedb" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 .ld1_args .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 .ld1_args .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .ld1_args .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 .ld1_args .exe}}
+outest "$b exe savetmp namedb" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
 
 # Setting the main output to a dir selects it as the default aux&dump
 # location.

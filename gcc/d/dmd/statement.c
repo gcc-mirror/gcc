@@ -109,6 +109,24 @@ Statement *Statement::syntaxCopy()
     return NULL;
 }
 
+/*************************************
+ * Do syntax copy of an array of Statement's.
+ */
+Statements *Statement::arraySyntaxCopy(Statements *a)
+{
+    Statements *b = NULL;
+    if (a)
+    {
+        b = a->copy();
+        for (size_t i = 0; i < a->length; i++)
+        {
+            Statement *s = (*a)[i];
+            (*b)[i] = s ? s->syntaxCopy() : NULL;
+        }
+    }
+    return b;
+}
+
 void Statement::print()
 {
     fprintf(stderr, "%s\n", toChars());
@@ -560,14 +578,7 @@ CompoundStatement *CompoundStatement::create(Loc loc, Statement *s1, Statement *
 
 Statement *CompoundStatement::syntaxCopy()
 {
-    Statements *a = new Statements();
-    a->setDim(statements->length);
-    for (size_t i = 0; i < statements->length; i++)
-    {
-        Statement *s = (*statements)[i];
-        (*a)[i] = s ? s->syntaxCopy() : NULL;
-    }
-    return new CompoundStatement(loc, a);
+    return new CompoundStatement(loc, Statement::arraySyntaxCopy(statements));
 }
 
 Statements *CompoundStatement::flatten(Scope *)

@@ -15977,6 +15977,56 @@ c_parser_omp_clause_uniform (c_parser *parser, tree list)
   return list;
 }
 
+/* OpenMP 5.0:
+   detach ( event-handle ) */
+
+static tree
+c_parser_omp_clause_detach (c_parser *parser, tree list)
+{
+  matching_parens parens;
+  location_t clause_loc = c_parser_peek_token (parser)->location;
+
+  if (!parens.require_open (parser))
+    return list;
+
+  if (c_parser_next_token_is_not (parser, CPP_NAME)
+      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+    {
+      c_parser_error (parser, "expected identifier");
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+
+  tree t = lookup_name (c_parser_peek_token (parser)->value);
+  if (t == NULL_TREE)
+    {
+      undeclared_variable (c_parser_peek_token (parser)->location,
+			   c_parser_peek_token (parser)->value);
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+  c_parser_consume_token (parser);
+
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+  if (!INTEGRAL_TYPE_P (type)
+      || TREE_CODE (type) != ENUMERAL_TYPE
+      || TYPE_NAME (type) != get_identifier ("omp_event_handle_t"))
+    {
+      error_at (clause_loc, "%<detach%> clause event handle "
+			    "has type %qT rather than "
+			    "%<omp_event_handle_t%>",
+			    type);
+      parens.skip_until_found_close (parser);
+      return list;
+    }
+
+  tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DETACH);
+  OMP_CLAUSE_DECL (u) = t;
+  OMP_CLAUSE_CHAIN (u) = list;
+  parens.skip_until_found_close (parser);
+  return u;
+}
+
 /* Parse all OpenACC clauses.  The set clauses allowed by the directive
    is a bitmask in MASK.  Return the list of clauses found.  */
 
@@ -16242,6 +16292,10 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_DEFAULT:
 	  clauses = c_parser_omp_clause_default (parser, clauses, false);
 	  c_name = "default";
+	  break;
+	case PRAGMA_OMP_CLAUSE_DETACH:
+	  clauses = c_parser_omp_clause_detach (parser, clauses);
+	  c_name = "detach";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FIRSTPRIVATE:
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
@@ -19190,7 +19244,8 @@ c_parser_omp_single (location_t loc, c_parser *parser, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DETACH))
 
 static tree
 c_parser_omp_task (location_t loc, c_parser *parser, bool *if_p)

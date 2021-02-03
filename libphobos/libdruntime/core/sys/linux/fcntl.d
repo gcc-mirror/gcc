@@ -5,6 +5,7 @@ public import core.sys.posix.fcntl;
 version (linux):
 extern(C):
 nothrow:
+@system:
 
 // From linux/falloc.h
 /// fallocate(2) params

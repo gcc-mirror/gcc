@@ -31,4 +31,19 @@ extern struct gcc_targetdm targetdm;
 /* Used by target to add predefined version idenditiers.  */
 extern void d_add_builtin_version (const char *);
 
+/* Structure describing a supported key for `__traits(getTargetInfo)' and a
+   function to handle it.  */
+struct d_target_info_spec
+{
+  /* The name of the key or NULL to mark the end of a table of keys.  */
+  const char *name;
+  /* Function to handle this key, the return value of the handler must be a CST.
+     This pointer may be NULL if no special handling is required, for instance,
+     the key must always be available according to the D language spec.  */
+  tree (*handler) ();
+};
+
+/* Used by target to add getTargetInfo handlers.  */
+extern void d_add_target_info_handlers (const d_target_info_spec *);
+
 #endif /* GCC_D_TARGET_H  */

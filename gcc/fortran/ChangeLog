@@ -1,3 +1,155 @@
+2021-01-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86470
+	* trans.c (gfc_call_malloc): Allocate area of size 1 if passed
+	size is NULL (as documented).
+
+2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93924
+	PR fortran/93925
+	* trans-expr.c (gfc_conv_procedure_call): Suppress the call to
+	gfc_conv_intrinsic_to_class for unlimited polymorphic procedure
+	pointers.
+	(gfc_trans_assignment_1): Similarly suppress class assignment
+	for class valued procedure pointers.
+
+2021-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98472
+	* trans-array.c (gfc_conv_expr_descriptor): Include elemental
+	procedure pointers in the assert under the comment 'elemental
+	function' and eliminate the second, spurious assert.
+
+2021-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/70070
+	* data.c (create_character_initializer): Check substring indices
+	against bounds.
+	(gfc_assign_data_value): Catch error returned from
+	create_character_initializer.
+
+2021-01-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (CO_BROADCAST, CO_MIN, CO_REDUCE, CO_SUM): Fix typos.
+
+2021-01-25  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98517
+	* resolve.c (resolve_charlen): Check that length expression is
+	present before testing for scalar/integer..
+
+2021-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98565
+	* trans-intrinsic.c (gfc_conv_associated): Do not add a _data
+	component for scalar class function targets. Instead, fix the
+	function result and access the _data from that.
+
+2021-01-21  Jorge D'Elia  <jdelia@cimec.unl.edu.ar>
+
+	* intrinsic.texi (CO_MAX): Fix typo.
+
+2021-01-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96320
+	* decl.c (gfc_match_modproc): It is not an error to find a
+	module procedure declaration within a contains block.
+	* expr.c (gfc_check_vardef_context): Pure procedure result is
+	assignable. Change 'own_scope' accordingly.
+	* resolve.c (resolve_typebound_procedure): A procedure that
+	has the module procedure attribute is almost certainly a
+	module procedure, whatever its interface.
+
+2021-01-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98476
+	* openmp.c (resolve_omp_clauses): Change use_device_ptr
+	to use_device_addr for unless type(c_ptr); check all
+	list item for is_device_ptr.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle detach clause.
+	* frontend-passes.c (gfc_code_walker): Walk detach expression.
+	* gfortran.h (struct gfc_omp_clauses): Add detach field.
+	(gfc_c_intptr_kind): New.
+	* openmp.c (gfc_free_omp_clauses): Free detach clause.
+	(gfc_match_omp_detach): New.
+	(enum omp_mask1): Add OMP_CLAUSE_DETACH.
+	(enum omp_mask2): Remove OMP_CLAUSE_DETACH.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_DETACH for OpenMP.
+	(OMP_TASK_CLAUSES): Add OMP_CLAUSE_DETACH.
+	(resolve_omp_clauses): Prevent use of detach with mergeable and
+	overriding the data sharing mode of the event handle.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle detach clause.
+	* trans-types.c (gfc_c_intptr_kind): New.
+	(gfc_init_kinds): Initialize gfc_c_intptr_kind.
+	* types.def
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT): Rename
+	to...
+	(BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT_PTR_INT_PTR):
+	...this.  Add extra argument.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.h (gfc_resolve_substring): Add prototype.
+	* primary.c (match_string_constant): Simplify substrings with
+	constant starting and ending points.
+	* resolve.c: Rename resolve_substring to gfc_resolve_substring.
+	(gfc_resolve_ref): Use renamed function gfc_resolve_substring.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
+2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98661
+	* resolve.c (resolve_component): Derived type components with
+	ALLOCATABLE or POINTER attribute shall have a deferred shape.
+
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93794
+	* trans-expr.c (gfc_conv_component_ref): Remove the condition
+	that deferred character length components only be allocatable.
+
+2021-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98458
+	* simplify.c (is_constant_array_expr): If an array constructor
+	expression has elements other than constants or structures, try
+	fixing the expression with gfc_reduce_init_expr. Also, if shape
+	is NULL, obtain the array size and set it.
+
+2021-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93701
+	* resolve.c (find_array_spec): Put static prototype for
+	resolve_assoc_var before this function and call for associate
+	variables.
+
+2021-01-06  Harald Anlauf  <anlauf@gmx.de>
+
+	* resolve.c (resolve_component): Add check for valid CLASS
+	reference before trying to access CLASS data.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* ChangeLog-2018: Remove duplicate ChangeLog entries.
+
 2021-01-01  Harald Anlauf  <anlauf@gmx.de>
 
 	* class.c (gfc_find_vtab): Add check on attribute is_class.

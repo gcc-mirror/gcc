@@ -1519,11 +1519,11 @@ public:
     this->m_vec = &m_auto;
   }
 
-  auto_vec (size_t s)
+  auto_vec (size_t s CXX_MEM_STAT_INFO)
   {
     if (s > N)
       {
-	this->create (s);
+	this->create (s PASS_MEM_STAT);
 	return;
       }
 
@@ -1548,7 +1548,7 @@ class auto_vec<T, 0> : public vec<T, va_heap>
 {
 public:
   auto_vec () { this->m_vec = NULL; }
-  auto_vec (size_t n) { this->create (n); }
+  auto_vec (size_t n CXX_MEM_STAT_INFO) { this->create (n PASS_MEM_STAT); }
   ~auto_vec () { this->release (); }
 
   auto_vec (vec<T, va_heap>&& r)

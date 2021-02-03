@@ -1712,6 +1712,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
   last_bb_discriminator = bb_discriminator = 0;
+  force_source_line = false;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
@@ -3250,12 +3251,11 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
     {
       location_t loc = NOTE_MARKER_LOCATION (insn);
       expanded_location xloc = expand_location (loc);
-      if (xloc.line == 0)
-	{
-	  gcc_checking_assert (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION
-			       || LOCATION_LOCUS (loc) == BUILTINS_LOCATION);
-	  return false;
-	}
+      if (xloc.line == 0
+	  && (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION
+	      || LOCATION_LOCUS (loc) == BUILTINS_LOCATION))
+	return false;
+
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;

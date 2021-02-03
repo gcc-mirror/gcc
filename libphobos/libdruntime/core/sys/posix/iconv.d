@@ -34,18 +34,19 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 
 alias void* iconv_t;
 
 /// Allocate descriptor for code conversion from codeset FROMCODE to
 /// codeset TOCODE.
-iconv_t iconv_open (in char* tocode, in char* fromcode);
+iconv_t iconv_open (const scope char* tocode, const scope char* fromcode);
 
 /// Convert at most *INBYTESLEFT bytes from *INBUF according to the
 /// code conversion algorithm specified by CD and place up to
 /// *OUTBYTESLEFT bytes in buffer at *OUTBUF.
-size_t iconv (iconv_t cd, in char** inbuf,
+size_t iconv (iconv_t cd, const scope char** inbuf,
          size_t* inbytesleft,
          char** outbuf,
          size_t* outbytesleft);

@@ -1507,6 +1507,10 @@ mark_or_check_tags (tree t, tree *tp, abi_tag_data *p, bool val)
 static tree
 find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1527,6 +1531,10 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 static tree
 mark_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
+  if (TYPE_P (*tp) && *walk_subtrees == 1)
+    /* Tell cp_walk_subtrees to look though typedefs.  */
+    *walk_subtrees = 2;
+
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
 
@@ -1827,15 +1835,13 @@ check_bases (tree t,
 	  else if (CLASSTYPE_REPEATED_BASE_P (t))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
-	    /* ...either has no non-static data members in the most-derived
-	       class and at most one base class with non-static data
-	       members, or has no base classes with non-static data
-	       members.  FIXME This was reworded in DR 1813.  */
+	    /* ...has all non-static data members and bit-fields in the class
+	       and its base classes first declared in the same class.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
 		  && !(DECL_FIELD_IS_BASE (basefield)
-		       && integer_zerop (DECL_SIZE (basefield))))
+		       && is_empty_field (basefield)))
 		{
 		  if (field)
 		    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -4216,6 +4222,25 @@ field_poverlapping_p (tree decl)
 
   return lookup_attribute ("no_unique_address",
 			   DECL_ATTRIBUTES (decl));
+}
+
+/* Return true iff DECL is an empty field, either for an empty base or a
+   [[no_unique_address]] data member.  */
+
+bool
+is_empty_field (tree decl)
+{
+  if (TREE_CODE (decl) != FIELD_DECL)
+    return false;
+
+  bool r = (is_empty_class (TREE_TYPE (decl))
+	    && (DECL_FIELD_IS_BASE (decl)
+		|| field_poverlapping_p (decl)));
+
+  /* Empty fields should have size zero.  */
+  gcc_checking_assert (!r || integer_zerop (DECL_SIZE (decl)));
+
+  return r;
 }
 
 /* Record all of the empty subobjects of DECL_OR_BINFO.  */
@@ -6604,7 +6629,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	  /* end_of_class doesn't always give dsize, but it does in the case of
 	     a class with virtual bases, which is when dsize > nvsize.  */
 	  tree dsize = end_of_class (type, /*vbases*/true);
-	  if (tree_int_cst_le (dsize, nvsize))
+	  if (CLASSTYPE_EMPTY_P (type))
+	    DECL_SIZE (field) = DECL_SIZE_UNIT (field) = size_zero_node;
+	  else if (tree_int_cst_le (dsize, nvsize))
 	    {
 	      DECL_SIZE_UNIT (field) = nvsize;
 	      DECL_SIZE (field) = CLASSTYPE_SIZE (type);

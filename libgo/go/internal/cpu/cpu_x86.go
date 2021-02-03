@@ -6,6 +6,8 @@
 
 package cpu
 
+// const CacheLinePadSize = 64
+
 // cpuid is implemented in cpu_x86.s.
 func cpuid(eaxArg, ecxArg uint32) (eax, ebx, ecx, edx uint32)
 

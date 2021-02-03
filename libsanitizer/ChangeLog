@@ -1,3 +1,13 @@
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98828
+	* lsan/Makefile.am: Add missing lsan_posix.cpp file.
+	* lsan/Makefile.in: Likewise.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
 2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/97865

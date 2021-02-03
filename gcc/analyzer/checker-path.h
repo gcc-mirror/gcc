@@ -37,6 +37,8 @@ enum event_kind
   EK_END_CFG_EDGE,
   EK_CALL_EDGE,
   EK_RETURN_EDGE,
+  EK_START_CONSOLIDATED_CFG_EDGES,
+  EK_END_CONSOLIDATED_CFG_EDGES,
   EK_SETJMP,
   EK_REWIND_FROM_LONGJMP,
   EK_REWIND_TO_SETJMP,
@@ -63,6 +65,8 @@ extern const char *event_kind_to_string (enum event_kind ek);
 	   end_cfg_edge_event (EK_END_CFG_EDGE)
          call_event (EK_CALL_EDGE)
          return_edge (EK_RETURN_EDGE)
+       start_consolidated_cfg_edges_event (EK_START_CONSOLIDATED_CFG_EDGES)
+       end_consolidated_cfg_edges_event (EK_END_CONSOLIDATED_CFG_EDGES)
        setjmp_event (EK_SETJMP)
        rewind_event
          rewind_from_longjmp_event (EK_REWIND_FROM_LONGJMP)
@@ -337,6 +341,42 @@ public:
   bool is_return_p () const FINAL OVERRIDE;
 };
 
+/* A concrete event subclass for the start of a consolidated run of CFG
+   edges all either TRUE or FALSE e.g. "following 'false' branch...'.  */
+
+class start_consolidated_cfg_edges_event : public checker_event
+{
+public:
+  start_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth,
+				      bool edge_sense)
+  : checker_event (EK_START_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth),
+    m_edge_sense (edge_sense)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
+
+ private:
+  bool m_edge_sense;
+};
+
+/* A concrete event subclass for the end of a consolidated run of
+   CFG edges e.g. "...to here'.  */
+
+class end_consolidated_cfg_edges_event : public checker_event
+{
+public:
+  end_consolidated_cfg_edges_event (location_t loc, tree fndecl, int depth)
+  : checker_event (EK_END_CONSOLIDATED_CFG_EDGES, loc, fndecl, depth)
+  {
+  }
+
+  label_text get_desc (bool /*can_colorize*/) const FINAL OVERRIDE
+  {
+    return label_text::borrow ("...to here");
+  }
+};
+
 /* A concrete event subclass for a setjmp or sigsetjmp call.  */
 
 class setjmp_event : public checker_event
@@ -490,6 +530,19 @@ public:
     delete event;
   }
 
+  void delete_events (unsigned start_idx, unsigned len)
+  {
+    for (unsigned i = start_idx; i < start_idx + len; i++)
+      delete m_events[i];
+    m_events.block_remove (start_idx, len);
+  }
+
+  void replace_event (unsigned idx, checker_event *new_event)
+  {
+    delete m_events[idx];
+    m_events[idx] = new_event;
+  }
+
   void add_final_event (const state_machine *sm,
 			const exploded_node *enode, const gimple *stmt,
 			tree var, state_machine::state_t state);
@@ -524,6 +577,8 @@ public:
       }
     return false;
   }
+
+  bool cfg_edge_pair_at_p (unsigned idx) const;
 
 private:
   DISABLE_COPY_AND_ASSIGN(checker_path);

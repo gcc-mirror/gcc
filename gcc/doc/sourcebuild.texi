@@ -2058,6 +2058,11 @@ ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
 Some multilibs may be incompatible with these options.
 
+@item arm_thumb2_no_arm_v8_1_lob
+ARM target where Thumb-2 is used without options but does not support
+executing the Armv8.1-M Mainline Low Overhead Loop instructions
+@code{DLS} and @code{LE}.
+
 @item arm_thumb2_ok_no_arm_v8_1_lob
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
 support executing the Armv8.1-M Mainline Low Overhead Loop
@@ -3092,6 +3097,10 @@ Check line counts in @command{gcov} tests.
 @item run-gcov [branches] [calls] @{ @var{opts} @var{sourcefile} @}
 Check branch and/or call counts, in addition to line counts, in
 @command{gcov} tests.
+
+@item run-gcov-pytest @{ @var{sourcefile} @var{pytest_file} @}
+Check output of @command{gcov} intermediate format with a pytest
+script.
 @end table
 
 @subsubsection Clean up generated test files

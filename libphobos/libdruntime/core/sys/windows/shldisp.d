@@ -8,8 +8,9 @@
  */
 module core.sys.windows.shldisp;
 version (Windows):
+@system:
 
-private import core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
+import core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
 
 // options for IAutoComplete2
 enum DWORD ACO_AUTOSUGGEST = 0x01;

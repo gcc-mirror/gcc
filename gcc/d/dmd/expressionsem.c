@@ -43,6 +43,7 @@ bool checkAccess(AggregateDeclaration *ad, Loc loc, Scope *sc, Dsymbol *smember)
 bool checkNestedRef(Dsymbol *s, Dsymbol *p);
 bool checkFrameAccess(Loc loc, Scope *sc, AggregateDeclaration *ad, size_t istart = 0);
 bool symbolIsVisible(Module *mod, Dsymbol *s);
+bool symbolIsVisible(Scope *sc, Dsymbol *s);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *extractSideEffect(Scope *sc, const char *name, Expression **e0, Expression *e, bool alwaysCopy = false);
 Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
@@ -117,6 +118,36 @@ static bool preFunctionParameters(Scope *sc, Expressions *exps)
         }
     }
     return err;
+}
+
+/**
+ * Determines whether a symbol represents a module or package
+ * (Used as a helper for is(type == module) and is(type == package))
+ *
+ * Params:
+ *  sym = the symbol to be checked
+ *
+ * Returns:
+ *  the symbol which `sym` represents (or `null` if it doesn't represent a `Package`)
+ */
+Package *resolveIsPackage(Dsymbol *sym)
+{
+    Package *pkg;
+    if (Import *imp = sym->isImport())
+    {
+        if (imp->pkg == NULL)
+        {
+            error(sym->loc, "Internal Compiler Error: unable to process forward-referenced import `%s`",
+                  imp->toChars());
+            assert(0);
+        }
+        pkg = imp->pkg;
+    }
+    else
+        pkg = sym->isPackage();
+    if (pkg)
+        pkg->resolvePKGunknown();
+    return pkg;
 }
 
 class ExpressionSemanticVisitor : public Visitor
@@ -301,7 +332,7 @@ public:
             /* See if the symbol was a member of an enclosing 'with'
             */
             WithScopeSymbol *withsym = scopesym->isWithScopeSymbol();
-            if (withsym && withsym->withstate->wthis)
+            if (withsym && withsym->withstate->wthis && symbolIsVisible(sc, s))
             {
                 /* Disallow shadowing
                 */
@@ -338,9 +369,20 @@ public:
             {
                 if (withsym)
                 {
-                    Declaration *d = s->isDeclaration();
-                    if (d)
-                        checkAccess(exp->loc, sc, NULL, d);
+                    if (withsym->withstate->exp->type->ty != Tvoid)
+                    {
+                        // with (exp)' is a type expression
+                        // or 's' is not visible there (for error message)
+                        e = new TypeExp(exp->loc, withsym->withstate->exp->type);
+                    }
+                    else
+                    {
+                        // 'with (exp)' is a Package/Module
+                        e = withsym->withstate->exp;
+                    }
+                    e = new DotIdExp(exp->loc, e, exp->ident);
+                    result = semantic(e, sc);
+                    return;
                 }
 
                 /* If f is really a function template,
@@ -1188,6 +1230,7 @@ public:
                 if (!f || f->errors)
                     return setError();
                 exp->checkDeprecated(sc, f);
+                exp->checkDisabled(sc, f);
                 exp->checkPurity(sc, f);
                 exp->checkSafety(sc, f);
                 exp->checkNogc(sc, f);
@@ -1216,6 +1259,7 @@ public:
                 if (!f || f->errors)
                     return setError();
                 exp->checkDeprecated(sc, f);
+                exp->checkDisabled(sc, f);
                 exp->checkPurity(sc, f);
                 exp->checkSafety(sc, f);
                 exp->checkNogc(sc, f);
@@ -1283,6 +1327,7 @@ public:
                 if (!f || f->errors)
                     return setError();
                 exp->checkDeprecated(sc, f);
+                exp->checkDisabled(sc, f);
                 exp->checkPurity(sc, f);
                 exp->checkSafety(sc, f);
                 exp->checkNogc(sc, f);
@@ -1311,6 +1356,7 @@ public:
                 if (!f || f->errors)
                     return setError();
                 exp->checkDeprecated(sc, f);
+                exp->checkDisabled(sc, f);
                 exp->checkPurity(sc, f);
                 exp->checkSafety(sc, f);
                 exp->checkNogc(sc, f);
@@ -1920,15 +1966,34 @@ public:
         }
 
         Type *tded = NULL;
-        Scope *sc2 = sc->copy();    // keep sc->flags
-        sc2->tinst = NULL;
-        sc2->minst = NULL;
-        sc2->flags |= SCOPEfullinst;
-        Type *t = e->targ->trySemantic(e->loc, sc2);
-        sc2->pop();
-        if (!t)
-            goto Lno;                       // errors, so condition is false
-        e->targ = t;
+        if (e->tok2 == TOKpackage || e->tok2 == TOKmodule) // These is() expressions are special because they can work on modules, not just types.
+        {
+            Dsymbol *sym = e->targ->toDsymbol(sc);
+            if (sym == NULL)
+                goto Lno;
+            Package *p = resolveIsPackage(sym);
+            if (p == NULL)
+                goto Lno;
+            if (e->tok2 == TOKpackage && p->isModule()) // Note that isModule() will return null for package modules because they're not actually instances of Module.
+                goto Lno;
+            else if(e->tok2 == TOKmodule && !(p->isModule() || p->isPackageMod()))
+                goto Lno;
+            tded = e->targ;
+            goto Lyes;
+        }
+
+        {
+            Scope *sc2 = sc->copy(); // keep sc->flags
+            sc2->tinst = NULL;
+            sc2->minst = NULL;
+            sc2->flags |= SCOPEfullinst;
+            Type *t = e->targ->trySemantic(e->loc, sc2);
+            sc2->pop();
+            if (!t) // errors, so condition is false
+                goto Lno;
+            e->targ = t;
+        }
+
         if (e->tok2 != TOKreserved)
         {
             switch (e->tok2)
@@ -2002,7 +2067,7 @@ public:
                         for (size_t i = 0; i < cd->baseclasses->length; i++)
                         {
                             BaseClass *b = (*cd->baseclasses)[i];
-                            args->push(new Parameter(STCin, b->type, NULL, NULL));
+                            args->push(new Parameter(STCin, b->type, NULL, NULL, NULL));
                         }
                         tded = new TypeTuple(args);
                     }
@@ -2051,7 +2116,8 @@ public:
                                 return setError();
                             args->push(new Parameter(arg->storageClass, arg->type,
                                                      (e->tok2 == TOKparameters) ? arg->ident : NULL,
-                                                     (e->tok2 == TOKparameters) ? arg->defaultArg : NULL));
+                                                     (e->tok2 == TOKparameters) ? arg->defaultArg : NULL,
+                                                     arg->userAttribDecl));
                         }
                         tded = new TypeTuple(args);
                         break;
@@ -3164,6 +3230,7 @@ public:
             }
 
             exp->checkDeprecated(sc, exp->f);
+            exp->checkDisabled(sc, exp->f);
             exp->checkPurity(sc, exp->f);
             exp->checkSafety(sc, exp->f);
             exp->checkNogc(sc, exp->f);
@@ -3257,6 +3324,7 @@ public:
             if (!exp->f || exp->f->errors)
                 return setError();
             exp->checkDeprecated(sc, exp->f);
+            exp->checkDisabled(sc, exp->f);
             exp->checkPurity(sc, exp->f);
             exp->checkSafety(sc, exp->f);
             exp->checkNogc(sc, exp->f);
@@ -3275,6 +3343,13 @@ public:
                 exp->error("constructor call must be in a constructor");
                 return setError();
             }
+
+            // https://issues.dlang.org/show_bug.cgi?id=18719
+            // If `exp` is a call expression to another constructor
+            // then it means that all struct/class fields will be
+            // initialized after this call.
+            for (size_t i = 0; i < sc->fieldinit_dim; i++)
+                sc->fieldinit[i] |= CSXthis_ctor;
 
             if (!sc->intypeof && !(sc->callSuper & CSXhalt))
             {
@@ -3295,6 +3370,7 @@ public:
             if (!exp->f || exp->f->errors)
                 return setError();
             exp->checkDeprecated(sc, exp->f);
+            exp->checkDisabled(sc, exp->f);
             exp->checkPurity(sc, exp->f);
             exp->checkSafety(sc, exp->f);
             exp->checkNogc(sc, exp->f);
@@ -3537,6 +3613,7 @@ public:
             }
 
             exp->checkDeprecated(sc, exp->f);
+            exp->checkDisabled(sc, exp->f);
             exp->checkPurity(sc, exp->f);
             exp->checkSafety(sc, exp->f);
             exp->checkNogc(sc, exp->f);
@@ -8316,21 +8393,23 @@ Expression *semanticY(DotIdExp *exp, Scope *sc, int flag)
          */
         if (s && !(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc->_module, s))
         {
-            if (s->isDeclaration())
-                ::error(exp->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toChars());
-            else
-                ::deprecation(exp->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toChars());
-            // s = NULL
+            s = NULL;
         }
         if (s)
         {
-            if (Package *p = s->isPackage())
-                checkAccess(exp->loc, sc, p);
-
+            Package *p = s->isPackage();
+            if (p && checkAccess(sc, p))
+            {
+                s = NULL;
+            }
+        }
+        if (s)
+        {
             // if 's' is a tuple variable, the tuple is returned.
             s = s->toAlias();
 
             exp->checkDeprecated(sc, s);
+            exp->checkDisabled(sc, s);
 
             EnumMember *em = s->isEnumMember();
             if (em)
@@ -8496,8 +8575,14 @@ Expression *semanticY(DotIdExp *exp, Scope *sc, int flag)
             return NULL;
         s = ie->sds->search_correct(exp->ident);
         if (s)
-            exp->error("undefined identifier '%s' in %s '%s', did you mean %s '%s'?",
-                       exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->kind(), s->toChars());
+        {
+            if (s->isPackage())
+                exp->error("undefined identifier `%s` in %s `%s`, perhaps add `static import %s;`",
+                    exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->toPrettyChars());
+            else
+                exp->error("undefined identifier '%s' in %s '%s', did you mean %s '%s'?",
+                    exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars(), s->kind(), s->toChars());
+        }
         else
             exp->error("undefined identifier '%s' in %s '%s'",
                        exp->ident->toChars(), ie->sds->kind(), ie->sds->toPrettyChars());

@@ -10,6 +10,7 @@ version (linux):
 extern (C):
 @system:
 nothrow:
+@nogc:
 
 version (ARM)     version = ARM_Any;
 version (AArch64) version = ARM_Any;

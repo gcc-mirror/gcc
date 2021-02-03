@@ -6243,6 +6243,9 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 
   /* Variable not assignable from a PURE procedure but appears in
      variable definition context.  */
+  own_scope = own_scope
+	      || (sym->attr.result && sym->ns->proc_name
+		  && sym == sym->ns->proc_name->result);
   if (!pointer && !own_scope && gfc_pure (NULL) && gfc_impure_variable (sym))
     {
       if (context)

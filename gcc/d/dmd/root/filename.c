@@ -175,6 +175,20 @@ bool FileName::absolute(const char *name)
 #endif
 }
 
+/**
+Return the given name as an absolute path
+
+Params:
+    name = path
+    base = the absolute base to prefix name with if it is relative
+
+Returns: name as an absolute path relative to base
+*/
+const char *FileName::toAbsolute(const char *name, const char *base)
+{
+    return absolute(name) ? name : combine(base ? base : getcwd(NULL, 0), name);
+}
+
 /********************************
  * Return filename extension (read-only).
  * Points past '.' of extension.

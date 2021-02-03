@@ -1,12 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -w -o-
 
-/*
-TEST_OUTPUT:
----
----
-*/
-
 /** Blah
  Params:
     T = some type

@@ -616,8 +616,9 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 		      class loop *loop = alloc_loop ();
 		      loop->num = is_loop_header_of;
 		      loop->header = bb;
-		      vec_safe_grow_cleared (loops_for_fn (cfun)->larray,
-					     is_loop_header_of + 1, true);
+		      if (number_of_loops (cfun) <= (unsigned)is_loop_header_of)
+			vec_safe_grow_cleared (loops_for_fn (cfun)->larray,
+					       is_loop_header_of + 1, true);
 		      (*loops_for_fn (cfun)->larray)[is_loop_header_of] = loop;
 		      flow_loop_tree_node_add (loops_for_fn (cfun)->tree_root,
 					       loop);

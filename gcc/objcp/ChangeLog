@@ -1,3 +1,13 @@
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cc1objplus-checksum, cc1objplus$(exeext): Add
+	$(CODYLIB) after $(BACKEND).
+
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* Make-lang.in (cc1objplus$(exeext)): Add $(CODYLIB), $(NETLIBS).
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

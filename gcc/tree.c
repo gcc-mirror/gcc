@@ -297,14 +297,15 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_TO_DECLARE  */
   1, /* OMP_CLAUSE_LINK  */
-  2, /* OMP_CLAUSE_FROM  */
-  2, /* OMP_CLAUSE_TO  */
-  2, /* OMP_CLAUSE_MAP  */
+  1, /* OMP_CLAUSE_DETACH  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
   1, /* OMP_CLAUSE_USE_DEVICE_ADDR  */
   1, /* OMP_CLAUSE_IS_DEVICE_PTR  */
   1, /* OMP_CLAUSE_INCLUSIVE  */
   1, /* OMP_CLAUSE_EXCLUSIVE  */
+  2, /* OMP_CLAUSE_FROM  */
+  2, /* OMP_CLAUSE_TO  */
+  2, /* OMP_CLAUSE_MAP  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -382,14 +383,15 @@ const char * const omp_clause_code_name[] =
   "uniform",
   "to",
   "link",
-  "from",
-  "to",
-  "map",
+  "detach",
   "use_device_ptr",
   "use_device_addr",
   "is_device_ptr",
   "inclusive",
   "exclusive",
+  "from",
+  "to",
+  "map",
   "_cache_",
   "gang",
   "async",
@@ -6571,7 +6573,8 @@ check_base_type (const_tree cand, const_tree base)
 			        TYPE_ATTRIBUTES (base)))
     return false;
   /* Check alignment.  */
-  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base))
+  if (TYPE_ALIGN (cand) == TYPE_ALIGN (base)
+      && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base))
     return true;
   /* Atomic types increase minimal alignment.  We must to do so as well
      or we get duplicated canonical types. See PR88686.  */
@@ -6606,6 +6609,7 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
 	  /* Check alignment.  */
 	  && TYPE_ALIGN (cand) == align
+	  && TYPE_USER_ALIGN (cand) == TYPE_USER_ALIGN (base)
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base))
 	  && check_lang_type (cand, base));
@@ -11077,13 +11081,13 @@ build_opaque_vector_type (tree innertype, poly_int64 nunits)
 
 /* Return the value of element I of VECTOR_CST T as a wide_int.  */
 
-wide_int
+static poly_wide_int
 vector_cst_int_elt (const_tree t, unsigned int i)
 {
   /* First handle elements that are directly encoded.  */
   unsigned int encoded_nelts = vector_cst_encoded_nelts (t);
   if (i < encoded_nelts)
-    return wi::to_wide (VECTOR_CST_ENCODED_ELT (t, i));
+    return wi::to_poly_wide (VECTOR_CST_ENCODED_ELT (t, i));
 
   /* Identify the pattern that contains element I and work out the index of
      the last encoded element for that pattern.  */
@@ -11094,13 +11098,13 @@ vector_cst_int_elt (const_tree t, unsigned int i)
 
   /* If there are no steps, the final encoded value is the right one.  */
   if (!VECTOR_CST_STEPPED_P (t))
-    return wi::to_wide (VECTOR_CST_ENCODED_ELT (t, final_i));
+    return wi::to_poly_wide (VECTOR_CST_ENCODED_ELT (t, final_i));
 
   /* Otherwise work out the value from the last two encoded elements.  */
   tree v1 = VECTOR_CST_ENCODED_ELT (t, final_i - npatterns);
   tree v2 = VECTOR_CST_ENCODED_ELT (t, final_i);
-  wide_int diff = wi::to_wide (v2) - wi::to_wide (v1);
-  return wi::to_wide (v2) + (count - 2) * diff;
+  poly_wide_int diff = wi::to_poly_wide (v2) - wi::to_poly_wide (v1);
+  return wi::to_poly_wide (v2) + (count - 2) * diff;
 }
 
 /* Return the value of element I of VECTOR_CST T.  */
@@ -12240,6 +12244,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_TO_DECLARE:
 	case OMP_CLAUSE_LINK:
+	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
@@ -12635,10 +12640,13 @@ tree_inlined_location (tree exp, bool system_header /* = true */)
     }
 
   if (loc == UNKNOWN_LOCATION)
-    loc = EXPR_LOCATION (exp);
-
-  if (system_header)
-    return expansion_point_location_if_in_system_header (loc);
+    {
+      loc = EXPR_LOCATION (exp);
+      if (system_header)
+	/* Only consider macro expansion when the block traversal failed
+	   to find a location.  Otherwise it's not relevant.  */
+	return expansion_point_location_if_in_system_header (loc);
+    }
 
   return loc;
 }
@@ -14021,8 +14029,7 @@ vector_element_bits (const_tree type)
 {
   gcc_checking_assert (VECTOR_TYPE_P (type));
   if (VECTOR_BOOLEAN_TYPE_P (type))
-    return vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (type)),
-				TYPE_VECTOR_SUBPARTS (type));
+    return TYPE_PRECISION (TREE_TYPE (type));
   return tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
 }
 

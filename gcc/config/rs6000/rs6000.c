@@ -2512,6 +2512,9 @@ rs6000_debug_reg_global (void)
   if (rs6000_altivec_abi)
     fprintf (stderr, DEBUG_FMT_S, "altivec_abi", "true");
 
+  if (rs6000_aix_extabi)
+    fprintf (stderr, DEBUG_FMT_S, "AIX vec-extabi", "true");
+
   if (rs6000_darwin64_abi)
     fprintf (stderr, DEBUG_FMT_S, "darwin64_abi", "true");
 
@@ -4429,6 +4432,16 @@ rs6000_option_override_internal (bool global_init_p)
   /* Enable -mmma by default on power10 systems.  */
   if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_MMA) == 0)
     rs6000_isa_flags |= OPTION_MASK_MMA;
+
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
+
+  if (TARGET_POWER10 &&
+      (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
+
+  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
 
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
@@ -6977,6 +6990,152 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
+/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
+   is variable and also counts by vector element size for p9 and above.  */
+
+static void
+rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
+{
+  machine_mode mode = GET_MODE (target);
+
+  gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
+
+  gcc_assert (GET_MODE (idx) == E_SImode);
+
+  machine_mode inner_mode = GET_MODE (val);
+
+  rtx tmp = gen_reg_rtx (GET_MODE (idx));
+  int width = GET_MODE_SIZE (inner_mode);
+
+  gcc_assert (width >= 1 && width <= 8);
+
+  int shift = exact_log2 (width);
+  /* Generate the IDX for permute shift, width is the vector element size.
+     idx = idx * width.  */
+  emit_insn (gen_ashlsi3 (tmp, idx, GEN_INT (shift)));
+
+  tmp = convert_modes (DImode, SImode, tmp, 1);
+
+  /*  lvsr    v1,0,idx.  */
+  rtx pcvr = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsr_reg (pcvr, tmp));
+
+  /*  lvsl    v2,0,idx.  */
+  rtx pcvl = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsl_reg (pcvl, tmp));
+
+  rtx sub_target = simplify_gen_subreg (V16QImode, target, mode, 0);
+
+  rtx permr
+    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvr);
+  emit_insn (permr);
+
+  rs6000_expand_vector_set (target, val, const0_rtx);
+
+  rtx perml
+    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvl);
+  emit_insn (perml);
+}
+
+/* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
+   is variable and also counts by vector element size for p8.  */
+
+static void
+rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
+{
+  machine_mode mode = GET_MODE (target);
+
+  gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
+
+  gcc_assert (GET_MODE (idx) == E_SImode);
+
+  machine_mode inner_mode = GET_MODE (val);
+  HOST_WIDE_INT mode_mask = GET_MODE_MASK (inner_mode);
+
+  rtx tmp = gen_reg_rtx (GET_MODE (idx));
+  int width = GET_MODE_SIZE (inner_mode);
+
+  gcc_assert (width >= 1 && width <= 4);
+
+  if (!BYTES_BIG_ENDIAN)
+    {
+      /*  idx = idx * width.  */
+      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
+      /*  idx = idx + 8.  */
+      emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (8)));
+    }
+  else
+    {
+      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
+      emit_insn (gen_subsi3 (tmp, GEN_INT (24 - width), tmp));
+    }
+
+  /*  lxv vs33, mask.
+      DImode: 0xffffffffffffffff0000000000000000
+      SImode: 0x00000000ffffffff0000000000000000
+      HImode: 0x000000000000ffff0000000000000000.
+      QImode: 0x00000000000000ff0000000000000000.  */
+  rtx mask = gen_reg_rtx (V16QImode);
+  rtx mask_v2di = gen_reg_rtx (V2DImode);
+  rtvec v = rtvec_alloc (2);
+  if (!BYTES_BIG_ENDIAN)
+    {
+      RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (DImode, 0);
+      RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (DImode, mode_mask);
+    }
+  else
+    {
+      RTVEC_ELT (v, 0) = gen_rtx_CONST_INT (DImode, mode_mask);
+      RTVEC_ELT (v, 1) = gen_rtx_CONST_INT (DImode, 0);
+    }
+  emit_insn (gen_vec_initv2didi (mask_v2di, gen_rtx_PARALLEL (V2DImode, v)));
+  rtx sub_mask = simplify_gen_subreg (V16QImode, mask_v2di, V2DImode, 0);
+  emit_insn (gen_rtx_SET (mask, sub_mask));
+
+  /*  mtvsrd[wz] f0,tmp_val.  */
+  rtx tmp_val = gen_reg_rtx (SImode);
+  if (inner_mode == E_SFmode)
+    emit_insn (gen_movsi_from_sf (tmp_val, val));
+  else
+    tmp_val = force_reg (SImode, val);
+
+  rtx val_v16qi = gen_reg_rtx (V16QImode);
+  rtx val_v2di = gen_reg_rtx (V2DImode);
+  rtvec vec_val = rtvec_alloc (2);
+  if (!BYTES_BIG_ENDIAN)
+  {
+    RTVEC_ELT (vec_val, 0) = gen_rtx_CONST_INT (DImode, 0);
+    RTVEC_ELT (vec_val, 1) = tmp_val;
+  }
+  else
+  {
+    RTVEC_ELT (vec_val, 0) = tmp_val;
+    RTVEC_ELT (vec_val, 1) = gen_rtx_CONST_INT (DImode, 0);
+  }
+  emit_insn (
+    gen_vec_initv2didi (val_v2di, gen_rtx_PARALLEL (V2DImode, vec_val)));
+  rtx sub_val = simplify_gen_subreg (V16QImode, val_v2di, V2DImode, 0);
+  emit_insn (gen_rtx_SET (val_v16qi, sub_val));
+
+  /*  lvsl    13,0,idx.  */
+  tmp = convert_modes (DImode, SImode, tmp, 1);
+  rtx pcv = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_lvsl_reg (pcv, tmp));
+
+  /*  vperm 1,1,1,13.  */
+  /*  vperm 0,0,0,13.  */
+  rtx val_perm = gen_reg_rtx (V16QImode);
+  rtx mask_perm = gen_reg_rtx (V16QImode);
+  emit_insn (gen_altivec_vperm_v8hiv16qi (val_perm, val_v16qi, val_v16qi, pcv));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (mask_perm, mask, mask, pcv));
+
+  rtx target_v16qi = simplify_gen_subreg (V16QImode, target, mode, 0);
+
+  /*  xxsel 34,34,32,33.  */
+  emit_insn (
+    gen_vector_select_v16qi (target_v16qi, target_v16qi, val_perm, mask_perm));
+}
+
 /* Set field ELT_RTX of TARGET to VAL.  */
 
 void
@@ -6993,6 +7152,22 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 
   if (VECTOR_MEM_VSX_P (mode))
     {
+      if (!CONST_INT_P (elt_rtx))
+	{
+	  /* For V2DI/V2DF, could leverage the P9 version to generate xxpermdi
+	     when elt_rtx is variable.  */
+	  if ((TARGET_P9_VECTOR && TARGET_POWERPC64) || width == 8)
+	    {
+	      rs6000_expand_vector_set_var_p9 (target, val, elt_rtx);
+	      return;
+	    }
+	  else if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+	    {
+	      rs6000_expand_vector_set_var_p8 (target, val, elt_rtx);
+	      return;
+	    }
+	}
+
       rtx insn = NULL_RTX;
 
       if (mode == V2DFmode)
@@ -9646,7 +9821,7 @@ rs6000_conditional_register_usage (void)
 	call_used_regs[i] = 1;
 
       /* AIX reserves VR20:31 in non-extended ABI mode.  */
-      if (TARGET_XCOFF)
+      if (TARGET_XCOFF && !rs6000_aix_extabi)
 	for (i = FIRST_ALTIVEC_REGNO + 20; i < FIRST_ALTIVEC_REGNO + 32; ++i)
 	  fixed_regs[i] = call_used_regs[i] = 1;
     }
@@ -9932,10 +10107,8 @@ rs6000_emit_le_vsx_load (rtx dest, rtx source, machine_mode mode)
 void
 rs6000_emit_le_vsx_store (rtx dest, rtx source, machine_mode mode)
 {
-  /* This should never be called during or after LRA, because it does
-     not re-permute the source register.  It is intended only for use
-     during expand.  */
-  gcc_assert (!lra_in_progress && !reload_completed);
+  /* This should never be called after LRA.  */
+  gcc_assert (can_create_pseudo_p ());
 
   /* Use V2DImode to do swaps of types with 128-bit scalar parts (TImode,
      V1TImode).  */
@@ -9946,7 +10119,7 @@ rs6000_emit_le_vsx_store (rtx dest, rtx source, machine_mode mode)
       source = gen_lowpart (V2DImode, source);
     }
 
-  rtx tmp = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (source) : source;
+  rtx tmp = gen_reg_rtx_and_attrs (source);
   rs6000_emit_le_vsx_permute (tmp, source, mode);
   rs6000_emit_le_vsx_permute (dest, tmp, mode);
 }
@@ -22946,6 +23119,16 @@ rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   if (TARGET_ALTIVEC && testing_p)
     return true;
 
+  if (op0)
+    {
+      rtx nop0 = force_reg (vmode, op0);
+      if (op0 == op1)
+        op1 = nop0;
+      op0 = nop0;
+    }
+  if (op1)
+    op1 = force_reg (vmode, op1);
+
   /* Check for ps_merge* or xxpermdi insns.  */
   if ((vmode == V2DFmode || vmode == V2DImode) && VECTOR_MEM_VSX_P (vmode))
     {
@@ -23613,6 +23796,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power9-minmax",		OPTION_MASK_P9_MINMAX,		false, true  },
   { "power9-misc",		OPTION_MASK_P9_MISC,		false, true  },
   { "power9-vector",		OPTION_MASK_P9_VECTOR,		false, true  },
+  { "power10-fusion",		OPTION_MASK_P10_FUSION,		false, true  },
   { "powerpc-gfxopt",		OPTION_MASK_PPC_GFXOPT,		false, true  },
   { "powerpc-gpopt",		OPTION_MASK_PPC_GPOPT,		false, true  },
   { "prefixed",			OPTION_MASK_PREFIXED,		false, true  },
@@ -25704,6 +25888,50 @@ address_to_insn_form (rtx addr,
   return INSN_FORM_BAD;
 }
 
+/* Given address rtx ADDR for a load of MODE, is this legitimate for a
+   non-prefixed D-form or X-form instruction?  NON_PREFIXED_FORMAT is
+   given NON_PREFIXED_D or NON_PREFIXED_DS to indicate whether we want
+   a D-form or DS-form instruction.  X-form and base_reg are always
+   allowed.  */
+bool
+address_is_non_pfx_d_or_x (rtx addr, machine_mode mode,
+			   enum non_prefixed_form non_prefixed_format)
+{
+  enum insn_form result_form;
+
+  result_form = address_to_insn_form (addr, mode, non_prefixed_format);
+
+  switch (non_prefixed_format)
+    {
+    case NON_PREFIXED_D:
+      switch (result_form)
+	{
+	case INSN_FORM_X:
+	case INSN_FORM_D:
+	case INSN_FORM_DS:
+	case INSN_FORM_BASE_REG:
+	  return true;
+	default:
+	  return false;
+	}
+      break;
+    case NON_PREFIXED_DS:
+      switch (result_form)
+	{
+	case INSN_FORM_X:
+	case INSN_FORM_DS:
+	case INSN_FORM_BASE_REG:
+	  return true;
+	default:
+	  return false;
+	}
+      break;
+    default:
+      break;
+    }
+  return false;
+}
+
 /* Helper function to see if we're potentially looking at lfs/stfs.
    - PARALLEL containing a SET and a CLOBBER
    - stfs:
@@ -27116,56 +27344,127 @@ rs6000_globalize_decl_name (FILE * stream, tree decl)
    library before you can switch the real*16 type at compile time.
 
    We use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change this name.  We
-   only do this if the default is that long double is IBM extended double, and
-   the user asked for IEEE 128-bit.  */
+   only do this transformation if the __float128 type is enabled.  This
+   prevents us from doing the transformation on older 32-bit ports that might
+   have enabled using IEEE 128-bit floating point as the default long double
+   type.  */
 
 static tree
 rs6000_mangle_decl_assembler_name (tree decl, tree id)
 {
-  if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
+  if (TARGET_FLOAT128_TYPE && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_IS_UNDECLARED_BUILTIN (decl))
+      && DECL_IS_UNDECLARED_BUILTIN (decl)
+      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
     {
       size_t len = IDENTIFIER_LENGTH (id);
       const char *name = IDENTIFIER_POINTER (id);
+      char *newname = NULL;
 
-      if (name[len - 1] == 'l')
+      /* See if it is one of the built-in functions with an unusual name.  */
+      switch (DECL_FUNCTION_CODE (decl))
 	{
-	  bool uses_ieee128_p = false;
-	  tree type = TREE_TYPE (decl);
-	  machine_mode ret_mode = TYPE_MODE (type);
+	case BUILT_IN_DREML:
+	  newname = xstrdup ("__remainderieee128");
+	  break;
 
-	  /* See if the function returns a IEEE 128-bit floating point type or
-	     complex type.  */
-	  if (ret_mode == TFmode || ret_mode == TCmode)
-	    uses_ieee128_p = true;
-	  else
+	case BUILT_IN_GAMMAL:
+	  newname = xstrdup ("__lgammaieee128");
+	  break;
+
+	case BUILT_IN_GAMMAL_R:
+	case BUILT_IN_LGAMMAL_R:
+	  newname = xstrdup ("__lgammaieee128_r");
+	  break;
+
+	case BUILT_IN_NEXTTOWARD:
+	  newname = xstrdup ("__nexttoward_to_ieee128");
+	  break;
+
+	case BUILT_IN_NEXTTOWARDF:
+	  newname = xstrdup ("__nexttowardf_to_ieee128");
+	  break;
+
+	case BUILT_IN_NEXTTOWARDL:
+	  newname = xstrdup ("__nexttowardieee128");
+	  break;
+
+	case BUILT_IN_POW10L:
+	  newname = xstrdup ("__exp10ieee128");
+	  break;
+
+	case BUILT_IN_SCALBL:
+	  newname = xstrdup ("__scalbieee128");
+	  break;
+
+	case BUILT_IN_SIGNIFICANDL:
+	  newname = xstrdup ("__significandieee128");
+	  break;
+
+	case BUILT_IN_SINCOSL:
+	  newname = xstrdup ("__sincosieee128");
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* Update the __builtin_*printf and __builtin_*scanf functions.  */
+      if (!newname)
+	{
+	  size_t printf_len = strlen ("printf");
+	  size_t scanf_len = strlen ("scanf");
+
+	  if (len >= printf_len
+	      && strcmp (name + len - printf_len, "printf") == 0)
+	    newname = xasprintf ("__%sieee128", name);
+
+	  else if (len >= scanf_len
+		   && strcmp (name + len - scanf_len, "scanf") == 0)
+	    newname = xasprintf ("__isoc99_%sieee128", name);
+
+	  else if (name[len - 1] == 'l')
 	    {
-	      function_args_iterator args_iter;
-	      tree arg;
+	      bool uses_ieee128_p = false;
+	      tree type = TREE_TYPE (decl);
+	      machine_mode ret_mode = TYPE_MODE (type);
 
-	      /* See if the function passes a IEEE 128-bit floating point type
-		 or complex type.  */
-	      FOREACH_FUNCTION_ARGS (type, arg, args_iter)
+	      /* See if the function returns a IEEE 128-bit floating point type or
+		 complex type.  */
+	      if (ret_mode == TFmode || ret_mode == TCmode)
+		uses_ieee128_p = true;
+	      else
 		{
-		  machine_mode arg_mode = TYPE_MODE (arg);
-		  if (arg_mode == TFmode || arg_mode == TCmode)
+		  function_args_iterator args_iter;
+		  tree arg;
+
+		  /* See if the function passes a IEEE 128-bit floating point type
+		     or complex type.  */
+		  FOREACH_FUNCTION_ARGS (type, arg, args_iter)
 		    {
-		      uses_ieee128_p = true;
-		      break;
+		      machine_mode arg_mode = TYPE_MODE (arg);
+		      if (arg_mode == TFmode || arg_mode == TCmode)
+			{
+			  uses_ieee128_p = true;
+			  break;
+			}
 		    }
 		}
-	    }
 
-	  /* If we passed or returned an IEEE 128-bit floating point type,
-	     change the name.  */
-	  if (uses_ieee128_p)
-	    {
-	      char *name2 = (char *) alloca (len + 4);
-	      memcpy (name2, name, len - 1);
-	      strcpy (name2 + len - 1, "f128");
-	      id = get_identifier (name2);
+	      /* If we passed or returned an IEEE 128-bit floating point type,
+		 change the name.  Use __<name>ieee128, instead of <name>l.  */
+	      if (uses_ieee128_p)
+		newname = xasprintf ("__%.*sieee128", (int)(len - 1), name);
 	    }
+	}
+
+      if (newname)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "Map %s => %s\n", name, newname);
+
+	  id = get_identifier (newname);
+	  free (newname);
 	}
     }
 

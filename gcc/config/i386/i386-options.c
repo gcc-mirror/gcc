@@ -641,7 +641,7 @@ ix86_function_specific_save (struct cl_target_option *ptr,
 {
   ptr->arch = ix86_arch;
   ptr->schedule = ix86_schedule;
-  ptr->prefetch_sse = x86_prefetch_sse;
+  ptr->prefetch_sse = ix86_prefetch_sse;
   ptr->tune = ix86_tune;
   ptr->branch_cost = ix86_branch_cost;
   ptr->tune_defaulted = ix86_tune_defaulted;
@@ -651,18 +651,13 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
   ptr->x_ix86_arch_string = opts->x_ix86_arch_string;
   ptr->x_ix86_tune_string = opts->x_ix86_tune_string;
-  ptr->x_ix86_cmodel = opts->x_ix86_cmodel;
   ptr->x_ix86_abi = opts->x_ix86_abi;
   ptr->x_ix86_asm_dialect = opts->x_ix86_asm_dialect;
   ptr->x_ix86_branch_cost = opts->x_ix86_branch_cost;
   ptr->x_ix86_dump_tunes = opts->x_ix86_dump_tunes;
   ptr->x_ix86_force_align_arg_pointer = opts->x_ix86_force_align_arg_pointer;
   ptr->x_ix86_force_drap = opts->x_ix86_force_drap;
-  ptr->x_ix86_incoming_stack_boundary_arg = opts->x_ix86_incoming_stack_boundary_arg;
-  ptr->x_ix86_pmode = opts->x_ix86_pmode;
-  ptr->x_ix86_preferred_stack_boundary_arg = opts->x_ix86_preferred_stack_boundary_arg;
   ptr->x_ix86_recip_name = opts->x_ix86_recip_name;
-  ptr->x_ix86_regparm = opts->x_ix86_regparm;
   ptr->x_ix86_section_threshold = opts->x_ix86_section_threshold;
   ptr->x_ix86_sse2avx = opts->x_ix86_sse2avx;
   ptr->x_ix86_stack_protector_guard = opts->x_ix86_stack_protector_guard;
@@ -672,7 +667,6 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->x_ix86_tune_memcpy_strategy = opts->x_ix86_tune_memcpy_strategy;
   ptr->x_ix86_tune_memset_strategy = opts->x_ix86_tune_memset_strategy;
   ptr->x_ix86_tune_no_default = opts->x_ix86_tune_no_default;
-  ptr->x_ix86_veclibabi_type = opts->x_ix86_veclibabi_type;
 
   /* The fields are char but the variables are not; make sure the
      values fit in the fields.  */
@@ -779,8 +773,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   ix86_arch = (enum processor_type) ptr->arch;
   ix86_schedule = (enum attr_cpu) ptr->schedule;
   ix86_tune = (enum processor_type) ptr->tune;
-  x86_prefetch_sse = ptr->prefetch_sse;
-  opts->x_ix86_branch_cost = ptr->branch_cost;
+  ix86_prefetch_sse = ptr->prefetch_sse;
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
@@ -788,18 +781,13 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
   opts->x_ix86_arch_string = ptr->x_ix86_arch_string;
   opts->x_ix86_tune_string = ptr->x_ix86_tune_string;
-  opts->x_ix86_cmodel = ptr->x_ix86_cmodel;
   opts->x_ix86_abi = ptr->x_ix86_abi;
   opts->x_ix86_asm_dialect = ptr->x_ix86_asm_dialect;
   opts->x_ix86_branch_cost = ptr->x_ix86_branch_cost;
   opts->x_ix86_dump_tunes = ptr->x_ix86_dump_tunes;
   opts->x_ix86_force_align_arg_pointer = ptr->x_ix86_force_align_arg_pointer;
   opts->x_ix86_force_drap = ptr->x_ix86_force_drap;
-  opts->x_ix86_incoming_stack_boundary_arg = ptr->x_ix86_incoming_stack_boundary_arg;
-  opts->x_ix86_pmode = ptr->x_ix86_pmode;
-  opts->x_ix86_preferred_stack_boundary_arg = ptr->x_ix86_preferred_stack_boundary_arg;
   opts->x_ix86_recip_name = ptr->x_ix86_recip_name;
-  opts->x_ix86_regparm = ptr->x_ix86_regparm;
   opts->x_ix86_section_threshold = ptr->x_ix86_section_threshold;
   opts->x_ix86_sse2avx = ptr->x_ix86_sse2avx;
   opts->x_ix86_stack_protector_guard = ptr->x_ix86_stack_protector_guard;
@@ -809,7 +797,6 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_ix86_tune_memcpy_strategy = ptr->x_ix86_tune_memcpy_strategy;
   opts->x_ix86_tune_memset_strategy = ptr->x_ix86_tune_memset_strategy;
   opts->x_ix86_tune_no_default = ptr->x_ix86_tune_no_default;
-  opts->x_ix86_veclibabi_type = ptr->x_ix86_veclibabi_type;
   ix86_tune_cost = processor_cost_table[ix86_tune];
   /* TODO: ix86_cost should be chosen at instruction or function granuality
      so for cold code we use size_cost even in !optimize_size compilation.  */
@@ -1101,8 +1088,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
   /* If this is a list, recurse to get the options.  */
   if (TREE_CODE (args) == TREE_LIST)
     {
-      bool ret = true;
-
       for (; args; args = TREE_CHAIN (args))
 	if (TREE_VALUE (args)
 	    && !ix86_valid_target_attribute_inner_p (fndecl, TREE_VALUE (args),
@@ -1795,7 +1780,7 @@ ix86_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts,
 			       struct gcc_options *opts_set)
 {
-  int i;
+  unsigned int i;
   unsigned HOST_WIDE_INT ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
 
@@ -2360,7 +2345,7 @@ ix86_option_override_internal (bool main_args_p,
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
-	  x86_prefetch_sse = true;
+	  ix86_prefetch_sse = true;
 	if (((processor_alias_table[i].flags & PTA_MWAITX) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MWAITX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MWAITX;
@@ -2458,7 +2443,7 @@ ix86_option_override_internal (bool main_args_p,
 	if (TARGET_CMOV
 	    && ((processor_alias_table[i].flags
 	      & (PTA_PREFETCH_SSE | PTA_SSE)) != 0))
-	  x86_prefetch_sse = true;
+	  ix86_prefetch_sse = true;
 	break;
       }
 
@@ -2601,7 +2586,7 @@ ix86_option_override_internal (bool main_args_p,
       || (TARGET_PRFCHW_P (opts->x_ix86_isa_flags)
 	  && !TARGET_3DNOW_P (opts->x_ix86_isa_flags))
       || TARGET_PREFETCHWT1_P (opts->x_ix86_isa_flags))
-    x86_prefetch_sse = true;
+    ix86_prefetch_sse = true;
 
   /* Enable popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags)
@@ -2865,7 +2850,7 @@ ix86_option_override_internal (bool main_args_p,
     {
       char *p = ASTRDUP (opts->x_ix86_recip_name);
       char *q;
-      unsigned int mask, i;
+      unsigned int mask;
       bool invert;
 
       while ((q = strtok (p, ",")) != NULL)
@@ -3029,8 +3014,14 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   if (opts->x_flag_cf_protection != CF_NONE)
-    opts->x_flag_cf_protection
+    {
+      if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
+	  && !TARGET_64BIT && !TARGET_CMOV)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      opts->x_flag_cf_protection
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
 
   if (ix86_tune_features [X86_TUNE_AVOID_256FMA_CHAINS])
     SET_OPTION_IF_UNSET (opts, opts_set, param_avoid_fma_max_bits, 256);

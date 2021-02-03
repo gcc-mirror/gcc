@@ -1,4 +1,11 @@
-﻿// PERMUTE_ARGS: -inline
+// PERMUTE_ARGS: -inline
+/*
+TEST_OUTPUT:
+---
+compilable/interpret3.d(2914): Deprecation: `case` variables have to be `const` or `immutable`
+compilable/interpret3.d(6351): Deprecation: identity comparison of static arrays implicitly coerces them to slices, which are compared by reference
+---
+*/
 
 template compiles(int T)
 {

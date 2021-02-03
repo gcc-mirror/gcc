@@ -236,10 +236,6 @@ struct builtin_isa {
 
 /* Bits for builtin_description.flag.  */
 
-/* Set when we don't support the comparison natively, and should
-   swap_comparison in order to support it.  */
-#define BUILTIN_DESC_SWAP_OPERANDS	1
-
 struct builtin_description
 {
   const HOST_WIDE_INT mask;

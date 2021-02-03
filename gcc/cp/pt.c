@@ -1709,6 +1709,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 
 /* Restricts tree and type comparisons.  */
 int comparing_specializations;
+int comparing_dependent_aliases;
 
 /* Returns true iff two spec_entry nodes are equivalent.  */
 
@@ -1718,6 +1719,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
   int equal;
 
   ++comparing_specializations;
+  ++comparing_dependent_aliases;
   equal = (e1->tmpl == e2->tmpl
 	   && comp_template_args (e1->args, e2->args));
   if (equal && flag_concepts
@@ -1732,6 +1734,7 @@ spec_hasher::equal (spec_entry *e1, spec_entry *e2)
       tree c2 = e2->spec ? get_constraints (e2->spec) : NULL_TREE;
       equal = equivalent_constraints (c1, c2);
     }
+  --comparing_dependent_aliases;
   --comparing_specializations;
 
   return equal;
@@ -6516,7 +6519,11 @@ complex_alias_template_p (const_tree tmpl)
 tree
 dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 {
-  if (!TYPE_P (t) || !typedef_variant_p (t))
+  if (t == error_mark_node)
+    return NULL_TREE;
+  gcc_assert (TYPE_P (t));
+
+  if (!typedef_variant_p (t))
     return NULL_TREE;
 
   tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t);
@@ -9166,6 +9173,18 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
   if (class_nttp_const_wrapper_p (ot))
     ot = TREE_OPERAND (ot, 0);
 
+  /* DR 1558: Don't treat an alias template specialization with dependent
+     arguments as equivalent to its underlying type when used as a template
+     argument; we need them to be distinct so that we substitute into the
+     specialization arguments at instantiation time.  And aliases can't be
+     equivalent without being ==, so we don't need to look any deeper.
+
+     During partial ordering, however, we need to treat them normally so we can
+     order uses of the same alias with different cv-qualification (79960).  */
+  auto cso = make_temp_override (comparing_dependent_aliases);
+  if (!partial_order)
+    ++comparing_dependent_aliases;
+
   if (TREE_CODE (nt) == TREE_VEC || TREE_CODE (ot) == TREE_VEC)
     /* For member templates */
     return TREE_CODE (ot) == TREE_CODE (nt) && comp_template_args (ot, nt);
@@ -9183,21 +9202,7 @@ template_args_equal (tree ot, tree nt, bool partial_order /* = false */)
     {
       if (!(TYPE_P (nt) && TYPE_P (ot)))
 	return false;
-      /* Don't treat an alias template specialization with dependent
-	 arguments as equivalent to its underlying type when used as a
-	 template argument; we need them to be distinct so that we
-	 substitute into the specialization arguments at instantiation
-	 time.  And aliases can't be equivalent without being ==, so
-	 we don't need to look any deeper.
-
-         During partial ordering, however, we need to treat them normally so
-         that we can order uses of the same alias with different
-         cv-qualification (79960).  */
-      if (!partial_order
-	  && (TYPE_ALIAS_P (nt) || TYPE_ALIAS_P (ot)))
-	return false;
-      else
-	return same_type_p (ot, nt);
+      return same_type_p (ot, nt);
     }
   else
     {
@@ -11825,16 +11830,13 @@ instantiate_class_template_1 (tree type)
 	      || COMPLETE_OR_OPEN_TYPE_P (TYPE_CONTEXT (type)));
 
   base_list = NULL_TREE;
+  /* Defer access checking while we substitute into the types named in
+     the base-clause.  */
+  push_deferring_access_checks (dk_deferred);
   if (BINFO_N_BASE_BINFOS (pbinfo))
     {
       tree pbase_binfo;
-      tree pushed_scope;
       int i;
-
-      /* We must enter the scope containing the type, as that is where
-	 the accessibility of types named in dependent bases are
-	 looked up from.  */
-      pushed_scope = push_scope (CP_TYPE_CONTEXT (type));
 
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
@@ -11877,9 +11879,6 @@ instantiate_class_template_1 (tree type)
 
       /* The list is now in reverse order; correct that.  */
       base_list = nreverse (base_list);
-
-      if (pushed_scope)
-	pop_scope (pushed_scope);
     }
   /* Now call xref_basetypes to set up all the base-class
      information.  */
@@ -11896,6 +11895,13 @@ instantiate_class_template_1 (tree type)
      begin_class_definition when defining an ordinary non-template
      class, except we also need to push the enclosing classes.  */
   push_nested_class (type);
+
+  /* Now check accessibility of the types named in its base-clause,
+     relative to the scope of the class.  */
+  pop_to_parent_deferring_access_checks ();
+
+  /* A vector to hold members marked with attribute used. */
+  auto_vec<tree> used;
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
@@ -11970,7 +11976,7 @@ instantiate_class_template_1 (tree type)
 	      finish_member_declaration (r);
 	      /* Instantiate members marked with attribute used.  */
 	      if (r != error_mark_node && DECL_PRESERVE_P (r))
-		mark_used (r);
+		used.safe_push (r);
 	      if (TREE_CODE (r) == FUNCTION_DECL
 		  && DECL_OMP_DECLARE_REDUCTION_P (r))
 		cp_check_omp_declare_reduction (r);
@@ -12036,7 +12042,7 @@ instantiate_class_template_1 (tree type)
 			     /*flags=*/0);
 			  /* Instantiate members marked with attribute used. */
 			  if (r != error_mark_node && DECL_PRESERVE_P (r))
-			    mark_used (r);
+			    used.safe_push (r);
 			}
 		      else if (TREE_CODE (r) == FIELD_DECL)
 			{
@@ -12226,6 +12232,11 @@ instantiate_class_template_1 (tree type)
      the keyed_classes.  */
   if (TYPE_CONTAINS_VPTR_P (type) && CLASSTYPE_KEY_METHOD (type))
     vec_safe_push (keyed_classes, type);
+
+  /* Now that we've gone through all the members, instantiate those
+     marked with attribute used.  */
+  for (tree x : used)
+    mark_used (x);
 
   return type;
 }
@@ -14897,10 +14908,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  {
 	    DECL_ORIGINAL_TYPE (r) = NULL_TREE;
 	    set_underlying_type (r);
-	    if (TYPE_DECL_ALIAS_P (r))
-	      /* An alias template specialization can be dependent
-		 even if its underlying type is not.  */
-	      TYPE_DEPENDENT_P_VALID (TREE_TYPE (r)) = false;
 	  }
 
 	layout_decl (r, 0);
@@ -15690,6 +15697,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
 		      {
 			pl = tsubst_copy (pl, args, complain, in_decl);
+			if (TREE_CODE (pl) == TEMPLATE_TEMPLATE_PARM)
+			  pl = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (pl);
 			CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
 		      }
 		  }
@@ -16186,6 +16195,16 @@ tsubst_baselink (tree baselink, tree object_type,
       tree name = OVL_NAME (fns);
       if (IDENTIFIER_CONV_OP_P (name))
 	name = make_conv_op_name (optype);
+
+      /* See maybe_dependent_member_ref.  */
+      if (dependent_scope_p (qualifying_scope))
+	{
+	  if (template_id_p)
+	    name = build2 (TEMPLATE_ID_EXPR, unknown_type_node, name,
+			   template_args);
+	  return build_qualified_name (NULL_TREE, qualifying_scope, name,
+				       /* ::template */false);
+	}
 
       if (name == complete_dtor_identifier)
 	/* Treat as-if non-dependent below.  */
@@ -16796,7 +16815,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	return cp_build_bit_cast (EXPR_LOCATION (t), type, op0, complain);
+	r = build_min (BIT_CAST_EXPR, type, op0);
+	SET_EXPR_LOCATION (r, EXPR_LOCATION (t));
+	return r;
       }
 
     case SIZEOF_EXPR:
@@ -17352,6 +17373,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_VECTOR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
+	case OMP_CLAUSE_DETACH:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain,
 			   in_decl, /*integral_constant_expression_p=*/false);
@@ -18119,18 +18141,33 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
 	  {
-	    /* We cannot have a member-using decl here (until 'using
-	       enum T' is a thing).  */
-	    gcc_checking_assert (!DECL_DEPENDENT_P (decl));
-
-	    /* This must be a non-dependent using-decl, and we'll have
-	       used the names it found during template parsing.  We do
-	       not want to do the lookup again, because we might not
-	       find the things we found then.  (Again, using enum T
-	       might mean we have to do things here.)  */
 	    tree scope = USING_DECL_SCOPE (decl);
-	    gcc_checking_assert (scope
-				 == tsubst (scope, args, complain, in_decl));
+	    if (DECL_DEPENDENT_P (decl))
+	      {
+		scope = tsubst (scope, args, complain, in_decl);
+		if (!MAYBE_CLASS_TYPE_P (scope)
+		    && TREE_CODE (scope) != ENUMERAL_TYPE)
+		  {
+		    if (complain & tf_error)
+		      error_at (DECL_SOURCE_LOCATION (decl), "%qT is not a "
+				"class, namespace, or enumeration", scope);
+		    return error_mark_node;
+		  }
+		finish_nonmember_using_decl (scope, DECL_NAME (decl));
+	      }
+	    else
+	      {
+		/* This is a non-dependent using-decl, and we'll have
+		   used the names it found during template parsing.  We do
+		   not want to do the lookup again, because we might not
+		   find the things we found then.  */
+		gcc_checking_assert (scope == tsubst (scope, args,
+						      complain, in_decl));
+		/* We still need to push the bindings so that we can look up
+		   this name later.  */
+		push_using_decl_bindings (DECL_NAME (decl),
+					  USING_DECL_DECLS (decl));
+	      }
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
@@ -18212,6 +18249,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    bool const_init = false;
 		    unsigned int cnt = 0;
 		    tree first = NULL_TREE, ndecl = error_mark_node;
+		    tree asmspec_tree = NULL_TREE;
 		    maybe_push_decl (decl);
 
 		    if (VAR_P (decl)
@@ -18235,7 +18273,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		       now.  */
 		    predeclare_vla (decl);
 
-		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+		    if (VAR_P (decl) && DECL_HARD_REGISTER (pattern_decl))
+		      {
+			tree id = DECL_ASSEMBLER_NAME (pattern_decl);
+			const char *asmspec = IDENTIFIER_POINTER (id);
+			gcc_assert (asmspec[0] == '*');
+			asmspec_tree
+			  = build_string (IDENTIFIER_LENGTH (id) - 1,
+					  asmspec + 1);
+			TREE_TYPE (asmspec_tree) = char_array_type_node;
+		      }
+
+		    cp_finish_decl (decl, init, const_init, asmspec_tree, 0);
 
 		    if (ndecl != error_mark_node)
 		      cp_finish_decomp (ndecl, first, cnt);
@@ -19629,6 +19678,13 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	RETURN (r);
+      }
+
+    case BIT_CAST_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	RETURN (cp_build_bit_cast (EXPR_LOCATION (t), type, op0, complain));
       }
 
     case POSTDECREMENT_EXPR:
@@ -21091,6 +21147,17 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
   tree r = instantiate_template (tmpl, args, complain);
   pop_tinst_level ();
 
+  if (tree d = dependent_alias_template_spec_p (TREE_TYPE (r), nt_opaque))
+    {
+      /* An alias template specialization can be dependent
+	 even if its underlying type is not.  */
+      TYPE_DEPENDENT_P (d) = true;
+      TYPE_DEPENDENT_P_VALID (d) = true;
+      /* Sometimes a dependent alias spec is equivalent to its expansion,
+	 sometimes not.  So always use structural_comptypes.  */
+      SET_TYPE_STRUCTURAL_EQUALITY (d);
+    }
+
   return r;
 }
 
@@ -22373,6 +22440,9 @@ resolve_overloaded_unification (tree tparms,
 		  --function_depth;
 		}
 
+	      if (flag_noexcept_type)
+		maybe_instantiate_noexcept (fn, tf_none);
+
 	      elem = TREE_TYPE (fn);
 	      if (try_one_overload (tparms, targs, tempargs, parm,
 				    elem, strict, sub_strict, addr_p, explain_p)
@@ -23581,13 +23651,21 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  /* We haven't deduced the type of this parameter yet.  */
 	  if (cxx_dialect >= cxx17
 	      /* We deduce from array bounds in try_array_deduction.  */
-	      && !(strict & UNIFY_ALLOW_INTEGER))
+	      && !(strict & UNIFY_ALLOW_INTEGER)
+	      && TEMPLATE_PARM_LEVEL (parm) <= TMPL_ARGS_DEPTH (targs))
 	    {
 	      /* Deduce it from the non-type argument.  */
 	      tree atype = TREE_TYPE (arg);
 	      RECUR_AND_CHECK_FAILURE (tparms, targs,
 				       tparm, atype,
 				       UNIFY_ALLOW_NONE, explain_p);
+	      /* Now check whether the type of this parameter is still
+		 dependent, and give up if so.  */
+	      ++processing_template_decl;
+	      tparm = tsubst (tparm, targs, tf_none, NULL_TREE);
+	      --processing_template_decl;
+	      if (uses_template_parms (tparm))
+		return unify_success (explain_p);
 	    }
 	  else
 	    /* Try again later.  */
@@ -25432,7 +25510,8 @@ always_instantiate_p (tree decl)
 bool
 maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
-  tree fntype, spec, noex;
+  if (fn == error_mark_node)
+    return false;
 
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl
@@ -25451,13 +25530,13 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       return !DECL_MAYBE_DELETED (fn);
     }
 
-  fntype = TREE_TYPE (fn);
-  spec = TYPE_RAISES_EXCEPTIONS (fntype);
+  tree fntype = TREE_TYPE (fn);
+  tree spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
   if (!spec || !TREE_PURPOSE (spec))
     return true;
 
-  noex = TREE_PURPOSE (spec);
+  tree noex = TREE_PURPOSE (spec);
   if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
       && TREE_CODE (noex) != DEFERRED_PARSE)
     return true;

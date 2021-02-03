@@ -21,10 +21,6 @@ libgccjit
 This document describes `libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API
 for embedding GCC inside programs and libraries.
 
-Note that libgccjit is currently of "Alpha" quality;
-the APIs are not yet set in stone, and they shouldn't be used in
-production yet.
-
 There are actually two APIs for the library:
 
 * a pure C API: ``libgccjit.h``

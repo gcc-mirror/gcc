@@ -4846,6 +4846,7 @@ process_command (unsigned int decoded_options_count,
       if (decoded_options[j].opt_index == OPT_SPECIAL_input_file)
 	{
 	  const char *arg = decoded_options[j].arg;
+
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  arg = convert_filename (arg, 0, access (arg, F_OK));
 #endif

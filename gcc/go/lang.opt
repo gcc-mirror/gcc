@@ -57,6 +57,10 @@ fgo-dump-
 Go Joined RejectNegative
 -fgo-dump-<type>	Dump Go frontend internal information.
 
+fgo-embedcfg=
+Go Joined RejectNegative
+-fgo-embedcfg=<file>	List embedded files via go:embed.
+
 fgo-optimize-
 Go Joined
 -fgo-optimize-<type>	Turn on optimization passes in the frontend.

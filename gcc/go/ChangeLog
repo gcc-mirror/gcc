@@ -1,3 +1,25 @@
+2021-01-28  Ian Lance Taylor  <iant@golang.org>
+
+	* gospec.c (lang_specific_driver): Add -g if no debugging options
+	were passed.
+
+2021-01-15  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/embed.o.
+
+2021-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (fgo-embedcfg=): Add full stop at the end of description.
+
+2021-01-05  Ian Lance Taylor  <iant@golang.org>
+
+	* lang.opt (fgo-embedcfg): New option.
+	* go-c.h (struct go_create_gogo_args): Add embedcfg field.
+	* go-lang.c (go_embedcfg): New static variable.
+	(go_langhook_init): Set go_create_gogo_args embedcfg field.
+	(go_langhook_handle_option): Handle OPT_fgo_embedcfg_.
+	* gccgo.texi (Invoking gccgo): Document -fgo-embedcfg.
+
 2021-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gccgo.texi: Bump @copyrights-go year.

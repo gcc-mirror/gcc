@@ -2621,6 +2621,14 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
       && TREE_CODE (op1) == INTEGER_CST)
     code = maybe_optimize_mod_cmp (code, &op0, &op1);
 
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (op0))
+      && (code == LT_EXPR || code == LE_EXPR
+	  || code == GT_EXPR || code == GE_EXPR)
+      && integer_zerop (op1)
+      && TREE_CODE (op0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (code, &op0, &op1);
+
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
@@ -6495,7 +6503,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec
     | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
-  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( PROP_ssa | PROP_gimple ), /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };

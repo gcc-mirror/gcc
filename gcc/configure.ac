@@ -1335,6 +1335,15 @@ EXTRA_GCC_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(EXTRA_GCC_LIBS)
 
+# Solaris needs libsocket and libnsl for socket functions before 11.4.
+# C++ needs those for libcody.
+save_LIBS="$LIBS"
+LIBS=
+AX_LIB_SOCKET_NSL
+NETLIBS="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(NETLIBS)
+
 # Some systems put ldexp and frexp in libm instead of libc; assume
 # they're both in the same place.  jcf-dump needs them.
 save_LIBS="$LIBS"
@@ -5409,8 +5418,12 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
   gcc_cv_as_gdwarf_5_flag,
-  [elf,2,36,0], [--gdwarf-5], [$insn],,
-  [AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
+  [elf,2,36,0], [--gdwarf-5], [$insn],
+  [if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi],[AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf-5 option.])])
 
  dwarf4_debug_info_size=0x46
@@ -6968,7 +6981,12 @@ changequote([,])dnl
 	$ok || continue
 
 	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
-	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	if test "x$language" = xc && test -n "$all_lang_makefrags"; then
+	    # Put c/Make-lang.in fragment first to match serialization languages order.
+	    all_lang_makefrags="\$(srcdir)/$gcc_subdir/Make-lang.in $all_lang_makefrags"
+	else
+	    all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	fi
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
 	    all_opt_files="$all_opt_files $srcdir/$gcc_subdir/lang.opt"

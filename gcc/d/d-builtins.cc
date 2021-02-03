@@ -311,7 +311,7 @@ build_frontend_type (tree type)
 		  return NULL;
 		}
 
-	      args->push (Parameter::create (sc, targ, NULL, NULL));
+	      args->push (Parameter::create (sc, targ, NULL, NULL, NULL));
 	    }
 
 	  /* GCC generic and placeholder built-ins are marked as variadic, yet
@@ -392,6 +392,20 @@ d_eval_constant_expression (const Loc &loc, tree cst)
 	  e->type = type->isTypeVector ()->basetype;
 
 	  return VectorExp::create (loc, e, type);
+	}
+      else if (code == ADDR_EXPR)
+	{
+	  /* Special handling for trees constructed by build_string_literal.
+	     What we receive is an `&"string"[0]' expression, strip off the
+	     outer ADDR_EXPR and ARRAY_REF to get to the underlying CST.  */
+	  tree pointee = TREE_OPERAND (cst, 0);
+
+	  if (TREE_CODE (pointee) != ARRAY_REF
+	      || TREE_OPERAND (pointee, 1) != integer_zero_node
+	      || TREE_CODE (TREE_OPERAND (pointee, 0)) != STRING_CST)
+	    return NULL;
+
+	  return d_eval_constant_expression (loc, TREE_OPERAND (pointee, 0));
 	}
     }
 

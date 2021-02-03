@@ -423,7 +423,8 @@ function_info::finalize_new_accesses (insn_change &change)
       }
 
   // Also keep any explicitly-recorded call clobbers, which are deliberately
-  // excluded from the vec_rtx_properties.
+  // excluded from the vec_rtx_properties.  Calls shouldn't move, so we can
+  // keep the definitions in their current position.
   for (def_info *def : change.new_defs)
     if (def->m_has_been_superceded && def->is_call_clobber ())
       {
@@ -533,10 +534,10 @@ function_info::apply_changes_to_insn (insn_change &change)
   // Copy the cost.
   insn->set_cost (change.new_cost);
 
-  // Add all clobbers.  Sets never moved relative to other definitions,
-  // so are OK as-is.
+  // Add all clobbers.  Sets and call clobbers never move relative to
+  // other definitions, so are OK as-is.
   for (def_info *def : change.new_defs)
-    if (is_a<clobber_info *> (def))
+    if (is_a<clobber_info *> (def) && !def->is_call_clobber ())
       add_def (def);
 
   // Add all uses, now that their position is final.

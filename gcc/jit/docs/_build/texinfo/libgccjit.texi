@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-libgccjit 11.0.0 (experimental 20201112), Nov 12, 2020
+libgccjit 11.0.0 (experimental 20210114), Jan 14, 2021
 
 David Malcolm
 
@@ -67,10 +67,6 @@ Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
 
 This document describes libgccjit@footnote{http://gcc.gnu.org/wiki/JIT}, an API
 for embedding GCC inside programs and libraries.
-
-Note that libgccjit is currently of “Alpha” quality;
-the APIs are not yet set in stone, and they shouldn’t be used in
-production yet.
 
 There are actually two APIs for the library:
 
@@ -9050,10 +9046,6 @@ The C++ bindings consist of a single header file @code{libgccjit++.h}.
 This is a collection of “thin” wrapper classes around the C API.
 Everything is an inline function, implemented in terms of the C API,
 so there is nothing extra to link against.
-
-Note that libgccjit is currently of “Alpha” quality;
-the APIs are not yet set in stone, and they shouldn’t be used in
-production yet.
 
 Contents:
 

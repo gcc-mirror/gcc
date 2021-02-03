@@ -8,11 +8,12 @@
  */
 module core.sys.windows.lzexpand;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "lz32");
 
-private import core.sys.windows.winbase, core.sys.windows.windef;
+import core.sys.windows.winbase, core.sys.windows.windef;
 
 enum : LONG {
     LZERROR_BADINHANDLE  = -1,

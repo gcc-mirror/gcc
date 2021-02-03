@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ccmp.h"
 #include "gimple-fold.h"
 #include "rtx-vector-builder.h"
+#include "tree-pretty-print.h"
+#include "flags.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -5457,6 +5459,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      /* If to_rtx is a promoted subreg, we need to zero or sign
 		 extend the value afterwards.  */
 	      if (TREE_CODE (to) == MEM_REF
+		  && TYPE_MODE (TREE_TYPE (from)) != BLKmode
 		  && !REF_REVERSE_STORAGE_ORDER (to)
 		  && known_eq (bitpos, 0)
 		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
@@ -12275,6 +12278,37 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   *arg1 = c4;
   return code == EQ_EXPR ? LE_EXPR : GT_EXPR;
 }
+
+/* Optimize x - y < 0 into x < 0 if x - y has undefined overflow.  */
+
+void
+maybe_optimize_sub_cmp_0 (enum tree_code code, tree *arg0, tree *arg1)
+{
+  gcc_checking_assert (code == GT_EXPR || code == GE_EXPR
+		       || code == LT_EXPR || code == LE_EXPR);
+  gcc_checking_assert (integer_zerop (*arg1));
+
+  if (!optimize)
+    return;
+
+  gimple *stmt = get_def_for_expr (*arg0, MINUS_EXPR);
+  if (stmt == NULL)
+    return;
+
+  tree treeop0 = gimple_assign_rhs1 (stmt);
+  tree treeop1 = gimple_assign_rhs2 (stmt);
+  if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (treeop0)))
+    return;
+
+  if (issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_COMPARISON))
+    warning_at (gimple_location (stmt), OPT_Wstrict_overflow,
+		"assuming signed overflow does not occur when "
+		"simplifying %<X - Y %s 0%> to %<X %s Y%>",
+		op_symbol_code (code), op_symbol_code (code));
+
+  *arg0 = treeop0;
+  *arg1 = treeop1;
+}
 
 /* Generate code to calculate OPS, and exploded expression
    using a store-flag instruction and return an rtx for the result.
@@ -12362,6 +12396,14 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  return do_store_flag (&nops, target, mode);
 	}
     }
+
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!unsignedp
+      && (ops->code == LT_EXPR || ops->code == LE_EXPR
+	  || ops->code == GT_EXPR || ops->code == GE_EXPR)
+      && integer_zerop (arg1)
+      && TREE_CODE (arg0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (ops->code, &arg0, &arg1);
 
   /* Get the rtx comparison code to use.  We know that EXP is a comparison
      operation of some type.  Some comparisons against 1 and -1 can be

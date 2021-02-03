@@ -5449,10 +5449,13 @@ extern GTY(()) tree integer_two_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-/* Nonzero if we are inside eq_specializations, which affects
-   comparison of PARM_DECLs in cp_tree_equal and alias specializations
-   in structrual_comptypes.  */
+/* Nonzero if we are inside spec_hasher::equal, which affects
+   comparison of PARM_DECLs in cp_tree_equal.  */
 extern int comparing_specializations;
+
+/* Nonzero if we want different dependent aliases to compare as unequal.
+   FIXME we should always do this except during deduction/ordering.  */
+extern int comparing_dependent_aliases;
 
 /* When comparing specializations permit context _FROM to match _TO.  */
 extern tree map_context_from;
@@ -6434,7 +6437,8 @@ class access_failure_info
   tree m_diag_decl;
 };
 
-extern void complain_about_access		(tree, tree, bool);
+extern void complain_about_access		(tree, tree, tree, bool,
+						 access_kind);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -6471,7 +6475,8 @@ extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
 extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
-extern bool unsafe_return_slot_p		(tree);
+extern int unsafe_return_slot_p			(tree);
+extern bool make_safe_copy_elision		(tree, tree);
 extern bool cp_warn_deprecated_use		(tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
@@ -6513,6 +6518,7 @@ extern int same_signature_p			(const_tree, const_tree);
 extern tree lookup_vfn_in_binfo			(tree, tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
 extern void unreverse_member_declarations	(tree);
+extern bool is_empty_field			(tree);
 extern void invalidate_class_lookup_cache	(void);
 extern void maybe_note_name_used_in_class	(tree, tree);
 extern void note_name_declared_in_class		(tree, tree);
@@ -7273,6 +7279,7 @@ extern unsigned get_pseudo_tinfo_index		(tree);
 extern tree get_pseudo_tinfo_type		(unsigned);
 
 /* in search.c */
+extern tree get_parent_with_private_access 	(tree decl, tree binfo);
 extern bool accessible_base_p			(tree, tree, bool);
 extern tree lookup_base                         (tree, tree, base_access,
 						 base_kind *, tsubst_flags_t);
@@ -7311,7 +7318,7 @@ extern tree adjust_result_of_qualified_name_lookup
 						(tree, tree, tree);
 extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
-extern int shared_member_p			(tree);
+extern bool shared_member_p			(tree);
 extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
 extern bool maybe_check_overriding_exception_spec (tree, tree);
 

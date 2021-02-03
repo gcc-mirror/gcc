@@ -1543,7 +1543,7 @@ Type *stripDefaultArgs(Type *t)
             {
                 Parameter *p = (*params)[i];
                 Type *ta = stripDefaultArgs(p->type);
-                if (ta != p->type || p->defaultArg || p->ident)
+                if (ta != p->type || p->defaultArg || p->ident || p->userAttribDecl)
                 {
                     if (params == parameters)
                     {
@@ -1552,7 +1552,7 @@ Type *stripDefaultArgs(Type *t)
                         for (size_t j = 0; j < params->length; j++)
                             (*params)[j] = (*parameters)[j];
                     }
-                    (*params)[i] = new Parameter(p->storageClass, ta, NULL, NULL);
+                    (*params)[i] = new Parameter(p->storageClass, ta, NULL, NULL, NULL);
                 }
             }
         }
@@ -1762,10 +1762,10 @@ bool Type::needsNested()
 
 void Type::checkDeprecated(Loc loc, Scope *sc)
 {
-    Dsymbol *s = toDsymbol(sc);
-
-    if (s)
+    if (Dsymbol *s = toDsymbol(sc))
+    {
         s->checkDeprecated(loc, sc);
+    }
 }
 
 
@@ -1996,7 +1996,7 @@ Type *TypeFunction::substWildTo(unsigned)
             continue;
         if (params == parameterList.parameters)
             params = parameterList.parameters->copy();
-        (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL);
+        (*params)[i] = new Parameter(p->storageClass, t, NULL, NULL, NULL);
     }
     if (next == tret && params == parameterList.parameters)
         return this;
@@ -4914,7 +4914,7 @@ Expression *TypeAArray::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
         if (fd_aaLen == NULL)
         {
             Parameters *fparams = new Parameters();
-            fparams->push(new Parameter(STCin, this, NULL, NULL));
+            fparams->push(new Parameter(STCin, this, NULL, NULL, NULL));
             fd_aaLen = FuncDeclaration::genCfunc(fparams, Type::tsize_t, Id::aaLen);
             TypeFunction *tf = fd_aaLen->type->toTypeFunction();
             tf->purity = PUREconst;
@@ -5821,7 +5821,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                         }
 
                         (*newparams)[j] = new Parameter(
-                                stc, narg->type, narg->ident, narg->defaultArg);
+                                stc, narg->type, narg->ident, narg->defaultArg, narg->userAttribDecl);
                     }
                     fparam->type = new TypeTuple(newparams);
                 }
@@ -6682,6 +6682,7 @@ Type *TypeTraits::semantic(Loc, Scope *sc)
         exp->ident != Id::derivedMembers &&
         exp->ident != Id::getMember &&
         exp->ident != Id::parent &&
+        exp->ident != Id::child &&
         exp->ident != Id::getOverloads &&
         exp->ident != Id::getVirtualFunctions &&
         exp->ident != Id::getVirtualMethods &&
@@ -6955,7 +6956,12 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
         if (d && (d->storage_class & STCtemplateparameter))
             s = s->toAlias();
         else
-            s->checkDeprecated(loc, sc);            // check for deprecated aliases
+        {
+            // check for deprecated aliases
+            s->checkDeprecated(loc, sc);
+            if (d)
+                d->checkDisabled(loc, sc, true);
+        }
 
         s = s->toAlias();
         //printf("\t2: s = '%s' %p, kind = '%s'\n",s->toChars(), s, s->kind());
@@ -6990,8 +6996,8 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
             Dsymbol *sm = s->searchX(loc, sc, id);
             if (sm && !(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, sm))
             {
-                ::deprecation(loc, "%s is not visible from module %s", sm->toPrettyChars(), sc->_module->toChars());
-                // sm = NULL;
+                ::error(loc, "`%s` is not visible from module `%s`", sm->toPrettyChars(), sc->_module->toChars());
+                sm = NULL;
             }
             if (global.errors != errorsave)
             {
@@ -7959,29 +7965,6 @@ Dsymbol *TypeStruct::toDsymbol(Scope *)
     return sym;
 }
 
-static Dsymbol *searchSymStruct(Scope *sc, Dsymbol *sym, Expression *e, Identifier *ident)
-{
-    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-    Dsymbol *sold = NULL;
-    if (global.params.bug10378 || global.params.check10378)
-    {
-        sold = sym->search(e->loc, ident, flags);
-        if (!global.params.check10378)
-            return sold;
-    }
-
-    Dsymbol *s = sym->search(e->loc, ident, flags | SearchLocalsOnly);
-    if (global.params.check10378)
-    {
-        Dsymbol *snew = s;
-        if (sold != snew)
-            Scope::deprecation10378(e->loc, sold, snew);
-        if (global.params.bug10378)
-            s = sold;
-    }
-    return s;
-}
-
 Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
 {
     Dsymbol *s;
@@ -8032,7 +8015,8 @@ Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
         return e;
     }
 
-    s = searchSymStruct(sc, sym, e, ident);
+    const int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
+    s = sym->search(e->loc, ident, flags | IgnorePrivateImports);
 L1:
     if (!s)
     {
@@ -8040,11 +8024,14 @@ L1:
     }
     if (!(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, s))
     {
-        ::deprecation(e->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toPrettyChars());
-        // return noMember(sc, e, ident, flag);
+        return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();
@@ -8514,35 +8501,6 @@ Dsymbol *TypeClass::toDsymbol(Scope *)
     return sym;
 }
 
-static Dsymbol *searchSymClass(Scope *sc, Dsymbol *sym, Expression *e, Identifier *ident)
-{
-    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
-    Dsymbol *sold = NULL;
-    if (global.params.bug10378 || global.params.check10378)
-    {
-        sold = sym->search(e->loc, ident, flags | IgnoreSymbolVisibility);
-        if (!global.params.check10378)
-            return sold;
-    }
-
-    Dsymbol *s = sym->search(e->loc, ident, flags | SearchLocalsOnly);
-    if (!s && !(flags & IgnoreSymbolVisibility))
-    {
-        s = sym->search(e->loc, ident, flags | SearchLocalsOnly | IgnoreSymbolVisibility);
-        if (s && !(flags & IgnoreErrors))
-            ::deprecation(e->loc, "%s is not visible from class %s", s->toPrettyChars(), sym->toChars());
-    }
-    if (global.params.check10378)
-    {
-        Dsymbol *snew = s;
-        if (sold != snew)
-            Scope::deprecation10378(e->loc, sold, snew);
-        if (global.params.bug10378)
-            s = sold;
-    }
-    return s;
-}
-
 Expression *TypeClass::dotExp(Scope *sc, Expression *e, Identifier *ident, int flag)
 {
     Dsymbol *s;
@@ -8596,7 +8554,9 @@ Expression *TypeClass::dotExp(Scope *sc, Expression *e, Identifier *ident, int f
         return e;
     }
 
-    s = searchSymClass(sc, sym, e, ident);
+    int flags = sc->flags & SCOPEignoresymbolvisibility ? IgnoreSymbolVisibility : 0;
+    s = sym->search(e->loc, ident, flags | IgnorePrivateImports);
+
 L1:
     if (!s)
     {
@@ -8744,11 +8704,14 @@ L1:
     }
     if (!(sc->flags & SCOPEignoresymbolvisibility) && !symbolIsVisible(sc, s))
     {
-        ::deprecation(e->loc, "%s is not visible from module %s", s->toPrettyChars(), sc->_module->toPrettyChars());
-        // return noMember(sc, e, ident, flag);
+        return noMember(sc, e, ident, flag);
     }
     if (!s->isFuncDeclaration())        // because of overloading
+    {
         s->checkDeprecated(e->loc, sc);
+        if (Declaration *d = s->isDeclaration())
+            d->checkDisabled(e->loc, sc);
+    }
     s = s->toAlias();
 
     EnumMember *em = s->isEnumMember();
@@ -9097,7 +9060,7 @@ TypeTuple::TypeTuple(Expressions *exps)
         {   Expression *e = (*exps)[i];
             if (e->type->ty == Ttuple)
                 e->error("cannot form tuple of tuples");
-            Parameter *arg = new Parameter(STCundefined, e->type, NULL, NULL);
+            Parameter *arg = new Parameter(STCundefined, e->type, NULL, NULL, NULL);
             (*arguments)[i] = arg;
         }
     }
@@ -9123,15 +9086,15 @@ TypeTuple::TypeTuple(Type *t1)
     : Type(Ttuple)
 {
     arguments = new Parameters();
-    arguments->push(new Parameter(0, t1, NULL, NULL));
+    arguments->push(new Parameter(0, t1, NULL, NULL, NULL));
 }
 
 TypeTuple::TypeTuple(Type *t1, Type *t2)
     : Type(Ttuple)
 {
     arguments = new Parameters();
-    arguments->push(new Parameter(0, t1, NULL, NULL));
-    arguments->push(new Parameter(0, t2, NULL, NULL));
+    arguments->push(new Parameter(0, t1, NULL, NULL, NULL));
+    arguments->push(new Parameter(0, t2, NULL, NULL, NULL));
 }
 
 const char *TypeTuple::kind()
@@ -9435,17 +9398,20 @@ size_t ParameterList::length()
 
 /***************************** Parameter *****************************/
 
-Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
+Parameter::Parameter(StorageClass storageClass, Type *type, Identifier *ident,
+                     Expression *defaultArg, UserAttributeDeclaration *userAttribDecl)
 {
     this->type = type;
     this->ident = ident;
     this->storageClass = storageClass;
     this->defaultArg = defaultArg;
+    this->userAttribDecl = userAttribDecl;
 }
 
-Parameter *Parameter::create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg)
+Parameter *Parameter::create(StorageClass storageClass, Type *type, Identifier *ident,
+                             Expression *defaultArg, UserAttributeDeclaration *userAttribDecl)
 {
-    return new Parameter(storageClass, type, ident, defaultArg);
+    return new Parameter(storageClass, type, ident, defaultArg, userAttribDecl);
 }
 
 Parameter *Parameter::syntaxCopy()
@@ -9453,7 +9419,8 @@ Parameter *Parameter::syntaxCopy()
     return new Parameter(storageClass,
         type ? type->syntaxCopy() : NULL,
         ident,
-        defaultArg ? defaultArg->syntaxCopy() : NULL);
+        defaultArg ? defaultArg->syntaxCopy() : NULL,
+        userAttribDecl ? (UserAttributeDeclaration *) userAttribDecl->syntaxCopy(NULL) : NULL);
 }
 
 Parameters *Parameter::arraySyntaxCopy(Parameters *parameters)

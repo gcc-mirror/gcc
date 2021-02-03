@@ -191,6 +191,8 @@ enum non_prefixed_form {
 
 extern enum insn_form address_to_insn_form (rtx, machine_mode,
 					    enum non_prefixed_form);
+extern bool address_is_non_pfx_d_or_x (rtx addr, machine_mode mode,
+				       enum non_prefixed_form non_prefix_format);
 extern bool prefixed_load_p (rtx_insn *);
 extern bool prefixed_store_p (rtx_insn *);
 extern bool prefixed_paddi_p (rtx_insn *);

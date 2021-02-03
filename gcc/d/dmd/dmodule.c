@@ -34,7 +34,6 @@ Dsymbols Module::deferred2; // deferred Dsymbol's needing semantic2() run on the
 Dsymbols Module::deferred3; // deferred Dsymbol's needing semantic3() run on them
 unsigned Module::dprogress;
 
-const char *lookForSourceFile(const char **path, const char *filename);
 StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 void Module::_init()
@@ -72,7 +71,6 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     sfilename = NULL;
     importedFrom = NULL;
     srcfile = NULL;
-    srcfilePath = NULL;
     docfile = NULL;
 
     debuglevel = 0;
@@ -109,9 +107,6 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
         fatal();
     }
     srcfile = new File(srcfilename);
-    if (!FileName::absolute(srcfilename))
-        srcfilePath = getcwd(NULL, 0);
-
     objfile = setOutfile(global.params.objname.ptr, global.params.objdir.ptr, filename, global.obj_ext.ptr);
 
     if (doDocComment)
@@ -215,6 +210,133 @@ static void checkModFileAlias(OutBuffer *buf, OutBuffer *dotmods,
     dotmods->writeByte('.');
 }
 
+/**
+ * Converts a chain of identifiers to the filename of the module
+ *
+ * Params:
+ *  packages = the names of the "parent" packages
+ *  ident = the name of the child package or module
+ *
+ * Returns:
+ *  the filename of the child package or module
+ */
+static const char *getFilename(Identifiers *packages, Identifier *ident)
+{
+    const char *filename = ident->toChars();
+
+    if (packages == NULL || packages->length == 0)
+        return filename;
+
+    OutBuffer buf;
+    OutBuffer dotmods;
+    Array<const char *> *ms = &global.params.modFileAliasStrings;
+    const size_t msdim = ms ? ms->length : 0;
+
+    for (size_t i = 0; i < packages->length; i++)
+    {
+        Identifier *pid = (*packages)[i];
+        const char *p = pid->toChars();
+        buf.writestring(p);
+        if (msdim)
+            checkModFileAlias(&buf, &dotmods, ms, msdim, p);
+#if _WIN32
+        buf.writeByte('\\');
+#else
+        buf.writeByte('/');
+#endif
+    }
+    buf.writestring(filename);
+    if (msdim)
+        checkModFileAlias(&buf, &dotmods, ms, msdim, filename);
+    buf.writeByte(0);
+    filename = (char *)buf.extractData();
+
+    return filename;
+}
+
+/********************************************
+ * Look for the source file if it's different from filename.
+ * Look for .di, .d, directory, and along global.path.
+ * Does not open the file.
+ * Input:
+ *      filename        as supplied by the user
+ *      global.path
+ * Returns:
+ *      NULL if it's not different from filename.
+ */
+
+static const char *lookForSourceFile(const char *filename)
+{
+    /* Search along global.path for .di file, then .d file.
+     */
+    const char *sdi = FileName::forceExt(filename, global.hdr_ext.ptr);
+    if (FileName::exists(sdi) == 1)
+        return sdi;
+
+    const char *sd  = FileName::forceExt(filename, global.mars_ext.ptr);
+    if (FileName::exists(sd) == 1)
+        return sd;
+
+    if (FileName::exists(filename) == 2)
+    {
+        /* The filename exists and it's a directory.
+         * Therefore, the result should be: filename/package.d
+         * iff filename/package.d is a file
+         */
+        const char *ni = FileName::combine(filename, "package.di");
+        if (FileName::exists(ni) == 1)
+            return ni;
+        FileName::free(ni);
+        const char *n = FileName::combine(filename, "package.d");
+        if (FileName::exists(n) == 1)
+            return n;
+        FileName::free(n);
+    }
+
+    if (FileName::absolute(filename))
+        return NULL;
+
+    if (!global.path)
+        return NULL;
+
+    for (size_t i = 0; i < global.path->length; i++)
+    {
+        const char *p = (*global.path)[i];
+        const char *n = FileName::combine(p, sdi);
+        if (FileName::exists(n) == 1)
+        {
+            return n;
+        }
+        FileName::free(n);
+
+        n = FileName::combine(p, sd);
+        if (FileName::exists(n) == 1)
+        {
+            return n;
+        }
+        FileName::free(n);
+
+        const char *b = FileName::removeExt(filename);
+        n = FileName::combine(p, b);
+        FileName::free(b);
+        if (FileName::exists(n) == 2)
+        {
+            const char *n2i = FileName::combine(n, "package.di");
+            if (FileName::exists(n2i) == 1)
+                return n2i;
+            FileName::free(n2i);
+            const char *n2 = FileName::combine(n, "package.d");
+            if (FileName::exists(n2) == 1)
+            {
+                return n2;
+            }
+            FileName::free(n2);
+        }
+        FileName::free(n);
+    }
+    return NULL;
+}
+
 Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
 {
     //printf("Module::load(ident = '%s')\n", ident->toChars());
@@ -223,49 +345,14 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
     //  foo.bar.baz
     // into:
     //  foo\bar\baz
-    const char *filename = ident->toChars();
-    if (packages && packages->length)
-    {
-        OutBuffer buf;
-        OutBuffer dotmods;
-        Array<const char *> *ms = &global.params.modFileAliasStrings;
-        const size_t msdim = ms ? ms->length : 0;
-
-        for (size_t i = 0; i < packages->length; i++)
-        {
-            Identifier *pid = (*packages)[i];
-            const char *p = pid->toChars();
-            buf.writestring(p);
-            if (msdim)
-                checkModFileAlias(&buf, &dotmods, ms, msdim, p);
-#if _WIN32
-            buf.writeByte('\\');
-#else
-            buf.writeByte('/');
-#endif
-        }
-        buf.writestring(filename);
-        if (msdim)
-            checkModFileAlias(&buf, &dotmods, ms, msdim, filename);
-        buf.writeByte(0);
-        filename = (char *)buf.extractData();
-    }
+    const char *filename = getFilename(packages, ident);
+    // Look for the source file
+    const char *result = lookForSourceFile(filename);
+    if (result)
+        filename = result;
 
     Module *m = new Module(filename, ident, 0, 0);
     m->loc = loc;
-
-    /* Look for the source file
-     */
-    const char *path;
-    const char *result = lookForSourceFile(&path, filename);
-    if (result)
-    {
-        m->srcfile = new File(result);
-        if (path)
-            m->srcfilePath = path;
-        else if (!FileName::absolute(result))
-            m->srcfilePath = getcwd(NULL, 0);
-    }
 
     if (!m->read(loc))
         return NULL;
@@ -288,8 +375,15 @@ Module *Module::load(Loc loc, Identifiers *packages, Identifier *ident)
 
     m = m->parse();
 
-    Compiler::loadModule(m);
-
+    // Call onImport here because if the module is going to be compiled then we
+    // need to determine it early because it affects semantic analysis. This is
+    // being done after parsing the module so the full module name can be taken
+    // from whatever was declared in the file.
+    if (!m->isRoot() && Compiler::onImport(m))
+    {
+        m->importedFrom = m;
+        assert(m->isRoot());
+    }
     return m;
 }
 
@@ -649,6 +743,7 @@ Module *Module::parse()
         // Add to global array of all modules
         amodules.push(this);
     }
+    Compiler::onParseModule(this);
     return this;
 }
 
@@ -1159,6 +1254,27 @@ Module *Package::isPackageMod()
 }
 
 /**
+ * Checks for the existence of a package.d to set isPkgMod appropriately
+ * if isPkgMod == PKGunknown
+ */
+void Package::resolvePKGunknown()
+{
+    if (isModule())
+        return;
+    if (isPkgMod != PKGunknown)
+        return;
+
+    Identifiers packages;
+    for (Dsymbol *s = this->parent; s; s = s->parent)
+        packages.insert(0, s->ident);
+
+    if (lookForSourceFile(getFilename(&packages, ident)))
+        Module::load(Loc(), &packages, this->ident);
+    else
+        isPkgMod = PKGpackage;
+}
+
+/**
  * Checks if pkg is a sub-package of this
  *
  * For example, if this qualifies to 'a1.a2' and pkg - to 'a1.a2.a3',
@@ -1265,97 +1381,4 @@ Dsymbol *Package::search(const Loc &loc, Identifier *ident, int flags)
     }
 
     return ScopeDsymbol::search(loc, ident, flags);
-}
-
-/* ===========================  ===================== */
-
-/********************************************
- * Look for the source file if it's different from filename.
- * Look for .di, .d, directory, and along global.path.
- * Does not open the file.
- * Output:
- *      path            the path where the file was found if it was not the current directory
- * Input:
- *      filename        as supplied by the user
- *      global.path
- * Returns:
- *      NULL if it's not different from filename.
- */
-
-const char *lookForSourceFile(const char **path, const char *filename)
-{
-    /* Search along global.path for .di file, then .d file.
-     */
-    *path = NULL;
-
-    const char *sdi = FileName::forceExt(filename, global.hdr_ext.ptr);
-    if (FileName::exists(sdi) == 1)
-        return sdi;
-
-    const char *sd  = FileName::forceExt(filename, global.mars_ext.ptr);
-    if (FileName::exists(sd) == 1)
-        return sd;
-
-    if (FileName::exists(filename) == 2)
-    {
-        /* The filename exists and it's a directory.
-         * Therefore, the result should be: filename/package.d
-         * iff filename/package.d is a file
-         */
-        const char *ni = FileName::combine(filename, "package.di");
-        if (FileName::exists(ni) == 1)
-            return ni;
-        FileName::free(ni);
-        const char *n = FileName::combine(filename, "package.d");
-        if (FileName::exists(n) == 1)
-            return n;
-        FileName::free(n);
-    }
-
-    if (FileName::absolute(filename))
-        return NULL;
-
-    if (!global.path)
-        return NULL;
-
-    for (size_t i = 0; i < global.path->length; i++)
-    {
-        const char *p = (*global.path)[i];
-
-        const char *n = FileName::combine(p, sdi);
-        if (FileName::exists(n) == 1)
-        {
-            *path = p;
-            return n;
-        }
-        FileName::free(n);
-
-        n = FileName::combine(p, sd);
-        if (FileName::exists(n) == 1)
-        {
-            *path = p;
-            return n;
-        }
-        FileName::free(n);
-
-        const char *b = FileName::removeExt(filename);
-        n = FileName::combine(p, b);
-        FileName::free(b);
-        if (FileName::exists(n) == 2)
-        {
-            const char *n2i = FileName::combine(n, "package.di");
-            if (FileName::exists(n2i) == 1)
-                return n2i;
-            FileName::free(n2i);
-            const char *n2 = FileName::combine(n, "package.d");
-            if (FileName::exists(n2) == 1)
-            {
-                *path = p;
-                return n2;
-            }
-            FileName::free(n2);
-        }
-        FileName::free(n);
-    }
-    return NULL;
 }

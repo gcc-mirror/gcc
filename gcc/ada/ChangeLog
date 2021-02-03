@@ -1,3 +1,29 @@
+2021-01-26  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR ada/98228
+	* gcc-interface/utils.c (maybe_pad_type): Test the size of the new
+	packable type instead of its alignment for addressability's sake.
+
+2021-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (make_covariant_thunk): Set the DECL_CONTEXT
+	of the parameters and do not set TREE_PUBLIC on the thunk.
+	(maybe_make_gnu_thunk): Pass the alias to the covariant thunk.
+	* gcc-interface/utils.c (finish_subprog_decl): Set the DECL_CONTEXT
+	of the parameters here...
+	(begin_subprog_body): ...instead of here.
+
+2021-01-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/98740
+	* gcc-interface/trans.c (add_decl_expr): Always mark TYPE_ADA_SIZE.
+
+2021-01-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR ada/98595
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <riscv*-*-rtems*>: Use
+	wraplf version of Aux_Long_Long_Float.
+
 2021-01-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads: Bump copyright year.

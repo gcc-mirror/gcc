@@ -978,6 +978,25 @@ public:
 
 }; // class pass_optimize_bswap
 
+/* Helper function for bswap_replace.  Build VIEW_CONVERT_EXPR from
+   VAL to TYPE.  If VAL has different type size, emit a NOP_EXPR cast
+   first.  */
+
+static tree
+bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
+{
+  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (val)));
+  if (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (val)))
+    {
+      HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_SIZE (type));
+      tree itype = build_nonstandard_integer_type (prec, 1);
+      gimple *g = gimple_build_assign (make_ssa_name (itype), NOP_EXPR, val);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      val = gimple_assign_lhs (g);
+    }
+  return build1 (VIEW_CONVERT_EXPR, type, val);
+}
+
 /* Perform the bswap optimization: replace the expression computed in the rhs
    of gsi_stmt (GSI) (or if NULL add instead of replace) by an equivalent
    bswap, load or load + bswap expression.
@@ -1100,7 +1119,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	      gimple_set_vuse (load_stmt, n->vuse);
 	      gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 	      if (conv_code == VIEW_CONVERT_EXPR)
-		val_tmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), val_tmp);
+		val_tmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), val_tmp);
 	      gimple_assign_set_rhs_with_ops (&gsi, conv_code, val_tmp);
 	      update_stmt (cur_stmt);
 	    }
@@ -1144,7 +1163,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	  if (!is_gimple_val (src))
 	    return NULL_TREE;
 	  if (conv_code == VIEW_CONVERT_EXPR)
-	    src = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), src);
+	    src = bswap_view_convert (&gsi, TREE_TYPE (tgt), src);
 	  g = gimple_build_assign (tgt, conv_code, src);
 	}
       else if (cur_stmt)
@@ -1227,7 +1246,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
       tree atmp = tmp;
       if (conv_code == VIEW_CONVERT_EXPR)
-	atmp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (tgt), tmp);
+	atmp = bswap_view_convert (&gsi, TREE_TYPE (tgt), tmp);
       convert_stmt = gimple_build_assign (tgt, conv_code, atmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
@@ -1255,6 +1274,75 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
   else
     gsi_insert_before (&gsi, bswap_stmt, GSI_SAME_STMT);
   return tgt;
+}
+
+/* Try to optimize an assignment CUR_STMT with CONSTRUCTOR on the rhs
+   using bswap optimizations.  CDI_DOMINATORS need to be
+   computed on entry.  Return true if it has been optimized and
+   TODO_update_ssa is needed.  */
+
+static bool
+maybe_optimize_vector_constructor (gimple *cur_stmt)
+{
+  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
+  struct symbolic_number n;
+  bool bswap;
+
+  gcc_assert (is_gimple_assign (cur_stmt)
+	      && gimple_assign_rhs_code (cur_stmt) == CONSTRUCTOR);
+
+  tree rhs = gimple_assign_rhs1 (cur_stmt);
+  if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (rhs)))
+      || gimple_assign_lhs (cur_stmt) == NULL_TREE)
+    return false;
+
+  HOST_WIDE_INT sz = int_size_in_bytes (TREE_TYPE (rhs)) * BITS_PER_UNIT;
+  switch (sz)
+    {
+    case 16:
+      load_type = bswap_type = uint16_type_node;
+      break;
+    case 32:
+      if (builtin_decl_explicit_p (BUILT_IN_BSWAP32)
+	  && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing)
+	{
+	  load_type = uint32_type_node;
+	  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP32);
+	  bswap_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+	}
+      else
+	return false;
+      break;
+    case 64:
+      if (builtin_decl_explicit_p (BUILT_IN_BSWAP64)
+	  && (optab_handler (bswap_optab, DImode) != CODE_FOR_nothing
+	      || (word_mode == SImode
+		  && builtin_decl_explicit_p (BUILT_IN_BSWAP32)
+		  && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing)))
+	{
+	  load_type = uint64_type_node;
+	  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP64);
+	  bswap_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+	}
+      else
+	return false;
+      break;
+    default:
+      return false;
+    }
+
+  gimple *ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
+  if (!ins_stmt || n.range != (unsigned HOST_WIDE_INT) sz)
+    return false;
+
+  if (bswap && !fndecl && n.range != 16)
+    return false;
+
+  memset (&nop_stats, 0, sizeof (nop_stats));
+  memset (&bswap_stats, 0, sizeof (bswap_stats));
+  return bswap_replace (gsi_for_stmt (cur_stmt), ins_stmt, fndecl,
+			bswap_type, load_type, &n, bswap) != NULL_TREE;
 }
 
 /* Find manual byte swap implementations as well as load in a given
@@ -5128,6 +5216,7 @@ static enum basic_block_status
 get_status_for_store_merging (basic_block bb)
 {
   unsigned int num_statements = 0;
+  unsigned int num_constructors = 0;
   gimple_stmt_iterator gsi;
   edge e;
 
@@ -5140,9 +5229,27 @@ get_status_for_store_merging (basic_block bb)
 
       if (store_valid_for_store_merging_p (stmt) && ++num_statements >= 2)
 	break;
+
+      if (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == CONSTRUCTOR)
+	{
+	  tree rhs = gimple_assign_rhs1 (stmt);
+	  if (VECTOR_TYPE_P (TREE_TYPE (rhs))
+	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (rhs)))
+	      && gimple_assign_lhs (stmt) != NULL_TREE)
+	    {
+	      HOST_WIDE_INT sz
+		= int_size_in_bytes (TREE_TYPE (rhs)) * BITS_PER_UNIT;
+	      if (sz == 16 || sz == 32 || sz == 64)
+		{
+		  num_constructors = 1;
+		  break;
+		}
+	    }
+	}
     }
 
-  if (num_statements == 0)
+  if (num_statements == 0 && num_constructors == 0)
     return BB_INVALID;
 
   if (cfun->can_throw_non_call_exceptions && cfun->eh
@@ -5151,7 +5258,7 @@ get_status_for_store_merging (basic_block bb)
       && e->dest == bb->next_bb)
     return BB_EXTENDED_VALID;
 
-  return num_statements >= 2 ? BB_VALID : BB_INVALID;
+  return (num_statements >= 2 || num_constructors) ? BB_VALID : BB_INVALID;
 }
 
 /* Entry point for the pass.  Go over each basic block recording chains of
@@ -5191,9 +5298,10 @@ pass_store_merging::execute (function *fun)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Processing basic block <%d>:\n", bb->index);
 
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
 	{
 	  gimple *stmt = gsi_stmt (gsi);
+	  gsi_next (&gsi);
 
 	  if (is_gimple_debug (stmt))
 	    continue;
@@ -5208,6 +5316,11 @@ pass_store_merging::execute (function *fun)
 	      open_chains = false;
 	      continue;
 	    }
+
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_code (stmt) == CONSTRUCTOR
+	      && maybe_optimize_vector_constructor (stmt))
+	    continue;
 
 	  if (store_valid_for_store_merging_p (stmt))
 	    changed |= process_store (stmt);

@@ -6177,12 +6177,12 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
    if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode)
-       && REGNO (operands[0]) != ACCL_REGNO)
+       && REGNO (operands[0]) != ACC_REG_FIRST)
       emit_insn (gen_macd (operands[0], operands[1], operands[2]));
    else
      {
       emit_insn (gen_mac (operands[1], operands[2]));
-      if (REGNO (operands[0]) != ACCL_REGNO)
+      if (REGNO (operands[0]) != ACC_REG_FIRST)
         emit_move_insn (operands[0], acc_reg);
      }
    DONE;
@@ -6279,12 +6279,12 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
    if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode)
-       && REGNO (operands[0]) != ACCL_REGNO)
+       && REGNO (operands[0]) != ACC_REG_FIRST)
       emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
    else
      {
       emit_insn (gen_macu (operands[1], operands[2]));
-      if (REGNO (operands[0]) != ACCL_REGNO)
+      if (REGNO (operands[0]) != ACC_REG_FIRST)
         emit_move_insn (operands[0], acc_reg);
      }
    DONE;
