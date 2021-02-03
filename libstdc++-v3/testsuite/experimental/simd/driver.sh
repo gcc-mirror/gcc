@@ -172,81 +172,14 @@ unsupported() {
   echo "UNSUPPORTED: $src $type $abiflag ($*)" >> "$log"
 }
 
-verify_compilation() {
-  failed=$1
-  if [ $failed -eq 0 ]; then
-    warnings=$(grep -ic 'warning:' "$log")
-    if [ $warnings -gt 0 ]; then
-      fail "excess warnings:" $warnings
-      if $verbose; then
-        cat "$log"
-      elif ! $quiet; then
-        grep -i 'warning:' "$log" | head -n5
-      fi
-    elif [ "$xfail" = "compile" ]; then
-      xpass "test for excess errors"
-    else
-      pass "test for excess errors"
-    fi
-  else
-    if [ $failed -eq 124 ]; then
-      fail "timeout: test for excess errors"
-    else
-      errors=$(grep -ic 'error:' "$log")
-      if [ "$xfail" = "compile" ]; then
-        xfail "excess errors:" $errors
-        exit 0
-      else
-        fail "excess errors:" $errors
-      fi
-    fi
-    if $verbose; then
-      cat "$log"
-    elif ! $quiet; then
-      grep -i 'error:' "$log" | head -n5
-    fi
-    exit 0
-  fi
-}
-
-verify_test() {
-  failed=$1
-  if [ $failed -eq 0 ]; then
-    rm "$exe"
-    if [ "$xfail" = "run" ]; then
-      xpass "execution test"
-    else
-      pass "execution test"
-    fi
-  else
-    $keep_failed || rm "$exe"
-    if [ $failed -eq 124 ]; then
-      fail "timeout: execution test"
-    elif [ "$xfail" = "run" ]; then
-      xfail "execution test"
-    else
-      fail "execution test"
-    fi
-    if $verbose; then
-      lines=$(wc -l < "$log")
-      lines=$((lines-3))
-      if [ $lines -gt 1000 ]; then
-        echo "[...]"
-        tail -n1000 "$log"
-      else
-        tail -n$lines "$log"
-      fi
-    elif ! $quiet; then
-      grep -i fail "$log" | head -n5
-    fi
-    exit 0
-  fi
-}
-
 write_log_and_verbose() {
   echo "$*" >> "$log"
   if $verbose; then
-    echo "$*"
+    if [ -z "$COLUMNS" ] || ! type fmt>/dev/null; then
+      echo "$*"
+    else
+      echo "$*" | fmt -w $COLUMNS -s - || cat
+    fi
   fi
 }
 
@@ -277,7 +210,7 @@ test_selector() {
   return 1
 }
 
-trap "rm -f '$log' '$sum'; exit" INT
+trap "rm -f '$log' '$sum' $exe; exit" INT
 rm -f "$log" "$sum"
 touch "$log" "$sum"
 
@@ -317,17 +250,122 @@ if [ -n "$xfail" ]; then
   fi
 fi
 
+log_output() {
+  if $verbose; then
+    maxcol=${1:-1024}
+    awk "
+BEGIN { count = 0 }
+/^###exitstatus### [0-9]+$/ { exit \$2 }
+{
+  print >> \"$log\"
+  if (count >= 1000) next
+  ++count
+  if (length(\$0) > $maxcol) {
+    i = 1
+    while (i + $maxcol <= length(\$0)) {
+      len = $maxcol
+      line = substr(\$0, i, len)
+      len = match(line, / [^ ]*$/)
+      if (len <= 0) {
+        len = match(substr(\$0, i), / [^ ]/)
+        if (len <= 0) len = $maxcol
+      }
+      print substr(\$0, i, len)
+      i += len
+    }
+    print substr(\$0, i)
+  } else {
+    print
+  }
+}
+END { close(\"$log\") }
+"
+  else
+    awk "
+/^###exitstatus### [0-9]+$/ { exit \$2 }
+{ print >> \"$log\" }
+END { close(\"$log\") }
+"
+  fi
+}
+
+verify_compilation() {
+  log_output $COLUMNS
+  exitstatus=$?
+  if [ $exitstatus -eq 0 ]; then
+    warnings=$(grep -ic 'warning:' "$log")
+    if [ $warnings -gt 0 ]; then
+      fail "excess warnings:" $warnings
+      if ! $verbose && ! $quiet; then
+        grep -i 'warning:' "$log" | head -n5
+      fi
+    elif [ "$xfail" = "compile" ]; then
+      xpass "test for excess errors"
+    else
+      pass "test for excess errors"
+    fi
+    return 0
+  else
+    if [ $exitstatus -eq 124 ]; then
+      fail "timeout: test for excess errors"
+    else
+      errors=$(grep -ic 'error:' "$log")
+      if [ "$xfail" = "compile" ]; then
+        xfail "excess errors:" $errors
+        exit 0
+      else
+        fail "excess errors:" $errors
+      fi
+    fi
+    if ! $verbose && ! $quiet; then
+      grep -i 'error:' "$log" | head -n5
+    fi
+    return 1
+  fi
+}
+
+verify_test() {
+  log_output $COLUMNS
+  exitstatus=$?
+  if [ $exitstatus -eq 0 ]; then
+    if [ "$xfail" = "run" ]; then
+      $keep_failed || rm "$exe"
+      xpass "execution test"
+    else
+      rm "$exe"
+      pass "execution test"
+    fi
+    return 0
+  else
+    $keep_failed || rm "$exe"
+    if ! $verbose && ! $quiet; then
+      grep -i fail "$log" | head -n5
+    fi
+    if [ $exitstatus -eq 124 ]; then
+      fail "timeout: execution test"
+    elif [ "$xfail" = "run" ]; then
+      xfail "execution test"
+    else
+      fail "execution test"
+    fi
+    return 1
+  fi
+}
+
 write_log_and_verbose "$CXX $src $@ -D_GLIBCXX_SIMD_TESTTYPE=$type $abiflag -o $exe"
-timeout --foreground $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abiflag -o "$exe" >> "$log" 2>&1
-verify_compilation $?
+{
+  timeout --foreground $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abiflag -o "$exe" 2>&1 <&-
+  printf "###exitstatus### %d\n" $?
+} | verify_compilation || exit 0
 if [ -n "$sim" ]; then
   write_log_and_verbose "$sim ./$exe"
-  timeout --foreground $timeout $sim "./$exe" >> "$log" 2>&1 <&-
 else
   write_log_and_verbose "./$exe"
   timeout=$(awk "BEGIN { print int($timeout / 2) }")
-  timeout --foreground $timeout "./$exe" >> "$log" 2>&1 <&-
 fi
-verify_test $?
+{
+  timeout --foreground $timeout $sim "./$exe" 2>&1 <&-
+  printf "###exitstatus### %d\n" $?
+} | verify_test || exit 0
 
 # vim: sw=2 et cc=81 si
