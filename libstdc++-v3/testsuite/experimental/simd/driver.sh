@@ -258,7 +258,11 @@ BEGIN { count = 0 }
 /^###exitstatus### [0-9]+$/ { exit \$2 }
 {
   print >> \"$log\"
-  if (count >= 1000) next
+  if (count >= 1000) {
+    print \"Aborting: too much output\" >> \"$log\"
+    print \"Aborting: too much output\"
+    exit 125
+  }
   ++count
   if (length(\$0) > $maxcol) {
     i = 1
@@ -282,8 +286,17 @@ END { close(\"$log\") }
 "
   else
     awk "
+BEGIN { count = 0 }
 /^###exitstatus### [0-9]+$/ { exit \$2 }
-{ print >> \"$log\" }
+{
+  print >> \"$log\"
+  if (count >= 1000) {
+    print \"Aborting: too much output\" >> \"$log\"
+    print \"Aborting: too much output\"
+    exit 125
+  }
+  ++count
+}
 END { close(\"$log\") }
 "
   fi
