@@ -1528,9 +1528,9 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "<insn><mode>3"
-  [(set (match_operand:MMXMODE248 0 "register_operand")
-        (any_lshift:MMXMODE248
-	  (match_operand:MMXMODE248 1 "register_operand")
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+        (any_lshift:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
 	  (match_operand:DI 2 "nonmemory_operand")))]
   "TARGET_MMX_WITH_SSE")
 
