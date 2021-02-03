@@ -1,3 +1,73 @@
+2021-02-02  Martin Liska  <mliska@suse.cz>
+
+	PR target/97510
+	* gcc.target/i386/pr97510.c: New test.
+
+2021-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98929
+	* g++.dg/cpp1z/class-deduction-decltype1.C: New test.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Adjust sqxtun2 scan.
+
+2021-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91862
+	* gfortran.dg/pr91862.f90: New test.
+
+2021-02-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/arg-type-diagnostics-1.c: Return result from foo.
+
+2021-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98848
+	* gcc.dg/vect/pr98848.c: New test.
+	* gcc.dg/vect/pr92205.c: Remove xfail.
+
+2021-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97960
+	* g++.dg/torture/pr97960.C: New test.
+
+2021-02-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/98743
+	* g++.dg/opt/pr98743.C: New.
+
+2021-02-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vorn.c: Add vorn tests.
+
+2021-02-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/asan/nested-1.c: New.
+
+2021-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	PR analyzer/96374
+	* gcc.dg/analyzer/conditionals-3.c: Add "__analyzer_"
+	prefix to support subroutines where necessary.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/feasibility-1.c (called_by_test_6a): New.
+	(test_6a): New.
+	* gcc.dg/analyzer/params.c: Add "__analyzer_" prefix to support
+	subroutines where necessary.
+	* gcc.dg/analyzer/pr96651-2.c: Likewise.
+	* gcc.dg/analyzer/signal-4b.c: Likewise.
+	* gcc.dg/analyzer/single-field.c: Likewise.
+	* gcc.dg/analyzer/torture/conditionals-2.c: Likewise.
+
+2021-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93355
+	PR analyzer/96374
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-2.c: New test.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-3.c: New test.
+
 2021-02-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/narrow_high-intrinsics.c: Adjust rshrn2
