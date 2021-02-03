@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
+// timeout-factor: 2
 #include "bits/verify.h"
 #include "bits/make_vec.h"
 #include "bits/conversions.h"

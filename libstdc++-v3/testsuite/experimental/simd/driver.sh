@@ -214,40 +214,54 @@ trap "rm -f '$log' '$sum' $exe; exit" INT
 rm -f "$log" "$sum"
 touch "$log" "$sum"
 
-skip="$(head -n25 "$src" | grep '^//\s*skip: ')"
-if [ -n "$skip" ]; then
-  skip="$(echo "$skip" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+read_src_option() {
+  local key tmp var
+  key="$1"
+  var="$2"
+  [ -z "$var" ] && var="$1"
+  local tmp="$(head -n25 "$src" | grep "^//\\s*${key}: ")"
+  if [ -n "$tmp" ]; then
+    tmp="$(echo "${tmp#//*${key}: }" | sed -e 's/ \+/ /g' -e 's/^ //' -e 's/$//')"
+    eval "$var=\"$tmp\""
+  else
+    return 1
+  fi
+}
+
+if read_src_option skip; then
   if test_selector "$skip"; then
     # silently skip this test
     exit 0
   fi
 fi
-only="$(head -n25 "$src" | grep '^//\s*only: ')"
-if [ -n "$only" ]; then
-  only="$(echo "$only" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+if read_src_option only; then
   if ! test_selector "$only"; then
     # silently skip this test
     exit 0
   fi
 fi
+
 if ! $run_expensive; then
-  expensive="$(head -n25 "$src" | grep '^//\s*expensive: ')"
-  if [ -n "$expensive" ]; then
-    expensive="$(echo "$expensive" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+  if read_src_option expensive; then
     if test_selector "$expensive"; then
       unsupported "skip expensive tests"
       exit 0
     fi
   fi
 fi
-xfail="$(head -n25 "$src" | grep '^//\s*xfail: ')"
-if [ -n "$xfail" ]; then
-  xfail="$(echo "$xfail" | sed -e 's/^.*:\s*//' -e 's/ \+/ /g')"
+
+if read_src_option xfail; then
   if test_selector "${xfail#* }"; then
     xfail="${xfail%% *}"
   else
     unset xfail
   fi
+fi
+
+read_src_option timeout
+
+if read_src_option timeout-factor factor; then
+  timeout=$(awk "BEGIN { print int($timeout * $factor) }")
 fi
 
 log_output() {
