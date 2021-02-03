@@ -33,6 +33,7 @@ test01()
 
   VERIFY( std::is_neq(e1 <=> e2) );
   VERIFY( std::is_lt(e1 <=> e2) || std::is_gt(e1 <=> e2) );
+  // e1.category() == e2.category(), so comparison depends on values:
   VERIFY( (e1 <=> e2) == (e1.value() <=> e2.value()) );
 
   VERIFY( e1 == e1 );
