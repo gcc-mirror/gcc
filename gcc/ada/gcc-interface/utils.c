@@ -1866,7 +1866,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	this_ada_size = this_size;
 
       const bool variant_part = (TREE_CODE (type) == QUAL_UNION_TYPE);
-      const bool variant_part_at_zero = variant_part && integer_zerop (pos);
 
       /* Clear DECL_BIT_FIELD for the cases layout_decl does not handle.  */
       if (DECL_BIT_FIELD (field)
@@ -1909,7 +1908,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* Clear DECL_BIT_FIELD_TYPE for a variant part at offset 0, it's simply
 	 not supported by the DECL_BIT_FIELD_REPRESENTATIVE machinery because
 	 the variant part is always the last field in the list.  */
-      if (variant_part_at_zero)
+      if (variant_part && integer_zerop (pos))
 	DECL_BIT_FIELD_TYPE (field) = NULL_TREE;
 
       /* If we still have DECL_BIT_FIELD set at this point, we know that the
@@ -1944,18 +1943,20 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	case RECORD_TYPE:
 	  /* Since we know here that all fields are sorted in order of
 	     increasing bit position, the size of the record is one
-	     higher than the ending bit of the last field processed,
-	     unless we have a variant part at offset 0, since in this
-	     case we might have a field outside the variant part that
-	     has a higher ending position; so use a MAX in this case.
-	     Also, if this field is a QUAL_UNION_TYPE, we need to take
-	     into account the previous size in the case of empty variants.  */
+	     higher than the ending bit of the last field processed
+	     unless we have a rep clause, because we might be processing
+	     the REP part of a record with a variant part for which the
+	     variant part has a rep clause but not the fixed part, in
+	     which case this REP part may contain overlapping fields
+	     and thus needs to be treated like a union tyoe above, so
+	     use a MAX in that case.  Also, if this field is a variant
+	     part, we need to take into account the previous size in
+	     the case of empty variants.  */
 	  ada_size
-	    = merge_sizes (ada_size, pos, this_ada_size, variant_part,
-			   variant_part_at_zero);
+	    = merge_sizes (ada_size, pos, this_ada_size, rep_level > 0,
+			   variant_part);
 	  size
-	    = merge_sizes (size, pos, this_size, variant_part,
-			   variant_part_at_zero);
+	    = merge_sizes (size, pos, this_size, rep_level > 0, variant_part);
 	  break;
 
 	default:
@@ -2234,14 +2235,14 @@ rest_of_record_type_compilation (tree record_type)
 }
 
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
-   with FIRST_BIT and SIZE that describe a field.  SPECIAL is true if this
-   represents a QUAL_UNION_TYPE in which case we must look for COND_EXPRs and
-   replace a value of zero with the old size.  If MAX is true, we take the
+   with FIRST_BIT and SIZE that describe a field.  If MAX is true, we take the
    MAX of the end position of this field with LAST_SIZE.  In all other cases,
-   we use FIRST_BIT plus SIZE.  Return an expression for the size.  */
+   we use FIRST_BIT plus SIZE.  SPECIAL is true if it's for a QUAL_UNION_TYPE,
+   in which case we must look for COND_EXPRs and replace a value of zero with
+   the old size.  Return an expression for the size.  */
 
 static tree
-merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
+merge_sizes (tree last_size, tree first_bit, tree size, bool max, bool special)
 {
   tree type = TREE_TYPE (last_size);
   tree new_size;
@@ -2258,11 +2259,11 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special, bool max)
 			    integer_zerop (TREE_OPERAND (size, 1))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 1),
-						       1, max),
+						       max, special),
 			    integer_zerop (TREE_OPERAND (size, 2))
 			    ? last_size : merge_sizes (last_size, first_bit,
 						       TREE_OPERAND (size, 2),
-						       1, max));
+						       max, special));
 
   /* We don't need any NON_VALUE_EXPRs and they can confuse us (especially
      when fed through SUBSTITUTE_IN_EXPR) into thinking that a constant
