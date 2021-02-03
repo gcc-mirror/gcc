@@ -106,6 +106,7 @@ lto_get_section_name (int section_type, const char *name,
   const char *add;
   char post[32];
   const char *sep;
+  char *buffer = NULL;
 
   if (section_type == LTO_section_function_body)
     {
@@ -113,7 +114,7 @@ lto_get_section_name (int section_type, const char *name,
       if (name[0] == '*')
 	name++;
 
-      char *buffer = (char *)xmalloc (strlen (name) + 32);
+      buffer = (char *)xmalloc (strlen (name) + 32);
       sprintf (buffer, "%s.%d", name, node_order);
 
       add = buffer;
@@ -138,7 +139,10 @@ lto_get_section_name (int section_type, const char *name,
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
   else
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
-  return concat (section_name_prefix, sep, add, post, NULL);
+  char *res = concat (section_name_prefix, sep, add, post, NULL);
+  if (buffer)
+    free (buffer);
+  return res;
 }
 
 

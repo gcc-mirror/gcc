@@ -2358,6 +2358,7 @@ loop_distribution::merge_dep_scc_partitions (struct graph *rdg,
   sort_partitions_by_post_order (pg, partitions);
   gcc_assert (partitions->length () == (unsigned)num_sccs);
   free_partition_graph_vdata (pg);
+  for_each_edge (pg, free_partition_graph_edata_cb, NULL);
   free_graph (pg);
 }
 
