@@ -2266,6 +2266,33 @@
   [(set_attr "type" "neon_mul_<Vetype>_scalar_long")]
 )
 
+(define_insn "aarch64_<su>mull_hi_n<mode>_insn"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(mult:<VWIDE>
+	  (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+	    (match_operand:VQ_HSI 1 "register_operand" "w")
+	    (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	  (ANY_EXTEND:<VWIDE>
+	    (vec_duplicate:<VCOND>
+	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))))]
+  "TARGET_SIMD"
+  "<su>mull2\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vetype>[0]"
+  [(set_attr "type" "neon_mul_<Vetype>_scalar_long")]
+)
+
+(define_expand "aarch64_<su>mull_hi_n<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQ_HSI 1 "register_operand"))
+   (match_operand:<VEL> 2 "register_operand")]
+ "TARGET_SIMD"
+ {
+   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+   emit_insn (gen_aarch64_<su>mull_hi_n<mode>_insn (operands[0], operands[1],
+						    operands[2], p));
+   DONE;
+ }
+)
+
 ;; vmlal_lane_s16 intrinsics
 (define_insn "aarch64_vec_<su>mlal_lane<Qlane>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")

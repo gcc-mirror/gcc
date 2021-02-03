@@ -8275,48 +8275,28 @@ __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_n_s16 (int16x8_t __a, int16_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("smull2 %0.4s,%1.8h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smull_hi_nv8hi (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_n_s32 (int32x4_t __a, int32_t __b)
 {
-  int64x2_t __result;
-  __asm__ ("smull2 %0.2d,%1.4s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_smull_hi_nv4si (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_n_u16 (uint16x8_t __a, uint16_t __b)
 {
-  uint32x4_t __result;
-  __asm__ ("umull2 %0.4s,%1.8h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_umull_hi_nv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_n_u32 (uint32x4_t __a, uint32_t __b)
 {
-  uint64x2_t __result;
-  __asm__ ("umull2 %0.2d,%1.4s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+ return __builtin_aarch64_umull_hi_nv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline poly16x8_t

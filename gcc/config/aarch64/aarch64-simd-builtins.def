@@ -300,6 +300,9 @@
   BUILTIN_VD_HSI (BINOP, smull_n, 0, NONE)
   BUILTIN_VD_HSI (BINOPU, umull_n, 0, NONE)
 
+  BUILTIN_VQ_HSI (BINOP, smull_hi_n, 0, NONE)
+  BUILTIN_VQ_HSI (BINOPU, umull_hi_n, 0, NONE)
+
   BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_lane_, 0, NONE)
   BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_lane_, 0, NONE)
   BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_laneq_, 0, NONE)
