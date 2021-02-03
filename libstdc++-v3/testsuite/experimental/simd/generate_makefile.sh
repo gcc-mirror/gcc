@@ -85,19 +85,20 @@ CXX="$1"
 shift
 
 echo "TESTFLAGS ?=" > "$dst"
-[ -n "$testflags" ] && echo "TESTFLAGS := $testflags \$(TESTFLAGS)" >> "$dst"
-echo CXXFLAGS = "$@" "\$(TESTFLAGS)" >> "$dst"
+echo "test_flags := $testflags \$(TESTFLAGS)" >> "$dst"
+echo CXXFLAGS = "$@" "\$(test_flags)" >> "$dst"
 [ -n "$sim" ] && echo "export GCC_TEST_SIMULATOR = $sim" >> "$dst"
 cat >> "$dst" <<EOF
 srcdir = ${srcdir}
 CXX = ${CXX}
 DRIVER = ${driver}
 DRIVEROPTS ?=
+driveroptions := \$(DRIVEROPTS)
 
 all: simd_testsuite.sum
 
 simd_testsuite.sum: simd_testsuite.log
-	@printf "\n\t\t=== simd_testsuite \$(TESTFLAGS) Summary ===\n\n"\\
+	@printf "\n\t\t=== simd_testsuite \$(test_flags) Summary ===\n\n"\\
 	"# of expected passes:\t\t\$(shell grep -c '^PASS:' \$@)\n"\\
 	"# of unexpected passes:\t\t\$(shell grep -c '^XPASS:' \$@)\n"\\
 	"# of unexpected failures:\t\$(shell grep -c '^FAIL:' \$@)\n"\\
@@ -247,14 +248,14 @@ EOF
     for i in $(seq 0 9); do
       cat <<EOF
 %-$type-$i.log: \$(srcdir)/%.cc
-	@\$(DRIVER) \$(DRIVEROPTS) -t "$t" -a $i -n \$* \$(CXX) \$(CXXFLAGS)
+	@\$(DRIVER) \$(driveroptions) -t "$t" -a $i -n \$* \$(CXX) \$(CXXFLAGS)
 
 EOF
     done
   done
   cat <<EOF
 run-%: export GCC_TEST_RUN_EXPENSIVE=yes
-run-%: DRIVEROPTS=-v
+run-%: driveroptions += -v
 run-%: %.log
 	@rm \$^ \$(^:log=sum)
 
