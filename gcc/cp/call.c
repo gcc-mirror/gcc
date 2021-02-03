@@ -520,8 +520,8 @@ struct z_candidate {
   /* The flags active in add_candidate.  */
   int flags;
 
-  bool rewritten () { return (flags & LOOKUP_REWRITTEN); }
-  bool reversed () { return (flags & LOOKUP_REVERSED); }
+  bool rewritten () const { return (flags & LOOKUP_REWRITTEN); }
+  bool reversed () const { return (flags & LOOKUP_REVERSED); }
 };
 
 /* Returns true iff T is a null pointer constant in the sense of
@@ -9474,7 +9474,7 @@ first_non_static_field (tree type, Predicate pred)
 
 struct NonPublicField
 {
-  bool operator() (const_tree t)
+  bool operator() (const_tree t) const
   {
     return DECL_P (t) && (TREE_PRIVATE (t) || TREE_PROTECTED (t));
   }
@@ -9491,7 +9491,7 @@ first_non_public_field (tree type)
 
 struct NonTrivialField
 {
-  bool operator() (const_tree t)
+  bool operator() (const_tree t) const
   {
     return !trivial_type_p (DECL_P (t) ? TREE_TYPE (t) : t);
   }
