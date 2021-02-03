@@ -204,6 +204,33 @@ template <size_t _Np>
 template <size_t _X>
   using _SizeConstant = integral_constant<size_t, _X>;
 
+namespace __detail
+{
+  struct _Minimum
+  {
+    template <typename _Tp>
+      _GLIBCXX_SIMD_INTRINSIC constexpr
+      _Tp
+      operator()(_Tp __a, _Tp __b) const
+      {
+	using std::min;
+	return min(__a, __b);
+      }
+  };
+
+  struct _Maximum
+  {
+    template <typename _Tp>
+      _GLIBCXX_SIMD_INTRINSIC constexpr
+      _Tp
+      operator()(_Tp __a, _Tp __b) const
+      {
+	using std::max;
+	return max(__a, __b);
+      }
+  };
+} // namespace __detail
+
 // unrolled/pack execution helpers
 // __execute_n_times{{{
 template <typename _Fp, size_t... _I>
@@ -3408,7 +3435,7 @@ template <typename _Tp, typename _Ap>
 
 // }}}1
 // reductions [simd.reductions] {{{1
-  template <typename _Tp, typename _Abi, typename _BinaryOperation = plus<>>
+template <typename _Tp, typename _Abi, typename _BinaryOperation = plus<>>
   _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
   reduce(const simd<_Tp, _Abi>& __v,
 	 _BinaryOperation __binary_op = _BinaryOperation())
@@ -3453,6 +3480,61 @@ template <typename _M, typename _V>
   _GLIBCXX_SIMD_INTRINSIC typename _V::value_type
   reduce(const const_where_expression<_M, _V>& __x, bit_xor<> __binary_op)
   { return reduce(__x, 0, __binary_op); }
+
+template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
+  hmin(const simd<_Tp, _Abi>& __v) noexcept
+  {
+    return _Abi::_SimdImpl::_S_reduce(__v, __detail::_Minimum());
+  }
+
+template <typename _Tp, typename _Abi>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR _Tp
+  hmax(const simd<_Tp, _Abi>& __v) noexcept
+  {
+    return _Abi::_SimdImpl::_S_reduce(__v, __detail::_Maximum());
+  }
+
+template <typename _M, typename _V>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  typename _V::value_type
+  hmin(const const_where_expression<_M, _V>& __x) noexcept
+  {
+    using _Tp = typename _V::value_type;
+    constexpr _Tp __id_elem =
+#ifdef __FINITE_MATH_ONLY__
+      __finite_max_v<_Tp>;
+#else
+      __value_or<__infinity, _Tp>(__finite_max_v<_Tp>);
+#endif
+    _V __tmp = __id_elem;
+    _V::_Impl::_S_masked_assign(__data(__get_mask(__x)), __data(__tmp),
+				__data(__get_lvalue(__x)));
+    return _V::abi_type::_SimdImpl::_S_reduce(__tmp, __detail::_Minimum());
+  }
+
+template <typename _M, typename _V>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  typename _V::value_type
+  hmax(const const_where_expression<_M, _V>& __x) noexcept
+  {
+    using _Tp = typename _V::value_type;
+    constexpr _Tp __id_elem =
+#ifdef __FINITE_MATH_ONLY__
+      __finite_min_v<_Tp>;
+#else
+      [] {
+	if constexpr (__value_exists_v<__infinity, _Tp>)
+	  return -__infinity_v<_Tp>;
+	else
+	  return __finite_min_v<_Tp>;
+      }();
+#endif
+    _V __tmp = __id_elem;
+    _V::_Impl::_S_masked_assign(__data(__get_mask(__x)), __data(__tmp),
+				__data(__get_lvalue(__x)));
+    return _V::abi_type::_SimdImpl::_S_reduce(__tmp, __detail::_Maximum());
+  }
 
 // }}}1
 // algorithms [simd.alg] {{{
