@@ -3023,8 +3023,13 @@ process_alt_operands (int only_alternative)
 		    && operand_reg[j] != NULL_RTX
 		    && HARD_REGISTER_P (operand_reg[j])
 		    && REG_USERVAR_P (operand_reg[j]))
-		  fatal_insn ("unable to generate reloads for "
-			      "impossible constraints:", curr_insn);
+		  {
+		    /* For asm, let curr_insn_transform diagnose it.  */
+		    if (INSN_CODE (curr_insn) < 0)
+		      return false;
+		    fatal_insn ("unable to generate reloads for "
+				"impossible constraints:", curr_insn);
+		  }
 	      }
 	  if (last_conflict_j < 0)
 	    continue;
