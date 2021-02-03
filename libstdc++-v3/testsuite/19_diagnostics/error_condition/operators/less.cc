@@ -29,6 +29,7 @@ int main()
   VERIFY( !(e1 < e1) );
   VERIFY( !(e2 < e2) );
 
+  // e1.category() == e2.category(), so comparison depends on values:
   VERIFY( (e1 < e2) == (e1.value() < e2.value()) );
 
   const __gnu_test::test_category cat;

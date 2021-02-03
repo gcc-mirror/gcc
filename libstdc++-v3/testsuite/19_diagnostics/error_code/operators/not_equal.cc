@@ -34,5 +34,6 @@ int main()
   std::error_code e3(e2.value(), cat);
   VERIFY( e2 != e3 );
 
-  return 0;
+  std::error_code e4(std::make_error_code(std::errc::invalid_argument));
+  VERIFY( e4 != e2 );
 }
