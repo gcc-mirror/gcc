@@ -224,16 +224,17 @@ verify_test() {
       fail "timeout: execution test"
     elif [ "$xfail" = "run" ]; then
       xfail "execution test"
-      exit 0
     else
       fail "execution test"
     fi
     if $verbose; then
-      if [ $(cat "$log"|wc -l) -gt 1000 ]; then
+      lines=$(wc -l < "$log")
+      lines=$((lines-3))
+      if [ $lines -gt 1000 ]; then
         echo "[...]"
         tail -n1000 "$log"
       else
-        cat "$log"
+        tail -n$lines "$log"
       fi
     elif ! $quiet; then
       grep -i fail "$log" | head -n5
@@ -267,7 +268,7 @@ test_selector() {
       [ -z "$target_triplet" ] && target_triplet=$($CXX -dumpmachine)
       if matches "$target_triplet" "$pat_triplet"; then
         pat_flags="${string#* }"
-        if matches "$CXXFLAGS" "$pat_flags"; then
+        if matches "$CXXFLAGS" "*$pat_flags*"; then
           return 0
         fi
       fi
@@ -276,6 +277,7 @@ test_selector() {
   return 1
 }
 
+trap "rm -f '$log' '$sum'; exit" INT
 rm -f "$log" "$sum"
 touch "$log" "$sum"
 
@@ -316,15 +318,15 @@ if [ -n "$xfail" ]; then
 fi
 
 write_log_and_verbose "$CXX $src $@ -D_GLIBCXX_SIMD_TESTTYPE=$type $abiflag -o $exe"
-timeout $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abiflag -o "$exe" >> "$log" 2>&1
+timeout --foreground $timeout "$CXX" "$src" "$@" "-D_GLIBCXX_SIMD_TESTTYPE=$type" $abiflag -o "$exe" >> "$log" 2>&1
 verify_compilation $?
 if [ -n "$sim" ]; then
   write_log_and_verbose "$sim ./$exe"
-  timeout $timeout $sim "./$exe" >> "$log" 2>&1 <&-
+  timeout --foreground $timeout $sim "./$exe" >> "$log" 2>&1 <&-
 else
   write_log_and_verbose "./$exe"
   timeout=$(awk "BEGIN { print int($timeout / 2) }")
-  timeout $timeout "./$exe" >> "$log" 2>&1 <&-
+  timeout --foreground $timeout "./$exe" >> "$log" 2>&1 <&-
 fi
 verify_test $?
 

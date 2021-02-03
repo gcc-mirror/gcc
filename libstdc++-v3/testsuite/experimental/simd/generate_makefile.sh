@@ -240,7 +240,7 @@ EOF
 %-$type.log: %-$type-0.log %-$type-1.log %-$type-2.log %-$type-3.log \
 %-$type-4.log %-$type-5.log %-$type-6.log %-$type-7.log \
 %-$type-8.log %-$type-9.log
-	@cat $^ > \$@
+	@cat \$^ > \$@
 	@cat \$(^:log=sum) > \$(@:log=sum)${rmline}
 
 EOF
@@ -252,47 +252,47 @@ EOF
 EOF
     done
   done
-  echo 'run-%: export GCC_TEST_RUN_EXPENSIVE=yes'
-  all_tests | while read file && read name; do
-    echo "run-$name: $name.log"
-    all_types "$file" | while read t && read type; do
-      echo "run-$name-$type: $name-$type.log"
-      for i in $(seq 0 9); do
-        echo "run-$name-$type-$i: $name-$type-$i.log"
-      done
-    done
-    echo
-  done
   cat <<EOF
-help:
-	@printf "use DRIVEROPTS=<options> to pass the following options:\n"\\
-	"-q, --quiet         Only print failures.\n"\\
-	"-v, --verbose       Print compiler and test output on failure.\n"\\
-	"-k, --keep-failed   Keep executables of failed tests.\n"\\
-	"--sim <executable>  Path to an executable that is prepended to the test\n"\\
-	"                    execution binary (default: the value of\n"\\
-	"                    GCC_TEST_SIMULATOR).\n"\\
-	"--timeout-factor <x>\n"\\
-	"                    Multiply the default timeout with x.\n"\\
-	"--run-expensive     Compile and run tests marked as expensive (default:\n"\\
-	"                    true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).\n"\\
-	"--only <pattern>    Compile and run only tests matching the given pattern.\n\n"
-	@echo "use TESTFLAGS=<flags> to pass additional compiler flags"
-	@echo
-	@echo "The following are some of the valid targets for this Makefile:"
-	@echo "... all"
-	@echo "... clean"
-	@echo "... help"
+run-%: export GCC_TEST_RUN_EXPENSIVE=yes
+run-%: DRIVEROPTS=-v
+run-%: %.log
+	@rm \$^ \$(^:log=sum)
+
+help: .make_help.txt
+	@cat \$<
+
+EOF
+  dsthelp="${dst%Makefile}.make_help.txt"
+  cat <<EOF > "$dsthelp"
+use DRIVEROPTS=<options> to pass the following options:
+-q, --quiet         Only print failures.
+-v, --verbose       Print compiler and test output on failure.
+-k, --keep-failed   Keep executables of failed tests.
+--sim <executable>  Path to an executable that is prepended to the test
+                    execution binary (default: the value of
+                    GCC_TEST_SIMULATOR).
+--timeout-factor <x>
+                    Multiply the default timeout with x.
+--run-expensive     Compile and run tests marked as expensive (default:
+                    true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).
+--only <pattern>    Compile and run only tests matching the given pattern.
+
+use TESTFLAGS=<flags> to pass additional compiler flags
+
+The following are some of the valid targets for this Makefile:
+... all
+... clean
+... help"
 EOF
   all_tests | while read file && read name; do
-    printf "\t@echo '... run-${name}'\n"
+    echo "... run-${name}"
     all_types | while read t && read type; do
-      printf "\t@echo '... run-${name}-${type}'\n"
+      echo "... run-${name}-${type}"
       for i in $(seq 0 9); do
-        printf "\t@echo '... run-${name}-${type}-$i'\n"
+        echo "... run-${name}-${type}-$i"
       done
     done
-  done
+  done >> "$dsthelp"
   cat <<EOF
 
 clean:
