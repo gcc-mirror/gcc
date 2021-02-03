@@ -4318,9 +4318,9 @@ cpp_directive_only_process (cpp_reader *pfile,
       buffer->cur_note = buffer->notes_used = 0;
       buffer->cur = buffer->line_base = buffer->next_line;
       buffer->need_line = false;
-      /* Files always end in a newline.  We rely on this for
+      /* Files always end in a newline or carriage return.  We rely on this for
 	 character peeking safety.  */
-      gcc_assert (buffer->rlimit[-1] == '\n');
+      gcc_assert (buffer->rlimit[0] == '\n' || buffer->rlimit[0] == '\r');
 
       const unsigned char *base = buffer->cur;
       unsigned line_count = 0;
