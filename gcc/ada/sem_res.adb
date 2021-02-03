@@ -4798,11 +4798,11 @@ package body Sem_Res is
 
             --  Check illegal cases of atomic/volatile/VFA actual (RM C.6(12))
 
-            if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
+            if (Is_By_Reference_Type (F_Typ) or else Is_Aliased (F))
               and then Comes_From_Source (N)
             then
                if Is_Atomic_Object (A)
-                 and then not Is_Atomic (Etype (F))
+                 and then not Is_Atomic (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass atomic object to nonatomic formal&",
@@ -4811,7 +4811,7 @@ package body Sem_Res is
                     ("\which is passed by reference (RM C.6(12))", A);
 
                elsif Is_Volatile_Object_Ref (A)
-                 and then not Is_Volatile (Etype (F))
+                 and then not Is_Volatile (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass volatile object to nonvolatile formal&",
@@ -4820,7 +4820,7 @@ package body Sem_Res is
                     ("\which is passed by reference (RM C.6(12))", A);
 
                elsif Is_Volatile_Full_Access_Object_Ref (A)
-                 and then not Is_Volatile_Full_Access (Etype (F))
+                 and then not Is_Volatile_Full_Access (F_Typ)
                then
                   Error_Msg_NE
                     ("cannot pass full access object to nonfull access "
@@ -4855,9 +4855,9 @@ package body Sem_Res is
             if Is_Controlling_Formal (F) then
                Set_Is_Controlling_Actual (A);
 
-               if Ekind (Etype (F)) = E_Anonymous_Access_Type then
+               if Ekind (F_Typ) = E_Anonymous_Access_Type then
                   declare
-                     Desig : constant Entity_Id := Designated_Type (Etype (F));
+                     Desig : constant Entity_Id := Designated_Type (F_Typ);
                   begin
                      if Ekind (Desig) = E_Incomplete_Type
                        and then No (Full_View (Desig))
@@ -4966,8 +4966,8 @@ package body Sem_Res is
                --  actual when the corresponding formal is of a non-scalar
                --  effectively volatile type for reading (SPARK RM 7.1.3(10)).
 
-               if not Is_Scalar_Type (Etype (F))
-                 and then Is_Effectively_Volatile_For_Reading (Etype (F))
+               if not Is_Scalar_Type (F_Typ)
+                 and then Is_Effectively_Volatile_For_Reading (F_Typ)
                then
                   null;
 
@@ -5088,7 +5088,7 @@ package body Sem_Res is
               and then Comes_From_Source (Nam)
 
               and then not Is_Primitive (Nam)
-              and then not Is_Class_Wide_Type (Etype (F))
+              and then not Is_Class_Wide_Type (F_Typ)
             then
                Error_Msg_NE
                  ("call to nonprimitive & with current instance not allowed " &
