@@ -885,6 +885,60 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
 			   || code == GEU || code == GTU), normalize);
 }
 
+/* Return true if X can be safely forced into a register by copy_to_mode_reg
+   / force_operand.  */
+
+static bool
+noce_can_force_operand (rtx x)
+{
+  if (general_operand (x, VOIDmode))
+    return true;
+  if (SUBREG_P (x))
+    {
+      if (!noce_can_force_operand (SUBREG_REG (x)))
+	return false;
+      return true;
+    }
+  if (ARITHMETIC_P (x))
+    {
+      if (!noce_can_force_operand (XEXP (x, 0))
+	  || !noce_can_force_operand (XEXP (x, 1)))
+	return false;
+      switch (GET_CODE (x))
+	{
+	case MULT:
+	case DIV:
+	case MOD:
+	case UDIV:
+	case UMOD:
+	  return true;
+	default:
+	  return code_to_optab (GET_CODE (x));
+	}
+    }
+  if (UNARY_P (x))
+    {
+      if (!noce_can_force_operand (XEXP (x, 0)))
+	return false;
+      switch (GET_CODE (x))
+	{
+	case ZERO_EXTEND:
+	case SIGN_EXTEND:
+	case TRUNCATE:
+	case FLOAT_EXTEND:
+	case FLOAT_TRUNCATE:
+	case FIX:
+	case UNSIGNED_FIX:
+	case FLOAT:
+	case UNSIGNED_FLOAT:
+	  return true;
+	default:
+	  return code_to_optab (GET_CODE (x));
+	}
+    }
+  return false;
+}
+
 /* Emit instruction to move an rtx, possibly into STRICT_LOW_PART.
    X is the destination/target and Y is the value to copy.  */
 
@@ -943,7 +997,7 @@ noce_emit_move_insn (rtx x, rtx y)
 	    {
 	    case RTX_UNARY:
 	      ot = code_to_optab (GET_CODE (y));
-	      if (ot)
+	      if (ot && noce_can_force_operand (XEXP (y, 0)))
 		{
 		  start_sequence ();
 		  target = expand_unop (GET_MODE (y), ot, XEXP (y, 0), x, 0);
@@ -960,7 +1014,9 @@ noce_emit_move_insn (rtx x, rtx y)
 	    case RTX_BIN_ARITH:
 	    case RTX_COMM_ARITH:
 	      ot = code_to_optab (GET_CODE (y));
-	      if (ot)
+	      if (ot
+		  && noce_can_force_operand (XEXP (y, 0))
+		  && noce_can_force_operand (XEXP (y, 1)))
 		{
 		  start_sequence ();
 		  target = expand_binop (GET_MODE (y), ot,
@@ -2763,13 +2819,16 @@ noce_try_sign_mask (struct noce_if_info *if_info)
      INSN_B which can happen for e.g. conditional stores to memory.  For the
      cost computation use the block TEST_BB where the evaluation will end up
      after the transformation.  */
-  t_unconditional =
-    (t == if_info->b
-     && (if_info->insn_b == NULL_RTX
-	 || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
+  t_unconditional
+    = (t == if_info->b
+       && (if_info->insn_b == NULL_RTX
+	   || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
   if (!(t_unconditional
 	|| (set_src_cost (t, mode, if_info->speed_p)
 	    < COSTS_N_INSNS (2))))
+    return FALSE;
+
+  if (!noce_can_force_operand (t))
     return FALSE;
 
   start_sequence ();
