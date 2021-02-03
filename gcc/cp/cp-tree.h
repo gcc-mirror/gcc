@@ -7949,6 +7949,7 @@ extern tree split_nonconstant_init		(tree, tree);
 extern bool check_narrowing			(tree, tree, tsubst_flags_t,
 						 bool = false);
 extern bool ordinary_char_type_p		(tree);
+extern bool array_string_literal_compatible_p	(tree, tree);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
 extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);

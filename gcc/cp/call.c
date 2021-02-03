@@ -895,28 +895,38 @@ strip_standard_conversion (conversion *conv)
   return conv;
 }
 
-/* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
-   is a valid aggregate initializer for array type ATYPE.  */
+/* Subroutine of build_aggr_conv: check whether FROM is a valid aggregate
+   initializer for array type ATYPE.  */
 
 static bool
-can_convert_array (tree atype, tree ctor, int flags, tsubst_flags_t complain)
+can_convert_array (tree atype, tree from, int flags, tsubst_flags_t complain)
 {
-  unsigned i;
   tree elttype = TREE_TYPE (atype);
-  for (i = 0; i < CONSTRUCTOR_NELTS (ctor); ++i)
+  unsigned i;
+
+  if (TREE_CODE (from) == CONSTRUCTOR)
     {
-      tree val = CONSTRUCTOR_ELT (ctor, i)->value;
-      bool ok;
-      if (TREE_CODE (elttype) == ARRAY_TYPE
-	  && TREE_CODE (val) == CONSTRUCTOR)
-	ok = can_convert_array (elttype, val, flags, complain);
-      else
-	ok = can_convert_arg (elttype, TREE_TYPE (val), val, flags,
-			      complain);
-      if (!ok)
-	return false;
+      for (i = 0; i < CONSTRUCTOR_NELTS (from); ++i)
+	{
+	  tree val = CONSTRUCTOR_ELT (from, i)->value;
+	  bool ok;
+	  if (TREE_CODE (elttype) == ARRAY_TYPE)
+	    ok = can_convert_array (elttype, val, flags, complain);
+	  else
+	    ok = can_convert_arg (elttype, TREE_TYPE (val), val, flags,
+				  complain);
+	  if (!ok)
+	    return false;
+	}
+      return true;
     }
-  return true;
+
+  if (char_type_p (TYPE_MAIN_VARIANT (elttype))
+      && TREE_CODE (tree_strip_any_location_wrapper (from)) == STRING_CST)
+    return array_string_literal_compatible_p (atype, from);
+
+  /* No other valid way to aggregate initialize an array.  */
+  return false;
 }
 
 /* Helper for build_aggr_conv.  Return true if FIELD is in PSET, or if
@@ -973,8 +983,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	      tree ftype = TREE_TYPE (idx);
 	      bool ok;
 
-	      if (TREE_CODE (ftype) == ARRAY_TYPE
-		  && TREE_CODE (val) == CONSTRUCTOR)
+	      if (TREE_CODE (ftype) == ARRAY_TYPE)
 		ok = can_convert_array (ftype, val, flags, complain);
 	      else
 		ok = can_convert_arg (ftype, TREE_TYPE (val), val, flags,
@@ -1021,8 +1030,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	  val = empty_ctor;
 	}
 
-      if (TREE_CODE (ftype) == ARRAY_TYPE
-	  && TREE_CODE (val) == CONSTRUCTOR)
+      if (TREE_CODE (ftype) == ARRAY_TYPE)
 	ok = can_convert_array (ftype, val, flags, complain);
       else
 	ok = can_convert_arg (ftype, TREE_TYPE (val), val, flags,
