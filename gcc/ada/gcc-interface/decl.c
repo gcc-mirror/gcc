@@ -8267,12 +8267,12 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   if (p_gnu_rep_list && gnu_rep_list)
     *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_rep_list);
 
-  /* Deal with the annoying case of an extension of a record with variable size
-     and partial rep clause, for which the _Parent field is forced at offset 0
-     and has variable size, which we do not support below.  Note that we cannot
-     do it if the field has fixed size because we rely on the presence of the
-     REP part built below to trigger the reordering of the fields in a derived
-     record type when all the fields have a fixed position.  */
+  /* Deal with the case of an extension of a record type with variable size and
+     partial rep clause, for which the _Parent field is forced at offset 0 and
+     has variable size.  Note that we cannot do it if the field has fixed size
+     because we rely on the presence of the REP part built below to trigger the
+     reordering of the fields in a derived record type when all the fields have
+     a fixed position.  */
   else if (gnu_rep_list
 	   && !DECL_CHAIN (gnu_rep_list)
 	   && TREE_CODE (DECL_SIZE (gnu_rep_list)) != INTEGER_CST
@@ -8290,33 +8290,52 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      record, before the others, if we also have fields without rep clause.  */
   else if (gnu_rep_list)
     {
-      tree gnu_rep_type, gnu_rep_part;
-      int i, len = list_length (gnu_rep_list);
-      tree *gnu_arr = XALLOCAVEC (tree, len);
+      tree gnu_parent, gnu_rep_type;
 
       /* If all the fields have a rep clause, we can do a flat layout.  */
       layout_with_rep = !gnu_field_list
 			&& (!gnu_variant_part || variants_have_rep);
+
+      /* Same as above but the extension itself has a rep clause, in which case
+	 we need to set aside the _Parent field to lay out the REP part.  */
+      if (TREE_CODE (DECL_SIZE (gnu_rep_list)) != INTEGER_CST
+	  && !layout_with_rep
+	  && !variants_have_rep
+	  && first_free_pos
+	  && integer_zerop (first_free_pos)
+	  && integer_zerop (bit_position (gnu_rep_list)))
+	{
+	  gnu_parent = gnu_rep_list;
+	  gnu_rep_list = DECL_CHAIN (gnu_rep_list);
+	}
+      else
+	gnu_parent = NULL_TREE;
+
       gnu_rep_type
 	= layout_with_rep ? gnu_record_type : make_node (RECORD_TYPE);
 
-      for (gnu_field = gnu_rep_list, i = 0;
-	   gnu_field;
-	   gnu_field = DECL_CHAIN (gnu_field), i++)
-	gnu_arr[i] = gnu_field;
+      /* Sort the fields in order of increasing bit position.  */
+      const int len = list_length (gnu_rep_list);
+      tree *gnu_arr = XALLOCAVEC (tree, len);
+
+      gnu_field = gnu_rep_list;
+      for (int i = 0; i < len; i++)
+	{
+	  gnu_arr[i] = gnu_field;
+	  gnu_field = DECL_CHAIN (gnu_field);
+	}
 
       qsort (gnu_arr, len, sizeof (tree), compare_field_bitpos);
 
-      /* Put the fields in the list in order of increasing position, which
-	 means we start from the end.  */
       gnu_rep_list = NULL_TREE;
-      for (i = len - 1; i >= 0; i--)
+      for (int i = len - 1; i >= 0; i--)
 	{
 	  DECL_CHAIN (gnu_arr[i]) = gnu_rep_list;
 	  gnu_rep_list = gnu_arr[i];
 	  DECL_CONTEXT (gnu_arr[i]) = gnu_rep_type;
 	}
 
+      /* Do the layout of the REP part, if any.  */
       if (layout_with_rep)
 	gnu_field_list = gnu_rep_list;
       else
@@ -8325,13 +8344,35 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 	    = create_concat_name (gnat_record_type, "REP");
 	  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
 	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
-	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, debug_info);
+	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, false);
 
 	  /* If FIRST_FREE_POS is nonzero, we need to ensure that the fields
 	     without rep clause are laid out starting from this position.
 	     Therefore, we force it as a minimal size on the REP part.  */
-	  gnu_rep_part
+	  tree gnu_rep_part
 	    = create_rep_part (gnu_rep_type, gnu_record_type, first_free_pos);
+
+	  /* If this is an extension, put back the _Parent field as the first
+	     field of the REP part at offset 0 and update its layout.  */
+	  if (gnu_parent)
+	    {
+	      const unsigned int align = DECL_ALIGN (gnu_parent);
+	      DECL_CHAIN (gnu_parent) = TYPE_FIELDS (gnu_rep_type);
+	      TYPE_FIELDS (gnu_rep_type) = gnu_parent;
+	      DECL_CONTEXT (gnu_parent) = gnu_rep_type;
+	      if (align > TYPE_ALIGN (gnu_rep_type))
+		{
+		  SET_TYPE_ALIGN (gnu_rep_type, align);
+		  TYPE_SIZE (gnu_rep_type)
+		    = round_up (TYPE_SIZE (gnu_rep_type), align);
+		  TYPE_SIZE_UNIT (gnu_rep_type)
+		    = round_up (TYPE_SIZE_UNIT (gnu_rep_type), align);
+		  SET_DECL_ALIGN (gnu_rep_part, align);
+		}
+	    }
+
+	  if (debug_info)
+	    rest_of_record_type_compilation (gnu_rep_type);
 
 	  /* Chain the REP part at the beginning of the field list.  */
 	  DECL_CHAIN (gnu_rep_part) = gnu_field_list;
