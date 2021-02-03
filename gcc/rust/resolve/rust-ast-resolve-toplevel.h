@@ -110,10 +110,6 @@ public:
 
   void visit (AST::InherentImpl &impl_block)
   {
-    if (!ResolveType::go (impl_block.get_type ().get (),
-			  impl_block.get_node_id ()))
-      return;
-
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (),
 				   impl_block.get_type ().get ());

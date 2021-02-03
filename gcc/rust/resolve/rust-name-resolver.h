@@ -71,6 +71,19 @@ public:
     return true;
   }
 
+  void clear_name (std::string ident, NodeId id)
+  {
+    mappings.erase (ident);
+    for (auto &it : decls_within_rib)
+      {
+	if (it.first == id)
+	  {
+	    decls_within_rib.erase (it);
+	    break;
+	  }
+      }
+  }
+
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
 
