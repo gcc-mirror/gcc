@@ -2670,7 +2670,7 @@ produce_lto_section ()
 
   bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
   lto_section s
-    = { LTO_major_version, LTO_minor_version, slim_object, 0 };
+    = { LTO_major_version, LTO_minor_version, slim_object, 0, 0 };
   s.set_compression (compression);
   lto_write_data (&s, sizeof s);
   lto_end_section ();
