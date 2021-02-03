@@ -1,3 +1,11 @@
+2021-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98295
+	* g++.dg/cpp0x/constexpr-98295.C: New test.
+
 2021-02-01  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

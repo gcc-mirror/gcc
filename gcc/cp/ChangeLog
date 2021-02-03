@@ -1,3 +1,12 @@
+2021-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98295
+	* constexpr.c (cxx_eval_array_reference): Also set
+	new_ctx.object when setting new_ctx.ctor.
+
 2021-02-01  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
