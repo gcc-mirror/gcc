@@ -29272,8 +29272,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	}
     }
 
-  if (tree guide = maybe_aggr_guide (tmpl, init, args))
-    cands = lookup_add (guide, cands);
+  if (!any_dguides_p)
+    if (tree guide = maybe_aggr_guide (tmpl, init, args))
+      cands = lookup_add (guide, cands);
 
   tree call = error_mark_node;
 
