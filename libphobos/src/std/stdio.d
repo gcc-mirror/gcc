@@ -79,6 +79,10 @@ else version (NetBSD)
 {
     version = GENERIC_IO;
 }
+else version (OpenBSD)
+{
+    version = GENERIC_IO;
+}
 else version (DragonFlyBSD)
 {
     version = GENERIC_IO;
@@ -93,12 +97,11 @@ version (Windows)
 {
     private alias FSChar = wchar;
 }
-else version (Posix)
+else
 {
     private alias FSChar = char;
 }
-else
-    static assert(0);
+
 
 version (Windows)
 {

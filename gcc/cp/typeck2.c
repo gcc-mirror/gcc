@@ -1003,6 +1003,29 @@ ordinary_char_type_p (tree type)
 	  || type == unsigned_char_type_node);
 }
 
+/* True iff the string literal INIT has a type suitable for initializing array
+   TYPE.  */
+
+bool
+array_string_literal_compatible_p (tree type, tree init)
+{
+  tree to_char_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+  tree from_char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+
+  if (to_char_type == from_char_type)
+    return true;
+  /* The array element type does not match the initializing string
+     literal element type; this is only allowed when both types are
+     ordinary character type.  There are no string literals of
+     signed or unsigned char type in the language, but we can get
+     them internally from converting braced-init-lists to
+     STRING_CST.  */
+  if (ordinary_char_type_p (to_char_type)
+      && ordinary_char_type_p (from_char_type))
+    return true;
+  return false;
+}
+
 /* Process the initializer INIT for a variable of type TYPE, emitting
    diagnostics for invalid initializers and converting the initializer as
    appropriate.
@@ -1070,30 +1093,13 @@ digest_init_r (tree type, tree init, int nested, int flags,
       if (char_type_p (typ1)
 	  && TREE_CODE (stripped_init) == STRING_CST)
 	{
-	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
-	  bool incompat_string_cst = false;
-
-	  if (typ1 != char_type)
-	    {
-	      /* The array element type does not match the initializing string
-	         literal element type; this is only allowed when both types are
-	         ordinary character type.  There are no string literals of
-	         signed or unsigned char type in the language, but we can get
-	         them internally from converting braced-init-lists to
-	         STRING_CST.  */
-	      if (ordinary_char_type_p (typ1)
-		  && ordinary_char_type_p (char_type))
-		/* OK */;
-	      else
-		incompat_string_cst = true;
-	    }
-
-	  if (incompat_string_cst)
+	  if (!array_string_literal_compatible_p (type, init))
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "cannot initialize array of %qT from "
-		          "a string literal with type array of %qT",
-		          typ1, char_type);
+			  "a string literal with type array of %qT",
+			  typ1,
+			  TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init))));
 	      return error_mark_node;
 	    }
 

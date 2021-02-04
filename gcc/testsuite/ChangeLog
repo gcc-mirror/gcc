@@ -1,3 +1,56 @@
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/98882
+	* gcc.dg/cpp/pr98882.c: New test.
+
+2021-02-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/alias-decl-dr1558.C: Pass --param
+	hash-table-verification-limit=10000.
+
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/udlit-shadow-neg.C: Test for 'z' and 'zu' shadowing.
+	* g++.dg/cpp23/feat-cxx2b.C: New test.
+	* g++.dg/cpp23/size_t-literals.C: New test.
+	* g++.dg/warn/Wsize_t-literals.C: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97804
+	* g++.dg/cpp2a/no_unique_address11.C: New test.
+
+2021-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98899
+	* g++.dg/cpp0x/noexcept65.C: New test.
+
+2021-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98913
+	* gfortran.dg/coarray/array_temporary.f90: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97487
+	* gcc.dg/pr97487-1.c: New test.
+	* gcc.dg/pr97487-2.c: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97971
+	* gcc.target/i386/pr97971.c: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98287
+	* gcc.dg/pr98287.c: New test.
+
+2021-02-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/98928
+	* gcc.target/i386/pr98928.c: New test.
+
 2021-02-02  Martin Liska  <mliska@suse.cz>
 
 	PR target/97510

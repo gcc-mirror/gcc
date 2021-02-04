@@ -1,3 +1,29 @@
+2021-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98951
+	* call.c (struct z_candidate): Mark rewritten and reversed as const.
+	(struct NonPublicField): Mark operator() as const.
+	(struct NonTrivialField): Likewise.
+
+2021-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98926
+	PR c++/98570
+	* pt.c (spec_hasher::equal): Set processing_template_decl.
+	* Make-lang.in (check-g++-strict-gc): Add --param
+	hash-table-verification-limit=10000.
+
+2021-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98899
+	* parser.c (cp_parser_class_specifier_1): Use any possible
+	DEFPARSE_INSTANTIATIONS to update DEFERRED_NOEXCEPT_PATTERN.
+	(cp_parser_save_noexcept): Initialize DEFPARSE_INSTANTIATIONS.
+	* pt.c (tsubst_exception_specification): Stash new_specs into
+	DEFPARSE_INSTANTIATIONS.
+	* tree.c (fixup_deferred_exception_variants): Use
+	UNPARSED_NOEXCEPT_SPEC_P.
+
 2021-02-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98929

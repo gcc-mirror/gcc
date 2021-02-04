@@ -1103,7 +1103,14 @@ else version (DragonFlyBSD)
     alias void* pthread_key_t;
     alias void* pthread_mutex_t;
     alias void* pthread_mutexattr_t;
-    alias void* pthread_once_t;
+
+    private struct pthread_once
+    {
+        int state;
+        pthread_mutex_t mutex;
+    }
+    alias pthread_once pthread_once_t;
+
     alias void* pthread_rwlock_t;
     alias void* pthread_rwlockattr_t;
     alias void* pthread_t;

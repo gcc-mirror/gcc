@@ -1,3 +1,192 @@
+2021-02-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:
+	Add comparison with same category and different values.
+	* testsuite/19_diagnostics/error_code/operators/less.cc:
+	Likewise. Fix comparison involving different categories.
+	* testsuite/19_diagnostics/error_code/operators/three_way.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/less.cc:
+	Add comment.
+	* testsuite/19_diagnostics/error_condition/operators/three_way.cc:
+	Likewise.
+
+2021-02-03  yaozhongxiao  <yaozhongxiao@linux.alibaba.com>
+
+	* include/experimental/bits/simd_neon.h: Replace repeated vpadd
+	calls with a single vaddv for aarch64.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/Makefile.am: Warn about the workaround. Add
+	-fno-tree-vrp to CXXFLAGS passed to the check_simd script.
+	Improve initial user feedback from make check-simd.
+	* testsuite/Makefile.in: Regenerated.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* include/experimental/bits/simd.h: Add __detail::_Minimum and
+	__detail::_Maximum to use them as _BinaryOperation to _S_reduce.
+	Add hmin and hmax overloads for simd and const_where_expression.
+	* include/experimental/bits/simd_scalar.h
+	(_SimdImplScalar::_S_reduce): Make unused _BinaryOperation
+	parameter const-ref to allow calling _S_reduce with an rvalue.
+	* testsuite/experimental/simd/tests/reductions.cc: Add tests for
+	hmin and hmax. Since the compiler statically determined that all
+	tests pass, repeat the test after a call to make_value_unknown.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/tests/bits/verify.h (verify): Add
+	instruction pointer data member. Ensure that the `if (m_failed)`
+	branch is always inlined into the calling code. The body of the
+	conditional can still be a function call. Move the get_ip call
+	into the verify ctor to simplify the ctor calls.
+	(COMPARE): Don't mention the use of all_of for reduction of a
+	simd_mask. It only distracts from the real issue.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/driver.sh: Abstract reading test
+	options into read_src_option function. Read skip, only,
+	expensive, and xfail via read_src_option. Add timeout and
+	timeout-factor options and adjust timeout variable accordingly.
+	* testsuite/experimental/simd/tests/loadstore.cc: Set
+	timeout-factor 2.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/driver.sh: When handling the pipe
+	to log (and on verbose to stdout) count the lines. If it exceeds
+	1000 log the issue and exit 125, which is then handled as a
+	failure.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/tests/hypot3_fma.cc: Add skip:
+	markup for long double on powerpc64*.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* include/experimental/bits/simd.h: Add __have_power10vec
+	conditional on _ARCH_PWR10.
+	* include/experimental/bits/simd_builtin.h: Forward declare
+	_MaskImplPpc and use it as _MaskImpl when __ALTIVEC__ is
+	defined.
+	(_MaskImplBuiltin::_S_some_of): Call _S_popcount from the
+	_SuperImpl for optimizations and correctness.
+	* include/experimental/bits/simd_ppc.h: Add _MaskImplPpc.
+	(_MaskImplPpc::_S_popcount): Implement via vec_cntm for POWER10.
+	Otherwise, for >=int use -vec_sums divided by a sizeof factor.
+	For <int use -vec_sums(vec_sum4s(...)) to sum all mask entries.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/driver.sh: Remove executable on
+	SIGINT. Process compiler and test executable output: In verbose
+	mode print messages immediately, limited to 1000 lines and
+	breaking long lines to below $COLUMNS (or 1024 if not set).
+	Communicating the exit status of the compiler / test with the
+	necessary pipe is done via a message through stdout/-in.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/Makefile.am: Ensure .simd.summary is empty before
+	collecting a new summary.
+	* testsuite/Makefile.in: Regenerate.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/generate_makefile.sh: Use
+	different variables internally than documented for user
+	overrides. This makes internal append/prepend work as intended.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/driver.sh (verify_test): Print
+	test output on run xfail. Do not repeat lines from the log that
+	were already printed on stdout.
+	(test_selector): Make the compiler flags pattern usable as a
+	substring selector.
+	(toplevel): Trap on SIGINT and remove the log and sum files.
+	Call timout with --foreground to quickly terminate on SIGINT.
+	* testsuite/experimental/simd/generate_makefile.sh: Simplify run
+	targets via target patterns. Default DRIVEROPTS to -v for run
+	targets. Remove log and sum files after completion of the run
+	target (so that it's always recompiled).
+	Place help text into text file for reasonable 'make help'
+	performance.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* include/experimental/bits/simd.h: Remove unnecessary static
+	assertion. Allow sizeof(8) integer __intrinsic_type to enable
+	the necessary mask type.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* include/experimental/bits/simd.h: Let __intrinsic_type<long
+	double, N> be valid if sizeof(long double) == sizeof(double) and
+	use a __vector double as member type.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* include/experimental/bits/simd.h (__is_intrinsic_type): New
+	internal type trait. Alias for __is_vector_type on x86.
+	(_VectorTraitsImpl): Enable for __intrinsic_type in addition for
+	__vector_type.
+	(__intrin_bitcast): Allow casting to & from vector & intrinsic
+	types.
+	(__intrinsic_type): Explicitly specialize for NEON intrinsic
+	vector types.
+
+2021-02-03  Matthias Kretz  <kretz@kde.org>
+
+	* testsuite/experimental/simd/driver.sh: Implement skip, only,
+	expensive, and xfail markers. They can select on type, ABI tag
+	subset number, target-triplet, and compiler flags.
+	* testsuite/experimental/simd/generate_makefile.sh: The summary
+	now includes lines for unexpected passes and expected failures.
+	If the skip or only markers are only conditional on the type, do
+	not generate rules for those types.
+	* testsuite/experimental/simd/tests/abs.cc: Mark test expensive
+	for ABI tag subsets 1-9.
+	* testsuite/experimental/simd/tests/algorithms.cc: Ditto.
+	* testsuite/experimental/simd/tests/broadcast.cc: Ditto.
+	* testsuite/experimental/simd/tests/casts.cc: Ditto.
+	* testsuite/experimental/simd/tests/generator.cc: Ditto.
+	* testsuite/experimental/simd/tests/integer_operators.cc: Ditto.
+	* testsuite/experimental/simd/tests/loadstore.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_broadcast.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_conversions.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_implicit_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_loadstore.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_operator_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_operators.cc: Ditto.
+	* testsuite/experimental/simd/tests/mask_reductions.cc: Ditto.
+	* testsuite/experimental/simd/tests/operator_cvt.cc: Ditto.
+	* testsuite/experimental/simd/tests/operators.cc: Ditto.
+	* testsuite/experimental/simd/tests/reductions.cc: Ditto.
+	* testsuite/experimental/simd/tests/simd.cc: Ditto.
+	* testsuite/experimental/simd/tests/split_concat.cc: Ditto.
+	* testsuite/experimental/simd/tests/splits.cc: Ditto.
+	* testsuite/experimental/simd/tests/where.cc: Ditto.
+	* testsuite/experimental/simd/tests/fpclassify.cc: Ditto. In
+	addition replace "test only floattypes" marker by unconditional
+	"float|double|ldouble" only marker.
+	* testsuite/experimental/simd/tests/frexp.cc: Ditto.
+	* testsuite/experimental/simd/tests/hypot3_fma.cc: Ditto.
+	* testsuite/experimental/simd/tests/ldexp_scalbn_scalbln_modf.cc:
+	Ditto.
+	* testsuite/experimental/simd/tests/logarithm.cc: Ditto.
+	* testsuite/experimental/simd/tests/math_1arg.cc: Ditto.
+	* testsuite/experimental/simd/tests/math_2arg.cc: Ditto.
+	* testsuite/experimental/simd/tests/remqo.cc: Ditto.
+	* testsuite/experimental/simd/tests/trigonometric.cc: Ditto.
+	* testsuite/experimental/simd/tests/trunc_ceil_floor.cc: Ditto.
+	* testsuite/experimental/simd/tests/sincos.cc: Ditto. In
+	addition, xfail on run because the reference data is missing.
+
 2021-02-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Remove stray table cell.

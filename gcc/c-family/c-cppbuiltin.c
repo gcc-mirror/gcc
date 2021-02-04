@@ -1028,7 +1028,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx20)
 	{
 	  /* Set feature test macros for C++23.  */
-	  cpp_define (pfile, "__cpp_size_t_suffix=202006L");
+	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
 	}
       if (flag_concepts)
         {

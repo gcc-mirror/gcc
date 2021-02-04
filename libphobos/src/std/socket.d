@@ -146,6 +146,8 @@ class SocketException: Exception
     mixin basicExceptionCtors;
 }
 
+version (CRuntime_Glibc) version = GNU_STRERROR;
+version (CRuntime_UClibc) version = GNU_STRERROR;
 
 /*
  * Needs to be public so that SocketOSException can be thrown outside of
@@ -159,7 +161,7 @@ string formatSocketError(int err) @trusted
     {
         char[80] buf;
         const(char)* cs;
-        version (CRuntime_Glibc)
+        version (GNU_STRERROR)
         {
             cs = strerror_r(err, buf.ptr, buf.length);
         }

@@ -1,3 +1,11 @@
+2021-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX908.
+	(gcn_gfx908_s): New constant string.
+	(isa_hsa_name): Add gfx908.
+	(isa_code): Add gfx908.
+
 2021-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp.texi (omp_fulfill_event): New entry.

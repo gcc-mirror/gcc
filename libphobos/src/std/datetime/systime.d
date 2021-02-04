@@ -7,6 +7,15 @@
 +/
 module std.datetime.systime;
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
 import core.time;
 import std.datetime.date;
 import std.datetime.timezone;
@@ -161,18 +170,19 @@ public:
             static import core.stdc.time;
             enum hnsecsToUnixEpoch = unixTimeToStdTime(0);
 
-            version (OSX)
+            version (Darwin)
             {
                 static if (clockType == ClockType.second)
                     return unixTimeToStdTime(core.stdc.time.time(null));
                 else
                 {
                     import core.sys.posix.sys.time : gettimeofday, timeval;
-                    timeval tv;
-                    if (gettimeofday(&tv, null) != 0)
-                        throw new TimeException("Call to gettimeofday() failed");
+                    timeval tv = void;
+                    // Posix gettimeofday called with a valid timeval address
+                    // and a null second parameter doesn't fail.
+                    gettimeofday(&tv, null);
                     return convert!("seconds", "hnsecs")(tv.tv_sec) +
-                           convert!("usecs", "hnsecs")(tv.tv_usec) +
+                           tv.tv_usec * 10 +
                            hnsecsToUnixEpoch;
                 }
             }
@@ -188,9 +198,16 @@ public:
                     else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
                     else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME;
                     else static assert(0, "Previous static if is wrong.");
-                    timespec ts;
-                    if (clock_gettime(clockArg, &ts) != 0)
-                        throw new TimeException("Call to clock_gettime() failed");
+                    timespec ts = void;
+                    immutable error = clock_gettime(clockArg, &ts);
+                    // Posix clock_gettime called with a valid address and valid clock_id is only
+                    // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                    // is long or larger overflow won't happen before 292 billion years A.D.
+                    static if (ts.tv_sec.max < long.max)
+                    {
+                        if (error)
+                            throw new TimeException("Call to clock_gettime() failed");
+                    }
                     return convert!("seconds", "hnsecs")(ts.tv_sec) +
                            ts.tv_nsec / 100 +
                            hnsecsToUnixEpoch;
@@ -205,9 +222,16 @@ public:
                 else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME_PRECISE;
                 else static if (clockType == ClockType.second)  alias clockArg = CLOCK_SECOND;
                 else static assert(0, "Previous static if is wrong.");
-                timespec ts;
-                if (clock_gettime(clockArg, &ts) != 0)
-                    throw new TimeException("Call to clock_gettime() failed");
+                timespec ts = void;
+                immutable error = clock_gettime(clockArg, &ts);
+                // Posix clock_gettime called with a valid address and valid clock_id is only
+                // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                // is long or larger overflow won't happen before 292 billion years A.D.
+                static if (ts.tv_sec.max < long.max)
+                {
+                    if (error)
+                        throw new TimeException("Call to clock_gettime() failed");
+                }
                 return convert!("seconds", "hnsecs")(ts.tv_sec) +
                        ts.tv_nsec / 100 +
                        hnsecsToUnixEpoch;
@@ -218,12 +242,38 @@ public:
                     return unixTimeToStdTime(core.stdc.time.time(null));
                 else
                 {
-                    import core.sys.posix.sys.time : gettimeofday, timeval;
-                    timeval tv;
-                    if (gettimeofday(&tv, null) != 0)
-                        throw new TimeException("Call to gettimeofday() failed");
-                    return convert!("seconds", "hnsecs")(tv.tv_sec) +
-                           convert!("usecs", "hnsecs")(tv.tv_usec) +
+                    import core.sys.netbsd.time : clock_gettime, CLOCK_REALTIME;
+                    timespec ts = void;
+                    immutable error = clock_gettime(CLOCK_REALTIME, &ts);
+                    // Posix clock_gettime called with a valid address and valid clock_id is only
+                    // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                    // is long or larger overflow won't happen before 292 billion years A.D.
+                    static if (ts.tv_sec.max < long.max)
+                    {
+                        if (error)
+                            throw new TimeException("Call to clock_gettime() failed");
+                    }
+                    return convert!("seconds", "hnsecs")(ts.tv_sec) +
+                           ts.tv_nsec / 100 +
+                           hnsecsToUnixEpoch;
+                }
+            }
+            else version (OpenBSD)
+            {
+                static if (clockType == ClockType.second)
+                    return unixTimeToStdTime(core.stdc.time.time(null));
+                else
+                {
+                    import core.sys.openbsd.time : clock_gettime, CLOCK_REALTIME;
+                    static if (clockType == ClockType.coarse)       alias clockArg = CLOCK_REALTIME;
+                    else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
+                    else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME;
+                    else static assert(0, "Previous static if is wrong.");
+                    timespec ts;
+                    if (clock_gettime(clockArg, &ts) != 0)
+                        throw new TimeException("Call to clock_gettime() failed");
+                    return convert!("seconds", "hnsecs")(ts.tv_sec) +
+                           ts.tv_nsec / 100 +
                            hnsecsToUnixEpoch;
                 }
             }
@@ -236,9 +286,16 @@ public:
                 else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME_PRECISE;
                 else static if (clockType == ClockType.second)  alias clockArg = CLOCK_SECOND;
                 else static assert(0, "Previous static if is wrong.");
-                timespec ts;
-                if (clock_gettime(clockArg, &ts) != 0)
-                    throw new TimeException("Call to clock_gettime() failed");
+                timespec ts = void;
+                immutable error = clock_gettime(clockArg, &ts);
+                // Posix clock_gettime called with a valid address and valid clock_id is only
+                // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                // is long or larger overflow won't happen before 292 billion years A.D.
+                static if (ts.tv_sec.max < long.max)
+                {
+                    if (error)
+                        throw new TimeException("Call to clock_gettime() failed");
+                }
                 return convert!("seconds", "hnsecs")(ts.tv_sec) +
                        ts.tv_nsec / 100 +
                        hnsecsToUnixEpoch;
@@ -254,9 +311,16 @@ public:
                     else static if (clockType == ClockType.normal)  alias clockArg = CLOCK_REALTIME;
                     else static if (clockType == ClockType.precise) alias clockArg = CLOCK_REALTIME;
                     else static assert(0, "Previous static if is wrong.");
-                    timespec ts;
-                    if (clock_gettime(clockArg, &ts) != 0)
-                        throw new TimeException("Call to clock_gettime() failed");
+                    timespec ts = void;
+                    immutable error = clock_gettime(clockArg, &ts);
+                    // Posix clock_gettime called with a valid address and valid clock_id is only
+                    // permitted to fail if the number of seconds does not fit in time_t. If tv_sec
+                    // is long or larger overflow won't happen before 292 billion years A.D.
+                    static if (ts.tv_sec.max < long.max)
+                    {
+                        if (error)
+                            throw new TimeException("Call to clock_gettime() failed");
+                    }
                     return convert!("seconds", "hnsecs")(ts.tv_sec) +
                            ts.tv_nsec / 100 +
                            hnsecsToUnixEpoch;

@@ -5212,7 +5212,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    || (n->expr
 			&& (!resolved || n->expr->expr_type != EXPR_VARIABLE)))
 		  {
-		    if (!resolved
+		    if (array_ref
+			&& (array_ref->type == REF_SUBSTRING
+			    || (array_ref->next
+				&& array_ref->next->type == REF_SUBSTRING)))
+		      gfc_error ("Unexpected substring reference in %s clause "
+				 "at %L", name, &n->where);
+		    else if (!resolved
 			|| n->expr->expr_type != EXPR_VARIABLE
 			|| array_ref->next
 			|| array_ref->type != REF_ARRAY)

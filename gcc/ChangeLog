@@ -1,3 +1,160 @@
+2021-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/98937
+	* tree-ssa-strlen.c (strlen_dom_walker::~strlen_dom_walker): Define.
+	Flush pointer_query cache.
+
+2021-02-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_2logical): Add missing
+	fixes based on patch review.
+	* config/rs6000/fusion.md: Regenerate file.
+
+2021-02-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/t-rs6000: Comment out auto generation of
+	fusion.md for now.
+
+2021-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-opts.h (enum processor_type): Add PROCESSOR_GFX908.
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): Add gfx908.
+	(output_file_start): Add gfx908.
+	* config/gcn/gcn.opt (gpu_type): Add gfx908.
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Add march=gfx908.
+	(MULTILIB_DIRNAMES): Add gfx908.
+	* config/gcn/mkoffload.c (EF_AMDGPU_MACH_AMDGCN_GFX908): New define.
+	(main): Recognize gfx908.
+	* config/gcn/t-omp-device: Add gfx908.
+
+2021-02-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	[su]mlsl_hi_lane[q] builtin macro generators.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<su>mlsl_hi_lane<mode>_insn): Define.
+	(aarch64_<su>mlsl_hi_lane<mode>): Define.
+	(aarch64_<su>mlsl_hi_laneq<mode>_insn): Define.
+	(aarch64_<su>mlsl_hi_laneq<mode>): Define.
+	* config/aarch64/arm_neon.h (vmlsl_high_lane_s16): Use RTL
+	builtin instead of inline asm.
+	(vmlsl_high_lane_s32): Likewise.
+	(vmlsl_high_lane_u16): Likewise.
+	(vmlsl_high_lane_u32): Likewise.
+	(vmlsl_high_laneq_s16): Likewise.
+	(vmlsl_high_laneq_s32): Likewise.
+	(vmlsl_high_laneq_u16): Likewise.
+	(vmlsl_high_laneq_u32): Likewise.
+	(vmlal_high_laneq_u32): Likewise.
+
+2021-02-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	[su]mlal_hi_lane[q] builtin generator macros.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<su>mlal_hi_lane<mode>_insn): Define.
+	(aarch64_<su>mlal_hi_lane<mode>): Define.
+	(aarch64_<su>mlal_hi_laneq<mode>_insn): Define.
+	(aarch64_<su>mlal_hi_laneq<mode>): Define.
+	* config/aarch64/arm_neon.h (vmlal_high_lane_s16): Use RTL
+	builtin instead of inline asm.
+	(vmlal_high_lane_s32): Likewise.
+	(vmlal_high_lane_u16): Likewise.
+	(vmlal_high_lane_u32): Likewise.
+	(vmlal_high_laneq_s16): Likewise.
+	(vmlal_high_laneq_s32): Likewise.
+	(vmlal_high_laneq_u16): Likewise.
+	(vmlal_high_laneq_u32): Likewise.
+
+2021-02-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlsl_hi_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mlsl_hi_n<mode>_insn):
+	Define.
+	(aarch64_<su>mlsl_hi_n<mode>): Define.
+	* config/aarch64/arm_neon.h (vmlsl_high_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmlsl_high_n_s32): Likewise.
+	(vmlsl_high_n_u16): Likewise.
+	(vmlsl_high_n_u32): Likewise.
+
+2021-02-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mlal_hi_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>mlal_hi_n<mode>_insn):
+	Define.
+	(aarch64_<su>mlal_hi_n<mode>): Define.
+	* config/aarch64/arm_neon.h (vmlal_high_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmlal_high_n_s32): Likewise.
+	(vmlal_high_n_u16): Likewise.
+	(vmlal_high_n_u32): Likewise.
+
+2021-02-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add RTL builtin
+	generator macros.
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>mlal_hi<mode>):
+	Rename to...
+	(aarch64_<su>mlal_hi<mode>_insn): This.
+	(aarch64_<su>mlal_hi<mode>): Define.
+	* config/aarch64/arm_neon.h (vmlal_high_s8): Use RTL builtin
+	instead of inline asm.
+	(vmlal_high_s16): Likewise.
+	(vmlal_high_s32): Likewise.
+	(vmlal_high_u8): Likewise.
+	(vmlal_high_u16): Likewise.
+	(vmlal_high_u32): Likewise.
+
+2021-02-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* lra-spills.c (remove_pseudos): Call lra_update_insn_recog_data()
+	after calling alter_subreg() on a (mem).
+
+2021-02-03  Martin Liska  <mliska@suse.cz>
+
+	PR lto/98912
+	* lto-streamer-out.c (produce_lto_section): Fill up missing
+	padding.
+	* lto-streamer.h (struct lto_section): Add _padding field.
+
+2021-02-03  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.c (lto_get_section_name): Free temporary
+	buffer.
+	* tree-loop-distribution.c
+	(loop_distribution::merge_dep_scc_partitions): Free edge data.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97487
+	* ifcvt.c (noce_can_force_operand): New function.
+	(noce_emit_move_insn): Use it.
+	(noce_try_sign_mask): Likewise.  Formatting fix.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97971
+	* lra-constraints.c (process_alt_operands): For inline asm, don't call
+	fatal_insn, but instead return false.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98287
+	* config/i386/mmx.md (<insn><mode>3): For shifts don't enable expander
+	for V1DImode.
+
+2021-02-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/98928
+	* tree-vect-loop.c (vect_analyze_loop_2): Change
+	STMT_VINFO_SLP_VECT_ONLY to STMT_VINFO_SLP_VECT_ONLY_PATTERN.
+	* tree-vect-slp-patterns.c (complex_pattern::build): Likewise.
+	* tree-vectorizer.h (STMT_VINFO_SLP_VECT_ONLY_PATTERN): New.
+	(class _stmt_vec_info): Add slp_vect_pattern_only_p.
+
 2021-02-02  Richard Biener  <rguenther@suse.de>
 
 	* gimple-loop-interchange.cc (prepare_data_references):

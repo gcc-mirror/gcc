@@ -820,7 +820,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
        {
 	  const char *message = (result & CPP_N_UNSIGNED) == CPP_N_UNSIGNED
 				? N_("use of C++23 %<size_t%> integer constant")
-				: N_("use of C++23 %<make_signed<size_t>::type%> integer constant");
+				: N_("use of C++23 %<make_signed_t<size_t>%> integer constant");
 	  cpp_warning_with_line (pfile, CPP_W_SIZE_T_LITERALS,
 				 virtual_location, 0, message);
        }

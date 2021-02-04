@@ -7777,8 +7777,12 @@ vectorizable_phi (vec_info *,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
-      record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
-			vector_stmt, stmt_info, vectype, 0, vect_body);
+      /* For single-argument PHIs assume coalescing which means zero cost
+	 for the scalar and the vector PHIs.  This avoids artificially
+	 favoring the vector path (but may pessimize it in some cases).  */
+      if (gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) > 1)
+	record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			  vector_stmt, stmt_info, vectype, 0, vect_body);
       STMT_VINFO_TYPE (stmt_info) = phi_info_type;
       return true;
     }

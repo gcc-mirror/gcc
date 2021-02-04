@@ -4297,6 +4297,13 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	}
       else if (vect_nop_conversion_p (orig_stmt_info))
 	continue;
+      /* For single-argument PHIs assume coalescing which means zero cost
+	 for the scalar and the vector PHIs.  This avoids artificially
+	 favoring the vector path (but may pessimize it in some cases).  */
+      else if (is_a <gphi *> (orig_stmt_info->stmt)
+	       && gimple_phi_num_args
+		    (as_a <gphi *> (orig_stmt_info->stmt)) == 1)
+	continue;
       else
 	kind = scalar_stmt;
       record_stmt_cost (cost_vec, 1, kind, orig_stmt_info,

@@ -544,6 +544,6 @@
 
 #ifndef __cpp_size_t_suffix
 #  error "__cpp_size_t_suffix"
-#elif __cpp_size_t_suffix != 202006
-#  error "__cpp_size_t_suffix != 202006"
+#elif __cpp_size_t_suffix != 202011
+#  error "__cpp_size_t_suffix != 202011"
 #endif

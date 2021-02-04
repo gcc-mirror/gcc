@@ -3002,13 +3002,12 @@ vectorizable_bswap (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
-      if (! slp_node)
-	{
-	  record_stmt_cost (cost_vec,
-			    1, vector_stmt, stmt_info, 0, vect_prologue);
-	  record_stmt_cost (cost_vec,
-			    ncopies, vec_perm, stmt_info, 0, vect_body);
-	}
+      record_stmt_cost (cost_vec,
+			1, vector_stmt, stmt_info, 0, vect_prologue);
+      record_stmt_cost (cost_vec,
+			slp_node
+			? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies,
+			vec_perm, stmt_info, 0, vect_body);
       return true;
     }
 
