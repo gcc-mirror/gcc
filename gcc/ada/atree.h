@@ -41,14 +41,14 @@ extern Node_Id Parent (Node_Id);
 #define Original_Node atree__original_node
 extern Node_Id Original_Node (Node_Id);
 
-/* Type used for union of Node_Id, List_Id, Elist_Id. */
+/* Type used for union of Node_Id, List_Id, Elist_Id.  */
 typedef Int Tree_Id;
 
 /* These two functions can only be used for Node_Id and List_Id values and
    they work in the C version because Empty = No_List = 0.  */
 
-static Boolean No	(Tree_Id);
-static Boolean Present	(Tree_Id);
+INLINE Boolean No (Tree_Id);
+INLINE Boolean Present (Tree_Id);
 
 INLINE Boolean
 No (Tree_Id N)
@@ -62,33 +62,32 @@ Present (Tree_Id N)
   return !No (N);
 }
 
-extern Node_Id Parent		(Tree_Id);
-
 #define Current_Error_Node atree__current_error_node
 extern Node_Id Current_Error_Node;
 
-// The following code corresponds to the Get_n_Bit_Field functions (for
-// various n) in package Atree. The low-level getters in sinfo.h call
-// these even-lower-level getters.
+/* The following code corresponds to the Get_n_Bit_Field functions (for
+   various n) in package Atree.  The low-level getters in sinfo.h call
+   these even-lower-level getters.  */
 
 extern Field_Offset *Node_Offsets_Ptr;
-extern slot* Slots_Ptr;
+extern slot *Slots_Ptr;
 
-static Union_Id Get_1_Bit_Field(Node_Id N, Field_Offset Offset);
-static Union_Id Get_2_Bit_Field(Node_Id N, Field_Offset Offset);
-static Union_Id Get_4_Bit_Field(Node_Id N, Field_Offset Offset);
-static Union_Id Get_8_Bit_Field(Node_Id N, Field_Offset Offset);
-static Union_Id Get_32_Bit_Field(Node_Id N, Field_Offset Offset);
-static Union_Id Get_32_Bit_Field_With_Default
-    (Node_Id N, Field_Offset Offset, Union_Id Default_Value);
+INLINE Union_Id Get_1_Bit_Field (Node_Id N, Field_Offset Offset);
+INLINE Union_Id Get_2_Bit_Field (Node_Id N, Field_Offset Offset);
+INLINE Union_Id Get_4_Bit_Field (Node_Id N, Field_Offset Offset);
+INLINE Union_Id Get_8_Bit_Field (Node_Id N, Field_Offset Offset);
+INLINE Union_Id Get_32_Bit_Field (Node_Id N, Field_Offset Offset);
+INLINE Union_Id Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
+					       Union_Id Default_Value);
 
 INLINE Union_Id
-Get_1_Bit_Field(Node_Id N, Field_Offset Offset)
+Get_1_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-    const Field_Offset L = 32;
-    slot_1_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_1;
+  const Field_Offset L = 32;
 
-    switch (Offset%L)
+  slot_1_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_1;
+
+  switch (Offset % L)
     {
     case 0: return slot.f0;
     case 1: return slot.f1;
@@ -122,17 +121,18 @@ Get_1_Bit_Field(Node_Id N, Field_Offset Offset)
     case 29: return slot.f29;
     case 30: return slot.f30;
     case 31: return slot.f31;
-    default: gcc_assert(false);
+    default: gcc_unreachable ();
     }
 }
 
 INLINE Union_Id
-Get_2_Bit_Field(Node_Id N, Field_Offset Offset)
+Get_2_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-    const Field_Offset L = 16;
-    slot_2_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_2;
+  const Field_Offset L = 16;
 
-    switch (Offset%L)
+  slot_2_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_2;
+
+  switch (Offset % L)
     {
     case 0: return slot.f0;
     case 1: return slot.f1;
@@ -150,17 +150,18 @@ Get_2_Bit_Field(Node_Id N, Field_Offset Offset)
     case 13: return slot.f13;
     case 14: return slot.f14;
     case 15: return slot.f15;
-    default: gcc_assert(false);
+    default: gcc_unreachable ();
     }
 }
 
 INLINE Union_Id
-Get_4_Bit_Field(Node_Id N, Field_Offset Offset)
+Get_4_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-    const Field_Offset L = 8;
-    slot_4_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_4;
+  const Field_Offset L = 8;
 
-    switch (Offset%L)
+  slot_4_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_4;
+
+  switch (Offset % L)
     {
     case 0: return slot.f0;
     case 1: return slot.f1;
@@ -170,46 +171,46 @@ Get_4_Bit_Field(Node_Id N, Field_Offset Offset)
     case 5: return slot.f5;
     case 6: return slot.f6;
     case 7: return slot.f7;
-    default: gcc_assert(false);
+    default: gcc_unreachable ();
     }
 }
 
 INLINE Union_Id
-Get_8_Bit_Field(Node_Id N, Field_Offset Offset)
+Get_8_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-    const Field_Offset L = 4;
-    slot_8_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_8;
+  const Field_Offset L = 4;
 
-    switch (Offset%L)
+  slot_8_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_8;
+
+  switch (Offset % L)
     {
     case 0: return slot.f0;
     case 1: return slot.f1;
     case 2: return slot.f2;
     case 3: return slot.f3;
-    default: gcc_assert(false);
+    default: gcc_unreachable ();
     }
 }
 
 INLINE Union_Id
-Get_32_Bit_Field(Node_Id N, Field_Offset Offset)
+Get_32_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-    const Field_Offset L = 1;
-    slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_32;
-    return slot;
+  const Field_Offset L = 1;
+
+  slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_32;
+
+  return slot;
 }
 
 INLINE Union_Id
-Get_32_Bit_Field_With_Default(Node_Id N, Field_Offset Offset, Union_Id Default_Value)
+Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
+			       Union_Id Default_Value)
 {
-    const Field_Offset L = 1;
-    slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset/L))->slot_32;
+  const Field_Offset L = 1;
 
-    if (slot == Empty)
-    {
-        return Default_Value;
-    }
+  slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_32;
 
-    return slot;
+  return slot == Empty ? Default_Value : slot;
 }
 
 #ifdef __cplusplus
