@@ -2,6 +2,16 @@
 
 	Backport from mainline
 
+	* gfortran.dg/goacc/array-with-dt-2.f90: New test.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-3.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-4.f90: Likewise.
+
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
 	* gfortran.dg/goacc/derived-classtypes-1.f95: New test.
 
 2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
