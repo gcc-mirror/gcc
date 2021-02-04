@@ -37,6 +37,30 @@ public:
     return dumper.dump;
   }
 
+  void visit (HIR::InherentImpl &impl_block)
+  {
+    dump += indent () + "impl "
+	    + type_string (impl_block.get_type ()->get_mappings ()) + " {\n";
+    indentation_level++;
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      {
+	impl_item->accept_vis (*this);
+	dump += "\n";
+      }
+
+    indentation_level--;
+    dump += indent () + "}\n";
+  }
+
+  void visit (HIR::ConstantItem &constant)
+  {
+    dump += indent () + "constant " + constant.get_identifier () + ":"
+	    + type_string (constant.get_mappings ()) + " = ";
+    constant.get_expr ()->accept_vis (*this);
+    dump += ";\n";
+  }
+
   void visit (HIR::Function &function)
   {
     dump += indent () + "fn " + function.function_name + " "
@@ -54,6 +78,7 @@ public:
     indentation_level++;
 
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
+      dump += indent ();
       s->accept_vis (*this);
       dump += ";\n";
       return true;
@@ -61,6 +86,7 @@ public:
 
     if (expr.has_expr () && expr.tail_expr_reachable ())
       {
+	dump += indent ();
 	expr.expr->accept_vis (*this);
 	dump += ";\n";
       }
@@ -70,7 +96,7 @@ public:
 
   void visit (HIR::LetStmt &stmt)
   {
-    dump += indent () + "let " + stmt.get_pattern ()->as_string () + ":"
+    dump += "let " + stmt.get_pattern ()->as_string () + ":"
 	    + type_string (stmt.get_mappings ());
     if (stmt.has_init_expr ())
       {
@@ -81,13 +107,11 @@ public:
 
   void visit (HIR::ExprStmtWithBlock &stmt)
   {
-    dump += indent ();
     stmt.get_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
-    dump += indent ();
     stmt.get_expr ()->accept_vis (*this);
   }
 
@@ -136,6 +160,11 @@ public:
     dump += ")";
   }
 
+  void visit (HIR::PathInExpression &expr)
+  {
+    dump += type_string (expr.get_mappings ());
+  }
+
 protected:
   std::string type_string (const Analysis::NodeMapping &mappings)
   {
@@ -152,6 +181,7 @@ protected:
     buf += "]";
 
     return "<" + lookup->as_string ()
+	   + " HIRID: " + std::to_string (mappings.get_hirid ())
 	   + " RF:" + std::to_string (lookup->get_ref ()) + " TF:"
 	   + std::to_string (lookup->get_ty_ref ()) + +" - " + buf + ">";
   }

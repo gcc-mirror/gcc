@@ -1377,47 +1377,6 @@ TypeAlias::as_string () const
 }
 
 std::string
-MacroInvocationSemi::as_string () const
-{
-  // get outer attrs
-  std::string str = MacroItem::as_string ();
-
-  str += "\n" + path.as_string () + "!";
-
-  std::string tok_trees;
-  if (token_trees.empty ())
-    {
-      tok_trees = "none";
-    }
-  else
-    {
-      auto i = token_trees.begin ();
-      auto e = token_trees.end ();
-
-      // DEBUG: null pointer check
-      if (i == e)
-	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "token tree in macro invocation semi.");
-	  return "nullptr_POINTER_MARK";
-	}
-
-      std::string s;
-      for (; i != e; i++)
-	{
-	  s += (*i)->as_string ();
-	  if (e != i + 1)
-	    s += ", ";
-	}
-
-      tok_trees += get_string_in_delims (s, delim_type);
-    }
-
-  return str;
-}
-
-std::string
 ExternBlock::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -5041,12 +5000,6 @@ Lifetime::accept_vis (HIRVisitor &vis)
 
 void
 LifetimeParam::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroInvocationSemi::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

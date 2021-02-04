@@ -37,10 +37,7 @@ public:
     expr->accept_vis (resolver);
 
     if (resolver.infered == nullptr)
-      {
-	resolver.infered
-	  = new TyTy::UnitType (expr->get_mappings ().get_hirid ());
-      }
+      return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
 
     auto ref = expr->get_mappings ().get_hirid ();
     resolver.infered->set_ref (ref);
@@ -428,73 +425,19 @@ public:
   {
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
-    auto combined = lhs->combine (rhs);
 
-    // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
-    switch (expr.get_expr_type ())
+    bool valid_lhs = validate_arithmetic_type (lhs, expr.get_expr_type ());
+    bool valid_rhs = validate_arithmetic_type (rhs, expr.get_expr_type ());
+    bool valid = valid_lhs && valid_rhs;
+    if (!valid)
       {
-	// integers or floats
-      case HIR::ArithmeticOrLogicalExpr::ADD:
-      case HIR::ArithmeticOrLogicalExpr::SUBTRACT:
-      case HIR::ArithmeticOrLogicalExpr::MULTIPLY:
-      case HIR::ArithmeticOrLogicalExpr::DIVIDE:
-	case HIR::ArithmeticOrLogicalExpr::MODULUS: {
-	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
-		       || (combined->get_kind () == TyTy::TypeKind::UINT)
-		       || (combined->get_kind () == TyTy::TypeKind::FLOAT)
-		       || (combined->get_kind () == TyTy::TypeKind::INFER
-			   && (((TyTy::InferType *) combined)->get_infer_kind ()
-			       == TyTy::InferType::INTEGRAL))
-		       || (combined->get_kind () == TyTy::TypeKind::INFER
-			   && (((TyTy::InferType *) combined)->get_infer_kind ()
-			       == TyTy::InferType::FLOAT));
-	  if (!valid)
-	    {
-	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
-			     combined->as_string ().c_str ());
-	      return;
-	    }
-	}
-	break;
-
-	// integers or bools
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_AND:
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_OR:
-	case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR: {
-	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
-		       || (combined->get_kind () == TyTy::TypeKind::UINT)
-		       || (combined->get_kind () == TyTy::TypeKind::BOOL)
-		       || (combined->get_kind () == TyTy::TypeKind::INFER
-			   && (((TyTy::InferType *) combined)->get_infer_kind ()
-			       == TyTy::InferType::INTEGRAL));
-	  if (!valid)
-	    {
-	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
-			     combined->as_string ().c_str ());
-	      return;
-	    }
-	}
-	break;
-
-	// integers only
-      case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
-	case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT: {
-	  bool valid = (combined->get_kind () == TyTy::TypeKind::INT)
-		       || (combined->get_kind () == TyTy::TypeKind::UINT)
-		       || (combined->get_kind () == TyTy::TypeKind::INFER
-			   && (((TyTy::InferType *) combined)->get_infer_kind ()
-			       == TyTy::InferType::INTEGRAL));
-	  if (!valid)
-	    {
-	      rust_error_at (expr.get_locus (), "cannot apply operator to %s",
-			     combined->as_string ().c_str ());
-	      return;
-	    }
-	}
-	break;
+	rust_error_at (expr.get_locus (),
+		       "cannot apply this operator to types %s and %s",
+		       lhs->as_string ().c_str (), rhs->as_string ().c_str ());
+	return;
       }
 
-    infered = combined;
+    infered = lhs->combine (rhs);
     infered->append_reference (lhs->get_ref ());
     infered->append_reference (rhs->get_ref ());
   }
@@ -594,7 +537,10 @@ public:
       {
 	auto expected_ty = context->peek_return_type ();
 	infered = expected_ty->combine (blk_expr);
+	return;
       }
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqElse &expr)
@@ -633,7 +579,10 @@ public:
 	auto else_blk_combined = expected_ty->combine (else_block_tyty);
 
 	infered = if_blk_combined->combine (else_blk_combined);
+	return;
       }
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqIf &expr)
@@ -649,7 +598,10 @@ public:
 
 	infered = expected_ty->combine (if_blk);
 	infered = infered->combine (elif_blk);
+	return;
       }
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BlockExpr &expr);
@@ -769,11 +721,85 @@ public:
     infered = resolved->get_field_type ();
   }
 
+  void visit (HIR::PathInExpression &expr)
+  {
+    NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+
+    // then lookup the reference_node_id
+    NodeId ref_node_id;
+    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+      {
+	if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "Failed to lookup reference for node: %s",
+			   expr.as_string ().c_str ());
+	    return;
+	  }
+      }
+
+    // node back to HIR
+    HirId ref;
+    if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				       ref_node_id, &ref))
+      {
+	rust_error_at (expr.get_locus (), "reverse lookup failure");
+	return;
+      }
+
+    context->lookup_type (ref, &infered);
+  }
+
 private:
   TypeCheckExpr (bool is_final_expr)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
       is_final_expr (is_final_expr)
   {}
+
+  bool
+  validate_arithmetic_type (TyTy::TyBase *type,
+			    HIR::ArithmeticOrLogicalExpr::ExprType expr_type)
+  {
+    // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
+    // this will change later when traits are added
+    switch (expr_type)
+      {
+      case HIR::ArithmeticOrLogicalExpr::ADD:
+      case HIR::ArithmeticOrLogicalExpr::SUBTRACT:
+      case HIR::ArithmeticOrLogicalExpr::MULTIPLY:
+      case HIR::ArithmeticOrLogicalExpr::DIVIDE:
+      case HIR::ArithmeticOrLogicalExpr::MODULUS:
+	return (type->get_kind () == TyTy::TypeKind::INT)
+	       || (type->get_kind () == TyTy::TypeKind::UINT)
+	       || (type->get_kind () == TyTy::TypeKind::FLOAT)
+	       || (type->get_kind () == TyTy::TypeKind::INFER
+		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		       == TyTy::InferType::INTEGRAL))
+	       || (type->get_kind () == TyTy::TypeKind::INFER
+		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		       == TyTy::InferType::FLOAT));
+
+	// integers or bools
+      case HIR::ArithmeticOrLogicalExpr::BITWISE_AND:
+      case HIR::ArithmeticOrLogicalExpr::BITWISE_OR:
+      case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR:
+	return (type->get_kind () == TyTy::TypeKind::INT)
+	       || (type->get_kind () == TyTy::TypeKind::UINT)
+	       || (type->get_kind () == TyTy::TypeKind::BOOL)
+	       || (type->get_kind () == TyTy::TypeKind::INFER
+		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		       == TyTy::InferType::INTEGRAL));
+
+	// integers only
+      case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
+      case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT:
+	return (type->get_kind () == TyTy::TypeKind::INT)
+	       || (type->get_kind () == TyTy::TypeKind::UINT)
+	       || (type->get_kind () == TyTy::TypeKind::INFER
+		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		       == TyTy::InferType::INTEGRAL));
+      }
+  }
 
   TyTy::TyBase *infered;
   TyTy::TyBase *infered_array_elems;

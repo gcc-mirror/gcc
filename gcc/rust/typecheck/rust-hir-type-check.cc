@@ -23,6 +23,9 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
 
+extern bool
+saw_errors (void);
+
 namespace Rust {
 namespace Resolver {
 
@@ -32,13 +35,26 @@ TypeResolution::Resolve (HIR::Crate &crate)
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckTopLevel::Resolve (it->get ());
 
+  if (saw_errors ())
+    return;
+
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckItem::Resolve (it->get ());
+
+  if (saw_errors ())
+    return;
 
   auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
   context->iterate ([&] (HirId id, TyTy::TyBase *ty) mutable -> bool {
+    if (ty->get_kind () == TyTy::TypeKind::ERROR)
+      {
+	rust_error_at (mappings->lookup_location (id),
+		       "failure in type resolution");
+	return false;
+      }
+
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;

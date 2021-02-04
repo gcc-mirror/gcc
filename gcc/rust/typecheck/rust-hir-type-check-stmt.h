@@ -56,6 +56,8 @@ public:
       {
 	init_expr_ty
 	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), is_final_stmt);
+	if (init_expr_ty == nullptr)
+	  return;
 
 	init_expr_ty = init_expr_ty->clone ();
 	auto ref = init_expr_ty->get_ref ();

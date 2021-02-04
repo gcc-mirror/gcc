@@ -25,7 +25,6 @@ namespace Rust {
 namespace HIR {
 // Decls as definitions moved to rust-ast.h
 class MacroItem;
-class MacroInvocationSemi;
 
 enum MacroFragSpec
 {
