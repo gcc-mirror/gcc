@@ -275,6 +275,9 @@ proc dg-scan-symbol-section { name testcase output_file orig_args } {
     foreach symbol_name [lsort [array names section_by_symbol]] {
         if { [regexp -- $symbol_pattern $symbol_name] } {
             set section $section_by_symbol($symbol_name)
+	    if { [istarget powerpc*-*-*] && $section == ".opd" } {
+		set section $section_by_symbol(.L.$symbol_name)
+	    }
             set description "$testcase $name symbol $printable_symbol_pattern (found $symbol_name) has section $printable_expected_section_pattern"
             if { $section == "" } {
                 fail "$description (no section detected)"
@@ -321,13 +324,16 @@ proc parse_section_of_symbols { filename result } {
 
     set section_pattern {^\s*(?:(?:\.section|\.csect)\s+(.*)|(\.const|\.data|\.text)\s*)$}
     set label_pattern {^(\S+):$}
+    set previous_pattern {^\s*\.previous\s*$}
 
     set fd [open $filename r]
     set current_section ""
+    set prev_section ""
     while { [gets $fd line] >= 0 } {
         if { [regexp -- $label_pattern $line dummy symbol_name] } {
             set up_result($symbol_name) $current_section
         } elseif { [regexp -- $section_pattern $line dummy section_directive_arguments full_section_directive] } {
+	    set prev_section $current_section
             if { $full_section_directive eq "" } {
                 # Example: .section .text,"ax",progbits
                 # Example: .section ".text",#alloc,#execinstr,#progbits
@@ -344,7 +350,11 @@ proc parse_section_of_symbols { filename result } {
                 # Example: .text
                 set current_section "$full_section_directive"
             }
-        }
+	} elseif { [regexp -- $previous_pattern $line dummy] } {
+	    set sect $prev_section
+	    set prev_section $current_section
+	    set current_section $sect
+	}
     }
     close $fd
 }
