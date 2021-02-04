@@ -1,3 +1,10 @@
+2021-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+
+	* openmp.c (resolve_omp_clauses): Explicitly diagnose
+	substrings as not permitted.
+
 2021-02-24  Julian Brown  <julian@codesourcery.com>
 
 	Backport from mainline

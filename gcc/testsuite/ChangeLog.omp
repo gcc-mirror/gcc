@@ -1,3 +1,10 @@
+2021-02-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline
+
+	* gfortran.dg/goacc/substring.f90: New test.
+	* gfortran.dg/gomp/substring.f90: New test.
+
 2021-02-24  Julian Brown  <julian@codesourcery.com>
 
 	Backport from mainline
