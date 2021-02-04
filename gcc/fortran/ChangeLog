@@ -1,3 +1,13 @@
+2021-02-03  Jeff Law  <law@redhat.com>
+
+	* intrinsic.texi (ANINT): Fix typo.
+
+2021-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98913
+	* dependency.c (gfc_dep_resolver): Treat local access
+	to coarrays like any array access in dependency analysis.
+
 2021-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/86470

@@ -1,3 +1,21 @@
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/98882
+	* lex.c (cpp_directive_only_process): Don't assert that rlimit[-1]
+	is a newline, instead assert that rlimit[0] is either newline or
+	carriage return.  When seeing '\\' followed by '\r', check limit
+	before accessing pos[1].
+
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* expr.c (interpret_int_suffix): Detect 'z' integer suffix.
+	(cpp_classify_number): Compat warning for use of 'z' suffix.
+	* include/cpplib.h (struct cpp_options): New flag.
+	(enum cpp_warning_reason): New flag.
+	(CPP_N_USERDEF): Comment C++0x -> C++11.
+	(CPP_N_SIZE_T): New flag for cpp_classify_number.
+	* init.c (cpp_set_lang): Initialize new flag.
+
 2021-01-27  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/98833

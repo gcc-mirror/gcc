@@ -1,3 +1,8 @@
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_size_t_suffix.
+	* c-lex.c (interpret_integer): Set node type for size literal.
+
 2021-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (-std=c++2a, -std=c++20, -std=gnu++2a, -std=gnu++20): Remove
