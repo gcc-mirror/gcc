@@ -1,3 +1,13 @@
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97528
+	* config/arm/arm.c (neon_vector_mem_operand): For POST_MODIFY, require
+	first POST_MODIFY operand is a REG and is equal to the first operand
+	of PLUS.
+
 2021-01-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
