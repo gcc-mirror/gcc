@@ -158,7 +158,7 @@ isBuiltin (FuncDeclaration *fd)
 Expression *
 eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 {
-  if (fd->builtin != BUILTINyes)
+  if (fd->builtin == BUILTINunimp)
     return NULL;
 
   tree decl = get_symbol_decl (fd);

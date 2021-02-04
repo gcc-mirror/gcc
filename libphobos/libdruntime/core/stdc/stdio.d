@@ -1527,7 +1527,7 @@ else version (OpenBSD)
     {
         void __sclearerr()(FILE* p)
         {
-            p._flags &= ~(__SERR|__SEOF);
+            p._flags = p._flags & ~(__SERR|__SEOF);
         }
 
         int __sfeof()(FILE* p)

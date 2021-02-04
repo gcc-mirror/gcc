@@ -566,7 +566,7 @@ d_build_builtins_module (Module *m)
 				   STCextern, tf);
       DECL_LANG_SPECIFIC (decl) = build_lang_decl (func);
       func->csym = decl;
-      func->builtin = BUILTINyes;
+      func->builtin = BUILTINgcc;
 
       members->push (func);
     }
@@ -706,7 +706,7 @@ maybe_set_builtin_1 (Dsymbol *d)
 	  /* Found a match, tell the frontend this is a builtin.  */
 	  DECL_LANG_SPECIFIC (t) = build_lang_decl (fd);
 	  fd->csym = t;
-	  fd->builtin = BUILTINyes;
+	  fd->builtin = BUILTINgcc;
 	  return;
 	}
     }
