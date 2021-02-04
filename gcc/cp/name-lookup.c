@@ -5700,6 +5700,14 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	scope = ctx;
     }
 
+  /* You cannot using-decl a destructor.  */
+  if (TREE_CODE (lookup.name) == BIT_NOT_EXPR)
+    {
+      error ("%<%T%s%D%> names destructor", scope,
+	     &"::"[scope == global_namespace ? 2 : 0], lookup.name);
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       /* Naming a namespace member.  */
@@ -5736,13 +5744,6 @@ lookup_using_decl (tree scope, name_lookup &lookup)
       if (!MAYBE_CLASS_TYPE_P (npscope))
 	{
 	  error ("%qT is not a class, namespace, or enumeration", npscope);
-	  return NULL_TREE;
-	}
-
-      /* You cannot using-decl a destructor.  */
-      if (TREE_CODE (lookup.name) == BIT_NOT_EXPR)
-	{
-	  error ("%<%T::%D%> names destructor", scope, lookup.name);
 	  return NULL_TREE;
 	}
 
