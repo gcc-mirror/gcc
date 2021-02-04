@@ -4471,6 +4471,44 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
+(define_insn "aarch64_pmullv8qi"
+  [(set (match_operand:V8HI 0 "register_operand" "=w")
+        (unspec:V8HI [(match_operand:V8QI 1 "register_operand" "w")
+		      (match_operand:V8QI 2 "register_operand" "w")]
+		     UNSPEC_PMULL))]
+ "TARGET_SIMD"
+ "pmull\\t%0.8h, %1.8b, %2.8b"
+  [(set_attr "type" "neon_mul_b_long")]
+)
+
+(define_insn "aarch64_pmull_hiv16qi_insn"
+  [(set (match_operand:V8HI 0 "register_operand" "=w")
+	(unspec:V8HI
+	  [(vec_select:V8QI
+	     (match_operand:V16QI 1 "register_operand" "w")
+	     (match_operand:V16QI 3 "vect_par_cnst_hi_half" ""))
+	   (vec_select:V8QI
+	     (match_operand:V16QI 2 "register_operand" "w")
+	     (match_dup 3))]
+	  UNSPEC_PMULL))]
+ "TARGET_SIMD"
+ "pmull2\\t%0.8h, %1.16b, %2.16b"
+  [(set_attr "type" "neon_mul_b_long")]
+)
+
+(define_expand "aarch64_pmull_hiv16qi"
+  [(match_operand:V8HI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "register_operand")]
+ "TARGET_SIMD"
+ {
+   rtx p = aarch64_simd_vect_par_cnst_half (V16QImode, 16, true);
+   emit_insn (gen_aarch64_pmull_hiv16qi_insn (operands[0], operands[1],
+					      operands[2], p));
+   DONE;
+ }
+)
+
 ;; fmulx.
 
 (define_insn "aarch64_fmulx<mode>"

@@ -8228,12 +8228,8 @@ __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_p8 (poly8x16_t __a, poly8x16_t __b)
 {
-  poly16x8_t __result;
-  __asm__ ("pmull2 %0.8h,%1.16b,%2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (poly16x8_t) __builtin_aarch64_pmull_hiv16qi ((int8x16_t) __a,
+						       (int8x16_t) __b);
 }
 
 __extension__ extern __inline int16x8_t
@@ -8366,12 +8362,8 @@ __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  poly16x8_t __result;
-  __asm__ ("pmull %0.8h, %1.8b, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (poly16x8_t) __builtin_aarch64_pmullv8qi ((int8x8_t) __a,
+						   (int8x8_t) __b);
 }
 
 __extension__ extern __inline int16x8_t
