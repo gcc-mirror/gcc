@@ -1,3 +1,36 @@
+2021-02-03  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98863
+	* config/i386/i386-features.c (remove_partial_avx_dependency):
+	Do not perform DF analysis.
+	(pass_data_remove_partial_avx_dependency): Remove
+	TODO_df_finish.
+
+2021-02-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98863
+	* config/i386/i386-features.c (convert_scalars_to_vector):
+	Set DF_RD_PRUNE_DEAD_DEFS.
+
+2021-02-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98144
+	* df.h (df_mir_bb_info): Add con_visited member.
+	* df-problems.c (df_mir_alloc): Initialize con_visited,
+	do not fully populate IN and OUT.
+	(df_mir_reset): Likewise.
+	(df_mir_confluence_0): Set con_visited.
+	(df_mir_confluence_n): Properly handle implicitely
+	fully populated IN and OUT as designated by con_visited
+	and update con_visited accordingly.
+
 2021-02-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

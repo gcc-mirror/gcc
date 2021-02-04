@@ -1,3 +1,14 @@
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97804
+	* g++.dg/cpp2a/no_unique_address11.C: New test.
+
+2021-02-03  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98863
+	* gcc.target/i386/20051216-1.c: New test.
+
 2021-02-02  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
