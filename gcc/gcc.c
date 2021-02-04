@@ -9020,8 +9020,15 @@ driver::maybe_run_linker (const char *argv0) const
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
-	warning (0, "%s: linker input file unused because linking not done",
-		 outfiles[i]);
+	{
+	  warning (0, "%s: linker input file unused because linking not done",
+		   outfiles[i]);
+	  if (access (outfiles[i], F_OK) < 0)
+	    /* This is can be an indication the user specifed an errorneous
+	       separated option value, (or used the wrong prefix for an
+	       option).  */
+	    error ("%s: linker input file not found: %m", outfiles[i]);
+	}
 }
 
 /* The end of "main".  */
