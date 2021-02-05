@@ -453,12 +453,12 @@ DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains", m_ZNVER2 | m_ZNVE
 /* X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL: if false, unaligned loads are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL, "256_unaligned_load_optimal",
-          ~(m_NEHALEM | m_SANDYBRIDGE | m_GENERIC))
+          ~(m_NEHALEM | m_SANDYBRIDGE))
 
 /* X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL: if false, unaligned stores are
    split.  */
 DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal",
-	  ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_ZNVER1 | m_GENERIC))
+	  ~(m_NEHALEM | m_SANDYBRIDGE | m_BDVER | m_ZNVER1))
 
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX256 ops are split into two AVX128 ops.  */
 DEF_TUNE (X86_TUNE_AVX256_SPLIT_REGS, "avx256_split_regs",m_BDVER | m_BTVER2
@@ -580,15 +580,15 @@ DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
    on simulation result. But after P4 was made, no performance benefit
    was observed with branch hints.  It also increases the code size.
    As a result, icc never generates branch hints.  */
-DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", 0U)
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints", m_NONE)
 
 /* X86_TUNE_QIMODE_MATH: Enable use of 8bit arithmetic.  */
-DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0U)
+DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", m_ALL)
 
 /* X86_TUNE_PROMOTE_QI_REGS: This enables generic code that promotes all 8bit
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
-DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0U)
+DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", m_NONE)
 
 /* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
    before a transfer of control flow out of the function.  */

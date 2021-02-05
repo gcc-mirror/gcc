@@ -415,10 +415,38 @@ else version (Solaris)
         LC_ALL      = 6,
     }
 
+    ///
+    enum
+    {
+        LC_CTYPE_MASK    = (1 << LC_CTYPE),
+        LC_NUMERIC_MASK  = (1 << LC_NUMERIC),
+        LC_TIME_MASK     = (1 << LC_TIME),
+        LC_COLLATE_MASK  = (1 << LC_COLLATE),
+        LC_MONETARY_MASK = (1 << LC_MONETARY),
+        LC_MESSAGES_MASK = (1 << LC_MESSAGES),
+        LC_ALL_MASK      = 0x3f,
+    }
+
+    private struct _LC_locale_t;
+
+    ///
+    alias locale_t = _LC_locale_t**;
+
+    ///
+    enum LC_GLOBAL_LOCALE = (cast(locale_t)-1);
+
+    /// Duplicate existing locale
+    locale_t duplocale(locale_t locale);
+    /// Free an allocated locale
+    void     freelocale(locale_t locale);
     /// Natural language formatting for C
     lconv*   localeconv();
+    /// Create a new locale
+    locale_t newlocale(int mask, const char* locale, locale_t base);
     /// Set the C library's notion of natural language formatting style
     char*    setlocale(int category, const char* locale);
+    /// Set the per-thread locale
+    locale_t uselocale (locale_t locale);
 }
 else
     static assert(false, "unimplemented platform");

@@ -5559,8 +5559,6 @@ build_conditional_expr_1 (const op_location_t &loc,
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
-      arg2 = mark_lvalue_use (arg2);
-      arg3 = mark_lvalue_use (arg3);
       goto valid_operands;
     }
 

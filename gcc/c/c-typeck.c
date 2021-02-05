@@ -1107,7 +1107,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
      not transitive: two enumerated types in the same translation unit
      are compatible with each other only if they are the same type.  */
 
-  if (TREE_CODE (t1) == ENUMERAL_TYPE && TREE_CODE (t2) != ENUMERAL_TYPE)
+  if (TREE_CODE (t1) == ENUMERAL_TYPE
+      && COMPLETE_TYPE_P (t1)
+      && TREE_CODE (t2) != ENUMERAL_TYPE)
     {
       t1 = c_common_type_for_size (TYPE_PRECISION (t1), TYPE_UNSIGNED (t1));
       if (TREE_CODE (t2) != VOID_TYPE)
@@ -1118,7 +1120,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 	    *different_types_p = true;
 	}
     }
-  else if (TREE_CODE (t2) == ENUMERAL_TYPE && TREE_CODE (t1) != ENUMERAL_TYPE)
+  else if (TREE_CODE (t2) == ENUMERAL_TYPE
+	   && COMPLETE_TYPE_P (t2)
+	   && TREE_CODE (t1) != ENUMERAL_TYPE)
     {
       t2 = c_common_type_for_size (TYPE_PRECISION (t2), TYPE_UNSIGNED (t2));
       if (TREE_CODE (t1) != VOID_TYPE)

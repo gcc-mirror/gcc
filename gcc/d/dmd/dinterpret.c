@@ -6801,7 +6801,7 @@ Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
     size_t nargs = arguments ? arguments->length : 0;
     if (!pthis)
     {
-        if (isBuiltin(fd) == BUILTINyes)
+        if (isBuiltin(fd) != BUILTINunimp)
         {
             Expressions args;
             args.setDim(nargs);

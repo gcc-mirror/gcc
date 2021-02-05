@@ -1,3 +1,36 @@
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98717
+	* constraint.cc (build_concept_check_arguments): Remove assert.
+	(build_concept_check): Allow empty args.
+
+2021-02-04  Tom Greenslade (thomgree)  <thomgree@cisco.com>
+
+	PR c++/90926
+	* call.c (can_convert_array): Extend to handle all valid aggregate
+	initializers of an array; including by string literals, not just by
+	brace-init-list.
+	(build_aggr_conv): Call can_convert_array more often, not just in
+	brace-init-list case.
+	* typeck2.c (array_string_literal_compatible_p): New function.
+	(digest_init_r): call array_string_literal_compatible_p
+	* cp-tree.h: (array_string_literal_compatible_p): Declare.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98802
+	* pt.c (do_class_deduction): No aggregate guide if any_dguides_p.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95192
+	* pt.c (tsubst_attribute): Handle error.
+	(apply_late_template_attributes): Return false on error.
+	(tsubst_function_decl): Check its return value.
+	(tsubst_decl): Likewise.
+	(push_template_decl): Assert current_template_parms.
+	(tsubst_template_decl): Set current_template_parms.
+
 2021-02-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98951

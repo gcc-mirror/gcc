@@ -3,6 +3,7 @@
 import core.bitop;
 import core.checkedint;
 import core.math;
+import core.volatile;
 import core.stdc.stdarg;
 
 //////////////////////////////////////////////////////
@@ -24,6 +25,8 @@ int test_btc(size_t *a, size_t b) { return btc(a, b); }
 int test_btr(size_t *a, size_t b) { return btr(a, b); }
 // { dg-final { scan-tree-dump-not " <retval> = bts " "original" } }
 int test_bts(size_t *a, size_t b) { return bts(a, b); }
+// { dg-final { scan-tree-dump " __builtin_bswap16 " "original" } }
+ushort test_byteswap(ushort a) { return byteswap(a); }
 // { dg-final { scan-tree-dump " __builtin_bswap32 " "original" } }
 uint test_bswap(uint a) { return bswap(a); }
 // { dg-final { scan-tree-dump " __builtin_bswap64 " "original" } }

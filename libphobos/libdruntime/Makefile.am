@@ -182,21 +182,22 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread/context.d \
 	core/thread/fiber.d core/thread/osthread.d core/thread/package.d \
 	core/thread/threadbase.d core/thread/threadgroup.d core/thread/types.d \
-	core/time.d core/vararg.d gc/bits.d gc/config.d gc/gcinterface.d \
-	gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d gc/pooltable.d \
-	gc/proxy.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
-	gcc/emutls.d gcc/gthread.d gcc/sections/android.d \
-	gcc/sections/elf_shared.d gcc/sections/osx.d gcc/sections/package.d \
-	gcc/sections/win32.d gcc/sections/win64.d gcc/unwind/arm.d \
-	gcc/unwind/arm_common.d gcc/unwind/c6x.d gcc/unwind/generic.d \
-	gcc/unwind/package.d gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d \
-	rt/aaA.d rt/adi.d rt/arrayassign.d rt/arraycast.d rt/arraycat.d \
-	rt/cast_.d rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d \
-	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
-	rt/obj.d rt/qsort.d rt/sections.d rt/switch_.d rt/tlsgc.d \
-	rt/util/array.d rt/util/container/array.d rt/util/container/common.d \
-	rt/util/container/hashtab.d rt/util/container/treap.d rt/util/random.d \
-	rt/util/typeinfo.d rt/util/utf.d
+	core/time.d core/vararg.d core/volatile.d gc/bits.d gc/config.d \
+	gc/gcinterface.d gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d \
+	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/backtrace.d \
+	gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
+	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
+	gcc/sections/package.d gcc/sections/win32.d gcc/sections/win64.d \
+	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
+	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
+	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arrayassign.d \
+	rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
+	rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d rt/memory.d \
+	rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
+	rt/switch_.d rt/tlsgc.d rt/util/array.d rt/util/container/array.d \
+	rt/util/container/common.d rt/util/container/hashtab.d \
+	rt/util/container/treap.d rt/util/random.d rt/util/typeinfo.d \
+	rt/util/utf.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/exception.d \
 	core/stdcpp/typeinfo.d

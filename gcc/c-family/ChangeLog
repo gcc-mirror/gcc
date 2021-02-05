@@ -1,3 +1,7 @@
+2021-02-04  emsr  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (c_cpp_builtins): __cpp_size_t_suffix=202011L.
+
 2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_size_t_suffix.

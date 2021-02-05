@@ -1345,7 +1345,6 @@ build_concept_check_arguments (tree arg, tree rest)
     }
   else
     {
-      gcc_assert (rest != NULL_TREE);
       args = rest;
     }
   return args;
@@ -1444,13 +1443,6 @@ build_concept_check (tree target, tree args, tsubst_flags_t complain)
 tree
 build_concept_check (tree decl, tree arg, tree rest, tsubst_flags_t complain)
 {
-  if (arg == NULL_TREE && rest == NULL_TREE)
-    {
-      tree id = build_nt (TEMPLATE_ID_EXPR, decl, rest);
-      error ("invalid use concept %qE", id);
-      return error_mark_node;
-    }
-
   tree args = build_concept_check_arguments (arg, rest);
 
   if (standard_concept_p (decl))

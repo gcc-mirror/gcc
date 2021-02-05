@@ -297,6 +297,28 @@
   "TARGET_SIMD"
 )
 
+(define_expand "aarch64_get_low<mode>"
+  [(match_operand:<VHALF> 0 "register_operand")
+   (match_operand:VQMOV 1 "register_operand")]
+  "TARGET_SIMD"
+  {
+    rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
+    emit_insn (gen_aarch64_get_half<mode> (operands[0], operands[1], lo));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_get_high<mode>"
+  [(match_operand:<VHALF> 0 "register_operand")
+   (match_operand:VQMOV 1 "register_operand")]
+  "TARGET_SIMD"
+  {
+    rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_get_half<mode> (operands[0], operands[1], hi));
+    DONE;
+  }
+)
+
 (define_insn_and_split "aarch64_simd_mov_from_<mode>low"
   [(set (match_operand:<VHALF> 0 "register_operand" "=w,?r")
         (vec_select:<VHALF>

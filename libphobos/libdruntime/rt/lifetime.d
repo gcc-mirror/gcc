@@ -44,17 +44,9 @@ private
     }
 }
 
-private immutable bool callStructDtorsDuringGC;
-
 extern (C) void lifetime_init()
 {
     // this is run before static ctors, so it is safe to modify immutables
-    import rt.config;
-    string s = rt_configOption("callStructDtorsDuringGC");
-    if (s != null)
-        cast() callStructDtorsDuringGC = s[0] == '1' || s[0] == 'y' || s[0] == 'Y';
-    else
-        cast() callStructDtorsDuringGC = true;
 }
 
 /**
@@ -214,9 +206,6 @@ inout(TypeInfo) unqualify(inout(TypeInfo) cti) pure nothrow @nogc
 // size used to store the TypeInfo at the end of an allocation for structs that have a destructor
 size_t structTypeInfoSize(const TypeInfo ti) pure nothrow @nogc
 {
-    if (!callStructDtorsDuringGC)
-        return 0;
-
     if (ti && typeid(ti) is typeid(TypeInfo_Struct)) // avoid a complete dynamic type cast
     {
         auto sti = cast(TypeInfo_Struct)cast(void*)ti;
@@ -975,7 +964,7 @@ extern (C) void[] _d_newarrayT(const TypeInfo ti, size_t length) pure nothrow
  */
 extern (C) void[] _d_newarrayiT(const TypeInfo ti, size_t length) pure nothrow
 {
-    import core.internal.traits : TypeTuple;
+    import core.internal.traits : AliasSeq;
 
     void[] result = _d_newarrayU(ti, length);
     auto tinext = unqualify(ti.next);
@@ -985,7 +974,7 @@ extern (C) void[] _d_newarrayiT(const TypeInfo ti, size_t length) pure nothrow
 
     switch (init.length)
     {
-    foreach (T; TypeTuple!(ubyte, ushort, uint, ulong))
+    foreach (T; AliasSeq!(ubyte, ushort, uint, ulong))
     {
     case T.sizeof:
         (cast(T*)result.ptr)[0 .. size * length / T.sizeof] = *cast(T*)init.ptr;
@@ -2539,33 +2528,30 @@ unittest
     delete arr1;
     assert(dtorCount == 7);
 
-    if (callStructDtorsDuringGC)
-    {
-        dtorCount = 0;
-        S1* s2 = new S1;
-        GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
-        assert(dtorCount == 1);
-        GC.free(s2);
+    dtorCount = 0;
+    S1* s2 = new S1;
+    GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
+    assert(dtorCount == 1);
+    GC.free(s2);
 
-        dtorCount = 0;
-        const(S1)* s3 = new const(S1);
-        GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
-        assert(dtorCount == 1);
-        GC.free(cast(void*)s3);
+    dtorCount = 0;
+    const(S1)* s3 = new const(S1);
+    GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
+    assert(dtorCount == 1);
+    GC.free(cast(void*)s3);
 
-        dtorCount = 0;
-        shared(S1)* s4 = new shared(S1);
-        GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
-        assert(dtorCount == 1);
-        GC.free(cast(void*)s4);
+    dtorCount = 0;
+    shared(S1)* s4 = new shared(S1);
+    GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
+    assert(dtorCount == 1);
+    GC.free(cast(void*)s4);
 
-        dtorCount = 0;
-        const(S1)[] carr1 = new const(S1)[5];
-        BlkInfo blkinf1 = GC.query(carr1.ptr);
-        GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
-        assert(dtorCount == 5);
-        GC.free(blkinf1.base);
-    }
+    dtorCount = 0;
+    const(S1)[] carr1 = new const(S1)[5];
+    BlkInfo blkinf1 = GC.query(carr1.ptr);
+    GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
+    assert(dtorCount == 5);
+    GC.free(blkinf1.base);
 
     dtorCount = 0;
     S1[] arr2 = new S1[10];
@@ -2573,14 +2559,11 @@ unittest
     arr2.assumeSafeAppend;
     assert(dtorCount == 4); // destructors run explicitely?
 
-    if (callStructDtorsDuringGC)
-    {
-        dtorCount = 0;
-        BlkInfo blkinf = GC.query(arr2.ptr);
-        GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
-        assert(dtorCount == 6);
-        GC.free(blkinf.base);
-    }
+    dtorCount = 0;
+    BlkInfo blkinf = GC.query(arr2.ptr);
+    GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
+    assert(dtorCount == 6);
+    GC.free(blkinf.base);
 
     // associative arrays
     import rt.aaA : entryDtor;
@@ -2590,36 +2573,27 @@ unittest
     S1[int] aa1;
     aa1[0] = S1(0);
     aa1[1] = S1(1);
-    if (callStructDtorsDuringGC)
-    {
-        dtorCount = 0;
-        aa1 = null;
-        GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
-        assert(dtorCount == 2);
-    }
+    dtorCount = 0;
+    aa1 = null;
+    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    assert(dtorCount == 2);
 
     int[S1] aa2;
     aa2[S1(0)] = 0;
     aa2[S1(1)] = 1;
     aa2[S1(2)] = 2;
-    if (callStructDtorsDuringGC)
-    {
-        dtorCount = 0;
-        aa2 = null;
-        GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
-        assert(dtorCount == 3);
-    }
+    dtorCount = 0;
+    aa2 = null;
+    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    assert(dtorCount == 3);
 
     S1[2][int] aa3;
     aa3[0] = [S1(0),S1(2)];
     aa3[1] = [S1(1),S1(3)];
-    if (callStructDtorsDuringGC)
-    {
-        dtorCount = 0;
-        aa3 = null;
-        GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
-        assert(dtorCount == 4);
-    }
+    dtorCount = 0;
+    aa3 = null;
+    GC.runFinalizers((cast(char*)(&entryDtor))[0..1]);
+    assert(dtorCount == 4);
 }
 
 // test class finalizers exception handling
@@ -2661,9 +2635,6 @@ unittest
 debug(SENTINEL) {} else
 unittest
 {
-    if (!callStructDtorsDuringGC)
-        return;
-
     bool test(E)()
     {
         import core.exception;

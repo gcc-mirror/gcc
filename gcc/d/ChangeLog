@@ -1,3 +1,38 @@
+2021-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 46133f761.
+	* d-builtins.cc (d_build_builtins_module): Set builtins as BUILTINgcc.
+	(maybe_set_builtin_1): Likewise.
+	* d-frontend.cc (eval_builtin): Adjust condition for early return.
+	* intrinsics.cc (maybe_set_intrinsic): Set intrinsics as BUILTINgcc.
+	(maybe_expand_intrinsic): Add case for INTRINSIC_BSWAP16.
+	* intrinsics.def (INTRINSIC_BT): Update signature.
+	(INTRINSIC_BT64): Likewise.
+	(INTRINSIC_BSWAP16): New intrinsic.
+	(INTRINSIC_VLOAD8): Update module.
+	(INTRINSIC_VLOAD16): Likewise.
+	(INTRINSIC_VLOAD32): Likewise.
+	(INTRINSIC_VLOAD64): Likewise.
+	(INTRINSIC_VSTORE8): Likewise.
+	(INTRINSIC_VSTORE16): Likewise.
+	(INTRINSIC_VSTORE32): Likewise.
+	(INTRINSIC_VSTORE64): Likewise.
+	(INTRINSIC_ADDS): Update signature.
+	(INTRINSIC_ADDSL): Likewise.
+	(INTRINSIC_ADDU): Likewise.
+	(INTRINSIC_ADDUL): Likewise.
+	(INTRINSIC_SUBS): Likewise.
+	(INTRINSIC_SUBSL): Likewise.
+	(INTRINSIC_SUBU): Likewise.
+	(INTRINSIC_SUBUL): Likewise.
+	(INTRINSIC_MULS): Likewise.
+	(INTRINSIC_MULSL): Likewise.
+	(INTRINSIC_MULU): Likewise.
+	(INTRINSIC_MULUI): Likewise.
+	(INTRINSIC_MULUL): Likewise.
+	(INTRINSIC_NEGS): Likewise.
+	(INTRINSIC_NEGSL): Likewise.
+
 2021-02-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98921

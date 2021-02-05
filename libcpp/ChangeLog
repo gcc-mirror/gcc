@@ -1,3 +1,8 @@
+2021-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (cpp_classify_number): Use make_signed_t<size_t> instead of
+	make_signed<size_t>::type in the diagnostics.
+
 2021-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/98882

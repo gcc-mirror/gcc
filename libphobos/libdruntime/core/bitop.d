@@ -267,7 +267,7 @@ unittest
  * (No longer an intrisic - the compiler recognizes the patterns
  * in the body.)
  */
-int bt(in size_t* p, size_t bitnum) pure @system
+int bt(const scope size_t* p, size_t bitnum) pure @system
 {
     static if (size_t.sizeof == 8)
         return ((p[bitnum >> 6] & (1L << (bitnum & 63)))) != 0;
@@ -495,25 +495,61 @@ struct BitRange
 }
 
 /**
+ * Swaps bytes in a 2 byte ushort.
+ * Params:
+ *      x = value
+ * Returns:
+ *      `x` with bytes swapped
+ */
+pragma(inline, false)
+ushort byteswap(ushort x) pure
+{
+    /* Calling it bswap(ushort) would break existing code that calls bswap(uint).
+     *
+     * This pattern is meant to be recognized by the dmd code generator.
+     * Don't change it without checking that an XCH instruction is still
+     * used to implement it.
+     * Inlining may also throw it off.
+     */
+    return cast(ushort) (((x >> 8) & 0xFF) | ((x << 8) & 0xFF00u));
+}
+
+///
+unittest
+{
+    assert(byteswap(cast(ushort)0xF234) == 0x34F2);
+    static ushort xx = 0xF234;
+    assert(byteswap(xx) == 0x34F2);
+}
+
+/**
  * Swaps bytes in a 4 byte uint end-to-end, i.e. byte 0 becomes
  * byte 3, byte 1 becomes byte 2, byte 2 becomes byte 1, byte 3
  * becomes byte 0.
  */
 uint bswap(uint v) pure;
 
+///
+unittest
+{
+    assert(bswap(0x01020304u) == 0x04030201u);
+    static uint xx = 0x10203040u;
+    assert(bswap(xx) == 0x40302010u);
+}
+
 /**
  * Swaps bytes in an 8 byte ulong end-to-end, i.e. byte 0 becomes
  * byte 7, byte 1 becomes byte 6, etc.
+ * This is meant to be recognized by the compiler as an intrinsic.
  */
-ulong bswap(ulong v) pure
+ulong bswap(ulong v) pure;
+
+///
+unittest
 {
-    auto sv = Split64(v);
-
-    const temp = sv.lo;
-    sv.lo = bswap(sv.hi);
-    sv.hi = bswap(temp);
-
-    return (cast(ulong) sv.hi << 32) | sv.lo;
+    assert(bswap(0x01020304_05060708uL) == 0x08070605_04030201uL);
+    static ulong xx = 0x10203040_50607080uL;
+    assert(bswap(xx) == 0x80706050_40302010uL);
 }
 
 version (DigitalMars) version (AnyX86) @system // not pure
@@ -722,57 +758,14 @@ version (DigitalMars) version (AnyX86)
 }
 
 
-/*************************************
- * Read/write value from/to the memory location indicated by ptr.
- *
- * These functions are recognized by the compiler, and calls to them are guaranteed
- * to not be removed (as dead assignment elimination or presumed to have no effect)
- * or reordered in the same thread.
- *
- * These reordering guarantees are only made with regards to other
- * operations done through these functions; the compiler is free to reorder regular
- * loads/stores with regards to loads/stores done through these functions.
- *
- * This is useful when dealing with memory-mapped I/O (MMIO) where a store can
- * have an effect other than just writing a value, or where sequential loads
- * with no intervening stores can retrieve
- * different values from the same location due to external stores to the location.
- *
- * These functions will, when possible, do the load/store as a single operation. In
- * general, this is possible when the size of the operation is less than or equal to
- * $(D (void*).sizeof), although some targets may support larger operations. If the
- * load/store cannot be done as a single operation, multiple smaller operations will be used.
- *
- * These are not to be conflated with atomic operations. They do not guarantee any
- * atomicity. This may be provided by coincidence as a result of the instructions
- * used on the target, but this should not be relied on for portable programs.
- * Further, no memory fences are implied by these functions.
- * They should not be used for communication between threads.
- * They may be used to guarantee a write or read cycle occurs at a specified address.
- */
-
-ubyte  volatileLoad(ubyte * ptr);
-ushort volatileLoad(ushort* ptr);  /// ditto
-uint   volatileLoad(uint  * ptr);  /// ditto
-ulong  volatileLoad(ulong * ptr);  /// ditto
-
-void volatileStore(ubyte * ptr, ubyte  value);   /// ditto
-void volatileStore(ushort* ptr, ushort value);   /// ditto
-void volatileStore(uint  * ptr, uint   value);   /// ditto
-void volatileStore(ulong * ptr, ulong  value);   /// ditto
-
-@system unittest
+deprecated("volatileLoad has been moved to core.volatile. Use core.volatile.volatileLoad instead.")
 {
-    alias TT(T...) = T;
+    public import core.volatile : volatileLoad;
+}
 
-    foreach (T; TT!(ubyte, ushort, uint, ulong))
-    {
-        T u;
-        T* p = &u;
-        volatileStore(p, 1);
-        T r = volatileLoad(p);
-        assert(r == u);
-    }
+deprecated("volatileStore has been moved to core.volatile. Use core.volatile.volatileStore instead.")
+{
+    public import core.volatile : volatileStore;
 }
 
 
@@ -954,51 +947,51 @@ version (D_InlineAsm_X86_64)
  *  Bitwise rotate `value` left (`rol`) or right (`ror`) by
  *  `count` bit positions.
  */
-pure T rol(T)(in T value, in uint count)
+pure T rol(T)(const T value, const uint count)
     if (__traits(isIntegral, T) && __traits(isUnsigned, T))
 {
     assert(count < 8 * T.sizeof);
-    return cast(T) ((value << count) | (value >> (-count & (T.sizeof * 8 - 1))));
+    return cast(T) ((value << count) | (value >> (T.sizeof * 8 - count)));
 }
 /// ditto
-pure T ror(T)(in T value, in uint count)
+pure T ror(T)(const T value, const uint count)
     if (__traits(isIntegral, T) && __traits(isUnsigned, T))
 {
     assert(count < 8 * T.sizeof);
-    return cast(T) ((value >> count) | (value << (-count & (T.sizeof * 8 - 1))));
+    return cast(T) ((value >> count) | (value << (T.sizeof * 8 - count)));
 }
 /// ditto
-pure T rol(uint count, T)(in T value)
+pure T rol(uint count, T)(const T value)
     if (__traits(isIntegral, T) && __traits(isUnsigned, T))
 {
     static assert(count < 8 * T.sizeof);
-    return cast(T) ((value << count) | (value >> (-count & (T.sizeof * 8 - 1))));
+    return cast(T) ((value << count) | (value >> (T.sizeof * 8 - count)));
 }
 /// ditto
-pure T ror(uint count, T)(in T value)
+pure T ror(uint count, T)(const T value)
     if (__traits(isIntegral, T) && __traits(isUnsigned, T))
 {
     static assert(count < 8 * T.sizeof);
-    return cast(T) ((value >> count) | (value << (-count & (T.sizeof * 8 - 1))));
+    return cast(T) ((value >> count) | (value << (T.sizeof * 8 - count)));
 }
 
 ///
 unittest
 {
-    ubyte a = 0b10101010U;
-    ulong b = ulong.max;
+    ubyte a = 0b11110000U;
+    ulong b = ~1UL;
 
-    assert(rol(a, 1) == 0b01010101);
-    assert(ror(a, 1) == 0b01010101);
-    assert(rol(a, 3) == 0b01010101);
-    assert(ror(a, 3) == 0b01010101);
+    assert(rol(a, 1) == 0b11100001);
+    assert(ror(a, 1) == 0b01111000);
+    assert(rol(a, 3) == 0b10000111);
+    assert(ror(a, 3) == 0b00011110);
 
     assert(rol(a, 0) == a);
     assert(ror(a, 0) == a);
 
-    assert(rol(b, 63) == ulong.max);
-    assert(ror(b, 63) == ulong.max);
+    assert(rol(b, 63) == ~(1UL << 63));
+    assert(ror(b, 63) == ~2UL);
 
-    assert(rol!3(a) == 0b01010101);
-    assert(ror!3(a) == 0b01010101);
+    assert(rol!3(a) == 0b10000111);
+    assert(ror!3(a) == 0b00011110);
 }
