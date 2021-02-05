@@ -7203,8 +7203,8 @@ package body Exp_Util is
 
                   --  Actions belong to the then expression, temporarily place
                   --  them as Then_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  moved to the proper place later when the if expression is
+                  --  expanded.
 
                   elsif N = ThenX then
                      if Present (Then_Actions (P)) then
@@ -7217,10 +7217,7 @@ package body Exp_Util is
 
                      return;
 
-                  --  Actions belong to the else expression, temporarily place
-                  --  them as Else_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  Else_Actions is treated the same as Then_Actions above
 
                   elsif N = ElseX then
                      if Present (Else_Actions (P)) then

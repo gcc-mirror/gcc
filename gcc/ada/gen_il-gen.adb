@@ -479,13 +479,14 @@ package body Gen_IL.Gen is
       Node_Field_Types_Used, Entity_Field_Types_Used : Type_Set;
 
       Setter_Needs_Parent : Field_Set :=
-        (Actions | Expression | Else_Actions => True, others => False);
+        (Actions | Expression | Then_Actions | Else_Actions => True,
+         others => False);
       --  Set of fields where the setter should set the Parent. True for
       --  syntactic fields of type Node_Id and List_Id, but with some
-      --  exceptions. Expression and Else_Actions are syntactic AND semantic,
-      --  and the Parent is needed.  Default_Expression is also both, but the
-      --  Parent is not needed.  Else_Actions is not syntactic, but the Parent
-      --  is needed.
+      --  exceptions. Expression is syntactic AND semantic, and the Parent
+      --  is needed. Default_Expression is also both, but the Parent is not
+      --  needed. Then_Actions and Else_Actions are not syntactic, but the
+      --  Parent is needed.
 
       procedure Check_Completeness;
       --  Check that every type and field has been declared
