@@ -6848,7 +6848,7 @@ extern void mark_exp_read			(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree,
+extern tree do_friend				(tree, tree, tree,
 						 enum overload_flags, bool);
 
 extern void set_global_friend			(tree);

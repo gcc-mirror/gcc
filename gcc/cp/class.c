@@ -3314,7 +3314,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	bool is_friend = DECL_CONTEXT (space) != t;
 	if (is_friend)
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
-		     NULL_TREE, NO_SPECIAL, true);
+		     NO_SPECIAL, true);
 	else
 	  {
 	    add_method (t, eq, false);
