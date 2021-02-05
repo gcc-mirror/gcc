@@ -21,7 +21,6 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-name-resolver.h"
-
 #include "rust-diagnostics.h"
 #include "rust-location.h"
 
@@ -33,210 +32,181 @@ class ResolverBase : public AST::ASTVisitor
 public:
   virtual ~ResolverBase () {}
 
-  // visitor impl
-  // rust-ast.h
-  //  virtual void visit(AttrInput& attr_input);
-  //  virtual void visit(TokenTree& token_tree);
-  //  virtual void visit(MacroMatch& macro_match);
-  virtual void visit (AST::Token &tok) {}
-  virtual void visit (AST::DelimTokenTree &delim_tok_tree) {}
-  virtual void visit (AST::AttrInputMetaItemContainer &input) {}
-  //  virtual void visit(MetaItem& meta_item) {}
-  //  void vsit(Stmt& stmt) {}
-  //  virtual void visit(Expr& expr) {}
-  virtual void visit (AST::IdentifierExpr &ident_expr) {}
-  //  virtual void visit(Pattern& pattern) {}
-  //  virtual void visit(Type& type) {}
-  //  virtual void visit(TypeParamBound& type_param_bound) {}
-  virtual void visit (AST::Lifetime &lifetime) {}
-  //  virtual void visit(GenericParam& generic_param) {}
-  virtual void visit (AST::LifetimeParam &lifetime_param) {}
-  //  virtual void visit(TraitItem& trait_item) {}
-  //  virtual void visit(InherentImplItem& inherent_impl_item) {}
-  //  virtual void visit(TraitImplItem& trait_impl_item) {}
-  virtual void visit (AST::MacroInvocationSemi &macro) {}
+  void visit (AST::Token &) {}
+  void visit (AST::DelimTokenTree &) {}
+  void visit (AST::AttrInputMetaItemContainer &) {}
+  void visit (AST::IdentifierExpr &) {}
+  void visit (AST::Lifetime &) {}
+  void visit (AST::LifetimeParam &) {}
+  void visit (AST::MacroInvocationSemi &) {}
+  void visit (AST::PathInExpression &) {}
+  void visit (AST::TypePathSegment &) {}
+  void visit (AST::TypePathSegmentGeneric &) {}
+  void visit (AST::TypePathSegmentFunction &) {}
+  void visit (AST::TypePath &) {}
+  void visit (AST::QualifiedPathInExpression &) {}
+  void visit (AST::QualifiedPathInType &) {}
+  void visit (AST::LiteralExpr &) {}
+  void visit (AST::AttrInputLiteral &) {}
+  void visit (AST::MetaItemLitExpr &) {}
+  void visit (AST::MetaItemPathLit &) {}
+  void visit (AST::BorrowExpr &) {}
+  void visit (AST::DereferenceExpr &) {}
+  void visit (AST::ErrorPropagationExpr &) {}
+  void visit (AST::NegationExpr &) {}
+  void visit (AST::ArithmeticOrLogicalExpr &) {}
+  void visit (AST::ComparisonExpr &) {}
+  void visit (AST::LazyBooleanExpr &) {}
+  void visit (AST::TypeCastExpr &) {}
+  void visit (AST::AssignmentExpr &) {}
+  void visit (AST::CompoundAssignmentExpr &) {}
+  void visit (AST::GroupedExpr &) {}
+  void visit (AST::ArrayElemsValues &) {}
+  void visit (AST::ArrayElemsCopied &) {}
+  void visit (AST::ArrayExpr &) {}
+  void visit (AST::ArrayIndexExpr &) {}
+  void visit (AST::TupleExpr &) {}
+  void visit (AST::TupleIndexExpr &) {}
+  void visit (AST::StructExprStruct &) {}
+  void visit (AST::StructExprFieldIdentifier &) {}
+  void visit (AST::StructExprFieldIdentifierValue &) {}
+  void visit (AST::StructExprFieldIndexValue &) {}
+  void visit (AST::StructExprStructFields &) {}
+  void visit (AST::StructExprStructBase &) {}
+  void visit (AST::StructExprTuple &) {}
+  void visit (AST::StructExprUnit &) {}
+  void visit (AST::EnumExprFieldIdentifier &) {}
+  void visit (AST::EnumExprFieldIdentifierValue &) {}
+  void visit (AST::EnumExprFieldIndexValue &) {}
+  void visit (AST::EnumExprStruct &) {}
+  void visit (AST::EnumExprTuple &) {}
+  void visit (AST::EnumExprFieldless &) {}
+  void visit (AST::CallExpr &) {}
+  void visit (AST::MethodCallExpr &) {}
+  void visit (AST::FieldAccessExpr &) {}
+  void visit (AST::ClosureExprInner &) {}
+  void visit (AST::BlockExpr &) {}
+  void visit (AST::ClosureExprInnerTyped &) {}
+  void visit (AST::ContinueExpr &) {}
+  void visit (AST::BreakExpr &) {}
+  void visit (AST::RangeFromToExpr &) {}
+  void visit (AST::RangeFromExpr &) {}
+  void visit (AST::RangeToExpr &) {}
+  void visit (AST::RangeFullExpr &) {}
+  void visit (AST::RangeFromToInclExpr &) {}
+  void visit (AST::RangeToInclExpr &) {}
+  void visit (AST::ReturnExpr &) {}
+  void visit (AST::UnsafeBlockExpr &) {}
+  void visit (AST::LoopExpr &) {}
+  void visit (AST::WhileLoopExpr &) {}
+  void visit (AST::WhileLetLoopExpr &) {}
+  void visit (AST::ForLoopExpr &) {}
+  void visit (AST::IfExpr &) {}
+  void visit (AST::IfExprConseqElse &) {}
+  void visit (AST::IfExprConseqIf &) {}
+  void visit (AST::IfExprConseqIfLet &) {}
+  void visit (AST::IfLetExpr &) {}
+  void visit (AST::IfLetExprConseqElse &) {}
+  void visit (AST::IfLetExprConseqIf &) {}
+  void visit (AST::IfLetExprConseqIfLet &) {}
 
-  // rust-path.h
-  virtual void visit (AST::PathInExpression &path) {}
-  virtual void visit (AST::TypePathSegment &segment) {}
-  virtual void visit (AST::TypePathSegmentGeneric &segment) {}
-  virtual void visit (AST::TypePathSegmentFunction &segment) {}
-  virtual void visit (AST::TypePath &path) {}
-  virtual void visit (AST::QualifiedPathInExpression &path) {}
-  virtual void visit (AST::QualifiedPathInType &path) {}
+  void visit (AST::MatchExpr &) {}
+  void visit (AST::AwaitExpr &) {}
+  void visit (AST::AsyncBlockExpr &) {}
 
-  // rust-expr.h
-  virtual void visit (AST::LiteralExpr &expr) {}
-  virtual void visit (AST::AttrInputLiteral &attr_input) {}
-  virtual void visit (AST::MetaItemLitExpr &meta_item) {}
-  virtual void visit (AST::MetaItemPathLit &meta_item) {}
-  virtual void visit (AST::BorrowExpr &expr) {}
-  virtual void visit (AST::DereferenceExpr &expr) {}
-  virtual void visit (AST::ErrorPropagationExpr &expr) {}
-  virtual void visit (AST::NegationExpr &expr) {}
-  virtual void visit (AST::ArithmeticOrLogicalExpr &expr) {}
-  virtual void visit (AST::ComparisonExpr &expr) {}
-  virtual void visit (AST::LazyBooleanExpr &expr) {}
-  virtual void visit (AST::TypeCastExpr &expr) {}
-  virtual void visit (AST::AssignmentExpr &expr) {}
-  virtual void visit (AST::CompoundAssignmentExpr &expr) {}
-  virtual void visit (AST::GroupedExpr &expr) {}
-  //  virtual void visit(ArrayElems& elems) {}
-  virtual void visit (AST::ArrayElemsValues &elems) {}
-  virtual void visit (AST::ArrayElemsCopied &elems) {}
-  virtual void visit (AST::ArrayExpr &expr) {}
-  virtual void visit (AST::ArrayIndexExpr &expr) {}
-  virtual void visit (AST::TupleExpr &expr) {}
-  virtual void visit (AST::TupleIndexExpr &expr) {}
-  virtual void visit (AST::StructExprStruct &expr) {}
-  //  virtual void visit(StructExprField& field) {}
-  virtual void visit (AST::StructExprFieldIdentifier &field) {}
-  virtual void visit (AST::StructExprFieldIdentifierValue &field) {}
-  virtual void visit (AST::StructExprFieldIndexValue &field) {}
-  virtual void visit (AST::StructExprStructFields &expr) {}
-  virtual void visit (AST::StructExprStructBase &expr) {}
-  virtual void visit (AST::StructExprTuple &expr) {}
-  virtual void visit (AST::StructExprUnit &expr) {}
-  //  virtual void visit(EnumExprField& field) {}
-  virtual void visit (AST::EnumExprFieldIdentifier &field) {}
-  virtual void visit (AST::EnumExprFieldIdentifierValue &field) {}
-  virtual void visit (AST::EnumExprFieldIndexValue &field) {}
-  virtual void visit (AST::EnumExprStruct &expr) {}
-  virtual void visit (AST::EnumExprTuple &expr) {}
-  virtual void visit (AST::EnumExprFieldless &expr) {}
-  virtual void visit (AST::CallExpr &expr) {}
-  virtual void visit (AST::MethodCallExpr &expr) {}
-  virtual void visit (AST::FieldAccessExpr &expr) {}
-  virtual void visit (AST::ClosureExprInner &expr) {}
-  virtual void visit (AST::BlockExpr &expr) {}
-  virtual void visit (AST::ClosureExprInnerTyped &expr) {}
-  virtual void visit (AST::ContinueExpr &expr) {}
-  virtual void visit (AST::BreakExpr &expr) {}
-  virtual void visit (AST::RangeFromToExpr &expr) {}
-  virtual void visit (AST::RangeFromExpr &expr) {}
-  virtual void visit (AST::RangeToExpr &expr) {}
-  virtual void visit (AST::RangeFullExpr &expr) {}
-  virtual void visit (AST::RangeFromToInclExpr &expr) {}
-  virtual void visit (AST::RangeToInclExpr &expr) {}
-  virtual void visit (AST::ReturnExpr &expr) {}
-  virtual void visit (AST::UnsafeBlockExpr &expr) {}
-  virtual void visit (AST::LoopExpr &expr) {}
-  virtual void visit (AST::WhileLoopExpr &expr) {}
-  virtual void visit (AST::WhileLetLoopExpr &expr) {}
-  virtual void visit (AST::ForLoopExpr &expr) {}
-  virtual void visit (AST::IfExpr &expr) {}
-  virtual void visit (AST::IfExprConseqElse &expr) {}
-  virtual void visit (AST::IfExprConseqIf &expr) {}
-  virtual void visit (AST::IfExprConseqIfLet &expr) {}
-  virtual void visit (AST::IfLetExpr &expr) {}
-  virtual void visit (AST::IfLetExprConseqElse &expr) {}
-  virtual void visit (AST::IfLetExprConseqIf &expr) {}
-  virtual void visit (AST::IfLetExprConseqIfLet &expr) {}
-  //  virtual void visit(MatchCase& match_case) {}
-  // virtual void visit (AST::MatchCaseBlockExpr &match_case) {}
-  // virtual void visit (AST::MatchCaseExpr &match_case) {}
-  virtual void visit (AST::MatchExpr &expr) {}
-  virtual void visit (AST::AwaitExpr &expr) {}
-  virtual void visit (AST::AsyncBlockExpr &expr) {}
+  void visit (AST::TypeParam &) {}
 
-  // rust-item.h
-  virtual void visit (AST::TypeParam &param) {}
-  //  virtual void visit(WhereClauseItem& item) {}
-  virtual void visit (AST::LifetimeWhereClauseItem &item) {}
-  virtual void visit (AST::TypeBoundWhereClauseItem &item) {}
-  virtual void visit (AST::Method &method) {}
-  virtual void visit (AST::ModuleBodied &module) {}
-  virtual void visit (AST::ModuleNoBody &module) {}
-  virtual void visit (AST::ExternCrate &crate) {}
-  //  virtual void visit(UseTree& use_tree) {}
-  virtual void visit (AST::UseTreeGlob &use_tree) {}
-  virtual void visit (AST::UseTreeList &use_tree) {}
-  virtual void visit (AST::UseTreeRebind &use_tree) {}
-  virtual void visit (AST::UseDeclaration &use_decl) {}
-  virtual void visit (AST::Function &function) {}
-  virtual void visit (AST::TypeAlias &type_alias) {}
-  virtual void visit (AST::StructStruct &struct_item) {}
-  virtual void visit (AST::TupleStruct &tuple_struct) {}
-  virtual void visit (AST::EnumItem &item) {}
-  virtual void visit (AST::EnumItemTuple &item) {}
-  virtual void visit (AST::EnumItemStruct &item) {}
-  virtual void visit (AST::EnumItemDiscriminant &item) {}
-  virtual void visit (AST::Enum &enum_item) {}
-  virtual void visit (AST::Union &union_item) {}
-  virtual void visit (AST::ConstantItem &const_item) {}
-  virtual void visit (AST::StaticItem &static_item) {}
-  virtual void visit (AST::TraitItemFunc &item) {}
-  virtual void visit (AST::TraitItemMethod &item) {}
-  virtual void visit (AST::TraitItemConst &item) {}
-  virtual void visit (AST::TraitItemType &item) {}
-  virtual void visit (AST::Trait &trait) {}
-  virtual void visit (AST::InherentImpl &impl) {}
-  virtual void visit (AST::TraitImpl &impl) {}
-  //  virtual void visit(ExternalItem& item) {}
-  virtual void visit (AST::ExternalStaticItem &item) {}
-  virtual void visit (AST::ExternalFunctionItem &item) {}
-  virtual void visit (AST::ExternBlock &block) {}
+  void visit (AST::LifetimeWhereClauseItem &) {}
+  void visit (AST::TypeBoundWhereClauseItem &) {}
+  void visit (AST::Method &) {}
+  void visit (AST::ModuleBodied &) {}
+  void visit (AST::ModuleNoBody &) {}
+  void visit (AST::ExternCrate &) {}
 
-  // rust-macro.h
-  virtual void visit (AST::MacroMatchFragment &match) {}
-  virtual void visit (AST::MacroMatchRepetition &match) {}
-  virtual void visit (AST::MacroMatcher &matcher) {}
-  virtual void visit (AST::MacroRulesDefinition &rules_def) {}
-  virtual void visit (AST::MacroInvocation &macro_invoc) {}
-  virtual void visit (AST::MetaItemPath &meta_item) {}
-  virtual void visit (AST::MetaItemSeq &meta_item) {}
-  virtual void visit (AST::MetaWord &meta_item) {}
-  virtual void visit (AST::MetaNameValueStr &meta_item) {}
-  virtual void visit (AST::MetaListPaths &meta_item) {}
-  virtual void visit (AST::MetaListNameValueStr &meta_item) {}
+  void visit (AST::UseTreeGlob &) {}
+  void visit (AST::UseTreeList &) {}
+  void visit (AST::UseTreeRebind &) {}
+  void visit (AST::UseDeclaration &) {}
+  void visit (AST::Function &) {}
+  void visit (AST::TypeAlias &) {}
+  void visit (AST::StructStruct &) {}
+  void visit (AST::TupleStruct &) {}
+  void visit (AST::EnumItem &) {}
+  void visit (AST::EnumItemTuple &) {}
+  void visit (AST::EnumItemStruct &) {}
+  void visit (AST::EnumItemDiscriminant &) {}
+  void visit (AST::Enum &) {}
+  void visit (AST::Union &) {}
+  void visit (AST::ConstantItem &) {}
+  void visit (AST::StaticItem &) {}
+  void visit (AST::TraitItemFunc &) {}
+  void visit (AST::TraitItemMethod &) {}
+  void visit (AST::TraitItemConst &) {}
+  void visit (AST::TraitItemType &) {}
+  void visit (AST::Trait &) {}
+  void visit (AST::InherentImpl &) {}
+  void visit (AST::TraitImpl &) {}
 
-  // rust-pattern.h
-  virtual void visit (AST::LiteralPattern &pattern) {}
-  virtual void visit (AST::IdentifierPattern &pattern) {}
-  virtual void visit (AST::WildcardPattern &pattern) {}
-  //  virtual void visit(RangePatternBound& bound) {}
-  virtual void visit (AST::RangePatternBoundLiteral &bound) {}
-  virtual void visit (AST::RangePatternBoundPath &bound) {}
-  virtual void visit (AST::RangePatternBoundQualPath &bound) {}
-  virtual void visit (AST::RangePattern &pattern) {}
-  virtual void visit (AST::ReferencePattern &pattern) {}
-  //  virtual void visit(StructPatternField& field) {}
-  virtual void visit (AST::StructPatternFieldTuplePat &field) {}
-  virtual void visit (AST::StructPatternFieldIdentPat &field) {}
-  virtual void visit (AST::StructPatternFieldIdent &field) {}
-  virtual void visit (AST::StructPattern &pattern) {}
-  //  virtual void visit(TupleStructItems& tuple_items) {}
-  virtual void visit (AST::TupleStructItemsNoRange &tuple_items) {}
-  virtual void visit (AST::TupleStructItemsRange &tuple_items) {}
-  virtual void visit (AST::TupleStructPattern &pattern) {}
-  //  virtual void visit(TuplePatternItems& tuple_items) {}
-  virtual void visit (AST::TuplePatternItemsMultiple &tuple_items) {}
-  virtual void visit (AST::TuplePatternItemsRanged &tuple_items) {}
-  virtual void visit (AST::TuplePattern &pattern) {}
-  virtual void visit (AST::GroupedPattern &pattern) {}
-  virtual void visit (AST::SlicePattern &pattern) {}
+  void visit (AST::ExternalStaticItem &) {}
+  void visit (AST::ExternalFunctionItem &) {}
+  void visit (AST::ExternBlock &) {}
 
-  // rust-stmt.h
-  virtual void visit (AST::EmptyStmt &stmt) {}
-  virtual void visit (AST::LetStmt &stmt) {}
-  virtual void visit (AST::ExprStmtWithoutBlock &stmt) {}
-  virtual void visit (AST::ExprStmtWithBlock &stmt) {}
+  void visit (AST::MacroMatchFragment &) {}
+  void visit (AST::MacroMatchRepetition &) {}
+  void visit (AST::MacroMatcher &) {}
+  void visit (AST::MacroRulesDefinition &) {}
+  void visit (AST::MacroInvocation &) {}
+  void visit (AST::MetaItemPath &) {}
+  void visit (AST::MetaItemSeq &) {}
+  void visit (AST::MetaWord &) {}
+  void visit (AST::MetaNameValueStr &) {}
+  void visit (AST::MetaListPaths &) {}
+  void visit (AST::MetaListNameValueStr &) {}
 
-  // rust-type.h
-  virtual void visit (AST::TraitBound &bound) {}
-  virtual void visit (AST::ImplTraitType &type) {}
-  virtual void visit (AST::TraitObjectType &type) {}
-  virtual void visit (AST::ParenthesisedType &type) {}
-  virtual void visit (AST::ImplTraitTypeOneBound &type) {}
-  virtual void visit (AST::TraitObjectTypeOneBound &type) {}
-  virtual void visit (AST::TupleType &type) {}
-  virtual void visit (AST::NeverType &type) {}
-  virtual void visit (AST::RawPointerType &type) {}
-  virtual void visit (AST::ReferenceType &type) {}
-  virtual void visit (AST::ArrayType &type) {}
-  virtual void visit (AST::SliceType &type) {}
-  virtual void visit (AST::InferredType &type) {}
-  virtual void visit (AST::BareFunctionType &type) {}
+  void visit (AST::LiteralPattern &) {}
+  void visit (AST::IdentifierPattern &) {}
+  void visit (AST::WildcardPattern &) {}
+
+  void visit (AST::RangePatternBoundLiteral &) {}
+  void visit (AST::RangePatternBoundPath &) {}
+  void visit (AST::RangePatternBoundQualPath &) {}
+  void visit (AST::RangePattern &) {}
+  void visit (AST::ReferencePattern &) {}
+
+  void visit (AST::StructPatternFieldTuplePat &) {}
+  void visit (AST::StructPatternFieldIdentPat &) {}
+  void visit (AST::StructPatternFieldIdent &) {}
+  void visit (AST::StructPattern &) {}
+
+  void visit (AST::TupleStructItemsNoRange &) {}
+  void visit (AST::TupleStructItemsRange &) {}
+  void visit (AST::TupleStructPattern &) {}
+
+  void visit (AST::TuplePatternItemsMultiple &) {}
+  void visit (AST::TuplePatternItemsRanged &) {}
+  void visit (AST::TuplePattern &) {}
+  void visit (AST::GroupedPattern &) {}
+  void visit (AST::SlicePattern &) {}
+
+  void visit (AST::EmptyStmt &) {}
+  void visit (AST::LetStmt &) {}
+  void visit (AST::ExprStmtWithoutBlock &) {}
+  void visit (AST::ExprStmtWithBlock &) {}
+
+  void visit (AST::TraitBound &) {}
+  void visit (AST::ImplTraitType &) {}
+  void visit (AST::TraitObjectType &) {}
+  void visit (AST::ParenthesisedType &) {}
+  void visit (AST::ImplTraitTypeOneBound &) {}
+  void visit (AST::TraitObjectTypeOneBound &) {}
+  void visit (AST::TupleType &) {}
+  void visit (AST::NeverType &) {}
+  void visit (AST::RawPointerType &) {}
+  void visit (AST::ReferenceType &) {}
+  void visit (AST::ArrayType &) {}
+  void visit (AST::SliceType &) {}
+  void visit (AST::InferredType &) {}
+  void visit (AST::BareFunctionType &) {}
 
 protected:
   ResolverBase (NodeId parent)

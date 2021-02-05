@@ -227,11 +227,11 @@ public:
 
   virtual ~TyTyResolveCompile () {}
 
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override
   {
@@ -266,7 +266,7 @@ public:
       ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::UnitType &type) override
+  void visit (TyTy::UnitType &) override
   {
     translated = ctx->get_backend ()->void_type ();
   }

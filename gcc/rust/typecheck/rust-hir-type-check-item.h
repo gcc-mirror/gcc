@@ -38,7 +38,7 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (HIR::InherentImpl &impl_block)
+  void visit (HIR::InherentImpl &impl_block) override
   {
     TyTy::TyBase *self = nullptr;
     if (!context->lookup_type (
@@ -53,7 +53,7 @@ public:
       TypeCheckImplItem::Resolve (impl_item.get (), self);
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     TyTy::TyBase *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
