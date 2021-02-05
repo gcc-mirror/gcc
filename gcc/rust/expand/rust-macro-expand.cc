@@ -1504,7 +1504,7 @@ public:
 	return;
       }
 
-    // TODO: strip sub-patterns of pattern
+    // strip sub-patterns of pattern
     auto &pattern = expr.get_pattern ();
     pattern->accept_vis (*this);
     if (pattern->is_marked_for_strip ())
@@ -3283,7 +3283,12 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 	    attr.parse_attr_to_meta_item ();
 
 	  if (!attr.check_cfg_predicate (session))
+    {
+      // DEBUG
+      fprintf (stderr, "cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ());
+
 	    return true;
+    }
 	}
     }
   return false;
