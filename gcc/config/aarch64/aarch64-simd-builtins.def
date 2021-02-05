@@ -55,6 +55,9 @@
   BUILTIN_VS (UNOP, ctz, 2, NONE)
   BUILTIN_VB (UNOP, popcount, 2, NONE)
 
+  /* Implemented by aarch64_get_low<mode>.  */
+  BUILTIN_VQMOV (UNOP, get_low, 0, AUTO_FP)
+
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0, NONE)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0, NONE)

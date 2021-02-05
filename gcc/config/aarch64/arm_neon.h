@@ -6302,110 +6302,103 @@ vsetq_lane_u64 (uint64_t __elem, uint64x2_t __vec, const int __index)
   return __aarch64_vset_lane_any (__elem, __vec, __index);
 }
 
-#define __GET_LOW(__TYPE) \
-  uint64x2_t tmp = vreinterpretq_u64_##__TYPE (__a);  \
-  uint64x1_t lo = vcreate_u64 (vgetq_lane_u64 (tmp, 0));  \
-  return vreinterpret_##__TYPE##_u64 (lo);
-
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_f16 (float16x8_t __a)
 {
-  __GET_LOW (f16);
+  return __builtin_aarch64_get_lowv8hf (__a);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_f32 (float32x4_t __a)
 {
-  __GET_LOW (f32);
+  return __builtin_aarch64_get_lowv4sf (__a);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_f64 (float64x2_t __a)
 {
-  return (float64x1_t) {vgetq_lane_f64 (__a, 0)};
+  return (float64x1_t) {__builtin_aarch64_get_lowv2df (__a)};
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_p8 (poly8x16_t __a)
 {
-  __GET_LOW (p8);
+  return (poly8x8_t) __builtin_aarch64_get_lowv16qi ((int8x16_t) __a);
 }
 
 __extension__ extern __inline poly16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_p16 (poly16x8_t __a)
 {
-  __GET_LOW (p16);
+  return (poly16x4_t) __builtin_aarch64_get_lowv8hi ((int16x8_t) __a);
 }
 
 __extension__ extern __inline poly64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_p64 (poly64x2_t __a)
 {
-  __GET_LOW (p64);
+  return (poly64x1_t) __builtin_aarch64_get_lowv2di ((int64x2_t) __a);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_s8 (int8x16_t __a)
 {
-  __GET_LOW (s8);
+  return  __builtin_aarch64_get_lowv16qi (__a);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_s16 (int16x8_t __a)
 {
-  __GET_LOW (s16);
+  return  __builtin_aarch64_get_lowv8hi (__a);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_s32 (int32x4_t __a)
 {
-  __GET_LOW (s32);
+  return  __builtin_aarch64_get_lowv4si (__a);
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_s64 (int64x2_t __a)
 {
-  __GET_LOW (s64);
+  return  (int64x1_t) {__builtin_aarch64_get_lowv2di (__a)};
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_u8 (uint8x16_t __a)
 {
-  __GET_LOW (u8);
+  return (uint8x8_t) __builtin_aarch64_get_lowv16qi ((int8x16_t) __a);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_u16 (uint16x8_t __a)
 {
-  __GET_LOW (u16);
+  return (uint16x4_t) __builtin_aarch64_get_lowv8hi ((int16x8_t) __a);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_u32 (uint32x4_t __a)
 {
-  __GET_LOW (u32);
+  return (uint32x2_t) __builtin_aarch64_get_lowv4si ((int32x4_t) __a);
 }
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_low_u64 (uint64x2_t __a)
 {
-  return vcreate_u64 (vgetq_lane_u64 (__a, 0));
+  return (uint64x1_t) {__builtin_aarch64_get_lowv2di ((int64x2_t) __a)};
 }
-
-#undef __GET_LOW
 
 #define __GET_HIGH(__TYPE)					\
   uint64x2_t tmp = vreinterpretq_u64_##__TYPE (__a);		\
