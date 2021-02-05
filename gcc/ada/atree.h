@@ -72,144 +72,60 @@ extern Node_Id Current_Error_Node;
 extern Field_Offset *Node_Offsets_Ptr;
 extern any_slot *Slots_Ptr;
 
-INLINE Union_Id Get_1_Bit_Field (Node_Id N, Field_Offset Offset);
-INLINE Union_Id Get_2_Bit_Field (Node_Id N, Field_Offset Offset);
-INLINE Union_Id Get_4_Bit_Field (Node_Id N, Field_Offset Offset);
-INLINE Union_Id Get_8_Bit_Field (Node_Id N, Field_Offset Offset);
-INLINE Union_Id Get_32_Bit_Field (Node_Id N, Field_Offset Offset);
-INLINE Union_Id Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
-					       Union_Id Default_Value);
+INLINE unsigned int Get_1_Bit_Field (Node_Id, Field_Offset);
+INLINE unsigned int Get_2_Bit_Field (Node_Id, Field_Offset);
+INLINE unsigned int Get_4_Bit_Field (Node_Id, Field_Offset);
+INLINE unsigned int Get_8_Bit_Field (Node_Id, Field_Offset);
+INLINE unsigned int Get_32_Bit_Field (Node_Id, Field_Offset);
+INLINE unsigned int Get_32_Bit_Field_With_Default (Node_Id, Field_Offset,
+						   unsigned int);
 
-INLINE Union_Id
+INLINE unsigned int
 Get_1_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-  const Field_Offset L = 32;
-
-  slot_1_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_1;
-
-  switch (Offset % L)
-    {
-    case 0: return slot.f0;
-    case 1: return slot.f1;
-    case 2: return slot.f2;
-    case 3: return slot.f3;
-    case 4: return slot.f4;
-    case 5: return slot.f5;
-    case 6: return slot.f6;
-    case 7: return slot.f7;
-    case 8: return slot.f8;
-    case 9: return slot.f9;
-    case 10: return slot.f10;
-    case 11: return slot.f11;
-    case 12: return slot.f12;
-    case 13: return slot.f13;
-    case 14: return slot.f14;
-    case 15: return slot.f15;
-    case 16: return slot.f16;
-    case 17: return slot.f17;
-    case 18: return slot.f18;
-    case 19: return slot.f19;
-    case 20: return slot.f20;
-    case 21: return slot.f21;
-    case 22: return slot.f22;
-    case 23: return slot.f23;
-    case 24: return slot.f24;
-    case 25: return slot.f25;
-    case 26: return slot.f26;
-    case 27: return slot.f27;
-    case 28: return slot.f28;
-    case 29: return slot.f29;
-    case 30: return slot.f30;
-    case 31: return slot.f31;
-    default: gcc_unreachable ();
-    }
+  const Field_Offset L = Slot_Size / 1;
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  return (slot >> (Offset % L) * (Slot_Size / L)) & 1;
 }
 
-INLINE Union_Id
+INLINE unsigned int
 Get_2_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-  const Field_Offset L = 16;
-
-  slot_2_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_2;
-
-  switch (Offset % L)
-    {
-    case 0: return slot.f0;
-    case 1: return slot.f1;
-    case 2: return slot.f2;
-    case 3: return slot.f3;
-    case 4: return slot.f4;
-    case 5: return slot.f5;
-    case 6: return slot.f6;
-    case 7: return slot.f7;
-    case 8: return slot.f8;
-    case 9: return slot.f9;
-    case 10: return slot.f10;
-    case 11: return slot.f11;
-    case 12: return slot.f12;
-    case 13: return slot.f13;
-    case 14: return slot.f14;
-    case 15: return slot.f15;
-    default: gcc_unreachable ();
-    }
+  const Field_Offset L = Slot_Size / 2;
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  return (slot >> (Offset % L) * (Slot_Size / L)) & 3;
 }
 
-INLINE Union_Id
+INLINE unsigned int
 Get_4_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-  const Field_Offset L = 8;
-
-  slot_4_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_4;
-
-  switch (Offset % L)
-    {
-    case 0: return slot.f0;
-    case 1: return slot.f1;
-    case 2: return slot.f2;
-    case 3: return slot.f3;
-    case 4: return slot.f4;
-    case 5: return slot.f5;
-    case 6: return slot.f6;
-    case 7: return slot.f7;
-    default: gcc_unreachable ();
-    }
+  const Field_Offset L = Slot_Size / 4;
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  return (slot >> (Offset % L) * (Slot_Size / L)) & 15;
 }
 
-INLINE Union_Id
+INLINE unsigned int
 Get_8_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-  const Field_Offset L = 4;
-
-  slot_8_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_8;
-
-  switch (Offset % L)
-    {
-    case 0: return slot.f0;
-    case 1: return slot.f1;
-    case 2: return slot.f2;
-    case 3: return slot.f3;
-    default: gcc_unreachable ();
-    }
+  const Field_Offset L = Slot_Size / 8;
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  return (slot >> (Offset % L) * (Slot_Size / L)) & 255;
 }
 
-INLINE Union_Id
+INLINE unsigned int
 Get_32_Bit_Field (Node_Id N, Field_Offset Offset)
 {
   const Field_Offset L = 1;
-
-  slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_32;
-
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
   return slot;
 }
 
-INLINE Union_Id
+INLINE unsigned int
 Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
-			       Union_Id Default_Value)
+			       unsigned int Default_Value)
 {
   const Field_Offset L = 1;
-
-  slot_32_bit slot = (Slots_Ptr + (Node_Offsets_Ptr[N] + Offset / L))->slot_32;
-
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
   return slot == Empty ? Default_Value : slot;
 }
 

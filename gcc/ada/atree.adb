@@ -599,119 +599,55 @@ package body Atree is
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_1_Bit
       is
          --  We wish we were using packed arrays, but instead we're simulating
-         --  packed arrays using packed records. L here (and elsewhere) is the
-         --  'Length of that array.
-         L : constant Field_Offset := 32;
+         --  them with modular integers. L here (and elsewhere) is the 'Length
+         --  of that simulated array.
+         L : constant Field_Offset := Slot_Size / 1;
 
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => return S.Slot_1.F0;
-            when 1 => return S.Slot_1.F1;
-            when 2 => return S.Slot_1.F2;
-            when 3 => return S.Slot_1.F3;
-            when 4 => return S.Slot_1.F4;
-            when 5 => return S.Slot_1.F5;
-            when 6 => return S.Slot_1.F6;
-            when 7 => return S.Slot_1.F7;
-            when 8 => return S.Slot_1.F8;
-            when 9 => return S.Slot_1.F9;
-            when 10 => return S.Slot_1.F10;
-            when 11 => return S.Slot_1.F11;
-            when 12 => return S.Slot_1.F12;
-            when 13 => return S.Slot_1.F13;
-            when 14 => return S.Slot_1.F14;
-            when 15 => return S.Slot_1.F15;
-            when 16 => return S.Slot_1.F16;
-            when 17 => return S.Slot_1.F17;
-            when 18 => return S.Slot_1.F18;
-            when 19 => return S.Slot_1.F19;
-            when 20 => return S.Slot_1.F20;
-            when 21 => return S.Slot_1.F21;
-            when 22 => return S.Slot_1.F22;
-            when 23 => return S.Slot_1.F23;
-            when 24 => return S.Slot_1.F24;
-            when 25 => return S.Slot_1.F25;
-            when 26 => return S.Slot_1.F26;
-            when 27 => return S.Slot_1.F27;
-            when 28 => return S.Slot_1.F28;
-            when 29 => return S.Slot_1.F29;
-            when 30 => return S.Slot_1.F30;
-            when 31 => return S.Slot_1.F31;
-         end case;
+         return Field_1_Bit (Shift_Right (S, V) and 1);
       end Get_1_Bit_Val;
 
       function Get_2_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_2_Bit
       is
-         L : constant Field_Offset := 16;
+         L : constant Field_Offset := Slot_Size / 2;
 
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => return S.Slot_2.F0;
-            when 1 => return S.Slot_2.F1;
-            when 2 => return S.Slot_2.F2;
-            when 3 => return S.Slot_2.F3;
-            when 4 => return S.Slot_2.F4;
-            when 5 => return S.Slot_2.F5;
-            when 6 => return S.Slot_2.F6;
-            when 7 => return S.Slot_2.F7;
-            when 8 => return S.Slot_2.F8;
-            when 9 => return S.Slot_2.F9;
-            when 10 => return S.Slot_2.F10;
-            when 11 => return S.Slot_2.F11;
-            when 12 => return S.Slot_2.F12;
-            when 13 => return S.Slot_2.F13;
-            when 14 => return S.Slot_2.F14;
-            when 15 => return S.Slot_2.F15;
-         end case;
+         return Field_2_Bit (Shift_Right (S, V) and 3);
       end Get_2_Bit_Val;
 
       function Get_4_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_4_Bit
       is
-         L : constant Field_Offset := 8;
+         L : constant Field_Offset := Slot_Size / 4;
 
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => return S.Slot_4.F0;
-            when 1 => return S.Slot_4.F1;
-            when 2 => return S.Slot_4.F2;
-            when 3 => return S.Slot_4.F3;
-            when 4 => return S.Slot_4.F4;
-            when 5 => return S.Slot_4.F5;
-            when 6 => return S.Slot_4.F6;
-            when 7 => return S.Slot_4.F7;
-         end case;
+         return Field_4_Bit (Shift_Right (S, V) and 15);
       end Get_4_Bit_Val;
 
       function Get_8_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_8_Bit
       is
-         L : constant Field_Offset := 4;
+         L : constant Field_Offset := Slot_Size / 8;
 
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => return S.Slot_8.F0;
-            when 1 => return S.Slot_8.F1;
-            when 2 => return S.Slot_8.F2;
-            when 3 => return S.Slot_8.F3;
-         end case;
+         return Field_8_Bit (Shift_Right (S, V) and 255);
       end Get_8_Bit_Val;
 
       function Get_32_Bit_Val
@@ -721,123 +657,59 @@ package body Atree is
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset);
       begin
-         return S.Slot_32;
+         return Field_32_Bit (S);
       end Get_32_Bit_Val;
 
       procedure Set_1_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_1_Bit)
       is
-         L : constant Field_Offset := 32;
+         L : constant Field_Offset := Slot_Size / 1;
 
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => S.Slot_1.F0 := Val;
-            when 1 => S.Slot_1.F1 := Val;
-            when 2 => S.Slot_1.F2 := Val;
-            when 3 => S.Slot_1.F3 := Val;
-            when 4 => S.Slot_1.F4 := Val;
-            when 5 => S.Slot_1.F5 := Val;
-            when 6 => S.Slot_1.F6 := Val;
-            when 7 => S.Slot_1.F7 := Val;
-            when 8 => S.Slot_1.F8 := Val;
-            when 9 => S.Slot_1.F9 := Val;
-            when 10 => S.Slot_1.F10 := Val;
-            when 11 => S.Slot_1.F11 := Val;
-            when 12 => S.Slot_1.F12 := Val;
-            when 13 => S.Slot_1.F13 := Val;
-            when 14 => S.Slot_1.F14 := Val;
-            when 15 => S.Slot_1.F15 := Val;
-            when 16 => S.Slot_1.F16 := Val;
-            when 17 => S.Slot_1.F17 := Val;
-            when 18 => S.Slot_1.F18 := Val;
-            when 19 => S.Slot_1.F19 := Val;
-            when 20 => S.Slot_1.F20 := Val;
-            when 21 => S.Slot_1.F21 := Val;
-            when 22 => S.Slot_1.F22 := Val;
-            when 23 => S.Slot_1.F23 := Val;
-            when 24 => S.Slot_1.F24 := Val;
-            when 25 => S.Slot_1.F25 := Val;
-            when 26 => S.Slot_1.F26 := Val;
-            when 27 => S.Slot_1.F27 := Val;
-            when 28 => S.Slot_1.F28 := Val;
-            when 29 => S.Slot_1.F29 := Val;
-            when 30 => S.Slot_1.F30 := Val;
-            when 31 => S.Slot_1.F31 := Val;
-         end case;
+         S := (S and not Shift_Left (1, V)) or Shift_Left (Slot (Val), V);
       end Set_1_Bit_Val;
 
       procedure Set_2_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_2_Bit)
       is
-         L : constant Field_Offset := 16;
+         L : constant Field_Offset := Slot_Size / 2;
 
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => S.Slot_2.F0 := Val;
-            when 1 => S.Slot_2.F1 := Val;
-            when 2 => S.Slot_2.F2 := Val;
-            when 3 => S.Slot_2.F3 := Val;
-            when 4 => S.Slot_2.F4 := Val;
-            when 5 => S.Slot_2.F5 := Val;
-            when 6 => S.Slot_2.F6 := Val;
-            when 7 => S.Slot_2.F7 := Val;
-            when 8 => S.Slot_2.F8 := Val;
-            when 9 => S.Slot_2.F9 := Val;
-            when 10 => S.Slot_2.F10 := Val;
-            when 11 => S.Slot_2.F11 := Val;
-            when 12 => S.Slot_2.F12 := Val;
-            when 13 => S.Slot_2.F13 := Val;
-            when 14 => S.Slot_2.F14 := Val;
-            when 15 => S.Slot_2.F15 := Val;
-         end case;
+         S := (S and not Shift_Left (3, V)) or Shift_Left (Slot (Val), V);
       end Set_2_Bit_Val;
 
       procedure Set_4_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_4_Bit)
       is
-         L : constant Field_Offset := 8;
+         L : constant Field_Offset := Slot_Size / 4;
 
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => S.Slot_4.F0 := Val;
-            when 1 => S.Slot_4.F1 := Val;
-            when 2 => S.Slot_4.F2 := Val;
-            when 3 => S.Slot_4.F3 := Val;
-            when 4 => S.Slot_4.F4 := Val;
-            when 5 => S.Slot_4.F5 := Val;
-            when 6 => S.Slot_4.F6 := Val;
-            when 7 => S.Slot_4.F7 := Val;
-         end case;
+         S := (S and not Shift_Left (15, V)) or Shift_Left (Slot (Val), V);
       end Set_4_Bit_Val;
 
       procedure Set_8_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_8_Bit)
       is
-         L : constant Field_Offset := 4;
+         L : constant Field_Offset := Slot_Size / 8;
 
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
-         subtype Offset_In_Slot is Field_Offset range 0 .. L - 1;
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
+         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
       begin
-         case Offset_In_Slot'(Offset mod L) is
-            when 0 => S.Slot_8.F0 := Val;
-            when 1 => S.Slot_8.F1 := Val;
-            when 2 => S.Slot_8.F2 := Val;
-            when 3 => S.Slot_8.F3 := Val;
-         end case;
+         S := (S and not Shift_Left (255, V)) or Shift_Left (Slot (Val), V);
       end Set_8_Bit_Val;
 
       procedure Set_32_Bit_Val
@@ -847,7 +719,7 @@ package body Atree is
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset);
       begin
-         S.Slot_32 := Val;
+         S := Slot (Val);
       end Set_32_Bit_Val;
 
    end Atree_Private_Part;
@@ -2006,7 +1878,7 @@ package body Atree is
    ----------------------
 
    procedure Print_Atree_Info (N : Node_Or_Entity_Id) is
-      function Cast is new Unchecked_Conversion (Slot_32_Bit, Int);
+      function Cast is new Unchecked_Conversion (Slot, Int);
    begin
       Write_Int (Int (Size_In_Slots (N)));
       Write_Str (" slots (");
@@ -2017,7 +1889,7 @@ package body Atree is
 
       for Off in Off_0 (N) .. Off_L (N) loop
          Write_Str (" ");
-         Write_Int (Cast (Slots.Table (Off).Slot_32));
+         Write_Int (Cast (Slots.Table (Off)));
       end loop;
 
       Write_Eol;
@@ -2507,7 +2379,7 @@ package body Atree is
       Locked := False;
    end Unlock_Nodes;
 
-   Zero : constant Slot := (Field_Size => 32, Slot_32 => 0);
+   Zero : constant Slot := 0;
 
    procedure Zero_Slots (F, L : Node_Offset) is
    begin

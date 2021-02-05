@@ -722,57 +722,21 @@ package Atree is
          Table_Increment      => Alloc.Node_Offsets_Increment,
          Table_Name           => "Node_Offsets");
 
-      --  We define type Slot as a packed Unchecked_Union of slots with
-      --  appropriate numbers of components of appropriate size. The reason
-      --  for this (as opposed to using packed arrays) is that we are using
-      --  bit fields on the C++ side, and C++ doesn't have packed arrays.
+      --  We define the type Slot as a 32-bit modular integer. It is logically
+      --  split into the appropriate numbers of components of appropriate size,
+      --  but this splitting is not explicit because packed arrays cannot be
+      --  properly interfaced in C/C++ and packed records are way too slow.
 
-      type Field_1_Bit is mod 2**1;
-      type Slot_1_Bit is record -- 32 1-bit fields
-         F0, F1, F2, F3, F4, F5, F6, F7, F8, F9,
-         F10, F11, F12, F13, F14, F15, F16, F17, F18, F19,
-         F20, F21, F22, F23, F24, F25, F26, F27, F28, F29,
-         F30, F31 :
-           Field_1_Bit;
-      end record with Pack, Convention => C;
-      pragma Assert (Slot_1_Bit'Size = 32);
+      Slot_Size : constant := 32;
+      type Slot is mod 2**Slot_Size;
+      for Slot'Size use Slot_Size;
+      pragma Provide_Shift_Operators (Slot);
 
-      type Field_2_Bit is mod 2**2;
-      type Slot_2_Bit is record -- 16 2-bit fields
-         F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15 :
-           Field_2_Bit;
-      end record with Pack, Convention => C;
-      pragma Assert (Slot_2_Bit'Size = 32);
-
-      type Field_4_Bit is mod 2**4;
-      type Slot_4_Bit is record -- 8 4-bit fields
-         F0, F1, F2, F3, F4, F5, F6, F7 :
-           Field_4_Bit;
-      end record with Pack, Convention => C;
-      pragma Assert (Slot_4_Bit'Size = 32);
-
-      type Field_8_Bit is mod 2**8;
-      type Slot_8_Bit is record -- 4 8-bit fields
-         F0, F1, F2, F3 :
-           Field_8_Bit;
-      end record with Pack, Convention => C;
-      pragma Assert (Slot_8_Bit'Size = 32);
-
+      type Field_1_Bit  is mod 2**1;
+      type Field_2_Bit  is mod 2**2;
+      type Field_4_Bit  is mod 2**4;
+      type Field_8_Bit  is mod 2**8;
       type Field_32_Bit is mod 2**32;
-      subtype Slot_32_Bit is Field_32_Bit; -- 1 32-bit field
-      pragma Assert (Slot_32_Bit'Size = 32);
-
-      type Slot (Field_Size : Field_Size_In_Bits := 9999) is record
-         case Field_Size is
-            when 1 => Slot_1 : Slot_1_Bit;
-            when 2 => Slot_2 : Slot_2_Bit;
-            when 4 => Slot_4 : Slot_4_Bit;
-            when 8 => Slot_8 : Slot_8_Bit;
-            when 32 => Slot_32 : Slot_32_Bit;
-            when others => null;
-         end case;
-      end record with Unchecked_Union;
-      pragma Assert (Slot'Size = 32);
 
       Slots_Low_Bound : constant Field_Offset := Field_Offset'First + 1;
 
