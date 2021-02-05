@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "output.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -6845,8 +6846,9 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
-  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
-  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+  HOST_WIDE_INT patch_area_size, patch_area_entry;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_entry);
 
   tree patchable_function_entry_attr
     = lookup_attribute ("patchable_function_entry",

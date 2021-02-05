@@ -2130,6 +2130,44 @@ check_alignment_argument (location_t loc, const char *flag, const char *name,
     }
 }
 
+/* Parse argument of -fpatchable-function-entry option ARG and store
+   corresponding values to PATCH_AREA_SIZE and PATCH_AREA_START.
+   If REPORT_ERROR is set to true, generate error for a problematic
+   option arguments.  */
+
+void
+parse_and_check_patch_area (const char *arg, bool report_error,
+			    HOST_WIDE_INT *patch_area_size,
+			    HOST_WIDE_INT *patch_area_start)
+{
+  *patch_area_size = 0;
+  *patch_area_start = 0;
+
+  if (arg == NULL)
+    return;
+
+  char *patch_area_arg = xstrdup (arg);
+  char *comma = strchr (patch_area_arg, ',');
+  if (comma)
+    {
+      *comma = '\0';
+      *patch_area_size = integral_argument (patch_area_arg);
+      *patch_area_start = integral_argument (comma + 1);
+    }
+  else
+    *patch_area_size = integral_argument (patch_area_arg);
+
+  if (*patch_area_size < 0
+      || *patch_area_size > USHRT_MAX
+      || *patch_area_start < 0
+      || *patch_area_start > USHRT_MAX
+      || *patch_area_size < *patch_area_start)
+    if (report_error)
+      error ("invalid arguments for %<-fpatchable-function-entry%>");
+
+  free (patch_area_arg);
+}
+
 /* Print help when OPT__help_ is set.  */
 
 void
@@ -2671,30 +2709,9 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fpatchable_function_entry_:
       {
-	char *patch_area_arg = xstrdup (arg);
-	char *comma = strchr (patch_area_arg, ',');
-	if (comma)
-	  {
-	    *comma = '\0';
-	    function_entry_patch_area_size = 
-	      integral_argument (patch_area_arg);
-	    function_entry_patch_area_start =
-	      integral_argument (comma + 1);
-	  }
-	else
-	  {
-	    function_entry_patch_area_size =
-	      integral_argument (patch_area_arg);
-	    function_entry_patch_area_start = 0;
-	  }
-	if (function_entry_patch_area_size < 0
-	    || function_entry_patch_area_size > USHRT_MAX
-	    || function_entry_patch_area_start < 0
-	    || function_entry_patch_area_start > USHRT_MAX
-	    || function_entry_patch_area_size 
-		< function_entry_patch_area_start)
-	  error ("invalid arguments for %<-fpatchable-function-entry%>");
-	free (patch_area_arg);
+	HOST_WIDE_INT patch_area_size, patch_area_start;
+	parse_and_check_patch_area (arg, true, &patch_area_size,
+				    &patch_area_start);
       }
       break;
 
