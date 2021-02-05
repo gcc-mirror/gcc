@@ -1115,7 +1115,8 @@ group_cluster::dump (FILE *f, bool details)
 
 void
 jump_table_cluster::emit (tree index_expr, tree,
-			  tree default_label_expr, basic_block default_bb)
+			  tree default_label_expr, basic_block default_bb,
+			  location_t loc)
 {
   unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
   unsigned HOST_WIDE_INT nondefault_range = 0;
@@ -1134,6 +1135,7 @@ jump_table_cluster::emit (tree index_expr, tree,
 
   gswitch *s = gimple_build_switch (index_expr,
 				    unshare_expr (default_label_expr), labels);
+  gimple_set_location (s, loc);
   gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
 
@@ -1491,7 +1493,7 @@ case_bit_test::cmp (const void *p1, const void *p2)
 
 void
 bit_test_cluster::emit (tree index_expr, tree index_type,
-			tree, basic_block default_bb)
+			tree, basic_block default_bb, location_t)
 {
   case_bit_test test[m_max_case_bit_tests] = { {} };
   unsigned int i, j, k;
@@ -1858,7 +1860,8 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     {
       cluster *c = clusters[0];
       c->emit (index_expr, index_type,
-	       gimple_switch_default_label (m_switch), m_default_bb);
+	       gimple_switch_default_label (m_switch), m_default_bb,
+	       gimple_location (m_switch));
       redirect_edge_succ (single_succ_edge (bb), c->m_case_bb);
     }
   else
@@ -1870,7 +1873,7 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
 	if (clusters[i]->get_type () != SIMPLE_CASE)
 	  clusters[i]->emit (index_expr, index_type,
 			     gimple_switch_default_label (m_switch),
-			     m_default_bb);
+			     m_default_bb, gimple_location (m_switch));
     }
 
   fix_phi_operands_for_edges ();

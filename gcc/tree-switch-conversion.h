@@ -71,7 +71,7 @@ public:
   virtual void dump (FILE *f, bool details = false) = 0;
 
   /* Emit GIMPLE code to handle the cluster.  */
-  virtual void emit (tree, tree, tree, basic_block) = 0;
+  virtual void emit (tree, tree, tree, basic_block, location_t) = 0;
 
   /* Return true if a cluster handles only a single case value and the
      value is not a range.  */
@@ -164,7 +164,7 @@ public:
     fprintf (f, " ");
   }
 
-  void emit (tree, tree, tree, basic_block)
+  void emit (tree, tree, tree, basic_block, location_t)
   {
     gcc_unreachable ();
   }
@@ -250,7 +250,7 @@ public:
   }
 
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find jump tables of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -368,7 +368,7 @@ public:
     There *MUST* be max_case_bit_tests or less unique case
     node targets.  */
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
