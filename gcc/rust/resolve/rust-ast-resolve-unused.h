@@ -24,10 +24,10 @@
 namespace Rust {
 namespace Resolver {
 
-class ScanUnused : public ResolverBase
+class ScanUnused
 {
 public:
-  static void Scan (Rib *r)
+  static void ScanRib (Rib *r)
   {
     r->iterate_decls ([&] (NodeId decl_node_id, Location locus) -> bool {
       if (!r->have_references_for_node (decl_node_id))
@@ -36,6 +36,13 @@ public:
 	}
       return true;
     });
+  }
+
+  static void Scan ()
+  {
+    auto resolver = Resolver::get ();
+    resolver->iterate_name_ribs ([&] (Rib *r) -> void { ScanRib (r); });
+    resolver->iterate_type_ribs ([&] (Rib *r) -> void { ScanRib (r); });
   }
 };
 

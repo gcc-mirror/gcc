@@ -24,7 +24,6 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-stmt.h"
-#include "rust-ast-resolve-unused.h"
 
 namespace Rust {
 namespace Resolver {
@@ -109,9 +108,6 @@ public:
     // resolve the function body
     ResolveExpr::go (function.get_definition ().get (),
 		     function.get_node_id ());
-
-    ScanUnused::Scan (resolver->get_name_scope ().peek ());
-    ScanUnused::Scan (resolver->get_type_scope ().peek ());
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();

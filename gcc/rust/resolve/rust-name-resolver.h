@@ -290,6 +290,23 @@ public:
     return it->second.size ();
   }
 
+  void iterate_name_ribs (std::function<void (Rib *)> cb)
+  {
+    for (auto it = name_ribs.begin (); it != name_ribs.end (); it++)
+      cb (it->second);
+  }
+
+  void iterate_type_ribs (std::function<void (Rib *)> cb)
+  {
+    for (auto it = type_ribs.begin (); it != type_ribs.end (); it++)
+      {
+	if (it->first == global_type_node_id)
+	  continue;
+
+	cb (it->second);
+      }
+  }
+
 private:
   Resolver ();
 
