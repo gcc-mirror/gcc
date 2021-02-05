@@ -1,3 +1,9 @@
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98802
+	* pt.c (deduction_guides_for): Add any_dguides_p parm.
+	(do_class_deduction): No aggregate guide if any_dguides_p.
+
 2021-02-02  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

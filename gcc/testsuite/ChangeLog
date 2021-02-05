@@ -1,3 +1,13 @@
+2021-02-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97701
+	* gcc.target/aarch64/pr97701.c: New.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98802
+	* g++.dg/cpp1z/class-deduction78.C: New test.
+
 2021-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/97804
