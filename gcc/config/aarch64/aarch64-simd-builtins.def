@@ -57,6 +57,8 @@
 
   /* Implemented by aarch64_get_low<mode>.  */
   BUILTIN_VQMOV (UNOP, get_low, 0, AUTO_FP)
+  /* Implemented by aarch64_get_high<mode>.  */
+  BUILTIN_VQMOV (UNOP, get_high, 0, AUTO_FP)
 
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0, NONE)

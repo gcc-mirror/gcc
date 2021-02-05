@@ -6400,110 +6400,104 @@ vget_low_u64 (uint64x2_t __a)
   return (uint64x1_t) {__builtin_aarch64_get_lowv2di ((int64x2_t) __a)};
 }
 
-#define __GET_HIGH(__TYPE)					\
-  uint64x2_t tmp = vreinterpretq_u64_##__TYPE (__a);		\
-  uint64x1_t hi = vcreate_u64 (vgetq_lane_u64 (tmp, 1));	\
-  return vreinterpret_##__TYPE##_u64 (hi);
-
 __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_f16 (float16x8_t __a)
 {
-  __GET_HIGH (f16);
+  return __builtin_aarch64_get_highv8hf (__a);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_f32 (float32x4_t __a)
 {
-  __GET_HIGH (f32);
+  return __builtin_aarch64_get_highv4sf (__a);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_f64 (float64x2_t __a)
 {
-  __GET_HIGH (f64);
+  return (float64x1_t) {__builtin_aarch64_get_highv2df (__a)};
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_p8 (poly8x16_t __a)
 {
-  __GET_HIGH (p8);
+  return (poly8x8_t) __builtin_aarch64_get_highv16qi ((int8x16_t) __a);
 }
 
 __extension__ extern __inline poly16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_p16 (poly16x8_t __a)
 {
-  __GET_HIGH (p16);
+  return (poly16x4_t) __builtin_aarch64_get_highv8hi ((int16x8_t) __a);
 }
 
 __extension__ extern __inline poly64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_p64 (poly64x2_t __a)
 {
-  __GET_HIGH (p64);
+  return (poly64x1_t) __builtin_aarch64_get_highv2di ((int64x2_t) __a);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_s8 (int8x16_t __a)
 {
-  __GET_HIGH (s8);
+  return  __builtin_aarch64_get_highv16qi (__a);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_s16 (int16x8_t __a)
 {
-  __GET_HIGH (s16);
+  return  __builtin_aarch64_get_highv8hi (__a);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_s32 (int32x4_t __a)
 {
-  __GET_HIGH (s32);
+  return  __builtin_aarch64_get_highv4si (__a);
 }
 
 __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_s64 (int64x2_t __a)
 {
-  __GET_HIGH (s64);
+  return  (int64x1_t) {__builtin_aarch64_get_highv2di (__a)};
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_u8 (uint8x16_t __a)
 {
-  __GET_HIGH (u8);
+  return (uint8x8_t) __builtin_aarch64_get_highv16qi ((int8x16_t) __a);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_u16 (uint16x8_t __a)
 {
-  __GET_HIGH (u16);
+  return (uint16x4_t) __builtin_aarch64_get_highv8hi ((int16x8_t) __a);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_u32 (uint32x4_t __a)
 {
-  __GET_HIGH (u32);
+  return (uint32x2_t) __builtin_aarch64_get_highv4si ((int32x4_t) __a);
 }
-
-#undef __GET_HIGH
 
 __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vget_high_u64 (uint64x2_t __a)
 {
-  return vcreate_u64 (vgetq_lane_u64 (__a, 1));
+  return (uint64x1_t) {__builtin_aarch64_get_highv2di ((int64x2_t) __a)};
 }
+
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
