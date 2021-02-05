@@ -110,7 +110,8 @@ Resolver::insert_builtin_types (Rib *r)
   auto builtins = get_builtin_types ();
   for (auto &builtin : builtins)
     r->insert_name (builtin->as_string (), builtin->get_node_id (),
-		    Linemap::predeclared_location ());
+		    Linemap::predeclared_location (), false,
+		    [] (std::string, NodeId, Location) -> void {});
 }
 
 std::vector<AST::Type *> &

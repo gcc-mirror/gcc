@@ -37,8 +37,25 @@ public:
 
   ~Rib () {}
 
-  void insert_name (std::string ident, NodeId id, Location locus)
+  void insert_name (std::string ident, NodeId id, Location locus, bool shadow,
+		    std::function<void (std::string, NodeId, Location)> dup_cb)
   {
+    auto it = mappings.find (ident);
+    bool already_exists = it != mappings.end ();
+    if (already_exists && !shadow)
+      {
+	for (auto &decl : decls_within_rib)
+	  {
+	    if (decl.first == it->second)
+	      {
+		dup_cb (ident, it->second, decl.second);
+		return;
+	      }
+	  }
+	dup_cb (ident, it->second, locus);
+	return;
+      }
+
     mappings[ident] = id;
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
@@ -117,9 +134,16 @@ public:
   Scope (CrateNum crate_num) : crate_num (crate_num) {}
   ~Scope () {}
 
+  void insert (std::string ident, NodeId id, Location locus, bool shadow,
+	       std::function<void (std::string, NodeId, Location)> dup_cb)
+  {
+    peek ()->insert_name (ident, id, locus, shadow, dup_cb);
+  }
+
   void insert (std::string ident, NodeId id, Location locus)
   {
-    peek ()->insert_name (ident, id, locus);
+    peek ()->insert_name (ident, id, locus, true,
+			  [] (std::string, NodeId, Location) -> void {});
   }
 
   bool lookup (std::string ident, NodeId *id)
