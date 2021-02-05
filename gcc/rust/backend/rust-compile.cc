@@ -135,10 +135,30 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 				  start_location, end_location);
   ctx->push_block (new_block);
 
-  expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-    CompileStmt::Compile (s, ctx);
-    return true;
-  });
+  for (auto &s : expr.get_statements ())
+    {
+      auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
+      if (compiled_expr == nullptr)
+	continue;
+
+      if (result == nullptr)
+	{
+	  Bstatement *final_stmt
+	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
+							 compiled_expr);
+	  ctx->add_statement (final_stmt);
+	}
+      else
+	{
+	  Bexpression *result_reference
+	    = ctx->get_backend ()->var_expression (result,
+						   s->get_locus_slow ());
+
+	  Bstatement *assignment = ctx->get_backend ()->assignment_statement (
+	    fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
+	  ctx->add_statement (assignment);
+	}
+    }
 
   if (expr.has_expr () && expr.tail_expr_reachable ())
     {
@@ -147,14 +167,22 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
       rust_assert (compiled_expr != nullptr);
 
-      auto fncontext = ctx->peek_fn ();
+      if (result == nullptr)
+	{
+	  Bstatement *final_stmt
+	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
+							 compiled_expr);
+	  ctx->add_statement (final_stmt);
+	}
+      else
+	{
+	  Bexpression *result_reference = ctx->get_backend ()->var_expression (
+	    result, expr.get_final_expr ()->get_locus_slow ());
 
-      std::vector<Bexpression *> retstmts;
-      retstmts.push_back (compiled_expr);
-      auto s
-	= ctx->get_backend ()->return_statement (fncontext.fndecl, retstmts,
-						 expr.expr->get_locus_slow ());
-      ctx->add_statement (s);
+	  Bstatement *assignment = ctx->get_backend ()->assignment_statement (
+	    fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
+	  ctx->add_statement (assignment);
+	}
     }
 
   ctx->pop_block ();
@@ -168,7 +196,8 @@ CompileConditionalBlocks::visit (HIR::IfExpr &expr)
   Bfunction *fndecl = fnctx.fndecl;
   Bexpression *condition_expr
     = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
+  Bblock *then_block
+    = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -182,8 +211,10 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
   Bfunction *fndecl = fnctx.fndecl;
   Bexpression *condition_expr
     = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
-  Bblock *else_block = CompileBlock::compile (expr.get_else_block (), ctx);
+  Bblock *then_block
+    = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  Bblock *else_block
+    = CompileBlock::compile (expr.get_else_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -197,7 +228,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
   Bfunction *fndecl = fnctx.fndecl;
   Bexpression *condition_expr
     = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block = CompileBlock::compile (expr.get_if_block (), ctx);
+  Bblock *then_block
+    = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   // else block
   std::vector<Bvariable *> locals;
@@ -210,7 +242,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
   ctx->push_block (else_block);
 
   Bstatement *else_stmt_decl
-    = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx);
+    = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx,
+					 result);
   ctx->add_statement (else_stmt_decl);
 
   ctx->pop_block ();
@@ -242,6 +275,65 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
   HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
 			    field.get_locus ());
   translated = CompileExpr::Compile (&expr, ctx);
+}
+
+// Shared methods in compilation
+
+void
+HIRCompileBase::compile_function_body (
+  Bfunction *fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
+  bool has_return_type)
+{
+  for (auto &s : function_body->get_statements ())
+    {
+      auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
+      if (compiled_expr != nullptr)
+	{
+	  if (has_return_type)
+	    {
+	      std::vector<Bexpression *> retstmts;
+	      retstmts.push_back (compiled_expr);
+
+	      auto ret
+		= ctx->get_backend ()->return_statement (fndecl, retstmts,
+							 s->get_locus_slow ());
+	      ctx->add_statement (ret);
+	    }
+	  else
+	    {
+	      Bstatement *final_stmt
+		= ctx->get_backend ()->expression_statement (fndecl,
+							     compiled_expr);
+	      ctx->add_statement (final_stmt);
+	    }
+	}
+    }
+
+  if (function_body->has_expr () && function_body->tail_expr_reachable ())
+    {
+      // the previous passes will ensure this is a valid return
+      // dead code elimination should remove any bad trailing expressions
+      Bexpression *compiled_expr
+	= CompileExpr::Compile (function_body->expr.get (), ctx);
+      rust_assert (compiled_expr != nullptr);
+
+      if (has_return_type)
+	{
+	  std::vector<Bexpression *> retstmts;
+	  retstmts.push_back (compiled_expr);
+
+	  auto ret = ctx->get_backend ()->return_statement (
+	    fndecl, retstmts,
+	    function_body->get_final_expr ()->get_locus_slow ());
+	  ctx->add_statement (ret);
+	}
+      else
+	{
+	  Bstatement *final_stmt
+	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
+	  ctx->add_statement (final_stmt);
+	}
+    }
 }
 
 } // namespace Compile

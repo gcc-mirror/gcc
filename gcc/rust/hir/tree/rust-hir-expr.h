@@ -2585,6 +2585,10 @@ public:
     return statements[statements.size () - 1]->get_locus_slow ();
   }
 
+  std::unique_ptr<ExprWithoutBlock> &get_final_expr () { return expr; }
+
+  std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

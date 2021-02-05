@@ -110,6 +110,11 @@ public:
     return scope_stack.back ();
   }
 
+  void add_statement_to_enclosing_scope (Bstatement *stmt)
+  {
+    statements.at (statements.size () - 2).push_back (stmt);
+  }
+
   void add_statement (Bstatement *stmt) { statements.back ().push_back (stmt); }
 
   void insert_var_decl (HirId id, ::Bvariable *decl)
