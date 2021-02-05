@@ -6768,6 +6768,19 @@ check_array_initializer (tree decl, tree type, tree init)
 {
   tree element_type = TREE_TYPE (type);
 
+  /* Structured binding when initialized with an array type needs
+     to have complete type.  */
+  if (decl
+      && DECL_DECOMPOSITION_P (decl)
+      && !DECL_DECOMP_BASE (decl)
+      && !COMPLETE_TYPE_P (type))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"structured binding has incomplete type %qT", type);
+      TREE_TYPE (decl) = error_mark_node;
+      return true;
+    }
+
   /* The array type itself need not be complete, because the
      initializer may tell us how many elements are in the array.
      But, the elements of the array must be complete.  */
