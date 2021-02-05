@@ -62,7 +62,7 @@ struct intrinsic_decl
 static const intrinsic_decl intrinsic_decls[] =
 {
 #define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
-    { INTRINSIC_ ## CODE, BUILT_IN_ ## BUILTIN, NAME, MODULE, DECO, CTFE },
+    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE },
 
 #include "intrinsics.def"
 

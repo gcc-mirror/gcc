@@ -80,7 +80,7 @@ enum level_kind
 
 enum intrinsic_code
 {
-#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) INTRINSIC_ ## CODE,
+#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) CODE,
 
 #include "intrinsics.def"
 
