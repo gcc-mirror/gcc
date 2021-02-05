@@ -1,3 +1,56 @@
+2021-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/97932
+	* diagnostic-show-locus.c (compatible_locations_p): Require
+	locations in the same macro map to be either both from the
+	macro definition, or both from the macro arguments.
+
+2021-02-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	[su]mull_hi_lane[q] builtin generator macros.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<su>mull_hi_lane<mode>_insn): Define.
+	(aarch64_<su>mull_hi_lane<mode>): Define.
+	(aarch64_<su>mull_hi_laneq<mode>_insn): Define.
+	(aarch64_<su>mull_hi_laneq<mode>): Define.
+	* config/aarch64/arm_neon.h (vmull_high_lane_s16): Use RTL
+	builtin instead of inline asm.
+	(vmull_high_lane_s32): Likewise.
+	(vmull_high_lane_u16): Likewise.
+	(vmull_high_lane_u32): Likewise.
+	(vmull_high_laneq_s16): Likewise.
+	(vmull_high_laneq_s32): Likewise.
+	(vmull_high_laneq_u16): Likewise.
+	(vmull_high_laneq_u32): Liekwise.
+
+2021-02-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]mull_hi_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<su>mull_hi_n<mode>_insn): Define.
+	(aarch64_<su>mull_hi_n<mode>): Define.
+	* config/aarch64/arm_neon.h (vmull_high_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vmull_high_n_s32): Likewise.
+	(vmull_high_n_u16): Likewise.
+	(vmull_high_n_u32): Likewise.
+
+2021-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98855
+	* tree-vect-loop.c (vectorizable_phi): Do not cost
+	single-argument PHIs.
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Likewise.
+	* tree-vect-stmts.c (vectorizable_bswap): Also perform
+	costing for SLP operation.
+
+2021-02-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Mention -mprefer-vector-width in target
+	attributes.
+
 2021-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/98937
