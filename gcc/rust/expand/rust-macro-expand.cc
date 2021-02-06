@@ -3282,12 +3282,19 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 	  if (!attr.is_parsed_to_meta_item ())
 	    attr.parse_attr_to_meta_item ();
 
+    // DEBUG
+    if (!attr.is_parsed_to_meta_item ())
+      fprintf (stderr, "failed to parse attr to meta item, right before cfg predicate check\n");
+
 	  if (!attr.check_cfg_predicate (session))
     {
       // DEBUG
       fprintf (stderr, "cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ().c_str ());
 
 	    return true;
+    } else {
+      // DEBUG
+      fprintf (stderr, "cfg predicate succeeded for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ().c_str ());
     }
 	}
     }
