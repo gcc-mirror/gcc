@@ -5030,6 +5030,9 @@ AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
   if (items.empty ())
     return false;
 
+  // DEBUG
+  fprintf (stderr, "asked to check cfg of attrinputmetaitemcontainer - delegating to first item. container: '%s'\n", as_string ().c_str ());
+
   return items[0]->check_cfg_predicate (session);
 
   /*for (const auto &inner_item : items)
@@ -5229,6 +5232,9 @@ MetaItemPath::check_cfg_predicate (const Session &session) const
 bool
 MetaNameValueStr::check_cfg_predicate (const Session &session) const
 {
+  // DEBUG
+  fprintf (stderr, "checked key-value pair for cfg: '%s', '%s' - is%s in target data\n", ident.c_str (), str.c_str (), session.options.target_data.has_key_value_pair (ident, str) ? "" : " not");
+
   return session.options.target_data.has_key_value_pair (ident, str);
 }
 
