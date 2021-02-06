@@ -3285,6 +3285,8 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
     // DEBUG
     if (!attr.is_parsed_to_meta_item ())
       fprintf (stderr, "failed to parse attr to meta item, right before cfg predicate check\n");
+    else
+      fprintf(stderr, "attr has been successfully parsed to meta item, right before cfg predicate check\n");
 
 	  if (!attr.check_cfg_predicate (session))
     {

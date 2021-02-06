@@ -5359,8 +5359,12 @@ Attribute::check_cfg_predicate (const Session &session) const
   /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
    * cfg_attr path */
   if (!has_attr_input ()
-      || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
+      || (path.as_string () != "cfg" && path.as_string () != "cfg_attr")) {
+        // DEBUG message
+        fprintf (stderr, "tried to check cfg predicate on attr that either has no input or invalid path. attr: '%s'\n", as_string ().c_str ());
+
     return false;
+    }
 
   // assume that it has already been parsed
   if (!is_parsed_to_meta_item ())

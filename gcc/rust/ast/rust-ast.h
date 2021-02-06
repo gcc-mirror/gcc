@@ -733,6 +733,7 @@ public:
   bool check_cfg_predicate (const Session &) const override
   {
     // this should never be called - should be converted first
+    rust_assert (false);
     return false;
   }
 
