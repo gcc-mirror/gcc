@@ -150,6 +150,15 @@ std::string append_attributes (std::vector<Attribute> attrs, AttrMode mode) {
   return str;
 }
 
+// Removes the beginning and end quotes of a quoted string. 
+std::string
+unquote_string (std::string input) 
+{
+  rust_assert (input.front () == '"');
+  rust_assert (input.back () == '"');
+  return input.substr (1, input.length () - 2);
+}
+
 std::string
 Crate::as_string () const
 {
@@ -158,13 +167,10 @@ Crate::as_string () const
   std::string str ("Crate: ");
   // add utf8bom and shebang
   if (has_utf8bom)
-    {
       str += "\n has utf8bom";
-    }
+
   if (has_shebang)
-    {
       str += "\n has shebang";
-    }
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -177,9 +183,7 @@ Crate::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   // items
@@ -311,9 +315,7 @@ SimplePath::as_string () const
 {
   std::string path;
   if (has_opening_scope_resolution)
-    {
       path = "::";
-    }
 
   // crappy hack because doing proper for loop would be more code
   bool first_time = true;
@@ -377,9 +379,7 @@ VisItem::as_string () const
     }
 
   if (has_visibility ())
-    {
-      str = visibility.as_string () + " ";
-    }
+      str += visibility.as_string () + " ";
 
   return str;
 }
@@ -426,9 +426,7 @@ ModuleBodied::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   // items
@@ -474,9 +472,7 @@ StaticItem::as_string () const
   str += indent_spaces (stay) + "static";
 
   if (has_mut)
-    {
       str += " mut";
-    }
 
   str += " " + name;
 
@@ -509,9 +505,7 @@ ExternCrate::as_string () const
   str += "extern crate " + referenced_crate;
 
   if (has_as_clause ())
-    {
       str += " as " + as_clause_name;
-    }
 
   return str;
 }
@@ -556,20 +550,14 @@ TupleStruct::as_string () const
   else
     {
       for (const auto &field : fields)
-	{
 	  str += "\n  " + field.as_string ();
-	}
     }
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -637,13 +625,9 @@ InherentImpl::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -670,9 +654,7 @@ InherentImpl::as_string () const
   else
     {
       for (const auto &item : impl_items)
-	{
 	  str += "\n  " + item->as_string ();
-	}
     }
 
   return str;
@@ -775,13 +757,9 @@ StructStruct::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   // struct fields
   str += "\n Struct fields: ";
@@ -796,9 +774,7 @@ StructStruct::as_string () const
   else
     {
       for (const auto &field : fields)
-	{
 	  str += "\n  " + field.as_string ();
-	}
     }
 
   return str;
@@ -950,13 +926,9 @@ Enum::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   // items
   str += "\n Items: ";
@@ -4677,8 +4649,11 @@ MacroParser::parse_meta_item_inner ()
 
 	  skip_token (2);
 
+    // remove the quotes from the string value
+    std::string raw_value = unquote_string (std::move (value));
+
 	  return std::unique_ptr<MetaNameValueStr> (
-	    new MetaNameValueStr (std::move (ident), std::move (value)));
+	    new MetaNameValueStr (std::move (ident), std::move (raw_value)));
 	}
       else
 	{

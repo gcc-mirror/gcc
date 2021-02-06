@@ -537,6 +537,7 @@ protected:
 class MetaNameValueStr : public MetaItem
 {
   Identifier ident;
+  // NOTE: str stored without quotes
   std::string str;
 
 public:
@@ -544,7 +545,7 @@ public:
     : ident (std::move (ident)), str (std::move (str))
   {}
 
-  std::string as_string () const override { return ident + " = " + str; }
+  std::string as_string () const override { return ident + " = \"" + str + "\""; }
 
   void accept_vis (ASTVisitor &vis) override;
 
