@@ -1,3 +1,40 @@
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98947
+	* g++.dg/cpp2a/volatile5.C: New test.
+
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96462
+	* g++.dg/cpp2a/using-enum-8.C: New test.
+
+2021-02-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR driver/98943
+	* c-c++-common/pr98943.c: New.
+
+2021-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98855
+	* g++.dg/vect/slp-pr98855.cc: New testcase.
+
+2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* g++.dg/cpp1z/decomp54.C: New test.
+
+2021-02-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98537
+	* g++.target/i386/avx512bw-pr98537-1.C: New test.
+	* g++.target/i386/avx512vl-pr98537-1.C: New test.
+	* g++.target/i386/avx512vl-pr98537-2.C: New test.
+	* gcc.target/i386/avx512vl-pr88547-1.c: Adjust testcase,
+	integer mask comparison should not be generated.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-1.c: Remove.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-intelasm-1.c: Ditto.
+
 2021-02-04  Julian Brown  <julian@codesourcery.com>
 
 	* gfortran.dg/goacc/derived-chartypes-1.f90: New test.

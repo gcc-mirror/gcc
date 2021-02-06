@@ -1,3 +1,23 @@
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98947
+	* call.c (build_conditional_expr_1): Don't call mark_lvalue_use
+	on arg2/arg3.
+	* expr.c (mark_use) <case MODIFY_EXPR>: Don't check read_p when
+	issuing the -Wvolatile warning.  Only set TREE_THIS_VOLATILE if
+	a warning was emitted.
+
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96462
+	* name-lookup.c (lookup_using_decl): Hoist the destructor check.
+
+2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* decl.c (check_array_initializer): For structured bindings, require
+	the array type to be complete.
+
 2021-02-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98717
