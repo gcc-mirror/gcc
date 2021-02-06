@@ -3285,7 +3285,7 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 	  if (!attr.check_cfg_predicate (session))
     {
       // DEBUG
-      fprintf (stderr, "cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ());
+      fprintf (stderr, "cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ().c_str ());
 
 	    return true;
     }
