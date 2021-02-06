@@ -109,10 +109,11 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
     bool is_final_stmt = expr.is_final_stmt (s);
-    bool is_final_expr = is_final_stmt && !expr.has_expr ();
+    bool is_final_expr
+      = is_final_stmt && (!expr.has_expr () || !expr.tail_expr_reachable ());
 
-    auto infered = TypeCheckStmt::Resolve (s, is_final_expr);
-    if (infered == nullptr)
+    auto resolved = TypeCheckStmt::Resolve (s);
+    if (resolved == nullptr)
       {
 	rust_error_at (s->get_locus_slow (), "failure to resolve type");
 	return false;
@@ -121,7 +122,12 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     if (is_final_expr)
       {
 	delete block_tyty;
-	block_tyty = infered;
+	block_tyty = resolved;
+      }
+    else if (resolved->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	rust_error_at (s->get_locus_slow (), "expected () got %s",
+		       infered->as_string ().c_str ());
       }
 
     return true;
@@ -131,7 +137,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     {
       delete block_tyty;
 
-      block_tyty = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), true);
+      block_tyty = TypeCheckExpr::Resolve (expr.get_final_expr ().get ());
     }
 
   infered = block_tyty->clone ();

@@ -32,9 +32,9 @@ namespace Resolver {
 class TypeCheckExpr : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Expr *expr, bool is_final_expr = false)
+  static TyTy::TyBase *Resolve (HIR::Expr *expr)
   {
-    TypeCheckExpr resolver (is_final_expr);
+    TypeCheckExpr resolver;
     expr->accept_vis (resolver);
 
     if (resolver.infered == nullptr)
@@ -277,11 +277,13 @@ public:
 
   void visit (HIR::AssignmentExpr &expr)
   {
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-    infered = lhs->combine (rhs);
-    if (infered == nullptr)
+    auto result = lhs->combine (rhs);
+    if (result == nullptr)
       {
 	rust_error_at (expr.get_locus (),
 		       "failure in TypeInference AssignmentExpr");
@@ -320,11 +322,10 @@ public:
 	return;
       }
 
-    // FIXME free the old one
     context->insert_type (
       Analysis::NodeMapping (expr.get_lhs ()->get_mappings ().get_crate_num (),
 			     ref_node_id, ref, UNKNOWN_LOCAL_DEFID),
-      infered->clone ());
+      result->clone ());
   }
 
   void visit (HIR::IdentifierExpr &expr)
@@ -592,76 +593,25 @@ public:
   void visit (HIR::IfExpr &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-    auto blk_expr = TypeCheckExpr::Resolve (expr.get_if_block ());
-
-    if (is_final_expr
-	&& context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
-      {
-	auto expected_ty = context->peek_return_type ();
-	infered = expected_ty->combine (blk_expr);
-	return;
-      }
+    TypeCheckExpr::Resolve (expr.get_if_block ());
 
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    // check and resolve all types in the conditional var
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-
     auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
     auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_else_block ());
 
-    TyTy::TyBase *if_block_tyty = nullptr;
-    if (expr.get_if_block ()->has_expr ())
-      if_block_tyty
-	= TypeCheckExpr::Resolve (expr.get_if_block ()->expr.get ());
-    else
-      if_block_tyty = if_blk_resolved;
-
-    TyTy::TyBase *else_block_tyty = nullptr;
-    if (expr.get_else_block ()->has_expr ())
-      else_block_tyty
-	= TypeCheckExpr::Resolve (expr.get_else_block ()->expr.get ());
-    else
-      else_block_tyty = else_blk_resolved;
-
-    if (context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
-      {
-	// this must combine to what the type is expected
-	// this might be a parameter or the last expr in an if + else in a
-	// BlockExpr then it must resolve to fn return type else its a unit-type
-	auto expected_ty
-	  = is_final_expr
-	      ? context->peek_return_type ()
-	      : new TyTy::UnitType (expr.get_mappings ().get_hirid ());
-
-	auto if_blk_combined = expected_ty->combine (if_block_tyty);
-	auto else_blk_combined = expected_ty->combine (else_block_tyty);
-
-	infered = if_blk_combined->combine (else_blk_combined);
-	return;
-      }
-
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = if_blk_resolved->combine (else_blk_resolved);
   }
 
   void visit (HIR::IfExprConseqIf &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-    auto if_blk = TypeCheckExpr::Resolve (expr.get_if_block ());
-    auto elif_blk = TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
-
-    if (is_final_expr
-	&& context->peek_return_type ()->get_kind () != TyTy::TypeKind::UNIT)
-      {
-	auto expected_ty = context->peek_return_type ();
-
-	infered = expected_ty->combine (if_blk);
-	infered = infered->combine (elif_blk);
-	return;
-      }
+    TypeCheckExpr::Resolve (expr.get_if_block ());
+    TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
 
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
@@ -817,9 +767,8 @@ public:
   }
 
 private:
-  TypeCheckExpr (bool is_final_expr)
-    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
-      is_final_expr (is_final_expr)
+  TypeCheckExpr ()
+    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr)
   {}
 
   bool
@@ -870,8 +819,6 @@ private:
 
   TyTy::TyBase *infered;
   TyTy::TyBase *infered_array_elems;
-
-  bool is_final_expr;
 };
 
 } // namespace Resolver

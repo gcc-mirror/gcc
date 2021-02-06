@@ -460,22 +460,31 @@ public:
 	return;
       }
 
-    fncontext fnctx = ctx->peek_fn ();
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+    Bvariable *tmp = NULL;
+    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
-    bool is_address_taken = false;
-    Bstatement *ret_var_stmt = nullptr;
-    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
-      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-      expr.get_locus (), &ret_var_stmt);
-    ctx->add_statement (ret_var_stmt);
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
 
     auto code_block = CompileBlock::compile (&expr, ctx, tmp);
     auto block_stmt = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (block_stmt);
 
-    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::StructExprStructFields &struct_expr)
