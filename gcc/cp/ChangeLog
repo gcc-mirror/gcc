@@ -1,3 +1,9 @@
+2021-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98717
+	* constraint.cc (build_concept_check_arguments): Remove assert.
+	(build_concept_check): Allow empty args.
+
 2021-02-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98802

@@ -1,3 +1,8 @@
+2021-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98717
+	* g++.dg/cpp2a/concepts-variadic3.C: New test.
+
 2021-02-04  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/97701
