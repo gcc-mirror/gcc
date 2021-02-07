@@ -29,37 +29,24 @@ namespace Compile {
 class CompileStmt : public HIRCompileBase
 {
 public:
-  static void Compile (HIR::Stmt *stmt, Context *ctx)
+  static Bexpression *Compile (HIR::Stmt *stmt, Context *ctx)
   {
     CompileStmt compiler (ctx);
     stmt->accept_vis (compiler);
     rust_assert (compiler.ok);
+    return compiler.translated;
   }
-
-  virtual ~CompileStmt () {}
 
   void visit (HIR::ExprStmtWithBlock &stmt)
   {
     ok = true;
-    auto translated = CompileExpr::Compile (stmt.get_expr (), ctx);
-
-    // these can be null
-    if (translated == nullptr)
-      return;
-
-    gcc_unreachable ();
+    translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
     ok = true;
-    auto translated = CompileExpr::Compile (stmt.get_expr (), ctx);
-
-    // these can be null
-    if (translated == nullptr)
-      return;
-
-    gcc_unreachable ();
+    translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
   void visit (HIR::LetStmt &stmt)
@@ -99,9 +86,12 @@ public:
   }
 
 private:
-  CompileStmt (Context *ctx) : HIRCompileBase (ctx), ok (false) {}
+  CompileStmt (Context *ctx)
+    : HIRCompileBase (ctx), ok (false), translated (nullptr)
+  {}
 
   bool ok;
+  Bexpression *translated;
 };
 
 } // namespace Compile

@@ -366,12 +366,14 @@ private:
   // bool has_type; // only possible if not ref
   std::unique_ptr<Type> type;
 
+  NodeId node_id;
+
   Location locus;
 
   // Unrestricted constructor used for error state
   SelfParam (Lifetime lifetime, bool has_ref, bool is_mut, Type *type)
     : has_ref (has_ref), is_mut (is_mut), lifetime (std::move (lifetime)),
-      type (type)
+      type (type), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
   // this is ok as no outside classes can ever call this
 
@@ -401,20 +403,23 @@ public:
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (std::unique_ptr<Type> type, bool is_mut, Location locus)
     : has_ref (false), is_mut (is_mut), lifetime (Lifetime::error ()),
-      type (std::move (type)), locus (locus)
+      type (std::move (type)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Lifetime-based self parameter (is ref, no type)
   SelfParam (Lifetime lifetime, bool is_mut, Location locus)
     : has_ref (true), is_mut (is_mut), lifetime (std::move (lifetime)),
-      locus (locus)
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor requires clone
   SelfParam (SelfParam const &other)
     : has_ref (other.has_ref), is_mut (other.is_mut), lifetime (other.lifetime),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
       locus (other.locus)
   {
+    node_id = other.node_id;
     if (other.type != nullptr)
       type = other.type->clone_type ();
   }
@@ -426,6 +431,7 @@ public:
     has_ref = other.has_ref;
     lifetime = other.lifetime;
     locus = other.locus;
+    node_id = other.node_id;
 
     if (other.type != nullptr)
       type = other.type->clone_type ();
@@ -442,6 +448,13 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  bool get_has_ref () const { return has_ref; };
+  bool get_is_mut () const { return is_mut; }
+
+  Lifetime get_lifetime () const { return lifetime; }
+
+  NodeId get_node_id () const { return node_id; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()

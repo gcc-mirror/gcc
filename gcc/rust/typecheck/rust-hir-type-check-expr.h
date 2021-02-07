@@ -24,6 +24,7 @@
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
 #include "rust-hir-type-check-struct-field.h"
+#include "rust-hir-method-resolve.h"
 
 namespace Rust {
 namespace Resolver {
@@ -37,7 +38,10 @@ public:
     expr->accept_vis (resolver);
 
     if (resolver.infered == nullptr)
-      return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
+      {
+	rust_error_at (expr->get_locus_slow (), "failed to resolve expression");
+	return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
+      }
 
     auto ref = expr->get_mappings ().get_hirid ();
     resolver.infered->set_ref (ref);
@@ -196,9 +200,8 @@ public:
     TyTy::TyBase *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
-	// FIXME we need to be able to lookup the location info for the
-	// reference here
-	rust_error_at (expr.get_locus (), "consider giving this a type: %s",
+	rust_error_at (mappings->lookup_location (ref),
+		       "failed to lookup type for CallExpr: %s",
 		       expr.as_string ().c_str ());
 	return;
       }
@@ -211,6 +214,65 @@ public:
       }
 
     infered->set_ref (expr.get_mappings ().get_hirid ());
+  }
+
+  void visit (HIR::MethodCallExpr &expr)
+  {
+    auto receiver_tyty = TypeCheckExpr::Resolve (expr.get_receiver ().get ());
+    if (receiver_tyty == nullptr)
+      {
+	rust_error_at (expr.get_receiver ()->get_locus_slow (),
+		       "failed to resolve receiver in MethodCallExpr");
+	return;
+      }
+
+    // https://doc.rust-lang.org/reference/expressions/method-call-expr.html
+    // method resolution is complex in rust once we start handling generics and
+    // traits. For now we only support looking up the valid name in impl blocks
+    // which is simple. There will need to be adjustments to ensure we can turn
+    // the receiver into borrowed references etc
+
+    auto probes
+      = MethodResolution::Probe (receiver_tyty, expr.get_method_name ());
+    if (probes.size () == 0)
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to resolve the PathExprSegment to any Method");
+	return;
+      }
+    else if (probes.size () > 1)
+      {
+	rust_error_at (
+	  expr.get_locus (),
+	  "Generics and Traits are not implemented yet for MethodCall");
+	return;
+      }
+
+    auto resolved_method = probes.at (0);
+    TyTy::TyBase *lookup;
+    if (!context->lookup_type (resolved_method->get_mappings ().get_hirid (),
+			       &lookup))
+      {
+	rust_error_at (resolved_method->get_locus (),
+		       "failed to lookup type for CallExpr: %s",
+		       expr.as_string ().c_str ());
+	return;
+      }
+
+    infered = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, context);
+    if (infered == nullptr)
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to lookup type to MethodCallExpr");
+	return;
+      }
+
+    infered->set_ref (expr.get_mappings ().get_hirid ());
+
+    // set up the resolved name on the path
+    resolver->insert_resolved_name (
+      expr.get_mappings ().get_nodeid (),
+      resolved_method->get_mappings ().get_nodeid ());
   }
 
   void visit (HIR::AssignmentExpr &expr)
@@ -313,7 +375,7 @@ public:
     if (!context->lookup_type (ref, &lookup))
       {
 	rust_error_at (mappings->lookup_location (ref),
-		       "consider giving this a type: %s",
+		       "Failed to resolve IdentifierExpr type: %s",
 		       expr.as_string ().c_str ());
 	return;
       }
@@ -703,7 +765,7 @@ public:
     if (!is_valid_type)
       {
 	rust_error_at (expr.get_locus (),
-		       "expected ADT or Tuple Type got: [%s]",
+		       "expected algebraic data type got: [%s]",
 		       struct_base->as_string ().c_str ());
 	return;
       }
@@ -747,7 +809,11 @@ public:
 	return;
       }
 
-    context->lookup_type (ref, &infered);
+    if (!context->lookup_type (ref, &infered))
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to resolve PathInExpression type");
+      }
   }
 
 private:
@@ -799,6 +865,7 @@ private:
 		   && (((TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL));
       }
+    gcc_unreachable ();
   }
 
   TyTy::TyBase *infered;

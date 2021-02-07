@@ -237,9 +237,13 @@ public:
 protected:
   HIRCompileBase (Context *ctx) : ctx (ctx) {}
 
+  Context *ctx;
+
   Context *get_context () { return ctx; }
 
-  Context *ctx;
+  void compile_function_body (Bfunction *fndecl,
+			      std::unique_ptr<HIR::BlockExpr> &function_body,
+			      bool has_return_type);
 };
 
 } // namespace Compile

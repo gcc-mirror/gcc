@@ -24,7 +24,6 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-stmt.h"
-#include "rust-ast-resolve-unused.h"
 
 namespace Rust {
 namespace Resolver {
@@ -110,17 +109,76 @@ public:
     ResolveExpr::go (function.get_definition ().get (),
 		     function.get_node_id ());
 
-    ScanUnused::Scan (resolver->get_name_scope ().peek ());
-    ScanUnused::Scan (resolver->get_type_scope ().peek ());
-
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
   }
 
   void visit (AST::InherentImpl &impl_block)
   {
+    NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
+					    impl_block.get_node_id ());
+    if (resolved_node == UNKNOWN_NODEID)
+      return;
+
+    resolver->get_type_scope ().insert (
+      "Self", resolved_node, impl_block.get_type ()->get_locus_slow ());
+
     for (auto &impl_item : impl_block.get_impl_items ())
       impl_item->accept_vis (*this);
+
+    resolver->get_type_scope ().peek ()->clear_name ("Self", resolved_node);
+  }
+
+  void visit (AST::Method &method)
+  {
+    if (method.has_return_type ())
+      ResolveType::go (method.get_return_type ().get (), method.get_node_id ());
+
+    NodeId scope_node_id = method.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+
+    // self turns into self: Self as a function param
+    AST::SelfParam &self_param = method.get_self_param ();
+    AST::IdentifierPattern self_pattern (
+      self_param.get_node_id (), "self", self_param.get_locus (),
+      self_param.get_has_ref (), self_param.get_is_mut (),
+      std::unique_ptr<AST::Pattern> (nullptr));
+
+    std::vector<std::unique_ptr<AST::TypePathSegment> > segments;
+    segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+      new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+
+    AST::TypePath self_type_path (std::move (segments),
+				  self_param.get_locus ());
+
+    ResolveType::go (&self_type_path, self_param.get_node_id ());
+    PatternDeclaration::go (&self_pattern, self_param.get_node_id ());
+
+    resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
+				       self_pattern.get_node_id ());
+
+    // we make a new scope so the names of parameters are resolved and shadowed
+    // correctly
+    for (auto &param : method.get_function_params ())
+      {
+	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+	PatternDeclaration::go (param.get_pattern ().get (),
+				param.get_node_id ());
+
+	// the mutability checker needs to verify for immutable decls the number
+	// of assignments are <1. This marks an implicit assignment
+	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
+					   param.get_node_id ());
+      }
+
+    // resolve the function body
+    ResolveExpr::go (method.get_definition ().get (), method.get_node_id ());
+
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
   }
 
 private:

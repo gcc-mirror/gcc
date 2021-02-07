@@ -61,6 +61,22 @@ private:
   ::Bvariable *translated;
 };
 
+class CompileSelfParam : public HIRCompileBase
+{
+public:
+  static Bvariable *compile (Context *ctx, Bfunction *fndecl,
+			     HIR::SelfParam &self, Btype *decl_type,
+			     Location locus)
+  {
+    if (!self.get_is_mut ())
+      decl_type = ctx->get_backend ()->immutable_type (decl_type);
+
+    return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
+						    false /* address_taken */,
+						    locus);
+  }
+};
+
 } // namespace Compile
 } // namespace Rust
 

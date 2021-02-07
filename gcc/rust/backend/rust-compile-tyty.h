@@ -44,22 +44,19 @@ public:
 
   ~TyTyCompile () {}
 
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::ADTType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ADTType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::TupleType &type) override { gcc_unreachable (); }
+  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::ArrayType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::UnitType &type) override
-  {
-    translated = backend->void_type ();
-  }
+  void visit (TyTy::UnitType &) override { translated = backend->void_type (); }
 
   void visit (TyTy::FnType &type) override
   {
@@ -93,7 +90,7 @@ public:
 				mappings->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::BoolType &type) override
+  void visit (TyTy::BoolType &) override
   {
     translated = backend->named_type ("bool", backend->bool_type (),
 				      Linemap::predeclared_location ());
@@ -190,14 +187,14 @@ public:
     gcc_unreachable ();
   }
 
-  void visit (TyTy::USizeType &type) override
+  void visit (TyTy::USizeType &) override
   {
     translated = backend->named_type (
       "usize", backend->integer_type (true, backend->get_pointer_size ()),
       Linemap::predeclared_location ());
   }
 
-  void visit (TyTy::ISizeType &type) override
+  void visit (TyTy::ISizeType &) override
   {
     translated = backend->named_type (
       "isize", backend->integer_type (false, backend->get_pointer_size ()),

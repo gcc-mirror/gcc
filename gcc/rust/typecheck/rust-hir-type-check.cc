@@ -127,19 +127,12 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     return true;
   });
 
-  // tail expression must be checked as part of the caller since
-  // the result of this is very dependant on what we expect it to be
+  if (expr.has_expr ())
+    {
+      delete block_tyty;
 
-  // now that the stmts have been resolved we must resolve the block of locals
-  // and make sure the variables have been resolved
-  // auto body_mappings = expr.get_mappings ();
-  // Rib *rib = nullptr;
-  // if (!resolver->find_name_rib (body_mappings.get_nodeid (), &rib))
-  //   {
-  //     rust_fatal_error (expr.get_locus (), "failed to lookup locals per
-  //     block"); return;
-  //   }
-  // TyTyResolver::Resolve (rib, mappings, resolver, context);
+      block_tyty = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), true);
+    }
 
   infered = block_tyty->clone ();
 }

@@ -38,7 +38,6 @@ public:
     ref->accept_vis (checker);
     return checker.resolved;
   }
-  ~TypeCheckCallExpr () {}
 
   void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
@@ -67,6 +66,47 @@ private:
 
   TyBase *resolved;
   HIR::CallExpr &call;
+  Resolver::TypeCheckContext *context;
+  Analysis::Mappings *mappings;
+};
+
+class TypeCheckMethodCallExpr : private TyVisitor
+{
+public:
+  static TyBase *go (TyBase *ref, HIR::MethodCallExpr &call,
+		     Resolver::TypeCheckContext *context)
+  {
+    TypeCheckMethodCallExpr checker (call, context);
+    ref->accept_vis (checker);
+    return checker.resolved;
+  }
+
+  void visit (UnitType &type) override { gcc_unreachable (); }
+  void visit (InferType &type) override { gcc_unreachable (); }
+  void visit (TupleType &type) override { gcc_unreachable (); }
+  void visit (StructFieldType &type) override { gcc_unreachable (); }
+  void visit (ArrayType &type) override { gcc_unreachable (); }
+  void visit (BoolType &type) override { gcc_unreachable (); }
+  void visit (IntType &type) override { gcc_unreachable (); }
+  void visit (UintType &type) override { gcc_unreachable (); }
+  void visit (FloatType &type) override { gcc_unreachable (); }
+  void visit (USizeType &type) override { gcc_unreachable (); }
+  void visit (ISizeType &type) override { gcc_unreachable (); }
+  void visit (ErrorType &type) override { gcc_unreachable (); }
+  void visit (ADTType &type) override { gcc_unreachable (); };
+
+  // call fns
+  void visit (FnType &type) override;
+
+private:
+  TypeCheckMethodCallExpr (HIR::MethodCallExpr &c,
+			   Resolver::TypeCheckContext *context)
+    : resolved (nullptr), call (c), context (context),
+      mappings (Analysis::Mappings::get ())
+  {}
+
+  TyBase *resolved;
+  HIR::MethodCallExpr &call;
   Resolver::TypeCheckContext *context;
   Analysis::Mappings *mappings;
 };

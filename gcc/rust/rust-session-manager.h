@@ -177,7 +177,8 @@ struct CompileOptions
     RESOLUTION_DUMP,
     TARGET_OPTION_DUMP,
     HIR_DUMP,
-    // TODO: add more?
+    TYPE_RESOLUTION_DUMP,
+
   } dump_option;
 
   /* configuration options - actually useful for conditional compilation and
@@ -204,8 +205,6 @@ struct Session
   // backend linemap
   Linemap *linemap;
 
-  // TODO: replace raw pointers with smart pointers?
-
 public:
   /* Initialise compiler session. Corresponds to langhook grs_langhook_init().
    * Note that this is called after option handling. */
@@ -217,7 +216,6 @@ public:
   void init_options ();
 
 private:
-  // TODO: should this be private or public?
   void parse_file (const char *filename);
   bool enable_dump (std::string arg);
 
@@ -232,23 +230,16 @@ private:
    * (top-level inner attribute creation from command line arguments), setting
    * options maybe, registering lints maybe, loading plugins maybe. */
   void register_plugins (AST::Crate &crate);
+
   /* Injection pipeline stage. TODO maybe move to another object? Maybe have
    * some lint checks (in future, obviously), register builtin macros, crate
    * injection. */
   void injection (AST::Crate &crate);
+
   /* Expansion pipeline stage. TODO maybe move to another object? Expands all
    * macros, maybe build test harness in future, AST validation, maybe create
    * macro crate (if not rustdoc).*/
   void expansion (AST::Crate &crate);
-  /* Resolution pipeline stage. TODO maybe move to another object.
-   * Performs name resolution and type resolution, maybe complete gated
-   * feature checking, maybe create buffered lints in future. */
-  void resolution (AST::Crate &crate);
-  /* This lowers the AST down to HIR and assigns all mappings from AST
-   * NodeIds back to HirIds */
-  HIR::Crate lower_ast (AST::Crate &crate);
-  /* This adds the type resolution process */
-  void type_resolution (HIR::Crate &crate);
 };
 } // namespace Rust
 

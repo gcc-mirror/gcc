@@ -22,7 +22,6 @@
 #include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-item.h"
 #include "rust-ast-resolve-expr.h"
-#include "rust-ast-resolve-unused.h"
 
 #define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \
@@ -110,7 +109,8 @@ Resolver::insert_builtin_types (Rib *r)
   auto builtins = get_builtin_types ();
   for (auto &builtin : builtins)
     r->insert_name (builtin->as_string (), builtin->get_node_id (),
-		    Linemap::predeclared_location ());
+		    Linemap::predeclared_location (), false,
+		    [] (std::string, NodeId, Location) -> void {});
 }
 
 std::vector<AST::Type *> &
@@ -283,9 +283,6 @@ NameResolution::go (AST::Crate &crate)
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveItem::go (it->get ());
-
-  ScanUnused::Scan (resolver->get_name_scope ().peek ());
-  ScanUnused::Scan (resolver->get_type_scope ().peek ());
 }
 
 // rust-ast-resolve-expr.h
@@ -306,9 +303,6 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 
   if (expr.has_tail_expr ())
     ResolveExpr::go (expr.get_tail_expr ().get (), expr.get_node_id ());
-
-  ScanUnused::Scan (resolver->get_name_scope ().peek ());
-  ScanUnused::Scan (resolver->get_type_scope ().peek ());
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();

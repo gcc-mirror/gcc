@@ -110,6 +110,11 @@ public:
     return scope_stack.back ();
   }
 
+  void add_statement_to_enclosing_scope (Bstatement *stmt)
+  {
+    statements.at (statements.size () - 2).push_back (stmt);
+  }
+
   void add_statement (Bstatement *stmt) { statements.back ().push_back (stmt); }
 
   void insert_var_decl (HirId id, ::Bvariable *decl)
@@ -222,11 +227,11 @@ public:
 
   virtual ~TyTyResolveCompile () {}
 
-  void visit (TyTy::ErrorType &type) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::InferType &type) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::StructFieldType &type) override { gcc_unreachable (); }
+  void visit (TyTy::StructFieldType &) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override
   {
@@ -261,7 +266,7 @@ public:
       ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::UnitType &type) override
+  void visit (TyTy::UnitType &) override
   {
     translated = ctx->get_backend ()->void_type ();
   }
@@ -278,8 +283,7 @@ public:
       {
 	TyTy::StructFieldType *field = type.get_field (i);
 	Btype *compiled_field_ty
-	  = TyTyCompile::compile (ctx->get_backend (),
-				  field->get_field_type ());
+	  = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
 	Backend::Btyped_identifier f (field->get_name (), compiled_field_ty,
 				      ctx->get_mappings ()->lookup_location (

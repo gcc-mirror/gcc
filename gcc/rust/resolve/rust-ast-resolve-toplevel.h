@@ -38,22 +38,34 @@ public:
 
   void visit (AST::TupleStruct &struct_decl)
   {
-    resolver->get_type_scope ().insert (struct_decl.get_identifier (),
-					struct_decl.get_node_id (),
-					struct_decl.get_locus ());
+    resolver->get_type_scope ().insert (
+      struct_decl.get_identifier (), struct_decl.get_node_id (),
+      struct_decl.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (struct_decl.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
   }
 
   void visit (AST::StructStruct &struct_decl)
   {
-    resolver->get_type_scope ().insert (struct_decl.get_identifier (),
-					struct_decl.get_node_id (),
-					struct_decl.get_locus ());
+    resolver->get_type_scope ().insert (
+      struct_decl.get_identifier (), struct_decl.get_node_id (),
+      struct_decl.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (struct_decl.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
   }
 
   void visit (AST::StaticItem &var)
   {
-    resolver->get_name_scope ().insert (var.get_identifier (),
-					var.get_node_id (), var.get_locus ());
+    resolver->get_name_scope ().insert (
+      var.get_identifier (), var.get_node_id (), var.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (var.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (var.get_node_id (),
 				     Definition{var.get_node_id (),
 						var.get_node_id ()});
@@ -62,9 +74,13 @@ public:
 
   void visit (AST::ConstantItem &constant)
   {
-    resolver->get_name_scope ().insert (constant.get_identifier (),
-					constant.get_node_id (),
-					constant.get_locus ());
+    resolver->get_name_scope ().insert (
+      constant.get_identifier (), constant.get_node_id (),
+      constant.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (constant.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (constant.get_node_id (),
 				     Definition{constant.get_node_id (),
 						constant.get_node_id ()});
@@ -72,9 +88,13 @@ public:
 
   void visit (AST::Function &function)
   {
-    resolver->get_name_scope ().insert (function.get_function_name (),
-					function.get_node_id (),
-					function.get_locus ());
+    resolver->get_name_scope ().insert (
+      function.get_function_name (), function.get_node_id (),
+      function.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (function.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (function.get_node_id (),
 				     Definition{function.get_node_id (),
 						function.get_node_id ()});
@@ -90,10 +110,6 @@ public:
 
   void visit (AST::InherentImpl &impl_block)
   {
-    if (!ResolveType::go (impl_block.get_type ().get (),
-			  impl_block.get_node_id ()))
-      return;
-
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (),
 				   impl_block.get_type ().get ());

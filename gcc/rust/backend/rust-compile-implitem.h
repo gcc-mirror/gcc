@@ -32,10 +32,10 @@ namespace Compile {
 class CompileInherentImplItem : public HIRCompileBase
 {
 public:
-  static void Compile (HIR::Type *base, HIR::InherentImplItem *item,
+  static void Compile (TyTy::TyBase *self, HIR::InherentImplItem *item,
 		       Context *ctx, bool compile_fns)
   {
-    CompileInherentImplItem compiler (base, ctx, compile_fns);
+    CompileInherentImplItem compiler (self, ctx, compile_fns);
     item->accept_vis (compiler);
   }
 
@@ -50,7 +50,7 @@ public:
     ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
-    std::string ident = base->as_string () + "::" + constant.get_identifier ();
+    std::string ident = self->as_string () + "::" + constant.get_identifier ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_identifier (), value, constant.get_locus ());
 
@@ -78,7 +78,8 @@ public:
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
       {
-	rust_fatal_error (function.locus, "failed to lookup function type");
+	rust_fatal_error (function.get_locus (),
+			  "failed to lookup function type");
 	return;
       }
 
@@ -93,23 +94,15 @@ public:
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
-    bool is_main_fn = function.function_name.compare ("main") == 0;
-
     std::string fn_identifier
-      = base->as_string () + "::" + function.function_name;
+      = self->as_string () + "::" + function.function_name;
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
-    if (is_main_fn || function.has_visibility ())
+    if (function.has_visibility ())
       flags |= Backend::function_is_visible;
 
     std::string asm_name = fn_identifier;
-    if (!is_main_fn)
-      {
-	// FIXME need name mangling
-	asm_name = "__" + function.function_name;
-      }
-
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, function.get_locus ());
@@ -213,28 +206,8 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    // compile the block
-    function_body->iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-      CompileStmt::Compile (s, ctx);
-      return true;
-    });
-
-    if (function_body->has_expr () && function_body->tail_expr_reachable ())
-      {
-	// the previous passes will ensure this is a valid return
-	// dead code elimination should remove any bad trailing expressions
-	Bexpression *compiled_expr
-	  = CompileExpr::Compile (function_body->expr.get (), ctx);
-	rust_assert (compiled_expr != nullptr);
-
-	auto fncontext = ctx->peek_fn ();
-
-	std::vector<Bexpression *> retstmts;
-	retstmts.push_back (compiled_expr);
-	auto s = ctx->get_backend ()->return_statement (
-	  fncontext.fndecl, retstmts, function_body->expr->get_locus_slow ());
-	ctx->add_statement (s);
-      }
+    compile_function_body (fndecl, function.function_body,
+			   function.has_function_return_type ());
 
     ctx->pop_block ();
     auto body = ctx->get_backend ()->block_statement (code_block);
@@ -249,12 +222,217 @@ public:
     ctx->push_function (fndecl);
   }
 
+  void visit (HIR::Method &method)
+  {
+    if (!compile_fns)
+      return;
+
+    // items can be forward compiled which means we may not need to invoke this
+    // code
+    Bfunction *lookup = nullptr;
+    if (ctx->lookup_function_decl (method.get_mappings ().get_hirid (),
+				   &lookup))
+      {
+	// has this been added to the list then it must be finished
+	if (ctx->function_completed (lookup))
+	  return;
+      }
+
+    TyTy::TyBase *fntype_tyty;
+    if (!ctx->get_tyctx ()->lookup_type (method.get_mappings ().get_hirid (),
+					 &fntype_tyty))
+      {
+	rust_fatal_error (method.get_locus (),
+			  "failed to lookup function type");
+	return;
+      }
+
+    if (fntype_tyty->get_kind () != TyTy::TypeKind::FNDEF)
+      {
+	rust_error_at (method.get_locus (), "invalid TyTy for function item");
+	return;
+      }
+
+    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
+    // convert to the actual function type
+    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+
+    unsigned int flags = 0;
+    std::string fn_identifier
+      = self->as_string () + "::" + method.get_method_name ();
+
+    // if its the main fn or pub visibility mark its as DECL_PUBLIC
+    // please see https://github.com/Rust-GCC/gccrs/pull/137
+    if (method.has_visibility ())
+      flags |= Backend::function_is_visible;
+
+    std::string asm_name = fn_identifier;
+    Bfunction *fndecl
+      = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
+				       asm_name, flags, method.get_locus ());
+    ctx->insert_function_decl (method.get_mappings ().get_hirid (), fndecl);
+
+    // setup the params
+    TyTy::TyBase *tyret = fntype->return_type ();
+    std::vector<Bvariable *> param_vars;
+
+    // insert self
+    TyTy::TyBase *self_tyty_lookup = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  method.get_self_param ().get_mappings ().get_hirid (),
+	  &self_tyty_lookup))
+      {
+	rust_error_at (method.get_self_param ().get_locus (),
+		       "failed to lookup self param type");
+	return;
+      }
+
+    Btype *self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
+    if (self_type == nullptr)
+      {
+	rust_error_at (method.get_self_param ().get_locus (),
+		       "failed to compile self param type");
+	return;
+      }
+
+    Bvariable *compiled_self_param
+      = CompileSelfParam::compile (ctx, fndecl, method.get_self_param (),
+				   self_type,
+				   method.get_self_param ().get_locus ());
+    if (compiled_self_param == nullptr)
+      {
+	rust_error_at (method.get_self_param ().get_locus (),
+		       "failed to compile self param variable");
+	return;
+      }
+
+    param_vars.push_back (compiled_self_param);
+    ctx->insert_var_decl (method.get_self_param ().get_mappings ().get_hirid (),
+			  compiled_self_param);
+
+    // offset from + 1 for the TyTy::FnType being used
+    size_t i = 1;
+    for (auto referenced_param : method.get_function_params ())
+      {
+	auto tyty_param = fntype->param_at (i);
+	auto param_tyty = tyty_param.second;
+
+	auto compiled_param_type
+	  = TyTyResolveCompile::compile (ctx, param_tyty);
+	if (compiled_param_type == nullptr)
+	  {
+	    rust_error_at (referenced_param.get_locus (),
+			   "failed to compile parameter type");
+	    return;
+	  }
+
+	Location param_locus
+	  = ctx->get_mappings ()->lookup_location (param_tyty->get_ref ());
+	Bvariable *compiled_param_var
+	  = CompileFnParam::compile (ctx, fndecl, &referenced_param,
+				     compiled_param_type, param_locus);
+	if (compiled_param_var == nullptr)
+	  {
+	    rust_error_at (param_locus, "failed to compile parameter variable");
+	    return;
+	  }
+
+	param_vars.push_back (compiled_param_var);
+
+	ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
+			      compiled_param_var);
+	i++;
+      }
+
+    if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+      {
+	rust_fatal_error (method.get_locus (),
+			  "failed to setup parameter variables");
+	return;
+      }
+
+    // lookup locals
+    auto block_expr = method.get_function_body ().get ();
+    auto body_mappings = block_expr->get_mappings ();
+
+    Resolver::Rib *rib = nullptr;
+    if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
+					      &rib))
+      {
+	rust_fatal_error (method.get_locus (),
+			  "failed to setup locals per block");
+	return;
+      }
+
+    std::vector<Bvariable *> locals;
+    rib->iterate_decls ([&] (NodeId n, Location) mutable -> bool {
+      Resolver::Definition d;
+      bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
+      rust_assert (ok);
+
+      HIR::Stmt *decl = nullptr;
+      ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
+      rust_assert (ok);
+
+      Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
+      locals.push_back (compiled);
+
+      return true;
+    });
+
+    bool toplevel_item
+      = method.get_mappings ().get_local_defid () != UNKNOWN_LOCAL_DEFID;
+    Bblock *enclosing_scope
+      = toplevel_item ? NULL : ctx->peek_enclosing_scope ();
+
+    HIR::BlockExpr *function_body = method.get_function_body ().get ();
+    Location start_location = function_body->get_locus ();
+    Location end_location = function_body->get_closing_locus ();
+
+    Bblock *code_block
+      = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+				    start_location, end_location);
+    ctx->push_block (code_block);
+
+    Bvariable *return_address = nullptr;
+    if (method.has_function_return_type ())
+      {
+	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
+
+	bool address_is_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+
+	return_address = ctx->get_backend ()->temporary_variable (
+	  fndecl, code_block, return_type, NULL, address_is_taken,
+	  method.get_locus (), &ret_var_stmt);
+
+	ctx->add_statement (ret_var_stmt);
+      }
+
+    ctx->push_fn (fndecl, return_address);
+
+    compile_function_body (fndecl, method.get_function_body (),
+			   method.has_function_return_type ());
+
+    ctx->pop_block ();
+    auto body = ctx->get_backend ()->block_statement (code_block);
+    if (!ctx->get_backend ()->function_set_body (fndecl, body))
+      {
+	rust_error_at (method.get_locus (), "failed to set body to function");
+	return;
+      }
+
+    ctx->pop_fn ();
+
+    ctx->push_function (fndecl);
+  }
+
 private:
-  CompileInherentImplItem (HIR::Type *base, Context *ctx, bool compile_fns)
-    : HIRCompileBase (ctx), base (base), compile_fns (compile_fns)
+  CompileInherentImplItem (TyTy::TyBase *self, Context *ctx, bool compile_fns)
+    : HIRCompileBase (ctx), self (self), compile_fns (compile_fns)
   {}
 
-  HIR::Type *base;
+  TyTy::TyBase *self;
   bool compile_fns;
 };
 

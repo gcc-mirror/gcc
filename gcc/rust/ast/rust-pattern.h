@@ -78,7 +78,7 @@ class IdentifierPattern : public Pattern
   Location locus;
 
 public:
-  std::string as_string () const;
+  std::string as_string () const override;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
   bool has_pattern_to_bind () const { return to_bind != nullptr; }
@@ -90,6 +90,15 @@ public:
     : Pattern (), variable_ident (std::move (ident)), is_ref (is_ref),
       is_mut (is_mut), to_bind (std::move (to_bind)), locus (locus)
   {}
+
+  IdentifierPattern (NodeId node_id, Identifier ident, Location locus,
+		     bool is_ref = false, bool is_mut = false,
+		     std::unique_ptr<Pattern> to_bind = nullptr)
+    : Pattern (), variable_ident (std::move (ident)), is_ref (is_ref),
+      is_mut (is_mut), to_bind (std::move (to_bind)), locus (locus)
+  {
+    this->node_id = node_id;
+  }
 
   // Copy constructor with clone
   IdentifierPattern (IdentifierPattern const &other)

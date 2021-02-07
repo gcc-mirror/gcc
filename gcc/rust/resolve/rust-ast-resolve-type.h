@@ -28,14 +28,14 @@ namespace Resolver {
 class ResolveType : public ResolverBase
 {
 public:
-  static bool go (AST::Type *type, NodeId parent)
+  static NodeId go (AST::Type *type, NodeId parent)
   {
     ResolveType resolver (parent);
     type->accept_vis (resolver);
     if (!resolver.ok)
       rust_error_at (type->get_locus_slow (), "unresolved type");
 
-    return resolver.ok;
+    return resolver.resolved_node;
   };
 
   void visit (AST::BareFunctionType &fntype)

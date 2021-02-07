@@ -35,6 +35,7 @@
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
 #include "rust-tycheck-dump.h"
+#include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
 
 extern Linemap *
@@ -527,9 +528,7 @@ Session::parse_file (const char *filename)
     }
 
   // resolution pipeline stage
-  resolution (parsed_crate);
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED RESOLUTION \n\033[0m");
-
+  Resolver::NameResolution::Resolve (parsed_crate);
   if (options.dump_option == CompileOptions::RESOLUTION_DUMP)
     {
       // TODO: what do I dump here? resolved names? AST with resolved names?
@@ -539,7 +538,7 @@ Session::parse_file (const char *filename)
     return;
 
   // lower AST to HIR
-  HIR::Crate hir = lower_ast (parsed_crate);
+  HIR::Crate hir = HIR::ASTLowering::Resolve (parsed_crate);
   if (options.dump_option == CompileOptions::HIR_DUMP)
     {
       fprintf (stderr, "%s", hir.as_string ().c_str ());
@@ -550,11 +549,17 @@ Session::parse_file (const char *filename)
     return;
 
   // type resolve
-  type_resolution (hir);
+  Resolver::TypeResolution::Resolve (hir);
+  if (options.dump_option == CompileOptions::TYPE_RESOLUTION_DUMP)
+    {
+      auto buf = Resolver::TypeResolverDump::go (hir);
+      fprintf (stderr, "%s\n", buf.c_str ());
+      return;
+    }
 
-  // FIXME this needs an option of itself
-  // auto buf = Resolver::TypeResolverDump::go (hir);
-  // fprintf (stderr, "%s\n", buf.c_str ());
+  // scan unused has to be done after type resolution since methods are resolved
+  // at that point
+  Resolver::ScanUnused::Scan ();
 
   if (saw_errors ())
     return;
@@ -789,31 +794,6 @@ Session::expansion (AST::Crate &crate)
   // maybe create macro crate if not rustdoc
 
   fprintf (stderr, "finished expansion\n");
-}
-
-void
-Session::resolution (AST::Crate &crate)
-{
-  fprintf (stderr, "started name resolution\n");
-  Resolver::NameResolution::Resolve (crate);
-  fprintf (stderr, "finished name resolution\n");
-}
-
-HIR::Crate
-Session::lower_ast (AST::Crate &crate)
-{
-  fprintf (stderr, "started lowering AST\n");
-  auto hir = HIR::ASTLowering::Resolve (crate);
-  fprintf (stderr, "finished lowering AST\n");
-  return hir;
-}
-
-void
-Session::type_resolution (HIR::Crate &crate)
-{
-  fprintf (stderr, "started type resolution\n");
-  Resolver::TypeResolution::Resolve (crate);
-  fprintf (stderr, "finished type resolution\n");
 }
 
 void

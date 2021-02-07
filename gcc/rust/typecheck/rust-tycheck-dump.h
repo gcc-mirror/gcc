@@ -37,7 +37,7 @@ public:
     return dumper.dump;
   }
 
-  void visit (HIR::InherentImpl &impl_block)
+  void visit (HIR::InherentImpl &impl_block) override
   {
     dump += indent () + "impl "
 	    + type_string (impl_block.get_type ()->get_mappings ()) + " {\n";
@@ -53,7 +53,7 @@ public:
     dump += indent () + "}\n";
   }
 
-  void visit (HIR::ConstantItem &constant)
+  void visit (HIR::ConstantItem &constant) override
   {
     dump += indent () + "constant " + constant.get_identifier () + ":"
 	    + type_string (constant.get_mappings ()) + " = ";
@@ -61,7 +61,7 @@ public:
     dump += ";\n";
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     dump += indent () + "fn " + function.function_name + " "
 	    + type_string (function.get_mappings ()) + "\n";
@@ -73,7 +73,19 @@ public:
     dump += indent () + "}\n";
   }
 
-  void visit (HIR::BlockExpr &expr)
+  void visit (HIR::Method &method) override
+  {
+    dump += indent () + "fn " + method.get_method_name () + " "
+	    + type_string (method.get_mappings ()) + "\n";
+    dump += indent () + "{\n";
+
+    HIR::BlockExpr *function_body = method.get_function_body ().get ();
+    function_body->accept_vis (*this);
+
+    dump += indent () + "}\n";
+  }
+
+  void visit (HIR::BlockExpr &expr) override
   {
     indentation_level++;
 
@@ -94,7 +106,7 @@ public:
     indentation_level--;
   }
 
-  void visit (HIR::LetStmt &stmt)
+  void visit (HIR::LetStmt &stmt) override
   {
     dump += "let " + stmt.get_pattern ()->as_string () + ":"
 	    + type_string (stmt.get_mappings ());
@@ -105,35 +117,35 @@ public:
       }
   }
 
-  void visit (HIR::ExprStmtWithBlock &stmt)
+  void visit (HIR::ExprStmtWithBlock &stmt) override
   {
     stmt.get_expr ()->accept_vis (*this);
   }
 
-  void visit (HIR::ExprStmtWithoutBlock &stmt)
+  void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
     stmt.get_expr ()->accept_vis (*this);
   }
 
-  void visit (HIR::AssignmentExpr &expr)
+  void visit (HIR::AssignmentExpr &expr) override
   {
     expr.get_lhs ()->accept_vis (*this);
     dump += " = ";
     expr.get_rhs ()->accept_vis (*this);
   }
 
-  void visit (HIR::LiteralExpr &expr)
+  void visit (HIR::LiteralExpr &expr) override
   {
     dump += expr.get_literal ()->as_string () + ":"
 	    + type_string (expr.get_mappings ());
   }
 
-  void visit (HIR::IdentifierExpr &expr)
+  void visit (HIR::IdentifierExpr &expr) override
   {
     dump += expr.get_identifier () + ":" + type_string (expr.get_mappings ());
   }
 
-  void visit (HIR::ArrayExpr &expr)
+  void visit (HIR::ArrayExpr &expr) override
   {
     dump += type_string (expr.get_mappings ()) + ":[";
 
@@ -143,7 +155,7 @@ public:
     dump += "]";
   }
 
-  void visit (HIR::ArrayElemsValues &elems)
+  void visit (HIR::ArrayElemsValues &elems) override
   {
     elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
       e->accept_vis (*this);
@@ -152,7 +164,7 @@ public:
     });
   }
 
-  void visit (HIR::GroupedExpr &expr)
+  void visit (HIR::GroupedExpr &expr) override
   {
     HIR::Expr *paren_expr = expr.get_expr_in_parens ().get ();
     dump += "(";
@@ -160,7 +172,7 @@ public:
     dump += ")";
   }
 
-  void visit (HIR::PathInExpression &expr)
+  void visit (HIR::PathInExpression &expr) override
   {
     dump += type_string (expr.get_mappings ());
   }

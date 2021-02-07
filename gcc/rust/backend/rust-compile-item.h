@@ -265,28 +265,8 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    // compile the block
-    function_body->iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-      CompileStmt::Compile (s, ctx);
-      return true;
-    });
-
-    if (function_body->has_expr () && function_body->tail_expr_reachable ())
-      {
-	// the previous passes will ensure this is a valid return
-	// dead code elimination should remove any bad trailing expressions
-	Bexpression *compiled_expr
-	  = CompileExpr::Compile (function_body->expr.get (), ctx);
-	rust_assert (compiled_expr != nullptr);
-
-	auto fncontext = ctx->peek_fn ();
-
-	std::vector<Bexpression *> retstmts;
-	retstmts.push_back (compiled_expr);
-	auto s = ctx->get_backend ()->return_statement (
-	  fncontext.fndecl, retstmts, function_body->expr->get_locus_slow ());
-	ctx->add_statement (s);
-      }
+    compile_function_body (fndecl, function.function_body,
+			   function.has_function_return_type ());
 
     ctx->pop_block ();
     auto body = ctx->get_backend ()->block_statement (code_block);
@@ -297,15 +277,23 @@ public:
       }
 
     ctx->pop_fn ();
-
     ctx->push_function (fndecl);
   }
 
   void visit (HIR::InherentImpl &impl_block)
   {
+    TyTy::TyBase *self_lookup = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  impl_block.get_type ()->get_mappings ().get_hirid (), &self_lookup))
+      {
+	rust_error_at (impl_block.get_locus (),
+		       "failed to resolve type of impl");
+	return;
+      }
+
     for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (impl_block.get_type ().get (),
-					impl_item.get (), ctx, compile_fns);
+      CompileInherentImplItem::Compile (self_lookup, impl_item.get (), ctx,
+					compile_fns);
   }
 
 private:

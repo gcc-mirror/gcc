@@ -147,14 +147,15 @@ ADTType::accept_vis (TyVisitor &vis)
 std::string
 ADTType::as_string () const
 {
-  if (num_fields () == 0)
-    return identifier;
+  // if (num_fields () == 0)
+  //   return identifier;
 
-  std::string fields_buffer;
-  for (auto &field : fields)
-    fields_buffer += field->as_string () + ", ";
+  // std::string fields_buffer;
+  // for (auto &field : fields)
+  //   fields_buffer += field->as_string () + ", ";
 
-  return identifier + "{" + fields_buffer + "}";
+  // return identifier + "{" + fields_buffer + "}";
+  return identifier;
 }
 
 TyBase *
@@ -564,6 +565,57 @@ TypeCheckCallExpr::visit (FnType &type)
   });
 
   if (i != call.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
+
+  resolved = type.get_return_type ()->clone ();
+}
+
+// method call checker
+
+void
+TypeCheckMethodCallExpr::visit (FnType &type)
+{
+  // +1 for the receiver self
+  size_t num_args_to_call = call.num_params () + 1;
+  if (num_args_to_call != type.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_params ());
+      return;
+    }
+
+  size_t i = 1;
+  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
+    auto fnparam = type.param_at (i);
+    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param);
+    if (argument_expr_tyty == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "failed to resolve type for argument expr in CallExpr");
+	return false;
+      }
+
+    auto resolved_argument_type = fnparam.second->combine (argument_expr_tyty);
+    if (resolved_argument_type == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "Type Resolution failure on parameter");
+	return false;
+      }
+
+    context->insert_type (param->get_mappings (), resolved_argument_type);
+
+    i++;
+    return true;
+  });
+
+  if (i != num_args_to_call)
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu", i,

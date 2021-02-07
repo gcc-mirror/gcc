@@ -238,6 +238,35 @@ public:
 			   expr.get_locus ());
   }
 
+  void visit (AST::MethodCallExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::PathExprSegment method_path (
+      expr.get_method_name ().get_ident_segment ().as_string (),
+      expr.get_method_name ().get_locus ());
+
+    HIR::Expr *receiver
+      = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());
+
+    std::vector<std::unique_ptr<HIR::Expr> > params;
+    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
+      auto trans = ASTLoweringExpr::translate (p);
+      params.push_back (std::unique_ptr<HIR::Expr> (trans));
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (
+      crate_num, UNKNOWN_NODEID /* this can map back to the AST*/,
+      mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::MethodCallExpr (mapping, std::unique_ptr<HIR::Expr> (receiver),
+				 method_path, std::move (params),
+				 std::move (outer_attribs), expr.get_locus ());
+  }
+
   void visit (AST::AssignmentExpr &expr)
   {
     HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());

@@ -228,6 +228,8 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  PathIdentSegment get_segment () const { return segment_name; }
 };
 
 // HIR node representing a pattern that involves a "path" - abstract base class

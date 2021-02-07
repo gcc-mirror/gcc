@@ -39,8 +39,12 @@ public:
   {
     std::string identifier
       = base->as_string () + "::" + constant.get_identifier ();
-    resolver->get_name_scope ().insert (identifier, constant.get_node_id (),
-					constant.get_locus ());
+    resolver->get_name_scope ().insert (
+      identifier, constant.get_node_id (), constant.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (constant.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (constant.get_node_id (),
 				     Definition{constant.get_node_id (),
 						constant.get_node_id ()});
@@ -50,8 +54,12 @@ public:
   {
     std::string identifier
       = base->as_string () + "::" + function.get_function_name ();
-    resolver->get_name_scope ().insert (identifier, function.get_node_id (),
-					function.get_locus ());
+    resolver->get_name_scope ().insert (
+      identifier, function.get_node_id (), function.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (function.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (function.get_node_id (),
 				     Definition{function.get_node_id (),
 						function.get_node_id ()});
@@ -61,8 +69,12 @@ public:
   {
     std::string identifier
       = base->as_string () + "::" + method.get_method_name ();
-    resolver->get_name_scope ().insert (identifier, method.get_node_id (),
-					method.get_locus ());
+    resolver->get_name_scope ().insert (
+      identifier, method.get_node_id (), method.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (method.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
     resolver->insert_new_definition (method.get_node_id (),
 				     Definition{method.get_node_id (),
 						method.get_node_id ()});

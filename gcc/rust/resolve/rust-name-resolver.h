@@ -37,8 +37,25 @@ public:
 
   ~Rib () {}
 
-  void insert_name (std::string ident, NodeId id, Location locus)
+  void insert_name (std::string ident, NodeId id, Location locus, bool shadow,
+		    std::function<void (std::string, NodeId, Location)> dup_cb)
   {
+    auto it = mappings.find (ident);
+    bool already_exists = it != mappings.end ();
+    if (already_exists && !shadow)
+      {
+	for (auto &decl : decls_within_rib)
+	  {
+	    if (decl.first == it->second)
+	      {
+		dup_cb (ident, it->second, decl.second);
+		return;
+	      }
+	  }
+	dup_cb (ident, it->second, locus);
+	return;
+      }
+
     mappings[ident] = id;
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
@@ -52,6 +69,19 @@ public:
 
     *id = it->second;
     return true;
+  }
+
+  void clear_name (std::string ident, NodeId id)
+  {
+    mappings.erase (ident);
+    for (auto &it : decls_within_rib)
+      {
+	if (it.first == id)
+	  {
+	    decls_within_rib.erase (it);
+	    break;
+	  }
+      }
   }
 
   CrateNum get_crate_num () const { return crate_num; }
@@ -117,9 +147,16 @@ public:
   Scope (CrateNum crate_num) : crate_num (crate_num) {}
   ~Scope () {}
 
+  void insert (std::string ident, NodeId id, Location locus, bool shadow,
+	       std::function<void (std::string, NodeId, Location)> dup_cb)
+  {
+    peek ()->insert_name (ident, id, locus, shadow, dup_cb);
+  }
+
   void insert (std::string ident, NodeId id, Location locus)
   {
-    peek ()->insert_name (ident, id, locus);
+    peek ()->insert_name (ident, id, locus, true,
+			  [] (std::string, NodeId, Location) -> void {});
   }
 
   bool lookup (std::string ident, NodeId *id)
@@ -264,6 +301,23 @@ public:
       return 0;
 
     return it->second.size ();
+  }
+
+  void iterate_name_ribs (std::function<void (Rib *)> cb)
+  {
+    for (auto it = name_ribs.begin (); it != name_ribs.end (); it++)
+      cb (it->second);
+  }
+
+  void iterate_type_ribs (std::function<void (Rib *)> cb)
+  {
+    for (auto it = type_ribs.begin (); it != type_ribs.end (); it++)
+      {
+	if (it->first == global_type_node_id)
+	  continue;
+
+	cb (it->second);
+      }
   }
 
 private:

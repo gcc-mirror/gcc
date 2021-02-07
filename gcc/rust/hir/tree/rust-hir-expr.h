@@ -2177,9 +2177,9 @@ public:
 
   void iterate_params (std::function<bool (Expr *)> cb)
   {
-    for (auto it = params.begin (); it != params.end (); it++)
+    for (auto &param : params)
       {
-	if (!cb (it->get ()))
+	if (!cb (param.get ()))
 	  return;
       }
   }
@@ -2260,6 +2260,27 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_receiver () { return receiver; }
+
+  PathExprSegment get_method_name () const { return method_name; };
+
+  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
+  const std::vector<std::unique_ptr<Expr> > &get_params () const
+  {
+    return params;
+  }
+
+  size_t num_params () const { return params.size (); }
+
+  void iterate_params (std::function<bool (Expr *)> cb)
+  {
+    for (auto &param : params)
+      {
+	if (!cb (param.get ()))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2584,6 +2605,10 @@ public:
 
     return statements[statements.size () - 1]->get_locus_slow ();
   }
+
+  std::unique_ptr<ExprWithoutBlock> &get_final_expr () { return expr; }
+
+  std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -28,34 +28,34 @@ namespace Compile {
 class CompileBlock : public HIRCompileBase
 {
 public:
-  static Bblock *compile (HIR::BlockExpr *expr, Context *ctx)
+  static Bblock *compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
   {
-    CompileBlock compiler (ctx);
+    CompileBlock compiler (ctx, result);
     expr->accept_vis (compiler);
     return compiler.translated;
   }
 
-  ~CompileBlock () {}
-
   void visit (HIR::BlockExpr &expr);
 
 private:
-  CompileBlock (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
+  CompileBlock (Context *ctx, Bvariable *result)
+    : HIRCompileBase (ctx), translated (nullptr), result (result)
+  {}
 
   Bblock *translated;
+  Bvariable *result;
 };
 
 class CompileConditionalBlocks : public HIRCompileBase
 {
 public:
-  static Bstatement *compile (HIR::IfExpr *expr, Context *ctx)
+  static Bstatement *compile (HIR::IfExpr *expr, Context *ctx,
+			      Bvariable *result)
   {
-    CompileConditionalBlocks resolver (ctx);
+    CompileConditionalBlocks resolver (ctx, result);
     expr->accept_vis (resolver);
     return resolver.translated;
   }
-
-  ~CompileConditionalBlocks () {}
 
   void visit (HIR::IfExpr &expr);
 
@@ -64,46 +64,47 @@ public:
   void visit (HIR::IfExprConseqIf &expr);
 
 private:
-  CompileConditionalBlocks (Context *ctx)
-    : HIRCompileBase (ctx), translated (nullptr)
+  CompileConditionalBlocks (Context *ctx, Bvariable *result)
+    : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
   Bstatement *translated;
+  Bvariable *result;
 };
 
 class CompileExprWithBlock : public HIRCompileBase
 {
 public:
-  static Bstatement *compile (HIR::ExprWithBlock *expr, Context *ctx)
+  static Bstatement *compile (HIR::ExprWithBlock *expr, Context *ctx,
+			      Bvariable *result)
   {
-    CompileExprWithBlock resolver (ctx);
+    CompileExprWithBlock resolver (ctx, result);
     expr->accept_vis (resolver);
     return resolver.translated;
   }
 
-  ~CompileExprWithBlock () {}
-
   void visit (HIR::IfExpr &expr)
   {
-    translated = CompileConditionalBlocks::compile (&expr, ctx);
+    translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    translated = CompileConditionalBlocks::compile (&expr, ctx);
+    translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }
 
   void visit (HIR::IfExprConseqIf &expr)
   {
-    translated = CompileConditionalBlocks::compile (&expr, ctx);
+    translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }
 
 private:
-  CompileExprWithBlock (Context *ctx)
-    : HIRCompileBase (ctx), translated (nullptr)
+  CompileExprWithBlock (Context *ctx, Bvariable *result)
+    : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
   Bstatement *translated;
+  Bvariable *result;
 };
 
 } // namespace Compile

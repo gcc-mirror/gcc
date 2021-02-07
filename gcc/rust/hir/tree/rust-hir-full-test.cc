@@ -676,7 +676,7 @@ Method::as_string () const
     }
 
   str += "\n Block expr (body): \n  ";
-  str += expr->as_string ();
+  str += function_body->as_string ();
 
   return str;
 }

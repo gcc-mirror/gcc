@@ -2399,9 +2399,9 @@ public:
 
   void iterate_params (std::function<bool (Expr *)> cb)
   {
-    for (auto it = params.begin (); it != params.end (); it++)
+    for (auto &param : params)
       {
-	if (!cb (it->get ()))
+	if (!cb (param.get ()))
 	  return;
       }
   }
@@ -2503,6 +2503,15 @@ public:
   // Invalid if receiver expr is null, so base stripping on that.
   void mark_for_strip () override { receiver = nullptr; }
   bool is_marked_for_strip () const override { return receiver == nullptr; }
+
+  void iterate_params (std::function<bool (Expr *)> cb)
+  {
+    for (auto &param : params)
+      {
+	if (!cb (param.get ()))
+	  return;
+      }
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<std::unique_ptr<Expr> > &get_params () const
