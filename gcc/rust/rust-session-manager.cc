@@ -365,7 +365,7 @@ Session::enable_dump (std::string arg)
 	Location (),
 	"dumping all is not supported as of now. choose %<lex%>, %<parse%>, "
 	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
-  " %<target_options%>, or %<hir%>");
+	" %<target_options%>, or %<hir%>");
       return false;
     }
   else if (arg == "lex")
@@ -407,9 +407,11 @@ Session::enable_dump (std::string arg)
     }
   else if (arg == "")
     {
-      rust_error_at (Location (), "dump option was not given a name. choose "
-				  "%<lex%>, %<parse%>, %<register_plugins%>, %<injection%>, "
-          "%<expansion%>, %<resolution%>, %<target_options%>, or %<hir%>");
+      rust_error_at (
+	Location (),
+	"dump option was not given a name. choose "
+	"%<lex%>, %<parse%>, %<register_plugins%>, %<injection%>, "
+	"%<expansion%>, %<resolution%>, %<target_options%>, or %<hir%>");
       return false;
     }
   else
@@ -417,8 +419,8 @@ Session::enable_dump (std::string arg)
       rust_error_at (
 	Location (),
 	"dump option %qs was unrecognised. choose %<lex%>, %<parse%>, "
-      "%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
-      " %<target_options%>, or %<hir%>",
+	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
+	" %<target_options%>, or %<hir%>",
 	arg.c_str ());
       return false;
     }

@@ -220,7 +220,10 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  Token *clone_token_tree_impl () const final override { return clone_token_impl (); }
+  Token *clone_token_tree_impl () const final override
+  {
+    return clone_token_impl ();
+  }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -823,8 +826,6 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
-  std::string as_string () const = 0;
-
   /* Adds crate names to the vector passed by reference, if it can
    * (polymorphism). TODO: remove, unused. */
   virtual void
@@ -885,8 +886,7 @@ public:
 
 protected:
   // Constructor
-  Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
-  {}
+  Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Expr *clone_expr_impl () const = 0;
@@ -941,8 +941,10 @@ class IdentifierExpr : public ExprWithoutBlock
   Location locus;
 
 public:
-  IdentifierExpr (Identifier ident, std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), ident (std::move (ident)), locus (locus)
+  IdentifierExpr (Identifier ident, std::vector<Attribute> outer_attrs,
+		  Location locus)
+    : outer_attrs (std::move (outer_attrs)), ident (std::move (ident)),
+      locus (locus)
   {}
 
   std::string as_string () const override { return ident; }
@@ -967,7 +969,10 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
 
 protected:
   // Clone method implementation
@@ -1670,7 +1675,8 @@ public:
 
 // Base path expression AST node - abstract
 class PathExpr : public ExprWithoutBlock
-{};
+{
+};
 } // namespace AST
 } // namespace Rust
 

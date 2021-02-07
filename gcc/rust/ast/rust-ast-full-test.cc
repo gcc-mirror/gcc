@@ -109,14 +109,17 @@ frag_spec_to_str (MacroFragSpec frag_spec)
     }
 }
 
-enum AttrMode 
+enum AttrMode
 {
   OUTER,
   INNER
 };
 
-std::string get_mode_dump_desc (AttrMode mode) {
-  switch (mode) {
+std::string
+get_mode_dump_desc (AttrMode mode)
+{
+  switch (mode)
+    {
     case OUTER:
       return "outer attributes";
     case INNER:
@@ -124,35 +127,38 @@ std::string get_mode_dump_desc (AttrMode mode) {
     default:
       gcc_unreachable ();
       return "";
-  }
+    }
 }
 
 // Adds lines below adding attributes
-std::string append_attributes (std::vector<Attribute> attrs, AttrMode mode) {
+std::string
+append_attributes (std::vector<Attribute> attrs, AttrMode mode)
+{
   indent_spaces (enter);
 
-  std::string str = "\n" + indent_spaces (stay) + get_mode_dump_desc (mode) + ": ";
-  //str += "\n" + indent_spaces (stay) + "inner attributes: ";
+  std::string str
+    = "\n" + indent_spaces (stay) + get_mode_dump_desc (mode) + ": ";
+  // str += "\n" + indent_spaces (stay) + "inner attributes: ";
   if (attrs.empty ())
     {
       str += "none";
     }
   else
     {
-      /* note that this does not print them with outer or "inner attribute" 
+      /* note that this does not print them with outer or "inner attribute"
        * syntax - just prints the body */
       for (const auto &attr : attrs)
 	str += "\n" + indent_spaces (stay) + attr.as_string ();
     }
 
   indent_spaces (out);
-  
+
   return str;
 }
 
-// Removes the beginning and end quotes of a quoted string. 
+// Removes the beginning and end quotes of a quoted string.
 std::string
-unquote_string (std::string input) 
+unquote_string (std::string input)
 {
   rust_assert (input.front () == '"');
   rust_assert (input.back () == '"');
@@ -167,24 +173,13 @@ Crate::as_string () const
   std::string str ("Crate: ");
   // add utf8bom and shebang
   if (has_utf8bom)
-      str += "\n has utf8bom";
+    str += "\n has utf8bom";
 
   if (has_shebang)
-      str += "\n has shebang";
+    str += "\n has shebang";
 
   // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   // items
   str += "\n items: ";
@@ -315,7 +310,7 @@ SimplePath::as_string () const
 {
   std::string path;
   if (has_opening_scope_resolution)
-      path = "::";
+    path = "::";
 
   // crappy hack because doing proper for loop would be more code
   bool first_time = true;
@@ -379,27 +374,10 @@ VisItem::as_string () const
     }
 
   if (has_visibility ())
-      str += visibility.as_string () + " ";
+    str += visibility.as_string () + " ";
 
   return str;
 }
-
-// Creates a string that reflects the outer attributes stored.
-/*std::string
-Item::as_string () const
-{
-  std::string str;
-
-  if (!outer_attrs.empty ())
-    {
-      for (const auto &attr : outer_attrs)
-	{
-	  str += attr.as_string () + "\n";
-	}
-    }
-
-  return str;
-}*/
 
 std::string
 Module::as_string () const
@@ -416,18 +394,7 @@ ModuleBodied::as_string () const
   std::string str = Module::as_string ();
 
   // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   // items
   str += "\n items: ";
@@ -472,7 +439,7 @@ StaticItem::as_string () const
   str += indent_spaces (stay) + "static";
 
   if (has_mut)
-      str += " mut";
+    str += " mut";
 
   str += " " + name;
 
@@ -505,7 +472,7 @@ ExternCrate::as_string () const
   str += "extern crate " + referenced_crate;
 
   if (has_as_clause ())
-      str += " as " + as_clause_name;
+    str += " as " + as_clause_name;
 
   return str;
 }
@@ -550,14 +517,14 @@ TupleStruct::as_string () const
   else
     {
       for (const auto &field : fields)
-	  str += "\n  " + field.as_string ();
+	str += "\n  " + field.as_string ();
     }
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   return str;
 }
@@ -625,25 +592,12 @@ InherentImpl::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	{
-	  str += "\n  " + attr.as_string ();
-	}
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   // inherent impl items
   str += "\n Inherent impl items: ";
@@ -654,7 +608,7 @@ InherentImpl::as_string () const
   else
     {
       for (const auto &item : impl_items)
-	  str += "\n  " + item->as_string ();
+	str += "\n  " + item->as_string ();
     }
 
   return str;
@@ -757,9 +711,9 @@ StructStruct::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   // struct fields
   str += "\n Struct fields: ";
@@ -774,7 +728,7 @@ StructStruct::as_string () const
   else
     {
       for (const auto &field : fields)
-	  str += "\n  " + field.as_string ();
+	str += "\n  " + field.as_string ();
     }
 
   return str;
@@ -926,9 +880,9 @@ Enum::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   // items
   str += "\n Items: ";
@@ -963,7 +917,7 @@ Trait::as_string () const
   std::string str = VisItem::as_string ();
 
   if (has_unsafe)
-      str += "unsafe ";
+    str += "unsafe ";
 
   str += "trait " + name;
 
@@ -1016,9 +970,9 @@ Trait::as_string () const
 
   str += "\n Where clause: ";
   if (!has_where_clause ())
-      str += "none";
+    str += "none";
   else
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
 
   str += "\n Trait items: ";
   if (!has_trait_items ())
@@ -1079,9 +1033,9 @@ Union::as_string () const
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   // struct fields
   str += "\n Struct fields (variants): ";
@@ -1092,7 +1046,7 @@ Union::as_string () const
   else
     {
       for (const auto &field : variants)
-	  str += "\n  " + field.as_string ();
+	str += "\n  " + field.as_string ();
     }
 
   return str;
@@ -1213,34 +1167,12 @@ BlockExpr::as_string () const
 {
   std::string istr = indent_spaces (enter);
   std::string str = istr + "BlockExpr:\n" + istr;
-  
+
   // get outer attributes
-  str += "{\n" + indent_spaces (stay) + "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	str += "\n" + indent_spaces (stay) + attr.as_string ();
-    }
+  str += append_attributes (outer_attrs, OUTER);
 
   // inner attributes
-  str += "\n" + indent_spaces (stay) + "inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n" + indent_spaces (stay) + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   // statements
   str += "\n" + indent_spaces (stay) + "statements: ";
@@ -1273,7 +1205,7 @@ BlockExpr::as_string () const
   else
     str += "\n" + expr->as_string ();
 
-  str += "\n" + indent_spaces (out) + "}";
+  str += "\n" + indent_spaces (out);
   return str;
 }
 
@@ -1316,18 +1248,7 @@ TraitImpl::as_string () const
     str += where_clause.as_string ();
 
   // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n  " + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   str += "\n trait impl items: ";
   if (!has_impl_items ())
@@ -1383,50 +1304,11 @@ TypeAlias::as_string () const
 std::string
 MacroInvocationSemi::as_string () const
 {
-  std::string str;
+  std::string str = "MacroInvocationSemi: ";
 
-  // get outer attrs
-  if (!outer_attrs.empty ())
-    {
-      for (const auto &attr : outer_attrs)
-	str += attr.as_string () + "\n";
-    }
+  str += append_attributes (outer_attrs, OUTER);
 
-  str += invoc_data.as_string ();
-
-#if 0
-  str += "\n" + path.as_string () + "!";
-
-  std::string tok_trees;
-  if (token_trees.empty ())
-    {
-      tok_trees = "none";
-    }
-  else
-    {
-      auto i = token_trees.begin ();
-      auto e = token_trees.end ();
-
-      // DEBUG: null pointer check
-      if (i == e)
-	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "token tree in macro invocation semi.");
-	  return "NULL_POINTER_MARK";
-	}
-
-      std::string s;
-      for (; i != e; i++)
-	{
-	  s += (*i)->as_string ();
-	  if (e != i + 1)
-	    s += ", ";
-	}
-
-      tok_trees += get_string_in_delims (s, delim_type);
-    }
-#endif
+  str += "\n" + invoc_data.as_string ();
 
   return str;
 }
@@ -1438,21 +1320,9 @@ ExternBlock::as_string () const
 
   str += "extern ";
   if (has_abi ())
-      str += "\"" + abi + "\" ";
+    str += "\"" + abi + "\" ";
 
-  // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n  " + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
 
   str += "\n external items: ";
   if (!has_extern_items ())
@@ -1488,11 +1358,7 @@ MacroRulesDefinition::as_string () const
   std::string str;
 
   // get outer attrs
-  if (!outer_attrs.empty ())
-    {
-      for (const auto &attr : outer_attrs)
-	str += attr.as_string () + "\n";
-    }
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "macro_rules!";
 
@@ -1531,9 +1397,13 @@ MacroRulesDefinition::as_string () const
 std::string
 MacroInvocation::as_string () const
 {
-  /*return "MacroInvocation: " + path.as_string () + "!"
-	 + token_tree.as_string ();*/
-  return "MacroInvocation: " + invoc_data.as_string ();
+  std::string str = "MacroInvocation: ";
+
+  str += append_attributes (outer_attrs, OUTER);
+
+  str += "\n " + invoc_data.as_string ();
+
+  return str;
 }
 
 std::string
@@ -1590,22 +1460,6 @@ ClosureExpr::as_string () const
   std::string str = "ClosureExpr:";
 
   str += append_attributes (outer_attrs, OUTER);
-
-#if 0
-  // outer attributes
-  str += "\n outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\n Has move: ";
   if (has_move)
@@ -1674,7 +1528,7 @@ QualifiedPathInExpression::as_string () const
 std::string
 BorrowExpr::as_string () const
 {
-  /* TODO: find way to incorporate outer attrs - may have to represent in 
+  /* TODO: find way to incorporate outer attrs - may have to represent in
    * different style (i.e. something more like BorrowExpr: \n outer attrs) */
 
   std::string str ("&");
@@ -1693,7 +1547,7 @@ BorrowExpr::as_string () const
 std::string
 ReturnExpr::as_string () const
 {
-  /* TODO: find way to incorporate outer attrs - may have to represent in 
+  /* TODO: find way to incorporate outer attrs - may have to represent in
    * different style (i.e. something more like BorrowExpr: \n outer attrs) */
 
   std::string str ("return ");
@@ -1713,20 +1567,6 @@ GroupedExpr::as_string () const
   str += append_attributes (outer_attrs, OUTER);
 
   // inner attributes
-#if 0
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-#endif
   str += append_attributes (inner_attrs, INNER);
 
   str += "\n Expr in parens: " + expr_in_parens->as_string ();
@@ -1821,7 +1661,7 @@ AsyncBlockExpr::as_string () const
   std::string str = "AsyncBlockExpr: ";
 
   // get outer attributes
-  //str += "\n " + Expr::as_string ();
+  // str += "\n " + Expr::as_string ();
   str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Has move: ";
@@ -1871,7 +1711,7 @@ MethodCallExpr::as_string () const
   std::string str = "MethodCallExpr: ";
 
   str += append_attributes (outer_attrs, OUTER);
-  
+
   str += "\n Object (receiver) expr: \n";
   str += receiver->as_string ();
 
@@ -1958,15 +1798,14 @@ RangeToInclExpr::as_string () const
 std::string
 UnsafeBlockExpr::as_string () const
 {
-  std::string istr = indent_spaces (enter);
-  std::string str = istr + "UnsafeBlockExpr:";
-  str += istr + "{";
+  std::string str = "UnsafeBlockExpr:" + indent_spaces (enter);
 
   // get outer attributes
-  //str += "\n" + indent_spaces (stay) + Expr::as_string ();
   str += append_attributes (outer_attrs, OUTER);
 
-  return str + "\n" + indent_spaces (out) + "}\n" + expr->as_string ();
+  str += indent_spaces (stay) + expr->as_string () + "\n" + indent_spaces (out);
+
+  return str;
 }
 
 std::string
@@ -1982,9 +1821,9 @@ ClosureExprInner::as_string () const
 std::string
 IfExpr::as_string () const
 {
-  /* TODO: can if exprs have outer attributes? i thought no, but can't find it
-   * in docs */
-  std::string str ("IfExpr: ");
+  std::string str = "IfExpr: ";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Condition expr: " + condition->as_string ();
 
@@ -2026,9 +1865,9 @@ IfExprConseqIfLet::as_string () const
 std::string
 IfLetExpr::as_string () const
 {
-  /* TODO: can if let exprs have outer attributes? i thought no, but can't find 
-   * it in docs */
-  std::string str ("IfLetExpr: ");
+  std::string str = "IfLetExpr: ";
+
+  str += append_attributes (outer_attrs, OUTER);
 
   str += "\n Condition match arm patterns: ";
   if (match_arm_patterns.empty ())
@@ -2218,7 +2057,7 @@ CallExpr::as_string () const
   std::string str = "CallExpr: ";
 
   str += append_attributes (outer_attrs, OUTER);
-  
+
   str += "\n Function expr: ";
   str += function->as_string ();
 
@@ -2319,20 +2158,6 @@ ArrayExpr::as_string () const
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);
-  #if 0
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-  #endif
 
   str += "\n Array elems: ";
   if (!has_array_elems ())
@@ -2376,20 +2201,6 @@ MatchArm::as_string () const
 {
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "Outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	str += "\n " + attr.as_string ();
-    }
-#endif
 
   str += "\nPatterns: ";
   if (match_arm_patterns.empty ())
@@ -2422,26 +2233,6 @@ MatchCase::as_string () const
   return str;
 }
 
-/*std::string
-MatchCaseBlockExpr::as_string () const
-{
-  std::string str = MatchCase::as_string ();
-
-  str += "\n Block expr: " + block_expr->as_string ();
-
-  return str;
-}
-
-std::string
-MatchCaseExpr::as_string () const
-{
-  std::string str = MatchCase::as_string ();
-
-  str += "\n Expr: " + expr->as_string ();
-
-  return str;
-}*/
-
 std::string
 MatchExpr::as_string () const
 {
@@ -2453,20 +2244,6 @@ MatchExpr::as_string () const
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);
-#if 0
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   // match arms
   str += "\n Match arms: ";
@@ -2492,20 +2269,6 @@ TupleExpr::as_string () const
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);
-#if 0
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\n Tuple elements: ";
   if (tuple_elems.empty ())
@@ -2515,7 +2278,7 @@ TupleExpr::as_string () const
   else
     {
       for (const auto &elem : tuple_elems)
-	  str += "\n  " + elem->as_string ();
+	str += "\n  " + elem->as_string ();
     }
 
   return str;
@@ -2529,9 +2292,9 @@ ExprStmtWithoutBlock::as_string () const
   str += indent_spaces (stay);
 
   if (expr == nullptr)
-      str += "none (this shouldn't happen and is probably an error)";
+    str += "none (this shouldn't happen and is probably an error)";
   else
-      str += expr->as_string ();
+    str += expr->as_string ();
   indent_spaces (out);
 
   return str;
@@ -2565,13 +2328,13 @@ FunctionQualifiers::as_string () const
     }
 
   if (has_unsafe)
-      str += "unsafe ";
+    str += "unsafe ";
 
   if (has_extern)
     {
       str += "extern";
       if (extern_abi != "")
-	      str += " \"" + extern_abi + "\"";
+	str += " \"" + extern_abi + "\"";
     }
 
   return str;
@@ -2584,9 +2347,9 @@ TraitBound::as_string () const
 
   str += "\n Has opening question mark: ";
   if (opening_question_mark)
-      str += "true";
+    str += "true";
   else
-      str += "false";
+    str += "false";
 
   str += "\n For lifetimes: ";
   if (!has_for_lifetimes ())
@@ -2596,7 +2359,7 @@ TraitBound::as_string () const
   else
     {
       for (const auto &lifetime : for_lifetimes)
-	  str += "\n  " + lifetime.as_string ();
+	str += "\n  " + lifetime.as_string ();
     }
 
   str += "\n Type path: " + type_path.as_string ();
@@ -2635,7 +2398,7 @@ MacroMatcher::as_string () const
   else
     {
       for (const auto &match : matches)
-	      str += "\n  " + match->as_string ();
+	str += "\n  " + match->as_string ();
     }
 
   return str;
@@ -2648,9 +2411,9 @@ LifetimeParam::as_string () const
 
   str += "\n Outer attribute: ";
   if (!has_outer_attribute ())
-      str += "none";
+    str += "none";
   else
-      str += outer_attr.as_string ();
+    str += outer_attr.as_string ();
 
   str += "\n Lifetime: " + lifetime.as_string ();
 
@@ -2662,7 +2425,7 @@ LifetimeParam::as_string () const
   else
     {
       for (const auto &bound : lifetime_bounds)
-	      str += "\n  " + bound.as_string ();
+	str += "\n  " + bound.as_string ();
     }
 
   return str;
@@ -2677,12 +2440,12 @@ MacroMatchFragment::as_string () const
 std::string
 QualifiedPathInType::as_string () const
 {
-  /* TODO: this may need adjusting if segments (e.g. with functions) can't be 
+  /* TODO: this may need adjusting if segments (e.g. with functions) can't be
    * literalised */
   std::string str = path_type.as_string ();
 
   for (const auto &segment : segments)
-      str += "::" + segment->as_string ();
+    str += "::" + segment->as_string ();
 
   return str;
 }
@@ -2700,14 +2463,14 @@ MacroMatchRepetition::as_string () const
   else
     {
       for (const auto &match : matches)
-	  str += "\n  " + match->as_string ();
+	str += "\n  " + match->as_string ();
     }
 
   str += "\n Sep: ";
   if (!has_sep ())
-      str += "none";
+    str += "none";
   else
-      str += sep->as_string ();
+    str += sep->as_string ();
 
   str += "\n Op: ";
   switch (op)
@@ -2735,7 +2498,7 @@ std::string
 Lifetime::as_string () const
 {
   if (is_error ())
-      return "error lifetime";
+    return "error lifetime";
 
   switch (lifetime_type)
     {
@@ -2753,15 +2516,15 @@ Lifetime::as_string () const
 std::string
 TypePath::as_string () const
 {
-  /* TODO: this may need to be rewritten if a segment (e.g. function) can't be 
+  /* TODO: this may need to be rewritten if a segment (e.g. function) can't be
    * literalised */
   std::string str;
 
   if (has_opening_scope_resolution)
-      str = "::";
+    str = "::";
 
   for (const auto &segment : segments)
-      str += segment->as_string () + "::";
+    str += segment->as_string () + "::";
 
   // kinda hack - remove last 2 '::' characters
   str.erase (str.length () - 2);
@@ -2776,9 +2539,9 @@ TypeParam::as_string () const
 
   str += "\n Outer attribute: ";
   if (!has_outer_attribute ())
-      str += "none";
+    str += "none";
   else
-      str += outer_attr.as_string ();
+    str += outer_attr.as_string ();
 
   str += "\n Identifier: " + type_representation;
 
@@ -2790,14 +2553,14 @@ TypeParam::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	  str += "\n  " + bound->as_string ();
+	str += "\n  " + bound->as_string ();
     }
 
   str += "\n Type: ";
   if (!has_type ())
-      str += "none";
+    str += "none";
   else
-      str += type->as_string ();
+    str += type->as_string ();
 
   return str;
 }
@@ -2806,7 +2569,7 @@ SimplePath
 PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
 {
   if (!has_segments ())
-      return SimplePath::create_empty ();
+    return SimplePath::create_empty ();
 
   // create vector of reserved size (to minimise reallocations)
   std::vector<SimplePathSegment> simple_segments;
@@ -2817,7 +2580,7 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
       // return empty path if doesn't meet simple path segment requirements
       if (segment.is_error () || segment.has_generic_args ()
 	  || segment.as_string () == "Self")
-	  return SimplePath::create_empty ();
+	return SimplePath::create_empty ();
 
       // create segment and add to vector
       std::string segment_str = segment.as_string ();
@@ -2828,9 +2591,9 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
   // kind of a HACK to get locus depending on opening scope resolution
   Location locus = Linemap::unknown_location ();
   if (with_opening_scope_resolution)
-      locus = simple_segments[0].get_locus () - 2; // minus 2 chars for ::
+    locus = simple_segments[0].get_locus () - 2; // minus 2 chars for ::
   else
-      locus = simple_segments[0].get_locus ();
+    locus = simple_segments[0].get_locus ();
   // FIXME: this hack probably doesn't actually work
 
   return SimplePath (std::move (simple_segments), with_opening_scope_resolution,
@@ -2841,7 +2604,7 @@ SimplePath
 TypePath::as_simple_path () const
 {
   if (segments.empty ())
-      return SimplePath::create_empty ();
+    return SimplePath::create_empty ();
 
   // create vector of reserved size (to minimise reallocations)
   std::vector<SimplePathSegment> simple_segments;
@@ -2852,7 +2615,7 @@ TypePath::as_simple_path () const
       // return empty path if doesn't meet simple path segment requirements
       if (segment == nullptr || segment->is_error ()
 	  || !segment->is_ident_only () || segment->as_string () == "Self")
-	  return SimplePath::create_empty ();
+	return SimplePath::create_empty ();
 
       // create segment and add to vector
       std::string segment_str = segment->as_string ();
@@ -2870,7 +2633,7 @@ PathExprSegment::as_string () const
   // TODO: rewrite dump to work with non-literalisable types
   std::string ident_str = segment_name.as_string ();
   if (has_generic_args ())
-      ident_str += "::<" + generic_args.as_string () + ">";
+    ident_str += "::<" + generic_args.as_string () + ">";
 
   return ident_str;
 }
@@ -2941,9 +2704,9 @@ ForLoopExpr::as_string () const
 
   str += "\n Label: ";
   if (!has_loop_label ())
-      str += "none";
+    str += "none";
   else
-      str += loop_label.as_string ();
+    str += loop_label.as_string ();
 
   str += "\n Pattern: " + pattern->as_string ();
 
@@ -2959,9 +2722,9 @@ RangePattern::as_string () const
 {
   // TODO: maybe rewrite to work with non-linearisable bounds
   if (has_ellipsis_syntax)
-      return lower->as_string () + "..." + upper->as_string ();
+    return lower->as_string () + "..." + upper->as_string ();
   else
-      return lower->as_string () + "..=" + upper->as_string ();
+    return lower->as_string () + "..=" + upper->as_string ();
 }
 
 std::string
@@ -2970,7 +2733,7 @@ RangePatternBoundLiteral::as_string () const
   std::string str;
 
   if (has_minus)
-      str += "-";
+    str += "-";
 
   str += literal.as_string ();
 
@@ -2983,7 +2746,7 @@ SlicePattern::as_string () const
   std::string str ("SlicePattern: ");
 
   for (const auto &pattern : items)
-      str += "\n " + pattern->as_string ();
+    str += "\n " + pattern->as_string ();
 
   return str;
 }
@@ -2994,7 +2757,7 @@ TuplePatternItemsMultiple::as_string () const
   std::string str;
 
   for (const auto &pattern : patterns)
-      str += "\n " + pattern->as_string ();
+    str += "\n " + pattern->as_string ();
 
   return str;
 }
@@ -3012,7 +2775,7 @@ TuplePatternItemsRanged::as_string () const
   else
     {
       for (const auto &lower : lower_patterns)
-	  str += "\n  " + lower->as_string ();
+	str += "\n  " + lower->as_string ();
     }
 
   str += "\n Upper patterns: ";
@@ -3023,7 +2786,7 @@ TuplePatternItemsRanged::as_string () const
   else
     {
       for (const auto &upper : upper_patterns)
-	  str += "\n  " + upper->as_string ();
+	str += "\n  " + upper->as_string ();
     }
 
   return str;
@@ -3040,20 +2803,6 @@ StructPatternField::as_string () const
 {
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str ("Outer attributes: ");
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   return str;
 }
@@ -3066,10 +2815,10 @@ StructPatternFieldIdent::as_string () const
   str += "\n";
 
   if (has_ref)
-      str += "ref ";
+    str += "ref ";
 
   if (has_mut)
-      str += "mut ";
+    str += "mut ";
 
   str += ident;
 
@@ -3114,14 +2863,14 @@ StructPatternElements::as_string () const
   else
     {
       for (const auto &field : fields)
-	  str += "\n   " + field->as_string ();
+	str += "\n   " + field->as_string ();
     }
 
   str += "\n  Etc: ";
   if (has_struct_pattern_etc)
-      str += "true";
+    str += "true";
   else
-      str += "false";
+    str += "false";
 
   return str;
 }
@@ -3135,9 +2884,9 @@ StructPattern::as_string () const
 
   str += "\n Struct pattern elems: ";
   if (!has_struct_pattern_elems ())
-      str += "none";
+    str += "none";
   else
-      str += elems.as_string ();
+    str += elems.as_string ();
 
   return str;
 }
@@ -3148,7 +2897,7 @@ LiteralPattern::as_string () const
   std::string str;
 
   if (has_minus)
-      str += "-";
+    str += "-";
 
   return str + lit.as_string ();
 }
@@ -3160,10 +2909,10 @@ ReferencePattern::as_string () const
   std::string str ("&");
 
   if (has_two_amps)
-      str += "&";
+    str += "&";
 
   if (is_mut)
-      str += "mut ";
+    str += "mut ";
 
   str += pattern->as_string ();
 
@@ -3177,15 +2926,15 @@ IdentifierPattern::as_string () const
   std::string str;
 
   if (is_ref)
-      str += "ref ";
+    str += "ref ";
 
   if (is_mut)
-      str += "mut ";
+    str += "mut ";
 
   str += variable_ident;
 
   if (has_pattern_to_bind ())
-      str += " @ " + to_bind->as_string ();
+    str += " @ " + to_bind->as_string ();
 
   return str;
 }
@@ -3196,7 +2945,7 @@ TupleStructItemsNoRange::as_string () const
   std::string str;
 
   for (const auto &pattern : patterns)
-      str += "\n  " + pattern->as_string ();
+    str += "\n  " + pattern->as_string ();
 
   return str;
 }
@@ -3213,7 +2962,7 @@ TupleStructItemsRange::as_string () const
   else
     {
       for (const auto &lower : lower_patterns)
-	  str += "\n   " + lower->as_string ();
+	str += "\n   " + lower->as_string ();
     }
 
   str += "\n  Upper patterns: ";
@@ -3224,7 +2973,7 @@ TupleStructItemsRange::as_string () const
   else
     {
       for (const auto &upper : upper_patterns)
-	  str += "\n   " + upper->as_string ();
+	str += "\n   " + upper->as_string ();
     }
 
   return str;
@@ -3251,36 +3000,13 @@ LetStmt::as_string () const
   str += "\n" + indent_spaces (stay) + "let " + variables_pattern->as_string ();
 
   if (has_type ())
-      str += " : " + type->as_string ();
+    str += " : " + type->as_string ();
 
   if (has_init_expr ())
-      str += " = " + init_expr->as_string ();
+    str += " = " + init_expr->as_string ();
 
   return str;
 }
-
-#if 0
-// Used to get outer attributes for expressions.
-std::string
-Expr::as_string () const
-{
-  // outer attributes
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-
-  return str;
-}
-#endif
 
 // hopefully definition here will prevent circular dependency issue
 TraitBound *
@@ -3315,7 +3041,7 @@ ImplTraitType::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	  str += "\n  " + bound->as_string ();
+	str += "\n  " + bound->as_string ();
     }
 
   return str;
@@ -3328,10 +3054,10 @@ ReferenceType::as_string () const
   std::string str ("&");
 
   if (has_lifetime ())
-      str += lifetime.as_string () + " ";
+    str += lifetime.as_string () + " ";
 
   if (has_mut)
-      str += "mut ";
+    str += "mut ";
 
   str += type->as_string ();
 
@@ -3367,9 +3093,9 @@ TraitObjectType::as_string () const
   std::string str ("TraitObjectType: \n Has dyn dispatch: ");
 
   if (has_dyn)
-      str += "true";
+    str += "true";
   else
-      str += "false";
+    str += "false";
 
   str += "\n TypeParamBounds: ";
   if (type_param_bounds.empty ())
@@ -3379,7 +3105,7 @@ TraitObjectType::as_string () const
   else
     {
       for (const auto &bound : type_param_bounds)
-	  str += "\n  " + bound->as_string ();
+	str += "\n  " + bound->as_string ();
     }
 
   return str;
@@ -3397,7 +3123,7 @@ BareFunctionType::as_string () const
   else
     {
       for (const auto &for_lifetime : for_lifetimes)
-	  str += "\n  " + for_lifetime.as_string ();
+	str += "\n  " + for_lifetime.as_string ();
     }
 
   str += "\n Qualifiers: " + function_qualifiers.as_string ();
@@ -3410,20 +3136,20 @@ BareFunctionType::as_string () const
   else
     {
       for (const auto &param : params)
-	  str += "\n  " + param.as_string ();
+	str += "\n  " + param.as_string ();
     }
 
   str += "\n Is variadic: ";
   if (is_variadic)
-      str += "true";
+    str += "true";
   else
-      str += "false";
+    str += "false";
 
   str += "\n Return type: ";
   if (!has_return_type ())
-      str += "none (void)";
+    str += "none (void)";
   else
-      str += return_type->as_string ();
+    str += return_type->as_string ();
 
   return str;
 }
@@ -3449,9 +3175,9 @@ TraitObjectTypeOneBound::as_string () const
   std::string str ("TraitObjectTypeOneBound: \n Has dyn dispatch: ");
 
   if (has_dyn)
-      str += "true";
+    str += "true";
   else
-      str += "false";
+    str += "false";
 
   str += "\n TraitBound: " + trait_bound.as_string ();
 
@@ -3480,7 +3206,7 @@ TypePathFunction::as_string () const
   str += ")";
 
   if (has_return_type ())
-      str += " -> " + return_type->as_string ();
+    str += " -> " + return_type->as_string ();
 
   return str;
 }
@@ -3560,7 +3286,7 @@ StructExprTuple::as_string () const
 
       // debug - null pointer check
       if (*i == nullptr)
-	  return "ERROR_MARK_STRING - nullptr struct expr tuple field";
+	return "ERROR_MARK_STRING - nullptr struct expr tuple field";
 
       str += '(';
       for (; i != e; i++)
@@ -3575,18 +3301,7 @@ StructExprTuple::as_string () const
   indent_spaces (enter);
   indent_spaces (enter);
   // inner attributes
-  str += "\n" + indent_spaces (stay) + "inner attributes:";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n" + indent_spaces (stay) + attr.as_string ();
-    }
+  str += append_attributes (inner_attrs, INNER);
   indent_spaces (out);
   indent_spaces (out);
 
@@ -3603,20 +3318,6 @@ StructExprStruct::as_string () const
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);
-#if 0
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-#endif
 
   return str;
 }
@@ -3723,20 +3424,6 @@ EnumItem::as_string () const
 {
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\n" + variant_name;
 
@@ -3778,23 +3465,9 @@ TupleField::as_string () const
 
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   if (has_visibility ())
-      str += "\n" + visibility.as_string ();
+    str += "\n" + visibility.as_string ();
 
   str += " " + field_type->as_string ();
 
@@ -3835,23 +3508,9 @@ StructField::as_string () const
   // TODO: rewrite to work with non-linearisable exprs
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   if (has_visibility ())
-      str += "\n" + visibility.as_string ();
+    str += "\n" + visibility.as_string ();
 
   str += " " + field_name + " : " + field_type->as_string ();
 
@@ -3870,50 +3529,11 @@ EnumItemDiscriminant::as_string () const
   return str;
 }
 
-#if 0
-std::string
-ExternalItem::as_string () const
-{
-  // outer attributes
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-
-  // start visibility on new line and with a space
-  str += "\n" + visibility.as_string () + " ";
-
-  return str;
-}
-#endif
-
 std::string
 ExternalStaticItem::as_string () const
 {
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-#endif
 
   // start visibility on new line and with a space
   str += "\n" + visibility.as_string () + " ";
@@ -3937,20 +3557,6 @@ ExternalFunctionItem::as_string () const
 {
   // outer attributes
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	str += "\n  " + attr.as_string ();
-    }
-#endif
 
   // start visibility on new line and with a space
   str += "\n" + visibility.as_string () + " ";
@@ -4028,19 +3634,6 @@ std::string
 NamedFunctionParam::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-
-  if (!has_outer_attrs ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &attr : outer_attrs)
-	str += "\n " + attr.as_string ();
-    }
-#endif
 
   str += "\n" + name;
 
@@ -4049,47 +3642,18 @@ NamedFunctionParam::as_string () const
   return str;
 }
 
-/*std::string TraitItem::as_string() const {
-    // outer attributes
-    std::string str = "outer attributes: ";
-    if (outer_attrs.empty()) {
-	str += "none";
-    } else {
-	// note that this does not print them with "outer attribute" syntax -
-just the body for (const auto& attr : outer_attrs) { str += "\n  " +
-attr.as_string();
-	}
-    }
-
-    return str;
-}*/
-
 std::string
 TraitItemFunc::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\n" + decl.as_string ();
 
   str += "\n Definition (block expr): ";
   if (has_definition ())
-      str += block_expr->as_string ();
+    str += block_expr->as_string ();
   else
-      str += "none";
+    str += "none";
 
   return str;
 }
@@ -4127,7 +3691,7 @@ TraitFunctionDecl::as_string () const
   if (has_params ())
     {
       for (const auto &param : function_params)
-	  str += "\n  " + param.as_string ();
+	str += "\n  " + param.as_string ();
     }
   else
     {
@@ -4136,15 +3700,15 @@ TraitFunctionDecl::as_string () const
 
   str += "\n Return type: ";
   if (has_return_type ())
-      str += return_type->as_string ();
+    str += return_type->as_string ();
   else
-      str += "none (void)";
+    str += "none (void)";
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   return str;
 }
@@ -4153,28 +3717,14 @@ std::string
 TraitItemMethod::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\n" + decl.as_string ();
 
   str += "\n Definition (block expr): ";
   if (has_definition ())
-      str += block_expr->as_string ();
+    str += block_expr->as_string ();
   else
-      str += "none";
+    str += "none";
 
   return str;
 }
@@ -4214,7 +3764,7 @@ TraitMethodDecl::as_string () const
   if (has_params ())
     {
       for (const auto &param : function_params)
-	  str += "\n  " + param.as_string ();
+	str += "\n  " + param.as_string ();
     }
   else
     {
@@ -4223,15 +3773,15 @@ TraitMethodDecl::as_string () const
 
   str += "\n Return type: ";
   if (has_return_type ())
-      str += return_type->as_string ();
+    str += return_type->as_string ();
   else
-      str += "none (void)";
+    str += "none (void)";
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-      str += where_clause.as_string ();
+    str += where_clause.as_string ();
   else
-      str += "none";
+    str += "none";
 
   return str;
 }
@@ -4241,25 +3791,11 @@ TraitItemConst::as_string () const
 {
   // TODO: rewrite to work with non-linearisable exprs
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\nconst " + name + " : " + type->as_string ();
 
   if (has_expression ())
-      str += " = " + expr->as_string ();
+    str += " = " + expr->as_string ();
 
   return str;
 }
@@ -4268,20 +3804,6 @@ std::string
 TraitItemType::as_string () const
 {
   std::string str = append_attributes (outer_attrs, OUTER);
-#if 0
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	  str += "\n  " + attr.as_string ();
-    }
-#endif
 
   str += "\ntype " + name;
 
@@ -4327,7 +3849,7 @@ SelfParam::as_string () const
 	  std::string str;
 
 	  if (is_mut)
-	      str += "mut ";
+	    str += "mut ";
 
 	  str += "self : ";
 
@@ -4341,7 +3863,7 @@ SelfParam::as_string () const
 	  std::string str = "&" + lifetime.as_string () + " ";
 
 	  if (is_mut)
-	      str += "mut ";
+	    str += "mut ";
 
 	  str += "self";
 
@@ -4353,7 +3875,7 @@ SelfParam::as_string () const
 	  std::string str = "&";
 
 	  if (is_mut)
-	      str += " mut ";
+	    str += " mut ";
 
 	  str += "self";
 
@@ -4365,7 +3887,7 @@ SelfParam::as_string () const
 	  std::string str;
 
 	  if (is_mut)
-	      str += "mut ";
+	    str += "mut ";
 
 	  str += "self";
 
@@ -4391,7 +3913,7 @@ LifetimeWhereClauseItem::as_string () const
   str += "\nLifetime bounds: ";
 
   for (const auto &bound : lifetime_bounds)
-      str += "\n " + bound.as_string ();
+    str += "\n " + bound.as_string ();
 
   return str;
 }
@@ -4408,7 +3930,7 @@ TypeBoundWhereClauseItem::as_string () const
   else
     {
       for (const auto &for_lifetime : for_lifetimes)
-	  str += "\n " + for_lifetime.as_string ();
+	str += "\n " + for_lifetime.as_string ();
     }
 
   str += "\nType: " + bound_type->as_string ();
@@ -4419,7 +3941,7 @@ TypeBoundWhereClauseItem::as_string () const
     {
       // debug null pointer check
       if (bound == nullptr)
-	  return "NULL_POINTER_MARK - type param bounds";
+	return "NULL_POINTER_MARK - type param bounds";
 
       str += "\n " + bound->as_string ();
     }
@@ -4649,8 +4171,8 @@ MacroParser::parse_meta_item_inner ()
 
 	  skip_token (2);
 
-    // remove the quotes from the string value
-    std::string raw_value = unquote_string (std::move (value));
+	  // remove the quotes from the string value
+	  std::string raw_value = unquote_string (std::move (value));
 
 	  return std::unique_ptr<MetaNameValueStr> (
 	    new MetaNameValueStr (std::move (ident), std::move (raw_value)));
@@ -4829,7 +4351,7 @@ MacroParser::parse_meta_item_seq ()
       meta_items.push_back (std::move (inner));
 
       if (peek_token ()->get_id () != COMMA)
-	  break;
+	break;
 
       skip_token ();
     }
@@ -5006,7 +4528,10 @@ AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
     return false;
 
   // DEBUG
-  fprintf (stderr, "asked to check cfg of attrinputmetaitemcontainer - delegating to first item. container: '%s'\n", as_string ().c_str ());
+  fprintf (stderr,
+	   "asked to check cfg of attrinputmetaitemcontainer - delegating to "
+	   "first item. container: '%s'\n",
+	   as_string ().c_str ());
 
   return items[0]->check_cfg_predicate (session);
 
@@ -5208,7 +4733,12 @@ bool
 MetaNameValueStr::check_cfg_predicate (const Session &session) const
 {
   // DEBUG
-  fprintf (stderr, "checked key-value pair for cfg: '%s', '%s' - is%s in target data\n", ident.c_str (), str.c_str (), session.options.target_data.has_key_value_pair (ident, str) ? "" : " not");
+  fprintf (stderr,
+	   "checked key-value pair for cfg: '%s', '%s' - is%s in target data\n",
+	   ident.c_str (), str.c_str (),
+	   session.options.target_data.has_key_value_pair (ident, str)
+	     ? ""
+	     : " not");
 
   return session.options.target_data.has_key_value_pair (ident, str);
 }
@@ -5340,11 +4870,15 @@ Attribute::check_cfg_predicate (const Session &session) const
   /* assume that cfg predicate actually can exist, i.e. attribute has cfg or
    * cfg_attr path */
   if (!has_attr_input ()
-      || (path.as_string () != "cfg" && path.as_string () != "cfg_attr")) {
-        // DEBUG message
-        fprintf (stderr, "tried to check cfg predicate on attr that either has no input or invalid path. attr: '%s'\n", as_string ().c_str ());
+      || (path.as_string () != "cfg" && path.as_string () != "cfg_attr"))
+    {
+      // DEBUG message
+      fprintf (stderr,
+	       "tried to check cfg predicate on attr that either has no input "
+	       "or invalid path. attr: '%s'\n",
+	       as_string ().c_str ());
 
-    return false;
+      return false;
     }
 
   // assume that it has already been parsed
@@ -5832,18 +5366,6 @@ IfLetExprConseqIfLet::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
-
-/*void
-MatchCaseBlockExpr::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MatchCaseExpr::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}*/
 
 void
 MatchExpr::accept_vis (ASTVisitor &vis)

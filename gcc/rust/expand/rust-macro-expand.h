@@ -60,8 +60,9 @@ struct MacroExpander
   // should this be public or private?
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
-  // Expands a single declarative macro. 
-  AST::ASTFragment expand_decl_macro (AST::MacroInvocData &invoc, AST::MacroRulesDefinition &rules_def);
+  // Expands a single declarative macro.
+  AST::ASTFragment expand_decl_macro (AST::MacroInvocData &invoc,
+				      AST::MacroRulesDefinition &rules_def);
 
   void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
   bool fails_cfg (const std::vector<AST::Attribute> &attr) const;

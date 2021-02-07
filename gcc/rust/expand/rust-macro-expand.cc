@@ -18,7 +18,6 @@
 
 #include "rust-macro-expand.h"
 #include "rust-ast-full.h"
-// is full really required?
 #include "rust-ast-visitor.h"
 #include "rust-diagnostics.h"
 
@@ -1529,7 +1528,8 @@ public:
   }
   void visit (AST::IfExpr &expr) override
   {
-    // rust playground test shows that IfExpr does support outer attrs, at least when used as statement
+    // rust playground test shows that IfExpr does support outer attrs, at least
+    // when used as statement
 
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1667,7 +1667,7 @@ public:
 	expr.mark_for_strip ();
 	return;
       }
-    
+
     for (auto &pattern : expr.get_patterns ())
       {
 	pattern->accept_vis (*this);
@@ -3183,36 +3183,48 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
     return AST::Literal ("false", AST::Literal::BOOL, CORETYPE_BOOL);
 }
 
-AST::ASTFragment 
-MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc, AST::MacroRulesDefinition &rules_def) {
+AST::ASTFragment
+MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc,
+				  AST::MacroRulesDefinition &rules_def)
+{
   // ensure that both invocation and rules are in a valid state
   rust_assert (!invoc.is_marked_for_strip ());
   rust_assert (!rules_def.is_marked_for_strip ());
   rust_assert (rules_def.get_macro_rules ().size () > 0);
 
-  /* probably something here about parsing invoc and rules def token trees to token stream. if not, 
-   * how would parser handle the captures of exprs and stuff? on the other hand, token trees may be
-   * kind of useful in rules def as creating a point where recursion can occur (like having 
-   * "compare_macro_match" and then it calling itself when it finds delimiters) */
+  /* probably something here about parsing invoc and rules def token trees to
+   * token stream. if not, how would parser handle the captures of exprs and
+   * stuff? on the other hand, token trees may be kind of useful in rules def as
+   * creating a point where recursion can occur (like having
+   * "compare_macro_match" and then it calling itself when it finds delimiters)
+   */
 
-  /* find matching rule to invoc token tree, based on macro rule's matcher. if none exist, error. 
-   * - specifically, check each matcher in order. if one fails to match, move onto next. */
-  /* TODO: does doing this require parsing expressions and whatever in the invoc? if so, might as 
-   * well save the results if referenced using $ or whatever. If not, do another pass saving them. 
-   * Except this is probably useless as different rules could have different starting points for exprs
-   * or whatever. Decision trees could avoid this, but they have their own issues. */
-  /* TODO: will need to modify the parser so that it can essentially "catch" errors - maybe 
-   * "try_parse_expr" or whatever methods. */
-  // this technically creates a back-tracking parser - this will be the implementation style
+  /* find matching rule to invoc token tree, based on macro rule's matcher. if
+   * none exist, error.
+   * - specifically, check each matcher in order. if one fails to match, move
+   * onto next. */
+  /* TODO: does doing this require parsing expressions and whatever in the
+   * invoc? if so, might as well save the results if referenced using $ or
+   * whatever. If not, do another pass saving them. Except this is probably
+   * useless as different rules could have different starting points for exprs
+   * or whatever. Decision trees could avoid this, but they have their own
+   * issues. */
+  /* TODO: will need to modify the parser so that it can essentially "catch"
+   * errors - maybe "try_parse_expr" or whatever methods. */
+  // this technically creates a back-tracking parser - this will be the
+  // implementation style
 
-  /* then, after results are saved, generate the macro output from the transcriber token tree. if i
-   * understand this correctly, the macro invocation gets replaced by the transcriber tokens, except
-   * with substitutions made (e.g. for $i variables) */
+  /* then, after results are saved, generate the macro output from the
+   * transcriber token tree. if i understand this correctly, the macro
+   * invocation gets replaced by the transcriber tokens, except with
+   * substitutions made (e.g. for $i variables) */
 
-  /* TODO: it is probably better to modify AST::Token to store a pointer to a Lexer::Token (rather 
-   * than being converted) - i.e. not so much have AST::Token as a Token but rather a TokenContainer
-   * (as it is another type of TokenTree). This will prevent re-conversion of Tokens between each type
-   * all the time, while still allowing the heterogenous storage of token trees.  */
+  /* TODO: it is probably better to modify AST::Token to store a pointer to a
+   * Lexer::Token (rather than being converted) - i.e. not so much have
+   * AST::Token as a Token but rather a TokenContainer (as it is another type of
+   * TokenTree). This will prevent re-conversion of Tokens between each type
+   * all the time, while still allowing the heterogenous storage of token trees.
+   */
 }
 
 void
@@ -3275,6 +3287,7 @@ MacroExpander::fails_cfg (const std::vector<AST::Attribute> &attrs) const
 bool
 MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 {
+  // TODO: maybe have something that strips cfg attributes that evaluate true?
   for (auto &attr : attrs)
     {
       if (attr.get_path () == "cfg")
@@ -3282,22 +3295,32 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 	  if (!attr.is_parsed_to_meta_item ())
 	    attr.parse_attr_to_meta_item ();
 
-    // DEBUG
-    if (!attr.is_parsed_to_meta_item ())
-      fprintf (stderr, "failed to parse attr to meta item, right before cfg predicate check\n");
-    else
-      fprintf(stderr, "attr has been successfully parsed to meta item, right before cfg predicate check\n");
+	  // DEBUG
+	  if (!attr.is_parsed_to_meta_item ())
+	    fprintf (stderr, "failed to parse attr to meta item, right before "
+			     "cfg predicate check\n");
+	  else
+	    fprintf (stderr, "attr has been successfully parsed to meta item, "
+			     "right before cfg predicate check\n");
 
 	  if (!attr.check_cfg_predicate (session))
-    {
-      // DEBUG
-      fprintf (stderr, "cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ().c_str ());
+	    {
+	      // DEBUG
+	      fprintf (
+		stderr,
+		"cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n",
+		attr.as_string ().c_str ());
 
-	    return true;
-    } else {
-      // DEBUG
-      fprintf (stderr, "cfg predicate succeeded for attribute: \033[0;31m'%s'\033[0m\n", attr.as_string ().c_str ());
-    }
+	      return true;
+	    }
+	  else
+	    {
+	      // DEBUG
+	      fprintf (stderr,
+		       "cfg predicate succeeded for attribute: "
+		       "\033[0;31m'%s'\033[0m\n",
+		       attr.as_string ().c_str ());
+	    }
 	}
     }
   return false;

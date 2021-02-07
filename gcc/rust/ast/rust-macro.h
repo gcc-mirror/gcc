@@ -316,7 +316,7 @@ class MacroRulesDefinition : public MacroItem
 
   Location locus;
 
-  /* NOTE: in rustc, macro definitions are considered (and parsed as) a type 
+  /* NOTE: in rustc, macro definitions are considered (and parsed as) a type
    * of macro, whereas here they are considered part of the language itself.
    * I am not aware of the implications of this decision. The rustc spec does
    * mention that using the same parser for macro definitions and invocations
@@ -395,7 +395,10 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -545,7 +548,10 @@ public:
     : ident (std::move (ident)), str (std::move (str))
   {}
 
-  std::string as_string () const override { return ident + " = \"" + str + "\""; }
+  std::string as_string () const override
+  {
+    return ident + " = \"" + str + "\"";
+  }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -626,138 +632,44 @@ protected:
   }
 };
 
-/* A "tagged union" describing a single AST node. Due to technical difficulties
- * with unions, this is actually a struct and so wastes space. FIXME */
-/*
+/* Should be a tagged union to save space but implemented as struct due to
+ * technical difficulties. TODO: fix
+ * Basically, a single AST node used inside an AST fragment. */
 struct SingleASTNode
 {
-  public:
-    enum tag_types {
-      EXPR,
-      STMT,
-      ITEM,
-      TYPE,
-      PATTERN,
-      TRAIT_ITEM,
-      INHERENT_IMPL_ITEM,
-      TRAIT_IMPL_ITEM,
-      EXTERNAL_ITEM
-      // TODO: other types like inside macro_rules? 
-    };
+  std::unique_ptr<Expr> expr;
+  std::unique_ptr<Stmt> stmt;
+  std::unique_ptr<Item> item;
+  std::unique_ptr<Type> type;
+  std::unique_ptr<Pattern> pattern;
+  std::unique_ptr<TraitItem> trait_item;
+  std::unique_ptr<InherentImplItem> inherent_impl_item;
+  std::unique_ptr<TraitImplItem> trait_impl_item;
+  std::unique_ptr<ExternalItem> external_item;
 
-    SingleASTNode (std::unique_ptr<Expr> expr) : tag (EXPR), expr (std::move (expr)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<Stmt> stmt) : tag (STMT), stmt (std::move (stmt)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<Item> item) : tag (ITEM), item (std::move (item)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<Type> type) : tag (TYPE), type (std::move (type)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<Pattern> pattern) : tag (PATTERN), pattern (std::move (pattern)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<TraitItem> trait_item) : tag (TRAIT_ITEM), trait_item (std::move (trait_item)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item) : tag (INHERENT_IMPL_ITEM), inherent_impl_item (std::move (inherent_impl_item)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item) : tag (TRAIT_IMPL_ITEM), trait_impl_item (std::move (trait_impl_item)) {
-
-    }
-
-    SingleASTNode (std::unique_ptr<ExternalItem> external_item) : tag (EXTERNAL_ITEM), external_item (std::move (external_item)) {
-
-    }
-
-    // destructor definition is required
-    ~SingleASTNode () {
-      switch (tag) {
-        case EXPR:
-          expr.~unique_ptr<Expr> ();
-          break;
-        case STMT:
-          stmt.~unique_ptr<Stmt> ();
-          break;
-        case ITEM:
-          item.~unique_ptr<Item> ();
-          break;
-        case TYPE:
-          type.~unique_ptr<Type> ();
-          break;
-        case PATTERN:
-          pattern.~unique_ptr<Pattern> ();
-          break;
-        case TRAIT_ITEM:
-          trait_item.~unique_ptr<TraitItem> ();
-          break;
-        case INHERENT_IMPL_ITEM:
-          inherent_impl_item.~unique_ptr<InherentImplItem> ();
-          break;
-        case TRAIT_IMPL_ITEM:
-          trait_impl_item.~unique_ptr<TraitImplItem> ();
-          break;
-        case EXTERNAL_ITEM:
-          external_item.~unique_ptr<ExternalItem> ();
-          break;
-        default:
-          // should not happen
-          gcc_unreachable ();
-          break;
-      }
-    }
-
-  private:
-    tag_types tag;
-
-    union {
-      std::unique_ptr<Expr> expr;
-      std::unique_ptr<Stmt> stmt;
-      std::unique_ptr<Item> item;
-      std::unique_ptr<Type> type;
-      std::unique_ptr<Pattern> pattern;
-      std::unique_ptr<TraitItem> trait_item;
-      std::unique_ptr<InherentImplItem> inherent_impl_item;
-      std::unique_ptr<TraitImplItem> trait_impl_item;
-      std::unique_ptr<ExternalItem> external_item;
-    };
-};
-*/
-struct SingleASTNode {
-      std::unique_ptr<Expr> expr;
-      std::unique_ptr<Stmt> stmt;
-      std::unique_ptr<Item> item;
-      std::unique_ptr<Type> type;
-      std::unique_ptr<Pattern> pattern;
-      std::unique_ptr<TraitItem> trait_item;
-      std::unique_ptr<InherentImplItem> inherent_impl_item;
-      std::unique_ptr<TraitImplItem> trait_impl_item;
-      std::unique_ptr<ExternalItem> external_item;
-
-    SingleASTNode (std::unique_ptr<Expr> expr) : expr (std::move (expr)) {}
-    SingleASTNode (std::unique_ptr<Stmt> stmt) : stmt (std::move (stmt)) {}
-    SingleASTNode (std::unique_ptr<Item> item) : item (std::move (item)) {}
-    SingleASTNode (std::unique_ptr<Type> type) : type (std::move (type)) {}
-    SingleASTNode (std::unique_ptr<Pattern> pattern) : pattern (std::move (pattern)) {}
-    SingleASTNode (std::unique_ptr<TraitItem> trait_item) : trait_item (std::move (trait_item)) {}
-    SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item) : inherent_impl_item (std::move (inherent_impl_item)) {}
-    SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item) : trait_impl_item (std::move (trait_impl_item)) {}
-    SingleASTNode (std::unique_ptr<ExternalItem> external_item) : external_item (std::move (external_item)) {}
+  SingleASTNode (std::unique_ptr<Expr> expr) : expr (std::move (expr)) {}
+  SingleASTNode (std::unique_ptr<Stmt> stmt) : stmt (std::move (stmt)) {}
+  SingleASTNode (std::unique_ptr<Item> item) : item (std::move (item)) {}
+  SingleASTNode (std::unique_ptr<Type> type) : type (std::move (type)) {}
+  SingleASTNode (std::unique_ptr<Pattern> pattern)
+    : pattern (std::move (pattern))
+  {}
+  SingleASTNode (std::unique_ptr<TraitItem> trait_item)
+    : trait_item (std::move (trait_item))
+  {}
+  SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item)
+    : inherent_impl_item (std::move (inherent_impl_item))
+  {}
+  SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item)
+    : trait_impl_item (std::move (trait_impl_item))
+  {}
+  SingleASTNode (std::unique_ptr<ExternalItem> external_item)
+    : external_item (std::move (external_item))
+  {}
 };
 
-/* Basically, a "fragment" that can be incorporated into the AST, created as 
- * a result of macro expansion. Really annoying to work with due to the fact 
+/* Basically, a "fragment" that can be incorporated into the AST, created as
+ * a result of macro expansion. Really annoying to work with due to the fact
  * that macros can really expand to anything. As such, horrible representation
  * at the moment. */
 struct ASTFragment
@@ -765,7 +677,7 @@ struct ASTFragment
 private:
   /* basic idea: essentially, a vector of tagged unions of different AST node
    * types. Now, this could actually be stored without a tagged union if the
-   * different AST node types had a unified parent, but that would create 
+   * different AST node types had a unified parent, but that would create
    * issues with the diamond problem or significant performance penalties. So
    * a tagged union had to be used instead. A vector is used to represent the
    * ability for a macro to expand to two statements, for instance. */
