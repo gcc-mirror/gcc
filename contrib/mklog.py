@@ -55,6 +55,9 @@ bugzilla_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/bug?id=%s&' \
 
 function_extensions = {'.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def', '.md'}
 
+# NB: Makefile.in isn't listed as it's not always generated.
+generated_files = {'aclocal.m4', 'config.h.in', 'configure'}
+
 help_message = """\
 Generate ChangeLog template for PATCH.
 PATCH must be generated using diff(1)'s -up or -cp options
@@ -192,6 +195,8 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                 if new_path.startswith(changelog):
                     new_path = new_path[len(changelog):].lstrip('/')
                 out += '\t* %s: ...here.\n' % (new_path)
+            elif os.path.basename(file.path) in generated_files:
+                out += '\t* %s: Regenerate.\n' % (relative_path)
             else:
                 if not no_functions:
                     for hunk in file:
