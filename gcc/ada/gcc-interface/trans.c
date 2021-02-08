@@ -461,12 +461,19 @@ gigi (Node_Id gnat_root,
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
 
-  /* Name of the Exception_Data type defined in System.Standard_Library.  */
-  exception_data_name_id
-    = get_identifier ("system__standard_library__exception_data");
+  /* Name of the Not_Handled_By_Others field in exception record types.  */
+  not_handled_by_others_name_id = get_identifier ("not_handled_by_others");
 
   /* Make the types and functions used for exception processing.  */
   except_type_node = gnat_to_gnu_type (Base_Type (standard_exception_type));
+
+  for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
+    if (DECL_NAME (t) == not_handled_by_others_name_id)
+      {
+	not_handled_by_others_decl = t;
+	break;
+      }
+  gcc_assert (DECL_P (not_handled_by_others_decl));
 
   jmpbuf_type
     = build_array_type (gnat_type_for_mode (Pmode, 0),
@@ -494,15 +501,6 @@ gigi (Node_Id gnat_root,
        build_function_type_list (build_pointer_type (except_type_node),
 				 NULL_TREE),
        NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-
-  not_handled_by_others_decl = get_identifier ("not_handled_by_others");
-  for (t = TYPE_FIELDS (except_type_node); t; t = DECL_CHAIN (t))
-    if (DECL_NAME (t) == not_handled_by_others_decl)
-      {
-	not_handled_by_others_decl = t;
-	break;
-      }
-  gcc_assert (DECL_P (not_handled_by_others_decl));
 
   /* setjmp returns an integer and has one operand, which is a pointer to
      a jmpbuf.  */
@@ -5596,7 +5594,7 @@ Exception_Handler_to_gnu_fe_sjlj (Node_Id gnat_node)
 	       gnu_except_ptr_stack->last (),
 	       convert (TREE_TYPE (gnu_except_ptr_stack->last ()),
 			build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
-}
+	}
       else
 	gcc_unreachable ();
 

@@ -396,8 +396,8 @@ enum standard_datatypes
   /* Identifier for the name of the _Parent field in tagged record types.  */
   ADT_parent_name_id,
 
-  /* Identifier for the name of the Exception_Data type.  */
-  ADT_exception_data_name_id,
+  /* Identifier for the name of the Not_Handled_By_Others field.  */
+  ADT_not_handled_by_others_name_id,
 
   /* Types and decls used by the SJLJ exception mechanism.  */
   ADT_jmpbuf_type,
@@ -467,7 +467,8 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
 #define mulv128_decl gnat_std_decls[(int) ADT_mulv128_decl]
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
-#define exception_data_name_id gnat_std_decls[(int) ADT_exception_data_name_id]
+#define not_handled_by_others_name_id \
+	  gnat_std_decls[(int) ADT_not_handled_by_others_name_id]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
 #define jmpbuf_ptr_type gnat_std_decls[(int) ADT_jmpbuf_ptr_type]
 #define get_jmpbuf_decl gnat_std_decls[(int) ADT_get_jmpbuf_decl]

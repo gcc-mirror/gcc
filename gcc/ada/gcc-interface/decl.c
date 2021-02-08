@@ -736,16 +736,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
 	  gnu_type = ptr_type_node;
 	else
-	  {
-	    gnu_type = gnat_to_gnu_type (gnat_type);
-
-	    /* If this is a standard exception definition, use the standard
-	       exception type.  This is necessary to make sure that imported
-	       and exported views of exceptions are merged in LTO mode.  */
-	    if (TREE_CODE (TYPE_NAME (gnu_type)) == TYPE_DECL
-		&& DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
-	      gnu_type = except_type_node;
-	  }
+	  gnu_type = gnat_to_gnu_type (gnat_type);
 
 	/* For a debug renaming declaration, build a debug-only entity.  */
 	if (Present (Debug_Renaming_Link (gnat_entity)))
@@ -3404,21 +3395,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Fill in locations of fields.  */
 	annotate_rep (gnat_entity, gnu_type);
-
-	/* If this is a record type associated with an exception definition,
-	   equate its fields to those of the standard exception type.  This
-	   will make it possible to convert between them.  */
-	if (gnu_entity_name == exception_data_name_id)
-	  {
-	    tree gnu_std_field;
-	    for (gnu_field = TYPE_FIELDS (gnu_type),
-		 gnu_std_field = TYPE_FIELDS (except_type_node);
-		 gnu_field;
-		 gnu_field = DECL_CHAIN (gnu_field),
-		 gnu_std_field = DECL_CHAIN (gnu_std_field))
-	      SET_DECL_ORIGINAL_FIELD_TO_FIELD (gnu_field, gnu_std_field);
-	    gcc_assert (!gnu_std_field);
-	  }
       }
       break;
 
@@ -7125,6 +7101,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   const char *field_s, *size_s;
   tree gnu_field, gnu_size, gnu_pos;
   bool is_bitfield;
+
+  /* Force the type of the Not_Handled_By_Others field to be that of the
+     field in struct Exception_Data declared in raise.h instead of using
+     the declared boolean type.  We need to do that because there is no
+     easy way to make use of a C compatible boolean type for the latter.  */
+  if (gnu_field_id == not_handled_by_others_name_id
+      && gnu_field_type == boolean_type_node)
+    gnu_field_type = char_type_node;
 
   /* The qualifier to be used in messages.  */
   if (is_aliased)
