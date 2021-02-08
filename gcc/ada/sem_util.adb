@@ -9371,6 +9371,10 @@ package body Sem_Util is
       Ent : out Entity_Id;
       Off : out Boolean)
    is
+      pragma Assert
+        (Nkind (N) = N_Attribute_Definition_Clause
+         and then Chars (N) = Name_Address);
+
       Expr : Node_Id;
 
    begin
@@ -9390,61 +9394,56 @@ package body Sem_Util is
       Ent := Empty;
       Off := False;
 
-      if Nkind (N) = N_Attribute_Definition_Clause
-        and then Chars (N) = Name_Address
-      then
-         Expr := Expression (N);
+      Expr := Expression (N);
 
-         --  This loop checks the form of the expression for Y'Address,
-         --  using recursion to deal with intermediate constants.
+      --  This loop checks the form of the expression for Y'Address, using
+      --  recursion to deal with intermediate constants.
 
-         loop
-            --  Check for Y'Address
+      loop
+         --  Check for Y'Address
 
-            if Nkind (Expr) = N_Attribute_Reference
-              and then Attribute_Name (Expr) = Name_Address
-            then
-               Expr := Prefix (Expr);
-               exit;
+         if Nkind (Expr) = N_Attribute_Reference
+           and then Attribute_Name (Expr) = Name_Address
+         then
+            Expr := Prefix (Expr);
+            exit;
 
-            --  Check for Const where Const is a constant entity
+         --  Check for Const where Const is a constant entity
 
-            elsif Is_Entity_Name (Expr)
-              and then Ekind (Entity (Expr)) = E_Constant
-            then
-               Expr := Constant_Value (Entity (Expr));
+         elsif Is_Entity_Name (Expr)
+           and then Ekind (Entity (Expr)) = E_Constant
+         then
+            Expr := Constant_Value (Entity (Expr));
 
-            --  Anything else does not need checking
+         --  Anything else does not need checking
 
-            else
-               return;
-            end if;
-         end loop;
+         else
+            return;
+         end if;
+      end loop;
 
-         --  This loop checks the form of the prefix for an entity, using
-         --  recursion to deal with intermediate components.
+      --  This loop checks the form of the prefix for an entity, using
+      --  recursion to deal with intermediate components.
 
-         loop
-            --  Check for Y where Y is an entity
+      loop
+         --  Check for Y where Y is an entity
 
-            if Is_Entity_Name (Expr) then
-               Ent := Entity (Expr);
-               return;
+         if Is_Entity_Name (Expr) then
+            Ent := Entity (Expr);
+            return;
 
-            --  Check for components
+         --  Check for components
 
-            elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component
-            then
-               Expr := Prefix (Expr);
-               Off := True;
+         elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component then
+            Expr := Prefix (Expr);
+            Off  := True;
 
-            --  Anything else does not need checking
+         --  Anything else does not need checking
 
-            else
-               return;
-            end if;
-         end loop;
-      end if;
+         else
+            return;
+         end if;
+      end loop;
    end Find_Overlaid_Entity;
 
    -------------------------

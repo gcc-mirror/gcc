@@ -900,12 +900,11 @@ package Sem_Util is
      (N   : Node_Id;
       Ent : out Entity_Id;
       Off : out Boolean);
-   --  The node N should be an address representation clause. Determines if
-   --  the target expression is the address of an entity with an optional
-   --  offset. If so, set Ent to the entity and, if there is an offset, set
-   --  Off to True, otherwise to False. If N is not an address representation
-   --  clause, or if it is not possible to determine that the address is of
-   --  this form, then set Ent to Empty.
+   --  The node N should be an address representation clause. Determines if the
+   --  target expression is the address of an entity with an optional offset.
+   --  If so, set Ent to the entity and, if there is an offset, set Off to
+   --  True, otherwise to False. If it is not possible to determine that the
+   --  address is of this form, then set Ent to Empty.
 
    function Find_Parameter_Type (Param : Node_Id) return Entity_Id;
    --  Return the type of formal parameter Param as determined by its
