@@ -480,10 +480,12 @@ private:
 		    bool pratt_parse = false);
   std::unique_ptr<AST::IfExpr>
   parse_if_expr (std::vector<AST::Attribute> outer_attrs
-		 = std::vector<AST::Attribute> ());
+		 = std::vector<AST::Attribute> (),
+		 bool pratt_parse = false);
   std::unique_ptr<AST::IfLetExpr>
   parse_if_let_expr (std::vector<AST::Attribute> outer_attrs
-		     = std::vector<AST::Attribute> ());
+		     = std::vector<AST::Attribute> (),
+		     bool pratt_parse = false);
   std::unique_ptr<AST::LoopExpr>
   parse_loop_expr (std::vector<AST::Attribute> outer_attrs
 		   = std::vector<AST::Attribute> (),

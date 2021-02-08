@@ -7504,12 +7504,23 @@ Parser<ManagedTokenSource>::parse_loop_label ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfExpr>
 Parser<ManagedTokenSource>::parse_if_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED)
+  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED, bool pratt_parse)
 {
   // TODO: make having outer attributes an error?
-
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (IF);
+  Location locus = Linemap::unknown_location ();
+  if (!pratt_parse)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      if (!skip_token (IF))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
+  else
+    {
+      locus = lexer.peek_token ()->get_locus () - 1;
+    }
 
   // detect accidental if let
   if (lexer.peek_token ()->get_id () == LET)
@@ -7640,12 +7651,23 @@ Parser<ManagedTokenSource>::parse_if_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfLetExpr>
 Parser<ManagedTokenSource>::parse_if_let_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED)
+  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED, bool pratt_parse)
 {
   // TODO: make having outer attributes an error?
-
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (IF);
+  Location locus = Linemap::unknown_location ();
+  if (!pratt_parse)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      if (!skip_token (IF))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
+  else
+    {
+      locus = lexer.peek_token ()->get_locus () - 1;
+    }
 
   // detect accidental if expr parsed as if let expr
   if (lexer.peek_token ()->get_id () != LET)
@@ -12399,6 +12421,18 @@ Parser<ManagedTokenSource>::null_denotation (
     case LEFT_CURLY:
       // ok - this is an expression with block for once.
       return parse_block_expr (std::move (outer_attrs), true);
+    case IF:
+      // if or if let, so more lookahead to find out
+      if (lexer.peek_token (1)->get_id () == LET)
+	{
+	  // if let expr
+	  return parse_if_let_expr (std::move (outer_attrs), true);
+	}
+      else
+	{
+	  // if expr
+	  return parse_if_expr (std::move (outer_attrs), true);
+	}
     case MATCH_TOK:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), true);
