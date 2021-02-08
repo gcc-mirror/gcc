@@ -10235,7 +10235,6 @@ vectorizable_condition (vec_info *vinfo,
 
 	  if (masks)
 	    {
-	      unsigned vec_num = vec_oprnds0.length ();
 	      tree loop_mask
 		= vect_get_loop_mask (gsi, masks, vec_num * ncopies,
 				      vectype, i);
