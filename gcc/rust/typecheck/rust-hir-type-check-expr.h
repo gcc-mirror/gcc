@@ -610,10 +610,10 @@ public:
   void visit (HIR::IfExprConseqIf &expr)
   {
     TypeCheckExpr::Resolve (expr.get_if_condition ());
-    TypeCheckExpr::Resolve (expr.get_if_block ());
-    TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
+    auto if_blk = TypeCheckExpr::Resolve (expr.get_if_block ());
+    auto else_blk = TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
 
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = if_blk->combine (else_blk);
   }
 
   void visit (HIR::BlockExpr &expr);

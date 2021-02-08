@@ -417,7 +417,6 @@ public:
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    // this can be a return expression
     TyTy::TyBase *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &if_type))
@@ -427,27 +426,67 @@ public:
 	return;
       }
 
-    fncontext fnctx = ctx->peek_fn ();
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+    Bvariable *tmp = NULL;
+    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
 
-    bool is_address_taken = false;
-    Bstatement *ret_var_stmt = nullptr;
-    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
-      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-      expr.get_locus (), &ret_var_stmt);
-    ctx->add_statement (ret_var_stmt);
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
 
     auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
     ctx->add_statement (stmt);
 
-    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::IfExprConseqIf &expr)
   {
-    auto stmt = CompileConditionalBlocks::compile (&expr, ctx, nullptr);
+    TyTy::TyBase *if_type = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &if_type))
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to lookup type of IfExprConseqElse");
+	return;
+      }
+
+    Bvariable *tmp = NULL;
+    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
+
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
     ctx->add_statement (stmt);
+
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::BlockExpr &expr)
