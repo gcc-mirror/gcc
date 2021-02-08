@@ -1,3 +1,104 @@
+2021-02-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR driver/98943
+	* gcc.c (driver::maybe_run_linker): Check for input file
+	accessibility if not linking.
+
+2021-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98855
+	* tree-vectorizer.h (add_stmt_cost): New overload.
+	* tree-vect-slp.c (li_cost_vec_cmp): New.
+	(vect_bb_slp_scalar_cost): Cost individual loop regions
+	separately.  Account for the scalar instance root stmt.
+
+2021-02-05  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/98656
+	* tree-switch-conversion.c (jump_table_cluster::emit): Add loc
+	argument.
+	(bit_test_cluster::emit): Reuse location_t for newly created
+	gswitch statement.
+	(switch_decision_tree::try_switch_expansion): Preserve
+	location_t.
+	* tree-switch-conversion.h: Change function signatures.
+
+2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98957
+	* config/i386/i386-options.c (m_NONE, m_ALL): Define.
+	* config/i386/x86-tune.def (X86_TUNE_BRANCH_PREDICTION_HINTS,
+	X86_TUNE_PROMOTE_QI_REGS): Use m_NONE instead of 0U.
+	(X86_TUNE_QIMODE_MATH): Use m_ALL instead of ~0U.
+
+2021-02-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (get_high): Define builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_get_high<mode>): Define.
+	* config/aarch64/arm_neon.h (__GET_HIGH): Delete.
+	(vget_high_f16): Reimplement using new builtin.
+	(vget_high_f32): Likewise.
+	(vget_high_f64): Likewise.
+	(vget_high_p8): Likewise.
+	(vget_high_p16): Likewise.
+	(vget_high_p64): Likewise.
+	(vget_high_s8): Likewise.
+	(vget_high_s16): Likewise.
+	(vget_high_s32): Likewise.
+	(vget_high_s64): Likewise.
+	(vget_high_u8): Likewise.
+	(vget_high_u16): Likewise.
+	(vget_high_u32): Likewise.
+	(vget_high_u64): Likewise.
+
+2021-02-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (get_low): Define builtin.
+	* config/aarch64/aarch64-simd.md (aarch64_get_low<mode>): Define.
+	* config/aarch64/arm_neon.h (__GET_LOW): Delete.
+	(vget_low_f16): Reimplement using new builtin.
+	(vget_low_f32): Likewise.
+	(vget_low_f64): Likewise.
+	(vget_low_p8): Likewise.
+	(vget_low_p16): Likewise.
+	(vget_low_p64): Likewise.
+	(vget_low_s8): Likewise.
+	(vget_low_s16): Likewise.
+	(vget_low_s32): Likewise.
+	(vget_low_s64): Likewise.
+	(vget_low_u8): Likewise.
+	(vget_low_u16): Likewise.
+	(vget_low_u32): Likewise.
+	(vget_low_u64): Likewise.
+
+2021-02-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.c (print_multilib_info): Check all required argument is provided
+	by default arg.
+
+2021-02-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98537
+	* config/i386/i386-expand.c (ix86_expand_sse_cmp): Don't
+	generate integer mask comparison for 128/256-bits vector when
+	op_true/op_false is NULL_RTX or CONSTM1_RTX/CONST0_RTX. Also
+	delete redundant !maskcmp condition.
+	(ix86_expand_int_vec_cmp): Ditto but no redundant deletion
+	here.
+	(ix86_expand_sse_movcc): Delete definition of maskcmp, add the
+	condition directly to if (maskcmp), add extra check for
+	cmpmode, it should be MODE_INT.
+	(ix86_expand_fp_vec_cmp): Pass NULL to ix86_expand_sse_cmp's
+	parameters op_true/op_false.
+	(ix86_use_mask_cmp_p): New.
+
+2021-02-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98172
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL):
+	Remove m_GENERIC from ~list.
+	(X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL): Ditto.
+
 2021-02-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/97932

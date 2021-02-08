@@ -143,24 +143,6 @@ static bool typeinfo_in_lib_p (tree);
 
 static int doing_runtime = 0;
 
-static unsigned
-push_abi_namespace (void)
-{
-  push_nested_namespace (abi_node);
-  push_visibility ("default", 2);
-  unsigned flags = module_kind;
-  module_kind = 0;
-  return flags;
-}
-
-static void
-pop_abi_namespace (unsigned flags)
-{
-  module_kind = flags;
-  pop_visibility (2);
-  pop_nested_namespace (abi_node);
-}
-
 /* Declare language defined type_info type and a pointer to const
    type_info.  This is incomplete here, and will be completed when
    the user #includes <typeinfo>.  There are language defined

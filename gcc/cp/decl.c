@@ -1209,7 +1209,8 @@ check_redeclaration_exception_specification (tree new_decl,
      all declarations, including the definition and an explicit
      specialization, of that function shall have an
      exception-specification with the same set of type-ids.  */
-  if (! DECL_IS_UNDECLARED_BUILTIN (old_decl)
+  if (!DECL_IS_UNDECLARED_BUILTIN (old_decl)
+      && !DECL_IS_UNDECLARED_BUILTIN (new_decl)
       && !comp_except_specs (new_exceptions, old_exceptions, ce_normal))
     {
       const char *const msg
@@ -4694,6 +4695,30 @@ cxx_init_decl_processing (void)
   /* Show we use EH for cleanups.  */
   if (flag_exceptions)
     using_eh_for_cleanups ();
+}
+
+/* Enter an abi node in global-module context.  returns a cookie to
+   give to pop_abi_namespace.  */
+
+unsigned
+push_abi_namespace (tree node)
+{
+  push_nested_namespace (node);
+  push_visibility ("default", 2);
+  unsigned flags = module_kind;
+  module_kind = 0;
+  return flags;
+}
+
+/* Pop an abi namespace, FLAGS is the cookie push_abi_namespace gave
+   you.  */
+
+void
+pop_abi_namespace (unsigned flags, tree node)
+{
+  module_kind = flags;
+  pop_visibility (2);
+  pop_nested_namespace (node);
 }
 
 /* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give
@@ -8687,21 +8712,19 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 static tree
 declare_global_var (tree name, tree type)
 {
-  tree decl;
-
-  push_to_top_level ();
-  decl = build_decl (input_location, VAR_DECL, name, type);
+  auto cookie = push_abi_namespace (global_namespace);
+  tree decl = build_decl (input_location, VAR_DECL, name, type);
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_CONTEXT (decl) = FROB_CONTEXT (global_namespace);
+  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
   /* If the user has explicitly declared this variable (perhaps
      because the code we are compiling is part of a low-level runtime
      library), then it is possible that our declaration will be merged
      with theirs by pushdecl.  */
   decl = pushdecl (decl);
   cp_finish_decl (decl, NULL_TREE, false, NULL_TREE, 0);
-  pop_from_top_level ();
+  pop_abi_namespace (cookie, global_namespace);
 
   return decl;
 }
@@ -8746,6 +8769,7 @@ get_atexit_node (void)
   tree fn_ptr_type;
   const char *name;
   bool use_aeabi_atexit;
+  tree ctx = global_namespace;
 
   if (atexit_node)
     return atexit_node;
@@ -8780,10 +8804,23 @@ get_atexit_node (void)
       fn_type = build_function_type_list (integer_type_node,
 					  argtype0, argtype1, argtype2,
 					  NULL_TREE);
+      /* ... which needs noexcept.  */
+      fn_type = build_exception_variant (fn_type, noexcept_true_spec);
       if (use_aeabi_atexit)
-	name = "__aeabi_atexit";
+	{
+	  name = "__aeabi_atexit";
+	  push_to_top_level ();
+	  int n = push_namespace (get_identifier ("__aeabiv1"), false);
+	  ctx = current_namespace;
+	  while (n--)
+	    pop_namespace ();
+	  pop_from_top_level ();
+	}
       else
-	name = "__cxa_atexit";
+	{
+	  name = "__cxa_atexit";
+	  ctx = abi_node;
+	}
     }
   else
     {
@@ -8797,12 +8834,23 @@ get_atexit_node (void)
       /* Build the final atexit type.  */
       fn_type = build_function_type_list (integer_type_node,
 					  fn_ptr_type, NULL_TREE);
+      /* ... which needs noexcept.  */
+      fn_type = build_exception_variant (fn_type, noexcept_true_spec);
       name = "atexit";
     }
 
   /* Now, build the function declaration.  */
   push_lang_context (lang_name_c);
+  auto cookie = push_abi_namespace (ctx);
   atexit_fndecl = build_library_fn_ptr (name, fn_type, ECF_LEAF | ECF_NOTHROW);
+  DECL_CONTEXT (atexit_fndecl) = FROB_CONTEXT (current_namespace);
+  /* Install as hidden builtin so we're (a) more relaxed about
+    exception spec matching and (b) will not give a confusing location
+    in diagnostic and (c) won't magically appear in user-visible name
+    lookups.  */
+  DECL_SOURCE_LOCATION (atexit_fndecl) = BUILTINS_LOCATION;
+  atexit_fndecl = pushdecl (atexit_fndecl, /*hiding=*/true);
+  pop_abi_namespace (cookie, ctx);
   mark_used (atexit_fndecl);
   pop_lang_context ();
   atexit_node = decay_conversion (atexit_fndecl, tf_warning_or_error);
@@ -8861,10 +8909,6 @@ static tree
 start_cleanup_fn (void)
 {
   char name[32];
-  tree fntype;
-  tree fndecl;
-  bool use_cxa_atexit = flag_use_cxa_atexit
-			&& !targetm.cxx.use_atexit_for_cxa_atexit ();
 
   push_to_top_level ();
 
@@ -8874,8 +8918,9 @@ start_cleanup_fn (void)
   /* Build the name of the function.  */
   sprintf (name, "__tcf_%d", start_cleanup_cnt++);
   /* Build the function declaration.  */
-  fntype = TREE_TYPE (get_atexit_fn_ptr_type ());
-  fndecl = build_lang_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  tree fntype = TREE_TYPE (get_atexit_fn_ptr_type ());
+  tree fndecl = build_lang_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  DECL_CONTEXT (fndecl) = FROB_CONTEXT (current_namespace);
   /* It's a function with internal linkage, generated by the
      compiler.  */
   TREE_PUBLIC (fndecl) = 0;
@@ -8886,16 +8931,16 @@ start_cleanup_fn (void)
      emissions this way.  */
   DECL_DECLARED_INLINE_P (fndecl) = 1;
   DECL_INTERFACE_KNOWN (fndecl) = 1;
-  /* Build the parameter.  */
-  if (use_cxa_atexit)
+  if (flag_use_cxa_atexit && !targetm.cxx.use_atexit_for_cxa_atexit ())
     {
+      /* Build the parameter.  */
       tree parmdecl = cp_build_parm_decl (fndecl, NULL_TREE, ptr_type_node);
       TREE_USED (parmdecl) = 1;
       DECL_READ_P (parmdecl) = 1;
       DECL_ARGUMENTS (fndecl) = parmdecl;
     }
 
-  pushdecl (fndecl);
+  fndecl = pushdecl (fndecl, /*hidden=*/true);
   start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
 
   pop_lang_context ();

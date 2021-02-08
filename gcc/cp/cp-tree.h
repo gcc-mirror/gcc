@@ -193,7 +193,9 @@ enum cp_tree_index
 
     CPTI_MODULE_HWM,
     /* Nodes after here change during compilation, or should not be in
-       the module's global tree table.  */
+       the module's global tree table.  Such nodes must be locatable
+       via name lookup or type-construction, as those are the only
+       cross-TU matching capabilities remaining.  */
 
     /* We must find these via the global namespace.  */
     CPTI_STD,
@@ -3775,8 +3777,8 @@ struct GTY(()) lang_decl {
 
       template <typename T> struct S {};
       template <typename T> struct S<T*> {};
-      
-   the CLASSTPYE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.
+
+   the CLASSTYPE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.
 
    For a member class template, CLASSTYPE_TI_TEMPLATE always refers to the
    partial instantiation rather than the primary template.  CLASSTYPE_TI_ARGS
@@ -6625,6 +6627,9 @@ extern tree make_typename_type			(tree, tree, enum tag_types, tsubst_flags_t);
 extern tree build_typename_type			(tree, tree, tree, tag_types);
 extern tree make_unbound_class_template		(tree, tree, tree, tsubst_flags_t);
 extern tree make_unbound_class_template_raw	(tree, tree, tree);
+extern unsigned push_abi_namespace		(tree node = abi_node);
+extern void pop_abi_namespace			(unsigned flags,
+						 tree node = abi_node);
 extern tree build_library_fn_ptr		(const char *, tree, int);
 extern tree build_cp_library_fn_ptr		(const char *, tree, int);
 extern tree push_library_fn			(tree, tree, tree, int);
