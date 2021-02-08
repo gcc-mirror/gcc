@@ -3258,7 +3258,9 @@ objects.
 
 Associating a function with a @var{deallocator} helps detect calls to
 mismatched allocation and deallocation functions and diagnose them under
-the control of options such as @option{-Wmismatched-dealloc}.  To indicate
+the control of options such as @option{-Wmismatched-dealloc}.  It also
+makes it possible to diagnose attempts to deallocate objects that were not
+allocated dynamically, by @option{-Wfree-nonheap-object}.  To indicate
 that an allocation function both satisifies the nonaliasing property and
 has a deallocator associated with it, both the plain form of the attribute
 and the one with the @var{deallocator} argument must be used.  The same
@@ -3273,21 +3275,21 @@ not alias any others, the following declarations make @code{fclose}
 a suitable deallocator for pointers returned from all functions except
 @code{popen}, and @code{pclose} as the only suitable deallocator for
 pointers returned from @code{popen}.  The deallocator functions must
-declared before they can be referenced in the attribute.
+be declared before they can be referenced in the attribute.
 
 @smallexample
 int fclose (FILE*);
 int pclose (FILE*);
 
-__attribute__ ((malloc, malloc (fclose (1))))
-  FILE* fdopen (int);
-__attribute__ ((malloc, malloc (fclose (1))))
+__attribute__ ((malloc, malloc (fclose, 1)))
+  FILE* fdopen (int, const char*);
+__attribute__ ((malloc, malloc (fclose, 1)))
   FILE* fopen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose (1))))
+__attribute__ ((malloc, malloc (fclose, 1)))
   FILE* fmemopen(void *, size_t, const char *);
-__attribute__ ((malloc, malloc (pclose (1))))
+__attribute__ ((malloc, malloc (pclose, 1)))
   FILE* popen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose (1))))
+__attribute__ ((malloc, malloc (fclose, 1)))
   FILE* tmpfile (void);
 @end smallexample
 
