@@ -3775,8 +3775,8 @@ struct GTY(()) lang_decl {
 
       template <typename T> struct S {};
       template <typename T> struct S<T*> {};
-      
-   the CLASSTPYE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.
+
+   the CLASSTYPE_TI_TEMPLATE for S<int*> will be S, not the S<T*>.
 
    For a member class template, CLASSTYPE_TI_TEMPLATE always refers to the
    partial instantiation rather than the primary template.  CLASSTYPE_TI_ARGS
