@@ -4639,6 +4639,18 @@
   [(set_attr "type" "neon_sat_mul_<Vetype><q>")]
 )
 
+(define_insn "aarch64_sq<r>dmulh_n<mode>"
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+	(unspec:VDQHS
+	  [(match_operand:VDQHS 1 "register_operand" "w")
+	   (vec_duplicate:VDQHS
+	     (match_operand:<VEL> 2 "register_operand" "<h_con>"))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[0]"
+  [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
+)
+
 ;; sq<r>dmulh_lane
 
 (define_insn "aarch64_sq<r>dmulh_lane<mode>"

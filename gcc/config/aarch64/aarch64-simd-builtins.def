@@ -348,6 +348,9 @@
   /* Implemented by aarch64_sq<r>dmulh<mode>.  */
   BUILTIN_VSDQ_HSI (BINOP, sqdmulh, 0, NONE)
   BUILTIN_VSDQ_HSI (BINOP, sqrdmulh, 0, NONE)
+  /* Implemented by aarch64_sq<r>dmulh_n<mode>.  */
+  BUILTIN_VDQHS (BINOP, sqdmulh_n, 0, NONE)
+  BUILTIN_VDQHS (BINOP, sqrdmulh_n, 0, NONE)
   /* Implemented by aarch64_sq<r>dmulh_lane<q><mode>.  */
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqdmulh_lane, 0, NONE)
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqdmulh_laneq, 0, NONE)

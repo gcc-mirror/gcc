@@ -8769,48 +8769,28 @@ __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqdmulh_n_s16 (int16x4_t __a, int16_t __b)
 {
-  int16x4_t __result;
-  __asm__ ("sqdmulh %0.4h,%1.4h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqdmulh_nv4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqdmulh_n_s32 (int32x2_t __a, int32_t __b)
 {
-  int32x2_t __result;
-  __asm__ ("sqdmulh %0.2s,%1.2s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqdmulh_nv2si (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqdmulhq_n_s16 (int16x8_t __a, int16_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sqdmulh %0.8h,%1.8h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqdmulh_nv8hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqdmulhq_n_s32 (int32x4_t __a, int32_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sqdmulh %0.4s,%1.4s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqdmulh_nv4si (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
@@ -8880,48 +8860,28 @@ __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqrdmulh_n_s16 (int16x4_t __a, int16_t __b)
 {
-  int16x4_t __result;
-  __asm__ ("sqrdmulh %0.4h,%1.4h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqrdmulh_nv4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqrdmulh_n_s32 (int32x2_t __a, int32_t __b)
 {
-  int32x2_t __result;
-  __asm__ ("sqrdmulh %0.2s,%1.2s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqrdmulh_nv2si (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqrdmulhq_n_s16 (int16x8_t __a, int16_t __b)
 {
-  int16x8_t __result;
-  __asm__ ("sqrdmulh %0.8h,%1.8h,%2.h[0]"
-           : "=w"(__result)
-           : "w"(__a), "x"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqrdmulh_nv8hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqrdmulhq_n_s32 (int32x4_t __a, int32_t __b)
 {
-  int32x4_t __result;
-  __asm__ ("sqrdmulh %0.4s,%1.4s,%2.s[0]"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_sqrdmulh_nv4si (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
