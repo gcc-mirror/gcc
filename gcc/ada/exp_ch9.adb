@@ -3779,10 +3779,6 @@ package body Exp_Ch9 is
                raise Program_Error;
          end case;
 
-         --  Establish link between subprogram body entity and source entry
-
-         Set_Corresponding_Protected_Entry (Bod_Id, Ent);
-
          --  Create body of entry procedure. The renaming declarations are
          --  placed ahead of the block that contains the actual entry body.
 
@@ -3815,6 +3811,10 @@ package body Exp_Ch9 is
                              Name =>
                                New_Occurrence_Of
                                  (RTE (RE_Get_GNAT_Exception), Loc)))))))));
+
+         --  Establish link between subprogram body and source entry body
+
+         Set_Corresponding_Entry_Body (Proc_Body, N);
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;

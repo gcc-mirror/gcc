@@ -786,10 +786,6 @@ package Einfo is
 --       Modify_Tree_For_C is set. Denotes the internally built procedure
 --       with an extra out parameter created for it.
 
---    Corresponding_Protected_Entry (Node18)
---       Defined in subprogram bodies. Set for subprogram bodies that implement
---       a protected type entry to point to the entity for the entry.
-
 --    Corresponding_Record_Component (Node21)
 --       Defined in components of a derived untagged record type, including
 --       discriminants. For a regular component or a girder discriminant,

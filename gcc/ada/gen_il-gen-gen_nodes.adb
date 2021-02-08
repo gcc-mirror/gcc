@@ -790,6 +790,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Bad_Is_Detected, Flag),
         Sm (Activation_Chain_Entity, Node_Id),
         Sm (Acts_As_Spec, Flag),
+        Sm (Corresponding_Entry_Body, Node_Id),
         Sm (Do_Storage_Check, Flag),
         Sm (Has_Relative_Deadline_Pragma, Flag),
         Sm (Is_Entry_Barrier_Function, Flag),

@@ -5789,21 +5789,8 @@ package body Sem_Ch6 is
       if Nkind (N) = N_Function_Specification then
          Set_Ekind (Designator, E_Function);
          Set_Mechanism (Designator, Default_Mechanism);
-
       else
-         case Ekind (Designator) is
-            when E_Subprogram_Body | E_Void =>
-               Reinit_Field_To_Zero
-                 (Designator, Corresponding_Protected_Entry);
-               Set_Ekind (Designator, E_Procedure);
-
-            when E_Procedure | E_Generic_Procedure =>
-               null;
-
-            when others =>
-               pragma Assert (False);
-         end case;
-
+         Set_Ekind (Designator, E_Procedure);
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 

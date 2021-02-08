@@ -244,7 +244,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Scope_Depth_Value, Uint),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag),
-        Sm (Corresponding_Protected_Entry, Node_Id), -- setter only
         Sm (Current_Value, Node_Id), -- setter only
         Sm (Has_Predicates, Flag), -- setter only
         Sm (Initialization_Statements, Node_Id), -- setter only
@@ -1245,7 +1244,6 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Subprogram_Body, Entity_Kind,
        (Sm (Anonymous_Masters, Elist_Id),
         Sm (Contract, Node_Id),
-        Sm (Corresponding_Protected_Entry, Node_Id),
         Sm (Extra_Formals, Node_Id),
         Sm (First_Entity, Node_Id),
         Sm (Ignore_SPARK_Mode_Pragmas, Flag),

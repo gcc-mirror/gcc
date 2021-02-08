@@ -1040,6 +1040,10 @@ package Sinfo is
    --    to the defining entity for the corresponding body (NOT the node for
    --    the body itself).
 
+   --    Corresponding_Entry_Body
+   --    Defined in N_Subprogram_Body. Set for subprogram bodies that implement
+   --    a protected type entry; points to the body for the entry.
+
    --  Corresponding_Formal_Spec (Node3-Sem)
    --    This field is set in subprogram renaming declarations, where it points
    --    to the defining entity for a formal subprogram in the case where the
