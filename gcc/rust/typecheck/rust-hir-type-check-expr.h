@@ -155,58 +155,11 @@ public:
 
   void visit (HIR::CallExpr &expr)
   {
-    auto fn = expr.get_fnexpr ();
-    auto fn_node_id = fn->get_mappings ().get_nodeid ();
+    TyTy::TyBase *function_tyty = TypeCheckExpr::Resolve (expr.get_fnexpr ());
+    if (function_tyty == nullptr)
+      return;
 
-    // then lookup the reference_node_id
-    NodeId ref_node_id = UNKNOWN_NODEID;
-    if (resolver->lookup_resolved_name (fn_node_id, &ref_node_id))
-      {
-	Definition def;
-	if (!resolver->lookup_definition (ref_node_id, &def))
-	  {
-	    rust_error_at (expr.get_locus (),
-			   "unknown reference for resolved name");
-	    return;
-	  }
-	ref_node_id = def.parent;
-      }
-    else if (!resolver->lookup_resolved_type (fn_node_id, &ref_node_id))
-      {
-	rust_error_at (expr.get_locus (),
-		       "Failed to lookup type reference for node: %s",
-		       expr.as_string ().c_str ());
-	return;
-      }
-
-    if (ref_node_id == UNKNOWN_NODEID)
-      {
-	rust_error_at (expr.get_locus (), "unresolved node: %s",
-		       expr.as_string ().c_str ());
-	return;
-      }
-
-    // node back to HIR
-    HirId ref;
-    if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				       ref_node_id, &ref))
-      {
-	rust_error_at (expr.get_locus (), "reverse lookup failure for node %u",
-		       ref_node_id);
-	return;
-      }
-
-    // check if this has a type
-    TyTy::TyBase *lookup;
-    if (!context->lookup_type (ref, &lookup))
-      {
-	rust_error_at (mappings->lookup_location (ref),
-		       "failed to lookup type for CallExpr: %s",
-		       expr.as_string ().c_str ());
-	return;
-      }
-
-    infered = TyTy::TypeCheckCallExpr::go (lookup, expr, context);
+    infered = TyTy::TypeCheckCallExpr::go (function_tyty, expr, context);
     if (infered == nullptr)
       {
 	rust_error_at (expr.get_locus (), "failed to lookup type to CallExpr");
@@ -703,6 +656,10 @@ public:
 
   void visit (HIR::GroupedExpr &expr)
   {
+    printf ("inside grouped expr: \n%s\n inside it is: \n%s\n",
+	    expr.as_string ().c_str (),
+	    expr.get_expr_in_parens ()->as_string ().c_str ());
+
     infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get ());
   }
 
@@ -738,16 +695,33 @@ public:
     NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 
     // then lookup the reference_node_id
-    NodeId ref_node_id;
-    if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    NodeId ref_node_id = UNKNOWN_NODEID;
+    if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
       {
-	if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+	// these ref_node_ids will resolve to a pattern declaration but we are
+	// interested in the definition that this refers to get the parent id
+	Definition def;
+	if (!resolver->lookup_definition (ref_node_id, &def))
 	  {
 	    rust_error_at (expr.get_locus (),
-			   "Failed to lookup reference for node: %s",
-			   expr.as_string ().c_str ());
+			   "unknown reference for resolved name");
 	    return;
 	  }
+	ref_node_id = def.parent;
+      }
+    else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+      {
+	rust_error_at (expr.get_locus (),
+		       "Failed to lookup type reference for node: %s",
+		       expr.as_string ().c_str ());
+	return;
+      }
+
+    if (ref_node_id == UNKNOWN_NODEID)
+      {
+	rust_error_at (expr.get_locus (), "unresolved node: %s",
+		       expr.as_string ().c_str ());
+	return;
       }
 
     // node back to HIR
@@ -763,6 +737,7 @@ public:
       {
 	rust_error_at (expr.get_locus (),
 		       "failed to resolve PathInExpression type");
+	return;
       }
   }
 
