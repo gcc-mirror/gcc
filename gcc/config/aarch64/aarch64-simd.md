@@ -6004,10 +6004,10 @@
 ;; addp
 
 (define_insn "aarch64_addp<mode>"
-  [(set (match_operand:VD_BHSI 0 "register_operand" "=w")
-        (unspec:VD_BHSI
-          [(match_operand:VD_BHSI 1 "register_operand" "w")
-	   (match_operand:VD_BHSI 2 "register_operand" "w")]
+  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
+        (unspec:VDQ_I
+          [(match_operand:VDQ_I 1 "register_operand" "w")
+	   (match_operand:VDQ_I 2 "register_operand" "w")]
           UNSPEC_ADDP))]
   "TARGET_SIMD"
   "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
