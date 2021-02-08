@@ -550,6 +550,8 @@
     UNSPEC_SSHLL	; Used in aarch64-simd.md.
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
+    UNSPEC_SADDLP	; Used in aarch64-simd.md.
+    UNSPEC_UADDLP	; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
@@ -2209,6 +2211,8 @@
 
 (define_int_iterator SVE_INT_ADDV [UNSPEC_SADDV UNSPEC_UADDV])
 
+(define_int_iterator USADDLP [UNSPEC_SADDLP UNSPEC_UADDLP])
+
 (define_int_iterator USADDLV [UNSPEC_SADDLV UNSPEC_UADDLV])
 
 (define_int_iterator LOGICALF [UNSPEC_ANDF UNSPEC_IORF UNSPEC_XORF])
@@ -2961,6 +2965,8 @@
 ;; "s" for signed operations and "u" for unsigned ones.
 (define_int_attr su [(UNSPEC_SADDV "s")
 		     (UNSPEC_UADDV "u")
+		     (UNSPEC_SADDLP "s")
+		     (UNSPEC_UADDLP "u")
 		     (UNSPEC_SADDLV "s")
 		     (UNSPEC_UADDLV "u")
 		     (UNSPEC_UNPACKSHI "s")

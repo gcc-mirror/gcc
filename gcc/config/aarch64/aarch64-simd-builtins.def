@@ -154,6 +154,10 @@
   BUILTIN_VDQ_BHSI (BINOP, srhadd, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, urhadd, 0, NONE)
 
+  /* Implemented by aarch64_<su>addlp<mode>.  */
+  BUILTIN_VDQV_L (UNOP, saddlp, 0, NONE)
+  BUILTIN_VDQV_L (UNOPU, uaddlp, 0, NONE)
+
   /* Implemented by aarch64_<su>addlv<mode>.  */
   BUILTIN_VDQV_L (UNOP, saddlv, 0, NONE)
   BUILTIN_VDQV_L (UNOPU, uaddlv, 0, NONE)
