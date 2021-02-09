@@ -2032,7 +2032,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
       if (get_size_range (access_size, sizrng, true))
 	{
-	  const char *s0 = print_generic_expr_to_str (sizrng[0]);
+	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
 	    {
 	      gcc_checking_assert (strlen (s0) < sizeof sizstr);
@@ -2040,11 +2040,13 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	    }
 	  else
 	    {
-	      const char *s1 = print_generic_expr_to_str (sizrng[1]);
+	      char *s1 = print_generic_expr_to_str (sizrng[1]);
 	      gcc_checking_assert (strlen (s0) + strlen (s1)
 				   < sizeof sizstr - 4);
 	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	      free (s1);
 	    }
+	  free (s0);
 	}
       else
 	*sizstr = '\0';
