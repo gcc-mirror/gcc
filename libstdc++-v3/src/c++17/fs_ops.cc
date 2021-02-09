@@ -1130,7 +1130,7 @@ fs::permissions(const path& p, perms prms, perm_options opts,
 #else
   if (nofollow && is_symlink(st))
     ec = std::make_error_code(std::errc::not_supported);
-  else if (posix::chmod(p.c_str(), static_cast<mode_t>(prms)))
+  else if (posix::chmod(p.c_str(), static_cast<posix::mode_t>(prms)))
     err = errno;
 #endif
 
