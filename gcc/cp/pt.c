@@ -10137,7 +10137,17 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  /* Temporarily reduce by one the number of levels in the ARGLIST
 	     so as to avoid comparing the last set of arguments.  */
 	  TREE_VEC_LENGTH (arglist)--;
-	  found = tsubst (gen_tmpl, arglist, complain, NULL_TREE);
+	  /* We don't use COMPLAIN in the following call because this isn't
+	     the immediate context of deduction.  For instance, tf_partial
+	     could be set here as we might be at the beginning of template
+	     argument deduction when any explicitly specified template
+	     arguments are substituted into the function type.  tf_partial
+	     could lead into trouble because we wouldn't find the partial
+	     instantiation that might have been created outside tf_partial
+	     context, because the levels of template parameters wouldn't
+	     match, because in a tf_partial context, tsubst doesn't reduce
+	     TEMPLATE_PARM_LEVEL.  */
+	  found = tsubst (gen_tmpl, arglist, tf_none, NULL_TREE);
 	  TREE_VEC_LENGTH (arglist)++;
 	  /* FOUND is either a proper class type, or an alias
 	     template specialization.  In the later case, it's a
