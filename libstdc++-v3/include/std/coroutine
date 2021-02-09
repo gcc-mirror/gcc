@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     // 17.12.3.2, export/import
-    constexpr static coroutine_handle from_address(void* __a)
+    constexpr static coroutine_handle from_address(void* __a) noexcept
     {
       coroutine_handle __self;
       __self._M_fr_ptr = __a;
