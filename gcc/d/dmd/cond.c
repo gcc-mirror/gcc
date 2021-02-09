@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -26,7 +26,6 @@
 #include "arraytypes.h"
 #include "tokens.h"
 
-Expression *semantic(Expression *e, Scope *sc);
 bool evalStaticCondition(Scope *sc, Expression *exp, Expression *e, bool &errors);
 
 int findCondition(Identifiers *ids, Identifier *ident)
@@ -86,7 +85,7 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
     Expression *aggr = sfe->aggrfe->aggr;
     Expression *el = new ArrayLengthExp(aggr->loc, aggr);
     sc = sc->startCTFE();
-    el = semantic(el, sc);
+    el = expressionSemantic(el, sc);
     sc = sc->endCTFE();
     el = el->optimize(WANTvalue);
     el = el->ctfeInterpret();
@@ -111,7 +110,7 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
             }
         }
         sfe->aggrfe->aggr = new TupleExp(aggr->loc, es);
-        sfe->aggrfe->aggr = semantic(sfe->aggrfe->aggr, sc);
+        sfe->aggrfe->aggr = expressionSemantic(sfe->aggrfe->aggr, sc);
         sfe->aggrfe->aggr = sfe->aggrfe->aggr->optimize(WANTvalue);
     }
     else
@@ -292,9 +291,9 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
     if (sfe->rangefe)
     {
         sc = sc->startCTFE();
-        sfe->rangefe->lwr = semantic(sfe->rangefe->lwr, sc);
+        sfe->rangefe->lwr = expressionSemantic(sfe->rangefe->lwr, sc);
         sfe->rangefe->lwr = resolveProperties(sc, sfe->rangefe->lwr);
-        sfe->rangefe->upr = semantic(sfe->rangefe->upr, sc);
+        sfe->rangefe->upr = expressionSemantic(sfe->rangefe->upr, sc);
         sfe->rangefe->upr = resolveProperties(sc, sfe->rangefe->upr);
         sc = sc->endCTFE();
         sfe->rangefe->lwr = sfe->rangefe->lwr->optimize(WANTvalue);
@@ -321,7 +320,7 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
     Expression *aggr;
     Type *indexty;
 
-    if (sfe->rangefe && (indexty = ety->semantic(aloc, sc))->isintegral())
+    if (sfe->rangefe && (indexty = typeSemantic(ety, aloc, sc))->isintegral())
     {
         sfe->rangefe->lwr->type = indexty;
         sfe->rangefe->upr->type = indexty;
@@ -355,7 +354,7 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
     {
         aggr = wrapAndCall(aloc, new CompoundStatement(aloc, s2));
         sc = sc->startCTFE();
-        aggr = semantic(aggr, sc);
+        aggr = expressionSemantic(aggr, sc);
         aggr = resolveProperties(sc, aggr);
         sc = sc->endCTFE();
         aggr = aggr->optimize(WANTvalue);
@@ -382,7 +381,7 @@ void staticForeachPrepare(StaticForeach *sfe, Scope *sc)
     if (sfe->aggrfe)
     {
         sc = sc->startCTFE();
-        sfe->aggrfe->aggr = semantic(sfe->aggrfe->aggr, sc);
+        sfe->aggrfe->aggr = expressionSemantic(sfe->aggrfe->aggr, sc);
         sc = sc->endCTFE();
         sfe->aggrfe->aggr = sfe->aggrfe->aggr->optimize(WANTvalue);
         Type *tab = sfe->aggrfe->aggr->type->toBasetype();
@@ -624,7 +623,7 @@ static bool isReserved(const char *ident)
 void checkReserved(Loc loc, const char *ident)
 {
     if (isReserved(ident))
-        error(loc, "version identifier '%s' is reserved and cannot be set", ident);
+        error(loc, "version identifier `%s` is reserved and cannot be set", ident);
 }
 
 void VersionCondition::addGlobalIdent(const char *ident)

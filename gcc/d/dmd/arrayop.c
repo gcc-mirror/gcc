@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -25,7 +25,6 @@
 
 void buildArrayIdent(Expression *e, OutBuffer *buf, Expressions *arguments);
 Expression *buildArrayLoop(Expression *e, Parameters *fparams);
-Expression *semantic(Expression *e, Scope *sc);
 
 /**************************************
  * Hash table of array op functions already generated or known about.
@@ -80,10 +79,10 @@ FuncDeclaration *buildArrayOp(Identifier *ident, BinExp *exp, Scope *sc)
     sc->parent = sc->_module->importedFrom;
     sc->stc = 0;
     sc->linkage = LINKc;
-    fd->semantic(sc);
-    fd->semantic2(sc);
+    dsymbolSemantic(fd, sc);
+    semantic2(fd, sc);
     unsigned errors = global.startGagging();
-    fd->semantic3(sc);
+    semantic3(fd, sc);
     if (global.endGagging(errors))
     {
         fd->type = Type::terror;
@@ -231,7 +230,7 @@ Expression *arrayOp(BinExp *e, Scope *sc)
     Expression *ev = new VarExp(e->loc, fd);
     Expression *ec = new CallExp(e->loc, ev, arguments);
 
-    return semantic(ec, sc);
+    return expressionSemantic(ec, sc);
 }
 
 Expression *arrayOp(BinAssignExp *e, Scope *sc)

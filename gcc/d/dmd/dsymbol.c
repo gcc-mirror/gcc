@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -35,7 +35,6 @@
 bool symbolIsVisible(Dsymbol *origin, Dsymbol *s);
 typedef int (*ForeachDg)(void *ctx, size_t idx, Dsymbol *s);
 int ScopeDsymbol_foreach(Scope *sc, Dsymbols *members, ForeachDg dg, void *ctx, size_t *pn = NULL);
-Expression *semantic(Expression *e, Scope *sc);
 
 
 /****************************** Dsymbol ******************************/
@@ -462,33 +461,6 @@ void Dsymbol::importAll(Scope *)
 {
 }
 
-/*************************************
- * Does semantic analysis on the public face of declarations.
- */
-
-void Dsymbol::semantic(Scope *)
-{
-    error("%p has no semantic routine", this);
-}
-
-/*************************************
- * Does semantic analysis on initializers and members of aggregates.
- */
-
-void Dsymbol::semantic2(Scope *)
-{
-    // Most Dsymbols have no further semantic analysis needed
-}
-
-/*************************************
- * Does semantic analysis on function bodies.
- */
-
-void Dsymbol::semantic3(Scope *)
-{
-    // Most Dsymbols have no further semantic analysis needed
-}
-
 /*********************************************
  * Search for ident as member of s.
  * Params:
@@ -553,7 +525,7 @@ Dsymbol *Dsymbol::searchX(Loc loc, Scope *sc, RootObject *id)
     {
         if (d->inuse)
         {
-            ::error(loc, "circular reference to '%s'", d->toPrettyChars());
+            ::error(loc, "circular reference to `%s`", d->toPrettyChars());
             return NULL;
         }
     }
@@ -575,10 +547,10 @@ Dsymbol *Dsymbol::searchX(Loc loc, Scope *sc, RootObject *id)
             {
                 sm = s->search_correct(ti->name);
                 if (sm)
-                    ::error(loc, "template identifier '%s' is not a member of %s '%s', did you mean %s '%s'?",
+                    ::error(loc, "template identifier `%s` is not a member of %s `%s`, did you mean %s `%s`?",
                           ti->name->toChars(), s->kind(), s->toPrettyChars(), sm->kind(), sm->toChars());
                 else
-                    ::error(loc, "template identifier '%s' is not a member of %s '%s'",
+                    ::error(loc, "template identifier `%s` is not a member of %s `%s`",
                           ti->name->toChars(), s->kind(), s->toPrettyChars());
                 return NULL;
             }
@@ -591,7 +563,7 @@ Dsymbol *Dsymbol::searchX(Loc loc, Scope *sc, RootObject *id)
             }
             ti->tempdecl = td;
             if (!ti->semanticRun)
-                ti->semantic(sc);
+                dsymbolSemantic(ti, sc);
             sm = ti->toAlias();
             break;
         }
@@ -612,7 +584,7 @@ bool Dsymbol::overloadInsert(Dsymbol *)
 
 d_uns64 Dsymbol::size(Loc)
 {
-    error("Dsymbol '%s' has no size", toChars());
+    error("Dsymbol `%s` has no size", toChars());
     return SIZE_INVALID;
 }
 
@@ -1015,10 +987,6 @@ void ForwardingScopeDsymbol::importScope(Dsymbol *s, Prot protection)
     forward->importScope(s, protection);
 }
 
-void ForwardingScopeDsymbol::semantic(Scope *)
-{
-}
-
 const char *ForwardingScopeDsymbol::kind() const
 {
     return "local scope";
@@ -1053,10 +1021,6 @@ Dsymbol *ScopeDsymbol::syntaxCopy(Dsymbol *s)
     sds->members = arraySyntaxCopy(members);
     sds->endlinnum = endlinnum;
     return sds;
-}
-
-void ScopeDsymbol::semantic(Scope *)
-{
 }
 
 /*****************************************
@@ -1593,7 +1557,7 @@ Dsymbol *ArrayScopeSymbol::search(const Loc &loc, Identifier *ident, int)
             Expression *e = new IntegerExp(Loc(), td->objects->length, Type::tsize_t);
             v->_init = new ExpInitializer(Loc(), e);
             v->storage_class |= STCtemp | STCstatic | STCconst;
-            v->semantic(sc);
+            dsymbolSemantic(v, sc);
             return v;
         }
 
@@ -1605,7 +1569,7 @@ Dsymbol *ArrayScopeSymbol::search(const Loc &loc, Identifier *ident, int)
             Expression *e = new IntegerExp(Loc(), type->arguments->length, Type::tsize_t);
             v->_init = new ExpInitializer(Loc(), e);
             v->storage_class |= STCtemp | STCstatic | STCconst;
-            v->semantic(sc);
+            dsymbolSemantic(v, sc);
             return v;
         }
 
@@ -1709,7 +1673,7 @@ Dsymbol *ArrayScopeSymbol::search(const Loc &loc, Identifier *ident, int)
 
                     Objects *tiargs = new Objects();
                     Expression *edim = new IntegerExp(Loc(), dim, Type::tsize_t);
-                    edim = ::semantic(edim, sc);
+                    edim = expressionSemantic(edim, sc);
                     tiargs->push(edim);
                     e = new DotTemplateInstanceExp(loc, ce, td->ident, tiargs);
                 }
@@ -1729,7 +1693,7 @@ Dsymbol *ArrayScopeSymbol::search(const Loc &loc, Identifier *ident, int)
                     assert(d);
                     e = new DotVarExp(loc, ce, d);
                 }
-                e = ::semantic(e, sc);
+                e = expressionSemantic(e, sc);
                 if (!e->type)
                     exp->error("%s has no value", e->toChars());
                 t = e->type->toBasetype();
@@ -1752,7 +1716,7 @@ Dsymbol *ArrayScopeSymbol::search(const Loc &loc, Identifier *ident, int)
             }
             *pvar = v;
         }
-        (*pvar)->semantic(sc);
+        dsymbolSemantic(*pvar, sc);
         return (*pvar);
     }
     return NULL;

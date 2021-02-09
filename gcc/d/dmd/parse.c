@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -144,7 +144,7 @@ Dsymbols *Parser::parseModule()
                 }
                 default:
                 {
-                    error("'module' expected instead of %s", token.toChars());
+                    error("`module` expected instead of %s", token.toChars());
                     nextToken();
                     break;
                 }
@@ -195,7 +195,7 @@ Dsymbols *Parser::parseModule()
             md->msg = msg;
 
             if (token.value != TOKsemicolon)
-                error("';' expected following module declaration instead of %s", token.toChars());
+                error("`;` expected following module declaration instead of %s", token.toChars());
             nextToken();
             addComment(mod, comment);
         }
@@ -399,7 +399,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 }
                 else
                 {
-                    error("invariant body expected, not '%s'", token.toChars());
+                    error("invariant body expected, not `%s`", token.toChars());
                     goto Lerror;
                 }
                 break;
@@ -458,13 +458,13 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
 
             case TOKcolon:
             case TOKlcurly:
-                error("declaration expected, not '%s'",token.toChars());
+                error("declaration expected, not `%s`",token.toChars());
                 goto Lerror;
 
             case TOKrcurly:
             case TOKeof:
                 if (once)
-                    error("declaration expected, not '%s'", token.toChars());
+                    error("declaration expected, not `%s`", token.toChars());
                 return decldefs;
 
             case TOKstatic:
@@ -749,10 +749,10 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 if (pAttrs->protection.kind != Prot::undefined)
                 {
                     if (pAttrs->protection.kind != prot)
-                        error("conflicting protection attribute '%s' and '%s'",
+                        error("conflicting protection attribute `%s` and `%s`",
                             protectionToChars(pAttrs->protection.kind), protectionToChars(prot));
                     else
-                        error("redundant protection attribute '%s'", protectionToChars(prot));
+                        error("redundant protection attribute `%s`", protectionToChars(prot));
                 }
                 pAttrs->protection.kind = prot;
 
@@ -942,7 +942,7 @@ Dsymbols *Parser::parseDeclDefs(int once, Dsymbol **pLastDecl, PrefixAttributes 
                 continue;
 
             default:
-                error("declaration expected, not '%s'",token.toChars());
+                error("declaration expected, not `%s`",token.toChars());
             Lerror:
                 while (token.value != TOKsemicolon && token.value != TOKeof)
                     nextToken();
@@ -985,9 +985,9 @@ StorageClass Parser::appendStorageClass(StorageClass storageClass, StorageClass 
         OutBuffer buf;
         stcToBuffer(&buf, stc);
         if (deprec)
-            deprecation("redundant attribute '%s'", buf.peekChars());
+            deprecation("redundant attribute `%s`", buf.peekChars());
         else
-            error("redundant attribute '%s'", buf.peekChars());
+            error("redundant attribute `%s`", buf.peekChars());
         return storageClass | stc;
     }
 
@@ -997,19 +997,19 @@ StorageClass Parser::appendStorageClass(StorageClass storageClass, StorageClass 
     {
         StorageClass u = storageClass & (STCconst | STCimmutable | STCmanifest);
         if (u & (u - 1))
-            error("conflicting attribute '%s'", Token::toChars(token.value));
+            error("conflicting attribute `%s`", Token::toChars(token.value));
     }
     if (stc & (STCgshared | STCshared | STCtls))
     {
         StorageClass u = storageClass & (STCgshared | STCshared | STCtls);
         if (u & (u - 1))
-            error("conflicting attribute '%s'", Token::toChars(token.value));
+            error("conflicting attribute `%s`", Token::toChars(token.value));
     }
     if (stc & (STCsafe | STCsystem | STCtrusted))
     {
         StorageClass u = storageClass & (STCsafe | STCsystem | STCtrusted);
         if (u & (u - 1))
-            error("conflicting attribute '@%s'", token.toChars());
+            error("conflicting attribute `@%s`", token.toChars());
     }
 
     return storageClass;
@@ -1170,7 +1170,7 @@ Dsymbols *Parser::parseBlock(Dsymbol **pLastDecl, PrefixAttributes *pAttrs)
     switch (token.value)
     {
         case TOKsemicolon:
-            error("declaration expected following attribute, not ';'");
+            error("declaration expected following attribute, not `;`");
             nextToken();
             break;
 
@@ -1188,7 +1188,7 @@ Dsymbols *Parser::parseBlock(Dsymbol **pLastDecl, PrefixAttributes *pAttrs)
             if (token.value != TOKrcurly)
             {
                 /* { */
-                error("matching '}' expected, not %s", token.toChars());
+                error("matching `}` expected, not %s", token.toChars());
             }
             else
                 nextToken();
@@ -1439,7 +1439,7 @@ Identifiers *Parser::parseQualifiedIdentifier(const char *entity)
         nextToken();
         if (token.value != TOKidentifier)
         {
-            error("%s expected as dot-separated identifiers, got '%s'",
+            error("%s expected as dot-separated identifiers, got `%s`",
                     entity, token.toChars());
             return NULL;
         }
@@ -1620,9 +1620,9 @@ Dsymbol *Parser::parseCtor(PrefixAttributes *pAttrs)
     else if (StorageClass ss = stc & (STCshared | STCstatic))   // this()
     {
         if (ss == STCstatic)
-            error(loc, "use 'static this()' to declare a static constructor");
+            error(loc, "use `static this()` to declare a static constructor");
         else if (ss == (STCshared | STCstatic))
-            error(loc, "use 'shared static this()' to declare a shared static constructor");
+            error(loc, "use `shared static this()` to declare a shared static constructor");
     }
 
     Expression *constraint = tpl ? parseConstraint() : NULL;
@@ -1674,9 +1674,9 @@ Dsymbol *Parser::parseDtor(PrefixAttributes *pAttrs)
     if (StorageClass ss = stc & (STCshared | STCstatic))
     {
         if (ss == STCstatic)
-            error(loc, "use 'static ~this()' to declare a static destructor");
+            error(loc, "use `static ~this()` to declare a static destructor");
         else if (ss == (STCshared | STCstatic))
-            error(loc, "use 'shared static ~this()' to declare a shared static destructor");
+            error(loc, "use `shared static ~this()` to declare a shared static destructor");
     }
 
     DtorDeclaration *f = new DtorDeclaration(loc, Loc(), stc, Id::dtor);
@@ -1711,7 +1711,7 @@ Dsymbol *Parser::parseStaticCtor(PrefixAttributes *pAttrs)
 
     stc = parsePostfix(stc & ~STC_TYPECTOR, NULL) | stc;
     if (stc & STCshared)
-        error(loc, "use 'shared static this()' to declare a shared static constructor");
+        error(loc, "use `shared static this()` to declare a shared static constructor");
     else if (stc & STCstatic)
         appendStorageClass(stc, STCstatic);     // complaint for the redundancy
     else if (StorageClass modStc = stc & STC_TYPECTOR)
@@ -1749,7 +1749,7 @@ Dsymbol *Parser::parseStaticDtor(PrefixAttributes *pAttrs)
 
     stc = parsePostfix(stc & ~STC_TYPECTOR, &udas) | stc;
     if (stc & STCshared)
-        error(loc, "use 'shared static ~this()' to declare a shared static destructor");
+        error(loc, "use `shared static ~this()` to declare a shared static destructor");
     else if (stc & STCstatic)
         appendStorageClass(stc, STCstatic);     // complaint for the redundancy
     else if (StorageClass modStc = stc & STC_TYPECTOR)
@@ -2856,7 +2856,7 @@ Dsymbol *Parser::parseMixin()
         nextToken();
         if (token.value != TOKidentifier)
         {
-            error("identifier expected following '.' instead of '%s'", token.toChars());
+            error("identifier expected following `.` instead of `%s`", token.toChars());
             break;
         }
         loc = token.loc;
@@ -2874,7 +2874,7 @@ Dsymbol *Parser::parseMixin()
 
     tm = new TemplateMixin(locMixin, id, tqual, tiargs);
     if (token.value != TOKsemicolon)
-        error("';' expected after mixin");
+        error("`;` expected after mixin");
     nextToken();
 
     return tm;
@@ -3144,7 +3144,7 @@ Dsymbols *Parser::parseImport()
         nextToken();
     else
     {
-        error("';' expected");
+        error("`;` expected");
         nextToken();
     }
 
@@ -3373,7 +3373,7 @@ Type *Parser::parseBasicTypeStartingAt(TypeQualified *tid, bool dontLookDotIdent
                 nextToken();
                 if (token.value != TOKidentifier)
                 {
-                    error("identifier expected following '.' instead of '%s'", token.toChars());
+                    error("identifier expected following `.` instead of `%s`", token.toChars());
                     break;
                 }
                 if (maybeArray)
@@ -3602,7 +3602,7 @@ Type *Parser::parseDeclarator(Type *t, int *palt, Identifier **pident,
             if (pident)
                 *pident = token.ident;
             else
-                error("unexpected identifer '%s' in declarator", token.ident->toChars());
+                error("unexpected identifer `%s` in declarator", token.ident->toChars());
             ts = t;
             nextToken();
             break;
@@ -3635,7 +3635,7 @@ Type *Parser::parseDeclarator(Type *t, int *palt, Identifier **pident,
              */
             if (isParameters(&peekt))
             {
-                error("function declaration without return type. (Note that constructors are always named 'this')");
+                error("function declaration without return type. (Note that constructors are always named `this`)");
             }
             else
                 error("unexpected ( in declarator");
@@ -4188,7 +4188,7 @@ L2:
             if (init)
             {
                 if (isThis)
-                    error("cannot use syntax 'alias this = %s', use 'alias %s this' instead",
+                    error("cannot use syntax `alias this = %s`, use `alias %s this` instead",
                           init->toChars(), init->toChars());
                 else
                     error("alias cannot have initializer");
@@ -4332,7 +4332,7 @@ L2:
                     continue;
 
                 default:
-                    error("semicolon expected, not '%s'", token.toChars());
+                    error("semicolon expected, not `%s`", token.toChars());
                     break;
             }
         }
@@ -4511,7 +4511,7 @@ Dsymbols *Parser::parseAutoDeclarations(StorageClass storageClass, const utf8_t 
                 continue;
 
             default:
-                error("semicolon expected following auto declaration, not '%s'", token.toChars());
+                error("semicolon expected following auto declaration, not `%s`", token.toChars());
                 break;
         }
         break;
@@ -4758,7 +4758,7 @@ Initializer *Parser::parseInitializer()
 
                     case TOKcomma:
                         if (comma == 2)
-                            error("expression expected, not ','");
+                            error("expression expected, not `,`");
                         nextToken();
                         comma = 2;
                         continue;
@@ -4778,7 +4778,7 @@ Initializer *Parser::parseInitializer()
                         is->addInit(NULL, value);
                         comma = 1;
                         continue;
-                        //error("found '%s' instead of field initializer", token.toChars());
+                        //error("found `%s` instead of field initializer", token.toChars());
                         //break;
                 }
                 break;
@@ -4868,7 +4868,7 @@ Initializer *Parser::parseInitializer()
 
                     case TOKcomma:
                         if (comma == 2)
-                            error("expression expected, not ','");
+                            error("expression expected, not `,`");
                         nextToken();
                         comma = 2;
                         continue;
@@ -4878,7 +4878,7 @@ Initializer *Parser::parseInitializer()
                         break;
 
                     case TOKeof:
-                        error("found '%s' instead of array initializer", token.toChars());
+                        error("found `%s` instead of array initializer", token.toChars());
                         break;
                 }
                 break;
@@ -4965,9 +4965,9 @@ void Parser::checkCstyleTypeSyntax(Loc loc, Type *t, int alt, Identifier *ident)
     const char *sp = !ident ? "" : " ";
     const char *s  = !ident ? "" : ident->toChars();
     if (alt & 1)    // contains C-style function pointer syntax
-        error(loc, "instead of C-style syntax, use D-style '%s%s%s'", t->toChars(), sp, s);
+        error(loc, "instead of C-style syntax, use D-style `%s%s%s`", t->toChars(), sp, s);
     else
-        ::warning(loc, "instead of C-style syntax, use D-style syntax '%s%s%s'", t->toChars(), sp, s);
+        ::warning(loc, "instead of C-style syntax, use D-style syntax `%s%s%s`", t->toChars(), sp, s);
 
 }
 
@@ -5408,7 +5408,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
 
             nextToken();
             //if (token.value == TOKsemicolon)
-                //error("use '{ }' for an empty statement, not a ';'");
+                //error("use `{ }` for an empty statement, not a `;`");
             Statements *statements = new Statements();
             while (token.value != TOKrcurly && token.value != TOKeof)
             {
@@ -5445,9 +5445,9 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
             if (!(flags & PSsemi_ok))
             {
                 if (flags & PSsemi)
-                    deprecation("use '{ }' for an empty statement, not a ';'");
+                    deprecation("use `{ }` for an empty statement, not a `;`");
                 else
-                    error("use '{ }' for an empty statement, not a ';'");
+                    error("use `{ }` for an empty statement, not a `;`");
             }
             nextToken();
             s = new ExpStatement(loc, (Expression *)NULL);
@@ -5469,7 +5469,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
             if (token.value == TOKsemicolon)
                 nextToken();
             else
-                error("terminating ';' required after do-while statement");
+                error("terminating `;` required after do-while statement");
             s = new DoStatement(loc, body, condition, token.loc);
             break;
         }
@@ -6052,7 +6052,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
 
                         if (toklist || label)
                         {
-                            error("asm statements must end in ';'");
+                            error("asm statements must end in `;`");
                         }
                         break;
 
@@ -6078,7 +6078,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
 
                     case TOKeof:
                         /* { */
-                        error("matching '}' expected, not end of file");
+                        error("matching `}` expected, not end of file");
                         goto Lerror;
                         /* fall through */
 
@@ -6116,7 +6116,7 @@ Statement *Parser::parseStatement(int flags, const utf8_t** endPtr, Loc *pEndloc
         }
 
         default:
-            error("found '%s' instead of statement", token.toChars());
+            error("found `%s` instead of statement", token.toChars());
             goto Lerror;
 
         Lerror:
@@ -6142,14 +6142,14 @@ void Parser::check(TOK value)
 void Parser::check(Loc loc, TOK value)
 {
     if (token.value != value)
-        error(loc, "found '%s' when expecting '%s'", token.toChars(), Token::toChars(value));
+        error(loc, "found `%s` when expecting `%s`", token.toChars(), Token::toChars(value));
     nextToken();
 }
 
 void Parser::check(TOK value, const char *string)
 {
     if (token.value != value)
-        error("found '%s' when expecting '%s' following %s",
+        error("found `%s` when expecting `%s` following %s",
             token.toChars(), Token::toChars(value), string);
     nextToken();
 }
@@ -6992,7 +6992,7 @@ Expression *Parser::parsePrimaryExp()
 
         case TOKdollar:
             if (!inBrackets)
-                error("'$' is valid only inside [] of index or slice");
+                error("`$` is valid only inside [] of index or slice");
             e = new DollarExp(loc);
             nextToken();
             break;
@@ -7148,7 +7148,7 @@ Expression *Parser::parsePrimaryExp()
                 {
                     if (token.postfix)
                     {   if (token.postfix != postfix)
-                            error("mismatched string literal postfixes '%c' and '%c'", postfix, token.postfix);
+                            error("mismatched string literal postfixes `'%c'` and `'%c'`", postfix, token.postfix);
                         postfix = token.postfix;
                     }
 
@@ -7204,7 +7204,7 @@ Expression *Parser::parsePrimaryExp()
             }
             check(TOKdot, t->toChars());
             if (token.value != TOKidentifier)
-            {   error("found '%s' when expecting identifier following '%s.'", token.toChars(), t->toChars());
+            {   error("found `%s` when expecting identifier following `%s.`", token.toChars(), t->toChars());
                 goto Lerr;
             }
             e = typeDotIdExp(loc, t, token.ident);
@@ -7418,7 +7418,7 @@ Expression *Parser::parsePrimaryExp()
                         e = parseAssignExp();
                     }
                     else if (keys)
-                    {   error("'key:value' expected for associative array literal");
+                    {   error("`key:value` expected for associative array literal");
                         delete keys;
                         keys = NULL;
                     }
@@ -7447,7 +7447,7 @@ Expression *Parser::parsePrimaryExp()
         }
 
         default:
-            error("expression expected, not '%s'", token.toChars());
+            error("expression expected, not `%s`", token.toChars());
         Lerr:
             // Anything for e, as long as it's not NULL
             e = new IntegerExp(loc, 0, Type::tint32);
@@ -7487,7 +7487,7 @@ Expression *Parser::parsePostExp(Expression *e)
                     continue;
                 }
                 else
-                    error("identifier expected following '.', not '%s'", token.toChars());
+                    error("identifier expected following `.`, not `%s`", token.toChars());
                 break;
 
             case TOKplusplus:

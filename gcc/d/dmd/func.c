@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -22,275 +22,20 @@
 #include "id.h"
 #include "module.h"
 #include "statement.h"
+#include "statement_rewrite_walker.h"
 #include "template.h"
 #include "hdrgen.h"
 #include "target.h"
 #include "parse.h"
 #include "root/rmem.h"
 #include "visitor.h"
-#include "objc.h"
 
-Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis);
-bool checkReturnEscape(Scope *sc, Expression *e, bool gag);
-bool checkReturnEscapeRef(Scope *sc, Expression *e, bool gag);
 bool checkNestedRef(Dsymbol *s, Dsymbol *p);
-Statement *semantic(Statement *s, Scope *sc);
-void semantic(Catch *c, Scope *sc);
-Expression *resolve(Loc loc, Scope *sc, Dsymbol *s, bool hasOverloads);
-Expression *semantic(Expression *e, Scope *sc);
 int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow);
 TypeIdentifier *getThrowable();
 
-void MODtoBuffer(OutBuffer *buf, MOD mod);
-char *MODtoChars(MOD mod);
 bool MODimplicitConv(MOD modfrom, MOD modto);
 MATCH MODmethodConv(MOD modfrom, MOD modto);
-void allocFieldinit(Scope *sc, size_t dim);
-void freeFieldinit(Scope *sc);
-Objc *objc();
-
-
-/* A visitor to walk entire statements and provides ability to replace any sub-statements.
- */
-class StatementRewriteWalker : public Visitor
-{
-    /* Point the currently visited statement.
-     * By using replaceCurrent() method, you can replace AST during walking.
-     */
-    Statement **ps;
-public:
-    void visitStmt(Statement *&s) { ps = &s; s->accept(this); }
-    void replaceCurrent(Statement *s) { *ps = s; }
-
-    void visit(ErrorStatement *) {  }
-    void visit(PeelStatement *s)
-    {
-        if (s->s)
-            visitStmt(s->s);
-    }
-    void visit(ExpStatement *) {  }
-    void visit(DtorExpStatement *) {  }
-    void visit(CompileStatement *) {  }
-    void visit(CompoundStatement *s)
-    {
-        if (s->statements && s->statements->length)
-        {
-            for (size_t i = 0; i < s->statements->length; i++)
-            {
-                if ((*s->statements)[i])
-                    visitStmt((*s->statements)[i]);
-            }
-        }
-    }
-    void visit(CompoundDeclarationStatement *s) { visit((CompoundStatement *)s); }
-    void visit(UnrolledLoopStatement *s)
-    {
-        if (s->statements && s->statements->length)
-        {
-            for (size_t i = 0; i < s->statements->length; i++)
-            {
-                if ((*s->statements)[i])
-                    visitStmt((*s->statements)[i]);
-            }
-        }
-    }
-    void visit(ScopeStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(WhileStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(DoStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(ForStatement *s)
-    {
-        if (s->_init)
-            visitStmt(s->_init);
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(ForeachStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(ForeachRangeStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(IfStatement *s)
-    {
-        if (s->ifbody)
-            visitStmt(s->ifbody);
-        if (s->elsebody)
-            visitStmt(s->elsebody);
-    }
-    void visit(ConditionalStatement *) {  }
-    void visit(PragmaStatement *) {  }
-    void visit(StaticAssertStatement *) {  }
-    void visit(SwitchStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(CaseStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(CaseRangeStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(DefaultStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(GotoDefaultStatement *) {  }
-    void visit(GotoCaseStatement *) {  }
-    void visit(SwitchErrorStatement *) {  }
-    void visit(ReturnStatement *) {  }
-    void visit(BreakStatement *) {  }
-    void visit(ContinueStatement *) {  }
-    void visit(SynchronizedStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(WithStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-    }
-    void visit(TryCatchStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-        if (s->catches && s->catches->length)
-        {
-            for (size_t i = 0; i < s->catches->length; i++)
-            {
-                Catch *c = (*s->catches)[i];
-                if (c && c->handler)
-                    visitStmt(c->handler);
-            }
-        }
-    }
-    void visit(TryFinallyStatement *s)
-    {
-        if (s->_body)
-            visitStmt(s->_body);
-        if (s->finalbody)
-            visitStmt(s->finalbody);
-    }
-    void visit(ScopeGuardStatement *) {  }
-    void visit(ThrowStatement *) {  }
-    void visit(DebugStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(GotoStatement *) {  }
-    void visit(LabelStatement *s)
-    {
-        if (s->statement)
-            visitStmt(s->statement);
-    }
-    void visit(AsmStatement *) {  }
-    void visit(ImportStatement *) {  }
-};
-
-/* Tweak all return statements and dtor call for nrvo_var, for correct NRVO.
- */
-class NrvoWalker : public StatementRewriteWalker
-{
-public:
-    FuncDeclaration *fd;
-    Scope *sc;
-
-    void visit(ReturnStatement *s)
-    {
-        // See if all returns are instead to be replaced with a goto returnLabel;
-        if (fd->returnLabel)
-        {
-            /* Rewrite:
-             *  return exp;
-             * as:
-             *  vresult = exp; goto Lresult;
-             */
-            GotoStatement *gs = new GotoStatement(s->loc, Id::returnLabel);
-            gs->label = fd->returnLabel;
-
-            Statement *s1 = gs;
-            if (s->exp)
-                s1 = new CompoundStatement(s->loc, new ExpStatement(s->loc, s->exp), gs);
-
-            replaceCurrent(s1);
-        }
-    }
-    void visit(TryFinallyStatement *s)
-    {
-        DtorExpStatement *des;
-        if (fd->nrvo_can &&
-            s->finalbody && (des = s->finalbody->isDtorExpStatement()) != NULL &&
-            fd->nrvo_var == des->var)
-        {
-            if (!(global.params.useExceptions && ClassDeclaration::throwable))
-            {
-                /* Don't need to call destructor at all, since it is nrvo
-                 */
-                replaceCurrent(s->_body);
-                s->_body->accept(this);
-                return;
-            }
-
-            /* Normally local variable dtors are called regardless exceptions.
-             * But for nrvo_var, its dtor should be called only when exception is thrown.
-             *
-             * Rewrite:
-             *      try { s->body; } finally { nrvo_var->edtor; }
-             *      // equivalent with:
-             *      //    s->body; scope(exit) nrvo_var->edtor;
-             * as:
-             *      try { s->body; } catch(Throwable __o) { nrvo_var->edtor; throw __o; }
-             *      // equivalent with:
-             *      //    s->body; scope(failure) nrvo_var->edtor;
-             */
-            Statement *sexception = new DtorExpStatement(Loc(), fd->nrvo_var->edtor, fd->nrvo_var);
-            Identifier *id = Identifier::generateId("__o");
-
-            Statement *handler = new PeelStatement(sexception);
-            if (blockExit(sexception, fd, false) & BEfallthru)
-            {
-                ThrowStatement *ts = new ThrowStatement(Loc(), new IdentifierExp(Loc(), id));
-                ts->internalThrow = true;
-                handler = new CompoundStatement(Loc(), handler, ts);
-            }
-
-            Catches *catches = new Catches();
-            Catch *ctch = new Catch(Loc(), getThrowable(), id, handler);
-            ctch->internalCatch = true;
-            ::semantic(ctch, sc);     // Run semantic to resolve identifier '__o'
-            catches->push(ctch);
-
-            Statement *s2 = new TryCatchStatement(Loc(), s->_body, catches);
-            replaceCurrent(s2);
-            s2->accept(this);
-        }
-        else
-            StatementRewriteWalker::visit(s);
-    }
-};
 
 /***********************************************************
  * Tuple of result identifier (possibly null) and statement.
@@ -416,69 +161,8 @@ Dsymbol *FuncDeclaration::syntaxCopy(Dsymbol *s)
     return f;
 }
 
-/**********************************
- * Decide if attributes for this function can be inferred from examining
- * the function body.
- * Returns:
- *  true if can
- */
-static bool canInferAttributes(FuncDeclaration *fd, Scope *sc)
-{
-    if (!fd->fbody)
-        return false;
-
-    if (fd->isVirtualMethod())
-        return false;               // since they may be overridden
-
-    if (sc->func &&
-        /********** this is for backwards compatibility for the moment ********/
-        (!fd->isMember() || (sc->func->isSafeBypassingInference() && !fd->isInstantiated())))
-        return true;
-
-    if (fd->isFuncLiteralDeclaration() ||               // externs are not possible with literals
-        (fd->storage_class & STCinference) ||           // do attribute inference
-        (fd->inferRetType && !fd->isCtorDeclaration()))
-        return true;
-
-    if (fd->isInstantiated())
-    {
-        TemplateInstance *ti = fd->parent->isTemplateInstance();
-        if (ti == NULL || ti->isTemplateMixin() || ti->tempdecl->ident == fd->ident)
-            return true;
-    }
-
-    return false;
-}
-
-/*****************************************
- * Initialize for inferring the attributes of this function.
- */
-static void initInferAttributes(FuncDeclaration *fd)
-{
-    //printf("initInferAttributes() for %s\n", toPrettyChars());
-    TypeFunction *tf = fd->type->toTypeFunction();
-    if (tf->purity == PUREimpure) // purity not specified
-        fd->flags |= FUNCFLAGpurityInprocess;
-
-    if (tf->trust == TRUSTdefault)
-        fd->flags |= FUNCFLAGsafetyInprocess;
-
-    if (!tf->isnothrow)
-        fd->flags |= FUNCFLAGnothrowInprocess;
-
-    if (!tf->isnogc)
-        fd->flags |= FUNCFLAGnogcInprocess;
-
-    if (!fd->isVirtual() || fd->introducing)
-        fd->flags |= FUNCFLAGreturnInprocess;
-
-    // Initialize for inferring STCscope
-    if (global.params.vsafe)
-        fd->flags |= FUNCFLAGinferScope;
-}
-
 // Returns true if a contract can appear without a function body.
-static bool allowsContractWithoutBody(FuncDeclaration *funcdecl)
+bool allowsContractWithoutBody(FuncDeclaration *funcdecl)
 {
     assert(!funcdecl->fbody);
 
@@ -499,824 +183,6 @@ static bool allowsContractWithoutBody(FuncDeclaration *funcdecl)
     return true;
 }
 
-// Do the semantic analysis on the external interface to the function.
-
-void FuncDeclaration::semantic(Scope *sc)
-{
-    TypeFunction *f;
-    AggregateDeclaration *ad;
-    InterfaceDeclaration *id;
-
-    if (semanticRun != PASSinit && isFuncLiteralDeclaration())
-    {
-        /* Member functions that have return types that are
-         * forward references can have semantic() run more than
-         * once on them.
-         * See test\interface2.d, test20
-         */
-        return;
-    }
-
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    assert(semanticRun <= PASSsemantic);
-    semanticRun = PASSsemantic;
-
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    if (!sc || errors)
-        return;
-
-    parent = sc->parent;
-    Dsymbol *parent = toParent();
-
-    foverrides.setDim(0);       // reset in case semantic() is being retried for this function
-
-    storage_class |= sc->stc & ~STCref;
-    ad = isThis();
-    // Don't nest structs b/c of generated methods which should not access the outer scopes.
-    // https://issues.dlang.org/show_bug.cgi?id=16627
-    if (ad && !generated)
-    {
-        storage_class |= ad->storage_class & (STC_TYPECTOR | STCsynchronized);
-        ad->makeNested();
-    }
-    if (sc->func)
-        storage_class |= sc->func->storage_class & STCdisable;
-    // Remove prefix storage classes silently.
-    if ((storage_class & STC_TYPECTOR) && !(ad || isNested()))
-        storage_class &= ~STC_TYPECTOR;
-
-    //printf("function storage_class = x%llx, sc->stc = x%llx, %x\n", storage_class, sc->stc, Declaration::isFinal());
-
-    FuncLiteralDeclaration *fld = isFuncLiteralDeclaration();
-    if (fld && fld->treq)
-    {
-        Type *treq = fld->treq;
-        assert(treq->nextOf()->ty == Tfunction);
-        if (treq->ty == Tdelegate)
-            fld->tok = TOKdelegate;
-        else if (treq->ty == Tpointer && treq->nextOf()->ty == Tfunction)
-            fld->tok = TOKfunction;
-        else
-            assert(0);
-        linkage = treq->nextOf()->toTypeFunction()->linkage;
-    }
-    else
-        linkage = sc->linkage;
-    inlining = sc->inlining;
-    protection = sc->protection;
-    userAttribDecl = sc->userAttribDecl;
-
-    if (!originalType)
-        originalType = type->syntaxCopy();
-    if (type->ty != Tfunction)
-    {
-        if (type->ty != Terror)
-        {
-            error("%s must be a function instead of %s", toChars(), type->toChars());
-            type = Type::terror;
-        }
-        errors = true;
-        return;
-    }
-    if (!type->deco)
-    {
-        sc = sc->push();
-        sc->stc |= storage_class & (STCdisable | STCdeprecated);  // forward to function type
-        TypeFunction *tf = type->toTypeFunction();
-
-        if (sc->func)
-        {
-            /* If the nesting parent is pure without inference,
-             * then this function defaults to pure too.
-             *
-             *  auto foo() pure {
-             *    auto bar() {}     // become a weak purity funciton
-             *    class C {         // nested class
-             *      auto baz() {}   // become a weak purity funciton
-             *    }
-             *
-             *    static auto boo() {}   // typed as impure
-             *    // Even though, boo cannot call any impure functions.
-             *    // See also Expression::checkPurity().
-             *  }
-             */
-            if (tf->purity == PUREimpure && (isNested() || isThis()))
-            {
-                FuncDeclaration *fd = NULL;
-                for (Dsymbol *p = toParent2(); p; p = p->toParent2())
-                {
-                    if (AggregateDeclaration *adx = p->isAggregateDeclaration())
-                    {
-                        if (adx->isNested())
-                            continue;
-                        break;
-                    }
-                    if ((fd = p->isFuncDeclaration()) != NULL)
-                        break;
-                }
-
-                /* If the parent's purity is inferred, then this function's purity needs
-                 * to be inferred first.
-                 */
-                if (fd && fd->isPureBypassingInference() >= PUREweak &&
-                    !isInstantiated())
-                {
-                    tf->purity = PUREfwdref;            // default to pure
-                }
-            }
-        }
-
-        if (tf->isref)      sc->stc |= STCref;
-        if (tf->isscope)    sc->stc |= STCscope;
-        if (tf->isnothrow)  sc->stc |= STCnothrow;
-        if (tf->isnogc)     sc->stc |= STCnogc;
-        if (tf->isproperty) sc->stc |= STCproperty;
-        if (tf->purity == PUREfwdref)   sc->stc |= STCpure;
-        if (tf->trust != TRUSTdefault)
-            sc->stc &= ~(STCsafe | STCsystem | STCtrusted);
-        if (tf->trust == TRUSTsafe)     sc->stc |= STCsafe;
-        if (tf->trust == TRUSTsystem)   sc->stc |= STCsystem;
-        if (tf->trust == TRUSTtrusted)  sc->stc |= STCtrusted;
-
-        if (isCtorDeclaration())
-        {
-            sc->flags |= SCOPEctor;
-
-            Type *tret = ad->handleType();
-            assert(tret);
-            tret = tret->addStorageClass(storage_class | sc->stc);
-            tret = tret->addMod(type->mod);
-            tf->next = tret;
-
-            if (ad->isStructDeclaration())
-                sc->stc |= STCref;
-        }
-
-        // 'return' on a non-static class member function implies 'scope' as well
-        if (ad && ad->isClassDeclaration() && (tf->isreturn || sc->stc & STCreturn) && !(sc->stc & STCstatic))
-            sc->stc |= STCscope;
-
-        // If 'this' has no pointers, remove 'scope' as it has no meaning
-        if (sc->stc & STCscope && ad && ad->isStructDeclaration() && !ad->type->hasPointers())
-        {
-            sc->stc &= ~STCscope;
-            tf->isscope = false;
-        }
-
-        sc->linkage = linkage;
-
-        if (!tf->isNaked() && !(isThis() || isNested()))
-        {
-            OutBuffer buf;
-            MODtoBuffer(&buf, tf->mod);
-            error("without 'this' cannot be %s", buf.peekChars());
-            tf->mod = 0;    // remove qualifiers
-        }
-
-        /* Apply const, immutable, wild and shared storage class
-         * to the function type. Do this before type semantic.
-         */
-        StorageClass stc = storage_class;
-        if (type->isImmutable())
-            stc |= STCimmutable;
-        if (type->isConst())
-            stc |= STCconst;
-        if (type->isShared() || storage_class & STCsynchronized)
-            stc |= STCshared;
-        if (type->isWild())
-            stc |= STCwild;
-        switch (stc & STC_TYPECTOR)
-        {
-            case STCimmutable:
-            case STCimmutable | STCconst:
-            case STCimmutable | STCwild:
-            case STCimmutable | STCwild | STCconst:
-            case STCimmutable | STCshared:
-            case STCimmutable | STCshared | STCconst:
-            case STCimmutable | STCshared | STCwild:
-            case STCimmutable | STCshared | STCwild | STCconst:
-                // Don't use immutableOf(), as that will do a merge()
-                type = type->makeImmutable();
-                break;
-
-            case STCconst:
-                type = type->makeConst();
-                break;
-
-            case STCwild:
-                type = type->makeWild();
-                break;
-
-            case STCwild | STCconst:
-                type = type->makeWildConst();
-                break;
-
-            case STCshared:
-                type = type->makeShared();
-                break;
-
-            case STCshared | STCconst:
-                type = type->makeSharedConst();
-                break;
-
-            case STCshared | STCwild:
-                type = type->makeSharedWild();
-                break;
-
-            case STCshared | STCwild | STCconst:
-                type = type->makeSharedWildConst();
-                break;
-
-            case 0:
-                break;
-
-            default:
-                assert(0);
-        }
-
-        type = type->semantic(loc, sc);
-        sc = sc->pop();
-    }
-    if (type->ty != Tfunction)
-    {
-        if (type->ty != Terror)
-        {
-            error("%s must be a function instead of %s", toChars(), type->toChars());
-            type = Type::terror;
-        }
-        errors = true;
-        return;
-    }
-    else
-    {
-        // Merge back function attributes into 'originalType'.
-        // It's used for mangling, ddoc, and json output.
-        TypeFunction *tfo = originalType->toTypeFunction();
-        TypeFunction *tfx = type->toTypeFunction();
-        tfo->mod        = tfx->mod;
-        tfo->isscope    = tfx->isscope;
-        tfo->isscopeinferred = tfx->isscopeinferred;
-        tfo->isref      = tfx->isref;
-        tfo->isnothrow  = tfx->isnothrow;
-        tfo->isnogc     = tfx->isnogc;
-        tfo->isproperty = tfx->isproperty;
-        tfo->purity     = tfx->purity;
-        tfo->trust      = tfx->trust;
-
-        storage_class &= ~(STC_TYPECTOR | STC_FUNCATTR);
-    }
-
-    f = (TypeFunction *)type;
-
-    if ((storage_class & STCauto) && !f->isref && !inferRetType)
-        error("storage class 'auto' has no effect if return type is not inferred");
-    /* Functions can only be 'scope' if they have a 'this'
-     */
-    if (f->isscope && !isNested() && !ad)
-    {
-        error("functions cannot be scope");
-    }
-
-    if (f->isreturn && !needThis() && !isNested())
-    {
-        /* Non-static nested functions have a hidden 'this' pointer to which
-         * the 'return' applies
-         */
-        error("static member has no 'this' to which 'return' can apply");
-    }
-
-    if (isAbstract() && !isVirtual())
-    {
-        const char *sfunc;
-        if (isStatic())
-            sfunc = "static";
-        else if (protection.kind == Prot::private_ || protection.kind == Prot::package_)
-            sfunc = protectionToChars(protection.kind);
-        else
-            sfunc = "non-virtual";
-        error("%s functions cannot be abstract", sfunc);
-    }
-
-    if (isOverride() && !isVirtual())
-    {
-        Prot::Kind kind = prot().kind;
-        if ((kind == Prot::private_ || kind == Prot::package_) && isMember())
-            error("%s method is not virtual and cannot override", protectionToChars(kind));
-        else
-            error("cannot override a non-virtual function");
-    }
-
-    if (isAbstract() && isFinalFunc())
-        error("cannot be both final and abstract");
-
-    id = parent->isInterfaceDeclaration();
-    if (id)
-    {
-        storage_class |= STCabstract;
-
-        if (isCtorDeclaration() ||
-            isPostBlitDeclaration() ||
-            isDtorDeclaration() ||
-            isInvariantDeclaration() ||
-            isNewDeclaration() || isDelete())
-            error("constructors, destructors, postblits, invariants, new and delete functions are not allowed in interface %s", id->toChars());
-        if (fbody && isVirtual())
-            error("function body only allowed in final functions in interface %s", id->toChars());
-    }
-
-    if (UnionDeclaration *ud = parent->isUnionDeclaration())
-    {
-        if (isPostBlitDeclaration() ||
-            isDtorDeclaration() ||
-            isInvariantDeclaration())
-            error("destructors, postblits and invariants are not allowed in union %s", ud->toChars());
-    }
-
-    if (parent->isStructDeclaration())
-    {
-        if (isCtorDeclaration())
-        {
-            goto Ldone;
-        }
-    }
-
-    if (ClassDeclaration *cd = parent->isClassDeclaration())
-    {
-        if (isCtorDeclaration())
-        {
-            goto Ldone;
-        }
-
-        if (storage_class & STCabstract)
-            cd->isabstract = ABSyes;
-
-        // if static function, do not put in vtbl[]
-        if (!isVirtual())
-        {
-            //printf("\tnot virtual\n");
-            goto Ldone;
-        }
-        // Suppress further errors if the return type is an error
-        if (type->nextOf() == Type::terror)
-            goto Ldone;
-
-        bool may_override = false;
-        for (size_t i = 0; i < cd->baseclasses->length; i++)
-        {
-            BaseClass *b = (*cd->baseclasses)[i];
-            ClassDeclaration *cbd = b->type->toBasetype()->isClassHandle();
-            if (!cbd)
-                continue;
-            for (size_t j = 0; j < cbd->vtbl.length; j++)
-            {
-                FuncDeclaration *f2 = cbd->vtbl[j]->isFuncDeclaration();
-                if (!f2 || f2->ident != ident)
-                    continue;
-                if (cbd->parent && cbd->parent->isTemplateInstance())
-                {
-                    if (!f2->functionSemantic())
-                        goto Ldone;
-                }
-                may_override = true;
-            }
-        }
-        if (may_override && type->nextOf() == NULL)
-        {
-            /* If same name function exists in base class but 'this' is auto return,
-             * cannot find index of base class's vtbl[] to override.
-             */
-            error("return type inference is not supported if may override base class function");
-        }
-
-        /* Find index of existing function in base class's vtbl[] to override
-         * (the index will be the same as in cd's current vtbl[])
-         */
-        int vi = cd->baseClass ? findVtblIndex((Dsymbols*)&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.length)
-                               : -1;
-
-        bool doesoverride = false;
-        switch (vi)
-        {
-            case -1:
-        Lintro:
-                /* Didn't find one, so
-                 * This is an 'introducing' function which gets a new
-                 * slot in the vtbl[].
-                 */
-
-                // Verify this doesn't override previous final function
-                if (cd->baseClass)
-                {
-                    Dsymbol *s = cd->baseClass->search(loc, ident);
-                    if (s)
-                    {
-                        FuncDeclaration *f2 = s->isFuncDeclaration();
-                        if (f2)
-                        {
-                            f2 = f2->overloadExactMatch(type);
-                            if (f2 && f2->isFinalFunc() && f2->prot().kind != Prot::private_)
-                                error("cannot override final function %s", f2->toPrettyChars());
-                        }
-                    }
-                }
-
-                /* These quirky conditions mimic what VC++ appears to do
-                 */
-                if (global.params.mscoff && cd->isCPPclass() &&
-                    cd->baseClass && cd->baseClass->vtbl.length)
-                {
-                    /* if overriding an interface function, then this is not
-                     * introducing and don't put it in the class vtbl[]
-                     */
-                    interfaceVirtual = overrideInterface();
-                    if (interfaceVirtual)
-                    {
-                        //printf("\tinterface function %s\n", toChars());
-                        cd->vtblFinal.push(this);
-                        goto Linterfaces;
-                    }
-                }
-
-                if (isFinalFunc())
-                {
-                    // Don't check here, as it may override an interface function
-                    //if (isOverride())
-                        //error("is marked as override, but does not override any function");
-                    cd->vtblFinal.push(this);
-                }
-                else
-                {
-                    //printf("\tintroducing function %s\n", toChars());
-                    introducing = 1;
-                    if (cd->isCPPclass() && target.cpp.reverseOverloads)
-                    {
-                        // with dmc, overloaded functions are grouped and in reverse order
-                        vtblIndex = (int)cd->vtbl.length;
-                        for (int i = 0; i < (int)cd->vtbl.length; i++)
-                        {
-                            if (cd->vtbl[i]->ident == ident && cd->vtbl[i]->parent == parent)
-                            {
-                                vtblIndex = (int)i;
-                                break;
-                            }
-                        }
-                        // shift all existing functions back
-                        for (int i = (int)cd->vtbl.length; i > vtblIndex; i--)
-                        {
-                            FuncDeclaration *fd = cd->vtbl[i-1]->isFuncDeclaration();
-                            assert(fd);
-                            fd->vtblIndex++;
-                        }
-                        cd->vtbl.insert(vtblIndex, this);
-                    }
-                    else
-                    {
-                        // Append to end of vtbl[]
-                        vi = (int)cd->vtbl.length;
-                        cd->vtbl.push(this);
-                        vtblIndex = vi;
-                    }
-                }
-                break;
-
-            case -2:
-                // can't determine because of forward references
-                errors = true;
-                return;
-
-            default:
-            {
-                FuncDeclaration *fdv = cd->baseClass->vtbl[vi]->isFuncDeclaration();
-                FuncDeclaration *fdc = cd->vtbl[vi]->isFuncDeclaration();
-                // This function is covariant with fdv
-
-                if (fdc == this)
-                {
-                    doesoverride = true;
-                    break;
-                }
-
-                if (fdc->toParent() == parent)
-                {
-                    //printf("vi = %d,\tthis = %p %s %s @ [%s]\n\tfdc  = %p %s %s @ [%s]\n\tfdv  = %p %s %s @ [%s]\n",
-                    //        vi, this, this->toChars(), this->type->toChars(), this->loc.toChars(),
-                    //            fdc,  fdc ->toChars(), fdc ->type->toChars(), fdc ->loc.toChars(),
-                    //            fdv,  fdv ->toChars(), fdv ->type->toChars(), fdv ->loc.toChars());
-
-                    // fdc overrides fdv exactly, then this introduces new function.
-                    if (fdc->type->mod == fdv->type->mod && this->type->mod != fdv->type->mod)
-                        goto Lintro;
-                }
-
-                // This function overrides fdv
-                if (fdv->isFinalFunc())
-                    error("cannot override final function %s", fdv->toPrettyChars());
-
-                if (!isOverride())
-                {
-                    if (fdv->isFuture())
-                    {
-                        ::deprecation(loc, "@__future base class method %s is being overridden by %s; rename the latter",
-                            fdv->toPrettyChars(), toPrettyChars());
-                        // Treat 'this' as an introducing function, giving it a separate hierarchy in the vtbl[]
-                        goto Lintro;
-                    }
-                    else
-                    {
-                        int vi2 = findVtblIndex(&cd->baseClass->vtbl, (int)cd->baseClass->vtbl.length, false);
-                        if (vi2 < 0)
-                            // https://issues.dlang.org/show_bug.cgi?id=17349
-                            ::deprecation(loc, "cannot implicitly override base class method `%s` with `%s`; add `override` attribute",
-                                fdv->toPrettyChars(), toPrettyChars());
-                        else
-                            ::error(loc, "implicitly overriding base class method %s with %s deprecated; add 'override' attribute",
-                                fdv->toPrettyChars(), toPrettyChars());
-                    }
-                }
-
-                doesoverride = true;
-                if (fdc->toParent() == parent)
-                {
-                    // If both are mixins, or both are not, then error.
-                    // If either is not, the one that is not overrides the other.
-                    bool thismixin = this->parent->isClassDeclaration() != NULL;
-                    bool fdcmixin = fdc->parent->isClassDeclaration() != NULL;
-                    if (thismixin == fdcmixin)
-                    {
-                        error("multiple overrides of same function");
-                    }
-                    else if (!thismixin)    // fdc overrides fdv
-                    {
-                        // this doesn't override any function
-                        break;
-                    }
-                }
-                cd->vtbl[vi] = this;
-                vtblIndex = vi;
-
-                /* Remember which functions this overrides
-                 */
-                foverrides.push(fdv);
-
-                /* This works by whenever this function is called,
-                 * it actually returns tintro, which gets dynamically
-                 * cast to type. But we know that tintro is a base
-                 * of type, so we could optimize it by not doing a
-                 * dynamic cast, but just subtracting the isBaseOf()
-                 * offset if the value is != null.
-                 */
-
-                if (fdv->tintro)
-                    tintro = fdv->tintro;
-                else if (!type->equals(fdv->type))
-                {
-                    /* Only need to have a tintro if the vptr
-                     * offsets differ
-                     */
-                    int offset;
-                    if (fdv->type->nextOf()->isBaseOf(type->nextOf(), &offset))
-                    {
-                        tintro = fdv->type;
-                    }
-                }
-                break;
-            }
-        }
-
-        /* Go through all the interface bases.
-         * If this function is covariant with any members of those interface
-         * functions, set the tintro.
-         */
-    Linterfaces:
-        for (size_t i = 0; i < cd->interfaces.length; i++)
-        {
-            BaseClass *b = cd->interfaces.ptr[i];
-            vi = findVtblIndex((Dsymbols *)&b->sym->vtbl, (int)b->sym->vtbl.length);
-            switch (vi)
-            {
-                case -1:
-                    break;
-
-                case -2:
-                    // can't determine because of forward references
-                    errors = true;
-                    return;
-
-                default:
-                {
-                    FuncDeclaration *fdv = (FuncDeclaration *)b->sym->vtbl[vi];
-                    Type *ti = NULL;
-
-                    /* Remember which functions this overrides
-                     */
-                    foverrides.push(fdv);
-
-                    /* Should we really require 'override' when implementing
-                     * an interface function?
-                     */
-                    //if (!isOverride())
-                        //warning(loc, "overrides base class function %s, but is not marked with 'override'", fdv->toPrettyChars());
-
-                    if (fdv->tintro)
-                        ti = fdv->tintro;
-                    else if (!type->equals(fdv->type))
-                    {
-                        /* Only need to have a tintro if the vptr
-                         * offsets differ
-                         */
-                        int offset;
-                        if (fdv->type->nextOf()->isBaseOf(type->nextOf(), &offset))
-                        {
-                            ti = fdv->type;
-                        }
-                    }
-                    if (ti)
-                    {
-                        if (tintro)
-                        {
-                            if (!tintro->nextOf()->equals(ti->nextOf()) &&
-                                !tintro->nextOf()->isBaseOf(ti->nextOf(), NULL) &&
-                                !ti->nextOf()->isBaseOf(tintro->nextOf(), NULL))
-                            {
-                                error("incompatible covariant types %s and %s", tintro->toChars(), ti->toChars());
-                            }
-                        }
-                        tintro = ti;
-                    }
-                    goto L2;
-                }
-            }
-        }
-
-        if (!doesoverride && isOverride() && (type->nextOf() || !may_override))
-        {
-            BaseClass *bc = NULL;
-            Dsymbol *s = NULL;
-            for (size_t i = 0; i < cd->baseclasses->length; i++)
-            {
-                bc = (*cd->baseclasses)[i];
-                s = bc->sym->search_correct(ident);
-                if (s) break;
-            }
-
-            if (s)
-                error("does not override any function, did you mean to override '%s%s'?",
-                    bc->sym->isCPPclass() ? "extern (C++) " : "", s->toPrettyChars());
-            else
-                error("does not override any function");
-        }
-
-    L2: ;
-
-        /* Go through all the interface bases.
-         * Disallow overriding any final functions in the interface(s).
-         */
-        for (size_t i = 0; i < cd->interfaces.length; i++)
-        {
-            BaseClass *b = cd->interfaces.ptr[i];
-            if (b->sym)
-            {
-                Dsymbol *s = search_function(b->sym, ident);
-                if (s)
-                {
-                    FuncDeclaration *f2 = s->isFuncDeclaration();
-                    if (f2)
-                    {
-                        f2 = f2->overloadExactMatch(type);
-                        if (f2 && f2->isFinalFunc() && f2->prot().kind != Prot::private_)
-                            error("cannot override final function %s.%s", b->sym->toChars(), f2->toPrettyChars());
-                    }
-                }
-            }
-        }
-
-        if (isOverride())
-        {
-            if (storage_class & STCdisable)
-                deprecation("overridden functions cannot be annotated @disable");
-            if (isDeprecated())
-                deprecation("deprecated functions cannot be annotated @disable");
-        }
-    }
-    else if (isOverride() && !parent->isTemplateInstance())
-        error("override only applies to class member functions");
-
-    // Reflect this->type to f because it could be changed by findVtblIndex
-    f = type->toTypeFunction();
-
-Ldone:
-    /* Contracts can only appear without a body when they are virtual interface functions
-     */
-    if (!fbody && !allowsContractWithoutBody(this))
-        error("in and out contracts can only appear without a body when they are virtual interface functions or abstract");
-
-    /* Do not allow template instances to add virtual functions
-     * to a class.
-     */
-    if (isVirtual())
-    {
-        TemplateInstance *ti = parent->isTemplateInstance();
-        if (ti)
-        {
-            // Take care of nested templates
-            while (1)
-            {
-                TemplateInstance *ti2 = ti->tempdecl->parent->isTemplateInstance();
-                if (!ti2)
-                    break;
-                ti = ti2;
-            }
-
-            // If it's a member template
-            ClassDeclaration *cd = ti->tempdecl->isClassMember();
-            if (cd)
-            {
-                error("cannot use template to add virtual function to class '%s'", cd->toChars());
-            }
-        }
-    }
-
-    if (isMain())
-        checkDmain();       // Check main() parameters and return type
-
-    /* Purity and safety can be inferred for some functions by examining
-     * the function body.
-     */
-    if (canInferAttributes(this, sc))
-        initInferAttributes(this);
-
-    Module::dprogress++;
-    semanticRun = PASSsemanticdone;
-
-    /* Save scope for possible later use (if we need the
-     * function internals)
-     */
-    _scope = sc->copy();
-    _scope->setNoFree();
-
-    static bool printedMain = false;  // semantic might run more than once
-    if (global.params.verbose && !printedMain)
-    {
-        const char *type = isMain() ? "main" : isWinMain() ? "winmain" : isDllMain() ? "dllmain" : (const char *)NULL;
-        Module *mod = sc->_module;
-
-        if (type && mod)
-        {
-            printedMain = true;
-            const char *name = mod->srcfile->toChars();
-            const char *path = FileName::searchPath(global.path, name, true);
-            message("entry     %-10s\t%s", type, path ? path : name);
-        }
-    }
-
-    if (fbody && isMain() && sc->_module->isRoot())
-        Compiler::genCmain(sc);
-
-    assert(type->ty != Terror || errors);
-
-    // semantic for parameters' UDAs
-    const size_t nparams = f->parameterList.length();
-    for (size_t i = 0; i < nparams; i++)
-    {
-        Parameter *param = f->parameterList[i];
-        if (param && param->userAttribDecl)
-            param->userAttribDecl->semantic(sc);
-    }
-}
-
-void FuncDeclaration::semantic2(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic2done)
-        return;
-    assert(semanticRun <= PASSsemantic2);
-    semanticRun = PASSsemantic2;
-
-    objc()->setSelector(this, sc);
-    objc()->validateSelector(this);
-
-    if (parent->isClassDeclaration())
-    {
-        objc()->checkLinkage(this);
-    }
-    if (!type || type->ty != Tfunction)
-        return;
-    TypeFunction *f = type->toTypeFunction();
-    const size_t nparams = f->parameterList.length();
-    // semantic for parameters' UDAs
-    for (size_t i = 0; i < nparams; i++)
-    {
-        Parameter *param = f->parameterList[i];
-        if (param && param->userAttribDecl)
-            param->userAttribDecl->semantic2(sc);
-    }
-}
-
 /****************************************************
  * Determine whether an 'out' contract is declared inside
  * the given function or any of its overrides.
@@ -1326,7 +192,7 @@ void FuncDeclaration::semantic2(Scope *sc)
  *      true    found an 'out' contract
  *      false   didn't find one
  */
-static bool needsFensure(FuncDeclaration *fd)
+bool FuncDeclaration::needsFensure(FuncDeclaration *fd)
 {
     if (fd->fensures)
         return true;
@@ -1358,12 +224,10 @@ static bool canBuildResultVar(FuncDeclaration *fd)
 
 /****************************************************
  * Rewrite contracts as statements.
- * Params:
- *      fdx = the function to rewrite contracts for
  */
-static void buildEnsureRequire(FuncDeclaration *fdx)
+void FuncDeclaration::buildEnsureRequire()
 {
-    if (fdx->frequires)
+    if (frequires)
     {
         /*   in { statements1... }
          *   in { statements2... }
@@ -1371,18 +235,18 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
          * becomes:
          *   in { { statements1... } { statements2... } ... }
          */
-        assert(fdx->frequires->length);
-        Loc loc = (*fdx->frequires)[0]->loc;
+        assert(frequires->length);
+        Loc loc = (*frequires)[0]->loc;
         Statements *s = new Statements;
-        for (size_t i = 0; i < fdx->frequires->length; i++)
+        for (size_t i = 0; i < frequires->length; i++)
         {
-            Statement *r = (*fdx->frequires)[i];
+            Statement *r = (*frequires)[i];
             s->push(new ScopeStatement(r->loc, r, r->loc));
         }
-        fdx->frequire = new CompoundStatement(loc, s);
+        frequire = new CompoundStatement(loc, s);
     }
 
-    if (fdx->fensures)
+    if (fensures)
     {
         /*   out(id1) { statements1... }
          *   out(id2) { statements2... }
@@ -1391,13 +255,13 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
          *   out(__result) { { ref id1 = __result; { statements1... } }
          *                   { ref id2 = __result; { statements2... } } ... }
          */
-        assert(fdx->fensures->length);
-        Loc loc = (*fdx->fensures)[0].ensure->loc;
+        assert(fensures->length);
+        Loc loc = (*fensures)[0].ensure->loc;
         Statements *s = new Statements;
-        for (size_t i = 0; i < fdx->fensures->length; i++)
+        for (size_t i = 0; i < fensures->length; i++)
         {
-            Ensure r = (*fdx->fensures)[i];
-            if (r.id && canBuildResultVar(fdx))
+            Ensure r = (*fensures)[i];
+            if (r.id && canBuildResultVar(this))
             {
                 Loc rloc = r.ensure->loc;
                 IdentifierExp *resultId = new IdentifierExp(rloc, Id::result);
@@ -1413,25 +277,25 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
                 s->push(r.ensure);
             }
         }
-        fdx->fensure = new CompoundStatement(loc, s);
+        fensure = new CompoundStatement(loc, s);
     }
 
-    if (!fdx->isVirtual())
+    if (!isVirtual())
         return;
 
     /* Rewrite contracts as nested functions, then call them. Doing it as nested
      * functions means that overriding functions can call them.
      */
-    TypeFunction *f = (TypeFunction *)fdx->type;
+    TypeFunction *f = (TypeFunction *)type;
 
-    if (fdx->frequire)
+    if (frequire)
     {
         /*   in { ... }
          * becomes:
          *   void __require() { ... }
          *   __require();
          */
-        Loc loc = fdx->frequire->loc;
+        Loc loc = frequire->loc;
         TypeFunction *tf = new TypeFunction(ParameterList(), Type::tvoid, LINKd);
         tf->isnothrow = f->isnothrow;
         tf->isnogc = f->isnogc;
@@ -1439,25 +303,25 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         tf->trust = f->trust;
         FuncDeclaration *fd = new FuncDeclaration(loc, loc,
                                                   Id::require, STCundefined, tf);
-        fd->fbody = fdx->frequire;
+        fd->fbody = frequire;
         Statement *s1 = new ExpStatement(loc, fd);
         Expression *e = new CallExp(loc, new VarExp(loc, fd, false), (Expressions *)NULL);
         Statement *s2 = new ExpStatement(loc, e);
-        fdx->frequire = new CompoundStatement(loc, s1, s2);
-        fdx->fdrequire = fd;
+        frequire = new CompoundStatement(loc, s1, s2);
+        fdrequire = fd;
     }
 
-    if (fdx->fensure)
+    if (fensure)
     {
         /*   out (result) { ... }
          * becomes:
          *   void __ensure(ref tret result) { ... }
          *   __ensure(result);
          */
-        Loc loc = fdx->fensure->loc;
+        Loc loc = fensure->loc;
         Parameters *fparams = new Parameters();
         Parameter *p = NULL;
-        if (canBuildResultVar(fdx))
+        if (canBuildResultVar(this))
         {
             p = new Parameter(STCref | STCconst, f->nextOf(), Id::result, NULL, NULL);
             fparams->push(p);
@@ -1469,1049 +333,16 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
         tf->trust = f->trust;
         FuncDeclaration *fd = new FuncDeclaration(loc, loc,
                                                   Id::ensure, STCundefined, tf);
-        fd->fbody = fdx->fensure;
+        fd->fbody = fensure;
         Statement *s1 = new ExpStatement(loc, fd);
         Expression *eresult = NULL;
-        if (canBuildResultVar(fdx))
+        if (canBuildResultVar(this))
             eresult = new IdentifierExp(loc, Id::result);
         Expression *e = new CallExp(loc, new VarExp(loc, fd, false), eresult);
         Statement *s2 = new ExpStatement(loc, e);
-        fdx->fensure = new CompoundStatement(loc, s1, s2);
-        fdx->fdensure = fd;
+        fensure = new CompoundStatement(loc, s1, s2);
+        fdensure = fd;
     }
-}
-
-/* Determine if function should add `return 0;`
- */
-static bool addReturn0(FuncDeclaration *funcdecl)
-{
-    TypeFunction *f = (TypeFunction *)funcdecl->type;
-
-    return f->next->ty == Tvoid &&
-        (funcdecl->isMain() || (global.params.betterC && funcdecl->isCMain()));
-}
-
-// Do the semantic analysis on the internals of the function.
-
-void FuncDeclaration::semantic3(Scope *sc)
-{
-    VarDeclaration *_arguments = NULL;
-
-    if (!parent)
-    {
-        if (global.errors)
-            return;
-        //printf("FuncDeclaration::semantic3(%s '%s', sc = %p)\n", kind(), toChars(), sc);
-        assert(0);
-    }
-    if (errors || isError(parent))
-    {
-        errors = true;
-        return;
-    }
-    //printf("FuncDeclaration::semantic3('%s.%s', %p, sc = %p, loc = %s)\n", parent->toChars(), toChars(), this, sc, loc.toChars());
-    //fflush(stdout);
-    //printf("storage class = x%x %x\n", sc->stc, storage_class);
-    //{ static int x; if (++x == 2) *(char*)0=0; }
-    //printf("\tlinkage = %d\n", sc->linkage);
-
-    if (ident == Id::assign && !inuse)
-    {
-        if (storage_class & STCinference)
-        {
-            /* Bugzilla 15044: For generated opAssign function, any errors
-             * from its body need to be gagged.
-             */
-            unsigned oldErrors = global.startGagging();
-            ++inuse;
-            semantic3(sc);
-            --inuse;
-            if (global.endGagging(oldErrors))   // if errors happened
-            {
-                // Disable generated opAssign, because some members forbid identity assignment.
-                storage_class |= STCdisable;
-                fbody = NULL;   // remove fbody which contains the error
-                semantic3Errors = false;
-            }
-            return;
-        }
-    }
-
-    //printf(" sc->incontract = %d\n", (sc->flags & SCOPEcontract));
-    if (semanticRun >= PASSsemantic3)
-        return;
-    semanticRun = PASSsemantic3;
-    semantic3Errors = false;
-
-    if (!type || type->ty != Tfunction)
-        return;
-    TypeFunction *f = (TypeFunction *)type;
-    if (!inferRetType && f->next->ty == Terror)
-        return;
-
-    if (!fbody && inferRetType && !f->next)
-    {
-        error("has no function body with return type inference");
-        return;
-    }
-
-    unsigned oldErrors = global.errors;
-
-    if (frequires)
-    {
-        for (size_t i = 0; i < foverrides.length; i++)
-        {
-            FuncDeclaration *fdv = foverrides[i];
-
-            if (fdv->fbody && !fdv->frequires)
-            {
-                error("cannot have an in contract when overriden function %s does not have an in contract", fdv->toPrettyChars());
-                break;
-            }
-        }
-    }
-
-    // Remember whether we need to generate an 'out' contract.
-    const bool needEnsure = needsFensure(this);
-
-    if (fbody || frequires || needEnsure)
-    {
-        /* Symbol table into which we place parameters and nested functions,
-         * solely to diagnose name collisions.
-         */
-        localsymtab = new DsymbolTable();
-
-        // Establish function scope
-        ScopeDsymbol *ss = new ScopeDsymbol();
-        // find enclosing scope symbol, might skip symbol-less CTFE and/or FuncExp scopes
-        for (Scope *scx = sc; ; scx = scx->enclosing)
-        {
-            if (scx->scopesym)
-            {
-                ss->parent = scx->scopesym;
-                break;
-            }
-        }
-        ss->loc = loc;
-        ss->endlinnum = endloc.linnum;
-        Scope *sc2 = sc->push(ss);
-        sc2->func = this;
-        sc2->parent = this;
-        sc2->callSuper = 0;
-        sc2->sbreak = NULL;
-        sc2->scontinue = NULL;
-        sc2->sw = NULL;
-        sc2->fes = fes;
-        sc2->linkage = LINKd;
-        sc2->stc &= ~(STCauto | STCscope | STCstatic | STCextern | STCabstract |
-                        STCdeprecated | STCoverride |
-                        STC_TYPECTOR | STCfinal | STCtls | STCgshared | STCref | STCreturn |
-                        STCproperty | STCnothrow | STCpure | STCsafe | STCtrusted | STCsystem);
-        sc2->protection = Prot(Prot::public_);
-        sc2->explicitProtection = 0;
-        sc2->aligndecl = NULL;
-        if (this->ident != Id::require && this->ident != Id::ensure)
-            sc2->flags = sc->flags & ~SCOPEcontract;
-        sc2->flags &= ~SCOPEcompile;
-        sc2->tf = NULL;
-        sc2->os = NULL;
-        sc2->noctor = 0;
-        sc2->userAttribDecl = NULL;
-        if (sc2->intypeof == 1) sc2->intypeof = 2;
-        sc2->fieldinit = NULL;
-        sc2->fieldinit_dim = 0;
-
-        /* Note: When a lambda is defined immediately under aggregate member
-         * scope, it should be contextless due to prevent interior pointers.
-         * e.g.
-         *      // dg points 'this' - it's interior pointer
-         *      class C { int x; void delegate() dg = (){ this.x = 1; }; }
-         *
-         * However, lambdas could be used inside typeof, in order to check
-         * some expressions varidity at compile time. For such case the lambda
-         * body can access aggregate instance members.
-         * e.g.
-         *      class C { int x; static assert(is(typeof({ this.x = 1; }))); }
-         *
-         * To properly accept it, mark these lambdas as member functions.
-         */
-        if (FuncLiteralDeclaration *fld = isFuncLiteralDeclaration())
-        {
-            if (AggregateDeclaration *ad = isMember2())
-            {
-                if (!sc->intypeof)
-                {
-                    if (fld->tok == TOKdelegate)
-                        error("cannot be %s members", ad->kind());
-                    else
-                        fld->tok = TOKfunction;
-                }
-                else
-                {
-                    if (fld->tok != TOKfunction)
-                        fld->tok = TOKdelegate;
-                }
-            }
-        }
-
-        // Declare 'this'
-        AggregateDeclaration *ad = isThis();
-        vthis = declareThis(sc2, ad);
-        //printf("[%s] ad = %p vthis = %p\n", loc.toChars(), ad, vthis);
-        //if (vthis) printf("\tvthis->type = %s\n", vthis->type->toChars());
-
-        // Declare hidden variable _arguments[] and _argptr
-        if (f->parameterList.varargs == VARARGvariadic)
-        {
-            if (f->linkage == LINKd)
-            {
-                // Variadic arguments depend on Typeinfo being defined
-                if (!global.params.useTypeInfo || !Type::dtypeinfo || !Type::typeinfotypelist)
-                {
-                    if (!global.params.useTypeInfo)
-                        error("D-style variadic functions cannot be used with -betterC");
-                    else if (!Type::typeinfotypelist)
-                        error("`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions");
-                    else
-                        error("`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions");
-                    fatal();
-                }
-
-                // Declare _arguments[]
-                v_arguments = new VarDeclaration(Loc(), Type::typeinfotypelist->type, Id::_arguments_typeinfo, NULL);
-                v_arguments->storage_class |= STCtemp | STCparameter;
-                v_arguments->semantic(sc2);
-                sc2->insert(v_arguments);
-                v_arguments->parent = this;
-
-                //Type *t = Type::typeinfo->type->constOf()->arrayOf();
-                Type *t = Type::dtypeinfo->type->arrayOf();
-                _arguments = new VarDeclaration(Loc(), t, Id::_arguments, NULL);
-                _arguments->storage_class |= STCtemp;
-                _arguments->semantic(sc2);
-                sc2->insert(_arguments);
-                _arguments->parent = this;
-            }
-            if (f->linkage == LINKd || f->parameterList.length())
-            {
-                // Declare _argptr
-                Type *t = target.va_listType(loc, sc);
-                v_argptr = new VarDeclaration(Loc(), t, Id::_argptr, NULL);
-                v_argptr->storage_class |= STCtemp;
-                v_argptr->semantic(sc2);
-                sc2->insert(v_argptr);
-                v_argptr->parent = this;
-            }
-        }
-
-        /* Declare all the function parameters as variables
-         * and install them in parameters[]
-         */
-        size_t nparams = f->parameterList.length();
-        if (nparams)
-        {
-            /* parameters[] has all the tuples removed, as the back end
-             * doesn't know about tuples
-             */
-            parameters = new VarDeclarations();
-            parameters->reserve(nparams);
-            for (size_t i = 0; i < nparams; i++)
-            {
-                Parameter *fparam = f->parameterList[i];
-                Identifier *id = fparam->ident;
-                StorageClass stc = 0;
-                if (!id)
-                {
-                    /* Generate identifier for un-named parameter,
-                     * because we need it later on.
-                     */
-                    fparam->ident = id = Identifier::generateId("_param_", i);
-                    stc |= STCtemp;
-                }
-                Type *vtype = fparam->type;
-                VarDeclaration *v = new VarDeclaration(loc, vtype, id, NULL);
-                //printf("declaring parameter %s of type %s\n", v->toChars(), v->type->toChars());
-                stc |= STCparameter;
-                if (f->parameterList.varargs == VARARGtypesafe && i + 1 == nparams)
-                    stc |= STCvariadic;
-                if (flags & FUNCFLAGinferScope && !(fparam->storageClass & STCscope))
-                    stc |= STCmaybescope;
-                stc |= fparam->storageClass & (STCin | STCout | STCref | STCreturn | STCscope | STClazy | STCfinal | STC_TYPECTOR | STCnodtor);
-                v->storage_class = stc;
-                v->semantic(sc2);
-                if (!sc2->insert(v))
-                    error("parameter %s.%s is already defined", toChars(), v->toChars());
-                else
-                    parameters->push(v);
-                localsymtab->insert(v);
-                v->parent = this;
-                if (fparam->userAttribDecl)
-                    v->userAttribDecl = fparam->userAttribDecl;
-            }
-        }
-
-        // Declare the tuple symbols and put them in the symbol table,
-        // but not in parameters[].
-        if (f->parameterList.parameters)
-        {
-            for (size_t i = 0; i < f->parameterList.parameters->length; i++)
-            {
-                Parameter *fparam = (*f->parameterList.parameters)[i];
-
-                if (!fparam->ident)
-                    continue;                   // never used, so ignore
-                if (fparam->type->ty == Ttuple)
-                {
-                    TypeTuple *t = (TypeTuple *)fparam->type;
-                    size_t dim = Parameter::dim(t->arguments);
-                    Objects *exps = new Objects();
-                    exps->setDim(dim);
-                    for (size_t j = 0; j < dim; j++)
-                    {
-                        Parameter *narg = Parameter::getNth(t->arguments, j);
-                        assert(narg->ident);
-                        VarDeclaration *v = sc2->search(Loc(), narg->ident, NULL)->isVarDeclaration();
-                        assert(v);
-                        Expression *e = new VarExp(v->loc, v);
-                        (*exps)[j] = e;
-                    }
-                    assert(fparam->ident);
-                    TupleDeclaration *v = new TupleDeclaration(loc, fparam->ident, exps);
-                    //printf("declaring tuple %s\n", v->toChars());
-                    v->isexp = true;
-                    if (!sc2->insert(v))
-                        error("parameter %s.%s is already defined", toChars(), v->toChars());
-                    localsymtab->insert(v);
-                    v->parent = this;
-                }
-            }
-        }
-
-        // Precondition invariant
-        Statement *fpreinv = NULL;
-        if (addPreInvariant())
-        {
-            Expression *e = addInvariant(ad, vthis);
-            if (e)
-                fpreinv = new ExpStatement(Loc(), e);
-        }
-
-        // Postcondition invariant
-        Statement *fpostinv = NULL;
-        if (addPostInvariant())
-        {
-            Expression *e = addInvariant(ad, vthis);
-            if (e)
-                fpostinv = new ExpStatement(Loc(), e);
-        }
-
-        // Pre/Postcondition contract
-        if (!fbody)
-            buildEnsureRequire(this);
-
-        Scope *scout = NULL;
-        if (needEnsure || addPostInvariant())
-        {
-            if ((needEnsure && global.params.useOut == CHECKENABLEon) || fpostinv)
-            {
-                returnLabel = new LabelDsymbol(Id::returnLabel);
-            }
-
-            // scope of out contract (need for vresult->semantic)
-            ScopeDsymbol *sym = new ScopeDsymbol();
-            sym->parent = sc2->scopesym;
-            sym->loc = loc;
-            sym->endlinnum = endloc.linnum;
-            scout = sc2->push(sym);
-        }
-
-        if (fbody)
-        {
-            ScopeDsymbol *sym = new ScopeDsymbol();
-            sym->parent = sc2->scopesym;
-            sym->loc = loc;
-            sym->endlinnum = endloc.linnum;
-            sc2 = sc2->push(sym);
-
-            AggregateDeclaration *ad2 = isMember2();
-
-            /* If this is a class constructor
-             */
-            if (ad2 && isCtorDeclaration())
-            {
-                allocFieldinit(sc2, ad2->fields.length);
-                for (size_t i = 0; i < ad2->fields.length; i++)
-                {
-                    VarDeclaration *v = ad2->fields[i];
-                    v->ctorinit = 0;
-                }
-            }
-
-            bool inferRef = (f->isref && (storage_class & STCauto));
-
-            fbody = ::semantic(fbody, sc2);
-            if (!fbody)
-                fbody = new CompoundStatement(Loc(), new Statements());
-
-            if (naked)
-            {
-                fpreinv = NULL;         // can't accommodate with no stack frame
-                fpostinv = NULL;
-            }
-
-            assert(type == f ||
-                   (type->ty == Tfunction &&
-                    f->purity == PUREimpure &&
-                    ((TypeFunction *)type)->purity >= PUREfwdref));
-            f = (TypeFunction *)type;
-
-            if (inferRetType)
-            {
-                // If no return type inferred yet, then infer a void
-                if (!f->next)
-                    f->next = Type::tvoid;
-                if (f->checkRetType(loc))
-                    fbody = new ErrorStatement();
-            }
-            if (global.params.vcomplex && f->next != NULL)
-                f->next->checkComplexTransition(loc);
-
-            if (returns && !fbody->isErrorStatement())
-            {
-                for (size_t i = 0; i < returns->length; )
-                {
-                    Expression *exp = (*returns)[i]->exp;
-                    if (exp->op == TOKvar && ((VarExp *)exp)->var == vresult)
-                    {
-                        if (addReturn0(this))
-                            exp->type = Type::tint32;
-                        else
-                            exp->type = f->next;
-                        // Remove `return vresult;` from returns
-                        returns->remove(i);
-                        continue;
-                    }
-                    if (inferRef && f->isref && !exp->type->constConv(f->next))     // Bugzilla 13336
-                        f->isref = false;
-                    i++;
-                }
-            }
-            if (f->isref)   // Function returns a reference
-            {
-                if (storage_class & STCauto)
-                    storage_class &= ~STCauto;
-            }
-            if (!target.isReturnOnStack(f, needThis()) || !checkNRVO())
-                nrvo_can = 0;
-
-            if (fbody->isErrorStatement())
-                ;
-            else if (isStaticCtorDeclaration())
-            {
-                /* It's a static constructor. Ensure that all
-                 * ctor consts were initialized.
-                 */
-                ScopeDsymbol *pd = toParent()->isScopeDsymbol();
-                for (size_t i = 0; i < pd->members->length; i++)
-                {
-                    Dsymbol *s = (*pd->members)[i];
-                    s->checkCtorConstInit();
-                }
-            }
-            else if (ad2 && isCtorDeclaration())
-            {
-                ClassDeclaration *cd = ad2->isClassDeclaration();
-
-                // Verify that all the ctorinit fields got initialized
-                if (!(sc2->callSuper & CSXthis_ctor))
-                {
-                    for (size_t i = 0; i < ad2->fields.length; i++)
-                    {
-                        VarDeclaration *v = ad2->fields[i];
-                        if (v->isThisDeclaration())
-                            continue;
-                        if (v->ctorinit == 0)
-                        {
-                            /* Current bugs in the flow analysis:
-                             * 1. union members should not produce error messages even if
-                             *    not assigned to
-                             * 2. structs should recognize delegating opAssign calls as well
-                             *    as delegating calls to other constructors
-                             */
-                            if (v->isCtorinit() && !v->type->isMutable() && cd)
-                                error("missing initializer for %s field %s", MODtoChars(v->type->mod), v->toChars());
-                            else if (v->storage_class & STCnodefaultctor)
-                                ::error(loc, "field %s must be initialized in constructor", v->toChars());
-                            else if (v->type->needsNested())
-                                ::error(loc, "field %s must be initialized in constructor, because it is nested struct", v->toChars());
-                        }
-                        else
-                        {
-                            bool mustInit = (v->storage_class & STCnodefaultctor ||
-                                             v->type->needsNested());
-                            if (mustInit && !(sc2->fieldinit[i] & CSXthis_ctor))
-                            {
-                                error("field %s must be initialized but skipped", v->toChars());
-                            }
-                        }
-                    }
-                }
-                freeFieldinit(sc2);
-
-                if (cd &&
-                    !(sc2->callSuper & CSXany_ctor) &&
-                    cd->baseClass && cd->baseClass->ctor)
-                {
-                    sc2->callSuper = 0;
-
-                    // Insert implicit super() at start of fbody
-                    FuncDeclaration *fd = resolveFuncCall(Loc(), sc2, cd->baseClass->ctor, NULL, vthis->type, NULL, 1);
-                    if (!fd)
-                    {
-                        error("no match for implicit super() call in constructor");
-                    }
-                    else if (fd->storage_class & STCdisable)
-                    {
-                        error("cannot call super() implicitly because it is annotated with @disable");
-                    }
-                    else
-                    {
-                        Expression *e1 = new SuperExp(Loc());
-                        Expression *e = new CallExp(Loc(), e1);
-                        e = ::semantic(e, sc2);
-
-                        Statement *s = new ExpStatement(Loc(), e);
-                        fbody = new CompoundStatement(Loc(), s, fbody);
-                    }
-                }
-                //printf("callSuper = x%x\n", sc2->callSuper);
-            }
-
-            /* https://issues.dlang.org/show_bug.cgi?id=17502
-             * Wait until after the return type has been inferred before
-             * generating the contracts for this function, and merging contracts
-             * from overrides.
-             *
-             * https://issues.dlang.org/show_bug.cgi?id=17893
-             * However should take care to generate this before inferered
-             * function attributes are applied, such as 'nothrow'.
-             *
-             * This was originally at the end of the first semantic pass, but
-             * required a fix-up to be done here for the '__result' variable
-             * type of __ensure() inside auto functions, but this didn't work
-             * if the out parameter was implicit.
-             */
-            buildEnsureRequire(this);
-
-            int blockexit = BEnone;
-            if (!fbody->isErrorStatement())
-            {
-                // Check for errors related to 'nothrow'.
-                unsigned int nothrowErrors = global.errors;
-                blockexit = blockExit(fbody, this, f->isnothrow);
-                if (f->isnothrow && (global.errors != nothrowErrors))
-                    ::error(loc, "nothrow %s '%s' may throw", kind(), toPrettyChars());
-                if (flags & FUNCFLAGnothrowInprocess)
-                {
-                    if (type == f) f = (TypeFunction *)f->copy();
-                    f->isnothrow = !(blockexit & BEthrow);
-                }
-            }
-
-            if (fbody->isErrorStatement())
-                ;
-            else if (ad2 && isCtorDeclaration())
-            {
-                /* Append:
-                 *  return this;
-                 * to function body
-                 */
-                if (blockexit & BEfallthru)
-                {
-                    Statement *s = new ReturnStatement(loc, NULL);
-                    s = ::semantic(s, sc2);
-                    fbody = new CompoundStatement(loc, fbody, s);
-                    hasReturnExp |= (hasReturnExp & 1 ? 16 : 1);
-                }
-            }
-            else if (fes)
-            {
-                // For foreach(){} body, append a return 0;
-                if (blockexit & BEfallthru)
-                {
-                    Expression *e = new IntegerExp(0);
-                    Statement *s = new ReturnStatement(Loc(), e);
-                    fbody = new CompoundStatement(Loc(), fbody, s);
-                    hasReturnExp |= (hasReturnExp & 1 ? 16 : 1);
-                }
-                assert(!returnLabel);
-            }
-            else
-            {
-                const bool inlineAsm = (hasReturnExp & 8) != 0;
-                if ((blockexit & BEfallthru) && f->next->ty != Tvoid && !inlineAsm)
-                {
-                    Expression *e;
-                    if (!hasReturnExp)
-                        error("has no return statement, but is expected to return a value of type %s", f->next->toChars());
-                    else
-                        error("no return exp; or assert(0); at end of function");
-                    if (global.params.useAssert == CHECKENABLEon &&
-                        !global.params.useInline)
-                    {
-                        /* Add an assert(0, msg); where the missing return
-                         * should be.
-                         */
-                        e = new AssertExp(
-                              endloc,
-                              new IntegerExp(0),
-                              new StringExp(loc, const_cast<char *>("missing return expression"))
-                            );
-                    }
-                    else
-                        e = new HaltExp(endloc);
-                    e = new CommaExp(Loc(), e, f->next->defaultInit());
-                    e = ::semantic(e, sc2);
-                    Statement *s = new ExpStatement(Loc(), e);
-                    fbody = new CompoundStatement(Loc(), fbody, s);
-                }
-            }
-
-            if (returns)
-            {
-                bool implicit0 = addReturn0(this);
-                Type *tret = implicit0 ? Type::tint32 : f->next;
-                assert(tret->ty != Tvoid);
-                if (vresult || returnLabel)
-                    buildResultVar(scout ? scout : sc2, tret);
-
-                /* Cannot move this loop into NrvoWalker, because
-                 * returns[i] may be in the nested delegate for foreach-body.
-                 */
-                for (size_t i = 0; i < returns->length; i++)
-                {
-                    ReturnStatement *rs = (*returns)[i];
-                    Expression *exp = rs->exp;
-                    if (exp->op == TOKerror)
-                        continue;
-                    if (tret->ty == Terror)
-                    {
-                        // Bugzilla 13702
-                        exp = checkGC(sc2, exp);
-                        continue;
-                    }
-
-                    if (!exp->implicitConvTo(tret) &&
-                        parametersIntersect(exp->type))
-                    {
-                        if (exp->type->immutableOf()->implicitConvTo(tret))
-                            exp = exp->castTo(sc2, exp->type->immutableOf());
-                        else if (exp->type->wildOf()->implicitConvTo(tret))
-                            exp = exp->castTo(sc2, exp->type->wildOf());
-                    }
-                    exp = exp->implicitCastTo(sc2, tret);
-
-                    if (f->isref)
-                    {
-                        // Function returns a reference
-                        exp = exp->toLvalue(sc2, exp);
-                        checkReturnEscapeRef(sc2, exp, false);
-                    }
-                    else
-                    {
-                        exp = exp->optimize(WANTvalue);
-
-                        /* Bugzilla 10789:
-                         * If NRVO is not possible, all returned lvalues should call their postblits.
-                         */
-                        if (!nrvo_can)
-                            exp = doCopyOrMove(sc2, exp);
-
-                        if (tret->hasPointers())
-                            checkReturnEscape(sc2, exp, false);
-                    }
-
-                    exp = checkGC(sc2, exp);
-
-                    if (vresult)
-                    {
-                        // Create: return vresult = exp;
-                        exp = new BlitExp(rs->loc, vresult, exp);
-                        exp->type = vresult->type;
-
-                        if (rs->caseDim)
-                            exp = Expression::combine(exp, new IntegerExp(rs->caseDim));
-                    }
-                    else if (tintro && !tret->equals(tintro->nextOf()))
-                    {
-                        exp = exp->implicitCastTo(sc2, tintro->nextOf());
-                    }
-                    rs->exp = exp;
-                }
-            }
-            if (nrvo_var || returnLabel)
-            {
-                NrvoWalker nw;
-                nw.fd = this;
-                nw.sc = sc2;
-                nw.visitStmt(fbody);
-            }
-
-            sc2 = sc2->pop();
-        }
-
-        frequire = mergeFrequire(frequire);
-        fensure = mergeFensure(fensure, Id::result);
-
-        Statement *freq = frequire;
-        Statement *fens = fensure;
-
-        /* Do the semantic analysis on the [in] preconditions and
-         * [out] postconditions.
-         */
-        if (freq)
-        {
-            /* frequire is composed of the [in] contracts
-             */
-            ScopeDsymbol *sym = new ScopeDsymbol();
-            sym->parent = sc2->scopesym;
-            sym->loc = loc;
-            sym->endlinnum = endloc.linnum;
-            sc2 = sc2->push(sym);
-            sc2->flags = (sc2->flags & ~SCOPEcontract) | SCOPErequire;
-
-            // BUG: need to error if accessing out parameters
-            // BUG: need to disallow returns and throws
-            // BUG: verify that all in and ref parameters are read
-            freq = ::semantic(freq, sc2);
-            blockExit(freq, this, false);
-
-            sc2 = sc2->pop();
-
-            if (global.params.useIn == CHECKENABLEoff)
-                freq = NULL;
-        }
-
-        if (fens)
-        {
-            /* fensure is composed of the [out] contracts
-             */
-            if (f->next->ty == Tvoid && fensures)
-            {
-                for (size_t i = 0; i < fensures->length; i++)
-                {
-                    Ensure e = (*fensures)[i];
-                    if (e.id)
-                    {
-                        error(e.ensure->loc, "`void` functions have no result");
-                        //fens = NULL;
-                    }
-                }
-            }
-
-            sc2 = scout;    //push
-            sc2->flags = (sc2->flags & ~SCOPEcontract) | SCOPEensure;
-
-            // BUG: need to disallow returns and throws
-            if (fensure && f->next->ty != Tvoid)
-                buildResultVar(scout, f->next);
-
-            fens = ::semantic(fens, sc2);
-            blockExit(fens, this, false);
-
-            sc2 = sc2->pop();
-
-            if (global.params.useOut == CHECKENABLEoff)
-                fens = NULL;
-        }
-
-        if (fbody && fbody->isErrorStatement())
-            ;
-        else
-        {
-            Statements *a = new Statements();
-
-            // Merge in initialization of 'out' parameters
-            if (parameters)
-            {
-                for (size_t i = 0; i < parameters->length; i++)
-                {
-                    VarDeclaration *v = (*parameters)[i];
-                    if (v->storage_class & STCout)
-                    {
-                        assert(v->_init);
-                        ExpInitializer *ie = v->_init->isExpInitializer();
-                        assert(ie);
-                        if (ie->exp->op == TOKconstruct)
-                            ie->exp->op = TOKassign; // construction occured in parameter processing
-                        a->push(new ExpStatement(Loc(), ie->exp));
-                    }
-                }
-            }
-
-            if (v_argptr)
-            {
-                // Handled in FuncDeclaration::toObjFile
-                v_argptr->_init = new VoidInitializer(loc);
-            }
-
-            if (_arguments)
-            {
-                /* Advance to elements[] member of TypeInfo_Tuple with:
-                 *  _arguments = v_arguments.elements;
-                 */
-                Expression *e = new VarExp(Loc(), v_arguments);
-                e = new DotIdExp(Loc(), e, Id::elements);
-                e = new ConstructExp(Loc(), _arguments, e);
-                e = ::semantic(e, sc2);
-
-                _arguments->_init = new ExpInitializer(Loc(), e);
-                DeclarationExp *de = new DeclarationExp(Loc(), _arguments);
-                a->push(new ExpStatement(Loc(), de));
-            }
-
-            // Merge contracts together with body into one compound statement
-
-            if (freq || fpreinv)
-            {
-                if (!freq)
-                    freq = fpreinv;
-                else if (fpreinv)
-                    freq = new CompoundStatement(Loc(), freq, fpreinv);
-
-                a->push(freq);
-            }
-
-            if (fbody)
-                a->push(fbody);
-
-            if (fens || fpostinv)
-            {
-                if (!fens)
-                    fens = fpostinv;
-                else if (fpostinv)
-                    fens = new CompoundStatement(Loc(), fpostinv, fens);
-
-                LabelStatement *ls = new LabelStatement(Loc(), Id::returnLabel, fens);
-                returnLabel->statement = ls;
-                a->push(returnLabel->statement);
-
-                if (f->next->ty != Tvoid && vresult)
-                {
-                    // Create: return vresult;
-                    Expression *e = new VarExp(Loc(), vresult);
-                    if (tintro)
-                    {
-                        e = e->implicitCastTo(sc, tintro->nextOf());
-                        e = ::semantic(e, sc);
-                    }
-                    ReturnStatement *s = new ReturnStatement(Loc(), e);
-                    a->push(s);
-                }
-            }
-            if (addReturn0(this))
-            {
-                // Add a return 0; statement
-                Statement *s = new ReturnStatement(Loc(), new IntegerExp(0));
-                a->push(s);
-            }
-
-            Statement *sbody = new CompoundStatement(Loc(), a);
-            /* Append destructor calls for parameters as finally blocks.
-             */
-            if (parameters)
-            {
-                for (size_t i = 0; i < parameters->length; i++)
-                {
-                    VarDeclaration *v = (*parameters)[i];
-
-                    if (v->storage_class & (STCref | STCout | STClazy))
-                        continue;
-
-                    if (v->needsScopeDtor())
-                    {
-                        // same with ExpStatement.scopeCode()
-                        Statement *s = new DtorExpStatement(Loc(), v->edtor, v);
-                        v->storage_class |= STCnodtor;
-
-                        s = ::semantic(s, sc2);
-
-                        bool isnothrow = f->isnothrow & !(flags & FUNCFLAGnothrowInprocess);
-                        int blockexit = blockExit(s, this, isnothrow);
-                        if (f->isnothrow && isnothrow && blockexit & BEthrow)
-                            ::error(loc, "nothrow %s '%s' may throw", kind(), toPrettyChars());
-                        if (flags & FUNCFLAGnothrowInprocess && blockexit & BEthrow)
-                            f->isnothrow = false;
-                        if (blockExit(sbody, this, f->isnothrow) == BEfallthru)
-                            sbody = new CompoundStatement(Loc(), sbody, s);
-                        else
-                            sbody = new TryFinallyStatement(Loc(), sbody, s);
-                    }
-                }
-            }
-            // from this point on all possible 'throwers' are checked
-            flags &= ~FUNCFLAGnothrowInprocess;
-
-            if (isSynchronized())
-            {
-                /* Wrap the entire function body in a synchronized statement
-                 */
-                ClassDeclaration *cd = isThis() ? isThis()->isClassDeclaration() : parent->isClassDeclaration();
-
-                if (cd)
-                {
-                    if (!global.params.is64bit &&
-                        global.params.isWindows &&
-                        !isStatic() && !sbody->usesEH() && !global.params.trace)
-                    {
-                        /* The back end uses the "jmonitor" hack for syncing;
-                         * no need to do the sync at this level.
-                         */
-                    }
-                    else
-                    {
-                        Expression *vsync;
-                        if (isStatic())
-                        {
-                            // The monitor is in the ClassInfo
-                            vsync = new DotIdExp(loc, resolve(loc, sc2, cd, false), Id::classinfo);
-                        }
-                        else
-                        {
-                            // 'this' is the monitor
-                            vsync = new VarExp(loc, vthis);
-                        }
-                        sbody = new PeelStatement(sbody);       // don't redo semantic()
-                        sbody = new SynchronizedStatement(loc, vsync, sbody);
-                        sbody = ::semantic(sbody, sc2);
-                    }
-                }
-                else
-                {
-                    error("synchronized function %s must be a member of a class", toChars());
-                }
-            }
-
-            // If declaration has no body, don't set sbody to prevent incorrect codegen.
-            if (fbody || allowsContractWithoutBody(this))
-                fbody = sbody;
-        }
-
-        // Fix up forward-referenced gotos
-        if (gotos)
-        {
-            for (size_t i = 0; i < gotos->length; ++i)
-            {
-                (*gotos)[i]->checkLabel();
-            }
-        }
-
-        if (naked && (fensures || frequires))
-            error("naked assembly functions with contracts are not supported");
-
-        sc2->callSuper = 0;
-        sc2->pop();
-    }
-
-    if (checkClosure())
-    {
-        // We should be setting errors here instead of relying on the global error count.
-        //errors = true;
-    }
-
-    /* If function survived being marked as impure, then it is pure
-     */
-    if (flags & FUNCFLAGpurityInprocess)
-    {
-        flags &= ~FUNCFLAGpurityInprocess;
-        if (type == f)
-            f = (TypeFunction *)f->copy();
-        f->purity = PUREfwdref;
-    }
-
-    if (flags & FUNCFLAGsafetyInprocess)
-    {
-        flags &= ~FUNCFLAGsafetyInprocess;
-        if (type == f)
-            f = (TypeFunction *)f->copy();
-        f->trust = TRUSTsafe;
-    }
-
-    if (flags & FUNCFLAGnogcInprocess)
-    {
-        flags &= ~FUNCFLAGnogcInprocess;
-        if (type == f)
-            f = (TypeFunction *)f->copy();
-        f->isnogc = true;
-    }
-
-    if (flags & FUNCFLAGreturnInprocess)
-    {
-        flags &= ~FUNCFLAGreturnInprocess;
-        if (storage_class & STCreturn)
-        {
-            if (type == f)
-                f = (TypeFunction *)f->copy();
-            f->isreturn = true;
-        }
-    }
-
-    flags &= ~FUNCFLAGinferScope;
-
-    // Infer STCscope
-    if (parameters)
-    {
-        size_t nfparams = f->parameterList.length();
-        assert(nfparams == parameters->length);
-        for (size_t u = 0; u < parameters->length; u++)
-        {
-            VarDeclaration *v = (*parameters)[u];
-            if (v->storage_class & STCmaybescope)
-            {
-                //printf("Inferring scope for %s\n", v->toChars());
-                Parameter *p = f->parameterList[u];
-                v->storage_class &= ~STCmaybescope;
-                v->storage_class |= STCscope | STCscopeinferred;
-                p->storageClass |= STCscope | STCscopeinferred;
-                assert(!(p->storageClass & STCmaybescope));
-            }
-        }
-    }
-
-    if (vthis && vthis->storage_class & STCmaybescope)
-    {
-        vthis->storage_class &= ~STCmaybescope;
-        vthis->storage_class |= STCscope | STCscopeinferred;
-        f->isscope = true;
-        f->isscopeinferred = true;
-    }
-
-    // reset deco to apply inference result to mangled name
-    if (f != type)
-        f->deco = NULL;
-
-    // Do semantic type AFTER pure/nothrow inference.
-    if (!f->deco && ident != Id::xopEquals && ident != Id::xopCmp)
-    {
-        sc = sc->push();
-        if (isCtorDeclaration()) // Bugzilla #15665
-            sc->flags |= SCOPEctor;
-        sc->stc = 0;
-        sc->linkage = linkage;  // Bugzilla 8496
-        type = f->semantic(loc, sc);
-        sc = sc->pop();
-    }
-
-    /* If this function had instantiated with gagging, error reproduction will be
-     * done by TemplateInstance::semantic.
-     * Otherwise, error gagging should be temporarily ungagged by functionSemantic3.
-     */
-    semanticRun = PASSsemantic3done;
-    semantic3Errors = (global.errors != oldErrors) || (fbody && fbody->isErrorStatement());
-    if (type->ty == Terror)
-        errors = true;
-    //printf("-FuncDeclaration::semantic3('%s.%s', sc = %p, loc = %s)\n", parent->toChars(), toChars(), sc, loc.toChars());
-    //fflush(stdout);
 }
 
 /****************************************************
@@ -2531,7 +362,7 @@ bool FuncDeclaration::functionSemantic()
         unsigned oldgag = global.gag;
         if (global.gag && !spec)
             global.gag = 0;
-        semantic(_scope);
+        dsymbolSemantic(this, _scope);
         global.gag = oldgag;
         if (spec && global.errors != olderrs)
             spec->errors = (global.errors - olderrs != 0);
@@ -2586,7 +417,7 @@ bool FuncDeclaration::functionSemantic3()
         unsigned oldgag = global.gag;
         if (global.gag && !spec)
             global.gag = 0;
-        semantic3(_scope);
+        semantic3(this, _scope);
         global.gag = oldgag;
 
         // If it is a speculatively-instantiated template, and errors occur,
@@ -2615,7 +446,7 @@ bool FuncDeclaration::checkForwardRef(Loc loc)
     if (!type->deco)
     {
         bool inSemantic3 = (inferRetType && semanticRun >= PASSsemantic3);
-        ::error(loc, "forward reference to %s'%s'",
+        ::error(loc, "forward reference to %s`%s`",
             (inSemantic3 ? "inferred return type of function " : ""),
             toChars());
         return true;
@@ -2655,7 +486,7 @@ VarDeclaration *FuncDeclaration::declareThis(Scope *sc, AggregateDeclaration *ad
             if (flags & FUNCFLAGinferScope && !(v->storage_class & STCscope))
                 v->storage_class |= STCmaybescope;
 
-            v->semantic(sc);
+            dsymbolSemantic(v, sc);
             if (!sc->insert(v))
                 assert(0);
             v->parent = this;
@@ -2681,7 +512,7 @@ VarDeclaration *FuncDeclaration::declareThis(Scope *sc, AggregateDeclaration *ad
         if (flags & FUNCFLAGinferScope && !(v->storage_class & STCscope))
             v->storage_class |= STCmaybescope;
 
-        v->semantic(sc);
+        dsymbolSemantic(v, sc);
         if (!sc->insert(v))
             assert(0);
         v->parent = this;
@@ -2756,7 +587,7 @@ void FuncDeclaration::buildResultVar(Scope *sc, Type *tret)
             vresult->storage_class |= STCref;
         vresult->type = tret;
 
-        vresult->semantic(sc);
+        dsymbolSemantic(vresult, sc);
 
         if (!sc->insert(vresult))
             error("out result %s is already defined", vresult->toChars());
@@ -2816,7 +647,7 @@ Statement *FuncDeclaration::mergeFrequire(Statement *sf)
             assert(fdv->_scope);
             Scope *sc = fdv->_scope->push();
             sc->stc &= ~STCoverride;
-            fdv->semantic3(sc);
+            semantic3(fdv, sc);
             sc->pop();
         }
 
@@ -2874,7 +705,7 @@ Statement *FuncDeclaration::mergeFensure(Statement *sf, Identifier *oid)
             assert(fdv->_scope);
             Scope *sc = fdv->_scope->push();
             sc->stc &= ~STCoverride;
-            fdv->semantic3(sc);
+            semantic3(fdv, sc);
             sc->pop();
         }
 
@@ -3706,7 +1537,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
         }
         else if (od)
         {
-            ::error(loc, "none of the overloads of '%s' are callable using argument types !(%s)%s",
+            ::error(loc, "none of the overloads of `%s` are callable using argument types !(%s)%s",
                 od->ident->toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
         }
         else
@@ -3721,7 +1552,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
                 MODMatchToBuffer(&thisBuf, tthis->mod, tf->mod);
                 MODMatchToBuffer(&funcBuf, tf->mod, tthis->mod);
                 if (hasOverloads)
-                    ::error(loc, "none of the overloads of '%s' are callable using a %sobject, candidates are:",
+                    ::error(loc, "none of the overloads of `%s` are callable using a %sobject, candidates are:",
                         fd->ident->toChars(), thisBuf.peekChars());
                 else
                     ::error(loc, "%smethod %s is not callable using a %sobject",
@@ -3731,7 +1562,7 @@ FuncDeclaration *resolveFuncCall(Loc loc, Scope *sc, Dsymbol *s,
             {
                 //printf("tf = %s, args = %s\n", tf->deco, (*fargs)[0]->type->deco);
                 if (hasOverloads)
-                    ::error(loc, "none of the overloads of '%s' are callable using argument types %s, candidates are:",
+                    ::error(loc, "none of the overloads of `%s` are callable using argument types %s, candidates are:",
                             fd->ident->toChars(), fargsBuf.peekChars());
                 else
                     fd->error(loc, "%s%s is not callable using argument types %s",
@@ -4294,56 +2125,6 @@ bool FuncDeclaration::addPostInvariant()
             global.params.useInvariants == CHECKENABLEon &&
             (protection.kind == Prot::protected_ || protection.kind == Prot::public_ || protection.kind == Prot::export_) &&
             !naked);
-}
-
-/********************************************************
- * Generate Expression to call the invariant.
- * Input:
- *      ad      aggregate with the invariant
- *      vthis   variable with 'this'
- * Returns:
- *      void expression that calls the invariant
- */
-Expression *addInvariant(AggregateDeclaration *ad, VarDeclaration *vthis)
-{
-    Expression *e = NULL;
-
-    // Call invariant directly only if it exists
-    FuncDeclaration *inv = ad->inv;
-    ClassDeclaration *cd = ad->isClassDeclaration();
-
-    while (!inv && cd)
-    {
-        cd = cd->baseClass;
-        if (!cd)
-            break;
-        inv = cd->inv;
-    }
-    if (inv)
-    {
-    #if 1
-        // Workaround for bugzilla 13394: For the correct mangling,
-        // run attribute inference on inv if needed.
-        inv->functionSemantic();
-    #endif
-
-        //e = new DsymbolExp(Loc(), inv);
-        //e = new CallExp(Loc(), e);
-        //e = e->semantic(sc2);
-
-        /* https://issues.dlang.org/show_bug.cgi?id=13113
-         * Currently virtual invariant calls completely
-         * bypass attribute enforcement.
-         * Change the behavior of pre-invariant call by following it.
-         */
-        e = new ThisExp(Loc());
-        e->type = vthis->type;
-        e = new DotVarExp(Loc(), e, inv, false);
-        e->type = inv->type;
-        e = new CallExp(Loc(), e);
-        e->type = Type::tvoid;
-    }
-    return e;
 }
 
 /**********************************
@@ -4987,87 +2768,6 @@ Dsymbol *CtorDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(f);
 }
 
-void CtorDeclaration::semantic(Scope *sc)
-{
-    //printf("CtorDeclaration::semantic() %s\n", toChars());
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = toParent2();
-    AggregateDeclaration *ad = p->isAggregateDeclaration();
-    if (!ad)
-    {
-        ::error(loc, "constructor can only be a member of aggregate, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-
-    sc = sc->push();
-    sc->stc &= ~STCstatic;              // not a static constructor
-    sc->flags |= SCOPEctor;
-
-    FuncDeclaration::semantic(sc);
-
-    sc->pop();
-
-    if (errors)
-        return;
-
-    TypeFunction *tf = type->toTypeFunction();
-
-    /* See if it's the default constructor
-     * But, template constructor should not become a default constructor.
-     */
-    if (ad && (!parent->isTemplateInstance() || parent->isTemplateMixin()))
-    {
-        const size_t dim = tf->parameterList.length();
-
-        if (StructDeclaration *sd = ad->isStructDeclaration())
-        {
-            if (dim == 0 && tf->parameterList.varargs == VARARGnone) // empty default ctor w/o any varargs
-            {
-                if (fbody || !(storage_class & STCdisable) || dim)
-                {
-                    error("default constructor for structs only allowed "
-                        "with @disable, no body, and no parameters");
-                    storage_class |= STCdisable;
-                    fbody = NULL;
-                }
-                sd->noDefaultCtor = true;
-            }
-            else if (dim == 0 && tf->parameterList.varargs) // allow varargs only ctor
-            {
-            }
-            else if (dim && tf->parameterList[0]->defaultArg)
-            {
-                // if the first parameter has a default argument, then the rest does as well
-                if (storage_class & STCdisable)
-                {
-                    deprecation("@disable'd constructor cannot have default "
-                                "arguments for all parameters.");
-                    deprecationSupplemental(loc, "Use @disable this(); if you want to disable default initialization.");
-                }
-                else
-                    deprecation("all parameters have default arguments, "
-                                "but structs cannot have default constructors.");
-            }
-
-        }
-        else if (dim == 0 && tf->parameterList.varargs == VARARGnone)
-        {
-            ad->defaultCtor = this;
-        }
-    }
-}
-
 const char *CtorDeclaration::kind() const
 {
     return "constructor";
@@ -5108,44 +2808,6 @@ Dsymbol *PostBlitDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(dd);
 }
 
-void PostBlitDeclaration::semantic(Scope *sc)
-{
-    //printf("PostBlitDeclaration::semantic() %s\n", toChars());
-    //printf("ident: %s, %s, %p, %p\n", ident->toChars(), Id::dtor->toChars(), ident, Id::dtor);
-    //printf("stc = x%llx\n", sc->stc);
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = toParent2();
-    StructDeclaration *ad = p->isStructDeclaration();
-    if (!ad)
-    {
-        ::error(loc, "postblit can only be a member of struct/union, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (ident == Id::postblit && semanticRun < PASSsemantic)
-        ad->postblits.push(this);
-    if (!type)
-        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-
-    sc = sc->push();
-    sc->stc &= ~STCstatic;              // not static
-    sc->linkage = LINKd;
-
-    FuncDeclaration::semantic(sc);
-
-    sc->pop();
-}
-
 bool PostBlitDeclaration::overloadInsert(Dsymbol *)
 {
     return false;       // cannot overload postblits
@@ -5183,44 +2845,6 @@ Dsymbol *DtorDeclaration::syntaxCopy(Dsymbol *s)
     assert(!s);
     DtorDeclaration *dd = new DtorDeclaration(loc, endloc, storage_class, ident);
     return FuncDeclaration::syntaxCopy(dd);
-}
-
-void DtorDeclaration::semantic(Scope *sc)
-{
-    //printf("DtorDeclaration::semantic() %s\n", toChars());
-    //printf("ident: %s, %s, %p, %p\n", ident->toChars(), Id::dtor->toChars(), ident, Id::dtor);
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = toParent2();
-    AggregateDeclaration *ad = p->isAggregateDeclaration();
-    if (!ad)
-    {
-        ::error(loc, "destructor can only be a member of aggregate, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (ident == Id::dtor && semanticRun < PASSsemantic)
-        ad->dtors.push(this);
-    if (!type)
-        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-
-    sc = sc->push();
-    sc->stc &= ~STCstatic;              // not a static destructor
-    if (sc->linkage != LINKcpp)
-        sc->linkage = LINKd;
-
-    FuncDeclaration::semantic(sc);
-
-    sc->pop();
 }
 
 bool DtorDeclaration::overloadInsert(Dsymbol *)
@@ -5273,71 +2897,6 @@ Dsymbol *StaticCtorDeclaration::syntaxCopy(Dsymbol *s)
     assert(!s);
     StaticCtorDeclaration *scd = new StaticCtorDeclaration(loc, endloc, storage_class);
     return FuncDeclaration::syntaxCopy(scd);
-}
-
-void StaticCtorDeclaration::semantic(Scope *sc)
-{
-    //printf("StaticCtorDeclaration::semantic()\n");
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    if (!p->isScopeDsymbol())
-    {
-        const char *s = (isSharedStaticCtorDeclaration() ? "shared " : "");
-        ::error(loc, "%sstatic constructor can only be member of module/aggregate/template, not %s %s",
-            s, p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (!type)
-        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-
-    /* If the static ctor appears within a template instantiation,
-     * it could get called multiple times by the module constructors
-     * for different modules. Thus, protect it with a gate.
-     */
-    if (isInstantiated() && semanticRun < PASSsemantic)
-    {
-        /* Add this prefix to the function:
-         *      static int gate;
-         *      if (++gate != 1) return;
-         * Note that this is not thread safe; should not have threads
-         * during static construction.
-         */
-        VarDeclaration *v = new VarDeclaration(Loc(), Type::tint32, Id::gate, NULL);
-        v->storage_class = STCtemp | (isSharedStaticCtorDeclaration() ? STCstatic : STCtls);
-        Statements *sa = new Statements();
-        Statement *s = new ExpStatement(Loc(), v);
-        sa->push(s);
-        Expression *e = new IdentifierExp(Loc(), v->ident);
-        e = new AddAssignExp(Loc(), e, new IntegerExp(1));
-        e = new EqualExp(TOKnotequal, Loc(), e, new IntegerExp(1));
-        s = new IfStatement(Loc(), NULL, e, new ReturnStatement(Loc(), NULL), NULL, Loc());
-        sa->push(s);
-        if (fbody)
-            sa->push(fbody);
-        fbody = new CompoundStatement(Loc(), sa);
-    }
-
-    FuncDeclaration::semantic(sc);
-
-    // We're going to need ModuleInfo
-    Module *m = getModule();
-    if (!m)
-        m = sc->_module;
-    if (m)
-    {
-        m->needmoduleinfo = 1;
-        //printf("module1 %s needs moduleinfo\n", m->toChars());
-    }
 }
 
 AggregateDeclaration *StaticCtorDeclaration::isThis()
@@ -5402,72 +2961,6 @@ Dsymbol *StaticDtorDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(sdd);
 }
 
-void StaticDtorDeclaration::semantic(Scope *sc)
-{
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    if (!p->isScopeDsymbol())
-    {
-        const char *s = (isSharedStaticDtorDeclaration() ? "shared " : "");
-        ::error(loc, "%sstatic destructor can only be member of module/aggregate/template, not %s %s",
-            s, p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (!type)
-        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-
-    /* If the static ctor appears within a template instantiation,
-     * it could get called multiple times by the module constructors
-     * for different modules. Thus, protect it with a gate.
-     */
-    if (isInstantiated() && semanticRun < PASSsemantic)
-    {
-        /* Add this prefix to the function:
-         *      static int gate;
-         *      if (--gate != 0) return;
-         * Increment gate during constructor execution.
-         * Note that this is not thread safe; should not have threads
-         * during static destruction.
-         */
-        VarDeclaration *v = new VarDeclaration(Loc(), Type::tint32, Id::gate, NULL);
-        v->storage_class = STCtemp | (isSharedStaticDtorDeclaration() ? STCstatic : STCtls);
-        Statements *sa = new Statements();
-        Statement *s = new ExpStatement(Loc(), v);
-        sa->push(s);
-        Expression *e = new IdentifierExp(Loc(), v->ident);
-        e = new AddAssignExp(Loc(), e, new IntegerExp(-1));
-        e = new EqualExp(TOKnotequal, Loc(), e, new IntegerExp(0));
-        s = new IfStatement(Loc(), NULL, e, new ReturnStatement(Loc(), NULL), NULL, Loc());
-        sa->push(s);
-        if (fbody)
-            sa->push(fbody);
-        fbody = new CompoundStatement(Loc(), sa);
-        vgate = v;
-    }
-
-    FuncDeclaration::semantic(sc);
-
-    // We're going to need ModuleInfo
-    Module *m = getModule();
-    if (!m)
-        m = sc->_module;
-    if (m)
-    {
-        m->needmoduleinfo = 1;
-        //printf("module2 %s needs moduleinfo\n", m->toChars());
-    }
-}
-
 AggregateDeclaration *StaticDtorDeclaration::isThis()
 {
     return NULL;
@@ -5523,46 +3016,6 @@ Dsymbol *InvariantDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(id);
 }
 
-void InvariantDeclaration::semantic(Scope *sc)
-{
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    AggregateDeclaration *ad = p->isAggregateDeclaration();
-    if (!ad)
-    {
-        ::error(loc, "invariant can only be a member of aggregate, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (ident != Id::classInvariant &&
-        semanticRun < PASSsemantic &&
-        !ad->isUnionDeclaration()           // users are on their own with union fields
-       )
-        ad->invs.push(this);
-    if (!type)
-        type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-
-    sc = sc->push();
-    sc->stc &= ~STCstatic;              // not a static invariant
-    sc->stc |= STCconst;                // invariant() is always const
-    sc->flags = (sc->flags & ~SCOPEcontract) | SCOPEinvariant;
-    sc->linkage = LINKd;
-
-    FuncDeclaration::semantic(sc);
-
-    sc->pop();
-}
-
 bool InvariantDeclaration::isVirtual()
 {
     return false;
@@ -5605,40 +3058,6 @@ Dsymbol *UnitTestDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(utd);
 }
 
-void UnitTestDeclaration::semantic(Scope *sc)
-{
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    protection = sc->protection;
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    if (!p->isScopeDsymbol())
-    {
-        ::error(loc, "unittest can only be a member of module/aggregate/template, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-
-    if (global.params.useUnitTests)
-    {
-        if (!type)
-            type = new TypeFunction(ParameterList(), Type::tvoid, LINKd, storage_class);
-        Scope *sc2 = sc->push();
-        sc2->linkage = LINKd;
-        FuncDeclaration::semantic(sc2);
-        sc2->pop();
-    }
-}
-
 AggregateDeclaration *UnitTestDeclaration::isThis()
 {
     return NULL;
@@ -5676,49 +3095,6 @@ Dsymbol *NewDeclaration::syntaxCopy(Dsymbol *s)
     return FuncDeclaration::syntaxCopy(f);
 }
 
-void NewDeclaration::semantic(Scope *sc)
-{
-    //printf("NewDeclaration::semantic()\n");
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    if (!p->isAggregateDeclaration())
-    {
-        ::error(loc, "allocator can only be a member of aggregate, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    Type *tret = Type::tvoid->pointerTo();
-    if (!type)
-        type = new TypeFunction(ParameterList(parameters, varargs), tret, LINKd, storage_class);
-
-    type = type->semantic(loc, sc);
-
-    // Check that there is at least one argument of type size_t
-    TypeFunction *tf = type->toTypeFunction();
-    if (tf->parameterList.length() < 1)
-    {
-        error("at least one argument of type size_t expected");
-    }
-    else
-    {
-        Parameter *fparam = tf->parameterList[0];
-        if (!fparam->type->equals(Type::tsize_t))
-            error("first argument must be type size_t, not %s", fparam->type->toChars());
-    }
-
-    FuncDeclaration::semantic(sc);
-}
-
 const char *NewDeclaration::kind() const
 {
     return "allocator";
@@ -5753,48 +3129,6 @@ Dsymbol *DeleteDeclaration::syntaxCopy(Dsymbol *s)
     DeleteDeclaration *f = new DeleteDeclaration(loc, endloc,
             storage_class, Parameter::arraySyntaxCopy(parameters));
     return FuncDeclaration::syntaxCopy(f);
-}
-
-void DeleteDeclaration::semantic(Scope *sc)
-{
-    //printf("DeleteDeclaration::semantic()\n");
-    if (semanticRun >= PASSsemanticdone)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-
-    parent = sc->parent;
-    Dsymbol *p = parent->pastMixin();
-    if (!p->isAggregateDeclaration())
-    {
-        ::error(loc, "deallocator can only be a member of aggregate, not %s %s",
-            p->kind(), p->toChars());
-        type = Type::terror;
-        errors = true;
-        return;
-    }
-    if (!type)
-        type = new TypeFunction(ParameterList(parameters), Type::tvoid, LINKd, storage_class);
-
-    type = type->semantic(loc, sc);
-
-    // Check that there is only one argument of type void*
-    TypeFunction *tf = type->toTypeFunction();
-    if (tf->parameterList.length() != 1)
-    {
-        error("one argument of type void* expected");
-    }
-    else
-    {
-        Parameter *fparam = tf->parameterList[0];
-        if (!fparam->type->equals(Type::tvoid->pointerTo()))
-            error("one argument of type void* expected, not %s", fparam->type->toChars());
-    }
-
-    FuncDeclaration::semantic(sc);
 }
 
 const char *DeleteDeclaration::kind() const

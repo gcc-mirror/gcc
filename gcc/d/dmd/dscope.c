@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -398,7 +398,7 @@ static Dsymbol *searchScopes(Scope *scope, Loc loc, Identifier *ident, Dsymbol *
                 ident == Id::length && sc->scopesym->isArrayScopeSymbol() &&
                 sc->enclosing && sc->enclosing->search(loc, ident, NULL, flags))
             {
-                warning(s->loc, "array 'length' hides other 'length' name in outer scope");
+                warning(s->loc, "array `length` hides other `length` name in outer scope");
             }
             if (pscopesym)
                 *pscopesym = sc->scopesym;
@@ -473,11 +473,11 @@ Dsymbol *Scope::insert(Dsymbol *s)
     }
     else if (WithScopeSymbol *ss = s->isWithScopeSymbol())
     {
-        if (VarDeclaration *vd = ss->withstate->wthis)
+        if (VarDeclaration *wthis = ss->withstate->wthis)
         {
             if (lastVar)
-                vd->lastVar = lastVar;
-            lastVar = vd;
+                wthis->lastVar = lastVar;
+            lastVar = wthis;
         }
         return NULL;
     }

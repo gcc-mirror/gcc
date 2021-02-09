@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -47,8 +47,7 @@ static size_t templateParameterLookup(Type *tparam, TemplateParameters *paramete
 static int arrayObjectMatch(Objects *oa1, Objects *oa2);
 static unsigned char deduceWildHelper(Type *t, Type **at, Type *tparam);
 static MATCH deduceTypeHelper(Type *t, Type **at, Type *tparam);
-static bool reliesOnTident(Type *t, TemplateParameters *tparams = NULL, size_t iStart = 0);
-Expression *semantic(Expression *e, Scope *sc);
+bool reliesOnTident(Type *t, TemplateParameters *tparams = NULL, size_t iStart = 0);
 bool evalStaticCondition(Scope *sc, Expression *exp, Expression *e, bool &errors);
 
 /********************************************
@@ -568,127 +567,6 @@ Dsymbol *TemplateDeclaration::syntaxCopy(Dsymbol *)
         Dsymbol::arraySyntaxCopy(members), ismixin, literal);
 }
 
-void TemplateDeclaration::semantic(Scope *sc)
-{
-    if (semanticRun != PASSinit)
-        return;         // semantic() already run
-
-    // Remember templates defined in module object that we need to know about
-    if (sc->_module && sc->_module->ident == Id::object)
-    {
-        if (ident == Id::RTInfo)
-            Type::rtinfo = this;
-    }
-
-    /* Remember Scope for later instantiations, but make
-     * a copy since attributes can change.
-     */
-    if (!this->_scope)
-    {
-        this->_scope = sc->copy();
-        this->_scope->setNoFree();
-    }
-
-    semanticRun = PASSsemantic;
-
-    parent = sc->parent;
-    protection = sc->protection;
-    isstatic = toParent()->isModule() || (_scope->stc & STCstatic);
-
-    if (!isstatic)
-    {
-        if (AggregateDeclaration *ad = parent->pastMixin()->isAggregateDeclaration())
-            ad->makeNested();
-    }
-
-    // Set up scope for parameters
-    ScopeDsymbol *paramsym = new ScopeDsymbol();
-    paramsym->parent = parent;
-    Scope *paramscope = sc->push(paramsym);
-    paramscope->stc = 0;
-
-    if (global.params.doDocComments)
-    {
-        origParameters = new TemplateParameters();
-        origParameters->setDim(parameters->length);
-        for (size_t i = 0; i < parameters->length; i++)
-        {
-            TemplateParameter *tp = (*parameters)[i];
-            (*origParameters)[i] = tp->syntaxCopy();
-        }
-    }
-
-    for (size_t i = 0; i < parameters->length; i++)
-    {
-        TemplateParameter *tp = (*parameters)[i];
-
-        if (!tp->declareParameter(paramscope))
-        {
-            error(tp->loc, "parameter '%s' multiply defined", tp->ident->toChars());
-            errors = true;
-        }
-        if (!tp->semantic(paramscope, parameters))
-        {
-            errors = true;
-        }
-        if (i + 1 != parameters->length && tp->isTemplateTupleParameter())
-        {
-            error("template tuple parameter must be last one");
-            errors = true;
-        }
-    }
-
-    /* Calculate TemplateParameter::dependent
-     */
-    TemplateParameters tparams;
-    tparams.setDim(1);
-    for (size_t i = 0; i < parameters->length; i++)
-    {
-        TemplateParameter *tp = (*parameters)[i];
-        tparams[0] = tp;
-
-        for (size_t j = 0; j < parameters->length; j++)
-        {
-            // Skip cases like: X(T : T)
-            if (i == j)
-                continue;
-
-            if (TemplateTypeParameter *ttp = (*parameters)[j]->isTemplateTypeParameter())
-            {
-                if (reliesOnTident(ttp->specType, &tparams))
-                    tp->dependent = true;
-            }
-            else if (TemplateAliasParameter *tap = (*parameters)[j]->isTemplateAliasParameter())
-            {
-                if (reliesOnTident(tap->specType, &tparams) ||
-                    reliesOnTident(isType(tap->specAlias), &tparams))
-                {
-                    tp->dependent = true;
-                }
-            }
-        }
-    }
-
-    paramscope->pop();
-
-    // Compute again
-    onemember = NULL;
-    if (members)
-    {
-        Dsymbol *s;
-        if (Dsymbol::oneMembers(members, &s, ident) && s)
-        {
-            onemember = s;
-            s->parent = this;
-        }
-    }
-
-    /* BUG: should check:
-     *  o no virtual functions or non-static data members of classes
-     */
-    semanticRun = PASSsemanticdone;
-}
-
 const char *TemplateDeclaration::kind() const
 {
     return (onemember && onemember->isAggregateDeclaration())
@@ -806,7 +684,7 @@ bool TemplateDeclaration::evaluateConstraint(
                 continue;                       // don't add it, if it has no name
             VarDeclaration *v = new VarDeclaration(loc, fparam->type, fparam->ident, NULL);
             v->storage_class = fparam->storageClass;
-            v->semantic(scx);
+            dsymbolSemantic(v, scx);
             if (!ti->symtab)
                 ti->symtab = new DsymbolTable();
             if (!scx->insert(v))
@@ -904,7 +782,7 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
             m = m2;
 
         if (!flag)
-            sparam->semantic(paramscope);
+            dsymbolSemantic(sparam, paramscope);
         if (!paramscope->insert(sparam))    // TODO: This check can make more early
             goto Lnomatch;                  // in TemplateDeclaration::semantic, and
                                             // then we don't need to make sparam if flags == 0
@@ -951,7 +829,7 @@ MATCH TemplateDeclaration::matchWithInstance(Scope *sc, TemplateInstance *ti,
             // Resolve parameter types and 'auto ref's.
             tf->fargs = fargs;
             unsigned olderrors = global.startGagging();
-            fd->type = tf->semantic(loc, paramscope);
+            fd->type = typeSemantic(tf, loc, paramscope);
             if (global.endGagging(olderrors))
             {
                 assert(fd->type->ty != Tfunction);
@@ -1187,7 +1065,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
             if (m < matchTiargs)
                 matchTiargs = m;
 
-            sparam->semantic(paramscope);
+            dsymbolSemantic(sparam, paramscope);
             if (!paramscope->insert(sparam))
                 goto Lnomatch;
         }
@@ -1351,7 +1229,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                     Parameter *p = fparameters[j];
                     if (!reliesOnTident(p->type, parameters, inferStart))
                     {
-                        Type *pt = p->type->syntaxCopy()->semantic(fd->loc, paramscope);
+                        Type *pt = typeSemantic(p->type->syntaxCopy(), fd->loc, paramscope);
                         rem += pt->ty == Ttuple ? ((TypeTuple *)pt)->arguments->length : 1;
                     }
                     else
@@ -1423,7 +1301,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
         if (!reliesOnTident(prmtype, parameters, inferStart))
         {
             // should copy prmtype to avoid affecting semantic result
-            prmtype = prmtype->syntaxCopy()->semantic(fd->loc, paramscope);
+            prmtype = typeSemantic(prmtype->syntaxCopy(), fd->loc, paramscope);
 
             if (prmtype->ty == Ttuple)
             {
@@ -1551,7 +1429,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
 
             // Deduce prmtype from the defaultArg.
             farg = fparam->defaultArg->syntaxCopy();
-            farg = ::semantic(farg, paramscope);
+            farg = expressionSemantic(farg, paramscope);
             farg = resolveProperties(paramscope, farg);
         }
         else
@@ -1773,7 +1651,7 @@ MATCH TemplateDeclaration::deduceFunctionTemplateMatch(
                         }
                         else
                         {
-                            Type *vt = tvp->valType->semantic(Loc(), sc);
+                            Type *vt = typeSemantic(tvp->valType, Loc(), sc);
                             MATCH m = (MATCH)dim->implicitConvTo(vt);
                             if (m <= MATCHnomatch)
                                 goto Lnomatch;
@@ -2079,7 +1957,7 @@ RootObject *TemplateDeclaration::declareParameter(Scope *sc, TemplateParameter *
 
     if (!sc->insert(d))
         error("declaration %s is already defined", tp->ident->toChars());
-    d->semantic(sc);
+    dsymbolSemantic(d, sc);
 
     /* So the caller's o gets updated with the result of semantic() being run on o
      */
@@ -2176,7 +2054,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
                 fd->semanticRun < PASSsemanticdone)
             {
                 Ungag ungag = fd->ungagSpeculative();
-                fd->semantic(NULL);
+                dsymbolSemantic(fd, NULL);
             }
             if (fd->semanticRun < PASSsemanticdone)
             {
@@ -2313,7 +2191,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
             {
                 // Try to fix forward reference. Ungag errors while doing so.
                 Ungag ungag = td->ungagSpeculative();
-                td->semantic(td->_scope);
+                dsymbolSemantic(td, td->_scope);
             }
             if (td->semanticRun == PASSinit)
             {
@@ -2341,7 +2219,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
                 if (mta <= MATCHnomatch || mta < ta_last)      // no match or less match
                     return 0;
 
-                ti->semantic(sc, fargs);
+                templateInstanceSemantic(ti, sc, fargs);
                 if (!ti->inst)                  // if template failed to expand
                     return 0;
 
@@ -2583,7 +2461,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
             sc = p.td_best->_scope; // workaround for Type::aliasthisOf
 
         TemplateInstance *ti = new TemplateInstance(loc, p.td_best, p.ti_best->tiargs);
-        ti->semantic(sc, fargs);
+        templateInstanceSemantic(ti, sc, fargs);
 
         m->lastf = ti->toAlias()->isFuncDeclaration();
         if (!m->lastf)
@@ -2623,7 +2501,7 @@ void functionResolve(Match *m, Dsymbol *dstart, Loc loc, Scope *sc,
          */
         if (tf->next && !m->lastf->inferRetType)
         {
-            m->lastf->type = tf->semantic(loc, sc);
+            m->lastf->type = typeSemantic(tf, loc, sc);
         }
     }
     else if (m->lastf)
@@ -2713,7 +2591,7 @@ FuncDeclaration *TemplateDeclaration::doHeaderInstantiation(
         tf->next = NULL;
     fd->type = tf;
     fd->type = fd->type->addSTC(scx->stc);
-    fd->type = fd->type->semantic(fd->loc, scx);
+    fd->type = typeSemantic(fd->type, fd->loc, scx);
     scx = scx->pop();
 
     if (fd->type->ty != Tfunction)
@@ -3199,7 +3077,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     /* BUG: what if tparam is a template instance, that
                      * has as an argument another Tident?
                      */
-                    tparam = tparam->semantic(loc, sc);
+                    tparam = typeSemantic(tparam, loc, sc);
                     assert(tparam->ty != Tident);
                     result = deduceType(t, sc, tparam, parameters, dedtypes, wm);
                     return;
@@ -3371,7 +3249,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     loc = tp->loc;
                 }
 
-                tparam = tparam->semantic(loc, sc);
+                tparam = typeSemantic(tparam, loc, sc);
             }
             if (t->ty != tparam->ty)
             {
@@ -3848,7 +3726,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                             // (it may be from a parent template, for example)
                         }
 
-                        e2 = ::semantic(e2, sc);      // Bugzilla 13417
+                        e2 = expressionSemantic(e2, sc);      // Bugzilla 13417
                         e2 = e2->ctfeInterpret();
 
                         //printf("e1 = %s, type = %s %d\n", e1->toChars(), e1->type->toChars(), e1->type->ty);
@@ -4459,7 +4337,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
                     Type *t = pto->type->syntaxCopy();  // Bugzilla 11774
                     if (reliesOnTident(t, parameters, inferStart))
                         return;
-                    t = t->semantic(e->loc, sc);
+                    t = typeSemantic(t, e->loc, sc);
                     if (t->ty == Terror)
                         return;
                     tiargs->push(t);
@@ -4471,7 +4349,7 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
 
                 TemplateInstance *ti = new TemplateInstance(e->loc, e->td, tiargs);
                 Expression *ex = new ScopeExp(e->loc, ti);
-                ex = ::semantic(ex, e->td->_scope);
+                ex = expressionSemantic(ex, e->td->_scope);
 
                 // Reset inference target for the later re-semantic
                 e->fd->treq = NULL;
@@ -5041,16 +4919,6 @@ bool TemplateTypeParameter::declareParameter(Scope *sc)
     return sc->insert(ad) != NULL;
 }
 
-bool TemplateTypeParameter::semantic(Scope *sc, TemplateParameters *parameters)
-{
-    //printf("TemplateTypeParameter::semantic('%s')\n", ident->toChars());
-    if (specType && !reliesOnTident(specType, parameters))
-    {
-        specType = specType->semantic(loc, sc);
-    }
-    return !(specType && isError(specType));
-}
-
 MATCH TemplateTypeParameter::matchArg(Scope *sc, RootObject *oarg,
         size_t i, TemplateParameters *parameters, Objects *dedtypes,
         Declaration **psparam)
@@ -5171,7 +5039,7 @@ RootObject *TemplateTypeParameter::defaultArg(Loc, Scope *sc)
     if (t)
     {
         t = t->syntaxCopy();
-        t = t->semantic(loc, sc);   // use the parameter loc
+        t = typeSemantic(t, loc, sc);   // use the parameter loc
     }
     return t;
 }
@@ -5238,42 +5106,6 @@ bool TemplateAliasParameter::declareParameter(Scope *sc)
     TypeIdentifier *ti = new TypeIdentifier(loc, ident);
     Declaration *ad = new AliasDeclaration(loc, ident, ti);
     return sc->insert(ad) != NULL;
-}
-
-static RootObject *aliasParameterSemantic(Loc loc, Scope *sc, RootObject *o, TemplateParameters *parameters)
-{
-    if (o)
-    {
-        Expression *ea = isExpression(o);
-        Type *ta = isType(o);
-        if (ta && (!parameters || !reliesOnTident(ta, parameters)))
-        {
-            Dsymbol *s = ta->toDsymbol(sc);
-            if (s)
-                o = s;
-            else
-                o = ta->semantic(loc, sc);
-        }
-        else if (ea)
-        {
-            sc = sc->startCTFE();
-            ea = ::semantic(ea, sc);
-            sc = sc->endCTFE();
-            o = ea->ctfeInterpret();
-        }
-    }
-    return o;
-}
-
-bool TemplateAliasParameter::semantic(Scope *sc, TemplateParameters *parameters)
-{
-    if (specType && !reliesOnTident(specType, parameters))
-    {
-        specType = specType->semantic(loc, sc);
-    }
-    specAlias = aliasParameterSemantic(loc, sc, specAlias, parameters);
-    return !(specType  && isError(specType)) &&
-           !(specAlias && isError(specAlias));
 }
 
 MATCH TemplateAliasParameter::matchArg(Scope *sc, RootObject *oarg,
@@ -5391,7 +5223,7 @@ MATCH TemplateAliasParameter::matchArg(Scope *sc, RootObject *oarg,
             Initializer *init = new ExpInitializer(loc, ea);
             VarDeclaration *v = new VarDeclaration(loc, NULL, ident, init);
             v->storage_class = STCmanifest;
-            v->semantic(sc);
+            dsymbolSemantic(v, sc);
             *psparam = v;
         }
     }
@@ -5491,13 +5323,6 @@ bool TemplateValueParameter::declareParameter(Scope *sc)
     return sc->insert(v) != NULL;
 }
 
-bool TemplateValueParameter::semantic(Scope *sc, TemplateParameters *)
-{
-    valType = valType->semantic(loc, sc);
-
-    return !isError(valType);
-}
-
 MATCH TemplateValueParameter::matchArg(Scope *sc, RootObject *oarg,
         size_t i, TemplateParameters *, Objects *dedtypes, Declaration **psparam)
 {
@@ -5516,7 +5341,7 @@ MATCH TemplateValueParameter::matchArg(Scope *sc, RootObject *oarg,
             goto Lnomatch;
 
         ei = new VarExp(loc, f);
-        ei = ::semantic(ei, sc);
+        ei = expressionSemantic(ei, sc);
 
         /* If a function is really property-like, and then
          * it's CTFEable, ei will be a literal expression.
@@ -5552,7 +5377,7 @@ MATCH TemplateValueParameter::matchArg(Scope *sc, RootObject *oarg,
     }
 
     //printf("\tvalType: %s, ty = %d\n", valType->toChars(), valType->ty);
-    vt = valType->semantic(loc, sc);
+    vt = typeSemantic(valType, loc, sc);
     //printf("ei: %s, ei->type: %s\n", ei->toChars(), ei->type->toChars());
     //printf("vt = %s\n", vt->toChars());
 
@@ -5576,7 +5401,7 @@ MATCH TemplateValueParameter::matchArg(Scope *sc, RootObject *oarg,
         Expression *e = specValue;
 
         sc = sc->startCTFE();
-        e = ::semantic(e, sc);
+        e = expressionSemantic(e, sc);
         e = resolveProperties(sc, e);
         sc = sc->endCTFE();
         e = e->implicitCastTo(sc, vt);
@@ -5584,7 +5409,7 @@ MATCH TemplateValueParameter::matchArg(Scope *sc, RootObject *oarg,
 
         ei = ei->syntaxCopy();
         sc = sc->startCTFE();
-        ei = ::semantic(ei, sc);
+        ei = expressionSemantic(ei, sc);
         sc = sc->endCTFE();
         ei = ei->implicitCastTo(sc, vt);
         ei = ei->ctfeInterpret();
@@ -5660,7 +5485,7 @@ RootObject *TemplateValueParameter::defaultArg(Loc instLoc, Scope *sc)
     if (e)
     {
         e = e->syntaxCopy();
-        if ((e = ::semantic(e, sc)) == NULL)
+        if ((e = expressionSemantic(e, sc)) == NULL)
             return NULL;
         if ((e = resolveProperties(sc, e)) == NULL)
             return NULL;
@@ -5700,11 +5525,6 @@ bool TemplateTupleParameter::declareParameter(Scope *sc)
     TypeIdentifier *ti = new TypeIdentifier(loc, ident);
     Declaration *ad = new AliasDeclaration(loc, ident, ti);
     return sc->insert(ad) != NULL;
-}
-
-bool TemplateTupleParameter::semantic(Scope *, TemplateParameters *)
-{
-    return true;
 }
 
 MATCH TemplateTupleParameter::matchArg(Loc, Scope *sc, Objects *tiargs,
@@ -5902,11 +5722,6 @@ Dsymbol *TemplateInstance::syntaxCopy(Dsymbol *s)
     return ti;
 }
 
-void TemplateInstance::semantic(Scope *sc)
-{
-    semantic(sc, NULL);
-}
-
 void TemplateInstance::expandMembers(Scope *sc2)
 {
     for (size_t i = 0; i < members->length; i++)
@@ -5929,7 +5744,7 @@ void TemplateInstance::expandMembers(Scope *sc2)
 //      if (enclosing)
 //          s->parent = sc->parent;
         //printf("test3: enclosing = %d, s->parent = %s\n", enclosing, s->parent->toChars());
-        s->semantic(sc2);
+        dsymbolSemantic(s, sc2);
         //printf("test4: enclosing = %d, s->parent = %s\n", enclosing, s->parent->toChars());
         Module::runDeferredSemantic();
     }
@@ -5963,558 +5778,10 @@ void TemplateInstance::trySemantic3(Scope *sc2)
         error("recursive expansion exceeded allowed nesting limit");
         fatal();
     }
-    semantic3(sc2);
+    semantic3(this, sc2);
 
     --nest;
 }
-
-void TemplateInstance::semantic(Scope *sc, Expressions *fargs)
-{
-    //printf("[%s] TemplateInstance::semantic('%s', this=%p, gag = %d, sc = %p)\n", loc.toChars(), toChars(), this, global.gag, sc);
-    if (inst)           // if semantic() was already run
-    {
-        return;
-    }
-    if (semanticRun != PASSinit)
-    {
-        Ungag ungag(global.gag);
-        if (!gagged)
-            global.gag = 0;
-        error(loc, "recursive template expansion");
-        if (gagged)
-            semanticRun = PASSinit;
-        else
-            inst = this;
-        errors = true;
-        return;
-    }
-
-    // Get the enclosing template instance from the scope tinst
-    tinst = sc->tinst;
-
-    // Get the instantiating module from the scope minst
-    minst = sc->minst;
-    // Bugzilla 10920: If the enclosing function is non-root symbol,
-    // this instance should be speculative.
-    if (!tinst && sc->func && sc->func->inNonRoot())
-    {
-        minst = NULL;
-    }
-
-    gagged = (global.gag > 0);
-
-    semanticRun = PASSsemantic;
-
-    /* Find template declaration first,
-     * then run semantic on each argument (place results in tiargs[]),
-     * last find most specialized template from overload list/set.
-     */
-    if (!findTempDecl(sc, NULL) ||
-        !semanticTiargs(sc) ||
-        !findBestMatch(sc, fargs))
-    {
-Lerror:
-        if (gagged)
-        {
-            // Bugzilla 13220: Rollback status for later semantic re-running.
-            semanticRun = PASSinit;
-        }
-        else
-            inst = this;
-        errors = true;
-        return;
-    }
-    TemplateDeclaration *tempdecl = this->tempdecl->isTemplateDeclaration();
-    assert(tempdecl);
-
-    // If tempdecl is a mixin, disallow it
-    if (tempdecl->ismixin)
-    {
-        error("mixin templates are not regular templates");
-        goto Lerror;
-    }
-
-    hasNestedArgs(tiargs, tempdecl->isstatic);
-    if (errors)
-        goto Lerror;
-
-    /* See if there is an existing TemplateInstantiation that already
-     * implements the typeargs. If so, just refer to that one instead.
-     */
-    inst = tempdecl->findExistingInstance(this, fargs);
-    TemplateInstance *errinst = NULL;
-    if (!inst)
-    {
-        // So, we need to implement 'this' instance.
-    }
-    else if (inst->gagged && !gagged && inst->errors)
-    {
-        // If the first instantiation had failed, re-run semantic,
-        // so that error messages are shown.
-        errinst = inst;
-    }
-    else
-    {
-        // It's a match
-        parent = inst->parent;
-        errors = inst->errors;
-
-        // If both this and the previous instantiation were gagged,
-        // use the number of errors that happened last time.
-        global.errors += errors;
-        global.gaggedErrors += errors;
-
-        // If the first instantiation was gagged, but this is not:
-        if (inst->gagged)
-        {
-            // It had succeeded, mark it is a non-gagged instantiation,
-            // and reuse it.
-            inst->gagged = gagged;
-        }
-
-        this->tnext = inst->tnext;
-        inst->tnext = this;
-
-        /* A module can have explicit template instance and its alias
-         * in module scope (e,g, `alias Base64 = Base64Impl!('+', '/');`).
-         * If the first instantiation 'inst' had happened in non-root module,
-         * compiler can assume that its instantiated code would be included
-         * in the separately compiled obj/lib file (e.g. phobos.lib).
-         *
-         * However, if 'this' second instantiation happened in root module,
-         * compiler might need to invoke its codegen (Bugzilla 2500 & 2644).
-         * But whole import graph is not determined until all semantic pass finished,
-         * so 'inst' should conservatively finish the semantic3 pass for the codegen.
-         */
-        if (minst && minst->isRoot() && !(inst->minst && inst->minst->isRoot()))
-        {
-            /* Swap the position of 'inst' and 'this' in the instantiation graph.
-             * Then, the primary instance `inst` will be changed to a root instance,
-             * along with all members of `inst` having their scopes updated.
-             *
-             * Before:
-             *  non-root -> A!() -> B!()[inst] -> C!() { members[non-root] }
-             *                      |
-             *  root     -> D!() -> B!()[this]
-             *
-             * After:
-             *  non-root -> A!() -> B!()[this]
-             *                      |
-             *  root     -> D!() -> B!()[inst] -> C!() { members[root] }
-             */
-            Module *mi = minst;
-            TemplateInstance *ti = tinst;
-            minst = inst->minst;
-            tinst = inst->tinst;
-            inst->minst = mi;
-            inst->tinst = ti;
-
-            /* https://issues.dlang.org/show_bug.cgi?id=21299
-               `minst` has been updated on the primary instance `inst` so it is
-               now coming from a root module, however all Dsymbol `inst.members`
-               of the instance still have their `_scope.minst` pointing at the
-               original non-root module. We must now propagate `minst` to all
-               members so that forward referenced dependencies that get
-               instantiated will also be appended to the root module, otherwise
-               there will be undefined references at link-time.  */
-            class InstMemberWalker : public Visitor
-            {
-            public:
-                TemplateInstance *inst;
-
-                InstMemberWalker(TemplateInstance *inst)
-                    : inst(inst) { }
-
-                void visit(Dsymbol *d)
-                {
-                    if (d->_scope)
-                        d->_scope->minst = inst->minst;
-                }
-
-                void visit(ScopeDsymbol *sds)
-                {
-                    if (!sds->members)
-                        return;
-                    for (size_t i = 0; i < sds->members->length; i++)
-                    {
-                        Dsymbol *s = (*sds->members)[i];
-                        s->accept(this);
-                    }
-                    visit((Dsymbol *)sds);
-                }
-
-                void visit(AttribDeclaration *ad)
-                {
-                    Dsymbols *d = ad->include(NULL);
-                    if (!d)
-                        return;
-                    for (size_t i = 0; i < d->length; i++)
-                    {
-                        Dsymbol *s = (*d)[i];
-                        s->accept(this);
-                    }
-                    visit((Dsymbol *)ad);
-                }
-
-                void visit(ConditionalDeclaration *cd)
-                {
-                    if (cd->condition->inc)
-                        visit((AttribDeclaration *)cd);
-                    else
-                        visit((Dsymbol *)cd);
-                }
-            };
-            InstMemberWalker v(inst);
-            inst->accept(&v);
-
-            if (minst)  // if inst was not speculative
-            {
-                /* Add 'inst' once again to the root module members[], then the
-                 * instance members will get codegen chances.
-                 */
-                inst->appendToModuleMember();
-            }
-        }
-
-        return;
-    }
-    unsigned errorsave = global.errors;
-
-    inst = this;
-    parent = enclosing ? enclosing : tempdecl->parent;
-    //printf("parent = '%s'\n", parent->kind());
-
-    TemplateInstance *tempdecl_instance_idx = tempdecl->addInstance(this);
-
-    //getIdent();
-
-    // Store the place we added it to in target_symbol_list(_idx) so we can
-    // remove it later if we encounter an error.
-    Dsymbols *target_symbol_list = appendToModuleMember();
-    size_t target_symbol_list_idx = target_symbol_list ? target_symbol_list->length - 1 : 0;
-
-    // Copy the syntax trees from the TemplateDeclaration
-    members = Dsymbol::arraySyntaxCopy(tempdecl->members);
-
-    // resolve TemplateThisParameter
-    for (size_t i = 0; i < tempdecl->parameters->length; i++)
-    {
-        if ((*tempdecl->parameters)[i]->isTemplateThisParameter() == NULL)
-            continue;
-        Type *t = isType((*tiargs)[i]);
-        assert(t);
-        if (StorageClass stc = ModToStc(t->mod))
-        {
-            //printf("t = %s, stc = x%llx\n", t->toChars(), stc);
-            Dsymbols *s = new Dsymbols();
-            s->push(new StorageClassDeclaration(stc, members));
-            members = s;
-        }
-        break;
-    }
-
-    // Create our own scope for the template parameters
-    Scope *scope = tempdecl->_scope;
-    if (tempdecl->semanticRun == PASSinit)
-    {
-        error("template instantiation %s forward references template declaration %s", toChars(), tempdecl->toChars());
-        return;
-    }
-
-    argsym = new ScopeDsymbol();
-    argsym->parent = scope->parent;
-    scope = scope->push(argsym);
-    scope->tinst = this;
-    scope->minst = minst;
-    //scope->stc = 0;
-
-    // Declare each template parameter as an alias for the argument type
-    Scope *paramscope = scope->push();
-    paramscope->stc = 0;
-    paramscope->protection = Prot(Prot::public_);  // Bugzilla 14169: template parameters should be public
-    declareParameters(paramscope);
-    paramscope->pop();
-
-    // Add members of template instance to template instance symbol table
-//    parent = scope->scopesym;
-    symtab = new DsymbolTable();
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->addMember(scope, this);
-    }
-
-    /* See if there is only one member of template instance, and that
-     * member has the same name as the template instance.
-     * If so, this template instance becomes an alias for that member.
-     */
-    //printf("members->length = %d\n", members->length);
-    if (members->length)
-    {
-        Dsymbol *s;
-        if (Dsymbol::oneMembers(members, &s, tempdecl->ident) && s)
-        {
-            //printf("tempdecl->ident = %s, s = '%s'\n", tempdecl->ident->toChars(), s->kind(), s->toPrettyChars());
-            //printf("setting aliasdecl\n");
-            aliasdecl = s;
-        }
-    }
-
-    /* If function template declaration
-     */
-    if (fargs && aliasdecl)
-    {
-        FuncDeclaration *fd = aliasdecl->isFuncDeclaration();
-        if (fd)
-        {
-            /* Transmit fargs to type so that TypeFunction::semantic() can
-             * resolve any "auto ref" storage classes.
-             */
-            TypeFunction *tf = (TypeFunction *)fd->type;
-            if (tf && tf->ty == Tfunction)
-                tf->fargs = fargs;
-        }
-    }
-
-    // Do semantic() analysis on template instance members
-    Scope *sc2;
-    sc2 = scope->push(this);
-    //printf("enclosing = %d, sc->parent = %s\n", enclosing, sc->parent->toChars());
-    sc2->parent = this;
-    sc2->tinst = this;
-    sc2->minst = minst;
-
-    tryExpandMembers(sc2);
-
-    semanticRun = PASSsemanticdone;
-
-    /* ConditionalDeclaration may introduce eponymous declaration,
-     * so we should find it once again after semantic.
-     */
-    if (members->length)
-    {
-        Dsymbol *s;
-        if (Dsymbol::oneMembers(members, &s, tempdecl->ident) && s)
-        {
-            if (!aliasdecl || aliasdecl != s)
-            {
-                //printf("tempdecl->ident = %s, s = '%s'\n", tempdecl->ident->toChars(), s->kind(), s->toPrettyChars());
-                //printf("setting aliasdecl 2\n");
-                aliasdecl = s;
-            }
-        }
-    }
-
-    if (global.errors != errorsave)
-        goto Laftersemantic;
-
-    /* If any of the instantiation members didn't get semantic() run
-     * on them due to forward references, we cannot run semantic2()
-     * or semantic3() yet.
-     */
-    {
-    bool found_deferred_ad = false;
-    for (size_t i = 0; i < Module::deferred.length; i++)
-    {
-        Dsymbol *sd = Module::deferred[i];
-        AggregateDeclaration *ad = sd->isAggregateDeclaration();
-        if (ad && ad->parent && ad->parent->isTemplateInstance())
-        {
-            //printf("deferred template aggregate: %s %s\n",
-            //        sd->parent->toChars(), sd->toChars());
-            found_deferred_ad = true;
-            if (ad->parent == this)
-            {
-                ad->deferred = this;
-                break;
-            }
-        }
-    }
-    if (found_deferred_ad || Module::deferred.length)
-        goto Laftersemantic;
-    }
-
-    /* The problem is when to parse the initializer for a variable.
-     * Perhaps VarDeclaration::semantic() should do it like it does
-     * for initializers inside a function.
-     */
-    //if (sc->parent->isFuncDeclaration())
-    {
-        /* BUG 782: this has problems if the classes this depends on
-         * are forward referenced. Find a way to defer semantic()
-         * on this template.
-         */
-        semantic2(sc2);
-    }
-    if (global.errors != errorsave)
-        goto Laftersemantic;
-
-    if ((sc->func || (sc->flags & SCOPEfullinst)) && !tinst)
-    {
-        /* If a template is instantiated inside function, the whole instantiation
-         * should be done at that position. But, immediate running semantic3 of
-         * dependent templates may cause unresolved forward reference (Bugzilla 9050).
-         * To avoid the issue, don't run semantic3 until semantic and semantic2 done.
-         */
-        TemplateInstances deferred;
-        this->deferred = &deferred;
-
-        //printf("Run semantic3 on %s\n", toChars());
-        trySemantic3(sc2);
-
-        for (size_t i = 0; i < deferred.length; i++)
-        {
-            //printf("+ run deferred semantic3 on %s\n", deferred[i]->toChars());
-            deferred[i]->semantic3(NULL);
-        }
-
-        this->deferred = NULL;
-    }
-    else if (tinst)
-    {
-        bool doSemantic3 = false;
-        if (sc->func && aliasdecl && aliasdecl->toAlias()->isFuncDeclaration())
-        {
-            /* Template function instantiation should run semantic3 immediately
-             * for attribute inference.
-             */
-            trySemantic3(sc2);
-        }
-        else if (sc->func)
-        {
-            /* A lambda function in template arguments might capture the
-             * instantiated scope context. For the correct context inference,
-             * all instantiated functions should run the semantic3 immediately.
-             * See also compilable/test14973.d
-             */
-            for (size_t i = 0; i < tdtypes.length; i++)
-            {
-                RootObject *oarg = tdtypes[i];
-                Dsymbol *s = getDsymbol(oarg);
-                if (!s)
-                    continue;
-
-                if (TemplateDeclaration *td = s->isTemplateDeclaration())
-                {
-                    if (!td->literal)
-                        continue;
-                    assert(td->members && td->members->length == 1);
-                    s = (*td->members)[0];
-                }
-                if (FuncLiteralDeclaration *fld = s->isFuncLiteralDeclaration())
-                {
-                    if (fld->tok == TOKreserved)
-                    {
-                        doSemantic3 = true;
-                        break;
-                    }
-                }
-            }
-            //printf("[%s] %s doSemantic3 = %d\n", loc.toChars(), toChars(), doSemantic3);
-        }
-        if (doSemantic3)
-            trySemantic3(sc2);
-
-        TemplateInstance *ti = tinst;
-        int nest = 0;
-        while (ti && !ti->deferred && ti->tinst)
-        {
-            ti = ti->tinst;
-            if (++nest > global.recursionLimit)
-            {
-                global.gag = 0;            // ensure error message gets printed
-                error("recursive expansion");
-                fatal();
-            }
-        }
-        if (ti && ti->deferred)
-        {
-            //printf("deferred semantic3 of %p %s, ti = %s, ti->deferred = %p\n", this, toChars(), ti->toChars());
-            for (size_t i = 0; ; i++)
-            {
-                if (i == ti->deferred->length)
-                {
-                    ti->deferred->push(this);
-                    break;
-                }
-                if ((*ti->deferred)[i] == this)
-                    break;
-            }
-        }
-    }
-
-    if (aliasdecl)
-    {
-        /* Bugzilla 13816: AliasDeclaration tries to resolve forward reference
-         * twice (See inuse check in AliasDeclaration::toAlias()). It's
-         * necessary to resolve mutual references of instantiated symbols, but
-         * it will left a true recursive alias in tuple declaration - an
-         * AliasDeclaration A refers TupleDeclaration B, and B contains A
-         * in its elements.  To correctly make it an error, we strictly need to
-         * resolve the alias of eponymous member.
-         */
-        aliasdecl = aliasdecl->toAlias2();
-    }
-
-  Laftersemantic:
-    sc2->pop();
-
-    scope->pop();
-
-    // Give additional context info if error occurred during instantiation
-    if (global.errors != errorsave)
-    {
-        if (!errors)
-        {
-            if (!tempdecl->literal)
-                error(loc, "error instantiating");
-            if (tinst)
-                tinst->printInstantiationTrace();
-        }
-        errors = true;
-        if (gagged)
-        {
-            // Errors are gagged, so remove the template instance from the
-            // instance/symbol lists we added it to and reset our state to
-            // finish clean and so we can try to instantiate it again later
-            // (see bugzilla 4302 and 6602).
-            tempdecl->removeInstance(tempdecl_instance_idx);
-            if (target_symbol_list)
-            {
-                // Because we added 'this' in the last position above, we
-                // should be able to remove it without messing other indices up.
-                assert((*target_symbol_list)[target_symbol_list_idx] == this);
-                target_symbol_list->remove(target_symbol_list_idx);
-                memberOf = NULL;                    // no longer a member
-            }
-            semanticRun = PASSinit;
-            inst = NULL;
-            symtab = NULL;
-        }
-    }
-    else if (errinst)
-    {
-        /* Bugzilla 14541: If the previous gagged instance had failed by
-         * circular references, currrent "error reproduction instantiation"
-         * might succeed, because of the difference of instantiated context.
-         * On such case, the cached error instance needs to be overridden by the
-         * succeeded instance.
-         */
-        //printf("replaceInstance()\n");
-        TemplateInstances *tinstances = (TemplateInstances *)dmd_aaGetRvalue((AA *)tempdecl->instances, (void *)hash);
-        assert(tinstances);
-        for (size_t i = 0; i < tinstances->length; i++)
-        {
-            TemplateInstance *ti = (*tinstances)[i];
-            if (ti == errinst)
-            {
-                (*tinstances)[i] = this;     // override
-                break;
-            }
-        }
-    }
-}
-
 
 /**********************************************
  * Find template declaration corresponding to template instance.
@@ -6549,9 +5816,9 @@ bool TemplateInstance::findTempDecl(Scope *sc, WithScopeSymbol **pwithsym)
         {
             s = sc->search_correct(id);
             if (s)
-                error("template '%s' is not defined, did you mean %s?", id->toChars(), s->toChars());
+                error("template `%s` is not defined, did you mean %s?", id->toChars(), s->toChars());
             else
-                error("template '%s' is not defined", id->toChars());
+                error("template `%s` is not defined", id->toChars());
             return false;
         }
 
@@ -6601,7 +5868,7 @@ bool TemplateInstance::findTempDecl(Scope *sc, WithScopeSymbol **pwithsym)
             {
                 // Try to fix forward reference. Ungag errors while doing so.
                 Ungag ungag = td->ungagSpeculative();
-                td->semantic(td->_scope);
+                dsymbolSemantic(td, td->_scope);
             }
             if (td->semanticRun == PASSinit)
             {
@@ -6667,7 +5934,7 @@ bool TemplateInstance::updateTempDecl(Scope *sc, Dsymbol *s)
             }
             if (!s)
             {
-                error("template '%s' is not defined", id->toChars());
+                error("template `%s` is not defined", id->toChars());
                 return false;
             }
         }
@@ -6827,7 +6094,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
             //printf("+[%d] ea = %s %s\n", j, Token::toChars(ea->op), ea->toChars());
             if (flags & 1) // only used by __traits
             {
-                ea = ::semantic(ea, sc);
+                ea = expressionSemantic(ea, sc);
 
                 // must not interpret the args, excepting template parameters
                 if (ea->op != TOKvar ||
@@ -6839,7 +6106,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
             else
             {
                 sc = sc->startCTFE();
-                ea = ::semantic(ea, sc);
+                ea = expressionSemantic(ea, sc);
                 sc = sc->endCTFE();
 
                 if (ea->op == TOKvar)
@@ -6966,7 +6233,7 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
             TemplateDeclaration *td = sa->isTemplateDeclaration();
             if (td && td->semanticRun == PASSinit && td->literal)
             {
-                td->semantic(sc);
+                dsymbolSemantic(td, sc);
             }
             FuncDeclaration *fd = sa->isFuncDeclaration();
             if (fd)
@@ -7286,7 +6553,7 @@ bool TemplateInstance::needsTypeInference(Scope *sc, int flag)
                 {
                     // Try to fix forward reference. Ungag errors while doing so.
                     Ungag ungag = td->ungagSpeculative();
-                    td->semantic(td->_scope);
+                    dsymbolSemantic(td, td->_scope);
                 }
                 if (td->semanticRun == PASSinit)
                 {
@@ -7449,7 +6716,7 @@ bool TemplateInstance::hasNestedArgs(Objects *args, bool isstatic)
                 }
                 else
                 {
-                    error("cannot use local '%s' as parameter to non-global template %s", sa->toChars(), tempdecl->toChars());
+                    error("cannot use local `%s` as parameter to non-global template %s", sa->toChars(), tempdecl->toChars());
                     errors = true;
                 }
             }
@@ -7588,111 +6855,6 @@ void TemplateInstance::declareParameters(Scope *sc)
     }
 }
 
-void TemplateInstance::semantic2(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic2)
-        return;
-    semanticRun = PASSsemantic2;
-    if (!errors && members)
-    {
-        TemplateDeclaration *tempdecl = this->tempdecl->isTemplateDeclaration();
-        assert(tempdecl);
-
-        sc = tempdecl->_scope;
-        assert(sc);
-        sc = sc->push(argsym);
-        sc = sc->push(this);
-        sc->tinst = this;
-        sc->minst = minst;
-
-        int needGagging = (gagged && !global.gag);
-        unsigned int olderrors = global.errors;
-        int oldGaggedErrors = -1;       // dead-store to prevent spurious warning
-        if (needGagging)
-            oldGaggedErrors = global.startGagging();
-
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic2(sc);
-            if (gagged && global.errors != olderrors)
-                break;
-        }
-
-        if (global.errors != olderrors)
-        {
-            if (!errors)
-            {
-                if (!tempdecl->literal)
-                    error(loc, "error instantiating");
-                if (tinst)
-                    tinst->printInstantiationTrace();
-            }
-            errors = true;
-        }
-        if (needGagging)
-            global.endGagging(oldGaggedErrors);
-
-        sc = sc->pop();
-        sc->pop();
-    }
-}
-
-void TemplateInstance::semantic3(Scope *sc)
-{
-//if (toChars()[0] == 'D') *(char*)0=0;
-    if (semanticRun >= PASSsemantic3)
-        return;
-    semanticRun = PASSsemantic3;
-    if (!errors && members)
-    {
-        TemplateDeclaration *tempdecl = this->tempdecl->isTemplateDeclaration();
-        assert(tempdecl);
-
-        sc = tempdecl->_scope;
-        sc = sc->push(argsym);
-        sc = sc->push(this);
-        sc->tinst = this;
-        sc->minst = minst;
-
-        int needGagging = (gagged && !global.gag);
-        unsigned int olderrors = global.errors;
-        int oldGaggedErrors = -1;       // dead-store to prevent spurious warning
-        /* If this is a gagged instantiation, gag errors.
-         * Future optimisation: If the results are actually needed, errors
-         * would already be gagged, so we don't really need to run semantic
-         * on the members.
-         */
-        if (needGagging)
-            oldGaggedErrors = global.startGagging();
-
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic3(sc);
-            if (gagged && global.errors != olderrors)
-                break;
-        }
-
-        if (global.errors != olderrors)
-        {
-            if (!errors)
-            {
-                if (!tempdecl->literal)
-                    error(loc, "error instantiating");
-                if (tinst)
-                    tinst->printInstantiationTrace();
-            }
-            errors = true;
-        }
-        if (needGagging)
-            global.endGagging(oldGaggedErrors);
-
-        sc = sc->pop();
-        sc->pop();
-    }
-}
-
 /**************************************
  * Given an error instantiating the TemplateInstance,
  * give the nested TemplateInstance instantiations that got
@@ -7781,7 +6943,7 @@ Dsymbol *TemplateInstance::toAlias()
         // Maybe we can resolve it
         if (_scope)
         {
-            semantic(_scope);
+            dsymbolSemantic(this, _scope);
         }
         if (!inst)
         {
@@ -8209,7 +7371,7 @@ bool TemplateMixin::findTempDecl(Scope *sc)
         if (td->semanticRun == PASSinit)
         {
             if (td->_scope)
-                td->semantic(td->_scope);
+                dsymbolSemantic(td, td->_scope);
             else
             {
                 tm->semanticRun = PASSinit;
@@ -8230,264 +7392,6 @@ bool TemplateMixin::findTempDecl(Scope *sc)
     return true;
 }
 
-void TemplateMixin::semantic(Scope *sc)
-{
-    if (semanticRun != PASSinit)
-    {
-        // When a class/struct contains mixin members, and is done over
-        // because of forward references, never reach here so semanticRun
-        // has been reset to PASSinit.
-        return;
-    }
-    semanticRun = PASSsemantic;
-
-    Scope *scx = NULL;
-    if (_scope)
-    {
-        sc = _scope;
-        scx = _scope;            // save so we don't make redundant copies
-        _scope = NULL;
-    }
-
-    /* Run semantic on each argument, place results in tiargs[],
-     * then find best match template with tiargs
-     */
-    if (!findTempDecl(sc) ||
-        !semanticTiargs(sc) ||
-        !findBestMatch(sc, NULL))
-    {
-        if (semanticRun == PASSinit)    // forward reference had occured
-        {
-            //printf("forward reference - deferring\n");
-            _scope = scx ? scx : sc->copy();
-            _scope->setNoFree();
-            _scope->_module->addDeferredSemantic(this);
-            return;
-        }
-
-        inst = this;
-        errors = true;
-        return;         // error recovery
-    }
-    TemplateDeclaration *tempdecl = this->tempdecl->isTemplateDeclaration();
-    assert(tempdecl);
-
-    if (!ident)
-    {
-        /* Assign scope local unique identifier, as same as lambdas.
-         */
-        const char *s = "__mixin";
-
-        DsymbolTable *symtab;
-        if (FuncDeclaration *func = sc->parent->isFuncDeclaration())
-        {
-            symtab = func->localsymtab;
-            if (symtab)
-            {
-                // Inside template constraint, symtab is not set yet.
-                goto L1;
-            }
-        }
-        else
-        {
-            symtab = sc->parent->isScopeDsymbol()->symtab;
-        L1:
-            assert(symtab);
-            int num = (int)dmd_aaLen(symtab->tab) + 1;
-            ident = Identifier::generateId(s, num);
-            symtab->insert(this);
-        }
-    }
-
-    inst = this;
-    parent = sc->parent;
-
-    /* Detect recursive mixin instantiations.
-     */
-    for (Dsymbol *s = parent; s; s = s->parent)
-    {
-        //printf("\ts = '%s'\n", s->toChars());
-        TemplateMixin *tm = s->isTemplateMixin();
-        if (!tm || tempdecl != tm->tempdecl)
-            continue;
-
-        /* Different argument list lengths happen with variadic args
-         */
-        if (tiargs->length != tm->tiargs->length)
-            continue;
-
-        for (size_t i = 0; i < tiargs->length; i++)
-        {
-            RootObject *o = (*tiargs)[i];
-            Type *ta = isType(o);
-            Expression *ea = isExpression(o);
-            Dsymbol *sa = isDsymbol(o);
-            RootObject *tmo = (*tm->tiargs)[i];
-            if (ta)
-            {
-                Type *tmta = isType(tmo);
-                if (!tmta)
-                    goto Lcontinue;
-                if (!ta->equals(tmta))
-                    goto Lcontinue;
-            }
-            else if (ea)
-            {
-                Expression *tme = isExpression(tmo);
-                if (!tme || !ea->equals(tme))
-                    goto Lcontinue;
-            }
-            else if (sa)
-            {
-                Dsymbol *tmsa = isDsymbol(tmo);
-                if (sa != tmsa)
-                    goto Lcontinue;
-            }
-            else
-                assert(0);
-        }
-        error("recursive mixin instantiation");
-        return;
-
-    Lcontinue:
-        continue;
-    }
-
-    // Copy the syntax trees from the TemplateDeclaration
-    members = Dsymbol::arraySyntaxCopy(tempdecl->members);
-    if (!members)
-        return;
-
-    symtab = new DsymbolTable();
-
-    for (Scope *sce = sc; 1; sce = sce->enclosing)
-    {
-        ScopeDsymbol *sds = (ScopeDsymbol *)sce->scopesym;
-        if (sds)
-        {
-            sds->importScope(this, Prot(Prot::public_));
-            break;
-        }
-    }
-
-    Scope *scy = sc->push(this);
-    scy->parent = this;
-
-    argsym = new ScopeDsymbol();
-    argsym->parent = scy->parent;
-    Scope *argscope = scy->push(argsym);
-
-    unsigned errorsave = global.errors;
-
-    // Declare each template parameter as an alias for the argument type
-    declareParameters(argscope);
-
-    // Add members to enclosing scope, as well as this scope
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->addMember(argscope, this);
-        //printf("sc->parent = %p, sc->scopesym = %p\n", sc->parent, sc->scopesym);
-        //printf("s->parent = %s\n", s->parent->toChars());
-    }
-
-    // Do semantic() analysis on template instance members
-    Scope *sc2 = argscope->push(this);
-    //size_t deferred_dim = Module::deferred.length;
-
-    static int nest;
-    //printf("%d\n", nest);
-    if (++nest > global.recursionLimit)
-    {
-        global.gag = 0;                 // ensure error message gets printed
-        error("recursive expansion");
-        fatal();
-    }
-
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->setScope(sc2);
-    }
-
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->importAll(sc2);
-    }
-
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->semantic(sc2);
-    }
-
-    nest--;
-
-    /* In DeclDefs scope, TemplateMixin does not have to handle deferred symbols.
-     * Because the members would already call Module::addDeferredSemantic() for themselves.
-     * See Struct, Class, Interface, and EnumDeclaration::semantic().
-     */
-    //if (!sc->func && Module::deferred.length > deferred_dim) {}
-
-    AggregateDeclaration *ad = toParent()->isAggregateDeclaration();
-    if (sc->func && !ad)
-    {
-        semantic2(sc2);
-        semantic3(sc2);
-    }
-
-    // Give additional context info if error occurred during instantiation
-    if (global.errors != errorsave)
-    {
-        error("error instantiating");
-        errors = true;
-    }
-
-    sc2->pop();
-    argscope->pop();
-    scy->pop();
-}
-
-void TemplateMixin::semantic2(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic2)
-        return;
-    semanticRun = PASSsemantic2;
-    if (members)
-    {
-        assert(sc);
-        sc = sc->push(argsym);
-        sc = sc->push(this);
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic2(sc);
-        }
-        sc = sc->pop();
-        sc->pop();
-    }
-}
-
-void TemplateMixin::semantic3(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic3)
-        return;
-    semanticRun = PASSsemantic3;
-    if (members)
-    {
-        sc = sc->push(argsym);
-        sc = sc->push(this);
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic3(sc);
-        }
-        sc = sc->pop();
-        sc->pop();
-    }
-}
-
 const char *TemplateMixin::kind() const
 {
     return "mixin";
@@ -8501,7 +7405,7 @@ bool TemplateMixin::oneMember(Dsymbol **ps, Identifier *ident)
 int TemplateMixin::apply(Dsymbol_apply_ft_t fp, void *param)
 {
     if (_scope) // if fwd reference
-        semantic(NULL); // try to resolve it
+        dsymbolSemantic(this, NULL); // try to resolve it
     if (members)
     {
         for (size_t i = 0; i < members->length; i++)
@@ -8540,7 +7444,7 @@ void TemplateMixin::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, 
 {
     //printf("TemplateMixin::setFieldOffset() %s\n", toChars());
     if (_scope)                  // if fwd reference
-        semantic(NULL);         // try to resolve it
+        dsymbolSemantic(this, NULL);         // try to resolve it
     if (members)
     {
         for (size_t i = 0; i < members->length; i++)

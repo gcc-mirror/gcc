@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -1699,7 +1699,7 @@ TOK Lexer::number(Token *t)
                 ++p;
                 if (base < 10 && !err)
                 {
-                    error("radix %d digit expected, not '%c'", base, c);
+                    error("radix %d digit expected, not `%c`", base, c);
                     err = true;
                 }
                 d = c - '0';
@@ -1714,7 +1714,7 @@ TOK Lexer::number(Token *t)
                         goto Lreal;
                     if (!err)
                     {
-                        error("radix %d digit expected, not '%c'", base, c);
+                        error("radix %d digit expected, not `%c`", base, c);
                         err = true;
                     }
                 }
@@ -2049,7 +2049,7 @@ TOK Lexer::inreal(Token *t)
     if (isOutOfRange && !isLong)
     {
         const char *suffix = (result == TOKfloat32v || result == TOKimaginary32v) ? "f" : "";
-        error(scanloc, "number '%s%s' is not representable", (char *)stringbuffer.slice().ptr, suffix);
+        error(scanloc, "number `%s%s` is not representable", (char *)stringbuffer.slice().ptr, suffix);
     }
     return result;
 }

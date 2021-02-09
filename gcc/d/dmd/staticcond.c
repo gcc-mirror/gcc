@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -12,8 +12,6 @@
 #include "expression.h"
 #include "mtype.h"
 #include "scope.h"
-
-Expression *semantic(Expression *e, Scope *sc);
 
 /********************************************
  * Semantically analyze and then evaluate a static condition at compile time.
@@ -64,7 +62,7 @@ bool evalStaticCondition(Scope *sc, Expression *exp, Expression *e, bool &errors
     sc = sc->startCTFE();
     sc->flags |= SCOPEcondition;
 
-    e = semantic(e, sc);
+    e = expressionSemantic(e, sc);
     e = resolveProperties(sc, e);
 
     sc = sc->endCTFE();

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -663,7 +663,8 @@ static size_t getCodeIndent(const char *src)
 /** Recursively expand template mixin member docs into the scope. */
 static void expandTemplateMixinComments(TemplateMixin *tm, OutBuffer *buf, Scope *sc)
 {
-    if (!tm->semanticRun) tm->semantic(sc);
+    if (!tm->semanticRun)
+        dsymbolSemantic(tm, sc);
     TemplateDeclaration *td = (tm && tm->tempdecl) ?
         tm->tempdecl->isTemplateDeclaration() : NULL;
     if (td && td->members)
@@ -1105,9 +1106,9 @@ void toDocBuffer(Dsymbol *s, OutBuffer *buf, Scope *sc)
             emitProtection(buf, ad->protection);
             buf->printf("alias %s = ", ad->toChars());
 
-            if (Dsymbol *s = ad->aliassym)  // ident alias
+            if (Dsymbol *sa = ad->aliassym)  // ident alias
             {
-                prettyPrintDsymbol(s, ad->parent);
+                prettyPrintDsymbol(sa, ad->parent);
             }
             else if (Type *type = ad->getType())  // type alias
             {

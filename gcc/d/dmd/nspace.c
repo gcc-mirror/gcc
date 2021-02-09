@@ -1,6 +1,6 @@
 
 // Compiler implementation of the D programming language
-// Copyright: Copyright (C) 2014-2020 by The D Language Foundation, All Rights Reserved
+// Copyright: Copyright (C) 2014-2021 by The D Language Foundation, All Rights Reserved
 // Authors: Walter Bright, http://www.digitalmars.com
 // License: http://boost.org/LICENSE_1_0.txt
 // Source: https://github.com/D-Programming-Language/dmd/blob/master/src/nspace.c
@@ -86,80 +86,6 @@ void Nspace::setScope(Scope *sc)
     }
 }
 
-void Nspace::semantic(Scope *sc)
-{
-    if (semanticRun != PASSinit)
-        return;
-    if (_scope)
-    {
-        sc = _scope;
-        _scope = NULL;
-    }
-    if (!sc)
-        return;
-
-    semanticRun = PASSsemantic;
-    parent = sc->parent;
-    if (members)
-    {
-        assert(sc);
-        sc = sc->push(this);
-        sc->linkage = LINKcpp;          // note that namespaces imply C++ linkage
-        sc->parent = this;
-
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->importAll(sc);
-        }
-
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic(sc);
-        }
-        sc->pop();
-    }
-    semanticRun = PASSsemanticdone;
-}
-
-void Nspace::semantic2(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic2)
-        return;
-    semanticRun = PASSsemantic2;
-    if (members)
-    {
-        assert(sc);
-        sc = sc->push(this);
-        sc->linkage = LINKcpp;
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic2(sc);
-        }
-        sc->pop();
-    }
-}
-
-void Nspace::semantic3(Scope *sc)
-{
-    if (semanticRun >= PASSsemantic3)
-        return;
-    semanticRun = PASSsemantic3;
-    if (members)
-    {
-        sc = sc->push(this);
-        sc->linkage = LINKcpp;
-        for (size_t i = 0; i < members->length; i++)
-        {
-            Dsymbol *s = (*members)[i];
-            s->semantic3(sc);
-        }
-        sc->pop();
-    }
-}
-
 const char *Nspace::kind() const
 {
     return "namespace";
@@ -174,11 +100,11 @@ Dsymbol *Nspace::search(const Loc &loc, Identifier *ident, int flags)
 {
     //printf("%s::Nspace::search('%s')\n", toChars(), ident->toChars());
     if (_scope && !symtab)
-        semantic(_scope);
+        dsymbolSemantic(this, _scope);
 
     if (!members || !symtab) // opaque or semantic() is not yet called
     {
-        error("is forward referenced when looking for '%s'", ident->toChars());
+        error("is forward referenced when looking for `%s`", ident->toChars());
         return NULL;
     }
 
@@ -225,7 +151,7 @@ void Nspace::setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool is
 {
     //printf("Nspace::setFieldOffset() %s\n", toChars());
     if (_scope)                  // if fwd reference
-        semantic(NULL);         // try to resolve it
+        dsymbolSemantic(this, NULL);         // try to resolve it
     if (members)
     {
         for (size_t i = 0; i < members->length; i++)
