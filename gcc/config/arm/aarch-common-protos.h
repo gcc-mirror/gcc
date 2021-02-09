@@ -132,6 +132,7 @@ struct fp_cost_table
 struct vector_cost_table
 {
   const int alu;
+  const int mult;
 };
 
 struct cpu_cost_table

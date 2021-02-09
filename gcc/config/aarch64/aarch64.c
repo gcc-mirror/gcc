@@ -11568,7 +11568,6 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
   if (VECTOR_MODE_P (mode))
     {
       unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-      mode = GET_MODE_INNER (mode);
       if (vec_flags & VEC_ADVSIMD)
 	{
 	  /* The by-element versions of the instruction have the same costs as
@@ -11582,6 +11581,17 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
 	  else if (GET_CODE (op1) == VEC_DUPLICATE)
 	    op1 = XEXP (op1, 0);
 	}
+      cost += rtx_cost (op0, mode, MULT, 0, speed);
+      cost += rtx_cost (op1, mode, MULT, 1, speed);
+      if (speed)
+	{
+	  if (GET_CODE (x) == MULT)
+	    cost += extra_cost->vect.mult;
+	  /* This is to catch the SSRA costing currently flowing here.  */
+	  else
+	    cost += extra_cost->vect.alu;
+	}
+      return cost;
     }
 
   /* Integer multiply/fma.  */
