@@ -165,8 +165,11 @@ sem_item::add_reference (ref_map *refs,
   unsigned index = reference_count++;
   bool existed;
 
-  vec<sem_item *> &v
-    = refs->get_or_insert (new sem_usage_pair (target, index), &existed);
+  sem_usage_pair *pair = new sem_usage_pair (target, index);
+  vec<sem_item *> &v = refs->get_or_insert (pair, &existed);
+  if (existed)
+    delete pair;
+
   v.safe_push (this);
   bitmap_set_bit (target->usage_index_bitmap, index);
   refs_set.add (target->node);
