@@ -7827,14 +7827,30 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::LoopExpr>
 Parser<ManagedTokenSource>::parse_loop_expr (
-  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label)
+  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label,
+  bool pratt_parse)
 {
   Location locus = Linemap::unknown_location ();
-  if (label.is_error ())
-    locus = lexer.peek_token ()->get_locus ();
+  if (!pratt_parse)
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus ();
+      else
+	locus = label.get_locus ();
+
+      if (!skip_token (LOOP))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
   else
-    locus = label.get_locus ();
-  skip_token (LOOP);
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus () - 1;
+      else
+	locus = label.get_locus ();
+    }
 
   // parse loop body, which is required
   std::unique_ptr<AST::BlockExpr> loop_body = parse_block_expr ();
@@ -12435,6 +12451,9 @@ Parser<ManagedTokenSource>::null_denotation (
 	  // if expr
 	  return parse_if_expr (std::move (outer_attrs), true);
 	}
+    case LOOP:
+      return parse_loop_expr (std::move (outer_attrs), AST::LoopLabel::error (),
+			      true);
     case MATCH_TOK:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), true);
