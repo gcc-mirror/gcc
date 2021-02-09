@@ -3334,6 +3334,8 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  std::unique_ptr<HIR::BlockExpr> &get_loop_block () { return loop_block; };
 };
 
 // 'Loop' expression (i.e. the infinite loop) HIR node

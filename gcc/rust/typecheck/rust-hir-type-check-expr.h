@@ -741,6 +741,11 @@ public:
       }
   }
 
+  void visit (HIR::LoopExpr &expr)
+  {
+    infered = TypeCheckExpr::Resolve (expr.get_loop_block ().get ());
+  }
+
 private:
   TypeCheckExpr ()
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr)

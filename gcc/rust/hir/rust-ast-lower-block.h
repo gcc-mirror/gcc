@@ -134,6 +134,25 @@ public:
     translated = ASTLoweringBlock::translate (&expr, &terminated);
   }
 
+  void visit (AST::LoopExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+    HIR::BlockExpr *loop_block
+      = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
+				     &terminated);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::LoopExpr (mapping,
+			   std::unique_ptr<HIR::BlockExpr> (loop_block),
+			   expr.get_locus (), HIR::LoopLabel::error (),
+			   std::move (outer_attribs));
+  }
+
 private:
   ASTLoweringExprWithBlock ()
     : ASTLoweringBase (), translated (nullptr), terminated (false)

@@ -697,6 +697,11 @@ public:
 				  std::move (outer_attribs), expr.get_locus ());
   }
 
+  void visit (AST::LoopExpr &expr)
+  {
+    translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
+  }
+
 private:
   ASTLoweringExpr ()
     : translated (nullptr), translated_array_elems (nullptr), terminated (false)

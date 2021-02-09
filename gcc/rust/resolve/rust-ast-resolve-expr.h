@@ -241,6 +241,11 @@ public:
     ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::LoopExpr &expr)
+  {
+    ResolveExpr::go (expr.get_loop_block ().get (), expr.get_node_id ());
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };

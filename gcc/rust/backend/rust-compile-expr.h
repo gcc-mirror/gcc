@@ -580,6 +580,25 @@ public:
     translated = ResolvePathRef::Compile (&expr, ctx);
   }
 
+  void visit (HIR::LoopExpr &expr)
+  {
+    // loop_start:
+    //      <loop_body>
+    //   goto loop_start;
+    fncontext fnctx = ctx->peek_fn ();
+    Blabel *loop_start
+      = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
+    Bstatement *label_decl_stmt
+      = ctx->get_backend ()->label_definition_statement (loop_start);
+    ctx->add_statement (label_decl_stmt);
+
+    translated = CompileExpr::Compile (expr.get_loop_block ().get (), ctx);
+
+    Bstatement *goto_loop_start_stmt
+      = ctx->get_backend ()->goto_statement (loop_start, Location ());
+    ctx->add_statement (goto_loop_start_stmt);
+  }
+
 private:
   CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 
