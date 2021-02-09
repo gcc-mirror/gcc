@@ -170,8 +170,8 @@
   BUILTIN_VDQ_BHSI (TERNOP, saba, 0, NONE)
   BUILTIN_VDQ_BHSI (TERNOPU, uaba, 0, NONE)
 
-  BUILTIN_VDQV_S (BINOP, sadalp, 0, NONE)
-  BUILTIN_VDQV_S (BINOPU, uadalp, 0, NONE)
+  BUILTIN_VDQV_L (BINOP, sadalp, 0, NONE)
+  BUILTIN_VDQV_L (BINOPU, uadalp, 0, NONE)
 
   /* Implemented by aarch64_<sur>abal<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, sabal, 0, NONE)

@@ -904,8 +904,8 @@
 
 (define_insn "aarch64_<sur>adalp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VDQV_S 2 "register_operand" "w")
-			  (match_operand:<VDBLW> 1 "register_operand" "0")]
+	(unspec:<VDBLW> [(match_operand:VDQV_L 2 "register_operand" "w")
+			 (match_operand:<VDBLW> 1 "register_operand" "0")]
 	ADALP))]
   "TARGET_SIMD"
   "<sur>adalp\t%0.<Vwhalf>, %2.<Vtype>"

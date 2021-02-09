@@ -8449,12 +8449,7 @@ __extension__ extern __inline int64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_s32 (int64x1_t __a, int32x2_t __b)
 {
-  int64x1_t __result;
-  __asm__ ("sadalp %0.1d,%2.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (int64x1_t) __builtin_aarch64_sadalpv2si (__a[0], __b);
 }
 
 __extension__ extern __inline uint16x4_t
@@ -8475,12 +8470,7 @@ __extension__ extern __inline uint64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vpadal_u32 (uint64x1_t __a, uint32x2_t __b)
 {
-  uint64x1_t __result;
-  __asm__ ("uadalp %0.1d,%2.2s"
-           : "=w"(__result)
-           : "0"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (uint64x1_t) __builtin_aarch64_uadalpv2si_uuu (__a[0], __b);
 }
 
 __extension__ extern __inline int16x8_t
