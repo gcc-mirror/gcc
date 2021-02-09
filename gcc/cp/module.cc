@@ -3608,8 +3608,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
 
  public:
-  /* Is this not a real module?  */
-  bool is_rooted () const
+  /* Is this a real module?  */
+  bool has_location () const
   {
     return loc != UNKNOWN_LOCATION;
   }
@@ -4416,7 +4416,7 @@ dumper::operator () (const char *format, ...)
 	    const char *str = "(none)";
 	    if (module_state *m = va_arg (args, module_state *))
 	      {
-		if (!m->is_rooted ())
+		if (!m->has_location ())
 		  str = "(detached)";
 		else
 		  str = m->get_flatname ();
@@ -14441,16 +14441,17 @@ module_state::read_partitions (unsigned count)
       dump () && dump ("Reading elided partition %s (crc=%x)", name, crc);
 
       module_state *imp = get_module (name);
-      if (!imp || !imp->is_partition () || imp->is_rooted ()
-	  || get_primary (imp) != this)
+      if (!imp	/* Partition should be ...  */
+	  || !imp->is_partition () /* a partition ...  */
+	  || imp->loadedness != ML_NONE  /* that is not yet loaded ...  */
+	  || get_primary (imp) != this) /* whose primary is this.  */
 	{
 	  sec.set_overrun ();
 	  break;
 	}
 
-      /* Attach the partition without loading it.  We'll have to load
-	 for real if it's indirectly imported.  */
-      imp->loc = floc;
+      if (!imp->has_location ())
+	imp->loc = floc;
       imp->crc = crc;
       if (!imp->filename && fname[0])
 	imp->filename = xstrdup (fname);
@@ -18857,7 +18858,7 @@ direct_import (module_state *import, cpp_reader *reader)
   timevar_start (TV_MODULE_IMPORT);
   unsigned n = dump.push (import);
 
-  gcc_checking_assert (import->is_direct () && import->is_rooted ());
+  gcc_checking_assert (import->is_direct () && import->has_location ());
   if (import->loadedness == ML_NONE)
     if (!import->do_import (reader, true))
       gcc_unreachable ();
@@ -18904,7 +18905,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
       linemap_module_reparent (line_table, import->loc, from_loc);
     }
   gcc_checking_assert (!import->module_p);
-  gcc_checking_assert (import->is_direct () && import->is_rooted ());
+  gcc_checking_assert (import->is_direct () && import->has_location ());
 
   direct_import (import, reader);
 }
@@ -18934,7 +18935,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
     }
 
   gcc_checking_assert (module->module_p);
-  gcc_checking_assert (module->is_direct () && module->is_rooted ());
+  gcc_checking_assert (module->is_direct () && module->has_location ());
 
   /* Yer a module, 'arry.  */
   module_kind &= ~MK_GLOBAL;
