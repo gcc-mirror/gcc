@@ -361,19 +361,12 @@ class MacroInvocation : public TypeNoBounds,
 			public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  /*SimplePath path;
-  DelimTokenTree token_tree;*/
   MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  /*MacroInvocation (SimplePath path, DelimTokenTree token_tree,
-		   std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attrs)), path (std::move (path)),
-      token_tree (std::move (token_tree)), locus (locus)
-  {}*/
   MacroInvocation (MacroInvocData invoc_data,
 		   std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)),
@@ -694,11 +687,8 @@ public:
 struct MacroParser
 {
 private:
+  // TODO: might as well rewrite to use lexer tokens
   std::vector<std::unique_ptr<Token> > token_stream;
-  /* probably have to make this mutable (mutable int stream_pos) otherwise const
-   * has to be removed up to DelimTokenTree or further ok since this changing
-   * would have an effect on the results of the methods run (i.e. not logically
-   * const), the parsing methods shouldn't be const */
   int stream_pos;
 
 public:

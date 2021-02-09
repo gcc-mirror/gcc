@@ -129,6 +129,7 @@ class Token : public TokenTree, public MacroMatch
 {
   // A token is a kind of token tree (except delimiter tokens)
   // A token is a kind of MacroMatch (except $ and delimiter tokens)
+#if 0
   // TODO: improve member variables - current ones are the same as lexer token
   // Token kind.
   TokenId token_id;
@@ -138,6 +139,13 @@ class Token : public TokenTree, public MacroMatch
   std::string str;
   // Token type hint (if any).
   PrimitiveCoreType type_hint;
+#endif
+
+  const_TokenPtr tok_ref;
+
+  /* new idea: wrapper around const_TokenPtr used for heterogeneuous storage in
+   * token trees. rather than convert back and forth when parsing macros, just 
+   * wrap it. */
 
 public:
   // Unique pointer custom clone function
@@ -146,6 +154,7 @@ public:
     return std::unique_ptr<Token> (clone_token_impl ());
   }
 
+#if 0
   /* constructor from general text - avoid using if lexer const_TokenPtr is
    * available */
   Token (TokenId token_id, Location locus, std::string str,
@@ -153,8 +162,11 @@ public:
     : token_id (token_id), locus (locus), str (std::move (str)),
       type_hint (type_hint)
   {}
+#endif
+  // not doable with new implementation - will have to make a const_TokenPtr
 
   // Constructor from lexer const_TokenPtr
+#if 0
   /* TODO: find workaround for std::string being nullptr - probably have to
    * introduce new method in lexer Token, or maybe make conversion method
    * there */
@@ -188,10 +200,12 @@ public:
 		 lexer_token_ptr->get_token_description ());
       }
   }
+#endif
+  Token (const_TokenPtr lexer_tok_ptr) : tok_ref (std::move (lexer_tok_ptr)) {}
 
   bool is_string_lit () const
   {
-    switch (token_id)
+    switch (get_id ())
       {
       case STRING_LITERAL:
       case BYTE_STRING_LITERAL:
@@ -208,11 +222,14 @@ public:
   // Return copy of itself but in token stream form.
   std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
-  TokenId get_id () const { return token_id; }
+  TokenId get_id () const { return tok_ref->get_id (); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const { return tok_ref->get_locus (); }
 
-  PrimitiveCoreType get_type_hint () const { return type_hint; }
+  PrimitiveCoreType get_type_hint () const { return tok_ref->get_type_hint (); }
+
+  // Get a new token pointer copy.
+  const_TokenPtr get_tok_ptr () const { return tok_ref; }
 
 protected:
   // No virtual for now as not polymorphic but can be in future
@@ -1190,15 +1207,8 @@ protected:
 class LifetimeParam : public GenericParam
 {
   Lifetime lifetime;
-
-  // bool has_lifetime_bounds;
-  // LifetimeBounds lifetime_bounds;
-  std::vector<Lifetime> lifetime_bounds; // inlined LifetimeBounds
-
-  // bool has_outer_attribute;
-  // std::unique_ptr<Attribute> outer_attr;
+  std::vector<Lifetime> lifetime_bounds; 
   Attribute outer_attr;
-
   Location locus;
 
 public:
@@ -1211,44 +1221,20 @@ public:
   // Creates an error state lifetime param.
   static LifetimeParam create_error ()
   {
-    return LifetimeParam (Lifetime::error ());
+    return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (), Location ());
   }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }
 
   // Constructor
-  LifetimeParam (Lifetime lifetime, Location locus = Location (),
-		 std::vector<Lifetime> lifetime_bounds
-		 = std::vector<Lifetime> (),
-		 Attribute outer_attr = Attribute::create_empty ())
+  LifetimeParam (Lifetime lifetime, 
+		 std::vector<Lifetime> lifetime_bounds,
+		 Attribute outer_attr, Location locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
       outer_attr (std::move (outer_attr)), locus (locus)
   {}
-
-  // TODO: remove copy and assignment operator definitions - not required
-
-  // Copy constructor with clone
-  LifetimeParam (LifetimeParam const &other)
-    : lifetime (other.lifetime), lifetime_bounds (other.lifetime_bounds),
-      outer_attr (other.outer_attr), locus (other.locus)
-  {}
-
-  // Overloaded assignment operator to clone attribute
-  LifetimeParam &operator= (LifetimeParam const &other)
-  {
-    lifetime = other.lifetime;
-    lifetime_bounds = other.lifetime_bounds;
-    outer_attr = other.outer_attr;
-    locus = other.locus;
-
-    return *this;
-  }
-
-  // move constructors
-  LifetimeParam (LifetimeParam &&other) = default;
-  LifetimeParam &operator= (LifetimeParam &&other) = default;
 
   std::string as_string () const override;
 
@@ -1263,28 +1249,13 @@ protected:
   }
 };
 
-// A macro item AST node - potentially abstract base class
+// A macro item AST node - abstract base class
 class MacroItem : public Item
-{
-  /*public:
-  std::string as_string() const;*/
-  // std::vector<Attribute> outer_attrs;
-
-protected:
-  /*MacroItem (std::vector<Attribute> outer_attribs)
-    : outer_attrs (std::move (outer_attribs))
-  {}*/
-};
+{};
 
 // Item used in trait declarations - abstract base class
 class TraitItem
 {
-  // bool has_outer_attrs;
-  // TODO: remove and rely on virtual functions and VisItem-derived attributes?
-  // std::vector<Attribute> outer_attrs;
-
-  // NOTE: all children should have outer attributes
-
 protected:
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
@@ -1468,68 +1439,17 @@ class MacroInvocationSemi : public MacroItem,
 			    public ExternalItem
 {
   std::vector<Attribute> outer_attrs;
-#if 0
-  SimplePath path;
-  // all delim types except curly must have invocation end with a semicolon
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
-#endif
   MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  /*MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
-		       std::vector<std::unique_ptr<TokenTree> > token_trees,
-		       std::vector<Attribute> outer_attribs, Location locus)
-    : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
-      delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}*/
   MacroInvocationSemi (MacroInvocData invoc_data,
 		       std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)),
       invoc_data (std::move (invoc_data)), locus (locus)
   {}
-
-  /*
-  // Copy constructor with vector clone
-  MacroInvocationSemi (MacroInvocationSemi const &other)
-    : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), outer_attrs (other.outer_attrs), path (other.path),
-      delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }*/
-
-  /*
-  // Overloaded assignment operator to vector clone
-  MacroInvocationSemi &operator= (MacroInvocationSemi const &other)
-  {
-    MacroItem::operator= (other);
-    TraitItem::operator= (other);
-    InherentImplItem::operator= (other);
-    TraitImplItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    path = other.path;
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }*/
-
-  /*
-  // Move constructors
-  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
-  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
-  */
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1540,11 +1460,6 @@ public:
       clone_macro_invocation_semi_impl ());
   }
 
-  /*
-  // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const override { return path.is_empty (); }
-  */
   void mark_for_strip () override { invoc_data.mark_for_strip (); }
   bool is_marked_for_strip () const override
   {

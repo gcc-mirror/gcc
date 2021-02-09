@@ -972,8 +972,7 @@ Parser<ManagedTokenSource>::parse_token_tree ()
     default:
       // parse token itself as TokenTree
       lexer.skip_token ();
-      // TODO: fix that token constructor, possibly with c++11 features
-      return std::unique_ptr<AST::Token> (new AST::Token (t));
+      return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
     }
 }
 
@@ -1805,7 +1804,7 @@ Parser<ManagedTokenSource>::parse_macro_match ()
     default:
       // just the token
       lexer.skip_token ();
-      return std::unique_ptr<AST::Token> (new AST::Token (t));
+      return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
     }
 }
 
@@ -1913,7 +1912,7 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
       break;
     default:
       // separator does exist
-      separator = std::unique_ptr<AST::Token> (new AST::Token (t));
+      separator = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
       lexer.skip_token ();
       break;
     }
@@ -2665,9 +2664,9 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
-	new AST::LifetimeParam (std::move (lifetime), locus,
+	new AST::LifetimeParam (std::move (lifetime), 
 				std::move (lifetime_bounds),
-				std::move (outer_attr)));
+				std::move (outer_attr), locus));
       generic_params.push_back (std::move (param));
 
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -2841,9 +2840,9 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
-	new AST::LifetimeParam (std::move (lifetime), locus,
+	new AST::LifetimeParam (std::move (lifetime),
 				std::move (lifetime_bounds),
-				std::move (outer_attr)));
+				std::move (outer_attr), locus));
       generic_params.push_back (std::move (param));
 
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -3166,9 +3165,9 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
       // TODO: have end token passed in?
     }
 
-  return AST::LifetimeParam (std::move (lifetime), lifetime_tok->get_locus (),
+  return AST::LifetimeParam (std::move (lifetime), 
 			     std::move (lifetime_bounds),
-			     std::move (outer_attr));
+			     std::move (outer_attr), lifetime_tok->get_locus ());
 }
 
 // Parses type generic parameters. Will also consume any trailing comma.
@@ -3693,13 +3692,11 @@ Parser<ManagedTokenSource>::parse_trait_bound ()
       lexer.skip_token ();
     }
 
-  // parse for lifetimes, if it exists (although empty for lifetimes is ok to
-  // handle this)
+  /* parse for lifetimes, if it exists (although empty for lifetimes is ok to
+   * handle this) */
   std::vector<AST::LifetimeParam> for_lifetimes;
   if (lexer.peek_token ()->get_id () == FOR)
-    {
       for_lifetimes = parse_for_lifetimes ();
-    }
 
   // handle TypePath
   AST::TypePath type_path = parse_type_path ();

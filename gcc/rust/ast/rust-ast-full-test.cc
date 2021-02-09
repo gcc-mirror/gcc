@@ -290,13 +290,17 @@ DelimTokenTree::as_string () const
 std::string
 Token::as_string () const
 {
-  /* FIXME: only works when not identifier or literal or whatever, i.e. when
-   * doesn't store string value */
-  // return get_token_description(token_id);
+  if (tok_ref->has_str ())
+    {
+      std::string str = tok_ref->get_str ();
 
-  // maybe fixed - stores everything as string though, so storage-inefficient
-  std::string quote = is_string_lit () ? "\"" : "";
-  return quote + str + quote;
+      std::string quote = is_string_lit () ? "\"" : "";
+      return quote + str + quote;
+    }
+  else
+    {
+      return tok_ref->get_token_description ();
+    }
 }
 
 std::string
@@ -4375,9 +4379,10 @@ DelimTokenTree::to_token_stream () const
   std::vector<std::unique_ptr<Token> > tokens;
 
   // simulate presence of delimiters
+  const_TokenPtr left_paren
+    = Rust::Token::make (LEFT_PAREN, Linemap::unknown_location ());
   tokens.push_back (
-    std::unique_ptr<Token> (new Token (LEFT_PAREN, Linemap::unknown_location (),
-				       "", CORETYPE_UNKNOWN)));
+    std::unique_ptr<Token> (new Token (std::move (left_paren))));
 
   for (const auto &tree : token_trees)
     {
@@ -4387,9 +4392,10 @@ DelimTokenTree::to_token_stream () const
 		     std::make_move_iterator (stream.end ()));
     }
 
-  tokens.push_back (std::unique_ptr<Token> (
-    new Token (RIGHT_PAREN, Linemap::unknown_location (), "",
-	       CORETYPE_UNKNOWN)));
+  const_TokenPtr right_paren
+    = Rust::Token::make (RIGHT_PAREN, Linemap::unknown_location ());
+  tokens.push_back (
+    std::unique_ptr<Token> (new Token (std::move (right_paren))));
 
   tokens.shrink_to_fit ();
 
@@ -4545,8 +4551,7 @@ AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
 }
 
 bool
-MetaItemLitExpr::check_cfg_predicate (
-  const Session &session ATTRIBUTE_UNUSED) const
+MetaItemLitExpr::check_cfg_predicate (const Session &) const
 {
   /* as far as I can tell, a literal expr can never be a valid cfg body, so
    * false */
@@ -4653,10 +4658,7 @@ bool
 MetaListPaths::check_path_exists_in_cfg (const Session &session,
 					 const SimplePath &path) const
 {
-  auto it = session.options.target_data.features.find (path.as_string ());
-  if (it != session.options.target_data.features.end ())
-    return true;
-  return false;
+  return session.options.target_data.has_key (path.as_string ());
 }
 
 bool
@@ -4710,10 +4712,7 @@ MetaItemSeq::check_cfg_predicate (const Session &session) const
 bool
 MetaWord::check_cfg_predicate (const Session &session) const
 {
-  auto it = session.options.target_data.features.find (ident);
-  if (it != session.options.target_data.features.end ())
-    return true;
-  return false;
+  return session.options.target_data.has_key (ident);
 }
 
 bool
@@ -4723,10 +4722,7 @@ MetaItemPath::check_cfg_predicate (const Session &session) const
    * relating to SimplePath being identifier. Currently, it would return true
    * if path as identifier existed, and if the path in string form existed
    * (though this shouldn't occur). */
-  auto it = session.options.target_data.features.find (path.as_string ());
-  if (it != session.options.target_data.features.end ())
-    return true;
-  return false;
+  return session.options.target_data.has_key (path.as_string ());
 }
 
 bool
@@ -4853,8 +4849,8 @@ AttrInputMetaItemContainer::separate_cfg_attrs () const
       Attribute attr = (*it)->to_attribute ();
       if (attr.is_empty ())
 	{
-	  // TODO should this be an error that causes us to chuck out
-	  // everything?
+	  /* TODO should this be an error that causes us to chuck out
+	   * everything? */
 	  continue;
 	}
       attrs.push_back (std::move (attr));

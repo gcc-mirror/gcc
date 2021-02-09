@@ -318,26 +318,12 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
-  /*static TokenPtr make_int (Location locus, const std::string &str)
-  {
-    //return TokenPtr (new Token (INT_LITERAL, locus, str));
-    return std::make_shared<Token>(INT_LITERAL, locus, str);
-  }*/
-
-  // Makes and returns a new TokenPtr of type INT_LITERAL.
   static TokenPtr make_int (Location locus, const std::string &str,
 			    PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
     // return std::make_shared<Token> (INT_LITERAL, locus, str, type_hint);
     return TokenPtr (new Token (INT_LITERAL, locus, str, type_hint));
   }
-
-  // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
-  /*static TokenPtr make_float (Location locus, const std::string &str)
-  {
-    return TokenPtr (new Token (FLOAT_LITERAL, locus, str));
-    return std::make_shared<Token>(FLOAT_LITERAL, locus, str);
-  }*/
 
   // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
   static TokenPtr make_float (Location locus, const std::string &str,
