@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "rtl-ssa.h"
 
-#include "sparseset.h"
 #include "predict.h"
 #include "cfgrtl.h"
 #include "cfgcleanup.h"
