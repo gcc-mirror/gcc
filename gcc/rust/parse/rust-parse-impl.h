@@ -386,6 +386,8 @@ Parser<ManagedTokenSource>::left_binding_power (const_TokenPtr token)
       return LBP_MOD_ASSIG;
     case AMP_EQ:
       return LBP_AMP_ASSIG;
+    case PIPE_EQ:
+      return LBP_PIPE_ASSIG;
     case CARET_EQ:
       return LBP_CARET_ASSIG;
     case LEFT_SHIFT_EQ:
