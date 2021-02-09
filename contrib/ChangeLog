@@ -1,3 +1,8 @@
+2021-02-08  Mike Frysinger  <vapier@gentoo.org>
+
+	* mklog.py (generated_files): New set.
+	(generate_changelog): Add entries based on generated_files.
+
 2021-02-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* gcc_update (files_and_dependencies): Add dependency for

@@ -1,3 +1,31 @@
+2021-02-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR middle-end/98974
+	* tree-vect-stmts.c (vectorizable_condition): Remove shadow vec_num
+	parameter in vectorizable_condition.
+
+2021-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96591
+	* tree.c (walk_tree_1): Walk VECTOR_CST elements.
+
+2021-02-08  Martin Liska  <mliska@suse.cz>
+
+	PR lto/98971
+	* cfgexpand.c (pass_expand::execute): Parse per-function option
+	flag_patchable_function_entry and use it.
+	* common.opt: Remove function_entry_patch_area_size and
+	function_entry_patch_area_start global variables.
+	* opts.c (parse_and_check_patch_area): New function.
+	(common_handle_option): Use it.
+	* opts.h (parse_and_check_patch_area): New function.
+	* toplev.c (process_options): Parse and use
+	function_entry_patch_area_size.
+
+2021-02-08  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute malloc): Correct typos.
+
 2021-02-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR driver/98943
