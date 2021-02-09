@@ -49,7 +49,8 @@ namespace Resolver {
 Resolver::Resolver ()
   : mappings (Analysis::Mappings::get ()), tyctx (TypeCheckContext::get ()),
     name_scope (Scope (mappings->get_current_crate ())),
-    type_scope (Scope (mappings->get_current_crate ()))
+    type_scope (Scope (mappings->get_current_crate ())),
+    label_scope (Scope (mappings->get_current_crate ()))
 {
   generate_builtins ();
 }
@@ -79,6 +80,13 @@ Resolver::push_new_type_rib (Rib *r)
 
   rust_assert (type_ribs.find (r->get_node_id ()) == type_ribs.end ());
   type_ribs[r->get_node_id ()] = r;
+}
+
+void
+Resolver::push_new_label_rib (Rib *r)
+{
+  rust_assert (label_ribs.find (r->get_node_id ()) == label_ribs.end ());
+  label_ribs[r->get_node_id ()] = r;
 }
 
 bool
@@ -238,6 +246,27 @@ Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
   return true;
 }
 
+void
+Resolver::insert_resolved_label (NodeId refId, NodeId defId)
+{
+  auto it = resolved_labels.find (refId);
+  rust_assert (it == resolved_labels.end ());
+
+  resolved_types[refId] = defId;
+  get_label_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_labels.find (refId);
+  if (it == resolved_labels.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
 // NameResolution
 
 NameResolution *
@@ -275,6 +304,9 @@ NameResolution::go (AST::Crate &crate)
   // setup parent scoping for new types
   resolver->get_type_scope ().push (mappings->get_next_node_id ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  // setup label scope
+  resolver->get_label_scope ().push (mappings->get_next_node_id ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   // first gather the top-level namespace names then we drill down
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
@@ -293,8 +325,10 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   NodeId scope_node_id = expr.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
     ResolveStmt::go (s, s->get_node_id ());
@@ -306,6 +340,7 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
 }
 
 // rust-ast-resolve-struct-expr-field.h

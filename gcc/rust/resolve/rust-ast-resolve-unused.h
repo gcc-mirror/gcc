@@ -43,6 +43,7 @@ public:
     auto resolver = Resolver::get ();
     resolver->iterate_name_ribs ([&] (Rib *r) -> void { ScanRib (r); });
     resolver->iterate_type_ribs ([&] (Rib *r) -> void { ScanRib (r); });
+    resolver->iterate_label_ribs ([&] (Rib *r) -> void { ScanRib (r); });
   }
 };
 
