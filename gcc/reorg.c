@@ -139,9 +139,9 @@ skip_consecutive_labels (rtx label_or_return)
   /* __builtin_unreachable can create a CODE_LABEL followed by a BARRIER.
 
      Since reaching the CODE_LABEL is undefined behavior, we can return
-     any code label and we're OK at runtime.
+     any code label and we're OK at run time.
 
-     However, if we return a CODE_LABEL which leads to a shrinked wrapped
+     However, if we return a CODE_LABEL which leads to a shrink-wrapped
      epilogue, but the path does not have a prologue, then we will trip
      a sanity check in the dwarf2 cfi code which wants to verify that
      the CFIs are all the same on the traces leading to the epilogue.
@@ -3175,6 +3175,23 @@ relax_delay_slots (rtx_insn *first)
 	      && ! condjump_in_parallel_p (jump_insn)
 	      && ! (next && switch_text_sections_between_p (jump_insn, next)))
 	    {
+	      rtx_insn *direct_label = as_a<rtx_insn *> (JUMP_LABEL (insn));
+	      rtx_insn *prev = prev_nonnote_insn (direct_label);
+
+	      /* If the insn jumps over a BARRIER and is the only way to reach
+		 its target, then we need to delete the BARRIER before the jump
+		 because, otherwise, the target may end up being considered as
+		 unreachable and thus also deleted.  */
+	      if (BARRIER_P (prev) && LABEL_NUSES (direct_label) == 1)
+		{
+		  delete_related_insns (prev);
+
+		  /* We have just removed a BARRIER, which means that the block
+		     number of the next insns has effectively been changed (see
+		     find_basic_block in resource.c), so clear it.  */
+		  clear_hashed_info_until_next_barrier (direct_label);
+		}
+
 	      delete_jump (jump_insn);
 	      continue;
 	    }
