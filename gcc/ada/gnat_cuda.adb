@@ -54,6 +54,18 @@ package body GNAT_CUDA is
    function Hash (F : Entity_Id) return Hash_Range;
    --  Hash function for hash table
 
+   package CUDA_Device_Entities_Table is new
+     GNAT.HTable.Simple_HTable
+       (Header_Num => Hash_Range,
+        Element    => Elist_Id,
+        No_Element => No_Elist,
+        Key        => Entity_Id,
+        Hash       => Hash,
+        Equal      => "=");
+   --  The keys of this table are package entities whose bodies contain at
+   --  least one procedure marked with aspect CUDA_Device. The values are
+   --  Elists of the marked entities.
+
    package CUDA_Kernels_Table is new
      GNAT.HTable.Simple_HTable
        (Header_Num => Hash_Range,
@@ -85,16 +97,44 @@ package body GNAT_CUDA is
    --    * A procedure that takes care of calling CUDA functions that register
    --      CUDA_Global procedures with the runtime.
 
+   function Get_CUDA_Device_Entities (Pack_Id : Entity_Id) return Elist_Id;
+   --  Returns an Elist of all entities marked with pragma CUDA_Device that
+   --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
+   --  does not contain such entities.
+
    function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
    --  Returns an Elist of all procedures marked with pragma CUDA_Global that
    --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
    --  does not contain such procedures.
+
+   procedure Set_CUDA_Device_Entities
+     (Pack_Id : Entity_Id;
+      E       : Elist_Id);
+   --  Stores E as the list of CUDA_Device entities belonging to the package
+   --  entity Pack_Id. Pack_Id must not have a list of device entities.
 
    procedure Set_CUDA_Kernels
      (Pack_Id : Entity_Id;
       Kernels : Elist_Id);
    --  Stores Kernels as the list of kernels belonging to the package entity
    --  Pack_Id. Pack_Id must not have a list of kernels.
+
+   ----------------------------
+   -- Add_CUDA_Device_Entity --
+   ----------------------------
+
+   procedure Add_CUDA_Device_Entity
+     (Pack_Id : Entity_Id;
+      E       : Entity_Id)
+   is
+      Device_Entities : Elist_Id := Get_CUDA_Device_Entities (Pack_Id);
+   begin
+      if Device_Entities = No_Elist then
+         Device_Entities := New_Elmt_List;
+         Set_CUDA_Device_Entities (Pack_Id, Device_Entities);
+      end if;
+      Append_Elmt (E, Device_Entities);
+   end Add_CUDA_Device_Entity;
 
    ---------------------
    -- Add_CUDA_Kernel --
@@ -138,6 +178,15 @@ package body GNAT_CUDA is
    begin
       return Hash_Range (F mod 511);
    end Hash;
+
+   ------------------------------
+   -- Get_CUDA_Device_Entities --
+   ------------------------------
+
+   function Get_CUDA_Device_Entities (Pack_Id : Entity_Id) return Elist_Id is
+   begin
+      return CUDA_Device_Entities_Table.Get (Pack_Id);
+   end Get_CUDA_Device_Entities;
 
    ----------------------
    -- Get_CUDA_Kernels --
@@ -605,9 +654,22 @@ package body GNAT_CUDA is
       Analyze (New_Stmt);
    end Build_And_Insert_CUDA_Initialization;
 
-   --------------------
-   -- Set_CUDA_Nodes --
-   --------------------
+   ------------------------------
+   -- Set_CUDA_Device_Entities --
+   ------------------------------
+
+   procedure Set_CUDA_Device_Entities
+     (Pack_Id : Entity_Id;
+      E       : Elist_Id)
+   is
+   begin
+      pragma Assert (Get_CUDA_Device_Entities (Pack_Id) = No_Elist);
+      CUDA_Device_Entities_Table.Set (Pack_Id, E);
+   end Set_CUDA_Device_Entities;
+
+   ----------------------
+   -- Set_CUDA_Kernels --
+   ----------------------
 
    procedure Set_CUDA_Kernels
      (Pack_Id : Entity_Id;

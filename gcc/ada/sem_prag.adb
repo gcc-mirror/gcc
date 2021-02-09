@@ -14839,9 +14839,40 @@ package body Sem_Prag is
                   & "effect?j?", N);
             end if;
 
-         --------------------
+         -----------------
+         -- CUDA_Device --
+         -----------------
+
+         when Pragma_CUDA_Device => CUDA_Device : declare
+            Arg_Node      : Node_Id;
+            Device_Entity : Entity_Id;
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Arg_Node := Get_Pragma_Arg (Arg1);
+
+            Check_Arg_Is_Library_Level_Local_Name (Arg_Node);
+            Device_Entity := Entity (Arg_Node);
+
+            if Ekind (Device_Entity) in E_Variable
+                                      | E_Constant
+                                      | E_Procedure
+                                      | E_Function
+            then
+               Add_CUDA_Device_Entity (Scope (Device_Entity), Device_Entity);
+               Error_Msg_N ("??& not implemented yet", N);
+
+            else
+               Error_Msg_NE ("& must be constant, variable or subprogram",
+                 N,
+                 Device_Entity);
+            end if;
+
+         end CUDA_Device;
+
+         ------------------
          -- CUDA_Execute --
-         --------------------
+         ------------------
 
          --    pragma CUDA_Execute (PROCEDURE_CALL_STATEMENT,
          --                         EXPRESSION,
@@ -31248,6 +31279,7 @@ package body Sem_Prag is
       Pragma_C_Pass_By_Copy                 =>  0,
       Pragma_Comment                        => -1,
       Pragma_Common_Object                  =>  0,
+      Pragma_CUDA_Device                    => -1,
       Pragma_CUDA_Execute                   => -1,
       Pragma_CUDA_Global                    => -1,
       Pragma_Compile_Time_Error             => -1,

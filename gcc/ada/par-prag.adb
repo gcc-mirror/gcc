@@ -1338,6 +1338,7 @@ begin
          | Pragma_CPP_Virtual
          | Pragma_CPP_Vtable
          | Pragma_CPU
+         | Pragma_CUDA_Device
          | Pragma_CUDA_Execute
          | Pragma_CUDA_Global
          | Pragma_C_Pass_By_Copy
