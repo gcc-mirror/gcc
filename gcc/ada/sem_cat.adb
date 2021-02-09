@@ -356,6 +356,14 @@ package body Sem_Cat is
          if Present (Expression (Component_Decl))
            and then Nkind (Expression (Component_Decl)) /= N_Null
            and then not Is_OK_Static_Expression (Expression (Component_Decl))
+
+           --  If we're in a predefined unit, we can put whatever we like in a
+           --  preelaborated package, and in fact in some cases it's necessary
+           --  to bend the rules. Ada.Containers.Bounded_Hashed_Maps contains
+           --  some code that would not be considered preelaborable in user
+           --  code, for example.
+
+           and then not In_Predefined_Unit (Component_Decl)
          then
             Error_Msg_Sloc := Sloc (Component_Decl);
             Error_Msg_F
