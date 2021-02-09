@@ -447,9 +447,8 @@ find_conditions (basic_block bb,
       info->record_phi_mapping (info->m_false_edge,
 				&info->m_false_edge_phi_mapping);
       conditions_in_bbs->put (bb, info);
+      return;
     }
-
-  return;
 
 exit:
   delete info;
