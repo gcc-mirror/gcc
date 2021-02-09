@@ -121,7 +121,8 @@ const struct cpu_cost_table generic_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)   /* mult.  */
   }
 };
 
@@ -224,7 +225,8 @@ const struct cpu_cost_table cortexa53_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)	/* alu.  */
+    COSTS_N_INSNS (1),	/* alu.  */
+    COSTS_N_INSNS (4)   /* mult.  */
   }
 };
 
@@ -327,7 +329,8 @@ const struct cpu_cost_table cortexa57_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)  /* alu.  */
+    COSTS_N_INSNS (1),  /* alu.  */
+    COSTS_N_INSNS (4)   /* mult.  */
   }
 };
 
@@ -430,7 +433,8 @@ const struct cpu_cost_table cortexa76_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (1)  /* alu.  */
+    COSTS_N_INSNS (1),  /* alu.  */
+    COSTS_N_INSNS (4)   /* mult.  */
   }
 };
 
@@ -533,7 +537,8 @@ const struct cpu_cost_table exynosm1_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (0)  /* alu.  */
+    COSTS_N_INSNS (0),  /* alu.  */
+    COSTS_N_INSNS (4)   /* mult.  */
   }
 };
 
@@ -636,7 +641,8 @@ const struct cpu_cost_table xgene1_extra_costs =
   },
   /* Vector */
   {
-    COSTS_N_INSNS (2)  /* alu.  */
+    COSTS_N_INSNS (2),  /* alu.  */
+    COSTS_N_INSNS (8)   /* mult.  */
   }
 };
 

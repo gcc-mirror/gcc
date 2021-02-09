@@ -1,3 +1,33 @@
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr98531-2.h: New.
+	* g++.dg/modules/pr98531-2_a.H: New.
+	* g++.dg/modules/pr98531-2_b.C: New.
+	* g++.dg/modules/pr98531-3.h: New.
+	* g++.dg/modules/pr98531-3_a.H: New.
+	* g++.dg/modules/pr98531-3_b.C: New.
+
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98531
+	* g++.dg/modules/pr98531-1.h: New.
+	* g++.dg/modules/pr98531-1_a.H: New.
+	* g++.dg/modules/pr98531-1_b.C: New.
+	* g++.dg/abi/pr98531-1.C: New.
+	* g++.dg/abi/pr98531-2.C: New.
+	* g++.dg/abi/pr98531-3.C: New.
+	* g++.dg/abi/pr98531-4.C: New.
+
+2021-02-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR middle-end/98974
+	* gfortran.dg/pr98974.F90: New test.
+
+2021-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96591
+	* g++.dg/lto/pr96591_0.C: New testcase.
+
 2021-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98947

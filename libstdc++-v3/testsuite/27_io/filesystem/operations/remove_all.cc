@@ -171,6 +171,8 @@ test04()
   }
 
   fs::permissions(dir, fs::perms::owner_write, fs::perm_options::add);
+  fs::remove_all(dir, ec);
+  f.path.clear();
 #endif
 }
 

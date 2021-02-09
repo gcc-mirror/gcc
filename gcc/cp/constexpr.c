@@ -5292,7 +5292,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       type = refs->pop();
       tree index = refs->pop();
 
-      if (is_empty_field (index))
+      if (code == RECORD_TYPE && is_empty_field (index))
 	/* Don't build a sub-CONSTRUCTOR for an empty base or field, as they
 	   have no data and might have an offset lower than previously declared
 	   fields, which confuses the middle-end.  The code below will notice

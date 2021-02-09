@@ -4427,7 +4427,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   /* Now cost the portions individually.  */
   unsigned vi = 0;
   unsigned si = 0;
-  do
+  while (si < li_scalar_costs.length ()
+	 && vi < li_vector_costs.length ())
     {
       unsigned sl = li_scalar_costs[si].first;
       unsigned vl = li_vector_costs[vi].first;
@@ -4497,8 +4498,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	  return false;
 	}
     }
-  while (si < li_scalar_costs.length ()
-	 && vi < li_vector_costs.length ());
   if (vi < li_vector_costs.length ())
     {
       if (dump_enabled_p ())

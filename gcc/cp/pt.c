@@ -24154,6 +24154,11 @@ mark_decl_instantiated (tree result, int extern_p)
   if (TREE_ASM_WRITTEN (result))
     return;
 
+  /* consteval functions are never emitted.  */
+  if (TREE_CODE (result) == FUNCTION_DECL
+      && DECL_IMMEDIATE_FUNCTION_P (result))
+    return;
+
   /* For anonymous namespace we don't need to do anything.  */
   if (decl_anon_ns_mem_p (result))
     {

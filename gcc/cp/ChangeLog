@@ -1,3 +1,26 @@
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (start_cleanup_fn): Push function into
+	namespace.
+
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98531
+	* cp-tree.h (push_abi_namespace, pop_abi_namespace): Declare.
+	* decl.c (push_abi_namespace, pop_abi_namespace): Moved
+	from rtti.c, add default namespace arg.
+	(check_redeclaration_exception_specification): Allow a lazy
+	builtin's eh spec to differ from an lready-declared user
+	declaration.
+	(declare_global_var): Use push/pop_abi_namespace.
+	(get_atexit_node): Push the fndecl into a namespace.
+	* rtti.c (push_abi_namespace, pop_abi_namespace): Moved to
+	decl.c.
+
+2021-02-08  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (CLASSTYPE_TI_TEMPLATE): Fix typo.
+
 2021-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98947

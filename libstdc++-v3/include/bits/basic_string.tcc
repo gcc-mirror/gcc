@@ -478,7 +478,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  if (__s + __len2 <= __p + __len1)
 		    this->_S_move(__p, __s, __len2);
 		  else if (__s >= __p + __len1)
-		    this->_S_copy(__p, __s + __len2 - __len1, __len2);
+		    {
+		      // Hint to middle end that __p and __s overlap
+		      // (PR 98465).
+		      const size_type __poff = (__s - __p) + (__len2 - __len1);
+		      this->_S_copy(__p, __p + __poff, __len2);
+		    }
 		  else
 		    {
 		      const size_type __nleft = (__p + __len1) - __s;
