@@ -74,6 +74,7 @@
 #include "cfgloop.h"
 #include "fold-const.h"
 #include "intl.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -219,7 +220,10 @@ nvptx_option_override (void)
     flag_no_common = 1;
 
   /* The patch area requires nops, which we don't have.  */
-  if (function_entry_patch_area_size > 0)
+  HOST_WIDE_INT patch_area_size, patch_area_entry;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_entry);
+  if (patch_area_size > 0)
     sorry ("not generating patch area, nops not supported");
 
   /* Assumes that it will see only hard registers.  */
