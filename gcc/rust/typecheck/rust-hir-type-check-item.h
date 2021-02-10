@@ -75,7 +75,7 @@ public:
     auto expected_ret_tyty = resolve_fn_type->return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    auto result = TypeCheckExpr::Resolve (function.function_body.get ());
+    auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
     auto ret_resolved = expected_ret_tyty->combine (result);
     if (ret_resolved == nullptr)
       return;

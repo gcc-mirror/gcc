@@ -30,21 +30,21 @@ namespace Resolver {
 class TypeCheckStmt : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Stmt *stmt)
+  static TyTy::TyBase *Resolve (HIR::Stmt *stmt, bool inside_loop)
   {
-    TypeCheckStmt resolver;
+    TypeCheckStmt resolver (inside_loop);
     stmt->accept_vis (resolver);
     return resolver.infered;
   }
 
   void visit (HIR::ExprStmtWithBlock &stmt)
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr ());
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr ());
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
   void visit (HIR::LetStmt &stmt)
@@ -54,7 +54,8 @@ public:
     TyTy::TyBase *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
       {
-	init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
+	init_expr_ty
+	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), inside_loop);
 	if (init_expr_ty == nullptr)
 	  return;
 
@@ -105,9 +106,12 @@ public:
   }
 
 private:
-  TypeCheckStmt () : TypeCheckBase (), infered (nullptr) {}
+  TypeCheckStmt (bool inside_loop)
+    : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
+  {}
 
   TyTy::TyBase *infered;
+  bool inside_loop;
 };
 
 } // namespace Resolver
