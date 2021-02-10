@@ -1785,7 +1785,7 @@ package body Errout is
                        | N_Declaration
                        | N_Access_To_Subprogram_Definition
                        | N_Generic_Instantiation
-                       | N_Subprogram_Declaration
+                       | N_Later_Decl_Item
                        | N_Use_Package_Clause
                        | N_Array_Type_Definition
                        | N_Renaming_Declaration
