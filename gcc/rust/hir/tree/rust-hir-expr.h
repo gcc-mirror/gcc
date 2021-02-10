@@ -3284,6 +3284,8 @@ public:
   Location get_locus () const { return locus; }
 
   Analysis::NodeMapping &get_mappings () { return mappings; }
+
+  Lifetime &get_lifetime () { return label; }
 };
 
 // Base loop expression HIR node - aka LoopExpr
@@ -3340,6 +3342,8 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   std::unique_ptr<HIR::BlockExpr> &get_loop_block () { return loop_block; };
+
+  LoopLabel &get_loop_label () { return loop_label; }
 };
 
 // 'Loop' expression (i.e. the infinite loop) HIR node

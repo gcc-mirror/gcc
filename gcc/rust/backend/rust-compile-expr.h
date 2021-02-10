@@ -587,6 +587,20 @@ public:
   void visit (HIR::LoopExpr &expr)
   {
     fncontext fnctx = ctx->peek_fn ();
+    if (expr.has_loop_label ())
+      {
+	HIR::LoopLabel &loop_label = expr.get_loop_label ();
+	Blabel *label
+	  = ctx->get_backend ()->label (fnctx.fndecl,
+					loop_label.get_lifetime ().get_name (),
+					loop_label.get_locus ());
+	Bstatement *label_decl
+	  = ctx->get_backend ()->label_definition_statement (label);
+	ctx->add_statement (label_decl);
+	ctx->insert_label_decl (
+	  loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
+      }
+
     Bblock *code_block
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
     Bexpression *loop_expr
@@ -598,13 +612,51 @@ public:
 
   void visit (HIR::BreakExpr &expr)
   {
-    fncontext fnctx = ctx->peek_fn ();
-    Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
-      ctx->get_backend ()->boolean_constant_expression (true),
-      expr.get_locus ());
-    Bstatement *break_stmt
-      = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
-    ctx->add_statement (break_stmt);
+    if (expr.has_label ())
+      {
+	NodeId resolved_node_id = UNKNOWN_NODEID;
+	if (!ctx->get_resolver ()->lookup_resolved_label (
+	      expr.get_label ().get_mappings ().get_nodeid (),
+	      &resolved_node_id))
+	  {
+	    rust_error_at (
+	      expr.get_label ().get_locus (),
+	      "failed to resolve compiled label for label %s",
+	      expr.get_label ().get_mappings ().as_string ().c_str ());
+	    return;
+	  }
+
+	HirId ref = UNKNOWN_HIRID;
+	if (!ctx->get_mappings ()->lookup_node_to_hir (
+	      expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+	  {
+	    rust_fatal_error (expr.get_locus (),
+			      "reverse lookup label failure");
+	    return;
+	  }
+
+	Blabel *label = nullptr;
+	if (!ctx->lookup_label_decl (ref, &label))
+	  {
+	    rust_error_at (expr.get_label ().get_locus (),
+			   "failed to lookup compiled label");
+	    return;
+	  }
+
+	Bstatement *goto_label
+	  = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
+	ctx->add_statement (goto_label);
+      }
+    else
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
+	  ctx->get_backend ()->boolean_constant_expression (true),
+	  expr.get_locus ());
+	Bstatement *break_stmt
+	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
+	ctx->add_statement (break_stmt);
+      }
   }
 
 private:

@@ -162,6 +162,21 @@ public:
     return true;
   }
 
+  void insert_label_decl (HirId id, ::Blabel *label)
+  {
+    compiled_labels[id] = label;
+  }
+
+  bool lookup_label_decl (HirId id, ::Blabel **label)
+  {
+    auto it = compiled_labels.find (id);
+    if (it == compiled_labels.end ())
+      return false;
+
+    *label = it->second;
+    return true;
+  }
+
   void push_fn (::Bfunction *fn, ::Bvariable *ret_addr)
   {
     fn_stack.push_back (fncontext{fn, ret_addr});
@@ -205,6 +220,7 @@ private:
   std::map<HirId, ::Btype *> compiled_type_map;
   std::map<HirId, ::Bfunction *> compiled_fn_map;
   std::map<HirId, ::Bexpression *> compiled_consts;
+  std::map<HirId, ::Blabel *> compiled_labels;
   std::vector< ::std::vector<Bstatement *> > statements;
   std::vector< ::Bblock *> scope_stack;
 

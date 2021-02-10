@@ -264,6 +264,8 @@ protected:
     Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
+    mappings->insert_node_to_hir (mapping.get_crate_num (),
+				  mapping.get_nodeid (), mapping.get_hirid ());
 
     return HIR::Lifetime (mapping, type, lifetime.get_lifetime_name (),
 			  lifetime.get_locus ());
@@ -277,6 +279,8 @@ protected:
     Analysis::NodeMapping mapping (crate_num, loop_label.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
+    mappings->insert_node_to_hir (mapping.get_crate_num (),
+				  mapping.get_nodeid (), mapping.get_hirid ());
 
     return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
   }
