@@ -21299,8 +21299,11 @@ package body Sem_Ch3 is
          then
             Set_Subtype_Indication
               (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
-            Set_Etype (Priv_Dep, Full_T);
+            Reinit_Field_To_Zero
+              (Priv_Dep, Private_Dependents,
+               Old_Ekind => E_Incomplete_Subtype);
             Set_Ekind (Priv_Dep, Subtype_Kind (Ekind (Full_T)));
+            Set_Etype (Priv_Dep, Full_T);
             Set_Analyzed (Parent (Priv_Dep), False);
 
             --  Reanalyze the declaration, suppressing the call to Enter_Name

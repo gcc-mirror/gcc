@@ -29,6 +29,8 @@
 
 --  Checks and assertions in this package are too slow, and are mostly needed
 --  when working on this package itself, or on gen_il, so we disable them.
+--  To debug low-level bugs in this area, comment out the following pragmas,
+--  and run with -gnatd_v.
 
 pragma Suppress (All_Checks);
 pragma Assertion_Policy (Ignore);
@@ -868,7 +870,9 @@ package body Atree is
       Old_Kind : constant Entity_Kind := Ekind (Old_N);
 
       --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Set_Ekind.
+      --  calling Set_Ekind. But we have many cases where vanishing fields are
+      --  expected to reappear after converting to/from E_Void. Other cases are
+      --  more problematic; set a breakpoint on "(non-E_Void case)" below.
 
    begin
       for J in Entity_Field_Table (Old_Kind)'Range loop
@@ -882,12 +886,14 @@ package body Atree is
                   Write_Str (New_Kind'Img);
                   Write_Str (" Nonzero field ");
                   Write_Str (F'Img);
-                  Write_Str (" is vanishing");
+                  Write_Str (" is vanishing ");
                   Write_Eol;
 
-                  pragma Assert (New_Kind = E_Void or else Old_Kind = E_Void);
-
-                  raise Program_Error;
+                  if New_Kind = E_Void or else Old_Kind = E_Void then
+                     Write_Line ("    (E_Void case)");
+                  else
+                     Write_Line ("    (non-E_Void case)");
+                  end if;
                end if;
             end if;
          end;
