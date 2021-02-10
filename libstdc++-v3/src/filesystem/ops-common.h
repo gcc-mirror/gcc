@@ -56,6 +56,18 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // Get the last OS error (for POSIX this is just errno).
+  inline error_code
+  __last_system_error() noexcept
+  {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    return {::GetLastError(), std::system_category()};
+#else
+    return {errno, std::generic_category()};
+#endif
+  }
+
 namespace filesystem
 {
 namespace __gnu_posix
@@ -557,7 +569,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	ec.clear();
       }
     else
-      ec.assign((int)GetLastError(), std::system_category());
+      ec = std::last_system_error();
 #else
     ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -582,7 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       } while (len > buf.size());
 
     if (len == 0)
-      ec.assign((int)GetLastError(), std::system_category());
+      ec = __last_system_error();
     else
       ec.clear();
 

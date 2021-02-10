@@ -598,7 +598,7 @@ fs::create_hard_link(const path& to, const path& new_hard_link,
   if (CreateHardLinkW(new_hard_link.c_str(), to.c_str(), NULL))
     ec.clear();
   else
-    ec.assign((int)GetLastError(), system_category());
+    ec = __last_system_error();
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -1070,7 +1070,7 @@ fs::remove(const path& p, error_code& ec) noexcept
 	  return true;
 	}
       else if (!ec)
-	ec.assign((int)GetLastError(), system_category());
+	ec = __last_system_error();
     }
   else if (status_known(st))
     ec.clear();
