@@ -5690,7 +5690,12 @@ merge_weak (tree newdecl, tree olddecl)
 void
 declare_weak (tree decl)
 {
-  gcc_assert (TREE_CODE (decl) != FUNCTION_DECL || !TREE_ASM_WRITTEN (decl));
+  /* With -fsyntax-only, TREE_ASM_WRITTEN might be set on certain function
+     decls earlier than normally, but as with -fsyntax-only nothing is really
+     emitted, there is no harm in marking it weak later.  */
+  gcc_assert (TREE_CODE (decl) != FUNCTION_DECL
+	      || !TREE_ASM_WRITTEN (decl)
+	      || flag_syntax_only);
   if (! TREE_PUBLIC (decl))
     {
       error ("weak declaration of %q+D must be public", decl);
