@@ -381,6 +381,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Activation_Record_Component, Node_Id),
         Sm (Alignment, Uint),
         Sm (Esize, Uint),
+        Sm (Interface_Name, Node_Id),
         Sm (Is_Finalized_Transient, Flag),
         Sm (Is_Ignored_Transient, Flag),
         Sm (Linker_Section_Pragma, Node_Id),
