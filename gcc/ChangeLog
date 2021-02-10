@@ -1,3 +1,11 @@
+2021-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/96015
+	* reorg.c (skip_consecutive_labels): Minor comment tweaks.
+	(relax_delay_slots): When deleting a jump to the next active
+	instruction over a barrier, first delete the barrier if the
+	jump is the only way to reach the target label.
+
 2021-02-04  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/97701

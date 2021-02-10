@@ -1,3 +1,12 @@
+2021-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99021
+	* include/std/coroutine (coroutine_handle<P>::from_address): Add
+	noexcept.
+
 2021-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98605
