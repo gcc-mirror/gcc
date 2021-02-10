@@ -82,6 +82,7 @@ struct ParseRestrictions
   /* Whether the expression was entered from a unary expression - prevents stuff
    * like struct exprs being parsed from a dereference. */
   bool entered_from_unary = false;
+  bool expr_can_be_null = false;
 };
 
 // Parser implementation for gccrs.

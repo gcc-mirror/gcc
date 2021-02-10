@@ -7437,7 +7437,10 @@ Parser<ManagedTokenSource>::parse_break_expr (
     }
 
   // parse break return expression if it exists
-  std::unique_ptr<AST::Expr> return_expr = parse_expr ();
+  ParseRestrictions restrictions;
+  restrictions.expr_can_be_null = true;
+  std::unique_ptr<AST::Expr> return_expr
+    = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::BreakExpr> (
     new AST::BreakExpr (locus, std::move (label), std::move (return_expr),
@@ -12461,9 +12464,10 @@ Parser<ManagedTokenSource>::null_denotation (
       // array definition expr (not indexing)
       return parse_array_expr (std::move (outer_attrs), true);
     default:
-      rust_error_at (tok->get_locus (),
-		     "found unexpected token %qs in null denotation",
-		     tok->get_token_description ());
+      if (!restrictions.expr_can_be_null)
+	rust_error_at (tok->get_locus (),
+		       "found unexpected token %qs in null denotation",
+		       tok->get_token_description ());
       return nullptr;
     }
 }
