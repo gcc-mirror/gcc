@@ -434,6 +434,7 @@
   BUILTIN_VQN (USHIFT2IMM, uqrshrn2_n, 0, NONE)
   /* Implemented by aarch64_<sur>s<lr>i_n<mode>.  */
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, NONE)
+  BUILTIN_VALLP (SHIFTINSERTP, ssri_n, 0, NONE)
   BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, NONE)
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, NONE)
   BUILTIN_VALLP (SHIFTINSERTP, ssli_n, 0, NONE)

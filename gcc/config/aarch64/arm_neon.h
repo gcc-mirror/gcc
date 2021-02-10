@@ -9078,83 +9078,47 @@ vsliq_n_p16 (poly16x8_t __a, poly16x8_t __b, const int __c)
   return __builtin_aarch64_ssli_nv8hi_ppps (__a, __b, __c);
 }
 
-#define vsri_n_p8(a, b, c)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x8_t b_ = (b);                                              \
-       poly8x8_t a_ = (a);                                              \
-       poly8x8_t result;                                                \
-       __asm__ ("sri %0.8b,%2.8b,%3"                                    \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline poly8x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsri_n_p8 (poly8x8_t __a, poly8x8_t __b, const int __c)
+{
+  return __builtin_aarch64_ssri_nv8qi_ppps (__a, __b, __c);
+}
 
-#define vsri_n_p16(a, b, c)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x4_t b_ = (b);                                             \
-       poly16x4_t a_ = (a);                                             \
-       poly16x4_t result;                                               \
-       __asm__ ("sri %0.4h,%2.4h,%3"                                    \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline poly16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsri_n_p16 (poly16x4_t __a, poly16x4_t __b, const int __c)
+{
+  return __builtin_aarch64_ssri_nv4hi_ppps (__a, __b, __c);
+}
 
-#define vsri_n_p64(a, b, c)						\
-  __extension__								\
-    ({									\
-       poly64x1_t b_ = (b);						\
-       poly64x1_t a_ = (a);						\
-       poly64x1_t result;						\
-       __asm__ ("sri %d0,%d2,%3"					\
-		: "=w"(result)						\
-		: "0"(a_), "w"(b_), "i"(c)				\
-		: /* No clobbers.  */);					\
-       result;								\
-     })
+__extension__ extern __inline poly64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsri_n_p64 (poly64x1_t __a, poly64x1_t __b, const int __c)
+{
+  return (poly64x1_t) __builtin_aarch64_ssri_ndi_ppps (__a[0], __b[0], __c);
+}
 
-#define vsriq_n_p8(a, b, c)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x16_t b_ = (b);                                             \
-       poly8x16_t a_ = (a);                                             \
-       poly8x16_t result;                                               \
-       __asm__ ("sri %0.16b,%2.16b,%3"                                  \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline poly8x16_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsriq_n_p8 (poly8x16_t __a, poly8x16_t __b, const int __c)
+{
+  return __builtin_aarch64_ssri_nv16qi_ppps (__a, __b, __c);
+}
 
-#define vsriq_n_p16(a, b, c)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x8_t b_ = (b);                                             \
-       poly16x8_t a_ = (a);                                             \
-       poly16x8_t result;                                               \
-       __asm__ ("sri %0.8h,%2.8h,%3"                                    \
-                : "=w"(result)                                          \
-                : "0"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
+__extension__ extern __inline poly16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsriq_n_p16 (poly16x8_t __a, poly16x8_t __b, const int __c)
+{
+  return __builtin_aarch64_ssri_nv8hi_ppps (__a, __b, __c);
+}
 
-#define vsriq_n_p64(a, b, c)						\
-  __extension__								\
-    ({									\
-       poly64x2_t b_ = (b);						\
-       poly64x2_t a_ = (a);						\
-       poly64x2_t result;						\
-       __asm__ ("sri %0.2d,%2.2d,%3"					\
-		: "=w"(result)						\
-		: "0"(a_), "w"(b_), "i"(c)				\
-		: /* No clobbers.  */);					\
-       result;								\
-     })
+__extension__ extern __inline poly64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vsriq_n_p64 (poly64x2_t __a, poly64x2_t __b, const int __c)
+{
+  return __builtin_aarch64_ssri_nv2di_ppps (__a, __b, __c);
+}
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
