@@ -16650,11 +16650,16 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	r = tsubst (t, args, complain, in_decl);
       else if (DECL_LOCAL_DECL_P (t))
 	{
-	  /* Local specialization will have been created when we
-	     instantiated the DECL_EXPR_DECL. */
+	  /* Local specialization will usually have been created when
+	     we instantiated the DECL_EXPR_DECL. */
 	  r = retrieve_local_specialization (t);
 	  if (!r)
-	    r = error_mark_node;
+	    {
+	      /* We're in a generic lambda referencing a local extern
+		 from an outer block-scope of a non-template.  */
+	      gcc_checking_assert (LAMBDA_FUNCTION_P (current_function_decl));
+	      r = t;
+	    }
 	}
       else if (local_variable_p (t)
 	       && uses_template_parms (DECL_CONTEXT (t)))
