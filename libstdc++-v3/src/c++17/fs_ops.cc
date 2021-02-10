@@ -113,7 +113,7 @@ fs::absolute(const path& p, error_code& ec)
   while (len > buf.size());
 
   if (len == 0)
-    ec.assign((int)GetLastError(), std::system_category());
+    ec = __last_system_error();
   else
     {
       buf.resize(len);
@@ -682,7 +682,7 @@ fs::create_hard_link(const path& to, const path& new_hard_link,
   if (CreateHardLinkW(new_hard_link.c_str(), to.c_str(), NULL))
     ec.clear();
   else
-    ec.assign((int)GetLastError(), system_category());
+    ec = __last_system_error();
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -874,12 +874,12 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       if (!h1 || !h2)
 	{
 	  if (!h1 && !h2)
-	    ec.assign((int)GetLastError(), system_category());
+	    ec = __last_system_error();
 	  return false;
 	}
       if (!h1.get_info() || !h2.get_info())
 	{
-	  ec.assign((int)GetLastError(), system_category());
+	  ec = __last_system_error();
 	  return false;
 	}
       return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
@@ -1255,7 +1255,7 @@ fs::remove(const path& p, error_code& ec) noexcept
 	  return true;
 	}
       else if (!ec)
-	ec.assign((int)GetLastError(), system_category());
+	ec = __last_system_error();
     }
   else if (status_known(st))
     ec.clear();
