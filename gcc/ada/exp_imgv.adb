@@ -952,7 +952,7 @@ package body Exp_Imgv is
          end;
 
          --  Generate:
-         --    S4 : String renames call_put_enumS (S2 .. S3 - 1);
+         --    P4 : String renames call_put_enumS (P2 .. P3 - 1);
 
          declare
             Sub_Node : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
