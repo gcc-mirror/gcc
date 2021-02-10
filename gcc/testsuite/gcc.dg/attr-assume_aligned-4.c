@@ -8,7 +8,7 @@ A (1) void fv_1 (void);       /* { dg-warning ".assume_aligned. attribute ignore
 
 A (1) int fi_1 (void);        /* { dg-warning ".assume_aligned. attribute ignored on a function returning .int." } */
 
-A (-1) void* fpv_m1 (void);   /* { dg-warning ".assume_aligned. attribute argument -1 is not a power of 2" } */
+A (-1) void* fpv_m1 (void);   /* { dg-warning ".assume_aligned. attribute argument -1 is not positive" } */
 
 A (0) void* fpv_0 (void);     /* { dg-warning ".assume_aligned. attribute argument 0 is not a power of 2" } */
 
@@ -23,7 +23,7 @@ A (16385) void* fpv_16kp1 (void);    /* { dg-warning ".assume_aligned. attribute
 
 A (32767) void* fpv_32km1 (void);     /* { dg-warning ".assume_aligned. attribute argument 32767 is not a power of 2" } */
 
-A (4, -1) void* fpv_4_m1 (void);      /* { dg-warning ".assume_aligned. attribute argument -1 is not in the range \\\[0, 3]" } */
+A (4, -1) void* fpv_4_m1 (void);      /* { dg-warning ".assume_aligned. attribute argument -1 is not positive" } */
 
 A (4, 0) void* fpv_4_0 (void);
 A (4, 1) void* fpv_4_1 (void);
