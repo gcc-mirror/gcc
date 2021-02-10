@@ -29,7 +29,7 @@ using __gnu_test::compare_paths;
 std::string operator""_norm(const char* s, std::size_t n)
 {
   std::string str(s, n);
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
   for (auto& c : str)
     if (c == '/')
       c = '\\';
@@ -80,7 +80,7 @@ test03()
 void
 test04()
 {
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
   // DR 3070
   compare_paths(path("c:/f:o/bar").lexically_relative("c:/f:o/bar"), ".");
   compare_paths(path("c:/foo/bar").lexically_relative("c:/foo/b:r"), "..\\bar");

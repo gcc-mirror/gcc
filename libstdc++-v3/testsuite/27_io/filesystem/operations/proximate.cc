@@ -30,7 +30,7 @@ using __gnu_test::compare_paths;
 std::string operator""_norm(const char* s, std::size_t n)
 {
   std::string str(s, n);
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
   for (auto& c : str)
     if (c == '/')
       c = '\\';

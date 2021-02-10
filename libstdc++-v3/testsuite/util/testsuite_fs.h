@@ -82,7 +82,7 @@ namespace __gnu_test
   test_fs::path
   root_path()
   {
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
     return L"c:/";
 #else
     return "/";
