@@ -927,7 +927,11 @@ _loop_vec_info::~_loop_vec_info ()
   delete scan_map;
   epilogue_vinfos.release ();
 
-  loop->aux = NULL;
+  /* When we release an epiloge vinfo that we do not intend to use
+     avoid clearing AUX of the main loop which should continue to
+     point to the main loop vinfo since otherwise we'll leak that.  */
+  if (loop->aux == this)
+    loop->aux = NULL;
 }
 
 /* Return an invariant or register for EXPR and emit necessary

@@ -1385,6 +1385,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** @}  */
 
+#if __cplusplus >= 201402L
+  template<typename _Func, typename _SfinaeType, typename = __void_t<>>
+    struct __has_is_transparent
+    { };
+
+  template<typename _Func, typename _SfinaeType>
+    struct __has_is_transparent<_Func, _SfinaeType,
+				__void_t<typename _Func::is_transparent>>
+    { typedef void type; };
+
+  template<typename _Func, typename _SfinaeType>
+    using __has_is_transparent_t
+      = typename __has_is_transparent<_Func, _SfinaeType>::type;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

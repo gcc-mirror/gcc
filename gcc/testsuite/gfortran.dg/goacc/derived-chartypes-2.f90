@@ -1,3 +1,6 @@
+! This currently ICEs. Avoid that.
+! { dg-skip-if "PR98979" { *-*-* } }
+
 type :: type1
   character(len=35,kind=4) :: a
 end type type1

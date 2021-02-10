@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "fold-const-call.h"
 #include "stor-layout.h"
+#include "cgraph.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -2340,6 +2341,13 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 				     type);
 	      DECL_ARTIFICIAL (var) = 1;
 	      TREE_STATIC (var) = 1;
+	      // Temporarily register the artificial var in varpool,
+	      // so that comparisons of its address against NULL are folded
+	      // through nonzero_address even with
+	      // -fno-delete-null-pointer-checks or that comparison of
+	      // addresses of different heap artificial vars is folded too.
+	      // See PR98988 and PR99031.
+	      varpool_node::finalize_decl (var);
 	      ctx->global->heap_vars.safe_push (var);
 	      ctx->global->values.put (var, NULL_TREE);
 	      return fold_convert (ptr_type_node, build_address (var));
@@ -7199,15 +7207,18 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	  non_constant_p = true;
 	}
       FOR_EACH_VEC_ELT (global_ctx.heap_vars, i, heap_var)
-	if (DECL_NAME (heap_var) != heap_deleted_identifier)
-	  {
-	    if (!allow_non_constant && !non_constant_p)
-	      error_at (DECL_SOURCE_LOCATION (heap_var),
-			"%qE is not a constant expression because allocated "
-			"storage has not been deallocated", t);
-	    r = t;
-	    non_constant_p = true;
-	  }
+	{
+	  if (DECL_NAME (heap_var) != heap_deleted_identifier)
+	    {
+	      if (!allow_non_constant && !non_constant_p)
+		error_at (DECL_SOURCE_LOCATION (heap_var),
+			  "%qE is not a constant expression because allocated "
+			  "storage has not been deallocated", t);
+	      r = t;
+	      non_constant_p = true;
+	    }
+	  varpool_node::get (heap_var)->remove ();
+	}
     }
 
   /* Check that immediate invocation does not return an expression referencing

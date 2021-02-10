@@ -6356,6 +6356,7 @@
 	  (match_operand:V2SF 1 "register_operand")))]
   "TARGET_AVX512DQ && TARGET_AVX512VL"
 {
+  operands[1] = force_reg (V2SFmode, operands[1]);
   operands[1] = simplify_gen_subreg (V4SFmode, operands[1], V2SFmode, 0);
   emit_insn (gen_avx512dq_fix<fixunssuffix>_truncv2sfv2di2
 	     (operands[0], operands[1]));
@@ -18013,6 +18014,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V8QImode, operands[1]);
       operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
       emit_insn (gen_sse4_1_<code>v8qiv8hi2 (operands[0], operands[1]));
       DONE;
@@ -18090,6 +18092,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V8QImode, operands[1]);
       operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
       emit_insn (gen_avx2_<code>v8qiv8si2 (operands[0], operands[1]));
       DONE;
@@ -18153,6 +18156,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V4QImode, operands[1]);
       operands[1] = simplify_gen_subreg (V16QImode, operands[1], V4QImode, 0);
       emit_insn (gen_sse4_1_<code>v4qiv4si2 (operands[0], operands[1]));
       DONE;
@@ -18279,6 +18283,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V4HImode, operands[1]);
       operands[1] = simplify_gen_subreg (V8HImode, operands[1], V4HImode, 0);
       emit_insn (gen_sse4_1_<code>v4hiv4si2 (operands[0], operands[1]));
       DONE;
@@ -18366,6 +18371,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V8QImode, operands[1]);
       operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
       emit_insn (gen_avx512f_<code>v8qiv8di2 (operands[0], operands[1]));
       DONE;
@@ -18427,6 +18433,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V8QImode, operands[1]);
       operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
       emit_insn (gen_avx2_<code>v4qiv4di2 (operands[0], operands[1]));
       DONE;
@@ -18453,6 +18460,7 @@
 	  (match_operand:V2QI 1 "register_operand")))]
   "TARGET_SSE4_1"
 {
+  operands[1] = force_reg (V2QImode, operands[1]);
   operands[1] = simplify_gen_subreg (V16QImode, operands[1], V2QImode, 0);
   emit_insn (gen_sse4_1_<code>v2qiv2di2 (operands[0], operands[1]));
   DONE;
@@ -18525,6 +18533,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V4HImode, operands[1]);
       operands[1] = simplify_gen_subreg (V8HImode, operands[1], V4HImode, 0);
       emit_insn (gen_avx2_<code>v4hiv4di2 (operands[0], operands[1]));
       DONE;
@@ -18586,6 +18595,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V2HImode, operands[1]);
       operands[1] = simplify_gen_subreg (V8HImode, operands[1], V2HImode, 0);
       emit_insn (gen_sse4_1_<code>v2hiv2di2 (operands[0], operands[1]));
       DONE;
@@ -18737,6 +18747,7 @@
 {
   if (!MEM_P (operands[1]))
     {
+      operands[1] = force_reg (V2SImode, operands[1]);
       operands[1] = simplify_gen_subreg (V4SImode, operands[1], V2SImode, 0);
       emit_insn (gen_sse4_1_<code>v2siv2di2 (operands[0], operands[1]));
       DONE;

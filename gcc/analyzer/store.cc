@@ -1820,9 +1820,20 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
   const region *lhs_base_reg = lhs_reg->get_base_region ();
   binding_cluster *lhs_cluster;
   if (lhs_base_reg->symbolic_for_unknown_ptr_p ())
-    /* Reject attempting to bind values into a symbolic region
-       for an unknown ptr; merely invalidate values below.  */
-    lhs_cluster = NULL;
+    {
+      /* Reject attempting to bind values into a symbolic region
+	 for an unknown ptr; merely invalidate values below.  */
+      lhs_cluster = NULL;
+
+      /* The LHS of the write is *UNKNOWN.  If the RHS is a pointer,
+	 then treat the region being pointed to as having escaped.  */
+      if (const region_svalue *ptr_sval = rhs_sval->dyn_cast_region_svalue ())
+	{
+	  const region *ptr_dst = ptr_sval->get_pointee ();
+	  const region *ptr_base_reg = ptr_dst->get_base_region ();
+	  mark_as_escaped (ptr_base_reg);
+	}
+    }
   else
     {
       lhs_cluster = get_or_create_cluster (lhs_base_reg);

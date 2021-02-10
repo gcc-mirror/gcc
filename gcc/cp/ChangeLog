@@ -1,3 +1,30 @@
+2021-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98944
+	* module.cc (module_state::is_rooted): Rename to ...
+	(module_state::has_location): ... here.  Adjust callers.
+	(module_state::read_partitions): Adjust validity check.
+	Don't overwrite a known location.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96905
+	* pt.c (mark_decl_instantiated): Exit early if consteval.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98326
+	PR c++/20408
+	* cp-gimplify.c (simple_empty_class_p): Don't touch an invisiref
+	parm.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98994
+	PR c++/97566
+	* constexpr.c (cxx_eval_store_expression): Only skip empty fields in
+	RECORD_TYPE.
+
 2021-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (start_cleanup_fn): Push function into

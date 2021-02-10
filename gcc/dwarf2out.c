@@ -29475,6 +29475,16 @@ prune_unused_types_walk (dw_die_ref die)
 	  if (die->die_perennial_p)
 	    break;
 
+	  /* For static data members, the declaration in the class is supposed
+	     to have DW_TAG_member tag in DWARF{3,4} but DW_TAG_variable in
+	     DWARF5.  DW_TAG_member will be marked, so mark even such
+	     DW_TAG_variables in DWARF5, as long as it has DW_AT_const_value
+	     attribute.  */
+	  if (dwarf_version >= 5
+	      && class_scope_p (die->die_parent)
+	      && get_AT (die, DW_AT_const_value))
+	    break;
+
 	  /* premark_used_variables marks external variables --- don't mark
 	     them here.  But function-local externals are always considered
 	     used.  */

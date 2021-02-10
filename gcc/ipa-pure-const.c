@@ -1937,7 +1937,7 @@ propagate_malloc (void)
 	  if (l->malloc_state == STATE_MALLOC_BOTTOM)
 	    continue;
 
-	  vec<cgraph_node *> callees = vNULL;
+	  auto_vec<cgraph_node *, 16> callees;
 	  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
 	    {
 	      ipa_call_summary *es = ipa_call_summaries->get_create (cs);

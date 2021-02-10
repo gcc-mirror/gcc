@@ -227,6 +227,7 @@ if_chain::is_beneficial ()
 			(left->get_high ()), wi::one (TYPE_PRECISION (type))))
 	    {
 	      left->set_high (right->get_high ());
+	      delete right;
 	      continue;
 	    }
 	}
@@ -241,20 +242,20 @@ if_chain::is_beneficial ()
     = jump_table_cluster::find_jump_tables (filtered_clusters);
   bool r = output.length () < filtered_clusters.length ();
   if (r)
-    dump_clusters (&output, "JT can be built");
-  output.release ();
-  if (r)
-    return true;
+    {
+      dump_clusters (&output, "JT can be built");
+      release_clusters (output);
+      return true;
+    }
+  else
+    output.release ();
 
   output = bit_test_cluster::find_bit_tests (filtered_clusters);
   r = output.length () < filtered_clusters.length ();
   if (r)
     dump_clusters (&output, "BT can be built");
 
-  for (unsigned i = 0; i < output.length (); i++)
-    delete output[i];
-
-  output.release ();
+  release_clusters (output);
   return r;
 }
 
@@ -447,9 +448,8 @@ find_conditions (basic_block bb,
       info->record_phi_mapping (info->m_false_edge,
 				&info->m_false_edge_phi_mapping);
       conditions_in_bbs->put (bb, info);
+      return;
     }
-
-  return;
 
 exit:
   delete info;

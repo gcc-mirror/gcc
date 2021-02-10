@@ -59,7 +59,7 @@ test01()
   check("c:", "d:", -1);
   check("c:", "c:/", -1);
   check("d:", "c:/", +1);
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
   check("c:/a/b", "c:a/b", +1);
 #else
   check("c:/a/b", "c:a/b", -1);

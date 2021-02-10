@@ -690,7 +690,7 @@ fs::create_hard_link(const path& to, const path& new_hard_link,
   if (CreateHardLinkW(new_hard_link.c_str(), to.c_str(), NULL))
     ec.clear();
   else
-    ec.assign((int)GetLastError(), generic_category());
+    ec.assign((int)GetLastError(), system_category());
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -882,12 +882,12 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       if (!h1 || !h2)
 	{
 	  if (!h1 && !h2)
-	    ec.assign((int)GetLastError(), generic_category());
+	    ec.assign((int)GetLastError(), system_category());
 	  return false;
 	}
       if (!h1.get_info() || !h2.get_info())
 	{
-	  ec.assign((int)GetLastError(), generic_category());
+	  ec.assign((int)GetLastError(), system_category());
 	  return false;
 	}
       return h1.info.dwVolumeSerialNumber == h2.info.dwVolumeSerialNumber
@@ -1263,7 +1263,7 @@ fs::remove(const path& p, error_code& ec) noexcept
 	  return true;
 	}
       else if (!ec)
-	ec.assign((int)GetLastError(), generic_category());
+	ec.assign((int)GetLastError(), system_category());
     }
   else if (status_known(st))
     ec.clear();
@@ -1462,7 +1462,6 @@ fs::status(const fs::path& p, error_code& ec) noexcept
   auto str = p.c_str();
 
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
-#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
   // stat() fails if there's a trailing slash (PR 88881)
   path p2;
   if (p.has_relative_path() && !p.has_filename())
@@ -1479,7 +1478,6 @@ fs::status(const fs::path& p, error_code& ec) noexcept
 	}
       str = p2.c_str();
     }
-#endif
 #endif
 
   stat_type st;
