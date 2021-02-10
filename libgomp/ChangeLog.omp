@@ -2,6 +2,13 @@
 
 	Backport from mainline
 
+	* testsuite/libgomp.oacc-fortran/array-stride-dt-1.f90: Remove
+	expected errors.
+
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
 	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90: New test.
 	* testsuite/libgomp.oacc-fortran/update-dt-array.f90: Likewise.
 

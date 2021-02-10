@@ -24,9 +24,8 @@ end do
 
 b(1)%A(:,:) = 5
 
-! TODO: Remove expected errors once this is supported.
-!$acc update device(b(::2))  ! { dg-error "Stride should not be specified for array section in MAP clause" }
-!$acc update device(b(1)%A(::3,::4))  ! { dg-error "Stride should not be specified for array section in MAP clause" }
+!$acc update device(b(::2))
+!$acc update device(b(1)%A(::3,::4))
 
 do i=1,20
   !$acc exit data copyout(b(i)%A)

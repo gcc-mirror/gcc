@@ -2,6 +2,16 @@
 
 	Backport from mainline
 
+	* gfortran.dg/goacc/array-with-dt-2.f90: Remove expected errors.
+	* gfortran.dg/goacc/array-with-dt-6.f90: New test.
+	* gfortran.dg/goacc/mapping-tests-2.f90: Update expected error.
+	* gfortran.dg/goacc/ref_inquiry.f90: Update expected errors.
+	* gfortran.dg/gomp/ref_inquiry.f90: Likewise.
+
+2021-02-24  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
 	* gfortran.dg/goacc/array-with-dt-1.f90: New test.
 	* gfortran.dg/goacc/array-with-dt-3.f90: Likewise.
 	* gfortran.dg/goacc/array-with-dt-4.f90: Likewise.
