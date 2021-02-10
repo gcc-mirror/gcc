@@ -141,6 +141,8 @@ public:
       = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
 				     &terminated);
 
+    HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
+
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
@@ -149,7 +151,7 @@ public:
     translated
       = new HIR::LoopExpr (mapping,
 			   std::unique_ptr<HIR::BlockExpr> (loop_block),
-			   expr.get_locus (), HIR::LoopLabel::error (),
+			   expr.get_locus (), std::move (loop_label),
 			   std::move (outer_attribs));
   }
 

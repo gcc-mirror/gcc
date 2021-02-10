@@ -39,7 +39,8 @@ public:
 
     if (resolver.infered == nullptr)
       {
-	rust_error_at (expr->get_locus_slow (), "failed to resolve expression");
+	rust_error_at (expr->get_locus_slow (),
+		       "failed to type resolve expression");
 	return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
       }
 
@@ -744,6 +745,13 @@ public:
   void visit (HIR::LoopExpr &expr)
   {
     infered = TypeCheckExpr::Resolve (expr.get_loop_block ().get ());
+  }
+
+  void visit (HIR::BreakExpr &expr)
+  {
+    infered = expr.has_break_expr ()
+		? TypeCheckExpr::Resolve (expr.get_expr ().get ())
+		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
 private:

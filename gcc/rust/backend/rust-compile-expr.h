@@ -582,21 +582,25 @@ public:
 
   void visit (HIR::LoopExpr &expr)
   {
-    // loop_start:
-    //      <loop_body>
-    //   goto loop_start;
     fncontext fnctx = ctx->peek_fn ();
-    Blabel *loop_start
-      = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
-    Bstatement *label_decl_stmt
-      = ctx->get_backend ()->label_definition_statement (loop_start);
-    ctx->add_statement (label_decl_stmt);
+    Bblock *code_block
+      = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
+    Bexpression *loop_expr
+      = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
+    Bstatement *loop_stmt
+      = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
+    ctx->add_statement (loop_stmt);
+  }
 
-    translated = CompileExpr::Compile (expr.get_loop_block ().get (), ctx);
-
-    Bstatement *goto_loop_start_stmt
-      = ctx->get_backend ()->goto_statement (loop_start, Location ());
-    ctx->add_statement (goto_loop_start_stmt);
+  void visit (HIR::BreakExpr &expr)
+  {
+    fncontext fnctx = ctx->peek_fn ();
+    Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
+      ctx->get_backend ()->boolean_constant_expression (true),
+      expr.get_locus ());
+    Bstatement *break_stmt
+      = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
+    ctx->add_statement (break_stmt);
   }
 
 private:

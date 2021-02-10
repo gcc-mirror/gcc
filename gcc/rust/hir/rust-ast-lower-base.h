@@ -243,6 +243,43 @@ protected:
   ASTLoweringBase () : mappings (Analysis::Mappings::get ()) {}
 
   Analysis::Mappings *mappings;
+
+  HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime)
+  {
+    HIR::Lifetime::LifetimeType type = HIR::Lifetime::LifetimeType::NAMED;
+    switch (lifetime.get_lifetime_type ())
+      {
+      case AST::Lifetime::LifetimeType::NAMED:
+	type = HIR::Lifetime::LifetimeType::NAMED;
+	break;
+      case AST::Lifetime::LifetimeType::STATIC:
+	type = HIR::Lifetime::LifetimeType::STATIC;
+	break;
+      case AST::Lifetime::LifetimeType::WILDCARD:
+	type = HIR::Lifetime::LifetimeType::WILDCARD;
+	break;
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    return HIR::Lifetime (mapping, type, lifetime.get_lifetime_name (),
+			  lifetime.get_locus ());
+  }
+
+  HIR::LoopLabel lower_loop_label (AST::LoopLabel &loop_label)
+  {
+    HIR::Lifetime life = lower_lifetime (loop_label.get_lifetime ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, loop_label.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
+  }
 };
 
 } // namespace HIR

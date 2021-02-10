@@ -1139,11 +1139,14 @@ private:
 
   Location locus;
 
+  NodeId node_id;
+
 public:
   // Constructor
   Lifetime (LifetimeType type, std::string name = std::string (),
 	    Location locus = Location ())
-    : lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
+    : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Creates an "error" lifetime.
@@ -1158,6 +1161,14 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  LifetimeType get_lifetime_type () { return lifetime_type; }
+
+  Location get_locus () { return locus; }
+
+  std::string get_lifetime_name () const { return lifetime_name; }
+
+  NodeId get_node_id () const { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -236,23 +236,28 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       // the previous passes will ensure this is a valid return
       // dead code elimination should remove any bad trailing expressions
       Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
-      rust_assert (compiled_expr != nullptr);
-
-      if (result == nullptr)
+      if (compiled_expr != nullptr)
 	{
-	  Bstatement *final_stmt
-	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
-							 compiled_expr);
-	  ctx->add_statement (final_stmt);
-	}
-      else
-	{
-	  Bexpression *result_reference = ctx->get_backend ()->var_expression (
-	    result, expr.get_final_expr ()->get_locus_slow ());
+	  if (result == nullptr)
+	    {
+	      Bstatement *final_stmt
+		= ctx->get_backend ()->expression_statement (fnctx.fndecl,
+							     compiled_expr);
+	      ctx->add_statement (final_stmt);
+	    }
+	  else
+	    {
+	      Bexpression *result_reference
+		= ctx->get_backend ()->var_expression (
+		  result, expr.get_final_expr ()->get_locus_slow ());
 
-	  Bstatement *assignment = ctx->get_backend ()->assignment_statement (
-	    fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
-	  ctx->add_statement (assignment);
+	      Bstatement *assignment
+		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
+							     result_reference,
+							     compiled_expr,
+							     expr.get_locus ());
+	      ctx->add_statement (assignment);
+	    }
 	}
     }
 

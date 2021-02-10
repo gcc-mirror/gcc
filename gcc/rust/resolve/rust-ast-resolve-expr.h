@@ -243,7 +243,58 @@ public:
 
   void visit (AST::LoopExpr &expr)
   {
+    if (expr.has_loop_label ())
+      {
+	auto label = expr.get_loop_label ();
+	if (label.get_lifetime ().get_lifetime_type ()
+	    != AST::Lifetime::LifetimeType::NAMED)
+	  {
+	    rust_error_at (label.get_locus (),
+			   "Labels must be a named lifetime value");
+	    return;
+	  }
+
+	auto label_name = label.get_lifetime ().get_lifetime_name ();
+	auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
+	resolver->get_label_scope ().insert (
+	  label_name, label_lifetime_node_id, label.get_locus (), false,
+	  [&] (std::string, NodeId, Location locus) -> void {
+	    rust_error_at (label.get_locus (),
+			   "label redefined multiple times");
+	    rust_error_at (locus, "was defined here");
+	  });
+	resolver->insert_new_definition (label_lifetime_node_id,
+					 Definition{label_lifetime_node_id,
+						    label.get_node_id ()});
+      }
     ResolveExpr::go (expr.get_loop_block ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::BreakExpr &expr)
+  {
+    if (expr.has_label ())
+      {
+	auto label = expr.get_label ();
+	if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
+	  {
+	    rust_error_at (label.get_locus (),
+			   "Labels must be a named lifetime value");
+	    return;
+	  }
+
+	NodeId resolved_node = UNKNOWN_NODEID;
+	if (!resolver->get_label_scope ().lookup (label.get_lifetime_name (),
+						  &resolved_node))
+	  {
+	    rust_error_at (expr.get_label ().get_locus (),
+			   "failed to resolve label");
+	    return;
+	  }
+	resolver->insert_resolved_label (label.get_node_id (), resolved_node);
+      }
+
+    if (expr.has_break_expr ())
+      ResolveExpr::go (expr.get_break_expr ().get (), expr.get_node_id ());
   }
 
 private:

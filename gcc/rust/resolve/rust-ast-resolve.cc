@@ -252,7 +252,7 @@ Resolver::insert_resolved_label (NodeId refId, NodeId defId)
   auto it = resolved_labels.find (refId);
   rust_assert (it == resolved_labels.end ());
 
-  resolved_types[refId] = defId;
+  resolved_labels[refId] = defId;
   get_label_scope ().append_reference_for_def (refId, defId);
 }
 

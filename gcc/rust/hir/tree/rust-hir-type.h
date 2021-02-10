@@ -531,7 +531,7 @@ public:
   // Constructor
   ReferenceType (Analysis::NodeMapping mappings, bool is_mut,
 		 std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus,
-		 Lifetime lifetime = Lifetime::error ())
+		 Lifetime lifetime)
     : TypeNoBounds (mappings), lifetime (std::move (lifetime)),
       has_mut (is_mut), type (std::move (type_no_bounds)), locus (locus)
   {}

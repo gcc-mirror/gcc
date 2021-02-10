@@ -3103,6 +3103,8 @@ public:
     return break_expr;
   }
 
+  Lifetime &get_label () { return label; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3670,11 +3672,14 @@ class LoopLabel /*: public Node*/
   Lifetime label; // or type LIFETIME_OR_LABEL
   Location locus;
 
+  NodeId node_id;
+
 public:
   std::string as_string () const;
 
   LoopLabel (Lifetime loop_label, Location locus = Location ())
-    : label (std::move (loop_label)), locus (locus)
+    : label (std::move (loop_label)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Returns whether the LoopLabel is in an error state.
@@ -3684,6 +3689,10 @@ public:
   static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
 
   Location get_locus () const { return locus; }
+
+  Lifetime &get_lifetime () { return label; }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // Base loop expression AST node - aka LoopExpr
@@ -3742,6 +3751,8 @@ protected:
 
 public:
   bool has_loop_label () const { return !loop_label.is_error (); }
+
+  LoopLabel &get_loop_label () { return loop_label; }
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
