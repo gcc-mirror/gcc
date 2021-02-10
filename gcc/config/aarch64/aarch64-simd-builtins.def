@@ -436,7 +436,7 @@
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, NONE)
   BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, NONE)
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, NONE)
-  VAR2 (SHIFTINSERTP, ssli_n, 0, NONE, di, v2di)
+  BUILTIN_VALLP (SHIFTINSERTP, ssli_n, 0, NONE)
   BUILTIN_VSDQ_I_DI (USHIFTACC, usli_n, 0, NONE)
   /* Implemented by aarch64_<sur>qshl<u>_n<mode>.  */
   BUILTIN_VSDQ_I (SHIFTIMM_USS, sqshlu_n, 0, NONE)

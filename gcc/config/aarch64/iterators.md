@@ -203,6 +203,9 @@
 (define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI V4BF V8BF
 			       V2DI V4HF V8HF V2SF V4SF V2DF DI DF])
 
+;; All Advanced SIMD polynomial modes and DI.
+(define_mode_iterator VALLP [V8QI V16QI V4HI V8HI V2DI DI])
+
 ;; Advanced SIMD modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
 
