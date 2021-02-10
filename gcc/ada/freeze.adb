@@ -9428,15 +9428,18 @@ package body Freeze is
       end if;
 
       --  Ensure that all anonymous access-to-subprogram types inherit the
-      --  convention of their related subprogram (RM 6.3.1 13.1/3). This is
+      --  convention of their related subprogram (RM 6.3.1(13.1/5)). This is
       --  not done for a defaulted convention Ada because those types also
       --  default to Ada. Convention Protected must not be propagated when
       --  the subprogram is an entry because this would be illegal. The only
       --  way to force convention Protected on these kinds of types is to
-      --  include keyword "protected" in the access definition.
+      --  include keyword "protected" in the access definition. Conventions
+      --  Entry and Intrinsic are also not propagated (specified by AI12-0207).
 
       if Convention (E) /= Convention_Ada
         and then Convention (E) /= Convention_Protected
+        and then Convention (E) /= Convention_Entry
+        and then Convention (E) /= Convention_Intrinsic
       then
          Set_Profile_Convention (E);
       end if;

@@ -10887,34 +10887,10 @@ package body Sem_Attr is
                   if Convention (Designated_Type (Btyp)) /=
                      Convention (Entity (P))
                   then
-                     --  The rule in 6.3.1 (8) deserves a special error
-                     --  message.
-
-                     if Convention (Btyp) = Convention_Intrinsic
-                       and then Nkind (Parent (N)) = N_Procedure_Call_Statement
-                       and then Is_Entity_Name (Name (Parent (N)))
-                       and then Inside_A_Generic
-                     then
-                        declare
-                           Subp : constant Entity_Id :=
-                                    Entity (Name (Parent (N)));
-                        begin
-                           if Convention (Subp) = Convention_Intrinsic then
-                              Error_Msg_FE
-                                ("?subprogram and its formal access "
-                                 & "parameters have convention Intrinsic",
-                                 Parent (N), Subp);
-                              Error_Msg_N
-                                ("actual cannot be access attribute", N);
-                           end if;
-                        end;
-
-                     else
-                        Error_Msg_FE
-                          ("subprogram & has wrong convention", P, Entity (P));
-                        Error_Msg_Sloc := Sloc (Btyp);
-                        Error_Msg_FE ("\does not match & declared#", P, Btyp);
-                     end if;
+                     Error_Msg_FE
+                       ("subprogram & has wrong convention", P, Entity (P));
+                     Error_Msg_Sloc := Sloc (Btyp);
+                     Error_Msg_FE ("\does not match & declared#", P, Btyp);
 
                      if not Is_Itype (Btyp)
                        and then not Has_Convention_Pragma (Btyp)
