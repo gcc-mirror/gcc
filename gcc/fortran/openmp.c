@@ -5174,17 +5174,31 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				 "are allowed on ORDERED directive at %L",
 				 &n->where);
 		  }
-		gfc_ref *array_ref = NULL;
+		gfc_ref *lastref = NULL, *lastslice = NULL;
 		bool resolved = false;
 		if (n->expr)
 		  {
-		    array_ref = n->expr->ref;
+		    lastref = n->expr->ref;
 		    resolved = gfc_resolve_expr (n->expr);
 
 		    /* Look through component refs to find last array
 		       reference.  */
 		    if (resolved)
 		      {
+			for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
+			  if (ref->type == REF_COMPONENT
+			      || ref->type == REF_SUBSTRING
+			      || ref->type == REF_INQUIRY)
+			    lastref = ref;
+			  else if (ref->type == REF_ARRAY)
+			    {
+			      for (int i = 0; i < ref->u.ar.dimen; i++)
+				if (ref->u.ar.dimen_type[i] == DIMEN_RANGE)
+				  lastslice = ref;
+
+			      lastref = ref;
+			    }
+
 			/* The "!$acc cache" directive allows rectangular
 			   subarrays to be specified, with some restrictions
 			   on the form of bounds (not implemented).
@@ -5192,53 +5206,51 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			   array isn't contiguous.  An expression such as
 			   arr(-n:n,-n:n) could be contiguous even if it looks
 			   like it may not be.  */
-			if (list != OMP_LIST_CACHE
+			if (code->op != EXEC_OACC_UPDATE
+			    && list != OMP_LIST_CACHE
 			    && list != OMP_LIST_DEPEND
 			    && !gfc_is_simply_contiguous (n->expr, false, true)
-			    && gfc_is_not_contiguous (n->expr))
+			    && gfc_is_not_contiguous (n->expr)
+			    && !(lastslice
+				 && (lastslice->next
+				     || lastslice->type != REF_ARRAY)))
 			  gfc_error ("Array is not contiguous at %L",
 				     &n->where);
-
-			while (array_ref
-			       && (array_ref->type == REF_COMPONENT
-				   || (array_ref->type == REF_ARRAY
-				       && array_ref->next
-				       && (array_ref->next->type
-					   == REF_COMPONENT))))
-			  array_ref = array_ref->next;
 		      }
 		  }
-		if (array_ref
+		if (lastref
 		    || (n->expr
 			&& (!resolved || n->expr->expr_type != EXPR_VARIABLE)))
 		  {
-		    if (array_ref
-			&& (array_ref->type == REF_SUBSTRING
-			    || (array_ref->next
-				&& array_ref->next->type == REF_SUBSTRING)))
+		    if (!lastslice
+			&& lastref
+			&& lastref->type == REF_SUBSTRING)
 		      gfc_error ("Unexpected substring reference in %s clause "
 				 "at %L", name, &n->where);
-		    else if (array_ref && array_ref->type == REF_INQUIRY)
+		    else if (!lastslice
+			     && lastref
+			     && lastref->type == REF_INQUIRY)
 		      {
-			gcc_assert (array_ref->u.i == INQUIRY_RE
-				    || array_ref->u.i == INQUIRY_IM);
+			gcc_assert (lastref->u.i == INQUIRY_RE
+				    || lastref->u.i == INQUIRY_IM);
 			gfc_error ("Unexpected complex-parts designator "
 				   "reference in %s clause at %L",
 				   name, &n->where);
 		      }
 		    else if (!resolved
-			|| n->expr->expr_type != EXPR_VARIABLE
-			|| array_ref->next
-			|| array_ref->type != REF_ARRAY)
+			     || n->expr->expr_type != EXPR_VARIABLE
+			     || (lastslice
+				 && (lastslice->next
+				     || lastslice->type != REF_ARRAY)))
 		      gfc_error ("%qs in %s clause at %L is not a proper "
 				 "array section", n->sym->name, name,
 				 &n->where);
-		    else
+		    else if (lastslice)
 		      {
 			int i;
-			gfc_array_ref *ar = &array_ref->u.ar;
+			gfc_array_ref *ar = &lastslice->u.ar;
 			for (i = 0; i < ar->dimen; i++)
-			  if (ar->stride[i])
+			  if (ar->stride[i] && code->op != EXEC_OACC_UPDATE)
 			    {
 			      gfc_error ("Stride should not be specified for "
 					 "array section in %s clause at %L",

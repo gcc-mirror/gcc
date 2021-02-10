@@ -25,15 +25,11 @@ print *, is_contiguous(zz(:)%re)
 !$omp target enter data map(to: z%re)    ! { dg-error "Unexpected complex-parts designator" }
 !$omp target enter data map(to: z%im)    ! { dg-error "Unexpected complex-parts designator" }
 !$omp target enter data map(to: zz%re)   ! { dg-error "not a proper array section" }
-                                         ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$omp target enter data map(to: zz%im)   ! { dg-error "not a proper array section" }
-                                         ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 
 !$omp target enter data map(to: x%z%re)  ! { dg-error "Unexpected complex-parts designator" }
 !$omp target enter data map(to: x%z%im)  ! { dg-error "Unexpected complex-parts designator" }
 !$omp target enter data map(to: x%zz%re) ! { dg-error "not a proper array section" }
-                                         ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$omp target enter data map(to: x%zz%im) ! { dg-error "not a proper array section" }
-                                         ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 
 end
