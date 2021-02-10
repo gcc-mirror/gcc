@@ -32,6 +32,11 @@
 #include <errno.h>
 #undef __sso_string
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#include <memory>
+#include <windows.h>
+#endif
+
 namespace
 {
   using std::string;
@@ -81,9 +86,33 @@ namespace
     string
     message(int i) const final
     {
+#if defined(_WIN32) && !defined(__CYGWIN__)
+      char* buf = nullptr;
+      auto len
+	= FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM
+			| FORMAT_MESSAGE_ALLOCATE_BUFFER,
+			nullptr,
+			i,
+			LANG_USER_DEFAULT,
+			reinterpret_cast<LPTSTR>(&buf),
+			0,
+			nullptr);
+      if (len > 0)
+      {
+	struct deleter {
+	  void operator()(void* p) const { ::LocalFree(p); }
+	};
+	std::unique_ptr<char[], deleter> guard(buf);
+	if (len > 3 && !__builtin_memcmp(buf + len - 3, ".\r\n", 3)) [[likely]]
+	  len -= 3;
+	return string(buf, len);
+      }
+      return string("Unknown error code");
+#else
       // XXX locale issues: how does one get or set loc.
       // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
       return string(strerror(i));
+#endif
     }
 
     std::error_condition
@@ -93,6 +122,132 @@ namespace
       // and system category otherwise.
       switch (ev)
       {
+#if defined(_WIN32) && !defined(__CYGWIN__)
+      case 0:
+	return {0, generic_category_instance.obj};
+	// Convert Windows error code into a corresponding POSIX errno value.
+#define X(w, e) case ERROR_##w: return {e, generic_category_instance.obj};
+	// This list is based on Cygwin's winsup/cygwin/errno.cc
+	X (ACCESS_DENIED,		EACCES);
+	X (ACTIVE_CONNECTIONS,		EAGAIN);
+	X (ALREADY_EXISTS,		EEXIST);
+	X (BAD_DEVICE,			ENODEV);
+	X (BAD_EXE_FORMAT,		ENOEXEC);
+	X (BAD_NETPATH,			ENOENT);
+	X (BAD_NET_NAME,		ENOENT);
+	X (BAD_NET_RESP,		ENOSYS);
+	X (BAD_PATHNAME,		ENOENT);
+	X (BAD_PIPE,			EINVAL);
+	X (BAD_UNIT,			ENODEV);
+	X (BAD_USERNAME,		EINVAL);
+	X (BEGINNING_OF_MEDIA,		EIO);
+	X (BROKEN_PIPE,			EPIPE);
+	X (BUSY,			EBUSY);
+	X (BUS_RESET,			EIO);
+	X (CALL_NOT_IMPLEMENTED,	ENOSYS);
+	X (CANCELLED,			EINTR);
+	X (CANNOT_MAKE,			EPERM);
+	X (CHILD_NOT_COMPLETE,		EBUSY);
+	X (COMMITMENT_LIMIT,		EAGAIN);
+	X (CONNECTION_REFUSED,		ECONNREFUSED);
+	X (CRC,				EIO);
+	X (DEVICE_DOOR_OPEN,		EIO);
+	X (DEVICE_IN_USE,		EAGAIN);
+	X (DEVICE_REQUIRES_CLEANING,	EIO);
+	X (DEV_NOT_EXIST,		ENOENT);
+	X (DIRECTORY,			ENOTDIR);
+	X (DIR_NOT_EMPTY,		ENOTEMPTY);
+	X (DISK_CORRUPT,		EIO);
+#ifdef ENOSPC
+	X (DISK_FULL,			ENOSPC);
+#endif
+	X (DS_GENERIC_ERROR,		EIO);
+#ifdef ENOSPC
+	X (END_OF_MEDIA,		ENOSPC);
+#endif
+	X (EOM_OVERFLOW,		EIO);
+	X (EXE_MACHINE_TYPE_MISMATCH,	ENOEXEC);
+	X (EXE_MARKED_INVALID,		ENOEXEC);
+	X (FILEMARK_DETECTED,		EIO);
+	X (FILENAME_EXCED_RANGE,	ENAMETOOLONG);
+	X (FILE_CORRUPT,		EEXIST);
+	X (FILE_EXISTS,			EEXIST);
+	X (FILE_INVALID,		ENXIO);
+	X (FILE_NOT_FOUND,		ENOENT);
+#ifdef ENOSPC
+	X (HANDLE_DISK_FULL,		ENOSPC);
+#endif
+	X (INVALID_ADDRESS,		EINVAL);
+	X (INVALID_AT_INTERRUPT_TIME,	EINTR);
+	X (INVALID_BLOCK_LENGTH,	EIO);
+	X (INVALID_DATA,		EINVAL);
+	X (INVALID_DRIVE,		ENODEV);
+	X (INVALID_EA_NAME,		EINVAL);
+	X (INVALID_EXE_SIGNATURE,	ENOEXEC);
+	X (INVALID_HANDLE,		EBADF);
+	X (INVALID_NAME,		ENOENT);
+	X (INVALID_PARAMETER,		EINVAL);
+	X (INVALID_SIGNAL_NUMBER,	EINVAL);
+	X (IOPL_NOT_ENABLED,		ENOEXEC);
+	X (IO_DEVICE,			EIO);
+	X (IO_INCOMPLETE,		EAGAIN);
+	X (IO_PENDING,			EAGAIN);
+	X (LOCK_VIOLATION,		EBUSY);
+	X (MAX_THRDS_REACHED,		EAGAIN);
+	X (META_EXPANSION_TOO_LONG,	EINVAL);
+	X (MOD_NOT_FOUND,		ENOENT);
+	X (MORE_DATA,			EMSGSIZE);
+	X (NEGATIVE_SEEK,		EINVAL);
+	X (NETNAME_DELETED,		ENOENT);
+	X (NOACCESS,			EFAULT);
+	X (NONE_MAPPED,			EINVAL);
+	X (NONPAGED_SYSTEM_RESOURCES,	EAGAIN);
+	X (NOT_ENOUGH_MEMORY,		ENOMEM);
+	X (NOT_ENOUGH_QUOTA,		EIO);
+#ifdef EPERM
+	X (NOT_OWNER,			EPERM);
+#else
+	X (NOT_OWNER,			EACCES);
+#endif
+	X (NOT_SAME_DEVICE,		EXDEV);
+	X (NOT_SUPPORTED,		ENOSYS);
+	X (NO_DATA,			EPIPE);
+	X (NO_DATA_DETECTED,		EIO);
+	X (NO_MORE_SEARCH_HANDLES,	ENFILE);
+	X (NO_PROC_SLOTS,		EAGAIN);
+	X (NO_SIGNAL_SENT,		EIO);
+	X (NO_SYSTEM_RESOURCES,		EFBIG);
+	X (NO_TOKEN,			EINVAL);
+	X (OPEN_FAILED,			EIO);
+	X (OPEN_FILES,			EAGAIN);
+	X (OUTOFMEMORY,			ENOMEM);
+	X (PAGED_SYSTEM_RESOURCES,	EAGAIN);
+	X (PAGEFILE_QUOTA,		EAGAIN);
+	X (PATH_NOT_FOUND,		ENOENT);
+	X (PIPE_BUSY,			EBUSY);
+	X (PIPE_CONNECTED,		EBUSY);
+	X (POSSIBLE_DEADLOCK,		EDEADLK);
+	X (PRIVILEGE_NOT_HELD,		EPERM);
+	X (PROCESS_ABORTED,		EFAULT);
+	X (PROC_NOT_FOUND,		ESRCH);
+	X (SECTOR_NOT_FOUND,		EINVAL);
+	X (SEEK,			EINVAL);
+	X (SERVICE_REQUEST_TIMEOUT,	EBUSY);
+	X (SETMARK_DETECTED,		EIO);
+	X (SHARING_BUFFER_EXCEEDED,	ENOLCK);
+	X (SHARING_VIOLATION,		EBUSY);
+	X (SIGNAL_PENDING,		EBUSY);
+	X (SIGNAL_REFUSED,		EIO);
+	X (THREAD_1_INACTIVE,		EINVAL);
+	X (TIMEOUT,			EBUSY);
+	X (TOO_MANY_LINKS,		EMLINK);
+	X (TOO_MANY_OPEN_FILES,		EMFILE);
+	X (UNEXP_NET_ERR,		EIO);
+	X (WORKING_SET_QUOTA,		EAGAIN);
+	X (WRITE_PROTECT,		EROFS);
+#undef X
+
+#else
       // List of errno macros from [cerrno.syn].
       // C11 only defines EDOM, EILSEQ and ERANGE, the rest are from POSIX.
       // They expand to integer constant expressions with type int,
@@ -340,6 +495,7 @@ namespace
 	return std::error_condition(EINVAL, std::generic_category());
        */
 
+#endif
       default:
 	return std::error_condition(ev, *this);
       }
