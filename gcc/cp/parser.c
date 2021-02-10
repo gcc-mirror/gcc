@@ -12247,12 +12247,9 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 		       "init-statement in selection statements only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
 	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-	      {
-		/* A non-empty init-statement can have arbitrary side
-		   effects.  */
-		delete chain;
-		chain = NULL;
-	      }
+	      /* A non-empty init-statement can have arbitrary side
+		 effects.  */
+	      vec_free (chain);
 	    cp_parser_init_statement (parser, &decl);
 	  }
 
@@ -12343,13 +12340,10 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 		      }
 		    else if (!cp_lexer_next_token_is_keyword (parser->lexer,
 							      RID_IF))
-		      {
-			/* This is if-else without subsequent if.  Zap the
-			   condition chain; we would have already warned at
-			   this point.  */
-			delete chain;
-			chain = NULL;
-		      }
+		      /* This is if-else without subsequent if.  Zap the
+			 condition chain; we would have already warned at
+			 this point.  */
+		      vec_free (chain);
 		  }
 		begin_else_clause (statement);
 		/* Parse the else-clause.  */
@@ -12384,11 +12378,8 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 			      "suggest explicit braces to avoid ambiguous"
 			      " %<else%>");
 		if (warn_duplicated_cond)
-		  {
-		    /* We don't need the condition chain anymore.  */
-		    delete chain;
-		    chain = NULL;
-		  }
+		  /* We don't need the condition chain anymore.  */
+		  vec_free (chain);
 	      }
 
 	    /* Now we're all done with the if-statement.  */
