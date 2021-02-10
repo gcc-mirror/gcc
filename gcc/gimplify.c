@@ -8604,13 +8604,17 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
 	      tree type = TREE_TYPE (decl);
+	      bool saved_into_ssa = gimplify_ctxp->into_ssa;
+	      gimplify_ctxp->into_ssa = false;
 	      if (gimplify_expr (&TYPE_MAX_VALUE (TYPE_DOMAIN (type)), pre_p,
 				 NULL, is_gimple_val, fb_rvalue, false)
 		  == GS_ERROR)
 		{
+		  gimplify_ctxp->into_ssa = saved_into_ssa;
 		  remove = true;
 		  break;
 		}
+	      gimplify_ctxp->into_ssa = saved_into_ssa;
 	      tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
 	      if (DECL_P (v))
 		{
@@ -8620,13 +8624,16 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      decl = TREE_OPERAND (decl, 0);
 	      if (TREE_CODE (decl) == POINTER_PLUS_EXPR)
 		{
+		  gimplify_ctxp->into_ssa = false;
 		  if (gimplify_expr (&TREE_OPERAND (decl, 1), pre_p,
 				     NULL, is_gimple_val, fb_rvalue, false)
 		      == GS_ERROR)
 		    {
+		      gimplify_ctxp->into_ssa = saved_into_ssa;
 		      remove = true;
 		      break;
 		    }
+		  gimplify_ctxp->into_ssa = saved_into_ssa;
 		  v = TREE_OPERAND (decl, 1);
 		  if (DECL_P (v))
 		    {
