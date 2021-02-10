@@ -1,3 +1,67 @@
+2021-02-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(__has_is_transparent, __has_is_transparent_t): Move...
+	* include/bits/stl_function.h: ...here.
+	* include/bits/hashtable_policy.h (_Hash_code_base<>::_M_hash_code_tr): New..
+	(_Hashtable_base<>::_M_equals_tr): New.
+	* include/bits/hashtable.h (_Hashtable<>::_M_find_tr, _Hashtable<>::_M_count_tr,
+	_Hashtable<>::_M_equal_range_tr): New member function templates to perform
+	heterogeneous lookup.
+	(_Hashtable<>::_M_find_before_node_tr): New.
+	(_Hashtable<>::_M_find_node_tr): New.
+	* include/bits/unordered_map.h (unordered_map::find<>, unordered_map::count<>,
+	unordered_map::contains<>, unordered_map::equal_range<>): New member function
+	templates to perform heterogeneous lookup.
+	(unordered_multimap::find<>, unordered_multimap::count<>,
+	unordered_multimap::contains<>, unordered_multimap::equal_range<>): Likewise.
+	* include/bits/unordered_set.h  (unordered_set::find<>, unordered_set::count<>,
+	unordered_set::contains<>, unordered_set::equal_range<>): Likewise.
+	(unordered_multiset::find<>, unordered_multiset::count<>,
+	unordered_multiset::contains<>, unordered_multiset::equal_range<>): Likewise.
+	* include/debug/unordered_map
+	(unordered_map::find<>, unordered_map::equal_range<>): Likewise.
+	(unordered_multimap::find<>, unordered_multimap::equal_range<>): Likewise.
+	* include/debug/unordered_set
+	(unordered_set::find<>, unordered_set::equal_range<>): Likewise.
+	(unordered_multiset::find<>, unordered_multiset::equal_range<>): Likewise.
+	* testsuite/23_containers/unordered_map/operations/1.cc: New test.
+	* testsuite/23_containers/unordered_multimap/operations/1.cc: New test.
+	* testsuite/23_containers/unordered_multiset/operations/1.cc: New test.
+	* testsuite/23_containers/unordered_set/operations/1.cc: New test.
+
+2021-02-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_deque.h
+	(std::operator-(deque::iterator, deque::iterator)): Replace if/then with
+	a null pointer test.
+
+2021-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Remove
+	test directory after making it writable again.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+
+2021-02-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99021
+	* include/std/coroutine (coroutine_handle<P>::from_address): Add
+	noexcept.
+
+2021-02-09  Vladimir Vishnevsky  <vv.os.swe@gmail.com>
+
+	* include/ext/stdio_sync_filebuf.h: Remove unused <unistd.h>.
+	* src/c++17/fs_ops.cc (fs::permissions): Qualify mode_t.
+
+2021-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98465
+	* include/bits/basic_string.tcc (basic_string::_M_replace): When __s
+	points to the characters moved by earlier _S_move, compute the source
+	address using expression based on the __p pointer rather than __s
+	pointer.
+
 2021-02-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:

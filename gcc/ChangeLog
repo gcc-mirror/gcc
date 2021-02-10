@@ -1,3 +1,44 @@
+2021-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/96015
+	* reorg.c (skip_consecutive_labels): Minor comment tweaks.
+	(relax_delay_slots): When deleting a jump to the next active
+	instruction over a barrier, first delete the barrier if the
+	jump is the only way to reach the target label.
+
+2021-02-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-cost-tables.h: Add entries for vect.mul.
+	* config/aarch64/aarch64.c (aarch64_rtx_mult_cost): Use vect.mul for
+	vector multiplies and vect.alu for SSRA.
+	* config/arm/aarch-common-protos.h (struct vector_cost_table): Define
+	vect.mul cost field.
+	* config/arm/aarch-cost-tables.h: Add entries for vect.mul.
+	* config/arm/arm.c: Likewise.
+
+2021-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98863
+	* tree-ssa-sccvn.h (vn_avail::next_undo): Add.
+	* tree-ssa-sccvn.c (last_pushed_avail): New global.
+	(rpo_elim::eliminate_push_avail): Chain pushed avails.
+	(unwind_state::avail_top): Add.
+	(do_unwind): Rewrite unwinding of avail entries.
+	(do_rpo_vn): Initialize last_pushed_avail and
+	avail_top of the undo state.
+
+2021-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99004
+	* calls.c (maybe_warn_rdwr_sizes): Change s0 and s1 type from
+	const char * to char * and free those pointers after use.
+
+2021-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99017
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Allow
+	zero vector cost entries.
+
 2021-02-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR middle-end/98974
