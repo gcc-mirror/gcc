@@ -766,6 +766,7 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
       werror_arg[0] = 'W';
 
       size_t warning_index = find_opt (werror_arg, lang_mask);
+      free (werror_arg);
       if (warning_index != OPT_SPECIAL_unknown)
 	{
 	  const struct cl_option *warning_option

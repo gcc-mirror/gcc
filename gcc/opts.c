@@ -3401,8 +3401,11 @@ char *
 gen_producer_string (const char *language_string, cl_decoded_option *options,
 		     unsigned int options_count)
 {
-  return concat (language_string, " ", version_string, " ",
-		 gen_command_line_string (options, options_count), NULL);
+  char *cmdline = gen_command_line_string (options, options_count);
+  char *combined = concat (language_string, " ", version_string, " ",
+			   cmdline, NULL);
+  free (cmdline);
+  return combined;
 }
 
 #if CHECKING_P
