@@ -515,8 +515,8 @@ package body Einfo.Utils is
 
    function Known_Component_Size                  (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) /= Uint_0
-        and then Component_Size (Base_Type (E)) /= No_Uint;
+      return Component_Size (Implementation_Base_Type (E)) /= Uint_0
+        and then Component_Size (Implementation_Base_Type (E)) /= No_Uint;
    end Known_Component_Size;
 
    function Known_Esize                           (E : Entity_Id) return B is
@@ -556,7 +556,7 @@ package body Einfo.Utils is
 
    function Known_Static_Component_Size           (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) > Uint_0;
+      return Component_Size (Implementation_Base_Type (E)) > Uint_0;
    end Known_Static_Component_Size;
 
    function Known_Static_Esize                    (E : Entity_Id) return B is
@@ -604,9 +604,9 @@ package body Einfo.Utils is
 
    function Unknown_Component_Size                (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) = Uint_0
+      return Component_Size (Implementation_Base_Type (E)) = Uint_0
                or else
-             Component_Size (Base_Type (E)) = No_Uint;
+             Component_Size (Implementation_Base_Type (E)) = No_Uint;
    end Unknown_Component_Size;
 
    function Unknown_Esize                         (E : Entity_Id) return B is
