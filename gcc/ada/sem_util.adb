@@ -15886,18 +15886,32 @@ package body Sem_Util is
                            Aspect_Spec_1, Aspect_Spec_2 : Node_Id)
                           return Boolean is
       function Names_Match (Nm1, Nm2 : Node_Id) return Boolean;
+
+      -----------------
+      -- Names_Match --
+      -----------------
+
       function Names_Match (Nm1, Nm2 : Node_Id) return Boolean is
       begin
          if Nkind (Nm1) /= Nkind (Nm2) then
             return False;
+            --  This may be too restrictive given that visibility
+            --  may allow an identifier in one case and an expanded
+            --  name in the other.
          end if;
          case Nkind (Nm1) is
             when N_Identifier =>
                return Name_Equals (Chars (Nm1), Chars (Nm2));
+
             when N_Expanded_Name =>
-               return Names_Match (Prefix (Nm1), Prefix (Nm2))
-                 and then Names_Match (Selector_Name (Nm1),
-                                       Selector_Name (Nm2));
+               --  An inherited operation has the same name as its
+               --  ancestor, but they may have different scopes.
+               --  This may be too permissive for Iterator_Element, which
+               --  is intended to be identical in parent and derived type.
+
+               return Names_Match (Selector_Name (Nm1),
+                                   Selector_Name (Nm2));
+
             when N_Empty =>
                return True; -- needed for Aggregate aspect checking
 
@@ -15925,8 +15939,7 @@ package body Sem_Util is
          when Aspect_Default_Iterator
             | Aspect_Iterator_Element
             | Aspect_Constant_Indexing
-            | Aspect_Variable_Indexing
-            | Aspect_Implicit_Dereference =>
+            | Aspect_Variable_Indexing =>
             declare
                Item_1 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_1);
                Item_2 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_2);
@@ -15941,6 +15954,13 @@ package body Sem_Util is
                return Names_Match (Expression (Item_1),
                                    Expression (Item_2));
             end;
+
+         --  A confirming aspect for Implicit_Derenfence on a derived type
+         --  has already been checked in Analyze_Aspect_Implicit_Dereference,
+         --  including the presence of renamed discriminants.
+
+         when Aspect_Implicit_Dereference =>
+            return True;
 
          --  one of a kind
          when Aspect_Aggregate =>
