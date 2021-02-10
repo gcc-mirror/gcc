@@ -56,9 +56,10 @@ package Hostparm is
    --  of file names in the library, must be at least Max_Line_Length, but
    --  can be larger.
 
-   Tag_Errors : constant Boolean := False;
+   Tag_Errors : constant Boolean := True;
    --  If set to true, then brief form error messages will be prefaced by
-   --  the string "error:". Used as default for Opt.Unique_Error_Tag.
+   --  the string "error:". Used as default for Opt.Unique_Error_Tag. Disabled
+   --  by gnatd_U.
 
    Exclude_Missing_Objects : constant Boolean := True;
    --  If set to true, gnatbind will exclude from consideration all

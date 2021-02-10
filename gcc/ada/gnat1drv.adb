@@ -153,6 +153,12 @@ procedure Gnat1drv is
 
       Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);
 
+      --  -gnatd_U disables prepending error messages with "error:"
+
+      if Debug_Flag_Underscore_UU then
+         Unique_Error_Tag := False;
+      end if;
+
       --  -gnatd.M enables Relaxed_RM_Semantics
 
       if Debug_Flag_Dot_MM then

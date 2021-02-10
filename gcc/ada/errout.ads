@@ -519,7 +519,7 @@ package Errout is
    --  The prefixes error and warning are supplied automatically (depending
    --  on the use of the ? insertion character), and the call to the error
    --  message routine supplies the text. The "error: " prefix is omitted
-   --  in brief error message formats.
+   --  if -gnatd_U is among the options given to gnat.
 
    --  Reserved Ada keywords in the message are in the default keyword case
    --  (determined from the given source program), surrounded by quotation
