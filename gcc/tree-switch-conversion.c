@@ -1824,12 +1824,7 @@ switch_decision_tree::analyze_switch_statement ()
   output.release ();
 
   bool expanded = try_switch_expansion (output2);
-
-  for (unsigned i = 0; i < output2.length (); i++)
-    delete output2[i];
-
-  output2.release ();
-
+  release_clusters (output2);
   return expanded;
 }
 
@@ -2597,5 +2592,3 @@ make_pass_lower_switch (gcc::context *ctxt)
 {
   return new pass_lower_switch<false> (ctxt);
 }
-
-

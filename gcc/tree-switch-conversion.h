@@ -893,6 +893,16 @@ switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
     e->aux = (void *) 0;
 }
 
+/* Release CLUSTERS vector and destruct all dynamically allocated items.  */
+
+static inline void
+release_clusters (vec<cluster *> &clusters)
+{
+  for (unsigned i = 0; i < clusters.length (); i++)
+    delete clusters[i];
+  clusters.release ();
+}
+
 } // tree_switch_conversion namespace
 
 #endif // TREE_SWITCH_CONVERSION_H
