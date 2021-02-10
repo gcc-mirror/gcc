@@ -137,6 +137,12 @@ public:
 
   void visit (HIR::ReturnExpr &expr)
   {
+    if (!expr.has_return_expr ())
+      {
+	infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+	return;
+      }
+
     auto fn_return_tyty = context->peek_return_type ();
     rust_assert (fn_return_tyty != nullptr);
 

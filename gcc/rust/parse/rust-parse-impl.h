@@ -7400,8 +7400,10 @@ Parser<ManagedTokenSource>::parse_return_expr (
     }
 
   // parse expression to return, if it exists
-  std::unique_ptr<AST::Expr> returned_expr = parse_expr ();
-  // FIXME: ensure this doesn't ruin the middle of any expressions or anything
+  ParseRestrictions restrictions;
+  restrictions.expr_can_be_null = true;
+  std::unique_ptr<AST::Expr> returned_expr
+    = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::ReturnExpr> (
     new AST::ReturnExpr (locus, std::move (returned_expr),

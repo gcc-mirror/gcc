@@ -84,14 +84,18 @@ public:
 
   void visit (HIR::ReturnExpr &expr)
   {
-    Bexpression *compiled_expr
-      = CompileExpr::Compile (expr.return_expr.get (), ctx);
-    rust_assert (compiled_expr != nullptr);
-
     auto fncontext = ctx->peek_fn ();
 
     std::vector<Bexpression *> retstmts;
-    retstmts.push_back (compiled_expr);
+    if (expr.has_return_expr ())
+      {
+	Bexpression *compiled_expr
+	  = CompileExpr::Compile (expr.return_expr.get (), ctx);
+	rust_assert (compiled_expr != nullptr);
+
+	retstmts.push_back (compiled_expr);
+      }
+
     auto s = ctx->get_backend ()->return_statement (fncontext.fndecl, retstmts,
 						    expr.get_locus ());
     ctx->add_statement (s);
