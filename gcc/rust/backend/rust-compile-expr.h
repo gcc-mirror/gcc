@@ -586,7 +586,31 @@ public:
 
   void visit (HIR::LoopExpr &expr)
   {
+    TyTy::TyBase *block_tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &block_tyty))
+      {
+	rust_error_at (expr.get_locus (), "failed to lookup type of BlockExpr");
+	return;
+      }
+
     fncontext fnctx = ctx->peek_fn ();
+    Bvariable *tmp = NULL;
+    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+	ctx->push_loop_context (tmp);
+      }
+
     if (expr.has_loop_label ())
       {
 	HIR::LoopLabel &loop_label = expr.get_loop_label ();
@@ -608,10 +632,32 @@ public:
     Bstatement *loop_stmt
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
     ctx->add_statement (loop_stmt);
+
+    if (tmp != NULL)
+      {
+	ctx->pop_loop_context ();
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::BreakExpr &expr)
   {
+    if (expr.has_break_expr ())
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bexpression *compiled_expr
+	  = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+
+	Bvariable *loop_result_holder = ctx->peek_loop_context ();
+	Bexpression *result_reference = ctx->get_backend ()->var_expression (
+	  loop_result_holder, expr.get_expr ()->get_locus_slow ());
+
+	Bstatement *assignment = ctx->get_backend ()->assignment_statement (
+	  fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
+	ctx->add_statement (assignment);
+      }
+
     if (expr.has_label ())
       {
 	NodeId resolved_node_id = UNKNOWN_NODEID;

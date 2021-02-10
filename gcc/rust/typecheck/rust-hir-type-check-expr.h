@@ -757,7 +757,19 @@ public:
 
   void visit (HIR::LoopExpr &expr)
   {
-    infered = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+    context->push_new_loop_context (expr.get_mappings ().get_hirid ());
+    TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+    TyTy::TyBase *loop_context_type = context->pop_loop_context ();
+
+    bool loop_context_type_infered
+      = (loop_context_type->get_kind () != TyTy::TypeKind::INFER)
+	|| ((loop_context_type->get_kind () == TyTy::TypeKind::INFER)
+	    && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
+		!= TyTy::InferType::GENERAL));
+
+    infered = loop_context_type_infered
+		? loop_context_type
+		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BreakExpr &expr)
@@ -768,9 +780,17 @@ public:
 	return;
       }
 
-    infered = expr.has_break_expr ()
-		? TypeCheckExpr::Resolve (expr.get_expr ().get (), false)
-		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    if (expr.has_break_expr ())
+      {
+	TyTy::TyBase *break_expr_tyty
+	  = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+
+	TyTy::TyBase *loop_context = context->peek_loop_context ();
+	TyTy::TyBase *combined = loop_context->combine (break_expr_tyty);
+	context->swap_head_loop_context (combined);
+      }
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
 private:

@@ -56,6 +56,28 @@ public:
       }
   }
 
+  void push_new_loop_context (HirId id)
+  {
+    TyTy::TyBase *infer_var
+      = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL);
+    loop_type_stack.push_back (infer_var);
+  }
+
+  TyTy::TyBase *peek_loop_context () { return loop_type_stack.back (); }
+
+  TyTy::TyBase *pop_loop_context ()
+  {
+    auto back = peek_loop_context ();
+    loop_type_stack.pop_back ();
+    return back;
+  }
+
+  void swap_head_loop_context (TyTy::TyBase *val)
+  {
+    loop_type_stack.pop_back ();
+    loop_type_stack.push_back (val);
+  }
+
 private:
   TypeCheckContext ();
 
@@ -63,6 +85,7 @@ private:
   std::map<HirId, TyTy::TyBase *> resolved;
   std::vector<std::unique_ptr<TyTy::TyBase> > builtins;
   std::vector<TyTy::TyBase *> return_type_stack;
+  std::vector<TyTy::TyBase *> loop_type_stack;
 };
 
 class TypeResolution
