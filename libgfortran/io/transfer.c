@@ -4020,6 +4020,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 		}
 	    }
 	}
+      else if (dtp->u.p.seen_dollar == 1)
+	break;
       /* Handle legacy CARRIAGECONTROL line endings.  */
       else if (dtp->u.p.current_unit->flags.cc == CC_FORTRAN)
 	next_record_cc (dtp);
