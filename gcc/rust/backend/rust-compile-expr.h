@@ -625,6 +625,13 @@ public:
 	  loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
       }
 
+    Blabel *loop_begin_label
+      = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
+    Bstatement *loop_begin_label_decl
+      = ctx->get_backend ()->label_definition_statement (loop_begin_label);
+    ctx->add_statement (loop_begin_label_decl);
+    ctx->push_loop_begin_label (loop_begin_label);
+
     Bblock *code_block
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
     Bexpression *loop_expr
@@ -639,6 +646,7 @@ public:
 	translated
 	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
       }
+    ctx->pop_loop_begin_label ();
   }
 
   void visit (HIR::WhileLoopExpr &expr)
@@ -668,6 +676,13 @@ public:
 				    start_location, end_location);
     ctx->push_block (loop_block);
 
+    Blabel *loop_begin_label
+      = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
+    Bstatement *loop_begin_label_decl
+      = ctx->get_backend ()->label_definition_statement (loop_begin_label);
+    ctx->add_statement (loop_begin_label_decl);
+    ctx->push_loop_begin_label (loop_begin_label);
+
     Bexpression *condition
       = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
     Bexpression *exit_expr
@@ -682,6 +697,7 @@ public:
       = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (code_block_stmt);
 
+    ctx->pop_loop_begin_label ();
     ctx->pop_block ();
 
     Bexpression *loop_expr
@@ -752,6 +768,45 @@ public:
 	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
 	ctx->add_statement (break_stmt);
       }
+  }
+
+  void visit (HIR::ContinueExpr &expr)
+  {
+    Blabel *label = ctx->peek_loop_begin_label ();
+    if (expr.has_label ())
+      {
+	NodeId resolved_node_id = UNKNOWN_NODEID;
+	if (!ctx->get_resolver ()->lookup_resolved_label (
+	      expr.get_label ().get_mappings ().get_nodeid (),
+	      &resolved_node_id))
+	  {
+	    rust_error_at (
+	      expr.get_label ().get_locus (),
+	      "failed to resolve compiled label for label %s",
+	      expr.get_label ().get_mappings ().as_string ().c_str ());
+	    return;
+	  }
+
+	HirId ref = UNKNOWN_HIRID;
+	if (!ctx->get_mappings ()->lookup_node_to_hir (
+	      expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+	  {
+	    rust_fatal_error (expr.get_locus (),
+			      "reverse lookup label failure");
+	    return;
+	  }
+
+	if (!ctx->lookup_label_decl (ref, &label))
+	  {
+	    rust_error_at (expr.get_label ().get_locus (),
+			   "failed to lookup compiled label");
+	    return;
+	  }
+      }
+
+    Bstatement *goto_label
+      = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
+    ctx->add_statement (goto_label);
   }
 
 private:

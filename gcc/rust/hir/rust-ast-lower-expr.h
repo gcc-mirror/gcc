@@ -725,6 +725,21 @@ public:
 				     std::move (outer_attribs));
   }
 
+  void visit (AST::ContinueExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+    HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::ContinueExpr (mapping, expr.get_locus (),
+					std ::move (break_label),
+					std::move (outer_attribs));
+  }
+
 private:
   ASTLoweringExpr ()
     : ASTLoweringBase (), translated (nullptr),

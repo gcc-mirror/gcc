@@ -327,6 +327,30 @@ public:
     ResolveExpr::go (expr.get_loop_block ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::ContinueExpr &expr)
+  {
+    if (expr.has_label ())
+      {
+	auto label = expr.get_label ();
+	if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
+	  {
+	    rust_error_at (label.get_locus (),
+			   "Labels must be a named lifetime value");
+	    return;
+	  }
+
+	NodeId resolved_node = UNKNOWN_NODEID;
+	if (!resolver->get_label_scope ().lookup (label.get_lifetime_name (),
+						  &resolved_node))
+	  {
+	    rust_error_at (expr.get_label ().get_locus (),
+			   "failed to resolve label");
+	    return;
+	  }
+	resolver->insert_resolved_label (label.get_node_id (), resolved_node);
+      }
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };

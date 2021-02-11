@@ -127,7 +127,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     else if (resolved->get_kind () != TyTy::TypeKind::UNIT)
       {
 	rust_error_at (s->get_locus_slow (), "expected () got %s",
-		       infered->as_string ().c_str ());
+		       resolved->as_string ().c_str ());
       }
 
     return true;

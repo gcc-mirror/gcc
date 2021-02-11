@@ -66,10 +66,6 @@ public:
 	return;
       }
 
-    // there is an ICE in GCC for void_node
-    if (ty->get_kind () == TyTy::TypeKind::UNIT)
-      return;
-
     Bvariable *var = nullptr;
     if (!ctx->lookup_var_decl (stmt.get_mappings ().get_hirid (), &var))
       {
@@ -79,10 +75,21 @@ public:
       }
 
     Bexpression *init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+    if (init == nullptr)
+      return;
 
     auto fnctx = ctx->peek_fn ();
-    auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var, init);
-    ctx->add_statement (s);
+    if (ty->get_kind () == TyTy::TypeKind::UNIT)
+      {
+	Bstatement *expr_stmt
+	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, init);
+	ctx->add_statement (expr_stmt);
+      }
+    else
+      {
+	auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var, init);
+	ctx->add_statement (s);
+      }
   }
 
 private:

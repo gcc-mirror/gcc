@@ -823,6 +823,18 @@ public:
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
+  void visit (HIR::ContinueExpr &expr)
+  {
+    if (!inside_loop)
+      {
+	rust_error_at (expr.get_locus (),
+		       "cannot `continue` outside of a loop");
+	return;
+      }
+
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+  }
+
 private:
   TypeCheckExpr (bool inside_loop)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),

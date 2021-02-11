@@ -2724,6 +2724,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Lifetime &get_label () { return label; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

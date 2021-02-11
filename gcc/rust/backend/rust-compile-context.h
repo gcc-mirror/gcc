@@ -219,6 +219,20 @@ public:
     return back;
   }
 
+  void push_loop_begin_label (Blabel *label)
+  {
+    loop_begin_labels.push_back (label);
+  }
+
+  Blabel *peek_loop_begin_label () { return loop_begin_labels.back (); }
+
+  Blabel *pop_loop_begin_label ()
+  {
+    Blabel *pop = loop_begin_labels.back ();
+    loop_begin_labels.pop_back ();
+    return pop;
+  }
+
 private:
   ::Backend *backend;
   Resolver::Resolver *resolver;
@@ -235,6 +249,7 @@ private:
   std::vector< ::std::vector<Bstatement *> > statements;
   std::vector< ::Bblock *> scope_stack;
   std::vector< ::Bvariable *> loop_value_stack;
+  std::vector< ::Blabel *> loop_begin_labels;
 
   // To GCC middle-end
   std::vector< ::Btype *> type_decls;
