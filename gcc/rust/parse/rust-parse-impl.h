@@ -12192,6 +12192,10 @@ Parser<ManagedTokenSource>::null_denotation (
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::STRING,
 			      tok->get_type_hint (), {}, tok->get_locus ()));
+    case CHAR_LITERAL:
+      return std::unique_ptr<AST::LiteralExpr> (
+	new AST::LiteralExpr (tok->get_str (), AST::Literal::CHAR,
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case TRUE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_type_hint (),
