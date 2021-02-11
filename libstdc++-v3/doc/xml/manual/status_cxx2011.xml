@@ -24,6 +24,9 @@ features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
 <constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
+GCC 5.1 was the first release with non-experimental C++11 support,
+so the API and ABI of features added in C++11 is only stable
+since that release.
 </para>
 
 <para>

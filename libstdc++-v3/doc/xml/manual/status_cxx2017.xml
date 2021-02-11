@@ -17,6 +17,8 @@ features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
 <constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
+C++17 support is experimental up to and including the GCC 8 series,
+so the API and ABI of features added in C++17 is not stable in those releases.
 </para>
 
 <para>
