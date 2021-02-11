@@ -1,3 +1,19 @@
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98988
+	PR c++/99031
+	* constexpr.c: Include cgraph.h.
+	(cxx_eval_call_expression): Call varpool_node::finalize_decl on
+	heap artificial vars.
+	(cxx_eval_outermost_constant_expr): Remove varpool nodes for
+	heap artificial vars.
+
+2021-02-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99030
+	* pt.c (tsubst_copy) [VAR_DECL]: For a DECL_LOCAL_DECL_P T is the
+	answer if there's no local specialization.
+
 2021-02-09  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98944

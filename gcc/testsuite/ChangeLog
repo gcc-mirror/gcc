@@ -1,3 +1,52 @@
+2021-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92879
+	* g++.dg/warn/Warray-bounds-16.C: New test.
+
+2021-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/96391
+	* g++.dg/plugin/location-overflow-test-pr96391.c: New test.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add it,
+	using the location_overflow_plugin.c from gcc.dg/plugin.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99035
+	* g++.dg/ext/weak6.C: New test.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99025
+	* gcc.target/i386/pr99025.c: New test.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98988
+	PR c++/99031
+	* g++.dg/cpp2a/constexpr-new16.C: New test.
+	* g++.dg/cpp2a/constexpr-new17.C: New test.
+
+2021-02-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99030
+	* g++.dg/lookup/pr99030.C: New.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99007
+	* g++.dg/gomp/pr99007.C: New test.
+	* gcc.dg/gomp/pr99007-1.c: New test.
+	* gcc.dg/gomp/pr99007-2.c: New test.
+	* gcc.dg/gomp/pr99007-3.c: New test.
+
+2021-02-10  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/98979
+	* gfortran.dg/goacc/array-with-dt-2.f90: Add expected errors.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Skip ICEing test.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+
 2021-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98575

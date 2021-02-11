@@ -1,3 +1,10 @@
+2021-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/96391
+	* line-map.c (linemap_compare_locations): Require that
+	the location be <= LINE_MAP_MAX_LOCATION_WITH_COLS when
+	treating locations as coming from the same macro expansion.
+
 2021-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (cpp_classify_number): Use make_signed_t<size_t> instead of
