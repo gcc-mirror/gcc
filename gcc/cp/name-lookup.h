@@ -188,7 +188,6 @@ struct GTY(()) tree_binding_vec {
 #define BINDING_VECTOR_PENDING_IS_PARTITION_P(NODE) \
   (BINDING_VECTOR_CHECK (NODE)->base.private_flag)
 
-extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void push_binding (tree, tree, cp_binding_level*);
 extern void pop_local_binding (tree, tree);

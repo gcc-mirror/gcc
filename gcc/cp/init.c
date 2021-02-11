@@ -2118,18 +2118,6 @@ is_class_type (tree type, int or_else)
   return 1;
 }
 
-tree
-get_type_value (tree name)
-{
-  if (name == error_mark_node)
-    return NULL_TREE;
-
-  if (IDENTIFIER_HAS_TYPE_VALUE (name))
-    return IDENTIFIER_TYPE_VALUE (name);
-  else
-    return NULL_TREE;
-}
-
 /* Build a reference to a member of an aggregate.  This is not a C++
    `&', but really something which can have its address taken, and
    then act as a pointer to member, for example TYPE :: FIELD can have
