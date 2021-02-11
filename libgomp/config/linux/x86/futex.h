@@ -30,10 +30,10 @@
 #  define SYS_futex	202
 # endif
 
-static inline int
+static inline long
 __futex_wait (int *addr, int futex_op, int val)
 {
-  int res;
+  long res;
 
   register void *timeout __asm ("r10") = NULL;
   __asm volatile ("syscall"
@@ -44,10 +44,10 @@ __futex_wait (int *addr, int futex_op, int val)
   return res;
 }
 
-static inline int
+static inline long
 __futex_wake (int *addr, int futex_op, int count)
 {
-  int res;
+  long res;
 
   __asm volatile ("syscall"
 		  : "=a" (res)
@@ -61,10 +61,10 @@ __futex_wake (int *addr, int futex_op, int count)
 #  define SYS_futex	240
 # endif
 
-static inline int
+static inline long
 __futex_wait (int *addr, int futex_op, int val)
 {
-  int res;
+  long res;
 
   void *timeout = NULL;
   __asm volatile ("int $0x80"
@@ -75,10 +75,10 @@ __futex_wait (int *addr, int futex_op, int val)
   return res;
 }
 
-static inline int
+static inline long
 __futex_wake (int *addr, int futex_op, int count)
 {
-  int res;
+  long res;
 
   __asm volatile ("int $0x80"
 		  : "=a" (res)
@@ -92,9 +92,9 @@ __futex_wake (int *addr, int futex_op, int count)
 static inline void
 futex_wait (int *addr, int val)
 {
-  int res = __futex_wait (addr, gomp_futex_wait, val);
+  long err = __futex_wait (addr, gomp_futex_wait, val);
 
-  if (__builtin_expect (res == -ENOSYS, 0))
+  if (__builtin_expect (err == -ENOSYS, 0))
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
@@ -106,9 +106,9 @@ futex_wait (int *addr, int val)
 static inline void
 futex_wake (int *addr, int count)
 {
-  int res = __futex_wake (addr, gomp_futex_wake, count);
+  long err = __futex_wake (addr, gomp_futex_wake, count);
 
-  if (__builtin_expect (res == -ENOSYS, 0))
+  if (__builtin_expect (err == -ENOSYS, 0))
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
