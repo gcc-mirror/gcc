@@ -670,10 +670,6 @@ public:
 
   void visit (HIR::GroupedExpr &expr)
   {
-    printf ("inside grouped expr: \n%s\n inside it is: \n%s\n",
-	    expr.as_string ().c_str (),
-	    expr.get_expr_in_parens ()->as_string ().c_str ());
-
     infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get (), false);
   }
 
@@ -758,7 +754,15 @@ public:
   void visit (HIR::LoopExpr &expr)
   {
     context->push_new_loop_context (expr.get_mappings ().get_hirid ());
-    TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+    TyTy::TyBase *block_expr
+      = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+    if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
+		       "expected () got %s", block_expr->as_string ().c_str ());
+	return;
+      }
+
     TyTy::TyBase *loop_context_type = context->pop_loop_context ();
 
     bool loop_context_type_infered
@@ -770,6 +774,25 @@ public:
     infered = loop_context_type_infered
 		? loop_context_type
 		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+  }
+
+  void visit (HIR::WhileLoopExpr &expr)
+  {
+    context->push_new_while_loop_context (expr.get_mappings ().get_hirid ());
+
+    TypeCheckExpr::Resolve (expr.get_predicate_expr ().get (), false);
+    TyTy::TyBase *block_expr
+      = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
+
+    if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
+		       "expected () got %s", block_expr->as_string ().c_str ());
+	return;
+      }
+
+    context->pop_loop_context ();
+    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BreakExpr &expr)
@@ -786,6 +809,13 @@ public:
 	  = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
 	TyTy::TyBase *loop_context = context->peek_loop_context ();
+	if (loop_context->get_kind () == TyTy::TypeKind::ERROR)
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "can only break with a value inside `loop`");
+	    return;
+	  }
+
 	TyTy::TyBase *combined = loop_context->combine (break_expr_tyty);
 	context->swap_head_loop_context (combined);
       }

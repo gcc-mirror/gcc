@@ -63,6 +63,12 @@ public:
     loop_type_stack.push_back (infer_var);
   }
 
+  void push_new_while_loop_context (HirId id)
+  {
+    TyTy::TyBase *infer_var = new TyTy::ErrorType (id);
+    loop_type_stack.push_back (infer_var);
+  }
+
   TyTy::TyBase *peek_loop_context () { return loop_type_stack.back (); }
 
   TyTy::TyBase *pop_loop_context ()

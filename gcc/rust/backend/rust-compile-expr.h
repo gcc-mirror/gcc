@@ -641,11 +641,61 @@ public:
       }
   }
 
+  void visit (HIR::WhileLoopExpr &expr)
+  {
+    fncontext fnctx = ctx->peek_fn ();
+    if (expr.has_loop_label ())
+      {
+	HIR::LoopLabel &loop_label = expr.get_loop_label ();
+	Blabel *label
+	  = ctx->get_backend ()->label (fnctx.fndecl,
+					loop_label.get_lifetime ().get_name (),
+					loop_label.get_locus ());
+	Bstatement *label_decl
+	  = ctx->get_backend ()->label_definition_statement (label);
+	ctx->add_statement (label_decl);
+	ctx->insert_label_decl (
+	  loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
+      }
+
+    std::vector<Bvariable *> locals;
+    Location start_location = expr.get_loop_block ()->get_locus ();
+    Location end_location = expr.get_loop_block ()->get_locus (); // FIXME
+
+    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+    Bblock *loop_block
+      = ctx->get_backend ()->block (fnctx.fndecl, enclosing_scope, locals,
+				    start_location, end_location);
+    ctx->push_block (loop_block);
+
+    Bexpression *condition
+      = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
+    Bexpression *exit_expr
+      = ctx->get_backend ()->exit_expression (condition, expr.get_locus ());
+    Bstatement *break_stmt
+      = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
+    ctx->add_statement (break_stmt);
+
+    Bblock *code_block
+      = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
+    Bstatement *code_block_stmt
+      = ctx->get_backend ()->block_statement (code_block);
+    ctx->add_statement (code_block_stmt);
+
+    ctx->pop_block ();
+
+    Bexpression *loop_expr
+      = ctx->get_backend ()->loop_expression (loop_block, expr.get_locus ());
+    Bstatement *loop_stmt
+      = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
+    ctx->add_statement (loop_stmt);
+  }
+
   void visit (HIR::BreakExpr &expr)
   {
+    fncontext fnctx = ctx->peek_fn ();
     if (expr.has_break_expr ())
       {
-	fncontext fnctx = ctx->peek_fn ();
 	Bexpression *compiled_expr
 	  = CompileExpr::Compile (expr.get_expr ().get (), ctx);
 
@@ -695,7 +745,6 @@ public:
       }
     else
       {
-	fncontext fnctx = ctx->peek_fn ();
 	Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
 	  ctx->get_backend ()->boolean_constant_expression (true),
 	  expr.get_locus ());

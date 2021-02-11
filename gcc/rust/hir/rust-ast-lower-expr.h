@@ -700,6 +700,11 @@ public:
     translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
   }
 
+  void visit (AST::WhileLoopExpr &expr)
+  {
+    translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
+  }
+
   void visit (AST::BreakExpr &expr)
   {
     std::vector<HIR::Attribute> outer_attribs;

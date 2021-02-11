@@ -155,6 +155,8 @@ public:
 			   std::move (outer_attribs));
   }
 
+  void visit (AST::WhileLoopExpr &expr);
+
 private:
   ASTLoweringExprWithBlock ()
     : ASTLoweringBase (), translated (nullptr), terminated (false)
