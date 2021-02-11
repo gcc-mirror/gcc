@@ -51,6 +51,7 @@ public:
   void visit (USizeType &type) override { gcc_unreachable (); }
   void visit (ISizeType &type) override { gcc_unreachable (); }
   void visit (ErrorType &type) override { gcc_unreachable (); }
+  void visit (CharType &type) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -94,6 +95,7 @@ public:
   void visit (ISizeType &type) override { gcc_unreachable (); }
   void visit (ErrorType &type) override { gcc_unreachable (); }
   void visit (ADTType &type) override { gcc_unreachable (); };
+  void visit (CharType &type) override { gcc_unreachable (); }
 
   // call fns
   void visit (FnType &type) override;

@@ -218,6 +218,13 @@ public:
 	}
 	return;
 
+	case HIR::Literal::CHAR: {
+	  // FIXME needs wchar_t
+	  char c = literal_value->as_string ().c_str ()[0];
+	  translated = ctx->get_backend ()->wchar_constant_expression (c);
+	}
+	return;
+
       default:
 	rust_fatal_error (expr.get_locus (), "unknown literal");
 	return;

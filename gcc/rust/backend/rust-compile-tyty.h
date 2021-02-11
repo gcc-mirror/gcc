@@ -201,6 +201,12 @@ public:
       Linemap::predeclared_location ());
   }
 
+  void visit (TyTy::CharType &) override
+  {
+    translated = backend->named_type ("char", backend->wchar_type (),
+				      Linemap::predeclared_location ());
+  }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

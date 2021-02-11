@@ -437,6 +437,14 @@ public:
     translated = compiled_type;
   }
 
+  void visit (TyTy::CharType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
+  }
+
 private:
   TyTyResolveCompile (Context *ctx) : ctx (ctx) {}
 

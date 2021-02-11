@@ -169,6 +169,13 @@ public:
 		   base->as_string ().c_str (), type.as_string ().c_str ());
   }
 
+  virtual void visit (CharType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+  }
+
 protected:
   BaseRules (TyBase *base)
     : mappings (Analysis::Mappings::get ()),
@@ -362,6 +369,19 @@ public:
 	    }
 	}
 	break;
+      }
+
+    BaseRules::visit (type);
+  }
+
+  void visit (CharType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
       }
 
     BaseRules::visit (type);
@@ -727,6 +747,29 @@ public:
 
 private:
   ISizeType *base;
+};
+
+class CharRules : public BaseRules
+{
+public:
+  CharRules (CharType *base) : BaseRules (base), base (base) {}
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (CharType &type) override { resolved = type.clone (); }
+
+private:
+  CharType *base;
 };
 
 } // namespace TyTy

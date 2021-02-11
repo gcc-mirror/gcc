@@ -552,6 +552,26 @@ public:
   TyBase *clone () final override;
 };
 
+class CharType : public TyBase
+{
+public:
+  CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ref, TypeKind::CHAR)
+  {}
+
+  CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ty_ref, TypeKind::CHAR)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  TyBase *clone () final override;
+};
+
 } // namespace TyTy
 } // namespace Rust
 

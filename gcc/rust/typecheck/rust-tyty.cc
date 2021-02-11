@@ -486,6 +486,33 @@ ISizeType::clone ()
 }
 
 void
+CharType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+CharType::as_string () const
+{
+  return "char";
+}
+
+TyBase *
+CharType::combine (TyBase *other)
+{
+  CharRules r (this);
+  return r.combine (other);
+}
+
+TyBase *
+CharType::clone ()
+{
+  return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+// rust-tyty-call.h
+
+void
 TypeCheckCallExpr::visit (ADTType &type)
 {
   if (call.num_params () != type.num_fields ())

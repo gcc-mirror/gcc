@@ -439,6 +439,12 @@ public:
 	}
 	break;
 
+	case HIR::Literal::LitType::CHAR: {
+	  auto ok = context->lookup_builtin ("char", &infered);
+	  rust_assert (ok);
+	}
+	break;
+
       default:
 	gcc_unreachable ();
 	break;

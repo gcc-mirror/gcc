@@ -98,6 +98,12 @@ public:
   // Get the unnamed boolean type.
   virtual Btype *bool_type () = 0;
 
+  // Get the char type
+  virtual Btype *char_type () = 0;
+
+  // Get the wchar type
+  virtual Btype *wchar_type () = 0;
+
   // Get the Host pointer size in bits
   virtual int get_pointer_size () = 0;
 
@@ -293,6 +299,9 @@ public:
 
   // Return an expression for the string value VAL.
   virtual Bexpression *string_constant_expression (const std::string &val) = 0;
+
+  // Get a char literal
+  virtual Bexpression *wchar_constant_expression (wchar_t c) = 0;
 
   // Return an expression for the boolean value VAL.
   virtual Bexpression *boolean_constant_expression (bool val) = 0;

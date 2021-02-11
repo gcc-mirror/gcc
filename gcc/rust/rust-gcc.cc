@@ -165,6 +165,17 @@ public:
 
   Btype *bool_type () { return this->make_type (boolean_type_node); }
 
+  Btype *char_type () { return this->make_type (char_type_node); }
+
+  Btype *wchar_type ()
+  {
+    // i think this is meant to be 32 bit from
+    // https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf#G7404
+    int precision = 32;
+    tree wchar = make_unsigned_type (precision);
+    return this->make_type (wchar);
+  }
+
   int get_pointer_size ();
 
   Btype *integer_type (bool, int);
@@ -246,6 +257,8 @@ public:
   Bexpression *complex_constant_expression (Btype *btype, mpc_t val);
 
   Bexpression *string_constant_expression (const std::string &val);
+
+  Bexpression *wchar_constant_expression (wchar_t c);
 
   Bexpression *boolean_constant_expression (bool val);
 
@@ -1407,6 +1420,13 @@ Gcc_backend::string_constant_expression (const std::string &val)
   TREE_TYPE (string_val) = string_type;
 
   return this->make_expression (string_val);
+}
+
+Bexpression *
+Gcc_backend::wchar_constant_expression (wchar_t c)
+{
+  tree ret = build_int_cst (this->wchar_type ()->get_tree (), c);
+  return this->make_expression (ret);
 }
 
 // Make a constant boolean expression.
