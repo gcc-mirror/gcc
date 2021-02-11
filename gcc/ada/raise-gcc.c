@@ -1604,7 +1604,7 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 
   return
     _GCC_specific_handler (ms_exc, this_frame, ms_orig_context, ms_disp,
-			   __gnat_personality_imp);
+			   PERSONALITY_FUNCTION);
 }
 
 /* Define __gnat_personality_v0 for convenience */
