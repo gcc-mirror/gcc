@@ -681,6 +681,14 @@ Maximum number of constant stores to merge in the store merging pass.
 Common Joined UInteger Var(param_max_stores_to_sink) Init(2) Param Optimization
 Maximum number of conditional store pairs that can be sunk.
 
+-param=max-store-chains-to-track=
+Common Joined UInteger Var(param_max_store_chains_to_track) Init(64) IntegerRange(1, 65536)
+Maximum number of store chains to track at the same time in the store merging pass.
+
+-param=max-stores-to-track=
+Common Joined UInteger Var(param_max_stores_to_track) Init(1024) IntegerRange(2, 1048576)
+Maximum number of store chains to track at the same time in the store merging pass.
+
 -param=max-tail-merge-comparisons=
 Common Joined UInteger Var(param_max_tail_merge_comparisons) Init(10) Param Optimization
 Maximum amount of similar bbs to compare a bb with.
