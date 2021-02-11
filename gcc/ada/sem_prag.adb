@@ -2464,7 +2464,7 @@ package body Sem_Prag is
 
                   if Global_Mode in Name_In_Out | Name_Output then
 
-                     --  Constant of a access-to-variable type is a read-write
+                     --  Constant of an access-to-variable type is a read-write
                      --  item in procedures, generic procedures, protected
                      --  entries and tasks.
 
@@ -13431,7 +13431,7 @@ package body Sem_Prag is
                     Arg1);
                end if;
 
-            --  Only other possibility is Access-to-class-wide type
+            --  Only other possibility is access-to-class-wide type
 
             elsif Is_Access_Type (Nm)
               and then Is_Class_Wide_Type (Designated_Type (Nm))

@@ -15386,8 +15386,9 @@ package body Sem_Util is
 
    function Is_Access_Variable (E : Entity_Id) return Boolean is
    begin
-      return Is_Access_Object_Type (E)
-        and then not Is_Access_Constant (E);
+      return Is_Access_Type (E)
+        and then not Is_Access_Constant (E)
+        and then Ekind (Directly_Designated_Type (E)) /= E_Subprogram_Type;
    end Is_Access_Variable;
 
    -----------------------------
