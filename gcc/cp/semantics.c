@@ -1028,6 +1028,11 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll)
 {
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
+  /* Unlike other iteration statements, the condition may not contain
+     a declaration, so we don't call finish_cond which checks for
+     unexpanded parameter packs.  */
+  if (check_for_bare_parameter_packs (cond))
+    cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
