@@ -4999,10 +4999,16 @@ gfc_match_call (void)
   sym = st->n.sym;
 
   /* If this is a variable of derived-type, it probably starts a type-bound
-     procedure call.  */
-  if ((sym->attr.flavor != FL_PROCEDURE
-       || gfc_is_function_return_value (sym, gfc_current_ns))
-      && (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS))
+     procedure call. Associate variable targets have to be resolved for the
+     target type.  */
+  if (((sym->attr.flavor != FL_PROCEDURE
+	|| gfc_is_function_return_value (sym, gfc_current_ns))
+       && (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS))
+		||
+      (sym->assoc && sym->assoc->target
+       && gfc_resolve_expr (sym->assoc->target)
+       && (sym->assoc->target->ts.type == BT_DERIVED
+	   || sym->assoc->target->ts.type == BT_CLASS)))
     return match_typebound_call (st);
 
   /* If it does not seem to be callable (include functions so that the
