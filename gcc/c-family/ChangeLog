@@ -1,3 +1,7 @@
+2021-02-10  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (parse_optimize_options): Free decoded_options.
+
 2021-02-04  emsr  <3dw4rd@verizon.net>
 
 	* c-cppbuiltin.c (c_cpp_builtins): __cpp_size_t_suffix=202011L.

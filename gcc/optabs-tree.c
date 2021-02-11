@@ -277,6 +277,75 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     }
 }
 
+/* Check whether an operation represented by CODE is a 'half' widening operation
+   in which the input vector type has half the number of bits of the output
+   vector type e.g. V8QI->V8HI.
+
+   This is handled by widening the inputs using NOP_EXPRs then using a
+   non-widening stmt e.g. MINUS_EXPR.  RTL fusing converts these to the widening
+   hardware instructions if supported.
+
+   The more typical case (handled in supportable_widening_operation) is where
+   the input vector type has the same number of bits as the output vector type.
+   In this case half the elements of the input vectors must be processed at a
+   time into respective vector outputs with elements twice as wide i.e. a
+   'hi'/'lo' pair using codes such as VEC_WIDEN_MINUS_HI/LO.
+
+   Supported widening operations:
+    WIDEN_MINUS_EXPR
+    WIDEN_PLUS_EXPR
+    WIDEN_MULT_EXPR
+    WIDEN_LSHIFT_EXPR
+
+   Output:
+   - CODE1 - The non-widened code, which will be used after the inputs are
+     converted to the wide type.  */
+bool
+supportable_half_widening_operation (enum tree_code code, tree vectype_out,
+				     tree vectype_in, enum tree_code *code1)
+{
+  machine_mode m1,m2;
+  enum tree_code dummy_code;
+  optab op;
+
+  gcc_assert (VECTOR_TYPE_P (vectype_out) && VECTOR_TYPE_P (vectype_in));
+
+  m1 = TYPE_MODE (vectype_out);
+  m2 = TYPE_MODE (vectype_in);
+
+  if (!VECTOR_MODE_P (m1) || !VECTOR_MODE_P (m2))
+    return false;
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in),
+		  TYPE_VECTOR_SUBPARTS (vectype_out)))
+    return false;
+
+  switch (code)
+    {
+    case WIDEN_LSHIFT_EXPR:
+      *code1 = LSHIFT_EXPR;
+      break;
+    case WIDEN_MINUS_EXPR:
+      *code1 = MINUS_EXPR;
+      break;
+    case WIDEN_PLUS_EXPR:
+      *code1 = PLUS_EXPR;
+      break;
+    case WIDEN_MULT_EXPR:
+      *code1 = MULT_EXPR;
+      break;
+    default:
+      return false;
+    }
+
+  if (!supportable_convert_operation (NOP_EXPR, vectype_out, vectype_in,
+				     &dummy_code))
+    return false;
+
+  op = optab_for_tree_code (*code1, vectype_out, optab_vector);
+  return (optab_handler (op, TYPE_MODE (vectype_out)) != CODE_FOR_nothing);
+}
+
 /* Function supportable_convert_operation
 
    Check whether an operation represented by the code CODE is a

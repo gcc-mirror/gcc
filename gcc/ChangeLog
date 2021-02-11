@@ -1,3 +1,79 @@
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99035
+	* varasm.c (declare_weak): For -fsyntax-only, allow even
+	TREE_ASM_WRITTEN function decls.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99025
+	* config/i386/sse.md (fix<fixunssuffix>_truncv2sfv2di2,
+	<insn>v8qiv8hi2, <insn>v8qiv8si2, <insn>v4qiv4si2, <insn>v4hiv4si2,
+	<insn>v8qiv8di2, <insn>v4qiv4di2, <insn>v2qiv2di2, <insn>v4hiv4di2,
+	<insn>v2hiv2di2, <insn>v2siv2di2): Force operands[1] into REG before
+	calling simplify_gen_subreg on it.
+
+2021-02-10  Martin Liska  <mliska@suse.cz>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Use
+	flag_patchable_function_entry instead of the removed
+	function_entry_patch_area_size.
+
+2021-02-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/99002
+	PR tree-optimization/99026
+	* gimple-if-to-switch.cc (if_chain::is_beneficial): Fix memory
+	leak when adjacent cases are merged.
+	* tree-switch-conversion.c (switch_decision_tree::analyze_switch_statement): Use
+	release_clusters.
+	(make_pass_lower_switch): Remove trailing whitespace.
+	* tree-switch-conversion.h (release_clusters): New.
+
+2021-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/99054
+	* cfgrtl.c (rtl-optimization/99054): Return an auto_vec.
+	(fixup_partitions): Adjust.
+	(rtl_verify_edges): Likewise.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99007
+	* gimplify.c (gimplify_scan_omp_clauses): For MEM_REF on reductions,
+	temporarily disable gimplify_ctxp->into_ssa around gimplify_expr
+	calls.
+
+2021-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/99029
+	* ipa-pure-const.c (propagate_malloc): Use an auto_vec<>
+	for callees.
+
+2021-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99024
+	* tree-vect-loop.c (_loop_vec_info::~_loop_vec_info): Only
+	clear loop->aux if it is associated with the destroyed loop_vinfo.
+
+2021-02-10  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/99002
+	* gimple-if-to-switch.cc (find_conditions): Fix memory leak
+	in the function.
+
+2021-02-10  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/99003
+	* ipa-icf.c (sem_item::add_reference): Fix memory leak when
+	a reference exists.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/98755
+	* dwarf2out.c (prune_unused_types_walk): Mark DW_TAG_variable DIEs
+	at class scope for DWARF5+.
+
 2021-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/96015

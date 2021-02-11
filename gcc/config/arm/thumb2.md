@@ -1711,15 +1711,27 @@
 
 ;; Originally expanded by 'doloop_end'.
 (define_insn "*doloop_end_internal"
-  [(parallel [(set (pc)
-                   (if_then_else
-                       (ne (reg:SI LR_REGNUM) (const_int 1))
-                     (label_ref (match_operand 0 "" ""))
-                     (pc)))
-              (set (reg:SI LR_REGNUM)
-                   (plus:SI (reg:SI LR_REGNUM) (const_int -1)))])]
+  [(set (pc)
+        (if_then_else
+            (ne (reg:SI LR_REGNUM) (const_int 1))
+          (label_ref (match_operand 0 "" ""))
+          (pc)))
+   (set (reg:SI LR_REGNUM)
+        (plus:SI (reg:SI LR_REGNUM) (const_int -1)))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && TARGET_HAVE_LOB"
-  "le\t%|lr, %l0")
+  {
+    if (get_attr_length (insn) == 4)
+      return "le\t%|lr, %l0";
+    else
+      return "subs\t%|lr, #1;bne\t%l0";
+  }
+  [(set (attr "length")
+        (if_then_else
+            (ltu (minus (pc) (match_dup 0)) (const_int 1024))
+	    (const_int 4)
+	    (const_int 6)))
+   (set_attr "type" "branch")])
 
 (define_expand "doloop_begin"
   [(match_operand 0 "" "")

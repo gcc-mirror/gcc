@@ -1417,7 +1417,8 @@ linemap_compare_locations (line_maps *set,
 
   if (l0 == l1
       && pre_virtual_p
-      && post_virtual_p)
+      && post_virtual_p
+      && l0 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
     {
       /* So pre and post represent two tokens that are present in a
 	 same macro expansion.  Let's see if the token for pre was
