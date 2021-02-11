@@ -2666,7 +2666,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
-	new AST::LifetimeParam (std::move (lifetime), 
+	new AST::LifetimeParam (std::move (lifetime),
 				std::move (lifetime_bounds),
 				std::move (outer_attr), locus));
       generic_params.push_back (std::move (param));
@@ -3167,9 +3167,9 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
       // TODO: have end token passed in?
     }
 
-  return AST::LifetimeParam (std::move (lifetime), 
-			     std::move (lifetime_bounds),
-			     std::move (outer_attr), lifetime_tok->get_locus ());
+  return AST::LifetimeParam (std::move (lifetime), std::move (lifetime_bounds),
+			     std::move (outer_attr),
+			     lifetime_tok->get_locus ());
 }
 
 // Parses type generic parameters. Will also consume any trailing comma.
@@ -3698,7 +3698,7 @@ Parser<ManagedTokenSource>::parse_trait_bound ()
    * handle this) */
   std::vector<AST::LifetimeParam> for_lifetimes;
   if (lexer.peek_token ()->get_id () == FOR)
-      for_lifetimes = parse_for_lifetimes ();
+    for_lifetimes = parse_for_lifetimes ();
 
   // handle TypePath
   AST::TypePath type_path = parse_type_path ();
@@ -7879,14 +7879,30 @@ Parser<ManagedTokenSource>::parse_loop_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::WhileLoopExpr>
 Parser<ManagedTokenSource>::parse_while_loop_expr (
-  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label)
+  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label,
+  bool pratt_parse)
 {
   Location locus = Linemap::unknown_location ();
-  if (label.is_error ())
-    locus = lexer.peek_token ()->get_locus ();
+  if (!pratt_parse)
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus ();
+      else
+	locus = label.get_locus ();
+
+      if (!skip_token (WHILE))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
   else
-    locus = label.get_locus ();
-  skip_token (WHILE);
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus () - 1;
+      else
+	locus = label.get_locus ();
+    }
 
   // ensure it isn't a while let loop
   if (lexer.peek_token ()->get_id () == LET)
@@ -12454,6 +12470,9 @@ Parser<ManagedTokenSource>::null_denotation (
     case LOOP:
       return parse_loop_expr (std::move (outer_attrs), AST::LoopLabel::error (),
 			      true);
+    case WHILE:
+      return parse_while_loop_expr (std::move (outer_attrs),
+				    AST::LoopLabel::error (), true);
     case MATCH_TOK:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), true);

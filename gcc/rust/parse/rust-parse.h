@@ -504,10 +504,9 @@ private:
   std::unique_ptr<AST::LoopExpr> parse_loop_expr (
     std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> (),
     AST::LoopLabel label = AST::LoopLabel::error (), bool pratt_parse = false);
-  std::unique_ptr<AST::WhileLoopExpr>
-  parse_while_loop_expr (std::vector<AST::Attribute> outer_attrs
-			 = std::vector<AST::Attribute> (),
-			 AST::LoopLabel label = AST::LoopLabel::error ());
+  std::unique_ptr<AST::WhileLoopExpr> parse_while_loop_expr (
+    std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> (),
+    AST::LoopLabel label = AST::LoopLabel::error (), bool pratt_parse = false);
   std::unique_ptr<AST::WhileLetLoopExpr>
   parse_while_let_loop_expr (std::vector<AST::Attribute> outer_attrs
 			     = std::vector<AST::Attribute> (),
