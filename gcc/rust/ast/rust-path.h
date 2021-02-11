@@ -311,9 +311,9 @@ public:
  * arguments) */
 class PathInExpression : public PathPattern, public PathExpr
 {
+  std::vector<Attribute> outer_attrs;
   bool has_opening_scope_resolution;
   Location locus;
-
   NodeId _node_id;
 
 public:
@@ -321,12 +321,10 @@ public:
 
   // Constructor
   PathInExpression (std::vector<PathExprSegment> path_segments,
-		    Location locus = Location (),
-		    bool has_opening_scope_resolution = false,
-		    std::vector<Attribute> outer_attrs
-		    = std::vector<Attribute> ())
+		    std::vector<Attribute> outer_attrs, Location locus,
+		    bool has_opening_scope_resolution = false)
     : PathPattern (std::move (path_segments)),
-      PathExpr (std::move (outer_attrs)),
+      outer_attrs (std::move (outer_attrs)),
       has_opening_scope_resolution (has_opening_scope_resolution),
       locus (locus), _node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
@@ -334,7 +332,7 @@ public:
   // Creates an error state path in expression.
   static PathInExpression create_error ()
   {
-    return PathInExpression (std::vector<PathExprSegment> ());
+    return PathInExpression ({}, {}, Location ());
   }
 
   // Returns whether path in expression is in an error state.
@@ -353,28 +351,39 @@ public:
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if path is empty (error state), so base stripping on that.
   void mark_for_strip () override { remove_all_segments (); }
   bool is_marked_for_strip () const override { return is_error (); }
-  bool opening_scope_resolution () { return has_opening_scope_resolution; }
+
+  bool opening_scope_resolution () const { return has_opening_scope_resolution; }
 
   NodeId get_node_id () const override { return _node_id; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  PathInExpression *clone_pattern_impl () const override
+  PathInExpression *clone_pattern_impl () const final override
   {
-    return new PathInExpression (*this);
+    return clone_path_in_expression_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  PathInExpression *clone_expr_without_block_impl () const override
+  PathInExpression *clone_expr_without_block_impl () const final override
+  {
+    return clone_path_in_expression_impl ();
+  }
+
+  /*virtual*/ PathInExpression *clone_path_in_expression_impl () const
   {
     return new PathInExpression (*this);
   }
@@ -830,6 +839,7 @@ public:
  * allows specifying trait functions) */
 class QualifiedPathInExpression : public PathPattern, public PathExpr
 {
+  std::vector<Attribute> outer_attrs;
   QualifiedPathType path_type;
   Location locus;
 
@@ -838,11 +848,10 @@ public:
 
   QualifiedPathInExpression (QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
-			     Location locus = Location (),
-			     std::vector<Attribute> outer_attrs
-			     = std::vector<Attribute> ())
+			     std::vector<Attribute> outer_attrs,
+           Location locus)
     : PathPattern (std::move (path_segments)),
-      PathExpr (std::move (outer_attrs)),
+      outer_attrs (std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus)
   {}
 
@@ -856,11 +865,11 @@ public:
   static QualifiedPathInExpression create_error ()
   {
     return QualifiedPathInExpression (QualifiedPathType::create_error (),
-				      std::vector<PathExprSegment> ());
+				      {}, {}, Location ());
   }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -878,17 +887,27 @@ public:
     return path_type;
   }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  QualifiedPathInExpression *clone_pattern_impl () const override
+  QualifiedPathInExpression *clone_pattern_impl () const final override
   {
-    return new QualifiedPathInExpression (*this);
+    return clone_qual_path_in_expression_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  QualifiedPathInExpression *clone_expr_without_block_impl () const override
+  QualifiedPathInExpression *clone_expr_without_block_impl () const final override
+  {
+    return clone_qual_path_in_expression_impl ();
+  }
+
+  /*virtual*/ QualifiedPathInExpression *clone_qual_path_in_expression_impl () const
   {
     return new QualifiedPathInExpression (*this);
   }

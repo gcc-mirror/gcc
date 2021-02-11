@@ -129,6 +129,7 @@ class Token : public TokenTree, public MacroMatch
 {
   // A token is a kind of token tree (except delimiter tokens)
   // A token is a kind of MacroMatch (except $ and delimiter tokens)
+#if 0
   // TODO: improve member variables - current ones are the same as lexer token
   // Token kind.
   TokenId token_id;
@@ -138,6 +139,13 @@ class Token : public TokenTree, public MacroMatch
   std::string str;
   // Token type hint (if any).
   PrimitiveCoreType type_hint;
+#endif
+
+  const_TokenPtr tok_ref;
+
+  /* new idea: wrapper around const_TokenPtr used for heterogeneuous storage in
+   * token trees. rather than convert back and forth when parsing macros, just 
+   * wrap it. */
 
 public:
   // Unique pointer custom clone function
@@ -146,6 +154,7 @@ public:
     return std::unique_ptr<Token> (clone_token_impl ());
   }
 
+#if 0
   /* constructor from general text - avoid using if lexer const_TokenPtr is
    * available */
   Token (TokenId token_id, Location locus, std::string str,
@@ -153,8 +162,11 @@ public:
     : token_id (token_id), locus (locus), str (std::move (str)),
       type_hint (type_hint)
   {}
+#endif
+  // not doable with new implementation - will have to make a const_TokenPtr
 
   // Constructor from lexer const_TokenPtr
+#if 0
   /* TODO: find workaround for std::string being nullptr - probably have to
    * introduce new method in lexer Token, or maybe make conversion method
    * there */
@@ -188,10 +200,12 @@ public:
 		 lexer_token_ptr->get_token_description ());
       }
   }
+#endif
+  Token (const_TokenPtr lexer_tok_ptr) : tok_ref (std::move (lexer_tok_ptr)) {}
 
   bool is_string_lit () const
   {
-    switch (token_id)
+    switch (get_id ())
       {
       case STRING_LITERAL:
       case BYTE_STRING_LITERAL:
@@ -208,11 +222,14 @@ public:
   // Return copy of itself but in token stream form.
   std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
-  TokenId get_id () const { return token_id; }
+  TokenId get_id () const { return tok_ref->get_id (); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const { return tok_ref->get_locus (); }
 
-  PrimitiveCoreType get_type_hint () const { return type_hint; }
+  PrimitiveCoreType get_type_hint () const { return tok_ref->get_type_hint (); }
+
+  // Get a new token pointer copy.
+  const_TokenPtr get_tok_ptr () const { return tok_ref; }
 
 protected:
   // No virtual for now as not polymorphic but can be in future
@@ -220,11 +237,14 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  Token *clone_token_tree_impl () const override { return clone_token_impl (); }
+  Token *clone_token_tree_impl () const final override
+  {
+    return clone_token_impl ();
+  }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  Token *clone_macro_match_impl () const override
+  Token *clone_macro_match_impl () const final override
   {
     return clone_token_impl ();
   }
@@ -372,6 +392,13 @@ public:
   }
 };
 
+// path-to-string inverse comparison operator
+inline bool
+operator!= (const SimplePath &lhs, const std::string &rhs)
+{
+  return !(lhs == rhs);
+}
+
 // forward decl for Attribute
 class AttrInput;
 
@@ -402,27 +429,9 @@ public:
   // default destructor
   ~Attribute () = default;
 
-  // Copy constructor must deep copy attr_input as unique pointer
-  /*Attribute (Attribute const &other) : path (other.path), locus (other.locus)
-  {
-    // guard to protect from null pointer dereference
-    if (other.attr_input != nullptr)
-      attr_input = other.attr_input->clone_attr_input ();
-  }*/
   // no point in being defined inline as requires virtual call anyway
   Attribute (const Attribute &other);
 
-  // overload assignment operator to use custom clone method
-  /*Attribute &operator= (Attribute const &other)
-  {
-    path = other.path;
-    locus = other.locus;
-    // guard to protect from null pointer dereference
-    if (other.attr_input != nullptr)
-      attr_input = other.attr_input->clone_attr_input ();
-
-    return *this;
-  }*/
   // no point in being defined inline as requires virtual call anyway
   Attribute &operator= (const Attribute &other);
 
@@ -499,7 +508,7 @@ public:
 
   std::string as_string () const;
 
-  // TODO: does this require visitor pattern as not polymorphic?
+  // no visitor pattern as not currently polymorphic
 
   const SimplePath &get_path () const { return path; }
   SimplePath &get_path () { return path; }
@@ -508,10 +517,15 @@ public:
   void parse_attr_to_meta_item ();
 
   /* Determines whether cfg predicate is true and item with attribute should not
-   * be stripped. */
-  bool check_cfg_predicate (const Session &session);
+   * be stripped. Attribute body must already be parsed to meta item. */
+  bool check_cfg_predicate (const Session &session) const;
 
-  std::vector<Attribute> separate_cfg_attrs ();
+  // Returns whether body has been parsed to meta item form or not.
+  bool is_parsed_to_meta_item () const;
+
+  /* Returns any attributes generated from cfg_attr attributes. Attribute body
+   * must already be parsed to meta item. */
+  std::vector<Attribute> separate_cfg_attrs () const;
 
 protected:
   // not virtual as currently no subclasses of Attribute, but could be in future
@@ -544,98 +558,13 @@ public:
 
   virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
 
+  // Returns whether attr input has been parsed to meta item syntax.
+  virtual bool is_meta_item () const = 0;
+
 protected:
   // pure virtual clone implementation
   virtual AttrInput *clone_attr_input_impl () const = 0;
 };
-
-// A token tree with delimiters
-class DelimTokenTree : public TokenTree, public AttrInput
-{
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
-  Location locus;
-
-protected:
-  DelimTokenTree *clone_delim_tok_tree_impl () const
-  {
-    return new DelimTokenTree (*this);
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_attr_input_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_token_tree_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-public:
-  DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree> > token_trees
-		  = std::vector<std::unique_ptr<TokenTree> > (),
-		  Location locus = Location ())
-    : delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}
-
-  // Copy constructor with vector clone
-  DelimTokenTree (DelimTokenTree const &other)
-    : delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // overloaded assignment operator with vector clone
-  DelimTokenTree &operator= (DelimTokenTree const &other)
-  {
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  // move constructors
-  DelimTokenTree (DelimTokenTree &&other) = default;
-  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
-
-  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool check_cfg_predicate (const Session &) const override
-  {
-    // this should never be called - should be converted first
-    return false;
-  }
-
-  AttrInput *parse_to_meta_item () const override;
-
-  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
-
-  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
-  {
-    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
-  }
-};
-
-/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
- * be defined */
-class AttrInputLiteral;
 
 // Forward decl - defined in rust-macro.h
 class MetaNameValueStr;
@@ -689,7 +618,26 @@ public:
     : items (std::move (items))
   {}
 
-  // no destructor definition required
+  // copy constructor with vector clone
+  AttrInputMetaItemContainer (const AttrInputMetaItemContainer &other)
+  {
+    items.reserve (other.items.size ());
+    for (const auto &e : other.items)
+      items.push_back (e->clone_meta_item_inner ());
+  }
+
+  // copy assignment operator with vector clone
+  AttrInputMetaItemContainer &
+  operator= (const AttrInputMetaItemContainer &other)
+  {
+    AttrInput::operator= (other);
+
+    items.reserve (other.items.size ());
+    for (const auto &e : other.items)
+      items.push_back (e->clone_meta_item_inner ());
+
+    return *this;
+  }
 
   // default move constructors
   AttrInputMetaItemContainer (AttrInputMetaItemContainer &&other) = default;
@@ -712,9 +660,18 @@ public:
 
   std::vector<Attribute> separate_cfg_attrs () const override;
 
+  bool is_meta_item () const override { return true; }
+
+  // TODO: this mutable getter seems dodgy
+  std::vector<std::unique_ptr<MetaItemInner> > &get_items () { return items; }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_items () const
+  {
+    return items;
+  }
+
 protected:
   // Use covariance to implement clone function as returning this type
-  AttrInputMetaItemContainer *clone_attr_input_impl () const override
+  AttrInputMetaItemContainer *clone_attr_input_impl () const final override
   {
     return clone_attr_input_meta_item_container_impl ();
   }
@@ -723,28 +680,98 @@ protected:
   {
     return new AttrInputMetaItemContainer (*this);
   }
+};
 
-  // copy constructor with vector clone
-  AttrInputMetaItemContainer (const AttrInputMetaItemContainer &other)
+// A token tree with delimiters
+class DelimTokenTree : public TokenTree, public AttrInput
+{
+  DelimType delim_type;
+  std::vector<std::unique_ptr<TokenTree> > token_trees;
+  Location locus;
+
+protected:
+  DelimTokenTree *clone_delim_tok_tree_impl () const
   {
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_meta_item_inner ());
+    return new DelimTokenTree (*this);
   }
 
-  // copy assignment operator with vector clone
-  AttrInputMetaItemContainer &
-  operator= (const AttrInputMetaItemContainer &other)
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_attr_input_impl () const final override
   {
-    AttrInput::operator= (other);
+    return clone_delim_tok_tree_impl ();
+  }
 
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_meta_item_inner ());
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_token_tree_impl () const final override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+public:
+  DelimTokenTree (DelimType delim_type,
+		  std::vector<std::unique_ptr<TokenTree> > token_trees
+		  = std::vector<std::unique_ptr<TokenTree> > (),
+		  Location locus = Location ())
+    : delim_type (delim_type), token_trees (std::move (token_trees)),
+      locus (locus)
+  {}
+
+  // Copy constructor with vector clone
+  DelimTokenTree (DelimTokenTree const &other)
+    : delim_type (other.delim_type), locus (other.locus)
+  {
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+  }
+
+  // overloaded assignment operator with vector clone
+  DelimTokenTree &operator= (DelimTokenTree const &other)
+  {
+    delim_type = other.delim_type;
+    locus = other.locus;
+
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
 
     return *this;
   }
+
+  // move constructors
+  DelimTokenTree (DelimTokenTree &&other) = default;
+  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
+
+  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  bool check_cfg_predicate (const Session &) const override
+  {
+    // this should never be called - should be converted first
+    rust_assert (false);
+    return false;
+  }
+
+  AttrInputMetaItemContainer *parse_to_meta_item () const override;
+
+  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
+
+  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
+  {
+    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
+  }
+
+  bool is_meta_item () const override { return false; }
 };
+
+/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
+ * be defined */
+class AttrInputLiteral;
 
 // abstract base meta item class
 class MetaItem : public MetaItemInner
@@ -816,8 +843,6 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
-  std::string as_string () const = 0;
-
   /* Adds crate names to the vector passed by reference, if it can
    * (polymorphism). TODO: remove, unused. */
   virtual void
@@ -840,14 +865,7 @@ class ExprWithoutBlock;
 // Base expression AST node - abstract
 class Expr
 {
-  // TODO: move outer attribute data to derived classes?
-  std::vector<Attribute> outer_attrs;
-
 public:
-  // TODO: this mutable getter seems really dodgy. Think up better way.
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-
   // Unique pointer custom clone function
   std::unique_ptr<Expr> clone_expr () const
   {
@@ -863,8 +881,7 @@ public:
    * overrided in subclasses of ExprWithoutBlock */
   virtual ExprWithoutBlock *as_expr_without_block () const { return nullptr; }
 
-  // TODO: make pure virtual if move out outer attributes to derived classes
-  virtual std::string as_string () const;
+  virtual std::string as_string () const = 0;
 
   virtual ~Expr () {}
 
@@ -886,20 +903,14 @@ public:
 
 protected:
   // Constructor
-  Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : outer_attrs (std::move (outer_attribs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
-  {}
+  Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Expr *clone_expr_impl () const = 0;
 
   // TODO: think of less hacky way to implement this kind of thing
   // Sets outer attributes.
-  void set_outer_attrs (std::vector<Attribute> outer_attrs_to_set)
-  {
-    outer_attrs = std::move (outer_attrs_to_set);
-  }
+  virtual void set_outer_attrs (std::vector<Attribute>) = 0;
 
   NodeId node_id;
 };
@@ -908,12 +919,6 @@ protected:
 class ExprWithoutBlock : public Expr
 {
 protected:
-  // Constructor
-  ExprWithoutBlock (std::vector<Attribute> outer_attribs
-		    = std::vector<Attribute> ())
-    : Expr (std::move (outer_attribs))
-  {}
-
   // pure virtual clone implementation
   virtual ExprWithoutBlock *clone_expr_without_block_impl () const = 0;
 
@@ -936,7 +941,7 @@ public:
 
   /* downcasting hack from expr to use pratt parsing with
    * parse_expr_without_block */
-  ExprWithoutBlock *as_expr_without_block () const override
+  ExprWithoutBlock *as_expr_without_block () const final override
   {
     return clone_expr_without_block_impl ();
   }
@@ -948,21 +953,21 @@ public:
  */
 class IdentifierExpr : public ExprWithoutBlock
 {
+  std::vector<Attribute> outer_attrs;
   Identifier ident;
   Location locus;
 
 public:
-  IdentifierExpr (Identifier ident, Location locus = Location (),
-		  std::vector<Attribute> outer_attrs
-		  = std::vector<Attribute> ())
-    : ExprWithoutBlock (std::move (outer_attrs)), ident (std::move (ident)),
+  IdentifierExpr (Identifier ident, std::vector<Attribute> outer_attrs,
+		  Location locus)
+    : outer_attrs (std::move (outer_attrs)), ident (std::move (ident)),
       locus (locus)
   {}
 
   std::string as_string () const override { return ident; }
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   Identifier get_ident () const { return ident; }
 
@@ -978,9 +983,17 @@ public:
   void mark_for_strip () override { ident = {}; }
   bool is_marked_for_strip () const override { return ident.empty (); }
 
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
+
 protected:
   // Clone method implementation
-  IdentifierExpr *clone_expr_without_block_impl () const override
+  IdentifierExpr *clone_expr_without_block_impl () const final override
   {
     return clone_identifier_expr_impl ();
   }
@@ -1205,15 +1218,8 @@ protected:
 class LifetimeParam : public GenericParam
 {
   Lifetime lifetime;
-
-  // bool has_lifetime_bounds;
-  // LifetimeBounds lifetime_bounds;
-  std::vector<Lifetime> lifetime_bounds; // inlined LifetimeBounds
-
-  // bool has_outer_attribute;
-  // std::unique_ptr<Attribute> outer_attr;
+  std::vector<Lifetime> lifetime_bounds; 
   Attribute outer_attr;
-
   Location locus;
 
 public:
@@ -1226,44 +1232,20 @@ public:
   // Creates an error state lifetime param.
   static LifetimeParam create_error ()
   {
-    return LifetimeParam (Lifetime::error ());
+    return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (), Location ());
   }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }
 
   // Constructor
-  LifetimeParam (Lifetime lifetime, Location locus = Location (),
-		 std::vector<Lifetime> lifetime_bounds
-		 = std::vector<Lifetime> (),
-		 Attribute outer_attr = Attribute::create_empty ())
+  LifetimeParam (Lifetime lifetime, 
+		 std::vector<Lifetime> lifetime_bounds,
+		 Attribute outer_attr, Location locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
       outer_attr (std::move (outer_attr)), locus (locus)
   {}
-
-  // TODO: remove copy and assignment operator definitions - not required
-
-  // Copy constructor with clone
-  LifetimeParam (LifetimeParam const &other)
-    : lifetime (other.lifetime), lifetime_bounds (other.lifetime_bounds),
-      outer_attr (other.outer_attr), locus (other.locus)
-  {}
-
-  // Overloaded assignment operator to clone attribute
-  LifetimeParam &operator= (LifetimeParam const &other)
-  {
-    lifetime = other.lifetime;
-    lifetime_bounds = other.lifetime_bounds;
-    outer_attr = other.outer_attr;
-    locus = other.locus;
-
-    return *this;
-  }
-
-  // move constructors
-  LifetimeParam (LifetimeParam &&other) = default;
-  LifetimeParam &operator= (LifetimeParam &&other) = default;
 
   std::string as_string () const override;
 
@@ -1278,28 +1260,13 @@ protected:
   }
 };
 
-// A macro item AST node - potentially abstract base class
+// A macro item AST node - abstract base class
 class MacroItem : public Item
-{
-  /*public:
-  std::string as_string() const;*/
-  // std::vector<Attribute> outer_attrs;
-
-protected:
-  /*MacroItem (std::vector<Attribute> outer_attribs)
-    : outer_attrs (std::move (outer_attribs))
-  {}*/
-};
+{};
 
 // Item used in trait declarations - abstract base class
 class TraitItem
 {
-  // bool has_outer_attrs;
-  // TODO: remove and rely on virtual functions and VisItem-derived attributes?
-  // std::vector<Attribute> outer_attrs;
-
-  // NOTE: all children should have outer attributes
-
 protected:
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
@@ -1395,6 +1362,85 @@ protected:
   virtual ExternalItem *clone_external_item_impl () const = 0;
 };
 
+/* Data structure to store the data used in macro invocations and macro
+ * invocations with semicolons. */
+struct MacroInvocData
+{
+private:
+  SimplePath path;
+  DelimTokenTree token_tree;
+
+  // One way of parsing the macro. Probably not applicable for all macros.
+  std::vector<std::unique_ptr<MetaItemInner> > parsed_items;
+  bool parsed_to_meta_item = false;
+
+public:
+  std::string as_string () const;
+
+  MacroInvocData (SimplePath path, DelimTokenTree token_tree)
+    : path (std::move (path)), token_tree (std::move (token_tree))
+  {}
+
+  // Copy constructor with vector clone
+  MacroInvocData (const MacroInvocData &other)
+    : path (other.path), token_tree (other.token_tree),
+      parsed_to_meta_item (other.parsed_to_meta_item)
+  {
+    parsed_items.reserve (other.parsed_items.size ());
+    for (const auto &e : other.parsed_items)
+      parsed_items.push_back (e->clone_meta_item_inner ());
+  }
+
+  // Copy assignment operator with vector clone
+  MacroInvocData &operator= (const MacroInvocData &other)
+  {
+    path = other.path;
+    token_tree = other.token_tree;
+    parsed_to_meta_item = other.parsed_to_meta_item;
+
+    parsed_items.reserve (other.parsed_items.size ());
+    for (const auto &e : other.parsed_items)
+      parsed_items.push_back (e->clone_meta_item_inner ());
+
+    return *this;
+  }
+
+  // Move constructors
+  MacroInvocData (MacroInvocData &&other) = default;
+  MacroInvocData &operator= (MacroInvocData &&other) = default;
+
+  // Invalid if path is empty, so base stripping on that.
+  void mark_for_strip () { path = SimplePath::create_empty (); }
+  bool is_marked_for_strip () const { return path.is_empty (); }
+
+  // Returns whether the macro has been parsed already.
+  bool is_parsed () const { return parsed_to_meta_item; }
+  // TODO: update on other ways of parsing it
+
+  // TODO: this mutable getter seems kinda dodgy
+  DelimTokenTree &get_delim_tok_tree () { return token_tree; }
+  const DelimTokenTree &get_delim_tok_tree () const { return token_tree; }
+
+  // TODO: this mutable getter seems kinda dodgy
+  SimplePath &get_path () { return path; }
+  const SimplePath &get_path () const { return path; }
+
+  void
+  set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items)
+  {
+    parsed_items = std::move (new_items);
+  }
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items ()
+  {
+    return parsed_items;
+  }
+  const std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () const
+  {
+    return parsed_items;
+  }
+};
+
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
  * invocation) */
 class MacroInvocationSemi : public MacroItem,
@@ -1404,56 +1450,17 @@ class MacroInvocationSemi : public MacroItem,
 			    public ExternalItem
 {
   std::vector<Attribute> outer_attrs;
-  SimplePath path;
-  // all delim types except curly must have invocation end with a semicolon
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
+  MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
-		       std::vector<std::unique_ptr<TokenTree> > token_trees,
-		       std::vector<Attribute> outer_attribs, Location locus)
-    : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
-      delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
+  MacroInvocationSemi (MacroInvocData invoc_data,
+		       std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
+      invoc_data (std::move (invoc_data)), locus (locus)
   {}
-
-  // Copy constructor with vector clone
-  MacroInvocationSemi (MacroInvocationSemi const &other)
-    : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), outer_attrs (other.outer_attrs), path (other.path),
-      delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // Overloaded assignment operator to vector clone
-  MacroInvocationSemi &operator= (MacroInvocationSemi const &other)
-  {
-    MacroItem::operator= (other);
-    TraitItem::operator= (other);
-    InherentImplItem::operator= (other);
-    TraitImplItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    path = other.path;
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  // Move constructors
-  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
-  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1464,9 +1471,11 @@ public:
       clone_macro_invocation_semi_impl ());
   }
 
-  // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const override { return path.is_empty (); }
+  void mark_for_strip () override { invoc_data.mark_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return invoc_data.is_marked_for_strip ();
+  }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -1484,35 +1493,35 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_item_impl () const override
+  MacroInvocationSemi *clone_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_inherent_impl_item_impl () const override
+  MacroInvocationSemi *clone_inherent_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_trait_impl_item_impl () const override
+  MacroInvocationSemi *clone_trait_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_trait_item_impl () const override
+  MacroInvocationSemi *clone_trait_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocationSemi *clone_external_item_impl () const override
+  MacroInvocationSemi *clone_external_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
@@ -1593,20 +1602,6 @@ public:
 // Base path expression AST node - abstract
 class PathExpr : public ExprWithoutBlock
 {
-protected:
-  PathExpr (std::vector<Attribute> outer_attribs)
-    : ExprWithoutBlock (std::move (outer_attribs))
-  {}
-
-public:
-  // TODO: think of a better and less hacky way to allow this
-
-  /* Replaces the outer attributes of this path expression with the given outer
-   * attributes. */
-  void replace_outer_attrs (std::vector<Attribute> outer_attrs)
-  {
-    set_outer_attrs (std::move (outer_attrs));
-  }
 };
 } // namespace AST
 } // namespace Rust

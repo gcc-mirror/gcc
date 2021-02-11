@@ -316,6 +316,12 @@ class MacroRulesDefinition : public MacroItem
 
   Location locus;
 
+  /* NOTE: in rustc, macro definitions are considered (and parsed as) a type
+   * of macro, whereas here they are considered part of the language itself.
+   * I am not aware of the implications of this decision. The rustc spec does
+   * mention that using the same parser for macro definitions and invocations
+   * is "extremely self-referential and non-intuitive". */
+
 public:
   std::string as_string () const override;
 
@@ -354,49 +360,62 @@ class MacroInvocation : public TypeNoBounds,
 			public Pattern,
 			public ExprWithoutBlock
 {
-  SimplePath path;
-  DelimTokenTree token_tree;
+  std::vector<Attribute> outer_attrs;
+  MacroInvocData invoc_data;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  MacroInvocation (SimplePath path, DelimTokenTree token_tree,
+  MacroInvocation (MacroInvocData invoc_data,
 		   std::vector<Attribute> outer_attrs, Location locus)
-    : ExprWithoutBlock (std::move (outer_attrs)), path (std::move (path)),
-      token_tree (std::move (token_tree)), locus (locus)
+    : outer_attrs (std::move (outer_attrs)),
+      invoc_data (std::move (invoc_data)), locus (locus)
   {}
 
   Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
   // Invalid if path is empty, so base stripping on that.
-  void mark_for_strip () override { path = SimplePath::create_empty (); }
-  bool is_marked_for_strip () const override { return path.is_empty (); }
+  void mark_for_strip () override { invoc_data.mark_for_strip (); }
+  bool is_marked_for_strip () const override
+  {
+    return invoc_data.is_marked_for_strip ();
+  }
 
-  const SimplePath &get_path () const { return path; }
-  SimplePath &get_path () { return path; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_pattern_impl () const override
+  MacroInvocation *clone_pattern_impl () const final override
   {
-    return new MacroInvocation (*this);
+    return clone_macro_invocation_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_expr_without_block_impl () const override
+  MacroInvocation *clone_expr_without_block_impl () const final override
   {
-    return new MacroInvocation (*this);
+    return clone_macro_invocation_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  MacroInvocation *clone_type_no_bounds_impl () const override
+  MacroInvocation *clone_type_no_bounds_impl () const final override
+  {
+    return clone_macro_invocation_impl ();
+  }
+
+  /*virtual*/ MacroInvocation *clone_macro_invocation_impl () const
   {
     return new MacroInvocation (*this);
   }
@@ -514,6 +533,7 @@ protected:
 class MetaNameValueStr : public MetaItem
 {
   Identifier ident;
+  // NOTE: str stored without quotes
   std::string str;
 
 public:
@@ -521,7 +541,10 @@ public:
     : ident (std::move (ident)), str (std::move (str))
   {}
 
-  std::string as_string () const override { return ident + " = " + str; }
+  std::string as_string () const override
+  {
+    return ident + " = \"" + str + "\"";
+  }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -602,17 +625,70 @@ protected:
   }
 };
 
+/* Should be a tagged union to save space but implemented as struct due to
+ * technical difficulties. TODO: fix
+ * Basically, a single AST node used inside an AST fragment. */
+struct SingleASTNode
+{
+  std::unique_ptr<Expr> expr;
+  std::unique_ptr<Stmt> stmt;
+  std::unique_ptr<Item> item;
+  std::unique_ptr<Type> type;
+  std::unique_ptr<Pattern> pattern;
+  std::unique_ptr<TraitItem> trait_item;
+  std::unique_ptr<InherentImplItem> inherent_impl_item;
+  std::unique_ptr<TraitImplItem> trait_impl_item;
+  std::unique_ptr<ExternalItem> external_item;
+
+  SingleASTNode (std::unique_ptr<Expr> expr) : expr (std::move (expr)) {}
+  SingleASTNode (std::unique_ptr<Stmt> stmt) : stmt (std::move (stmt)) {}
+  SingleASTNode (std::unique_ptr<Item> item) : item (std::move (item)) {}
+  SingleASTNode (std::unique_ptr<Type> type) : type (std::move (type)) {}
+  SingleASTNode (std::unique_ptr<Pattern> pattern)
+    : pattern (std::move (pattern))
+  {}
+  SingleASTNode (std::unique_ptr<TraitItem> trait_item)
+    : trait_item (std::move (trait_item))
+  {}
+  SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item)
+    : inherent_impl_item (std::move (inherent_impl_item))
+  {}
+  SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item)
+    : trait_impl_item (std::move (trait_impl_item))
+  {}
+  SingleASTNode (std::unique_ptr<ExternalItem> external_item)
+    : external_item (std::move (external_item))
+  {}
+};
+
+/* Basically, a "fragment" that can be incorporated into the AST, created as
+ * a result of macro expansion. Really annoying to work with due to the fact
+ * that macros can really expand to anything. As such, horrible representation
+ * at the moment. */
+struct ASTFragment
+{
+private:
+  /* basic idea: essentially, a vector of tagged unions of different AST node
+   * types. Now, this could actually be stored without a tagged union if the
+   * different AST node types had a unified parent, but that would create
+   * issues with the diamond problem or significant performance penalties. So
+   * a tagged union had to be used instead. A vector is used to represent the
+   * ability for a macro to expand to two statements, for instance. */
+
+  std::vector<SingleASTNode> nodes;
+
+public:
+  ASTFragment (std::vector<SingleASTNode> nodes) : nodes (std::move (nodes)) {}
+};
+
 // Object that parses macros from a token stream.
 /* TODO: would "AttributeParser" be a better name? MetaItems are only for
  * attributes, I believe */
 struct MacroParser
 {
 private:
+  // TODO: might as well rewrite to use lexer tokens
   std::vector<std::unique_ptr<Token> > token_stream;
-  /* probably have to make this mutable (mutable int stream_pos) otherwise const
-   * has to be removed up to DelimTokenTree or further ok since this changing
-   * would have an effect on the results of the methods run (i.e. not logically
-   * const), the parsing methods shouldn't be const */
   int stream_pos;
 
 public:

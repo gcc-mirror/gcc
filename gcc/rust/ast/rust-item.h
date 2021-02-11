@@ -149,7 +149,7 @@ public:
   }
 
 protected:
-  // Clone function implementation as (not pure) virtual method
+  // Clone function implementation as virtual method
   TypeParam *clone_generic_param_impl () const override
   {
     return new TypeParam (*this);
@@ -891,17 +891,19 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  Method *clone_inherent_impl_item_impl () const override
+  Method *clone_inherent_impl_item_impl () const final override
   {
-    return new Method (*this);
+    return clone_method_impl ();
   }
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  Method *clone_trait_impl_item_impl () const override
+  Method *clone_trait_impl_item_impl () const final override
   {
-    return new Method (*this);
+    return clone_method_impl ();
   }
+
+  /*virtual*/ Method *clone_method_impl () const { return new Method (*this); }
 };
 
 // Item that supports visibility - abstract base class

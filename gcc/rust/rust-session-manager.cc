@@ -366,8 +366,11 @@ Session::enable_dump (std::string arg)
 {
   if (arg.empty ())
     {
-      rust_error_at (Location (), "dump option was not given a name. choose "
-				  "%<lex%>, %<parse%>, or %<target_options%>");
+      rust_error_at (
+	Location (),
+	"dump option was not given a name. choose %<lex%>, %<parse%>, "
+	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
+	" %<target_options%>, %<hir%>, or %<all%>");
       return false;
     }
 
@@ -401,11 +404,6 @@ Session::enable_dump (std::string arg)
     }
   else if (arg == "target_options")
     {
-      // special case - dump all target options, and then quit compilation
-      // nope, option handling called before init, so have to make this an
-      // actual compile option
-      // options.target_data.dump_target_options();
-      // return false;
       options.enable_dump_option (CompileOptions::TARGET_OPTION_DUMP);
     }
   else if (arg == "hir")
@@ -416,8 +414,9 @@ Session::enable_dump (std::string arg)
     {
       rust_error_at (
 	Location (),
-	"dump option %qs was unrecognised. choose %<lex%>, %<parse%>, or "
-	"%<target_options%>",
+	"dump option %qs was unrecognised. choose %<lex%>, %<parse%>, "
+	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
+	" %<target_options%>, or %<hir%>",
 	arg.c_str ());
       return false;
     }

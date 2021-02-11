@@ -792,7 +792,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 
 	// create actual LiteralExpr
 	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (),
-				   t->get_locus ());
+				   {}, t->get_locus ());
 
 	std::unique_ptr<AST::AttrInputLiteral> attr_input_lit (
 	  new AST::AttrInputLiteral (std::move (lit_expr)));
@@ -974,8 +974,7 @@ Parser<ManagedTokenSource>::parse_token_tree ()
     default:
       // parse token itself as TokenTree
       lexer.skip_token ();
-      // TODO: fix that token constructor, possibly with c++11 features
-      return std::unique_ptr<AST::Token> (new AST::Token (t));
+      return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
     }
 }
 
@@ -1531,6 +1530,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 		     t->get_token_description ());
       return nullptr;
     }
+  Location tok_tree_locus = t->get_locus ();
   lexer.skip_token ();
 
   // parse actual token trees
@@ -1556,6 +1556,10 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
       t = lexer.peek_token ();
     }
 
+  AST::DelimTokenTree delim_tok_tree (delim_type, std::move (token_trees),
+				      tok_tree_locus);
+  AST::MacroInvocData invoc_data (std::move (path), std::move (delim_tok_tree));
+
   // parse end delimiters
   t = lexer.peek_token ();
   if (token_id_matches_delims (t->get_id (), delim_type))
@@ -1570,8 +1574,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	    {
 	      // as this is the end, allow recovery (probably) - may change
 	      return std::unique_ptr<AST::MacroInvocationSemi> (
-		new AST::MacroInvocationSemi (std::move (path), delim_type,
-					      std::move (token_trees),
+		new AST::MacroInvocationSemi (std::move (invoc_data),
 					      std::move (outer_attrs),
 					      macro_locus));
 	    }
@@ -1584,8 +1587,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	       lexer.peek_token ()->get_token_description ());
 
       return std::unique_ptr<AST::MacroInvocationSemi> (
-	new AST::MacroInvocationSemi (std::move (path), delim_type,
-				      std::move (token_trees),
+	new AST::MacroInvocationSemi (std::move (invoc_data),
 				      std::move (outer_attrs), macro_locus));
     }
   else
@@ -1633,8 +1635,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation (
   Location macro_locus = macro_path.get_locus ();
 
   return std::unique_ptr<AST::MacroInvocation> (
-    new AST::MacroInvocation (std::move (macro_path),
-			      std::move (delim_tok_tree),
+    new AST::MacroInvocation (AST::MacroInvocData (std::move (macro_path),
+						   std::move (delim_tok_tree)),
 			      std::move (outer_attrs), macro_locus));
 }
 
@@ -1804,7 +1806,7 @@ Parser<ManagedTokenSource>::parse_macro_match ()
     default:
       // just the token
       lexer.skip_token ();
-      return std::unique_ptr<AST::Token> (new AST::Token (t));
+      return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
     }
 }
 
@@ -1912,7 +1914,7 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
       break;
     default:
       // separator does exist
-      separator = std::unique_ptr<AST::Token> (new AST::Token (t));
+      separator = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
       lexer.skip_token ();
       break;
     }
@@ -2664,9 +2666,9 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
-	new AST::LifetimeParam (std::move (lifetime), locus,
+	new AST::LifetimeParam (std::move (lifetime), 
 				std::move (lifetime_bounds),
-				std::move (outer_attr)));
+				std::move (outer_attr), locus));
       generic_params.push_back (std::move (param));
 
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -2840,9 +2842,9 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 	}
 
       std::unique_ptr<AST::LifetimeParam> param (
-	new AST::LifetimeParam (std::move (lifetime), locus,
+	new AST::LifetimeParam (std::move (lifetime),
 				std::move (lifetime_bounds),
-				std::move (outer_attr)));
+				std::move (outer_attr), locus));
       generic_params.push_back (std::move (param));
 
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -3165,9 +3167,9 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
       // TODO: have end token passed in?
     }
 
-  return AST::LifetimeParam (std::move (lifetime), lifetime_tok->get_locus (),
+  return AST::LifetimeParam (std::move (lifetime), 
 			     std::move (lifetime_bounds),
-			     std::move (outer_attr));
+			     std::move (outer_attr), lifetime_tok->get_locus ());
 }
 
 // Parses type generic parameters. Will also consume any trailing comma.
@@ -3692,13 +3694,11 @@ Parser<ManagedTokenSource>::parse_trait_bound ()
       lexer.skip_token ();
     }
 
-  // parse for lifetimes, if it exists (although empty for lifetimes is ok to
-  // handle this)
+  /* parse for lifetimes, if it exists (although empty for lifetimes is ok to
+   * handle this) */
   std::vector<AST::LifetimeParam> for_lifetimes;
   if (lexer.peek_token ()->get_id () == FOR)
-    {
       for_lifetimes = parse_for_lifetimes ();
-    }
 
   // handle TypePath
   AST::TypePath type_path = parse_type_path ();
@@ -6359,9 +6359,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression ()
 
   segments.shrink_to_fit ();
 
-  return AST::PathInExpression (std::move (segments), locus,
-				has_opening_scope_resolution,
-				std::vector<AST::Attribute> ());
+  return AST::PathInExpression (std::move (segments), {}, locus,
+				has_opening_scope_resolution);
 }
 
 /* Parses a single path in expression path segment (including generic
@@ -6474,8 +6473,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_expression (
 
   // FIXME: outer attr parsing
   return AST::QualifiedPathInExpression (std::move (qual_path_type),
-					 std::move (segments), locus,
-					 std::vector<AST::Attribute> ());
+					 std::move (segments), {}, locus);
 }
 
 // Parses the type syntactical construction at the start of a qualified path.
@@ -7375,8 +7373,8 @@ Parser<ManagedTokenSource>::parse_literal_expr (
   // create literal based on stuff in switch
   return std::unique_ptr<AST::LiteralExpr> (
     new AST::LiteralExpr (std::move (literal_value), std::move (type),
-			  t->get_type_hint (), t->get_locus (),
-			  std::move (outer_attrs)));
+			  t->get_type_hint (), std::move (outer_attrs),
+			  t->get_locus ()));
 }
 
 // Parses a return expression (including any expression to return).
@@ -7406,8 +7404,8 @@ Parser<ManagedTokenSource>::parse_return_expr (
     = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::ReturnExpr> (
-    new AST::ReturnExpr (locus, std::move (returned_expr),
-			 std::move (outer_attrs)));
+    new AST::ReturnExpr (std::move (returned_expr), std::move (outer_attrs),
+			 locus));
 }
 
 /* Parses a break expression (including any label to break to AND any return
@@ -7445,8 +7443,8 @@ Parser<ManagedTokenSource>::parse_break_expr (
     = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::BreakExpr> (
-    new AST::BreakExpr (locus, std::move (label), std::move (return_expr),
-			std::move (outer_attrs)));
+    new AST::BreakExpr (std::move (label), std::move (return_expr),
+			std::move (outer_attrs), locus));
 }
 
 // Parses a continue expression (including any label to continue from).
@@ -7477,7 +7475,7 @@ Parser<ManagedTokenSource>::parse_continue_expr (
     }
 
   return std::unique_ptr<AST::ContinueExpr> (
-    new AST::ContinueExpr (locus, std::move (label), std::move (outer_attrs)));
+    new AST::ContinueExpr (std::move (label), std::move (outer_attrs), locus));
 }
 
 // Parses a loop label used in loop expressions.
@@ -7511,7 +7509,7 @@ Parser<ManagedTokenSource>::parse_loop_label ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfExpr>
 Parser<ManagedTokenSource>::parse_if_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED, bool pratt_parse)
+  std::vector<AST::Attribute> outer_attrs, bool pratt_parse)
 {
   // TODO: make having outer attributes an error?
   Location locus = Linemap::unknown_location ();
@@ -7543,8 +7541,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
    * parsed */
   ParseRestrictions no_struct_expr;
   no_struct_expr.can_be_struct_expr = false;
-  std::unique_ptr<AST::Expr> condition
-    = parse_expr (std::vector<AST::Attribute> (), no_struct_expr);
+  std::unique_ptr<AST::Expr> condition = parse_expr ({}, no_struct_expr);
   if (condition == nullptr)
     {
       rust_error_at (lexer.peek_token ()->get_locus (),
@@ -7569,7 +7566,8 @@ Parser<ManagedTokenSource>::parse_if_expr (
     {
       // single selection - end of if expression
       return std::unique_ptr<AST::IfExpr> (
-	new AST::IfExpr (std::move (condition), std::move (if_body), locus));
+	new AST::IfExpr (std::move (condition), std::move (if_body),
+			 std::move (outer_attrs), locus));
     }
   else
     {
@@ -7598,7 +7596,8 @@ Parser<ManagedTokenSource>::parse_if_expr (
 	    return std::unique_ptr<AST::IfExprConseqElse> (
 	      new AST::IfExprConseqElse (std::move (condition),
 					 std::move (if_body),
-					 std::move (else_body), locus));
+					 std::move (else_body),
+					 std::move (outer_attrs), locus));
 	  }
 	  case IF: {
 	    // multiple selection - else if or else if let
@@ -7620,7 +7619,8 @@ Parser<ManagedTokenSource>::parse_if_expr (
 		return std::unique_ptr<AST::IfExprConseqIfLet> (
 		  new AST::IfExprConseqIfLet (std::move (condition),
 					      std::move (if_body),
-					      std::move (if_let_expr), locus));
+					      std::move (if_let_expr),
+					      std::move (outer_attrs), locus));
 	      }
 	    else
 	      {
@@ -7638,7 +7638,8 @@ Parser<ManagedTokenSource>::parse_if_expr (
 		return std::unique_ptr<AST::IfExprConseqIf> (
 		  new AST::IfExprConseqIf (std::move (condition),
 					   std::move (if_body),
-					   std::move (if_expr), locus));
+					   std::move (if_expr),
+					   std::move (outer_attrs), locus));
 	      }
 	  }
 	default:
@@ -7658,7 +7659,7 @@ Parser<ManagedTokenSource>::parse_if_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfLetExpr>
 Parser<ManagedTokenSource>::parse_if_let_expr (
-  std::vector<AST::Attribute> outer_attrs ATTRIBUTE_UNUSED, bool pratt_parse)
+  std::vector<AST::Attribute> outer_attrs, bool pratt_parse)
 {
   // TODO: make having outer attributes an error?
   Location locus = Linemap::unknown_location ();
@@ -7708,8 +7709,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
   // parse expression (required) - HACK to prevent struct expr being parsed
   ParseRestrictions no_struct_expr;
   no_struct_expr.can_be_struct_expr = false;
-  std::unique_ptr<AST::Expr> scrutinee_expr
-    = parse_expr (std::vector<AST::Attribute> (), no_struct_expr);
+  std::unique_ptr<AST::Expr> scrutinee_expr = parse_expr ({}, no_struct_expr);
   if (scrutinee_expr == nullptr)
     {
       rust_error_at (
@@ -7739,7 +7739,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
       return std::unique_ptr<AST::IfLetExpr> (
 	new AST::IfLetExpr (std::move (match_arm_patterns),
 			    std::move (scrutinee_expr), std::move (if_let_body),
-			    locus));
+			    std::move (outer_attrs), locus));
     }
   else
     {
@@ -7769,7 +7769,8 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 	      new AST::IfLetExprConseqElse (std::move (match_arm_patterns),
 					    std::move (scrutinee_expr),
 					    std::move (if_let_body),
-					    std::move (else_body), locus));
+					    std::move (else_body),
+					    std::move (outer_attrs), locus));
 	  }
 	  case IF: {
 	    // multiple selection - else if or else if let
@@ -7791,7 +7792,8 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 		return std::unique_ptr<AST::IfLetExprConseqIfLet> (
 		  new AST::IfLetExprConseqIfLet (
 		    std::move (match_arm_patterns), std::move (scrutinee_expr),
-		    std::move (if_let_body), std::move (if_let_expr), locus));
+		    std::move (if_let_body), std::move (if_let_expr),
+		    std::move (outer_attrs), locus));
 	      }
 	    else
 	      {
@@ -7810,7 +7812,8 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 		  new AST::IfLetExprConseqIf (std::move (match_arm_patterns),
 					      std::move (scrutinee_expr),
 					      std::move (if_let_body),
-					      std::move (if_expr), locus));
+					      std::move (if_expr),
+					      std::move (outer_attrs), locus));
 	      }
 	  }
 	default:
@@ -8887,10 +8890,10 @@ Parser<ManagedTokenSource>::parse_type ()
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
 	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (std::move (macro_path),
-					  std::move (tok_tree),
-					  std::vector<AST::Attribute> (),
-					  locus));
+		new AST::MacroInvocation (
+		  AST::MacroInvocData (std::move (macro_path),
+				       std::move (tok_tree)),
+		  {}, locus));
 	    }
 	    case PLUS: {
 	      // type param bounds
@@ -9690,10 +9693,10 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 	      AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
 	      return std::unique_ptr<AST::MacroInvocation> (
-		new AST::MacroInvocation (std::move (macro_path),
-					  std::move (tok_tree),
-					  std::vector<AST::Attribute> (),
-					  locus));
+		new AST::MacroInvocation (
+		  AST::MacroInvocData (std::move (macro_path),
+				       std::move (tok_tree)),
+		  {}, locus));
 	    }
 	    case PLUS: {
 	      // type param bounds - not allowed, here for error message
@@ -11465,25 +11468,25 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	     * fixed up via HACKs in semantic analysis (by checking whether it
 	     * is the last elem in the vector). */
 
+	    AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
+						tok_tree_loc);
+	    AST::MacroInvocData invoc_data (std::move (macro_path),
+					    std::move (delim_tok_tree));
+
 	    if (lexer.peek_token ()->get_id () == SEMICOLON)
 	      {
 		lexer.skip_token ();
 
 		std::unique_ptr<AST::MacroInvocationSemi> stmt (
-		  new AST::MacroInvocationSemi (std::move (macro_path), type,
-						std::move (token_trees),
+		  new AST::MacroInvocationSemi (std::move (invoc_data),
 						std::move (outer_attrs),
 						stmt_or_expr_loc));
 		return ExprOrStmt (std::move (stmt));
 	      }
 
 	    // otherwise, create macro invocation
-	    AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-						tok_tree_loc);
-
 	    std::unique_ptr<AST::MacroInvocation> expr (
-	      new AST::MacroInvocation (std::move (macro_path),
-					std::move (delim_tok_tree),
+	      new AST::MacroInvocation (std::move (invoc_data),
 					std::move (outer_attrs),
 					stmt_or_expr_loc));
 	    return ExprOrStmt (std::move (expr));
@@ -11491,14 +11494,12 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	else
 	  {
 	    // tokens don't match opening delimiters, so produce error
-	    rust_error_at (t2->get_locus (),
-			   "unexpected token %qs - expecting closing "
-			   "delimiter %qs (for a "
-			   "macro invocation)",
-			   t2->get_token_description (),
-			   (type == AST::PARENS
-			      ? ")"
-			      : (type == AST::SQUARE ? "]" : "}")));
+	    rust_error_at (
+	      t2->get_locus (),
+	      "unexpected token %qs - expecting closing delimiter %qs (for a "
+	      "macro invocation)",
+	      t2->get_token_description (),
+	      (type == AST::PARENS ? ")" : (type == AST::SQUARE ? "]" : "}")));
 	    return ExprOrStmt::create_error ();
 	  }
       }
@@ -11535,7 +11536,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	    // lexer.skip_token();
 
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    expr = std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -11586,7 +11587,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	// lexer.skip_token();
 
 	// HACK: replace outer attributes in path
-	path.replace_outer_attrs (std::move (outer_attrs));
+	path.set_outer_attrs (std::move (outer_attrs));
 	std::unique_ptr<AST::PathInExpression> expr (
 	  new AST::PathInExpression (std::move (path)));
 
@@ -11765,25 +11766,25 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
        * HACKs in semantic analysis (by checking whether it is the last elem in
        * the vector). */
 
+      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
+					  tok_tree_loc);
+      AST::MacroInvocData invoc_data (std::move (macro_path),
+				      std::move (delim_tok_tree));
+
       if (lexer.peek_token ()->get_id () == SEMICOLON)
 	{
 	  lexer.skip_token ();
 
 	  std::unique_ptr<AST::MacroInvocationSemi> stmt (
-	    new AST::MacroInvocationSemi (std::move (macro_path), type,
-					  std::move (token_trees),
+	    new AST::MacroInvocationSemi (std::move (invoc_data),
 					  std::move (outer_attrs),
 					  macro_locus));
 	  return ExprOrStmt (std::move (stmt));
 	}
 
       // otherwise, create macro invocation
-      AST::DelimTokenTree delim_tok_tree (type, std::move (token_trees),
-					  tok_tree_loc);
-
       std::unique_ptr<AST::MacroInvocation> expr (
-	new AST::MacroInvocation (std::move (macro_path),
-				  std::move (delim_tok_tree),
+	new AST::MacroInvocation (std::move (invoc_data),
 				  std::move (outer_attrs), macro_locus));
       return ExprOrStmt (std::move (expr));
     }
@@ -12095,11 +12096,11 @@ Parser<ManagedTokenSource>::null_denotation (
 		      /* HACK: may have to become permanent, but this is my
 		       * current identifier expression */
 		      return std::unique_ptr<AST::IdentifierExpr> (
-			new AST::IdentifierExpr (tok->get_str (),
+			new AST::IdentifierExpr (tok->get_str (), {},
 						 tok->get_locus ()));
 		    }
 		  // HACK: add outer attrs to path
-		  path.replace_outer_attrs (std::move (outer_attrs));
+		  path.set_outer_attrs (std::move (outer_attrs));
 		  return std::unique_ptr<AST::PathInExpression> (
 		    new AST::PathInExpression (std::move (path)));
 		}
@@ -12117,11 +12118,11 @@ Parser<ManagedTokenSource>::null_denotation (
 		    /* HACK: may have to become permanent, but this is my
 		     * current identifier expression */
 		    return std::unique_ptr<AST::IdentifierExpr> (
-		      new AST::IdentifierExpr (tok->get_str (),
+		      new AST::IdentifierExpr (tok->get_str (), {},
 					       tok->get_locus ()));
 		  }
 		// HACK: add outer attrs to path
-		path.replace_outer_attrs (std::move (outer_attrs));
+		path.set_outer_attrs (std::move (outer_attrs));
 		return std::unique_ptr<AST::PathInExpression> (
 		  new AST::PathInExpression (std::move (path)));
 	      }
@@ -12135,10 +12136,11 @@ Parser<ManagedTokenSource>::null_denotation (
 		/* HACK: may have to become permanent, but this is my current
 		 * identifier expression */
 		return std::unique_ptr<AST::IdentifierExpr> (
-		  new AST::IdentifierExpr (tok->get_str (), tok->get_locus ()));
+		  new AST::IdentifierExpr (tok->get_str (), {},
+					   tok->get_locus ()));
 	      }
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -12153,33 +12155,35 @@ Parser<ManagedTokenSource>::null_denotation (
 	// HACK: add outer attrs to path
 	AST::QualifiedPathInExpression path
 	  = parse_qualified_path_in_expression (true);
-	path.replace_outer_attrs (std::move (outer_attrs));
+	path.set_outer_attrs (std::move (outer_attrs));
 	return std::unique_ptr<AST::QualifiedPathInExpression> (
 	  new AST::QualifiedPathInExpression (std::move (path)));
       }
+    // FIXME: for literal exprs, should outer attrs be passed in or just
+    // ignored?
     case INT_LITERAL:
       // we should check the range, but ignore for now
       // encode as int?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::INT,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case FLOAT_LITERAL:
       // encode as float?
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::FLOAT,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case STRING_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::STRING,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
     case TRUE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("true", AST::Literal::BOOL, tok->get_type_hint (),
-			      tok->get_locus ()));
+			      {}, tok->get_locus ()));
     case FALSE_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr ("false", AST::Literal::BOOL,
-			      tok->get_type_hint (), tok->get_locus ()));
+			      tok->get_type_hint (), {}, tok->get_locus ()));
       case LEFT_PAREN: { // have to parse whole expression if inside brackets
 	/* recursively invoke parse_expression with lowest priority possible as
 	 * it it were a top-level expression. */
@@ -12218,8 +12222,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_MINUS, std::vector<AST::Attribute> (),
-			entered_from_unary);
+	  = parse_expr (LBP_UNARY_MINUS, {}, entered_from_unary);
 
 	if (expr == nullptr)
 	  return nullptr;
@@ -12243,8 +12246,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_EXCLAM, std::vector<AST::Attribute> (),
-			entered_from_unary);
+	  = parse_expr (LBP_UNARY_EXCLAM, {}, entered_from_unary);
 
 	if (expr == nullptr)
 	  return nullptr;
@@ -12270,8 +12272,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	entered_from_unary.entered_from_unary = true;
 	entered_from_unary.can_be_struct_expr = false;
 	std::unique_ptr<AST::Expr> expr
-	  = parse_expr (LBP_UNARY_ASTERISK, std::vector<AST::Attribute> (),
-			entered_from_unary);
+	  = parse_expr (LBP_UNARY_ASTERISK, {}, entered_from_unary);
 	// FIXME: allow outer attributes on expression
 	return std::unique_ptr<AST::DereferenceExpr> (
 	  new AST::DereferenceExpr (std::move (expr), std::move (outer_attrs),
@@ -12291,15 +12292,12 @@ Parser<ManagedTokenSource>::null_denotation (
 	if (lexer.peek_token ()->get_id () == MUT)
 	  {
 	    lexer.skip_token ();
-	    expr
-	      = parse_expr (LBP_UNARY_AMP_MUT, std::vector<AST::Attribute> (),
-			    entered_from_unary);
+	    expr = parse_expr (LBP_UNARY_AMP_MUT, {}, entered_from_unary);
 	    is_mut_borrow = true;
 	  }
 	else
 	  {
-	    expr = parse_expr (LBP_UNARY_AMP, std::vector<AST::Attribute> (),
-			       entered_from_unary);
+	    expr = parse_expr (LBP_UNARY_AMP, {}, entered_from_unary);
 	  }
 
 	// FIXME: allow outer attributes on expression
@@ -12318,15 +12316,12 @@ Parser<ManagedTokenSource>::null_denotation (
 	if (lexer.peek_token ()->get_id () == MUT)
 	  {
 	    lexer.skip_token ();
-	    expr
-	      = parse_expr (LBP_UNARY_AMP_MUT, std::vector<AST::Attribute> (),
-			    entered_from_unary);
+	    expr = parse_expr (LBP_UNARY_AMP_MUT, {}, entered_from_unary);
 	    is_mut_borrow = true;
 	  }
 	else
 	  {
-	    expr = parse_expr (LBP_UNARY_AMP, std::vector<AST::Attribute> (),
-			       entered_from_unary);
+	    expr = parse_expr (LBP_UNARY_AMP, {}, entered_from_unary);
 	  }
 
 	// FIXME: allow outer attributes on expression
@@ -12364,7 +12359,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	if (tok->get_id () == SELF && path.is_single_segment ())
 	  {
 	    // HACK: add outer attrs to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -12394,7 +12389,7 @@ Parser<ManagedTokenSource>::null_denotation (
 		{
 		  // assume path is returned
 		  // HACK: add outer attributes to path
-		  path.replace_outer_attrs (std::move (outer_attrs));
+		  path.set_outer_attrs (std::move (outer_attrs));
 		  return std::unique_ptr<AST::PathInExpression> (
 		    new AST::PathInExpression (std::move (path)));
 		}
@@ -12407,7 +12402,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	      {
 		// assume path is returned
 		// HACK: add outer attributes to path
-		path.replace_outer_attrs (std::move (outer_attrs));
+		path.set_outer_attrs (std::move (outer_attrs));
 		return std::unique_ptr<AST::PathInExpression> (
 		  new AST::PathInExpression (std::move (path)));
 	      }
@@ -12416,7 +12411,7 @@ Parser<ManagedTokenSource>::null_denotation (
 	  default:
 	    // assume path is returned
 	    // HACK: add outer attributes to path
-	    path.replace_outer_attrs (std::move (outer_attrs));
+	    path.set_outer_attrs (std::move (outer_attrs));
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
@@ -14011,7 +14006,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
   Location macro_locus = converted_path.get_locus ();
 
   return std::unique_ptr<AST::MacroInvocation> (
-    new AST::MacroInvocation (std::move (converted_path), std::move (tok_tree),
+    new AST::MacroInvocation (AST::MacroInvocData (std::move (converted_path),
+						   std::move (tok_tree)),
 			      std::move (outer_attrs), macro_locus));
 }
 
@@ -14178,9 +14174,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
       exprs.push_back (std::move (expr));
 
       if (lexer.peek_token ()->get_id () != COMMA)
-	{
-	  break;
-	}
+	break;
+
       lexer.skip_token ();
 
       t = lexer.peek_token ();
@@ -14306,7 +14301,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
     "current token (just about to return path to null denotation): '%s'\n",
     lexer.peek_token ()->get_token_description ());
 
-  return AST::PathInExpression (std::move (segments), tok->get_locus (), false);
+  return AST::PathInExpression (std::move (segments), {}, tok->get_locus (),
+				false);
 }
 
 // Parses a closure expression with pratt parsing (from null denotation).
