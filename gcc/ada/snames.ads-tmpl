@@ -146,6 +146,7 @@ package Snames is
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
    Name_No_Controlled_Parts            : constant Name_Id := N + $;
+   Name_No_Task_Parts                  : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;

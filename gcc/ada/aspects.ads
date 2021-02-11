@@ -117,6 +117,7 @@ package Aspects is
       Aspect_Max_Queue_Length,              -- GNAT
       Aspect_No_Caching,                    -- GNAT
       Aspect_No_Controlled_Parts,
+      Aspect_No_Task_Parts,                 -- GNAT
       Aspect_Object_Size,                   -- GNAT
       Aspect_Obsolescent,                   -- GNAT
       Aspect_Output,
@@ -405,6 +406,7 @@ package Aspects is
       Aspect_Max_Queue_Length           => Expression,
       Aspect_No_Caching                 => Optional_Expression,
       Aspect_No_Controlled_Parts        => Optional_Expression,
+      Aspect_No_Task_Parts              => Optional_Expression,
       Aspect_Object_Size                => Expression,
       Aspect_Obsolescent                => Optional_Expression,
       Aspect_Output                     => Name,
@@ -508,6 +510,7 @@ package Aspects is
       Aspect_Max_Queue_Length             => False,
       Aspect_No_Caching                   => False,
       Aspect_No_Controlled_Parts          => False,
+      Aspect_No_Task_Parts                => False,
       Aspect_Object_Size                  => True,
       Aspect_Obsolescent                  => False,
       Aspect_Output                       => False,
@@ -670,6 +673,7 @@ package Aspects is
       Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Caching                   => Name_No_Caching,
       Aspect_No_Controlled_Parts          => Name_No_Controlled_Parts,
+      Aspect_No_Task_Parts                => Name_No_Task_Parts,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Inline                    => Name_No_Inline,
       Aspect_No_Return                    => Name_No_Return,
@@ -965,6 +969,7 @@ package Aspects is
       Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Caching                   => Never_Delay,
       Aspect_No_Controlled_Parts          => Never_Delay,
+      Aspect_No_Task_Parts                => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
       Aspect_No_Tagged_Streams            => Never_Delay,
       Aspect_Obsolescent                  => Never_Delay,

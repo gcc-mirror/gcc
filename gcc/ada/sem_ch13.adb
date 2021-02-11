@@ -3944,9 +3944,9 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
-               --  No_Controlled_Parts
+               --  No_Controlled_Parts, No_Task_Parts
 
-               when Aspect_No_Controlled_Parts =>
+               when Aspect_No_Controlled_Parts | Aspect_No_Task_Parts =>
 
                   --  Check appropriate type argument
 
@@ -11086,6 +11086,7 @@ package body Sem_Ch13 is
             | Aspect_Max_Queue_Length
             | Aspect_No_Caching
             | Aspect_No_Controlled_Parts
+            | Aspect_No_Task_Parts
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post
