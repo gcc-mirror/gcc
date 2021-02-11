@@ -1127,7 +1127,9 @@
 ;; Return 1 if this operand is valid for a MMA assemble accumulator insn.
 (define_special_predicate "mma_assemble_input_operand"
   (match_test "(mode == V16QImode
-		&& (vsx_register_operand (op, mode) || MEM_P (op)))"))
+		&& (vsx_register_operand (op, mode)
+		    || (MEM_P (op)
+			&& quad_address_p (XEXP (op, 0), mode, false))))"))
 
 ;; Return true if operand is an operator used in rotate-and-mask instructions.
 (define_predicate "rotate_mask_operator"
