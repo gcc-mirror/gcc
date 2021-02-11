@@ -326,6 +326,10 @@ public:
 					   Bstatement *except_stmt,
 					   Bstatement *finally_stmt, Location);
 
+  Bexpression *loop_expression (Bblock *body, Location);
+
+  Bexpression *exit_expression (Bexpression *condition, Location);
+
   // Blocks.
 
   Bblock *block (Bfunction *, Bblock *, const std::vector<Bvariable *> &,
@@ -2199,6 +2203,25 @@ Gcc_backend::if_statement (Bfunction *, Bexpression *condition,
   tree ret = build3_loc (location.gcc_location (), COND_EXPR, void_type_node,
 			 cond_tree, then_tree, else_tree);
   return this->make_statement (ret);
+}
+
+// Loops
+
+Bexpression *
+Gcc_backend::loop_expression (Bblock *body, Location locus)
+{
+  tree loop_expr_tree = fold_build1_loc (locus.gcc_location (), LOOP_EXPR,
+					 void_type_node, body->get_tree ());
+  return this->make_expression (loop_expr_tree);
+}
+
+Bexpression *
+Gcc_backend::exit_expression (Bexpression *condition, Location locus)
+{
+  tree cond_tree = condition->get_tree ();
+  tree exit_expr_tree = fold_build1_loc (locus.gcc_location (), EXIT_EXPR,
+					 void_type_node, cond_tree);
+  return this->make_expression (exit_expr_tree);
 }
 
 // Switch.

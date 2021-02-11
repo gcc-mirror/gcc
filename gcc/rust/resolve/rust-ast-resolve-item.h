@@ -88,8 +88,10 @@ public:
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
     resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
     resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly
@@ -111,6 +113,7 @@ public:
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
   }
 
   void visit (AST::InherentImpl &impl_block)

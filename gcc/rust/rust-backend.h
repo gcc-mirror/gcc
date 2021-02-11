@@ -425,6 +425,12 @@ public:
 				    Location)
     = 0;
 
+  // infinite loop expressions
+  virtual Bexpression *loop_expression (Bblock *body, Location);
+
+  // exit expressions
+  virtual Bexpression *exit_expression (Bexpression *condition, Location);
+
   // Create a switch statement where the case values are constants.
   // CASES and STATEMENTS must have the same number of entries.  If
   // VALUE matches any of the list in CASES[i], which will all be

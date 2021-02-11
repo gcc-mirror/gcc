@@ -75,23 +75,12 @@ public:
     auto expected_ret_tyty = resolve_fn_type->return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    TypeCheckExpr::Resolve (function.function_body.get ());
-    if (function.function_body->has_expr ())
-      {
-	auto resolved
-	  = TypeCheckExpr::Resolve (function.function_body->expr.get ());
+    auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
+    auto ret_resolved = expected_ret_tyty->combine (result);
+    if (ret_resolved == nullptr)
+      return;
 
-	auto ret_resolved = expected_ret_tyty->combine (resolved);
-	if (ret_resolved == nullptr)
-	  {
-	    rust_error_at (function.function_body->expr->get_locus_slow (),
-			   "failed to resolve final expression");
-	    return;
-	  }
-
-	context->peek_return_type ()->append_reference (
-	  ret_resolved->get_ref ());
-      }
+    context->peek_return_type ()->append_reference (ret_resolved->get_ref ());
 
     context->pop_return_type ();
   }

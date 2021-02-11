@@ -460,6 +460,12 @@ Mappings::walk_local_defids_for_crate (CrateNum crateNum,
     }
 }
 
+void
+Mappings::insert_node_to_hir (CrateNum crate, NodeId id, HirId ref)
+{
+  nodeIdToHirMappings[crate][id] = ref;
+}
+
 bool
 Mappings::lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref)
 {

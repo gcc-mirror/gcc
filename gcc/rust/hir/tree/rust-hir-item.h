@@ -324,7 +324,8 @@ public:
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     bool is_mut, Location locus)
-    : has_ref (false), is_mut (is_mut), lifetime (Lifetime::error ()),
+    : has_ref (false), is_mut (is_mut),
+      lifetime (Lifetime (mappings, Lifetime::LifetimeType::NAMED, "", locus)),
       type (std::move (type)), locus (locus), mappings (mappings)
   {}
 

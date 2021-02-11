@@ -386,6 +386,8 @@ Parser<ManagedTokenSource>::left_binding_power (const_TokenPtr token)
       return LBP_MOD_ASSIG;
     case AMP_EQ:
       return LBP_AMP_ASSIG;
+    case PIPE_EQ:
+      return LBP_PIPE_ASSIG;
     case CARET_EQ:
       return LBP_CARET_ASSIG;
     case LEFT_SHIFT_EQ:
@@ -7396,8 +7398,10 @@ Parser<ManagedTokenSource>::parse_return_expr (
     }
 
   // parse expression to return, if it exists
-  std::unique_ptr<AST::Expr> returned_expr = parse_expr ();
-  // FIXME: ensure this doesn't ruin the middle of any expressions or anything
+  ParseRestrictions restrictions;
+  restrictions.expr_can_be_null = true;
+  std::unique_ptr<AST::Expr> returned_expr
+    = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::ReturnExpr> (
     new AST::ReturnExpr (std::move (returned_expr), std::move (outer_attrs),
@@ -7433,7 +7437,10 @@ Parser<ManagedTokenSource>::parse_break_expr (
     }
 
   // parse break return expression if it exists
-  std::unique_ptr<AST::Expr> return_expr = parse_expr ();
+  ParseRestrictions restrictions;
+  restrictions.expr_can_be_null = true;
+  std::unique_ptr<AST::Expr> return_expr
+    = parse_expr (std::vector<AST::Attribute> (), restrictions);
 
   return std::unique_ptr<AST::BreakExpr> (
     new AST::BreakExpr (std::move (label), std::move (return_expr),
@@ -7502,10 +7509,23 @@ Parser<ManagedTokenSource>::parse_loop_label ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfExpr>
 Parser<ManagedTokenSource>::parse_if_expr (
-  std::vector<AST::Attribute> outer_attrs)
+  std::vector<AST::Attribute> outer_attrs, bool pratt_parse)
 {
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (IF);
+  // TODO: make having outer attributes an error?
+  Location locus = Linemap::unknown_location ();
+  if (!pratt_parse)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      if (!skip_token (IF))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
+  else
+    {
+      locus = lexer.peek_token ()->get_locus () - 1;
+    }
 
   // detect accidental if let
   if (lexer.peek_token ()->get_id () == LET)
@@ -7639,10 +7659,23 @@ Parser<ManagedTokenSource>::parse_if_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::IfLetExpr>
 Parser<ManagedTokenSource>::parse_if_let_expr (
-  std::vector<AST::Attribute> outer_attrs)
+  std::vector<AST::Attribute> outer_attrs, bool pratt_parse)
 {
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (IF);
+  // TODO: make having outer attributes an error?
+  Location locus = Linemap::unknown_location ();
+  if (!pratt_parse)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      if (!skip_token (IF))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
+  else
+    {
+      locus = lexer.peek_token ()->get_locus () - 1;
+    }
 
   // detect accidental if expr parsed as if let expr
   if (lexer.peek_token ()->get_id () != LET)
@@ -7802,14 +7835,30 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::LoopExpr>
 Parser<ManagedTokenSource>::parse_loop_expr (
-  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label)
+  std::vector<AST::Attribute> outer_attrs, AST::LoopLabel label,
+  bool pratt_parse)
 {
   Location locus = Linemap::unknown_location ();
-  if (label.is_error ())
-    locus = lexer.peek_token ()->get_locus ();
+  if (!pratt_parse)
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus ();
+      else
+	locus = label.get_locus ();
+
+      if (!skip_token (LOOP))
+	{
+	  skip_after_end_block ();
+	  return nullptr;
+	}
+    }
   else
-    locus = label.get_locus ();
-  skip_token (LOOP);
+    {
+      if (label.is_error ())
+	locus = lexer.peek_token ()->get_locus () - 1;
+      else
+	locus = label.get_locus ();
+    }
 
   // parse loop body, which is required
   std::unique_ptr<AST::BlockExpr> loop_body = parse_block_expr ();
@@ -12390,6 +12439,21 @@ Parser<ManagedTokenSource>::null_denotation (
     case LEFT_CURLY:
       // ok - this is an expression with block for once.
       return parse_block_expr (std::move (outer_attrs), true);
+    case IF:
+      // if or if let, so more lookahead to find out
+      if (lexer.peek_token (1)->get_id () == LET)
+	{
+	  // if let expr
+	  return parse_if_let_expr (std::move (outer_attrs), true);
+	}
+      else
+	{
+	  // if expr
+	  return parse_if_expr (std::move (outer_attrs), true);
+	}
+    case LOOP:
+      return parse_loop_expr (std::move (outer_attrs), AST::LoopLabel::error (),
+			      true);
     case MATCH_TOK:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), true);
@@ -12397,9 +12461,10 @@ Parser<ManagedTokenSource>::null_denotation (
       // array definition expr (not indexing)
       return parse_array_expr (std::move (outer_attrs), true);
     default:
-      rust_error_at (tok->get_locus (),
-		     "found unexpected token %qs in null denotation",
-		     tok->get_token_description ());
+      if (!restrictions.expr_can_be_null)
+	rust_error_at (tok->get_locus (),
+		       "found unexpected token %qs in null denotation",
+		       tok->get_token_description ());
       return nullptr;
     }
 }
@@ -14415,7 +14480,7 @@ Parser<ManagedTokenSource>::done_end ()
 // Dumps lexer output to stderr.
 template <typename ManagedTokenSource>
 void
-Parser<ManagedTokenSource>::debug_dump_lex_output ()
+Parser<ManagedTokenSource>::debug_dump_lex_output (std::ostream &out)
 {
   /* TODO: a better implementation of "lexer dump" (as in dump what was actually
    * tokenised) would actually be to "write" a token to a file every time
@@ -14426,6 +14491,9 @@ Parser<ManagedTokenSource>::debug_dump_lex_output ()
 
   while (true)
     {
+      if (tok->get_id () == Rust::END_OF_FILE)
+	break;
+
       bool has_text = tok->get_id () == Rust::IDENTIFIER
 		      || tok->get_id () == Rust::INT_LITERAL
 		      || tok->get_id () == Rust::FLOAT_LITERAL
@@ -14436,16 +14504,13 @@ Parser<ManagedTokenSource>::debug_dump_lex_output ()
 
       Location loc = tok->get_locus ();
 
-      fprintf (stderr, "<id=%s%s, %s\n", tok->token_id_to_str (),
-	       has_text ? (std::string (", text=") + tok->get_str ()
-			   + std::string (", typehint=")
-			   + std::string (tok->get_type_hint_str ()))
-			    .c_str ()
-			: "",
-	       lexer.get_line_map ()->to_string (loc).c_str ());
-
-      if (tok->get_id () == Rust::END_OF_FILE)
-	break;
+      out << "<id=";
+      out << tok->token_id_to_str ();
+      out << has_text ? (std::string (", text=") + tok->get_str ()
+			 + std::string (", typehint=")
+			 + std::string (tok->get_type_hint_str ()))
+		      : "";
+      out << lexer.get_line_map ()->to_string (loc);
 
       lexer.skip_token ();
       tok = lexer.peek_token ();
@@ -14455,9 +14520,9 @@ Parser<ManagedTokenSource>::debug_dump_lex_output ()
 // Parses crate and dumps AST to stderr, recursively.
 template <typename ManagedTokenSource>
 void
-Parser<ManagedTokenSource>::debug_dump_ast_output (AST::Crate &crate)
+Parser<ManagedTokenSource>::debug_dump_ast_output (AST::Crate &crate,
+						   std::ostream &out)
 {
-  // print crate "as string", which then calls each item as string, etc.
-  fprintf (stderr, "%s", crate.as_string ().c_str ());
+  out << crate.as_string ();
 }
 } // namespace Rust

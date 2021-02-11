@@ -2712,8 +2712,7 @@ public:
   bool has_label () const { return !label.is_error (); }
 
   // Constructor for a ContinueExpr with a label.
-  ContinueExpr (Analysis::NodeMapping mappings, Location locus,
-		Lifetime label = Lifetime::error (),
+  ContinueExpr (Analysis::NodeMapping mappings, Location locus, Lifetime label,
 		std::vector<Attribute> outer_attribs
 		= std::vector<Attribute> ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
@@ -2765,7 +2764,7 @@ public:
 
   // Constructor for a break expression
   BreakExpr (Analysis::NodeMapping mappings, Location locus,
-	     Lifetime break_label = Lifetime::error (),
+	     Lifetime break_label,
 	     std::unique_ptr<Expr> expr_in_break = nullptr,
 	     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
@@ -2802,6 +2801,10 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Lifetime &get_label () { return label; }
+
+  std::unique_ptr<Expr> &get_expr () { return break_expr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3266,20 +3269,23 @@ class LoopLabel /*: public Node*/
 
   Location locus;
 
+  Analysis::NodeMapping mappings;
+
 public:
   std::string as_string () const;
 
-  LoopLabel (Lifetime loop_label, Location locus = Location ())
-    : label (std::move (loop_label)), locus (locus)
+  LoopLabel (Analysis::NodeMapping mapping, Lifetime loop_label, Location locus)
+    : label (std::move (loop_label)), locus (locus), mappings (mapping)
   {}
 
   // Returns whether the LoopLabel is in an error state.
   bool is_error () const { return label.is_error (); }
 
-  // Creates an error state LoopLabel.
-  static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
-
   Location get_locus () const { return locus; }
+
+  Analysis::NodeMapping &get_mappings () { return mappings; }
+
+  Lifetime &get_lifetime () { return label; }
 };
 
 // Base loop expression HIR node - aka LoopExpr
@@ -3299,7 +3305,7 @@ protected:
   // Constructor for BaseLoopExpr
   BaseLoopExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<BlockExpr> loop_block, Location locus,
-		LoopLabel loop_label = LoopLabel::error (),
+		LoopLabel loop_label,
 		std::vector<Attribute> outer_attribs
 		= std::vector<Attribute> ())
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
@@ -3334,6 +3340,10 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  std::unique_ptr<HIR::BlockExpr> &get_loop_block () { return loop_block; };
+
+  LoopLabel &get_loop_label () { return loop_label; }
 };
 
 // 'Loop' expression (i.e. the infinite loop) HIR node
@@ -3345,7 +3355,7 @@ public:
   // Constructor for LoopExpr
   LoopExpr (Analysis::NodeMapping mappings,
 	    std::unique_ptr<BlockExpr> loop_block, Location locus,
-	    LoopLabel loop_label = LoopLabel::error (),
+	    LoopLabel loop_label,
 	    std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		    std::move (loop_label), std::move (outer_attribs))
@@ -3378,7 +3388,7 @@ public:
   WhileLoopExpr (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Expr> loop_condition,
 		 std::unique_ptr<BlockExpr> loop_block, Location locus,
-		 LoopLabel loop_label = LoopLabel::error (),
+		 LoopLabel loop_label,
 		 std::vector<Attribute> outer_attribs
 		 = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
@@ -3440,7 +3450,7 @@ public:
 		    std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> loop_block, Location locus,
-		    LoopLabel loop_label = LoopLabel::error (),
+		    LoopLabel loop_label,
 		    std::vector<Attribute> outer_attribs
 		    = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
@@ -3513,7 +3523,7 @@ public:
 	       std::unique_ptr<Pattern> loop_pattern,
 	       std::unique_ptr<Expr> iterator_expr,
 	       std::unique_ptr<BlockExpr> loop_body, Location locus,
-	       LoopLabel loop_label = LoopLabel::error (),
+	       LoopLabel loop_label,
 	       std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_body), locus,
 		    std::move (loop_label), std::move (outer_attribs)),

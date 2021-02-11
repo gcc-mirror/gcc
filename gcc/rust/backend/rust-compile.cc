@@ -53,33 +53,9 @@ CompileCrate::go ()
 void
 CompileExpr::visit (HIR::CallExpr &expr)
 {
-  // this can be a function call or it can be a constructor for a tuple struct
-  Bexpression *fn = ResolvePathRef::Compile (expr.get_fnexpr (), ctx);
-  if (fn != nullptr)
+  Btype *type = ResolvePathType::Compile (expr.get_fnexpr (), ctx);
+  if (type != nullptr)
     {
-      std::vector<Bexpression *> args;
-      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
-	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
-	rust_assert (compiled_expr != nullptr);
-	args.push_back (compiled_expr);
-	return true;
-      });
-
-      auto fncontext = ctx->peek_fn ();
-      translated
-	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
-						nullptr, expr.get_locus ());
-    }
-  else
-    {
-      Btype *type = ResolvePathType::Compile (expr.get_fnexpr (), ctx);
-      if (type == nullptr)
-	{
-	  rust_fatal_error (expr.get_locus (),
-			    "failed to lookup type associated with call");
-	  return;
-	}
-
       // this assumes all fields are in order from type resolution and if a base
       // struct was specified those fields are filed via accesors
       std::vector<Bexpression *> vals;
@@ -92,6 +68,24 @@ CompileExpr::visit (HIR::CallExpr &expr)
       translated
 	= ctx->get_backend ()->constructor_expression (type, vals,
 						       expr.get_locus ());
+    }
+  else
+    {
+      // must be a call to a function
+      Bexpression *fn = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+
+      std::vector<Bexpression *> args;
+      expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
+	Bexpression *compiled_expr = CompileExpr::Compile (p, ctx);
+	rust_assert (compiled_expr != nullptr);
+	args.push_back (compiled_expr);
+	return true;
+      });
+
+      auto fncontext = ctx->peek_fn ();
+      translated
+	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn, args,
+						nullptr, expr.get_locus ());
     }
 }
 
@@ -242,23 +236,28 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       // the previous passes will ensure this is a valid return
       // dead code elimination should remove any bad trailing expressions
       Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
-      rust_assert (compiled_expr != nullptr);
-
-      if (result == nullptr)
+      if (compiled_expr != nullptr)
 	{
-	  Bstatement *final_stmt
-	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
-							 compiled_expr);
-	  ctx->add_statement (final_stmt);
-	}
-      else
-	{
-	  Bexpression *result_reference = ctx->get_backend ()->var_expression (
-	    result, expr.get_final_expr ()->get_locus_slow ());
+	  if (result == nullptr)
+	    {
+	      Bstatement *final_stmt
+		= ctx->get_backend ()->expression_statement (fnctx.fndecl,
+							     compiled_expr);
+	      ctx->add_statement (final_stmt);
+	    }
+	  else
+	    {
+	      Bexpression *result_reference
+		= ctx->get_backend ()->var_expression (
+		  result, expr.get_final_expr ()->get_locus_slow ());
 
-	  Bstatement *assignment = ctx->get_backend ()->assignment_statement (
-	    fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
-	  ctx->add_statement (assignment);
+	      Bstatement *assignment
+		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
+							     result_reference,
+							     compiled_expr,
+							     expr.get_locus ());
+	      ctx->add_statement (assignment);
+	    }
 	}
     }
 

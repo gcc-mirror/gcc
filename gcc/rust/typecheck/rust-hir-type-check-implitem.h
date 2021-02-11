@@ -40,7 +40,8 @@ public:
   void visit (HIR::ConstantItem &constant)
   {
     TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+    TyTy::TyBase *expr_type
+      = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->combine (expr_type));
   }
@@ -170,23 +171,12 @@ public:
     auto expected_ret_tyty = resolve_fn_type->return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    TypeCheckExpr::Resolve (function.function_body.get ());
-    if (function.function_body->has_expr ())
-      {
-	auto resolved
-	  = TypeCheckExpr::Resolve (function.function_body->expr.get ());
+    auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
+    auto ret_resolved = expected_ret_tyty->combine (result);
+    if (ret_resolved == nullptr)
+      return;
 
-	auto ret_resolved = expected_ret_tyty->combine (resolved);
-	if (ret_resolved == nullptr)
-	  {
-	    rust_error_at (function.function_body->expr->get_locus_slow (),
-			   "failed to resolve final expression");
-	    return;
-	  }
-
-	context->peek_return_type ()->append_reference (
-	  ret_resolved->get_ref ());
-      }
+    context->peek_return_type ()->append_reference (ret_resolved->get_ref ());
 
     context->pop_return_type ();
   }
@@ -213,23 +203,13 @@ public:
     auto expected_ret_tyty = resolve_fn_type->return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    TypeCheckExpr::Resolve (method.get_function_body ().get ());
-    if (method.get_function_body ()->has_expr ())
-      {
-	auto resolved
-	  = TypeCheckExpr::Resolve (method.get_function_body ()->expr.get ());
+    auto result
+      = TypeCheckExpr::Resolve (method.get_function_body ().get (), false);
+    auto ret_resolved = expected_ret_tyty->combine (result);
+    if (ret_resolved == nullptr)
+      return;
 
-	auto ret_resolved = expected_ret_tyty->combine (resolved);
-	if (ret_resolved == nullptr)
-	  {
-	    rust_error_at (method.get_function_body ()->expr->get_locus_slow (),
-			   "failed to resolve final expression");
-	    return;
-	  }
-
-	context->peek_return_type ()->append_reference (
-	  ret_resolved->get_ref ());
-      }
+    context->peek_return_type ()->append_reference (ret_resolved->get_ref ());
 
     context->pop_return_type ();
   }

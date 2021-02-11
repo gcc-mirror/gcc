@@ -250,9 +250,11 @@ public:
 
   void push_new_name_rib (Rib *r);
   void push_new_type_rib (Rib *r);
+  void push_new_label_rib (Rib *r);
 
   bool find_name_rib (NodeId id, Rib **rib);
   bool find_type_rib (NodeId id, Rib **rib);
+  bool find_label_rib (NodeId id, Rib **rib);
 
   void insert_new_definition (NodeId id, Definition def);
   bool lookup_definition (NodeId id, Definition *def);
@@ -263,9 +265,13 @@ public:
   void insert_resolved_type (NodeId refId, NodeId defId);
   bool lookup_resolved_type (NodeId refId, NodeId *defId);
 
+  void insert_resolved_label (NodeId refId, NodeId defId);
+  bool lookup_resolved_label (NodeId refId, NodeId *defId);
+
   // proxy for scoping
   Scope &get_name_scope () { return name_scope; }
   Scope &get_type_scope () { return type_scope; }
+  Scope &get_label_scope () { return label_scope; }
 
   NodeId get_global_type_node_id () { return global_type_node_id; }
 
@@ -320,6 +326,12 @@ public:
       }
   }
 
+  void iterate_label_ribs (std::function<void (Rib *)> cb)
+  {
+    for (auto it = label_ribs.begin (); it != label_ribs.end (); it++)
+      cb (it->second);
+  }
+
 private:
   Resolver ();
 
@@ -332,6 +344,7 @@ private:
 
   Scope name_scope;
   Scope type_scope;
+  Scope label_scope;
 
   NodeId global_type_node_id;
   NodeId unit_ty_node_id;
@@ -339,6 +352,7 @@ private:
   // map a AST Node to a Rib
   std::map<NodeId, Rib *> name_ribs;
   std::map<NodeId, Rib *> type_ribs;
+  std::map<NodeId, Rib *> label_ribs;
 
   // map any Node to its Definition
   // ie any name or type usage
@@ -354,6 +368,7 @@ private:
   // we need two namespaces one for names and ones for types
   std::map<NodeId, NodeId> resolved_names;
   std::map<NodeId, NodeId> resolved_types;
+  std::map<NodeId, NodeId> resolved_labels;
 
   // map of resolved names mutability flag
   std::map<NodeId, bool> decl_mutability;

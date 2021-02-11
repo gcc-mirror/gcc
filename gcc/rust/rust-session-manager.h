@@ -116,8 +116,8 @@ public:
   // Dump all target options to stderr.
   void dump_target_options () const;
 
-  /* Creates derived values and implicit enables after all target info is added
-   * (e.g. "unix"). */
+  /* Creates derived values and implicit enables after all target info is
+   * added (e.g. "unix"). */
   void init_derived_values ();
 
   /* Enables all requirements for the feature given, and will enable feature
@@ -162,13 +162,8 @@ public:
 // Defines compiler options (e.g. dump, etc.).
 struct CompileOptions
 {
-  // TODO: use bitfield for smaller memory requirements?
-
-  /* FIXME: this is set up for "instead of" dumping - in future, dumps should
-   * not inhibit compilation */
-  enum DumpOptions
+  enum DumpOption
   {
-    NO_DUMP,
     LEXER_DUMP,
     PARSER_AST_DUMP,
     REGISTER_PLUGINS_DUMP,
@@ -178,8 +173,9 @@ struct CompileOptions
     TARGET_OPTION_DUMP,
     HIR_DUMP,
     TYPE_RESOLUTION_DUMP,
+  };
 
-  } dump_option;
+  std::set<DumpOption> dump_options;
 
   /* configuration options - actually useful for conditional compilation and
    * whatever data related to target arch, features, os, family, env, endian,
@@ -188,6 +184,26 @@ struct CompileOptions
   bool enable_test = false;
   bool debug_assertions = false;
   bool proc_macro = false;
+
+  bool dump_option_enabled (DumpOption option) const
+  {
+    return dump_options.find (option) != dump_options.end ();
+  }
+
+  void enable_dump_option (DumpOption option) { dump_options.insert (option); }
+
+  void enable_all_dump_options ()
+  {
+    enable_dump_option (DumpOption::LEXER_DUMP);
+    enable_dump_option (DumpOption::PARSER_AST_DUMP);
+    enable_dump_option (DumpOption::REGISTER_PLUGINS_DUMP);
+    enable_dump_option (DumpOption::INJECTION_DUMP);
+    enable_dump_option (DumpOption::EXPANSION_DUMP);
+    enable_dump_option (DumpOption::RESOLUTION_DUMP);
+    enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
+    enable_dump_option (DumpOption::HIR_DUMP);
+    enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
+  }
 };
 
 /* Defines a compiler session. This is for a single compiler invocation, so
@@ -218,6 +234,12 @@ public:
 private:
   void parse_file (const char *filename);
   bool enable_dump (std::string arg);
+
+  void dump_lex (Parser<Lexer> &parser) const;
+  void dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const;
+  void dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const;
+  void dump_hir (HIR::Crate &crate) const;
+  void dump_type_resolution (HIR::Crate &crate) const;
 
   void debug_dump_load_crates (Parser<Lexer> &parser);
 

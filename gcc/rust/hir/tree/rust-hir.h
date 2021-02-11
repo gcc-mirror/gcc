@@ -1060,15 +1060,15 @@ private:
 
   Location locus;
 
+  Analysis::NodeMapping mappings;
+
 public:
   // Constructor
-  Lifetime (LifetimeType type, std::string name = std::string (),
-	    Location locus = Location ())
-    : lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
+  Lifetime (Analysis::NodeMapping mapping, LifetimeType type, std::string name,
+	    Location locus)
+    : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
+      mappings (mapping)
   {}
-
-  // Creates an "error" lifetime.
-  static Lifetime error () { return Lifetime (NAMED, std::string ("")); }
 
   // Returns true if the lifetime is in an error state.
   bool is_error () const
@@ -1079,6 +1079,14 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::string get_name () const { return lifetime_name; }
+
+  LifetimeType get_lifetime_type () const { return lifetime_type; }
+
+  Location get_locus () const { return locus; }
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1132,12 +1140,6 @@ public:
 
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
-
-  // Creates an error state lifetime param.
-  static LifetimeParam create_error ()
-  {
-    return LifetimeParam (Lifetime::error ());
-  }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }

@@ -109,10 +109,11 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
     bool is_final_stmt = expr.is_final_stmt (s);
-    bool is_final_expr = is_final_stmt && !expr.has_expr ();
+    bool is_final_expr
+      = is_final_stmt && (!expr.has_expr () || !expr.tail_expr_reachable ());
 
-    auto infered = TypeCheckStmt::Resolve (s, is_final_expr);
-    if (infered == nullptr)
+    auto resolved = TypeCheckStmt::Resolve (s, inside_loop);
+    if (resolved == nullptr)
       {
 	rust_error_at (s->get_locus_slow (), "failure to resolve type");
 	return false;
@@ -121,7 +122,12 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     if (is_final_expr)
       {
 	delete block_tyty;
-	block_tyty = infered;
+	block_tyty = resolved;
+      }
+    else if (resolved->get_kind () != TyTy::TypeKind::UNIT)
+      {
+	rust_error_at (s->get_locus_slow (), "expected () got %s",
+		       infered->as_string ().c_str ());
       }
 
     return true;
@@ -131,7 +137,8 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     {
       delete block_tyty;
 
-      block_tyty = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), true);
+      block_tyty
+	= TypeCheckExpr::Resolve (expr.get_final_expr ().get (), inside_loop);
     }
 
   infered = block_tyty->clone ();
@@ -154,7 +161,8 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   if (struct_expr.has_struct_base ())
     {
       TyTy::TyBase *base_resolved
-	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
+	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
+				  false);
       resolved = struct_path_resolved->combine (base_resolved);
       if (resolved == nullptr)
 	{
@@ -320,7 +328,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     }
 
   size_t field_index;
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value (), false);
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field.field_name, &field_index);
   if (field_type == nullptr)
@@ -349,7 +357,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
     }
 
   size_t field_index;
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value ());
+  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value (), false);
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field_name, &field_index);
   if (field_type == nullptr)
@@ -389,7 +397,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   // existing code to figure out the type
   HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
 			    field.get_locus ());
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (&expr);
+  TyTy::TyBase *value = TypeCheckExpr::Resolve (&expr, false);
 
   resolved_field = field_type->get_field_type ()->combine (value);
   if (resolved_field != nullptr)

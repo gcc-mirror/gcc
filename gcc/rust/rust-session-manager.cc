@@ -21,6 +21,8 @@
 #include "rust-diagnostics.h"
 #include "diagnostic.h"
 #include "input.h"
+#include <fstream>
+#include <sstream>
 
 #include "target.h"
 #include "tm.h"
@@ -45,6 +47,13 @@ extern Backend *
 rust_get_backend ();
 
 namespace Rust {
+
+const char *kLexDumpFile = "gccrs.lex.dump";
+const char *kASTDumpFile = "gccrs.ast.dump";
+const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
+const char *kHIRDumpFile = "gccrs.hir.dump";
+const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
+const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
@@ -309,9 +318,7 @@ Session::init ()
  * itself. */
 void
 Session::init_options ()
-{
-  options.dump_option = CompileOptions::NO_DUMP;
-}
+{}
 
 // Handle option selection.
 bool
@@ -357,62 +364,51 @@ Session::handle_option (
 bool
 Session::enable_dump (std::string arg)
 {
-  /* FIXME: change dumping algorithm when new non-inhibiting dump system is
-   * created */
-  if (arg == "all")
+  if (arg.empty ())
     {
       rust_error_at (
 	Location (),
-	"dumping all is not supported as of now. choose %<lex%>, %<parse%>, "
+	"dump option was not given a name. choose %<lex%>, %<parse%>, "
 	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
-	" %<target_options%>, or %<hir%>");
+	" %<target_options%>, %<hir%>, or %<all%>");
       return false;
+    }
+
+  if (arg == "all")
+    {
+      options.enable_all_dump_options ();
     }
   else if (arg == "lex")
     {
-      options.dump_option = CompileOptions::LEXER_DUMP;
+      options.enable_dump_option (CompileOptions::LEXER_DUMP);
     }
   else if (arg == "parse")
     {
-      options.dump_option = CompileOptions::PARSER_AST_DUMP;
+      options.enable_dump_option (CompileOptions::PARSER_AST_DUMP);
     }
   else if (arg == "register_plugins")
     {
-      options.dump_option = CompileOptions::REGISTER_PLUGINS_DUMP;
+      options.enable_dump_option (CompileOptions::REGISTER_PLUGINS_DUMP);
     }
   else if (arg == "injection")
     {
-      options.dump_option = CompileOptions::INJECTION_DUMP;
+      options.enable_dump_option (CompileOptions::INJECTION_DUMP);
     }
   else if (arg == "expansion")
     {
-      options.dump_option = CompileOptions::EXPANSION_DUMP;
+      options.enable_dump_option (CompileOptions::EXPANSION_DUMP);
     }
   else if (arg == "resolution")
     {
-      options.dump_option = CompileOptions::RESOLUTION_DUMP;
+      options.enable_dump_option (CompileOptions::RESOLUTION_DUMP);
     }
   else if (arg == "target_options")
     {
-      // special case - dump all target options, and then quit compilation
-      // nope, option handling called before init, so have to make this an
-      // actual compile option
-      // options.target_data.dump_target_options();
-      // return false;
-      options.dump_option = CompileOptions::TARGET_OPTION_DUMP;
+      options.enable_dump_option (CompileOptions::TARGET_OPTION_DUMP);
     }
   else if (arg == "hir")
     {
-      options.dump_option = CompileOptions::HIR_DUMP;
-    }
-  else if (arg == "")
-    {
-      rust_error_at (
-	Location (),
-	"dump option was not given a name. choose "
-	"%<lex%>, %<parse%>, %<register_plugins%>, %<injection%>, "
-	"%<expansion%>, %<resolution%>, %<target_options%>, or %<hir%>");
-      return false;
+      options.enable_dump_option (CompileOptions::HIR_DUMP);
     }
   else
     {
@@ -465,23 +461,21 @@ Session::parse_file (const char *filename)
   auto mappings = Analysis::Mappings::get ();
   mappings->insert_ast_crate (&parsed_crate);
 
-  // give a chance to give some debug
-  switch (options.dump_option)
+  if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
     {
-    case CompileOptions::LEXER_DUMP:
-      parser.debug_dump_lex_output ();
-      // TODO: rewrite lexer dump or something so that it allows for the crate
-      // to already be parsed
-      break;
-    case CompileOptions::PARSER_AST_DUMP:
-      parser.debug_dump_ast_output (parsed_crate);
-      break;
-    case CompileOptions::TARGET_OPTION_DUMP:
-      options.target_data.dump_target_options ();
-      return;
-    default:
-      break;
+      dump_lex (parser);
     }
+  if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
+    {
+      dump_ast (parser, parsed_crate);
+    }
+  if (options.dump_option_enabled (CompileOptions::TARGET_OPTION_DUMP))
+    {
+      options.target_data.dump_target_options ();
+    }
+
+  if (saw_errors ())
+    return;
 
   /* basic pipeline:
    *  - lex
@@ -502,8 +496,7 @@ Session::parse_file (const char *filename)
   // register plugins pipeline stage
   register_plugins (parsed_crate);
   fprintf (stderr, "\033[0;31mSUCCESSFULLY REGISTERED PLUGINS \n\033[0m");
-
-  if (options.dump_option == CompileOptions::REGISTER_PLUGINS_DUMP)
+  if (options.dump_option_enabled (CompileOptions::REGISTER_PLUGINS_DUMP))
     {
       // TODO: what do I dump here?
     }
@@ -511,8 +504,7 @@ Session::parse_file (const char *filename)
   // injection pipeline stage
   injection (parsed_crate);
   fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED INJECTION \n\033[0m");
-
-  if (options.dump_option == CompileOptions::INJECTION_DUMP)
+  if (options.dump_option_enabled (CompileOptions::INJECTION_DUMP))
     {
       // TODO: what do I dump here? injected crate names?
     }
@@ -520,18 +512,17 @@ Session::parse_file (const char *filename)
   // expansion pipeline stage
   expansion (parsed_crate);
   fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED EXPANSION \n\033[0m");
-
-  if (options.dump_option == CompileOptions::EXPANSION_DUMP)
+  if (options.dump_option_enabled (CompileOptions::EXPANSION_DUMP))
     {
       // dump AST with expanded stuff
       fprintf (stderr, "BEGIN POST-EXPANSION AST DUMP\n");
-      parser.debug_dump_ast_output (parsed_crate);
+      dump_ast_expanded (parser, parsed_crate);
       fprintf (stderr, "END POST-EXPANSION AST DUMP\n");
     }
 
   // resolution pipeline stage
   Resolver::NameResolution::Resolve (parsed_crate);
-  if (options.dump_option == CompileOptions::RESOLUTION_DUMP)
+  if (options.dump_option_enabled (CompileOptions::RESOLUTION_DUMP))
     {
       // TODO: what do I dump here? resolved names? AST with resolved names?
     }
@@ -541,10 +532,9 @@ Session::parse_file (const char *filename)
 
   // lower AST to HIR
   HIR::Crate hir = HIR::ASTLowering::Resolve (parsed_crate);
-  if (options.dump_option == CompileOptions::HIR_DUMP)
+  if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
     {
-      fprintf (stderr, "%s", hir.as_string ().c_str ());
-      return;
+      dump_hir (hir);
     }
 
   if (saw_errors ())
@@ -552,11 +542,9 @@ Session::parse_file (const char *filename)
 
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
-  if (options.dump_option == CompileOptions::TYPE_RESOLUTION_DUMP)
+  if (options.dump_option_enabled (CompileOptions::TYPE_RESOLUTION_DUMP))
     {
-      auto buf = Resolver::TypeResolverDump::go (hir);
-      fprintf (stderr, "%s\n", buf.c_str ());
-      return;
+      dump_type_resolution (hir);
     }
 
   // scan unused has to be done after type resolution since methods are resolved
@@ -799,22 +787,114 @@ Session::expansion (AST::Crate &crate)
 }
 
 void
+Session::dump_lex (Parser<Lexer> &parser) const
+{
+  std::ofstream out;
+  out.open (kLexDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kLexDumpFile);
+      return;
+    }
+
+  // TODO: rewrite lexer dump or something so that it allows for the crate
+  // to already be parsed
+  parser.debug_dump_lex_output (out);
+  out.close ();
+}
+
+void
+Session::dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const
+{
+  std::ofstream out;
+  out.open (kASTDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kASTDumpFile);
+      return;
+    }
+
+  parser.debug_dump_ast_output (crate, out);
+  out.close ();
+}
+
+void
+Session::dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const
+{
+  std::ofstream out;
+  out.open (kASTExpandedDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kASTExpandedDumpFile);
+      return;
+    }
+
+  parser.debug_dump_ast_output (crate, out);
+  out.close ();
+}
+
+void
+Session::dump_hir (HIR::Crate &hir) const
+{
+  std::ofstream out;
+  out.open (kHIRDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kHIRDumpFile);
+      return;
+    }
+
+  out << hir.as_string ();
+  out.close ();
+}
+
+void
+Session::dump_type_resolution (HIR::Crate &hir) const
+{
+  std::ofstream out;
+  out.open (kHIRTypeResolutionDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kHIRTypeResolutionDumpFile);
+      return;
+    }
+
+  Resolver::TypeResolverDump::go (hir, out);
+  out.close ();
+}
+
+void
 TargetOptions::dump_target_options () const
 {
-  fprintf (stderr,
-	   "\033[0;31m--PREPARING TO DUMP ALL TARGET OPTIONS--\n\033[0m");
+  std::ofstream out;
+  out.open (kTargetOptionsDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kTargetOptionsDumpFile);
+      return;
+    }
+
+  if (features.empty ())
+    {
+      out << "No target options available!\n";
+    }
+
   for (const auto &pairs : features)
     {
       for (const auto &value : pairs.second)
-	fprintf (stderr, "%s: \"%s\"\n", pairs.first.c_str (), value.c_str ());
+	out << pairs.first + ": \"" + value + "\"\n";
 
       if (pairs.second.empty ())
-	fprintf (stderr, "%s\n", pairs.first.c_str ());
+	out << pairs.first + "\n";
     }
-  if (features.empty ())
-    fprintf (stderr, "No target options available!\n");
 
-  fprintf (stderr, "\033[0;31m--END OF TARGET OPTION DUMP--\n\033[0m");
+  out.close ();
 }
 
 void

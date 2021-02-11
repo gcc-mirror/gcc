@@ -501,7 +501,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     StructFieldType *field = type.get_field (i);
     TyBase *field_tyty = field->get_field_type ();
 
-    TyBase *arg = Resolver::TypeCheckExpr::Resolve (p);
+    TyBase *arg = Resolver::TypeCheckExpr::Resolve (p, false);
     if (arg == nullptr)
       {
 	rust_error_at (p->get_locus_slow (), "failed to resolve argument type");
@@ -542,7 +542,7 @@ TypeCheckCallExpr::visit (FnType &type)
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param);
+    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
 	rust_error_at (param->get_locus_slow (),
@@ -593,7 +593,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
   size_t i = 1;
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
     auto fnparam = type.param_at (i);
-    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param);
+    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
 	rust_error_at (param->get_locus_slow (),

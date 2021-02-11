@@ -136,6 +136,7 @@ public:
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
 
+  void insert_node_to_hir (CrateNum crate, NodeId id, HirId ref);
   bool lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref);
 
   void insert_location (CrateNum crate, HirId id, Location locus);

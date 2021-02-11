@@ -74,8 +74,6 @@ public:
     return compiler.translated;
   }
 
-  ~ASTLowerPathInExpression () {}
-
   void visit (AST::PathInExpression &expr)
   {
     std::vector<HIR::PathExprSegment> path_segments;
@@ -697,9 +695,35 @@ public:
 				  std::move (outer_attribs), expr.get_locus ());
   }
 
+  void visit (AST::LoopExpr &expr)
+  {
+    translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
+  }
+
+  void visit (AST::BreakExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+    HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
+    HIR::Expr *break_expr
+      = expr.has_break_expr ()
+	  ? ASTLoweringExpr::translate (expr.get_break_expr ().get ())
+	  : nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::BreakExpr (mapping, expr.get_locus (),
+				     std ::move (break_label),
+				     std::unique_ptr<HIR::Expr> (break_expr),
+				     std::move (outer_attribs));
+  }
+
 private:
   ASTLoweringExpr ()
-    : translated (nullptr), translated_array_elems (nullptr), terminated (false)
+    : ASTLoweringBase (), translated (nullptr),
+      translated_array_elems (nullptr), terminated (false)
   {}
 
   HIR::Expr *translated;

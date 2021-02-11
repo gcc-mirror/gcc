@@ -28,13 +28,13 @@ namespace Resolver {
 class TypeResolverDump : public TypeCheckBase
 {
 public:
-  static std::string go (HIR::Crate &crate)
+  static void go (HIR::Crate &crate, std::ofstream &out)
   {
     TypeResolverDump dumper;
     for (auto &item : crate.items)
       item->accept_vis (dumper);
 
-    return dumper.dump;
+    out << dumper.dump;
   }
 
   void visit (HIR::InherentImpl &impl_block) override

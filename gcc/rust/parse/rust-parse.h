@@ -82,6 +82,7 @@ struct ParseRestrictions
   /* Whether the expression was entered from a unary expression - prevents stuff
    * like struct exprs being parsed from a dereference. */
   bool entered_from_unary = false;
+  bool expr_can_be_null = false;
 };
 
 // Parser implementation for gccrs.
@@ -166,22 +167,30 @@ private:
   parse_generic_params_in_angles ();
   std::vector<std::unique_ptr<AST::GenericParam> > parse_generic_params ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::GenericParam> > parse_generic_params (EndTokenPred is_end_token);
+  std::vector<std::unique_ptr<AST::GenericParam> >
+  parse_generic_params (EndTokenPred is_end_token);
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params (EndTokenPred is_end_token);
+  std::vector<std::unique_ptr<AST::LifetimeParam> >
+  parse_lifetime_params (EndTokenPred is_end_token);
   std::vector<AST::LifetimeParam> parse_lifetime_params_objs ();
   template <typename EndTokenPred>
-  std::vector<AST::LifetimeParam> parse_lifetime_params_objs (EndTokenPred is_end_token);
+  std::vector<AST::LifetimeParam>
+  parse_lifetime_params_objs (EndTokenPred is_end_token);
   template <typename ParseFunction, typename EndTokenPred>
-  auto parse_non_ptr_sequence (ParseFunction parsing_function, EndTokenPred is_end_token, std::string error_msg = "failed to parse generic param in generic params") -> std::vector<decltype(parsing_function ())>;
+  auto parse_non_ptr_sequence (
+    ParseFunction parsing_function, EndTokenPred is_end_token,
+    std::string error_msg = "failed to parse generic param in generic params")
+    -> std::vector<decltype (parsing_function ())>;
   AST::LifetimeParam parse_lifetime_param ();
   std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params (EndTokenPred is_end_token);
+  std::vector<std::unique_ptr<AST::TypeParam> >
+  parse_type_params (EndTokenPred is_end_token);
   std::unique_ptr<AST::TypeParam> parse_type_param ();
   template <typename EndTokenPred>
-  std::vector<AST::FunctionParam> parse_function_params (EndTokenPred is_end_token);
+  std::vector<AST::FunctionParam>
+  parse_function_params (EndTokenPred is_end_token);
   AST::FunctionParam parse_function_param ();
   std::unique_ptr<AST::Type> parse_function_return_type ();
   AST::WhereClause parse_where_clause ();
@@ -192,7 +201,8 @@ private:
   parse_type_bound_where_clause_item ();
   std::vector<AST::LifetimeParam> parse_for_lifetimes ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::TypeParamBound> > parse_type_param_bounds (EndTokenPred is_end_token);
+  std::vector<std::unique_ptr<AST::TypeParamBound> >
+  parse_type_param_bounds (EndTokenPred is_end_token);
   std::vector<std::unique_ptr<AST::TypeParamBound> > parse_type_param_bounds ();
   std::unique_ptr<AST::TypeParamBound> parse_type_param_bound ();
   std::unique_ptr<AST::TraitBound> parse_trait_bound ();
@@ -215,7 +225,8 @@ private:
   parse_enum (AST::Visibility vis, std::vector<AST::Attribute> outer_attrs);
   std::vector<std::unique_ptr<AST::EnumItem> > parse_enum_items ();
   template <typename EndTokenPred>
-  std::vector<std::unique_ptr<AST::EnumItem> > parse_enum_items (EndTokenPred is_end_token);
+  std::vector<std::unique_ptr<AST::EnumItem> >
+  parse_enum_items (EndTokenPred is_end_token);
   std::unique_ptr<AST::EnumItem> parse_enum_item ();
   std::unique_ptr<AST::Union>
   parse_union (AST::Visibility vis, std::vector<AST::Attribute> outer_attrs);
@@ -247,8 +258,9 @@ private:
   parse_extern_block (AST::Visibility vis,
 		      std::vector<AST::Attribute> outer_attrs);
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
-  AST::NamedFunctionParam parse_named_function_param (
-    std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> ());
+  AST::NamedFunctionParam
+  parse_named_function_param (std::vector<AST::Attribute> outer_attrs
+			      = std::vector<AST::Attribute> ());
   AST::Method parse_method ();
 
   // Expression-related (Pratt parsed)
@@ -272,9 +284,11 @@ private:
 		   = std::vector<AST::Attribute> (),
 		   ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::ArithmeticOrLogicalExpr>
-  parse_arithmetic_or_logical_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
-			  std::vector<AST::Attribute> outer_attrs, AST::ArithmeticOrLogicalExpr::ExprType expr_type,
-			  ParseRestrictions restrictions = ParseRestrictions ());
+  parse_arithmetic_or_logical_expr (
+    const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
+    std::vector<AST::Attribute> outer_attrs,
+    AST::ArithmeticOrLogicalExpr::ExprType expr_type,
+    ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::ArithmeticOrLogicalExpr>
   parse_binary_plus_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
 			  std::vector<AST::Attribute> outer_attrs,
@@ -368,10 +382,11 @@ private:
   parse_assig_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
 		    std::vector<AST::Attribute> outer_attrs,
 		    ParseRestrictions restrictions = ParseRestrictions ());
-  std::unique_ptr<AST::CompoundAssignmentExpr>
-  parse_compound_assignment_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
-			 std::vector<AST::Attribute> outer_attrs, AST::CompoundAssignmentExpr::ExprType expr_type,
-			 ParseRestrictions restrictions = ParseRestrictions ());
+  std::unique_ptr<AST::CompoundAssignmentExpr> parse_compound_assignment_expr (
+    const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
+    std::vector<AST::Attribute> outer_attrs,
+    AST::CompoundAssignmentExpr::ExprType expr_type,
+    ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::CompoundAssignmentExpr>
   parse_plus_assig_expr (const_TokenPtr tok, std::unique_ptr<AST::Expr> left,
 			 std::vector<AST::Attribute> outer_attrs,
@@ -480,14 +495,15 @@ private:
 		    bool pratt_parse = false);
   std::unique_ptr<AST::IfExpr>
   parse_if_expr (std::vector<AST::Attribute> outer_attrs
-		 = std::vector<AST::Attribute> ());
+		 = std::vector<AST::Attribute> (),
+		 bool pratt_parse = false);
   std::unique_ptr<AST::IfLetExpr>
   parse_if_let_expr (std::vector<AST::Attribute> outer_attrs
-		     = std::vector<AST::Attribute> ());
-  std::unique_ptr<AST::LoopExpr>
-  parse_loop_expr (std::vector<AST::Attribute> outer_attrs
-		   = std::vector<AST::Attribute> (),
-		   AST::LoopLabel label = AST::LoopLabel::error ());
+		     = std::vector<AST::Attribute> (),
+		     bool pratt_parse = false);
+  std::unique_ptr<AST::LoopExpr> parse_loop_expr (
+    std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> (),
+    AST::LoopLabel label = AST::LoopLabel::error (), bool pratt_parse = false);
   std::unique_ptr<AST::WhileLoopExpr>
   parse_while_loop_expr (std::vector<AST::Attribute> outer_attrs
 			 = std::vector<AST::Attribute> (),
@@ -561,7 +577,8 @@ private:
   std::unique_ptr<AST::Type> parse_paren_prefixed_type ();
   std::unique_ptr<AST::TypeNoBounds> parse_paren_prefixed_type_no_bounds ();
   std::unique_ptr<AST::Type> parse_for_prefixed_type ();
-  AST::MaybeNamedParam parse_maybe_named_param (std::vector<AST::Attribute> outer_attrs);
+  AST::MaybeNamedParam
+  parse_maybe_named_param (std::vector<AST::Attribute> outer_attrs);
 
   // Statement-related
   std::unique_ptr<AST::Stmt> parse_stmt ();
@@ -591,7 +608,8 @@ private:
   std::unique_ptr<AST::TupleStructItems> parse_tuple_struct_items ();
   AST::StructPatternElements parse_struct_pattern_elems ();
   std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field ();
-  std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field_partial (std::vector<AST::Attribute> outer_attrs);
+  std::unique_ptr<AST::StructPatternField>
+  parse_struct_pattern_field_partial (std::vector<AST::Attribute> outer_attrs);
 
   int left_binding_power (const_TokenPtr token);
 
@@ -607,8 +625,8 @@ public:
   AST::Crate parse_crate ();
 
   // Dumps all lexer output.
-  void debug_dump_lex_output ();
-  void debug_dump_ast_output (AST::Crate &crate);
+  void debug_dump_lex_output (std::ostream &out);
+  void debug_dump_ast_output (AST::Crate &crate, std::ostream &out);
 
 private:
   // The token source (usually lexer) associated with the parser.

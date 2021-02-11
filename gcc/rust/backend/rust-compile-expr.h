@@ -84,14 +84,18 @@ public:
 
   void visit (HIR::ReturnExpr &expr)
   {
-    Bexpression *compiled_expr
-      = CompileExpr::Compile (expr.return_expr.get (), ctx);
-    rust_assert (compiled_expr != nullptr);
-
     auto fncontext = ctx->peek_fn ();
 
     std::vector<Bexpression *> retstmts;
-    retstmts.push_back (compiled_expr);
+    if (expr.has_return_expr ())
+      {
+	Bexpression *compiled_expr
+	  = CompileExpr::Compile (expr.return_expr.get (), ctx);
+	rust_assert (compiled_expr != nullptr);
+
+	retstmts.push_back (compiled_expr);
+      }
+
     auto s = ctx->get_backend ()->return_statement (fncontext.fndecl, retstmts,
 						    expr.get_locus ());
     ctx->add_statement (s);
@@ -417,7 +421,6 @@ public:
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    // this can be a return expression
     TyTy::TyBase *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &if_type))
@@ -427,27 +430,67 @@ public:
 	return;
       }
 
-    fncontext fnctx = ctx->peek_fn ();
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+    Bvariable *tmp = NULL;
+    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
 
-    bool is_address_taken = false;
-    Bstatement *ret_var_stmt = nullptr;
-    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
-      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-      expr.get_locus (), &ret_var_stmt);
-    ctx->add_statement (ret_var_stmt);
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
 
     auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
     ctx->add_statement (stmt);
 
-    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::IfExprConseqIf &expr)
   {
-    auto stmt = CompileConditionalBlocks::compile (&expr, ctx, nullptr);
+    TyTy::TyBase *if_type = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &if_type))
+      {
+	rust_error_at (expr.get_locus (),
+		       "failed to lookup type of IfExprConseqElse");
+	return;
+      }
+
+    Bvariable *tmp = NULL;
+    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
+
+    auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
     ctx->add_statement (stmt);
+
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::BlockExpr &expr)
@@ -460,22 +503,31 @@ public:
 	return;
       }
 
-    fncontext fnctx = ctx->peek_fn ();
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+    Bvariable *tmp = NULL;
+    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
-    bool is_address_taken = false;
-    Bstatement *ret_var_stmt = nullptr;
-    Bvariable *tmp = ctx->get_backend ()->temporary_variable (
-      fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-      expr.get_locus (), &ret_var_stmt);
-    ctx->add_statement (ret_var_stmt);
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+      }
 
     auto code_block = CompileBlock::compile (&expr, ctx, tmp);
     auto block_stmt = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (block_stmt);
 
-    translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+    if (tmp != NULL)
+      {
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
   }
 
   void visit (HIR::StructExprStructFields &struct_expr)
@@ -530,6 +582,127 @@ public:
   void visit (HIR::PathInExpression &expr)
   {
     translated = ResolvePathRef::Compile (&expr, ctx);
+  }
+
+  void visit (HIR::LoopExpr &expr)
+  {
+    TyTy::TyBase *block_tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &block_tyty))
+      {
+	rust_error_at (expr.get_locus (), "failed to lookup type of BlockExpr");
+	return;
+      }
+
+    fncontext fnctx = ctx->peek_fn ();
+    Bvariable *tmp = NULL;
+    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    if (needs_temp)
+      {
+	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+
+	bool is_address_taken = false;
+	Bstatement *ret_var_stmt = nullptr;
+	tmp = ctx->get_backend ()->temporary_variable (
+	  fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	  expr.get_locus (), &ret_var_stmt);
+	ctx->add_statement (ret_var_stmt);
+	ctx->push_loop_context (tmp);
+      }
+
+    if (expr.has_loop_label ())
+      {
+	HIR::LoopLabel &loop_label = expr.get_loop_label ();
+	Blabel *label
+	  = ctx->get_backend ()->label (fnctx.fndecl,
+					loop_label.get_lifetime ().get_name (),
+					loop_label.get_locus ());
+	Bstatement *label_decl
+	  = ctx->get_backend ()->label_definition_statement (label);
+	ctx->add_statement (label_decl);
+	ctx->insert_label_decl (
+	  loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
+      }
+
+    Bblock *code_block
+      = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
+    Bexpression *loop_expr
+      = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
+    Bstatement *loop_stmt
+      = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
+    ctx->add_statement (loop_stmt);
+
+    if (tmp != NULL)
+      {
+	ctx->pop_loop_context ();
+	translated
+	  = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+      }
+  }
+
+  void visit (HIR::BreakExpr &expr)
+  {
+    if (expr.has_break_expr ())
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bexpression *compiled_expr
+	  = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+
+	Bvariable *loop_result_holder = ctx->peek_loop_context ();
+	Bexpression *result_reference = ctx->get_backend ()->var_expression (
+	  loop_result_holder, expr.get_expr ()->get_locus_slow ());
+
+	Bstatement *assignment = ctx->get_backend ()->assignment_statement (
+	  fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
+	ctx->add_statement (assignment);
+      }
+
+    if (expr.has_label ())
+      {
+	NodeId resolved_node_id = UNKNOWN_NODEID;
+	if (!ctx->get_resolver ()->lookup_resolved_label (
+	      expr.get_label ().get_mappings ().get_nodeid (),
+	      &resolved_node_id))
+	  {
+	    rust_error_at (
+	      expr.get_label ().get_locus (),
+	      "failed to resolve compiled label for label %s",
+	      expr.get_label ().get_mappings ().as_string ().c_str ());
+	    return;
+	  }
+
+	HirId ref = UNKNOWN_HIRID;
+	if (!ctx->get_mappings ()->lookup_node_to_hir (
+	      expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+	  {
+	    rust_fatal_error (expr.get_locus (),
+			      "reverse lookup label failure");
+	    return;
+	  }
+
+	Blabel *label = nullptr;
+	if (!ctx->lookup_label_decl (ref, &label))
+	  {
+	    rust_error_at (expr.get_label ().get_locus (),
+			   "failed to lookup compiled label");
+	    return;
+	  }
+
+	Bstatement *goto_label
+	  = ctx->get_backend ()->goto_statement (label, expr.get_locus ());
+	ctx->add_statement (goto_label);
+      }
+    else
+      {
+	fncontext fnctx = ctx->peek_fn ();
+	Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
+	  ctx->get_backend ()->boolean_constant_expression (true),
+	  expr.get_locus ());
+	Bstatement *break_stmt
+	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
+	ctx->add_statement (break_stmt);
+      }
   }
 
 private:

@@ -30,21 +30,21 @@ namespace Resolver {
 class TypeCheckStmt : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Stmt *stmt, bool is_final_stmt)
+  static TyTy::TyBase *Resolve (HIR::Stmt *stmt, bool inside_loop)
   {
-    TypeCheckStmt resolver (is_final_stmt);
+    TypeCheckStmt resolver (inside_loop);
     stmt->accept_vis (resolver);
     return resolver.infered;
   }
 
   void visit (HIR::ExprStmtWithBlock &stmt)
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr (), is_final_stmt);
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt)
   {
-    infered = TypeCheckExpr::Resolve (stmt.get_expr (), is_final_stmt);
+    infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
   void visit (HIR::LetStmt &stmt)
@@ -55,7 +55,7 @@ public:
     if (stmt.has_init_expr ())
       {
 	init_expr_ty
-	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), is_final_stmt);
+	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), inside_loop);
 	if (init_expr_ty == nullptr)
 	  return;
 
@@ -106,13 +106,13 @@ public:
   }
 
 private:
-  TypeCheckStmt (bool is_final_stmt)
-    : TypeCheckBase (), infered (nullptr), is_final_stmt (is_final_stmt)
+  TypeCheckStmt (bool inside_loop)
+    : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
   {}
 
   TyTy::TyBase *infered;
-  bool is_final_stmt;
-}; // namespace Resolver
+  bool inside_loop;
+};
 
 } // namespace Resolver
 } // namespace Rust

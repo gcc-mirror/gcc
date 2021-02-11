@@ -3163,7 +3163,7 @@ public:
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_break_expr ()
   {
-    rust_assert (break_expr != nullptr);
+    rust_assert (has_break_expr ());
     return break_expr;
   }
 
@@ -3171,6 +3171,8 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+  
+  Lifetime &get_label () { return label; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3751,11 +3753,14 @@ class LoopLabel /*: public Node*/
   Lifetime label; // or type LIFETIME_OR_LABEL
   Location locus;
 
+  NodeId node_id;
+
 public:
   std::string as_string () const;
 
   LoopLabel (Lifetime loop_label, Location locus = Location ())
-    : label (std::move (loop_label)), locus (locus)
+    : label (std::move (loop_label)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Returns whether the LoopLabel is in an error state.
@@ -3765,6 +3770,10 @@ public:
   static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
 
   Location get_locus () const { return locus; }
+
+  Lifetime &get_lifetime () { return label; }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // Base loop expression AST node - aka LoopExpr
@@ -3822,6 +3831,8 @@ protected:
 
 public:
   bool has_loop_label () const { return !loop_label.is_error (); }
+
+  LoopLabel &get_loop_label () { return loop_label; }
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const final override { return get_locus (); }

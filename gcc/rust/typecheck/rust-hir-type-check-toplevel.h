@@ -86,7 +86,7 @@ public:
   void visit (HIR::StaticItem &var)
   {
     TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
-    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr ());
+    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
 
     context->insert_type (var.get_mappings (), type->combine (expr_type));
   }
@@ -94,7 +94,8 @@ public:
   void visit (HIR::ConstantItem &constant)
   {
     TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+    TyTy::TyBase *expr_type
+      = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->combine (expr_type));
   }
