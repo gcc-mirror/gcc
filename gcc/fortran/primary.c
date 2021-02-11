@@ -2407,11 +2407,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	component = NULL;
 
       if (intrinsic && !inquiry)
-       {
-	  gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
-		     "type component %qs", name, previous->name);
+	{
+	  if (previous)
+	    gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
+			"type component %qs", name, previous->name);
+	  else
+	    gfc_error ("%qs at %C is not an inquiry reference to an intrinsic "
+			"type component", name);
 	  return MATCH_ERROR;
-       }
+	}
       else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
