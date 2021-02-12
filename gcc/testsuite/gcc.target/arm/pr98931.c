@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main -O3 --param=max-completely-peeled-insns=1300 --save-temps" } */
+/* { dg-options "-march=armv8.1-m.main -O3 --param=max-completely-peeled-insns=1300 --save-temps -mthumb" } */
 
 extern long long a[][20][26][26][22];
 
