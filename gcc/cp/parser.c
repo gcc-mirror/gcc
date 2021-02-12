@@ -28807,7 +28807,9 @@ cp_parser_requirement_seq (cp_parser *parser)
       tree req = cp_parser_requirement (parser);
       if (req != error_mark_node)
 	result = tree_cons (NULL_TREE, req, result);
-    } while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE));
+    }
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE)
+	 && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF));
 
   /* If there are no valid requirements, this is not a valid expression. */
   if (!result)
