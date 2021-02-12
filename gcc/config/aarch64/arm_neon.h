@@ -9625,72 +9625,46 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1_s8 (int8x8_t __r, int8x16_t __tab, uint8x8_t __idx)
 {
-  int8x8_t __result = __r;
-  __asm__ ("tbx %0.8b,{%1.16b},%2.8b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v8qi (__r, __tab, (int8x8_t) __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1_u8 (uint8x8_t __r, uint8x16_t __tab, uint8x8_t __idx)
 {
-  uint8x8_t __result = __r;
-  __asm__ ("tbx %0.8b,{%1.16b},%2.8b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v8qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1_p8 (poly8x8_t __r, poly8x16_t __tab, uint8x8_t __idx)
 {
-  poly8x8_t __result = __r;
-  __asm__ ("tbx %0.8b,{%1.16b},%2.8b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x8_t) __builtin_aarch64_tbx1v8qi ((int8x8_t) __r,
+						 (int8x16_t) __tab,
+						 (int8x8_t) __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1q_s8 (int8x16_t __r, int8x16_t __tab, uint8x16_t __idx)
 {
-  int8x16_t __result = __r;
-  __asm__ ("tbx %0.16b,{%1.16b},%2.16b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v16qi (__r, __tab, (int8x16_t) __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1q_u8 (uint8x16_t __r, uint8x16_t __tab, uint8x16_t __idx)
 {
-  uint8x16_t __result = __r;
-  __asm__ ("tbx %0.16b,{%1.16b},%2.16b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v16qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx1q_p8 (poly8x16_t __r, poly8x16_t __tab, uint8x16_t __idx)
 {
-  poly8x16_t __result = __r;
-  __asm__ ("tbx %0.16b,{%1.16b},%2.16b"
-           : "+w"(__result)
-           : "w"(__tab), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x16_t) __builtin_aarch64_tbx1v16qi ((int8x16_t) __r,
+						   (int8x16_t) __tab,
+						   (int8x16_t) __idx);
 }
 
 /* V7 legacy table intrinsics.  */
@@ -9854,39 +9828,26 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx2_s8 (int8x8_t __r, int8x8x2_t __tab, int8x8_t __idx)
 {
-  int8x8_t __result = __r;
   int8x16_t __temp = vcombine_s8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbx %0.8b, {%1.16b}, %2.8b"
-           : "+w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v8qi (__r, __temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx2_u8 (uint8x8_t __r, uint8x8x2_t __tab, uint8x8_t __idx)
 {
-  uint8x8_t __result = __r;
   uint8x16_t __temp = vcombine_u8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbx %0.8b, {%1.16b}, %2.8b"
-           : "+w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbx1v8qi_uuuu (__r, __temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx2_p8 (poly8x8_t __r, poly8x8x2_t __tab, uint8x8_t __idx)
 {
-  poly8x8_t __result = __r;
   poly8x16_t __temp = vcombine_p8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbx %0.8b, {%1.16b}, %2.8b"
-           : "+w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x8_t) __builtin_aarch64_tbx1v8qi ((int8x8_t) __r,
+						 (int8x16_t) __temp,
+						 (int8x8_t) __idx);
 }
 
 /* End of temporary inline asm.  */

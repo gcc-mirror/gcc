@@ -6852,6 +6852,17 @@
   [(set_attr "type" "neon_tbl1<q>")]
 )
 
+(define_insn "aarch64_tbx1<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
+		    (match_operand:V16QI 2 "register_operand" "w")
+		    (match_operand:VB 3 "register_operand" "w")]
+		   UNSPEC_TBX))]
+  "TARGET_SIMD"
+  "tbx\\t%0.<Vtype>, {%2.16b}, %3.<Vtype>"
+  [(set_attr "type" "neon_tbl1<q>")]
+)
+
 ;; Two source registers.
 
 (define_insn "aarch64_tbl2v16qi"

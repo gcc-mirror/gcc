@@ -708,6 +708,10 @@
   VAR1 (BINOP, qtbl4, 0, NONE, v8qi)
   VAR1 (BINOP, qtbl4, 0, NONE, v16qi)
 
+  /* Implemented by aarch64_tbx1<mode>.  */
+  VAR2 (TERNOP, tbx1, 0, NONE, v8qi, v16qi)
+  VAR2 (TERNOPU, tbx1, 0, NONE, v8qi, v16qi)
+
   /* Implemented by aarch64_tbx4<mode>.  */
   VAR1 (TERNOP, tbx4, 0, NONE, v8qi)
   VAR1 (TERNOP, tbx4, 0, NONE, v16qi)
