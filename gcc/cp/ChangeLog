@@ -1,3 +1,12 @@
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95888
+	* pt.c (lookup_template_class_1): Pass tf_none to tsubst when looking
+	for the partial instantiation.
+
 2021-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98717

@@ -1,3 +1,22 @@
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98897
+	* match.c (gfc_match_call): Include associate names as possible
+	entities with typebound subroutines. The target needs to be
+	resolved for the type.
+
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99060
+	* primary.c (gfc_match_varspec): Test for non-null 'previous'
+	before using its name in the error message.
+
 2021-01-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,9 @@
+2021-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to
+	the cold section, emit a nop before the directive if the previous
+	active instruction can throw.
+
 2021-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/96015
