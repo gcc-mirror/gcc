@@ -9579,74 +9579,46 @@ vqrdmulhq_laneq_s32 (int32x4_t __a, int32x4_t __b, const int __c)
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1_p8 (poly8x16_t __a, uint8x8_t __b)
+vqtbl1_p8 (poly8x16_t __tab, uint8x8_t __idx)
 {
-  poly8x8_t __result;
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x8_t) __builtin_aarch64_tbl1v8qi ((int8x16_t) __tab,
+						 (int8x8_t) __idx);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1_s8 (int8x16_t __a, uint8x8_t __b)
+vqtbl1_s8 (int8x16_t __tab, uint8x8_t __idx)
 {
-  int8x8_t __result;
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v8qi (__tab, (int8x8_t) __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1_u8 (uint8x16_t __a, uint8x8_t __b)
+vqtbl1_u8 (uint8x16_t __tab, uint8x8_t __idx)
 {
-  uint8x8_t __result;
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v8qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1q_p8 (poly8x16_t __a, uint8x16_t __b)
+vqtbl1q_p8 (poly8x16_t __tab, uint8x16_t __idx)
 {
-  poly8x16_t __result;
-  __asm__ ("tbl %0.16b, {%1.16b}, %2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x16_t) __builtin_aarch64_tbl1v16qi ((int8x16_t) __tab,
+						   (int8x16_t) __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1q_s8 (int8x16_t __a, uint8x16_t __b)
+vqtbl1q_s8 (int8x16_t __tab, uint8x16_t __idx)
 {
-  int8x16_t __result;
-  __asm__ ("tbl %0.16b, {%1.16b}, %2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v16qi (__tab, (int8x16_t) __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vqtbl1q_u8 (uint8x16_t __a, uint8x16_t __b)
+vqtbl1q_u8 (uint8x16_t __tab, uint8x16_t __idx)
 {
-  uint8x16_t __result;
-  __asm__ ("tbl %0.16b, {%1.16b}, %2.16b"
-           : "=w"(__result)
-           : "w"(__a), "w"(__b)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v16qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x8_t
@@ -9727,78 +9699,53 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl1_s8 (int8x8_t __tab, int8x8_t __idx)
 {
-  int8x8_t __result;
-  int8x16_t __temp = vcombine_s8 (__tab, vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  int8x16_t __temp = vcombine_s8 (__tab,
+				  vcreate_s8 (__AARCH64_UINT64_C (0x0)));
+  return __builtin_aarch64_tbl1v8qi (__temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl1_u8 (uint8x8_t __tab, uint8x8_t __idx)
 {
-  uint8x8_t __result;
-  uint8x16_t __temp = vcombine_u8 (__tab, vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  uint8x16_t __temp = vcombine_u8 (__tab,
+				   vcreate_u8 (__AARCH64_UINT64_C (0x0)));
+  return __builtin_aarch64_tbl1v8qi_uuu (__temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl1_p8 (poly8x8_t __tab, uint8x8_t __idx)
 {
-  poly8x8_t __result;
-  poly8x16_t __temp = vcombine_p8 (__tab, vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  poly8x16_t __temp = vcombine_p8 (__tab,
+				   vcreate_p8 (__AARCH64_UINT64_C (0x0)));
+  return (poly8x8_t) __builtin_aarch64_tbl1v8qi ((int8x16_t) __temp,
+						 (int8x8_t) __idx);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl2_s8 (int8x8x2_t __tab, int8x8_t __idx)
 {
-  int8x8_t __result;
   int8x16_t __temp = vcombine_s8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v8qi (__temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl2_u8 (uint8x8x2_t __tab, uint8x8_t __idx)
 {
-  uint8x8_t __result;
   uint8x16_t __temp = vcombine_u8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_tbl1v8qi_uuu (__temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl2_p8 (poly8x8x2_t __tab, uint8x8_t __idx)
 {
-  poly8x8_t __result;
   poly8x16_t __temp = vcombine_p8 (__tab.val[0], __tab.val[1]);
-  __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
-           : "=w"(__result)
-           : "w"(__temp), "w"(__idx)
-           : /* No clobbers */);
-  return __result;
+  return (poly8x8_t) __builtin_aarch64_tbl1v8qi ((int8x16_t) __temp,
+						 (int8x8_t) __idx);
 }
 
 __extension__ extern __inline int8x8_t

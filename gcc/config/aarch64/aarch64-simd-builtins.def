@@ -696,6 +696,10 @@
   VAR1 (BINOP, tbl3, 0, NONE, v8qi)
   VAR1 (BINOP, tbl3, 0, NONE, v16qi)
 
+  /* Implemented by aarch64_tbl1<mode>.  */
+  VAR2 (BINOP, tbl1, 0, NONE, v8qi, v16qi)
+  VAR2 (BINOPU, tbl1, 0, NONE, v8qi, v16qi)
+
   /* Implemented by aarch64_qtbl3<mode>.  */
   VAR1 (BINOP, qtbl3, 0, NONE, v8qi)
   VAR1 (BINOP, qtbl3, 0, NONE, v16qi)
