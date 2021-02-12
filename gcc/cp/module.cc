@@ -3108,7 +3108,8 @@ private:
   unsigned section;
 #if CHECKING_P
   int importedness;		/* Checker that imports not occurring
-				   inappropriately.  */
+				   inappropriately.  +ve imports ok,
+				   -ve imports not ok.  */
 #endif
 
 public:
@@ -14632,13 +14633,36 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  depset *dep = b->deps[jx];
 
-	  if (!dep->is_binding ()
-	      && dep->is_import () && !TREE_VISITED (dep->get_entity ()))
+	  if (dep->is_binding ())
+	    {
+	      /* A cross-module using decl could be here.  */
+	      for (unsigned ix = dep->deps.length (); --ix;)
+		{
+		  depset *bind = dep->deps[ix];
+		  if (bind->get_entity_kind () == depset::EK_USING
+		      && bind->deps[1]->is_import ())
+		    {
+		      tree import = bind->deps[1]->get_entity ();
+		      if (!TREE_VISITED (import))
+			{
+			  sec.tree_node (import);
+			  dump (dumper::CLUSTER)
+			    && dump ("Seeded import %N", import);
+			}
+		    }
+		}
+	      /* Also check the namespace itself.  */
+	      dep = dep->deps[0];
+	    }
+
+	  if (dep->is_import ())
 	    {
 	      tree import = dep->get_entity ();
-
-	      sec.tree_node (import);
-	      dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
+	      if (!TREE_VISITED (import))
+		{
+		  sec.tree_node (import);
+		  dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
+		}
 	    }
 	}
     }
