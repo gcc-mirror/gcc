@@ -344,9 +344,23 @@ namespace ip
       to_string(const _Allocator& __a = _Allocator()) const
       {
 	__string_with<_Allocator> __str(__a);
-	__str.resize(INET6_ADDRSTRLEN);
-	if (inet_ntop(AF_INET6, &_M_bytes, &__str.front(), __str.size()))
-	  __str.erase(__str.find('\0'));
+	__str.resize(INET6_ADDRSTRLEN + (_M_scope_id ? 11 : 0));
+	char* const __p = &__str.front();
+	if (inet_ntop(AF_INET6, &_M_bytes, __p, __str.size()))
+	  {
+	    auto __end = __str.find('\0');
+	    if (unsigned long __scope = _M_scope_id)
+	      {
+		__end +=
+#if _GLIBCXX_USE_C99_STDIO
+		  __builtin_snprintf(__p + __end, __str.size() - __end,
+				     "%%%lu", __scope);
+#else
+		  __builtin_sprintf(__p + __end, "%%%lu", __scope);
+#endif
+	      }
+	    __str.erase(__end);
+	  }
 	else
 	  __str.resize(0);
 	return __str;
@@ -364,9 +378,7 @@ namespace ip
     static constexpr address_v6
     loopback() noexcept
     {
-      address_v6 __addr;
-      __addr._M_bytes[15] = 1;
-      return __addr;
+      return {bytes_type{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1}};
     }
 
   private:
