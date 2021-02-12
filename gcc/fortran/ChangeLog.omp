@@ -1,3 +1,18 @@
+2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99045
+	Backport from mainline
+	2020-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97694
+	PR fortran/97723
+	* check.c (allocatable_check): Select rank temporaries are
+	permitted even though they are treated as associate variables.
+	* resolve.c (gfc_resolve_code): Break on select rank as well as
+	select type so that the block os resolved.
+	* trans-stmt.c (trans_associate_var): Class associate variables
+	that are optional dummies must use the backend_decl.
+
 2021-01-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

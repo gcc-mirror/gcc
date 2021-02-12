@@ -1,3 +1,13 @@
+2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99045
+	Backport from mainline
+	2020-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97694
+	PR fortran/97723
+	* gfortran.dg/select_rank_5.f90: New test.
+
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
