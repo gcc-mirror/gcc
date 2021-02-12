@@ -19,6 +19,7 @@
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-do run { target c++2a } }
 // { dg-require-effective-target cxx11-abi }
+// { dg-xfail-run-if "cannot catch forced_unwind" { *-*-* } { "-fno-rtti" } }
 
 #include <syncstream>
 #include <testsuite_hooks.h>
