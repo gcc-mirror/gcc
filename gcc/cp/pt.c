@@ -28643,7 +28643,7 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 
       tree ctmpl = CLASSTYPE_TI_TEMPLATE (type);
       tparms = DECL_TEMPLATE_PARMS (ctmpl);
-      targs = CLASSTYPE_TI_ARGS (type);
+      targs = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
       ci = NULL_TREE;
       fargs = NULL_TREE;
       loc = DECL_SOURCE_LOCATION (ctmpl);
@@ -28866,8 +28866,22 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   if (init == NULL_TREE)
     return NULL_TREE;
 
+  /* We might be creating a guide for a class member template, e.g.,
+
+       template<typename U> struct A {
+	 template<typename T> struct B { T t; };
+       };
+
+     At this point, A will have been instantiated.  Below, we need to
+     use both A<U>::B<T> (TEMPLATE_TYPE) and A<int>::B<T> (TYPE) types.  */
+  const bool member_template_p
+    = (DECL_TEMPLATE_INFO (tmpl)
+       && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (tmpl)));
   tree type = TREE_TYPE (tmpl);
-  if (!CP_AGGREGATE_TYPE_P (type))
+  tree template_type = (member_template_p
+			? TREE_TYPE (DECL_TI_TEMPLATE (tmpl))
+			: type);
+  if (!CP_AGGREGATE_TYPE_P (template_type))
     return NULL_TREE;
 
   /* No aggregate candidate for copy-initialization.  */
@@ -28884,10 +28898,21 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   tree parms = NULL_TREE;
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      init = reshape_init (type, init, complain);
+      init = reshape_init (template_type, init, complain);
       if (init == error_mark_node)
 	return NULL_TREE;
       parms = collect_ctor_idx_types (init, parms);
+      /* If we're creating a deduction guide for a member class template,
+	 we've used the original template pattern type for the reshape_init
+	 above; this is done because we want PARMS to be a template parameter
+	 type, something that can be deduced when used as a function template
+	 parameter.  At this point the outer class template has already been
+	 partially instantiated (we deferred the deduction until the enclosing
+	 scope is non-dependent).  Therefore we have to partially instantiate
+	 PARMS, so that its template level is properly reduced and we don't get
+	 mismatches when deducing types using the guide with PARMS.  */
+      if (member_template_p)
+	parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
     }
   else if (TREE_CODE (init) == TREE_LIST)
     {
@@ -29223,6 +29248,11 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 {
   /* We should have handled this in the caller.  */
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
+    return ptype;
+
+  /* Wait until the enclosing scope is non-dependent.  */
+  if (DECL_CLASS_SCOPE_P (tmpl)
+      && dependent_type_p (DECL_CONTEXT (tmpl)))
     return ptype;
 
   /* Initializing one placeholder from another.  */
