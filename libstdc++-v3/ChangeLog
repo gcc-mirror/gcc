@@ -1,3 +1,20 @@
+2021-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_ptr.cc (_GLIBCXX_EH_PTR_RELOPS_COMPAT): Define
+	new macro.
+	* libsupc++/exception_ptr.h (_GLIBCXX_EH_PTR_USED): Check new
+	macro instead of _GLIBCXX_EH_PTR_COMPAT.
+	(operator==): Likewise.
+
+2021-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99058
+	* doc/xml/manual/status_cxx2011.xml: Document when support
+	became stable.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88881

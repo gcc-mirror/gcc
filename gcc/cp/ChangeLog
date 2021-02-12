@@ -1,3 +1,36 @@
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95888
+	* pt.c (lookup_template_class_1): Pass tf_none to tsubst when looking
+	for the partial instantiation.
+
+2021-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* init.c (build_zero_init_1): Handle zero initialiation of
+	flexible array members like initialization of [0] arrays.
+	Use integer_minus_onep instead of comparison to integer_minus_one_node
+	and integer_zerop instead of comparison against size_zero_node.
+	Formatting fixes.
+
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99063
+	* semantics.c (finish_do_stmt): Check for unexpanded parameter packs.
+
+2021-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97582
+	* name-lookup.c (op_unqualified_lookup): Handle an ambiguous
+	lookup result by discarding it if the first element is a
+	class-scope declaration, otherwise return it.
+	(push_operator_bindings): Handle an ambiguous lookup result by
+	doing push_local_binding on each element in the list.
+
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (cp_parser_selection_statement): Use vec_free.
+
 2021-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98988

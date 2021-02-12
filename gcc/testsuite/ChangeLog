@@ -1,3 +1,58 @@
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95888
+	* g++.dg/template/deduce10.C: New test.
+	* g++.dg/template/deduce9.C: New test.
+
+2021-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99041
+	* g++.target/powerpc/pr99041.C: New test.
+
+2021-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* g++.dg/ext/flexary38.C: New test.
+
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99063
+	* g++.dg/cpp0x/variadic-crash6.C: New test.
+
+2021-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97582
+	* g++.dg/cpp0x/lambda/lambda-template17.C: New test.
+
+2021-02-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/98931
+	* gcc.target/arm/pr98931.c: New testcase.
+
+2021-02-11  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/98772
+	* gcc.target/aarch64/pr98772.c: New test.
+
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98897
+	* gfortran.dg/typebound_call_32.f90: New test.
+
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99060
+	* gfortran.dg/pr99060.f90: New test.
+
+2021-02-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: Pass -mfpu=auto.
+
+2021-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/98825
+	* gfortran.dg/dollar_edit_descriptor_4.f: New test.
+
 2021-02-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/92879
