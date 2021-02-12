@@ -803,6 +803,9 @@ detect_type_change_from_memory_writes (ipa_func_body_info *fbi, tree arg,
       || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))))
     return true;
 
+  if (fbi->aa_walk_budget == 0)
+    return false;
+
   ao_ref_init (&ao, arg);
   ao.base = base;
   ao.offset = offset;
@@ -815,7 +818,11 @@ detect_type_change_from_memory_writes (ipa_func_body_info *fbi, tree arg,
 
   int walked
     = walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
-			  &tci, NULL, NULL, fbi->aa_walk_budget + 1);
+			  &tci, NULL, NULL, fbi->aa_walk_budget);
+  if (walked >= 0)
+    fbi->aa_walk_budget -= walked;
+  else
+    fbi->aa_walk_budget = 0;
 
   if (walked >= 0 && !tci.type_maybe_changed)
     return false;
@@ -948,21 +955,20 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
 
   gcc_checking_assert (fbi);
   paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
-  if (paa->parm_modified)
+  if (paa->parm_modified || fbi->aa_walk_budget == 0)
     return false;
 
   gcc_checking_assert (gimple_vuse (stmt) != NULL_TREE);
   ao_ref_init (&refd, parm_load);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
 				   &modified, NULL, NULL,
-				   fbi->aa_walk_budget + 1);
+				   fbi->aa_walk_budget);
   if (walked < 0)
     {
       modified = true;
-      if (fbi)
-	fbi->aa_walk_budget = 0;
+      fbi->aa_walk_budget = 0;
     }
-  else if (fbi)
+  else
     fbi->aa_walk_budget -= walked;
   if (paa && modified)
     paa->parm_modified = true;
@@ -1010,14 +1016,14 @@ parm_ref_data_preserved_p (struct ipa_func_body_info *fbi,
 
   gcc_checking_assert (fbi);
   paa = parm_bb_aa_status_for_bb (fbi, gimple_bb (stmt), index);
-  if (paa->ref_modified)
+  if (paa->ref_modified || fbi->aa_walk_budget == 0)
     return false;
 
   gcc_checking_assert (gimple_vuse (stmt));
   ao_ref_init (&refd, ref);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified,
 				   &modified, NULL, NULL,
-				   fbi->aa_walk_budget + 1);
+				   fbi->aa_walk_budget);
   if (walked < 0)
     {
       modified = true;
@@ -1051,13 +1057,13 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
   struct ipa_param_aa_status *paa = parm_bb_aa_status_for_bb (fbi,
 							      gimple_bb (call),
 							      index);
-  if (paa->pt_modified)
+  if (paa->pt_modified || fbi->aa_walk_budget == 0)
     return false;
 
   ao_ref_init_from_ptr_and_size (&refd, parm, NULL_TREE);
   int walked = walk_aliased_vdefs (&refd, gimple_vuse (call), mark_modified,
 				   &modified, NULL, NULL,
-				   fbi->aa_walk_budget + 1);
+				   fbi->aa_walk_budget);
   if (walked < 0)
     {
       fbi->aa_walk_budget = 0;
@@ -2040,7 +2046,8 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
      of the aggregate is affected by definition of the virtual operand, it
      builds a sorted linked list of ipa_agg_jf_list describing that.  */
 
-  for (tree dom_vuse = gimple_vuse (call); dom_vuse;)
+  for (tree dom_vuse = gimple_vuse (call);
+       dom_vuse && fbi->aa_walk_budget > 0;)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (dom_vuse);
 
@@ -2052,6 +2059,7 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 	  continue;
 	}
 
+      fbi->aa_walk_budget--;
       if (stmt_may_clobber_ref_p_1 (stmt, &r))
 	{
 	  struct ipa_known_agg_contents_list *content
