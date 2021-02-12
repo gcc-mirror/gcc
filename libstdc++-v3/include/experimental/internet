@@ -354,19 +354,18 @@ namespace ip
 #endif
 
     // static members:
+
     static constexpr address_v6
     any() noexcept
     {
-      address_v6 __addr;
-      __builtin_memcpy(&__addr._M_bytes, in6addr_any.s6_addr, 16);
-      return __addr;
+      return {};
     }
 
     static constexpr address_v6
     loopback() noexcept
     {
       address_v6 __addr;
-      __builtin_memcpy(&__addr._M_bytes, in6addr_loopback.s6_addr, 16);
+      __addr._M_bytes[15] = 1;
       return __addr;
     }
 
@@ -755,7 +754,10 @@ namespace ip
 	__str++;
       }
     if (__out == std::end(__buf))
-      __ec = std::make_error_code(std::errc::invalid_argument);
+      {
+	__ec = std::make_error_code(std::errc::invalid_argument);
+	return {};
+      }
     else
       {
 	*__out = '\0';
@@ -790,7 +792,10 @@ namespace ip
 	__n++;
       }
     if (__out == std::end(__buf))
-      __ec = std::make_error_code(std::errc::invalid_argument);
+      {
+	__ec = std::make_error_code(std::errc::invalid_argument);
+	return {};
+      }
     else
       {
 	*__out = '\0';
@@ -835,7 +840,10 @@ namespace ip
 	__n++;
       }
     if (__out == std::end(__buf))
-      __ec = std::make_error_code(std::errc::invalid_argument);
+      {
+	__ec = std::make_error_code(std::errc::invalid_argument);
+	return {};
+      }
     else
       {
 	*__out = '\0';

@@ -667,10 +667,12 @@ inline namespace v1
 	    continue;
 
 	  if (__res == __reactor::_S_timeout)
-	    if (__timerq == nullptr)
-	      return false;
-	    else
-	      continue;  // timed out, so restart loop and process the timer
+	    {
+	      if (__timerq == nullptr)
+		return false;
+	      else
+		continue;  // timed out, so restart loop and process the timer
+	    }
 
 	  __timerq = nullptr;
 
