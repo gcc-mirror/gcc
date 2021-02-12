@@ -763,7 +763,7 @@ namespace __gnu_test
 #endif // C++11
 
 #if __cplusplus >= 201703L
-#if __cpp_aligned_new && __cpp_rtti && __cpp_exceptions
+#if __cpp_aligned_new
   // A concrete memory_resource, with error checking.
   class memory_resource : public std::pmr::memory_resource
   {
@@ -842,9 +842,9 @@ namespace __gnu_test
 	  if (p == a->p)
 	    {
 	      if (bytes != a->bytes)
-		throw bad_size();
+		_S_throw<bad_size>();
 	      if (alignment != a->alignment)
-		throw bad_alignment();
+		_S_throw<bad_alignment>();
 #if __cpp_sized_deallocation
 	      ::operator delete(p, bytes, std::align_val_t(alignment));
 #else
@@ -857,19 +857,35 @@ namespace __gnu_test
 	    }
 	  aptr = &a->next;
 	}
-      throw bad_address();
+      _S_throw<bad_address>();
     }
 
     bool
     do_is_equal(const std::pmr::memory_resource& r) const noexcept override
     {
+#if __cpp_rtti
       // Equality is determined by sharing the same allocation_lists object.
       if (auto p = dynamic_cast<const memory_resource*>(&r))
 	return p->lists == lists;
+#else
+      if (this == &r) // Is this the best we can do without RTTI?
+	return true;
+#endif
       return false;
     }
 
   private:
+    template<typename E>
+      static void
+      _S_throw()
+      {
+#if __cpp_exceptions
+	throw E();
+#else
+	__builtin_abort();
+#endif
+      }
+
     struct allocation
     {
       void* p;
@@ -905,7 +921,7 @@ namespace __gnu_test
 
     allocation_lists* lists;
   };
-#endif // aligned-new && rtti
+#endif // aligned-new
 
   // Set the default resource, and restore the previous one on destruction.
   struct default_resource_mgr
