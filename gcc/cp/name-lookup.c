@@ -382,7 +382,8 @@ add_decl_to_level (cp_binding_level *b, tree decl)
 
   /* Make sure we don't create a circular list.  xref_tag can end
      up pushing the same artificial decl more than once.  We
-     should have already detected that in update_binding.  */
+     should have already detected that in update_binding.  (This isn't a
+     complete verification of non-circularity.)  */
   gcc_assert (b->names != decl);
 
   /* We build up the list in reverse order, and reverse it later if
@@ -3496,41 +3497,6 @@ implicitly_export_namespace (tree ns)
     }
 }
 
-/* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
-
-static void
-newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
-{
-  if (TREE_CODE (decl) == TYPE_DECL)
-    {
-      tree type = TREE_TYPE (decl);
-
-      if (type != error_mark_node)
-	{
-	  if (TYPE_NAME (type) != decl)
-	    set_underlying_type (decl);
-
-	  set_identifier_type_value_with_scope (name, decl, level);
-
-	  if (level->kind != sk_namespace
-	      && !instantiating_current_function_p ())
-	    /* This is a locally defined typedef in a function that
-	       is not a template instantation, record it to implement
-	       -Wunused-local-typedefs.  */
-	    record_locally_defined_typedef (decl);
-	}
-    }
-  else
-    {
-      if (VAR_P (decl) && !DECL_LOCAL_DECL_P (decl))
-	maybe_register_incomplete_var (decl);
-
-      if (VAR_OR_FUNCTION_DECL_P (decl)
-	  && DECL_EXTERN_C_P (decl))
-	check_extern_c_conflict (decl);
-    }
-}
-
 /* DECL is a global or module-purview entity.  If it has non-internal
    linkage, and we have a module vector, record it in the appropriate
    slot.  We have already checked for duplicates.  */
@@ -3839,12 +3805,38 @@ do_pushdecl (tree decl, bool hiding)
 	decl = old;
       else
 	{
-	  newbinding_bookkeeping (name, decl, level);
+	  if (TREE_CODE (decl) == TYPE_DECL)
+	    {
+	      tree type = TREE_TYPE (decl);
 
-	  if (VAR_OR_FUNCTION_DECL_P (decl)
-	      && DECL_LOCAL_DECL_P (decl)
-	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
-	    push_local_extern_decl_alias (decl);
+	      if (type != error_mark_node)
+		{
+		  if (TYPE_NAME (type) != decl)
+		    set_underlying_type (decl);
+
+		  set_identifier_type_value_with_scope (name, decl, level);
+
+		  if (level->kind != sk_namespace
+		      && !instantiating_current_function_p ())
+		    /* This is a locally defined typedef in a function that
+		       is not a template instantation, record it to implement
+		       -Wunused-local-typedefs.  */
+		    record_locally_defined_typedef (decl);
+		}
+	    }
+	  else if (VAR_OR_FUNCTION_DECL_P (decl))
+	    {
+	      if (DECL_EXTERN_C_P (decl))
+		check_extern_c_conflict (decl);
+
+	      if (!DECL_LOCAL_DECL_P (decl)
+		  && VAR_P (decl))
+		maybe_register_incomplete_var (decl);
+
+	      if (DECL_LOCAL_DECL_P (decl)
+		  && NAMESPACE_SCOPE_P (decl))
+		push_local_extern_decl_alias (decl);
+	    }
 
 	  if (level->kind == sk_namespace
 	      && TREE_PUBLIC (level->this_entity))
@@ -4182,11 +4174,25 @@ load_pending_specializations (tree ns, tree name)
 }
 
 void
-add_module_decl (tree ns, tree name, tree decl)
+add_module_namespace_decl (tree ns, tree decl)
 {
   gcc_assert (!DECL_CHAIN (decl));
+  gcc_checking_assert (!(VAR_OR_FUNCTION_DECL_P (decl)
+			 && DECL_LOCAL_DECL_P (decl)));
+  if (CHECKING_P)
+    /* Expensive already-there? check.  */
+    for (auto probe = NAMESPACE_LEVEL (ns)->names; probe;
+	 probe = DECL_CHAIN (probe))
+      gcc_assert (decl != probe);
+
   add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
-  newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
+
+  if (VAR_P (decl))
+    maybe_register_incomplete_var (decl);
+
+  if (VAR_OR_FUNCTION_DECL_P (decl)
+      && DECL_EXTERN_C_P (decl))
+    check_extern_c_conflict (decl);
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

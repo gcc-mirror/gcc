@@ -8162,6 +8162,12 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      if (NAMESPACE_SCOPE_P (decl)
+	  && (mk == MK_named || mk == MK_unique
+	      || mk == MK_enum || mk == MK_friend_spec)
+	  && !(VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl)))
+	add_module_namespace_decl (CP_DECL_CONTEXT (decl), decl);
+
       /* The late insertion of an alias here or an implicit member
          (next block), is ok, because we ensured that all imports were
          loaded up before we started this cluster.  Thus an insertion
@@ -14893,20 +14899,6 @@ module_state::read_cluster (unsigned snum)
 				     : 0,
 				     decls, type, visible))
 	      sec.set_overrun ();
-
-	    if (type
-		&& CP_DECL_CONTEXT (type) == ns
-		&& !sec.is_duplicate (type))
-	      add_module_decl (ns, name, type);
-
-	    for (ovl_iterator iter (decls); iter; ++iter)
-	      if (!iter.using_p ())
-		{
-		  tree decl = *iter;
-		  if (CP_DECL_CONTEXT (decl) == ns
-		      && !sec.is_duplicate (decl))
-		    add_module_decl (ns, name, decl);
-		}
 	  }
 	  break;
 

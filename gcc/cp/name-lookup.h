@@ -490,7 +490,7 @@ extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				int mod_glob_flag,
 				tree value, tree type, tree visible);
-extern void add_module_decl (tree ctx, tree name, tree decl);
+extern void add_module_namespace_decl (tree ns, tree decl);
 
 enum WMB_Flags
 {
