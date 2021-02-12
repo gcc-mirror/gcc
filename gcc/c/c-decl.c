@@ -1910,15 +1910,22 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 static void
 locate_old_decl (tree decl)
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl)
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && fndecl_built_in_p (decl)
       && !C_DECL_DECLARED_BUILTIN (decl))
     ;
   else if (DECL_INITIAL (decl))
-    inform (input_location, "previous definition of %q+D was here", decl);
+    inform (input_location,
+	    "previous definition of %q+D with type %qT",
+	    decl, TREE_TYPE (decl));
   else if (C_DECL_IMPLICIT (decl))
-    inform (input_location, "previous implicit declaration of %q+D was here", decl);
+    inform (input_location,
+	    "previous implicit declaration of %q+D with type %qT",
+	    decl, TREE_TYPE (decl));
   else
-    inform (input_location, "previous declaration of %q+D was here", decl);
+    inform (input_location,
+	    "previous declaration of %q+D with type %qT",
+	    decl, TREE_TYPE (decl));
 }
 
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.
@@ -2083,7 +2090,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	       && C_DECL_IMPLICIT (olddecl) && !DECL_INITIAL (olddecl))
 	{
 	  pedwarned = pedwarn (input_location, 0,
-			       "conflicting types for %q+D", newdecl);
+			       "conflicting types for %q+D; have %qT",
+			       newdecl, newtype);
 	  /* Make sure we keep void as the return type.  */
 	  TREE_TYPE (olddecl) = *oldtypep = oldtype = newtype;
 	}
@@ -2119,7 +2127,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		error ("conflicting type qualifiers for %q+D", newdecl);
 	    }
 	  else
-	    error ("conflicting types for %q+D", newdecl);
+	    error ("conflicting types for %q+D; have %qT", newdecl, newtype);
 	  diagnose_arglist_conflict (newdecl, olddecl, newtype, oldtype);
 	  locate_old_decl (olddecl);
 	  return false;
@@ -9457,27 +9465,29 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   current_function_prototype_locus = UNKNOWN_LOCATION;
   current_function_prototype_built_in = false;
   current_function_prototype_arg_types = NULL_TREE;
-  if (!prototype_p (TREE_TYPE (decl1)))
+  tree newtype = TREE_TYPE (decl1);
+  tree oldtype = old_decl ? TREE_TYPE (old_decl) : newtype;
+  if (!prototype_p (newtype))
     {
+      tree oldrt = TREE_TYPE (oldtype);
+      tree newrt = TREE_TYPE (newtype);
       if (old_decl != NULL_TREE
-	  && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
-	  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
-			TREE_TYPE (TREE_TYPE (old_decl))))
+	  && TREE_CODE (oldtype) == FUNCTION_TYPE
+	  && comptypes (oldrt, newrt))
 	{
-	  if (stdarg_p (TREE_TYPE (old_decl)))
+	  if (stdarg_p (oldtype))
 	    {
 	      auto_diagnostic_group d;
 	      warning_at (loc, 0, "%q+D defined as variadic function "
 			  "without prototype", decl1);
 	      locate_old_decl (old_decl);
 	    }
-	  TREE_TYPE (decl1) = composite_type (TREE_TYPE (old_decl),
-					      TREE_TYPE (decl1));
+	  TREE_TYPE (decl1) = composite_type (oldtype, newtype);
 	  current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
 	  current_function_prototype_built_in
 	    = C_DECL_BUILTIN_PROTOTYPE (old_decl);
 	  current_function_prototype_arg_types
-	    = TYPE_ARG_TYPES (TREE_TYPE (decl1));
+	    = TYPE_ARG_TYPES (newtype);
 	}
       if (TREE_PUBLIC (decl1))
 	{

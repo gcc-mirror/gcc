@@ -2381,11 +2381,11 @@ find_bbs_reachable_by_hot_paths (hash_set<basic_block> *set)
    cfg optimizations that may make hot blocks previously reached
    by both hot and cold blocks now only reachable along cold paths.  */
 
-static vec<basic_block>
+static auto_vec<basic_block>
 find_partition_fixes (bool flag_only)
 {
   basic_block bb;
-  vec<basic_block> bbs_to_fix = vNULL;
+  auto_vec<basic_block> bbs_to_fix;
   hash_set<basic_block> set;
 
   /* Callers check this.  */
@@ -2431,7 +2431,7 @@ fixup_partitions (void)
      a cold partition cannot dominate a basic block in a hot partition.
      Fixup any that now violate this requirement, as a result of edge
      forwarding and unreachable block deletion.  */
-  vec<basic_block> bbs_to_fix = find_partition_fixes (false);
+  auto_vec<basic_block> bbs_to_fix = find_partition_fixes (false);
 
   /* Do the partition fixup after all necessary blocks have been converted to
      cold, so that we only update the region crossings the minimum number of
@@ -2682,7 +2682,7 @@ rtl_verify_edges (void)
   if (crtl->has_bb_partition && !err
       && current_ir_type () == IR_RTL_CFGLAYOUT)
     {
-      vec<basic_block> bbs_to_fix = find_partition_fixes (true);
+      auto_vec<basic_block> bbs_to_fix = find_partition_fixes (true);
       err = !bbs_to_fix.is_empty ();
     }
 

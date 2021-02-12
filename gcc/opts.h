@@ -475,6 +475,10 @@ extern bool parse_and_check_align_values (const char *flag,
 					  bool report_error,
 					  location_t loc);
 
+extern void parse_and_check_patch_area (const char *arg, bool report_error,
+					HOST_WIDE_INT *patch_area_size,
+					HOST_WIDE_INT *patch_area_start);
+
 extern void parse_options_from_collect_gcc_options (const char *, obstack *,
 						    int *);
 

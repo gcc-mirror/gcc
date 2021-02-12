@@ -13308,6 +13308,14 @@ do so.
 The maximum number of stores to attempt to merge into wider stores in the store
 merging pass.
 
+@item max-store-chains-to-track
+The maximum number of store chains to track at the same time in the attempt
+to merge them into wider stores in the store merging pass.
+
+@item max-stores-to-track
+The maximum number of stores to track at the same time in the attemt to
+to merge them into wider stores in the store merging pass.
+
 @item max-unrolled-insns
 The maximum number of instructions that a loop may have to be unrolled.
 If a loop is unrolled, this parameter also determines how many times

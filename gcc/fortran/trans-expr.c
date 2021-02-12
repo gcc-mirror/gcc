@@ -6403,9 +6403,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      /* Unallocated allocatable arrays and unassociated pointer arrays
 		 need their dtype setting if they are argument associated with
-		 assumed rank dummies.  */
+		 assumed rank dummies, unless already assumed rank.  */
 	      if (!sym->attr.is_bind_c && e && fsym && fsym->as
-		  && fsym->as->type == AS_ASSUMED_RANK)
+		  && fsym->as->type == AS_ASSUMED_RANK
+		  && e->rank != -1)
 		{
 		  if (gfc_expr_attr (e).pointer
 		      || gfc_expr_attr (e).allocatable)

@@ -98,6 +98,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Processor feature/optimization bitmasks.  */
+#define m_NONE HOST_WIDE_INT_0U
+#define m_ALL (~HOST_WIDE_INT_0U)
 #define m_386 (HOST_WIDE_INT_1U<<PROCESSOR_I386)
 #define m_486 (HOST_WIDE_INT_1U<<PROCESSOR_I486)
 #define m_PENT (HOST_WIDE_INT_1U<<PROCESSOR_PENTIUM)

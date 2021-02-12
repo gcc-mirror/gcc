@@ -291,7 +291,7 @@ else version (OpenBSD)
     }
 
     enum PTHREAD_MUTEX_INITIALIZER              = null;
-    //enum PTHREAD_ONCE_INIT                      = { PTHREAD_NEEDS_INIT, PTHREAD_MUTEX_INITIALIZER };
+    enum PTHREAD_ONCE_INIT                      = pthread_once_t.init;
     enum PTHREAD_COND_INITIALIZER               = null;
     enum PTHREAD_RWLOCK_INITIALIZER             = null;
 }
@@ -330,7 +330,6 @@ else version (DragonFlyBSD)
     enum PTHREAD_DONE_INIT  = 1;
 
     enum PTHREAD_MUTEX_INITIALIZER              = null;
-    //enum PTHREAD_ONCE_INIT                      = { PTHREAD_NEEDS_INIT, NULL };
     enum PTHREAD_ONCE_INIT                      = pthread_once_t.init;
     enum PTHREAD_COND_INITIALIZER               = null;
     enum PTHREAD_RWLOCK_INITIALIZER             = null;

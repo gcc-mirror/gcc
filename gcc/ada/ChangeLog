@@ -1,3 +1,21 @@
+2021-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): If the first component
+	with rep clause is the _Parent field with variable size, temporarily
+	set it aside when computing the internal layout of the REP part again.
+	* gcc-interface/utils.c (finish_record_type): Revert to taking the
+	maximum when merging sizes for all record types with rep clause.
+	(merge_sizes): Put SPECIAL parameter last and adjust recursive calls.
+
+2021-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Make the
+	two fields of the fat pointer type addressable, and do not make the
+	template type read-only.
+	<E_Record_Type>: If the type has discriminants mark it as may_alias.
+	* gcc-interface/utils.c (make_dummy_type): Likewise.
+	(build_dummy_unc_pointer_types): Likewise.
+
 2021-01-26  Marius Hillenbrand  <mhillen@linux.ibm.com>
 
 	PR ada/98228

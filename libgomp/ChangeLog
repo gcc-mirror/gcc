@@ -1,3 +1,39 @@
+2021-02-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (__futex_wait):
+	Revert output type back to long.
+	(__futex_wake): Ditto.
+	(futex_wait): Update for revert.
+	(futex_wake): Ditto.
+
+2021-02-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (__futex_wait): New static inline
+	wrapper function.  Correct output type to int and
+	timeout type to void *.
+	(__futex_wake): New static inline wrapper function.
+	Correct output type to int.
+	(futex_wait): Use __futex_wait.
+	(futex_wake): Use __futex_wake.
+
+2021-02-10  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/98979
+	* testsuite/libgomp.oacc-fortran/array-stride-dt-1.f90: Add expected
+	errors.
+
+2021-02-04  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/array-stride-dt-1.f90: New test.
+
+2021-02-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX908.
+	(gcn_gfx908_s): New constant string.
+	(isa_hsa_name): Add gfx908.
+	(isa_code): Add gfx908.
+
 2021-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp.texi (omp_fulfill_event): New entry.

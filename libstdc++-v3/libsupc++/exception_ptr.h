@@ -39,7 +39,7 @@
 #include <typeinfo>
 #include <new>
 
-#ifdef _GLIBCXX_EH_PTR_COMPAT
+#ifdef _GLIBCXX_EH_PTR_RELOPS_COMPAT
 # define _GLIBCXX_EH_PTR_USED __attribute__((__used__))
 #else
 # define _GLIBCXX_EH_PTR_USED
@@ -153,7 +153,7 @@ namespace std
 #endif
 
 #if __cpp_impl_three_way_comparison >= 201907L \
-      && ! defined _GLIBCXX_EH_PTR_COMPAT
+      && ! defined _GLIBCXX_EH_PTR_RELOPS_COMPAT
       friend bool
       operator==(const exception_ptr&, const exception_ptr&) noexcept = default;
 #else

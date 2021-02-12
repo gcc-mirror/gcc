@@ -212,6 +212,8 @@ struct vn_avail
   int location;
   /* The LEADER for the value we are chained on.  */
   int leader;
+  /* The previous value we pushed a avail record to.  */
+  struct vn_ssa_aux *next_undo;
 };
 
 typedef struct vn_ssa_aux

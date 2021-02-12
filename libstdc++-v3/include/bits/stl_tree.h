@@ -415,21 +415,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
 			       _Rb_tree_node_base& __header) throw ();
 
-#if __cplusplus >= 201402L
-  template<typename _Cmp, typename _SfinaeType, typename = __void_t<>>
-    struct __has_is_transparent
-    { };
-
-  template<typename _Cmp, typename _SfinaeType>
-    struct __has_is_transparent<_Cmp, _SfinaeType,
-				__void_t<typename _Cmp::is_transparent>>
-    { typedef void type; };
-
-  template<typename _Cmp, typename _SfinaeType>
-    using __has_is_transparent_t
-      = typename __has_is_transparent<_Cmp, _SfinaeType>::type;
-#endif
-
 #if __cplusplus > 201402L
   template<typename _Tree1, typename _Cmp2>
     struct _Rb_tree_merge_helper { };

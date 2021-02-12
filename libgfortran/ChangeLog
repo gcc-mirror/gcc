@@ -1,3 +1,9 @@
+2021-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/98825
+	* io/transfer.c (next_record_w): Insert check for seen_dollar and if
+	so, skip issueing next record.
+
 2021-01-27  Harris Snyder  <hsnyder@structura.bio>
 
 	* runtime/ISO_Fortran_binding.c (CFI_establish): fixed

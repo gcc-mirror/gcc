@@ -4297,6 +4297,13 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	}
       else if (vect_nop_conversion_p (orig_stmt_info))
 	continue;
+      /* For single-argument PHIs assume coalescing which means zero cost
+	 for the scalar and the vector PHIs.  This avoids artificially
+	 favoring the vector path (but may pessimize it in some cases).  */
+      else if (is_a <gphi *> (orig_stmt_info->stmt)
+	       && gimple_phi_num_args
+		    (as_a <gphi *> (orig_stmt_info->stmt)) == 1)
+	continue;
       else
 	kind = scalar_stmt;
       record_stmt_cost (cost_vec, 1, kind, orig_stmt_info,
@@ -4333,6 +4340,20 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
     }
 }
 
+/* Comparator for the loop-index sorted cost vectors.  */
+
+static int
+li_cost_vec_cmp (const void *a_, const void *b_)
+{
+  auto *a = (const std::pair<unsigned, stmt_info_for_cost *> *)a_;
+  auto *b = (const std::pair<unsigned, stmt_info_for_cost *> *)b_;
+  if (a->first < b->first)
+    return -1;
+  else if (a->first == b->first)
+    return 0;
+  return 1;
+}
+
 /* Check if vectorization of the basic block is profitable for the
    subgraph denoted by SLP_INSTANCES.  */
 
@@ -4345,61 +4366,151 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   unsigned int vec_inside_cost = 0, vec_outside_cost = 0, scalar_cost = 0;
   unsigned int vec_prologue_cost = 0, vec_epilogue_cost = 0;
 
-  void *vect_target_cost_data = init_cost (NULL);
-
   /* Calculate scalar cost and sum the cost for the vector stmts
      previously collected.  */
-  stmt_vector_for_cost scalar_costs;
-  scalar_costs.create (0);
+  stmt_vector_for_cost scalar_costs = vNULL;
+  stmt_vector_for_cost vector_costs = vNULL;
   hash_set<slp_tree> visited;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       auto_vec<bool, 20> life;
       life.safe_grow_cleared (SLP_TREE_LANES (SLP_INSTANCE_TREE (instance)),
 			      true);
+      if (SLP_INSTANCE_ROOT_STMT (instance))
+	record_stmt_cost (&scalar_costs, 1, scalar_stmt,
+			  SLP_INSTANCE_ROOT_STMT (instance), 0, vect_body);
       vect_bb_slp_scalar_cost (bb_vinfo,
 			       SLP_INSTANCE_TREE (instance),
 			       &life, &scalar_costs, visited);
-      add_stmt_costs (bb_vinfo, vect_target_cost_data, &instance->cost_vec);
+      vector_costs.safe_splice (instance->cost_vec);
       instance->cost_vec.release ();
     }
   /* Unset visited flag.  */
-  stmt_info_for_cost *si;
-  FOR_EACH_VEC_ELT (scalar_costs, i, si)
-    gimple_set_visited  (si->stmt_info->stmt, false);
-
-  void *scalar_target_cost_data = init_cost (NULL);
-  add_stmt_costs (bb_vinfo, scalar_target_cost_data, &scalar_costs);
-  scalar_costs.release ();
-  unsigned dummy;
-  finish_cost (scalar_target_cost_data, &dummy, &scalar_cost, &dummy);
-  destroy_cost_data (scalar_target_cost_data);
-
-  /* Complete the target-specific vector cost calculation.  */
-  finish_cost (vect_target_cost_data, &vec_prologue_cost,
-	       &vec_inside_cost, &vec_epilogue_cost);
-  destroy_cost_data (vect_target_cost_data);
-
-  vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
+  stmt_info_for_cost *cost;
+  FOR_EACH_VEC_ELT (scalar_costs, i, cost)
+    gimple_set_visited  (cost->stmt_info->stmt, false);
 
   if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");
+
+  /* When costing non-loop vectorization we need to consider each covered
+     loop independently and make sure vectorization is profitable.  For
+     now we assume a loop may be not entered or executed an arbitrary
+     number of iterations (???  static information can provide more
+     precise info here) which means we can simply cost each containing
+     loops stmts separately.  */
+
+  /* First produce cost vectors sorted by loop index.  */
+  auto_vec<std::pair<unsigned, stmt_info_for_cost *> >
+    li_scalar_costs (scalar_costs.length ());
+  auto_vec<std::pair<unsigned, stmt_info_for_cost *> >
+    li_vector_costs (vector_costs.length ());
+  FOR_EACH_VEC_ELT (scalar_costs, i, cost)
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "Cost model analysis: \n");
-      dump_printf (MSG_NOTE, "  Vector inside of basic block cost: %d\n",
-		   vec_inside_cost);
-      dump_printf (MSG_NOTE, "  Vector prologue cost: %d\n", vec_prologue_cost);
-      dump_printf (MSG_NOTE, "  Vector epilogue cost: %d\n", vec_epilogue_cost);
-      dump_printf (MSG_NOTE, "  Scalar cost of basic block: %d\n", scalar_cost);
+      unsigned l = gimple_bb (cost->stmt_info->stmt)->loop_father->num;
+      li_scalar_costs.quick_push (std::make_pair (l, cost));
+    }
+  /* Use a random used loop as fallback in case the first vector_costs
+     entry does not have a stmt_info associated with it.  */
+  unsigned l = li_scalar_costs[0].first;
+  FOR_EACH_VEC_ELT (vector_costs, i, cost)
+    {
+      /* We inherit from the previous COST, invariants, externals and
+	 extracts immediately follow the cost for the related stmt.  */
+      if (cost->stmt_info)
+	l = gimple_bb (cost->stmt_info->stmt)->loop_father->num;
+      li_vector_costs.quick_push (std::make_pair (l, cost));
+    }
+  li_scalar_costs.qsort (li_cost_vec_cmp);
+  li_vector_costs.qsort (li_cost_vec_cmp);
+
+  /* Now cost the portions individually.  */
+  unsigned vi = 0;
+  unsigned si = 0;
+  while (si < li_scalar_costs.length ()
+	 && vi < li_vector_costs.length ())
+    {
+      unsigned sl = li_scalar_costs[si].first;
+      unsigned vl = li_vector_costs[vi].first;
+      if (sl != vl)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Scalar %d and vector %d loop part do not "
+			     "match up, skipping scalar part\n", sl, vl);
+	  /* Skip the scalar part, assuming zero cost on the vector side.  */
+	  do
+	    {
+	      si++;
+	    }
+	  while (si < li_scalar_costs.length ()
+		 && li_scalar_costs[si].first == sl);
+	  continue;
+	}
+
+      void *scalar_target_cost_data = init_cost (NULL);
+      do
+	{
+	  add_stmt_cost (bb_vinfo, scalar_target_cost_data,
+			 li_scalar_costs[si].second);
+	  si++;
+	}
+      while (si < li_scalar_costs.length ()
+	     && li_scalar_costs[si].first == sl);
+      unsigned dummy;
+      finish_cost (scalar_target_cost_data, &dummy, &scalar_cost, &dummy);
+      destroy_cost_data (scalar_target_cost_data);
+
+      /* Complete the target-specific vector cost calculation.  */
+      void *vect_target_cost_data = init_cost (NULL);
+      do
+	{
+	  add_stmt_cost (bb_vinfo, vect_target_cost_data,
+			 li_vector_costs[vi].second);
+	  vi++;
+	}
+      while (vi < li_vector_costs.length ()
+	     && li_vector_costs[vi].first == vl);
+      finish_cost (vect_target_cost_data, &vec_prologue_cost,
+		   &vec_inside_cost, &vec_epilogue_cost);
+      destroy_cost_data (vect_target_cost_data);
+
+      vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Cost model analysis for part in loop %d:\n", sl);
+	  dump_printf (MSG_NOTE, "  Vector cost: %d\n",
+		       vec_inside_cost + vec_outside_cost);
+	  dump_printf (MSG_NOTE, "  Scalar cost: %d\n", scalar_cost);
+	}
+
+      /* Vectorization is profitable if its cost is more than the cost of scalar
+	 version.  Note that we err on the vector side for equal cost because
+	 the cost estimate is otherwise quite pessimistic (constant uses are
+	 free on the scalar side but cost a load on the vector side for
+	 example).  */
+      if (vec_outside_cost + vec_inside_cost > scalar_cost)
+	{
+	  scalar_costs.release ();
+	  vector_costs.release ();
+	  return false;
+	}
+    }
+  if (vi < li_vector_costs.length ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Excess vector cost for part in loop %d:\n",
+			 li_vector_costs[vi].first);
+      scalar_costs.release ();
+      vector_costs.release ();
+      return false;
     }
 
-  /* Vectorization is profitable if its cost is more than the cost of scalar
-     version.  Note that we err on the vector side for equal cost because
-     the cost estimate is otherwise quite pessimistic (constant uses are
-     free on the scalar side but cost a load on the vector side for
-     example).  */
-  if (vec_outside_cost + vec_inside_cost > scalar_cost)
-    return false;
-
+  scalar_costs.release ();
+  vector_costs.release ();
   return true;
 }
 

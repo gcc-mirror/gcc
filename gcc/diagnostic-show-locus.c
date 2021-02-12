@@ -905,6 +905,15 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
       /* Are both within the same macro expansion?  */
       if (linemap_macro_expansion_map_p (map_a))
 	{
+	  /* If so, then they're only compatible if either both are
+	     from the macro definition, or both from the macro arguments.  */
+	  bool loc_a_from_defn
+	    = linemap_location_from_macro_definition_p (line_table, loc_a);
+	  bool loc_b_from_defn
+	    = linemap_location_from_macro_definition_p (line_table, loc_b);
+	  if (loc_a_from_defn != loc_b_from_defn)
+	    return false;
+
 	  /* Expand each location towards the spelling location, and
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);

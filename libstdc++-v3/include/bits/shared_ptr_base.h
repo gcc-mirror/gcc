@@ -450,7 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       virtual void*
-      _M_get_deleter(const std::type_info& __ti) noexcept
+      _M_get_deleter(const type_info& __ti [[__gnu__::__unused__]]) noexcept
       {
 #if __cpp_rtti
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS

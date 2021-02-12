@@ -724,6 +724,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __k) const;
 
+#if __cplusplus > 201702L
+      template<typename _Kt,
+	       typename = __has_is_transparent_t<_Hash, _Kt>,
+	       typename = __has_is_transparent_t<_Equal, _Kt>>
+	iterator
+	_M_find_tr(const _Kt& __k);
+
+      template<typename _Kt,
+	       typename = __has_is_transparent_t<_Hash, _Kt>,
+	       typename = __has_is_transparent_t<_Equal, _Kt>>
+	const_iterator
+	_M_find_tr(const _Kt& __k) const;
+
+      template<typename _Kt,
+	       typename = __has_is_transparent_t<_Hash, _Kt>,
+	       typename = __has_is_transparent_t<_Equal, _Kt>>
+	size_type
+	_M_count_tr(const _Kt& __k) const;
+
+      template<typename _Kt,
+	       typename = __has_is_transparent_t<_Hash, _Kt>,
+	       typename = __has_is_transparent_t<_Equal, _Kt>>
+	pair<iterator, iterator>
+	_M_equal_range_tr(const _Kt& __k);
+
+      template<typename _Kt,
+	       typename = __has_is_transparent_t<_Hash, _Kt>,
+	       typename = __has_is_transparent_t<_Equal, _Kt>>
+	pair<const_iterator, const_iterator>
+	_M_equal_range_tr(const _Kt& __k) const;
+#endif
+
     private:
       // Bucket index computation helpers.
       size_type
@@ -739,6 +771,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __node_base_ptr
       _M_find_before_node(size_type, const key_type&, __hash_code) const;
 
+      template<typename _Kt>
+	__node_base_ptr
+	_M_find_before_node_tr(size_type, const _Kt&, __hash_code) const;
+
       __node_ptr
       _M_find_node(size_type __bkt, const key_type& __key,
 		   __hash_code __c) const
@@ -748,6 +784,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<__node_ptr>(__before_n->_M_nxt);
 	return nullptr;
       }
+
+      template<typename _Kt>
+	__node_ptr
+	_M_find_node_tr(size_type __bkt, const _Kt& __key,
+			__hash_code __c) const
+	{
+	  auto __before_n = _M_find_before_node_tr(__bkt, __key, __c);
+	  if (__before_n)
+	    return static_cast<__node_ptr>(__before_n->_M_nxt);
+	  return nullptr;
+	}
 
       // Insert a node at the beginning of a bucket.
       void
@@ -1532,6 +1579,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return const_iterator(_M_find_node(__bkt, __k, __code));
     }
 
+#if __cplusplus > 201703L
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt, typename, typename>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_find_tr(const _Kt& __k)
+      -> iterator
+      {
+	__hash_code __code = this->_M_hash_code_tr(__k);
+	std::size_t __bkt = _M_bucket_index(__code);
+	return iterator(_M_find_node_tr(__bkt, __k, __code));
+      }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt, typename, typename>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_find_tr(const _Kt& __k) const
+      -> const_iterator
+      {
+	__hash_code __code = this->_M_hash_code_tr(__k);
+	std::size_t __bkt = _M_bucket_index(__code);
+	return const_iterator(_M_find_node_tr(__bkt, __k, __code));
+      }
+#endif
+
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -1560,6 +1641,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return __result;
     }
+
+#if __cplusplus > 201703L
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt, typename, typename>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_count_tr(const _Kt& __k) const
+      -> size_type
+      {
+	__hash_code __code = this->_M_hash_code_tr(__k);
+	std::size_t __bkt = _M_bucket_index(__code);
+	auto __n = _M_find_node_tr(__bkt, __k, __code);
+	if (!__n)
+	  return 0;
+
+	// All equivalent values are next to each other, if we find a
+	// non-equivalent value after an equivalent one it means that we won't
+	// find any new equivalent value.
+	iterator __it(__n);
+	size_type __result = 1;
+	for (++__it;
+	     __it._M_cur && this->_M_equals_tr(__k, __code, *__it._M_cur);
+	     ++__it)
+	  ++__result;
+
+	return __result;
+      }
+#endif
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -1615,6 +1728,64 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return { __beg, __ite };
     }
 
+#if __cplusplus > 201703L
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt, typename, typename>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_equal_range_tr(const _Kt& __k)
+      -> pair<iterator, iterator>
+      {
+	__hash_code __code = this->_M_hash_code_tr(__k);
+	std::size_t __bkt = _M_bucket_index(__code);
+	auto __n = _M_find_node_tr(__bkt, __k, __code);
+	iterator __ite(__n);
+	if (!__n)
+	  return { __ite, __ite };
+
+	// All equivalent values are next to each other, if we find a
+	// non-equivalent value after an equivalent one it means that we won't
+	// find any new equivalent value.
+	auto __beg = __ite++;
+	while (__ite._M_cur && this->_M_equals_tr(__k, __code, *__ite._M_cur))
+	  ++__ite;
+
+	return { __beg, __ite };
+      }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt, typename, typename>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_equal_range_tr(const _Kt& __k) const
+      -> pair<const_iterator, const_iterator>
+      {
+	__hash_code __code = this->_M_hash_code_tr(__k);
+	std::size_t __bkt = _M_bucket_index(__code);
+	auto __n = _M_find_node_tr(__bkt, __k, __code);
+	const_iterator __ite(__n);
+	if (!__n)
+	  return { __ite, __ite };
+
+	// All equivalent values are next to each other, if we find a
+	// non-equivalent value after an equivalent one it means that we won't
+	// find any new equivalent value.
+	auto __beg = __ite++;
+	while (__ite._M_cur && this->_M_equals_tr(__k, __code, *__ite._M_cur))
+	  ++__ite;
+
+	return { __beg, __ite };
+      }
+#endif
+
   // Find the node before the one whose key compares equal to k in the bucket
   // bkt. Return nullptr if no node is found.
   template<typename _Key, typename _Value, typename _Alloc,
@@ -1645,6 +1816,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return nullptr;
     }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _Kt>
+      auto
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_find_before_node_tr(size_type __bkt, const _Kt& __k,
+			     __hash_code __code) const
+      -> __node_base_ptr
+      {
+	__node_base_ptr __prev_p = _M_buckets[__bkt];
+	if (!__prev_p)
+	  return nullptr;
+
+	for (__node_ptr __p = static_cast<__node_ptr>(__prev_p->_M_nxt);;
+	     __p = __p->_M_next())
+	  {
+	    if (this->_M_equals_tr(__k, __code, *__p))
+	      return __prev_p;
+
+	    if (!__p->_M_nxt || _M_bucket_index(*__p->_M_next()) != __bkt)
+	      break;
+	    __prev_p = __p;
+	  }
+
+	return nullptr;
+      }
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,

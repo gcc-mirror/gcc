@@ -581,6 +581,13 @@ class region_model
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt);
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt);
 
+  path_var
+  get_representative_path_var_1 (const svalue *sval,
+				 svalue_set *visited) const;
+  path_var
+  get_representative_path_var_1 (const region *reg,
+				 svalue_set *visited) const;
+
   void add_any_constraints_from_ssa_def_stmt (tree lhs,
 					      enum tree_code op,
 					      tree rhs,

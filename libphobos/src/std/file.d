@@ -1490,6 +1490,15 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R))
 //   vfs.timestamp_precision sysctl to a value greater than zero.
 // - OS X, where the native filesystem (HFS+) stores filesystem
 //   timestamps with 1-second precision.
+//
+// Note: on linux systems, although in theory a change to a file date
+// can be tracked with precision of 4 msecs, this test waits 20 msecs
+// to prevent possible problems relative to the CI services the dlang uses,
+// as they may have the HZ setting that controls the software clock set to 100
+// (instead of the more common 250).
+// see https://man7.org/linux/man-pages/man7/time.7.html
+//     https://stackoverflow.com/a/14393315,
+//     https://issues.dlang.org/show_bug.cgi?id=21148
 version (FreeBSD) {} else
 version (DragonFlyBSD) {} else
 version (OSX) {} else
@@ -1508,7 +1517,7 @@ version (OSX) {} else
         remove(deleteme);
         assert(time != lastTime);
         lastTime = time;
-        Thread.sleep(10.msecs);
+        Thread.sleep(20.msecs);
     }
 }
 
@@ -2757,15 +2766,27 @@ else version (NetBSD)
             buffer.length *= 2;
         }
     }
+    else version (DragonFlyBSD)
+    {
+        import core.sys.dragonflybsd.sys.sysctl : sysctl, CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME;
+        import std.exception : errnoEnforce, assumeUnique;
+
+        int[4] mib = [CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1];
+        size_t len;
+
+        auto result = sysctl(mib.ptr, mib.length, null, &len, null, 0); // get the length of the path
+        errnoEnforce(result == 0);
+
+        auto buffer = new char[len - 1];
+        result = sysctl(mib.ptr, mib.length, buffer.ptr, &len, null, 0);
+        errnoEnforce(result == 0);
+
+        return buffer.assumeUnique;
+    }
     else version (FreeBSD)
     {
+        import core.sys.freebsd.sys.sysctl : sysctl, CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME;
         import std.exception : errnoEnforce, assumeUnique;
-        enum
-        {
-            CTL_KERN = 1,
-            KERN_PROC = 14,
-            KERN_PROC_PATHNAME = 12
-        }
 
         int[4] mib = [CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1];
         size_t len;
@@ -2781,11 +2802,58 @@ else version (NetBSD)
     }
     else version (NetBSD)
     {
-        return readLink("/proc/self/exe");
+        import core.sys.netbsd.sys.sysctl : sysctl, CTL_KERN, KERN_PROC_ARGS, KERN_PROC_PATHNAME;
+        import std.exception : errnoEnforce, assumeUnique;
+
+        int[4] mib = [CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME];
+        size_t len;
+
+        auto result = sysctl(mib.ptr, mib.length, null, &len, null, 0); // get the length of the path
+        errnoEnforce(result == 0);
+
+        auto buffer = new char[len - 1];
+        result = sysctl(mib.ptr, mib.length, buffer.ptr, &len, null, 0);
+        errnoEnforce(result == 0);
+
+        return buffer.assumeUnique;
     }
-    else version (DragonFlyBSD)
+    else version (OpenBSD)
     {
-        return readLink("/proc/curproc/file");
+        import core.sys.openbsd.sys.sysctl : sysctl, CTL_KERN, KERN_PROC_ARGS, KERN_PROC_ARGV;
+        import core.sys.posix.unistd : getpid;
+        import std.conv : to;
+        import std.exception : enforce, errnoEnforce;
+        import std.process : searchPathFor;
+
+        int[4] mib = [CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV];
+        size_t len;
+
+        auto result = sysctl(mib.ptr, mib.length, null, &len, null, 0);
+        errnoEnforce(result == 0);
+
+        auto argv = new char*[len - 1];
+        result = sysctl(mib.ptr, mib.length, argv.ptr, &len, null, 0);
+        errnoEnforce(result == 0);
+
+        auto argv0 = argv[0];
+        if (*argv0 == '/' || *argv0 == '.')
+        {
+            import core.sys.posix.stdlib : realpath;
+            auto absolutePath = realpath(argv0, null);
+            scope (exit)
+            {
+                if (absolutePath)
+                    free(absolutePath);
+            }
+            errnoEnforce(absolutePath);
+            return to!(string)(absolutePath);
+        }
+        else
+        {
+            auto absolutePath = searchPathFor(to!string(argv0));
+            errnoEnforce(absolutePath);
+            return absolutePath;
+        }
     }
     else version (Solaris)
     {

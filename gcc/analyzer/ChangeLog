@@ -1,3 +1,15 @@
+2021-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98575
+	* sm-file.cc (is_file_using_fn_p): Support "_IO_"-prefixed
+	variants.
+
+2021-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98575
+	* store.cc (store::set_value): Treat a pointer written to *UNKNOWN
+	as having escaped.
+
 2021-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93355

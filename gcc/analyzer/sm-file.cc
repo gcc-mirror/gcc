@@ -307,7 +307,16 @@ static bool
 is_file_using_fn_p (tree fndecl)
 {
   function_set fs = get_file_using_fns ();
-  return fs.contains_decl_p (fndecl);
+  if (fs.contains_decl_p (fndecl))
+    return true;
+
+  /* Also support variants of these names prefixed with "_IO_".  */
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  if (strncmp (name, "_IO_", 4) == 0)
+    if (fs.contains_name_p (name + 4))
+      return true;
+
+  return false;
 }
 
 /* Implementation of state_machine::on_stmt vfunc for fileptr_state_machine.  */

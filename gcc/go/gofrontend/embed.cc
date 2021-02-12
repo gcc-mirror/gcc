@@ -812,8 +812,7 @@ Gogo::initializer_for_embeds(Type* type,
 	}
 
       // Each pattern in the embedcfg file maps to a list of file
-      // names.  For each file name, the embedcfg file records an
-      // absolute path.  Add those absolute paths to PATHS.
+      // names.  Add those file names to PATHS.
       for (std::vector<std::string>::const_iterator pf = pp->second.begin();
 	   pf != pp->second.end();
 	   pf++)
@@ -865,7 +864,7 @@ Gogo::initializer_for_embeds(Type* type,
 	}
 
       std::string data;
-      if (!read_file(paths[0].c_str(), loc, &data))
+      if (!read_file(this->embed_files_[paths[0]].c_str(), loc, &data))
 	return Expression::make_error(loc);
 
       Expression* e = Expression::make_string(data, loc);

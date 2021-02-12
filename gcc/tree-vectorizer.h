@@ -1481,6 +1481,15 @@ add_stmt_cost (vec_info *vinfo, void *data, int count,
   return cost;
 }
 
+/* Alias targetm.vectorize.add_stmt_cost.  */
+
+static inline unsigned
+add_stmt_cost (vec_info *vinfo, void *data, stmt_info_for_cost *i)
+{
+  return add_stmt_cost (vinfo, data, i->count, i->kind, i->stmt_info,
+			i->vectype, i->misalign, i->where);
+}
+
 /* Alias targetm.vectorize.finish_cost.  */
 
 static inline void

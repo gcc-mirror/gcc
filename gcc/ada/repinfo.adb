@@ -92,6 +92,18 @@ package body Repinfo is
       Table_Increment      => Alloc.Rep_Table_Increment,
       Table_Name           => "BE_Rep_Table");
 
+   --------------------------------------------------------------
+   -- Representation of Front-End Dynamic Size/Offset Entities --
+   --------------------------------------------------------------
+
+   package Dynamic_SO_Entity_Table is new Table.Table (
+      Table_Component_Type => Entity_Id,
+      Table_Index_Type     => Nat,
+      Table_Low_Bound      => 1,
+      Table_Initial        => Alloc.Rep_Table_Initial,
+      Table_Increment      => Alloc.Rep_Table_Increment,
+      Table_Name           => "FE_Rep_Table");
+
    Unit_Casing : Casing_Type;
    --  Identifier casing for current unit. This is set by List_Rep_Info for
    --  each unit, before calling subprograms which may read it.
@@ -212,6 +224,16 @@ package body Repinfo is
          Op1  => Discriminant_Number (Discr));
    end Create_Discrim_Ref;
 
+   ---------------------------
+   -- Create_Dynamic_SO_Ref --
+   ---------------------------
+
+   function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref is
+   begin
+      Dynamic_SO_Entity_Table.Append (E);
+      return UI_From_Int (-Dynamic_SO_Entity_Table.Last);
+   end Create_Dynamic_SO_Ref;
+
    -----------------
    -- Create_Node --
    -----------------
@@ -239,6 +261,33 @@ package body Repinfo is
    begin
       return Entity_Header_Num (Id mod Relevant_Entities_Size);
    end Entity_Hash;
+
+   ---------------------------
+   -- Get_Dynamic_SO_Entity --
+   ---------------------------
+
+   function Get_Dynamic_SO_Entity (U : Dynamic_SO_Ref) return Entity_Id is
+   begin
+      return Dynamic_SO_Entity_Table.Table (-UI_To_Int (U));
+   end Get_Dynamic_SO_Entity;
+
+   -----------------------
+   -- Is_Dynamic_SO_Ref --
+   -----------------------
+
+   function Is_Dynamic_SO_Ref (U : SO_Ref) return Boolean is
+   begin
+      return U < Uint_0;
+   end Is_Dynamic_SO_Ref;
+
+   ----------------------
+   -- Is_Static_SO_Ref --
+   ----------------------
+
+   function Is_Static_SO_Ref (U : SO_Ref) return Boolean is
+   begin
+      return U >= Uint_0;
+   end Is_Static_SO_Ref;
 
    ---------
    -- lgx --

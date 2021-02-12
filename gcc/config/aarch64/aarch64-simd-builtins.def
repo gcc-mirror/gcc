@@ -55,6 +55,11 @@
   BUILTIN_VS (UNOP, ctz, 2, NONE)
   BUILTIN_VB (UNOP, popcount, 2, NONE)
 
+  /* Implemented by aarch64_get_low<mode>.  */
+  BUILTIN_VQMOV (UNOP, get_low, 0, AUTO_FP)
+  /* Implemented by aarch64_get_high<mode>.  */
+  BUILTIN_VQMOV (UNOP, get_high, 0, AUTO_FP)
+
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0, NONE)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0, NONE)
@@ -299,6 +304,14 @@
 
   BUILTIN_VD_HSI (BINOP, smull_n, 0, NONE)
   BUILTIN_VD_HSI (BINOPU, umull_n, 0, NONE)
+
+  BUILTIN_VQ_HSI (BINOP, smull_hi_n, 0, NONE)
+  BUILTIN_VQ_HSI (BINOPU, umull_hi_n, 0, NONE)
+
+  BUILTIN_VQ_HSI (TERNOP_LANE, smull_hi_lane, 0, NONE)
+  BUILTIN_VQ_HSI (TERNOP_LANE, smull_hi_laneq, 0, NONE)
+  BUILTIN_VQ_HSI (TERNOPU_LANE, umull_hi_lane, 0, NONE)
+  BUILTIN_VQ_HSI (TERNOPU_LANE, umull_hi_laneq, 0, NONE)
 
   BUILTIN_VD_HSI (TERNOP_LANE, vec_smult_lane_, 0, NONE)
   BUILTIN_VD_HSI (QUADOP_LANE, vec_smlal_lane_, 0, NONE)

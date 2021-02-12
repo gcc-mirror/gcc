@@ -144,14 +144,6 @@ bool flag_stack_usage_info = false
 Variable
 int flag_debug_asm
 
-; How many NOP insns to place at each function entry by default
-Variable
-HOST_WIDE_INT function_entry_patch_area_size
-
-; And how far the real asm entry point is into this area
-Variable
-HOST_WIDE_INT function_entry_patch_area_start
-
 ; Balance between GNAT encodings and standard DWARF to emit.
 Variable
 enum dwarf_gnat_encodings gnat_encodings = DWARF_GNAT_ENCODINGS_DEFAULT
@@ -2309,7 +2301,7 @@ Common Var(flag_profile_reorder_functions) Optimization
 Enable function reordering that improves code placement.
 
 fpatchable-function-entry=
-Common Joined Optimization
+Common Var(flag_patchable_function_entry) Joined Optimization
 Insert NOP instructions at each function entry.
 
 frandom-seed

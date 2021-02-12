@@ -1461,14 +1461,6 @@ in (fn)
     fn(sp);
 }
 
-version (Solaris)
-{
-    import core.sys.solaris.sys.priocntl;
-    import core.sys.solaris.sys.types;
-    import core.sys.posix.sys.wait : idtype_t;
-}
-
-
 version (Windows)
 private extern (D) void scanWindowsOnly(scope ScanAllThreadsTypeFn scan, ThreadBase _t) nothrow
 {

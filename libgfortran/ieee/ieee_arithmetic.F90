@@ -77,15 +77,16 @@ module IEEE_ARITHMETIC
 
 
   ! Equality operators on the derived types
-  interface operator (==)
+  ! Note, the FE overloads .eq. to == and .ne. to /=
+  interface operator (.eq.)
     module procedure IEEE_CLASS_TYPE_EQ, IEEE_ROUND_TYPE_EQ
   end interface
-  public :: operator(==)
+  public :: operator(.eq.)
 
-  interface operator (/=)
+  interface operator (.ne.)
     module procedure IEEE_CLASS_TYPE_NE, IEEE_ROUND_TYPE_NE
   end interface
-  public :: operator (/=)
+  public :: operator (.ne.)
 
 
   ! IEEE_IS_FINITE

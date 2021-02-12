@@ -503,9 +503,43 @@ enum ILS
 
 enum BUILTIN
 {
-    BUILTINunknown = -1,        // not known if this is a builtin
-    BUILTINno,                  // this is not a builtin
-    BUILTINyes                  // this is a builtin
+    BUILTINunknown = 255,   /// not known if this is a builtin
+    BUILTINunimp = 0,       /// this is not a builtin
+    BUILTINgcc,             /// this is a GCC builtin
+    BUILTINllvm,            /// this is an LLVM builtin
+    BUILTINsin,
+    BUILTINcos,
+    BUILTINtan,
+    BUILTINsqrt,
+    BUILTINfabs,
+    BUILTINldexp,
+    BUILTINlog,
+    BUILTINlog2,
+    BUILTINlog10,
+    BUILTINexp,
+    BUILTINexpm1,
+    BUILTINexp2,
+    BUILTINround,
+    BUILTINfloor,
+    BUILTINceil,
+    BUILTINtrunc,
+    BUILTINcopysign,
+    BUILTINpow,
+    BUILTINfmin,
+    BUILTINfmax,
+    BUILTINfma,
+    BUILTINisnan,
+    BUILTINisinfinity,
+    BUILTINisfinite,
+    BUILTINbsf,
+    BUILTINbsr,
+    BUILTINbswap,
+    BUILTINpopcnt,
+    BUILTINyl2x,
+    BUILTINyl2xp1,
+    BUILTINtoPrecFloat,
+    BUILTINtoPrecDouble,
+    BUILTINtoPrecReal
 };
 
 Expression *eval_builtin(Loc loc, FuncDeclaration *fd, Expressions *arguments);

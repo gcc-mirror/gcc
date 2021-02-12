@@ -5700,6 +5700,14 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	scope = ctx;
     }
 
+  /* You cannot using-decl a destructor.  */
+  if (TREE_CODE (lookup.name) == BIT_NOT_EXPR)
+    {
+      error ("%<%T%s%D%> names destructor", scope,
+	     &"::"[scope == global_namespace ? 2 : 0], lookup.name);
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       /* Naming a namespace member.  */
@@ -5736,13 +5744,6 @@ lookup_using_decl (tree scope, name_lookup &lookup)
       if (!MAYBE_CLASS_TYPE_P (npscope))
 	{
 	  error ("%qT is not a class, namespace, or enumeration", npscope);
-	  return NULL_TREE;
-	}
-
-      /* You cannot using-decl a destructor.  */
-      if (TREE_CODE (lookup.name) == BIT_NOT_EXPR)
-	{
-	  error ("%<%T::%D%> names destructor", scope, lookup.name);
 	  return NULL_TREE;
 	}
 
@@ -9218,11 +9219,15 @@ op_unqualified_lookup (tree fnname)
     /* Remember we found nothing!  */
     return error_mark_node;
 
-  tree d = is_overloaded_fn (fns) ? get_first_fn (fns) : fns;
+  tree d = fns;
+  if (TREE_CODE (d) == TREE_LIST)
+    d = TREE_VALUE (d);
+  if (is_overloaded_fn (d))
+    d = get_first_fn (d);
   if (DECL_CLASS_SCOPE_P (d))
     /* We don't need to remember class-scope functions or declarations,
        normal unqualified lookup will find them again.  */
-    fns = NULL_TREE;
+    return NULL_TREE;
 
   return fns;
 }
@@ -9301,7 +9306,11 @@ push_operator_bindings ()
       if (tree val = TREE_VALUE (binds))
 	{
 	  tree name = TREE_PURPOSE (binds);
-	  push_local_binding (name, val, /*using*/true);
+	  if (TREE_CODE (val) == TREE_LIST)
+	    for (tree v = val; v; v = TREE_CHAIN (v))
+	      push_local_binding (name, TREE_VALUE (v), /*using*/true);
+	  else
+	    push_local_binding (name, val, /*using*/true);
 	}
 }
 

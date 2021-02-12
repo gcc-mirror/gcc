@@ -62,7 +62,7 @@ struct intrinsic_decl
 static const intrinsic_decl intrinsic_decls[] =
 {
 #define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
-    { INTRINSIC_ ## CODE, BUILT_IN_ ## BUILTIN, NAME, MODULE, DECO, CTFE },
+    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE },
 
 #include "intrinsics.def"
 
@@ -81,7 +81,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 
   /* The builtin flag is updated only if we can evaluate the intrinsic
      at compile-time.  Such as the math or bitop intrinsics.  */
-  decl->builtin = BUILTINno;
+  decl->builtin = BUILTINunimp;
 
   /* Check if it's a compiler intrinsic.  We only require that any
      internally recognised intrinsics are declared in a module with
@@ -177,12 +177,12 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 		 built-in function.  It could be `int pow(int, int)'.  */
 	      tree rettype = TREE_TYPE (TREE_TYPE (decl->csym));
 	      if (mathfn_built_in (rettype, BUILT_IN_POW) != NULL_TREE)
-		decl->builtin = BUILTINyes;
+		decl->builtin = BUILTINgcc;
 	      break;
 	    }
 
 	    default:
-	      decl->builtin = BUILTINyes;
+	      decl->builtin = BUILTINgcc;
 	      break;
 	    }
 
@@ -809,6 +809,7 @@ maybe_expand_intrinsic (tree callexp)
     case INTRINSIC_ROR_TIARG:
       return expand_intrinsic_rotate (intrinsic, callexp);
 
+    case INTRINSIC_BSWAP16:
     case INTRINSIC_BSWAP32:
     case INTRINSIC_BSWAP64:
     case INTRINSIC_CEIL:

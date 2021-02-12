@@ -5491,6 +5491,8 @@ public:
     m_cleanup_cfg (false)
   { }
 
+  ~strlen_dom_walker ();
+
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
@@ -5507,6 +5509,13 @@ public:
      execute function.  */
   bool m_cleanup_cfg;
 };
+
+/* Release pointer_query cache.  */
+
+strlen_dom_walker::~strlen_dom_walker ()
+{
+  ptr_qry.flush_cache ();
+}
 
 /* Callback for walk_dominator_tree.  Attempt to optimize various
    string ops by remembering string lengths pointed by pointer SSA_NAMEs.  */

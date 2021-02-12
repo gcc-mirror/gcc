@@ -56,6 +56,9 @@
 
 module core.cpuid;
 
+version (GNU) version = GNU_OR_LDC;
+version (LDC) version = GNU_OR_LDC;
+
 @trusted:
 nothrow:
 @nogc:
@@ -318,10 +321,10 @@ private:
 struct CpuFeatures
 {
     bool probablyIntel; // true = _probably_ an Intel processor, might be faking
-    bool probablyAMD; // true = _probably_ an AMD processor
+    bool probablyAMD; // true = _probably_ an AMD or Hygon processor
     string processorName;
-    char [12] vendorID;
-    char [48] processorNameBuffer;
+    char [12] vendorID = 0;
+    char [48] processorNameBuffer = 0;
     uint features = 0;     // mmx, sse, sse2, hyperthreading, etc
     uint miscfeatures = 0; // sse3, etc.
     uint extfeatures = 0;  // HLE, AVX2, RTM, etc.
@@ -426,7 +429,7 @@ CpuFeatures* getCpuFeatures() @nogc nothrow
     }
 
 
-version (GNU) {
+version (GNU_OR_LDC) {
     version (X86)
         enum supportedX86 = true;
     else version (X86_64)
@@ -509,12 +512,12 @@ void getcacheinfoCPUID2()
     // for old single-core CPUs.
     uint numinfos = 1;
     do {
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a[0]), "=b" (a[1]), "=c" (a[2]), "=d" (a[3]) : "a" (2);
         } else asm pure nothrow @nogc {
             mov EAX, 2;
             cpuid;
-            mov a, EAX;
+            mov a+0, EAX;
             mov a+4, EBX;
             mov a+8, ECX;
             mov a+12, EDX;
@@ -553,7 +556,7 @@ void getcacheinfoCPUID4()
     int cachenum = 0;
     for (;;) {
         uint a, b, number_of_sets;
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a), "=b" (b), "=c" (number_of_sets) : "a" (4), "c" (cachenum) : "edx";
         } else asm pure nothrow @nogc {
             mov EAX, 4;
@@ -593,7 +596,7 @@ void getcacheinfoCPUID4()
 void getAMDcacheinfo()
 {
     uint dummy, c5, c6, d6;
-    version (GNU) asm pure nothrow @nogc {
+    version (GNU_OR_LDC) asm pure nothrow @nogc {
         "cpuid" : "=a" (dummy), "=c" (c5) : "a" (0x8000_0005) : "ebx", "edx";
     } else asm pure nothrow @nogc {
         mov EAX, 0x8000_0005; // L1 cache
@@ -612,7 +615,7 @@ void getAMDcacheinfo()
         // AMD K6-III or K6-2+ or later.
         ubyte numcores = 1;
         if (max_extended_cpuid >= 0x8000_0008) {
-            version (GNU) asm pure nothrow @nogc {
+            version (GNU_OR_LDC) asm pure nothrow @nogc {
                 "cpuid" : "=a" (dummy), "=c" (numcores) : "a" (0x8000_0008) : "ebx", "edx";
             } else asm pure nothrow @nogc {
                 mov EAX, 0x8000_0008;
@@ -623,7 +626,7 @@ void getAMDcacheinfo()
             if (numcores>cpuFeatures.maxCores) cpuFeatures.maxCores = numcores;
         }
 
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (dummy), "=c" (c6), "=d" (d6) : "a" (0x8000_0006) : "ebx";
         } else asm pure nothrow @nogc {
             mov EAX, 0x8000_0006; // L2/L3 cache
@@ -652,7 +655,7 @@ void getCpuInfo0B()
     int threadsPerCore;
     uint a, b, c, d;
     do {
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (0x0B), "c" (level);
         } else asm pure nothrow @nogc {
             mov EAX, 0x0B;
@@ -684,7 +687,7 @@ void cpuidX86()
 
     uint a, b, c, d;
     uint* venptr = cast(uint*)cf.vendorID.ptr;
-    version (GNU)
+    version (GNU_OR_LDC)
     {
         asm pure nothrow @nogc {
             "cpuid" : "=a" (max_cpuid), "=b" (venptr[0]), "=d" (venptr[1]), "=c" (venptr[2]) : "a" (0);
@@ -729,9 +732,9 @@ void cpuidX86()
 
 
     cf.probablyIntel = cf.vendorID == "GenuineIntel";
-    cf.probablyAMD = cf.vendorID == "AuthenticAMD";
+    cf.probablyAMD = (cf.vendorID == "AuthenticAMD" || cf.vendorID == "HygonGenuine");
     uint apic = 0; // brand index, apic id
-    version (GNU) asm pure nothrow @nogc {
+    version (GNU_OR_LDC) asm pure nothrow @nogc {
         "cpuid" : "=a" (a), "=b" (apic), "=c" (cf.miscfeatures), "=d" (cf.features) : "a" (1);
     } else {
         asm pure nothrow @nogc {
@@ -754,7 +757,7 @@ void cpuidX86()
 
     if (max_cpuid >= 7)
     {
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a), "=b" (cf.extfeatures), "=c" (c) : "a" (7), "c" (0) : "edx";
         } else {
             uint ext;
@@ -770,8 +773,11 @@ void cpuidX86()
 
     if (cf.miscfeatures & OSXSAVE_BIT)
     {
-        version (GNU) asm pure nothrow @nogc {
-            "xgetbv" : "=a" (a), "=d" (d) : "c" (0);
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
+            /* Old assemblers do not recognize xgetbv, and there is no easy way
+             * to conditionally compile based on the assembler used, so use the
+             * raw .byte sequence instead.  */
+            ".byte 0x0f, 0x01, 0xd0" : "=a" (a), "=d" (d) : "c" (0);
         } else asm pure nothrow @nogc {
             mov ECX, 0;
             xgetbv;
@@ -784,7 +790,7 @@ void cpuidX86()
     cf.amdfeatures = 0;
     cf.amdmiscfeatures = 0;
     if (max_extended_cpuid >= 0x8000_0001) {
-        version (GNU) asm pure nothrow @nogc {
+        version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a), "=c" (cf.amdmiscfeatures), "=d" (cf.amdfeatures) : "a" (0x8000_0001) : "ebx";
         } else {
             asm pure nothrow @nogc {
@@ -805,7 +811,7 @@ void cpuidX86()
         cf.maxCores = 1;
         if (hyperThreadingBit) {
             // determine max number of cores for AMD
-            version (GNU) asm pure nothrow @nogc {
+            version (GNU_OR_LDC) asm pure nothrow @nogc {
                 "cpuid" : "=a" (a), "=c" (c) : "a" (0x8000_0008) : "ebx", "edx";
             } else asm pure nothrow @nogc {
                 mov EAX, 0x8000_0008;
@@ -818,7 +824,7 @@ void cpuidX86()
 
     if (max_extended_cpuid >= 0x8000_0004) {
         uint* pnb = cast(uint*)cf.processorNameBuffer.ptr;
-        version (GNU)
+        version (GNU_OR_LDC)
         {
             asm pure nothrow @nogc {
                 "cpuid" : "=a" (pnb[0]), "=b" (pnb[1]), "=c" (pnb[ 2]), "=d" (pnb[ 3]) : "a" (0x8000_0002);
@@ -950,7 +956,7 @@ void cpuidX86()
         else cf.maxThreads = cf.maxCores;
 
         if (cf.probablyAMD && max_extended_cpuid >= 0x8000_001E) {
-            version (GNU) asm pure nothrow @nogc {
+            version (GNU_OR_LDC) asm pure nothrow @nogc {
                 "cpuid" : "=a" (a), "=b" (b) : "a" (0x8000_001E) : "ecx", "edx";
             } else {
                 asm pure nothrow @nogc {
@@ -974,21 +980,18 @@ bool hasCPUID()
     else
     {
         uint flags;
-        version (GNU)
+        version (GNU_OR_LDC)
         {
             // http://wiki.osdev.org/CPUID#Checking_CPUID_availability
-            // ASM template supports both AT&T and Intel syntax.
             asm nothrow @nogc { "
-                pushf{l|d}                 # Save EFLAGS
-                pushf{l|d}                 # Store EFLAGS
-                xor{l $0x00200000, (%%esp)| dword ptr [esp], 0x00200000}
-                                           # Invert the ID bit in stored EFLAGS
-                popf{l|d}                  # Load stored EFLAGS (with ID bit inverted)
-                pushf{l|d}                 # Store EFLAGS again (ID bit may or may not be inverted)
-                pop {%%}eax                # eax = modified EFLAGS (ID bit may or may not be inverted)
-                xor {(%%esp), %%eax|eax, [esp]}
-                                           # eax = whichever bits were changed
-                popf{l|d}                  # Restore original EFLAGS
+                pushfl                    # Save EFLAGS
+                pushfl                    # Store EFLAGS
+                xorl $0x00200000, (%%esp) # Invert the ID bit in stored EFLAGS
+                popfl                     # Load stored EFLAGS (with ID bit inverted)
+                pushfl                    # Store EFLAGS again (ID bit may or may not be inverted)
+                popl %%eax                # eax = modified EFLAGS (ID bit may or may not be inverted)
+                xorl (%%esp), %%eax       # eax = whichever bits were changed
+                popfl                     # Restore original EFLAGS
                 " : "=a" (flags);
             }
         }

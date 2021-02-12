@@ -3002,13 +3002,12 @@ vectorizable_bswap (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
-      if (! slp_node)
-	{
-	  record_stmt_cost (cost_vec,
-			    1, vector_stmt, stmt_info, 0, vect_prologue);
-	  record_stmt_cost (cost_vec,
-			    ncopies, vec_perm, stmt_info, 0, vect_body);
-	}
+      record_stmt_cost (cost_vec,
+			1, vector_stmt, stmt_info, 0, vect_prologue);
+      record_stmt_cost (cost_vec,
+			slp_node
+			? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies,
+			vec_perm, stmt_info, 0, vect_body);
       return true;
     }
 
@@ -4545,6 +4544,64 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
   *vec_oprnds0 = vec_tmp;
 }
 
+/* Create vectorized promotion stmts for widening stmts using only half the
+   potential vector size for input.  */
+static void
+vect_create_half_widening_stmts (vec_info *vinfo,
+					vec<tree> *vec_oprnds0,
+					vec<tree> *vec_oprnds1,
+					stmt_vec_info stmt_info, tree vec_dest,
+					gimple_stmt_iterator *gsi,
+					enum tree_code code1,
+					int op_type)
+{
+  int i;
+  tree vop0, vop1;
+  gimple *new_stmt1;
+  gimple *new_stmt2;
+  gimple *new_stmt3;
+  vec<tree> vec_tmp = vNULL;
+
+  vec_tmp.create (vec_oprnds0->length ());
+  FOR_EACH_VEC_ELT (*vec_oprnds0, i, vop0)
+    {
+      tree new_tmp1, new_tmp2, new_tmp3, out_type;
+
+      gcc_assert (op_type == binary_op);
+      vop1 = (*vec_oprnds1)[i];
+
+      /* Widen the first vector input.  */
+      out_type = TREE_TYPE (vec_dest);
+      new_tmp1 = make_ssa_name (out_type);
+      new_stmt1 = gimple_build_assign (new_tmp1, NOP_EXPR, vop0);
+      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt1, gsi);
+      if (VECTOR_TYPE_P (TREE_TYPE (vop1)))
+	{
+	  /* Widen the second vector input.  */
+	  new_tmp2 = make_ssa_name (out_type);
+	  new_stmt2 = gimple_build_assign (new_tmp2, NOP_EXPR, vop1);
+	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt2, gsi);
+	  /* Perform the operation.  With both vector inputs widened.  */
+	  new_stmt3 = gimple_build_assign (vec_dest, code1, new_tmp1, new_tmp2);
+	}
+      else
+	{
+	  /* Perform the operation.  With the single vector input widened.  */
+	  new_stmt3 = gimple_build_assign (vec_dest, code1, new_tmp1, vop1);
+      }
+
+      new_tmp3 = make_ssa_name (vec_dest, new_stmt3);
+      gimple_assign_set_lhs (new_stmt3, new_tmp3);
+      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt3, gsi);
+
+      /* Store the results for the next step.  */
+      vec_tmp.quick_push (new_tmp3);
+    }
+
+  vec_oprnds0->release ();
+  *vec_oprnds0 = vec_tmp;
+}
+
 
 /* Check if STMT_INFO performs a conversion operation that can be vectorized.
    If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
@@ -4697,7 +4754,13 @@ vectorizable_conversion (vec_info *vinfo,
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (known_eq (nunits_out, nunits_in))
-    modifier = NONE;
+    if (code == WIDEN_MINUS_EXPR
+	|| code == WIDEN_PLUS_EXPR
+	|| code == WIDEN_LSHIFT_EXPR
+	|| code == WIDEN_MULT_EXPR)
+      modifier = WIDEN;
+    else
+      modifier = NONE;
   else if (multiple_p (nunits_out, nunits_in))
     modifier = NARROW;
   else
@@ -4743,9 +4806,18 @@ vectorizable_conversion (vec_info *vinfo,
       return false;
 
     case WIDEN:
-      if (supportable_widening_operation (vinfo, code, stmt_info, vectype_out,
-					  vectype_in, &code1, &code2,
-					  &multi_step_cvt, &interm_types))
+      if (known_eq (nunits_in, nunits_out))
+	{
+	  if (!supportable_half_widening_operation (code, vectype_out,
+						   vectype_in, &code1))
+	    goto unsupported;
+	  gcc_assert (!(multi_step_cvt && op_type == binary_op));
+	  break;
+	}
+      if (supportable_widening_operation (vinfo, code, stmt_info,
+					       vectype_out, vectype_in, &code1,
+					       &code2, &multi_step_cvt,
+					       &interm_types))
 	{
 	  /* Binary widening operation can only be supported directly by the
 	     architecture.  */
@@ -4981,10 +5053,16 @@ vectorizable_conversion (vec_info *vinfo,
 	      c1 = codecvt1;
 	      c2 = codecvt2;
 	    }
-	  vect_create_vectorized_promotion_stmts (vinfo, &vec_oprnds0,
-						  &vec_oprnds1, stmt_info,
-						  this_dest, gsi,
-						  c1, c2, op_type);
+	  if (known_eq (nunits_out, nunits_in))
+	    vect_create_half_widening_stmts (vinfo, &vec_oprnds0,
+						    &vec_oprnds1, stmt_info,
+						    this_dest, gsi,
+						    c1, op_type);
+	  else
+	    vect_create_vectorized_promotion_stmts (vinfo, &vec_oprnds0,
+						    &vec_oprnds1, stmt_info,
+						    this_dest, gsi,
+						    c1, c2, op_type);
 	}
 
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
@@ -10236,7 +10314,6 @@ vectorizable_condition (vec_info *vinfo,
 
 	  if (masks)
 	    {
-	      unsigned vec_num = vec_oprnds0.length ();
 	      tree loop_mask
 		= vect_get_loop_mask (gsi, masks, vec_num * ncopies,
 				      vectype, i);

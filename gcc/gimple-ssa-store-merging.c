@@ -2324,7 +2324,8 @@ class pass_store_merging : public gimple_opt_pass
 {
 public:
   pass_store_merging (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_tree_store_merging, ctxt), m_stores_head ()
+    : gimple_opt_pass (pass_data_tree_store_merging, ctxt), m_stores_head (),
+      m_n_chains (0), m_n_stores (0)
   {
   }
 
@@ -2355,6 +2356,11 @@ private:
      getting different SSA names, which may ultimately change
      decisions when going out of SSA).  */
   imm_store_chain_info *m_stores_head;
+
+  /* The number of store chains currently tracked.  */
+  unsigned m_n_chains;
+  /* The number of stores currently tracked.  */
+  unsigned m_n_stores;
 
   bool process_store (gimple *);
   bool terminate_and_process_chain (imm_store_chain_info *);
@@ -2435,6 +2441,8 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 bool
 pass_store_merging::terminate_and_process_chain (imm_store_chain_info *chain_info)
 {
+  m_n_stores -= chain_info->m_store_info.length ();
+  m_n_chains--;
   bool ret = chain_info->terminate_and_process_chain ();
   m_stores.remove (chain_info->base_addr);
   delete chain_info;
@@ -4711,6 +4719,9 @@ imm_store_chain_info::output_merged_stores ()
 bool
 imm_store_chain_info::terminate_and_process_chain ()
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Terminating chain with %u stores\n",
+	     m_store_info.length ());
   /* Process store chain.  */
   bool ret = false;
   if (m_store_info.length () > 1)
@@ -5159,6 +5170,7 @@ pass_store_merging::process_store (gimple *stmt)
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
       (*chain_info)->m_store_info.safe_push (info);
+      m_n_stores++;
       ret |= terminate_all_aliasing_chains (chain_info, stmt);
       /* If we reach the limit of stores to merge in a chain terminate and
 	 process the chain now.  */
@@ -5170,30 +5182,64 @@ pass_store_merging::process_store (gimple *stmt)
 		     "Reached maximum number of statements to merge:\n");
 	  ret |= terminate_and_process_chain (*chain_info);
 	}
-      return ret;
+    }
+  else
+    {
+      /* Store aliases any existing chain?  */
+      ret |= terminate_all_aliasing_chains (NULL, stmt);
+
+      /* Start a new chain.  */
+      class imm_store_chain_info *new_chain
+	  = new imm_store_chain_info (m_stores_head, base_addr);
+      info = new store_immediate_info (const_bitsize, const_bitpos,
+				       const_bitregion_start,
+				       const_bitregion_end,
+				       stmt, 0, rhs_code, n, ins_stmt,
+				       bit_not_p, lp_nr_for_store (stmt),
+				       ops[0], ops[1]);
+      new_chain->m_store_info.safe_push (info);
+      m_n_stores++;
+      m_stores.put (base_addr, new_chain);
+      m_n_chains++;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Starting active chain number %u with statement:\n",
+		   m_n_chains);
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, "The base object is:\n");
+	  print_generic_expr (dump_file, base_addr);
+	  fprintf (dump_file, "\n");
+	}
     }
 
-  /* Store aliases any existing chain?  */
-  ret |= terminate_all_aliasing_chains (NULL, stmt);
-  /* Start a new chain.  */
-  class imm_store_chain_info *new_chain
-    = new imm_store_chain_info (m_stores_head, base_addr);
-  info = new store_immediate_info (const_bitsize, const_bitpos,
-				   const_bitregion_start,
-				   const_bitregion_end,
-				   stmt, 0, rhs_code, n, ins_stmt,
-				   bit_not_p, lp_nr_for_store (stmt),
-				   ops[0], ops[1]);
-  new_chain->m_store_info.safe_push (info);
-  m_stores.put (base_addr, new_chain);
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  /* Prune oldest chains so that after adding the chain or store above
+     we're again within the limits set by the params.  */
+  if (m_n_chains > (unsigned)param_max_store_chains_to_track
+      || m_n_stores > (unsigned)param_max_stores_to_track)
     {
-      fprintf (dump_file, "Starting new chain with statement:\n");
-      print_gimple_stmt (dump_file, stmt, 0);
-      fprintf (dump_file, "The base object is:\n");
-      print_generic_expr (dump_file, base_addr);
-      fprintf (dump_file, "\n");
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Too many chains (%u > %d) or stores (%u > %d), "
+		 "terminating oldest chain(s).\n", m_n_chains,
+		 param_max_store_chains_to_track, m_n_stores,
+		 param_max_stores_to_track);
+      imm_store_chain_info **e = &m_stores_head;
+      unsigned idx = 0;
+      unsigned n_stores = 0;
+      while (*e)
+	{
+	  if (idx >= (unsigned)param_max_store_chains_to_track
+	      || (n_stores + (*e)->m_store_info.length ()
+		  > (unsigned)param_max_stores_to_track))
+	    terminate_and_process_chain (*e);
+	  else
+	    {
+	      n_stores += (*e)->m_store_info.length ();
+	      e = &(*e)->next;
+	      ++idx;
+	    }
+	}
     }
+
   return ret;
 }
 

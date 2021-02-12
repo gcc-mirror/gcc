@@ -17,6 +17,9 @@ features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
 <constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
+GCC 6.1 was the first release with non-experimental C++14 support,
+so the API and ABI of features added in C++14 is only stable
+since that release.
 </para>
 
 <para>
@@ -1714,9 +1717,33 @@ not in any particular release.
       </entry>
     </row>
 
-
   </tbody>
 </tgroup>
 </table>
+
+<section xml:id="iso.2014.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+
+  <section xml:id="iso.2014.filesystemts" xreflabel="Implementation Specific Behavior of the Filesystem TS"><info><title>Filesystem TS</title></info>
+    <para>
+      <emphasis>2.1 POSIX conformance [fs.conform.9945]</emphasis>
+      The behavior of the filesystem library implementation will depend on
+      the target operating system. Some features will not be supported
+      on some targets. Symbolic links and file permissions
+      are not supported on Windows.
+    </para>
+    <para>
+      <emphasis>15.30 Rename [fs.op.rename]</emphasis>
+      On Windows, <code>experimental::filesystem::rename</code>
+      is implemented by calling <code>MoveFileExW</code> and so
+      does not meet the requirements of POSIX <code>rename</code>
+      when one or both of the paths resolves to an existing directory.
+      Specifically, it is possible to rename a directory so it replaces
+      a non-directory (POSIX requires an error in that case),
+      and it is not possible to rename a directory to replace another
+      directory (POSIX requires that to work if the directory being
+      replaced is empty).
+    </para>
+  </section>
+</section>
 
 </section>

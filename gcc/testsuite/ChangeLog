@@ -1,3 +1,370 @@
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95888
+	* g++.dg/template/deduce10.C: New test.
+	* g++.dg/template/deduce9.C: New test.
+
+2021-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99041
+	* g++.target/powerpc/pr99041.C: New test.
+
+2021-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* g++.dg/ext/flexary38.C: New test.
+
+2021-02-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99063
+	* g++.dg/cpp0x/variadic-crash6.C: New test.
+
+2021-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97582
+	* g++.dg/cpp0x/lambda/lambda-template17.C: New test.
+
+2021-02-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/98931
+	* gcc.target/arm/pr98931.c: New testcase.
+
+2021-02-11  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/98772
+	* gcc.target/aarch64/pr98772.c: New test.
+
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98897
+	* gfortran.dg/typebound_call_32.f90: New test.
+
+2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99060
+	* gfortran.dg/pr99060.f90: New test.
+
+2021-02-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/simd/vmmla_1.c: Pass -mfpu=auto.
+
+2021-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/98825
+	* gfortran.dg/dollar_edit_descriptor_4.f: New test.
+
+2021-02-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/92879
+	* g++.dg/warn/Warray-bounds-16.C: New test.
+
+2021-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/96391
+	* g++.dg/plugin/location-overflow-test-pr96391.c: New test.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add it,
+	using the location_overflow_plugin.c from gcc.dg/plugin.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99035
+	* g++.dg/ext/weak6.C: New test.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99025
+	* gcc.target/i386/pr99025.c: New test.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98988
+	PR c++/99031
+	* g++.dg/cpp2a/constexpr-new16.C: New test.
+	* g++.dg/cpp2a/constexpr-new17.C: New test.
+
+2021-02-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99030
+	* g++.dg/lookup/pr99030.C: New.
+
+2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99007
+	* g++.dg/gomp/pr99007.C: New test.
+	* gcc.dg/gomp/pr99007-1.c: New test.
+	* gcc.dg/gomp/pr99007-2.c: New test.
+	* gcc.dg/gomp/pr99007-3.c: New test.
+
+2021-02-10  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/98979
+	* gfortran.dg/goacc/array-with-dt-2.f90: Add expected errors.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Skip ICEing test.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+
+2021-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98575
+	* gcc.dg/analyzer/file-1.c (test_5): New.
+	* gcc.dg/analyzer/file-3.c: New test.
+
+2021-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98575
+	* gcc.dg/analyzer/explode-1.c: Remove expected leak warning.
+	* gcc.dg/analyzer/pr94851-2.c: New test.
+	* gcc.dg/analyzer/pr98575-1.c: New test.
+
+2021-02-09  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/asimd-mul-to-shl-sub.c: New test.
+
+2021-02-09  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vpXXXq.inc:
+	New test template.
+	* gcc.target/aarch64/advsimd-intrinsics/vpaddq.c: New test.
+
+2021-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98944
+	* g++.dg/modules/pr98944_a.C: New.
+	* g++.dg/modules/pr98944_b.C: New.
+	* g++.dg/modules/pr98944_c.C: New.
+	* g++.dg/modules/pr98944_d.C: New.
+
+2021-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98465
+	* g++.dg/warn/Wstringop-overread-1.C: New test.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96905
+	* g++.dg/cpp2a/consteval-expinst1.C: New test.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98326
+	* g++.dg/cpp1y/lambda-generic-empty1.C: New test.
+
+2021-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98994
+	* g++.dg/cpp2a/no_unique_address12.C: New test.
+
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr98531-2.h: New.
+	* g++.dg/modules/pr98531-2_a.H: New.
+	* g++.dg/modules/pr98531-2_b.C: New.
+	* g++.dg/modules/pr98531-3.h: New.
+	* g++.dg/modules/pr98531-3_a.H: New.
+	* g++.dg/modules/pr98531-3_b.C: New.
+
+2021-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98531
+	* g++.dg/modules/pr98531-1.h: New.
+	* g++.dg/modules/pr98531-1_a.H: New.
+	* g++.dg/modules/pr98531-1_b.C: New.
+	* g++.dg/abi/pr98531-1.C: New.
+	* g++.dg/abi/pr98531-2.C: New.
+	* g++.dg/abi/pr98531-3.C: New.
+	* g++.dg/abi/pr98531-4.C: New.
+
+2021-02-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR middle-end/98974
+	* gfortran.dg/pr98974.F90: New test.
+
+2021-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96591
+	* g++.dg/lto/pr96591_0.C: New testcase.
+
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98947
+	* g++.dg/cpp2a/volatile5.C: New test.
+
+2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96462
+	* g++.dg/cpp2a/using-enum-8.C: New test.
+
+2021-02-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR driver/98943
+	* c-c++-common/pr98943.c: New.
+
+2021-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98855
+	* g++.dg/vect/slp-pr98855.cc: New testcase.
+
+2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* g++.dg/cpp1z/decomp54.C: New test.
+
+2021-02-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98537
+	* g++.target/i386/avx512bw-pr98537-1.C: New test.
+	* g++.target/i386/avx512vl-pr98537-1.C: New test.
+	* g++.target/i386/avx512vl-pr98537-2.C: New test.
+	* gcc.target/i386/avx512vl-pr88547-1.c: Adjust testcase,
+	integer mask comparison should not be generated.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-1.c: Remove.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-2.c: Ditto.
+	* gcc.target/i386/avx512vl-pr92686-vpcmp-intelasm-1.c: Ditto.
+
+2021-02-04  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/derived-chartypes-1.f90: New test.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-3.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-4.f90: Likewise.
+
+2021-02-04  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/array-with-dt-2.f90: New test.
+
+2021-02-04  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/derived-classtypes-1.f95: New test.
+
+2021-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98325
+	* lib/scanasm.exp (dg-scan-symbol-section): For powerpc*-*-* targets if
+	$section is .opd, look at .L.$symbol_name's section.
+	(parse_section_section_of_symbols): Handle .previous directive.
+	* gcc.dg/array-quals-1.c: Allow .sdata section.
+
+2021-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/intrinsics.d: Update test.
+
+2021-02-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97882
+	* gcc.dg/decl-8.c: Adjust text of expected diagnostic.
+	* gcc.dg/label-decl-4.c: Same.
+	* gcc.dg/mismatch-decl-1.c: Same.
+	* gcc.dg/old-style-then-proto-1.c: Same.
+	* gcc.dg/parm-mismatch-1.c: Same.
+	* gcc.dg/pr35445.c: Same.
+	* gcc.dg/redecl-11.c: Same.
+	* gcc.dg/redecl-12.c: Same.
+	* gcc.dg/redecl-13.c: Same.
+	* gcc.dg/redecl-15.c: Same.
+	* gcc.dg/tls/thr-init-1.c: Same.
+	* objc.dg/id-1.m: Same.
+	* objc.dg/tls/diag-3.m: Same.
+	* gcc.dg/pr97882.c: New test.
+	* gcc.dg/qual-return-7.c: New test.
+	* gcc.dg/qual-return-8.c: New test.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98717
+	* g++.dg/cpp2a/concepts-variadic3.C: New test.
+
+2021-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/97932
+	* gcc.dg/pr97932.c: New test.
+
+2021-02-04  emsr  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp23/feat-cxx2b.C: __cpp_size_t_suffix == 202011.
+
+2021-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Wsize_t-literals.C: Expect make_signed_t<size_t> instead
+	of make_signed<size_t>::type in the diagnostics.
+
+2021-02-04  Tom Greenslade (thomgree)  <thomgree@cisco.com>
+
+	PR c++/90926
+	* g++.dg/cpp1y/nsdmi-aggr12.C: New test.
+
+2021-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/substring.f90: New test.
+	* gfortran.dg/gomp/substring.f90: New test.
+
+2021-02-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/prefer-vector-width-attr.c: New test.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98802
+	* g++.dg/cpp1z/class-deduction78.C: New test.
+
+2021-02-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95192
+	* g++.dg/cpp0x/pr84630.C: Call b().
+	* g++.dg/cpp2a/lambda-uneval13.C: New test.
+	* g++.dg/ext/attr-expr1.C: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/98882
+	* gcc.dg/cpp/pr98882.c: New test.
+
+2021-02-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/alias-decl-dr1558.C: Pass --param
+	hash-table-verification-limit=10000.
+
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/udlit-shadow-neg.C: Test for 'z' and 'zu' shadowing.
+	* g++.dg/cpp23/feat-cxx2b.C: New test.
+	* g++.dg/cpp23/size_t-literals.C: New test.
+	* g++.dg/warn/Wsize_t-literals.C: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97804
+	* g++.dg/cpp2a/no_unique_address11.C: New test.
+
+2021-02-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98899
+	* g++.dg/cpp0x/noexcept65.C: New test.
+
+2021-02-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98913
+	* gfortran.dg/coarray/array_temporary.f90: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97487
+	* gcc.dg/pr97487-1.c: New test.
+	* gcc.dg/pr97487-2.c: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97971
+	* gcc.target/i386/pr97971.c: New test.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98287
+	* gcc.dg/pr98287.c: New test.
+
+2021-02-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/98928
+	* gcc.target/i386/pr98928.c: New test.
+
 2021-02-02  Martin Liska  <mliska@suse.cz>
 
 	PR target/97510

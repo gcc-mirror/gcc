@@ -32,7 +32,6 @@
 #pragma GCC system_header
 
 #include <streambuf>
-#include <unistd.h>
 #include <cstdio>
 #include <bits/c++io.h>  // For __c_file
 #include <bits/move.h>   // For __exchange

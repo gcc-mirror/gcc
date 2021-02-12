@@ -313,13 +313,14 @@ static unsigned int
 interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
   size_t orig_len = len;
-  size_t u, l, i;
+  size_t u, l, i, z;
 
-  u = l = i = 0;
+  u = l = i = z = 0;
 
   while (len--)
     switch (s[len])
       {
+      case 'z': case 'Z':	z++; break;
       case 'u': case 'U':	u++; break;
       case 'i': case 'I':
       case 'j': case 'J':	i++; break;
@@ -332,8 +333,16 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	return 0;
       }
 
-  if (l > 2 || u > 1 || i > 1)
+  if (l > 2 || u > 1 || i > 1 || z > 1)
     return 0;
+
+  if (z)
+    {
+      if (l > 0 || i > 0)
+	return 0;
+      if (!CPP_OPTION (pfile, cplusplus))
+	return 0;
+    }
 
   if (i)
     {
@@ -352,7 +361,8 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (u ? CPP_N_UNSIGNED : 0)
 	  | ((l == 0) ? CPP_N_SMALL
-	     : (l == 1) ? CPP_N_MEDIUM : CPP_N_LARGE));
+	     : (l == 1) ? CPP_N_MEDIUM : CPP_N_LARGE)
+	  | (z ? CPP_N_SIZE_T : 0));
 }
 
 /* Return the classification flags for an int suffix.  */
@@ -804,6 +814,16 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
             cpp_pedwarning_with_line (pfile, CPP_W_LONG_LONG,
 				      virtual_location, 0, message);
         }
+
+      if ((result & CPP_N_SIZE_T) == CPP_N_SIZE_T
+	  && !CPP_OPTION (pfile, size_t_literals))
+       {
+	  const char *message = (result & CPP_N_UNSIGNED) == CPP_N_UNSIGNED
+				? N_("use of C++23 %<size_t%> integer constant")
+				: N_("use of C++23 %<make_signed_t<size_t>%> integer constant");
+	  cpp_warning_with_line (pfile, CPP_W_SIZE_T_LITERALS,
+				 virtual_location, 0, message);
+       }
 
       result |= CPP_N_INTEGER;
     }

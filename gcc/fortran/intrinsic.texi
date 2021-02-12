@@ -1232,7 +1232,7 @@ end program test_anint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument         @tab Return type      @tab Standard
-@item @code{AINT(A)}  @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
+@item @code{ANINT(A)}  @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
 @item @code{DNINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
@@ -6188,6 +6188,8 @@ conformance with @var{ARRAY}.
 @item @var{DIM} @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
+@item @var{MASK} @tab (Optional) Shall be of type @code{LOGICAL},
+and conformable with @var{ARRAY}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
 @item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
@@ -10356,7 +10358,7 @@ Transformational function
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
+@item @var{MASK}  @tab Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
@@ -10417,7 +10419,7 @@ Transformational function
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
-@item @var{MASK}  @tab (Optional) Shall be an array of type @code{LOGICAL},
+@item @var{MASK}  @tab (Optional) Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
 @end multitable
 
@@ -10723,7 +10725,7 @@ Transformational function
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
+@item @var{MASK}  @tab Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
@@ -10784,7 +10786,7 @@ Transformational function
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
+@item @var{MASK}  @tab Shall be of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
 @end multitable
 

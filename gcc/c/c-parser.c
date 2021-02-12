@@ -6499,12 +6499,9 @@ c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
 		chain->safe_push (cond);
 	    }
 	  else if (!c_parser_next_token_is_keyword (parser, RID_IF))
-	    {
-	      /* This is if-else without subsequent if.  Zap the condition
-		 chain; we would have already warned at this point.  */
-	      delete chain;
-	      chain = NULL;
-	    }
+	    /* This is if-else without subsequent if.  Zap the condition
+	       chain; we would have already warned at this point.  */
+	    vec_free (chain);
 	}
       second_body = c_parser_else_body (parser, else_tinfo, chain);
       /* Set IF_P to true to indicate that this if statement has an
@@ -6524,12 +6521,9 @@ c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
 		    "suggest explicit braces to avoid ambiguous %<else%>");
 
       if (warn_duplicated_cond)
-	{
-	  /* This if statement does not have an else clause.  We don't
-	     need the condition chain anymore.  */
-	  delete chain;
-	  chain = NULL;
-	}
+	/* This if statement does not have an else clause.  We don't
+	   need the condition chain anymore.  */
+	vec_free (chain);
     }
   c_finish_if_stmt (loc, cond, first_body, second_body);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
