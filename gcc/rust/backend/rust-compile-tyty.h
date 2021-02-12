@@ -56,6 +56,8 @@ public:
 
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+
   void visit (TyTy::UnitType &) override { translated = backend->void_type (); }
 
   void visit (TyTy::FnType &type) override

@@ -42,6 +42,7 @@ public:
   virtual void visit (ISizeType &type) = 0;
   virtual void visit (ErrorType &type) = 0;
   virtual void visit (CharType &type) = 0;
+  virtual void visit (ReferenceType &type) = 0;
 };
 
 } // namespace TyTy

@@ -121,6 +121,9 @@ public:
   // Get a pointer type.
   virtual Btype *pointer_type (Btype *to_type) = 0;
 
+  // Get a reference type.
+  virtual Btype *reference_type (Btype *to_type) = 0;
+
   // make type immutable
   virtual Btype *immutable_type (Btype *base) = 0;
 

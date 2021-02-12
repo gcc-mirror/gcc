@@ -288,6 +288,10 @@ public:
     return main_or_left_expr;
   }
 
+  bool get_is_mut () const { return is_mut; }
+
+  bool get_is_double_borrow () const { return double_borrow; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

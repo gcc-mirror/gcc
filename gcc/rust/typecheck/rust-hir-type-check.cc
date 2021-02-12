@@ -51,7 +51,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
     if (ty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (mappings->lookup_location (id),
-		       "failure in type resolution");
+		       "failure in type resolution for %u", id);
 	return false;
       }
 
@@ -64,7 +64,8 @@ TypeResolution::Resolve (HIR::Crate &crate)
       {
       case TyTy::InferType::GENERAL:
 	rust_error_at (mappings->lookup_location (id),
-		       "unable to determine type: %u", id);
+		       "unable to determine type: please give this a type: %u",
+		       id);
 	break;
 
 	case TyTy::InferType::INTEGRAL: {

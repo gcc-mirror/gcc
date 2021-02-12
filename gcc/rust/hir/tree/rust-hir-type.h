@@ -518,7 +518,7 @@ class ReferenceType : public TypeNoBounds
   Lifetime lifetime;
 
   bool has_mut;
-  std::unique_ptr<TypeNoBounds> type;
+  std::unique_ptr<Type> type;
   Location locus;
 
 public:
@@ -530,7 +530,7 @@ public:
 
   // Constructor
   ReferenceType (Analysis::NodeMapping mappings, bool is_mut,
-		 std::unique_ptr<TypeNoBounds> type_no_bounds, Location locus,
+		 std::unique_ptr<Type> type_no_bounds, Location locus,
 		 Lifetime lifetime)
     : TypeNoBounds (mappings), lifetime (std::move (lifetime)),
       has_mut (is_mut), type (std::move (type_no_bounds)), locus (locus)
@@ -539,7 +539,7 @@ public:
   // Copy constructor with custom clone method
   ReferenceType (ReferenceType const &other)
     : TypeNoBounds (other.mappings), lifetime (other.lifetime),
-      has_mut (other.has_mut), type (other.type->clone_type_no_bounds ()),
+      has_mut (other.has_mut), type (other.type->clone_type ()),
       locus (other.locus)
   {}
 
@@ -549,7 +549,7 @@ public:
     mappings = other.mappings;
     lifetime = other.lifetime;
     has_mut = other.has_mut;
-    type = other.type->clone_type_no_bounds ();
+    type = other.type->clone_type ();
     locus = other.locus;
 
     return *this;
@@ -564,6 +564,12 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Lifetime &get_lifetime () { return lifetime; }
+
+  bool get_has_mut () const { return has_mut; }
+
+  std::unique_ptr<Type> &get_base_type () { return type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

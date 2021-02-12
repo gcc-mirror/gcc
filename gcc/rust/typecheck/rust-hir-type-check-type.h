@@ -70,12 +70,14 @@ public:
     TypeCheckType resolver;
     type->accept_vis (resolver);
 
-    if (resolver.translated != nullptr)
+    if (resolver.translated == nullptr)
       {
-	resolver.context->insert_type (type->get_mappings (),
-				       resolver.translated);
+	rust_error_at (Location (), "failed to translate %s",
+		       type->as_string ().c_str ());
+	return new TyTy::ErrorType (type->get_mappings ().get_hirid ());
       }
 
+    resolver.context->insert_type (type->get_mappings (), resolver.translated);
     return resolver.translated;
   }
 
@@ -172,6 +174,19 @@ public:
     TyTy::TyBase *base = TypeCheckType::Resolve (type.get_element_type ());
     translated
       = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity, base);
+  }
+
+  void visit (HIR::ReferenceType &type)
+  {
+    TyTy::TyBase *base = TypeCheckType::Resolve (type.get_base_type ().get ());
+    translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
+					  base->get_ref ());
+  }
+
+  void visit (HIR::InferredType &type)
+  {
+    translated = new TyTy::InferType (type.get_mappings ().get_hirid (),
+				      TyTy::InferType::InferTypeKind::GENERAL);
   }
 
 private:

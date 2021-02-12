@@ -740,6 +740,43 @@ public:
 					std::move (outer_attribs));
   }
 
+  void visit (AST::BorrowExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *borrow_lvalue
+      = ASTLoweringExpr::translate (expr.get_borrowed_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::BorrowExpr (mapping,
+			     std::unique_ptr<HIR::Expr> (borrow_lvalue),
+			     expr.get_is_mut (), expr.get_is_double_borrow (),
+			     std::move (outer_attribs), expr.get_locus ());
+  }
+
+  void visit (AST::DereferenceExpr &expr)
+  {
+    std::vector<HIR::Attribute> outer_attribs;
+
+    HIR::Expr *dref_lvalue
+      = ASTLoweringExpr::translate (expr.get_dereferenced_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::DereferenceExpr (mapping,
+				  std::unique_ptr<HIR::Expr> (dref_lvalue),
+				  std::move (outer_attribs), expr.get_locus ());
+  }
+
 private:
   ASTLoweringExpr ()
     : ASTLoweringBase (), translated (nullptr),

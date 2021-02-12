@@ -244,6 +244,8 @@ protected:
 public:
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  std::unique_ptr<Expr> &get_expr () { return main_or_left_expr; }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -266,6 +268,9 @@ public:
   {}
 
   void accept_vis (HIRVisitor &vis) override;
+
+  bool get_is_mut () const { return is_mut; }
+  bool get_is_double_borrow () const { return double_borrow; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

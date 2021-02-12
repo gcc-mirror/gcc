@@ -510,6 +510,52 @@ CharType::clone ()
   return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+void
+ReferenceType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ReferenceType::as_string () const
+{
+  return "&" + get_base ()->as_string ();
+}
+
+TyBase *
+ReferenceType::combine (TyBase *other)
+{
+  ReferenceRules r (this);
+  return r.combine (other);
+}
+
+const TyBase *
+ReferenceType::get_base () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  TyBase *lookup = nullptr;
+  bool ok = context->lookup_type (base, &lookup);
+  rust_assert (ok);
+  return lookup;
+}
+
+TyBase *
+ReferenceType::get_base ()
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  TyBase *lookup = nullptr;
+  bool ok = context->lookup_type (base, &lookup);
+  rust_assert (ok);
+  return lookup;
+}
+
+TyBase *
+ReferenceType::clone ()
+{
+  return new ReferenceType (get_ref (), get_ty_ref (), base,
+			    get_combined_refs ());
+}
+
 // rust-tyty-call.h
 
 void

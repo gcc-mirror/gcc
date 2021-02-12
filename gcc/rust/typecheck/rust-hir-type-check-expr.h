@@ -246,10 +246,10 @@ public:
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
 
     auto result = lhs->combine (rhs);
-    if (result == nullptr)
+    if (result->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_locus (),
-		       "failure in TypeInference AssignmentExpr");
+		       "type resolution failure in AssignmentExpr");
 	return;
       }
 
@@ -839,6 +839,32 @@ public:
       }
 
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+  }
+
+  void visit (HIR::BorrowExpr &expr)
+  {
+    TyTy::TyBase *resolved_base
+      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+
+    // FIXME double_reference
+
+    infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+				       resolved_base->get_ref ());
+  }
+
+  void visit (HIR::DereferenceExpr &expr)
+  {
+    TyTy::TyBase *resolved_base
+      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
+    if (resolved_base->get_kind () != TyTy::TypeKind::REF)
+      {
+	rust_error_at (expr.get_locus (), "expected reference type got %s",
+		       resolved_base->as_string ().c_str ());
+	return;
+      }
+
+    TyTy::ReferenceType *ref_base = (TyTy::ReferenceType *) resolved_base;
+    infered = ref_base->get_base ()->clone ();
   }
 
 private:

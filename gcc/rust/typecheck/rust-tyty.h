@@ -561,6 +561,7 @@ public:
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : TyBase (ref, ty_ref, TypeKind::CHAR)
+
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -570,6 +571,35 @@ public:
   TyBase *combine (TyBase *other) override;
 
   TyBase *clone () final override;
+};
+
+class ReferenceType : public TyBase
+{
+public:
+  ReferenceType (HirId ref, HirId base,
+		 std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ref, TypeKind::REF), base (base)
+  {}
+
+  ReferenceType (HirId ref, HirId ty_ref, HirId base,
+		 std::set<HirId> refs = std::set<HirId> ())
+    : TyBase (ref, ty_ref, TypeKind::REF), base (base)
+  {}
+
+  const TyTy::TyBase *get_base () const;
+
+  TyTy::TyBase *get_base ();
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  TyBase *combine (TyBase *other) override;
+
+  TyBase *clone () final override;
+
+private:
+  HirId base;
 };
 
 } // namespace TyTy

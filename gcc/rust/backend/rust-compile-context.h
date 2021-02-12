@@ -445,6 +445,13 @@ public:
     translated = compiled_type;
   }
 
+  void visit (TyTy::ReferenceType &type) override
+  {
+    Btype *base_compiled_type
+      = TyTyResolveCompile::compile (ctx, type.get_base ());
+    translated = ctx->get_backend ()->reference_type (base_compiled_type);
+  }
+
 private:
   TyTyResolveCompile (Context *ctx) : ctx (ctx) {}
 

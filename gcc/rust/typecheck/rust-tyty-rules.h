@@ -176,6 +176,14 @@ public:
 		   base->as_string ().c_str (), type.as_string ().c_str ());
   }
 
+  virtual void visit (ReferenceType &type) override
+
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   base->as_string ().c_str (), type.as_string ().c_str ());
+  }
+
 protected:
   BaseRules (TyBase *base)
     : mappings (Analysis::Mappings::get ()),
@@ -375,6 +383,22 @@ public:
   }
 
   void visit (CharType &type) override
+  {
+    {
+      bool is_valid
+	= (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+      if (is_valid)
+	{
+	  resolved = type.clone ();
+	  return;
+	}
+
+      BaseRules::visit (type);
+    }
+  }
+
+  void visit (ReferenceType &type) override
+
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -770,6 +794,25 @@ public:
 
 private:
   CharType *base;
+};
+
+class ReferenceRules : public BaseRules
+{
+public:
+  ReferenceRules (ReferenceType *base) : BaseRules (base), base (base) {}
+
+  void visit (ReferenceType &type) override
+  {
+    auto base_type = base->get_base ();
+    auto other_base_type = type.get_base ();
+
+    TyTy::TyBase *base_resolved = base_type->combine (other_base_type);
+    resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
+				  base_resolved->get_ref ());
+  }
+
+private:
+  ReferenceType *base;
 };
 
 } // namespace TyTy

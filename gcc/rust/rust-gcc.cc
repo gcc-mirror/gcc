@@ -43,6 +43,7 @@
 #include "output.h"
 #include "realmpfr.h"
 #include "builtins.h"
+#include "print-tree.h"
 
 #include "rust-location.h"
 #include "rust-linemap.h"
@@ -185,6 +186,8 @@ public:
   Btype *complex_type (int);
 
   Btype *pointer_type (Btype *);
+
+  Btype *reference_type (Btype *);
 
   Btype *immutable_type (Btype *);
 
@@ -872,6 +875,18 @@ Gcc_backend::pointer_type (Btype *to_type)
   if (to_type_tree == error_mark_node)
     return this->error_type ();
   tree type = build_pointer_type (to_type_tree);
+  return this->make_type (type);
+}
+
+// Get a reference type.
+
+Btype *
+Gcc_backend::reference_type (Btype *to_type)
+{
+  tree to_type_tree = to_type->get_tree ();
+  if (to_type_tree == error_mark_node)
+    return this->error_type ();
+  tree type = build_reference_type (to_type_tree);
   return this->make_type (type);
 }
 
@@ -2517,7 +2532,6 @@ Gcc_backend::convert_tree (tree type_tree, tree expr_tree, Location location)
       || TREE_TYPE (expr_tree) == error_mark_node)
     return error_mark_node;
 
-  gcc_assert (TREE_CODE (type_tree) == TREE_CODE (TREE_TYPE (expr_tree)));
   if (POINTER_TYPE_P (type_tree) || INTEGRAL_TYPE_P (type_tree)
       || SCALAR_FLOAT_TYPE_P (type_tree) || COMPLEX_FLOAT_TYPE_P (type_tree))
     return fold_convert_loc (location.gcc_location (), type_tree, expr_tree);

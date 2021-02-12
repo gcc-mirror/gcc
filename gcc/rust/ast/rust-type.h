@@ -576,6 +576,12 @@ public:
     return type;
   }
 
+  bool get_has_mut () const { return has_mut; }
+
+  Lifetime &get_lifetime () { return lifetime; }
+
+  std::unique_ptr<TypeNoBounds> &get_base_type () { return type; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

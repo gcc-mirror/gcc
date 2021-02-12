@@ -351,6 +351,16 @@ public:
       }
   }
 
+  void visit (AST::BorrowExpr &expr)
+  {
+    ResolveExpr::go (expr.get_borrowed_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::DereferenceExpr &expr)
+  {
+    ResolveExpr::go (expr.get_dereferenced_expr ().get (), expr.get_node_id ());
+  }
+
 private:
   ResolveExpr (NodeId parent) : ResolverBase (parent) {}
 };

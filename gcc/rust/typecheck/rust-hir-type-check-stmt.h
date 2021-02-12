@@ -73,7 +73,7 @@ public:
     if (specified_ty != nullptr && init_expr_ty != nullptr)
       {
 	auto combined = specified_ty->combine (init_expr_ty);
-	if (combined == nullptr)
+	if (combined->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_fatal_error (stmt.get_locus (),
 			      "failure in setting up let stmt type");

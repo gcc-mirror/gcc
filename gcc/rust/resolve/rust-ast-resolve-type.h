@@ -83,6 +83,14 @@ public:
     type.get_elem_type ()->accept_vis (*this);
   }
 
+  void visit (AST::ReferenceType &type)
+  {
+    type.get_type_referenced ()->accept_vis (*this);
+  }
+
+  // nothing to do for inferred types
+  void visit (AST::InferredType &type) { ok = true; }
+
 private:
   ResolveType (NodeId parent) : ResolverBase (parent), ok (false) {}
 
