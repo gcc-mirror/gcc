@@ -3319,6 +3319,19 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
     }
 }
 
+/* Format EXPR if nonnull and return the formatted string.  If EXPR is
+   null return DFLT.  */
+
+static inline const char*
+expr_to_str (pretty_printer &pp, tree expr, const char *dflt)
+{
+  if (!expr)
+    return dflt;
+
+  dump_generic_node (&pp, expr, 0, TDF_VOPS | TDF_MEMSYMS, false);
+  return pp_formatted_text (&pp);
+}
+
 /* Detect and diagnose a mismatch between an attribute access specification
    on the original declaration of FNDECL and that on the parameters NEWPARMS
    from its refeclaration.  ORIGLOC is the location of the first declaration
@@ -3585,10 +3598,9 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	       the same.  */
 	    continue;
 
-	  const char* const newbndstr =
-	    newbnd ? print_generic_expr_to_str (newbnd) : "*";
-	  const char* const curbndstr =
-	    curbnd ? print_generic_expr_to_str (curbnd) : "*";
+	  pretty_printer pp1, pp2;
+	  const char* const newbndstr = expr_to_str (pp1, newbnd, "*");
+	  const char* const curbndstr = expr_to_str (pp2, curbnd, "*");
 
 	  if (!newpos != !curpos
 	      || (newpos && !tree_int_cst_equal (newpos, curpos)))

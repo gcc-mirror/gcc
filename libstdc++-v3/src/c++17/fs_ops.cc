@@ -1394,6 +1394,36 @@ fs::rename(const path& from, const path& to)
 void
 fs::rename(const path& from, const path& to, error_code& ec) noexcept
 {
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  const auto to_status = fs::status(to, ec);
+  if (to_status.type() == file_type::not_found)
+    ec.clear();
+  else if (ec)
+    return;
+
+  if (fs::exists(to_status))
+  {
+    const auto from_status = fs::status(from, ec);
+    if (ec)
+      return;
+
+    if (fs::is_directory(to_status))
+    {
+      if (!fs::is_directory(from_status))
+      {
+	// Cannot rename a non-directory over an existing directory.
+	ec = std::make_error_code(std::errc::is_a_directory);
+	return;
+      }
+    }
+    else if (fs::is_directory(from_status))
+    {
+      // Cannot rename a directory over an existing non-directory.
+      ec = std::make_error_code(std::errc::not_a_directory);
+      return;
+    }
+  }
+#endif
   if (posix::rename(from.c_str(), to.c_str()))
     ec.assign(errno, std::generic_category());
   else
@@ -1507,7 +1537,6 @@ fs::symlink_status(const fs::path& p, std::error_code& ec) noexcept
   auto str = p.c_str();
 
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
-#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
   // stat() fails if there's a trailing slash (PR 88881)
   path p2;
   if (p.has_relative_path() && !p.has_filename())
@@ -1524,7 +1553,6 @@ fs::symlink_status(const fs::path& p, std::error_code& ec) noexcept
 	}
       str = p2.c_str();
     }
-#endif
 #endif
 
   stat_type st;

@@ -2992,7 +2992,8 @@ since C++14 and the implementation is complete.
       <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
       the target operating system. Some features will not be supported
-      on some targets.
+      on some targets. Symbolic links and file permissions
+      are not supported on Windows.
    </para>
 
    <para>
@@ -3024,6 +3025,18 @@ since C++14 and the implementation is complete.
       <emphasis>30.10.15.4 [fs.op.file_size]</emphasis>
       If <code>!is_regular_file(p)</code>, an error is reported.
    </para>
+
+    <para>
+      <emphasis>30.10.15.32 [fs.op.rename]</emphasis>
+      On Windows, <code>filesystem::rename</code>
+      is implemented by calling <code>MoveFileExW</code> and so
+      does not meet the requirements of POSIX <code>rename</code>
+      when one or both of the paths resolves to an existing directory.
+      Specifically, it is not possible to rename a directory to replace another
+      directory (POSIX requires that to work if the directory being
+      replaced is empty).
+    </para>
+
 
    <section xml:id="iso.2017.par2ts" xreflabel="Implementation Specific Behavior of the Parallelism 2 TS"><info><title>Parallelism 2 TS</title></info>
 

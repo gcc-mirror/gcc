@@ -1,3 +1,21 @@
+2021-02-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (__futex_wait):
+	Revert output type back to long.
+	(__futex_wake): Ditto.
+	(futex_wait): Update for revert.
+	(futex_wake): Ditto.
+
+2021-02-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (__futex_wait): New static inline
+	wrapper function.  Correct output type to int and
+	timeout type to void *.
+	(__futex_wake): New static inline wrapper function.
+	Correct output type to int.
+	(futex_wait): Use __futex_wait.
+	(futex_wake): Use __futex_wake.
+
 2021-02-10  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/98979

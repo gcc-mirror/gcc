@@ -3,6 +3,7 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
+// { dg-xfail-run-if "cannot catch forced_unwind" { *-*-* } { "-fno-rtti" } }
 
 // Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //

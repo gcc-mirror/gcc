@@ -1290,7 +1290,7 @@ function_info::make_use_available (use_info *use, bb_info *bb)
 	  // Create a temporary placeholder phi.  This will become
 	  // permanent if the change is later committed.
 	  phi = allocate_temp<phi_info> (phi_insn, resource, 0);
-	  auto *input = allocate<use_info> (phi, resource, ultimate_def);
+	  auto *input = allocate_temp<use_info> (phi, resource, ultimate_def);
 	  input->m_is_temp = true;
 	  phi->m_is_temp = true;
 	  phi->make_degenerate (input);

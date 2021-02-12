@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   bool
-  _Sp_make_shared_tag::_S_eq(const type_info& ti) noexcept
+  _Sp_make_shared_tag::_S_eq(const type_info& ti [[gnu::unused]]) noexcept
   {
 #if __cpp_rtti
     return ti == typeid(_Sp_make_shared_tag);

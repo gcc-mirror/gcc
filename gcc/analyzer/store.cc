@@ -1375,6 +1375,21 @@ binding_cluster::redundant_p () const
 	  && !m_touched);
 }
 
+/* Add PV to OUT_PVS, casting it to TYPE if if is not already of that type.  */
+
+static void
+append_pathvar_with_type (path_var pv,
+			  tree type,
+			  auto_vec<path_var> *out_pvs)
+{
+  gcc_assert (pv.m_tree);
+
+  if (TREE_TYPE (pv.m_tree) != type)
+    pv.m_tree = build1 (NOP_EXPR, type, pv.m_tree);
+
+  out_pvs->safe_push (pv);
+}
+
 /* Find representative path_vars for SVAL within this binding of BASE_REG,
    appending the results to OUT_PVS.  */
 
@@ -1411,7 +1426,7 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 		  if (path_var pv
 		      = model->get_representative_path_var (subregion,
 							    visited))
-		    out_pvs->safe_push (pv);
+		    append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 		}
 	    }
 	  else
@@ -1420,7 +1435,7 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 	      if (path_var pv
 		  = model->get_representative_path_var (skey->get_region (),
 							visited))
-		out_pvs->safe_push (pv);
+		append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 	    }
 	}
     }

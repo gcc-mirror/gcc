@@ -169,7 +169,8 @@ print_generic_expr (FILE *file, tree t, dump_flags_t flags)
   pp_flush (tree_pp);
 }
 
-/* Print a single expression T to string, and return it.  */
+/* Print a single expression T to string, and return it.  The caller
+   must free the returned memory.  */
 
 char *
 print_generic_expr_to_str (tree t)

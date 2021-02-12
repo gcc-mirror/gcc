@@ -34,8 +34,13 @@ namespace test_fs = std::experimental::filesystem;
 #include <fstream>
 #include <string>
 #include <cstdio>
-#include <stdlib.h>
-#include <unistd.h>
+
+#if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
+#include <stdlib.h> // mkstemp
+#include <unistd.h> // unlink, close
+#else
+#include <random>   // std::random_device
+#endif
 
 namespace __gnu_test
 {
@@ -121,13 +126,13 @@ namespace __gnu_test
     if (file.length() > 64)
       file.resize(64);
     char buf[128];
-    static int counter;
+    static unsigned counter = std::random_device{}();
 #if _GLIBCXX_USE_C99_STDIO
     std::snprintf(buf, 128,
 #else
     std::sprintf(buf,
 #endif
-      "filesystem-test.%d.%lu-%s", counter++, (unsigned long) ::getpid(),
+      "filesystem-test.%u.%lu-%s", counter++, (unsigned long) ::getpid(),
       file.c_str());
     p = buf;
 #endif

@@ -1,3 +1,37 @@
+2021-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to
+	the cold section, emit a nop before the directive if the previous
+	active instruction can throw.
+
+2021-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99041
+	* config/rs6000/predicates.md (mma_assemble_input_operand): Restrict
+	memory addresses that are legal for quad word accesses.
+
+2021-02-11  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/98931
+	* config/arm/thumb2.md (*doloop_end_internal): Generate
+	alternative sequence to handle long range branches.
+
+2021-02-11  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/98772
+	* optabs-tree.c (supportable_half_widening_operation): New function
+	to check for supportable V8QI->V8HI widening patterns.
+	* optabs-tree.h (supportable_half_widening_operation): New function.
+	* tree-vect-stmts.c (vect_create_half_widening_stmts): New function
+	to create promotion stmts for V8QI->V8HI widening patterns.
+	(vectorizable_conversion): Add case for V8QI->V8HI.
+
+2021-02-11  Richard Biener  <rguenther@suse.de>
+
+	* sparseset.h (SPARSESET_ELT_BITS): Remove.
+	(SPARSESET_ELT_TYPE): Use unsigned int.
+	* fwprop.c: Do not include sparseset.h.
+
 2021-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99035

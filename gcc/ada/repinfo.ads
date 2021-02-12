@@ -51,10 +51,10 @@ package Repinfo is
    --       for example in the case where representation clauses or
    --       pragmas specify the values.
 
-   --    2. Otherwise the backend is responsible for layout of all types and
-   --       objects not laid out by the front end. This includes all dynamic
-   --       values, and also static values (e.g. record sizes) when not set by
-   --       the front end.
+   --    2. The backend is responsible for layout of all types and objects
+   --       not laid out by the front end. This includes all dynamic values,
+   --       and also static values (e.g. record sizes) when not set by the
+   --       front end.
 
    -----------------------------
    -- Back Annotation by Gigi --
@@ -290,6 +290,56 @@ package Repinfo is
 
    function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref;
    --  Creates a reference to the discriminant whose entity is Discr
+
+   --------------------------------------------------------
+   -- Front-End Interface for Dynamic Size/Offset Values --
+   --------------------------------------------------------
+
+   --  This interface is used by GNAT LLVM to deal with all dynamic size and
+   --  offset fields.
+
+   --  The interface here allows these created entities to be referenced
+   --  using negative Unit values, so that they can be stored in the
+   --  appropriate size and offset fields in the tree.
+
+   --  In the case of components, if the location of the component is static,
+   --  then all four fields (Component_Bit_Offset, Normalized_Position, Esize,
+   --  and Normalized_First_Bit) are set to appropriate values. In the case of
+   --  a non-static component location, Component_Bit_Offset is not used and
+   --  is left set to Unknown. Normalized_Position and Normalized_First_Bit
+   --  are set appropriately.
+
+   subtype SO_Ref is Uint;
+   --  Type used to represent a Uint value that represents a static or
+   --  dynamic size/offset value (non-negative if static, negative if
+   --  the size value is dynamic).
+
+   subtype Dynamic_SO_Ref is Uint;
+   --  Type used to represent a negative Uint value used to store
+   --  a dynamic size/offset value.
+
+   function Is_Dynamic_SO_Ref (U : SO_Ref) return Boolean;
+   pragma Inline (Is_Dynamic_SO_Ref);
+   --  Given a SO_Ref (Uint) value, returns True iff the SO_Ref value
+   --  represents a dynamic Size/Offset value (i.e. it is negative).
+
+   function Is_Static_SO_Ref (U : SO_Ref) return Boolean;
+   pragma Inline (Is_Static_SO_Ref);
+   --  Given a SO_Ref (Uint) value, returns True iff the SO_Ref value
+   --  represents a static Size/Offset value (i.e. it is non-negative).
+
+   function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref;
+   --  Given the Entity_Id for a constant (case 1), the Node_Id for an
+   --  expression (case 2), or the Entity_Id for a function (case 3),
+   --  this function returns a (negative) Uint value that can be used
+   --  to retrieve the entity or expression for later use.
+
+   function Get_Dynamic_SO_Entity (U : Dynamic_SO_Ref) return Entity_Id;
+   --  Retrieve the Node_Id or Entity_Id stored by a previous call to
+   --  Create_Dynamic_SO_Ref. The approach is that the front end makes
+   --  the necessary Create_Dynamic_SO_Ref calls to associate the node
+   --  and entity id values and the back end makes Get_Dynamic_SO_Ref
+   --  calls to retrieve them.
 
    ------------------------------
    -- External tools Interface --
