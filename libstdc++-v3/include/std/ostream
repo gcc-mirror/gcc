@@ -783,10 +783,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       static bool*
-      _S_get(basic_streambuf<_CharT, _Traits>* __buf) noexcept
+      _S_get(basic_streambuf<_CharT, _Traits>* __buf [[maybe_unused]]) noexcept
       {
+#if __cpp_rtti
 	if (auto __p = dynamic_cast<__syncbuf_base*>(__buf))
 	  return &__p->_M_emit_on_sync;
+#endif
 	return nullptr;
       }
 
