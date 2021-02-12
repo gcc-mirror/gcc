@@ -456,6 +456,9 @@ private:
 static int
 readability (const_tree expr)
 {
+  /* Arbitrarily-chosen "high readability" value.  */
+  const int HIGH_READABILITY = 65536;
+
   gcc_assert (expr);
   switch (TREE_CODE (expr))
     {
@@ -479,8 +482,7 @@ readability (const_tree expr)
     case PARM_DECL:
     case VAR_DECL:
       if (DECL_NAME (expr))
-	/* Arbitrarily-chosen "high readability" value.  */
-	return 65536;
+	return HIGH_READABILITY;
       else
 	/* We don't want to print temporaries.  For example, the C FE
 	   prints them as e.g. "<Uxxxx>" where "xxxx" is the low 16 bits
@@ -490,7 +492,17 @@ readability (const_tree expr)
     case RESULT_DECL:
       /* Printing "<return-value>" isn't ideal, but is less awful than
 	 trying to print a temporary.  */
-      return 32768;
+      return HIGH_READABILITY / 2;
+
+    case NOP_EXPR:
+      {
+	/* Impose a moderate readability penalty for casts.  */
+	const int CAST_PENALTY = 32;
+	return readability (TREE_OPERAND (expr, 0)) - CAST_PENALTY;
+      }
+
+    case INTEGER_CST:
+      return HIGH_READABILITY;
 
     default:
       return 0;
@@ -508,14 +520,25 @@ readability_comparator (const void *p1, const void *p2)
   path_var pv1 = *(path_var const *)p1;
   path_var pv2 = *(path_var const *)p2;
 
-  int r1 = readability (pv1.m_tree);
-  int r2 = readability (pv2.m_tree);
-  if (int cmp = r2 - r1)
-    return cmp;
+  const int tree_r1 = readability (pv1.m_tree);
+  const int tree_r2 = readability (pv2.m_tree);
 
   /* Favor items that are deeper on the stack and hence more recent;
      this also favors locals over globals.  */
-  if (int cmp = pv2.m_stack_depth - pv1.m_stack_depth)
+  const int COST_PER_FRAME = 64;
+  const int depth_r1 = pv1.m_stack_depth * COST_PER_FRAME;
+  const int depth_r2 = pv2.m_stack_depth * COST_PER_FRAME;
+
+  /* Combine the scores from the tree and from the stack depth.
+     This e.g. lets us have a slightly penalized cast in the most
+     recent stack frame "beat" an uncast value in an older stack frame.  */
+  const int sum_r1 = tree_r1 + depth_r1;
+  const int sum_r2 = tree_r2 + depth_r2;
+  if (int cmp = sum_r2 - sum_r1)
+    return cmp;
+
+  /* Otherwise, more readable trees win.  */
+  if (int cmp = tree_r2 - tree_r1)
     return cmp;
 
   /* Otherwise, if they have the same readability, then impose an
@@ -579,6 +602,10 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
   path_var leaked_pv
     = m_old_state->m_region_model->get_representative_path_var (sval,
 								&visited);
+
+  /* Strip off top-level casts  */
+  if (leaked_pv.m_tree && TREE_CODE (leaked_pv.m_tree) == NOP_EXPR)
+    leaked_pv.m_tree = TREE_OPERAND (leaked_pv.m_tree, 0);
 
   /* This might be NULL; the pending_diagnostic subclasses need to cope
      with this.  */
