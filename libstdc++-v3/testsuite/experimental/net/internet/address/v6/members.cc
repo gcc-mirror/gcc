@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,22 +22,38 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-using std::experimental::net::ip::address_v4;
+using std::experimental::net::ip::address_v6;
 
 constexpr bool
 test01()
 {
-  address_v4 a;
+  address_v6 a;
   VERIFY( a.is_unspecified() );
+  VERIFY( !a.is_loopback() );
+  VERIFY( !a.is_multicast() );
+  VERIFY( !a.is_link_local() );
+  VERIFY( !a.is_site_local() );
 
-  a = address_v4::any();
+  a = address_v6::any();
   VERIFY( a.is_unspecified() );
+  VERIFY( !a.is_loopback() );
+  VERIFY( !a.is_multicast() );
+  VERIFY( !a.is_link_local() );
+  VERIFY( !a.is_site_local() );
 
-  a = address_v4::loopback();
+  a = address_v6::loopback();
   VERIFY( !a.is_unspecified() );
+  VERIFY( a.is_loopback() );
+  VERIFY( !a.is_multicast() );
+  VERIFY( !a.is_link_local() );
+  VERIFY( !a.is_site_local() );
 
-  a = address_v4::broadcast();
+  a = address_v6{address_v6::loopback().to_bytes(), 1};
   VERIFY( !a.is_unspecified() );
+  VERIFY( !a.is_loopback() );
+  VERIFY( !a.is_multicast() );
+  VERIFY( !a.is_link_local() );
+  VERIFY( !a.is_site_local() );
 
   return true;
 }
@@ -47,67 +63,39 @@ static_assert(test01(), "");
 constexpr bool
 test02()
 {
-  auto a = address_v4::loopback();
-  VERIFY( a.is_loopback() );
+  auto a = address_v6{address_v6::bytes_type{0xFF}};
+  VERIFY( a.is_multicast() );
 
-  a = address_v4{0x7F000001};
-  VERIFY( a.is_loopback() );
+  a = address_v6{address_v6::bytes_type{0xFF, 0x01}};
+  VERIFY( a.is_multicast() );
 
-  a = address_v4{0x7F010203};
-  VERIFY( a.is_loopback() );
+  a = address_v6{address_v6::bytes_type{0xFF, 0x00, 0x01}};
+  VERIFY( a.is_multicast() );
 
-  a = address_v4{0x7FFFFFFF};
-  VERIFY( a.is_loopback() );
+  a = address_v6{address_v6::bytes_type{0xFE, 0x80}};
+  VERIFY( !a.is_multicast() );
 
-  a = address_v4::any();
-  VERIFY( !a.is_loopback() );
-
-  a = address_v4::broadcast();
-  VERIFY( !a.is_loopback() );
+  a = address_v6{address_v6::bytes_type{0xFE, 0xC0}};
+  VERIFY( !a.is_multicast() );
 
   return true;
 }
 
 static_assert(test02(), "");
 
-constexpr bool
+void
 test03()
 {
-  auto a = address_v4{0xE0000001};
-  VERIFY( a.is_multicast() );
-
-  a = address_v4{0xE0010203};
-  VERIFY( a.is_multicast() );
-
-  a = address_v4{0xE0FFFFFF};
-  VERIFY( a.is_multicast() );
-
-  a = address_v4{0xF0000000};
-  VERIFY( !a.is_multicast() );
-
-  a = address_v4{0xDFFFFFFF};
-  VERIFY( !a.is_multicast() );
-
-  return true;
+  VERIFY( address_v6::any().to_string() == "::" );
+  VERIFY( address_v6::loopback().to_string() == "::1" );
 }
-
-static_assert(test03(), "");
 
 void
 test04()
 {
-  VERIFY( address_v4::any().to_string() == "0.0.0.0" );
-  VERIFY( address_v4::loopback().to_string() == "127.0.0.1" );
-  VERIFY( address_v4::broadcast().to_string() == "255.255.255.255" );
-}
-
-void
-test05()
-{
   std::ostringstream ss;
-  ss << address_v4::any() << ' ' << address_v4::loopback() << ' '
-    << address_v4::broadcast();
-  VERIFY( ss.str() == "0.0.0.0 127.0.0.1 255.255.255.255" );
+  ss << address_v6::any() << ' ' << address_v6::loopback();
+  VERIFY( ss.str() == ":: ::1" );
 }
 
 int
@@ -117,5 +105,4 @@ main()
   test02();
   test03();
   test04();
-  test05();
 }
