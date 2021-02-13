@@ -5853,6 +5853,47 @@ prep_operand (tree operand)
   return operand;
 }
 
+/* True iff CONV represents a conversion sequence which no other can be better
+   than under [over.ics.rank]: in other words, a "conversion" to the exact same
+   type (including binding to a reference to the same type).  This is stronger
+   than the standard's "identity" category, which also includes reference
+   bindings that add cv-qualifiers or change rvalueness.  */
+
+static bool
+perfect_conversion_p (conversion *conv)
+{
+  if (CONVERSION_RANK (conv) != cr_identity)
+    return false;
+  if (!conv->rvaluedness_matches_p)
+    return false;
+  if (conv->kind == ck_ref_bind
+      && !same_type_p (TREE_TYPE (conv->type),
+		       next_conversion (conv)->type))
+    return false;
+  return true;
+}
+
+/* True if CAND represents a perfect match, i.e. all perfect conversions, so no
+   other candidate can be a better match.  Since the template/non-template
+   tiebreaker comes immediately after the conversion comparison in
+   [over.match.best], a perfect non-template candidate is better than all
+   templates.  */
+
+static bool
+perfect_candidate_p (z_candidate *cand)
+{
+  if (cand->viable < 1)
+    return false;
+  int len = cand->num_convs;
+  for (int i = 0; i < len; ++i)
+    if (!perfect_conversion_p (cand->convs[i]))
+      return false;
+  if (conversion *conv = cand->second_conv)
+    if (!perfect_conversion_p (conv))
+      return false;
+  return true;
+}
+
 /* Add each of the viable functions in FNS (a FUNCTION_DECL or
    OVERLOAD) to the CANDIDATES, returning an updated list of
    CANDIDATES.  The ARGS are the arguments provided to the call;
@@ -5920,6 +5961,18 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     /* Delay creating the implicit this parameter until it is needed.  */
     non_static_args = NULL;
 
+  /* If there's a non-template perfect match, we don't need to consider
+     templates.  So check non-templates first.  This optimization is only
+     really needed for the defaulted copy constructor of tuple and the like
+     (96926), but it seems like we might as well enable it more generally.  */
+  bool seen_perfect = false;
+  enum { templates, non_templates, either } which = either;
+  if (template_only)
+    which = templates;
+  else /*if (flags & LOOKUP_DEFAULTED)*/
+    which = non_templates;
+
+ again:
   for (lkp_iterator iter (fns); iter; ++iter)
     {
       fn = *iter;
@@ -5927,6 +5980,10 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       if (check_converting && DECL_NONCONVERTING_P (fn))
 	continue;
       if (check_list_ctor && !is_list_ctor (fn))
+	continue;
+      if (which == templates && TREE_CODE (fn) != TEMPLATE_DECL)
+	continue;
+      if (which == non_templates && TREE_CODE (fn) == TEMPLATE_DECL)
 	continue;
 
       tree fn_first_arg = NULL_TREE;
@@ -5967,7 +6024,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 				fn,
 				ctype,
 				explicit_targs,
-				fn_first_arg, 
+				fn_first_arg,
 				fn_args,
 				return_type,
 				access_path,
@@ -5975,17 +6032,26 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 				flags,
 				strict,
 				complain);
-      else if (!template_only)
-	add_function_candidate (candidates,
-				fn,
-				ctype,
-				fn_first_arg,
-				fn_args,
-				access_path,
-				conversion_path,
-				flags,
-				NULL,
-				complain);
+      else
+	{
+	  add_function_candidate (candidates,
+				  fn,
+				  ctype,
+				  fn_first_arg,
+				  fn_args,
+				  access_path,
+				  conversion_path,
+				  flags,
+				  NULL,
+				  complain);
+	  if (perfect_candidate_p (*candidates))
+	    seen_perfect = true;
+	}
+    }
+  if (which == non_templates && !seen_perfect)
+    {
+      which = templates;
+      goto again;
     }
 }
 
