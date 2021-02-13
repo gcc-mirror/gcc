@@ -1,3 +1,15 @@
+2021-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96905
+	* pt.c (mark_decl_instantiated): Exit early if consteval.
+
+2021-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98326
+	PR c++/20408
+	* cp-gimplify.c (simple_empty_class_p): Don't touch an invisiref
+	parm.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
