@@ -222,6 +222,10 @@ package Atree is
    --  Called to unlock node modifications when assertions are enabled; if
    --  assertions are not enabled calling this subprogram has no effect.
 
+   function Is_Entity (N : Node_Or_Entity_Id) return Boolean;
+   pragma Inline (Is_Entity);
+   --  Returns True if N is an entity
+
    function New_Node
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Node_Id;

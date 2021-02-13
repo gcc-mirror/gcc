@@ -1508,20 +1508,31 @@ package body Gen_IL.Gen is
       end Put_Getter_Decl;
 
       procedure Put_Getter_Body (S : in out Sink'Class; F : Field_Enum) is
+         Rec : Field_Info renames Field_Table (F).all;
       begin
+         --  Note that we store the result in a local constant below, so that
+         --  the "Pre => ..." can refer to it. The constant is called Val so
+         --  that it has the same name as the formal of the setter, so the
+         --  "Pre => ..." can refer to it by the same name in both getter
+         --  and setter.
+
          Put_Getter_Spec (S, F);
          Put (S, " is\n");
+         Indent (S, 3);
+         Put (S, "Val : constant \1 := \2 (\3, \4);\n",
+              Get_Set_Id_Image (Rec.Field_Type),
+              Low_Level_Getter (Rec.Field_Type),
+              Node_To_Fetch_From (F),
+              Image (Rec.Offset));
+         Outdent (S, 3);
          Put (S, "begin\n");
          Indent (S, 3);
 
-         if Field_Table (F).Pre.all /= "" then
-            Put (S, "pragma Assert (\1);\n", Field_Table (F).Pre.all);
+         if Rec.Pre.all /= "" then
+            Put (S, "pragma Assert (\1);\n", Rec.Pre.all);
          end if;
 
-         Put (S, "return \1 (\2, \3);\n",
-              Low_Level_Getter (Field_Table (F).Field_Type),
-              Node_To_Fetch_From (F),
-              Image (Field_Table (F).Offset));
+         Put (S, "return Val;\n");
          Outdent (S, 3);
          Put (S, "end \1;\n\n", Image (F));
       end Put_Getter_Body;
@@ -1529,7 +1540,7 @@ package body Gen_IL.Gen is
       procedure Put_Setter_Spec (S : in out Sink'Class; F : Field_Enum) is
          Rec    : Field_Info renames Field_Table (F).all;
          Default : constant String :=
-           (if Field_Table (F).Field_Type = Flag then " := True" else "");
+           (if Rec.Field_Type = Flag then " := True" else "");
       begin
          Put (S, "procedure Set_\1\n", Image (F));
          Indent (S, 2);
@@ -1550,11 +1561,13 @@ package body Gen_IL.Gen is
       end Put_Setter_Decl;
 
       procedure Put_Setter_Body (S : in out Sink'Class; F : Field_Enum) is
+         Rec : Field_Info renames Field_Table (F).all;
+
          --  If Type_Only was specified in the call to Create_Semantic_Field,
          --  then we assert that the node is a base (etc) type.
 
          Type_Only_Assertion : constant String :=
-           (case Field_Table (F).Type_Only is
+           (case Rec.Type_Only is
               when No_Type_Only => "",
               when Base_Type_Only => "Is_Base_Type (N)",
 --  ????It seems like we should call Is_Implementation_Base_Type or
@@ -1570,8 +1583,8 @@ package body Gen_IL.Gen is
          Put (S, "begin\n");
          Indent (S, 3);
 
-         if Field_Table (F).Pre.all /= "" then
-            Put (S, "pragma Assert (\1);\n", Field_Table (F).Pre.all);
+         if Rec.Pre.all /= "" then
+            Put (S, "pragma Assert (\1);\n", Rec.Pre.all);
          end if;
 
          if Type_Only_Assertion /= "" then
@@ -1580,7 +1593,7 @@ package body Gen_IL.Gen is
 
          Put (S, "\1 (N, \2, Val);\n",
               Low_Level_Setter (F),
-              Image (Field_Table (F).Offset));
+              Image (Rec.Offset));
          Outdent (S, 3);
          Put (S, "end Set_\1;\n\n", Image (F));
       end Put_Setter_Body;
@@ -2034,9 +2047,11 @@ package body Gen_IL.Gen is
 
       begin
          Put (S, "with Seinfo; use Seinfo;\n");
-         Put (S, "pragma Warnings (Off); -- ????\n");
+         Put (S, "pragma Warnings (Off);\n");
+         --  With's included in case they are needed; so we don't have to keep
+         --  switching back and forth.
          Put (S, "with Output; use Output;\n");
-         Put (S, "pragma Warnings (On); -- ????\n");
+         Put (S, "pragma Warnings (On);\n");
 
          Put (S, "\npackage Sinfo.Nodes is\n\n");
          Indent (S, 3);
@@ -2061,6 +2076,9 @@ package body Gen_IL.Gen is
 
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;\n");
          Put (B, "with Nlists; use Nlists;\n");
+         Put (B, "pragma Warnings (Off);\n");
+         Put (B, "with Einfo.Utils; use Einfo.Utils;\n");
+         Put (B, "pragma Warnings (On);\n");
 
          Put (B, "\npackage body Sinfo.Nodes is\n\n");
          Indent (B, 3);

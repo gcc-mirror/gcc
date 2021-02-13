@@ -139,10 +139,6 @@ package body Atree is
    -- Local Subprograms --
    -----------------------
 
-   function Is_Entity (N : Node_Or_Entity_Id) return Boolean;
-   pragma Inline (Is_Entity);
-   --  Returns True if N is an entity
-
    function Allocate_New_Node (Kind : Node_Kind) return Node_Id;
    pragma Inline (Allocate_New_Node);
    --  Allocate a new node or first part of a node extension. Initialize the
@@ -1435,7 +1431,7 @@ package body Atree is
    -- Is_Entity --
    ---------------
 
-   function Is_Entity (N : Node_Id) return Boolean is
+   function Is_Entity (N : Node_Or_Entity_Id) return Boolean is
    begin
       return Nkind (N) in N_Entity;
    end Is_Entity;

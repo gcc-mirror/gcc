@@ -26215,7 +26215,9 @@ package body Sem_Util is
          Part_IP := Partial_Invariant_Procedure (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
-         --  prevents accidental clobbering of enabled attributes.
+         --  prevents accidental clobbering of enabled attributes. We need to
+         --  call Base_Type twice, because it is sometimes not set to an actual
+         --  base type.
 
          if Has_Inheritable_Invariants (From_Typ) then
             Set_Has_Inheritable_Invariants (Typ);
@@ -26226,7 +26228,7 @@ package body Sem_Util is
          end if;
 
          if Has_Own_Invariants (From_Typ) then
-            Set_Has_Own_Invariants (Base_Type (Typ));
+            Set_Has_Own_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
