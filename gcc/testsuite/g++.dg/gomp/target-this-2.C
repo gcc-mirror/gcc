@@ -46,4 +46,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump {map\(to:\*__closure \[len: [0-9]+\]\) map\(firstprivate:__closure \[pointer assign, bias: 0\]\) map\(struct:\*__closure \[len: 1\]\) map\(alloc:__closure->__this \[len: [0-9]+\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(always_pointer:__closure->__this \[pointer assign, bias: 0\]\)} "gimple" } } */
+/* { dg-final { scan-tree-dump {map\(to:\*__closure \[len: [0-9]+\]\) map\(firstprivate:__closure \[pointer assign, bias: 0\]\) map\(tofrom:\*_[0-9]+ \[len: [0-9]+\]\) map\(always_pointer:__closure->__this \[pointer assign, bias: 0\]\)} "gimple" } } */
