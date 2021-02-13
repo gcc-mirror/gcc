@@ -1,3 +1,54 @@
+2021-02-12  Martin Sebor  <msebor@redhat.com>
+
+	* tree-pretty-print.c (print_generic_expr_to_str): Update comment.
+
+2021-02-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/accesses.cc (function_info::make_use_available): Use
+	m_temp_obstack rather than m_obstack to allocate the temporary use.
+
+2021-02-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-problems.c (df_lr_bb_local_compute): Treat partial definitions
+	as read-modify operations.
+
+2021-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* ipa-fnsummary.c (unmodified_parm_1): Only walk when
+	fbi->aa_walk_budget is bigger than zero.  Update
+	fbi->aa_walk_budget.
+	(param_change_prob): Likewise.
+	* ipa-prop.c (detect_type_change_from_memory_writes):
+	Properly account walk_aliased_vdefs.
+	(parm_preserved_before_stmt_p): Canonicalize updates.
+	(parm_ref_data_preserved_p): Likewise.
+	(parm_ref_data_pass_through_p): Likewise.
+	(determine_known_aggregate_parts): Account own alias queries.
+
+2021-02-12  Martin Liska  <mliska@suse.cz>
+
+	* opts-common.c (decode_cmdline_option): Release werror_arg.
+	* opts.c (gen_producer_string): Release output of
+	gen_command_line_string.
+
+2021-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/38474
+	* params.opt (-param=max-store-chains-to-track=): New param.
+	(-param=max-stores-to-track=): Likewise.
+	* doc/invoke.texi (max-store-chains-to-track): Document.
+	(max-stores-to-track): Likewise.
+	* gimple-ssa-store-merging.c (pass_store_merging::m_n_chains):
+	New.
+	(pass_store_merging::m_n_stores): Likewise.
+	(pass_store_merging::terminate_and_process_chain): Update
+	m_n_stores and m_n_chains.
+	(pass_store_merging::process_store): Likewise.   Terminate
+	oldest chains if the number of stores or chains get too large.
+	(imm_store_chain_info::terminate_and_process_chain): Dump
+	chain length.
+
 2021-02-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to

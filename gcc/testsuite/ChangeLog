@@ -1,3 +1,62 @@
+2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/rtl/aarch64/multi-subreg-1.c: Add dg-do compile directive
+	and restrict the test to aarch64-*-* target only.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr99039_a.C: New.
+	* g++.dg/modules/pr99039_b.C: New.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99040
+	* g++.dg/modules/pr99040_a.C: New.
+	* g++.dg/modules/pr99040_b.C: New.
+	* g++.dg/modules/pr99040_c.C: New.
+	* g++.dg/modules/pr99040_d.C: New.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99039
+	PR c++/99040
+	* g++.dg/lookup/pr99039.C: New.
+
+2021-02-12  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR libfortran/95647
+	* gfortran.dg/ieee/ieee_12.f90: New test.
+
+2021-02-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/rtl/aarch64/multi-subreg-1.c: New test.
+
+2021-02-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/98931
+	* gcc.target/arm/pr98931.c: Add -mthumb
+
+2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99043
+	* gfortran.dg/assumed_rank_20.f90: New test.
+
+2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97742
+	* g++.dg/cpp2a/concepts-requires24.C: New test.
+
+2021-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97246
+	* g++.dg/cpp2a/lambda-generic-variadic21.C: New test.
+
+2021-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* g++.dg/analyzer/pr99064.C: New test.
+	* gcc.dg/analyzer/pr98969.c: New test.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95888

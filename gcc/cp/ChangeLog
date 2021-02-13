@@ -1,3 +1,66 @@
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write_cluster): Check bindings for
+	imported using-decls.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99040
+	* module.cc (trees_in::decl_value): Call add_module_namespace_decl
+	for new namespace-scope entities.
+	(module_state::read_cluster): Don't call add_module_decl here.
+	* name-lookup.h (add_module_decl): Rename to ...
+	(add_module_namespace_decl): ... this.
+	* name-lookup.c (newbinding_bookkeeping): Move into ...
+	(do_pushdecl): ... here.  Its only remaining caller.
+	(add_module_decl): Rename to ...
+	(add_module_namespace_decl): ... here.  Add checking-assert for
+	circularity. Don't call newbinding_bookkeeping, just extern_c
+	checking and incomplete var checking.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99039
+	PR c++/99040
+	* cp-tree.h (CPTI_GLOBAL_TYPE): Delete.
+	(global_type_node): Delete.
+	(IDENTIFIER_TYPE_VALUE): Delete.
+	(IDENTIFIER_HAS_TYPE_VALUE): Delete.
+	(get_type_value): Delete.
+	* name-lookup.h (identifier_type_value): Delete.
+	* name-lookup.c (check_module_override): Don't
+	SET_IDENTIFIER_TYPE_VALUE here.
+	(do_pushdecl): Nor here.
+	(identifier_type_value_1, identifier_type_value): Delete.
+	(set_identifier_type_value_with_scope): Only
+	SET_IDENTIFIER_TYPE_VALUE for local and class scopes.
+	(pushdecl_nanmespace_level): Remove shadow stack nadgering.
+	(do_pushtag): Use REAL_IDENTIFIER_TYPE_VALUE.
+	* call.c (check_dtor_name): Use lookup_name.
+	* decl.c (cxx_init_decl_processing): Drop global_type_node.
+	* decl2.c (cplus_decl_attributes): Don't SET_IDENTIFIER_TYPE_VALUE
+	here.
+	* init.c (get_type_value): Delete.
+	* pt.c (instantiate_class_template_1): Don't call pushtag or
+	SET_IDENTIFIER_TYPE_VALUE here.
+	(tsubst): Assert never an identifier.
+	(dependent_type_p): Drop global_type_node assert.
+	* typeck.c (error_args_num): Don't use IDENTIFIER_HAS_TYPE_VALUE
+	to determine ctorness.
+
+2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97742
+	* parser.c (cp_parser_requirement_seq): Stop iterating after reaching
+	CPP_EOF.
+
+2021-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97246
+	PR c++/94546
+	* pt.c (extract_fnparm_pack): Check DECL_PACK_P here.
+	(register_parameter_specializations): Not here.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95888

@@ -1,3 +1,94 @@
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (fs::symlink_status): Re-enable workaround.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Document implementation
+	specific properties of std::experimental::filesystem::rename.
+	* doc/xml/manual/status_cxx2017.xml: Document implementation
+	specific properties of std::filesystem::rename.
+	* doc/html/*: Regenerate.
+	* src/c++17/fs_ops.cc (fs::rename): Implement correct behaviour
+	for directories on Windows.
+	* src/filesystem/ops-common.h (__gnu_posix::rename): Use
+	MoveFileExW on Windows.
+	* testsuite/27_io/filesystem/operations/rename.cc: New test.
+	* testsuite/experimental/filesystem/operations/rename.cc: New test.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Add
+	random number to the path.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::to_string): Include
+	scope ID in string.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Test to_string() results.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::any): Avoid using
+	memcpy in constexpr function.
+	(address_v6::loopback): Likewise.
+	(make_address_v6): Fix missing return statements on error paths.
+	* include/experimental/io_context: Avoid -Wdangling-else
+	warning.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Remove unused variables.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	New test.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr::_M_get_deleter):
+	Add unused attribute to parameter.
+	* src/c++11/shared_ptr.cc (_Sp_make_shared_tag::_S_eq):
+	Likewise.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_ostream/emit/1.cc: Expect test to fail
+	if -fno-rtti is used.
+	* testsuite/30_threads/async/forced_unwind.cc: Expect test
+	to abort if -fno-rtti is used.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (memory_resource):
+	Remove requirement for RTTI and exceptions to be enabled.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istringstream/rdbuf/char/2832.cc: Use
+	static_cast when RTTI is disabled.
+	* testsuite/27_io/basic_istringstream/rdbuf/wchar_t/2832.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/rdbuf/char/2832.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/rdbuf/wchar_t/2832.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/str/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/2.cc:
+	Likewise.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (__syncbuf_base::_S_get): Mark parameter
+	as unused and only use dynamic_cast when RTTI is enabled.
+
+2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99077
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure(const char*, int)):
+	Change int parameter to error_code, to match std::ios_failure.
+	(__throw_ios_failure(const char*, int)): Construct error_code
+	from int parameter.
+
 2021-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/eh_ptr.cc (_GLIBCXX_EH_PTR_RELOPS_COMPAT): Define

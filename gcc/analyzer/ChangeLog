@@ -1,3 +1,30 @@
+2021-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* engine.cc (readability): Add names for the various arbitrary
+	values.  Handle NOP_EXPR and INTEGER_CST.
+	(readability_comparator): Combine the readability tests for
+	tree and stack depth, rather than performing them sequentially.
+	(impl_region_model_context::on_state_leak): Strip off top-level
+	casts.
+	* region-model.cc (region_model::get_representative_path_var): Add
+	type-checking, moving the bulk of the implementation to...
+	(region_model::get_representative_path_var_1): ...here.  Respect
+	types in casts by recursing and re-adding the cast, rather than
+	merely stripping them off.  Use the correct type when handling
+	region_svalue.
+	(region_model::get_representative_tree): Strip off any top-level
+	cast.
+	(region_model::get_representative_path_var): Add type-checking,
+	moving the bulk of the implementation to...
+	(region_model::get_representative_path_var_1): ...here.
+	* region-model.h (region_model::get_representative_path_var_1):
+	New decl
+	(region_model::get_representative_path_var_1): New decl.
+	* store.cc (append_pathvar_with_type): New.
+	(binding_cluster::get_representative_path_vars): Cast path_vars
+	to the correct type when adding them to *OUT_PVS.
+
 2021-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98575
