@@ -2076,6 +2076,17 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
+;; Optimize V2SImode load from memory, swapping the elements and
+;; storing back into the memory into DImode rotate of the memory by 32.
+(define_split
+  [(set (match_operand:V2SI 0 "memory_operand")
+	(vec_select:V2SI (match_dup 0)
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_64BIT && (TARGET_READ_MODIFY_WRITE || optimize_insn_for_size_p ())"
+  [(set (match_dup 0)
+	(rotate:DI (match_dup 0) (const_int 32)))]
+  "operands[0] = adjust_address (operands[0], DImode, 0);")
+
 (define_insn "mmx_pswapdv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
