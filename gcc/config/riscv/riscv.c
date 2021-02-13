@@ -891,17 +891,13 @@ riscv_compressed_lw_address_p (rtx x)
   bool result = riscv_classify_address (&addr, x, GET_MODE (x),
 					reload_completed);
 
-  /* Before reload, assuming all load/stores of valid addresses get compressed
-     gives better code size than checking if the address is reg + small_offset
-     early on.  */
-  if (result && !reload_completed)
-    return true;
-
   /* Return false if address is not compressed_reg + small_offset.  */
   if (!result
       || addr.type != ADDRESS_REG
-      || (!riscv_compressed_reg_p (REGNO (addr.reg))
-	    && addr.reg != stack_pointer_rtx)
+      /* Before reload, assume all registers are OK.  */
+      || (reload_completed
+	  && !riscv_compressed_reg_p (REGNO (addr.reg))
+	  && addr.reg != stack_pointer_rtx)
       || !riscv_compressed_lw_offset_p (addr.offset))
     return false;
 
@@ -1708,6 +1704,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	 instructions it needs.  */
       if ((cost = riscv_address_insns (XEXP (x, 0), mode, true)) > 0)
 	{
+	  /* When optimizing for size, make uncompressible 32-bit addresses
+	     more expensive so that compressible 32-bit addresses are
+	     preferred.  */
+	  if (TARGET_RVC && !speed && riscv_mshorten_memrefs && mode == SImode
+	      && !riscv_compressed_lw_address_p (XEXP (x, 0)))
+	    cost++;
+
 	  *total = COSTS_N_INSNS (cost + tune_param->memory_cost);
 	  return true;
 	}
