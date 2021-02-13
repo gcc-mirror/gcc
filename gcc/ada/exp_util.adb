@@ -9238,28 +9238,33 @@ package body Exp_Util is
          if W then
 
             --  We suppress the warning if this code is under control of an
-            --  if statement, whose condition is a simple identifier, and
-            --  either we are in an instance, or warnings off is set for this
-            --  identifier. The reason for killing it in the instance case is
-            --  that it is common and reasonable for code to be deleted in
-            --  instances for various reasons.
+            --  if/case statement and either
+            --    a) we are in an instance and the condition/selector
+            --       has a statically known value; or
+            --    b) the condition/selector is a simple identifier and
+            --       warnings off is set for this identifier.
+            --  Dead code is common and reasonable in instances, so we don't
+            --  want a warning in that case.
 
-            --  Could we use Is_Statically_Unevaluated here???
+            declare
+               C : Node_Id := Empty;
+            begin
+               if Nkind (Parent (N)) = N_If_Statement then
+                  C := Condition (Parent (N));
+               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
+                  C := Expression (Parent (Parent (N)));
+               end if;
 
-            if Nkind (Parent (N)) = N_If_Statement then
-               declare
-                  C : constant Node_Id := Condition (Parent (N));
-               begin
-                  if Nkind (C) = N_Identifier
-                    and then
-                      (In_Instance
-                        or else (Present (Entity (C))
-                                  and then Has_Warnings_Off (Entity (C))))
+               if Present (C) then
+                  if (In_Instance and Compile_Time_Known_Value (C))
+                    or else (Nkind (C) = N_Identifier
+                             and then Present (Entity (C))
+                             and then Has_Warnings_Off (Entity (C)))
                   then
                      W := False;
                   end if;
-               end;
-            end if;
+               end if;
+            end;
 
             --  Generate warning if not suppressed
 
