@@ -772,7 +772,8 @@ package body Atree is
                   Write_Str (New_Kind'Img);
                   Write_Str (" Nonzero field ");
                   Write_Str (F'Img);
-                  Write_Str (" is vanishing");
+                  Write_Str (" is vanishing for node ");
+                  Write_Int (Nat (Old_N));
                   Write_Eol;
 
                   raise Program_Error;
@@ -845,7 +846,8 @@ package body Atree is
                   Write_Str (New_Kind'Img);
                   Write_Str (" Nonzero field ");
                   Write_Str (F'Img);
-                  Write_Str (" is vanishing ");
+                  Write_Str (" is vanishing for node ");
+                  Write_Int (Nat (Old_N));
                   Write_Eol;
 
                   if New_Kind = E_Void or else Old_Kind = E_Void then

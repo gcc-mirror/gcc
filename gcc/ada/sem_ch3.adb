@@ -6191,6 +6191,12 @@ package body Sem_Ch3 is
 
       if Nkind (Def) = N_Constrained_Array_Definition then
 
+         if Ekind (T) in Incomplete_Or_Private_Kind then
+            Reinit_Field_To_Zero (T, Stored_Constraint);
+         else
+            pragma Assert (Ekind (T) = E_Void);
+         end if;
+
          --  Establish Implicit_Base as unconstrained base type
 
          Implicit_Base := Create_Itype (E_Array_Type, P, Related_Id, 'B');
@@ -9748,6 +9754,12 @@ package body Sem_Ch3 is
 
    begin
       --  Set common attributes
+
+      if Ekind (Derived_Type) in Incomplete_Or_Private_Kind
+        and then Ekind (Parent_Base) in Modular_Integer_Kind | Array_Kind
+      then
+         Reinit_Field_To_Zero (Derived_Type, Stored_Constraint);
+      end if;
 
       Set_Scope                  (Derived_Type, Current_Scope);
       Set_Etype                  (Derived_Type,        Parent_Base);
@@ -19618,6 +19630,11 @@ package body Sem_Ch3 is
       --  Proceed with analysis of mod expression
 
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
+
+      if Ekind (T) in Incomplete_Or_Private_Kind then
+         Reinit_Field_To_Zero (T, Stored_Constraint);
+      end if;
+
       Set_Etype (T, T);
       Mutate_Ekind (T, E_Modular_Integer_Type);
       Init_Alignment (T);
