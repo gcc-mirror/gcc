@@ -19239,14 +19239,17 @@ package body Sem_Ch3 is
          Reinit_Field_To_Zero (CW_Type, Private_Dependents);
 
       elsif Ekind (CW_Type) in Concurrent_Kind then
-         if Ekind (CW_Type) = E_Task_Type then
+         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
+         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
+
+         if Ekind (CW_Type) in Task_Kind then
             Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Checks_OK_Id);
             Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Warnings_OK_Id);
          end if;
 
-         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
-         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
-         Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+         if Ekind (CW_Type) in E_Task_Type | E_Protected_Type then
+            Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+         end if;
       end if;
 
       Mutate_Ekind                    (CW_Type, E_Class_Wide_Type);
