@@ -1,3 +1,13 @@
+2021-02-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 7132b3537.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/dsymbolsem.o, d/semantic2.o,
+	d/semantic3.o, and d/templateparamsem.o.
+	* d-compiler.cc (Compiler::genCmain): Update calls to semantic
+	entrypoint functions.
+	* d-lang.cc (d_parse_file): Likewise.
+	* typeinfo.cc (make_frontend_typeinfo): Likewise.
+
 2021-02-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-tree.h (DEF_D_INTRINSIC): Don't insert INTRINSIC_ into the

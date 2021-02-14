@@ -1,3 +1,36 @@
+2021-02-13  Levy Hsu  <admin@levyhsu.com>
+
+	PR target/97417
+	* config/riscv/riscv-shorten-memrefs.c (pass_shorten_memrefs): Add
+	extend parameter to get_si_mem_base_reg declaration.
+	(get_si_mem_base_reg): Add extend parameter.  Set it.
+	(analyze): Pass extend arg to get_si_mem_base_reg.
+	(transform): Likewise.  Use it when rewriting mems.
+	* config/riscv/riscv.c (riscv_legitimize_move): Check for subword
+	loads and emit sign/zero extending load followed by subreg move.
+
+2021-02-13  Jim Wilson  <jimw@sifive.com>
+
+	PR target/97417
+	* config/riscv/riscv.c (riscv_compressed_lw_address_p): Drop early
+	exit when !reload_completed.  Only perform check for compressed reg
+	if reload_completed.
+	(riscv_rtx_costs): In MEM case, when optimizing	for size and
+	shorten memrefs, if not compressible, then increase cost.
+
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98439
+	* recog.c (pass_split_before_regstack::gate): Enable even when
+	pass_split_before_sched2 is enabled if -fselective-scheduling2 is
+	on.
+
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96166
+	* config/i386/mmx.md (*mmx_pshufd_1): Add a combine splitter for
+	swap of V2SImode elements in memory into DImode memory rotate by 32.
+
 2021-02-12  Martin Sebor  <msebor@redhat.com>
 
 	* tree-pretty-print.c (print_generic_expr_to_str): Update comment.

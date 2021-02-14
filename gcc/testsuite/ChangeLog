@@ -1,3 +1,13 @@
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98439
+	* gcc.target/i386/pr98439.c: New test.
+
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96166
+	* gcc.target/i386/pr96166.c: New test.
+
 2021-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/rtl/aarch64/multi-subreg-1.c: Add dg-do compile directive
