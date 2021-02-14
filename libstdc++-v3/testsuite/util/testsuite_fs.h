@@ -34,10 +34,10 @@ namespace test_fs = std::experimental::filesystem;
 #include <fstream>
 #include <string>
 #include <cstdio>
+#include <unistd.h> // unlink, close, getpid
 
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
 #include <stdlib.h> // mkstemp
-#include <unistd.h> // unlink, close
 #else
 #include <random>   // std::random_device
 #endif
