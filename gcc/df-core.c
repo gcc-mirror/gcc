@@ -1064,7 +1064,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 	     " n_basic_blocks %d n_edges %d"
 	     " count %d (%5.2g)\n",
 	     n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
-	     dcount, dcount / (float)n_basic_blocks_for_fn (cfun));
+	     dcount, dcount / (double)n_basic_blocks_for_fn (cfun));
 }
 
 /* Worklist-based dataflow solver. It uses sbitmap as a worklist,
