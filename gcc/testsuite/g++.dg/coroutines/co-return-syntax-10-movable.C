@@ -32,7 +32,7 @@ struct coro1 {
 
   auto get_return_object () { return handle_type::from_promise (*this);}
   coro::suspend_always initial_suspend () const { return {}; }
-  coro::suspend_always final_suspend () const {  return {}; }
+  coro::suspend_always final_suspend () const noexcept {  return {}; }
 
   void return_value(T&& v) noexcept { value = std::move(v); }
   

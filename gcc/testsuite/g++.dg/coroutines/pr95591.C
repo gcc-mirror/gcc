@@ -12,7 +12,7 @@ struct generator {
         void return_void();
         void unhandled_exception();
         suspend_always initial_suspend();
-        suspend_always final_suspend();
+        suspend_always final_suspend() noexcept;
 
         template<typename Arg>
         suspend_always yield_value(Arg&&) {

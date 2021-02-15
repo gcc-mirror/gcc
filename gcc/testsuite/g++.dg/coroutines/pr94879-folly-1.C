@@ -31,7 +31,7 @@ class j {
 
 public:
   std::g initial_suspend();
-  l final_suspend();
+  l final_suspend() noexcept;
 };
 class m : public j {
 public:

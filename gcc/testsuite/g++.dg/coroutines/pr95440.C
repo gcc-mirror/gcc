@@ -11,7 +11,7 @@ struct task
   {
     auto get_return_object() const { return task{}; }
     static constexpr std::suspend_always initial_suspend()  { return {}; }
-    static constexpr std::suspend_never final_suspend() { return {}; }
+    static constexpr std::suspend_never final_suspend() noexcept { return {}; }
     static constexpr void return_void() {}
     static constexpr void unhandled_exception() {}
   };

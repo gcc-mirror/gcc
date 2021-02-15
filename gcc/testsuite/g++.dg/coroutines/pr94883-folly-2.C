@@ -24,7 +24,7 @@ class h {
 public:
   void get_return_object();
   std::b initial_suspend();
-  j final_suspend();
+  j final_suspend() noexcept;
   void unhandled_exception();
   template <typename g> 
     auto await_transform (g c) { return ab(f, c); }
