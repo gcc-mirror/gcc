@@ -1815,6 +1815,8 @@ struct param_info
   vec<tree *> *body_uses; /* Worklist of uses, void if there are none.  */
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
+  tree guard_var;    /* If we need a DTOR on exception, this bool guards it.  */
+  tree fr_copy_dtor; /* If we need a DTOR on exception, this is it.  */
   bool by_ref;       /* Was passed by reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
   bool rv_ref;       /* Was an rvalue ref.  */
@@ -1985,6 +1987,73 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   if (decl_expr_p)
     *do_subtree = 0; /* We've accounted for the nested use.  */
   return NULL_TREE;
+}
+
+/* A helper to build the frame DTOR.
+   [dcl.fct.def.coroutine] / 12
+   The deallocation function’s name is looked up in the scope of the promise
+   type.  If this lookup fails, the deallocation function’s name is looked up
+   in the global scope.  If deallocation function lookup finds both a usual
+   deallocation function with only a pointer parameter and a usual
+   deallocation function with both a pointer parameter and a size parameter,
+   then the selected deallocation function shall be the one with two
+   parameters.  Otherwise, the selected deallocation function shall be the
+   function with one parameter.  If no usual deallocation function is found
+   the program is ill-formed.  The selected deallocation function shall be
+   called with the address of the block of storage to be reclaimed as its
+   first argument.  If a deallocation function with a parameter of type
+   std::size_t is used, the size of the block is passed as the corresponding
+   argument.  */
+
+static tree
+coro_get_frame_dtor (tree coro_fp, tree orig, tree frame_size,
+		     tree promise_type, location_t loc)
+{
+  tree del_coro_fr = NULL_TREE;
+  tree frame_arg = build1 (CONVERT_EXPR, ptr_type_node, coro_fp);
+  tree delname = ovl_op_identifier (false, DELETE_EXPR);
+  tree fns = lookup_promise_method (orig, delname, loc,
+					/*musthave=*/false);
+  if (fns && BASELINK_P (fns))
+    {
+      /* Look for sized version first, since this takes precedence.  */
+      vec<tree, va_gc> *args = make_tree_vector ();
+      vec_safe_push (args, frame_arg);
+      vec_safe_push (args, frame_size);
+      tree dummy_promise = build_dummy_object (promise_type);
+
+      /* It's OK to fail for this one... */
+      del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
+					   NULL_TREE, LOOKUP_NORMAL, NULL,
+					   tf_none);
+
+      if (!del_coro_fr || del_coro_fr == error_mark_node)
+	{
+	  release_tree_vector (args);
+	  args = make_tree_vector_single (frame_arg);
+	  del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
+					       NULL_TREE, LOOKUP_NORMAL, NULL,
+					       tf_none);
+	}
+
+      /* But one of them must succeed, or the program is ill-formed.  */
+      if (!del_coro_fr || del_coro_fr == error_mark_node)
+	{
+	  error_at (loc, "%qE is provided by %qT but is not usable with"
+		  " the function signature %qD", delname, promise_type, orig);
+	  del_coro_fr = error_mark_node;
+	}
+    }
+  else
+    {
+      del_coro_fr = build_op_delete_call (DELETE_EXPR, frame_arg, frame_size,
+					  /*global_p=*/true, /*placement=*/NULL,
+					  /*alloc_fn=*/NULL,
+					  tf_warning_or_error);
+      if (!del_coro_fr || del_coro_fr == error_mark_node)
+	del_coro_fr = error_mark_node;
+    }
+  return del_coro_fr;
 }
 
 /* The actor transform.  */
@@ -2283,68 +2352,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 	}
     }
 
-  /* [dcl.fct.def.coroutine] / 12
-     The deallocation function’s name is looked up in the scope of the promise
-     type.  If this lookup fails, the deallocation function’s name is looked up
-     in the global scope.  If deallocation function lookup finds both a usual
-     deallocation function with only a pointer parameter and a usual
-     deallocation function with both a pointer parameter and a size parameter,
-     then the selected deallocation function shall be the one with two
-     parameters.  Otherwise, the selected deallocation function shall be the
-     function with one parameter.  If no usual deallocation function is found
-     the program is ill-formed.  The selected deallocation function shall be
-     called with the address of the block of storage to be reclaimed as its
-     first argument.  If a deallocation function with a parameter of type
-     std::size_t is used, the size of the block is passed as the corresponding
-     argument.  */
-
-  tree del_coro_fr = NULL_TREE;
-  tree frame_arg = build1 (CONVERT_EXPR, ptr_type_node, actor_fp);
-
-  tree delname = ovl_op_identifier (false, DELETE_EXPR);
-  tree fns = lookup_promise_method (orig, delname, loc, /*musthave=*/false);
-  if (fns && BASELINK_P (fns))
-    {
-      /* Look for sized version first, since this takes precedence.  */
-      vec<tree, va_gc> *args = make_tree_vector ();
-      vec_safe_push (args, frame_arg);
-      vec_safe_push (args, frame_size);
-      tree dummy_promise = build_dummy_object (promise_type);
-
-      /* It's OK to fail for this one... */
-      del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
-					   NULL_TREE, LOOKUP_NORMAL, NULL,
-					   tf_none);
-
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	{
-	  release_tree_vector (args);
-	  args = make_tree_vector_single (frame_arg);
-	  del_coro_fr = build_new_method_call (dummy_promise, fns, &args,
-					       NULL_TREE, LOOKUP_NORMAL, NULL,
-					       tf_none);
-	}
-
-      /* But one of them must succeed, or the program is ill-formed.  */
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	{
-	  error_at (loc, "%qE is provided by %qT but is not usable with"
-		  " the function signature %qD", delname, promise_type, orig);
-	  del_coro_fr = error_mark_node;
-	}
-    }
-  else
-    {
-      del_coro_fr = build_op_delete_call (DELETE_EXPR, frame_arg, frame_size,
-					  /*global_p=*/true, /*placement=*/NULL,
-					  /*alloc_fn=*/NULL,
-					  tf_warning_or_error);
-      if (!del_coro_fr || del_coro_fr == error_mark_node)
-	del_coro_fr = error_mark_node;
-    }
-
-  del_coro_fr = coro_build_cvt_void_expr_stmt (del_coro_fr, loc);
-  add_stmt (del_coro_fr);
+  /* Build the frame DTOR.  */
+  tree del_coro_fr = coro_get_frame_dtor (actor_fp, orig, frame_size,
+					  promise_type, loc);
+  finish_expr_stmt (del_coro_fr);
   finish_then_clause (need_free_if);
   tree scope = IF_SCOPE (need_free_if);
   IF_SCOPE (need_free_if) = NULL;
@@ -4143,7 +4154,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  parm.this_ptr = is_this_parameter (arg);
 	  parm.lambda_cobj = lambda_p && DECL_NAME (arg) == closure_identifier;
 
-	  parm.trivial_dtor = TYPE_HAS_TRIVIAL_DESTRUCTOR (parm.frame_type);
 	  char *buf;
 	  if (DECL_NAME (arg))
 	    {
@@ -4152,6 +4162,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	    }
 	  else
 	    buf = xasprintf ("__unnamed_parm.%d", no_name_parm++);
+
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
+	    {
+	      char *gbuf = xasprintf ("%s.live", buf);
+	      parm.guard_var
+		= build_lang_decl (VAR_DECL, get_identifier (gbuf),
+				   boolean_type_node);
+	      free (gbuf);
+	      DECL_ARTIFICIAL (parm.guard_var) = true;
+	      DECL_INITIAL (parm.guard_var) = boolean_false_node;
+	      parm.trivial_dtor = false;
+	    }
+	  else
+	    parm.trivial_dtor = true;
 	  parm.field_id = coro_make_frame_entry
 	    (&field_list, buf, actual_type, DECL_SOURCE_LOCATION (arg));
 	  free (buf);
@@ -4208,6 +4232,37 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				  coro_frame_ptr);
   tree varlist = coro_fp;
 
+  /* To signal that we need to cleanup copied function args.  */
+  if (flag_exceptions && DECL_ARGUMENTS (orig))
+    for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+	arg = DECL_CHAIN (arg))
+      {
+	param_info *parm_i = param_uses->get (arg);
+	gcc_checking_assert (parm_i);
+	if (parm_i->trivial_dtor)
+	  continue;
+	DECL_CHAIN (parm_i->guard_var) = varlist;
+	varlist = parm_i->guard_var;
+      }
+
+  /* Signal that we need to clean up the promise object on exception.  */
+  tree coro_promise_live
+   = build_lang_decl (VAR_DECL, get_identifier ("coro.promise.live"),
+		      boolean_type_node);
+  DECL_ARTIFICIAL (coro_promise_live) = true;
+  DECL_CHAIN (coro_promise_live) = varlist;
+  varlist = coro_promise_live;
+  DECL_INITIAL (coro_promise_live) = boolean_false_node;
+  /* When the get-return-object is in the RETURN slot, we need to arrange for
+     cleanup on exception.  */
+  tree coro_gro_live
+   = build_lang_decl (VAR_DECL, get_identifier ("coro.gro.live"),
+		      boolean_type_node);
+  DECL_ARTIFICIAL (coro_gro_live) = true;
+  DECL_CHAIN (coro_gro_live) = varlist;
+  varlist = coro_gro_live;
+  DECL_INITIAL (coro_gro_live) = boolean_false_node;
+
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
 
@@ -4225,6 +4280,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
   DECL_INITIAL (coro_fp) = zeroinit;
   add_decl_expr (coro_fp);
+  if (flag_exceptions && DECL_ARGUMENTS (orig))
+    for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+	arg = DECL_CHAIN (arg))
+      {
+	param_info *parm_i = param_uses->get (arg);
+	if (parm_i->trivial_dtor)
+	  continue;
+	add_decl_expr (parm_i->guard_var);;
+      }
+  add_decl_expr (coro_promise_live);
+  add_decl_expr (coro_gro_live);
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
      to adjust the allocation in response to optimizations.  We provide the
@@ -4418,6 +4484,20 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       finish_if_stmt (if_stmt);
     }
 
+  /* Up to now any exception thrown will propagate directly to the caller.
+     This is OK since the only source of such exceptions would be in allocation
+     of the coroutine frame, and therefore the ramp will not have initialized
+     any further state.  From here, we will track state that needs explicit
+     destruction in the case that promise or g.r.o setup fails or an exception
+     is thrown from the initial suspend expression.  */
+  tree ramp_cleanup = NULL_TREE;
+  if (flag_exceptions)
+    {
+      ramp_cleanup = build_stmt (fn_start, TRY_BLOCK, NULL, NULL);
+      add_stmt (ramp_cleanup);
+      TRY_STMTS (ramp_cleanup) = push_stmt_list ();
+    }
+
   /* deref the frame pointer, to use in member access code.  */
   tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
 
@@ -4544,13 +4624,23 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				     INIT_EXPR, DECL_SOURCE_LOCATION (arg), r,
 				     TREE_TYPE (r));
 	    }
-	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-	  add_stmt (r);
+	  finish_expr_stmt (r);
 	  if (!parm.trivial_dtor)
 	    {
 	      if (param_dtor_list == NULL)
 		param_dtor_list = make_tree_vector ();
 	      vec_safe_push (param_dtor_list, parm.field_id);
+	      /* Cleanup this frame copy on exception.  */
+	      parm.fr_copy_dtor
+		= build_special_member_call (fld_idx, complete_dtor_identifier,
+					     NULL, parm.frame_type,
+					     LOOKUP_NORMAL,
+					     tf_warning_or_error);
+	      /* This var is now live.  */
+	      r = build_modify_expr (fn_start, parm.guard_var,
+				     boolean_type_node, INIT_EXPR, fn_start,
+				     boolean_true_node, boolean_type_node);
+	      finish_expr_stmt (r);
 	    }
 	}
     }
@@ -4563,6 +4653,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree p = build_class_member_access_expr (deref_fp, promise_m, NULL_TREE,
 					   false, tf_warning_or_error);
 
+  tree promise_dtor = NULL_TREE;
   if (TYPE_NEEDS_CONSTRUCTING (promise_type))
     {
       /* Do a placement new constructor for the promise type (we never call
@@ -4589,7 +4680,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				       tf_warning_or_error);
 
       r = coro_build_cvt_void_expr_stmt (r, fn_start);
-      add_stmt (r);
+      finish_expr_stmt (r);
+
+      r = build_modify_expr (fn_start, coro_promise_live, boolean_type_node,
+			     INIT_EXPR, fn_start, boolean_true_node,
+			     boolean_type_node);
+      finish_expr_stmt (r);
+
+      promise_dtor
+	= build_special_member_call (p, complete_dtor_identifier,
+				     NULL, promise_type, LOOKUP_NORMAL,
+				     tf_warning_or_error);
     }
 
   /* Set up a new bind context for the GRO.  */
@@ -4621,6 +4722,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree gro = NULL_TREE;
   tree gro_bind_vars = NULL_TREE;
+  /* Used for return objects in the RESULT slot.  */
+  tree gro_ret_dtor = NULL_TREE;
   tree gro_cleanup_stmt = NULL_TREE;
   /* We have to sequence the call to get_return_object before initial
      suspend.  */
@@ -4644,6 +4747,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       else
 	r = build2_loc (fn_start, INIT_EXPR, gro_type,
 			DECL_RESULT (orig), get_ro);
+
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
+	/* If some part of the initalization code (prior to the await_resume
+	     of the initial suspend expression), then we need to clean up the
+	     return value.  */
+	gro_ret_dtor
+	  = build_special_member_call (DECL_RESULT (orig),
+				       complete_dtor_identifier, NULL,
+				       gro_type, LOOKUP_NORMAL,
+				       tf_warning_or_error);
     }
   else
     {
@@ -4668,19 +4781,28 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* The constructed object might require a cleanup.  */
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
 	{
-	  tree cleanup
+	  gro_cleanup_stmt
 	    = build_special_member_call (gro, complete_dtor_identifier,
 					 NULL, gro_type, LOOKUP_NORMAL,
 					 tf_warning_or_error);
 	  gro_cleanup_stmt = build_stmt (input_location, CLEANUP_STMT, NULL,
-					 cleanup, gro);
+					 gro_cleanup_stmt, gro);
 	}
     }
   finish_expr_stmt (r);
 
-  if (gro_cleanup_stmt)
+  if (gro_cleanup_stmt && gro_cleanup_stmt != error_mark_node)
     CLEANUP_BODY (gro_cleanup_stmt) = push_stmt_list ();
 
+  /* If we have a live g.r.o in the return slot, then signal this for exception
+     cleanup.  */
+  if (gro_ret_dtor)
+    {
+       r = build_modify_expr (fn_start, coro_gro_live, boolean_type_node,
+			      INIT_EXPR, fn_start, boolean_true_node,
+			      boolean_type_node);
+      finish_expr_stmt (r);
+    }
   /* Initialize the resume_idx_name to 0, meaning "not started".  */
   tree resume_idx_m
     = lookup_member (coro_frame_type, resume_idx_name,
@@ -4759,6 +4881,73 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   TREE_SIDE_EFFECTS (gro_context_bind) = true;
+
+  if (flag_exceptions)
+    {
+      TRY_HANDLERS (ramp_cleanup) = push_stmt_list ();
+      tree handler = begin_handler ();
+      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
+
+      /* If we have a live G.R.O in the return slot, then run its DTOR.
+     When the return object is constructed from a separate g.r.o, this is
+     already handled by its regular cleanup.  */
+      if (gro_ret_dtor && gro_ret_dtor != error_mark_node)
+	{
+	  tree gro_d_if = begin_if_stmt ();
+	  finish_if_stmt_cond (coro_gro_live, gro_d_if);
+	  finish_expr_stmt (gro_ret_dtor);
+	  finish_then_clause (gro_d_if);
+	  tree gro_d_if_scope = IF_SCOPE (gro_d_if);
+	  IF_SCOPE (gro_d_if) = NULL;
+	  gro_d_if = do_poplevel (gro_d_if_scope);
+	  add_stmt (gro_d_if);
+	}
+
+      /* If the promise is live, then run its dtor if that's available.  */
+      if (promise_dtor && promise_dtor != error_mark_node)
+	{
+	  tree promise_d_if = begin_if_stmt ();
+	  finish_if_stmt_cond (coro_promise_live, promise_d_if);
+	  finish_expr_stmt (promise_dtor);
+	  finish_then_clause (promise_d_if);
+	  tree promise_d_if_scope = IF_SCOPE (promise_d_if);
+	  IF_SCOPE (promise_d_if) = NULL;
+	  promise_d_if = do_poplevel (promise_d_if_scope);
+	  add_stmt (promise_d_if);
+	}
+
+      /* Clean up any frame copies of parms with non-trivial dtors.  */
+      if (DECL_ARGUMENTS (orig))
+	for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+	     arg = DECL_CHAIN (arg))
+	  {
+	    param_info *parm_i = param_uses->get (arg);
+	    if (parm_i->trivial_dtor)
+	      continue;
+	    if (parm_i->fr_copy_dtor && parm_i->fr_copy_dtor != error_mark_node)
+	      {
+		tree dtor_if = begin_if_stmt ();
+		finish_if_stmt_cond (parm_i->guard_var, dtor_if);
+		finish_expr_stmt (parm_i->fr_copy_dtor);
+		finish_then_clause (dtor_if);
+		tree parm_d_if_scope = IF_SCOPE (dtor_if);
+		IF_SCOPE (dtor_if) = NULL;
+		dtor_if = do_poplevel (parm_d_if_scope);
+		add_stmt (dtor_if);
+	      }
+	  }
+
+      /* We always expect to delete the frame.  */
+      tree del_coro_fr = coro_get_frame_dtor (coro_fp, orig, frame_size,
+					      promise_type, fn_start);
+      finish_expr_stmt (del_coro_fr);
+      tree rethrow = build_throw (fn_start, NULL_TREE);
+      TREE_NO_WARNING (rethrow) = true;
+      finish_expr_stmt (rethrow);
+      finish_handler (handler);
+      TRY_HANDLERS (ramp_cleanup) = pop_stmt_list (TRY_HANDLERS (ramp_cleanup));
+    }
+
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
   TREE_SIDE_EFFECTS (ramp_bind) = true;
 
