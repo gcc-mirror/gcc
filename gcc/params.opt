@@ -682,11 +682,11 @@ Common Joined UInteger Var(param_max_stores_to_sink) Init(2) Param Optimization
 Maximum number of conditional store pairs that can be sunk.
 
 -param=max-store-chains-to-track=
-Common Joined UInteger Var(param_max_store_chains_to_track) Init(64) IntegerRange(1, 65536)
+Common Joined UInteger Var(param_max_store_chains_to_track) Init(64) IntegerRange(1, 65536) Param
 Maximum number of store chains to track at the same time in the store merging pass.
 
 -param=max-stores-to-track=
-Common Joined UInteger Var(param_max_stores_to_track) Init(1024) IntegerRange(2, 1048576)
+Common Joined UInteger Var(param_max_stores_to_track) Init(1024) IntegerRange(2, 1048576) Param
 Maximum number of store chains to track at the same time in the store merging pass.
 
 -param=max-tail-merge-comparisons=
