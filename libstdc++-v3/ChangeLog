@@ -1,3 +1,8 @@
+2021-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99096
+	* testsuite/util/testsuite_fs.h: Always include <unistd.h>.
+
 2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88881
