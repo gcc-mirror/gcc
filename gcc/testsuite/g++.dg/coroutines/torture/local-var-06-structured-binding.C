@@ -15,7 +15,7 @@ struct promise
   promise (Args&... args) {}
  
   coro::suspend_never initial_suspend() { return {}; }
-  coro::suspend_never final_suspend() { return {}; }
+  coro::suspend_never final_suspend() noexcept { return {}; }
 
   future get_return_object() { return {}; }
 

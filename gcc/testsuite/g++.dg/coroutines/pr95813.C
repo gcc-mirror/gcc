@@ -21,7 +21,7 @@ template <typename T, typename... Args>
 struct coroutine_traits<lazy<T>, Args...> {
     struct promise_type {
         suspend_always initial_suspend() const { return {}; }
-        suspend_always final_suspend() const { return {}; }
+        suspend_always final_suspend() const noexcept { return {}; }
         void return_value(T val) {}
         lazy<T> get_return_object() {
             return lazy<T>();

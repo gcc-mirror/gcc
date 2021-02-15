@@ -23,7 +23,7 @@ struct generator{
         std::suspend_always initial_suspend (){
             return {};
         }
-        std::suspend_always final_suspend (){
+        std::suspend_always final_suspend () noexcept {
             return {};
         }
 

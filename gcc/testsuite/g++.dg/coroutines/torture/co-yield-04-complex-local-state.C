@@ -25,7 +25,7 @@ struct looper {
     return suspend_always_prt{};
   }
 
-  auto final_suspend () {
+  auto final_suspend () noexcept {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }
