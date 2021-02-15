@@ -591,12 +591,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (lshift INTEGER_CST@1 @2))
 (for mod (trunc_mod floor_mod)
  (simplify
-  (mod @0 (convert?@3 (power_of_two_cand@1 @2)))
-  (if ((TYPE_UNSIGNED (type)
-	|| tree_expr_nonnegative_p (@0))
-	&& tree_nop_conversion_p (type, TREE_TYPE (@3))
-	&& integer_pow2p (@2) && tree_int_cst_sgn (@2) > 0)
-   (bit_and @0 (convert (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))))
+  (mod @0 (convert? (power_of_two_cand@1 @2)))
+  (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
+       /* Allow any integral conversions of the divisor, except
+	  conversion from narrower signed to wider unsigned type
+	  where if @1 would be negative power of two, the divisor
+	  would not be a power of two.  */
+       && INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@1))
+	   || TYPE_UNSIGNED (TREE_TYPE (@1))
+	   || !TYPE_UNSIGNED (type))
+       && integer_pow2p (@2) && tree_int_cst_sgn (@2) > 0)
+   (with { tree utype = TREE_TYPE (@1);
+	   if (!TYPE_OVERFLOW_WRAPS (utype))
+	     utype = unsigned_type_for (utype); }
+    (bit_and @0 (convert (minus (convert:utype @1)
+				{ build_one_cst (utype); })))))))
 
 /* Simplify (unsigned t * 2)/2 -> unsigned t & 0x7FFFFFFF.  */
 (simplify
