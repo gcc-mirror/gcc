@@ -1,3 +1,9 @@
+2021-02-12  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR libfortran/95647
+	* ieee/ieee_arithmetic.F90: Flip interfaces of operators .eq. to
+	== and .ne. to /= .
+
 2021-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/98825

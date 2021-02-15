@@ -1,3 +1,9 @@
+2021-02-12  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for objcopy --add-gnu-debuglink by using
+	objcopy --help.
+	* configure: Regenerate
+
 2021-01-18  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (%_dwz): If dwz fails, use uncompressed debug info.

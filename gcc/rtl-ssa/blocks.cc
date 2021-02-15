@@ -26,12 +26,121 @@
 #include "rtl.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-ssa/internals.h"
 #include "rtl-ssa/internals.inl"
 #include "cfganal.h"
 #include "cfgrtl.h"
 #include "predict.h"
+#include "domwalk.h"
 
 using namespace rtl_ssa;
+
+// Prepare to build information for a function in which all register numbers
+// are less than NUM_REGS and all basic block indices are less than
+// NUM_BB_INDICES
+function_info::build_info::build_info (unsigned int num_regs,
+				       unsigned int num_bb_indices)
+  : current_bb (nullptr),
+    current_ebb (nullptr),
+    last_access (num_regs + 1),
+    ebb_live_in_for_debug (nullptr),
+    potential_phi_regs (num_regs),
+    bb_phis (num_bb_indices),
+    bb_mem_live_out (num_bb_indices),
+    bb_to_rpo (num_bb_indices)
+{
+  last_access.safe_grow_cleared (num_regs + 1);
+
+  bitmap_clear (potential_phi_regs);
+
+  // These arrays shouldn't need to be initialized, since we'll always
+  // write to an entry before reading from it.  But poison the contents
+  // when checking, just to make sure we don't accidentally use an
+  // uninitialized value.
+  bb_phis.quick_grow (num_bb_indices);
+  bb_mem_live_out.quick_grow (num_bb_indices);
+  bb_to_rpo.quick_grow (num_bb_indices);
+  if (flag_checking)
+    {
+      // Can't do this for bb_phis because it has a constructor.
+      memset (bb_mem_live_out.address (), 0xaf,
+	      num_bb_indices * sizeof (bb_mem_live_out[0]));
+      memset (bb_to_rpo.address (), 0xaf,
+	      num_bb_indices * sizeof (bb_to_rpo[0]));
+    }
+
+  // Start off with an empty set of phi nodes for each block.
+  for (bb_phi_info &info : bb_phis)
+    bitmap_initialize (&info.regs, &bitmap_default_obstack);
+}
+
+function_info::build_info::~build_info ()
+{
+  for (bb_phi_info &info : bb_phis)
+    bitmap_release (&info.regs);
+}
+
+// A dom_walker for populating the basic blocks.
+class function_info::bb_walker : public dom_walker
+{
+public:
+  bb_walker (function_info *, build_info &);
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+private:
+  // Information about the function we're building.
+  function_info *m_function;
+  build_info &m_bi;
+
+  // We should treat the exit block as being the last child of this one.
+  // See the comment in the constructor for more information.
+  basic_block m_exit_block_dominator;
+};
+
+// Prepare to walk the blocks in FUNCTION using BI.
+function_info::bb_walker::bb_walker (function_info *function, build_info &bi)
+  : dom_walker (CDI_DOMINATORS, ALL_BLOCKS, bi.bb_to_rpo.address ()),
+    m_function (function),
+    m_bi (bi),
+    m_exit_block_dominator (nullptr)
+{
+  // ??? There is no dominance information associated with the exit block,
+  // so work out its immediate dominator using predecessor blocks.  We then
+  // walk the exit block just before popping its immediate dominator.
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (m_function->m_fn)->preds)
+    if (m_exit_block_dominator)
+      m_exit_block_dominator
+	= nearest_common_dominator (CDI_DOMINATORS,
+				    m_exit_block_dominator, e->src);
+    else
+      m_exit_block_dominator = e->src;
+
+  // If the exit block is unreachable, process it last.
+  if (!m_exit_block_dominator)
+    m_exit_block_dominator = ENTRY_BLOCK_PTR_FOR_FN (m_function->m_fn);
+}
+
+edge
+function_info::bb_walker::before_dom_children (basic_block bb)
+{
+  m_function->start_block (m_bi, m_function->bb (bb));
+  return nullptr;
+}
+
+void
+function_info::bb_walker::after_dom_children (basic_block bb)
+{
+  // See the comment in the constructor for details.
+  if (bb == m_exit_block_dominator)
+    {
+      before_dom_children (EXIT_BLOCK_PTR_FOR_FN (m_function->m_fn));
+      after_dom_children (EXIT_BLOCK_PTR_FOR_FN (m_function->m_fn));
+    }
+  m_function->end_block (m_bi, m_function->bb (bb));
+}
 
 // See the comment above the declaration.
 void
@@ -217,15 +326,15 @@ function_info::add_live_out_use (bb_info *bb, set_info *def)
 
   // If the end of the block already has an artificial use, that use
   // acts to make DEF live at the appropriate point.
-  unsigned int regno = def->regno ();
-  if (find_access (bb->end_insn ()->uses (), regno))
+  use_info *use = def->last_nondebug_insn_use ();
+  if (use && use->insn () == bb->end_insn ())
     return;
 
   // Currently there is no need to maintain a backward link from the end
   // instruction to the list of live-out uses.  Such a list would be
   // expensive to update if it was represented using the usual insn_info
   // access arrays.
-  use_info *use = allocate<use_info> (bb->end_insn (), def->resource (), def);
+  use = allocate<use_info> (bb->end_insn (), def->resource (), def);
   use->set_is_live_out_use (true);
   add_use (use);
 }
@@ -474,6 +583,124 @@ function_info::append_bb (bb_info *bb)
   m_last_bb = bb;
 }
 
+// Calculate BI.potential_phi_regs and BI.potential_phi_regs_for_debug.
+void
+function_info::calculate_potential_phi_regs (build_info &bi)
+{
+  auto *lr_info = DF_LR_BB_INFO (ENTRY_BLOCK_PTR_FOR_FN (m_fn));
+  bool is_debug = MAY_HAVE_DEBUG_INSNS;
+  for (unsigned int regno = 0; regno < m_num_regs; ++regno)
+    if (regno >= DF_REG_SIZE (DF)
+	// Exclude registers that have a single definition that dominates
+	// all uses.  If the definition does not dominate all uses,
+	// the register will be exposed upwards to the entry block but
+	// will not be defined by the entry block.
+	|| DF_REG_DEF_COUNT (regno) > 1
+	|| (!bitmap_bit_p (&lr_info->def, regno)
+	    && bitmap_bit_p (&lr_info->out, regno)))
+      {
+	bitmap_set_bit (bi.potential_phi_regs, regno);
+	if (is_debug)
+	  bitmap_set_bit (bi.potential_phi_regs_for_debug, regno);
+      }
+}
+
+// Called while building SSA form using BI.  Decide where phi nodes
+// should be placed for each register and initialize BI.bb_phis accordingly.
+void
+function_info::place_phis (build_info &bi)
+{
+  unsigned int num_bb_indices = last_basic_block_for_fn (m_fn);
+
+  // Calculate dominance frontiers.
+  auto_vec<bitmap_head> frontiers;
+  frontiers.safe_grow (num_bb_indices);
+  for (unsigned int i = 0; i < num_bb_indices; ++i)
+    bitmap_initialize (&frontiers[i], &bitmap_default_obstack);
+  compute_dominance_frontiers (frontiers.address ());
+
+  // In extreme cases, the number of live-in registers can be much
+  // greater than the number of phi nodes needed in a block (see PR98863).
+  // Try to reduce the number of operations involving live-in sets by using
+  // PENDING as a staging area: registers in PENDING need phi nodes if
+  // they are live on entry to the corresponding block, but do not need
+  // phi nodes otherwise.
+  auto_vec<bitmap_head> unfiltered;
+  unfiltered.safe_grow (num_bb_indices);
+  for (unsigned int i = 0; i < num_bb_indices; ++i)
+    bitmap_initialize (&unfiltered[i], &bitmap_default_obstack);
+
+  // If block B1 defines R and if B2 is in the dominance frontier of B1,
+  // queue a possible phi node for R in B2.
+  auto_bitmap worklist;
+  for (unsigned int b1 = 0; b1 < num_bb_indices; ++b1)
+    {
+      // Only access DF information for blocks that are known to exist.
+      if (bitmap_empty_p (&frontiers[b1]))
+	continue;
+
+      bitmap b1_def = &DF_LR_BB_INFO (BASIC_BLOCK_FOR_FN (m_fn, b1))->def;
+      bitmap_iterator bmi;
+      unsigned int b2;
+      EXECUTE_IF_SET_IN_BITMAP (&frontiers[b1], 0, b2, bmi)
+	if (bitmap_ior_into (&unfiltered[b2], b1_def)
+	    && !bitmap_empty_p (&frontiers[b2]))
+	  // Propagate the (potential) new phi node definitions in B2.
+	  bitmap_set_bit (worklist, b2);
+    }
+
+  while (!bitmap_empty_p (worklist))
+    {
+      unsigned int b1 = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, b1);
+
+      // Restrict the phi nodes to registers that are live on entry to
+      // the block.
+      bitmap b1_in = DF_LR_IN (BASIC_BLOCK_FOR_FN (m_fn, b1));
+      bitmap b1_phis = &bi.bb_phis[b1].regs;
+      if (!bitmap_ior_and_into (b1_phis, &unfiltered[b1], b1_in))
+	continue;
+
+      // If block B1 has a phi node for R and if B2 is in the dominance
+      // frontier of B1, queue a possible phi node for R in B2.
+      bitmap_iterator bmi;
+      unsigned int b2;
+      EXECUTE_IF_SET_IN_BITMAP (&frontiers[b1], 0, b2, bmi)
+	if (bitmap_ior_into (&unfiltered[b2], b1_phis)
+	    && !bitmap_empty_p (&frontiers[b2]))
+	  bitmap_set_bit (worklist, b2);
+    }
+
+  basic_block cfg_bb;
+  FOR_ALL_BB_FN (cfg_bb, m_fn)
+    {
+      // Calculate the set of phi nodes for blocks that don't have any
+      // dominance frontiers.  We only need to do this once per block.
+      unsigned int i = cfg_bb->index;
+      bb_phi_info &phis = bi.bb_phis[i];
+      if (bitmap_empty_p (&frontiers[i]))
+	bitmap_and (&phis.regs, &unfiltered[i], DF_LR_IN (cfg_bb));
+
+      // Create an array that contains all phi inputs for this block.
+      // See the comment above the member variables for more information.
+      phis.num_phis = bitmap_count_bits (&phis.regs);
+      phis.num_preds = EDGE_COUNT (cfg_bb->preds);
+      unsigned int num_inputs = phis.num_phis * phis.num_preds;
+      if (num_inputs != 0)
+	{
+	  phis.inputs = XOBNEWVEC (&m_temp_obstack, set_info *, num_inputs);
+	  memset (phis.inputs, 0, num_inputs * sizeof (phis.inputs[0]));
+	}
+    }
+
+  // Free the temporary bitmaps.
+  for (unsigned int i = 0; i < num_bb_indices; ++i)
+    {
+      bitmap_release (&frontiers[i]);
+      bitmap_release (&unfiltered[i]);
+    }
+}
+
 // Called while building SSA form using BI, with BI.current_bb being
 // the entry block.
 //
@@ -508,7 +735,7 @@ function_info::add_entry_block_defs (build_info &bi)
       auto *set = allocate<set_info> (insn, full_register (regno));
       append_def (set);
       m_temp_defs.safe_push (set);
-      bi.record_reg_def (regno, set);
+      bi.record_reg_def (set);
     }
 
   // Create a definition that reflects the state of memory on entry to
@@ -521,191 +748,86 @@ function_info::add_entry_block_defs (build_info &bi)
   finish_insn_accesses (insn);
 }
 
+// Lazily calculate the value of BI.ebb_live_in_for_debug for BI.current_ebb.
+void
+function_info::calculate_ebb_live_in_for_debug (build_info &bi)
+{
+  gcc_checking_assert (bitmap_empty_p (bi.tmp_ebb_live_in_for_debug));
+  bi.ebb_live_in_for_debug = bi.tmp_ebb_live_in_for_debug;
+  bitmap_and (bi.ebb_live_in_for_debug, bi.potential_phi_regs_for_debug,
+	      DF_LR_IN (bi.current_ebb->first_bb ()->cfg_bb ()));
+  bitmap_tree_view (bi.ebb_live_in_for_debug);
+}
+
 // Called while building SSA form using BI.  Create phi nodes for the
-// current EBB, leaving backedge inputs to be filled in later.  Set
-// bi.last_access to the values that are live on entry to the EBB,
-// regardless of whether or not they are phi nodes.
+// current EBB.
 void
 function_info::add_phi_nodes (build_info &bi)
 {
   ebb_info *ebb = bi.current_ebb;
   basic_block cfg_bb = ebb->first_bb ()->cfg_bb ();
-  auto *lr_info = DF_LR_BB_INFO (cfg_bb);
 
-  // Get a local cache of the predecessor blocks' live out values.
-  unsigned int num_preds = EDGE_COUNT (cfg_bb->preds);
-  auto_vec<const bb_live_out_info *, 16> pred_live_outs (num_preds);
-  bool has_backedge = false;
-  bool has_eh_edge = false;
+  // Create the register phis for this EBB.
+  bb_phi_info &phis = bi.bb_phis[cfg_bb->index];
+  unsigned int num_preds = phis.num_preds;
+  unsigned int regno;
+  bitmap_iterator in_bi;
+  EXECUTE_IF_SET_IN_BITMAP (&phis.regs, 0, regno, in_bi)
+    {
+      gcc_checking_assert (bitmap_bit_p (bi.potential_phi_regs, regno));
+
+      // Create an array of phi inputs, to be filled in later.
+      auto *inputs = XOBNEWVEC (&m_obstack, access_info *, num_preds);
+      memset (inputs, 0, sizeof (access_info *) * num_preds);
+
+      // Later code works out the correct mode of the phi.  Use BLKmode
+      // as a placeholder for now.
+      phi_info *phi = create_phi (ebb, { E_BLKmode, regno },
+				  inputs, num_preds);
+      bi.record_reg_def (phi);
+    }
+
+  bitmap_copy (bi.ebb_def_regs, &phis.regs);
+
+  // Collect the live-in memory definitions and record whether they're
+  // all the same.
+  m_temp_defs.reserve (num_preds);
+  set_info *mem_value = nullptr;
+  bool mem_phi_is_degenerate = true;
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, cfg_bb->preds)
     {
       bb_info *pred_bb = this->bb (e->src);
-      const bb_live_out_info *live_out = &bi.bb_live_out[e->src->index];
-
-      // In LR (but not LIVE), the registers live on entry to a block must
-      // normally be a subset of the registers live on exit from any
-      // given predecessor block.  The exceptions are EH edges, which
-      // implicitly clobber all registers in eh_edge_abi.full_reg_clobbers ().
-      // Thus if a register is upwards exposed in an EH handler, it won't
-      // be propagated across the EH edge.
-      //
-      // Excluding that special case, all registers live on entry to
-      // EBB are also live on exit from PRED_BB and were (or will be)
-      // considered when creating LIVE_OUT.
-      gcc_checking_assert ((e->flags & EDGE_EH)
-			   || !bitmap_intersect_compl_p (&lr_info->in,
-							 DF_LR_OUT (e->src)));
-      if (!pred_bb || !pred_bb->head_insn ())
+      if (pred_bb && pred_bb->head_insn ())
 	{
-	  has_backedge = true;
-	  live_out = nullptr;
-	}
-      has_eh_edge |= (e->flags & EDGE_EH);
-      pred_live_outs.quick_push (live_out);
-    }
-
-  // PRED_REG_INDICES[I] tracks the index into PRED_LIVE_OUTS[I]->reg_values
-  // of the first unused entry.
-  auto_vec<unsigned int, 16> pred_reg_indices (num_preds);
-  pred_reg_indices.quick_grow_cleared (num_preds);
-
-  // Use this array to build up the list of inputs to each phi.
-  m_temp_defs.safe_grow (num_preds);
-
-  // Return true if the current phi is degenerate, i.e. if all its inputs
-  // are the same.
-  auto is_degenerate_phi = [&]()
-    {
-      if (has_backedge)
-	return false;
-
-      for (unsigned int i = 1; i < num_preds; ++i)
-	if (m_temp_defs[i] != m_temp_defs[0])
-	  return false;
-
-      return true;
-    };
-
-  // Finish calculating the live-in value for RESOURCE.  Decide how to
-  // represent the value of RESOURCE on entry to EBB and return its definition.
-  auto finish_phi = [&](resource_info resource) -> set_info *
-    {
-      access_info **inputs;
-      unsigned int num_inputs;
-      if (is_degenerate_phi ())
-	{
-	  auto *input = safe_as_a<set_info *> (m_temp_defs[0]);
-	  if (!input)
-	    // The live-in value is completely uninitialized.
-	    return nullptr;
-
-	  unsigned int regno = input->regno ();
-	  if (input->is_reg () && !bitmap_bit_p (bi.ebb_use, regno))
-	    // The live-in value comes from a single source and there
-	    // are no uses of it within the EBB itself.  We therefore
-	    // don't need a phi node.
-	    return input;
-
-	  // The live-in value comes from a single source and might be
-	  // used by the EBB itself.  Create a degenerate phi for it.
-	  inputs = m_temp_defs.begin ();
-	  num_inputs = 1;
+	  mem_value = bi.bb_mem_live_out[pred_bb->index ()];
+	  m_temp_defs.quick_push (mem_value);
+	  if (mem_value != m_temp_defs[0])
+	    mem_phi_is_degenerate = false;
 	}
       else
 	{
-	  obstack_grow (&m_obstack, m_temp_defs.address (),
-			num_preds * sizeof (access_info *));
-	  inputs = static_cast<access_info **> (obstack_finish (&m_obstack));
-	  num_inputs = num_preds;
+	  m_temp_defs.quick_push (nullptr);
+	  mem_phi_is_degenerate = false;
 	}
-      return create_phi (ebb, resource, inputs, num_inputs);
-    };
-
-  if (bi.ebb_live_in_for_debug)
-    bitmap_clear (bi.ebb_live_in_for_debug);
-
-  // Get the definition of each live input register, excluding registers
-  // that are known to have a single definition that dominates all uses.
-  unsigned int regno;
-  bitmap_iterator in_bi;
-  EXECUTE_IF_AND_IN_BITMAP (&lr_info->in, m_potential_phi_regs,
-			    0, regno, in_bi)
-    {
-      for (unsigned int pred_i = 0; pred_i < num_preds; ++pred_i)
-	{
-	  set_info *input = nullptr;
-	  if (const bb_live_out_info *pred_live_out = pred_live_outs[pred_i])
-	    {
-	      // Skip over registers that aren't live on entry to this block.
-	      unsigned int reg_i = pred_reg_indices[pred_i];
-	      while (reg_i < pred_live_out->num_reg_values
-		     && pred_live_out->reg_values[reg_i]->regno () < regno)
-		reg_i += 1;
-
-	      // As we asserted above, REGNO is live out from the predecessor
-	      // block, at least by the LR reckoning.  But there are three
-	      // cases:
-	      //
-	      // (1) The live-out value is well-defined (the normal case),
-	      //     with the definition coming either from the block itself
-	      //     or from a predecessor block.  In this case reg_values
-	      //     has a set_info entry for the register.
-	      //
-	      // (2) The live-out value was not modified by the predecessor
-	      //     EBB and did not have a defined value on input to that
-	      //     EBB either.  In this case reg_values has no entry for
-	      //     the register.
-	      //
-	      // (3) The live-out value was modified by the predecessor EBB,
-	      //     but the final modification was a clobber rather than
-	      //     a set.  In this case reg_values again has no entry for
-	      //     the register.
-	      //
-	      // The phi input for (2) and (3) is undefined, which we
-	      // represent as a null set_info.
-	      if (reg_i < pred_live_out->num_reg_values)
-		{
-		  set_info *set = pred_live_out->reg_values[reg_i];
-		  if (set->regno () == regno)
-		    {
-		      input = set;
-		      reg_i += 1;
-		    }
-		}
-
-	      // Fully call-clobbered values do not survive across EH edges.
-	      // In particular, if a call that normally sets a result register
-	      // throws an exception, the set of the result register should
-	      // not be treated as live on entry to the EH handler.
-	      if (has_eh_edge
-		  && HARD_REGISTER_NUM_P (regno)
-		  && eh_edge_abi.clobbers_full_reg_p (regno)
-		  && (EDGE_PRED (cfg_bb, pred_i)->flags & EDGE_EH))
-		input = nullptr;
-
-	      pred_reg_indices[pred_i] = reg_i;
-	    }
-	  m_temp_defs[pred_i] = input;
-	}
-      // Later code works out the correct mode of the phi.  Use BLKmode
-      // as a placeholder for now.
-      bi.record_reg_def (regno, finish_phi ({ E_BLKmode, regno }));
-      if (bi.ebb_live_in_for_debug)
-	bitmap_set_bit (bi.ebb_live_in_for_debug, regno);
     }
 
-  // Repeat the process above for memory.
-  for (unsigned int pred_i = 0; pred_i < num_preds; ++pred_i)
+  // Create a phi for memory, on the assumption that something in the
+  // EBB will need it.
+  if (mem_phi_is_degenerate)
     {
-      set_info *input = nullptr;
-      if (const bb_live_out_info *pred_live_out = pred_live_outs[pred_i])
-	input = pred_live_out->mem_value;
-      m_temp_defs[pred_i] = input;
+      access_info *input[] = { mem_value };
+      mem_value = create_phi (ebb, memory, input, 1);
     }
-  bi.record_mem_def (finish_phi (memory));
-
+  else
+    {
+      obstack_grow (&m_obstack, m_temp_defs.address (),
+		    num_preds * sizeof (access_info *));
+      auto *inputs = static_cast<access_info **> (obstack_finish (&m_obstack));
+      mem_value = create_phi (ebb, memory, inputs, num_preds);
+    }
+  bi.record_mem_def (mem_value);
   m_temp_defs.truncate (0);
 }
 
@@ -744,16 +866,12 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
       {
 	unsigned int regno = DF_REF_REGNO (ref);
 	machine_mode mode = GET_MODE (DF_REF_REAL_REG (ref));
-	resource_info resource { mode, regno };
 
 	// A definition must be available.
 	gcc_checking_assert (bitmap_bit_p (&lr_info->in, regno)
 			     || (flags != DF_REF_AT_TOP
 				 && bitmap_bit_p (&lr_info->def, regno)));
-	set_info *def = bi.current_reg_value (regno);
-	auto *use = allocate<use_info> (insn, resource, def);
-	add_use (use);
-	m_temp_uses.safe_push (use);
+	m_temp_uses.safe_push (create_reg_use (bi, insn, { mode, regno }));
       }
 
   // Track the return value of memory by adding an artificial use of
@@ -772,6 +890,9 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 	machine_mode mode = GET_MODE (DF_REF_REAL_REG (ref));
 	resource_info resource { mode, regno };
 
+	// We rely on the def set being correct.
+	gcc_checking_assert (bitmap_bit_p (&lr_info->def, regno));
+
 	// If the value isn't used later in the block and isn't live
 	// on exit, we could instead represent the definition as a
 	// clobber_info.  However, that case should be relatively
@@ -779,7 +900,7 @@ function_info::add_artificial_accesses (build_info &bi, df_ref_flags flags)
 	set_info *def = allocate<set_info> (insn, resource);
 	append_def (def);
 	m_temp_defs.safe_push (def);
-	bi.record_reg_def (regno, def);
+	bi.record_reg_def (def);
       }
 
   // Model the effect of a memory clobber on an incoming edge by adding
@@ -808,102 +929,214 @@ function_info::add_block_contents (build_info &bi)
       add_insn_to_block (bi, insn);
 }
 
-// Called while building SSA form using BI.  Use BI.bb_live_out to record
-// the values that are live out from BI.current_bb.
+// Called while building SSA form using BI.  Record live-out register values
+// in the phi inputs of successor blocks and create live-out uses where
+// appropriate.  Record the live-out memory value in BI.bb_mem_live_out.
 void
 function_info::record_block_live_out (build_info &bi)
 {
   bb_info *bb = bi.current_bb;
   ebb_info *ebb = bi.current_ebb;
   basic_block cfg_bb = bb->cfg_bb ();
-  bb_live_out_info *live_out = &bi.bb_live_out[bb->index ()];
-  auto *lr_info = DF_LR_BB_INFO (bb->cfg_bb ());
 
-  // Calculate which subset of m_potential_phi_regs is live out from EBB
-  // at the end of BB.
-  auto_bitmap live_out_from_ebb;
+  // Record the live-out register values in the phi inputs of
+  // successor blocks.
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, cfg_bb->succs)
     {
-      bb_info *dest_bb = this->bb (e->dest);
-      if (!dest_bb || dest_bb->ebb () != ebb)
-	bitmap_ior_and_into (live_out_from_ebb, DF_LR_IN (e->dest),
-			     m_potential_phi_regs);
+      bb_phi_info &phis = bi.bb_phis[e->dest->index];
+      unsigned int input_i = e->dest_idx * phis.num_phis;
+      unsigned int regno;
+      bitmap_iterator out_bi;
+      EXECUTE_IF_SET_IN_BITMAP (&phis.regs, 0, regno, out_bi)
+	{
+	  phis.inputs[input_i]
+	    = live_out_value (bb, bi.current_reg_value (regno));
+	  input_i += 1;
+	}
     }
 
-  // Record the live-out register values.
-  unsigned int regno;
-  bitmap_iterator out_bi;
-  EXECUTE_IF_AND_IN_BITMAP (&lr_info->out, m_potential_phi_regs,
-			    0, regno, out_bi)
-    if (set_info *value = live_out_value (bb, bi.current_reg_value (regno)))
+  // Add the set of registers that were defined in this BB to the set
+  // of potentially-live registers defined in the EBB.
+  bitmap_ior_into (bi.ebb_def_regs, &DF_LR_BB_INFO (cfg_bb)->def);
+
+  // Iterate through the registers in LIVE_OUT and see whether we need
+  // to add a live-out use for them.
+  auto record_live_out_regs = [&](bitmap live_out)
+    {
+      unsigned int regno;
+      bitmap_iterator out_bi;
+      EXECUTE_IF_AND_IN_BITMAP (bi.ebb_def_regs, live_out, 0, regno, out_bi)
+	{
+	  set_info *value = live_out_value (bb, bi.current_reg_value (regno));
+	  if (value && value->ebb () == ebb)
+	    add_live_out_use (bb, value);
+	}
+    };
+
+  if (bb == ebb->last_bb ())
+    // All live-out registers might need live-out uses.
+    record_live_out_regs (DF_LR_OUT (cfg_bb));
+  else
+    // Registers might need live-out uses if they are live on entry
+    // to a successor block in a different EBB.
+    FOR_EACH_EDGE (e, ei, cfg_bb->succs)
       {
-	if (value->ebb () == ebb && bitmap_bit_p (live_out_from_ebb, regno))
-	  add_live_out_use (bb, value);
-	obstack_ptr_grow (&m_temp_obstack, value);
+	bb_info *dest_bb = this->bb (e->dest);
+	if (dest_bb->ebb () != ebb || dest_bb == ebb->first_bb ())
+	  record_live_out_regs (DF_LR_IN (e->dest));
       }
 
-  live_out->num_reg_values = (obstack_object_size (&m_temp_obstack)
-			      / sizeof (set_info *));
-  auto *data = obstack_finish (&m_temp_obstack);
-  live_out->reg_values = static_cast<set_info **> (data);
-
-  live_out->mem_value = live_out_value (bb, bi.current_mem_value ());
+  // Record the live-out memory value.
+  bi.bb_mem_live_out[cfg_bb->index]
+    = live_out_value (bb, bi.current_mem_value ());
 }
 
-// Called while building SSA form using BI.  Check if BI.current_bb has
-// any outgoing backedges.  If so, use the up-to-date contents of
-// BI.bb_live_out to populate the associated inputs of any phi nodes.
+// Add BB and its contents to the SSA information.
 void
-function_info::populate_backedge_phis (build_info &bi)
+function_info::start_block (build_info &bi, bb_info *bb)
 {
-  bb_info *bb = bi.current_bb;
-  basic_block cfg_bb = bb->cfg_bb ();
-  const bb_live_out_info *live_out = &bi.bb_live_out[bb->index ()];
+  ebb_info *ebb = bb->ebb ();
 
-  edge e;
-  edge_iterator ei;
-  FOR_EACH_EDGE (e, ei, cfg_bb->succs)
+  // We (need to) add all blocks from one EBB before moving on to the next.
+  bi.current_bb = bb;
+  if (bb == ebb->first_bb ())
+    bi.current_ebb = ebb;
+  else
+    gcc_assert (bi.current_ebb == ebb);
+
+  // Record the start of this block's definitions in the definitions stack.
+  bi.old_def_stack_limit.safe_push (bi.def_stack.length ());
+
+  // Add the block itself.
+  append_bb (bb);
+
+  // If the block starts an EBB, create the phi insn.  This insn should exist
+  // for all EBBs, even if they don't (yet) need phis.
+  if (bb == ebb->first_bb ())
+    ebb->set_phi_insn (append_artificial_insn (bb));
+
+  if (bb->index () == ENTRY_BLOCK)
     {
-      // Check if this edge counts as a backedge in the current traversal.
-      bb_info *succ_bb = this->bb (e->dest);
-      if (!succ_bb || !succ_bb->head_insn ())
+      add_entry_block_defs (bi);
+      record_block_live_out (bi);
+      return;
+    }
+
+  if (EDGE_COUNT (bb->cfg_bb ()->preds) == 0)
+    {
+      // Leave unreachable blocks empty, since there is no useful
+      // liveness information for them, and anything they do will
+      // be wasted work.  In a cleaned-up cfg, the only unreachable
+      // block we should see is the exit block of a noreturn function.
+      bb->set_head_insn (append_artificial_insn (bb));
+      bb->set_end_insn (append_artificial_insn (bb));
+      return;
+    }
+
+  // If the block starts an EBB, create the phi nodes.
+  if (bb == ebb->first_bb ())
+    add_phi_nodes (bi);
+
+  // Process the contents of the block.
+  add_artificial_accesses (bi, DF_REF_AT_TOP);
+  if (bb->index () != EXIT_BLOCK)
+    add_block_contents (bi);
+  add_artificial_accesses (bi, df_ref_flags ());
+  record_block_live_out (bi);
+
+  // If we needed to calculate a live-in set for debug purposes,
+  // reset it to null at the end of the EBB.  Convert the underlying
+  // bitmap to an empty list view, ready for the next calculation.
+  if (bi.ebb_live_in_for_debug && bb == ebb->last_bb ())
+    {
+      bitmap_clear (bi.tmp_ebb_live_in_for_debug);
+      bitmap_list_view (bi.tmp_ebb_live_in_for_debug);
+      bi.ebb_live_in_for_debug = nullptr;
+    }
+}
+
+// Finish adding BB and the blocks that it dominates to the SSA information.
+void
+function_info::end_block (build_info &bi, bb_info *bb)
+{
+  // Restore the register last_access information to the state it was
+  // in before we started processing BB.
+  unsigned int old_limit = bi.old_def_stack_limit.pop ();
+  while (bi.def_stack.length () > old_limit)
+    {
+      // We pushed a definition in BB if it was the first dominating
+      // definition (and so the previous entry was null).  In other
+      // cases we pushed the previous dominating definition.
+      def_info *def = bi.def_stack.pop ();
+      unsigned int regno = def->regno ();
+      if (def->bb () == bb)
+	def = nullptr;
+      bi.last_access[regno + 1] = def;
+    }
+}
+
+// Finish setting up the phi nodes for each block, now that we've added
+// the contents of all blocks.
+void
+function_info::populate_phi_inputs (build_info &bi)
+{
+  auto_vec<phi_info *, 32> sorted_phis;
+  for (ebb_info *ebb : ebbs ())
+    {
+      if (!ebb->first_phi ())
 	continue;
 
-      // Although the phis do not keep a defined order long-term, they are
-      // still in reverse regno order at this point.  We can therefore use
-      // a merge operation on the phis and the live-out values.
-      unsigned int input_i = e->dest_idx;
-      int reg_i = live_out->num_reg_values - 1;
-      for (phi_info *phi : succ_bb->ebb ()->phis ())
+      // Get a sorted array of EBB's phi nodes.
+      basic_block cfg_bb = ebb->first_bb ()->cfg_bb ();
+      bb_phi_info &phis = bi.bb_phis[cfg_bb->index];
+      sorted_phis.truncate (0);
+      for (phi_info *phi : ebb->phis ())
+	sorted_phis.safe_push (phi);
+      std::sort (sorted_phis.address (),
+		 sorted_phis.address () + sorted_phis.length (),
+		 compare_access_infos);
+
+      // Set the inputs of the non-degenerate register phis.  All inputs
+      // for one edge come before all inputs for the next edge.
+      set_info **inputs = phis.inputs;
+      unsigned int phi_i = 0;
+      bitmap_iterator bmi;
+      unsigned int regno;
+      EXECUTE_IF_SET_IN_BITMAP (&phis.regs, 0, regno, bmi)
 	{
-	  set_info *input = nullptr;
-	  if (phi->is_mem ())
-	    input = live_out->mem_value;
-	  else
+	  // Skip intervening degenerate phis.
+	  while (sorted_phis[phi_i]->regno () < regno)
+	    phi_i += 1;
+	  phi_info *phi = sorted_phis[phi_i];
+	  gcc_assert (phi->regno () == regno);
+	  for (unsigned int input_i = 0; input_i < phis.num_preds; ++input_i)
+	    if (set_info *input = inputs[input_i * phis.num_phis])
+	      {
+		use_info *use = phi->input_use (input_i);
+		gcc_assert (!use->def ());
+		use->set_def (input);
+		add_use (use);
+	      }
+	  phi_i += 1;
+	  inputs += 1;
+	}
+
+      // Fill in the backedge inputs to any memory phi.
+      phi_info *mem_phi = sorted_phis.last ();
+      if (mem_phi->is_mem () && !mem_phi->is_degenerate ())
+	{
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, cfg_bb->preds)
 	    {
-	      // Skip over any intervening live-out values.
-	      unsigned int regno = phi->regno ();
-	      while (reg_i >= 0)
+	      use_info *use = mem_phi->input_use (e->dest_idx);
+	      if (!use->def ())
 		{
-		  set_info *reg_value = live_out->reg_values[reg_i];
-		  if (reg_value->regno () < regno)
-		    break;
-		  reg_i -= 1;
-		  if (reg_value->regno () == regno)
-		    {
-		      input = reg_value;
-		      break;
-		    }
+		  use->set_def (bi.bb_mem_live_out[e->src->index]);
+		  add_use (use);
 		}
-	    }
-	  if (input)
-	    {
-	      use_info *use = phi->input_use (input_i);
-	      gcc_assert (!use->def ());
-	      use->set_def (input);
-	      add_use (use);
 	    }
 	}
     }
@@ -960,6 +1193,49 @@ choose_next_block_in_ebb (basic_block bb)
   return best_edge ? best_edge->dest : nullptr;
 }
 
+// Partition the function into extended basic blocks.  Create the
+// associated ebb_infos and bb_infos, but don't add the bb_infos
+// to the function list yet.
+void
+function_info::create_ebbs (build_info &bi)
+{
+  // Compute the starting reverse postorder.  We tweak this later to try
+  // to get better EBB assignments.
+  auto *postorder = new int[n_basic_blocks_for_fn (m_fn)];
+  unsigned int postorder_num
+    = pre_and_rev_post_order_compute (nullptr, postorder, true);
+  gcc_assert (int (postorder_num) <= n_basic_blocks_for_fn (m_fn));
+
+  // Iterate over the blocks in reverse postorder.  In cases where
+  // multiple possible orders exist, prefer orders that chain blocks
+  // together into EBBs.  If multiple possible EBBs exist, try to pick
+  // the ones that are most likely to be profitable.
+  auto_vec<bb_info *, 16> bbs;
+  unsigned int next_bb_index = 0;
+  for (unsigned int i = 0; i < postorder_num; ++i)
+    if (!m_bbs[postorder[i]])
+      {
+	// Choose and create the blocks that should form the next EBB.
+	basic_block cfg_bb = BASIC_BLOCK_FOR_FN (m_fn, postorder[i]);
+	do
+	  {
+	    // Record the chosen block order in a new RPO.
+	    bi.bb_to_rpo[cfg_bb->index] = next_bb_index++;
+	    bbs.safe_push (create_bb_info (cfg_bb));
+	    cfg_bb = choose_next_block_in_ebb (cfg_bb);
+	  }
+	while (cfg_bb);
+
+	// Create the EBB itself.
+	auto *ebb = allocate<ebb_info> (bbs[0], bbs.last ());
+	for (bb_info *bb : bbs)
+	  bb->set_ebb (ebb);
+	bbs.truncate (0);
+      }
+
+  delete[] postorder;
+}
+
 // Partition the function's blocks into EBBs and build SSA form for all
 // EBBs in the function.
 void
@@ -968,124 +1244,23 @@ function_info::process_all_blocks ()
   auto temps = temp_watermark ();
   unsigned int num_bb_indices = last_basic_block_for_fn (m_fn);
 
-  // Compute the starting reverse postorder.  We tweak this later to try
-  // to get better EBB assignments.
-  auto *postorder = new int[n_basic_blocks_for_fn (m_fn)];
-  unsigned int postorder_num
-    = pre_and_rev_post_order_compute (nullptr, postorder, true);
-  gcc_assert (int (postorder_num) <= n_basic_blocks_for_fn (m_fn));
+  build_info bi (m_num_regs, num_bb_indices);
 
-  // Construct the working state for this function and its subroutines.
-  build_info bi;
-  bi.last_access = XOBNEWVEC (&m_temp_obstack, access_info *, m_num_regs + 1);
-  memset (bi.last_access, 0, (m_num_regs + 1) * sizeof (set_info *));
+  calculate_potential_phi_regs (bi);
+  create_ebbs (bi);
+  place_phis (bi);
+  bb_walker (this, bi).walk (ENTRY_BLOCK_PTR_FOR_FN (m_fn));
+  populate_phi_inputs (bi);
 
-  // The bb_live_out array shouldn't need to be initialized, since we'll
-  // always write to an entry before reading from it.  But poison the
-  // contents when checking, just to make sure we don't accidentally use
-  // an uninitialized value.
-  bi.bb_live_out = XOBNEWVEC (&m_temp_obstack, bb_live_out_info,
-			      num_bb_indices);
   if (flag_checking)
-    memset (bi.bb_live_out, 0xaf,
-	    num_bb_indices * sizeof (bb_live_out_info));
-
-  // Only pay the overhead of recording a separate live-in bitmap if
-  // there are debug instructions that might need it.
-  auto_bitmap ebb_live_in;
-  if (MAY_HAVE_DEBUG_INSNS)
     {
-      bi.ebb_live_in_for_debug = ebb_live_in;
-      // The bitmap is tested using individual bit operations, so optimize
-      // for that case.
-      bitmap_tree_view (ebb_live_in);
+      // The definition stack should be empty and all register definitions
+      // should be back in their original undefined state.
+      gcc_assert (bi.def_stack.is_empty ()
+		  && bi.old_def_stack_limit.is_empty ());
+      for (unsigned int regno = 0; regno < m_num_regs; ++regno)
+	gcc_assert (!bi.last_access[regno + 1]);
     }
-  else
-    bi.ebb_live_in_for_debug = nullptr;
-
-  // Iterate over the blocks in reverse postorder.  In cases where
-  // multiple possible orders exist, prefer orders that chain blocks
-  // together into EBBs.  If multiple possible EBBs exist, try to pick
-  // the ones that are most likely to be profitable.
-  auto_vec<bb_info *, 16> ebb;
-  auto_bitmap ebb_use_tmp;
-  auto_bitmap ebb_def_tmp;
-  for (unsigned int i = 0; i < postorder_num; ++i)
-    if (!m_bbs[postorder[i]])
-      {
-	// Choose and create the blocks that should form the next EBB,
-	// and calculate the set of registers that the EBB uses and defines
-	// Only do actual bitmap operations if the EBB contains multiple
-	// blocks.
-	basic_block cfg_bb = BASIC_BLOCK_FOR_FN (m_fn, postorder[i]);
-	bi.ebb_use = &DF_LR_BB_INFO (cfg_bb)->use;
-	bi.ebb_def = &DF_LR_BB_INFO (cfg_bb)->def;
-	ebb.safe_push (create_bb_info (cfg_bb));
-	cfg_bb = choose_next_block_in_ebb (cfg_bb);
-	if (cfg_bb)
-	  {
-	    // An EBB with two blocks.
-	    bitmap_ior (ebb_use_tmp, bi.ebb_use, &DF_LR_BB_INFO (cfg_bb)->use);
-	    bitmap_ior (ebb_def_tmp, bi.ebb_def, &DF_LR_BB_INFO (cfg_bb)->def);
-	    bi.ebb_use = ebb_use_tmp;
-	    bi.ebb_def = ebb_def_tmp;
-	    ebb.safe_push (create_bb_info (cfg_bb));
-	    cfg_bb = choose_next_block_in_ebb (cfg_bb);
-	    while (cfg_bb)
-	      {
-		// An EBB with three or more blocks.
-		bitmap_ior_into (bi.ebb_use, &DF_LR_BB_INFO (cfg_bb)->use);
-		bitmap_ior_into (bi.ebb_def, &DF_LR_BB_INFO (cfg_bb)->def);
-		ebb.safe_push (create_bb_info (cfg_bb));
-		cfg_bb = choose_next_block_in_ebb (cfg_bb);
-	      }
-	  }
-
-	// Create the EBB itself.
-	bi.current_ebb = allocate<ebb_info> (ebb[0], ebb.last ());
-	for (bb_info *bb : ebb)
-	  {
-	    bb->set_ebb (bi.current_ebb);
-	    append_bb (bb);
-	  }
-
-	// Populate the contents of the EBB.
-	bi.current_ebb->set_phi_insn (append_artificial_insn (ebb[0]));
-	if (ebb[0]->index () == ENTRY_BLOCK)
-	  {
-	    gcc_assert (ebb.length () == 1);
-	    bi.current_bb = ebb[0];
-	    add_entry_block_defs (bi);
-	    record_block_live_out (bi);
-	  }
-	else if (EDGE_COUNT (ebb[0]->cfg_bb ()->preds) == 0)
-	  // Leave unreachable blocks empty, since there is no useful
-	  // liveness information for them, and anything they do will
-	  // be wasted work.  In a cleaned-up cfg, the only unreachable
-	  // block we should see is the exit block of a noreturn function.
-	  for (bb_info *bb : ebb)
-	    {
-	      bb->set_head_insn (append_artificial_insn (bb));
-	      bb->set_end_insn (append_artificial_insn (bb));
-	    }
-	else
-	  {
-	    add_phi_nodes (bi);
-	    for (bb_info *bb : ebb)
-	      {
-		bi.current_bb = bb;
-		add_artificial_accesses (bi, DF_REF_AT_TOP);
-		if (bb->index () != EXIT_BLOCK)
-		  add_block_contents (bi);
-		add_artificial_accesses (bi, df_ref_flags ());
-		record_block_live_out (bi);
-		populate_backedge_phis (bi);
-	      }
-	  }
-	ebb.truncate (0);
-      }
-
-  delete[] postorder;
 }
 
 // Print a description of CALL_CLOBBERS to PP.

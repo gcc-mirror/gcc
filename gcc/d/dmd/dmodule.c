@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -33,8 +33,6 @@ Dsymbols Module::deferred;  // deferred Dsymbol's needing semantic() run on them
 Dsymbols Module::deferred2; // deferred Dsymbol's needing semantic2() run on them
 Dsymbols Module::deferred3; // deferred Dsymbol's needing semantic3() run on them
 unsigned Module::dprogress;
-
-StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 void Module::_init()
 {
@@ -815,113 +813,6 @@ void Module::importAll(Scope *)
     sc->pop();          // 2 pops because Scope::createGlobal() created 2
 }
 
-void Module::semantic(Scope *)
-{
-    if (semanticRun != PASSinit)
-        return;
-
-    //printf("+Module::semantic(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
-    semanticRun = PASSsemantic;
-
-    // Note that modules get their own scope, from scratch.
-    // This is so regardless of where in the syntax a module
-    // gets imported, it is unaffected by context.
-    Scope *sc = _scope;                  // see if already got one from importAll()
-    if (!sc)
-    {
-        Scope::createGlobal(this);      // create root scope
-    }
-
-    //printf("Module = %p, linkage = %d\n", sc->scopesym, sc->linkage);
-
-    // Pass 1 semantic routines: do public side of the definition
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-
-        //printf("\tModule('%s'): '%s'.semantic()\n", toChars(), s->toChars());
-        s->semantic(sc);
-        runDeferredSemantic();
-    }
-
-    if (userAttribDecl)
-    {
-        userAttribDecl->semantic(sc);
-    }
-
-    if (!_scope)
-    {
-        sc = sc->pop();
-        sc->pop();              // 2 pops because Scope::createGlobal() created 2
-    }
-    semanticRun = PASSsemanticdone;
-    //printf("-Module::semantic(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
-}
-
-void Module::semantic2(Scope*)
-{
-    //printf("Module::semantic2('%s'): parent = %p\n", toChars(), parent);
-    if (semanticRun != PASSsemanticdone)       // semantic() not completed yet - could be recursive call
-        return;
-    semanticRun = PASSsemantic2;
-
-    // Note that modules get their own scope, from scratch.
-    // This is so regardless of where in the syntax a module
-    // gets imported, it is unaffected by context.
-    Scope *sc = Scope::createGlobal(this);      // create root scope
-    //printf("Module = %p\n", sc.scopesym);
-
-    // Pass 2 semantic routines: do initializers and function bodies
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        s->semantic2(sc);
-    }
-
-    if (userAttribDecl)
-    {
-        userAttribDecl->semantic2(sc);
-    }
-
-    sc = sc->pop();
-    sc->pop();
-    semanticRun = PASSsemantic2done;
-    //printf("-Module::semantic2('%s'): parent = %p\n", toChars(), parent);
-}
-
-void Module::semantic3(Scope*)
-{
-    //printf("Module::semantic3('%s'): parent = %p\n", toChars(), parent);
-    if (semanticRun != PASSsemantic2done)
-        return;
-    semanticRun = PASSsemantic3;
-
-    // Note that modules get their own scope, from scratch.
-    // This is so regardless of where in the syntax a module
-    // gets imported, it is unaffected by context.
-    Scope *sc = Scope::createGlobal(this);      // create root scope
-    //printf("Module = %p\n", sc.scopesym);
-
-    // Pass 3 semantic routines: do initializers and function bodies
-    for (size_t i = 0; i < members->length; i++)
-    {
-        Dsymbol *s = (*members)[i];
-        //printf("Module %s: %s.semantic3()\n", toChars(), s->toChars());
-        s->semantic3(sc);
-
-        runDeferredSemantic2();
-    }
-
-    if (userAttribDecl)
-    {
-        userAttribDecl->semantic3(sc);
-    }
-
-    sc = sc->pop();
-    sc->pop();
-    semanticRun = PASSsemantic3done;
-}
-
 /**********************************
  * Determine if we need to generate an instance of ModuleInfo
  * for this Module.
@@ -1074,7 +965,7 @@ void Module::runDeferredSemantic()
         {
             Dsymbol *s = todo[i];
 
-            s->semantic(NULL);
+            dsymbolSemantic(s, NULL);
             //printf("deferred: %s, parent = %s\n", s->toChars(), s->parent->toChars());
         }
         //printf("\tdeferred.length = %d, len = %d, dprogress = %d\n", deferred.length, len, dprogress);
@@ -1094,7 +985,7 @@ void Module::runDeferredSemantic2()
     {
         Dsymbol *s = (*a)[i];
         //printf("[%d] %s semantic2a\n", i, s->toPrettyChars());
-        s->semantic2(NULL);
+        semantic2(s, NULL);
 
         if (global.errors)
             break;
@@ -1112,7 +1003,7 @@ void Module::runDeferredSemantic3()
         Dsymbol *s = (*a)[i];
         //printf("[%d] %s semantic3a\n", i, s->toPrettyChars());
 
-        s->semantic3(NULL);
+        semantic3(s, NULL);
 
         if (global.errors)
             break;
@@ -1294,12 +1185,6 @@ bool Package::isAncestorPackageOf(const Package * const pkg) const
     if (!pkg || !pkg->parent)
         return false;
     return isAncestorPackageOf(pkg->parent->isPackage());
-}
-
-void Package::semantic(Scope *)
-{
-    if (semanticRun < PASSsemanticdone)
-        semanticRun = PASSsemanticdone;
 }
 
 /****************************************************

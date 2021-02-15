@@ -574,10 +574,20 @@ inline ebb_info::ebb_info (bb_info *first_bb, bb_info *last_bb)
 {
 }
 
-// Set the contents of last_access for register REGNO to DEF.
+// Record register definition DEF in last_access, pushing a definition
+// to def_stack where appropriate.
 inline void
-function_info::build_info::record_reg_def (unsigned int regno, def_info *def)
+function_info::build_info::record_reg_def (def_info *def)
 {
+  unsigned int regno = def->regno ();
+  auto *prev_dominating_def = safe_as_a<def_info *> (last_access[regno + 1]);
+  if (!prev_dominating_def)
+    // Indicate that DEF is the first dominating definition of REGNO.
+    def_stack.safe_push (def);
+  else if (prev_dominating_def->bb () != def->bb ())
+    // Record that PREV_DOMINATING_DEF was the dominating definition
+    // of REGNO on entry to the current block.
+    def_stack.safe_push (prev_dominating_def);
   last_access[regno + 1] = def;
 }
 

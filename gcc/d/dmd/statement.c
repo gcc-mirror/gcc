@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -30,8 +30,6 @@ bool walkPostorder(Statement *s, StoppableVisitor *v);
 StorageClass mergeFuncAttrs(StorageClass s1, FuncDeclaration *f);
 bool checkEscapeRef(Scope *sc, Expression *e, bool gag);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
-Expression *semantic(Expression *e, Scope *sc);
-StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 Statement *makeTupleForeachStatic(Scope *sc, ForeachStatement *fs, bool needExpansion);
 
 Identifier *fixupLabelName(Scope *sc, Identifier *ident)
@@ -470,7 +468,7 @@ Statements *ExpStatement::flatten(Scope *sc)
         Dsymbol *d = ((DeclarationExp *)exp)->declaration;
         if (TemplateMixin *tm = d->isTemplateMixin())
         {
-            Expression *e = semantic(exp, sc);
+            Expression *e = expressionSemantic(exp, sc);
             if (e->op == TOKerror || tm->errors)
             {
                 Statements *a = new Statements();
@@ -1143,12 +1141,12 @@ static bool checkVar(SwitchStatement *s, VarDeclaration *vd)
     }
     else if (vd->ident == Id::withSym)
     {
-        s->deprecation("'switch' skips declaration of 'with' temporary at %s", vd->loc.toChars());
+        s->deprecation("`switch` skips declaration of `with` temporary at %s", vd->loc.toChars());
         return true;
     }
     else
     {
-        s->deprecation("'switch' skips declaration of variable %s at %s", vd->toPrettyChars(), vd->loc.toChars());
+        s->deprecation("`switch` skips declaration of variable %s at %s", vd->toPrettyChars(), vd->loc.toChars());
         return true;
     }
 
@@ -1471,7 +1469,7 @@ Statement *ScopeGuardStatement::scopeCode(Scope *sc, Statement **sentry, Stateme
              *  sfinally: if (!x) statement;
              */
             VarDeclaration *v = copyToTemp(0, "__os", new IntegerExp(Loc(), 0, Type::tbool));
-            v->semantic(sc);
+            dsymbolSemantic(v, sc);
             *sentry = new ExpStatement(loc, v);
 
             Expression *e = new IntegerExp(Loc(), 1, Type::tbool);
@@ -1558,7 +1556,7 @@ bool GotoStatement::checkLabel()
 {
     if (!label->statement)
     {
-        error("label '%s' is undefined", label->toChars());
+        error("label `%s` is undefined", label->toChars());
         return true;
     }
 

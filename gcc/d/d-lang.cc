@@ -1051,7 +1051,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic  %s", m->toChars ());
 
-      m->semantic (NULL);
+      dsymbolSemantic (m, NULL);
     }
 
   /* Do deferred semantic analysis.  */
@@ -1083,7 +1083,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic2 %s", m->toChars ());
 
-      m->semantic2 (NULL);
+      semantic2 (m, NULL);
     }
 
   Module::runDeferredSemantic2 ();
@@ -1099,7 +1099,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic3 %s", m->toChars ());
 
-      m->semantic3 (NULL);
+      semantic3 (m, NULL);
     }
 
   Module::runDeferredSemantic3 ();

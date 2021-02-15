@@ -176,81 +176,9 @@ public:
   void print (pretty_printer *pp) const;
 
 private:
-  // Information about the values that are live on exit from a basic block.
-  // This class is only used when constructing the SSA form, it isn't
-  // designed for being kept up-to-date.
-  class bb_live_out_info
-  {
-  public:
-    // REG_VALUES contains all the registers that live out from the block,
-    // in order of increasing register number.  There are NUM_REG_VALUES
-    // in total.  Registers do not appear here if their values are known
-    // to be completely undefined; in that sense, the information is
-    // closer to DF_LIVE than to DF_LR.
-    unsigned int num_reg_values;
-    set_info **reg_values;
-
-    // The memory value that is live on exit from the block.
-    set_info *mem_value;
-  };
-
-  // Information used while constructing the SSA form and discarded
-  // afterwards.
-  class build_info
-  {
-  public:
-    set_info *current_reg_value (unsigned int) const;
-    set_info *current_mem_value () const;
-
-    void record_reg_def (unsigned int, def_info *);
-    void record_mem_def (def_info *);
-
-    // The block that we're currently processing.
-    bb_info *current_bb;
-
-    // The EBB that contains CURRENT_BB.
-    ebb_info *current_ebb;
-
-    // Except for the local exception noted below:
-    //
-    // - If register R has been defined in the current EBB, LAST_ACCESS[R + 1]
-    //   is the last definition of R in the EBB.
-    //
-    // - If register R is currently live but has not yet been defined
-    //   in the EBB, LAST_ACCESS[R + 1] is the current value of R,
-    //   or null if the register's value is completely undefined.
-    //
-    // - The contents are not meaningful for other registers.
-    //
-    // Similarly:
-    //
-    // - If the current EBB has defined memory, LAST_ACCESS[0] is the last
-    //   definition of memory in the EBB.
-    //
-    // - Otherwise LAST_ACCESS[0] is the value of memory that is live on
-    // - entry to the EBB.
-    //
-    // The exception is that while building instructions, LAST_ACCESS[I]
-    // can temporarily be the use of regno I - 1 by that instruction.
-    access_info **last_access;
-
-    // A bitmap of registers that are live on entry to this EBB, with a tree
-    // view for quick lookup.  Only used if MAY_HAVE_DEBUG_INSNS.
-    bitmap ebb_live_in_for_debug;
-
-    // A conservative superset of the registers that are used by
-    // instructions in CURRENT_EBB.  That is, all used registers
-    // are in the set, but some unused registers might be too.
-    bitmap ebb_use;
-
-    // A similarly conservative superset of the registers that are defined
-    // by instructions in CURRENT_EBB.
-    bitmap ebb_def;
-
-    // BB_LIVE_OUT[BI] gives the live-out values for the basic block
-    // with index BI.
-    bb_live_out_info *bb_live_out;
-  };
+  class bb_phi_info;
+  class build_info;
+  class bb_walker;
 
   // Return an RAII object that owns all objects allocated by
   // allocate_temp during its lifetime.
@@ -307,6 +235,7 @@ private:
   void start_insn_accesses ();
   void finish_insn_accesses (insn_info *);
 
+  use_info *create_reg_use (build_info &, insn_info *, resource_info);
   void record_use (build_info &, insn_info *, rtx_obj_reference);
   void record_call_clobbers (build_info &, insn_info *, rtx_call_insn *);
   void record_def (build_info &, insn_info *, rtx_obj_reference);
@@ -327,7 +256,6 @@ private:
 
   bb_info *create_bb_info (basic_block);
   void append_bb (bb_info *);
-  void calculate_potential_phi_regs ();
 
   insn_info *add_placeholder_after (insn_info *);
   void possibly_queue_changes (insn_change &);
@@ -335,12 +263,18 @@ private:
   void apply_changes_to_insn (insn_change &);
 
   void init_function_data ();
+  void calculate_potential_phi_regs (build_info &);
+  void place_phis (build_info &);
+  void create_ebbs (build_info &);
   void add_entry_block_defs (build_info &);
+  void calculate_ebb_live_in_for_debug (build_info &);
   void add_phi_nodes (build_info &);
   void add_artificial_accesses (build_info &, df_ref_flags);
   void add_block_contents (build_info &);
   void record_block_live_out (build_info &);
-  void populate_backedge_phis (build_info &);
+  void start_block (build_info &, bb_info *);
+  void end_block (build_info &, bb_info *);
+  void populate_phi_inputs (build_info &);
   void process_all_blocks ();
 
   void simplify_phi_setup (phi_info *, set_info **, bitmap);
@@ -399,13 +333,6 @@ private:
   // Keeping them around should reduce the number of unnecessary reallocations.
   auto_vec<access_info *> m_temp_defs;
   auto_vec<access_info *> m_temp_uses;
-
-  // The set of registers that might need to have phis associated with them.
-  // Registers outside this set are known to have a single definition that
-  // dominates all uses.
-  //
-  // Before RA, about 5% of registers are typically in the set.
-  auto_bitmap m_potential_phi_regs;
 
   // A list of phis that are no longer in use.  Their uids are still unique
   // and so can be recycled.

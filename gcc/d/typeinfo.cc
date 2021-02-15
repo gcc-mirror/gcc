@@ -210,7 +210,7 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
   ClassDeclaration *tinfo = ClassDeclaration::create (loc, ident, NULL, NULL,
 						      true);
   tinfo->parent = object_module;
-  tinfo->semantic (object_module->_scope);
+  dsymbolSemantic (tinfo, object_module->_scope);
   tinfo->baseClass = base;
   /* This is a compiler generated class, and shouldn't be mistaken for being
      the type declared in the runtime library.  */

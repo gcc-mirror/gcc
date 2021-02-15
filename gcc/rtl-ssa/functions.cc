@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-ssa/internals.h"
 #include "rtl-ssa/internals.inl"
 
 using namespace rtl_ssa;
@@ -74,23 +75,6 @@ function_info::print (pretty_printer *pp) const
     }
 }
 
-// Calculate m_potential_phi_regs.
-void
-function_info::calculate_potential_phi_regs ()
-{
-  auto *lr_info = DF_LR_BB_INFO (ENTRY_BLOCK_PTR_FOR_FN (m_fn));
-  for (unsigned int regno = 0; regno < m_num_regs; ++regno)
-    if (regno >= DF_REG_SIZE (DF)
-	// Exclude registers that have a single definition that dominates
-	// all uses.  If the definition does not dominate all uses,
-	// the register will be exposed upwards to the entry block but
-	// will not be defined by the entry block.
-	|| DF_REG_DEF_COUNT (regno) > 1
-	|| (!bitmap_bit_p (&lr_info->def, regno)
-	    && bitmap_bit_p (&lr_info->out, regno)))
-      bitmap_set_bit (m_potential_phi_regs, regno);
-}
-
 // Initialize all member variables in preparation for (re)building
 // SSA form from scratch.
 void
@@ -107,8 +91,6 @@ function_info::init_function_data ()
   m_last_insn = nullptr;
   m_last_nondebug_insn = nullptr;
   m_free_phis = nullptr;
-
-  calculate_potential_phi_regs ();
 }
 
 // The initial phase of the phi simplification process.  The cumulative

@@ -59,9 +59,9 @@ Compiler::genCmain (Scope *sc)
     {
       m->importedFrom = m;
       m->importAll (NULL);
-      m->semantic (NULL);
-      m->semantic2 (NULL);
-      m->semantic3 (NULL);
+      dsymbolSemantic (m, NULL);
+      semantic2 (m, NULL);
+      semantic3 (m, NULL);
       d_add_entrypoint_module (m, sc->_module);
     }
 

@@ -1,3 +1,97 @@
+2021-02-14  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguether@suse.de>
+
+	PR ipa/97346
+	* ipa-reference.c (ipa_init): Only conditinally initialize
+	reference_vars_to_consider.
+	(propagate): Conditionally deninitialize reference_vars_to_consider.
+	(ipa_reference_write_optimization_summary): Sanity check that
+	reference_vars_to_consider is not allocated.
+
+2021-02-13  Levy Hsu  <admin@levyhsu.com>
+
+	PR target/97417
+	* config/riscv/riscv-shorten-memrefs.c (pass_shorten_memrefs): Add
+	extend parameter to get_si_mem_base_reg declaration.
+	(get_si_mem_base_reg): Add extend parameter.  Set it.
+	(analyze): Pass extend arg to get_si_mem_base_reg.
+	(transform): Likewise.  Use it when rewriting mems.
+	* config/riscv/riscv.c (riscv_legitimize_move): Check for subword
+	loads and emit sign/zero extending load followed by subreg move.
+
+2021-02-13  Jim Wilson  <jimw@sifive.com>
+
+	PR target/97417
+	* config/riscv/riscv.c (riscv_compressed_lw_address_p): Drop early
+	exit when !reload_completed.  Only perform check for compressed reg
+	if reload_completed.
+	(riscv_rtx_costs): In MEM case, when optimizing	for size and
+	shorten memrefs, if not compressible, then increase cost.
+
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98439
+	* recog.c (pass_split_before_regstack::gate): Enable even when
+	pass_split_before_sched2 is enabled if -fselective-scheduling2 is
+	on.
+
+2021-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96166
+	* config/i386/mmx.md (*mmx_pshufd_1): Add a combine splitter for
+	swap of V2SImode elements in memory into DImode memory rotate by 32.
+
+2021-02-12  Martin Sebor  <msebor@redhat.com>
+
+	* tree-pretty-print.c (print_generic_expr_to_str): Update comment.
+
+2021-02-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/accesses.cc (function_info::make_use_available): Use
+	m_temp_obstack rather than m_obstack to allocate the temporary use.
+
+2021-02-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-problems.c (df_lr_bb_local_compute): Treat partial definitions
+	as read-modify operations.
+
+2021-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* ipa-fnsummary.c (unmodified_parm_1): Only walk when
+	fbi->aa_walk_budget is bigger than zero.  Update
+	fbi->aa_walk_budget.
+	(param_change_prob): Likewise.
+	* ipa-prop.c (detect_type_change_from_memory_writes):
+	Properly account walk_aliased_vdefs.
+	(parm_preserved_before_stmt_p): Canonicalize updates.
+	(parm_ref_data_preserved_p): Likewise.
+	(parm_ref_data_pass_through_p): Likewise.
+	(determine_known_aggregate_parts): Account own alias queries.
+
+2021-02-12  Martin Liska  <mliska@suse.cz>
+
+	* opts-common.c (decode_cmdline_option): Release werror_arg.
+	* opts.c (gen_producer_string): Release output of
+	gen_command_line_string.
+
+2021-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/38474
+	* params.opt (-param=max-store-chains-to-track=): New param.
+	(-param=max-stores-to-track=): Likewise.
+	* doc/invoke.texi (max-store-chains-to-track): Document.
+	(max-stores-to-track): Likewise.
+	* gimple-ssa-store-merging.c (pass_store_merging::m_n_chains):
+	New.
+	(pass_store_merging::m_n_stores): Likewise.
+	(pass_store_merging::terminate_and_process_chain): Update
+	m_n_stores and m_n_chains.
+	(pass_store_merging::process_store): Likewise.   Terminate
+	oldest chains if the number of stores or chains get too large.
+	(imm_store_chain_info::terminate_and_process_chain): Dump
+	chain length.
+
 2021-02-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to

@@ -236,8 +236,15 @@ check_dtor_name (tree basetype, tree name)
 	   || TREE_CODE (basetype) == ENUMERAL_TYPE)
 	  && name == constructor_name (basetype))
 	return true;
-      else
-	name = get_type_value (name);
+
+      /* Otherwise lookup the name, it could be an unrelated typedef
+	 of the correct type.  */
+      name = lookup_name (name, LOOK_want::TYPE);
+      if (!name)
+	return false;
+      name = TREE_TYPE (name);
+      if (name == error_mark_node)
+	return false;
     }
   else
     {
@@ -252,8 +259,6 @@ check_dtor_name (tree basetype, tree name)
       return false;
     }
 
-  if (!name || name == error_mark_node)
-    return false;
   return same_type_p (TYPE_MAIN_VARIANT (basetype), TYPE_MAIN_VARIANT (name));
 }
 

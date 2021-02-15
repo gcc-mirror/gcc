@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -43,6 +43,9 @@ class TemplateInstance;
 class TemplateDeclaration;
 class ClassDeclaration;
 class BinExp;
+class UnaExp;
+class DotIdExp;
+class DotTemplateInstanceExp;
 class OverloadSet;
 class Initializer;
 class StringExp;
@@ -54,6 +57,16 @@ typedef union tree_node Symbol;
 #else
 struct Symbol;          // back end symbol
 #endif
+
+Expression *expressionSemantic(Expression *e, Scope *sc);
+Expression *semanticX(DotIdExp *exp, Scope *sc);
+Expression *semanticY(DotIdExp *exp, Scope *sc, int flag);
+Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
+Expression *trySemantic(Expression *e, Scope *sc);
+Expression *unaSemantic(UnaExp *e, Scope *sc);
+Expression *binSemantic(BinExp *e, Scope *sc);
+Expression *binSemanticProp(BinExp *e, Scope *sc);
+StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
 
 Expression *resolveProperties(Scope *sc, Expression *e);
 Expression *resolvePropertiesOnly(Scope *sc, Expression *e1);

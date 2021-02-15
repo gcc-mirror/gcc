@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -20,9 +20,7 @@
 #include "id.h"
 
 FuncDeclaration *isFuncAddress(Expression *e, bool *hasOverloads = NULL);
-Expression *semantic(Expression *e, Scope *sc);
 Initializer *inferType(Initializer *init, Scope *sc);
-Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 bool hasNonConstPointers(Expression *e);
 
 class InitializerSemanticVisitor : public Visitor
@@ -97,10 +95,10 @@ public:
                     {
                         s = sd->search_correct(id);
                         if (s)
-                            error(i->loc, "'%s' is not a member of '%s', did you mean %s '%s'?",
+                            error(i->loc, "`%s` is not a member of `%s`, did you mean %s `%s`?",
                                   id->toChars(), sd->toChars(), s->kind(), s->toChars());
                         else
-                            error(i->loc, "'%s' is not a member of '%s'", id->toChars(), sd->toChars());
+                            error(i->loc, "`%s` is not a member of `%s`", id->toChars(), sd->toChars());
                         result = new ErrorInitializer();
                         return;
                     }
@@ -130,7 +128,7 @@ public:
                 VarDeclaration *vd = sd->fields[fieldi];
                 if ((*elements)[fieldi])
                 {
-                    error(i->loc, "duplicate initializer for field '%s'", vd->toChars());
+                    error(i->loc, "duplicate initializer for field `%s`", vd->toChars());
                     errors = true;
                     continue;
                 }
@@ -148,7 +146,7 @@ public:
 
                 assert(sc);
                 Initializer *iz = i->value[j];
-                iz = ::semantic(iz, sc, vd->type->addMod(t->mod), needInterpret);
+                iz = initializerSemantic(iz, sc, vd->type->addMod(t->mod), needInterpret);
                 Expression *ex = initializerToExpression(iz);
                 if (ex->op == TOKerror)
                 {
@@ -174,7 +172,7 @@ public:
             sle->type = t;
 
             ExpInitializer *ie = new ExpInitializer(i->loc, sle);
-            result = ::semantic(ie, sc, t, needInterpret);
+            result = initializerSemantic(ie, sc, t, needInterpret);
             return;
         }
         else if ((t->ty == Tdelegate || (t->ty == Tpointer && t->nextOf()->ty == Tfunction)) && i->value.length == 0)
@@ -188,7 +186,7 @@ public:
             fd->endloc = i->loc;
             Expression *e = new FuncExp(i->loc, fd);
             ExpInitializer *ie = new ExpInitializer(i->loc, e);
-            result = ::semantic(ie, sc, t, needInterpret);
+            result = initializerSemantic(ie, sc, t, needInterpret);
             return;
         }
 
@@ -235,7 +233,7 @@ public:
                         goto Lerr;
                     }
                     ExpInitializer *ei = new ExpInitializer(e->loc, e);
-                    result = ::semantic(ei, sc, t, needInterpret);
+                    result = initializerSemantic(ei, sc, t, needInterpret);
                     return;
                 }
             case Tpointer:
@@ -257,7 +255,7 @@ public:
             if (idx)
             {
                 sc = sc->startCTFE();
-                idx = ::semantic(idx, sc);
+                idx = expressionSemantic(idx, sc);
                 sc = sc->endCTFE();
                 idx = idx->ctfeInterpret();
                 i->index[j] = idx;
@@ -276,7 +274,7 @@ public:
             ExpInitializer *ei = val->isExpInitializer();
             if (ei && !idx)
                 ei->expandTuples = true;
-            val = ::semantic(val, sc, t->nextOf(), needInterpret);
+            val = initializerSemantic(val, sc, t->nextOf(), needInterpret);
             if (val->isErrorInitializer())
                 errors = true;
 
@@ -344,7 +342,7 @@ public:
     {
         //printf("ExpInitializer::semantic(%s), type = %s\n", i->exp->toChars(), t->toChars());
         if (needInterpret) sc = sc->startCTFE();
-        i->exp = ::semantic(i->exp, sc);
+        i->exp = expressionSemantic(i->exp, sc);
         i->exp = resolveProperties(sc, i->exp);
         if (needInterpret) sc = sc->endCTFE();
         if (i->exp->op == TOKerror)
@@ -388,7 +386,7 @@ public:
         }
         if (i->exp->op == TOKtype)
         {
-            i->exp->error("initializer must be an expression, not '%s'", i->exp->toChars());
+            i->exp->error("initializer must be an expression, not `%s`", i->exp->toChars());
             result = new ErrorInitializer();
             return;
         }
@@ -396,7 +394,7 @@ public:
         // Make sure all pointers are constants
         if (needInterpret && hasNonConstPointers(i->exp))
         {
-            i->exp->error("cannot use non-constant CTFE pointer in an initializer '%s'", i->exp->toChars());
+            i->exp->error("cannot use non-constant CTFE pointer in an initializer `%s`", i->exp->toChars());
             result = new ErrorInitializer();
             return;
         }
@@ -444,7 +442,7 @@ public:
                 e = new StructLiteralExp(i->loc, sd, NULL);
                 e = new DotIdExp(i->loc, e, Id::ctor);
                 e = new CallExp(i->loc, e, i->exp);
-                e = ::semantic(e, sc);
+                e = expressionSemantic(e, sc);
                 if (needInterpret)
                     i->exp = e->ctfeInterpret();
                 else
@@ -513,7 +511,7 @@ public:
 };
 
 // Performs semantic analisys on Initializer AST nodes
-Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret)
+Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret)
 {
     InitializerSemanticVisitor v = InitializerSemanticVisitor(sc, t, needInterpret);
     init->accept(&v);
@@ -633,7 +631,7 @@ public:
     void visit(ExpInitializer *init)
     {
         //printf("ExpInitializer::inferType() %s\n", init->toChars());
-        init->exp = ::semantic(init->exp, sc);
+        init->exp = expressionSemantic(init->exp, sc);
         init->exp = resolveProperties(sc, init->exp);
 
         if (init->exp->op == TOKscope)
@@ -897,8 +895,8 @@ public:
                 size_t d = (size_t)tsa->dim->toInteger();
                 Expressions *elements = new Expressions();
                 elements->setDim(d);
-                for (size_t i = 0; i < d; i++)
-                    (*elements)[i] = e;
+                for (size_t j = 0; j < d; j++)
+                    (*elements)[j] = e;
                 ArrayLiteralExp *ae = new ArrayLiteralExp(e->loc, itype, elements);
                 result = ae;
                 return;

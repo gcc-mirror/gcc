@@ -84,6 +84,7 @@ D_FRONTEND_OBJS = \
 	d/dscope.o \
 	d/dstruct.o \
 	d/dsymbol.o \
+	d/dsymbolsem.o \
 	d/dtemplate.o \
 	d/dversion.o \
 	d/entity.o \
@@ -115,6 +116,8 @@ D_FRONTEND_OBJS = \
 	d/rootobject.o \
 	d/safe.o \
 	d/sapply.o \
+	d/semantic2.o \
+	d/semantic3.o \
 	d/sideeffect.o \
 	d/speller.o \
 	d/statement.o \
@@ -122,6 +125,7 @@ D_FRONTEND_OBJS = \
 	d/staticassert.o \
 	d/staticcond.o \
 	d/stringtable.o \
+	d/templateparamsem.o \
 	d/tokens.o \
 	d/traits.o \
 	d/typesem.o \

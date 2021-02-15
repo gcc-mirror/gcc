@@ -1,3 +1,9 @@
+2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99043
+	* trans-expr.c (gfc_conv_procedure_call): Don't reset
+	rank of assumed-rank array.
+
 2021-02-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98897

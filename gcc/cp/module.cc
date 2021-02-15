@@ -3108,7 +3108,8 @@ private:
   unsigned section;
 #if CHECKING_P
   int importedness;		/* Checker that imports not occurring
-				   inappropriately.  */
+				   inappropriately.  +ve imports ok,
+				   -ve imports not ok.  */
 #endif
 
 public:
@@ -8161,6 +8162,12 @@ trees_in::decl_value ()
       if (inner_tag)
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
+
+      if (NAMESPACE_SCOPE_P (decl)
+	  && (mk == MK_named || mk == MK_unique
+	      || mk == MK_enum || mk == MK_friend_spec)
+	  && !(VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl)))
+	add_module_namespace_decl (CP_DECL_CONTEXT (decl), decl);
 
       /* The late insertion of an alias here or an implicit member
          (next block), is ok, because we ensured that all imports were
@@ -14626,13 +14633,36 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  depset *dep = b->deps[jx];
 
-	  if (!dep->is_binding ()
-	      && dep->is_import () && !TREE_VISITED (dep->get_entity ()))
+	  if (dep->is_binding ())
+	    {
+	      /* A cross-module using decl could be here.  */
+	      for (unsigned ix = dep->deps.length (); --ix;)
+		{
+		  depset *bind = dep->deps[ix];
+		  if (bind->get_entity_kind () == depset::EK_USING
+		      && bind->deps[1]->is_import ())
+		    {
+		      tree import = bind->deps[1]->get_entity ();
+		      if (!TREE_VISITED (import))
+			{
+			  sec.tree_node (import);
+			  dump (dumper::CLUSTER)
+			    && dump ("Seeded import %N", import);
+			}
+		    }
+		}
+	      /* Also check the namespace itself.  */
+	      dep = dep->deps[0];
+	    }
+
+	  if (dep->is_import ())
 	    {
 	      tree import = dep->get_entity ();
-
-	      sec.tree_node (import);
-	      dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
+	      if (!TREE_VISITED (import))
+		{
+		  sec.tree_node (import);
+		  dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
+		}
 	    }
 	}
     }
@@ -14893,20 +14923,6 @@ module_state::read_cluster (unsigned snum)
 				     : 0,
 				     decls, type, visible))
 	      sec.set_overrun ();
-
-	    if (type
-		&& CP_DECL_CONTEXT (type) == ns
-		&& !sec.is_duplicate (type))
-	      add_module_decl (ns, name, type);
-
-	    for (ovl_iterator iter (decls); iter; ++iter)
-	      if (!iter.using_p ())
-		{
-		  tree decl = *iter;
-		  if (CP_DECL_CONTEXT (decl) == ns
-		      && !sec.is_duplicate (decl))
-		    add_module_decl (ns, name, decl);
-		}
 	  }
 	  break;
 

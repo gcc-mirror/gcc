@@ -1,3 +1,9 @@
+2021-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/99055
+	* c-warn.c (warn_parm_array_mismatch): Free strings returned from
+	print_generic_expr_to_str.
+
 2021-02-10  Richard Biener  <rguenther@suse.de>
 
 	* c-common.c (parse_optimize_options): Free decoded_options.

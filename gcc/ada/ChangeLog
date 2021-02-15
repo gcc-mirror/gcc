@@ -1,3 +1,7 @@
+2021-02-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* repinfo.ads, repinfo.adb (*SO_Ref*): Restore.
+
 2021-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): If the first component

@@ -214,23 +214,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
     inline void
-    __thread_relax() noexcept
-    {
-#if defined __i386__ || defined __x86_64__
-      __builtin_ia32_pause();
-#elif defined _GLIBCXX_USE_SCHED_YIELD
-      __gthread_yield();
-#endif
-    }
-
-    inline void
     __thread_yield() noexcept
     {
-#if defined _GLIBCXX_USE_SCHED_YIELD
+#if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
      __gthread_yield();
 #endif
     }
 
+    inline void
+    __thread_relax() noexcept
+    {
+#if defined __i386__ || defined __x86_64__
+      __builtin_ia32_pause();
+#else
+      __gthread_yield();
+#endif
+    }
   } // namespace __detail
 
   template<typename _Pred>

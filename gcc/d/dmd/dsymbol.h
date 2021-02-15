@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -82,6 +82,10 @@ struct Ungag
     Ungag(unsigned old) : oldgag(old) {}
     ~Ungag() { global.gag = oldgag; }
 };
+
+void dsymbolSemantic(Dsymbol *dsym, Scope *sc);
+void semantic2(Dsymbol *dsym, Scope* sc);
+void semantic3(Dsymbol *dsym, Scope* sc);
 
 struct Prot
 {
@@ -201,9 +205,6 @@ public:
     virtual void addMember(Scope *sc, ScopeDsymbol *sds);
     virtual void setScope(Scope *sc);
     virtual void importAll(Scope *sc);
-    virtual void semantic(Scope *sc);
-    virtual void semantic2(Scope *sc);
-    virtual void semantic3(Scope *sc);
     virtual Dsymbol *search(const Loc &loc, Identifier *ident, int flags = IgnoreNone);
     Dsymbol *search_correct(Identifier *id);
     Dsymbol *searchX(Loc loc, Scope *sc, RootObject *id);
@@ -320,7 +321,6 @@ public:
     static Dsymbol *getNth(Dsymbols *members, size_t nth, size_t *pn = NULL);
 
     ScopeDsymbol *isScopeDsymbol() { return this; }
-    void semantic(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -382,7 +382,6 @@ public:
     Dsymbol *symtabInsert(Dsymbol *s);
     Dsymbol *symtabLookup(Dsymbol *s, Identifier *id);
     void importScope(Dsymbol *s, Prot protection);
-    void semantic(Scope *sc);
     const char *kind() const;
 
     ForwardingScopeDsymbol *isForwardingScopeDsymbol() { return this; }
