@@ -748,9 +748,10 @@ init_asm_output (const char *name)
 	  print_version (asm_out_file, ASM_COMMENT_START, true);
 	  fputs (ASM_COMMENT_START, asm_out_file);
 	  fputs (" options passed: ", asm_out_file);
-	  fputs (gen_command_line_string (save_decoded_options,
-					  save_decoded_options_count),
-		 asm_out_file);
+	  char *cmdline = gen_command_line_string (save_decoded_options,
+						   save_decoded_options_count);
+	  fputs (cmdline, asm_out_file);
+	  free (cmdline);
 	  fputc ('\n', asm_out_file);
 	}
     }
@@ -1384,8 +1385,11 @@ process_options (void)
       if (!quiet_flag)
 	{
 	  fputs ("options passed: ", stderr);
-	  fputs (gen_command_line_string (save_decoded_options,
-					  save_decoded_options_count), stderr);
+	  char *cmdline = gen_command_line_string (save_decoded_options,
+						   save_decoded_options_count);
+
+	  fputs (cmdline, stderr);
+	  free (cmdline);
 	  fputc ('\n', stderr);
 	}
     }
