@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-ssa/internals.h"
 #include "rtl-ssa/internals.inl"
 #include "predict.h"
 #include "print-rtl.h"
@@ -406,6 +407,33 @@ function_info::finish_insn_accesses (insn_info *insn)
   insn->set_accesses (static_cast<access_info **> (addr), num_defs, num_uses);
 }
 
+// Called while building SSA form using BI.  Create and return a use of
+// register RESOURCE in INSN.  Create a degenerate phi where necessary.
+use_info *
+function_info::create_reg_use (build_info &bi, insn_info *insn,
+			       resource_info resource)
+{
+  set_info *value = bi.current_reg_value (resource.regno);
+  if (value && value->ebb () != bi.current_ebb)
+    {
+      if (insn->is_debug_insn ())
+	value = look_through_degenerate_phi (value);
+      else if (bitmap_bit_p (bi.potential_phi_regs, resource.regno))
+	{
+	  // VALUE is defined by a previous EBB and RESOURCE has multiple
+	  // definitions.  Create a degenerate phi in the current EBB
+	  // so that all definitions and uses follow a linear RPO view;
+	  // see rtl.texi for details.
+	  access_info *inputs[] = { look_through_degenerate_phi (value) };
+	  value = create_phi (bi.current_ebb, value->resource (), inputs, 1);
+	  bi.record_reg_def (value);
+	}
+    }
+  auto *use = allocate<use_info> (insn, resource, value);
+  add_use (use);
+  return use;
+}
+
 // Called while building SSA form using BI.  Record that INSN contains
 // read reference REF.  If this requires new entries to be added to
 // INSN->uses (), add those entries to the list we're building in
@@ -450,18 +478,16 @@ function_info::record_use (build_info &bi, insn_info *insn,
 	  if (value->ebb () == bi.current_ebb)
 	    return true;
 
-	  // If the register is live on entry to the EBB but not used
-	  // within it, VALUE is the correct live-in value.
-	  if (bitmap_bit_p (bi.ebb_live_in_for_debug, regno))
+	  // Check if VALUE is the function's only definition of REGNO.
+	  // (We already know that it dominates the use.)
+	  if (!bitmap_bit_p (bi.potential_phi_regs, regno))
 	    return true;
 
-	  // Check if VALUE is the function's only definition of REGNO
-	  // and if it dominates the use.
-	  if (regno != MEM_REGNO
-	      && regno < DF_REG_SIZE (DF)
-	      && DF_REG_DEF_COUNT (regno) == 1
-	      && dominated_by_p (CDI_DOMINATORS, insn->bb ()->cfg_bb (),
-				 value->bb ()->cfg_bb ()))
+	  // If the register is live on entry to the EBB but not used
+	  // within it, VALUE is the correct live-in value.
+	  if (!bi.ebb_live_in_for_debug)
+	    calculate_ebb_live_in_for_debug (bi);
+	  if (bitmap_bit_p (bi.ebb_live_in_for_debug, regno))
 	    return true;
 
 	  // Punt for other cases.
@@ -470,8 +496,7 @@ function_info::record_use (build_info &bi, insn_info *insn,
       if (insn->is_debug_insn () && !value_is_valid ())
 	value = nullptr;
 
-      use = allocate<use_info> (insn, resource_info { mode, regno }, value);
-      add_use (use);
+      use = create_reg_use (bi, insn, { mode, regno });
       m_temp_uses.safe_push (use);
       bi.last_access[ref.regno + 1] = use;
       use->record_reference (ref, true);
@@ -547,7 +572,7 @@ function_info::record_call_clobbers (build_info &bi, insn_info *insn,
 	      def->m_is_call_clobber = true;
 	      append_def (def);
 	      m_temp_defs.safe_push (def);
-	      bi.last_access[regno + 1] = def;
+	      bi.record_reg_def (def);
 	    }
 	}
 }
@@ -599,7 +624,7 @@ function_info::record_def (build_info &bi, insn_info *insn,
   def->record_reference (ref, true);
   append_def (def);
   m_temp_defs.safe_push (def);
-  bi.last_access[ref.regno + 1] = def;
+  bi.record_reg_def (def);
 }
 
 // Called while building SSA form using BI.  Add an insn_info for RTL
