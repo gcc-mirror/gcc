@@ -5898,7 +5898,7 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
       exp->write_name(receiver->name());
       exp->write_escape(receiver->note());
       exp->write_c_string(" ");
-      exp->write_type(receiver->type());
+      exp->write_type(receiver->type()->unalias());
       exp->write_c_string(") ");
     }
 
