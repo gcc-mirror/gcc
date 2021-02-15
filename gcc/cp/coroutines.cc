@@ -793,6 +793,43 @@ get_awaitable_var (suspend_point_kind suspend_kind, tree v_type)
   return ret;
 }
 
+/* Helpers to diagnose missing noexcept on final await expressions.  */
+
+static bool
+coro_diagnose_throwing_fn (tree fndecl)
+{
+  if (!TYPE_NOTHROW_P (TREE_TYPE (fndecl)))
+    {
+      location_t f_loc = cp_expr_loc_or_loc (fndecl,
+					     DECL_SOURCE_LOCATION (fndecl));
+      error_at (f_loc, "the expression %qE is required to be non-throwing",
+		fndecl);
+      inform (f_loc, "must be declared with %<noexcept(true)%>");
+      return true;
+    }
+  return false;
+}
+
+static bool
+coro_diagnose_throwing_final_aw_expr (tree expr)
+{
+  tree t = TARGET_EXPR_INITIAL (expr);
+  tree fn = NULL_TREE;
+  if (TREE_CODE (t) == CALL_EXPR)
+    fn = CALL_EXPR_FN(t);
+  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (t);
+  else if (TREE_CODE (t) == CONSTRUCTOR)
+    return false;
+  else
+    {
+      gcc_checking_assert (0 && "unhandled expression type");
+      return false;
+    }
+  fn = TREE_OPERAND (fn, 0);
+  return coro_diagnose_throwing_fn (fn);
+}
+
 /*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
 
@@ -815,6 +852,28 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
       /* If no viable functions are found, o is a.  */
       if (!o || o == error_mark_node)
 	o = a;
+      else if (flag_exceptions && suspend_kind == FINAL_SUSPEND_POINT)
+	{
+	  /* We found an overload for co_await(), diagnose throwing cases.  */
+	  if (TREE_CODE (o) == TARGET_EXPR
+	      && coro_diagnose_throwing_final_aw_expr (o))
+	    return error_mark_node;
+
+	  /* We now know that the final suspend object is distinct from the
+	     final awaiter, so check for a non-throwing DTOR where needed.  */
+	  tree a_type = TREE_TYPE (a);
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (a_type))
+	    {
+	      tree dummy
+		= build_special_member_call (a, complete_dtor_identifier,
+					     NULL, a_type, LOOKUP_NORMAL,
+					     tf_none);
+	      dummy = dummy ? TREE_OPERAND (CALL_EXPR_FN (dummy), 0)
+			    : NULL_TREE;
+	      if (dummy && coro_diagnose_throwing_fn (dummy))
+		return error_mark_node;
+	    }
+	}
     }
   else
     o = a; /* This is most likely about to fail anyway.  */
@@ -957,6 +1016,27 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 
   if (!awrs_func || !awrs_call || awrs_call == error_mark_node)
     return error_mark_node;
+
+  if (flag_exceptions && suspend_kind == FINAL_SUSPEND_POINT)
+    {
+      if (coro_diagnose_throwing_fn (awrd_func))
+	return error_mark_node;
+      if (coro_diagnose_throwing_fn (awsp_func))
+	return error_mark_node;
+      if (coro_diagnose_throwing_fn (awrs_func))
+	return error_mark_node;
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (o_type))
+	{
+	  tree dummy
+	    = build_special_member_call (e_proxy, complete_dtor_identifier,
+					 NULL, o_type, LOOKUP_NORMAL,
+					 tf_none);
+	  dummy = dummy ? TREE_OPERAND (CALL_EXPR_FN (dummy), 0)
+			: NULL_TREE;
+	  if (dummy && coro_diagnose_throwing_fn (dummy))
+	    return error_mark_node;
+	}
+    }
 
   /* We now have three call expressions, in terms of the promise, handle and
      'e' proxies.  Save them in the await expression for later expansion.  */
@@ -2537,6 +2617,11 @@ build_init_or_final_await (location_t loc, bool is_final)
   tree setup_call
     = coro_build_promise_expression (current_function_decl, NULL, suspend_alt,
 				     loc, NULL, /*musthave=*/true);
+
+  /* Check for noexcept on the final_suspend call.  */
+  if (flag_exceptions && is_final && setup_call != error_mark_node
+      && coro_diagnose_throwing_final_aw_expr (setup_call))
+    return error_mark_node;
 
   /* So build the co_await for this */
   /* For initial/final suspends the call is "a" per [expr.await] 3.2.  */
