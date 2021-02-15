@@ -3913,8 +3913,10 @@ When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
 
+@item retain
+@cindex @code{retain} function attribute
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
-will also save the function from linker garbage collection.  To support
+will save the function from linker garbage collection.  To support
 this behavior, functions that have not been placed in specific sections
 (e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
 option), will be placed in new, unique sections.
@@ -7504,8 +7506,10 @@ When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
 class itself is instantiated.
 
+@item retain
+@cindex @code{retain} variable attribute
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
-will also save the variable from linker garbage collection.  To support
+will save the variable from linker garbage collection.  To support
 this behavior, variables that have not been placed in specific sections
 (e.g. by the @code{section} attribute, or the @code{-fdata-sections} option),
 will be placed in new, unique sections.

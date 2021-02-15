@@ -163,6 +163,7 @@ static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
 static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -328,6 +329,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_used_attribute, NULL },
   { "unused",                 0, 0, false, false, false, false,
 			      handle_unused_attribute, NULL },
+  { "retain",                 0, 0, true,  false, false, false,
+			      handle_retain_attribute, NULL },
   { "externally_visible",     0, 0, true,  false, false, false,
 			      handle_externally_visible_attribute, NULL },
   { "no_reorder",	      0, 0, true, false, false, false,
@@ -1559,6 +1562,28 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TREE_USED (*node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "retain" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_retain_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (SUPPORTS_SHF_GNU_RETAIN
+      && (TREE_CODE (node) == FUNCTION_DECL
+	  || (VAR_P (node) && TREE_STATIC (node))))
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;
