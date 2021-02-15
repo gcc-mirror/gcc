@@ -1833,6 +1833,7 @@ struct param_info
   tree orig_type;    /* The original type of the parm (not as passed).  */
   bool by_ref;       /* Was passed by reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
+  bool rv_ref;       /* Was an rvalue ref.  */
   bool trivial_dtor; /* The frame type has a trivial DTOR.  */
   bool this_ptr;     /* Is 'this' */
   bool lambda_cobj;  /* Lambda capture object */
@@ -4139,7 +4140,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (actual_type == NULL_TREE)
 	    actual_type = error_mark_node;
 	  parm.orig_type = actual_type;
-	  parm.by_ref = parm.pt_ref = false;
+	  parm.by_ref = parm.pt_ref = parm.rv_ref =  false;
 	  if (TREE_CODE (actual_type) == REFERENCE_TYPE)
 	    {
 	      /* If the user passes by reference, then we will save the
@@ -4147,8 +4148,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		 [dcl.fct.def.coroutine] / 13, if the lifetime of the
 		 referenced item ends and then the coroutine is resumed,
 		 we have UB; well, the user asked for it.  */
-	      actual_type = build_pointer_type (TREE_TYPE (actual_type));
-	      parm.pt_ref = true;
+	      if (TYPE_REF_IS_RVALUE (actual_type))
+		parm.rv_ref = true;
+	      else
+		parm.pt_ref = true;
 	    }
 	  else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
 	    parm.by_ref = true;
@@ -4524,16 +4527,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	      tree this_ref = build1 (INDIRECT_REF, ct, arg);
 	      tree rt = cp_build_reference_type (ct, false);
 	      this_ref = convert_to_reference (rt, this_ref, CONV_STATIC,
-					       LOOKUP_NORMAL , NULL_TREE,
+					       LOOKUP_NORMAL, NULL_TREE,
 					       tf_warning_or_error);
 	      vec_safe_push (promise_args, this_ref);
 	    }
-	  else if (parm.by_ref)
-	    vec_safe_push (promise_args, fld_idx);
+	  else if (parm.rv_ref)
+	    vec_safe_push (promise_args, rvalue(fld_idx));
 	  else
-	    vec_safe_push (promise_args, arg);
+	    vec_safe_push (promise_args, fld_idx);
 
-	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
+	  if (parm.rv_ref || parm.pt_ref)
+	    /* Initialise the frame reference field directly.  */
+	    r = build_modify_expr (fn_start, TREE_OPERAND (fld_idx, 0),
+				   parm.frame_type, INIT_EXPR,
+				   DECL_SOURCE_LOCATION (arg), arg,
+				   DECL_ARG_TYPE (arg));
+	  else if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
 	      if (CLASS_TYPE_P (parm.frame_type)
