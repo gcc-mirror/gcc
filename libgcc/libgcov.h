@@ -409,6 +409,19 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
+#if HAVE_SYS_MMAN_H
+
+/* Allocate LENGTH with mmap function.  */
+
+static inline void *
+malloc_mmap (size_t length)
+{
+  return mmap (NULL, length, PROT_READ | PROT_WRITE,
+	       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+}
+
+#endif
+
 /* Allocate gcov_kvp from statically pre-allocated pool,
    or use heap otherwise.  */
 
@@ -424,9 +437,7 @@ allocate_gcov_kvp (void)
   if (__gcov_kvp_dynamic_pool == NULL
       || __gcov_kvp_dynamic_pool_index >= __gcov_kvp_dynamic_pool_size)
     {
-      void *ptr = mmap (NULL, MMAP_CHUNK_SIZE,
-			PROT_READ | PROT_WRITE,
-			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+      void *ptr = malloc_mmap (MMAP_CHUNK_SIZE);
       if (ptr != MAP_FAILED)
 	{
 	  __gcov_kvp_dynamic_pool = ptr;
