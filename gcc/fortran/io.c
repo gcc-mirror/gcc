@@ -1762,6 +1762,13 @@ resolve_tag_format (gfc_expr *e)
      It may be assigned an Hollerith constant.  */
   if (e->ts.type != BT_CHARACTER)
     {
+      if (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS
+	  || e->ts.type == BT_VOID)
+	{
+	  gfc_error ("Non-character non-Hollerith in FORMAT tag at %L",
+		     &e->where);
+	  return false;
+	}
       if (!gfc_notify_std (GFC_STD_LEGACY, "Non-character in FORMAT tag "
 			   "at %L", &e->where))
 	return false;
