@@ -4047,6 +4047,17 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       TREE_OPERAND (body_start, 0) = push_stmt_list ();
     }
 
+  /* If the original function has a return value with a non-trivial DTOR
+     and the body contains a var with a DTOR that might throw, the decl is
+     marked "throwing_cleanup".
+     We do not [in the ramp, which is synthesised here], use any body var
+     types with DTORs that might throw.
+     The original body is transformed into the actor function which only
+     contains void returns, and is also wrapped in a try-catch block.
+     So (a) the 'throwing_cleanup' is not correct for the ramp and (b) we do
+     not need to transfer it to the actor which only contains void returns.  */
+  cp_function_chain->throwing_cleanup = false;
+
   /* Create the coro frame type, as far as it can be known at this stage.
      1. Types we already know.  */
 
