@@ -611,7 +611,7 @@ static char *
 resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
 {
   char *q;
-  int op;
+  int op, op_inout;
   tree t;
 
   /* Collect the operand name.  */
@@ -624,11 +624,14 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
   *q = '\0';
 
   /* Resolve the name to a number.  */
-  for (op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
+  for (op_inout = op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
     {
       tree name = TREE_PURPOSE (TREE_PURPOSE (t));
       if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
 	goto found;
+      tree constraint = TREE_VALUE (TREE_PURPOSE (t));
+      if (constraint && strchr (TREE_STRING_POINTER (constraint), '+') != NULL)
+        op_inout++;
     }
   for (t = inputs; t ; t = TREE_CHAIN (t), op++)
     {
@@ -636,6 +639,7 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
       if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
 	goto found;
     }
+  op += op_inout;
   for (t = labels; t ; t = TREE_CHAIN (t), op++)
     {
       tree name = TREE_PURPOSE (t);

@@ -10680,16 +10680,23 @@ should use @samp{+} constraint modifier meaning that the operand is
 input and output one.  With this modifier you will have the correct
 values on all possible paths from the @code{asm goto}.
 
-To reference a label in the assembler template,
-prefix it with @samp{%l} (lowercase @samp{L}) followed 
-by its (zero-based) position in @var{GotoLabels} plus the number of input 
-operands.  For example, if the @code{asm} has three inputs and references two 
-labels, refer to the first label as @samp{%l3} and the second as @samp{%l4}).
+To reference a label in the assembler template, prefix it with
+@samp{%l} (lowercase @samp{L}) followed by its (zero-based) position
+in @var{GotoLabels} plus the number of input and output operands.
+Output operand with constraint modifier @samp{+} is counted as two
+operands because it is considered as one output and one input operand.
+For example, if the @code{asm} has three inputs, one output operand
+with constraint modifier @samp{+} and one output operand with
+constraint modifier @samp{=} and references two labels, refer to the
+first label as @samp{%l6} and the second as @samp{%l7}).
 
-Alternately, you can reference labels using the actual C label name enclosed
-in brackets.  For example, to reference a label named @code{carry}, you can
-use @samp{%l[carry]}.  The label must still be listed in the @var{GotoLabels}
-section when using this approach.
+Alternately, you can reference labels using the actual C label name
+enclosed in brackets.  For example, to reference a label named
+@code{carry}, you can use @samp{%l[carry]}.  The label must still be
+listed in the @var{GotoLabels} section when using this approach.  It
+is better to use the named references for labels as in this case you
+can avoid counting input and output operands and special treatment of
+output operands with constraint modifier @samp{+}.
 
 Here is an example of @code{asm goto} for i386:
 
