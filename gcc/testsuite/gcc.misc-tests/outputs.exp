@@ -192,7 +192,7 @@ proc outest { test sources opts dirs outputs } {
 	# collect2 may create <execname>.cdtor* files in -save-temps link tests,
 	# ??? without regard to aux output naming conventions.
 	# Limit this exception to targets that define EH_FRAME_THROUGH_COLLECT2.
-	if { !(([istarget powerpc*-*-aix*] || [is_target hppa*-*-hpux*])
+	if { !(([istarget powerpc*-*-aix*] || [istarget hppa*-*-hpux*])
 	       && ([string match "*.cdtor.*" $f]
 		   || [string match "*.gcc_args" $f])) } {
 	    lappend outb $f

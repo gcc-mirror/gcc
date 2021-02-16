@@ -1,3 +1,16 @@
+2021-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__thread_yield()): Check
+	_GLIBCXX_HAS_GTHREADS before using __gthread_yield.
+	(__thread_relax()): Use __thread_yield() instead of repeating
+	the preprocessor checks for __gthread_yield.
+
+2021-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mutex (once_flag::_M_activate()): Add explicit
+	return statement for passive case.
+	(once_flag::_M_finish(bool)): Use reserved name for parameter.
+
 2021-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99096

@@ -5854,6 +5854,8 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 	part_ref  = ref;
       else if (ref->type == REF_SUBSTRING)
 	return false;
+      else if (ref->type == REF_INQUIRY)
+	return false;
       else if (ref->u.ar.type != AR_ELEMENT)
 	ar = &ref->u.ar;
     }

@@ -1,3 +1,122 @@
+2021-02-15  Maya Rashish  <coypu@sdf.org>
+
+	* config/aarch64/aarch64.c (aarch64_init_builtins):
+	Call SUBTARGET_INIT_BUILTINS.
+
+2021-02-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/98872
+	* init-regs.c (initialize_uninitialized_regs): Skip initialization
+	if CONST0_RTX is NULL.
+
+2021-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98863
+	* rtl-ssa/functions.h (function_info::bb_live_out_info): Delete.
+	(function_info::build_info): Turn into a declaration, moving the
+	definition to internals.h.
+	(function_info::bb_walker): Declare.
+	(function_info::create_reg_use): Likewise.
+	(function_info::calculate_potential_phi_regs): Take a build_info
+	parameter.
+	(function_info::place_phis, function_info::create_ebbs): Declare.
+	(function_info::calculate_ebb_live_in_for_debug): Likewise.
+	(function_info::populate_backedge_phis): Delete.
+	(function_info::start_block, function_info::end_block): Declare.
+	(function_info::populate_phi_inputs): Delete.
+	(function_info::m_potential_phi_regs): Move information to build_info.
+	* rtl-ssa/internals.h: New file.
+	(function_info::bb_phi_info): New class.
+	(function_info::build_info): Moved from functions.h.
+	Add a constructor and destructor.
+	(function_info::build_info::ebb_use): Delete.
+	(function_info::build_info::ebb_def): Likewise.
+	(function_info::build_info::bb_live_out): Likewise.
+	(function_info::build_info::tmp_ebb_live_in_for_debug): New variable.
+	(function_info::build_info::potential_phi_regs): Likewise.
+	(function_info::build_info::potential_phi_regs_for_debug): Likewise.
+	(function_info::build_info::ebb_def_regs): Likewise.
+	(function_info::build_info::bb_phis): Likewise.
+	(function_info::build_info::bb_mem_live_out): Likewise.
+	(function_info::build_info::bb_to_rpo): Likewise.
+	(function_info::build_info::def_stack): Likewise.
+	(function_info::build_info::old_def_stack_limit): Likewise.
+	* rtl-ssa/internals.inl (function_info::build_info::record_reg_def):
+	Remove the regno argument.  Push the previous definition onto the
+	definition stack where necessary.
+	* rtl-ssa/accesses.cc: Include internals.h.
+	* rtl-ssa/changes.cc: Likewise.
+	* rtl-ssa/blocks.cc: Likewise.
+	(function_info::build_info::build_info): Define.
+	(function_info::build_info::~build_info): Likewise.
+	(function_info::bb_walker): New class.
+	(function_info::bb_walker::bb_walker): Define.
+	(function_info::add_live_out_use): Convert a logarithmic-complexity
+	test into a linear one.  Allow the same definition to be passed
+	multiple times.
+	(function_info::calculate_potential_phi_regs): Moved from
+	functions.cc.  Take a build_info parameter and store the
+	information there instead.
+	(function_info::place_phis): New function.
+	(function_info::add_entry_block_defs): Update call to record_reg_def.
+	(function_info::calculate_ebb_live_in_for_debug): New function.
+	(function_info::add_phi_nodes): Use bb_phis to decide which
+	registers need phi nodes and initialize ebb_def_regs accordingly.
+	Do not add degenerate phis here.
+	(function_info::add_artificial_accesses): Use create_reg_use.
+	Assert that all definitions are listed in the DF LR sets.
+	Update call to record_reg_def.
+	(function_info::record_block_live_out): Record live-out register
+	values in the phis of successor blocks.  Use the live-out set
+	when processing the last block in an EBB, instead of always
+	using the live-in sets of successor blocks.  AND the live sets
+	with the set of registers that have been defined in the EBB,
+	rather than with all potential phi registers.  Cope correctly
+	with branches back to the start of the current EBB.
+	(function_info::start_block): New function.
+	(function_info::end_block): Likewise.
+	(function_info::populate_phi_inputs): Likewise.
+	(function_info::create_ebbs): Likewise.
+	(function_info::process_all_blocks): Rewrite into a multi-phase
+	process.
+	* rtl-ssa/functions.cc: Include internals.h.
+	(function_info::calculate_potential_phi_regs): Move to blocks.cc.
+	(function_info::init_function_data): Remove caller.
+	* rtl-ssa/insns.cc: Include internals.h
+	(function_info::create_reg_use): New function.  Lazily any
+	degenerate phis needed by the linear RPO view.
+	(function_info::record_use): Use create_reg_use.  When processing
+	debug uses, use potential_phi_regs and test it before checking
+	whether the register is live on entry to the current EBB.  Lazily
+	calculate ebb_live_in_for_debug.
+	(function_info::record_call_clobbers): Update call to record_reg_def.
+	(function_info::record_def): Likewise.
+
+2021-02-15  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (init_asm_output): Free output of
+	gen_command_line_string function.
+	(process_options): Likewise.
+
+2021-02-15  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: Add 2 missing Param keywords.
+
+2021-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-core.c (df_worklist_dataflow_doublequeue): Use proper cast.
+
+2021-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99079
+	* match.pd (A % (pow2pcst << N) -> A & ((pow2pcst << N) - 1)): Remove
+	useless tree_nop_conversion_p (type, TREE_TYPE (@3)) check.  Instead
+	require both type and TREE_TYPE (@1) to be integral types and either
+	type having smaller or equal precision, or TREE_TYPE (@1) being
+	unsigned type, or type being signed type.  If TREE_TYPE (@1)
+	doesn't have wrapping overflow, perform the subtraction of one in
+	unsigned type.
+
 2021-02-14  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener  <rguether@suse.de>
 
