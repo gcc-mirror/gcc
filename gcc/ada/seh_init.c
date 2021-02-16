@@ -64,8 +64,8 @@ extern struct Exception_Data storage_error;
 extern struct Exception_Data tasking_error;
 extern struct Exception_Data _abort_signal;
 
-#define Raise_From_Signal_Handler ada__exceptions__raise_from_signal_handler
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *)
+#define Raise_From_Signal_Handler __gnat_raise_from_signal_handler
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const void *)
   ATTRIBUTE_NORETURN;
 
 

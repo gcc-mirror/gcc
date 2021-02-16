@@ -542,17 +542,17 @@ typedef struct
   /* ABI header, maximally aligned. */
 } _GNAT_Exception;
 
-/* The two constants below are specific ttype identifiers for special
+/* The three constants below are specific ttype identifiers for special
    exception ids.  Their type should match what a-exexpr exports.  */
 
-extern const int __gnat_others_value;
-#define GNAT_OTHERS      ((_Unwind_Ptr) &__gnat_others_value)
+extern const char __gnat_others_value;
+#define GNAT_OTHERS ((_Unwind_Ptr) &__gnat_others_value)
 
-extern const int __gnat_all_others_value;
-#define GNAT_ALL_OTHERS  ((_Unwind_Ptr) &__gnat_all_others_value)
+extern const char __gnat_all_others_value;
+#define GNAT_ALL_OTHERS ((_Unwind_Ptr) &__gnat_all_others_value)
 
-extern const int __gnat_unhandled_others_value;
-#define GNAT_UNHANDLED_OTHERS  ((_Unwind_Ptr) &__gnat_unhandled_others_value)
+extern const char __gnat_unhandled_others_value;
+#define GNAT_UNHANDLED_OTHERS ((_Unwind_Ptr) &__gnat_unhandled_others_value)
 
 /* Describe the useful region data associated with an unwind context.  */
 
