@@ -1,3 +1,7 @@
+2021-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-core.c (df_worklist_dataflow_doublequeue): Use proper cast.
+
 2021-02-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to
