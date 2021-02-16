@@ -1,3 +1,14 @@
+2021-02-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/98872
+	* gcc.target/powerpc/pr98872.c: New test.
+
+2021-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99079
+	* gcc.dg/fold-modpow2-2.c: New test.
+	* gcc.c-torture/execute/pr99079.c: New test.
+
 2021-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/98439
