@@ -28,11 +28,33 @@
 namespace Rust {
 namespace TyTy {
 
+/* Rules specify how to unify two Ty. For example, the result of unifying the
+   two tuples (u64, A) and (B, i64) would be (u64, i64).
+
+   Performing a unification requires a double dispatch. To illustrate, suppose
+   we want to unify `ty1` and `ty2`. Here's what it looks like:
+     1. The caller calls `ty1.unify(ty2)`. This is the first dispatch.
+     2. `ty1` creates a rule specific to its type(e.g. TupleRules).
+     3. The rule calls `ty2.accept_vis(rule)`. This is the second dispatch.
+     4. `ty2` calls `rule.visit(*this)`, which will method-overload to the
+	      correct implementation at compile time.
+
+   The nice thing about Rules is that they seperate unification logic from the
+   representation of Ty. To support unifying a new Ty, implement its
+   `accept_vis` and `unify` method to pass the unification request to Rules.
+   Then, create a new `XXXRules` class and implement one `visit` method for
+   every Ty it can unify with. */
 class BaseRules : public TyVisitor
 {
 public:
   virtual ~BaseRules () {}
 
+  /* Unify two ty. Returns a pointer to the newly-created unified ty, or nullptr
+     if the two types cannot be unified. The caller is responsible for releasing
+     the memory of the returned ty.
+
+     This method is meant to be used internally by Ty. If you're trying to unify
+     two ty, you can simply call `unify` on ty themselves. */
   BaseType *unify (BaseType *other)
   {
     other->accept_vis (*this);
@@ -194,7 +216,13 @@ protected:
   Analysis::Mappings *mappings;
   Resolver::TypeCheckContext *context;
 
+  /* Pointer to the Ty that created this rule. */
   BaseType *base;
+
+  /* Temporary storage for the result of a unification.
+     We could return the result directly instead of storing it in the rule
+     object, but that involves modifying the visitor pattern to accommodate
+     the return value, which is too complex. */
   BaseType *resolved;
 };
 

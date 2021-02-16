@@ -63,16 +63,22 @@ public:
 
   void set_ty_ref (HirId id) { ty_ref = id; }
 
+  /* Visitor pattern for double dispatch. BaseRules implements TyVisitor. */
   virtual void accept_vis (TyVisitor &vis) = 0;
 
   virtual std::string as_string () const = 0;
 
+  /* Unify two types. Returns a pointer to the newly-created unified ty, or
+     nullptr if the two ty cannot be unified. The caller is responsible for
+     releasing the memory of the returned ty. */
   virtual BaseType *unify (BaseType *other) = 0;
 
   virtual bool is_unit () const { return kind == TypeKind::UNIT; }
 
   TypeKind get_kind () const { return kind; }
 
+  /* Returns a pointer to a clone of this. The caller is responsible for
+   * releasing the memory of the returned ty. */
   virtual BaseType *clone () = 0;
 
   std::set<HirId> get_combined_refs () { return combined; }
@@ -81,7 +87,7 @@ public:
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
-	  std::set<HirId> refs = std::set<HirId> ())
+	    std::set<HirId> refs = std::set<HirId> ())
     : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs)
   {}
 
@@ -323,7 +329,8 @@ public:
   FnType (HirId ref, HirId ty_ref,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::FNDEF, refs), params (params), type (type)
+    : BaseType (ref, ty_ref, TypeKind::FNDEF, refs), params (params),
+      type (type)
   {}
 
   void accept_vis (TyVisitor &vis) override;
