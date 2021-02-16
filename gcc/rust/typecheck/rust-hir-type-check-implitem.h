@@ -31,7 +31,7 @@ namespace Resolver {
 class TypeCheckTopLevelImplItem : public TypeCheckBase
 {
 public:
-  static void Resolve (HIR::InherentImplItem *item, TyTy::TyBase *self)
+  static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
   {
     TypeCheckTopLevelImplItem resolver (self);
     item->accept_vis (resolver);
@@ -39,8 +39,8 @@ public:
 
   void visit (HIR::ConstantItem &constant)
   {
-    TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::TyBase *expr_type
+    TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+    TyTy::BaseType *expr_type
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->combine (expr_type));
@@ -48,7 +48,7 @@ public:
 
   void visit (HIR::Function &function)
   {
-    TyTy::TyBase *ret_type = nullptr;
+    TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
@@ -65,13 +65,13 @@ public:
 	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
       }
 
-    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
     for (auto &param : function.function_params)
       {
 	// get the name as well required for later on
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
-	  std::pair<HIR::Pattern *, TyTy::TyBase *> (param.get_param_name (),
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
 						     param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
@@ -84,7 +84,7 @@ public:
 
   void visit (HIR::Method &method)
   {
-    TyTy::TyBase *ret_type = nullptr;
+    TyTy::BaseType *ret_type = nullptr;
     if (!method.has_function_return_type ())
       ret_type = new TyTy::UnitType (method.get_mappings ().get_hirid ());
     else
@@ -104,7 +104,7 @@ public:
       }
 
     // hold all the params to the fndef
-    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
 
     // add the self param at the front
     HIR::SelfParam &self_param = method.get_self_param ();
@@ -115,14 +115,14 @@ public:
 				    std::unique_ptr<HIR::Pattern> (nullptr));
     context->insert_type (self_param.get_mappings (), self->clone ());
     params.push_back (
-      std::pair<HIR::Pattern *, TyTy::TyBase *> (self_pattern, self->clone ()));
+      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern, self->clone ()));
 
     for (auto &param : method.get_function_params ())
       {
 	// get the name as well required for later on
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
-	  std::pair<HIR::Pattern *, TyTy::TyBase *> (param.get_param_name (),
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
 						     param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
@@ -134,16 +134,16 @@ public:
   }
 
 private:
-  TypeCheckTopLevelImplItem (TyTy::TyBase *self) : TypeCheckBase (), self (self)
+  TypeCheckTopLevelImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self)
   {}
 
-  TyTy::TyBase *self;
+  TyTy::BaseType *self;
 };
 
 class TypeCheckImplItem : public TypeCheckBase
 {
 public:
-  static void Resolve (HIR::InherentImplItem *item, TyTy::TyBase *self)
+  static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
   {
     TypeCheckImplItem resolver (self);
     item->accept_vis (resolver);
@@ -151,7 +151,7 @@ public:
 
   void visit (HIR::Function &function)
   {
-    TyTy::TyBase *lookup;
+    TyTy::BaseType *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       {
 	rust_error_at (function.get_locus (), "failed to lookup function type");
@@ -183,7 +183,7 @@ public:
 
   void visit (HIR::Method &method)
   {
-    TyTy::TyBase *lookup;
+    TyTy::BaseType *lookup;
     if (!context->lookup_type (method.get_mappings ().get_hirid (), &lookup))
       {
 	rust_error_at (method.get_locus (), "failed to lookup function type");
@@ -215,9 +215,9 @@ public:
   }
 
 private:
-  TypeCheckImplItem (TyTy::TyBase *self) : TypeCheckBase (), self (self) {}
+  TypeCheckImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self) {}
 
-  TyTy::TyBase *self;
+  TyTy::BaseType *self;
 };
 
 } // namespace Resolver

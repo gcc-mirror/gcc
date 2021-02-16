@@ -125,7 +125,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  return;
 	}
 
-      TyTy::TyBase *self_type = nullptr;
+      TyTy::BaseType *self_type = nullptr;
       if (!ctx->get_tyctx ()->lookup_type (
 	    expr.get_receiver ()->get_mappings ().get_hirid (), &self_type))
 	{

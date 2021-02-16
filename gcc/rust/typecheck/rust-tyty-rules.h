@@ -33,7 +33,7 @@ class BaseRules : public TyVisitor
 public:
   virtual ~BaseRules () {}
 
-  TyBase *combine (TyBase *other)
+  BaseType *combine (BaseType *other)
   {
     other->accept_vis (*this);
     if (resolved != nullptr)
@@ -50,7 +50,7 @@ public:
 	  {
 	    for (auto &ref : resolved->get_combined_refs ())
 	      {
-		TyTy::TyBase *ref_tyty = nullptr;
+		TyTy::BaseType *ref_tyty = nullptr;
 		bool ok = context->lookup_type (ref, &ref_tyty);
 		if (!ok)
 		  continue;
@@ -185,7 +185,7 @@ public:
   }
 
 protected:
-  BaseRules (TyBase *base)
+  BaseRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
       context (Resolver::TypeCheckContext::get ()), base (base),
       resolved (new ErrorType (base->get_ref (), base->get_ref ()))
@@ -194,8 +194,8 @@ protected:
   Analysis::Mappings *mappings;
   Resolver::TypeCheckContext *context;
 
-  TyBase *base;
-  TyBase *resolved;
+  BaseType *base;
+  BaseType *resolved;
 };
 
 class InferRules : public BaseRules
@@ -423,7 +423,7 @@ public:
 
   void visit (StructFieldType &type)
   {
-    TyBase *ty = base->get_field_type ()->combine (type.get_field_type ());
+    BaseType *ty = base->get_field_type ()->combine (type.get_field_type ());
     if (ty == nullptr)
       return;
 
@@ -474,7 +474,7 @@ public:
 	return;
       }
 
-    // FIXME add an abstract method for is_equal on TyBase
+    // FIXME add an abstract method for is_equal on BaseType
     for (size_t i = 0; i < base->num_params (); i++)
       {
 	auto a = base->param_at (i).second;
@@ -670,7 +670,7 @@ public:
 	TyTy::StructFieldType *base_field = base->get_field (i);
 	TyTy::StructFieldType *other_field = type.get_field (i);
 
-	TyBase *combined = base_field->combine (other_field);
+	BaseType *combined = base_field->combine (other_field);
 	if (combined == nullptr)
 	  {
 	    BaseRules::visit (type);
@@ -704,10 +704,10 @@ public:
     std::vector<HirId> fields;
     for (size_t i = 0; i < base->num_fields (); i++)
       {
-	TyBase *bo = base->get_field (i);
-	TyBase *fo = type.get_field (i);
+	BaseType *bo = base->get_field (i);
+	BaseType *fo = type.get_field (i);
 
-	TyBase *combined = bo->combine (fo);
+	BaseType *combined = bo->combine (fo);
 	if (combined == nullptr)
 	  {
 	    BaseRules::visit (type);
@@ -806,7 +806,7 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    TyTy::TyBase *base_resolved = base_type->combine (other_base_type);
+    TyTy::BaseType *base_resolved = base_type->combine (other_base_type);
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
 				  base_resolved->get_ref ());
   }

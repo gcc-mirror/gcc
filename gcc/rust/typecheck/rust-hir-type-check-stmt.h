@@ -30,7 +30,7 @@ namespace Resolver {
 class TypeCheckStmt : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Stmt *stmt, bool inside_loop)
+  static TyTy::BaseType *Resolve (HIR::Stmt *stmt, bool inside_loop)
   {
     TypeCheckStmt resolver (inside_loop);
     stmt->accept_vis (resolver);
@@ -51,7 +51,7 @@ public:
   {
     infered = new TyTy::UnitType (stmt.get_mappings ().get_hirid ());
 
-    TyTy::TyBase *init_expr_ty = nullptr;
+    TyTy::BaseType *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())
       {
 	init_expr_ty
@@ -65,7 +65,7 @@ public:
 	init_expr_ty->append_reference (ref);
       }
 
-    TyTy::TyBase *specified_ty = nullptr;
+    TyTy::BaseType *specified_ty = nullptr;
     if (stmt.has_type ())
       specified_ty = TypeCheckType::Resolve (stmt.get_type ());
 
@@ -110,7 +110,7 @@ private:
     : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
   {}
 
-  TyTy::TyBase *infered;
+  TyTy::BaseType *infered;
   bool inside_loop;
 };
 

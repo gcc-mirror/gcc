@@ -50,10 +50,10 @@ enum TypeKind
 };
 
 class TyVisitor;
-class TyBase
+class BaseType
 {
 public:
-  virtual ~TyBase () {}
+  virtual ~BaseType () {}
 
   HirId get_ref () const { return ref; }
 
@@ -67,20 +67,20 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual TyBase *combine (TyBase *other) = 0;
+  virtual BaseType *combine (BaseType *other) = 0;
 
   virtual bool is_unit () const { return kind == TypeKind::UNIT; }
 
   TypeKind get_kind () const { return kind; }
 
-  virtual TyBase *clone () = 0;
+  virtual BaseType *clone () = 0;
 
   std::set<HirId> get_combined_refs () { return combined; }
 
   void append_reference (HirId id) { combined.insert (id); }
 
 protected:
-  TyBase (HirId ref, HirId ty_ref, TypeKind kind,
+  BaseType (HirId ref, HirId ty_ref, TypeKind kind,
 	  std::set<HirId> refs = std::set<HirId> ())
     : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs)
   {}
@@ -92,7 +92,7 @@ protected:
   std::set<HirId> combined;
 };
 
-class InferType : public TyBase
+class InferType : public BaseType
 {
 public:
   enum InferTypeKind
@@ -104,12 +104,12 @@ public:
 
   InferType (HirId ref, InferTypeKind infer_kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::INFER, refs), infer_kind (infer_kind)
+    : BaseType (ref, ref, TypeKind::INFER, refs), infer_kind (infer_kind)
   {}
 
   InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::INFER, refs), infer_kind (infer_kind)
+    : BaseType (ref, ty_ref, TypeKind::INFER, refs), infer_kind (infer_kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -118,9 +118,9 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
 
@@ -128,15 +128,15 @@ private:
   InferTypeKind infer_kind;
 };
 
-class ErrorType : public TyBase
+class ErrorType : public BaseType
 {
 public:
   ErrorType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::ERROR, refs)
+    : BaseType (ref, ref, TypeKind::ERROR, refs)
   {}
 
   ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::ERROR, refs)
+    : BaseType (ref, ty_ref, TypeKind::ERROR, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -145,20 +145,20 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class UnitType : public TyBase
+class UnitType : public BaseType
 {
 public:
   UnitType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::UNIT, refs)
+    : BaseType (ref, ref, TypeKind::UNIT, refs)
   {}
 
   UnitType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::UNIT, refs)
+    : BaseType (ref, ty_ref, TypeKind::UNIT, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -167,22 +167,22 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class StructFieldType : public TyBase
+class StructFieldType : public BaseType
 {
 public:
-  StructFieldType (HirId ref, std::string name, TyBase *ty,
+  StructFieldType (HirId ref, std::string name, BaseType *ty,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::FIELD, refs), name (name), ty (ty)
+    : BaseType (ref, ref, TypeKind::FIELD, refs), name (name), ty (ty)
   {}
 
-  StructFieldType (HirId ref, HirId ty_ref, std::string name, TyBase *ty,
+  StructFieldType (HirId ref, HirId ty_ref, std::string name, BaseType *ty,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::FIELD, refs), name (name), ty (ty)
+    : BaseType (ref, ty_ref, TypeKind::FIELD, refs), name (name), ty (ty)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -191,30 +191,30 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   std::string get_name () const { return name; }
 
-  TyBase *get_field_type () { return ty; }
+  BaseType *get_field_type () { return ty; }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   std::string name;
-  TyBase *ty;
+  BaseType *ty;
 };
 
-class TupleType : public TyBase
+class TupleType : public BaseType
 {
 public:
   TupleType (HirId ref, std::vector<HirId> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::TUPLE, refs), fields (fields)
+    : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
   TupleType (HirId ref, HirId ty_ref, std::vector<HirId> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
+    : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -223,15 +223,15 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   size_t num_fields () const { return fields.size (); }
 
-  TyBase *get_field (size_t index) const;
+  BaseType *get_field (size_t index) const;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
-  void iterate_fields (std::function<bool (TyBase *)> cb) const
+  void iterate_fields (std::function<bool (BaseType *)> cb) const
   {
     for (size_t i = 0; i < num_fields (); i++)
       {
@@ -244,20 +244,20 @@ private:
   std::vector<HirId> fields;
 };
 
-class ADTType : public TyBase
+class ADTType : public BaseType
 {
 public:
   ADTType (HirId ref, std::string identifier,
 	   std::vector<StructFieldType *> fields,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::ADT, refs), identifier (identifier),
+    : BaseType (ref, ref, TypeKind::ADT, refs), identifier (identifier),
       fields (fields)
   {}
 
   ADTType (HirId ref, HirId ty_ref, std::string identifier,
 	   std::vector<StructFieldType *> fields,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::ADT, refs), identifier (identifier),
+    : BaseType (ref, ty_ref, TypeKind::ADT, refs), identifier (identifier),
       fields (fields)
   {}
 
@@ -267,7 +267,7 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -292,7 +292,7 @@ public:
     return nullptr;
   }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
   std::vector<StructFieldType *> &get_fields () { return fields; }
   const std::vector<StructFieldType *> &get_fields () const { return fields; }
@@ -311,62 +311,62 @@ private:
   std::vector<StructFieldType *> fields;
 };
 
-class FnType : public TyBase
+class FnType : public BaseType
 {
 public:
-  FnType (HirId ref, std::vector<std::pair<HIR::Pattern *, TyBase *> > params,
-	  TyBase *type, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::FNDEF, refs), params (std::move (params)),
+  FnType (HirId ref, std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  BaseType *type, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::FNDEF, refs), params (std::move (params)),
       type (type)
   {}
 
   FnType (HirId ref, HirId ty_ref,
-	  std::vector<std::pair<HIR::Pattern *, TyBase *> > params,
-	  TyBase *type, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::FNDEF, refs), params (params), type (type)
+	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  BaseType *type, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::FNDEF, refs), params (params), type (type)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *return_type () { return type; }
+  BaseType *return_type () { return type; }
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   size_t num_params () const { return params.size (); }
 
-  std::vector<std::pair<HIR::Pattern *, TyBase *> > &get_params ()
+  std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
   {
     return params;
   }
 
-  std::pair<HIR::Pattern *, TyBase *> &param_at (size_t idx)
+  std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx)
   {
     return params[idx];
   }
 
-  TyBase *get_return_type () { return type; }
+  BaseType *get_return_type () { return type; }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
-  std::vector<std::pair<HIR::Pattern *, TyBase *> > params;
-  TyBase *type;
+  std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
+  BaseType *type;
 };
 
-class ArrayType : public TyBase
+class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, size_t capacity, TyBase *type,
+  ArrayType (HirId ref, size_t capacity, BaseType *type,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
+    : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type_id (type->get_ref ())
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, size_t capacity, TyBase *type,
+  ArrayType (HirId ref, HirId ty_ref, size_t capacity, BaseType *type,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
+    : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type_id (type->get_ref ())
   {}
 
@@ -374,42 +374,42 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   size_t get_capacity () const { return capacity; }
 
   HirId element_type_ref () const { return element_type_id; }
 
-  TyBase *get_type () const;
+  BaseType *get_type () const;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   size_t capacity;
   HirId element_type_id;
 };
 
-class BoolType : public TyBase
+class BoolType : public BaseType
 {
 public:
   BoolType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::BOOL, refs)
+    : BaseType (ref, ref, TypeKind::BOOL, refs)
   {}
 
   BoolType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::BOOL, refs)
+    : BaseType (ref, ty_ref, TypeKind::BOOL, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class IntType : public TyBase
+class IntType : public BaseType
 {
 public:
   enum IntKind
@@ -422,29 +422,29 @@ public:
   };
 
   IntType (HirId ref, IntKind kind, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::INT, refs), int_kind (kind)
+    : BaseType (ref, ref, TypeKind::INT, refs), int_kind (kind)
   {}
 
   IntType (HirId ref, HirId ty_ref, IntKind kind,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::INT, refs), int_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::INT, refs), int_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   IntKind get_kind () const { return int_kind; }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   IntKind int_kind;
 };
 
-class UintType : public TyBase
+class UintType : public BaseType
 {
 public:
   enum UintKind
@@ -457,29 +457,29 @@ public:
   };
 
   UintType (HirId ref, UintKind kind, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::UINT, refs), uint_kind (kind)
+    : BaseType (ref, ref, TypeKind::UINT, refs), uint_kind (kind)
   {}
 
   UintType (HirId ref, HirId ty_ref, UintKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::UINT, refs), uint_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::UINT, refs), uint_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   UintKind get_kind () const { return uint_kind; }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   UintKind uint_kind;
 };
 
-class FloatType : public TyBase
+class FloatType : public BaseType
 {
 public:
   enum FloatKind
@@ -490,77 +490,77 @@ public:
 
   FloatType (HirId ref, FloatKind kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::FLOAT, refs), float_kind (kind)
+    : BaseType (ref, ref, TypeKind::FLOAT, refs), float_kind (kind)
   {}
 
   FloatType (HirId ref, HirId ty_ref, FloatKind kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::FLOAT, refs), float_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::FLOAT, refs), float_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
   FloatKind get_kind () const { return float_kind; }
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   FloatKind float_kind;
 };
 
-class USizeType : public TyBase
+class USizeType : public BaseType
 {
 public:
   USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::USIZE)
+    : BaseType (ref, ref, TypeKind::USIZE)
   {}
 
   USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::USIZE)
+    : BaseType (ref, ty_ref, TypeKind::USIZE)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class ISizeType : public TyBase
+class ISizeType : public BaseType
 {
 public:
   ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::ISIZE)
+    : BaseType (ref, ref, TypeKind::ISIZE)
   {}
 
   ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::ISIZE)
+    : BaseType (ref, ty_ref, TypeKind::ISIZE)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class CharType : public TyBase
+class CharType : public BaseType
 {
 public:
   CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::CHAR)
+    : BaseType (ref, ref, TypeKind::CHAR)
   {}
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::CHAR)
+    : BaseType (ref, ty_ref, TypeKind::CHAR)
 
   {}
 
@@ -568,35 +568,35 @@ public:
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 };
 
-class ReferenceType : public TyBase
+class ReferenceType : public BaseType
 {
 public:
   ReferenceType (HirId ref, HirId base,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ref, TypeKind::REF), base (base)
+    : BaseType (ref, ref, TypeKind::REF), base (base)
   {}
 
   ReferenceType (HirId ref, HirId ty_ref, HirId base,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : TyBase (ref, ty_ref, TypeKind::REF), base (base)
+    : BaseType (ref, ty_ref, TypeKind::REF), base (base)
   {}
 
-  const TyTy::TyBase *get_base () const;
+  const TyTy::BaseType *get_base () const;
 
-  TyTy::TyBase *get_base ();
+  TyTy::BaseType *get_base ();
 
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
 
-  TyBase *combine (TyBase *other) override;
+  BaseType *combine (BaseType *other) override;
 
-  TyBase *clone () final override;
+  BaseType *clone () final override;
 
 private:
   HirId base;

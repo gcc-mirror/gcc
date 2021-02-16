@@ -37,14 +37,14 @@ UnitType::as_string () const
   return "()";
 }
 
-TyBase *
-UnitType::combine (TyBase *other)
+BaseType *
+UnitType::combine (BaseType *other)
 {
   UnitRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 UnitType::clone ()
 {
   return new UnitType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -71,14 +71,14 @@ InferType::as_string () const
   return "<infer::error>";
 }
 
-TyBase *
-InferType::combine (TyBase *other)
+BaseType *
+InferType::combine (BaseType *other)
 {
   InferRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 InferType::clone ()
 {
   return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
@@ -97,15 +97,15 @@ ErrorType::as_string () const
   return "<tyty::error>";
 }
 
-TyBase *
-ErrorType::combine (TyBase *other)
+BaseType *
+ErrorType::combine (BaseType *other)
 {
   // FIXME
   // rust_error_at ();
   return this;
 }
 
-TyBase *
+BaseType *
 ErrorType::clone ()
 {
   return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -123,14 +123,14 @@ StructFieldType::as_string () const
   return name + ":" + ty->as_string ();
 }
 
-TyBase *
-StructFieldType::combine (TyBase *other)
+BaseType *
+StructFieldType::combine (BaseType *other)
 {
   StructFieldTypeRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 StructFieldType::clone ()
 {
   return new StructFieldType (get_ref (), get_ty_ref (), get_name (),
@@ -158,14 +158,14 @@ ADTType::as_string () const
   return identifier;
 }
 
-TyBase *
-ADTType::combine (TyBase *other)
+BaseType *
+ADTType::combine (BaseType *other)
 {
   ADTRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 ADTType::clone ()
 {
   std::vector<StructFieldType *> cloned_fields;
@@ -186,7 +186,7 @@ std::string
 TupleType::as_string () const
 {
   std::string fields_buffer;
-  iterate_fields ([&] (TyBase *field) mutable -> bool {
+  iterate_fields ([&] (BaseType *field) mutable -> bool {
     fields_buffer += field->as_string ();
     fields_buffer += ", ";
     return true;
@@ -194,24 +194,24 @@ TupleType::as_string () const
   return "(" + fields_buffer + ")";
 }
 
-TyBase *
+BaseType *
 TupleType::get_field (size_t index) const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  TyBase *lookup = nullptr;
+  BaseType *lookup = nullptr;
   bool ok = context->lookup_type (fields.at (index), &lookup);
   rust_assert (ok);
   return lookup;
 }
 
-TyBase *
-TupleType::combine (TyBase *other)
+BaseType *
+TupleType::combine (BaseType *other)
 {
   TupleRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 TupleType::clone ()
 {
   return new TupleType (get_ref (), get_ty_ref (), fields,
@@ -240,20 +240,20 @@ FnType::as_string () const
   return "fn (" + params_str + ") -> " + ret_str;
 }
 
-TyBase *
-FnType::combine (TyBase *other)
+BaseType *
+FnType::combine (BaseType *other)
 {
   FnRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 FnType::clone ()
 {
-  std::vector<std::pair<HIR::Pattern *, TyBase *> > cloned_params;
+  std::vector<std::pair<HIR::Pattern *, BaseType *> > cloned_params;
   for (auto &p : params)
     cloned_params.push_back (
-      std::pair<HIR::Pattern *, TyBase *> (p.first, p.second->clone ()));
+      std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
   return new FnType (get_ref (), get_ty_ref (), cloned_params,
 		     get_return_type ()->clone (), get_combined_refs ());
@@ -272,24 +272,24 @@ ArrayType::as_string () const
 	 + "]";
 }
 
-TyBase *
-ArrayType::combine (TyBase *other)
+BaseType *
+ArrayType::combine (BaseType *other)
 {
   ArrayRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 ArrayType::get_type () const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  TyBase *lookup = nullptr;
+  BaseType *lookup = nullptr;
   bool ok = context->lookup_type (element_type_id, &lookup);
   rust_assert (ok);
   return lookup;
 }
 
-TyBase *
+BaseType *
 ArrayType::clone ()
 {
   return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
@@ -308,14 +308,14 @@ BoolType::as_string () const
   return "bool";
 }
 
-TyBase *
-BoolType::combine (TyBase *other)
+BaseType *
+BoolType::combine (BaseType *other)
 {
   BoolRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 BoolType::clone ()
 {
   return new BoolType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -347,14 +347,14 @@ IntType::as_string () const
   return "__unknown_int_type";
 }
 
-TyBase *
-IntType::combine (TyBase *other)
+BaseType *
+IntType::combine (BaseType *other)
 {
   IntRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 IntType::clone ()
 {
   return new IntType (get_ref (), get_ty_ref (), get_kind (),
@@ -387,14 +387,14 @@ UintType::as_string () const
   return "__unknown_uint_type";
 }
 
-TyBase *
-UintType::combine (TyBase *other)
+BaseType *
+UintType::combine (BaseType *other)
 {
   UintRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 UintType::clone ()
 {
   return new UintType (get_ref (), get_ty_ref (), get_kind (),
@@ -421,14 +421,14 @@ FloatType::as_string () const
   return "__unknown_float_type";
 }
 
-TyBase *
-FloatType::combine (TyBase *other)
+BaseType *
+FloatType::combine (BaseType *other)
 {
   FloatRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 FloatType::clone ()
 {
   return new FloatType (get_ref (), get_ty_ref (), get_kind (),
@@ -447,14 +447,14 @@ USizeType::as_string () const
   return "usize";
 }
 
-TyBase *
-USizeType::combine (TyBase *other)
+BaseType *
+USizeType::combine (BaseType *other)
 {
   USizeRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 USizeType::clone ()
 {
   return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -472,14 +472,14 @@ ISizeType::as_string () const
   return "isize";
 }
 
-TyBase *
-ISizeType::combine (TyBase *other)
+BaseType *
+ISizeType::combine (BaseType *other)
 {
   ISizeRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 ISizeType::clone ()
 {
   return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -497,14 +497,14 @@ CharType::as_string () const
   return "char";
 }
 
-TyBase *
-CharType::combine (TyBase *other)
+BaseType *
+CharType::combine (BaseType *other)
 {
   CharRules r (this);
   return r.combine (other);
 }
 
-TyBase *
+BaseType *
 CharType::clone ()
 {
   return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
@@ -522,34 +522,34 @@ ReferenceType::as_string () const
   return "&" + get_base ()->as_string ();
 }
 
-TyBase *
-ReferenceType::combine (TyBase *other)
+BaseType *
+ReferenceType::combine (BaseType *other)
 {
   ReferenceRules r (this);
   return r.combine (other);
 }
 
-const TyBase *
+const BaseType *
 ReferenceType::get_base () const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  TyBase *lookup = nullptr;
+  BaseType *lookup = nullptr;
   bool ok = context->lookup_type (base, &lookup);
   rust_assert (ok);
   return lookup;
 }
 
-TyBase *
+BaseType *
 ReferenceType::get_base ()
 {
   auto context = Resolver::TypeCheckContext::get ();
-  TyBase *lookup = nullptr;
+  BaseType *lookup = nullptr;
   bool ok = context->lookup_type (base, &lookup);
   rust_assert (ok);
   return lookup;
 }
 
-TyBase *
+BaseType *
 ReferenceType::clone ()
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base,
@@ -572,9 +572,9 @@ TypeCheckCallExpr::visit (ADTType &type)
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *p) mutable -> bool {
     StructFieldType *field = type.get_field (i);
-    TyBase *field_tyty = field->get_field_type ();
+    BaseType *field_tyty = field->get_field_type ();
 
-    TyBase *arg = Resolver::TypeCheckExpr::Resolve (p, false);
+    BaseType *arg = Resolver::TypeCheckExpr::Resolve (p, false);
     if (arg == nullptr)
       {
 	rust_error_at (p->get_locus_slow (), "failed to resolve argument type");

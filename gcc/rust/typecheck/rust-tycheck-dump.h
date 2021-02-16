@@ -180,7 +180,7 @@ public:
 protected:
   std::string type_string (const Analysis::NodeMapping &mappings)
   {
-    TyTy::TyBase *lookup = nullptr;
+    TyTy::BaseType *lookup = nullptr;
     if (!context->lookup_type (mappings.get_hirid (), &lookup))
       return "<error>";
 

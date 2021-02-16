@@ -65,7 +65,7 @@ private:
 class TypeCheckType : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Type *type)
+  static TyTy::BaseType *Resolve (HIR::Type *type)
   {
     TypeCheckType resolver;
     type->accept_vis (resolver);
@@ -83,12 +83,12 @@ public:
 
   void visit (HIR::BareFunctionType &fntype)
   {
-    TyTy::TyBase *return_type
+    TyTy::BaseType *return_type
       = fntype.has_return_type ()
 	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
 	  : new TyTy::UnitType (fntype.get_mappings ().get_hirid ());
 
-    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
     for (auto &param : fntype.get_function_params ())
       {
 	std::unique_ptr<HIR::Pattern> to_bind;
@@ -100,9 +100,9 @@ public:
 	  = new HIR::IdentifierPattern (param.get_name (), param.get_locus (),
 					is_ref, is_mut, std::move (to_bind));
 
-	TyTy::TyBase *ptype = TypeCheckType::Resolve (param.get_type ().get ());
+	TyTy::BaseType *ptype = TypeCheckType::Resolve (param.get_type ().get ());
 	params.push_back (
-	  std::pair<HIR::Pattern *, TyTy::TyBase *> (pattern, ptype));
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (pattern, ptype));
       }
 
     translated = new TyTy::FnType (fntype.get_mappings ().get_hirid (),
@@ -171,14 +171,14 @@ public:
 	return;
       }
 
-    TyTy::TyBase *base = TypeCheckType::Resolve (type.get_element_type ());
+    TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
     translated
       = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity, base);
   }
 
   void visit (HIR::ReferenceType &type)
   {
-    TyTy::TyBase *base = TypeCheckType::Resolve (type.get_base_type ().get ());
+    TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
 					  base->get_ref ());
   }
@@ -192,7 +192,7 @@ public:
 private:
   TypeCheckType () : TypeCheckBase (), translated (nullptr) {}
 
-  TyTy::TyBase *translated;
+  TyTy::BaseType *translated;
 };
 
 } // namespace Resolver

@@ -57,7 +57,7 @@ public:
 	return;
       }
 
-    TyTy::TyBase *tyty = nullptr;
+    TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &tyty))
       {
@@ -177,7 +177,7 @@ public:
 	      return;
 	    }
 
-	  TyTy::TyBase *tyty = nullptr;
+	  TyTy::BaseType *tyty = nullptr;
 	  if (!ctx->get_tyctx ()->lookup_type (
 		expr.get_mappings ().get_hirid (), &tyty))
 	    {
@@ -203,7 +203,7 @@ public:
 	      return;
 	    }
 
-	  TyTy::TyBase *tyty = nullptr;
+	  TyTy::BaseType *tyty = nullptr;
 	  if (!ctx->get_tyctx ()->lookup_type (
 		expr.get_mappings ().get_hirid (), &tyty))
 	    {
@@ -256,7 +256,7 @@ public:
 
   void visit (HIR::ArrayExpr &expr)
   {
-    TyTy::TyBase *tyty = nullptr;
+    TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &tyty))
       {
@@ -428,7 +428,7 @@ public:
 
   void visit (HIR::IfExprConseqElse &expr)
   {
-    TyTy::TyBase *if_type = nullptr;
+    TyTy::BaseType *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &if_type))
       {
@@ -465,7 +465,7 @@ public:
 
   void visit (HIR::IfExprConseqIf &expr)
   {
-    TyTy::TyBase *if_type = nullptr;
+    TyTy::BaseType *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &if_type))
       {
@@ -502,7 +502,7 @@ public:
 
   void visit (HIR::BlockExpr &expr)
   {
-    TyTy::TyBase *block_tyty = nullptr;
+    TyTy::BaseType *block_tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &block_tyty))
       {
@@ -564,7 +564,7 @@ public:
   void visit (HIR::FieldAccessExpr &expr)
   {
     // resolve the receiver back to ADT type
-    TyTy::TyBase *receiver = nullptr;
+    TyTy::BaseType *receiver = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
 	  expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
       {
@@ -593,7 +593,7 @@ public:
 
   void visit (HIR::LoopExpr &expr)
   {
-    TyTy::TyBase *block_tyty = nullptr;
+    TyTy::BaseType *block_tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &block_tyty))
       {
@@ -830,7 +830,7 @@ public:
     Bexpression *main_expr
       = CompileExpr::Compile (expr.get_expr ().get (), ctx);
 
-    TyTy::TyBase *tyty = nullptr;
+    TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 					 &tyty))
       {

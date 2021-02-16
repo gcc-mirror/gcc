@@ -29,7 +29,7 @@ namespace Resolver {
 class MethodResolution : public TypeCheckBase
 {
 public:
-  static std::vector<HIR::Method *> Probe (TyTy::TyBase *receiver,
+  static std::vector<HIR::Method *> Probe (TyTy::BaseType *receiver,
 					   HIR::PathExprSegment method_name)
   {
     MethodResolution probe (receiver, method_name);
@@ -47,7 +47,7 @@ public:
 
   void visit (HIR::Method &method)
   {
-    TyTy::TyBase *self_lookup = nullptr;
+    TyTy::BaseType *self_lookup = nullptr;
     if (!context->lookup_type (
 	  method.get_self_param ().get_mappings ().get_hirid (), &self_lookup))
       {
@@ -79,11 +79,11 @@ public:
   }
 
 private:
-  MethodResolution (TyTy::TyBase *receiver, HIR::PathExprSegment method_name)
+  MethodResolution (TyTy::BaseType *receiver, HIR::PathExprSegment method_name)
     : TypeCheckBase (), receiver (receiver), method_name (method_name)
   {}
 
-  TyTy::TyBase *receiver;
+  TyTy::BaseType *receiver;
   HIR::PathExprSegment method_name;
 
   std::vector<HIR::Method *> probed;

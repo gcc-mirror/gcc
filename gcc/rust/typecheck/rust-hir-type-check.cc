@@ -47,7 +47,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
   auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
-  context->iterate ([&] (HirId id, TyTy::TyBase *ty) mutable -> bool {
+  context->iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
     if (ty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (mappings->lookup_location (id),
@@ -69,7 +69,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 	break;
 
 	case TyTy::InferType::INTEGRAL: {
-	  TyTy::TyBase *default_integer;
+	  TyTy::BaseType *default_integer;
 	  bool ok = context->lookup_builtin ("i32", &default_integer);
 	  rust_assert (ok);
 
@@ -83,7 +83,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 	break;
 
 	case TyTy::InferType::FLOAT: {
-	  TyTy::TyBase *default_float;
+	  TyTy::BaseType *default_float;
 	  bool ok = context->lookup_builtin ("f32", &default_float);
 	  rust_assert (ok);
 
@@ -105,7 +105,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
-  TyTy::TyBase *block_tyty
+  TyTy::BaseType *block_tyty
     = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
 
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
@@ -161,7 +161,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   resolved = struct_path_resolved;
   if (struct_expr.has_struct_base ())
     {
-      TyTy::TyBase *base_resolved
+      TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
 				  false);
       resolved = struct_path_resolved->combine (base_resolved);
@@ -300,7 +300,7 @@ TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
     }
 
   // the base reference for this name _must_ have a type set
-  TyTy::TyBase *lookup;
+  TyTy::BaseType *lookup;
   if (!context->lookup_type (ref, &lookup))
     {
       rust_error_at (mappings->lookup_location (ref),
@@ -329,7 +329,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     }
 
   size_t field_index;
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field.field_name, &field_index);
   if (field_type == nullptr)
@@ -358,7 +358,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
     }
 
   size_t field_index;
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field_name, &field_index);
   if (field_type == nullptr)
@@ -398,7 +398,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   // existing code to figure out the type
   HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
 			    field.get_locus ());
-  TyTy::TyBase *value = TypeCheckExpr::Resolve (&expr, false);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr, false);
 
   resolved_field = field_type->get_field_type ()->combine (value);
   if (resolved_field != nullptr)

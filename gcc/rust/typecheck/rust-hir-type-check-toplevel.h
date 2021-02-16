@@ -44,7 +44,7 @@ public:
 
     size_t idx = 0;
     struct_decl.iterate ([&] (HIR::TupleField &field) mutable -> bool {
-      TyTy::TyBase *field_type
+      TyTy::BaseType *field_type
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
@@ -55,7 +55,7 @@ public:
       return true;
     });
 
-    TyTy::TyBase *type
+    TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   struct_decl.get_identifier (), std::move (fields));
 
@@ -66,7 +66,7 @@ public:
   {
     std::vector<TyTy::StructFieldType *> fields;
     struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
-      TyTy::TyBase *field_type
+      TyTy::BaseType *field_type
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
@@ -76,7 +76,7 @@ public:
       return true;
     });
 
-    TyTy::TyBase *type
+    TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   struct_decl.get_identifier (), std::move (fields));
 
@@ -85,16 +85,16 @@ public:
 
   void visit (HIR::StaticItem &var)
   {
-    TyTy::TyBase *type = TypeCheckType::Resolve (var.get_type ());
-    TyTy::TyBase *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
+    TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
+    TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
 
     context->insert_type (var.get_mappings (), type->combine (expr_type));
   }
 
   void visit (HIR::ConstantItem &constant)
   {
-    TyTy::TyBase *type = TypeCheckType::Resolve (constant.get_type ());
-    TyTy::TyBase *expr_type
+    TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+    TyTy::BaseType *expr_type
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->combine (expr_type));
@@ -102,7 +102,7 @@ public:
 
   void visit (HIR::Function &function)
   {
-    TyTy::TyBase *ret_type = nullptr;
+    TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
@@ -119,13 +119,13 @@ public:
 	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
       }
 
-    std::vector<std::pair<HIR::Pattern *, TyTy::TyBase *> > params;
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
     for (auto &param : function.function_params)
       {
 	// get the name as well required for later on
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
-	  std::pair<HIR::Pattern *, TyTy::TyBase *> (param.get_param_name (),
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
 						     param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);

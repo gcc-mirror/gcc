@@ -32,7 +32,7 @@ namespace Resolver {
 class TypeCheckExpr : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::Expr *expr, bool inside_loop)
+  static TyTy::BaseType *Resolve (HIR::Expr *expr, bool inside_loop)
   {
     TypeCheckExpr resolver (inside_loop);
     expr->accept_vis (resolver);
@@ -163,7 +163,7 @@ public:
 
   void visit (HIR::CallExpr &expr)
   {
-    TyTy::TyBase *function_tyty
+    TyTy::BaseType *function_tyty
       = TypeCheckExpr::Resolve (expr.get_fnexpr (), false);
     if (function_tyty == nullptr)
       return;
@@ -212,7 +212,7 @@ public:
       }
 
     auto resolved_method = probes.at (0);
-    TyTy::TyBase *lookup;
+    TyTy::BaseType *lookup;
     if (!context->lookup_type (resolved_method->get_mappings ().get_hirid (),
 			       &lookup))
       {
@@ -335,7 +335,7 @@ public:
       }
 
     // the base reference for this name _must_ have a type set
-    TyTy::TyBase *lookup;
+    TyTy::BaseType *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
 	rust_error_at (mappings->lookup_location (ref),
@@ -592,7 +592,7 @@ public:
 
   void visit (HIR::ArrayIndexExpr &expr)
   {
-    TyTy::TyBase *size_ty;
+    TyTy::BaseType *size_ty;
     if (!context->lookup_builtin ("usize", &size_ty))
       {
 	rust_error_at (
@@ -647,7 +647,7 @@ public:
 
   void visit (HIR::ArrayElemsValues &elems)
   {
-    std::vector<TyTy::TyBase *> types;
+    std::vector<TyTy::BaseType *> types;
     elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
       types.push_back (TypeCheckExpr::Resolve (e, false));
       return true;
@@ -760,7 +760,7 @@ public:
   void visit (HIR::LoopExpr &expr)
   {
     context->push_new_loop_context (expr.get_mappings ().get_hirid ());
-    TyTy::TyBase *block_expr
+    TyTy::BaseType *block_expr
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
     if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
       {
@@ -769,7 +769,7 @@ public:
 	return;
       }
 
-    TyTy::TyBase *loop_context_type = context->pop_loop_context ();
+    TyTy::BaseType *loop_context_type = context->pop_loop_context ();
 
     bool loop_context_type_infered
       = (loop_context_type->get_kind () != TyTy::TypeKind::INFER)
@@ -787,7 +787,7 @@ public:
     context->push_new_while_loop_context (expr.get_mappings ().get_hirid ());
 
     TypeCheckExpr::Resolve (expr.get_predicate_expr ().get (), false);
-    TyTy::TyBase *block_expr
+    TyTy::BaseType *block_expr
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
 
     if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
@@ -811,10 +811,10 @@ public:
 
     if (expr.has_break_expr ())
       {
-	TyTy::TyBase *break_expr_tyty
+	TyTy::BaseType *break_expr_tyty
 	  = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
-	TyTy::TyBase *loop_context = context->peek_loop_context ();
+	TyTy::BaseType *loop_context = context->peek_loop_context ();
 	if (loop_context->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (expr.get_locus (),
@@ -822,7 +822,7 @@ public:
 	    return;
 	  }
 
-	TyTy::TyBase *combined = loop_context->combine (break_expr_tyty);
+	TyTy::BaseType *combined = loop_context->combine (break_expr_tyty);
 	context->swap_head_loop_context (combined);
       }
 
@@ -843,7 +843,7 @@ public:
 
   void visit (HIR::BorrowExpr &expr)
   {
-    TyTy::TyBase *resolved_base
+    TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
     // FIXME double_reference
@@ -854,7 +854,7 @@ public:
 
   void visit (HIR::DereferenceExpr &expr)
   {
-    TyTy::TyBase *resolved_base
+    TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
     if (resolved_base->get_kind () != TyTy::TypeKind::REF)
       {
@@ -874,7 +874,7 @@ private:
   {}
 
   bool
-  validate_arithmetic_type (TyTy::TyBase *type,
+  validate_arithmetic_type (TyTy::BaseType *type,
 			    HIR::ArithmeticOrLogicalExpr::ExprType expr_type)
   {
     // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
@@ -919,8 +919,8 @@ private:
     gcc_unreachable ();
   }
 
-  TyTy::TyBase *infered;
-  TyTy::TyBase *infered_array_elems;
+  TyTy::BaseType *infered;
+  TyTy::BaseType *infered_array_elems;
 
   bool inside_loop;
 };

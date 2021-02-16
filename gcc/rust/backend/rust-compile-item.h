@@ -41,7 +41,7 @@ public:
 
   void visit (HIR::TupleStruct &struct_decl)
   {
-    TyTy::TyBase *resolved = nullptr;
+    TyTy::BaseType *resolved = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
 	  struct_decl.get_mappings ().get_hirid (), &resolved))
       {
@@ -55,7 +55,7 @@ public:
 
   void visit (HIR::StructStruct &struct_decl)
   {
-    TyTy::TyBase *resolved = nullptr;
+    TyTy::BaseType *resolved = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
 	  struct_decl.get_mappings ().get_hirid (), &resolved))
       {
@@ -69,7 +69,7 @@ public:
 
   void visit (HIR::StaticItem &var)
   {
-    TyTy::TyBase *resolved_type = nullptr;
+    TyTy::BaseType *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
 					      &resolved_type);
     rust_assert (ok);
@@ -97,7 +97,7 @@ public:
 
   void visit (HIR::ConstantItem &constant)
   {
-    TyTy::TyBase *resolved_type = nullptr;
+    TyTy::BaseType *resolved_type = nullptr;
     bool ok
       = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
 					&resolved_type);
@@ -129,7 +129,7 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fntype_tyty;
+    TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
       {
@@ -169,7 +169,7 @@ public:
 
     // setup the params
 
-    TyTy::TyBase *tyret = fntype->return_type ();
+    TyTy::BaseType *tyret = fntype->return_type ();
     std::vector<Bvariable *> param_vars;
 
     size_t i = 0;
@@ -282,7 +282,7 @@ public:
 
   void visit (HIR::InherentImpl &impl_block)
   {
-    TyTy::TyBase *self_lookup = nullptr;
+    TyTy::BaseType *self_lookup = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
 	  impl_block.get_type ()->get_mappings ().get_hirid (), &self_lookup))
       {

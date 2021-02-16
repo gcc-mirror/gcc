@@ -41,7 +41,7 @@ public:
   void visit (HIR::LetStmt &stmt)
   {
     locus = stmt.get_locus ();
-    TyTy::TyBase *resolved_type = nullptr;
+    TyTy::BaseType *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
 					      &resolved_type);
     rust_assert (ok);

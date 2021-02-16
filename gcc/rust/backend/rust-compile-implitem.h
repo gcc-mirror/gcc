@@ -32,7 +32,7 @@ namespace Compile {
 class CompileInherentImplItem : public HIRCompileBase
 {
 public:
-  static void Compile (TyTy::TyBase *self, HIR::InherentImplItem *item,
+  static void Compile (TyTy::BaseType *self, HIR::InherentImplItem *item,
 		       Context *ctx, bool compile_fns)
   {
     CompileInherentImplItem compiler (self, ctx, compile_fns);
@@ -41,7 +41,7 @@ public:
 
   void visit (HIR::ConstantItem &constant)
   {
-    TyTy::TyBase *resolved_type = nullptr;
+    TyTy::BaseType *resolved_type = nullptr;
     bool ok
       = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
 					&resolved_type);
@@ -74,7 +74,7 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fntype_tyty;
+    TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
       {
@@ -110,7 +110,7 @@ public:
 
     // setup the params
 
-    TyTy::TyBase *tyret = fntype->return_type ();
+    TyTy::BaseType *tyret = fntype->return_type ();
     std::vector<Bvariable *> param_vars;
 
     size_t i = 0;
@@ -238,7 +238,7 @@ public:
 	  return;
       }
 
-    TyTy::TyBase *fntype_tyty;
+    TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (method.get_mappings ().get_hirid (),
 					 &fntype_tyty))
       {
@@ -273,11 +273,11 @@ public:
     ctx->insert_function_decl (method.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
-    TyTy::TyBase *tyret = fntype->return_type ();
+    TyTy::BaseType *tyret = fntype->return_type ();
     std::vector<Bvariable *> param_vars;
 
     // insert self
-    TyTy::TyBase *self_tyty_lookup = nullptr;
+    TyTy::BaseType *self_tyty_lookup = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
 	  method.get_self_param ().get_mappings ().get_hirid (),
 	  &self_tyty_lookup))
@@ -428,11 +428,11 @@ public:
   }
 
 private:
-  CompileInherentImplItem (TyTy::TyBase *self, Context *ctx, bool compile_fns)
+  CompileInherentImplItem (TyTy::BaseType *self, Context *ctx, bool compile_fns)
     : HIRCompileBase (ctx), self (self), compile_fns (compile_fns)
   {}
 
-  TyTy::TyBase *self;
+  TyTy::BaseType *self;
   bool compile_fns;
 };
 

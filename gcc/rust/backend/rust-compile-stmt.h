@@ -58,7 +58,7 @@ public:
     if (!stmt.has_init_expr ())
       return;
 
-    TyTy::TyBase *ty = nullptr;
+    TyTy::BaseType *ty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
 					 &ty))
       {

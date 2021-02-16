@@ -36,7 +36,7 @@ TypeCheckContext::TypeCheckContext () {}
 TypeCheckContext::~TypeCheckContext () {}
 
 bool
-TypeCheckContext::lookup_builtin (NodeId id, TyTy::TyBase **type)
+TypeCheckContext::lookup_builtin (NodeId id, TyTy::BaseType **type)
 {
   auto ref_it = node_id_refs.find (id);
   if (ref_it == node_id_refs.end ())
@@ -51,7 +51,7 @@ TypeCheckContext::lookup_builtin (NodeId id, TyTy::TyBase **type)
 }
 
 bool
-TypeCheckContext::lookup_builtin (std::string name, TyTy::TyBase **type)
+TypeCheckContext::lookup_builtin (std::string name, TyTy::BaseType **type)
 {
   for (auto &builtin : builtins)
     {
@@ -65,16 +65,16 @@ TypeCheckContext::lookup_builtin (std::string name, TyTy::TyBase **type)
 }
 
 void
-TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::TyBase *type)
+TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::BaseType *type)
 {
   node_id_refs[ref] = id;
   resolved[id] = type;
-  builtins.push_back (std::unique_ptr<TyTy::TyBase> (type));
+  builtins.push_back (std::unique_ptr<TyTy::BaseType> (type));
 }
 
 void
 TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
-			       TyTy::TyBase *type)
+			       TyTy::BaseType *type)
 {
   rust_assert (type != nullptr);
   NodeId ref = mappings.get_nodeid ();
@@ -84,7 +84,7 @@ TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
 }
 
 bool
-TypeCheckContext::lookup_type (HirId id, TyTy::TyBase **type)
+TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type)
 {
   auto it = resolved.find (id);
   if (it == resolved.end ())
@@ -112,14 +112,14 @@ TypeCheckContext::lookup_type_by_node_id (NodeId ref, HirId *id)
   return true;
 }
 
-TyTy::TyBase *
+TyTy::BaseType *
 TypeCheckContext::peek_return_type ()
 {
   return return_type_stack.back ();
 }
 
 void
-TypeCheckContext::push_return_type (TyTy::TyBase *return_type)
+TypeCheckContext::push_return_type (TyTy::BaseType *return_type)
 {
   return_type_stack.push_back (return_type);
 }

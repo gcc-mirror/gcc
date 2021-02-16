@@ -53,7 +53,7 @@ public:
 	rust_assert (
 	  tyctx->lookup_type_by_node_id ((*it)->get_node_id (), &ref));
 
-	TyTy::TyBase *lookup;
+	TyTy::BaseType *lookup;
 	rust_assert (tyctx->lookup_type (ref, &lookup));
 
 	auto compiled = TyTyCompile::compile (backend, lookup);
@@ -261,7 +261,7 @@ private:
 class TyTyResolveCompile : public TyTy::TyVisitor
 {
 public:
-  static ::Btype *compile (Context *ctx, TyTy::TyBase *ty)
+  static ::Btype *compile (Context *ctx, TyTy::BaseType *ty)
   {
     TyTyResolveCompile compiler (ctx);
     ty->accept_vis (compiler);
@@ -355,7 +355,7 @@ public:
     std::vector<Backend::Btyped_identifier> fields;
     for (size_t i = 0; i < type.num_fields (); i++)
       {
-	TyTy::TyBase *field = type.get_field (i);
+	TyTy::BaseType *field = type.get_field (i);
 	Btype *compiled_field_ty
 	  = TyTyCompile::compile (ctx->get_backend (), field);
 

@@ -30,7 +30,7 @@ namespace Resolver {
 class TypeCheckStructExpr : public TypeCheckBase
 {
 public:
-  static TyTy::TyBase *Resolve (HIR::StructExprStructFields *expr)
+  static TyTy::BaseType *Resolve (HIR::StructExprStructFields *expr)
   {
     TypeCheckStructExpr resolver;
     expr->accept_vis (resolver);
@@ -53,9 +53,9 @@ private:
     : TypeCheckBase (), resolved (nullptr), struct_path_resolved (nullptr)
   {}
 
-  TyTy::TyBase *resolved;
+  TyTy::BaseType *resolved;
   TyTy::ADTType *struct_path_resolved;
-  TyTy::TyBase *resolved_field;
+  TyTy::BaseType *resolved_field;
   std::set<std::string> fields_assigned;
   std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
 };

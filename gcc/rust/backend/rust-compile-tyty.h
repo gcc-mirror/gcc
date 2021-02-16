@@ -34,7 +34,7 @@ namespace Compile {
 class TyTyCompile : public TyTy::TyVisitor
 {
 public:
-  static ::Btype *compile (::Backend *backend, TyTy::TyBase *ty)
+  static ::Btype *compile (::Backend *backend, TyTy::BaseType *ty)
   {
     TyTyCompile compiler (backend);
     ty->accept_vis (compiler);
