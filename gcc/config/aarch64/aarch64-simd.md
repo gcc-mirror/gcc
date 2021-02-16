@@ -718,18 +718,18 @@
 }
 )
 
-(define_insn "*aarch64_mul3_elt<mode>"
+(define_insn "mul_lane<mode>3"
  [(set (match_operand:VMUL 0 "register_operand" "=w")
-    (mult:VMUL
-      (vec_duplicate:VMUL
-	  (vec_select:<VEL>
-	    (match_operand:VMUL 1 "register_operand" "<h_con>")
-	    (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VMUL 3 "register_operand" "w")))]
+       (mult:VMUL
+	 (vec_duplicate:VMUL
+	   (vec_select:<VEL>
+	     (match_operand:VMUL 2 "register_operand" "<h_con>")
+	     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
+	 (match_operand:VMUL 1 "register_operand" "w")))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
+    operands[3] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[3]));
+    return "<f>mul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]";
   }
   [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
@@ -2697,6 +2697,46 @@
   {
     rtx scratch = gen_reg_rtx (<MODE>mode);
     emit_insn (gen_mul_n<mode>3 (scratch, operands[2], operands[3]));
+    emit_insn (gen_sub<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_float_mla_lane<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand")
+	(plus:VDQSF
+	  (mult:VDQSF
+	    (vec_duplicate:VDQSF
+	      (vec_select:<VEL>
+		(match_operand:V2SF 3 "register_operand")
+		(parallel [(match_operand:SI 4 "immediate_operand")])))
+	    (match_operand:VDQSF 2 "register_operand"))
+	  (match_operand:VDQSF 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul_lane<mode>3 (scratch, operands[2],
+				    operands[3], operands[4]));
+    emit_insn (gen_add<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_float_mls_lane<mode>"
+  [(set (match_operand:VDQSF 0 "register_operand")
+	(minus:VDQSF
+	  (match_operand:VDQSF 1 "register_operand")
+	  (mult:VDQSF
+	    (vec_duplicate:VDQSF
+	      (vec_select:<VEL>
+		(match_operand:V2SF 3 "register_operand")
+		(parallel [(match_operand:SI 4 "immediate_operand")])))
+	    (match_operand:VDQSF 2 "register_operand"))))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul_lane<mode>3 (scratch, operands[2],
+				    operands[3], operands[4]));
     emit_insn (gen_sub<mode>3 (operands[0], operands[1], scratch));
     DONE;
   }

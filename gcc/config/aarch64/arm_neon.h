@@ -20378,7 +20378,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_lane_f32 (float32x2_t __a, float32x2_t __b,
 	       float32x2_t __c, const int __lane)
 {
-  return (__a + (__b * __aarch64_vget_lane_any (__c, __lane)));
+  return __builtin_aarch64_float_mla_lanev2sf (__a, __b, __c, __lane);
 }
 
 __extension__ extern __inline int16x4_t
@@ -20462,7 +20462,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_lane_f32 (float32x4_t __a, float32x4_t __b,
 		float32x2_t __c, const int __lane)
 {
-  return (__a + (__b * __aarch64_vget_lane_any (__c, __lane)));
+  return __builtin_aarch64_float_mla_lanev4sf (__a, __b, __c, __lane);
 }
 
 __extension__ extern __inline int16x8_t
@@ -20576,7 +20576,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_lane_f32 (float32x2_t __a, float32x2_t __b,
 	       float32x2_t __c, const int __lane)
 {
-  return (__a - (__b * __aarch64_vget_lane_any (__c, __lane)));
+  return __builtin_aarch64_float_mls_lanev2sf (__a, __b, __c, __lane);
 }
 
 __extension__ extern __inline int16x4_t
@@ -20660,7 +20660,7 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_lane_f32 (float32x4_t __a, float32x4_t __b,
 		float32x2_t __c, const int __lane)
 {
-  return (__a - (__b * __aarch64_vget_lane_any (__c, __lane)));
+  return __builtin_aarch64_float_mls_lanev4sf (__a, __b, __c, __lane);
 }
 
 __extension__ extern __inline int16x8_t
