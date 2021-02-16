@@ -918,13 +918,17 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 	 because we don't usually need that location (we're popping an
 	 include file).  However in this case we do want to do the
 	 increment.  So push a writable buffer of two newlines to acheive
-	 that.  */
-      static uchar newlines[] = "\n\n";
+	 that.  (We also need an extra newline, so this looks like a regular
+	 file, which we do that to to make sure we don't fall off the end in the
+	 middle of a line.  */
+      static uchar newlines[] = "\n\n\n";
       cpp_push_buffer (pfile, newlines, 2, true);
 
+      size_t len = strlen (buf);
+      buf[len] = '\n'; /* See above  */
       cpp_buffer *buffer
 	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
-			   strlen (buf), true);
+			   len, true);
       buffer->to_free = buffer->buf;
 
       file->header_unit = +1;
