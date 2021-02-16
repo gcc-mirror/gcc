@@ -3914,9 +3914,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    || n->simdclone->nargs != nargs)
 	  continue;
 	if (num_calls != 1)
-	  this_badness += exact_log2 (num_calls) * 1024;
+	  this_badness += exact_log2 (num_calls) * 4096;
 	if (n->simdclone->inbranch)
-	  this_badness += 2048;
+	  this_badness += 8192;
 	int target_badness = targetm.simd_clone.usable (n);
 	if (target_badness < 0)
 	  continue;
