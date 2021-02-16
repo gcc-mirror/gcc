@@ -158,14 +158,15 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
       return;
     }
 
-  resolved = struct_path_resolved;
+  TyTy::ADTType *struct_def = struct_path_resolved;
   if (struct_expr.has_struct_base ())
     {
       TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
 				  false);
-      resolved = struct_path_resolved->unify (base_resolved);
-      if (resolved == nullptr)
+      struct_def
+	= (TyTy::ADTType *) struct_path_resolved->unify (base_resolved);
+      if (struct_def == nullptr)
 	{
 	  rust_fatal_error (
 	    struct_expr.struct_base->base_struct->get_locus_slow (),
@@ -174,11 +175,12 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	}
     }
 
+  std::vector<TyTy::StructFieldType *> infered_fields;
   bool ok = true;
   struct_expr.iterate ([&] (HIR::StructExprField *field) mutable -> bool {
-    resolved_field = nullptr;
+    resolved_field_value_expr = nullptr;
     field->accept_vis (*this);
-    if (resolved_field == nullptr)
+    if (resolved_field_value_expr == nullptr)
       {
 	rust_fatal_error (field->get_locus (),
 			  "failed to resolve type for field");
@@ -186,13 +188,17 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	return false;
       }
 
-    context->insert_type (field->get_mappings (), resolved_field);
+    context->insert_type (field->get_mappings (), resolved_field_value_expr);
     return true;
   });
 
   // something failed setting up the fields
   if (!ok)
-    return;
+    {
+      rust_error_at (struct_expr.get_locus (),
+		     "constructor type resolution failure");
+      return;
+    }
 
   // check the arguments are all assigned and fix up the ordering
   if (fields_assigned.size () != struct_path_resolved->num_fields ())
@@ -270,6 +276,8 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	std::unique_ptr<HIR::StructExprField> (adtFieldIndexToField[i]));
     }
   struct_expr.set_fields_as_owner (std::move (ordered_fields));
+
+  resolved = struct_def;
 }
 
 void
@@ -315,7 +323,16 @@ TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
 			"expected an ADT type");
       return;
     }
-  struct_path_resolved = (TyTy::ADTType *) lookup;
+
+  struct_path_resolved = static_cast<TyTy::ADTType *> (lookup);
+  if (struct_path_resolved->has_substitions ())
+    {
+      HIR::PathExprSegment seg = expr.get_final_segment ();
+      struct_path_resolved
+	= seg.has_generic_args ()
+	    ? struct_path_resolved->handle_substitions (seg.get_generic_args ())
+	    : struct_path_resolved->infer_substitions ();
+    }
 }
 
 void
@@ -329,7 +346,6 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
     }
 
   size_t field_index;
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field.field_name, &field_index);
   if (field_type == nullptr)
@@ -338,8 +354,9 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
-  resolved_field = field_type->get_field_type ()->unify (value);
-  if (resolved_field != nullptr)
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field.field_name);
       adtFieldIndexToField[field_index] = &field;
@@ -358,7 +375,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
     }
 
   size_t field_index;
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
+
   TyTy::StructFieldType *field_type
     = struct_path_resolved->get_field (field_name, &field_index);
   if (field_type == nullptr)
@@ -367,8 +384,9 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  resolved_field = field_type->get_field_type ()->unify (value);
-  if (resolved_field != nullptr)
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value (), false);
+  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field_name);
       adtFieldIndexToField[field_index] = &field;
@@ -400,8 +418,9 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 			    field.get_locus ());
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr, false);
 
-  resolved_field = field_type->get_field_type ()->unify (value);
-  if (resolved_field != nullptr)
+  resolved_field_value_expr = field_type->get_field_type ()->unify (value);
+  if (resolved_field_value_expr != nullptr)
+
     {
       fields_assigned.insert (field.field_name);
       adtFieldIndexToField[field_index] = &field;

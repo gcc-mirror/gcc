@@ -32,9 +32,8 @@ class TypeCheckStructExpr : public TypeCheckBase
 public:
   static TyTy::BaseType *Resolve (HIR::StructExprStructFields *expr)
   {
-    TypeCheckStructExpr resolver;
+    TypeCheckStructExpr resolver (expr);
     expr->accept_vis (resolver);
-    rust_assert (resolver.resolved != nullptr);
     return resolver.resolved;
   }
 
@@ -49,13 +48,18 @@ public:
   void visit (HIR::StructExprFieldIdentifier &field);
 
 private:
-  TypeCheckStructExpr ()
-    : TypeCheckBase (), resolved (nullptr), struct_path_resolved (nullptr)
+  TypeCheckStructExpr (HIR::Expr *e)
+    : TypeCheckBase (),
+      resolved (new TyTy::ErrorType (e->get_mappings ().get_hirid ())),
+      struct_path_resolved (nullptr)
   {}
 
+  // result
   TyTy::BaseType *resolved;
+
+  // internal state:
   TyTy::ADTType *struct_path_resolved;
-  TyTy::BaseType *resolved_field;
+  TyTy::BaseType *resolved_field_value_expr;
   std::set<std::string> fields_assigned;
   std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
 };

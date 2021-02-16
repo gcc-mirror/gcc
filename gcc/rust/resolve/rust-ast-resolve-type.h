@@ -25,6 +25,53 @@
 namespace Rust {
 namespace Resolver {
 
+class ResolveTypePath : public ResolverBase
+{
+public:
+  static NodeId go (AST::TypePath &path, NodeId parent)
+  {
+    ResolveTypePath resolver (parent);
+    resolver.resolve (path);
+    return resolver.resolved_node;
+  }
+
+  void visit (AST::TypePathSegmentGeneric &seg) override;
+
+  void visit (AST::TypePathSegment &seg) override;
+
+private:
+  void resolve (AST::TypePath &path)
+  {
+    for (auto &seg : path.get_segments ())
+      {
+	seg->accept_vis (*this);
+	if (type_seg_failed_flag)
+	  return;
+      }
+
+    if (path_buffer.empty ())
+      {
+	rust_error_at (path.get_locus (), "failed to resolve path: %s",
+		       path.as_string ().c_str ());
+	return;
+      }
+
+    if (!resolver->get_type_scope ().lookup (path_buffer, &resolved_node))
+      {
+	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
+		       path_buffer.c_str ());
+	return;
+      }
+  }
+
+  ResolveTypePath (NodeId parent)
+    : ResolverBase (parent), type_seg_failed_flag (false)
+  {}
+
+  std::string path_buffer;
+  bool type_seg_failed_flag;
+};
+
 class ResolveType : public ResolverBase
 {
 public:
@@ -63,16 +110,8 @@ public:
 
   void visit (AST::TypePath &path)
   {
-    // this will need changed to handle mod/crate/use globs and look
-    // at the segments in granularity
-    if (!resolver->get_type_scope ().lookup (path.as_string (), &resolved_node))
-      {
-	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
-		       path.as_string ().c_str ());
-	return;
-      }
-
-    ok = true;
+    resolved_node = ResolveTypePath::go (path, parent);
+    ok = resolved_node != UNKNOWN_NODEID;
     resolver->insert_resolved_type (path.get_node_id (), resolved_node);
     resolver->insert_new_definition (path.get_node_id (),
 				     Definition{path.get_node_id (), parent});
@@ -93,6 +132,40 @@ public:
 
 private:
   ResolveType (NodeId parent) : ResolverBase (parent), ok (false) {}
+
+  bool ok;
+};
+
+class ResolveGenericParam : public ResolverBase
+{
+public:
+  static NodeId go (AST::GenericParam *param, NodeId parent)
+  {
+    ResolveGenericParam resolver (parent);
+    param->accept_vis (resolver);
+    if (!resolver.ok)
+      rust_error_at (param->get_locus_slow (), "unresolved generic parameter");
+
+    return resolver.resolved_node;
+  };
+
+  void visit (AST::TypeParam &param) override
+  {
+    ok = true;
+
+    // for now lets focus on handling the basics: like struct<T> { a:T, ....}
+    resolver->get_type_scope ().insert (
+      param.get_type_representation (), param.get_node_id (),
+      param.get_locus (), false,
+      [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (param.get_locus (),
+		       "generic param redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
+  }
+
+private:
+  ResolveGenericParam (NodeId parent) : ResolverBase (parent), ok (false) {}
 
   bool ok;
 };

@@ -37,8 +37,6 @@ public:
     item->accept_vis (resolver);
   };
 
-  ~ResolveItem () {}
-
   void visit (AST::TupleStruct &struct_decl)
   {
     struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
@@ -50,11 +48,25 @@ public:
 
   void visit (AST::StructStruct &struct_decl)
   {
+    NodeId scope_node_id = struct_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (struct_decl.has_generics ())
+      {
+	for (auto &generic : struct_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (),
+				     struct_decl.get_node_id ());
+	  }
+      }
+
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
       return true;
     });
+
+    resolver->get_type_scope ().pop ();
   }
 
   void visit (AST::StaticItem &var)

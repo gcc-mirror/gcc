@@ -66,6 +66,8 @@ class TypeParam : public GenericParam
   Location locus;
 
 public:
+  Identifier get_type_representation () const { return type_representation; }
+
   // Returns whether the type of the type param has been specified.
   bool has_type () const { return type != nullptr; }
 
@@ -80,7 +82,8 @@ public:
 	     = std::vector<std::unique_ptr<TypeParamBound> > (),
 	     std::unique_ptr<Type> type = nullptr,
 	     Attribute outer_attr = Attribute::create_empty ())
-    : outer_attr (std::move (outer_attr)),
+    : GenericParam (Analysis::Mappings::get ()->get_next_node_id ()),
+      outer_attr (std::move (outer_attr)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
       type (std::move (type)), locus (locus)
@@ -88,7 +91,7 @@ public:
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
-    : outer_attr (other.outer_attr),
+    : GenericParam (other.node_id), outer_attr (other.outer_attr),
       type_representation (other.type_representation), locus (other.locus)
   {
     // guard to prevent null pointer dereference
@@ -106,6 +109,7 @@ public:
     type_representation = other.type_representation;
     outer_attr = other.outer_attr;
     locus = other.locus;
+    node_id = other.node_id;
 
     // guard to prevent null pointer dereference
     if (other.type != nullptr)
@@ -127,6 +131,8 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override final { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1756,6 +1762,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Location get_locus_slow () const final { return get_locus (); };
+
   // Invalid if name is empty, so base stripping on that.
   void mark_for_strip () override { struct_name = ""; }
   bool is_marked_for_strip () const override { return struct_name.empty (); }
@@ -1949,7 +1957,6 @@ public:
 	      std::move (outer_attrs)),
       is_unit (true)
   {}
-  // TODO: can a unit struct have generic fields? assuming yes for now.
 
   /* Returns whether the struct is a unit struct - struct defined without
    * fields. This is important because it also means an implicit constant of its

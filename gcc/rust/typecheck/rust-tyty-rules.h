@@ -55,8 +55,17 @@ public:
 
      This method is meant to be used internally by Ty. If you're trying to unify
      two ty, you can simply call `unify` on ty themselves. */
-  BaseType *unify (BaseType *other)
+  virtual BaseType *unify (BaseType *other)
   {
+    if (other->get_kind () == TypeKind::PARAM)
+      {
+	ParamType *p = static_cast<ParamType *> (other);
+	if (p->can_resolve ())
+	  {
+	    other = p->resolve ();
+	  }
+      }
+
     other->accept_vis (*this);
     if (resolved != nullptr)
       {
@@ -197,14 +206,6 @@ public:
 		   type.as_string ().c_str ());
   }
 
-  virtual void visit (StructFieldType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
-
   virtual void visit (CharType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -219,6 +220,15 @@ public:
     rust_error_at (ref_locus, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
+  }
+
+  virtual void visit (ParamType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [ParamTy <%s>]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+    gcc_unreachable ();
   }
 
 protected:
@@ -461,28 +471,6 @@ private:
   InferType *base;
 };
 
-class StructFieldTypeRules : public BaseRules
-{
-public:
-  StructFieldTypeRules (StructFieldType *base) : BaseRules (base), base (base)
-  {}
-
-  void visit (StructFieldType &type)
-  {
-    BaseType *ty = base->get_field_type ()->unify (type.get_field_type ());
-    if (ty == nullptr)
-      return;
-
-    resolved = new TyTy::StructFieldType (type.get_ref (), type.get_ty_ref (),
-					  type.get_name (), ty);
-  }
-
-private:
-  BaseType *get_base () override { return base; }
-
-  StructFieldType *base;
-};
-
 class UnitRules : public BaseRules
 {
 public:
@@ -718,7 +706,7 @@ class ADTRules : public BaseRules
 public:
   ADTRules (ADTType *base) : BaseRules (base), base (base) {}
 
-  void visit (ADTType &type)
+  void visit (ADTType &type) override
   {
     if (base->num_fields () != type.num_fields ())
       {
@@ -726,24 +714,23 @@ public:
 	return;
       }
 
-    std::vector<TyTy::StructFieldType *> fields;
     for (size_t i = 0; i < type.num_fields (); ++i)
       {
 	TyTy::StructFieldType *base_field = base->get_field (i);
 	TyTy::StructFieldType *other_field = type.get_field (i);
 
-	BaseType *unified_ty = base_field->unify (other_field);
+	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
+	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
+
+	BaseType *unified_ty = this_field_ty->unify (other_field_ty);
 	if (unified_ty == nullptr)
 	  {
 	    BaseRules::visit (type);
 	    return;
 	  }
-
-	fields.push_back ((TyTy::StructFieldType *) unified_ty);
       }
 
-    resolved = new TyTy::ADTType (type.get_ref (), type.get_ty_ref (),
-				  type.get_name (), fields);
+    resolved = base->clone ();
   }
 
 private:
@@ -887,6 +874,46 @@ private:
   BaseType *get_base () override { return base; }
 
   ReferenceType *base;
+};
+
+class ParamRules : public BaseRules
+{
+public:
+  ParamRules (ParamType *base) : BaseRules (base), base (base) {}
+
+  // param types are a placeholder we shouldn't have cases where we unify
+  // against it. eg: struct foo<T> { a: T }; When we invoke it we can do either:
+  //
+  // foo<i32>{ a: 123 }.
+  // Then this enforces the i32 type to be referenced on the
+  // field via an hirid.
+  //
+  // rust also allows for a = foo{a:123}; Where we can use an Inference Variable
+  // to handle the typing of the struct
+  BaseType *unify (BaseType *other) override final
+  {
+    if (base->get_ref () == base->get_ty_ref ())
+      {
+	Location locus = mappings->lookup_location (base->get_ref ());
+	rust_fatal_error (locus,
+			  "invalid use of unify with ParamTy [%s] and [%s]",
+			  base->as_string ().c_str (),
+			  other->as_string ().c_str ());
+	return nullptr;
+      }
+
+    auto context = Resolver::TypeCheckContext::get ();
+    BaseType *lookup = nullptr;
+    bool ok = context->lookup_type (base->get_ty_ref (), &lookup);
+    rust_assert (ok);
+
+    return lookup->unify (other);
+  }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  ParamType *base;
 };
 
 } // namespace TyTy

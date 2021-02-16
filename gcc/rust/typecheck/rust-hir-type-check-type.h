@@ -62,6 +62,29 @@ private:
   size_t result;
 }; // namespace Resolver
 
+class TypeCheckResolveGenericArguments : public TypeCheckBase
+{
+public:
+  static HIR::GenericArgs resolve (HIR::TypePathSegment *segment)
+  {
+    TypeCheckResolveGenericArguments resolver;
+    segment->accept_vis (resolver);
+    return resolver.args;
+  };
+
+  void visit (HIR::TypePathSegmentGeneric &generic) override
+  {
+    args = generic.get_generic_args ();
+  }
+
+private:
+  TypeCheckResolveGenericArguments ()
+    : TypeCheckBase (), args (HIR::GenericArgs::create_empty ())
+  {}
+
+  HIR::GenericArgs args;
+};
+
 class TypeCheckType : public TypeCheckBase
 {
 public:
@@ -71,11 +94,7 @@ public:
     type->accept_vis (resolver);
 
     if (resolver.translated == nullptr)
-      {
-	rust_error_at (Location (), "failed to translate %s",
-		       type->as_string ().c_str ());
-	return new TyTy::ErrorType (type->get_mappings ().get_hirid ());
-      }
+      return new TyTy::ErrorType (type->get_mappings ().get_hirid ());
 
     resolver.context->insert_type (type->get_mappings (), resolver.translated);
     return resolver.translated;
@@ -156,10 +175,65 @@ public:
 	    translated = translated->clone ();
 	    auto ref = path.get_mappings ().get_hirid ();
 	    translated->set_ref (ref);
+
+	    HIR::TypePathSegment *final_seg = path.get_final_segment ();
+	    HIR::GenericArgs args
+	      = TypeCheckResolveGenericArguments::resolve (final_seg);
+
+	    bool path_declared_generic_arguments = !args.is_empty ();
+	    if (path_declared_generic_arguments)
+	      {
+		if (translated->has_subsititions_defined ())
+		  {
+		    // so far we only support ADT so lets just handle it here
+		    // for now
+		    if (translated->get_kind () != TyTy::TypeKind::ADT)
+		      {
+			rust_error_at (
+			  path.get_locus (),
+			  "unsupported type for generic substitution: %s",
+			  translated->as_string ().c_str ());
+			return;
+		      }
+
+		    TyTy::ADTType *adt
+		      = static_cast<TyTy::ADTType *> (translated);
+		    translated = adt->handle_substitions (args);
+		  }
+		else
+		  {
+		    rust_error_at (
+		      path.get_locus (),
+		      "TypePath %s declares generic argument's but "
+		      "the type %s does not have any",
+		      path.as_string ().c_str (),
+		      translated->as_string ().c_str ());
+		    return;
+		  }
+	      }
+	    else if (translated->supports_substitions ())
+	      {
+		// so far we only support ADT so lets just handle it here
+		// for now
+		if (translated->get_kind () != TyTy::TypeKind::ADT)
+		  {
+		    rust_error_at (
+		      path.get_locus (),
+		      "unsupported type for generic substitution: %s",
+		      translated->as_string ().c_str ());
+		    return;
+		  }
+
+		TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (translated);
+		translated = adt->infer_substitions ();
+	      }
+
 	    return;
 	  }
       }
-    gcc_unreachable ();
+
+    rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
+		   path.as_string ().c_str ());
   }
 
   void visit (HIR::ArrayType &type)
@@ -195,6 +269,36 @@ private:
   TypeCheckType () : TypeCheckBase (), translated (nullptr) {}
 
   TyTy::BaseType *translated;
+};
+
+class TypeResolveGenericParam : public TypeCheckBase
+{
+public:
+  static TyTy::ParamType *Resolve (HIR::GenericParam *param)
+  {
+    TypeResolveGenericParam resolver;
+    param->accept_vis (resolver);
+
+    if (resolver.resolved == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "failed to setup generic parameter");
+	return nullptr;
+      }
+
+    return resolver.resolved;
+  }
+
+  void visit (HIR::TypeParam &param) override
+  {
+    resolved = new TyTy::ParamType (param.get_type_representation (),
+				    param.get_mappings ().get_hirid (), param);
+  }
+
+private:
+  TypeResolveGenericParam () : TypeCheckBase (), resolved (nullptr) {}
+
+  TyTy::ParamType *resolved;
 };
 
 } // namespace Resolver

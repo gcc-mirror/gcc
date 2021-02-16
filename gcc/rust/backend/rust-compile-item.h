@@ -39,34 +39,6 @@ public:
     item->accept_vis (compiler);
   }
 
-  void visit (HIR::TupleStruct &struct_decl)
-  {
-    TyTy::BaseType *resolved = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (
-	  struct_decl.get_mappings ().get_hirid (), &resolved))
-      {
-	rust_fatal_error (struct_decl.get_locus (),
-			  "Failed to lookup type for struct decl");
-	return;
-      }
-
-    TyTyResolveCompile::compile (ctx, resolved);
-  }
-
-  void visit (HIR::StructStruct &struct_decl)
-  {
-    TyTy::BaseType *resolved = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (
-	  struct_decl.get_mappings ().get_hirid (), &resolved))
-      {
-	rust_fatal_error (struct_decl.get_locus (),
-			  "Failed to lookup type for struct decl");
-	return;
-      }
-
-    TyTyResolveCompile::compile (ctx, resolved);
-  }
-
   void visit (HIR::StaticItem &var)
   {
     TyTy::BaseType *resolved_type = nullptr;

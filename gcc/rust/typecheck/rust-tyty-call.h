@@ -42,7 +42,6 @@ public:
   void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
   void visit (TupleType &type) override { gcc_unreachable (); }
-  void visit (StructFieldType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }
   void visit (BoolType &type) override { gcc_unreachable (); }
   void visit (IntType &type) override { gcc_unreachable (); }
@@ -53,6 +52,7 @@ public:
   void visit (ErrorType &type) override { gcc_unreachable (); }
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
+  void visit (ParamType &) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -86,7 +86,6 @@ public:
   void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
   void visit (TupleType &type) override { gcc_unreachable (); }
-  void visit (StructFieldType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }
   void visit (BoolType &type) override { gcc_unreachable (); }
   void visit (IntType &type) override { gcc_unreachable (); }
@@ -98,6 +97,7 @@ public:
   void visit (ADTType &type) override { gcc_unreachable (); };
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
+  void visit (ParamType &) override { gcc_unreachable (); }
 
   // call fns
   void visit (FnType &type) override;

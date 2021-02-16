@@ -54,6 +54,12 @@ public:
   void visit (AST::TupleStruct &struct_decl)
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (struct_decl.has_generics ())
+      {
+	generic_params
+	  = lower_generic_params (struct_decl.get_generic_params ());
+      }
+
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -104,6 +110,12 @@ public:
   void visit (AST::StructStruct &struct_decl)
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (struct_decl.has_generics ())
+      {
+	generic_params
+	  = lower_generic_params (struct_decl.get_generic_params ());
+      }
+
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -324,6 +336,19 @@ public:
   }
 
 private:
+  std::vector<std::unique_ptr<HIR::GenericParam> > lower_generic_params (
+    std::vector<std::unique_ptr<AST::GenericParam> > &params)
+  {
+    std::vector<std::unique_ptr<HIR::GenericParam> > lowered;
+    for (auto &ast_param : params)
+      {
+	auto hir_param = ASTLowerGenericParam::translate (ast_param.get ());
+	lowered.push_back (std::unique_ptr<HIR::GenericParam> (hir_param));
+      }
+
+    return lowered;
+  }
+
   ASTLoweringItem () : translated (nullptr) {}
 
   HIR::Item *translated;

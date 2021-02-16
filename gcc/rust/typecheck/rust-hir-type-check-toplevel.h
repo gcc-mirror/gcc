@@ -40,6 +40,20 @@ public:
 
   void visit (HIR::TupleStruct &struct_decl)
   {
+    std::vector<TyTy::SubstitionMapping> substitions;
+    if (struct_decl.has_generics ())
+      {
+	for (auto &generic_param : struct_decl.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitions.push_back (
+	      TyTy::SubstitionMapping (generic_param, param_type));
+	  }
+      }
+
     std::vector<TyTy::StructFieldType *> fields;
 
     size_t idx = 0;
@@ -57,13 +71,29 @@ public:
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), std::move (fields));
+			   mappings->get_next_hir_id (),
+			   struct_decl.get_identifier (), std::move (fields),
+			   std::move (substitions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
   void visit (HIR::StructStruct &struct_decl)
   {
+    std::vector<TyTy::SubstitionMapping> substitions;
+    if (struct_decl.has_generics ())
+      {
+	for (auto &generic_param : struct_decl.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitions.push_back (
+	      TyTy::SubstitionMapping (generic_param, param_type));
+	  }
+      }
+
     std::vector<TyTy::StructFieldType *> fields;
     struct_decl.iterate ([&] (HIR::StructField &field) mutable -> bool {
       TyTy::BaseType *field_type
@@ -78,7 +108,9 @@ public:
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
-			   struct_decl.get_identifier (), std::move (fields));
+			   mappings->get_next_hir_id (),
+			   struct_decl.get_identifier (), std::move (fields),
+			   std::move (substitions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }

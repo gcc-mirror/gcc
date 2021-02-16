@@ -1209,9 +1209,18 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  virtual Location get_locus_slow () const = 0;
+
+  NodeId get_node_id () { return node_id; }
+
 protected:
+  GenericParam () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  GenericParam (NodeId node_id) : node_id (node_id) {}
+
   // Clone function implementation as pure virtual method
   virtual GenericParam *clone_generic_param_impl () const = 0;
+
+  NodeId node_id;
 };
 
 // A lifetime generic parameter (as opposed to a type generic parameter)
@@ -1250,6 +1259,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override final { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

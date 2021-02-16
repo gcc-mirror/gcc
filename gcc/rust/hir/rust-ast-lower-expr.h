@@ -74,27 +74,7 @@ public:
     return compiler.translated;
   }
 
-  void visit (AST::PathInExpression &expr)
-  {
-    std::vector<HIR::PathExprSegment> path_segments;
-    expr.iterate_path_segments ([&] (AST::PathExprSegment &s) mutable -> bool {
-      rust_assert (s.has_generic_args () == false); // TODO
-
-      HIR::PathIdentSegment is (s.get_ident_segment ().as_string ());
-      HIR::PathExprSegment seg (is, s.get_locus ());
-      path_segments.push_back (seg);
-      return true;
-    });
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-
-    translated = new HIR::PathInExpression (mapping, std::move (path_segments),
-					    expr.get_locus (),
-					    expr.opening_scope_resolution ());
-  }
+  void visit (AST::PathInExpression &expr) override;
 
 private:
   ASTLowerPathInExpression () : translated (nullptr) {}

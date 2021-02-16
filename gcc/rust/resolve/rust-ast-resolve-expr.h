@@ -27,6 +27,21 @@
 namespace Rust {
 namespace Resolver {
 
+class ResolvePath : public ResolverBase
+{
+public:
+  static void go (AST::PathInExpression *expr, NodeId parent)
+  {
+    ResolvePath resolver (parent);
+    resolver.resolve_path (expr);
+  }
+
+private:
+  ResolvePath (NodeId parent) : ResolverBase (parent) {}
+
+  void resolve_path (AST::PathInExpression *expr);
+};
+
 class ResolveExpr : public ResolverBase
 {
 public:
@@ -50,31 +65,7 @@ public:
       ResolveExpr::go (elem.get (), expr.get_node_id ());
   }
 
-  void visit (AST::PathInExpression &expr)
-  {
-    // name scope first
-    if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
-      {
-	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
-	resolver->insert_new_definition (expr.get_node_id (),
-					 Definition{expr.get_node_id (),
-						    parent});
-      }
-    // check the type scope
-    else if (resolver->get_type_scope ().lookup (expr.as_string (),
-						 &resolved_node))
-      {
-	resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
-	resolver->insert_new_definition (expr.get_node_id (),
-					 Definition{expr.get_node_id (),
-						    parent});
-      }
-    else
-      {
-	rust_error_at (expr.get_locus (), "unknown path %s",
-		       expr.as_string ().c_str ());
-      }
-  }
+  void visit (AST::PathInExpression &expr) { ResolvePath::go (&expr, parent); }
 
   void visit (AST::ReturnExpr &expr)
   {

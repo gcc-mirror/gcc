@@ -42,7 +42,6 @@ enum TypeKind
   UINT,
   FLOAT,
   UNIT,
-  FIELD,
   USIZE,
   ISIZE,
   // there are more to add...
@@ -68,6 +67,8 @@ public:
 
   virtual std::string as_string () const = 0;
 
+  virtual std::string get_name () const = 0;
+
   /* Unify two types. Returns a pointer to the newly-created unified ty, or
      nullptr if the two ty cannot be unified. The caller is responsible for
      releasing the memory of the returned ty. */
@@ -90,21 +91,28 @@ public:
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () = 0;
 
+  // get_combined_refs returns the chain of node refs involved in unification
   std::set<HirId> get_combined_refs () { return combined; }
 
   void append_reference (HirId id) { combined.insert (id); }
 
+  virtual bool supports_substitions () const { return false; }
+
+  virtual bool has_subsititions_defined () const { return false; }
+
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
-    : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs)
+    : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs),
+      mappings (Analysis::Mappings::get ())
   {}
 
   TypeKind kind;
   HirId ref;
   HirId ty_ref;
-
   std::set<HirId> combined;
+
+  Analysis::Mappings *mappings;
 };
 
 class InferType : public BaseType
@@ -129,7 +137,7 @@ public:
 
   void accept_vis (TyVisitor &vis) override;
 
-  bool is_unit () const override { return true; }
+  bool is_unit () const override { return false; }
 
   std::string as_string () const override;
 
@@ -138,6 +146,8 @@ public:
   BaseType *clone () final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
+
+  std::string get_name () const override final { return as_string (); }
 
 private:
   InferTypeKind infer_kind;
@@ -163,6 +173,8 @@ public:
   BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
+
+  std::string get_name () const override final { return as_string (); }
 };
 
 class UnitType : public BaseType
@@ -185,38 +197,31 @@ public:
   BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
+
+  std::string get_name () const override final { return as_string (); }
 };
 
-class StructFieldType : public BaseType
+class StructFieldType
 {
 public:
-  StructFieldType (HirId ref, std::string name, BaseType *ty,
-		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::FIELD, refs), name (name), ty (ty)
+  StructFieldType (HirId ref, std::string name, BaseType *ty)
+    : ref (ref), name (name), ty (ty)
   {}
 
-  StructFieldType (HirId ref, HirId ty_ref, std::string name, BaseType *ty,
-		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::FIELD, refs), name (name), ty (ty)
-  {}
+  HirId get_ref () const { return ref; }
 
-  void accept_vis (TyVisitor &vis) override;
+  std::string as_string () const;
 
-  bool is_unit () const override { return ty->is_unit (); }
-
-  std::string as_string () const override;
-
-  BaseType *unify (BaseType *other) override;
-
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const StructFieldType &other) const;
 
   std::string get_name () const { return name; }
 
   BaseType *get_field_type () const { return ty; }
 
-  BaseType *clone () final override;
+  StructFieldType *clone () const;
 
 private:
+  HirId ref;
   std::string name;
   BaseType *ty;
 };
@@ -225,6 +230,7 @@ class TupleType : public BaseType
 {
 public:
   TupleType (HirId ref, std::vector<HirId> fields,
+
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
   {}
@@ -259,24 +265,148 @@ public:
       }
   }
 
+  std::string get_name () const override final { return as_string (); }
+
 private:
   std::vector<HirId> fields;
 };
 
-class ADTType : public BaseType
+class ParamType : public BaseType
+{
+public:
+  ParamType (std::string symbol, HirId ref, HIR::GenericParam &param,
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PARAM), symbol (symbol), param (param)
+  {}
+
+  ParamType (std::string symbol, HirId ref, HirId ty_ref,
+	     HIR::GenericParam &param,
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::PARAM), symbol (symbol), param (param)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+
+  BaseType *clone () final override;
+
+  std::string get_symbol () const;
+
+  HIR::GenericParam &get_generic_param () { return param; }
+
+  bool can_resolve () const { return get_ref () != get_ty_ref (); }
+
+  BaseType *resolve ();
+
+  std::string get_name () const override final { return as_string (); }
+
+private:
+  std::string symbol;
+  HIR::GenericParam &param;
+};
+
+class SubstitionMapping
+{
+public:
+  SubstitionMapping (std::unique_ptr<HIR::GenericParam> &generic,
+		     ParamType *param)
+    : generic (generic), param (param)
+  {}
+
+  std::string as_string () const { return param->as_string (); }
+
+  void fill_param_ty (BaseType *type) { param->set_ty_ref (type->get_ref ()); }
+
+  SubstitionMapping clone ()
+  {
+    return SubstitionMapping (generic,
+			      static_cast<ParamType *> (param->clone ()));
+  }
+
+  const ParamType *get_param_ty () const { return param; }
+
+private:
+  std::unique_ptr<HIR::GenericParam> &generic;
+  ParamType *param;
+};
+
+template <class T> class SubstitionRef
+{
+public:
+  SubstitionRef (std::vector<SubstitionMapping> substitions)
+    : substitions (substitions)
+  {}
+
+  bool has_substitions () const { return substitions.size () > 0; }
+
+  std::string subst_as_string () const
+  {
+    std::string buffer;
+    for (size_t i = 0; i < substitions.size (); i++)
+      {
+	const SubstitionMapping &sub = substitions.at (i);
+	buffer += sub.as_string ();
+
+	if ((i + 1) < substitions.size ())
+	  buffer += ", ";
+      }
+
+    return buffer.empty () ? "" : "<" + buffer + ">";
+  }
+
+  size_t get_num_substitions () const { return substitions.size (); }
+
+  std::vector<SubstitionMapping> &get_substs () { return substitions; }
+
+  std::vector<SubstitionMapping> clone_substs ()
+  {
+    std::vector<SubstitionMapping> clone;
+    for (auto &sub : substitions)
+      clone.push_back (sub.clone ());
+
+    return clone;
+  }
+
+  virtual T *infer_substitions () = 0;
+
+  virtual T *handle_substitions (HIR::GenericArgs &generic_args) = 0;
+
+protected:
+  virtual void fill_in_at (size_t index, BaseType *type)
+  {
+    substitions.at (index).fill_param_ty (type);
+  }
+
+  SubstitionMapping get_substition_mapping_at (size_t index)
+  {
+    return substitions.at (index);
+  }
+
+private:
+  std::vector<SubstitionMapping> substitions;
+};
+
+class ADTType : public BaseType, public SubstitionRef<ADTType>
 {
 public:
   ADTType (HirId ref, std::string identifier,
 	   std::vector<StructFieldType *> fields,
+	   std::vector<SubstitionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ADT, refs), identifier (identifier),
+    : BaseType (ref, ref, TypeKind::ADT, refs),
+      SubstitionRef (std::move (subst_refs)), identifier (identifier),
       fields (fields)
   {}
 
   ADTType (HirId ref, HirId ty_ref, std::string identifier,
 	   std::vector<StructFieldType *> fields,
+	   std::vector<SubstitionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, refs), identifier (identifier),
+    : BaseType (ref, ty_ref, TypeKind::ADT, refs),
+      SubstitionRef (std::move (subst_refs)), identifier (identifier),
       fields (fields)
   {}
 
@@ -292,9 +422,18 @@ public:
 
   size_t num_fields () const { return fields.size (); }
 
-  std::string get_name () const { return identifier; }
+  std::string get_name () const override final
+  {
+    return identifier + subst_as_string ();
+  }
 
-  StructFieldType *get_field (size_t index) const { return fields.at (index); }
+  BaseType *get_field_type (size_t index);
+
+  const BaseType *get_field_type (size_t index) const;
+
+  const StructFieldType *get_field (size_t index) const;
+
+  StructFieldType *get_field (size_t index) { return fields.at (index); }
 
   StructFieldType *get_field (const std::string &lookup,
 			      size_t *index = nullptr) const
@@ -327,6 +466,21 @@ public:
       }
   }
 
+  bool supports_substitions () const override final { return true; }
+
+  bool has_subsititions_defined () const override final
+  {
+    return has_substitions ();
+  }
+
+  ADTType *infer_substitions () override final;
+
+  ADTType *handle_substitions (HIR::GenericArgs &generic_args) override final;
+
+  void fill_in_at (size_t index, BaseType *type) override final;
+
+  void fill_in_params_for (SubstitionMapping sub, BaseType *type);
+
 private:
   std::string identifier;
   std::vector<StructFieldType *> fields;
@@ -351,6 +505,8 @@ public:
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
 
   BaseType *return_type () { return type; }
 
@@ -408,6 +564,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string get_name () const override final { return as_string (); }
+
   BaseType *unify (BaseType *other) override;
 
   virtual bool is_equal (const BaseType &other) const override;
@@ -440,6 +598,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string get_name () const override final { return as_string (); }
+
   BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
@@ -469,6 +629,8 @@ public:
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
 
@@ -505,6 +667,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string get_name () const override final { return as_string (); }
+
   BaseType *unify (BaseType *other) override;
 
   UintKind get_kind () const { return uint_kind; }
@@ -538,6 +702,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string get_name () const override final { return as_string (); }
+
   BaseType *unify (BaseType *other) override;
 
   FloatKind get_kind () const { return float_kind; }
@@ -563,6 +729,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string get_name () const override final { return as_string (); }
+
   BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
@@ -582,6 +750,8 @@ public:
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
 
@@ -603,6 +773,8 @@ public:
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
 
@@ -629,6 +801,8 @@ public:
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
 

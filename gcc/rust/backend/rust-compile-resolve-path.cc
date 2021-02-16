@@ -84,7 +84,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
       CompileItem::compile (resolved_item, ctx);
       if (!ctx->lookup_function_decl (ref, &fn))
 	{
-	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
+	  rust_error_at (expr.get_locus (), "forward decl was not compiled 1");
 	  return;
 	}
     }
@@ -112,12 +112,14 @@ ResolvePathType::visit (HIR::PathInExpression &expr)
       return;
     }
 
-  // assumes paths are functions for now
-  if (!ctx->lookup_compiled_types (ref, &resolved))
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (ref, &tyty))
     {
-      rust_error_at (expr.get_locus (), "forward decl was not compiled");
+      rust_error_at (expr.get_locus (), "unknown type");
       return;
     }
+
+  resolved = TyTyResolveCompile::compile (ctx, tyty);
 }
 
 } // namespace Compile

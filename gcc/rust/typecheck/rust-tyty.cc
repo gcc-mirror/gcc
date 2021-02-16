@@ -20,7 +20,9 @@
 #include "rust-tyty-visitor.h"
 #include "rust-tyty-call.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
 namespace TyTy {
@@ -100,8 +102,6 @@ ErrorType::as_string () const
 BaseType *
 ErrorType::unify (BaseType *other)
 {
-  // FIXME
-  // rust_error_at ();
   return this;
 }
 
@@ -111,45 +111,24 @@ ErrorType::clone ()
   return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
-void
-StructFieldType::accept_vis (TyVisitor &vis)
-{
-  vis.visit (*this);
-}
-
 std::string
 StructFieldType::as_string () const
 {
   return name + ":" + ty->as_string ();
 }
 
-BaseType *
-StructFieldType::unify (BaseType *other)
-{
-  StructFieldTypeRules r (this);
-  return r.unify (other);
-}
-
 bool
-StructFieldType::is_equal (const BaseType &other) const
+StructFieldType::is_equal (const StructFieldType &other) const
 {
-  if (get_kind () != other.get_kind ())
-    {
-      return false;
-    }
-  else
-    {
-      auto other2 = static_cast<const StructFieldType &> (other);
-      return get_field_type () == other2.get_field_type ();
-    }
+  return get_name ().compare (other.get_name ()) == 0
+	 && get_field_type ()->is_equal (*other.get_field_type ());
 }
 
-BaseType *
-StructFieldType::clone ()
+StructFieldType *
+StructFieldType::clone () const
 {
-  return new StructFieldType (get_ref (), get_ty_ref (), get_name (),
-			      get_field_type ()->clone (),
-			      get_combined_refs ());
+  return new StructFieldType (get_ref (), get_name (),
+			      get_field_type ()->clone ());
 }
 
 void
@@ -161,15 +140,35 @@ ADTType::accept_vis (TyVisitor &vis)
 std::string
 ADTType::as_string () const
 {
-  // if (num_fields () == 0)
-  //   return identifier;
+  if (num_fields () == 0)
+    return identifier;
 
-  // std::string fields_buffer;
-  // for (auto &field : fields)
-  //   fields_buffer += field->as_string () + ", ";
+  std::string fields_buffer;
+  for (size_t i = 0; i < num_fields (); ++i)
+    {
+      fields_buffer += get_field (i)->as_string ();
+      if ((i + 1) < num_fields ())
+	fields_buffer += ", ";
+    }
 
-  // return identifier + "{" + fields_buffer + "}";
-  return identifier;
+  return identifier + subst_as_string () + "{" + fields_buffer + "}";
+}
+
+const StructFieldType *
+ADTType::get_field (size_t index) const
+{
+  return fields.at (index);
+}
+
+const BaseType *
+ADTType::get_field_type (size_t index) const
+{
+  const StructFieldType *ref = get_field (index);
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (ref->get_field_type ()->get_ref (), &lookup);
+  rust_assert (ok);
+  return lookup;
 }
 
 BaseType *
@@ -183,25 +182,19 @@ bool
 ADTType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const ADTType &> (other);
+  if (num_fields () != other2.num_fields ())
+    return false;
+
+  for (size_t i = 0; i < num_fields (); i++)
     {
-      return false;
+      if (!get_field (i)->is_equal (*other2.get_field (i)))
+	return false;
     }
-  else
-    {
-      auto other2 = static_cast<const ADTType &> (other);
-      if (num_fields () != other2.num_fields ())
-	{
-	  return false;
-	}
-      for (size_t i = 0; i < num_fields (); i++)
-	{
-	  if (!get_field (i)->is_equal (*other2.get_field (i)))
-	    {
-	      return false;
-	    }
-	}
-      return true;
-    }
+
+  return true;
 }
 
 BaseType *
@@ -211,8 +204,93 @@ ADTType::clone ()
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), get_name (), cloned_fields,
-		      get_combined_refs ());
+  return new ADTType (get_ref (), get_ty_ref (), identifier, cloned_fields,
+		      clone_substs (), get_combined_refs ());
+}
+
+ADTType *
+ADTType::infer_substitions ()
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  ADTType *adt = static_cast<ADTType *> (clone ());
+
+  for (auto &sub : adt->get_substs ())
+    {
+      // generate an new inference variable
+      InferType *infer = new InferType (mappings->get_next_hir_id (),
+					InferType::InferTypeKind::GENERAL);
+      context->insert_type (
+	Analysis::NodeMapping (mappings->get_current_crate (), UNKNOWN_NODEID,
+			       infer->get_ref (), UNKNOWN_LOCAL_DEFID),
+	infer);
+
+      sub.fill_param_ty (infer);
+      adt->fill_in_params_for (sub, infer);
+    }
+
+  // generate new ty ref id since this is an instantiate of the generic
+  adt->set_ty_ref (mappings->get_next_hir_id ());
+
+  return adt;
+}
+
+ADTType *
+ADTType::handle_substitions (HIR::GenericArgs &generic_args)
+{
+  if (generic_args.get_type_args ().size () != get_num_substitions ())
+    {
+      rust_error_at (generic_args.get_locus (),
+		     "invalid number of generic arguments to generic ADT type");
+      return nullptr;
+    }
+
+  ADTType *adt = static_cast<ADTType *> (clone ());
+  size_t index = 0;
+  for (auto &arg : generic_args.get_type_args ())
+    {
+      BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
+      if (resolved == nullptr)
+	{
+	  rust_error_at (generic_args.get_locus (),
+			 "failed to resolve type arguments");
+	  return nullptr;
+	}
+
+      adt->fill_in_at (index, resolved);
+      index++;
+    }
+
+  // generate new ty ref id since this is an instantiate of the generic
+  adt->set_ty_ref (mappings->get_next_hir_id ());
+
+  return adt;
+}
+
+void
+ADTType::fill_in_at (size_t index, BaseType *type)
+{
+  SubstitionMapping sub = get_substition_mapping_at (index);
+  SubstitionRef<ADTType>::fill_in_at (index, type);
+  fill_in_params_for (sub, type);
+}
+
+void
+ADTType::fill_in_params_for (SubstitionMapping sub, BaseType *type)
+{
+  iterate_fields ([&] (StructFieldType *field) mutable -> bool {
+    bool is_param_ty = field->get_field_type ()->get_kind () == TypeKind::PARAM;
+    if (!is_param_ty)
+      return true;
+
+    const ParamType *pp = sub.get_param_ty ();
+    ParamType *p = static_cast<ParamType *> (field->get_field_type ());
+
+    // for now let just see what symbols match up for the substitution
+    if (p->get_symbol ().compare (pp->get_symbol ()) == 0)
+      p->set_ty_ref (type->get_ref ());
+
+    return true;
+  });
 }
 
 void
@@ -637,14 +715,10 @@ bool
 ReferenceType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
-    {
-      return false;
-    }
-  else
-    {
-      auto other2 = static_cast<const ReferenceType &> (other);
-      return get_base () == other2.get_base ();
-    }
+    return false;
+
+  auto other2 = static_cast<const ReferenceType &> (other);
+  return get_base ()->is_equal (*other2.get_base ());
 }
 
 const BaseType *
@@ -672,6 +746,57 @@ ReferenceType::clone ()
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base,
 			    get_combined_refs ());
+}
+
+void
+ParamType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+ParamType::as_string () const
+{
+  if (get_ref () == get_ty_ref ())
+    return get_symbol ();
+
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (get_ty_ref (), &lookup);
+  rust_assert (ok);
+
+  return lookup->as_string ();
+}
+
+BaseType *
+ParamType::unify (BaseType *other)
+{
+  ParamRules r (this);
+  return r.unify (other);
+}
+
+BaseType *
+ParamType::clone ()
+{
+  return new ParamType (get_symbol (), get_ref (), get_ty_ref (),
+			get_generic_param (), get_combined_refs ());
+}
+
+std::string
+ParamType::get_symbol () const
+{
+  return symbol;
+}
+
+BaseType *
+ParamType::resolve ()
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (get_ty_ref (), &lookup);
+  rust_assert (ok);
+
+  return lookup;
 }
 
 // rust-tyty-call.h

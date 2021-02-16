@@ -274,7 +274,15 @@ public:
 
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::StructFieldType &) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &param) override
+  {
+    rust_assert (param.get_ref () != param.get_ty_ref ());
+
+    TyTy::BaseType *lookup = nullptr;
+    bool ok = ctx->get_tyctx ()->lookup_type (param.get_ty_ref (), &lookup);
+    rust_assert (ok);
+    lookup->accept_vis (*this);
+  }
 
   void visit (TyTy::FnType &type) override
   {
@@ -338,7 +346,7 @@ public:
     Btype *named_struct
       = ctx->get_backend ()->named_type (type.get_name (), struct_type_record,
 					 ctx->get_mappings ()->lookup_location (
-					   type.get_ty_ref ()));
+					   type.get_ref ()));
 
     ctx->push_type (named_struct);
     ctx->insert_compiled_type (type.get_ty_ref (), named_struct);

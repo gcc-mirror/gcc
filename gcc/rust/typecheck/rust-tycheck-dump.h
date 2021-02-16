@@ -32,9 +32,18 @@ public:
   {
     TypeResolverDump dumper;
     for (auto &item : crate.items)
-      item->accept_vis (dumper);
+      {
+	item->accept_vis (dumper);
+	dumper.dump += "\n";
+      }
 
     out << dumper.dump;
+  }
+
+  void visit (HIR::StructStruct &struct_decl) override
+  {
+    dump += indent () + "struct " + type_string (struct_decl.get_mappings ())
+	    + "\n";
   }
 
   void visit (HIR::InherentImpl &impl_block) override
@@ -177,6 +186,11 @@ public:
     dump += type_string (expr.get_mappings ());
   }
 
+  void visit (HIR::StructExprStructFields &expr) override
+  {
+    dump += "ctor: " + type_string (expr.get_mappings ());
+  }
+
 protected:
   std::string type_string (const Analysis::NodeMapping &mappings)
   {
@@ -192,8 +206,8 @@ protected:
       }
     buf += "]";
 
-    return "<" + lookup->as_string ()
-	   + " HIRID: " + std::to_string (mappings.get_hirid ())
+    std::string repr = lookup->as_string ();
+    return "<" + repr + " HIRID: " + std::to_string (mappings.get_hirid ())
 	   + " RF:" + std::to_string (lookup->get_ref ()) + " TF:"
 	   + std::to_string (lookup->get_ty_ref ()) + +" - " + buf + ">";
   }

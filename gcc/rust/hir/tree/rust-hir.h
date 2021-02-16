@@ -1114,9 +1114,17 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual Location get_locus_slow () const = 0;
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual GenericParam *clone_generic_param_impl () const = 0;
+
+  GenericParam (Analysis::NodeMapping mapping) : mappings (mapping) {}
+
+  Analysis::NodeMapping mappings;
 };
 
 // A lifetime generic parameter (as opposed to a type generic parameter)
@@ -1145,11 +1153,12 @@ public:
   bool is_error () const { return lifetime.is_error (); }
 
   // Constructor
-  LifetimeParam (Lifetime lifetime, Location locus = Location (),
+  LifetimeParam (Analysis::NodeMapping mappings, Lifetime lifetime,
+		 Location locus = Location (),
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
 		 Attribute outer_attr = Attribute::create_empty ())
-    : lifetime (std::move (lifetime)),
+    : GenericParam (mappings), lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
       outer_attr (std::move (outer_attr)), locus (locus)
   {}
@@ -1158,8 +1167,9 @@ public:
 
   // Copy constructor with clone
   LifetimeParam (LifetimeParam const &other)
-    : lifetime (other.lifetime), lifetime_bounds (other.lifetime_bounds),
-      outer_attr (other.outer_attr), locus (other.locus)
+    : GenericParam (other.mappings), lifetime (other.lifetime),
+      lifetime_bounds (other.lifetime_bounds), outer_attr (other.outer_attr),
+      locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone attribute
@@ -1169,6 +1179,7 @@ public:
     lifetime_bounds = other.lifetime_bounds;
     outer_attr = other.outer_attr;
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -1180,6 +1191,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override final { return get_locus (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

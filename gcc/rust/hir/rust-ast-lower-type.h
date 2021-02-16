@@ -121,6 +121,33 @@ public:
 				  segment.get_locus ());
   }
 
+  void visit (AST::TypePathSegmentGeneric &segment)
+  {
+    std::vector<HIR::GenericArgsBinding> binding_args; // TODO
+
+    std::string segment_name = segment.get_ident_segment ().as_string ();
+    bool has_separating_scope_resolution
+      = segment.get_separating_scope_resolution ();
+
+    std::vector<HIR::Lifetime> lifetime_args;
+    for (auto &lifetime : segment.get_generic_args ().get_lifetime_args ())
+      {
+	HIR::Lifetime l = lower_lifetime (lifetime);
+	lifetime_args.push_back (std::move (l));
+      }
+
+    std::vector<std::unique_ptr<HIR::Type> > type_args;
+    for (auto &type : segment.get_generic_args ().get_type_args ())
+      {
+	HIR::Type *t = ASTLoweringType::translate (type.get ());
+	type_args.push_back (std::unique_ptr<HIR::Type> (t));
+      }
+
+    translated_segment = new HIR::TypePathSegmentGeneric (
+      segment_name, has_separating_scope_resolution, std::move (lifetime_args),
+      std::move (type_args), std::move (binding_args), segment.get_locus ());
+  }
+
   void visit (AST::TypePath &path)
   {
     std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
@@ -213,6 +240,49 @@ private:
 
   HIR::Type *translated;
   HIR::TypePathSegment *translated_segment;
+};
+
+class ASTLowerGenericParam : public ASTLoweringBase
+{
+public:
+  static HIR::GenericParam *translate (AST::GenericParam *param)
+  {
+    ASTLowerGenericParam resolver;
+    param->accept_vis (resolver);
+
+    rust_assert (resolver.translated != nullptr);
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (),
+      param->get_locus_slow ());
+
+    return resolver.translated;
+  }
+
+  void visit (AST::TypeParam &param) override
+  {
+    HIR::Attribute outer_attr = HIR::Attribute::create_empty ();
+    std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+    HIR::Type *type = param.has_type ()
+			? ASTLoweringType::translate (param.get_type ().get ())
+			: nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::TypeParam (mapping, param.get_type_representation (),
+			    param.get_locus (), std::move (type_param_bounds),
+			    std::unique_ptr<Type> (type),
+			    std::move (outer_attr));
+  }
+
+private:
+  ASTLowerGenericParam () : ASTLoweringBase (), translated (nullptr) {}
+
+  HIR::GenericParam *translated;
 };
 
 } // namespace HIR

@@ -539,8 +539,16 @@ public:
 
   void visit (HIR::StructExprStructFields &struct_expr)
   {
-    Btype *type
-      = ResolvePathType::Compile (&struct_expr.get_struct_name (), ctx);
+    TyTy::BaseType *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_expr.get_mappings ().get_hirid (), &tyty))
+      {
+	rust_error_at (struct_expr.get_locus (), "unknown type");
+	return;
+      }
+
+    Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+    rust_assert (type != nullptr);
 
     // this assumes all fields are in order from type resolution and if a base
     // struct was specified those fields are filed via accesors
@@ -573,8 +581,8 @@ public:
 	return;
       }
     rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
+    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
 
-    TyTy::ADTType *adt = (TyTy::ADTType *) receiver;
     size_t index = 0;
     adt->get_field (expr.get_field_name (), &index);
 

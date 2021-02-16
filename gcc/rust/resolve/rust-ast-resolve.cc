@@ -368,5 +368,103 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
   ResolveExpr::go (&expr, field.get_node_id ());
 }
 
+// rust-ast-resolve-type.h
+
+void
+ResolveTypePath::visit (AST::TypePathSegmentGeneric &seg)
+{
+  AST::GenericArgs &generics = seg.get_generic_args ();
+  for (auto &gt : generics.get_type_args ())
+    ResolveType::go (gt.get (), UNKNOWN_NODEID);
+
+  if (seg.is_error ())
+    {
+      type_seg_failed_flag = true;
+      rust_error_at (Location (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return;
+    }
+
+  if (seg.get_separating_scope_resolution ())
+    path_buffer += "::";
+
+  path_buffer += seg.get_ident_segment ().as_string ();
+}
+
+void
+ResolveTypePath::visit (AST::TypePathSegment &seg)
+{
+  if (seg.is_error ())
+    {
+      type_seg_failed_flag = true;
+      rust_error_at (Location (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return;
+    }
+
+  if (seg.get_separating_scope_resolution ())
+    path_buffer += "::";
+
+  path_buffer += seg.get_ident_segment ().as_string ();
+}
+
+// rust-ast-resolve-expr.h
+
+void
+ResolvePath::resolve_path (AST::PathInExpression *expr)
+{
+  // this needs extended similar to the TypePath to lookup each segment
+  // in turn then look its rib for the next segment and so forth until we
+  // resolve to a final NodeId generic args can be ignored
+  std::string path_buf;
+  for (auto &seg : expr->get_segments ())
+    {
+      auto s = seg.get_ident_segment ();
+      if (s.is_error () && !seg.has_generic_args ())
+	{
+	  rust_error_at (expr->get_locus (), "malformed path");
+	  return;
+	}
+
+      if (seg.has_generic_args ())
+	{
+	  AST::GenericArgs &args = seg.get_generic_args ();
+	  for (auto &gt : args.get_type_args ())
+	    ResolveType::go (gt.get (), UNKNOWN_NODEID);
+	}
+
+      if (!s.is_error ())
+	{
+	  bool needs_sep = !path_buf.empty ();
+	  if (needs_sep)
+	    path_buf += "::";
+
+	  path_buf += s.as_string ();
+	}
+    }
+
+  // name scope first
+  if (resolver->get_name_scope ().lookup (path_buf, &resolved_node))
+    {
+      resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  // check the type scope
+  else if (resolver->get_type_scope ().lookup (path_buf, &resolved_node))
+    {
+      resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  else
+    {
+      rust_error_at (expr->get_locus (), "unknown path %s",
+		     expr->as_string ().c_str (), path_buf.c_str ());
+    }
+}
+
 } // namespace Resolver
 } // namespace Rust

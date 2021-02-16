@@ -57,12 +57,13 @@ public:
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
-  TypeParam (Identifier type_representation, Location locus = Location (),
+  TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
+	     Location locus = Location (),
 	     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound> > (),
 	     std::unique_ptr<Type> type = nullptr,
 	     Attribute outer_attr = Attribute::create_empty ())
-    : outer_attr (std::move (outer_attr)),
+    : GenericParam (mappings), outer_attr (std::move (outer_attr)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
       type (std::move (type)), locus (locus)
@@ -70,7 +71,7 @@ public:
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
-    : outer_attr (other.outer_attr),
+    : GenericParam (other.mappings), outer_attr (other.outer_attr),
       type_representation (other.type_representation),
       type (other.type->clone_type ()), locus (other.locus)
   {
@@ -87,6 +88,7 @@ public:
     type = other.type->clone_type ();
     outer_attr = other.outer_attr;
     locus = other.locus;
+    mappings = other.mappings;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -103,7 +105,11 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Location get_locus_slow () const override final { return get_locus (); }
+
   void accept_vis (HIRVisitor &vis) override;
+
+  Identifier get_type_representation () const { return type_representation; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1501,6 +1507,11 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Location get_locus () const { return locus; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
 
 protected:
   Struct (Analysis::NodeMapping mappings, Identifier struct_name,

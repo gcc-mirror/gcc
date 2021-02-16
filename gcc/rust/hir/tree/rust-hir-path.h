@@ -172,7 +172,21 @@ public:
 			std::vector<GenericArgsBinding> ());
   }
 
+  bool is_empty () const
+  {
+    return lifetime_args.size () == 0 && type_args.size () == 0
+	   && binding_args.size () == 0;
+  }
+
   std::string as_string () const;
+
+  std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; }
+
+  std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
+
+  std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
+
+  Location get_locus () const { return locus; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -230,6 +244,8 @@ public:
   Location get_locus () const { return locus; }
 
   PathIdentSegment get_segment () const { return segment_name; }
+
+  GenericArgs &get_generic_args () { return generic_args; }
 };
 
 // HIR node representing a pattern that involves a "path" - abstract base class
@@ -264,6 +280,8 @@ public:
 	  return;
       }
   }
+
+  PathExprSegment get_final_segment () const { return segments.back (); }
 };
 
 /* HIR node representing a path-in-expression pattern (path that allows generic
@@ -431,6 +449,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  GenericArgs get_generic_args () { return generic_args; }
 
 protected:
   // Use covariance to override base class method
@@ -653,12 +673,14 @@ public:
 
   void iterate_segments (std::function<bool (TypePathSegment *)> cb)
   {
-    for (auto it = segments.begin (); it != segments.end (); it++)
+    for (auto &seg : segments)
       {
-	if (!cb ((*it).get ()))
+	if (!cb (seg.get ()))
 	  return;
       }
   }
+
+  TypePathSegment *get_final_segment () { return segments.back ().get (); }
 };
 
 struct QualifiedPathType

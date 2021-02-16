@@ -196,6 +196,8 @@ public:
 
   // TODO: is this better? Or is a "vis_pattern" better?
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
+
+  std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe

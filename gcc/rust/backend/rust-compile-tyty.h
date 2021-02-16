@@ -48,8 +48,6 @@ public:
 
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::StructFieldType &) override { gcc_unreachable (); }
-
   void visit (TyTy::ADTType &) override { gcc_unreachable (); }
 
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
@@ -57,6 +55,8 @@ public:
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
 
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+
+  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
 
   void visit (TyTy::UnitType &) override { translated = backend->void_type (); }
 

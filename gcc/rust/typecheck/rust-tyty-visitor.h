@@ -29,7 +29,6 @@ class TyVisitor
 public:
   virtual void visit (UnitType &type) = 0;
   virtual void visit (InferType &type) = 0;
-  virtual void visit (StructFieldType &type) = 0;
   virtual void visit (ADTType &type) = 0;
   virtual void visit (TupleType &type) = 0;
   virtual void visit (FnType &type) = 0;
@@ -43,6 +42,7 @@ public:
   virtual void visit (ErrorType &type) = 0;
   virtual void visit (CharType &type) = 0;
   virtual void visit (ReferenceType &type) = 0;
+  virtual void visit (ParamType &type) = 0;
 };
 
 } // namespace TyTy
