@@ -66,14 +66,14 @@ public:
 
     // FIXME this can be simplified with
     // https://github.com/Rust-GCC/gccrs/issues/187
-    auto combined = receiver->combine (self_lookup);
-    if (combined == nullptr)
+    auto unified_ty = receiver->unify (self_lookup);
+    if (unified_ty == nullptr)
       {
 	// incompatible self argument then this is not a valid method for this
 	// receiver
 	return;
       }
-    delete combined;
+    delete unified_ty;
 
     probed.push_back (&method);
   }

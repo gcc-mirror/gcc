@@ -155,7 +155,7 @@ public:
 	return;
       }
 
-    infered = fn_return_tyty->combine (expr_ty);
+    infered = fn_return_tyty->unify (expr_ty);
     fn_return_tyty->append_reference (expr_ty->get_ref ());
     for (auto &ref : infered->get_combined_refs ())
       fn_return_tyty->append_reference (ref);
@@ -245,7 +245,7 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
 
-    auto result = lhs->combine (rhs);
+    auto result = lhs->unify (rhs);
     if (result->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_locus (),
@@ -469,7 +469,7 @@ public:
 	return;
       }
 
-    infered = lhs->combine (rhs);
+    infered = lhs->unify (rhs);
     infered->append_reference (lhs->get_ref ());
     infered->append_reference (rhs->get_ref ());
   }
@@ -479,7 +479,7 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
 
-    auto result = lhs->combine (rhs);
+    auto result = lhs->unify (rhs);
     if (result == nullptr || result->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
@@ -496,16 +496,16 @@ public:
 
     // we expect the lhs and rhs must be bools at this point
     TyTy::BoolType elhs (expr.get_mappings ().get_hirid ());
-    lhs = elhs.combine (lhs);
+    lhs = elhs.unify (lhs);
     if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
     TyTy::BoolType rlhs (expr.get_mappings ().get_hirid ());
-    rhs = elhs.combine (rhs);
+    rhs = elhs.unify (rhs);
     if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
-    infered = lhs->combine (rhs);
+    infered = lhs->unify (rhs);
     infered->append_reference (lhs->get_ref ());
     infered->append_reference (rhs->get_ref ());
   }
@@ -575,7 +575,7 @@ public:
     auto else_blk_resolved
       = TypeCheckExpr::Resolve (expr.get_else_block (), inside_loop);
 
-    infered = if_blk_resolved->combine (else_blk_resolved);
+    infered = if_blk_resolved->unify (else_blk_resolved);
   }
 
   void visit (HIR::IfExprConseqIf &expr)
@@ -585,7 +585,7 @@ public:
     auto else_blk
       = TypeCheckExpr::Resolve (expr.get_conseq_if_expr (), inside_loop);
 
-    infered = if_blk->combine (else_blk);
+    infered = if_blk->unify (else_blk);
   }
 
   void visit (HIR::BlockExpr &expr);
@@ -601,7 +601,7 @@ public:
 	return;
       }
 
-    auto resolved_index_expr = size_ty->combine (
+    auto resolved_index_expr = size_ty->unify (
       TypeCheckExpr::Resolve (expr.get_index_expr (), false));
     if (resolved_index_expr == nullptr)
       {
@@ -656,7 +656,7 @@ public:
     infered_array_elems = types[0];
     for (size_t i = 1; i < types.size (); i++)
       {
-	infered_array_elems = infered_array_elems->combine (types.at (i));
+	infered_array_elems = infered_array_elems->unify (types.at (i));
       }
 
     for (auto &elem : types)
@@ -822,8 +822,8 @@ public:
 	    return;
 	  }
 
-	TyTy::BaseType *combined = loop_context->combine (break_expr_tyty);
-	context->swap_head_loop_context (combined);
+	TyTy::BaseType *unified_ty = loop_context->unify (break_expr_tyty);
+	context->swap_head_loop_context (unified_ty);
       }
 
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());

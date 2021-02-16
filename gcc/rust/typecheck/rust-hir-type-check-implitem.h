@@ -43,7 +43,7 @@ public:
     TyTy::BaseType *expr_type
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
-    context->insert_type (constant.get_mappings (), type->combine (expr_type));
+    context->insert_type (constant.get_mappings (), type->unify (expr_type));
   }
 
   void visit (HIR::Function &function)
@@ -172,7 +172,7 @@ public:
     context->push_return_type (expected_ret_tyty);
 
     auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
-    auto ret_resolved = expected_ret_tyty->combine (result);
+    auto ret_resolved = expected_ret_tyty->unify (result);
     if (ret_resolved == nullptr)
       return;
 
@@ -205,7 +205,7 @@ public:
 
     auto result
       = TypeCheckExpr::Resolve (method.get_function_body ().get (), false);
-    auto ret_resolved = expected_ret_tyty->combine (result);
+    auto ret_resolved = expected_ret_tyty->unify (result);
     if (ret_resolved == nullptr)
       return;
 

@@ -73,7 +73,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 	  bool ok = context->lookup_builtin ("i32", &default_integer);
 	  rust_assert (ok);
 
-	  auto result = ty->combine (default_integer);
+	  auto result = ty->unify (default_integer);
 	  result->set_ref (id);
 	  context->insert_type (
 	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
@@ -87,7 +87,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 	  bool ok = context->lookup_builtin ("f32", &default_float);
 	  rust_assert (ok);
 
-	  auto result = ty->combine (default_float);
+	  auto result = ty->unify (default_float);
 	  result->set_ref (id);
 	  context->insert_type (
 	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
@@ -164,7 +164,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
       TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get (),
 				  false);
-      resolved = struct_path_resolved->combine (base_resolved);
+      resolved = struct_path_resolved->unify (base_resolved);
       if (resolved == nullptr)
 	{
 	  rust_fatal_error (
@@ -338,7 +338,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
-  resolved_field = field_type->get_field_type ()->combine (value);
+  resolved_field = field_type->get_field_type ()->unify (value);
   if (resolved_field != nullptr)
     {
       fields_assigned.insert (field.field_name);
@@ -367,7 +367,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  resolved_field = field_type->get_field_type ()->combine (value);
+  resolved_field = field_type->get_field_type ()->unify (value);
   if (resolved_field != nullptr)
     {
       fields_assigned.insert (field_name);
@@ -400,7 +400,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 			    field.get_locus ());
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr, false);
 
-  resolved_field = field_type->get_field_type ()->combine (value);
+  resolved_field = field_type->get_field_type ()->unify (value);
   if (resolved_field != nullptr)
     {
       fields_assigned.insert (field.field_name);

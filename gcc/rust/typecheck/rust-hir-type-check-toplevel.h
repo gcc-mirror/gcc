@@ -88,7 +88,7 @@ public:
     TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
     TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
 
-    context->insert_type (var.get_mappings (), type->combine (expr_type));
+    context->insert_type (var.get_mappings (), type->unify (expr_type));
   }
 
   void visit (HIR::ConstantItem &constant)
@@ -97,7 +97,7 @@ public:
     TyTy::BaseType *expr_type
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
-    context->insert_type (constant.get_mappings (), type->combine (expr_type));
+    context->insert_type (constant.get_mappings (), type->unify (expr_type));
   }
 
   void visit (HIR::Function &function)

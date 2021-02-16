@@ -38,10 +38,10 @@ UnitType::as_string () const
 }
 
 BaseType *
-UnitType::combine (BaseType *other)
+UnitType::unify (BaseType *other)
 {
   UnitRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -72,10 +72,10 @@ InferType::as_string () const
 }
 
 BaseType *
-InferType::combine (BaseType *other)
+InferType::unify (BaseType *other)
 {
   InferRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -98,7 +98,7 @@ ErrorType::as_string () const
 }
 
 BaseType *
-ErrorType::combine (BaseType *other)
+ErrorType::unify (BaseType *other)
 {
   // FIXME
   // rust_error_at ();
@@ -124,10 +124,10 @@ StructFieldType::as_string () const
 }
 
 BaseType *
-StructFieldType::combine (BaseType *other)
+StructFieldType::unify (BaseType *other)
 {
   StructFieldTypeRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -159,10 +159,10 @@ ADTType::as_string () const
 }
 
 BaseType *
-ADTType::combine (BaseType *other)
+ADTType::unify (BaseType *other)
 {
   ADTRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -205,10 +205,10 @@ TupleType::get_field (size_t index) const
 }
 
 BaseType *
-TupleType::combine (BaseType *other)
+TupleType::unify (BaseType *other)
 {
   TupleRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -241,10 +241,10 @@ FnType::as_string () const
 }
 
 BaseType *
-FnType::combine (BaseType *other)
+FnType::unify (BaseType *other)
 {
   FnRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -273,10 +273,10 @@ ArrayType::as_string () const
 }
 
 BaseType *
-ArrayType::combine (BaseType *other)
+ArrayType::unify (BaseType *other)
 {
   ArrayRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -309,10 +309,10 @@ BoolType::as_string () const
 }
 
 BaseType *
-BoolType::combine (BaseType *other)
+BoolType::unify (BaseType *other)
 {
   BoolRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -348,10 +348,10 @@ IntType::as_string () const
 }
 
 BaseType *
-IntType::combine (BaseType *other)
+IntType::unify (BaseType *other)
 {
   IntRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -388,10 +388,10 @@ UintType::as_string () const
 }
 
 BaseType *
-UintType::combine (BaseType *other)
+UintType::unify (BaseType *other)
 {
   UintRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -422,10 +422,10 @@ FloatType::as_string () const
 }
 
 BaseType *
-FloatType::combine (BaseType *other)
+FloatType::unify (BaseType *other)
 {
   FloatRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -448,10 +448,10 @@ USizeType::as_string () const
 }
 
 BaseType *
-USizeType::combine (BaseType *other)
+USizeType::unify (BaseType *other)
 {
   USizeRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -473,10 +473,10 @@ ISizeType::as_string () const
 }
 
 BaseType *
-ISizeType::combine (BaseType *other)
+ISizeType::unify (BaseType *other)
 {
   ISizeRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -498,10 +498,10 @@ CharType::as_string () const
 }
 
 BaseType *
-CharType::combine (BaseType *other)
+CharType::unify (BaseType *other)
 {
   CharRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 BaseType *
@@ -523,10 +523,10 @@ ReferenceType::as_string () const
 }
 
 BaseType *
-ReferenceType::combine (BaseType *other)
+ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
-  return r.combine (other);
+  return r.unify (other);
 }
 
 const BaseType *
@@ -581,7 +581,7 @@ TypeCheckCallExpr::visit (ADTType &type)
 	return false;
       }
 
-    auto res = field_tyty->combine (arg);
+    auto res = field_tyty->unify (arg);
     if (res == nullptr)
       return false;
 
@@ -623,7 +623,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	return false;
       }
 
-    auto resolved_argument_type = fnparam.second->combine (argument_expr_tyty);
+    auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
     if (resolved_argument_type == nullptr)
       {
 	rust_error_at (param->get_locus_slow (),
@@ -674,7 +674,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	return false;
       }
 
-    auto resolved_argument_type = fnparam.second->combine (argument_expr_tyty);
+    auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
     if (resolved_argument_type == nullptr)
       {
 	rust_error_at (param->get_locus_slow (),

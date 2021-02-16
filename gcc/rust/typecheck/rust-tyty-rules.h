@@ -33,7 +33,7 @@ class BaseRules : public TyVisitor
 public:
   virtual ~BaseRules () {}
 
-  BaseType *combine (BaseType *other)
+  BaseType *unify (BaseType *other)
   {
     other->accept_vis (*this);
     if (resolved != nullptr)
@@ -423,7 +423,7 @@ public:
 
   void visit (StructFieldType &type)
   {
-    BaseType *ty = base->get_field_type ()->combine (type.get_field_type ());
+    BaseType *ty = base->get_field_type ()->unify (type.get_field_type ());
     if (ty == nullptr)
       return;
 
@@ -480,17 +480,17 @@ public:
 	auto a = base->param_at (i).second;
 	auto b = type.param_at (i).second;
 
-	auto combined_param = a->combine (b);
-	if (combined_param == nullptr)
+	auto unified_param = a->unify (b);
+	if (unified_param == nullptr)
 	  {
 	    BaseRules::visit (type);
 	    return;
 	  }
       }
 
-    auto combined_return
-      = base->get_return_type ()->combine (type.get_return_type ());
-    if (combined_return == nullptr)
+    auto unified_return
+      = base->get_return_type ()->unify (type.get_return_type ());
+    if (unified_return == nullptr)
       {
 	BaseRules::visit (type);
 	return;
@@ -512,7 +512,7 @@ public:
   void visit (ArrayType &type) override
   {
     // check base type
-    auto base_resolved = base->get_type ()->combine (type.get_type ());
+    auto base_resolved = base->get_type ()->unify (type.get_type ());
     if (base_resolved == nullptr)
       {
 	// fixme add error message
@@ -670,14 +670,14 @@ public:
 	TyTy::StructFieldType *base_field = base->get_field (i);
 	TyTy::StructFieldType *other_field = type.get_field (i);
 
-	BaseType *combined = base_field->combine (other_field);
-	if (combined == nullptr)
+	BaseType *unified_ty = base_field->unify (other_field);
+	if (unified_ty == nullptr)
 	  {
 	    BaseRules::visit (type);
 	    return;
 	  }
 
-	fields.push_back ((TyTy::StructFieldType *) combined);
+	fields.push_back ((TyTy::StructFieldType *) unified_ty);
       }
 
     resolved = new TyTy::ADTType (type.get_ref (), type.get_ty_ref (),
@@ -707,14 +707,14 @@ public:
 	BaseType *bo = base->get_field (i);
 	BaseType *fo = type.get_field (i);
 
-	BaseType *combined = bo->combine (fo);
-	if (combined == nullptr)
+	BaseType *unified_ty = bo->unify (fo);
+	if (unified_ty == nullptr)
 	  {
 	    BaseRules::visit (type);
 	    return;
 	  }
 
-	fields.push_back (combined->get_ref ());
+	fields.push_back (unified_ty->get_ref ());
       }
 
     resolved
@@ -806,7 +806,7 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    TyTy::BaseType *base_resolved = base_type->combine (other_base_type);
+    TyTy::BaseType *base_resolved = base_type->unify (other_base_type);
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
 				  base_resolved->get_ref ());
   }

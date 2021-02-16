@@ -67,7 +67,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual BaseType *combine (BaseType *other) = 0;
+  virtual BaseType *unify (BaseType *other) = 0;
 
   virtual bool is_unit () const { return kind == TypeKind::UNIT; }
 
@@ -118,7 +118,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -145,7 +145,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -167,7 +167,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -191,7 +191,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   std::string get_name () const { return name; }
 
@@ -223,7 +223,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -267,7 +267,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -332,7 +332,7 @@ public:
 
   BaseType *return_type () { return type; }
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   size_t num_params () const { return params.size (); }
 
@@ -374,7 +374,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   size_t get_capacity () const { return capacity; }
 
@@ -404,7 +404,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -434,7 +434,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   IntKind get_kind () const { return int_kind; }
 
@@ -469,7 +469,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   UintKind get_kind () const { return uint_kind; }
 
@@ -502,7 +502,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   FloatKind get_kind () const { return float_kind; }
 
@@ -527,7 +527,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -547,7 +547,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -568,7 +568,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -594,7 +594,7 @@ public:
 
   std::string as_string () const override;
 
-  BaseType *combine (BaseType *other) override;
+  BaseType *unify (BaseType *other) override;
 
   BaseType *clone () final override;
 
