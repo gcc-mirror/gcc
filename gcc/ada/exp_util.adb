@@ -11485,7 +11485,8 @@ package body Exp_Util is
          return not Inside_A_Generic
            and then Full_Analysis
            and then Nkind (Enclosing_Declaration (Exp)) in
-                      N_Full_Type_Declaration
+                      N_Component_Declaration
+                    | N_Full_Type_Declaration
                     | N_Iterator_Specification
                     | N_Loop_Parameter_Specification
                     | N_Object_Renaming_Declaration
