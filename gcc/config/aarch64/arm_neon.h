@@ -20347,28 +20347,28 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
 {
-  return __a + __b * __c;
+  return __builtin_aarch64_float_mlav2sf (__a, __b, __c);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
 {
-  return __a + __b * __c;
+  return (float64x1_t) {__builtin_aarch64_float_mladf (__a[0], __b[0], __c[0])};
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
-  return __a + __b * __c;
+  return __builtin_aarch64_float_mlav4sf (__a, __b, __c);
 }
 
 __extension__ extern __inline float64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_f64 (float64x2_t __a, float64x2_t __b, float64x2_t __c)
 {
-  return __a + __b * __c;
+  return __builtin_aarch64_float_mlav2df (__a, __b, __c);
 }
 
 /* vmla_lane  */
@@ -20545,28 +20545,28 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
 {
-  return __a - __b * __c;
+  return __builtin_aarch64_float_mlsv2sf (__a, __b, __c);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
 {
-  return __a - __b * __c;
+  return (float64x1_t) {__builtin_aarch64_float_mlsdf (__a[0], __b[0], __c[0])};
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
-  return __a - __b * __c;
+  return __builtin_aarch64_float_mlsv4sf (__a, __b, __c);
 }
 
 __extension__ extern __inline float64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_f64 (float64x2_t __a, float64x2_t __b, float64x2_t __c)
 {
-  return __a - __b * __c;
+  return __builtin_aarch64_float_mlsv2df (__a, __b, __c);
 }
 
 /* vmls_lane  */

@@ -668,6 +668,8 @@
   BUILTIN_VHSDF (TERNOP, fnma, 4, FP)
   VAR1 (TERNOP, fnma, 4, FP, hf)
 
+  BUILTIN_VDQF_DF (TERNOP, float_mla, 0, FP)
+  BUILTIN_VDQF_DF (TERNOP, float_mls, 0, FP)
   BUILTIN_VDQSF (TERNOP, float_mla_n, 0, FP)
   BUILTIN_VDQSF (TERNOP, float_mls_n, 0, FP)
 

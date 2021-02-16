@@ -2636,6 +2636,38 @@
   [(set_attr "type" "neon_fp_abs_<stype><q>")]
 )
 
+(define_expand "aarch64_float_mla<mode>"
+  [(set (match_operand:VDQF_DF 0 "register_operand")
+	(plus:VDQF_DF
+	  (mult:VDQF_DF
+	    (match_operand:VDQF_DF 2 "register_operand")
+	    (match_operand:VDQF_DF 3 "register_operand"))
+	  (match_operand:VDQF_DF 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (scratch, operands[2], operands[3]));
+    emit_insn (gen_add<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_float_mls<mode>"
+  [(set (match_operand:VDQF_DF 0 "register_operand")
+	(minus:VDQF_DF
+	  (match_operand:VDQF_DF 1 "register_operand")
+	  (mult:VDQF_DF
+	    (match_operand:VDQF_DF 2 "register_operand")
+	    (match_operand:VDQF_DF 3 "register_operand"))))]
+  "TARGET_SIMD"
+  {
+    rtx scratch = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (scratch, operands[2], operands[3]));
+    emit_insn (gen_sub<mode>3 (operands[0], operands[1], scratch));
+    DONE;
+  }
+)
+
 (define_expand "aarch64_float_mla_n<mode>"
   [(set (match_operand:VDQSF 0 "register_operand")
 	(plus:VDQSF
