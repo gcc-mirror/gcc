@@ -5218,6 +5218,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				&& array_ref->next->type == REF_SUBSTRING)))
 		      gfc_error ("Unexpected substring reference in %s clause "
 				 "at %L", name, &n->where);
+		    else if (array_ref && array_ref->type == REF_INQUIRY)
+		      {
+			gcc_assert (array_ref->u.i == INQUIRY_RE
+				    || array_ref->u.i == INQUIRY_IM);
+			gfc_error ("Unexpected complex-parts designator "
+				   "reference in %s clause at %L",
+				   name, &n->where);
+		      }
 		    else if (!resolved
 			|| n->expr->expr_type != EXPR_VARIABLE
 			|| array_ref->next
