@@ -2083,21 +2083,10 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Avoid reporting spurious errors if the component is initialized with
-      --  a raise expression (which is legal in any expression context)
-
-      if Present (E)
-        and then
-          (Nkind (E) = N_Raise_Expression
-             or else (Nkind (E) = N_Qualified_Expression
-                        and then Nkind (Expression (E)) = N_Raise_Expression))
-      then
-         null;
-
       --  The parent type may be a private view with unknown discriminants,
       --  and thus unconstrained. Regular components must be constrained.
 
-      elsif not Is_Definite_Subtype (T)
+      if not Is_Definite_Subtype (T)
         and then Chars (Id) /= Name_uParent
       then
          if Is_Class_Wide_Type (T) then
