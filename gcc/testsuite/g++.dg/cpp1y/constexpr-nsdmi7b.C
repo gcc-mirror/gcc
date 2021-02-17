@@ -20,8 +20,8 @@ bar()
 {
   A a = foo();
   a.p->n = 5;
-  return a; // { dg-error "non-.constexpr." }
-}
+  return a;
+} // { dg-error "non-.constexpr." }
 
 constexpr int
 baz()
