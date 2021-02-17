@@ -130,6 +130,20 @@ StructFieldType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+StructFieldType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const StructFieldType &> (other);
+      return get_field_type () == other2.get_field_type ();
+    }
+}
+
 BaseType *
 StructFieldType::clone ()
 {
@@ -163,6 +177,31 @@ ADTType::unify (BaseType *other)
 {
   ADTRules r (this);
   return r.unify (other);
+}
+
+bool
+ADTType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const ADTType &> (other);
+      if (num_fields () != other2.num_fields ())
+	{
+	  return false;
+	}
+      for (int i = 0; i < num_fields (); i++)
+	{
+	  if (!get_field (i)->equals (*other2.get_field (i)))
+	    {
+	      return false;
+	    }
+	}
+      return true;
+    }
 }
 
 BaseType *
@@ -211,6 +250,31 @@ TupleType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+TupleType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const TupleType &> (other);
+      if (num_fields () != other2.num_fields ())
+	{
+	  return false;
+	}
+      for (int i = 0; i < num_fields (); i++)
+	{
+	  if (!get_field (i)->equals (*other2.get_field (i)))
+	    {
+	      return false;
+	    }
+	}
+      return true;
+    }
+}
+
 BaseType *
 TupleType::clone ()
 {
@@ -247,6 +311,31 @@ FnType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+FnType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const FnType &> (other);
+      if (!get_return_type ()->equals (*other2.get_return_type ()))
+	return false;
+      if (num_params () != other2.num_params ())
+	return false;
+      for (int i = 0; i < num_params (); i++)
+	{
+	  auto lhs = param_at (i).second;
+	  auto rhs = other2.param_at (i).second;
+	  if (!lhs->equals (*rhs))
+	    return false;
+	}
+      return true;
+    }
+}
+
 BaseType *
 FnType::clone ()
 {
@@ -277,6 +366,21 @@ ArrayType::unify (BaseType *other)
 {
   ArrayRules r (this);
   return r.unify (other);
+}
+
+bool
+ArrayType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const ArrayType &> (other);
+      return get_type () == other2.get_type ()
+	     && get_capacity () == other2.get_capacity ();
+    }
 }
 
 BaseType *
@@ -527,6 +631,20 @@ ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
   return r.unify (other);
+}
+
+bool
+ReferenceType::equals (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      return false;
+    }
+  else
+    {
+      auto other2 = static_cast<const ReferenceType &> (other);
+      return get_base () == other2.get_base ();
+    }
 }
 
 const BaseType *

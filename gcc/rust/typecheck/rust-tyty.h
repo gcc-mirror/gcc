@@ -73,6 +73,15 @@ public:
      releasing the memory of the returned ty. */
   virtual BaseType *unify (BaseType *other) = 0;
 
+  /* Check value equality between two ty. Type inference rules are ignored. Two
+     ty are considered equal if they're of the same kind, and
+       1. (For ADTs, arrays, tuples, refs) have the same underlying ty
+       2. (For functions) have the same signature */
+  virtual bool equals (const BaseType &other) const
+  {
+    return get_kind () == other.get_kind ();
+  }
+
   virtual bool is_unit () const { return kind == TypeKind::UNIT; }
 
   TypeKind get_kind () const { return kind; }
@@ -199,9 +208,11 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
+  virtual bool equals (const BaseType &other) const override;
+
   std::string get_name () const { return name; }
 
-  BaseType *get_field_type () { return ty; }
+  BaseType *get_field_type () const { return ty; }
 
   BaseType *clone () final override;
 
@@ -230,6 +241,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+
+  virtual bool equals (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -275,14 +288,16 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
+  virtual bool equals (const BaseType &other) const override;
+
   size_t num_fields () const { return fields.size (); }
 
   std::string get_name () const { return identifier; }
 
-  StructFieldType *get_field (size_t index) { return fields.at (index); }
+  StructFieldType *get_field (size_t index) const { return fields.at (index); }
 
   StructFieldType *get_field (const std::string &lookup,
-			      size_t *index = nullptr)
+			      size_t *index = nullptr) const
   {
     size_t i = 0;
     for (auto &field : fields)
@@ -341,6 +356,8 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
+  virtual bool equals (const BaseType &other) const override;
+
   size_t num_params () const { return params.size (); }
 
   std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
@@ -348,12 +365,22 @@ public:
     return params;
   }
 
-  std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx)
+  const std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params () const
   {
-    return params[idx];
+    return params;
   }
 
-  BaseType *get_return_type () { return type; }
+  std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx)
+  {
+    return params.at (idx);
+  }
+
+  const std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx) const
+  {
+    return params.at (idx);
+  }
+
+  BaseType *get_return_type () const { return type; }
 
   BaseType *clone () final override;
 
@@ -382,6 +409,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+
+  virtual bool equals (const BaseType &other) const override;
 
   size_t get_capacity () const { return capacity; }
 
@@ -602,6 +631,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+
+  virtual bool equals (const BaseType &other) const override;
 
   BaseType *clone () final override;
 
