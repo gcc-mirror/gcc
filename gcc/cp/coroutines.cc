@@ -949,7 +949,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
       e_proxy = o;
       o = NULL_TREE; /* The var is already present.  */
     }
-  else if (CLASS_TYPE_P (o_type) || TYPE_NEEDS_CONSTRUCTING (o_type))
+  else if (type_build_ctor_call (o_type))
     {
       e_proxy = get_awaitable_var (suspend_kind, o_type);
       releasing_vec arg (make_tree_vector_single (rvalue (o)));
@@ -2965,7 +2965,7 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  gcc_checking_assert (!already_present);
 	  tree inner = TREE_OPERAND (init, 1);
 	  gcc_checking_assert (TREE_CODE (inner) != COND_EXPR);
-	  if (TYPE_NEEDS_CONSTRUCTING (var_type))
+	  if (type_build_ctor_call (var_type))
 	    {
 	      releasing_vec p_in (make_tree_vector_single (init));
 	      init = build_special_member_call (var, complete_ctor_identifier,
@@ -2977,9 +2977,9 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  var_nest_node *ins
 	    = new var_nest_node (var, init, n->prev, n);
 	  /* We have to replace the target expr... */
-	  proxy_replace pr = {TREE_OPERAND (t, 0), var};
 	  *v.entry = var;
 	  /* ... and any uses of its var.  */
+	  proxy_replace pr = {TREE_OPERAND (t, 0), var};
 	  cp_walk_tree (&n->init, replace_proxy, &pr, NULL);
 	  /* Compiler-generated temporaries can also have uses in following
 	     arms of compound expressions, which will be listed in 'replace_in'
@@ -4681,7 +4681,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				   parm.frame_type, INIT_EXPR,
 				   DECL_SOURCE_LOCATION (arg), arg,
 				   DECL_ARG_TYPE (arg));
-	  else if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
+	  else if (type_build_ctor_call (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in;
 	      if (CLASS_TYPE_P (parm.frame_type)
@@ -4739,7 +4739,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					   false, tf_warning_or_error);
 
   tree promise_dtor = NULL_TREE;
-  if (TYPE_NEEDS_CONSTRUCTING (promise_type))
+  if (type_build_ctor_call (promise_type))
     {
       /* Do a placement new constructor for the promise type (we never call
 	 the new operator, just the constructor on the object in place in the
@@ -4820,7 +4820,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	The expression promise.get_return_object() is used to initialize the
 	glvalue result or... (see below)
 	Construct the return result directly.  */
-      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+      if (type_build_ctor_call (gro_type))
 	{
 	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
 	  r = build_special_member_call (DECL_RESULT (orig),
@@ -4853,7 +4853,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       DECL_IGNORED_P (gro) = true;
       add_decl_expr (gro);
       gro_bind_vars = gro;
-      if (TYPE_NEEDS_CONSTRUCTING (gro_type))
+      if (type_build_ctor_call (gro_type))
 	{
 	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
 	  r = build_special_member_call (gro, complete_ctor_identifier,
