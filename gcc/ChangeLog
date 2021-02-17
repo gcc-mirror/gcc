@@ -1,3 +1,29 @@
+2021-02-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/98096
+	* stmt.c (resolve_operand_name_1): Take inout operands into account
+	for access to labels by names.
+	* doc/extend.texi: Describe counting operands for accessing labels.
+
+2021-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/38474
+	* tree-ssa-structalias.c (variable_info::address_taken): New.
+	(new_var_info): Initialize address_taken.
+	(process_constraint): Set address_taken.
+	(solve_constraints): Use the new address_taken flag rather
+	than is_reg_var for sorting variables.
+	(dump_constraint): Dump the variable number if the name
+	is just NULL.
+
+2021-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99100
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): For num_calls != 1
+	multiply by 4096 and for inbranch by 8192.
+	* config/i386/i386.c (ix86_simd_clone_usable): For TARGET_AVX512F,
+	return 3, 2 or 1 for mangle letters 'b', 'c' or 'd'.
+
 2021-02-15  Maya Rashish  <coypu@sdf.org>
 
 	* config/aarch64/aarch64.c (aarch64_init_builtins):

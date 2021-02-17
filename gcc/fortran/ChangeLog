@@ -1,3 +1,15 @@
+2021-02-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* expr.c (gfc_is_simplify_contiguous): Handle REF_INQUIRY, i.e.
+	%im and %re which are EXPR_VARIABLE.
+	* openmp.c (resolve_omp_clauses): Diagnose %re/%im explicitly.
+
+2021-02-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99111
+	* io.c (resolve_tag_format): Reject BT_DERIVED/CLASS/VOID
+	as (array-valued) FORMAT tag.
+
 2021-02-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99043
