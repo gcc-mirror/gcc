@@ -616,12 +616,23 @@
    vlvgp\t%v0,%1,%N1"
   [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
 
-(define_insn "*fprx2_to_tf"
-  [(set (match_operand:TF               0 "nonimmediate_operand" "=v")
-	(subreg:TF (match_operand:FPRX2 1 "general_operand"       "f") 0))]
+(define_insn_and_split "fprx2_to_tf"
+  [(set (match_operand:TF               0 "nonimmediate_operand" "=v,AR")
+	(subreg:TF (match_operand:FPRX2 1 "general_operand"       "f,f") 0))]
   "TARGET_VXE"
-  "vmrhg\t%v0,%1,%N1"
-  [(set_attr "op_type" "VRR")])
+  "@
+   vmrhg\t%v0,%1,%N1
+   #"
+  "!(MEM_P (operands[0]) && MEM_VOLATILE_P (operands[0]))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  operands[2] = simplify_gen_subreg (DFmode, operands[0], TFmode, 0);
+  operands[3] = simplify_gen_subreg (DFmode, operands[1], FPRX2mode, 0);
+  operands[4] = simplify_gen_subreg (DFmode, operands[0], TFmode, 8);
+  operands[5] = simplify_gen_subreg (DFmode, operands[1], FPRX2mode, 8);
+}
+  [(set_attr "op_type" "VRR,*")])
 
 (define_insn "*vec_ti_to_v1ti"
   [(set (match_operand:V1TI                   0 "nonimmediate_operand" "=v,v,R,  v,  v,v")
@@ -752,6 +763,21 @@
   ; M4 == 5 corresponds to %V0[0] = %v1[1]; %V0[1] = %V0[1];
   "vpdi\t%V0,%v1,%V0,5"
   [(set_attr "op_type" "VRR")])
+
+(define_insn_and_split "tf_to_fprx2"
+  [(set (match_operand:FPRX2            0 "nonimmediate_operand" "=f,f")
+	(subreg:FPRX2 (match_operand:TF 1 "general_operand"       "v,AR") 0))]
+  "TARGET_VXE"
+  "#"
+  "!(MEM_P (operands[1]) && MEM_VOLATILE_P (operands[1]))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  operands[2] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 0);
+  operands[3] = simplify_gen_subreg (DFmode, operands[1], TFmode, 0);
+  operands[4] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 8);
+  operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
+})
 
 ; vec_perm_const for V2DI using vpdi?
 
