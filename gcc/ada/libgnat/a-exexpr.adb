@@ -282,7 +282,6 @@ package body Exception_Propagation is
 
    function Is_Handled_By_Others (E : Exception_Data_Ptr) return bool;
    pragma Export (C, Is_Handled_By_Others, "__gnat_is_handled_by_others");
-   pragma Warnings (Off, Is_Handled_By_Others);
 
    function Language_For (E : Exception_Data_Ptr) return Character;
    pragma Export (C, Language_For, "__gnat_language_for");
@@ -688,7 +687,7 @@ package body Exception_Propagation is
    -- Foreign_Data_For --
    ----------------------
 
-   function Foreign_Data_For (E : SSL.Exception_Data_Ptr) return Address is
+   function Foreign_Data_For (E : Exception_Data_Ptr) return Address is
    begin
       return E.Foreign_Data;
    end Foreign_Data_For;
@@ -697,7 +696,7 @@ package body Exception_Propagation is
    -- Is_Handled_By_Others --
    --------------------------
 
-   function Is_Handled_By_Others (E : SSL.Exception_Data_Ptr) return bool is
+   function Is_Handled_By_Others (E : Exception_Data_Ptr) return bool is
    begin
       return not bool (E.all.Not_Handled_By_Others);
    end Is_Handled_By_Others;
@@ -706,7 +705,7 @@ package body Exception_Propagation is
    -- Language_For --
    ------------------
 
-   function Language_For (E : SSL.Exception_Data_Ptr) return Character is
+   function Language_For (E : Exception_Data_Ptr) return Character is
    begin
       return E.all.Lang;
    end Language_For;
