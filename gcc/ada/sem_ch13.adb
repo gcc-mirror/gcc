@@ -16578,18 +16578,7 @@ package body Sem_Ch13 is
       --  here because the processing for generic instantiation always makes
       --  subtypes, and we want the original frozen actual types.
 
-      --  If we are dealing with private types, then do the check on their
-      --  fully declared counterparts if the full declarations have been
-      --  encountered (they don't have to be visible, but they must exist).
-
       Source := Ancestor_Subtype (Etype (First_Formal (Act_Unit)));
-
-      if Is_Private_Type (Source)
-        and then Present (Underlying_Type (Source))
-      then
-         Source := Underlying_Type (Source);
-      end if;
-
       Target := Ancestor_Subtype (Etype (Act_Unit));
 
       --  If either type is generic, the instantiation happens within a generic
@@ -16598,6 +16587,16 @@ package body Sem_Ch13 is
 
       if Is_Generic_Type (Source) or else Is_Generic_Type (Target) then
          return;
+      end if;
+
+      --  If we are dealing with private types, then do the check on their
+      --  fully declared counterparts if the full declarations have been
+      --  encountered (they don't have to be visible, but they must exist).
+
+      if Is_Private_Type (Source)
+        and then Present (Underlying_Type (Source))
+      then
+         Source := Underlying_Type (Source);
       end if;
 
       if Is_Private_Type (Target)
@@ -16692,8 +16691,8 @@ package body Sem_Ch13 is
       --  in the same unit as the unchecked conversion, then set the flag
       --  No_Strict_Aliasing (no strict aliasing is implicit here)
 
-      if Is_Access_Type (Target) and then
-        In_Same_Source_Unit (Target, N)
+      if Is_Access_Type (Target)
+        and then In_Same_Source_Unit (Target, N)
       then
          Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
       end if;
