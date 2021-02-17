@@ -16566,7 +16566,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
 }
 
 /* Exported macro data.  */
-struct macro_export {
+struct GTY(()) macro_export {
   cpp_macro *def;
   location_t undef_loc;
 
@@ -16731,7 +16731,7 @@ static vec<macro_import, va_heap, vl_embed> *macro_imports;
    indexes this array.  If the zeroth slot is not for module zero,
    there is no export.  */
 
-static vec<macro_export, va_heap, vl_embed> *macro_exports;
+static GTY(()) vec<macro_export, va_gc> *macro_exports;
 
 /* The reachable set of header imports from this TU.  */
 
