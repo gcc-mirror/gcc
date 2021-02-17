@@ -336,7 +336,8 @@ public:
   // Makes and returns a new TokenPtr of type STRING_LITERAL.
   static TokenPtr make_string (Location locus, const std::string &str)
   {
-    // return std::make_shared<Token> (STRING_LITERAL, locus, str, CORETYPE_STR);
+    // return std::make_shared<Token> (STRING_LITERAL, locus, str,
+    // CORETYPE_STR);
     return TokenPtr (new Token (STRING_LITERAL, locus, str, CORETYPE_STR));
   }
 
@@ -357,7 +358,7 @@ public:
   // Makes and returns a new TokenPtr of type BYTE_STRING_LITERAL (fix).
   static TokenPtr make_byte_string (Location locus, const std::string &str)
   {
-    // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str); 
+    // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str);
     return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, str));
   }
 

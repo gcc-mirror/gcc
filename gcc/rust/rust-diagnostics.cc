@@ -45,33 +45,27 @@ expand_format (const char *fmt)
       c++;
       switch (*c)
 	{
-	case '\0':
-	  {
+	  case '\0': {
 	    // malformed format string
 	    rust_unreachable ();
 	  }
-	case '%':
-	  {
+	  case '%': {
 	    ss << "%";
 	    break;
 	  }
-	case 'm':
-	  {
+	  case 'm': {
 	    ss << mformat_value ();
 	    break;
 	  }
-	case '<':
-	  {
+	  case '<': {
 	    ss << rust_open_quote ();
 	    break;
 	  }
-	case '>':
-	  {
+	  case '>': {
 	    ss << rust_close_quote ();
 	    break;
 	  }
-	case 'q':
-	  {
+	  case 'q': {
 	    ss << rust_open_quote ();
 	    c++;
 	    if (*c == 'm')
@@ -85,8 +79,7 @@ expand_format (const char *fmt)
 	    ss << rust_close_quote ();
 	    break;
 	  }
-	default:
-	  {
+	  default: {
 	    ss << "%" << *c;
 	  }
 	}

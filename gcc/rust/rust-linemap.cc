@@ -90,8 +90,8 @@ Gcc_linemap::to_string (Location location)
 
   // Strip the source file down to the base file, to reduce clutter.
   std::stringstream ss;
-  ss << lbasename (path) << ":" << SOURCE_LINE (lmo, location.gcc_location ()) 
-    << ":" << SOURCE_COLUMN (lmo, location.gcc_location ());
+  ss << lbasename (path) << ":" << SOURCE_LINE (lmo, location.gcc_location ())
+     << ":" << SOURCE_COLUMN (lmo, location.gcc_location ());
   return ss.str ();
 }
 

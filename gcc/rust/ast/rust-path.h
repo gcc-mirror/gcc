@@ -359,14 +359,20 @@ public:
   void mark_for_strip () override { remove_all_segments (); }
   bool is_marked_for_strip () const override { return is_error (); }
 
-  bool opening_scope_resolution () const { return has_opening_scope_resolution; }
+  bool opening_scope_resolution () const
+  {
+    return has_opening_scope_resolution;
+  }
 
   NodeId get_node_id () const override { return _node_id; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -848,8 +854,7 @@ public:
 
   QualifiedPathInExpression (QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
-			     std::vector<Attribute> outer_attrs,
-           Location locus)
+			     std::vector<Attribute> outer_attrs, Location locus)
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus)
@@ -864,8 +869,8 @@ public:
   // Creates an error qualified path in expression.
   static QualifiedPathInExpression create_error ()
   {
-    return QualifiedPathInExpression (QualifiedPathType::create_error (),
-				      {}, {}, Location ());
+    return QualifiedPathInExpression (QualifiedPathType::create_error (), {},
+				      {}, Location ());
   }
 
   Location get_locus () const { return locus; }
@@ -890,7 +895,10 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override { outer_attrs = std::move (new_attrs); }
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -902,12 +910,14 @@ protected:
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  QualifiedPathInExpression *clone_expr_without_block_impl () const final override
+  QualifiedPathInExpression *
+  clone_expr_without_block_impl () const final override
   {
     return clone_qual_path_in_expression_impl ();
   }
 
-  /*virtual*/ QualifiedPathInExpression *clone_qual_path_in_expression_impl () const
+  /*virtual*/ QualifiedPathInExpression *
+  clone_qual_path_in_expression_impl () const
   {
     return new QualifiedPathInExpression (*this);
   }

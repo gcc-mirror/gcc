@@ -82,7 +82,8 @@ public:
 		  std::swap (buffer, new_queue);
 	    */
 
-	    // TODO: determine overhead of this approach vs copy. Should be lower.
+	    // TODO: determine overhead of this approach vs copy. Should be
+	    // lower.
 	    std::vector<T> new_queue;
 	    new_queue.reserve (new_size);
 	    new_queue.insert (new_queue.begin (),
@@ -90,8 +91,9 @@ public:
 			      std::make_move_iterator (buffer.begin () + end));
 	    start = 0;
 	    end = num_queued_items;
-      // fill up rest of vector with junk so that indexing can work
-      new_queue.insert (new_queue.begin () + end, new_size - new_queue.size(), T ());
+	    // fill up rest of vector with junk so that indexing can work
+	    new_queue.insert (new_queue.begin () + end,
+			      new_size - new_queue.size (), T ());
 
 	    buffer = std::move (new_queue);
 	    /* this should be best method - std::move(range) would have

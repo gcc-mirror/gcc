@@ -35,15 +35,9 @@ struct Codepoint
   // Returns a C++ string containing string value of codepoint.
   std::string as_string ();
 
-  bool operator== (Codepoint other) const
-  {
-    return value == other.value;
-  }
+  bool operator== (Codepoint other) const { return value == other.value; }
 
-  bool operator!= (Codepoint other) const
-  {
-    return !operator== (other);
-  }
+  bool operator!= (Codepoint other) const { return !operator== (other); }
 };
 } // namespace Rust
 

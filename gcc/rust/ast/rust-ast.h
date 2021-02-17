@@ -144,7 +144,7 @@ class Token : public TokenTree, public MacroMatch
   const_TokenPtr tok_ref;
 
   /* new idea: wrapper around const_TokenPtr used for heterogeneuous storage in
-   * token trees. rather than convert back and forth when parsing macros, just 
+   * token trees. rather than convert back and forth when parsing macros, just
    * wrap it. */
 
 public:
@@ -1218,7 +1218,7 @@ protected:
 class LifetimeParam : public GenericParam
 {
   Lifetime lifetime;
-  std::vector<Lifetime> lifetime_bounds; 
+  std::vector<Lifetime> lifetime_bounds;
   Attribute outer_attr;
   Location locus;
 
@@ -1232,15 +1232,15 @@ public:
   // Creates an error state lifetime param.
   static LifetimeParam create_error ()
   {
-    return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (), Location ());
+    return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (),
+			  Location ());
   }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }
 
   // Constructor
-  LifetimeParam (Lifetime lifetime, 
-		 std::vector<Lifetime> lifetime_bounds,
+  LifetimeParam (Lifetime lifetime, std::vector<Lifetime> lifetime_bounds,
 		 Attribute outer_attr, Location locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
@@ -1262,7 +1262,8 @@ protected:
 
 // A macro item AST node - abstract base class
 class MacroItem : public Item
-{};
+{
+};
 
 // Item used in trait declarations - abstract base class
 class TraitItem

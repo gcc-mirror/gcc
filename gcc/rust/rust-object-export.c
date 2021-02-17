@@ -17,7 +17,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-// FIXME: doesn't this duplicate lots of code from rust-backend.c? Is one meant to be a replacement?
+// FIXME: doesn't this duplicate lots of code from rust-backend.c? Is one meant
+// to be a replacement?
 
 #include "config.h"
 #include "system.h"
@@ -30,7 +31,7 @@
 #include "simple-object.h"
 #include "stor-layout.h"
 #include "intl.h"
-#include "output.h"     /* for assemble_string */
+#include "output.h" /* for assemble_string */
 #include "common/common-target.h"
 
 // satisfy intellisense
@@ -105,14 +106,13 @@ rust_imported_unsafe (void)
 void
 rust_write_export_data (const char *bytes, unsigned int size)
 {
-  static section* sec;
+  static section *sec;
 
   if (sec == NULL)
     {
       gcc_assert (targetm_common.have_named_sections);
       sec = get_section (RUST_EXPORT_SECTION_NAME,
-                         TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG,
-                         NULL);
+			 TARGET_AIX ? SECTION_EXCLUDE : SECTION_DEBUG, NULL);
     }
 
   switch_to_section (sec);
@@ -146,20 +146,19 @@ rust_read_export_data (int fd, off_t offset, char **pbuf, size_t *plen,
   *plen = 0;
 
   sobj = simple_object_start_read (fd, offset, RUST_EXPORT_SEGMENT_NAME,
-                                   &errmsg, perr);
+				   &errmsg, perr);
   if (sobj == NULL)
     {
       /* If we get an error here, just pretend that we didn't find any
-         export data.  This is the right thing to do if the error is
-         that the file was not recognized as an object file.  This
-         will ignore file I/O errors, but it's not too big a deal
-         because we will wind up giving some other error later.  */
+	 export data.  This is the right thing to do if the error is
+	 that the file was not recognized as an object file.  This
+	 will ignore file I/O errors, but it's not too big a deal
+	 because we will wind up giving some other error later.  */
       return NULL;
     }
 
   found = simple_object_find_section (sobj, RUST_EXPORT_SECTION_NAME,
-                                      &sec_offset, &sec_length,
-                                      &errmsg, perr);
+				      &sec_offset, &sec_length, &errmsg, perr);
   simple_object_release_read (sobj);
   if (!found)
     return errmsg;
@@ -167,14 +166,14 @@ rust_read_export_data (int fd, off_t offset, char **pbuf, size_t *plen,
   if (lseek (fd, offset + sec_offset, SEEK_SET) < 0)
     {
       *perr = errno;
-      return _("lseek failed while reading export data");
+      return _ ("lseek failed while reading export data");
     }
 
   buf = XNEWVEC (char, sec_length);
   if (buf == NULL)
     {
       *perr = errno;
-      return _("memory allocation failed while reading export data");
+      return _ ("memory allocation failed while reading export data");
     }
 
   c = read (fd, buf, sec_length);
@@ -182,13 +181,13 @@ rust_read_export_data (int fd, off_t offset, char **pbuf, size_t *plen,
     {
       *perr = errno;
       free (buf);
-      return _("read failed while reading export data");
+      return _ ("read failed while reading export data");
     }
 
   if (c < sec_length)
     {
       free (buf);
-      return _("short read while reading export data");
+      return _ ("short read while reading export data");
     }
 
   *pbuf = buf;

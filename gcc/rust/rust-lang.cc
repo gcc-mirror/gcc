@@ -53,7 +53,8 @@
 
 /* General TODOs:
  *  - convert all copies of expensive-to-copy (deep copy) AST objects into
- * moves, if possible. Don't remove clone functionality - it may be required for e.g. HIR conversion.
+ * moves, if possible. Don't remove clone functionality - it may be required for
+ * e.g. HIR conversion.
  */
 
 #include "rust-system.h"
@@ -102,8 +103,10 @@ struct GTY (()) language_function
 static Rust::Session session;
 
 // has to be in same compilation unit as session, so here for now
-void rust_add_target_info(const char* key, const char* value) {
-    session.options.target_data.insert_key_value_pair(key, value);
+void
+rust_add_target_info (const char *key, const char *value)
+{
+  session.options.target_data.insert_key_value_pair (key, value);
 }
 
 /* Language hooks.  */

@@ -1,5 +1,5 @@
-/* rust-target.h -- Data structure definitions for target-specific Rust behavior.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+/* rust-target.h -- Data structure definitions for target-specific Rust
+   behavior. Copyright (C) 2020 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -20,7 +20,7 @@
 
 // TODO: find out what this stuff actually does
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
-#define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;
+#define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (*NAME) PARAMS;
 #define DEFHOOK_UNDOC DEFHOOK
 #define HOOKSTRUCT(FRAGMENT) FRAGMENT
 
@@ -28,13 +28,15 @@
 
 /* Each target can provide their own.  */
 extern struct gcc_targetrustm targetrustm;
-/* Some kind of structure to store all rust hook macros (like the TARGET_RUST_CPU_INFO).
- * This is required to store the function pointers for the target hooks so that the frontend can call them
+/* Some kind of structure to store all rust hook macros (like the
+ * TARGET_RUST_CPU_INFO). This is required to store the function pointers for
+ * the target hooks so that the frontend can call them
  * and it calls the correct target-specific function.  */
 
 /* Used by target to add predefined version idenditiers.  */
-//extern void d_add_builtin_version (const char *);
+// extern void d_add_builtin_version (const char *);
 /* Used by target to add target-related info.  */
-extern void rust_add_target_info(const char* key, const char* value);
+extern void
+rust_add_target_info (const char *key, const char *value);
 
 #endif

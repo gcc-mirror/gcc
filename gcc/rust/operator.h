@@ -19,25 +19,25 @@ enum Operator
   OPERATOR_ANDAND,   // &&
   OPERATOR_EQEQ,     // ==
   OPERATOR_NOTEQ,    // !=
-  OPERATOR_LT,       // <
-  OPERATOR_LE,       // <=
-  OPERATOR_GT,       // >
-  OPERATOR_GE,       // >=
+  OPERATOR_LT,	     // <
+  OPERATOR_LE,	     // <=
+  OPERATOR_GT,	     // >
+  OPERATOR_GE,	     // >=
   OPERATOR_PLUS,     // +
   OPERATOR_MINUS,    // -
-  OPERATOR_OR,       // |
-  OPERATOR_XOR,      // ^
+  OPERATOR_OR,	     // |
+  OPERATOR_XOR,	     // ^
   OPERATOR_MULT,     // *
-  OPERATOR_DIV,      // /
-  OPERATOR_MOD,      // %
+  OPERATOR_DIV,	     // /
+  OPERATOR_MOD,	     // %
   OPERATOR_LSHIFT,   // <<
   OPERATOR_RSHIFT,   // >>
-  OPERATOR_AND,      // &
-  OPERATOR_NOT,      // !
+  OPERATOR_AND,	     // &
+  OPERATOR_NOT,	     // !
   OPERATOR_BITCLEAR, // &^
   OPERATOR_CHANOP,   // <-
 
-  OPERATOR_EQ,	 // =
+  OPERATOR_EQ,	       // =
   OPERATOR_PLUSEQ,     // +=
   OPERATOR_MINUSEQ,    // -=
   OPERATOR_OREQ,       // |=
@@ -55,7 +55,7 @@ enum Operator
   OPERATOR_COLON,     // :
   OPERATOR_COLONEQ,   // :=
   OPERATOR_SEMICOLON, // ;
-  OPERATOR_DOT,       // .
+  OPERATOR_DOT,	      // .
   OPERATOR_ELLIPSIS,  // ...
   OPERATOR_COMMA,     // ,
   OPERATOR_LPAREN,    // (
