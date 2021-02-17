@@ -252,7 +252,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 				     build_one_cst (TREE_TYPE (nelts)));
       /* Treat flexible array members like [0] arrays.  */
       else if (TYPE_DOMAIN (type) == NULL_TREE)
-	max_index = build_minus_one_cst (sizetype);
+	return NULL_TREE;
       else
 	max_index = array_type_nelts (type);
 
