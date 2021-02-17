@@ -1,0 +1,20 @@
+name: Clang Format Lint
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Copy .clang-format file
+      run: cp contrib/clang-format .clang-format
+    - name: Check clang-format
+      uses: DoozyX/clang-format-lint-action@v0.11
+      with:
+        source: 'gcc/rust/'
+        extensions: 'h,cc'
+        clangFormatVersion: 10
