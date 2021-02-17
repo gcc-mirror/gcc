@@ -3525,7 +3525,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
   if (!partition)
     {
       binding_slot &orig
-	= BINDING_VECTOR_CLUSTER (*gslot, 0).slots[BINDING_SLOT_CURRENT];
+	= BINDING_VECTOR_CLUSTER (*slot, 0).slots[BINDING_SLOT_CURRENT];
 
       if (!STAT_HACK_P (tree (orig)))
 	orig = stat_hack (tree (orig));
