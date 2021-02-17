@@ -1980,18 +1980,8 @@ region_model::compare_initial_and_pointer (const initial_svalue *init,
   /* If we have a pointer to something within a stack frame, it can't be the
      initial value of a param.  */
   if (pointee->maybe_get_frame_region ())
-    {
-      const region *reg = init->get_region ();
-      if (tree reg_decl = reg->maybe_get_decl ())
-	if (TREE_CODE (reg_decl) == SSA_NAME)
-	  {
-	    tree ssa_name = reg_decl;
-	    if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
-		&& SSA_NAME_VAR (ssa_name)
-		&& TREE_CODE (SSA_NAME_VAR (ssa_name)) == PARM_DECL)
-	      return tristate::TS_FALSE;
-	  }
-    }
+    if (init->initial_value_of_param_p ())
+      return tristate::TS_FALSE;
 
   return tristate::TS_UNKNOWN;
 }

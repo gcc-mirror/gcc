@@ -1,3 +1,7 @@
+2021-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (_cpp_stack_file): Make buffers end in unread \n.
+
 2021-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/96391

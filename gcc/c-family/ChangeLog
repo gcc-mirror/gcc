@@ -1,3 +1,9 @@
+2021-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99062
+	* c-attribs.c (handle_assume_aligned_attribute): Check that the
+	alignment argument is non-negative.  Tweak a warning message.
+
 2021-02-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/99055

@@ -34,6 +34,6 @@ struct TPkcs11Token {
 void list_tokens() {
   for (__normal_iterator base = list_tokens_token_list.begin();;) {
     int *add_info = new int;
-    (*base).add_info = add_info; // { dg-bogus "leak" "PR analyzer/98969" { xfail *-*-* } }
+    (*base).add_info = add_info; // { dg-warning "leak" }
   }
 }

@@ -523,7 +523,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
        ++iter)
     {
       const svalue *iter_sval = (*iter).first;
-      if (!iter_sval->live_p (live_svalues, model))
+      if (!iter_sval->live_p (&live_svalues, model))
 	{
 	  svals_to_unset.add (iter_sval);
 	  entry_t e = (*iter).second;
@@ -1201,7 +1201,7 @@ program_state::detect_leaks (const program_state &src_state,
 	 live in DEST_STATE: either explicitly reachable, or implicitly
 	 live based on the set of explicitly reachable svalues.
 	 Record those that have ceased to be live.  */
-      if (!sval->live_p (dest_svalues, dest_state.m_region_model))
+      if (!sval->live_p (&dest_svalues, dest_state.m_region_model))
 	dead_svals.quick_push (sval);
     }
 

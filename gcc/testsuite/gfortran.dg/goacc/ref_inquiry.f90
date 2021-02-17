@@ -29,28 +29,20 @@ print *, is_contiguous(zz(:)%re)
 !$acc enter data copyin(z%re)    ! { dg-error "Unexpected complex-parts designator" }
 !$acc enter data copyin(z%im)    ! { dg-error "Unexpected complex-parts designator" }
 !$acc enter data copyin(zz%re)   ! { dg-error "not a proper array section" }
-                                 ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$acc enter data copyin(zz%im)   ! { dg-error "not a proper array section" }
-                                 ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 
 !$acc enter data copyin(x%z%re)  ! { dg-error "Unexpected complex-parts designator" }
 !$acc enter data copyin(x%z%im)  ! { dg-error "Unexpected complex-parts designator" }
 !$acc enter data copyin(x%zz%re) ! { dg-error "not a proper array section" }
-                                 ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$acc enter data copyin(x%zz%im) ! { dg-error "not a proper array section" }
-                                 ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 
 !$acc update self(z%re)         ! { dg-error "Unexpected complex-parts designator" }
 !$acc update self(z%im)         ! { dg-error "Unexpected complex-parts designator" }
 !$acc update self(zz%re)        ! { dg-error "not a proper array section" }
-                                ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$acc update self(zz%im)        ! { dg-error "not a proper array section" }
-                                ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 
 !$acc update self(x%z%re)       ! { dg-error "Unexpected complex-parts designator" }
 !$acc update self(x%z%im)       ! { dg-error "Unexpected complex-parts designator" }
 !$acc update self(x%zz%re)      ! { dg-error "is not a proper array section" }
-                                ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 !$acc update self(x%zz%im)      ! { dg-error "is not a proper array section" }
-                                ! { dg-error "Array is not contiguous" "" { target *-*-* } .-1 }
 end

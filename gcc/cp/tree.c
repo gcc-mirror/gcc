@@ -674,9 +674,6 @@ build_aggr_init_expr (tree type, tree init)
   else
     rval = init;
 
-  if (location_t loc = EXPR_LOCATION (init))
-    SET_EXPR_LOCATION (rval, loc);
-
   return rval;
 }
 

@@ -3525,7 +3525,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
   if (!partition)
     {
       binding_slot &orig
-	= BINDING_VECTOR_CLUSTER (*gslot, 0).slots[BINDING_SLOT_CURRENT];
+	= BINDING_VECTOR_CLUSTER (*slot, 0).slots[BINDING_SLOT_CURRENT];
 
       if (!STAT_HACK_P (tree (orig)))
 	orig = stat_hack (tree (orig));
@@ -3691,14 +3691,9 @@ do_pushdecl (tree decl, bool hiding)
 	    if (match == error_mark_node)
 	      ;
 	    else if (TREE_CODE (match) == TYPE_DECL)
-	      {
-		auto *l = level;
-		while (l->kind == sk_template_parms)
-		  l = l->level_chain;
-		gcc_checking_assert (REAL_IDENTIFIER_TYPE_VALUE (name)
-				     == (l->kind == sk_namespace
-					 ? NULL_TREE : TREE_TYPE (match)));
-	      }
+	      gcc_checking_assert (REAL_IDENTIFIER_TYPE_VALUE (name)
+				   == (level->kind == sk_namespace
+				       ? NULL_TREE : TREE_TYPE (match)));
 	    else if (iter.hidden_p () && !hiding)
 	      {
 		/* Unhiding a previously hidden decl.  */
@@ -4756,12 +4751,13 @@ print_binding_stack (void)
 static void
 set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
 {
-  while (b->kind == sk_template_parms)
-    b = b->level_chain;
-
   if (b->kind == sk_namespace)
     /* At namespace scope we should not see an identifier type value.  */
-    gcc_checking_assert (!REAL_IDENTIFIER_TYPE_VALUE (id));
+    gcc_checking_assert (!REAL_IDENTIFIER_TYPE_VALUE (id)
+			 /* We could be pushing a friend underneath a template
+			    parm (ill-formed).  */
+			 || (TEMPLATE_PARM_P
+			     (TYPE_NAME (REAL_IDENTIFIER_TYPE_VALUE (id)))));
   else
     {
       /* Push the current type value, so we can restore it later  */
@@ -8257,10 +8253,8 @@ do_pushtag (tree name, tree type, TAG_how how)
       if (decl == error_mark_node)
 	return decl;
 
-      bool in_class = false;
       if (b->kind == sk_class)
 	{
-	  in_class = true;
 	  if (!TYPE_BEING_DEFINED (current_class_type))
 	    /* Don't push anywhere if the class is complete; a lambda in an
 	       NSDMI is not a member of the class.  */
@@ -8275,7 +8269,12 @@ do_pushtag (tree name, tree type, TAG_how how)
 	    pushdecl_class_level (decl);
 	}
       else if (b->kind == sk_template_parms)
-	in_class = b->level_chain->kind == sk_class;
+	{
+	  /* Do not push the tag here -- we'll want to push the
+	     TEMPLATE_DECL.  */
+	  if (b->level_chain->kind != sk_class)
+	    set_identifier_type_value_with_scope (name, tdef, b->level_chain);
+	}
       else
 	{
 	  decl = do_pushdecl_with_scope
@@ -8292,9 +8291,6 @@ do_pushtag (tree name, tree type, TAG_how how)
 	      return error_mark_node;
 	    }
 	}
-
-      if (!in_class)
-	set_identifier_type_value_with_scope (name, tdef, b);
 
       TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
 

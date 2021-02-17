@@ -2381,7 +2381,7 @@ mips_symbol_insns (enum mips_symbol_type type, machine_mode mode)
 {
   /* MSA LD.* and ST.* cannot support loading symbols via an immediate
      operand.  */
-  if (MSA_SUPPORTED_MODE_P (mode))
+  if (mode != MAX_MACHINE_MODE && MSA_SUPPORTED_MODE_P (mode))
     return 0;
 
   return mips_symbol_insns_1 (type, mode) * (TARGET_MIPS16 ? 2 : 1);
