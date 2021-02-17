@@ -77,7 +77,7 @@ public:
      ty are considered equal if they're of the same kind, and
        1. (For ADTs, arrays, tuples, refs) have the same underlying ty
        2. (For functions) have the same signature */
-  virtual bool equals (const BaseType &other) const
+  virtual bool is_equal (const BaseType &other) const
   {
     return get_kind () == other.get_kind ();
   }
@@ -208,7 +208,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   std::string get_name () const { return name; }
 
@@ -242,7 +242,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -288,7 +288,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -356,7 +356,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
 
@@ -410,7 +410,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   size_t get_capacity () const { return capacity; }
 
@@ -632,7 +632,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool equals (const BaseType &other) const override;
+  virtual bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () final override;
 

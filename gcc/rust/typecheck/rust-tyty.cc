@@ -131,7 +131,7 @@ StructFieldType::unify (BaseType *other)
 }
 
 bool
-StructFieldType::equals (const BaseType &other) const
+StructFieldType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
@@ -180,7 +180,7 @@ ADTType::unify (BaseType *other)
 }
 
 bool
-ADTType::equals (const BaseType &other) const
+ADTType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
@@ -195,7 +195,7 @@ ADTType::equals (const BaseType &other) const
 	}
       for (int i = 0; i < num_fields (); i++)
 	{
-	  if (!get_field (i)->equals (*other2.get_field (i)))
+	  if (!get_field (i)->is_equal (*other2.get_field (i)))
 	    {
 	      return false;
 	    }
@@ -251,7 +251,7 @@ TupleType::unify (BaseType *other)
 }
 
 bool
-TupleType::equals (const BaseType &other) const
+TupleType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
@@ -266,7 +266,7 @@ TupleType::equals (const BaseType &other) const
 	}
       for (int i = 0; i < num_fields (); i++)
 	{
-	  if (!get_field (i)->equals (*other2.get_field (i)))
+	  if (!get_field (i)->is_equal (*other2.get_field (i)))
 	    {
 	      return false;
 	    }
@@ -312,7 +312,7 @@ FnType::unify (BaseType *other)
 }
 
 bool
-FnType::equals (const BaseType &other) const
+FnType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
@@ -321,7 +321,7 @@ FnType::equals (const BaseType &other) const
   else
     {
       auto other2 = static_cast<const FnType &> (other);
-      if (!get_return_type ()->equals (*other2.get_return_type ()))
+      if (!get_return_type ()->is_equal (*other2.get_return_type ()))
 	return false;
       if (num_params () != other2.num_params ())
 	return false;
@@ -329,7 +329,7 @@ FnType::equals (const BaseType &other) const
 	{
 	  auto lhs = param_at (i).second;
 	  auto rhs = other2.param_at (i).second;
-	  if (!lhs->equals (*rhs))
+	  if (!lhs->is_equal (*rhs))
 	    return false;
 	}
       return true;
@@ -369,7 +369,7 @@ ArrayType::unify (BaseType *other)
 }
 
 bool
-ArrayType::equals (const BaseType &other) const
+ArrayType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
@@ -634,7 +634,7 @@ ReferenceType::unify (BaseType *other)
 }
 
 bool
-ReferenceType::equals (const BaseType &other) const
+ReferenceType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
     {
