@@ -158,6 +158,14 @@ class Gcc_backend : public Backend
 public:
   Gcc_backend ();
 
+  void debug (Btype *t) { debug_tree (t->get_tree ()); };
+  void debug (Bexpression *t) { debug_tree (t->get_tree ()); };
+  void debug (Bstatement *t) { debug_tree (t->get_tree ()); };
+  void debug (Bfunction *t) { debug_tree (t->get_tree ()); };
+  void debug (Bblock *t) { debug_tree (t->get_tree ()); };
+  void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
+  void debug (Blabel *t) { debug_tree (t->get_tree ()); };
+
   // Types.
 
   Btype *error_type () { return this->make_type (error_mark_node); }

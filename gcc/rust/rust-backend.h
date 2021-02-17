@@ -84,6 +84,15 @@ public:
     {}
   };
 
+  // debug
+  virtual void debug (Btype *) = 0;
+  virtual void debug (Bexpression *) = 0;
+  virtual void debug (Bstatement *) = 0;
+  virtual void debug (Bfunction *) = 0;
+  virtual void debug (Bblock *) = 0;
+  virtual void debug (Bvariable *) = 0;
+  virtual void debug (Blabel *) = 0;
+
   // Types.
 
   // Produce an error type.  Actually the backend could probably just
