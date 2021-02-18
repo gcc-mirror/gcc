@@ -1,3 +1,37 @@
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* module.cc (struct macro_export): Add GTY markers.
+	(macro_exports): Likewise, us a va_gc Vector.
+
+2021-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* init.c (build_zero_init_1): For flexible array members just return
+	NULL_TREE instead of returning empty CONSTRUCTOR with non-complete
+	ARRAY_TYPE.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99116
+	* name-lookup.c (do_pushdecl): Don't peek under template_parm
+	bindings here ...
+	(set_identifier_type_value_with_scope): ... or here.
+	(do_pushtag): Only set_identifier_type_value_with_scope at
+	non-class template parm scope, and use parent scope.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99071
+	* name-lookup.c (maybe_record_mergeable_decl): Deref the correct
+	pointer.
+
+2021-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR debug/96997
+	PR c++/94034
+	* tree.c (build_aggr_init_expr): Revert r10-7718 change.
+
 2021-02-12  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (module_state::write_cluster): Check bindings for

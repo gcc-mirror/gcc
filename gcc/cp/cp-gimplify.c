@@ -1386,7 +1386,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  break;
 	}
 
-      if (tree fndecl = cp_get_callee_fndecl (stmt))
+      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
 	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
 	  {
 	    gcc_assert (source_location_current_p (fndecl));

@@ -2775,7 +2775,13 @@ analyze_function_body (struct cgraph_node *node, bool early)
 			     (gimple_call_arg (stmt, i));
 		    }
 		}
-
+	      /* We cannot setup VLA parameters during inlining.  */
+	      for (unsigned int i = 0; i < gimple_call_num_args (stmt); ++i)
+		if (TREE_CODE (gimple_call_arg (stmt, i)) == WITH_SIZE_EXPR)
+		  {
+		    edge->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+		    break;
+		  }
 	      es->call_stmt_size = this_size;
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb_loop_depth (bb);

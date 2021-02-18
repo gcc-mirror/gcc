@@ -1,3 +1,14 @@
+2021-02-17  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle ATTACH_DETACH
+	for non-decls.
+
+2021-02-17  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/98491
+	* config/mips/mips.c (mips_symbol_insns): Do not use
+	MSA_SUPPORTED_MODE_P if mode is MAX_MACHINE_MODE.
+
 2021-02-16  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR inline-asm/98096

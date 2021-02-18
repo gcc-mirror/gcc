@@ -372,12 +372,23 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   return warned;
 }
 
-/* Hack around the internal representation constraints and build a zero
-   element array type that actually renders as T[0] in diagnostcs.  */
+/* Wrapper around build_array_type_nelts that makes sure the array
+   can be created at all and handles zero sized arrays specially.  */
 
 static tree
-build_zero_elt_array_type (tree eltype)
+build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
 {
+  if (TYPE_SIZE_UNIT (eltype)
+      && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
+      && !integer_zerop (TYPE_SIZE_UNIT (eltype))
+      && TYPE_ALIGN_UNIT (eltype) > 1
+      && wi::zext (wi::to_wide (TYPE_SIZE_UNIT (eltype)),
+		   ffs_hwi (TYPE_ALIGN_UNIT (eltype)) - 1) != 0)
+    eltype = TYPE_MAIN_VARIANT (eltype);
+
+  if (nelts)
+    return build_array_type_nelts (eltype, nelts);
+
   tree idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
   tree arrtype = build_array_type (eltype, idxtype);
   arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
@@ -561,10 +572,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	return false;
 
       offset_int nelts = arrbounds[1] / eltsize;
-      if (nelts == 0)
-	reftype = build_zero_elt_array_type (reftype);
-      else
-	reftype = build_array_type_nelts (reftype, nelts.to_uhwi ());
+      reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
     }
   else if (TREE_CODE (arg) == ADDR_EXPR)
     {
@@ -675,7 +683,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       /* Treat a reference to a non-array object as one to an array
 	 of a single element.  */
       if (TREE_CODE (reftype) != ARRAY_TYPE)
-	reftype = build_array_type_nelts (reftype, 1);
+	reftype = build_printable_array_type (reftype, 1);
 
       /* Extract the element type out of MEM_REF and use its size
 	 to compute the index to print in the diagnostic; arrays

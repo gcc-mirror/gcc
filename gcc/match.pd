@@ -6315,8 +6315,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (for op (eq ne)
       cmp (lt ge)
   (simplify
-   (op (clz:s @0) INTEGER_CST@1)
-   (if (integer_zerop (@1))
+   (op (clz:s@2 @0) INTEGER_CST@1)
+   (if (integer_zerop (@1) && single_use (@2))
     /* clz(X) == 0 is (int)X < 0 and clz(X) != 0 is (int)X >= 0.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@0));
 	    HOST_WIDE_INT val = 0;
