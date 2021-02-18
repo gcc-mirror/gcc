@@ -2981,6 +2981,60 @@
 
 ;; Float narrowing operations.
 
+(define_insn "aarch64_float_trunc_rodd_df"
+  [(set (match_operand:SF 0 "register_operand" "=w")
+	(unspec:SF [(match_operand:DF 1 "register_operand" "w")]
+		UNSPEC_FCVTXN))]
+  "TARGET_SIMD"
+  "fcvtxn\\t%s0, %d1"
+  [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_insn "aarch64_float_trunc_rodd_lo_v2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=w")
+	(unspec:V2SF [(match_operand:V2DF 1 "register_operand" "w")]
+		UNSPEC_FCVTXN))]
+  "TARGET_SIMD"
+  "fcvtxn\\t%0.2s, %1.2d"
+  [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_insn "aarch64_float_trunc_rodd_hi_v4sf_le"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(vec_concat:V4SF
+	  (match_operand:V2SF 1 "register_operand" "0")
+	  (unspec:V2SF [(match_operand:V2DF 2 "register_operand" "w")]
+		UNSPEC_FCVTXN)))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "fcvtxn2\\t%0.4s, %2.2d"
+  [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_insn "aarch64_float_trunc_rodd_hi_v4sf_be"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(vec_concat:V4SF
+	  (unspec:V2SF [(match_operand:V2DF 2 "register_operand" "w")]
+		UNSPEC_FCVTXN)
+	  (match_operand:V2SF 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "fcvtxn2\\t%0.4s, %2.2d"
+  [(set_attr "type" "neon_fp_cvt_narrow_d_q")]
+)
+
+(define_expand "aarch64_float_trunc_rodd_hi_v4sf"
+  [(match_operand:V4SF 0 "register_operand")
+   (match_operand:V2SF 1 "register_operand")
+   (match_operand:V2DF 2 "register_operand")]
+  "TARGET_SIMD"
+{
+  rtx (*gen) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN
+			     ? gen_aarch64_float_trunc_rodd_hi_v4sf_be
+			     : gen_aarch64_float_trunc_rodd_hi_v4sf_le;
+  emit_insn (gen (operands[0], operands[1], operands[2]));
+  DONE;
+}
+)
+
 (define_insn "aarch64_float_truncate_lo_<mode>"
   [(set (match_operand:VDF 0 "register_operand" "=w")
       (float_truncate:VDF

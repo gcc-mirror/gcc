@@ -632,6 +632,10 @@
   VAR1 (UNOP, float_extend_lo_,  0, FP, v4sf)
   BUILTIN_VDF (UNOP, float_truncate_lo_, 0, FP)
 
+  VAR1 (UNOP, float_trunc_rodd_, 0, FP, df)
+  VAR1 (UNOP, float_trunc_rodd_lo_, 0, FP, v2sf)
+  VAR1 (BINOP, float_trunc_rodd_hi_, 0, FP, v4sf)
+
   /* Implemented by aarch64_ld1<VALL_F16:mode>.  */
   BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
   VAR1(STORE1P, ld1, 0, ALL, v2di)

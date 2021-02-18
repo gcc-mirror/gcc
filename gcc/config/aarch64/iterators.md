@@ -861,6 +861,7 @@
     UNSPEC_BFCVTN      ; Used in aarch64-simd.md.
     UNSPEC_BFCVTN2     ; Used in aarch64-simd.md.
     UNSPEC_BFCVT       ; Used in aarch64-simd.md.
+    UNSPEC_FCVTXN	; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------

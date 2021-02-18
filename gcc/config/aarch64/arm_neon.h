@@ -7014,36 +7014,21 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtx_f32_f64 (float64x2_t __a)
 {
-  float32x2_t __result;
-  __asm__ ("fcvtxn %0.2s,%1.2d"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_trunc_rodd_lo_v2sf (__a);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtx_high_f32_f64 (float32x2_t __a, float64x2_t __b)
 {
-  float32x4_t __result;
-  __asm__ ("fcvtxn2 %0.4s,%1.2d"
-           : "=w"(__result)
-           : "w" (__b), "0"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_trunc_rodd_hi_v4sf (__a, __b);
 }
 
 __extension__ extern __inline float32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtxd_f32_f64 (float64_t __a)
 {
-  float32_t __result;
-  __asm__ ("fcvtxn %s0,%d1"
-           : "=w"(__result)
-           : "w"(__a)
-           : /* No clobbers */);
-  return __result;
+  return __builtin_aarch64_float_trunc_rodd_df (__a);
 }
 
 __extension__ extern __inline float32x2_t
