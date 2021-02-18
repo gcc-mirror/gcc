@@ -1,3 +1,13 @@
+2021-02-17  Julian Brown  <julian@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Disallow selecting components
+	of arrays of derived type.
+
+2021-02-17  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle element selection
+	for arrays of derived types.
+
 2021-02-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* expr.c (gfc_is_simplify_contiguous): Handle REF_INQUIRY, i.e.

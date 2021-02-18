@@ -1,3 +1,67 @@
+2021-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94596
+	* gcc.dg/analyzer/pr94596.c: New test.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* g++.dg/modules/pr99023_a.H: New.
+	* g++.dg/modules/pr99023_b.H: New.
+
+2021-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* g++.dg/analyzer/pr99064.C: Convert dg-bogus to dg-warning.
+	* gcc.dg/analyzer/pr96841.c: Add -Wno-analyzer-too-complex to
+	options.  Remove false leak directive.
+	* gcc.dg/analyzer/pr98969.c (test_1): Remove xfail from leak
+	false positive.
+	(test_3): New.
+
+2021-02-17  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/array-with-dt-2.f90: Remove expected errors.
+	* gfortran.dg/goacc/array-with-dt-6.f90: New test.
+	* gfortran.dg/goacc/mapping-tests-2.f90: Update expected error.
+	* gfortran.dg/goacc/ref_inquiry.f90: Update expected errors.
+	* gfortran.dg/gomp/ref_inquiry.f90: Likewise.
+
+2021-02-17  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/array-with-dt-1.f90: New test.
+	* gfortran.dg/goacc/array-with-dt-3.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-4.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-5.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Re-enable test.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-classtypes-1.f95: Uncomment
+	previously-broken directives.
+
+2021-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* g++.dg/ubsan/pr99106.C: New test.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99116
+	* g++.dg/lookup/pr99116-1.C: New.
+	* g++.dg/lookup/pr99116-2.C: New.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99071
+	* g++.dg/modules/pr99071_a.H: New.
+	* g++.dg/modules/pr99071_b.H: New.
+
+2021-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR debug/96997
+	PR c++/94034
+	* g++.dg/cpp1y/constexpr-nsdmi7b.C:  Adjust expected location of
+	"call to non-'constexpr' function" error message.
+
 2021-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/modules/pr99050_a.H: New.

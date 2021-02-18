@@ -1,3 +1,43 @@
+2021-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* constraint-manager.cc (dead_svalue_purger::should_purge_p):
+	Update for change to svalue::live_p.
+	* program-state.cc (sm_state_map::on_liveness_change): Likewise.
+	(program_state::detect_leaks): Likewise.
+	* region-model-reachability.cc (reachable_regions::init_cluster):
+	When dealing with a symbolic region, if the underlying pointer is
+	implicitly live, add the region to the reachable regions.
+	* region-model.cc (region_model::compare_initial_and_pointer):
+	Move logic for detecting initial values of params to
+	initial_svalue::initial_value_of_param_p.
+	* svalue.cc (svalue::live_p): Convert "live_svalues" from a
+	reference to a pointer; support it being NULL.
+	(svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(region_svalue::implicitly_live_p): Likewise.
+	(constant_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::implicitly_live_p): Likewise.  Treat the initial
+	values of params for the top level frame as still live.
+	(initial_svalue::initial_value_of_param_p): New function, taken
+	from a test in region_model::compare_initial_and_pointer.
+	(unaryop_svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(binop_svalue::implicitly_live_p): Likewise.
+	(sub_svalue::implicitly_live_p): Likewise.
+	(unmergeable_svalue::implicitly_live_p): Likewise.
+	* svalue.h (svalue::live_p): Likewise.
+	(svalue::implicitly_live_p): Likewise.
+	(region_svalue::implicitly_live_p): Likewise.
+	(constant_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::initial_value_of_param_p): New decl.
+	(unaryop_svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(binop_svalue::implicitly_live_p): Likewise.
+	(sub_svalue::implicitly_live_p): Likewise.
+	(unmergeable_svalue::implicitly_live_p): Likewise.
+
 2021-02-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98969
