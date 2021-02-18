@@ -40,9 +40,9 @@ struct Exception_Data
   char Not_Handled_By_Others;
   char Lang;
   int Name_Length;
-  char *Full_Name;
-  char *Htable_Ptr;
-  void *Foreign_Data;
+  __UINTPTR_TYPE__ Full_Name;
+  void *HTable_Ptr;
+  __UINTPTR_TYPE__ Foreign_Data;
   void (*Raise_Hook)(void);
 };
 

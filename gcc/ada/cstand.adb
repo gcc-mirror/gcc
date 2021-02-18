@@ -133,12 +133,12 @@ package body CStand is
    --  Returns an identifier node with the same name as the defining identifier
    --  corresponding to the given Standard_Entity_Type value.
 
-   procedure Make_Component
+   procedure Make_Aliased_Component
      (Rec : Entity_Id;
       Typ : Entity_Id;
       Nam : String);
-   --  Build a record component with the given type and name, and append to
-   --  the list of components of Rec.
+   --  Build an aliased record component with the given type and name,
+   --  and append to the list of components of Rec.
 
    function Make_Formal (Typ : Entity_Id; Nam : String) return Entity_Id;
    --  Construct entity for subprogram formal with given name and type
@@ -1495,38 +1495,40 @@ package body CStand is
       --  known by the run-time. Components of the record are documented in
       --  the declaration in System.Standard_Library.
 
-      Standard_Exception_Type := New_Standard_Entity ("exception");
-      Set_Ekind       (Standard_Exception_Type, E_Record_Type);
-      Set_Etype       (Standard_Exception_Type, Standard_Exception_Type);
-      Set_Scope       (Standard_Exception_Type, Standard_Standard);
-      Set_Stored_Constraint
-                      (Standard_Exception_Type, No_Elist);
-      Init_Size_Align (Standard_Exception_Type);
-      Set_Size_Known_At_Compile_Time
-                      (Standard_Exception_Type, True);
-
-      Make_Component
-        (Standard_Exception_Type, Standard_Boolean,   "Not_Handled_By_Others");
-      Make_Component
-        (Standard_Exception_Type, Standard_Character, "Lang");
-      Make_Component
-        (Standard_Exception_Type, Standard_Natural,   "Name_Length");
-      Make_Component
-        (Standard_Exception_Type, Standard_A_Char,    "Full_Name");
-      Make_Component
-        (Standard_Exception_Type, Standard_A_Char,    "HTable_Ptr");
-      Make_Component
-        (Standard_Exception_Type, Standard_A_Char,    "Foreign_Data");
-      Make_Component
-        (Standard_Exception_Type, Standard_A_Char,    "Raise_Hook");
-
-      --  Build tree for record declaration, for use by the back-end
-
-      declare
-         Comp_List : List_Id;
-         Comp      : Entity_Id;
+      Build_Exception_Type : declare
+         Comp_List      : List_Id;
+         Comp           : Entity_Id;
 
       begin
+         Standard_Exception_Type := New_Standard_Entity ("exception");
+         Set_Ekind       (Standard_Exception_Type, E_Record_Type);
+         Set_Etype       (Standard_Exception_Type, Standard_Exception_Type);
+         Set_Scope       (Standard_Exception_Type, Standard_Standard);
+         Set_Stored_Constraint
+                         (Standard_Exception_Type, No_Elist);
+         Init_Size_Align (Standard_Exception_Type);
+         Set_Size_Known_At_Compile_Time
+                         (Standard_Exception_Type, True);
+
+         Make_Aliased_Component (Standard_Exception_Type, Standard_Boolean,
+                         "Not_Handled_By_Others");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_Character,
+                         "Lang");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_Natural,
+                         "Name_Length");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_Address,
+                         "Full_Name");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_A_Char,
+                         "HTable_Ptr");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_Address,
+                         "Foreign_Data");
+         Make_Aliased_Component (Standard_Exception_Type, Standard_A_Char,
+                         "Raise_Hook");
+
+         Layout_Type (Standard_Exception_Type);
+
+         --  Build tree for record declaration, for use by the back-end
+
          Comp      := First_Entity (Standard_Exception_Type);
          Comp_List := New_List;
          while Present (Comp) loop
@@ -1535,9 +1537,9 @@ package body CStand is
                 Defining_Identifier => Comp,
                 Component_Definition =>
                   Make_Component_Definition (Stloc,
-                    Aliased_Present    => False,
-                    Subtype_Indication => New_Occurrence_Of (Etype (Comp),
-                                                             Stloc))),
+                    Aliased_Present    => True,
+                    Subtype_Indication =>
+                      New_Occurrence_Of (Etype (Comp), Stloc))),
               Comp_List);
 
             Next_Entity (Comp);
@@ -1547,15 +1549,13 @@ package body CStand is
            Defining_Identifier => Standard_Exception_Type,
            Type_Definition =>
              Make_Record_Definition (Stloc,
-               End_Label => Empty,
+               End_Label      => Empty,
                Component_List =>
                  Make_Component_List (Stloc,
                    Component_Items => Comp_List)));
-      end;
 
-      Append (Decl, Decl_S);
-
-      Layout_Type (Standard_Exception_Type);
+         Append (Decl, Decl_S);
+      end Build_Exception_Type;
 
       --  Create declarations of standard exceptions
 
@@ -1711,11 +1711,11 @@ package body CStand is
       return Ident_Node;
    end Identifier_For;
 
-   --------------------
-   -- Make_Component --
-   --------------------
+   ----------------------------
+   -- Make_Aliased_Component --
+   ----------------------------
 
-   procedure Make_Component
+   procedure Make_Aliased_Component
      (Rec : Entity_Id;
       Typ : Entity_Id;
       Nam : String)
@@ -1728,8 +1728,10 @@ package body CStand is
       Set_Scope                     (Id, Rec);
       Init_Component_Location       (Id);
       Set_Original_Record_Component (Id, Id);
+      Set_Is_Aliased                (Id);
+      Set_Is_Independent            (Id);
       Append_Entity (Id, Rec);
-   end Make_Component;
+   end Make_Aliased_Component;
 
    -----------------
    -- Make_Formal --

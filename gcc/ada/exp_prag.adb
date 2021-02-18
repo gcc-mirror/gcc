@@ -2039,7 +2039,7 @@ package body Exp_Prag is
                     Expression => Relocate_Node (Rtti_Name))))));
 
             Rewrite (Expression (Foreign_Data),
-              Unchecked_Convert_To (Standard_A_Char,
+              OK_Convert_To (Standard_Address,
                 Make_Attribute_Reference (Loc,
                   Prefix         => Make_Identifier (Loc, Chars (Dum)),
                   Attribute_Name => Name_Address)));

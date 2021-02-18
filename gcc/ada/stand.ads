@@ -335,12 +335,12 @@ package Stand is
    --  This is a type used to represent the Etype of exceptions
 
    Standard_A_String : Entity_Id;
-   --  An access to String type used for building elements of tables
-   --  carrying the enumeration literal names.
+   --  An access to String type used for building elements of tables carrying
+   --  the enumeration literal names.
 
    Standard_A_Char : Entity_Id;
-   --  Access to character, used as a component of the exception type to denote
-   --  a thin pointer component.
+   --  An access to character type, used as a component of the exception type
+   --  to denote a thin pointer component. Needed for non-GCC back-ends.
 
    Standard_Debug_Renaming_Type : Entity_Id;
    --  A zero-size subtype of Integer, used as the type of variables used to
