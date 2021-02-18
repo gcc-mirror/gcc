@@ -41,7 +41,6 @@ dg-init
 
 global module_do
 global module_cmis
-global module_headers
 
 set DEFAULT_REPO "gcm.cache"
 
@@ -130,39 +129,6 @@ proc module_cmi_p { src ifs } {
 	}
     }
     return $res
-}
-
-# Append required header unit names to module_headers var
-proc dg-module-headers { args } {
-    if { [llength $args] != 3 } {
-	error "[lindex $args 0]: wrong number of arguments"
-	return
-    }
-}
-
-proc do_module_headers { srcdir subdir std flags} {
-    global module_headers
-    foreach header $module_headers {
-	set kind [lindex $header 0]
-	set hdr [lindex $header 1]
-	verbose "Header $hdr $std" 1
-	switch $kind {
-	    test {
-		global module_cmis
-		set module_cmis {}
-		dg-test -keep-output $srcdir/$subdir/$hdr "$std" $flags
-		global mod_files
-		lappend mod_files [module_cmi_p $subdir/$hdr $module_cmis]
-	    }
-	    system -
-	    user {
-		# FIXME
-	    }
-	    default {
-		error "$kind unknown header"
-	    }
-	}
-    }
 }
 
 # link and maybe run a set of object files
@@ -277,8 +243,6 @@ proc srcdir {} {
 proc module-init { src } {
     set tmp [dg-get-options $src]
     set option_list {}
-    global module_headers
-    set module_headers {}
     set have_std 0
     set std_prefix "-std=c++"
 
@@ -293,12 +257,6 @@ proc module-init { src } {
 	    "dg-additional-options" {
 		if { [string match "*-std=*" [lindex $op 2]] } {
 		    set have_std 1
-		}
-	    }
-	    "dg-module-headers" {
-		set kind [lindex $op 2]
-		foreach header [lindex $op 3] {
-		    lappend module_headers [list $kind $header]
 		}
 	    }
 	}
@@ -324,7 +282,6 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 
 	set std_list [module-init $test]
 	foreach std $std_list {
-	    do_module_headers $srcdir $subdir $std $DEFAULT_MODFLAGS
 	    set module_cmis {}
 	    verbose "Testing $nshort $std" 1
 	    dg-test $test "$std" $DEFAULT_MODFLAGS
@@ -347,7 +304,6 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    global module_do
 	    set module_do {"compile" "P"}
 	    set asm_list {}
-	    do_module_headers $srcdir $subdir $std $DEFAULT_MODFLAGS
 	    foreach test $tests {
 		if { [lindex $module_do 1] != "N" } {
 		    set module_cmis {}
