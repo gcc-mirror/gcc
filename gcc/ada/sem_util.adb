@@ -9990,6 +9990,18 @@ package body Sem_Util is
       Discrim_Value         : Node_Id;
       Discrim_Value_Subtype : Node_Id;
       Discrim_Value_Status  : Discriminant_Value_Status := Bad;
+
+      function OK_Scope_For_Discrim_Value_Error_Messages return Boolean is
+        (Scope (Original_Record_Component
+                        (Entity (First (Choices (Assoc))))) = Typ);
+      --  Used to avoid generating error messages having a source position
+      --  which refers to somewhere (e.g., a discriminant value in a derived
+      --  tagged type declaration) unrelated to the offending construct. This
+      --  is required for correctness - clients of Gather_Components such as
+      --  Sem_Ch3.Create_Constrained_Components depend on this function
+      --  returning True while processing semantically correct examples;
+      --  generating an error message in this case would be wrong.
+
    begin
       Report_Errors := False;
 
@@ -10178,9 +10190,7 @@ package body Sem_Util is
             --  every value of that subtype (and there must be at least one)
             --  selects the same variant.
 
-            if Scope (Original_Record_Component
-                        ((Entity (First (Choices (Assoc)))))) = Typ
-            then
+            if OK_Scope_For_Discrim_Value_Error_Messages then
                if Ada_Version >= Ada_2020 then
                   Error_Msg_FE
                     ("value for discriminant & must be static or " &
@@ -10299,10 +10309,12 @@ package body Sem_Util is
                         (Subset => Discrim_Value_Subtype_Intervals,
                          Of_Set => Variant_Intervals)
                then
-                  Error_Msg_NE
-                    ("no single variant is associated with all values of " &
-                     "the subtype of discriminant value &",
-                     Discrim_Value, Discrim);
+                  if OK_Scope_For_Discrim_Value_Error_Messages then
+                     Error_Msg_NE
+                       ("no single variant is associated with all values of " &
+                        "the subtype of discriminant value &",
+                        Discrim_Value, Discrim);
+                  end if;
                   Report_Errors := True;
                   return;
                end if;
