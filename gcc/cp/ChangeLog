@@ -1,3 +1,12 @@
+2021-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR debug/96997
+	PR c++/94034
+	* tree.c (build_aggr_init_expr): Revert r10-7718 change.
+
 2021-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96905
