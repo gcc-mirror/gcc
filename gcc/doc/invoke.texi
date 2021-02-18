@@ -3382,7 +3382,12 @@ is used when building the C++ library.)
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
 @opindex flang-info-include-translate-not
-Diagnose include translation events.
+Diagnose include translation events.  The first will note accepted
+include translations, the second will note declined include
+translations.  The @var{header} form will inform of include
+translations relating to that specific header.  If @var{header} is of
+the form @code{"user"} or @code{<system>} it will be resolved to a
+specific user or system header using the include path.
 
 @item -stdlib=@var{libstdc++,libc++}
 @opindex stdlib

@@ -19091,7 +19091,7 @@ canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
       buf[len] = 0;
 
       if (const char *hdr
-	  = cpp_find_header_unit (reader, buf, str[-1] == '<', loc))
+	  = cpp_probe_header_unit (reader, buf, str[-1] == '<', loc))
 	{
 	  len = strlen (hdr);
 	  str = hdr;
@@ -19185,19 +19185,11 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   else if (note_include_translate_no && xlate == 0)
     note = true;
   else if (note_includes)
-    {
-      /* We do not expect the note_includes vector to be large, so O(N)
-	 iteration.  */
-      for (unsigned ix = note_includes->length (); !note && ix--;)
-	{
-	  const char *hdr = (*note_includes)[ix];
-	  size_t hdr_len = strlen (hdr);
-	  if ((hdr_len == len
-	       || (hdr_len < len && IS_DIR_SEPARATOR (path[len - hdr_len - 1])))
-	      && !memcmp (hdr, path + len - hdr_len, hdr_len))
-	    note = true;
-	}
-    }
+    /* We do not expect the note_includes vector to be large, so O(N)
+       iteration.  */
+    for (unsigned ix = note_includes->length (); !note && ix--;)
+      if (!strcmp ((*note_includes)[ix], path))
+	note = true;
 
   if (note)
     inform (loc, xlate
@@ -19570,7 +19562,7 @@ init_modules (cpp_reader *reader)
 					0, !delimed, hdr, len);
 	char *path = XNEWVEC (char, len + 1);
 	memcpy (path, hdr, len);
-	path[len+1] = 0;
+	path[len] = 0;
 
 	(*note_includes)[ix] = path;
       }

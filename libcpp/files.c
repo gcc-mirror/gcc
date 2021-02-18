@@ -1108,31 +1108,54 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   return _cpp_stack_file (pfile, file, type, loc);
 }
 
-/* NAME is a header file name, find the path we'll use to open it.  */
+/* NAME is a header file name, find the _cpp_file, if any.  */
+
+static _cpp_file *
+test_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		  location_t loc)
+{
+  if (cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE))
+    return _cpp_find_file (pfile, name, dir, angle, _cpp_FFK_NORMAL, loc);
+
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it and infer that
+   it is a header-unit.  */
 
 const char *
-cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
-		      location_t loc)
+_cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
 {
-  cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE);
-  if (!dir)
-    return NULL;
-
-  _cpp_file *file = _cpp_find_file (pfile, name, dir, angle,
-				    _cpp_FFK_NORMAL, loc);
-  if (!file)
-    return NULL;
-
-  if (file->fd > 0)
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
     {
-      /* Don't leave it open.  */
-      close (file->fd);
-      file->fd = 0;
+      if (file->fd > 0)
+	{
+	  /* Don't leave it open.  */
+	  close (file->fd);
+	  file->fd = 0;
+	}
+
+      file->header_unit = +1;
+      _cpp_mark_file_once_only (pfile, file);
+
+      return file->path;
     }
 
-  file->header_unit = +1;
-  _cpp_mark_file_once_only (pfile, file);
-  return file->path;
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it.  But do not
+   infer it is a header unit.  */
+
+const char *
+cpp_probe_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
+{
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
+    return file->path;
+
+  return nullptr;
 }
 
 /* Retrofit the just-entered main file asif it was an include.  This
