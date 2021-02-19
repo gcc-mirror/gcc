@@ -1358,7 +1358,7 @@ static const struct tune_params neoversev1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_PREFER_ADVSIMD_AUTOVEC),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -14497,6 +14497,14 @@ aarch64_override_options_internal (struct gcc_options *opts)
      the *options_set structs anyway.  */
   SET_OPTION_IF_UNSET (opts, &global_options_set,
 		       param_sched_autopref_queue_depth, queue_depth);
+
+  /* If the core wants only AdvancedSIMD autovectorization, do this through
+     aarch64_autovec_preference.  If the user set it explicitly, they should
+     know what they want.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_PREFER_ADVSIMD_AUTOVEC)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 aarch64_autovec_preference, 1);
 
   /* If using Advanced SIMD only for autovectorization disable SVE vector costs
      comparison.  */
