@@ -240,8 +240,9 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--flang-info-include-translate@r{[}=@var{name}@r{]} @gol
+-flang-info-include-translate@r{[}=@var{header}@r{]} @gol
 -flang-info-include-translate-not @gol
+-flang-info-module-read@r{[}=@var{module}@r{]} @gol
 -stdlib=@var{libstdc++,libc++} @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
@@ -3382,12 +3383,21 @@ is used when building the C++ library.)
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
 @opindex flang-info-include-translate-not
-Diagnose include translation events.  The first will note accepted
+Inform of include translation events.  The first will note accepted
 include translations, the second will note declined include
 translations.  The @var{header} form will inform of include
 translations relating to that specific header.  If @var{header} is of
 the form @code{"user"} or @code{<system>} it will be resolved to a
 specific user or system header using the include path.
+
+@item -flang-info-module-read
+@itemx -flang-info-module-read=@var{module}
+@opindex flang-info-module-read
+Inform of Compiled Module Interface pathnames.  The first will note
+all read CMI pathnames.  The @var{module} form will not reading a
+specific module's CMI.  @var{module} may be a named module or a
+header-unit (the latter indicated by either being a pathname containing
+directory separators or enclosed in @code{<>} or @code{""}).
 
 @item -stdlib=@var{libstdc++,libc++}
 @opindex stdlib
@@ -33050,8 +33060,14 @@ textual.  With an argument, queries about include translation of a
 header files with that particular trailing pathname are noted.  You
 may repeat this form to cover several different header files.  This
 option may be helpful in determining whether include translation is
-happening---if it is working correctly, it'll behave as if it wasn't
+happening---if it is working correctly, it behaves as if it isn't
 there at all.
+
+The @option{-flang-info-module-read} option can be used to determine
+where the compiler is reading a CMI from.  Without the option, the
+compiler is silent when such a read is successful.  This option has an
+optional argument, which will restrict the notification to just the
+set of named modules or header units specified.
 
 The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported

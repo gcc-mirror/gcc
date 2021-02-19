@@ -317,6 +317,9 @@ version2string (unsigned version, verstr_t &out)
 /* Include files to note translation for.  */
 static vec<const char *, va_heap, vl_embed> *note_includes;
 
+/* Modules to note CMI pathames.  */
+static vec<const char *, va_heap, vl_embed> *note_cmis;
+
 /* Traits to hash an arbitrary pointer.  Entries are not deletable,
    and removal is a noop (removal needed upon destruction).  */
 template <typename T>
@@ -3547,9 +3550,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			   do it again  */
   bool call_init_p : 1; /* This module's global initializer needs
 			   calling.  */
+  bool inform_read_p : 1; /* Inform of a read.  */
   /* Record extensions emitted or permitted.  */
   unsigned extensions : SE_BITS;
-  /* 12 bits used, 4 bits remain  */
+  /* 13 bits used, 3 bits remain  */
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3781,6 +3785,8 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   call_init_p = false;
 
   partition_p = partition;
+
+  inform_read_p = false;
 
   extensions = 0;
   if (name && TREE_CODE (name) == STRING_CST)
@@ -18634,6 +18640,8 @@ module_state::do_import (cpp_reader *reader, bool outermost)
     {
       const char *file = maybe_add_cmi_prefix (filename);
       dump () && dump ("CMI is %s", file);
+      if (note_module_read_yes || inform_read_p)
+	inform (loc, "reading CMI %qs", file);
       fd = open (file, O_RDONLY | O_CLOEXEC | O_BINARY);
       e = errno;
     }
@@ -19545,6 +19553,7 @@ init_modules (cpp_reader *reader)
   headers = BITMAP_GGC_ALLOC ();
 
   if (note_includes)
+    /* Canonicalize header names.  */
     for (unsigned ix = 0; ix != note_includes->length (); ix++)
       {
 	const char *hdr = (*note_includes)[ix];
@@ -19565,6 +19574,37 @@ init_modules (cpp_reader *reader)
 	path[len] = 0;
 
 	(*note_includes)[ix] = path;
+      }
+
+  if (note_cmis)
+    /* Canonicalize & mark module names.  */
+    for (unsigned ix = 0; ix != note_cmis->length (); ix++)
+      {
+	const char *name = (*note_cmis)[ix];
+	size_t len = strlen (name);
+
+	bool is_system = name[0] == '<';
+	bool is_user = name[0] == '"';
+	bool is_pathname = false;
+	if (!(is_system || is_user))
+	  for (unsigned ix = len; !is_pathname && ix--;)
+	    is_pathname = IS_DIR_SEPARATOR (name[ix]);
+	if (is_system || is_user || is_pathname)
+	  {
+	    if (len <= (is_pathname ? 0 : 2)
+		|| (!is_pathname && name[len-1] != (is_system ? '>' : '"')))
+	      {
+		error ("invalid header name %qs", name);
+		continue;
+	      }
+	    else
+	      name = canonicalize_header_name (is_pathname ? nullptr : reader,
+					       0, is_pathname, name, len);
+	  }
+	if (auto module = get_module (name))
+	  module->inform_read_p = 1;
+	else
+	  error ("invalid module name %qs", name);
       }
 
   dump.push (NULL);
@@ -19950,6 +19990,10 @@ handle_module_option (unsigned code, const char *str, int)
 
     case OPT_flang_info_include_translate_:
       vec_safe_push (note_includes, str);
+      return true;
+
+    case OPT_flang_info_module_read_:
+      vec_safe_push (note_cmis, str);
       return true;
 
     default:
