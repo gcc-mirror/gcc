@@ -193,7 +193,7 @@ ADTType::is_equal (const BaseType &other) const
 	{
 	  return false;
 	}
-      for (int i = 0; i < num_fields (); i++)
+      for (size_t i = 0; i < num_fields (); i++)
 	{
 	  if (!get_field (i)->is_equal (*other2.get_field (i)))
 	    {
@@ -264,7 +264,7 @@ TupleType::is_equal (const BaseType &other) const
 	{
 	  return false;
 	}
-      for (int i = 0; i < num_fields (); i++)
+      for (size_t i = 0; i < num_fields (); i++)
 	{
 	  if (!get_field (i)->is_equal (*other2.get_field (i)))
 	    {
@@ -325,7 +325,7 @@ FnType::is_equal (const BaseType &other) const
 	return false;
       if (num_params () != other2.num_params ())
 	return false;
-      for (int i = 0; i < num_params (); i++)
+      for (size_t i = 0; i < num_params (); i++)
 	{
 	  auto lhs = param_at (i).second;
 	  auto rhs = other2.param_at (i).second;
