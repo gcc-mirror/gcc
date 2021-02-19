@@ -2133,7 +2133,17 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	  if (FORCED_LABEL (label))
 	    {
 	      gimple_stmt_iterator dest_gsi = gsi_start_bb (a);
-	      gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
+	      tree first_label = NULL_TREE;
+	      if (!gsi_end_p (dest_gsi))
+		if (glabel *first_label_stmt
+		    = dyn_cast <glabel *> (gsi_stmt (dest_gsi)))
+		  first_label = gimple_label_label (first_label_stmt);
+	      if (first_label
+		  && (DECL_NONLOCAL (first_label)
+		      || EH_LANDING_PAD_NR (first_label) != 0))
+		gsi_insert_after (&dest_gsi, stmt, GSI_NEW_STMT);
+	      else
+		gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  /* Other user labels keep around in a form of a debug stmt.  */
 	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_BIND_STMTS)
