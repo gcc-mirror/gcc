@@ -4136,7 +4136,17 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
     {
       if (upper)
 	{
-	  if (!gfc_ref_dimen_size (&ref->u.ar, d - 1, &result->value.integer, NULL))
+	  int d2 = 0, cnt = 0;
+	  for (int idx = 0; idx < ref->u.ar.dimen; ++idx)
+	    {
+	      if (ref->u.ar.dimen_type[idx] == DIMEN_ELEMENT)
+		d2++;
+	      else if (cnt < d - 1)
+		cnt++;
+	      else
+		break;
+	    }
+	  if (!gfc_ref_dimen_size (&ref->u.ar, d2 + d - 1, &result->value.integer, NULL))
 	    goto returnNull;
 	}
       else
