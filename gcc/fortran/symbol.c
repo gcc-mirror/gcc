@@ -1772,8 +1772,8 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
   /* Copying a procedure dummy argument for a module procedure in a
      submodule results in the flavor being copied and would result in
      an error without this.  */
-  if (gfc_new_block && gfc_new_block->abr_modproc_decl
-      && attr->flavor == f && f == FL_PROCEDURE)
+  if (attr->flavor == f && f == FL_PROCEDURE
+      && gfc_new_block && gfc_new_block->abr_modproc_decl)
     return true;
 
   if (attr->flavor != FL_UNKNOWN)
