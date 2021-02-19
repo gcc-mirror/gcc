@@ -5305,7 +5305,9 @@ gfc_find_specific_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
     }
 
 finish:
-  if (dtio_sub && derived != CLASS_DATA (dtio_sub->formal->sym)->ts.u.derived)
+  if (dtio_sub
+      && dtio_sub->formal->sym->ts.type == BT_CLASS
+      && derived != CLASS_DATA (dtio_sub->formal->sym)->ts.u.derived)
     gfc_find_derived_vtab (derived);
 
   return dtio_sub;
