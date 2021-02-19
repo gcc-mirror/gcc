@@ -162,7 +162,7 @@ builtins_manager::get_builtin_function (const char *name)
 recording::function *
 builtins_manager::get_builtin_function_by_id (enum built_in_function builtin_id)
 {
-  gcc_assert (builtin_id >= 0);
+  gcc_assert (builtin_id > BUILT_IN_NONE);
   gcc_assert (builtin_id < END_BUILTINS);
 
   /* Lazily build the functions, caching them so that repeated calls for
@@ -598,6 +598,18 @@ builtins_manager::make_ptr_type (enum jit_builtin_type,
 {
   recording::type *base_type = get_type (other_type_id);
   return base_type->get_pointer ();
+}
+
+/* Ensure that builtins that could be needed during optimization
+   get created ahead of time.  */
+
+void
+builtins_manager::ensure_optimization_builtins_exist ()
+{
+  /* build_common_builtin_nodes does most of this, but not all.
+     We can't loop through all of the builtin_data array, we don't
+     support all types yet.  */
+  (void)get_builtin_function_by_id (BUILT_IN_TRAP);
 }
 
 /* Playback support.  */
