@@ -4022,6 +4022,16 @@ inline_forbidden_p (tree fndecl)
   wi.info = (void *) fndecl;
   wi.pset = &visited_nodes;
 
+  /* We cannot inline a function with a VLA typed argument or result since
+     we have no implementation materializing a variable of such type in
+     the caller.  */
+  if (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
+      && !poly_int_tree_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (fndecl)))))
+    return true;
+  for (tree parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
+    if (!poly_int_tree_p (DECL_SIZE (parm)))
+      return true;
+
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple *ret;
