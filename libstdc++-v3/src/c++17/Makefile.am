@@ -67,6 +67,10 @@ floating_from_chars.lo: floating_from_chars.cc
 	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 floating_from_chars.o: floating_from_chars.cc
 	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.lo: floating_to_chars.cc
+	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.o: floating_to_chars.cc
+	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

@@ -42,6 +42,7 @@ GLIBCXX_LDBL_3.4.21 {
 
 GLIBCXX_LDBL_3.4.29 {
   _ZSt10from_charsPKcS0_RgSt12chars_format;
+  _ZSt8to_charsPcS_g*;
 } GLIBCXX_LDBL_3.4.21;
 
 CXXABI_LDBL_1.3 {
