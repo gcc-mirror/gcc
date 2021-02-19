@@ -60,9 +60,9 @@ public:
     other->accept_vis (*this);
     if (resolved != nullptr)
       {
-	resolved->append_reference (base->get_ref ());
+	resolved->append_reference (get_base()->get_ref ());
 	resolved->append_reference (other->get_ref ());
-	for (auto ref : base->get_combined_refs ())
+	for (auto ref : get_base()->get_combined_refs ())
 	  resolved->append_reference (ref);
 	for (auto ref : other->get_combined_refs ())
 	  resolved->append_reference (ref);
@@ -97,133 +97,149 @@ public:
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (TupleType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (ADTType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (InferType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (FnType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (ArrayType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (BoolType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (IntType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (UintType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (USizeType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (ISizeType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (FloatType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (ErrorType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (StructFieldType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (CharType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
   virtual void visit (ReferenceType &type) override
-
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   base->as_string ().c_str (), type.as_string ().c_str ());
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
   }
 
 protected:
   BaseRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
-      context (Resolver::TypeCheckContext::get ()), base (base),
+      context (Resolver::TypeCheckContext::get ()),
       resolved (new ErrorType (base->get_ref (), base->get_ref ()))
   {}
 
   Analysis::Mappings *mappings;
   Resolver::TypeCheckContext *context;
 
-  /* Pointer to the Ty that created this rule. */
-  BaseType *base;
-
   /* Temporary storage for the result of a unification.
      We could return the result directly instead of storing it in the rule
      object, but that involves modifying the visitor pattern to accommodate
      the return value, which is too complex. */
   BaseType *resolved;
+
+private:
+  /* Returns a pointer to the ty that created this rule. */
+  virtual BaseType *get_base () = 0;
 };
 
 class InferRules : public BaseRules
@@ -440,6 +456,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   InferType *base;
 };
 
@@ -460,6 +478,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   StructFieldType *base;
 };
 
@@ -474,6 +494,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   UnitType *base;
 };
 
@@ -529,6 +551,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   FnType *base;
 };
 
@@ -561,6 +585,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   ArrayType *base;
 };
 
@@ -575,6 +601,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   BoolType *base;
 };
 
@@ -609,6 +637,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   IntType *base;
 };
 
@@ -643,6 +673,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   UintType *base;
 };
 
@@ -676,6 +708,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   FloatType *base;
 };
 
@@ -713,6 +747,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   ADTType *base;
 };
 
@@ -750,6 +786,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   TupleType *base;
 };
 
@@ -774,6 +812,8 @@ public:
   void visit (USizeType &type) override { resolved = type.clone (); }
 
 private:
+  BaseType *get_base () override { return base; }
+
   USizeType *base;
 };
 
@@ -798,6 +838,8 @@ public:
   void visit (ISizeType &type) override { resolved = type.clone (); }
 
 private:
+  BaseType *get_base () override { return base; }
+
   ISizeType *base;
 };
 
@@ -821,6 +863,8 @@ public:
   void visit (CharType &type) override { resolved = type.clone (); }
 
 private:
+  BaseType *get_base () override { return base; }
+
   CharType *base;
 };
 
@@ -840,6 +884,8 @@ public:
   }
 
 private:
+  BaseType *get_base () override { return base; }
+
   ReferenceType *base;
 };
 
