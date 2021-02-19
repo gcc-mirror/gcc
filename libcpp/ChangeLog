@@ -1,3 +1,15 @@
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* include/cpplib.h (cpp_find_header_unit): Rename to ...
+	(cpp_probe_header_unit): ... this.
+	* internal.h (_cp_find_header_unit): Declare.
+	* files.c (cpp_find_header_unit): Break apart to ..
+	(test_header_unit): ... this, and ...
+	(_cpp_find_header_unit): ... and, or and ...
+	(cpp_probe_header_unit): ... this.
+	* macro.c (cpp_get_token_1): Call _cpp_find_header_unit.
+
 2021-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* files.c (_cpp_stack_file): Make buffers end in unread \n.
