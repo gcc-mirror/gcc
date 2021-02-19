@@ -5864,12 +5864,14 @@ perfect_conversion_p (conversion *conv)
 {
   if (CONVERSION_RANK (conv) != cr_identity)
     return false;
-  if (!conv->rvaluedness_matches_p)
-    return false;
-  if (conv->kind == ck_ref_bind
-      && !same_type_p (TREE_TYPE (conv->type),
-		       next_conversion (conv)->type))
-    return false;
+  if (conv->kind == ck_ref_bind)
+    {
+      if (!conv->rvaluedness_matches_p)
+	return false;
+      if (!same_type_p (TREE_TYPE (conv->type),
+			next_conversion (conv)->type))
+	return false;
+    }
   return true;
 }
 
