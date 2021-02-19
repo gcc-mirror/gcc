@@ -1,3 +1,88 @@
+2021-02-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/96264
+	* gcc.target/powerpc/pr96264.c: New.
+
+2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99113
+	* c-c++-common/attr-retain-1.c: New test.
+	* c-c++-common/attr-retain-2.c: Likewise.
+	* c-c++-common/attr-retain-3.c: Likewise.
+	* c-c++-common/attr-retain-4.c: Likewise.
+	* c-c++-common/attr-retain-5.c: Likewise.
+	* c-c++-common/attr-retain-6.c: Likewise.
+	* c-c++-common/attr-retain-7.c: Likewise.
+	* c-c++-common/attr-retain-8.c: Likewise.
+	* c-c++-common/attr-retain-9.c: Likewise.
+	* c-c++-common/pr99113.c: Likewise.
+	* gcc.c-torture/compile/attr-retain-1.c: Likewise.
+	* gcc.c-torture/compile/attr-retain-2.c: Likewise.
+	* c-c++-common/attr-used.c: Don't expect SHF_GNU_RETAIN section.
+	* c-c++-common/attr-used-2.c: Likewise.
+	* c-c++-common/attr-used-3.c: Likewise.
+	* c-c++-common/attr-used-4.c: Likewise.
+	* c-c++-common/attr-used-9.c: Likewise.
+	* gcc.c-torture/compile/attr-used-retain-1.c: Likewise.
+	* gcc.c-torture/compile/attr-used-retain-2.c: Likewise.
+	* c-c++-common/attr-used-5.c: Don't expect warning for the used
+	attribute nor SHF_GNU_RETAIN section.
+	* c-c++-common/attr-used-6.c: Likewise.
+	* c-c++-common/attr-used-7.c: Likewise.
+	* c-c++-common/attr-used-8.c: Likewise.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* g++.dg/modules/modules.exp: Bail on cross-testing.  Add support
+	for .X files.
+	* g++.dg/modules/pr99023_a.X: New.
+	* g++.dg/modules/pr99023_b.X: New.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99136
+	* gcc.dg/pr99136.c: New test.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* g++.dg/modules/modules.exp: Remove dg-module-headers support
+	* g++.dg/modules/alias-2_a.H: Delete.
+	* g++.dg/modules/sys/alias-2_a.H: Delete.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99150
+	* g++.dg/modules/pr99023_a.H: Delete.
+	* g++.dg/modules/pr99023_b.H: Delete.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99132
+	* g++.dg/cpp2a/constexpr-virtual18.C: New test.
+
+2021-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99122
+	* gcc.dg/pr99122-1.c: New testcase.
+	* gcc.dg/pr99122-2.c: Likewise.
+
+2021-02-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR tree-optimization/99142
+	* gcc.dg/tree-ssa/pr99142.c: New test.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99109
+	* g++.dg/warn/Warray-bounds-17.C: New test.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99104
+	* gcc.dg/pr99104.c: New test.
+
 2021-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94596

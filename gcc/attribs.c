@@ -2124,7 +2124,7 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 		  if (*m == '$')
 		    {
 		      ++m;
-		      if (!acc.size)
+		      if (!acc.size && vblist)
 			{
 			  /* Extract the list of VLA bounds for the current
 			     parameter, store it in ACC.SIZE, and advance
@@ -2249,10 +2249,6 @@ attr_access::free_lang_data (tree attrs)
     {
       tree vblist = TREE_VALUE (acs);
       vblist = TREE_CHAIN (vblist);
-      if (!vblist)
-	continue;
-
-      vblist = TREE_VALUE (vblist);
       if (!vblist)
 	continue;
 

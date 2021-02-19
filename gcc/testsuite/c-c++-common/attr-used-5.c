@@ -11,7 +11,6 @@ extern struct dtv_slotinfo_list *list;
 
 static int __attribute__ ((section ("__libc_freeres_fn")))
 free_slotinfo (struct dtv_slotinfo_list **elemp)
-/* { dg-warning "'.*' without 'used' attribute and '.*' with 'used' attribute are placed in a section with the same name" "" { target R_flag_in_section } .-1 } */
 {
   if (!free_slotinfo (&(*elemp)->next))
     return 0;
@@ -25,4 +24,4 @@ static void free_mem (void)
 }
 
 /* { dg-final { scan-assembler "__libc_freeres_fn,\"ax\"" { target R_flag_in_section } } } */
-/* { dg-final { scan-assembler "__libc_freeres_fn,\"axR\"" { target R_flag_in_section } } } */
+/* { dg-final { scan-assembler-not "__libc_freeres_fn,\"axR\"" { target R_flag_in_section } } } */

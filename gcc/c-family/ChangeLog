@@ -1,3 +1,10 @@
+2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99113
+	* c-attribs.c (c_common_attribute_table): Add the "retain"
+	attribute.
+	(handle_retain_attribute): New function.
+
 2021-02-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99062

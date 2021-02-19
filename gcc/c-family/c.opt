@@ -1752,6 +1752,14 @@ flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
 Note a #include translation of a specific header.
 
+flang-info-module-read
+C++ Var(note_module_read_yes)
+Note Compiled Module Interface pathnames.
+
+flang-info-module-read=
+C++ Joined RejectNegative MissingArgError(missing module name)
+Note Compiled Module Interface pathname of a specific module or header-unit.
+
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
 fmax-include-depth=<number> Set the maximum depth of the nested #include.

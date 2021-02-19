@@ -957,7 +957,7 @@ Maximum number of references stored in each modref base.
 
 -param=modref-max-accesses=
 Common Joined UInteger Var(param_modref_max_accesses) Init(16) Param Optimization
-Maximum number of accesse stored in each modref reference.
+Maximum number of accesses stored in each modref reference.
 
 -param=modref-max-tests=
 Common Joined UInteger Var(param_modref_max_tests) Init(64) Param Optimization

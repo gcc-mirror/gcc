@@ -130,7 +130,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 10.1-b20200209\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2020-02-07 22:33+0000\n"
+"POT-Creation-Date: 2021-02-05 21:38+0000\n"
 "PO-Revision-Date: 2020-03-08 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -140,154 +140,154 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: charset.c:674
+#: charset.c:677
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "konvertering fra %s til %s er ikke understøttet af iconv"
 
-#: charset.c:677
+#: charset.c:680
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.c:685
+#: charset.c:688
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "ingen iconv-implementering, kan ikke konvertere fra %s til %s"
 
-#: charset.c:781
+#: charset.c:784
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "tegnet 0x%lx er ikke det grundlæggende kildetegnsæt\n"
 
-#: charset.c:798 charset.c:1768
+#: charset.c:801 charset.c:1771
 msgid "converting to execution character set"
 msgstr "konverterer til kørseltegnsæt"
 
-#: charset.c:804
+#: charset.c:807
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "tegn 0x%lx er ikke unibyte i kørseltegnsæt"
 
-#: charset.c:1054
+#: charset.c:1057
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universelle tegnnavne er kun gyldige i C++ og C99"
 
-#: charset.c:1058
+#: charset.c:1061
 msgid "C99's universal character names are incompatible with C90"
 msgstr "C99's universelle tegnnavne er ikke kompatible med C90"
 
-#: charset.c:1061
+#: charset.c:1064
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "betydningen af »\\%c« er anderledes i traditionel C"
 
-#: charset.c:1070
+#: charset.c:1073
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "I _cpp_valid_ucn men ikke en UCN"
 
-#: charset.c:1103
+#: charset.c:1106
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "ufuldstændigt universelt tegnnavn %.*s"
 
-#: charset.c:1118
+#: charset.c:1121
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s er ikke et gyldigt universelt tegn"
 
-#: charset.c:1128 lex.c:1335
+#: charset.c:1131 lex.c:1335
 msgid "'$' in identifier or number"
 msgstr "»$« i kaldenavn eller tal"
 
-#: charset.c:1138
+#: charset.c:1141
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universelt tegn %.*s er ikke gyldigt i et kaldenavn"
 
-#: charset.c:1142
+#: charset.c:1145
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universelt tegn %.*s er ikke gyldigt i starten af et kaldenavn"
 
-#: charset.c:1149
+#: charset.c:1152
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr "%.*s er udenfor UCS-koderummet"
 
-#: charset.c:1194 charset.c:2113
+#: charset.c:1197 charset.c:2116
 msgid "converting UCN to source character set"
 msgstr "konverterer UCN til et kildetegnsæt"
 
-#: charset.c:1201
+#: charset.c:1204
 msgid "converting UCN to execution character set"
 msgstr "konverterer UCN til et kørselstegnsæt"
 
-#: charset.c:1265
+#: charset.c:1268
 #, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "udvidet tegn %.*s er ikke gyldigt i et kaldenavn"
 
-#: charset.c:1282
+#: charset.c:1285
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "udvidet tegn %.*s er ikke gyldigt i starten af et kaldenavn"
 
-#: charset.c:1368
+#: charset.c:1371
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "betydningen af »\\x« er anderledes i traditionel C"
 
-#: charset.c:1393
+#: charset.c:1396
 msgid "\\x used with no following hex digits"
 msgstr "\\x angivet uden efterfølgende hexadecimale cifre"
 
-#: charset.c:1400
+#: charset.c:1403
 msgid "hex escape sequence out of range"
 msgstr "den hexadecimale undvigesekvens er uden for det gyldige interval"
 
-#: charset.c:1452
+#: charset.c:1455
 msgid "octal escape sequence out of range"
 msgstr "den oktale undvigesekvens er uden for det gyldige interval"
 
-#: charset.c:1534
+#: charset.c:1537
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "betydningen af »\\a« er anderledes i traditionel C"
 
-#: charset.c:1541
+#: charset.c:1544
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "undvigesekvensen »\\%c« er ikke ISO-standard"
 
-#: charset.c:1549
+#: charset.c:1552
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "ukendt undvigesekvens: »\\%c«"
 
-#: charset.c:1557
+#: charset.c:1560
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "ukendt undvigesekvens: »\\%s«"
 
-#: charset.c:1565
+#: charset.c:1568
 msgid "converting escape sequence to execution character set"
 msgstr "konverterer undvigesekvens til kørselstegnsæt"
 
-#: charset.c:1705
+#: charset.c:1708
 msgid "missing open quote"
 msgstr "manglende indledende citationstegn"
 
-#: charset.c:1923 charset.c:2002
+#: charset.c:1926 charset.c:2005
 msgid "character constant too long for its type"
 msgstr "tegnkonstanten er for lang for dens type"
 
-#: charset.c:1926
+#: charset.c:1929
 msgid "multi-character character constant"
 msgstr "flerbyte-tegnkonstant"
 
-#: charset.c:2042
+#: charset.c:2045
 msgid "empty character constant"
 msgstr "tom tegnkonstant"
 
-#: charset.c:2160
+#: charset.c:2163
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "kunne ikke konvertere %s til %s"
@@ -358,202 +358,198 @@ msgstr "makronavne skal være kaldenavne"
 msgid "undefining \"%s\""
 msgstr "fjerner definitionen af »%s«"
 
-#: directives.c:724
+#: directives.c:725
 msgid "missing terminating > character"
 msgstr "manglende afsluttende >-tegn"
 
-#: directives.c:783
+#: directives.c:784
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s forventer »FILNAVN« eller <FILNAVN>"
 
-#: directives.c:829
+#: directives.c:830
 #, c-format
 msgid "empty filename in #%s"
 msgstr "tomt filnavn i #%s"
 
-#: directives.c:838
+#: directives.c:839
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr "#include indlejret dybde %u er større end maksimum på %u (brug -fmax-include-depth=DEPTH for at øge maksimum)"
 
-#: directives.c:883
+#: directives.c:884
 msgid "#include_next in primary source file"
 msgstr "#include_next i den primære kildekodefil"
 
-#: directives.c:909
+#: directives.c:910
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ugyldigt flag »%s« i linjedirektiv"
 
-#: directives.c:969
+#: directives.c:970
 msgid "unexpected end of file after #line"
 msgstr "uventet filafslutning efter #line"
 
-#: directives.c:972
+#: directives.c:973
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "»%s« efter #line er ikke et positivt heltal"
 
-#: directives.c:978 directives.c:980
+#: directives.c:979 directives.c:981
 msgid "line number out of range"
 msgstr "linjenummer er uden for det gyldige interval"
 
-#: directives.c:993 directives.c:1074
+#: directives.c:994 directives.c:1075
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "»%s« er ikke et gyldigt filnavn"
 
-#: directives.c:1034
+#: directives.c:1035
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "»%s« efter # er ikke et positivt heltal"
 
-#: directives.c:1101
+#: directives.c:1102
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr "filen »%s« linjemarkør ignoreret på grund af ukorrekt indlejring"
 
-#: directives.c:1162 directives.c:1164 directives.c:1166 directives.c:1754
+#: directives.c:1180 directives.c:1182 directives.c:1184 directives.c:1772
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1190
+#: directives.c:1208
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ugyldig #%s-direktiv"
 
-#: directives.c:1253
+#: directives.c:1271
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "registrerer pragmaer i navnerum »%s« med fejlmatchede navneudvidelse"
 
-#: directives.c:1262
+#: directives.c:1280
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "registrerer pragma »%s« med navneudvidelse og intet navnerum"
 
-#: directives.c:1280
+#: directives.c:1298
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registrerer »%s« som både et pragma og et pragmanavnerum"
 
-#: directives.c:1283
+#: directives.c:1301
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s er allerede registreret"
 
-#: directives.c:1286
+#: directives.c:1304
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s er allerede registreret"
 
-#: directives.c:1316
+#: directives.c:1334
 msgid "registering pragma with NULL handler"
 msgstr "registrerer pragma med NULL-håndtering"
 
-#: directives.c:1533
+#: directives.c:1551
 msgid "#pragma once in main file"
 msgstr "#pragma once i hovedfil"
 
-#: directives.c:1556
+#: directives.c:1574
 msgid "invalid #pragma push_macro directive"
 msgstr "ugyldigt #pragma push_macro-direktiv"
 
-#: directives.c:1613
+#: directives.c:1631
 msgid "invalid #pragma pop_macro directive"
 msgstr "ugyldigt #pragma pop_macro-direktiv"
 
-#: directives.c:1668
+#: directives.c:1686
 msgid "invalid #pragma GCC poison directive"
 msgstr "ugyldigt #pragma GCC poison-direktiv"
 
-#: directives.c:1677
+#: directives.c:1695
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "forgifter eksisterende makro »%s«"
 
-#: directives.c:1696
+#: directives.c:1714
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignoreret uden for inkluderingsfil"
 
-#: directives.c:1721
+#: directives.c:1739
 #, c-format
 msgid "cannot find source file %s"
 msgstr "kan ikke finde kildefilen %s"
 
-#: directives.c:1725
+#: directives.c:1743
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuel fil er ældre end %s"
 
-#: directives.c:1749
+#: directives.c:1767
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "ugyldigt »#pragma GCC %s«-direktiv"
 
-#: directives.c:1950
+#: directives.c:1968
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma tager en strengkonstant med paranteser omkring"
 
-#: directives.c:2033
+#: directives.c:2051
 msgid "#else without #if"
 msgstr "#else uden #if"
 
-#: directives.c:2038
+#: directives.c:2056
 msgid "#else after #else"
 msgstr "#else efter #else"
 
-#: directives.c:2040 directives.c:2073
+#: directives.c:2058 directives.c:2091
 msgid "the conditional began here"
 msgstr "betingelsen begyndte her"
 
-#: directives.c:2066
+#: directives.c:2084
 msgid "#elif without #if"
 msgstr "#elif uden #if"
 
-#: directives.c:2071
+#: directives.c:2089
 msgid "#elif after #else"
 msgstr "#elif efter #else"
 
-#: directives.c:2102
+#: directives.c:2120
 msgid "#endif without #if"
 msgstr "#endif uden #if"
 
-#: directives.c:2178
+#: directives.c:2196
 msgid "missing '(' after predicate"
 msgstr "manglende »(« efter udsagn"
 
-#: directives.c:2196
+#: directives.c:2214
 msgid "missing ')' to complete answer"
 msgstr "manglende »)« til at fuldføre svar"
 
-#: directives.c:2208
+#: directives.c:2226
 msgid "predicate's answer is empty"
 msgstr "udsagnets svar er tomt"
 
-#: directives.c:2238
+#: directives.c:2256
 msgid "assertion without predicate"
 msgstr "postulat uden udsagn"
 
-#: directives.c:2241
+#: directives.c:2259
 msgid "predicate must be an identifier"
 msgstr "udsagn skal være et kaldenavn"
 
-#: directives.c:2323
+#: directives.c:2341
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "»%s« genpostuleret"
 
-#: directives.c:2604
+#: directives.c:2659
 #, c-format
 msgid "unterminated #%s"
 msgstr "uafsluttet #%s"
-
-#: directives-only.c:221 lex.c:2879 traditional.c:174
-msgid "unterminated comment"
-msgstr "uafsluttet kommentar"
 
 #: errors.c:291
 #, c-format
@@ -564,215 +560,235 @@ msgstr "%s: %s"
 msgid "stdout"
 msgstr "standardud"
 
-#: expr.c:626 expr.c:743
+#: expr.c:636 expr.c:753
 msgid "fixed-point constants are a GCC extension"
 msgstr "fast punkt-konstanter er en GCC-udvidelse"
 
-#: expr.c:651
+#: expr.c:661
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ugyldigt præfiks »0b« i kommatalskonstant"
 
-#: expr.c:664
+#: expr.c:674
 msgid "use of C++17 hexadecimal floating constant"
 msgstr "brug af C++17 hexadecimal kommatalskonstant"
 
-#: expr.c:667
+#: expr.c:677
 msgid "use of C99 hexadecimal floating constant"
 msgstr "brug af C99 hexadecimal kommatalskonstant"
 
-#: expr.c:711
+#: expr.c:721
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "ugyldig endelse »%.*s« i kommatalskonstant"
 
-#: expr.c:722 expr.c:789
+#: expr.c:732 expr.c:799
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionel C tillader ikke endelsen »%.*s«"
 
-#: expr.c:730
+#: expr.c:740
 msgid "suffix for double constant is a GCC extension"
 msgstr "endelse for dobbelt konstant er en GCC-udvidelse"
 
-#: expr.c:736
+#: expr.c:746
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ugyldig endelse »%.*s« med hexadecimal kommatalskonstant"
 
-#: expr.c:749 expr.c:753
+#: expr.c:759 expr.c:763
 msgid "decimal float constants are a C2X feature"
 msgstr "decimal kommatalskonstanter er en C2X-funktion"
 
-#: expr.c:772
+#: expr.c:782
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ugyldig endelse »%.*s« i heltalskonstant"
 
-#: expr.c:797
+#: expr.c:807
 msgid "use of C++11 long long integer constant"
 msgstr "brug af C++11 long long-heltalskonstant"
 
-#: expr.c:798
+#: expr.c:808
 msgid "use of C99 long long integer constant"
 msgstr "brug af C99 long long-heltalskonstant"
 
-#: expr.c:814
+#: expr.c:822
+#, fuzzy
+#| msgid "use of C++11 long long integer constant"
+msgid "use of C++23 %<size_t%> integer constant"
+msgstr "brug af C++11 long long-heltalskonstant"
+
+#: expr.c:823
+#, fuzzy
+#| msgid "use of C++11 long long integer constant"
+msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
+msgstr "brug af C++11 long long-heltalskonstant"
+
+#: expr.c:834
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginære konstanter er en GCC-udvidelse"
 
-#: expr.c:820
+#: expr.c:841
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binære konstanter er en C++14-funktion eller GCC-udvidelse"
 
-#: expr.c:822
-msgid "binary constants are a GCC extension"
-msgstr "binære konstanter er en GCC-udvidelse"
+#: expr.c:843
+#, fuzzy
+#| msgid "binary constants are a C++14 feature or GCC extension"
+msgid "binary constants are a C2X feature or GCC extension"
+msgstr "binære konstanter er en C++14-funktion eller GCC-udvidelse"
 
-#: expr.c:917
+#: expr.c:848
+#, fuzzy
+#| msgid "decimal float constants are a C2X feature"
+msgid "binary constants are a C2X feature"
+msgstr "decimal kommatalskonstanter er en C2X-funktion"
+
+#: expr.c:944
 msgid "integer constant is too large for its type"
 msgstr "heltalskonstanten er for stor for dens type"
 
-#: expr.c:948
+#: expr.c:975
 msgid "integer constant is so large that it is unsigned"
 msgstr "heltalskonstanten er så stor at den er usigneret"
 
-#: expr.c:1043
+#: expr.c:1070
 msgid "missing ')' after \"defined\""
 msgstr "manglende »)« efter »defined«"
 
-#: expr.c:1050
+#: expr.c:1077
 msgid "operator \"defined\" requires an identifier"
 msgstr "operatoren »defined« kræver et kaldenavn"
 
-#: expr.c:1058
+#: expr.c:1085
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(»%s« er et alternativt symbol for »%s« i C++)"
 
-#: expr.c:1070
+#: expr.c:1098
 msgid "this use of \"defined\" may not be portable"
 msgstr "denne brug af »defined« er muligvis ikke portabel"
 
-#: expr.c:1113
+#: expr.c:1143
 msgid "user-defined literal in preprocessor expression"
 msgstr "brugerdefineret ordret i præprocessorudtrykket"
 
-#: expr.c:1118
+#: expr.c:1148
 msgid "floating constant in preprocessor expression"
 msgstr "kommatalskonstant i præprocessorudtryk"
 
-#: expr.c:1124
+#: expr.c:1154
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginært tal i præprocessorudtryk"
 
-#: expr.c:1173
+#: expr.c:1203
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "»%s« er ikke defineret, evaluerer til 0"
 
-#: expr.c:1186
+#: expr.c:1216
 msgid "assertions are a GCC extension"
 msgstr "påstande er en GCC-udvidelse"
 
-#: expr.c:1189
+#: expr.c:1219
 msgid "assertions are a deprecated extension"
 msgstr "påstande er en forældet udvidelse"
 
-#: expr.c:1435
+#: expr.c:1465
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "ubalanceret stak i %s"
 
-#: expr.c:1455
+#: expr.c:1485
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "umulig operator »%u«"
 
-#: expr.c:1556
+#: expr.c:1586
 msgid "missing ')' in expression"
 msgstr "manglende »)« i udtryk"
 
-#: expr.c:1585
+#: expr.c:1615
 msgid "'?' without following ':'"
 msgstr "»?« uden efterfølgende »:«"
 
-#: expr.c:1595
+#: expr.c:1625
 msgid "integer overflow in preprocessor expression"
 msgstr "heltallet løber over i præprocessorudtrykket"
 
-#: expr.c:1600
+#: expr.c:1630
 msgid "missing '(' in expression"
 msgstr "manglende »(« i udtryk"
 
-#: expr.c:1632
+#: expr.c:1662
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "den venstre operand til »%s« ændrer fortegn ved forfremmelse"
 
-#: expr.c:1637
+#: expr.c:1667
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "den højre operand til »%s« ændrer fortegn ved forfremmelse"
 
-#: expr.c:1896
+#: expr.c:1926
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditionel C tillader ikke operatoren unær plus"
 
-#: expr.c:1994
+#: expr.c:2024
 msgid "comma operator in operand of #if"
 msgstr "kommaoperator i en operand til #if"
 
-#: expr.c:2130
+#: expr.c:2160
 msgid "division by zero in #if"
 msgstr "division med nul i #if"
 
-#: files.c:576
+#: files.c:571
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "en eller flere PCH-filer blev fundet, men de var ugyldige"
 
-#: files.c:580
+#: files.c:575
 msgid "use -Winvalid-pch for more information"
 msgstr "brug -Winvalid-pch for yderligere information"
 
-#: files.c:1004
+#: files.c:1051
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "der er ingen inkluderingssti at søge efter %s i"
 
-#: files.c:1439
+#: files.c:1546
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Flere inkluderingsvagter kan være nyttige til:\n"
 
-#: init.c:598
+#: init.c:614
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t skal være en usigneret type"
 
-#: init.c:602
+#: init.c:618
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "præprocessorberegning har en maksimal præcision på %lu bit; målarkitektur kræver %lu bit"
 
-#: init.c:609
+#: init.c:625
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-beregning skal være mindst lige så præcis som en målarkitekturs int"
 
-#: init.c:612
+#: init.c:628
 msgid "target char is less than 8 bits wide"
 msgstr "målarkitekturs char er mindre end 8 bit bred"
 
-#: init.c:616
+#: init.c:632
 msgid "target wchar_t is narrower than target char"
 msgstr "målarkitekturs wchar_t er mindre end målarkitekturs char"
 
-#: init.c:620
+#: init.c:636
 msgid "target int is narrower than target char"
 msgstr "målarkitekturs int er mindre end målarkitekturs char"
 
-#: init.c:625
+#: init.c:641
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP-halvheltal er mindre end CPP-tegn"
 
-#: init.c:629
+#: init.c:645
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP på denne vært kan ikke håndtere bredtegnkonstanter over %lu bit, men målarkitekturen kræver %lu bit"
@@ -819,11 +835,15 @@ msgid "`%.*s' is not in NFC"
 msgstr "»%.*s« er ikke i NFC"
 
 #: lex.c:1375
-msgid "__VA_OPT__ is not available until C++2a"
+#, fuzzy
+#| msgid "__VA_OPT__ is not available until C++2a"
+msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ er ikke tilgængelig før C++2a"
 
 #: lex.c:1382
-msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
+#, fuzzy
+#| msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
+msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr "__VA_OPT__ kan kun optræde i udfoldelsen af en C++2a-makro med vilkårligt antal parametre"
 
 #: lex.c:1413 lex.c:1506
@@ -844,232 +864,257 @@ msgstr "__VA_ARGS__ kan kun optræde i udfoldelsen af en C99-makro med vilkårli
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "kaldenavn »%s« er et specielt operatornavn i C++"
 
-#: lex.c:1837
+#: lex.c:1879
 msgid "raw string delimiter longer than 16 characters"
 msgstr "rå strengafgrænser længere end 16 tegn"
 
-#: lex.c:1841
+#: lex.c:1883
 msgid "invalid new-line in raw string delimiter"
 msgstr "ugyldig nylinje i rå strengafgrænser"
 
-#: lex.c:1845
+#: lex.c:1887 lex.c:4639
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "ugyldigt tegn »%c« i rå strengafgrænser"
 
-#: lex.c:1894 lex.c:1916
+#: lex.c:1926 lex.c:1949
 msgid "unterminated raw string"
 msgstr "uafsluttet rå streng"
 
-#: lex.c:1936 lex.c:2065
+#: lex.c:1971 lex.c:2100
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "ugyldig suffiks på ordret; C++11 kræver et mellemrum mellem ordret og strengmakro"
 
-#: lex.c:2048
+#: lex.c:2083
 msgid "null character(s) preserved in literal"
 msgstr "nultegn bevaret i strengkonstant"
 
-#: lex.c:2051
+#: lex.c:2086
 #, c-format
 msgid "missing terminating %c character"
 msgstr "manglende afsluttende %c-tegn"
 
-#: lex.c:2083
+#: lex.c:2118
 msgid "C++11 requires a space between string literal and macro"
 msgstr "C++11 kræver et mellemrum mellem ordret og strengmakro"
 
-#: lex.c:2893 lex.c:2927
+#: lex.c:2711
+msgid "module control-line cannot be in included file"
+msgstr ""
+
+#: lex.c:2725
+#, c-format
+msgid "module control-line \"%s\" cannot be an object-like macro"
+msgstr ""
+
+#: lex.c:3099 lex.c:4472 traditional.c:174
+msgid "unterminated comment"
+msgstr "uafsluttet kommentar"
+
+#: lex.c:3113 lex.c:3147
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "kommentarer i C++-stil er ikke tilladt i ISO C90"
 
-#: lex.c:2895 lex.c:2906 lex.c:2930
+#: lex.c:3115 lex.c:3126 lex.c:3150
 msgid "(this will be reported only once per input file)"
 msgstr "(dette rapporteres kun en enkelt gang per inddatafil)"
 
-#: lex.c:2904
+#: lex.c:3124
 msgid "C++ style comments are incompatible with C90"
 msgstr "kommentarer i C++-stil er ikke kompatible med C90"
 
-#: lex.c:2936
+#: lex.c:3156
 msgid "multi-line comment"
 msgstr "flerlinjekommentar"
 
-#: lex.c:3330
+#: lex.c:3550
 #, c-format
 msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
+
+#: lex.c:4627
+#, fuzzy, c-format
+#| msgid "raw string delimiter longer than 16 characters"
+msgid "raw string delimiter longer than %d characters"
+msgstr "rå strengafgrænser længere end 16 tegn"
+
+#: lex.c:4697
+#, fuzzy
+#| msgid "unterminated #%s"
+msgid "unterminated literal"
+msgstr "uafsluttet #%s"
 
 #: macro.c:94
 msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "»##« må ikke optræde ved nogen af enderne i __VA_OPT__"
 
-#: macro.c:364
+#: macro.c:386
 #, c-format
 msgid "\"%s\" used outside of preprocessing directive"
 msgstr "»%s« brugt uden for præprocessordirektiv"
 
-#: macro.c:374
+#: macro.c:396
 #, c-format
 msgid "missing '(' before \"%s\" operand"
 msgstr "manglende »(« før »%s«-operand"
 
-#: macro.c:389
+#: macro.c:411
 #, c-format
 msgid "operator \"%s\" requires a header-name"
 msgstr "operatoren »%s« kræver et teksthovednavn"
 
-#: macro.c:406
+#: macro.c:428
 #, c-format
 msgid "missing ')' after \"%s\" operand"
 msgstr "manglende »)« efter »%s«-operand"
 
-#: macro.c:426
+#: macro.c:448
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "makroen »%s« bliver ikke brugt"
 
-#: macro.c:465 macro.c:723
+#: macro.c:487 macro.c:778
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ugyldig indbygget makro »%s«"
 
-#: macro.c:472 macro.c:574
+#: macro.c:494 macro.c:596
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "makroen »%s« kan forhindre reproducerbare bygninger"
 
-#: macro.c:503
+#: macro.c:525
 msgid "could not determine file timestamp"
 msgstr "kunne ikke bestemme filtidsstempel"
 
-#: macro.c:620
+#: macro.c:610
 msgid "could not determine date and time"
 msgstr "kunne ikke bestemme dato og tid"
 
-#: macro.c:636
+#: macro.c:642
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ udvidet inden i direktiv med -fdirectives-only"
 
-#: macro.c:842
+#: macro.c:897
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "ugyldig strengkonstant, ignorerer afsluttende »\\«"
 
-#: macro.c:904
+#: macro.c:959
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "indsættelse af »%s« og »%s« giver ikke et gyldigt præprocessorsymbol"
 
-#: macro.c:1030
+#: macro.c:1085
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 kræver mindst en parameter for »...« i en makro med vilkårligt antal parametre"
 
-#: macro.c:1034
+#: macro.c:1089
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 kræver mindst en parameter for »...« i en makro med vilkårligt antal parametre"
 
-#: macro.c:1041
+#: macro.c:1096
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "makroen »%s« kræver %u parametre, men modtager kun %u"
 
-#: macro.c:1046
+#: macro.c:1101
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "makroen »%s« viderebragte %u parametre, men tager kun mod %u"
 
-#: macro.c:1244 traditional.c:815
+#: macro.c:1299 traditional.c:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "uafsluttet parameterliste ved kald af makroen »%s«"
 
-#: macro.c:1386
+#: macro.c:1442
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktionsagtig makro »%s« skal bruges med parametre i traditionel C"
 
-#: macro.c:2165
+#: macro.c:2220
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "starter makroen %s parameter %d: tomme makroparametre er ikke defineret i ISO C+98"
 
-#: macro.c:2173 macro.c:2182
+#: macro.c:2228 macro.c:2237
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "starter makroen %s parameter %d: tomme makroparametre er ikke defineret i ISO C90"
 
-#: macro.c:3141
+#: macro.c:3279
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "makroparameternavnet »%s« optræder mere end en gang"
 
-#: macro.c:3223
+#: macro.c:3361
 #, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "forventede parameternavn, fandt »%s«"
 
-#: macro.c:3224
+#: macro.c:3362
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr "forventede »,« eller »)«, fandt »%s«"
 
-#: macro.c:3225
+#: macro.c:3363
 msgid "expected parameter name before end of line"
 msgstr "forventede parameternavn før linjeafslutning"
 
-#: macro.c:3226
+#: macro.c:3364
 msgid "expected ')' before end of line"
 msgstr "forventede »)« før linjeafslutning"
 
-#: macro.c:3227
+#: macro.c:3365
 msgid "expected ')' after \"...\""
 msgstr "forventede »)« efter »...«"
 
-#: macro.c:3284
+#: macro.c:3422
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonyme makroer med vilkårligt antal parametre blev introduceret i C++11"
 
-#: macro.c:3285 macro.c:3289
+#: macro.c:3423 macro.c:3427
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyme makroer med vilkårligt antal parametre blev introduceret i C99"
 
-#: macro.c:3295
+#: macro.c:3433
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ tillader ikke navngivne makroer med vilkårligt antal parametre"
 
-#: macro.c:3296
+#: macro.c:3434
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C tillader ikke navngivne makroer med vilkårligt antal parametre"
 
-#: macro.c:3342
+#: macro.c:3480
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "»##« må ikke optræde ved nogen af enderne i en makrokrop"
 
-#: macro.c:3380
+#: macro.c:3518
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 kræver mellemrum efter makronavnet"
 
-#: macro.c:3381
+#: macro.c:3519
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 kræver mellemrum efter makronavnet"
 
-#: macro.c:3405
+#: macro.c:3543
 msgid "missing whitespace after the macro name"
 msgstr "manglende mellemrum efter makronavnet"
 
-#: macro.c:3455
+#: macro.c:3593
 msgid "'#' is not followed by a macro parameter"
 msgstr "»#« efterfølges ikke af en makroparameter"
 
-#: macro.c:3606
+#: macro.c:3749
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "»%s« omdefineret"
 
-#: macro.c:3611
+#: macro.c:3754
 msgid "this is the location of the previous definition"
 msgstr "den foregående definition er her"
 
-#: macro.c:3715
+#: macro.c:3891
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makroparameteren »%s« ville blive gjort til en streng i traditionel C"
@@ -1107,14 +1152,17 @@ msgstr "%s: ikke brugt da »__COUNTER__« er ugyldig"
 msgid "while reading precompiled header"
 msgstr "under læsning af prækompileret teksthoved"
 
-#: traditional.c:884
+#: traditional.c:891
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "opdagede rekursion ved udfoldelse af makroen »%s«"
 
-#: traditional.c:1107
+#: traditional.c:1114
 msgid "syntax error in macro parameter list"
 msgstr "syntaksfejl i makroparameterliste"
+
+#~ msgid "binary constants are a GCC extension"
+#~ msgstr "binære konstanter er en GCC-udvidelse"
 
 #~ msgid "\"__has_include__\" cannot be used as a macro name"
 #~ msgstr "»__has_include__« kan ikke bruges som et makronavn"

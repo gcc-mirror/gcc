@@ -1,3 +1,18 @@
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* module.cc (canonicalize_header_name): Use
+	cpp_probe_header_unit.
+	(maybe_translate_include): Fix note_includes comparison.
+	(init_modules): Fix note_includes string termination.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99132
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Use
+	cp_get_callee_fndecl_nofold instead of cp_get_callee_fndecl to check
+	for immediate function calls.
+
 2021-02-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99023

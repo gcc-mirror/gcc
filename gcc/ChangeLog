@@ -1,3 +1,103 @@
+2021-02-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/96264
+	* lra-remat.c (reg_overlap_for_remat_p): Check also output insn
+	hard regs.
+
+2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99113
+	* varasm.c (get_section): Replace SUPPORTS_SHF_GNU_RETAIN with
+	looking up the retain attribute.
+	(resolve_unique_section): Likewise.
+	(get_variable_section): Likewise.
+	(switch_to_section): Likewise.  Warn when a symbol without the
+	retain attribute and a symbol with the retain attribute are
+	placed in the section with the same name, instead of the used
+	attribute.
+	* doc/extend.texi: Document the "retain" attribute.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* doc/invoke.texi (flang-info-include-translate): Document header
+	lookup behaviour.
+
+2021-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99122
+	* ipa-fnsummary.c (analyze_function_body): Set
+	CIF_FUNCTION_NOT_INLINABLE for VLA parameter calls.
+	* tree-inline.c (insert_init_debug_bind): Pass NULL for
+	error_mark_node values.
+	(force_value_to_type): Do not build V_C_Es for WITH_SIZE_EXPR
+	values.
+	(setup_one_parameter): Delay force_value_to_type until when
+	it's needed.
+
+2021-02-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR tree-optimization/99142
+	* match.pd (clz cmp 0): Gate replacement on single_use of clz result.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int-bitmask.h (wide_int_bitmask::wide_int_bitmask (),
+	wide_int_bitmask::wide_int_bitmask (uint64_t),
+	wide_int_bitmask::wide_int_bitmask (uint64_t, uint64_t),
+	wide_int_bitmask::operator ~ () const,
+	wide_int_bitmask::operator | (wide_int_bitmask) const,
+	wide_int_bitmask::operator & (wide_int_bitmask) const): Use constexpr
+	instead of inline.
+	* config/i386/i386.h (PTA_3DNOW, PTA_3DNOW_A, PTA_64BIT, PTA_ABM,
+	PTA_AES, PTA_AVX, PTA_BMI, PTA_CX16, PTA_F16C, PTA_FMA, PTA_FMA4,
+	PTA_FSGSBASE, PTA_LWP, PTA_LZCNT, PTA_MMX, PTA_MOVBE, PTA_NO_SAHF,
+	PTA_PCLMUL, PTA_POPCNT, PTA_PREFETCH_SSE, PTA_RDRND, PTA_SSE, PTA_SSE2,
+	PTA_SSE3, PTA_SSE4_1, PTA_SSE4_2, PTA_SSE4A, PTA_SSSE3, PTA_TBM,
+	PTA_XOP, PTA_AVX2, PTA_BMI2, PTA_RTM, PTA_HLE, PTA_PRFCHW, PTA_RDSEED,
+	PTA_ADX, PTA_FXSR, PTA_XSAVE, PTA_XSAVEOPT, PTA_AVX512F, PTA_AVX512ER,
+	PTA_AVX512PF, PTA_AVX512CD, PTA_NO_TUNE, PTA_SHA, PTA_PREFETCHWT1,
+	PTA_CLFLUSHOPT, PTA_XSAVEC, PTA_XSAVES, PTA_AVX512DQ, PTA_AVX512BW,
+	PTA_AVX512VL, PTA_AVX512IFMA, PTA_AVX512VBMI, PTA_CLWB, PTA_MWAITX,
+	PTA_CLZERO, PTA_NO_80387, PTA_PKU, PTA_AVX5124VNNIW, PTA_AVX5124FMAPS,
+	PTA_AVX512VPOPCNTDQ, PTA_SGX, PTA_AVX512VNNI, PTA_GFNI, PTA_VAES,
+	PTA_AVX512VBMI2, PTA_VPCLMULQDQ, PTA_AVX512BITALG, PTA_RDPID,
+	PTA_PCONFIG, PTA_WBNOINVD, PTA_AVX512VP2INTERSECT, PTA_PTWRITE,
+	PTA_AVX512BF16, PTA_WAITPKG, PTA_MOVDIRI, PTA_MOVDIR64B, PTA_ENQCMD,
+	PTA_CLDEMOTE, PTA_SERIALIZE, PTA_TSXLDTRK, PTA_AMX_TILE, PTA_AMX_INT8,
+	PTA_AMX_BF16, PTA_UINTR, PTA_HRESET, PTA_KL, PTA_WIDEKL, PTA_AVXVNNI,
+	PTA_X86_64_BASELINE, PTA_X86_64_V2, PTA_X86_64_V3, PTA_X86_64_V4,
+	PTA_CORE2, PTA_NEHALEM, PTA_WESTMERE, PTA_SANDYBRIDGE, PTA_IVYBRIDGE,
+	PTA_HASWELL, PTA_BROADWELL, PTA_SKYLAKE, PTA_SKYLAKE_AVX512,
+	PTA_CASCADELAKE, PTA_COOPERLAKE, PTA_CANNONLAKE, PTA_ICELAKE_CLIENT,
+	PTA_ICELAKE_SERVER, PTA_TIGERLAKE, PTA_SAPPHIRERAPIDS, PTA_ALDERLAKE,
+	PTA_KNL, PTA_BONNELL, PTA_SILVERMONT, PTA_GOLDMONT, PTA_GOLDMONT_PLUS,
+	PTA_TREMONT, PTA_KNM): Use constexpr instead of const.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99109
+	* gimple-array-bounds.cc (build_zero_elt_array_type): Rename to ...
+	(build_printable_array_type): ... this.  Add nelts argument.  For
+	overaligned eltype, use TYPE_MAIN_VARIANT (eltype) instead.  If
+	nelts, call build_array_type_nelts.
+	(array_bounds_checker::check_mem_ref): Use build_printable_array_type
+	instead of build_zero_elt_array_type and build_array_type_nelts.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99104
+	* config/i386/i386.c (distance_non_agu_define): Don't call
+	extract_insn_cached here.
+	(ix86_lea_outperforms): Save and restore recog_data around call
+	to distance_non_agu_define and distance_agu_use.
+	(ix86_ok_to_clobber_flags): Remove.
+	(ix86_avoid_lea_for_add): Don't call ix86_ok_to_clobber_flags.
+	(ix86_avoid_lea_for_addr): Likewise.  Adjust function comment.
+	* config/i386/i386.md (*lea<mode>): Change from define_insn_and_split
+	into define_insn.  Move the splitting to define_peephole2 and
+	check there using peep2_regno_dead_p if FLAGS_REG is dead.
+
 2021-02-17  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle ATTACH_DETACH

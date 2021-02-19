@@ -9216,6 +9216,11 @@
       else
 	{
 	  rtx mem = force_const_mem (SImode, operands[1]);
+	  if (!general_operand (mem, SImode))
+	    {
+	      emit_move_insn (operands[2], XEXP (mem, 0));
+	      mem = replace_equiv_address (mem, operands[2], false);
+	    }
 	  emit_move_insn (operands[2], mem);
 	}
     }
@@ -9299,6 +9304,11 @@
       else
 	{
 	  rtx mem = force_const_mem (SImode, operands[1]);
+	  if (!general_operand (mem, SImode))
+	    {
+	      emit_move_insn (operands[3], XEXP (mem, 0));
+	      mem = replace_equiv_address (mem, operands[3], false);
+	    }
 	  emit_move_insn (operands[3], mem);
 	}
     }

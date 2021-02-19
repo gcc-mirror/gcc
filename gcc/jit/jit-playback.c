@@ -2949,6 +2949,11 @@ replay ()
   /* Replay the recorded events:  */
   timevar_push (TV_JIT_REPLAY);
 
+  /* Ensure that builtins that could be needed during optimization
+     get created ahead of time.  */
+  builtins_manager *bm = m_recording_ctxt->get_builtins_manager ();
+  bm->ensure_optimization_builtins_exist ();
+
   m_recording_ctxt->replay_into (this);
 
   /* Clean away the temporary references from recording objects
@@ -2957,13 +2962,11 @@ replay ()
      refs.  Hence we must stop using them before the GC can run.  */
   m_recording_ctxt->disassociate_from_playback ();
 
-  /* The builtins_manager, if any, is associated with the recording::context
+  /* The builtins_manager is associated with the recording::context
      and might be reused for future compiles on other playback::contexts,
      but its m_attributes array is not GTY-labeled and hence will become
      nonsense if the GC runs.  Purge this state.  */
-  builtins_manager *bm = get_builtins_manager ();
-  if (bm)
-    bm->finish_playback ();
+  bm->finish_playback ();
 
   timevar_pop (TV_JIT_REPLAY);
 

@@ -1,3 +1,9 @@
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99136
+	* c-typeck.c (c_finish_return): Don't wrap retval into
+	EXCESS_PRECISION_EXPR in functions that return void.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_if_statement): Use vec_free.

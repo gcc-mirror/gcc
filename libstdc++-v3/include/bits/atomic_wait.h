@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __thread_yield() noexcept
     {
 #if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
-     __gthread_yield();
+      __gthread_yield();
 #endif
     }
 
@@ -227,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if defined __i386__ || defined __x86_64__
       __builtin_ia32_pause();
 #else
-      __gthread_yield();
+      __thread_yield();
 #endif
     }
   } // namespace __detail
