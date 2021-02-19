@@ -4862,7 +4862,7 @@ package body Sem_Ch8 is
 
             Pop_Scope;
 
-            while not (Is_List_Member (Decl))
+            while not Is_List_Member (Decl)
               or else Nkind (Parent (Decl)) in N_Protected_Definition
                                              | N_Task_Definition
             loop
