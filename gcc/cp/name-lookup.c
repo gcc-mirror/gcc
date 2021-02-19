@@ -367,6 +367,11 @@ append_imported_binding_slot (tree *slot, tree name, unsigned ix)
 	last->indices[off].base = ix;
 	last->indices[off].span = 1;
 	last->slots[off] = NULL_TREE;
+	/* Check monotonicity.  */
+	gcc_checking_assert (last[off ? 0 : -1]
+			     .indices[off ? off - 1
+				      : BINDING_VECTOR_SLOTS_PER_CLUSTER - 1]
+			     .base < ix);
 	return &last->slots[off];
       }
 

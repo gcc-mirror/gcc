@@ -3873,6 +3873,9 @@ module_state_hash::equal (const value_type existing,
 /* Mapper name.  */
 static const char *module_mapper_name;
 
+/* Deferred import queue (FIFO).  */
+static vec<module_state *, va_heap, vl_embed> *pending_imports;
+
 /* CMI repository path and workspace.  */
 static char *cmi_repo;
 static size_t cmi_repo_length;
@@ -18944,7 +18947,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
 
   module_state *current = (*modules)[0];
-  if (module_purview_p () || module->loadedness != ML_NONE)
+  if (module_purview_p () || module->loadedness > ML_CONFIG)
     {
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
@@ -19275,6 +19278,70 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
     }
 }
 
+/* Process the pending_import queue, making sure we know the
+   filenames.   */
+
+static void
+name_pending_imports (cpp_reader *reader, bool at_end)
+{
+  auto *mapper = get_mapper (cpp_main_loc (reader));
+
+  bool only_headers = (flag_preprocess_only
+		       && !bool (mapper->get_flags () & Cody::Flags::NameOnly)
+		       && !cpp_get_deps (reader));
+  if (at_end
+      && (!vec_safe_length (pending_imports) || only_headers))
+    /* Not doing anything.  */
+    return;
+
+  timevar_start (TV_MODULE_MAPPER);
+
+  dump.push (NULL);
+  dump () && dump ("Resolving direct import names");
+
+  mapper->Cork ();
+  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+    {
+      module_state *module = (*pending_imports)[ix];
+      gcc_checking_assert (module->is_direct ());
+      if (!module->filename)
+	{
+	  Cody::Flags flags
+	    = (flag_preprocess_only ? Cody::Flags::None
+	       : Cody::Flags::NameOnly);
+
+	  if (only_headers && !module->is_header ())
+	    ;
+	  else if (module->module_p
+		   && (module->is_partition () || module->exported_p))
+	    mapper->ModuleExport (module->get_flatname (), flags);
+	  else
+	    mapper->ModuleImport (module->get_flatname (), flags);
+	}
+    }
+  
+  auto response = mapper->Uncork ();
+  auto r_iter = response.begin ();
+  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+    {
+      module_state *module = (*pending_imports)[ix];
+      gcc_checking_assert (module->is_direct ());
+      if (only_headers && !module->is_header ())
+	;
+      else if (!module->filename)
+	{
+	  Cody::Packet const &p = *r_iter;
+	  ++r_iter;
+
+	  module->set_filename (p);
+	}
+    }
+
+  dump.pop (0);
+
+  timevar_stop (TV_MODULE_MAPPER);
+}
+
 /* We've just lexed a module-specific control line for MODULE.  Mark
    the module as a direct import, and possibly load up its macro
    state.  Returns the primary module, if this is a module
@@ -19322,17 +19389,22 @@ preprocess_module (module_state *module, location_t from_loc,
 	}
     }
 
+  auto desired = ML_CONFIG;
   if (is_import
-      && !module->is_module () && module->is_header ()
-      && module->loadedness < ML_PREPROCESSOR
+      && module->is_header ()
       && (!cpp_get_options (reader)->preprocessed
 	  || cpp_get_options (reader)->directives_only))
-    {
-      timevar_start (TV_MODULE_IMPORT);
-      unsigned n = dump.push (module);
+    /* We need preprocessor state now.  */
+    desired = ML_PREPROCESSOR;
 
-      if (module->loadedness == ML_NONE)
+  if (!is_import || module->loadedness < desired)
+    {
+      vec_safe_push (pending_imports, module);
+
+      if (desired == ML_PREPROCESSOR)
 	{
+	  name_pending_imports (reader, false);
+
 	  unsigned pre_hwm = 0;
 
 	  /* Preserve the state of the line-map.  */
@@ -19345,25 +19417,38 @@ preprocess_module (module_state *module, location_t from_loc,
 	  spans.maybe_init ();
 	  spans.close ();
 
-	  if (!module->filename)
+	  timevar_start (TV_MODULE_IMPORT);
+
+	  /* Load the config of each pending import -- we must assign
+	     module numbers monotonically.  */
+	  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
 	    {
-	      auto *mapper = get_mapper (cpp_main_loc (reader));
-	      auto packet = mapper->ModuleImport (module->get_flatname ());
-	      module->set_filename (packet);
+	      auto *import = (*pending_imports)[ix];
+	      if (!(import->module_p
+		    && (import->is_partition () || import->exported_p))
+		  && import->loadedness == ML_NONE
+		  && (import->is_header () || !flag_preprocess_only))
+		{
+		  unsigned n = dump.push (import);
+		  import->do_import (reader, true);
+		  dump.pop (n);
+		}
 	    }
-	  module->do_import (reader, true);
+	  vec_free (pending_imports);
 
 	  /* Restore the line-map state.  */
 	  linemap_module_restore (line_table, pre_hwm);
 	  spans.open ();
+
+	  /* Now read the preprocessor state of this particular
+	     import.  */
+	  unsigned n = dump.push (module);
+	  if (module->read_preprocessor (true))
+	    module->import_macros ();
+	  dump.pop (n);
+
+	  timevar_stop (TV_MODULE_IMPORT);
 	}
-
-      if (module->loadedness < ML_PREPROCESSOR)
-	if (module->read_preprocessor (true))
-	  module->import_macros ();
-
-      dump.pop (n);
-      timevar_stop (TV_MODULE_IMPORT);
     }
 
   return is_import ? NULL : get_primary (module);
@@ -19377,68 +19462,13 @@ preprocess_module (module_state *module, location_t from_loc,
 void
 preprocessed_module (cpp_reader *reader)
 {
-  auto *mapper = get_mapper (cpp_main_loc (reader));
+  name_pending_imports (reader, true);
+  vec_free (pending_imports);
 
   spans.maybe_init ();
   spans.close ();
 
-  /* Stupid GTY doesn't grok a typedef here.  And using type = is, too
-     modern.  */
-#define iterator hash_table<module_state_hash>::iterator
-  /* using iterator = hash_table<module_state_hash>::iterator;  */
-
-  /* Walk the module hash, asking for the names of all unknown
-     direct imports and informing of an export (if that's what we
-     are).  Notice these are emitted even when preprocessing as they
-     inform the server of dependency edges.  */
-  timevar_start (TV_MODULE_MAPPER);
-
-  dump.push (NULL);
-  dump () && dump ("Resolving direct import names");
-
-  if (!flag_preprocess_only
-      || bool (mapper->get_flags () & Cody::Flags::NameOnly)
-      || cpp_get_deps (reader))
-    {
-      mapper->Cork ();
-      iterator end = modules_hash->end ();
-      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
-	{
-	  module_state *module = *iter;
-	  if (module->is_direct () && !module->filename)
-	    {
-	      Cody::Flags flags
-		= (flag_preprocess_only ? Cody::Flags::None
-		   : Cody::Flags::NameOnly);
-
-	      if (module->module_p
-		  && (module->is_partition () || module->exported_p))
-		mapper->ModuleExport (module->get_flatname (), flags);
-	      else
-		mapper->ModuleImport (module->get_flatname (), flags);
-	    }
-	}
-
-      auto response = mapper->Uncork ();
-      auto r_iter = response.begin ();
-      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
-	{
-	  module_state *module = *iter;
-
-	  if (module->is_direct () && !module->filename)
-	    {
-	      Cody::Packet const &p = *r_iter;
-	      ++r_iter;
-
-	      module->set_filename (p);
-	    }
-	}
-    }
-
-  dump.pop (0);
-
-  timevar_stop (TV_MODULE_MAPPER);
-
+  using iterator = hash_table<module_state_hash>::iterator;
   if (mkdeps *deps = cpp_get_deps (reader))
     {
       /* Walk the module hash, informing the dependency machinery.  */
@@ -19462,6 +19492,8 @@ preprocessed_module (cpp_reader *reader)
 
   if (flag_header_unit && !flag_preprocess_only)
     {
+      /* Find the main module -- remember, it's not yet in the module
+	 array.  */
       iterator end = modules_hash->end ();
       for (iterator iter = modules_hash->begin (); iter != end; ++iter)
 	{
@@ -19473,7 +19505,6 @@ preprocessed_module (cpp_reader *reader)
 	    }
 	}
     }
-#undef iterator
 }
 
 /* VAL is a global tree, add it to the global vec if it is
