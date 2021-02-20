@@ -1,6 +1,8 @@
 name: Clang Format Lint
 
 on:
+  push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
