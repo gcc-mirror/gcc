@@ -126,7 +126,7 @@ public:
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
 	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						     param_tyty));
+						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
       }

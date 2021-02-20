@@ -37,7 +37,8 @@ public:
   bool lookup_builtin (std::string name, TyTy::BaseType **type);
   void insert_builtin (HirId id, NodeId ref, TyTy::BaseType *type);
 
-  void insert_type (const Analysis::NodeMapping &mappings, TyTy::BaseType *type);
+  void insert_type (const Analysis::NodeMapping &mappings,
+		    TyTy::BaseType *type);
   bool lookup_type (HirId id, TyTy::BaseType **type);
 
   void insert_type_by_node_id (NodeId ref, HirId id);

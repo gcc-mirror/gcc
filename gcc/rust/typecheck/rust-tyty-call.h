@@ -32,7 +32,7 @@ class TypeCheckCallExpr : private TyVisitor
 {
 public:
   static BaseType *go (BaseType *ref, HIR::CallExpr &call,
-		     Resolver::TypeCheckContext *context)
+		       Resolver::TypeCheckContext *context)
   {
     TypeCheckCallExpr checker (call, context);
     ref->accept_vis (checker);
@@ -76,7 +76,7 @@ class TypeCheckMethodCallExpr : private TyVisitor
 {
 public:
   static BaseType *go (BaseType *ref, HIR::MethodCallExpr &call,
-		     Resolver::TypeCheckContext *context)
+		       Resolver::TypeCheckContext *context)
   {
     TypeCheckMethodCallExpr checker (call, context);
     ref->accept_vis (checker);

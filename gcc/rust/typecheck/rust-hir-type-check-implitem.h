@@ -72,7 +72,7 @@ public:
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
 	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						     param_tyty));
+						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
       }
@@ -115,7 +115,8 @@ public:
 				    std::unique_ptr<HIR::Pattern> (nullptr));
     context->insert_type (self_param.get_mappings (), self->clone ());
     params.push_back (
-      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern, self->clone ()));
+      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
+						   self->clone ()));
 
     for (auto &param : method.get_function_params ())
       {
@@ -123,7 +124,7 @@ public:
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 	params.push_back (
 	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						     param_tyty));
+						       param_tyty));
 
 	context->insert_type (param.get_mappings (), param_tyty);
       }
@@ -134,7 +135,8 @@ public:
   }
 
 private:
-  TypeCheckTopLevelImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self)
+  TypeCheckTopLevelImplItem (TyTy::BaseType *self)
+    : TypeCheckBase (), self (self)
   {}
 
   TyTy::BaseType *self;

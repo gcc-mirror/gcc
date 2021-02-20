@@ -601,8 +601,8 @@ public:
 	return;
       }
 
-    auto resolved_index_expr = size_ty->unify (
-      TypeCheckExpr::Resolve (expr.get_index_expr (), false));
+    auto resolved_index_expr
+      = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
     if (resolved_index_expr == nullptr)
       {
 	rust_error_at (expr.get_index_expr ()->get_locus_slow (),

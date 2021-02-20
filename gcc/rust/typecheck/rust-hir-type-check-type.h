@@ -100,7 +100,8 @@ public:
 	  = new HIR::IdentifierPattern (param.get_name (), param.get_locus (),
 					is_ref, is_mut, std::move (to_bind));
 
-	TyTy::BaseType *ptype = TypeCheckType::Resolve (param.get_type ().get ());
+	TyTy::BaseType *ptype
+	  = TypeCheckType::Resolve (param.get_type ().get ());
 	params.push_back (
 	  std::pair<HIR::Pattern *, TyTy::BaseType *> (pattern, ptype));
       }
@@ -178,7 +179,8 @@ public:
 
   void visit (HIR::ReferenceType &type)
   {
-    TyTy::BaseType *base = TypeCheckType::Resolve (type.get_base_type ().get ());
+    TyTy::BaseType *base
+      = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
 					  base->get_ref ());
   }

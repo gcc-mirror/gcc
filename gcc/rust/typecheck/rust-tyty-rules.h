@@ -60,9 +60,9 @@ public:
     other->accept_vis (*this);
     if (resolved != nullptr)
       {
-	resolved->append_reference (get_base()->get_ref ());
+	resolved->append_reference (get_base ()->get_ref ());
 	resolved->append_reference (other->get_ref ());
-	for (auto ref : get_base()->get_combined_refs ())
+	for (auto ref : get_base ()->get_combined_refs ())
 	  resolved->append_reference (ref);
 	for (auto ref : other->get_combined_refs ())
 	  resolved->append_reference (ref);
