@@ -1,3 +1,10 @@
+2021-02-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (prefer_advsimd_autovec): Define.
+	* config/aarch64/aarch64.c (neoversev1_tunings): Use it.
+	(aarch64_override_options_internal): Adjust aarch64_autovec_preference
+	param when prefer_advsimd_autovec is enabled.
+
 2021-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* df-core.c (df_worklist_dataflow_doublequeue): Use proper cast.
