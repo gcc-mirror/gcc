@@ -1,3 +1,78 @@
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98741
+	* g++.dg/modules/pr98741_a.H: New.
+	* g++.dg/modules/pr98741_b.H: New.
+	* g++.dg/modules/pr98741_c.C: New.
+	* g++.dg/modules/pr98741_d.C: New.
+
+2021-02-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/98686
+	* gfortran.dg/namelist_4.f90: Modify.
+	* gfortran.dg/namelist_98.f90: New test.
+
+2021-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97172
+	* gcc.dg/pr97172.c: Add test cases.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr99166_a.X: New.
+	* g++.dg/modules/pr99166_b.C: New.
+	* g++.dg/modules/pr99166_c.C: New.
+	* g++.dg/modules/pr99166_d.C: New.
+
+2021-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99010
+	* gfortran.dg/coarray/array_temporary-1.f90: New test.
+
+2021-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99146
+	* gfortran.dg/dtio_36.f90: New test.
+
+2021-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99122
+	* gcc.dg/pr99122-3.c: New testcase.
+
+2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98998
+	* gcc.target/arm/pure-code/pr98998.c: New test.
+
+2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99034
+	* g++.dg/opt/pr99034.C: New test.
+
+2021-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99027
+	* gfortran.dg/ubound_1.f90: New test.
+
+2021-02-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/98657
+	* gcc.target/aarch64/sve/pr98657.c: New test.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/decltype64.C: Change argument to const&.
+
+2021-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/99126
+	* jit.dg/test-trap.c: New test.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96926
+	* g++.dg/cpp0x/overload4.C: New test.
+
 2021-02-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/96264

@@ -1,3 +1,17 @@
+2021-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/99126
+	* jit-builtins.c
+	(gcc::jit::builtins_manager::get_builtin_function_by_id):
+	Update assertion to reject BUILT_IN_NONE.
+	(gcc::jit::builtins_manager::ensure_optimization_builtins_exist):
+	New.
+	* jit-builtins.h
+	(gcc::jit::builtins_manager::ensure_optimization_builtins_exist):
+	New decl.
+	* jit-playback.c (gcc::jit::playback::context::replay): Call it.
+	Remove redundant conditional on bm.
+
 2021-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/index.rst: Remove "Alpha" warning.

@@ -1,3 +1,35 @@
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98741
+	* module.cc (pending_imports): New.
+	(declare_module): Adjust test condition.
+	(name_pending_imports): New.
+	(preprocess_module): Reimplement using pending_imports.
+	(preprocessed_module): Move name-getting to name_pending_imports.
+	* name-lookup.c (append_imported_binding_slot): Assert module
+	ordering is increasing.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (note_cmis): New.
+	(struct module_state): Add inform_read_p bit.
+	(module_state::do_import): Inform of CMI location, if enabled.
+	(init_modules): Canonicalize note_cmis entries.
+	(handle_module_option): Handle -flang-info-module-read=FOO.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96926
+	* call.c (perfect_conversion_p): Limit rvalueness
+	test to reference bindings.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96926
+	* call.c (perfect_conversion_p): New.
+	(perfect_candidate_p): New.
+	(add_candidates): Ignore templates after a perfect non-template.
+
 2021-02-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99023

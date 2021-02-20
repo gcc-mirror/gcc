@@ -1,3 +1,7 @@
+2021-02-19  Ayush Mittal  <ayush.m@samsung.com>
+
+	* argv.c (expandargv): free allocated buffer if read fails.
+
 2021-02-01  Martin Sebor  <msebor@redhat.com>
 
 	* dyn-string.c (dyn_string_insert_cstr): Use memcpy instead of strncpy

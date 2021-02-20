@@ -1,3 +1,45 @@
+2021-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97172
+	* attribs.c (init_attr_rdwr_indices): Guard vblist use.
+	(attr_access::free_lang_data): Remove a spurious test.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (flang-info-module-read): Document.
+
+2021-02-19  Martin Liska  <mliska@suse.cz>
+
+	PR translation/99167
+	* params.opt: Fix typo.
+
+2021-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99122
+	* tree-inline.c (inline_forbidden_p): Do not inline functions
+	with VLA arguments or return value.
+
+2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98998
+	* config/arm/arm.md (*stack_protect_combined_set_insn,
+	*stack_protect_combined_test_insn): If force_const_mem result
+	is not valid general operand, force its address into the destination
+	register first.
+
+2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99034
+	* tree-cfg.c (gimple_merge_blocks): If bb a starts with eh landing
+	pad or non-local label, put FORCED_LABELs from bb b after that label
+	rather than before it.
+
+2021-02-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/98657
+	* config/aarch64/aarch64-sve.md (<ASHIFT:optab><mode>3): Use
+	expand_vector_broadcast' to emit the vec_duplicate operand.
+
 2021-02-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/96264
