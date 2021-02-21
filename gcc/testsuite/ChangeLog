@@ -1,3 +1,21 @@
+2021-02-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/attr-retain-5.c: Skip on AIX.
+	* c-c++-common/attr-retain-6.c: Same.
+	* c-c++-common/attr-retain-7.c: Same.
+	* c-c++-common/attr-retain-8.c: Same.
+	* c-c++-common/attr-retain-9.c: Same.
+
+2021-02-20  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/99134
+	* gcc.target/s390/vector/long-double-from-decimal128.c: New test.
+	* gcc.target/s390/vector/long-double-from-decimal32.c: New test.
+	* gcc.target/s390/vector/long-double-from-decimal64.c: New test.
+	* gcc.target/s390/vector/long-double-to-decimal128.c: New test.
+	* gcc.target/s390/vector/long-double-to-decimal32.c: New test.
+	* gcc.target/s390/vector/long-double-to-decimal64.c: New test.
+
 2021-02-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98741

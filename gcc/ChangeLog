@@ -1,3 +1,22 @@
+2021-02-20  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/99134
+	* config/s390/vector.md (trunctf<DFP_ALL:mode>2_vr): New
+	pattern.
+	(trunctf<DFP_ALL:mode>2): Likewise.
+	(trunctdtf2_vr): Likewise.
+	(trunctdtf2): Likewise.
+	(extend<DFP_ALL:mode>tf2_vr): Likewise.
+	(extend<DFP_ALL:mode>tf2): Likewise.
+	(extendtftd2_vr): Likewise.
+	(extendtftd2): Likewise.
+
+2021-02-20  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md (*fprx2_to_tf): Rename to fprx2_to_tf,
+	add memory alternative.
+	(tf_to_fprx2): New pattern.
+
 2021-02-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/97172

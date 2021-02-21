@@ -1,3 +1,14 @@
+2021-02-20  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.in (ACLOCAL, ACLOCAL_AMFLAGS, $(srcdir)/aclocal.m4): Define.
+	(configure_deps): Rename to ...
+	(aclocal_deps): ... this.  Replace aclocal.m4 with acinclude.m4.
+	($(srcdir)/configure): Replace $(configure_deps) with
+	$(srcdir)/aclocal.m4.
+	* aclocal.m4: Move libiberty macros to acinclude.m4, then regenerate.
+	* acinclude.m4: New file.
+	* configure: Regenerate.
+
 2021-02-19  Ayush Mittal  <ayush.m@samsung.com>
 
 	* argv.c (expandargv): free allocated buffer if read fails.
