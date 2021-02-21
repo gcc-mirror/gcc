@@ -6955,19 +6955,30 @@ package body Sem_Util is
    -----------------------------
 
    function Current_Entity_In_Scope (N : Name_Id) return Entity_Id is
-      E  : Entity_Id;
       CS : constant Entity_Id := Current_Scope;
 
-      Transient_Case : constant Boolean := Scope_Is_Transient;
+      E  : Entity_Id;
 
    begin
       E := Get_Name_Entity_Id (N);
-      while Present (E)
-        and then Scope (E) /= CS
-        and then (not Transient_Case or else Scope (E) /= Scope (CS))
-      loop
-         E := Homonym (E);
-      end loop;
+
+      if No (E) then
+         null;
+
+      elsif Scope_Is_Transient then
+         while Present (E) loop
+            exit when Scope (E) = CS or else Scope (E) = Scope (CS);
+
+            E := Homonym (E);
+         end loop;
+
+      else
+         while Present (E) loop
+            exit when Scope (E) = CS;
+
+            E := Homonym (E);
+         end loop;
+      end if;
 
       return E;
    end Current_Entity_In_Scope;
