@@ -18516,6 +18516,7 @@ set_defining_module (tree decl)
 		  gcc_checking_assert (!use_tpl);
 		  /* Get to the TEMPLATE_DECL.  */
 		  decl = TI_TEMPLATE (ti);
+		  gcc_checking_assert (!DECL_MODULE_IMPORT_P (decl));
 		}
 
 	      /* Record it on the class_members list.  */
