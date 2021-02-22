@@ -1,3 +1,10 @@
+2021-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2020-12-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (REG_ALLOC_ORDER): Remove
+
 2021-02-20  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/99134

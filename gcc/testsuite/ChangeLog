@@ -1,3 +1,7 @@
+2021-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/intent_optimize_3.f90: New test.
+
 2021-02-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* c-c++-common/attr-retain-5.c: Skip on AIX.
