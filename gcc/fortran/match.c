@@ -5536,6 +5536,24 @@ gfc_match_namelist (void)
 	  if (m == MATCH_ERROR)
 	    goto error;
 
+	  if (sym->ts.type == BT_UNKNOWN)
+	    {
+	      if (gfc_current_ns->seen_implicit_none)
+		{
+		  /* It is required that members of a namelist be declared
+		     before the namelist.  We check this by checking if the
+		     symbol has a defined type for IMPLICIT NONE.  */
+		  gfc_error ("Symbol %qs in namelist %qs at %C must be "
+			     "declared before the namelist is declared.",
+			     sym->name, group_name->name);
+		  gfc_error_check ();
+		}
+	      else
+		/* If the type is not set already, we set it here to the
+		   implicit default type.  It is not allowed to set it
+		   later to any other type.  */
+		gfc_set_default_type (sym, 0, gfc_current_ns);
+	    }
 	  if (sym->attr.in_namelist == 0
 	      && !gfc_add_in_namelist (&sym->attr, sym->name, NULL))
 	    goto error;

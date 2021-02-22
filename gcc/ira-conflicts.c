@@ -275,7 +275,10 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
       ira_allocno_t a1 = ira_curr_regno_allocno_map[REGNO (reg1)];
       ira_allocno_t a2 = ira_curr_regno_allocno_map[REGNO (reg2)];
 
-      if (!allocnos_conflict_for_copy_p (a1, a2) && offset1 == offset2)
+      if (!allocnos_conflict_for_copy_p (a1, a2)
+	  && offset1 == offset2
+	  && ordered_p (GET_MODE_PRECISION (ALLOCNO_MODE (a1)),
+			GET_MODE_PRECISION (ALLOCNO_MODE (a2))))
 	{
 	  cp = ira_add_allocno_copy (a1, a2, freq, constraint_p, insn,
 				     ira_curr_loop_tree_node);

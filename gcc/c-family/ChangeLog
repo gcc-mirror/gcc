@@ -1,3 +1,7 @@
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (flang-info-module-read, flang-info-module-read=): New.
+
 2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/99113

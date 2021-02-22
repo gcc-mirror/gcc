@@ -4027,10 +4027,20 @@ inline_forbidden_p (tree fndecl)
      the caller.  */
   if (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
       && !poly_int_tree_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (fndecl)))))
-    return true;
+    {
+      inline_forbidden_reason
+	= G_("function %q+F can never be inlined because "
+	     "it has a VLA return argument");
+      return true;
+    }
   for (tree parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
     if (!poly_int_tree_p (DECL_SIZE (parm)))
-      return true;
+      {
+	inline_forbidden_reason
+	  = G_("function %q+F can never be inlined because "
+	       "it has a VLA argument");
+	return true;
+      }
 
   FOR_EACH_BB_FN (bb, fun)
     {
