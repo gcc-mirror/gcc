@@ -61,7 +61,9 @@ gfc_omp_is_allocatable_or_ptr (const_tree decl)
 /* True if the argument is an optional argument; except that false is also
    returned for arguments with the value attribute (nonpointers) and for
    assumed-shape variables (decl is a local variable containing arg->data).
-   Note that pvoid_type_node is for 'type(c_ptr), value.  */
+   Note that for 'procedure(), optional' the value false is used as that's
+   always a pointer and no additional indirection is used.
+   Note that pvoid_type_node is for 'type(c_ptr), value' (and c_funloc).  */
 
 static bool
 gfc_omp_is_optional_argument (const_tree decl)
@@ -70,6 +72,7 @@ gfc_omp_is_optional_argument (const_tree decl)
 	  && DECL_LANG_SPECIFIC (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != FUNCTION_TYPE
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
 }
 
