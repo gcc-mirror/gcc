@@ -4366,6 +4366,15 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
   unsigned int vec_inside_cost = 0, vec_outside_cost = 0, scalar_cost = 0;
   unsigned int vec_prologue_cost = 0, vec_epilogue_cost = 0;
 
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "Costing subgraph: \n");
+      hash_set<slp_tree> visited;
+      FOR_EACH_VEC_ELT (slp_instances, i, instance)
+	vect_print_slp_graph (MSG_NOTE, vect_location,
+			      SLP_INSTANCE_TREE (instance), visited);
+    }
+
   /* Calculate scalar cost and sum the cost for the vector stmts
      previously collected.  */
   stmt_vector_for_cost scalar_costs = vNULL;
