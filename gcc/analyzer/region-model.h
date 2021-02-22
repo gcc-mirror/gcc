@@ -383,6 +383,8 @@ public:
 
   bool maybe_set_lhs (const svalue *result) const;
 
+  unsigned num_args () const;
+
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
@@ -442,7 +444,8 @@ class region_model
   void on_assignment (const gassign *stmt, region_model_context *ctxt);
   const svalue *get_gassign_result (const gassign *assign,
 				    region_model_context *ctxt);
-  bool on_call_pre (const gcall *stmt, region_model_context *ctxt);
+  bool on_call_pre (const gcall *stmt, region_model_context *ctxt,
+		    bool *out_terminate_path);
   void on_call_post (const gcall *stmt,
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
@@ -455,6 +458,8 @@ class region_model
 				region_model_context *ctxt);
   bool impl_call_builtin_expect (const call_details &cd);
   bool impl_call_calloc (const call_details &cd);
+  bool impl_call_error (const call_details &cd, unsigned min_args,
+			bool *out_terminate_path);
   void impl_call_free (const call_details &cd);
   bool impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
