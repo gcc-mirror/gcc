@@ -49,6 +49,7 @@ typedef __complex float TCtype __attribute__ ((mode (TC)));
 #pragma GCC target ("vsx,float128")
 #endif
 
+#include <stddef.h>
 #include <quad.h>
 
 #define IBM128_TYPE	__ibm128
@@ -170,6 +171,13 @@ extern TFtype __trunctfkf2 (IBM128_TYPE);
 /* Complex __float128 built on __float128 interfaces.  */
 extern TCtype __mulkc3 (TFtype, TFtype, TFtype, TFtype);
 extern TCtype __divkc3 (TFtype, TFtype, TFtype, TFtype);
+
+/* Convert IEEE 128-bit floating point to/from string.  We explicitly use
+   _Float128 instead of TFmode because _strtokf and _strfromkf must be compiled
+   with long double being IBM 128.  */
+extern _Float128 __strtokf (const char *, char **);
+extern int __strfromkf (char *restrict, size_t, const char *restrict,
+			_Float128);
 
 /* Implementation of conversions between __ibm128 and __float128, to allow the
    same code to be used on systems with IEEE 128-bit emulation and with IEEE
