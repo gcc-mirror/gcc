@@ -536,19 +536,26 @@
   [(set_attr "type" "call")]
 )
 
-(define_insn "*nonsecure_call_reg_thumb2"
+(define_insn "*nonsecure_call_reg_thumb2_fpcxt"
   [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB2 && use_cmse"
-  {
-    if (TARGET_HAVE_FPCXT_CMSE)
-      return "blxns\\t%0";
-    else
-      return "bl\\t__gnu_cmse_nonsecure_call";
-  }
+  "TARGET_THUMB2 && use_cmse && TARGET_HAVE_FPCXT_CMSE"
+  "blxns\\t%0"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
+)
+
+(define_insn "*nonsecure_call_reg_thumb2"
+  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+		    UNSPEC_NONSECURE_MEM)
+	 (match_operand 0 "" ""))
+   (use (match_operand 1 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
+  "TARGET_THUMB2 && use_cmse && !TARGET_HAVE_FPCXT_CMSE"
+  "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -564,7 +571,7 @@
   [(set_attr "type" "call")]
 )
 
-(define_insn "*nonsecure_call_value_reg_thumb2"
+(define_insn "*nonsecure_call_value_reg_thumb2_fpcxt"
   [(set (match_operand 0 "" "")
 	(call
 	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
@@ -572,13 +579,21 @@
 	 (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB2 && use_cmse"
-  {
-    if (TARGET_HAVE_FPCXT_CMSE)
-      return "blxns\\t%1";
-    else
-      return "bl\\t__gnu_cmse_nonsecure_call";
-  }
+  "TARGET_THUMB2 && use_cmse && TARGET_HAVE_FPCXT_CMSE"
+  "blxns\\t%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
+)
+
+(define_insn "*nonsecure_call_value_reg_thumb2"
+  [(set (match_operand 0 "" "")
+	(call
+	 (unspec:SI [(mem:SI (reg:SI R4_REGNUM))] UNSPEC_NONSECURE_MEM)
+	 (match_operand 1 "" "")))
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
+  "TARGET_THUMB2 && use_cmse && !TARGET_HAVE_FPCXT_CMSE"
+  "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
