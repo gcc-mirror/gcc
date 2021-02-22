@@ -3551,9 +3551,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool call_init_p : 1; /* This module's global initializer needs
 			   calling.  */
   bool inform_read_p : 1; /* Inform of a read.  */
+  bool visited_p : 1;    /* A walk-once flag. */
   /* Record extensions emitted or permitted.  */
   unsigned extensions : SE_BITS;
-  /* 13 bits used, 3 bits remain  */
+  /* 14 bits used, 2 bits remain  */
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3787,6 +3788,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   partition_p = partition;
 
   inform_read_p = false;
+  visited_p = false;
 
   extensions = 0;
   if (name && TREE_CODE (name) == STRING_CST)
@@ -19305,16 +19307,16 @@ name_pending_imports (cpp_reader *reader, bool at_end)
     {
       module_state *module = (*pending_imports)[ix];
       gcc_checking_assert (module->is_direct ());
-      if (!module->filename)
+      if (!module->filename
+	  && !module->visited_p
+	  && (module->is_header () || !only_headers))
 	{
-	  Cody::Flags flags
-	    = (flag_preprocess_only ? Cody::Flags::None
-	       : Cody::Flags::NameOnly);
+	  module->visited_p = true;
+	  Cody::Flags flags = (flag_preprocess_only
+			       ? Cody::Flags::None : Cody::Flags::NameOnly);
 
-	  if (only_headers && !module->is_header ())
-	    ;
-	  else if (module->module_p
-		   && (module->is_partition () || module->exported_p))
+	  if (module->module_p
+	      && (module->is_partition () || module->exported_p))
 	    mapper->ModuleExport (module->get_flatname (), flags);
 	  else
 	    mapper->ModuleImport (module->get_flatname (), flags);
@@ -19326,15 +19328,13 @@ name_pending_imports (cpp_reader *reader, bool at_end)
   for (unsigned ix = 0; ix != pending_imports->length (); ix++)
     {
       module_state *module = (*pending_imports)[ix];
-      gcc_checking_assert (module->is_direct ());
-      if (only_headers && !module->is_header ())
-	;
-      else if (!module->filename)
+      if (module->visited_p)
 	{
-	  Cody::Packet const &p = *r_iter;
-	  ++r_iter;
+	  module->visited_p = false;
+	  gcc_checking_assert (!module->filename);
 
-	  module->set_filename (p);
+	  module->set_filename (*r_iter);
+	  ++r_iter;
 	}
     }
 
@@ -19444,7 +19444,8 @@ preprocess_module (module_state *module, location_t from_loc,
 	  /* Now read the preprocessor state of this particular
 	     import.  */
 	  unsigned n = dump.push (module);
-	  if (module->read_preprocessor (true))
+	  if (module->loadedness == ML_CONFIG
+	      && module->read_preprocessor (true))
 	    module->import_macros ();
 	  dump.pop (n);
 
