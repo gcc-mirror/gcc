@@ -1492,7 +1492,7 @@ static const struct tune_params neoversev1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -12589,8 +12589,18 @@ cost_plus:
 	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
 
 	    if (speed)
-	      /* ADD (immediate).  */
-	      *cost += extra_cost->alu.arith;
+	      {
+		/* ADD (immediate).  */
+		*cost += extra_cost->alu.arith;
+
+		/* Some tunings prefer to not use the VL-based scalar ops.
+		   Increase the cost of the poly immediate to prevent their
+		   formation.  */
+		if (GET_CODE (op1) == CONST_POLY_INT
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS))
+		  *cost += COSTS_N_INSNS (1);
+	      }
 	    return true;
 	  }
 
