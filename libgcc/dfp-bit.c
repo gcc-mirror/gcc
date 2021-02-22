@@ -643,7 +643,8 @@ BFP_TO_DFP (BFP_TYPE x)
   decContextDefault (&context, CONTEXT_INIT);
   DFP_INIT_ROUNDMODE (context.round);
 
-  /* Use the sprintf library function to write the floating point value to a string.
+  /* Use the sprintf library function to write the floating point value to a
+     string.
 
      If we are handling the IEEE 128-bit floating point on PowerPC, use the
      special function __sprintfkf instead of sprintf.  This function allows us
