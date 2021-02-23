@@ -27519,7 +27519,8 @@ bool
 instantiation_dependent_expression_p (tree expression)
 {
   return (instantiation_dependent_uneval_expression_p (expression)
-	  || (potential_constant_expression (expression)
+	  || (processing_template_decl
+	      && potential_constant_expression (expression)
 	      && value_dependent_expression_p (expression)));
 }
 
