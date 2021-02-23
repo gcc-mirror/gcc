@@ -321,7 +321,7 @@
    (set_attr "length" "*,*,16")
    (set_attr "max_prefixed_insns" "2,2,*")])
 
-(define_expand "mma_assemble_pair"
+(define_expand "vsx_assemble_pair"
   [(match_operand:OO 0 "vsx_register_operand")
    (match_operand:V16QI 1 "mma_assemble_input_operand")
    (match_operand:V16QI 2 "mma_assemble_input_operand")]
@@ -334,7 +334,7 @@
   DONE;
 })
 
-(define_insn_and_split "*mma_assemble_pair"
+(define_insn_and_split "*vsx_assemble_pair"
   [(set (match_operand:OO 0 "vsx_register_operand" "=wa")
 	(unspec:OO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
@@ -351,7 +351,7 @@
   DONE;
 })
 
-(define_expand "mma_disassemble_pair"
+(define_expand "vsx_disassemble_pair"
   [(match_operand:V16QI 0 "mma_disassemble_output_operand")
    (match_operand:OO 1 "vsx_register_operand")
    (match_operand 2 "const_0_to_1_operand")]
@@ -366,7 +366,7 @@
   DONE;
 })
 
-(define_insn_and_split "*mma_disassemble_pair"
+(define_insn_and_split "*vsx_disassemble_pair"
   [(set (match_operand:V16QI 0 "mma_disassemble_output_operand" "=mwa")
        (unspec:V16QI [(match_operand:OO 1 "vsx_register_operand" "wa")
 		      (match_operand 2 "const_0_to_1_operand")]
