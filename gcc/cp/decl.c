@@ -11081,21 +11081,18 @@ name_unnamed_type (tree type, tree decl)
 {
   gcc_assert (TYPE_UNNAMED_P (type));
 
-  /* Replace the anonymous name with the real name everywhere.  */
+  /* Replace the anonymous decl with the real decl.  Be careful not to
+     rename other typedefs (such as the self-reference) of type.  */
+  tree orig = TYPE_NAME (type);
   for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (IDENTIFIER_ANON_P (TYPE_IDENTIFIER (t)))
-      /* We do not rename the debug info representing the unnamed
-	 tagged type because the standard says in [dcl.typedef] that
-	 the naming applies only for linkage purposes.  */
-      /*debug_hooks->set_name (t, decl);*/
+    if (TYPE_NAME (t) == orig)
       TYPE_NAME (t) = decl;
 
   /* If this is a typedef within a template class, the nested
      type is a (non-primary) template.  The name for the
      template needs updating as well.  */
   if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
-    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
-      = TYPE_IDENTIFIER (type);
+    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)) = DECL_NAME (decl);
 
   /* Adjust linkage now that we aren't unnamed anymore.  */
   reset_type_linkage (type);
