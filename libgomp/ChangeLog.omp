@@ -1,3 +1,8 @@
+2021-02-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_alloc): Remove early call to
+	nvptx_stacks_free.
+
 2021-01-13  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Adjust for loop
