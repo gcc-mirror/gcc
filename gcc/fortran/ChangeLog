@@ -1,3 +1,9 @@
+2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99171
+	* trans-openmp.c (gfc_omp_is_optional_argument): Regard optional
+	dummy procs as nonoptional as no special treatment is needed.
+
 2021-02-21  Harald Anlauf  <anlauf@gmx.de>
 
 	* trans-expr.c (gfc_conv_procedure_call): Do not add clobber to

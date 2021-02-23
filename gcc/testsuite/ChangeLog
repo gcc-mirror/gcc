@@ -1,3 +1,65 @@
+2021-02-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99196
+	* gcc.dg/analyzer/error-1.c: New test.
+	* gcc.dg/analyzer/error-2.c: New test.
+	* gcc.dg/analyzer/error-3.c: New test.
+
+2021-02-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/99173
+	* c-c++-common/attr-retain-5.c: Require R_flag_in_section.
+	* c-c++-common/attr-retain-6.c: Likewise.
+	* c-c++-common/attr-retain-7.c: Likewise.
+	* c-c++-common/attr-retain-8.c: Likewise.
+	* c-c++-common/attr-retain-9.c: Likewise.
+
+2021-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sve/cse_sve_vl_constants_1.c: New test.
+
+2021-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/warn/Warray-bounds-10.C, g++.dg/warn/Warray-bounds-11.C,
+	g++.dg/warn/Warray-bounds-12.C, g++.dg/warn/Warray-bounds-13.C:
+	Handle __INT32_TYPE__ being "long int".
+
+2021-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/biap.c: Add a Y+=X*2 to the Y+=X*4.
+
+2021-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/biap-mul.c: New test.
+
+2021-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/torture/sync-reload-mul-1.c: New test.
+
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99174
+	* g++.dg/modules/pr99174-1_a.C: New.
+	* g++.dg/modules/pr99174-1_b.C: New.
+	* g++.dg/modules/pr99174-1_c.C: New.
+	* g++.dg/modules/pr99174.H: New.
+
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99153
+	* g++.dg/modules/pr99153_a.H: New.
+	* g++.dg/modules/pr99153_b.H: New.
+
+2021-02-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/98791
+	* gcc.target/aarch64/sve/pr98791.c: New test.
+
+2021-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99165
+	* g++.dg/pr99165.C: New testcase.
+
 2021-02-21  Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.dg/intent_optimize_3.f90: New test.

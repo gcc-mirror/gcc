@@ -1,3 +1,18 @@
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99174
+	* module.cc (struct module_state): Add visited_p flag.
+	(name_pending_imports): Use it to avoid duplicate requests.
+	(preprocess_module): Don't read preprocessor state if we failed to
+	load a module's config.
+
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99153
+	* decl.c (duplicate_decls): Move DECL_MODULE_IMPORT_P propagation
+	to common-path.
+	* module.cc (set_defining_module): Add assert.
+
 2021-02-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98741

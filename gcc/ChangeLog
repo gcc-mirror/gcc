@@ -1,3 +1,50 @@
+2021-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (cse_sve_vl_constants):
+	Define.
+	* config/aarch64/aarch64.md (add<mode>3): Force CONST_POLY_INT immediates
+	into a register when the above is enabled.
+	* config/aarch64/aarch64.c (neoversev1_tunings):
+	AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.
+	(aarch64_rtx_costs): Use AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.
+
+2021-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_print_operand) <'T'>: Change
+	valid operand from is now an addi mult-value to shift-value.
+	* config/cris/cris.md (*addi): Change expression of scaled
+	operand from mult to ashift.
+	* config/cris/cris.md (*addi_reload): New insn_and_split.
+
+2021-02-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/85074
+	* config/pa/pa.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define as
+	hook_bool_const_tree_hwi_hwi_const_tree_true.
+	(pa_asm_output_mi_thunk): Add support for nonzero vcall_offset.
+
+2021-02-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/98791
+	* ira-conflicts.c (process_regs_for_copy): Don't create allocno copies
+	for unordered modes.
+
+2021-02-22  Martin Liska  <mliska@suse.cz>
+
+	* tree-inline.c (inline_forbidden_p): Set
+	inline_forbidden_reason.
+
+2021-02-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Dump
+	costed subgraph.
+
+2021-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99165
+	* gimple-ssa-store-merging.c (pass_store_merging::process_store):
+	Accumulate changed to ret.
+
 2021-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:

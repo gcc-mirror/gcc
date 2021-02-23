@@ -1,3 +1,40 @@
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* dfp-bit.c (BFP_TO_DFP): Fix a comment line that was too long.
+
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_dd_to_kf.c: New file.
+	* config/rs6000/_kf_to_dd.c: New file.
+	* config/rs6000/_kf_to_sd.c: New file.
+	* config/rs6000/_kf_to_td.c: New file.
+	* config/rs6000/_sd_to_kf.c: New file.
+	* config/rs6000/_sprintfkf.c: New file.
+	* config/rs6000/_sprintfkf.h: New file.
+	* config/rs6000/_strtokf.h: New file.
+	* config/rs6000/_strtokf.c: New file.
+	* config/rs6000/_td_to_kf.c: New file.
+	* config/rs6000/quad-float128.h: Add new declarations.
+	* config/rs6000/t-float128 (fp128_dec_funcs): New macro.
+	(fp128_decstr_funcs): New macro.
+	(ibm128_dec_funcs): New macro.
+	(fp128_ppc_funcs): Add the new conversions.
+	(fp128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(fp128_decstr_objs): Force __float128 <-> string conversions to be
+	compiled with -mabi=ibmlongdouble.
+	(ibm128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(FP128_CFLAGS_DECIMAL): New macro.
+	(IBM128_CFLAGS_DECIMAL): New macro.
+	* dfp-bit.c (DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	* dfp-bit.h (BFP_KIND): Add new binary floating point kind for
+	IEEE 128-bit floating point.
+	(DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	(BFP_SPRINTF): New macro.
+
 2021-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/savms64.h: Add .note.GNU-stack section on Linux.
