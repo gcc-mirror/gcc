@@ -296,4 +296,31 @@ _mm_floor_ss (__m128 __A, __m128 __B)
   return __r;
 }
 
+/* Return horizontal packed word minimum and its index in bits [15:0]
+   and bits [18:16] respectively.  */
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_minpos_epu16 (__m128i __A)
+{
+  union __u
+    {
+      __m128i __m;
+      __v8hu __uh;
+    };
+  union __u __u = { .__m = __A }, __r = { .__m = {0} };
+  unsigned short __ridx = 0;
+  unsigned short __rmin = __u.__uh[__ridx];
+  for (unsigned long __i = 1; __i < 8; __i++)
+    {
+      if (__u.__uh[__i] < __rmin)
+	{
+	  __rmin = __u.__uh[__i];
+	  __ridx = __i;
+	}
+    }
+  __r.__uh[0] = __rmin;
+  __r.__uh[1] = __ridx;
+  return __r.__m;
+}
+
 #endif
