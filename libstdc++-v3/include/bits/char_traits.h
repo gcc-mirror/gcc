@@ -305,7 +305,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__builtin_constant_p(__n)
 	    && __constant_char_array_p(__s1, __n)
 	    && __constant_char_array_p(__s2, __n))
-	  return __gnu_cxx::char_traits<char_type>::compare(__s1, __s2, __n);
+	  {
+	    for (size_t __i = 0; __i < __n; ++__i)
+	      if (lt(__s1[__i], __s2[__i]))
+		return -1;
+	      else if (lt(__s2[__i], __s1[__i]))
+		return 1;
+	    return 0;
+	  }
 #endif
 	if (__n == 0)
 	  return 0;
