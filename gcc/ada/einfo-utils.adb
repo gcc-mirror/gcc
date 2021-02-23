@@ -101,7 +101,8 @@ package body Einfo.Utils is
 
    function Is_Access_Object_Type               (Id : E) return B is
    begin
-      return Is_Access_Type (Id) and then not Is_Access_Subprogram_Type (Id);
+      return Is_Access_Type (Id)
+        and then Ekind (Directly_Designated_Type (Id)) /= E_Subprogram_Type;
    end Is_Access_Object_Type;
 
    function Is_Access_Type                      (Id : E) return B is
@@ -116,7 +117,8 @@ package body Einfo.Utils is
 
    function Is_Access_Subprogram_Type           (Id : E) return B is
    begin
-      return Ekind (Id) in Access_Subprogram_Kind;
+      return Is_Access_Type (Id)
+        and then Ekind (Directly_Designated_Type (Id)) = E_Subprogram_Type;
    end Is_Access_Subprogram_Type;
 
    function Is_Aggregate_Type                   (Id : E) return B is
@@ -2672,8 +2674,7 @@ package body Einfo.Utils is
    begin
       Set_Basic_Convention (E, Val);
 
-      if Is_Type (E)
-        and then Is_Access_Subprogram_Type (Base_Type (E))
+      if Ekind (E) in Access_Subprogram_Kind
         and then Has_Foreign_Convention (E)
       then
          Set_Can_Use_Internal_Rep (E, False);

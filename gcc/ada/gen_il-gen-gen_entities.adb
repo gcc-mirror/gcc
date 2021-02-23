@@ -480,7 +480,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Alignment, Uint),
         Sm (Associated_Node_For_Itype, Node_Id),
         Sm (Can_Use_Internal_Rep, Flag, Base_Type_Only,
-            Pre => "Is_Access_Subprogram_Type (Base_Type (N))"),
+            Pre => "Ekind (Base_Type (N)) in Access_Subprogram_Kind"),
         Sm (Class_Wide_Type, Node_Id),
         Sm (Contract, Node_Id),
         Sm (Current_Use_Clause, Node_Id),
