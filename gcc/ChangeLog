@@ -1,3 +1,10 @@
+2021-02-22  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/85074
+	* config/pa/pa.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define as
+	hook_bool_const_tree_hwi_hwi_const_tree_true.
+	(pa_asm_output_mi_thunk): Add support for nonzero vcall_offset.
+
 2021-02-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def (prefer_advsimd_autovec): Define.

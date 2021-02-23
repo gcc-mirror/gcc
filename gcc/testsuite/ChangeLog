@@ -1,3 +1,11 @@
+2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-02-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99027
+	* gfortran.dg/ubound_1.f90: New test.
+
 2021-02-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/advsimd_autovec_only_1.c: New test.
