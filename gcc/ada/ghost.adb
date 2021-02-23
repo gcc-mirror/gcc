@@ -1245,11 +1245,21 @@ package body Ghost is
       --  processing them in that mode can lead to spurious errors.
 
       if Expander_Active then
+         --  Cases where full analysis is needed, involving array indexing
+         --  which would otherwise be missing array-bounds checks:
+
          if not Analyzed (Orig_Lhs)
-           and then Nkind (Orig_Lhs) = N_Indexed_Component
-           and then Nkind (Prefix (Orig_Lhs)) = N_Selected_Component
-           and then Nkind (Prefix (Prefix (Orig_Lhs))) =
-           N_Indexed_Component
+           and then
+             ((Nkind (Orig_Lhs) = N_Indexed_Component
+                and then Nkind (Prefix (Orig_Lhs)) = N_Selected_Component
+                and then Nkind (Prefix (Prefix (Orig_Lhs))) =
+                           N_Indexed_Component)
+              or else
+             (Nkind (Orig_Lhs) = N_Selected_Component
+              and then Nkind (Prefix (Orig_Lhs)) = N_Indexed_Component
+              and then Nkind (Prefix (Prefix (Orig_Lhs))) =
+                         N_Selected_Component
+              and then Nkind (Parent (N)) /= N_Loop_Statement))
          then
             Analyze (Orig_Lhs);
          end if;
