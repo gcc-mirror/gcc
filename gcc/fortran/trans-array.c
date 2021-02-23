@@ -1167,8 +1167,11 @@ get_class_info_from_ss (stmtblock_t * pre, gfc_ss *ss, tree *eltype)
       && rhs_ss->info->expr->ts.type == BT_CLASS
       && rhs_ss->info->data.array.descriptor)
     {
-      rhs_class_expr
-	= gfc_get_class_from_expr (rhs_ss->info->data.array.descriptor);
+      if (rhs_ss->info->expr->expr_type != EXPR_VARIABLE)
+	rhs_class_expr
+	  = gfc_get_class_from_expr (rhs_ss->info->data.array.descriptor);
+      else
+	rhs_class_expr = gfc_get_class_from_gfc_expr (rhs_ss->info->expr);
       unlimited_rhs = UNLIMITED_POLY (rhs_ss->info->expr);
       if (rhs_ss->info->expr->expr_type == EXPR_FUNCTION)
 	rhs_function = true;

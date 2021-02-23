@@ -11,17 +11,19 @@ module m
   type :: t1
     integer :: i
   CONTAINS
-    PROCEDURE :: add_t1
-    GENERIC :: OPERATOR(+) => add_t1
   end type
   type, extends(t1) :: t2
     real :: r
   end type
 
+  interface operator(+)
+    module procedure add_t1
+  end interface
+
 contains
-  impure elemental function add_t1 (a, b) result (c)
-    class(t1), intent(in) :: a, b
-    class(t1), allocatable :: c
+  function add_t1 (a, b) result (c)
+    class(t1), intent(in) :: a(:), b(:)
+    class(t1), allocatable :: c(:)
     allocate (c, source = a)
     c%i = a%i + b%i
     select type (c)
