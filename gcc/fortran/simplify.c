@@ -6887,6 +6887,8 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 			       &source->where);
   if (source->ts.type == BT_DERIVED)
     result->ts.u.derived = source->ts.u.derived;
+  if (source->ts.type == BT_CHARACTER && result->ts.u.cl == NULL)
+    result->ts = source->ts;
   result->rank = rank;
   result->shape = gfc_get_shape (rank);
   for (i = 0; i < rank; i++)

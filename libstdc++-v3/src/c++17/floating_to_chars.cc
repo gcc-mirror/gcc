@@ -395,11 +395,11 @@ namespace
       // of the high part, and we merge the mantissa of the high part with the
       // mantissa (and the implicit leading bit) of the low part.
       using uint_t = unsigned __int128;
-      uint_t value_bits = 0;
-      memcpy(&value_bits, &value, sizeof(value_bits));
+      uint64_t value_bits[2] = {};
+      memcpy(value_bits, &value, sizeof(value_bits));
 
-      const uint64_t value_hi = value_bits;
-      const uint64_t value_lo = value_bits >> 64;
+      const uint64_t value_hi = value_bits[0];
+      const uint64_t value_lo = value_bits[1];
 
       uint64_t mantissa_hi = value_hi & ((1ull << 52) - 1);
       unsigned exponent_hi = (value_hi >> 52) & ((1ull << 11) - 1);

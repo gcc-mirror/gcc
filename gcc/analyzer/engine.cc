@@ -1132,6 +1132,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 				  stmt);
 
   bool unknown_side_effects = false;
+  bool terminate_path = false;
 
   switch (gimple_code (stmt))
     {
@@ -1203,7 +1204,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	  }
 	else
 	  unknown_side_effects
-	    = state->m_region_model->on_call_pre (call, &ctxt);
+	    = state->m_region_model->on_call_pre (call, &ctxt, &terminate_path);
       }
       break;
 
@@ -1214,6 +1215,9 @@ exploded_node::on_stmt (exploded_graph &eg,
       }
       break;
     }
+
+  if (terminate_path)
+    return on_stmt_flags::terminate_path ();
 
   bool any_sm_changes = false;
   int sm_idx;

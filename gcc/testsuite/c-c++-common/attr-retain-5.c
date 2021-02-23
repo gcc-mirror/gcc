@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target R_flag_in_section } } */
 /* { dg-skip-if "non-ELF target" { *-*-darwin* powerpc*-*-aix* } } */
 /* { dg-options "-Wall -O2" } */
 
