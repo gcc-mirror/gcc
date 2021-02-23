@@ -24,9 +24,118 @@
 ------------------------------------------------------------------------------
 
 with Atree;
+with Debug;  use Debug;
+with Output; use Output;
 with Seinfo;
+with Sinput; use Sinput;
 
 package body Sinfo.Utils is
+
+   ---------------
+   -- Debugging --
+   ---------------
+
+   --  Suppose you find that node 12345 is messed up. You might want to find
+   --  the code that created that node. There are two ways to do this:
+
+   --  One way is to set a conditional breakpoint on New_Node_Debugging_Output
+   --  (nickname "nnd"):
+   --     break nnd if n = 12345
+   --  and run gnat1 again from the beginning.
+
+   --  The other way is to set a breakpoint near the beginning (e.g. on
+   --  gnat1drv), and run. Then set Watch_Node (nickname "ww") to 12345 in gdb:
+   --     ww := 12345
+   --  and set a breakpoint on New_Node_Breakpoint (nickname "nn"). Continue.
+
+   --  Either way, gnat1 will stop when node 12345 is created, or certain other
+   --  interesting operations are performed, such as Rewrite. To see exactly
+   --  which operations, search for "pragma Debug" below.
+
+   --  The second method is much faster if the amount of Ada code being
+   --  compiled is large.
+
+   ww : Node_Id'Base := Node_Id'First - 1;
+   pragma Export (Ada, ww);
+   Watch_Node : Node_Id'Base renames ww;
+   --  Node to "watch"; that is, whenever a node is created, we check if it
+   --  is equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
+   --  presumably set a breakpoint on New_Node_Breakpoint. Note that the
+   --  initial value of Node_Id'First - 1 ensures that by default, no node
+   --  will be equal to Watch_Node.
+
+   procedure nn;
+   pragma Export (Ada, nn);
+   procedure New_Node_Breakpoint renames nn;
+   --  This doesn't do anything interesting; it's just for setting breakpoint
+   --  on as explained above.
+
+   procedure nnd (N : Node_Id);
+   pragma Export (Ada, nnd);
+   --  For debugging. If debugging is turned on, New_Node and New_Entity call
+   --  this. If debug flag N is turned on, this prints out the new node.
+   --
+   --  If Node = Watch_Node, this prints out the new node and calls
+   --  New_Node_Breakpoint. Otherwise, does nothing.
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id);
+   --  Called by nnd; writes Op followed by information about N
+
+   -------------------------
+   -- New_Node_Breakpoint --
+   -------------------------
+
+   procedure nn is
+   begin
+      Write_Str ("Watched node ");
+      Write_Int (Int (Watch_Node));
+      Write_Eol;
+   end nn;
+
+   -------------------------------
+   -- New_Node_Debugging_Output --
+   -------------------------------
+
+   procedure nnd (N : Node_Id) is
+      Node_Is_Watched : constant Boolean := N = Watch_Node;
+
+   begin
+      if Debug_Flag_N or else Node_Is_Watched then
+         Node_Debug_Output ("Node", N);
+
+         if Node_Is_Watched then
+            New_Node_Breakpoint;
+         end if;
+      end if;
+   end nnd;
+
+   procedure New_Node_Debugging_Output (N : Node_Id) is
+   begin
+      pragma Debug (nnd (N));
+   end New_Node_Debugging_Output;
+
+   -----------------------
+   -- Node_Debug_Output --
+   -----------------------
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id) is
+   begin
+      Write_Str (Op);
+
+      if Nkind (N) in N_Entity then
+         Write_Str (" entity");
+      else
+         Write_Str (" node");
+      end if;
+
+      Write_Str (" Id = ");
+      Write_Int (Int (N));
+      Write_Str ("  ");
+      Write_Location (Sloc (N));
+      Write_Str ("  ");
+      Write_Str (Node_Kind'Image (Nkind (N)));
+      Write_Eol;
+   end Node_Debug_Output;
 
    -------------------------
    -- Iterator Procedures --

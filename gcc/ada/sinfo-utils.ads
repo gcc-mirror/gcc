@@ -145,4 +145,12 @@ package Sinfo.Utils is
      Entity_Or_Associated_Node;
    --  Note that we are renaming the enumeration literals here
 
+   ---------------
+   -- Debugging --
+   ---------------
+
+   procedure New_Node_Debugging_Output (N : Node_Id);
+   pragma Inline (New_Node_Debugging_Output);
+   --  See package body for documentation
+
 end Sinfo.Utils;

@@ -43,10 +43,16 @@ with Opt;         use Opt;
 with Output;      use Output;
 with Seinfo;      use Seinfo;
 with Sinfo.Utils; use Sinfo.Utils;
-with Sinput;      use Sinput;
 with System.Storage_Elements;
 
 package body Atree is
+
+   ---------------
+   -- Debugging --
+   ---------------
+
+   --  Suppose you find that node 12345 is messed up. You might want to find
+   --  the code that created that node. See sinfo-utils.adb for how to do that.
 
    Ignored_Ghost_Recording_Proc : Ignored_Ghost_Record_Proc := null;
    --  This soft link captures the procedure invoked during the creation of an
@@ -63,57 +69,6 @@ package body Atree is
 
    Rewriting_Proc : Rewrite_Proc := null;
    --  This soft link captures the procedure invoked during a node rewrite
-
-   ---------------
-   -- Debugging --
-   ---------------
-
-   --  Suppose you find that node 12345 is messed up. You might want to find
-   --  the code that created that node. There are two ways to do this:
-
-   --  One way is to set a conditional breakpoint on New_Node_Debugging_Output
-   --  (nickname "nnd"):
-   --     break nnd if n = 12345
-   --  and run gnat1 again from the beginning.
-
-   --  The other way is to set a breakpoint near the beginning (e.g. on
-   --  gnat1drv), and run. Then set Watch_Node (nickname "ww") to 12345 in gdb:
-   --     ww := 12345
-   --  and set a breakpoint on New_Node_Breakpoint (nickname "nn"). Continue.
-
-   --  Either way, gnat1 will stop when node 12345 is created, or certain other
-   --  interesting operations are performed, such as Rewrite. To see exactly
-   --  which operations, search for "pragma Debug" below.
-
-   --  The second method is much faster if the amount of Ada code being
-   --  compiled is large.
-
-   ww : Node_Id'Base := Node_Id'First - 1;
-   pragma Export (Ada, ww);
-   Watch_Node : Node_Id'Base renames ww;
-   --  Node to "watch"; that is, whenever a node is created, we check if it
-   --  is equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
-   --  presumably set a breakpoint on New_Node_Breakpoint. Note that the
-   --  initial value of Node_Id'First - 1 ensures that by default, no node
-   --  will be equal to Watch_Node.
-
-   procedure nn;
-   pragma Export (Ada, nn);
-   procedure New_Node_Breakpoint renames nn;
-   --  This doesn't do anything interesting; it's just for setting breakpoint
-   --  on as explained above.
-
-   procedure nnd (N : Node_Id);
-   pragma Export (Ada, nnd);
-   procedure New_Node_Debugging_Output (N : Node_Id) renames nnd;
-   --  For debugging. If debugging is turned on, New_Node and New_Entity call
-   --  this. If debug flag N is turned on, this prints out the new node.
-   --
-   --  If Node = Watch_Node, this prints out the new node and calls
-   --  New_Node_Breakpoint. Otherwise, does nothing.
-
-   procedure Node_Debug_Output (Op : String; N : Node_Id);
-   --  Called by nnd; writes Op followed by information about N
 
    -----------------------------
    -- Local Objects and Types --
@@ -1103,9 +1058,6 @@ package body Atree is
    ---------------
 
    procedure Copy_Node (Source, Destination : Node_Or_Entity_Id) is
-      pragma Debug (New_Node_Debugging_Output (Source));
-      pragma Debug (New_Node_Debugging_Output (Destination));
-
       pragma Assert (Source /= Destination);
 
       Save_In_List : constant Boolean  := In_List (Destination);
@@ -1115,6 +1067,9 @@ package body Atree is
       D_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Destination);
 
    begin
+      New_Node_Debugging_Output (Source);
+      New_Node_Debugging_Output (Destination);
+
       --  Currently all entities are allocated the same number of slots.
       --  Hopefully that won't always be the case, but if it is, the following
       --  is suboptimal if D_Size < S_Size, because in fact the Destination was
@@ -1335,9 +1290,6 @@ package body Atree is
    -----------------------
 
    procedure Exchange_Entities (E1 : Entity_Id; E2 : Entity_Id) is
-      pragma Debug (New_Node_Debugging_Output (E1));
-      pragma Debug (New_Node_Debugging_Output (E2));
-
       pragma Debug (Validate_Node_Write (E1));
       pragma Debug (Validate_Node_Write (E2));
       pragma Assert
@@ -1363,6 +1315,9 @@ package body Atree is
          Set_Defining_Identifier (Parent (E1), E1);
          Set_Defining_Identifier (Parent (E2), E2);
       end if;
+
+      New_Node_Debugging_Output (E1);
+      New_Node_Debugging_Output (E2);
    end Exchange_Entities;
 
    -----------------
@@ -1610,7 +1565,6 @@ package body Atree is
       --  copy, since we inserted the original, not the copy.
 
       Set_Rewrite_Ins (New_Id, False);
-      pragma Debug (New_Node_Debugging_Output (New_Id));
 
       --  Clear Is_Overloaded since we cannot have semantic interpretations
       --  of this new node.
@@ -1627,6 +1581,8 @@ package body Atree is
       --  Mark the copy as Ghost depending on the current Ghost region
 
       Mark_New_Ghost_Node (New_Id);
+
+      New_Node_Debugging_Output (New_Id);
 
       pragma Assert (New_Id /= Source);
       return New_Id;
@@ -1653,11 +1609,12 @@ package body Atree is
       end if;
 
       Set_Sloc (New_Id, New_Sloc);
-      pragma Debug (New_Node_Debugging_Output (New_Id));
 
       --  Mark the new entity as Ghost depending on the current Ghost region
 
       Mark_New_Ghost_Node (New_Id);
+
+      New_Node_Debugging_Output (New_Id);
 
       return New_Id;
    end New_Entity;
@@ -1675,7 +1632,6 @@ package body Atree is
       pragma Assert (Original_Node (Node_Offsets.Last) = Node_Offsets.Last);
    begin
       Set_Sloc (New_Id, New_Sloc);
-      pragma Debug (New_Node_Debugging_Output (New_Id));
 
       --  If this is a node with a real location and we are generating source
       --  nodes, then reset Current_Error_Node. This is useful if we bomb
@@ -1689,36 +1645,10 @@ package body Atree is
 
       Mark_New_Ghost_Node (New_Id);
 
+      New_Node_Debugging_Output (New_Id);
+
       return New_Id;
    end New_Node;
-
-   -------------------------
-   -- New_Node_Breakpoint --
-   -------------------------
-
-   procedure nn is
-   begin
-      Write_Str ("Watched node ");
-      Write_Int (Int (Watch_Node));
-      Write_Eol;
-   end nn;
-
-   -------------------------------
-   -- New_Node_Debugging_Output --
-   -------------------------------
-
-   procedure nnd (N : Node_Id) is
-      Node_Is_Watched : constant Boolean := N = Watch_Node;
-
-   begin
-      if Debug_Flag_N or else Node_Is_Watched then
-         Node_Debug_Output ("Node", N);
-
-         if Node_Is_Watched then
-            New_Node_Breakpoint;
-         end if;
-      end if;
-   end nnd;
 
    --------
    -- No --
@@ -1728,29 +1658,6 @@ package body Atree is
    begin
       return N = Empty;
    end No;
-
-   -----------------------
-   -- Node_Debug_Output --
-   -----------------------
-
-   procedure Node_Debug_Output (Op : String; N : Node_Id) is
-   begin
-      Write_Str (Op);
-
-      if Nkind (N) in N_Entity then
-         Write_Str (" entity");
-      else
-         Write_Str (" node");
-      end if;
-
-      Write_Str (" Id = ");
-      Write_Int (Int (N));
-      Write_Str ("  ");
-      Write_Location (Sloc (N));
-      Write_Str ("  ");
-      Write_Str (Node_Kind'Image (Nkind (N)));
-      Write_Eol;
-   end Node_Debug_Output;
 
    -------------------
    -- Nodes_Address --
@@ -1940,9 +1847,6 @@ package body Atree is
    -------------
 
    procedure Replace (Old_Node, New_Node : Node_Id) is
-      pragma Debug (New_Node_Debugging_Output (Old_Node));
-      pragma Debug (New_Node_Debugging_Output (New_Node));
-
       Old_Post : constant Boolean := Error_Posted (Old_Node);
       Old_HasA : constant Boolean := Has_Aspects (Old_Node);
       Old_CFS  : constant Boolean := Comes_From_Source (Old_Node);
@@ -1957,6 +1861,9 @@ package body Atree is
       end Destroy_New_Node;
 
    begin
+      New_Node_Debugging_Output (Old_Node);
+      New_Node_Debugging_Output (New_Node);
+
       pragma Assert
         (not Is_Entity (Old_Node)
           and not Is_Entity (New_Node)
@@ -2005,9 +1912,6 @@ package body Atree is
    -------------
 
    procedure Rewrite (Old_Node, New_Node : Node_Id) is
-      pragma Debug (New_Node_Debugging_Output (Old_Node));
-      pragma Debug (New_Node_Debugging_Output (New_Node));
-
       Old_CA     : constant Boolean := Check_Actuals (Old_Node);
       Old_Is_IGN : constant Boolean := Is_Ignored_Ghost_Node (Old_Node);
       Old_Error_Posted : constant Boolean :=
@@ -2031,6 +1935,9 @@ package body Atree is
       Sav_Node : Node_Id;
 
    begin
+      New_Node_Debugging_Output (Old_Node);
+      New_Node_Debugging_Output (New_Node);
+
       pragma Assert
         (not Is_Entity (Old_Node)
           and not Is_Entity (New_Node)
