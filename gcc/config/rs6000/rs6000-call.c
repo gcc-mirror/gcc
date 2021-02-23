@@ -91,6 +91,12 @@
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
+struct builtin_compatibility
+{
+  const enum rs6000_builtins code;
+  const char *const name;
+};
+
 struct builtin_description
 {
   const HOST_WIDE_INT mask;
@@ -8299,6 +8305,13 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
 	     (int)code, name, attr_string);
 }
 
+static const struct builtin_compatibility bdesc_compat[] =
+{
+#define RS6000_BUILTIN_COMPAT
+#include "rs6000-builtin.def"
+};
+#undef RS6000_BUILTIN_COMPAT
+
 /* Simple ternary operations: VECd = foo (VECa, VECb, VECc).  */
 
 #undef RS6000_BUILTIN_0
@@ -10828,7 +10841,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
     {
       /* This is an MMA disassemble built-in function.  */
       gcc_assert (fncode == MMA_BUILTIN_DISASSEMBLE_ACC
-		  || fncode == MMA_BUILTIN_DISASSEMBLE_PAIR);
+		  || fncode == VSX_BUILTIN_DISASSEMBLE_PAIR);
 
       push_gimplify_context (true);
       tree dst_ptr = gimple_call_arg (stmt, 0);
@@ -10937,7 +10950,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
       gcc_unreachable ();
     }
 
-  if (fncode == MMA_BUILTIN_ASSEMBLE_PAIR)
+  if (fncode == VSX_BUILTIN_ASSEMBLE_PAIR)
     lhs = make_ssa_name (vector_pair_type_node);
   else
     lhs = make_ssa_name (vector_quad_type_node);
@@ -12511,6 +12524,18 @@ rs6000_init_builtins (void)
 #ifdef SUBTARGET_INIT_BUILTINS
   SUBTARGET_INIT_BUILTINS;
 #endif
+
+  /* Register the compatibility builtins after all of the normal
+     builtins have been defined.  */
+  const struct builtin_compatibility *d = bdesc_compat;
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (bdesc_compat); i++, d++)
+    {
+      tree decl = rs6000_builtin_decls[(int)d->code];
+      gcc_assert (decl != NULL);
+      add_builtin_function (d->name, TREE_TYPE (decl), (int)d->code,
+			    BUILT_IN_MD, NULL, NULL_TREE);
+    }
 }
 
 /* Returns the rs6000 builtin decl for CODE.  */
@@ -13179,7 +13204,7 @@ mma_init_builtins (void)
 	  /* This is a disassemble MMA built-in function.  */
 	  gcc_assert (attr_args == RS6000_BTC_BINARY
 		      && (d->code == MMA_BUILTIN_DISASSEMBLE_ACC
-			  || d->code == MMA_BUILTIN_DISASSEMBLE_PAIR));
+			  || d->code == VSX_BUILTIN_DISASSEMBLE_PAIR));
 	  op[nopnds++] = build_pointer_type (void_type_node);
 	  if (attr & RS6000_BTC_QUAD)
 	    op[nopnds++] = build_pointer_type (vector_quad_type_node);
@@ -13196,7 +13221,7 @@ mma_init_builtins (void)
 	      if (gimple_func && mode == PXImode)
 		op[nopnds++] = build_pointer_type (vector_quad_type_node);
 	      else if (gimple_func && mode == POImode
-		       && d->code == MMA_BUILTIN_ASSEMBLE_PAIR)
+		       && d->code == VSX_BUILTIN_ASSEMBLE_PAIR)
 		op[nopnds++] = build_pointer_type (vector_pair_type_node);
 	      else
 		/* MMA uses unsigned types.  */

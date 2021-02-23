@@ -346,7 +346,7 @@
    (set_attr "length" "8,8,16,*")
    (set_attr "max_prefixed_insns" "2,2,*,*")])
 
-(define_expand "mma_assemble_pair"
+(define_expand "vsx_assemble_pair"
   [(match_operand:POI 0 "vsx_register_operand")
    (match_operand:V16QI 1 "input_operand")
    (match_operand:V16QI 2 "input_operand")]

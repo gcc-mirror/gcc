@@ -42,6 +42,10 @@
 	ATTR	builtin attribute information.
 	ICODE	Insn code of the function that implements the builtin.  */
 
+#ifndef RS6000_BUILTIN_COMPAT
+  #undef BU_COMPAT
+  #define BU_COMPAT(ENUM, COMPAT_NAME)
+
 #ifndef RS6000_BUILTIN_0
   #error "RS6000_BUILTIN_0 is not defined."
 #endif
@@ -80,6 +84,36 @@
 
 #ifndef RS6000_BUILTIN_X
   #error "RS6000_BUILTIN_X is not defined."
+#endif
+
+#else
+  /* Compatibility builtins.  These builtins are simply mapped into
+     their compatible builtin function identified by ENUM.  */
+  #undef BU_COMPAT
+  #define BU_COMPAT(ENUM, COMPAT_NAME) { ENUM, "__builtin_" COMPAT_NAME },
+
+  #undef RS6000_BUILTIN_0
+  #undef RS6000_BUILTIN_1
+  #undef RS6000_BUILTIN_2
+  #undef RS6000_BUILTIN_3
+  #undef RS6000_BUILTIN_4
+  #undef RS6000_BUILTIN_A
+  #undef RS6000_BUILTIN_D
+  #undef RS6000_BUILTIN_H
+  #undef RS6000_BUILTIN_M
+  #undef RS6000_BUILTIN_P
+  #undef RS6000_BUILTIN_X
+  #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_4(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_M(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE)
+  #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE)
 #endif
 
 #ifndef BU_AV_1
@@ -347,9 +381,20 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-#define BU_MMA_V2(ENUM, NAME, ATTR, ICODE)				\
+#define BU_MMA_M2(ENUM, NAME, ATTR, ICODE)				\
   RS6000_BUILTIN_M (MMA_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_mma_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY				\
+		     | RS6000_BTC_VOID					\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* Like BU_MMA_M2, but uses "vsx" rather than "mma" naming.  */
+#define BU_MMA_V2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
 		    RS6000_BTM_MMA,			/* MASK */	\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY				\
@@ -368,6 +413,23 @@
 		    CODE_FOR_nothing)			/* ICODE */	\
   RS6000_BUILTIN_M (MMA_BUILTIN_ ## ENUM ## _INTERNAL,	/* ENUM */	\
 		    "__builtin_mma_" NAME "_internal",	/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Like BU_MMA_3, but uses "vsx" rather than "mma" naming.  */
+#define BU_MMA_V3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY				\
+		     | RS6000_BTC_VOID					\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */	\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM ## _INTERNAL,	/* ENUM */	\
+		    "__builtin_vsx_" NAME "_internal",	/* NAME */	\
 		    RS6000_BTM_MMA,			/* MASK */	\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
@@ -2713,10 +2775,12 @@ BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
 BU_MMA_1 (XXMTACC,	    "xxmtacc",		QUAD, mma_xxmtacc)
 BU_MMA_1 (XXSETACCZ,	    "xxsetaccz",	MISC, mma_xxsetaccz)
 
-BU_MMA_V2 (DISASSEMBLE_ACC, "disassemble_acc",  QUAD, nothing)
+BU_MMA_M2 (DISASSEMBLE_ACC, "disassemble_acc",  QUAD, nothing)
 BU_MMA_V2 (DISASSEMBLE_PAIR,"disassemble_pair", PAIR, nothing)
+BU_COMPAT (VSX_BUILTIN_DISASSEMBLE_PAIR, "mma_disassemble_pair")
 
-BU_MMA_3 (ASSEMBLE_PAIR,    "assemble_pair",	MISC, mma_assemble_pair)
+BU_MMA_V3 (ASSEMBLE_PAIR,   "assemble_pair",	MISC, vsx_assemble_pair)
+BU_COMPAT (VSX_BUILTIN_ASSEMBLE_PAIR, "mma_assemble_pair")
 BU_MMA_3 (XVBF16GER2,	    "xvbf16ger2",	MISC, mma_xvbf16ger2)
 BU_MMA_3 (XVF16GER2,	    "xvf16ger2",	MISC, mma_xvf16ger2)
 BU_MMA_3 (XVF32GER,	    "xvf32ger",		MISC, mma_xvf32ger)
