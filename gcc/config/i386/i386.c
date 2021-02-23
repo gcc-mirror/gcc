@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "target-globals.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
@@ -17865,6 +17866,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree decl = NULL_TREE;
   tree arg0, arg1, arg2;
   enum rtx_code rcode;
+  enum tree_code tcode;
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
 
@@ -17945,6 +17947,48 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  return true;
 	}
       break;
+
+    case IX86_BUILTIN_PCMPEQB128:
+    case IX86_BUILTIN_PCMPEQW128:
+    case IX86_BUILTIN_PCMPEQD128:
+    case IX86_BUILTIN_PCMPEQQ:
+    case IX86_BUILTIN_PCMPEQB256:
+    case IX86_BUILTIN_PCMPEQW256:
+    case IX86_BUILTIN_PCMPEQD256:
+    case IX86_BUILTIN_PCMPEQQ256:
+      tcode = EQ_EXPR;
+      goto do_cmp;
+
+    case IX86_BUILTIN_PCMPGTB128:
+    case IX86_BUILTIN_PCMPGTW128:
+    case IX86_BUILTIN_PCMPGTD128:
+    case IX86_BUILTIN_PCMPGTQ:
+    case IX86_BUILTIN_PCMPGTB256:
+    case IX86_BUILTIN_PCMPGTW256:
+    case IX86_BUILTIN_PCMPGTD256:
+    case IX86_BUILTIN_PCMPGTQ256:
+      tcode = GT_EXPR;
+
+    do_cmp:
+      gcc_assert (n_args == 2);
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      {
+	location_t loc = gimple_location (stmt);
+	tree type = TREE_TYPE (arg0);
+	tree zero_vec = build_zero_cst (type);
+	tree minus_one_vec = build_minus_one_cst (type);
+	tree cmp_type = truth_type_for (type);
+	gimple_seq stmts = NULL;
+	tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
+	gsi_insert_before (gsi, stmts, GSI_SAME_STMT);
+	gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+					 VEC_COND_EXPR, cmp,
+					 minus_one_vec, zero_vec);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, false);
+      }
+      return true;
 
     case IX86_BUILTIN_PSLLD:
     case IX86_BUILTIN_PSLLD128:
