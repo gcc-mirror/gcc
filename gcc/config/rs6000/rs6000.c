@@ -26191,7 +26191,7 @@ prefixed_paddi_p (rtx_insn *insn)
 
 /* Whether the next instruction needs a 'p' prefix issued before the
    instruction is printed out.  */
-static bool next_insn_prefixed_p;
+static bool prepend_p_to_next_insn;
 
 /* Define FINAL_PRESCAN_INSN if some processing needs to be done before
    outputting the assembler code.  On the PowerPC, we remember if the current
@@ -26202,7 +26202,7 @@ static bool next_insn_prefixed_p;
 void
 rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
 {
-  next_insn_prefixed_p = (get_attr_prefixed (insn) != PREFIXED_NO);
+  prepend_p_to_next_insn = (get_attr_prefixed (insn) != PREFIXED_NO);
   return;
 }
 
@@ -26212,7 +26212,7 @@ rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
 void
 rs6000_asm_output_opcode (FILE *stream)
 {
-  if (next_insn_prefixed_p)
+  if (prepend_p_to_next_insn)
     fprintf (stream, "p");
 
   return;
