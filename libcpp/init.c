@@ -752,6 +752,23 @@ read_original_filename (cpp_reader *pfile)
       if (_cpp_handle_directive (pfile, token->flags & PREV_WHITE))
 	{
 	  read_original_directory (pfile);
+
+	  auto *penult = &linemap_check_ordinary
+	    (LINEMAPS_LAST_MAP (pfile->line_table, false))[-1];
+	  if (penult[1].reason == LC_RENAME_VERBATIM)
+	    {
+	      /* Expunge any evidence of the original linemap.  */
+	      pfile->line_table->highest_location
+		= pfile->line_table->highest_line
+		= penult[0].start_location;
+
+	      penult[1].start_location = penult[0].start_location;
+	      penult[1].reason = penult[0].reason;
+	      penult[0] = penult[1];
+	      pfile->line_table->info_ordinary.used--;
+	      pfile->line_table->info_ordinary.cache = 0;
+	    }
+
 	  return true;
 	}
     }
