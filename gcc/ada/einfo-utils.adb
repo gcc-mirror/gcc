@@ -23,13 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;  use Atree;
-with Elists; use Elists;
-with Nlists; use Nlists;
-with Output; use Output;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
+with Atree;          use Atree;
+with Elists;         use Elists;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Einfo.Utils is
 

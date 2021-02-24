@@ -24,8 +24,8 @@
 ------------------------------------------------------------------------------
 
 with Einfo.Entities; use Einfo.Entities;
-with Nmake;       use Nmake;
-with SPARK_Xrefs; use SPARK_Xrefs;
+with Nmake;          use Nmake;
+with SPARK_Xrefs;    use SPARK_Xrefs;
 
 separate (Lib.Xref)
 package body SPARK_Specific is

@@ -23,32 +23,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Einfo; use Einfo;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils; use Einfo.Utils;
-with Errout;   use Errout;
-with Exp_Dist; use Exp_Dist;
-with Exp_Tss;  use Exp_Tss;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Tss;        use Exp_Tss;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Dist is
 

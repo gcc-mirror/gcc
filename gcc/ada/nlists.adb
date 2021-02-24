@@ -27,11 +27,11 @@
 --  file must be properly reflected in the corresponding C header a-nlists.h
 
 with Alloc;
-with Atree;  use Atree;
-with Debug;  use Debug;
-with Output; use Output;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Output;         use Output;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
 with Table;
 
 package body Nlists is

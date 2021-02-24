@@ -23,32 +23,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo; use Einfo;
+with Atree;          use Atree;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils; use Einfo.Utils;
-with Elists;   use Elists;
-with Layout;   use Layout;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Set_Targ; use Set_Targ;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Sem_Mech; use Sem_Mech;
-with Sem_Util; use Sem_Util;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Layout;         use Layout;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Set_Targ;       use Set_Targ;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package body CStand is
 

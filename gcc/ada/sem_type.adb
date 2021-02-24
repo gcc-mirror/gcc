@@ -23,38 +23,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
 with Alloc;
-with Debug;    use Debug;
-with Einfo; use Einfo;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils; use Einfo.Utils;
-with Elists;   use Elists;
-with Nlists;   use Nlists;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Util; use Sem_Util;
-with Stand;    use Stand;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
-with Snames;   use Snames;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Nlists;         use Nlists;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Output;         use Output;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Util;       use Sem_Util;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
 with Table;
-with Treepr;   use Treepr;
-with Uintp;    use Uintp;
+with Treepr;         use Treepr;
+with Uintp;          use Uintp;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Sem_Type is
 

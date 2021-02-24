@@ -23,30 +23,30 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo; use Einfo;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils; use Einfo.Utils;
-with Elists;   use Elists;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Output;   use Output;
-with Seinfo; use Seinfo;
-with Sinfo; use Sinfo;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
-with Snames;   use Snames;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with SCIL_LL;  use SCIL_LL;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
-with Uname;    use Uname;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Seinfo;         use Seinfo;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with SCIL_LL;        use SCIL_LL;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
+with Uname;          use Uname;
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
 

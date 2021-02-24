@@ -30,10 +30,10 @@
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
 
-with Atree;    use Atree;
-with Snames;   use Snames;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Sinfo.Utils; use Sinfo.Utils;
+with Atree;          use Atree;
+with Snames;         use Snames;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Sinfo.CN is
 

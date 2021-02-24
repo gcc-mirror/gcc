@@ -25,17 +25,17 @@
 
 --  Package containing utility procedures used throughout the semantics
 
-with Aspects; use Aspects;
-with Atree;   use Atree;
-with Einfo; use Einfo;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
-with Exp_Tss; use Exp_Tss;
-with Namet;   use Namet;
-with Opt;     use Opt;
-with Snames;  use Snames;
-with Types;   use Types;
-with Uintp;   use Uintp;
-with Urealp;  use Urealp;
+with Exp_Tss;        use Exp_Tss;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Snames;         use Snames;
+with Types;          use Types;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package Sem_Util is
 

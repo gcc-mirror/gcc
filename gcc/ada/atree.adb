@@ -35,14 +35,14 @@
 pragma Suppress (All_Checks);
 pragma Assertion_Policy (Ignore);
 
-with Aspects;     use Aspects;
-with Debug;       use Debug;
-with Namet;       use Namet;
-with Nlists;      use Nlists;
-with Opt;         use Opt;
-with Output;      use Output;
-with Seinfo;      use Seinfo;
-with Sinfo.Utils; use Sinfo.Utils;
+with Aspects;        use Aspects;
+with Debug;          use Debug;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Seinfo;         use Seinfo;
+with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
 
 package body Atree is

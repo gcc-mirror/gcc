@@ -45,10 +45,10 @@
 --  tree, transforming it in various ways and adding semantic information.
 
 with Alloc;
-with Sinfo.Nodes; use Sinfo.Nodes;
+with Sinfo.Nodes;    use Sinfo.Nodes;
 with Einfo.Entities; use Einfo.Entities;
-with Types;  use Types;
-with System; use System;
+with Types;          use Types;
+with System;         use System;
 with Table;
 with Unchecked_Conversion;
 

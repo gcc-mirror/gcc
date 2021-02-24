@@ -27,7 +27,7 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order by RM
 --  section rather than alphabetical.
 
-with Sinfo.CN; use Sinfo.CN;
+with Sinfo.CN;       use Sinfo.CN;
 
 separate (Par)
 package body Ch5 is
