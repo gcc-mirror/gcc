@@ -3363,6 +3363,8 @@ public:
 };
 
 static loc_spans spans;
+/* Indirection to allow bsearching imports by ordinary location.  */
+static vec<module_state *> *ool;
 
 /********************************************************************/
 /* Data needed by a module during the process of loading.  */
@@ -13758,13 +13760,12 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
    interface and we're importing a partition.  */
 
 bool
-loc_spans::maybe_propagate (module_state *import,
-			    location_t loc = UNKNOWN_LOCATION)
+loc_spans::maybe_propagate (module_state *import, location_t hwm)
 {
   bool opened = (module_interface_p () && !module_partition_p ()
 		 && import->is_partition ());
   if (opened)
-    open (loc);
+    open (hwm);
   return opened;
 }
 
@@ -13772,11 +13773,8 @@ loc_spans::maybe_propagate (module_state *import,
    first map of the interval.  */
 
 void
-loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
+loc_spans::open (location_t hwm)
 {
-  if (hwm == UNKNOWN_LOCATION)
-    hwm = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
-
   span interval;
   interval.ordinary.first = interval.ordinary.second = hwm;
   interval.macro.first = interval.macro.second
@@ -13786,6 +13784,13 @@ loc_spans::open (location_t hwm = UNKNOWN_LOCATION)
     && dump ("Opening span %u ordinary:[%u,... macro:...,%u)",
 	     spans->length (), interval.ordinary.first,
 	     interval.macro.second);
+  if (spans->length ())
+    {
+      /* No overlapping!  */
+      auto &last = spans->last ();
+      gcc_checking_assert (interval.ordinary.first >= last.ordinary.second);
+      gcc_checking_assert (interval.macro.second <= last.macro.first);
+    }
   spans->safe_push (interval);
 }
 
@@ -15547,13 +15552,13 @@ enum loc_kind {
 static const module_state *
 module_for_ordinary_loc (location_t loc)
 {
-  unsigned pos = 1;
-  unsigned len = modules->length () - pos;
+  unsigned pos = 0;
+  unsigned len = ool->length () - pos;
 
   while (len)
     {
       unsigned half = len / 2;
-      module_state *probe = (*modules)[pos + half];
+      module_state *probe = (*ool)[pos + half];
       if (loc < probe->ordinary_locs.first)
 	len = half;
       else if (loc < probe->ordinary_locs.second)
@@ -15565,7 +15570,7 @@ module_for_ordinary_loc (location_t loc)
 	}
     }
 
-  return NULL;
+  return nullptr;
 }
 
 static const module_state *
@@ -15849,31 +15854,49 @@ module_state::write_prepare_maps (module_state_config *)
   for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
     {
       loc_spans::span &span = spans[ix];
-      line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (line_table,
-						  span.ordinary.first));
 
-      /* We should exactly match up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
-
-      line_map_ordinary const *fmap = omap;
-      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+      if (span.ordinary.first != span.ordinary.second)
 	{
-	  /* We should never find a module linemap in an interval.  */
-	  gcc_checking_assert (!MAP_MODULE_P (omap));
+	  line_map_ordinary const *omap
+	    = linemap_check_ordinary (linemap_lookup (line_table,
+						      span.ordinary.first));
 
-	  if (max_range < omap->m_range_bits)
-	    max_range = omap->m_range_bits;
+	  /* We should exactly match up.  */
+	  gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
+
+	  line_map_ordinary const *fmap = omap;
+	  for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+	    {
+	      /* We should never find a module linemap in an interval.  */
+	      gcc_checking_assert (!MAP_MODULE_P (omap));
+
+	      if (max_range < omap->m_range_bits)
+		max_range = omap->m_range_bits;
+	    }
+
+	  info.num_maps.first += omap - fmap;
 	}
-
-      unsigned count = omap - fmap;
-      info.num_maps.first += count;
 
       if (span.macro.first != span.macro.second)
 	{
-	  count = linemap_lookup_macro_index (line_table, span.macro.first) + 1;
-	  count -= linemap_lookup_macro_index (line_table,
+	  /* Iterate over the span's macros, to elide the empty
+	     expansions.  */
+	  unsigned count = 0;
+	  for (unsigned macro
+		 = linemap_lookup_macro_index (line_table,
 					       span.macro.second - 1);
+	       macro < LINEMAPS_MACRO_USED (line_table);
+	       macro++)
+	    {
+	      line_map_macro const *mmap
+		= LINEMAPS_MACRO_MAP_AT (line_table, macro);
+	      if (MAP_START_LOCATION (mmap) < span.macro.first)
+		/* Fallen out of the span.  */
+		break;
+
+	      if (mmap->n_tokens)
+		count++;
+	    }
 	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
 	  info.num_maps.second += count;
 	}
@@ -15901,7 +15924,7 @@ module_state::write_prepare_maps (module_state_config *)
 
       line_map_ordinary const *omap
 	= linemap_check_ordinary (linemap_lookup (line_table,
-						  span.ordinary.first));
+						      span.ordinary.first));
       location_t base = MAP_START_LOCATION (omap);
 
       /* Preserve the low MAX_RANGE bits of base by incrementing ORD_OFF.  */
@@ -15916,24 +15939,28 @@ module_state::write_prepare_maps (module_state_config *)
 	  location_t start_loc = MAP_START_LOCATION (omap);
 	  unsigned to = start_loc + span.ordinary_delta;
 	  location_t end_loc = MAP_START_LOCATION (omap + 1);
-	  
-	  dump () && dump ("Ordinary span:%u [%u,%u):%u->%d(%u)", ix, start_loc,
+
+	  dump () && dump ("Ordinary span:%u [%u,%u):%u->%d(%u)",
+			   ix, start_loc,
 			   end_loc, end_loc - start_loc,
 			   span.ordinary_delta, to);
 
 	  /* There should be no change in the low order bits.  */
 	  gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
 	}
+
       /* The ending serialized value.  */
       ord_off = span.ordinary.second + span.ordinary_delta;
     }
 
-  dump () && dump ("Ordinary hwm:%u macro lwm:%u", ord_off, mac_off);
+  dump () && dump ("Ordinary:%u maps hwm:%u macro:%u maps lwm:%u ",
+		   info.num_maps.first, ord_off,
+		   info.num_maps.second, mac_off);
 
   dump.outdent ();
 
   info.max_range = max_range;
-
+  
   return info;
 }
 
@@ -16001,14 +16028,15 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
 	  /* We should never find a module linemap in an interval.  */
 	  gcc_checking_assert (!MAP_MODULE_P (omap));
 
-	  /* We expect very few filenames, so just an array.  */
+	  /* We expect very few filenames, so just an array.
+	     (Not true when headers are still in play :()  */
 	  for (unsigned jx = filenames.length (); jx--;)
 	    {
 	      const char *name = filenames[jx];
 	      if (0 == strcmp (name, fname))
 		{
 		  /* Reset the linemap's name, because for things like
-		     preprocessed input we could have multple
+		     preprocessed input we could have multiple
 		     instances of the same name, and we'd rather not
 		     percolate that.  */
 		  const_cast<line_map_ordinary *> (omap)->to_file = name;
@@ -16133,27 +16161,24 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
     {
       loc_spans::span &span = spans[ix];
       if (span.macro.first == span.macro.second)
+	/* Empty span.  */
 	continue;
 
-      for (unsigned first
+      for (unsigned macro
 	     = linemap_lookup_macro_index (line_table, span.macro.second - 1);
-	   first < LINEMAPS_MACRO_USED (line_table);
-	   first++)
+	   macro < LINEMAPS_MACRO_USED (line_table);
+	   macro++)
 	{
 	  line_map_macro const *mmap
-	    = LINEMAPS_MACRO_MAP_AT (line_table, first);
+	    = LINEMAPS_MACRO_MAP_AT (line_table, macro);
 	  location_t start_loc = MAP_START_LOCATION (mmap);
 	  if (start_loc < span.macro.first)
+	    /* Fallen out of the span.  */
 	    break;
-	  if (macro_num == info.num_maps.second)
-	    {
-	      /* We're ending on an empty macro expansion.  The
-		 preprocessor doesn't prune such things.  */
-	      // FIXME:QOI This is an example of the non-pruning of
-	      // locations.  See write_prepare_maps.
-	      gcc_checking_assert (!mmap->n_tokens);
-	      continue;
-	    }
+
+	  if (!mmap->n_tokens)
+	    /* Empty expansion.  */
+	    continue;
 
 	  sec.u (offset);
 	  sec.u (mmap->n_tokens);
@@ -16318,7 +16343,8 @@ module_state::read_macro_maps ()
   location_t zero = sec.u ();
   dump () && dump ("Macro maps:%u zero:%u", num_macros, zero);
 
-  bool propagated = spans.maybe_propagate (this);
+  bool propagated = spans.maybe_propagate (this,
+					   line_table->highest_location + 1);
 
   location_t offset = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   slurp->loc_deltas.second = zero - offset;
@@ -17519,6 +17545,21 @@ module_state::read_config (module_state_config &config)
   return cfg.end (from ());
 }
 
+/* Comparator for ordering the Ordered Ordinary Location array.  */
+
+static int
+ool_cmp (const void *a_, const void *b_)
+{
+  auto *a = *static_cast<const module_state *const *> (a_);
+  auto *b = *static_cast<const module_state *const *> (b_);
+  if (a == b)
+    return 0;
+  else if (a->ordinary_locs.first < b->ordinary_locs.second)
+    return -1;
+  else
+    return +1;
+}
+
 /* Use ELROND format to record the following sections:
      qualified-names	    : binding value(s)
      MOD_SNAME_PFX.README   : human readable, strings
@@ -17624,6 +17665,16 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Determine Strongy Connected Components.  */
   vec<depset *> sccs = table.connect ();
+
+  vec_alloc (ool, modules->length ());
+  for (unsigned ix = modules->length (); --ix;)
+    {
+      auto *import = (*modules)[ix];
+      if (import->loadedness > ML_NONE
+	  && !(partitions && bitmap_bit_p (partitions, import->mod)))
+	ool->quick_push (import);
+    }
+  ool->qsort (ool_cmp);
 
   unsigned crc = 0;
   module_state_config config;
@@ -17787,6 +17838,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   spaces.release ();
   sccs.release ();
+
+  vec_free (ool);
 
   /* Human-readable info.  */
   write_readme (to, reader, config.dialect_str, extensions);
@@ -19299,7 +19352,7 @@ name_pending_imports (cpp_reader *reader, bool at_end)
 
   timevar_start (TV_MODULE_MAPPER);
 
-  dump.push (NULL);
+  auto n = dump.push (NULL);
   dump () && dump ("Resolving direct import names");
 
   mapper->Cork ();
@@ -19338,7 +19391,7 @@ name_pending_imports (cpp_reader *reader, bool at_end)
 	}
     }
 
-  dump.pop (0);
+  dump.pop (n);
 
   timevar_stop (TV_MODULE_MAPPER);
 }
@@ -19404,12 +19457,14 @@ preprocess_module (module_state *module, location_t from_loc,
 
       if (desired == ML_PREPROCESSOR)
 	{
+	  unsigned n = dump.push (NULL);
+
+	  dump () && dump ("Reading %s preprocessor state", module);
 	  name_pending_imports (reader, false);
 
-	  unsigned pre_hwm = 0;
-
 	  /* Preserve the state of the line-map.  */
-	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+	  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+
 	  /* We only need to close the span, if we're going to emit a
 	     CMI.  But that's a little tricky -- our token scanner
 	     needs to be smarter -- and this isn't much state.
@@ -19438,18 +19493,17 @@ preprocess_module (module_state *module, location_t from_loc,
 	  vec_free (pending_imports);
 
 	  /* Restore the line-map state.  */
-	  linemap_module_restore (line_table, pre_hwm);
-	  spans.open ();
+	  spans.open (linemap_module_restore (line_table, pre_hwm));
 
 	  /* Now read the preprocessor state of this particular
 	     import.  */
-	  unsigned n = dump.push (module);
 	  if (module->loadedness == ML_CONFIG
 	      && module->read_preprocessor (true))
 	    module->import_macros ();
-	  dump.pop (n);
 
 	  timevar_stop (TV_MODULE_IMPORT);
+
+	  dump.pop (n);
 	}
     }
 
@@ -19464,6 +19518,10 @@ preprocess_module (module_state *module, location_t from_loc,
 void
 preprocessed_module (cpp_reader *reader)
 {
+  unsigned n = dump.push (NULL);
+
+  dump () && dump ("Completed phase-4 (tokenization) processing");
+
   name_pending_imports (reader, true);
   vec_free (pending_imports);
 
@@ -19507,6 +19565,8 @@ preprocessed_module (cpp_reader *reader)
 	    }
 	}
     }
+
+  dump.pop (n);
 }
 
 /* VAL is a global tree, add it to the global vec if it is

@@ -621,27 +621,32 @@ linemap_module_reparent (line_maps *set, location_t loc, location_t adoptor)
 }
 
 /* A linemap at LWM-1 was interrupted to insert module locations & imports.
-   Append a new map, continuing the interrupted one.  */
+   Append a new map, continuing the interrupted one.  Return the start location
+   of the new map, or 0 if failed (because we ran out of locations.  */
 
-void
+unsigned
 linemap_module_restore (line_maps *set, unsigned lwm)
 {
-  if (lwm && lwm != LINEMAPS_USED (set, false))
+  linemap_assert (lwm);
+
+  const line_map_ordinary *pre_map
+    = linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
+  unsigned src_line = SOURCE_LINE (pre_map, LAST_SOURCE_LINE_LOCATION (pre_map));
+  location_t inc_at = pre_map->included_from;
+  if (const line_map_ordinary *post_map
+      = (linemap_check_ordinary
+	 (linemap_add (set, LC_RENAME_VERBATIM,
+		       ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+		       ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
     {
-      const line_map_ordinary *pre_map
-	= linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
-      unsigned src_line = SOURCE_LINE (pre_map,
-				       LAST_SOURCE_LINE_LOCATION (pre_map));
-      location_t inc_at = pre_map->included_from;
-      if (const line_map_ordinary *post_map
-	  = (linemap_check_ordinary
-	     (linemap_add (set, LC_RENAME_VERBATIM,
-			   ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
-			   ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
-	/* linemap_add will think we were included from the same as
-	   the preceeding map.  */
-	const_cast <line_map_ordinary *> (post_map)->included_from = inc_at;
+      /* linemap_add will think we were included from the same as the preceeding
+	 map.  */
+      const_cast <line_map_ordinary *> (post_map)->included_from = inc_at;
+
+      return post_map->start_location;
     }
+
+  return 0;
 }
 
 /* Returns TRUE if the line table set tracks token locations across
