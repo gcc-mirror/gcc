@@ -2466,26 +2466,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __d1 = __d0 + 1;
 
       return year_month_day{chrono::year{__y1 + __z2}, chrono::month{__m1},
-			    chrono::day{__d1}
-      };
+			    chrono::day{__d1}};
     }
 
-    // Days since 1970/01/01. Magic.
+    // Days since 1970/01/01.
+    // Proposition 6.2 of Neri and Schneider,
+    // "Euclidean Affine Functions and Applications to Calendar Algorithms".
+    // https://arxiv.org/abs/2102.06959
     constexpr days
     year_month_day::_M_days_since_epoch() const noexcept
     {
-      const auto __y = static_cast<int>(_M_y) - (_M_m <= February);
-      const auto __m = static_cast<unsigned>(_M_m);
-      const auto __d = static_cast<unsigned>(_M_d);
-      const auto __era = (__y >= 0 ? __y : __y - 399) / 400;
-      // Year of "era" [0, 399].
-      const auto __yoe = static_cast<unsigned>(__y - __era * 400);
-      // Day of year [0, 365].
-      const auto __doy = (153 * (__m > 2 ? __m - 3 : __m + 9) + 2) / 5 + __d - 1;
-      // Day of "era" [0, 146096].
-      const auto __doe = __yoe * 365 + __yoe / 4 - __yoe / 100 + __doy;
-      const auto __days = __era * 146097 + static_cast<int>(__doe) - 719468;
-      return days{__days};
+      auto constexpr __z2    = static_cast<uint32_t>(-1468000);
+      auto constexpr __r2_e3 = static_cast<uint32_t>(536895458);
+
+      const auto __y1 = static_cast<uint32_t>(static_cast<int>(_M_y)) - __z2;
+      const auto __m1 = static_cast<uint32_t>(_M_m);
+      const auto __d1 = static_cast<uint32_t>(_M_d);
+
+      const auto __j  = static_cast<uint32_t>(__m1 < 3);
+      const auto __y0 = __y1 - __j;
+      const auto __m0 = __j ? __m1 + 12 : __m1;
+      const auto __d0 = __d1 - 1;
+
+      const auto __q1 = __y0 / 100;
+      const auto __yc = 1461 * __y0 / 4 - __q1 + __q1 / 4;
+      const auto __mc = (979 *__m0 - 2919) / 32;
+      const auto __dc = __d0;
+
+      return days{static_cast<int32_t>(__yc + __mc + __dc - __r2_e3)};
     }
 
     // YEAR_MONTH_DAY_LAST
