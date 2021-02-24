@@ -1151,7 +1151,7 @@ template<typename T>
 
     // Ryu doesn't support formatting floating-point types larger than double
     // with an explicit precision, so instead we just go through printf.
-    if constexpr (is_same_v<T, long double>)
+    if constexpr (is_same_v<T, long double> || is_same_v<T, F128_type>)
       {
 	int effective_precision;
 	const char* output_specifier;
