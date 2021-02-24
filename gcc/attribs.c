@@ -2265,6 +2265,14 @@ attr_access::free_lang_data (tree attrs)
 	  *pvbnd = NULL_TREE;
 	}
     }
+
+  for (tree argspec = attrs; (argspec = lookup_attribute ("arg spec", argspec));
+       argspec = TREE_CHAIN (argspec))
+    {
+      /* Same as above.  */
+      tree *pvblist = &TREE_VALUE (argspec);
+      *pvblist = NULL_TREE;
+    }
 }
 
 /* Defined in attr_access.  */
