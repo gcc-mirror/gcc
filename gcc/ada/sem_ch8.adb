@@ -572,7 +572,7 @@ package body Sem_Ch8 is
       Enter_Name (Id);
       Analyze (Nam);
 
-      Set_Ekind   (Id, E_Exception);
+      Mutate_Ekind   (Id, E_Exception);
       Set_Etype   (Id, Standard_Exception_Type);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
@@ -701,7 +701,7 @@ package body Sem_Ch8 is
       end if;
 
       Enter_Name (New_P);
-      Set_Ekind (New_P, K);
+      Mutate_Ekind (New_P, K);
 
       if Etype (Old_P) = Any_Type then
          null;
@@ -984,7 +984,7 @@ package body Sem_Ch8 is
                   Error_Msg_N
                     ("object name or value expected in renaming", Nam);
 
-                  Set_Ekind (Id, E_Variable);
+                  Mutate_Ekind (Id, E_Variable);
                   Set_Etype (Id, Any_Type);
 
                   return;
@@ -1032,7 +1032,7 @@ package body Sem_Ch8 is
                      Error_Msg_N
                        ("object name or value expected in renaming", Nam);
 
-                     Set_Ekind (Id, E_Variable);
+                     Mutate_Ekind (Id, E_Variable);
                      Set_Etype (Id, Any_Type);
 
                      return;
@@ -1145,7 +1145,7 @@ package body Sem_Ch8 is
            and then Comes_From_Source (N)
          then
             Set_Etype (Id, T);
-            Set_Ekind (Id, E_Constant);
+            Mutate_Ekind (Id, E_Constant);
             Rewrite (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
@@ -1458,7 +1458,7 @@ package body Sem_Ch8 is
       --  want to change it to a variable.
 
       if Ekind (Id) /= E_Constant then
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
       end if;
 
       Init_Object_Size_Align (Id);
@@ -1536,7 +1536,7 @@ package body Sem_Ch8 is
       Set_Etype (Id, T2);
 
       if not Is_Variable (Nam) then
-         Set_Ekind               (Id, E_Constant);
+         Mutate_Ekind            (Id, E_Constant);
          Set_Never_Set_In_Source (Id, True);
          Set_Is_True_Constant    (Id, True);
       end if;
@@ -1632,7 +1632,7 @@ package body Sem_Ch8 is
 
          --  Set basic attributes to minimize cascaded errors
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
       elsif Present (Renamed_Entity (Old_P))
@@ -1647,7 +1647,7 @@ package body Sem_Ch8 is
 
          --  Set basic attributes to minimize cascaded errors
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
       --  Here for OK package renaming
@@ -1657,7 +1657,7 @@ package body Sem_Ch8 is
          --  entity. The simplest implementation is to have both packages share
          --  the entity list.
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
          if Present (Renamed_Object (Old_P)) then
@@ -3281,7 +3281,7 @@ package body Sem_Ch8 is
          Reinit_Field_To_Zero (New_S, Has_Out_Or_In_Out_Parameter);
          Reinit_Field_To_Zero (New_S, Needs_No_Actuals,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Set_Ekind (New_S, E_Subprogram_Body);
+         Mutate_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
 

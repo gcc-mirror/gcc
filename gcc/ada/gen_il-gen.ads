@@ -143,14 +143,24 @@ package Gen_IL.Gen is
    --  (The matching Default_Value requirement is a simplification from the
    --  earlier hand-written version.)
 
+   --  When adding new node or entity kinds, or adding new fields, all back
+   --  ends must be made aware of the changes. In addition, the documentation
+   --  in Sinfo or Einfo needs to be updated.
+
    --  To add a new node or entity type, add it to the enumeration type in
    --  Gen_IL.Types, taking care that it is in the approprate range
    --  (Abstract_Node, Abstract_Entity, Concrete_Node, or Concrete_Entity).
    --  Then add a call to one of the above type-creation procedures to
-   --  Sinfo.Nodes or Einfo.Entities.
+   --  Gen_IL.Gen.Gen_Nodes or Gen_IL.Gen.Gen_Entities.
    --
-   --  To add a new field to a type, add a call to one of the above field
-   --  creation procedures to Sinfo.Nodes or Einfo.Entities.
+   --  To add a new field to a type, add it to the enumeration type in
+   --  Gen_IL.Fields in the appropriate range. Then add a call to one of
+   --  the above field-creation procedures to Gen_IL.Gen.Gen_Nodes or
+   --  Gen_IL.Gen.Gen_Entities.
+   --
+   --  If a type or field name does not follow the usual Mixed_Case convention,
+   --  such as "SPARK_Pragma", then you have to add a special case to one of
+   --  the Image functions in Gen_IL.Utils.
 
    --  Forward references are not allowed. So if you say:
    --

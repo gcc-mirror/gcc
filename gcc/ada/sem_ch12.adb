@@ -2351,7 +2351,7 @@ package body Sem_Ch12 is
       Set_Is_Generic_Type (Base);
       Set_Parent          (Base, Parent (Def));
 
-      Set_Ekind          (T, E_Decimal_Fixed_Point_Subtype);
+      Mutate_Ekind       (T, E_Decimal_Fixed_Point_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T, Int_Base);
       Set_RM_Size        (T, RM_Size (Int_Base));
@@ -2473,7 +2473,7 @@ package body Sem_Ch12 is
 
    begin
       Enter_Name          (T);
-      Set_Ekind           (T, E_Enumeration_Subtype);
+      Mutate_Ekind        (T, E_Enumeration_Subtype);
       Set_Etype           (T, Base);
       Init_Size           (T, 8);
       Init_Alignment      (T);
@@ -2502,7 +2502,7 @@ package body Sem_Ch12 is
           Low_Bound  => Lo,
           High_Bound => Hi));
 
-      Set_Ekind           (Base, E_Enumeration_Type);
+      Mutate_Ekind        (Base, E_Enumeration_Type);
       Set_Etype           (Base, Base);
       Init_Size           (Base, 8);
       Init_Alignment      (Base);
@@ -2528,7 +2528,7 @@ package body Sem_Ch12 is
       --  the generic itself.
 
       Enter_Name (T);
-      Set_Ekind          (T, E_Floating_Point_Subtype);
+      Mutate_Ekind       (T, E_Floating_Point_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T,              (Standard_Float));
       Set_RM_Size        (T, RM_Size      (Standard_Float));
@@ -2580,8 +2580,8 @@ package body Sem_Ch12 is
       --  signed integer types, and have the same attributes.
 
       Analyze_Formal_Signed_Integer_Type (T, Def);
-      Set_Ekind (T, E_Modular_Integer_Subtype);
-      Set_Ekind (Etype (T), E_Modular_Integer_Type);
+      Mutate_Ekind (T, E_Modular_Integer_Subtype);
+      Mutate_Ekind (Etype (T), E_Modular_Integer_Type);
 
    end Analyze_Formal_Modular_Type;
 
@@ -2678,7 +2678,7 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         Set_Ekind (Id, K);
+         Mutate_Ekind (Id, K);
          Set_Etype (Id, T);
 
       --  Case of generic IN OUT parameter
@@ -2688,7 +2688,7 @@ package body Sem_Ch12 is
          --  subtype, as is done for subprogram formals. In this fashion, all
          --  its uses can refer to specific bounds.
 
-         Set_Ekind (Id, K);
+         Mutate_Ekind (Id, K);
          Set_Etype (Id, T);
 
          if (Is_Array_Type (T) and then not Is_Constrained (T))
@@ -2741,7 +2741,7 @@ package body Sem_Ch12 is
       --  will never be used, since all properties of the type are non-static.
 
       Enter_Name (T);
-      Set_Ekind            (T, E_Ordinary_Fixed_Point_Subtype);
+      Mutate_Ekind         (T, E_Ordinary_Fixed_Point_Subtype);
       Set_Etype            (T, Base);
       Set_Size_Info        (T, Standard_Integer);
       Set_RM_Size          (T, RM_Size (Standard_Integer));
@@ -3017,8 +3017,8 @@ package body Sem_Ch12 is
       exception
          when Instantiation_Error =>
             Enter_Name (Formal);
-            Set_Ekind  (Formal, E_Variable);
-            Set_Etype  (Formal, Any_Type);
+            Mutate_Ekind (Formal, E_Variable);
+            Set_Etype (Formal, Any_Type);
             Restore_Hidden_Primitives (Vis_Prims_List);
 
             if Parent_Installed then
@@ -3035,8 +3035,8 @@ package body Sem_Ch12 is
       Set_Is_Generic_Instance (Formal);
 
       Enter_Name (Formal);
-      Set_Ekind  (Formal, E_Package);
-      Set_Etype  (Formal, Standard_Void_Type);
+      Mutate_Ekind (Formal, E_Package);
+      Set_Etype (Formal, Standard_Void_Type);
       Set_Inner_Instances (Formal, New_Elmt_List);
 
       --  It is unclear that any aspects can apply to a formal package
@@ -3094,7 +3094,7 @@ package body Sem_Ch12 is
 
          Renaming_In_Par :=
            Make_Defining_Identifier (Loc, Chars (Gen_Unit));
-         Set_Ekind (Renaming_In_Par, E_Package);
+         Mutate_Ekind (Renaming_In_Par, E_Package);
          Set_Etype (Renaming_In_Par, Standard_Void_Type);
          Set_Scope (Renaming_In_Par, Parent_Instance);
          Set_Parent (Renaming_In_Par, Parent (Formal));
@@ -3163,7 +3163,7 @@ package body Sem_Ch12 is
 
       --  Add semantic information to the original defining identifier.
 
-      Set_Ekind (Pack_Id, E_Package);
+      Mutate_Ekind (Pack_Id, E_Package);
       Set_Etype (Pack_Id, Standard_Void_Type);
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
@@ -3207,7 +3207,7 @@ package body Sem_Ch12 is
    is
    begin
       Enter_Name (T);
-      Set_Ekind (T, E_Incomplete_Type);
+      Mutate_Ekind (T, E_Incomplete_Type);
       Set_Etype (T, T);
       Set_Private_Dependents (T, New_Elmt_List);
 
@@ -3235,7 +3235,7 @@ package body Sem_Ch12 is
    begin
       Enter_Name (T);
 
-      Set_Ekind          (T, E_Signed_Integer_Subtype);
+      Mutate_Ekind       (T, E_Signed_Integer_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T, Standard_Integer);
       Set_RM_Size        (T, RM_Size (Standard_Integer));
@@ -3693,8 +3693,8 @@ package body Sem_Ch12 is
       Start_Generic;
 
       Enter_Name (Id);
-      Set_Ekind  (Id, E_Generic_Package);
-      Set_Etype  (Id, Standard_Void_Type);
+      Mutate_Ekind (Id, E_Generic_Package);
+      Set_Etype (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context
 
@@ -3870,9 +3870,9 @@ package body Sem_Ch12 is
       Analyze_Generic_Formal_Part (N);
 
       if Nkind (Spec) = N_Function_Specification then
-         Set_Ekind (Id, E_Generic_Function);
+         Mutate_Ekind (Id, E_Generic_Function);
       else
-         Set_Ekind (Id, E_Generic_Procedure);
+         Mutate_Ekind (Id, E_Generic_Procedure);
       end if;
 
       --  Set SPARK_Mode from context
@@ -4189,7 +4189,7 @@ package body Sem_Ch12 is
       end if;
 
       Generate_Definition (Act_Decl_Id);
-      Set_Ekind (Act_Decl_Id, E_Package);
+      Mutate_Ekind (Act_Decl_Id, E_Package);
 
       --  Initialize list of incomplete actuals before analysis
 
@@ -4316,7 +4316,7 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
-         Set_Ekind (Inst_Id, E_Package);
+         Mutate_Ekind (Inst_Id, E_Package);
          Set_Scope (Inst_Id, Current_Scope);
 
          --  If the context of the instance is subject to SPARK_Mode "off" or
@@ -5663,7 +5663,7 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
-         Set_Ekind (Inst_Id, K);
+         Mutate_Ekind (Inst_Id, K);
          Set_Scope (Inst_Id, Current_Scope);
 
          Set_Entity (Gen_Id, Gen_Unit);
@@ -6055,7 +6055,7 @@ package body Sem_Ch12 is
       Func_Name := New_Occurrence_Of (Actual_Subp, Loc);
 
       Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Func, E_Function);
+      Mutate_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
       Actuals := New_List;
@@ -6140,7 +6140,7 @@ package body Sem_Ch12 is
       R  := New_Occurrence_Of (F2, Loc);
 
       Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Func, E_Function);
+      Mutate_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
       Spec :=
@@ -6255,7 +6255,7 @@ package body Sem_Ch12 is
    begin
 
       Subp := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Subp, Ekind (Formal_Subp));
+      Mutate_Ekind (Subp, Ekind (Formal_Subp));
       Set_Is_Generic_Actual_Subprogram (Subp);
 
       Profile := Parameter_Specifications (
@@ -10885,7 +10885,7 @@ package body Sem_Ch12 is
 
             begin
                Set_Is_Internal (I_Pack);
-               Set_Ekind (I_Pack, E_Package);
+               Mutate_Ekind (I_Pack, E_Package);
                Set_Hidden_In_Formal_Instance (I_Pack, Hidden_Formals);
 
                Append_To (Decls,
@@ -11022,7 +11022,7 @@ package body Sem_Ch12 is
          New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
       end if;
 
-      Set_Ekind (New_Subp, Ekind (Analyzed_S));
+      Mutate_Ekind (New_Subp, Ekind (Analyzed_S));
       Set_Is_Generic_Actual_Subprogram (New_Subp);
       Set_Defining_Unit_Name (New_Spec, New_Subp);
 
@@ -14214,7 +14214,7 @@ package body Sem_Ch12 is
       --  the local subtype must be treated as such.
 
       if From_Limited_With (Act_T) then
-         Set_Ekind (Subt, E_Incomplete_Subtype);
+         Mutate_Ekind (Subt, E_Incomplete_Subtype);
          Set_From_Limited_With (Subt);
       end if;
 
@@ -14273,9 +14273,9 @@ package body Sem_Ch12 is
             Append_To (Decl_Nodes, Corr_Decl);
 
             if Ekind (Act_T) = E_Task_Type then
-               Set_Ekind (Subt, E_Task_Subtype);
+               Mutate_Ekind (Subt, E_Task_Subtype);
             else
-               Set_Ekind (Subt, E_Protected_Subtype);
+               Mutate_Ekind (Subt, E_Protected_Subtype);
             end if;
 
             Set_Corresponding_Record_Type (Subt, Corr_Rec);

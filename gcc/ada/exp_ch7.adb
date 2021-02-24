@@ -2810,7 +2810,7 @@ package body Exp_Ch7 is
             --  Perform minor decoration in order to set the master and the
             --  storage pool attributes.
 
-            Set_Ekind (Ptr_Typ, E_Access_Type);
+            Mutate_Ekind (Ptr_Typ, E_Access_Type);
             Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 

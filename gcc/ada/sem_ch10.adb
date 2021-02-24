@@ -1647,7 +1647,7 @@ package body Sem_Ch10 is
          --  when we load the proper body.
 
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Package_Body);
+         Mutate_Ekind (Id, E_Package_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -1989,7 +1989,7 @@ package body Sem_Ch10 is
          Opts := Save_Config_Switches;
 
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Protected_Body);
+         Mutate_Ekind (Id, E_Protected_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -2500,7 +2500,7 @@ package body Sem_Ch10 is
 
       else
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Task_Body);
+         Mutate_Ekind (Id, E_Task_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -4120,7 +4120,8 @@ package body Sem_Ch10 is
                      Set_Subtype_Indication (Decl,
                        New_Occurrence_Of (Non_Lim_View, Sloc (Def_Id)));
                      Set_Etype (Def_Id, Non_Lim_View);
-                     Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
+                     Mutate_Ekind
+                       (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
                      Set_Analyzed (Decl, False);
 
                      --  Reanalyze the declaration, suppressing the call to
@@ -4986,7 +4987,7 @@ package body Sem_Ch10 is
 
             --  Minimum decoration
 
-            Set_Ekind (P, E_Package);
+            Mutate_Ekind (P, E_Package);
             Set_Etype (P, Standard_Void_Type);
             Set_Scope (P, Standard_Standard);
             Set_Is_Visible_Lib_Unit (P);
@@ -5738,9 +5739,9 @@ package body Sem_Ch10 is
          --  The abstract view of a variable is a state, not another variable
 
          if Ekind (Ent) = E_Variable then
-            Set_Ekind (Shadow, E_Abstract_State);
+            Mutate_Ekind (Shadow, E_Abstract_State);
          else
-            Set_Ekind (Shadow, Ekind (Ent));
+            Mutate_Ekind (Shadow, Ekind (Ent));
          end if;
 
          Set_Is_Internal       (Shadow);
@@ -5785,7 +5786,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_Package (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind (Ent, E_Package);
+         Mutate_Ekind (Ent, E_Package);
          Set_Etype (Ent, Standard_Void_Type);
          Set_Scope (Ent, Scop);
       end Decorate_Package;
@@ -5796,7 +5797,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_State (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind               (Ent, E_Abstract_State);
+         Mutate_Ekind            (Ent, E_Abstract_State);
          Set_Etype               (Ent, Standard_Void_Type);
          Set_Scope               (Ent, Scop);
          Set_Encapsulating_State (Ent, Empty);
@@ -5818,7 +5819,7 @@ package body Sem_Ch10 is
          --  An unanalyzed type or a shadow entity of a type is treated as an
          --  incomplete type, and carries the corresponding attributes.
 
-         Set_Ekind              (Ent, E_Incomplete_Type);
+         Mutate_Ekind           (Ent, E_Incomplete_Type);
          Set_Etype              (Ent, Ent);
          Set_Full_View          (Ent, Empty);
          Set_Is_First_Subtype   (Ent);
@@ -5854,7 +5855,7 @@ package body Sem_Ch10 is
 
             Set_Parent (CW_Typ, Parent (Ent));
 
-            Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
+            Mutate_Ekind                  (CW_Typ, E_Class_Wide_Type);
             Set_Class_Wide_Type           (CW_Typ, CW_Typ);
             Set_Etype                     (CW_Typ, Ent);
             Set_Equivalent_Type           (CW_Typ, Empty);
@@ -5874,7 +5875,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_Variable (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind (Ent, E_Variable);
+         Mutate_Ekind (Ent, E_Variable);
          Set_Etype (Ent, Standard_Void_Type);
          Set_Scope (Ent, Scop);
       end Decorate_Variable;
@@ -6229,7 +6230,7 @@ package body Sem_Ch10 is
       --  must be minimally decorated. This ensures that the checks on unused
       --  with clauses also process limieted withs.
 
-      Set_Ekind (Pack, E_Package);
+      Mutate_Ekind (Pack, E_Package);
       Set_Etype (Pack, Standard_Void_Type);
 
       if Is_Entity_Name (Nam) then
@@ -6251,7 +6252,7 @@ package body Sem_Ch10 is
       --  incomplete view of all types and packages declared within.
 
       Shadow_Pack := Make_Temporary (Sloc (N), 'Z');
-      Set_Ekind        (Shadow_Pack, E_Package);
+      Mutate_Ekind     (Shadow_Pack, E_Package);
       Set_Is_Internal  (Shadow_Pack);
       Set_Limited_View (Pack, Shadow_Pack);
 

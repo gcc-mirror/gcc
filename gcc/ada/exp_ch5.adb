@@ -3407,7 +3407,7 @@ package body Exp_Ch5 is
 
       Analyze (Init_Decl);
       Init_Name := Defining_Identifier (Init_Decl);
-      Set_Ekind (Init_Name, E_Loop_Parameter);
+      Mutate_Ekind (Init_Name, E_Loop_Parameter);
 
       --  The cursor was marked as a loop parameter to prevent user assignments
       --  to it, however this renders the advancement step illegal as it is not
@@ -3483,7 +3483,7 @@ package body Exp_Ch5 is
         (N, Container, Cursor, Init, Advance, New_Loop);
       Append_To (Stats, Advance);
 
-      Set_Ekind (Cursor, E_Variable);
+      Mutate_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
 
       --  The loop parameter is declared by an object declaration, but within
@@ -4484,7 +4484,7 @@ package body Exp_Ch5 is
                      (Container_Typ, Aspect_Variable_Indexing))
               or else not Is_Variable (Original_Node (Container))
             then
-               Set_Ekind (Id, E_Constant);
+               Mutate_Ekind (Id, E_Constant);
             end if;
 
             Prepend_To (Stats, Decl);
@@ -4620,7 +4620,7 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
-         Set_Ekind (Cursor, Id_Kind);
+         Mutate_Ekind (Cursor, Id_Kind);
       end;
 
       --  If the range of iteration is given by a function call that returns
@@ -5081,7 +5081,7 @@ package body Exp_Ch5 is
             --  identifier, since there may be references in the loop body.
 
             Set_Analyzed (Loop_Id, False);
-            Set_Ekind    (Loop_Id, E_Variable);
+            Mutate_Ekind (Loop_Id, E_Variable);
 
             --  In most loops the loop variable is assigned in various
             --  alternatives in the body. However, in the rare case when

@@ -1323,7 +1323,7 @@ package body Sem_Ch5 is
                   Reinit_Field_To_Zero (Ent, Enclosing_Scope);
                end if;
 
-               Set_Ekind (Ent, E_Block);
+               Mutate_Ekind (Ent, E_Block);
                Generate_Reference (Ent, N, ' ');
                Generate_Definition (Ent);
 
@@ -1970,7 +1970,7 @@ package body Sem_Ch5 is
       Id : constant Node_Id := Defining_Identifier (N);
    begin
       Enter_Name          (Id);
-      Set_Ekind           (Id, E_Label);
+      Mutate_Ekind        (Id, E_Label);
       Set_Etype           (Id, Standard_Void_Type);
       Set_Enclosing_Scope (Id, Current_Scope);
    end Analyze_Implicit_Label_Declaration;
@@ -2164,7 +2164,7 @@ package body Sem_Ch5 is
       --  Set the kind of the loop variable, which is not visible within the
       --  iterator name.
 
-      Set_Ekind (Def_Id, E_Variable);
+      Mutate_Ekind (Def_Id, E_Variable);
 
       --  Provide a link between the iterator variable and the container, for
       --  subsequent use in cross-reference and modification information.
@@ -2433,7 +2433,7 @@ package body Sem_Ch5 is
 
             --  Prevent cascaded errors
 
-            Set_Ekind (Def_Id, E_Loop_Parameter);
+            Mutate_Ekind (Def_Id, E_Loop_Parameter);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 
@@ -2445,7 +2445,7 @@ package body Sem_Ch5 is
       --  Iteration over a container
 
       else
-         Set_Ekind (Def_Id, E_Loop_Parameter);
+         Mutate_Ekind (Def_Id, E_Loop_Parameter);
          Error_Msg_Ada_2012_Feature ("container iterator", Sloc (N));
 
          --  OF present
@@ -2498,7 +2498,7 @@ package body Sem_Ch5 is
                      --  element is a variable and is modifiable in the loop.
 
                      if Has_Aspect (Typ, Aspect_Variable_Indexing) then
-                        Set_Ekind (Def_Id, E_Variable);
+                        Mutate_Ekind (Def_Id, E_Variable);
                      end if;
 
                      --  If the container is a constant, iterating over it
@@ -2669,7 +2669,7 @@ package body Sem_Ch5 is
 
    procedure Analyze_Label_Entity (E : Entity_Id) is
    begin
-      Set_Ekind           (E, E_Label);
+      Mutate_Ekind        (E, E_Label);
       Set_Etype           (E, Standard_Void_Type);
       Set_Enclosing_Scope (E, Current_Scope);
       Set_Reachable       (E, True);
@@ -3055,7 +3055,7 @@ package body Sem_Ch5 is
                --  subsequent analysis of the condition in a quantified
                --  expression.
 
-               Set_Ekind (Id, E_Loop_Parameter);
+               Mutate_Ekind (Id, E_Loop_Parameter);
                return;
             end;
 
@@ -3118,7 +3118,7 @@ package body Sem_Ch5 is
          Make_Index (DS, N);
       end if;
 
-      Set_Ekind (Id, E_Loop_Parameter);
+      Mutate_Ekind (Id, E_Loop_Parameter);
 
       --  A quantified expression which appears in a pre- or post-condition may
       --  be analyzed multiple times. The analysis of the range creates several
@@ -3746,7 +3746,7 @@ package body Sem_Ch5 is
               and then Ekind (Homonym (Ent)) = E_Label
             then
                Set_Entity (Id, Ent);
-               Set_Ekind (Ent, E_Loop);
+               Mutate_Ekind (Ent, E_Loop);
             end if;
 
          else
@@ -3761,7 +3761,7 @@ package body Sem_Ch5 is
 
             if Ekind (Ent) = E_Label then
                Reinit_Field_To_Zero (Ent, Enclosing_Scope);
-               Set_Ekind (Ent, E_Loop);
+               Mutate_Ekind (Ent, E_Loop);
 
                if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
                   Set_Label_Construct (Parent (Ent), N);
@@ -3925,7 +3925,7 @@ package body Sem_Ch5 is
                if not Of_Present (I_Spec)
                  or else not Is_Variable (Name (I_Spec))
                then
-                  Set_Ekind (Id, E_Loop_Parameter);
+                  Mutate_Ekind (Id, E_Loop_Parameter);
                end if;
             end;
 

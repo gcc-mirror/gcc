@@ -1322,8 +1322,8 @@ package body Gen_IL.Gen is
                Put_Getter_Decl (S, Ekind);
                Put (S, "function K (N : Entity_Id) return Entity_Kind renames Ekind;\n");
                Put (S, "--  Shorthand for use in predicates and preconditions below\n");
-               Put (S, "--  ????There is no procedure Set_Ekind here.\n");
-               Put (S, "--  See Atree.\n\n");
+               Put (S, "--  There is no procedure Set_Ekind here.\n");
+               Put (S, "--  See Mutate_Ekind in Atree.\n\n");
 
             when others => raise Program_Error;
          end case;

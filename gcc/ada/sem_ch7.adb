@@ -843,7 +843,7 @@ package body Sem_Ch7 is
          --  unannotated body will be used in all instantiations.
 
          Body_Id := Defining_Entity (N);
-         Set_Ekind (Body_Id, E_Package_Body);
+         Mutate_Ekind (Body_Id, E_Package_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
          Set_Body_Entity (Spec_Id, Body_Id);
@@ -875,7 +875,7 @@ package body Sem_Ch7 is
       --  current node otherwise. Note that N was rewritten above, so we must
       --  be sure to get the latest Body_Id value.
 
-      Set_Ekind (Body_Id, E_Package_Body);
+      Mutate_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);
 
@@ -1161,7 +1161,7 @@ package body Sem_Ch7 is
 
       Generate_Definition (Id);
       Enter_Name (Id);
-      Set_Ekind  (Id, E_Package);
+      Mutate_Ekind  (Id, E_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context
@@ -2558,9 +2558,9 @@ package body Sem_Ch7 is
       end if;
 
       if Limited_Present (Def) then
-         Set_Ekind (Id, E_Limited_Private_Type);
+         Mutate_Ekind (Id, E_Limited_Private_Type);
       else
-         Set_Ekind (Id, E_Private_Type);
+         Mutate_Ekind (Id, E_Private_Type);
       end if;
 
       Set_Etype              (Id, Id);
@@ -2592,7 +2592,7 @@ package body Sem_Ch7 is
       Set_Private_Dependents (Id, New_Elmt_List);
 
       if Tagged_Present (Def) then
-         Set_Ekind                       (Id, E_Record_Type_With_Private);
+         Mutate_Ekind                    (Id, E_Record_Type_With_Private);
          Set_Direct_Primitive_Operations (Id, New_Elmt_List);
          Set_Is_Abstract_Type            (Id, Abstract_Present (Def));
          Set_Is_Limited_Record           (Id, Limited_Present (Def));

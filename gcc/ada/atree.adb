@@ -83,14 +83,15 @@ package body Atree is
    -- Implementation of Tree Substitution Routines --
    --------------------------------------------------
 
-   --  A separate table keeps track of the mapping between rewritten nodes
-   --  and their corresponding original tree nodes. Rewrite makes an entry
-   --  in this table for use by Original_Node. By default, if no call is
-   --  Rewrite, the entry in this table points to the original unwritten node.
+   --  A separate table keeps track of the mapping between rewritten nodes and
+   --  their corresponding original tree nodes. Rewrite makes an entry in this
+   --  table for use by Original_Node. By default the entry in this table
+   --  points to the original unwritten node. Note that if a node is rewritten
+   --  more than once, there is no easy way to get to the intermediate
+   --  rewrites; the node itself is the latest version, and the entry in this
+   --  table is the original.
 
-   --  Note: eventually, this should be a field in the Node directly, but
-   --  for now we do not want to disturb the efficiency of a power of 2
-   --  for the node size. ????We are getting rid of power-of-2.
+   --  Note: This could be a node field.
 
    package Orig_Nodes is new Table.Table (
       Table_Component_Type => Node_Id,
@@ -825,9 +826,9 @@ package body Atree is
       Old_Kind : constant Entity_Kind := Ekind (Old_N);
 
       --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Set_Ekind. But we have many cases where vanishing fields are
-      --  expected to reappear after converting to/from E_Void. Other cases are
-      --  more problematic; set a breakpoint on "(non-E_Void case)" below.
+      --  calling Mutate_Ekind. But we have many cases where vanishing fields
+      --  are expected to reappear after converting to/from E_Void. Other cases
+      --  are more problematic; set a breakpoint on "(non-E_Void case)" below.
 
    begin
       for J in Entity_Field_Table (Old_Kind)'Range loop
@@ -909,7 +910,7 @@ package body Atree is
 
    procedure Set_Ekind_Type is new Set_8_Bit_Field (Entity_Kind) with Inline;
 
-   procedure Set_Ekind
+   procedure Mutate_Ekind
      (N : Entity_Id; Val : Entity_Kind)
    is
    begin
@@ -926,7 +927,7 @@ package body Atree is
 
       Set_Ekind_Type (N, Ekind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
-   end Set_Ekind;
+   end Mutate_Ekind;
 
    -----------------------
    -- Allocate_New_Node --

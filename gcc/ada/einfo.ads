@@ -34,23 +34,25 @@ pragma Warnings (On);
 
 package Einfo is
 
---  ????Comments below are partly obsolete
+--  This package documents the annotations to the abstract syntax tree that are
+--  needed to support semantic processing of an Ada compilation.
 
---  This package defines the annotations to the abstract syntax tree that
---  are needed to support semantic processing of an Ada compilation.
-
---  Note that after editing this spec and the corresponding body it is
---  required to run ceinfo to check the consistentcy of spec and body.
---  See ceinfo.adb for more information about the checks made.
+--  See the spec of Gen_IL.Gen for instructions on making changes to this file.
+--  Note that the official definition of what entities have what fields is in
+--  Gen_IL.Gen.Gen_Entities; if there is a discrepancy between that and the
+--  comments here, Gen_IL.Gen.Gen_Entities wins.
+--
+--  Offsets of each field are given in parentheses below, but this information
+--  is obsolete, and should be completely ignored. The actual field offsets are
+--  determined by the Gen_IL program. We might want to remove these comments at
+--  some point.
 
 --  These annotations are for the most part attributes of declared entities,
 --  and they correspond to conventional symbol table information. Other
 --  attributes include sets of meanings for overloaded names, possible
 --  types for overloaded expressions, flags to indicate deferred constants,
---  incomplete types, etc. These attributes are stored in available fields in
---  tree nodes (i.e. fields not used by the parser, as defined by the Sinfo
---  package specification), and accessed by means of a set of subprograms
---  which define an abstract interface.
+--  incomplete types, etc. These attributes are stored in fields in
+--  tree nodes.
 
 --  There are two kinds of semantic information
 
@@ -69,60 +71,12 @@ package Einfo is
 
 --    Second, in some cases semantic information is stored directly in other
 --    kinds of nodes, e.g. the Etype field, used to indicate the type of an
---    expression. The access functions to these fields are defined in the
---    Sinfo package, but their full documentation is to be found in
---    the Einfo package specification.
+--    expression. These fields are defined in the Sinfo package, but their
+--    full documentation is in the Einfo package specification.
 
 --  Declaration processing places information in the nodes of their defining
 --  identifiers. Name resolution places in all other occurrences of an
 --  identifier a pointer to the corresponding defining occurrence.
-
---------------------------------
--- The XEINFO Utility Program --
---------------------------------
-
---  XEINFO is a utility program which automatically produces a C header file,
---  einfo.h from the spec and body of package Einfo. It reads the input files
---  einfo.ads and einfo.adb and produces the output file einfo.h. XEINFO is run
---  automatically by the build scripts when you do a full bootstrap.
-
---  In order for this utility program to operate correctly, the form of the
---  einfo.ads and einfo.adb files must meet certain requirements and be laid
---  out in a specific manner.
-
---  The general form of einfo.ads is as follows:
-
---     type declaration for type Entity_Kind
---     subtype declarations declaring subranges of Entity_Kind
---     subtype declarations declaring synonyms for some standard types
---     function specs for attributes
---     procedure specs
---     pragma Inline declarations
-
---  This order must be observed. There are no restrictions on the procedures,
---  since the C header file only includes functions (The back end is not
---  allowed to modify the generated tree). However, functions are required to
---  have headers that fit on a single line.
-
---  XEINFO reads and processes the function specs and the pragma Inlines. For
---  functions that are declared as inlined, XEINFO reads the corresponding body
---  from einfo.adb, and processes it into C code. This results in some strict
---  restrictions on which functions can be inlined:
-
---     The function spec must be on a single line
-
---     There can only be a single return statement, not counting any pragma
---     Assert statements, possibly followed by a comment.
-
---     This single statement must either contain a function call with simple,
---     single token arguments, or it must contain a membership test of the form
---     a in b, where a and b are single tokens, or it must contain an equality
---     or inequality test of single tokens, or it must contain a disjunction of
---     the preceding constructs.
-
---  For functions that are not inlined, there is no restriction on the body,
---  and XEINFO generates a direct reference in the C header file which allows
---  the C code in the backend to directly call the corresponding Ada body.
 
 ----------------------------------
 -- Handling of Type'Size Values --

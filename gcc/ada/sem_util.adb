@@ -8553,7 +8553,7 @@ package body Sem_Util is
       --  will be detected. Any_Type insures that no cascaded errors will occur
 
       else
-         Set_Ekind (Def_Id, E_Void);
+         Mutate_Ekind (Def_Id, E_Void);
          Set_Etype (Def_Id, Any_Type);
       end if;
 
@@ -24441,7 +24441,7 @@ package body Sem_Util is
                 (Chars (Related_Id), Suffix, Suffix_Index, Prefix));
 
    begin
-      Set_Ekind          (N, Kind);
+      Mutate_Ekind       (N, Kind);
       Set_Is_Internal    (N, True);
       Append_Entity      (N, Scope_Id);
       Set_Public_Status  (N);
@@ -24466,7 +24466,7 @@ package body Sem_Util is
       N : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
    begin
-      Set_Ekind       (N, Kind);
+      Mutate_Ekind    (N, Kind);
       Set_Is_Internal (N, True);
       Append_Entity   (N, Scope_Id);
 
@@ -31242,9 +31242,9 @@ package body Sem_Util is
                       (Loc, Access_Type_Id,
                        Type_Definition => Access_Type_Def);
             begin
-               Set_Ekind (Temp_Id, E_Variable);
+               Mutate_Ekind (Temp_Id, E_Variable);
                Set_Etype (Temp_Id, Access_Type_Id);
-               Set_Ekind (Access_Type_Id, E_Access_Type);
+               Mutate_Ekind (Access_Type_Id, E_Access_Type);
 
                if Append_Decls_In_Reverse_Order then
                   Append_Item (Temp_Decl, Is_Eval_Stmt => False);

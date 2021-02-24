@@ -6652,7 +6652,7 @@ package body Exp_Aggr is
          --  aggregate. If the declaration has a subtype mark, use it,
          --  otherwise use the itype of the aggregate.
 
-         Set_Ekind (Tmp, E_Variable);
+         Mutate_Ekind (Tmp, E_Variable);
 
          if not Is_Constrained (Typ) then
             Build_Constrained_Type (Positional => False);
@@ -9476,7 +9476,7 @@ package body Exp_Aggr is
       --    type Res_Typ is access all Comp_Typ;
 
       Res_Typ := Make_Temporary (Loc, 'A');
-      Set_Ekind (Res_Typ, E_General_Access_Type);
+      Mutate_Ekind (Res_Typ, E_General_Access_Type);
       Set_Directly_Designated_Type (Res_Typ, Comp_Typ);
 
       Add_Item
@@ -9496,7 +9496,7 @@ package body Exp_Aggr is
       --  its lifetime is bounded by the current array or record component.
 
       Res_Id := Make_Temporary (Loc, 'R');
-      Set_Ekind (Res_Id, E_Constant);
+      Mutate_Ekind (Res_Id, E_Constant);
       Set_Etype (Res_Id, Res_Typ);
 
       --  Mark the transient object as successfully processed to avoid double

@@ -2247,7 +2247,7 @@ package body Exp_Disp is
       --  with GNATcoverage, as that tool relies on it to identify
       --  thunks and exclude them from source coverage analysis.
 
-      Set_Ekind (Thunk_Id, Ekind (Prim));
+      Mutate_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
       Set_Needs_Debug_Info (Thunk_Id, Needs_Debug_Info (Target));
@@ -4150,18 +4150,18 @@ package body Exp_Disp is
          --  dispatch tables.
 
          if not Building_Static_DT (Typ) then
-            Set_Ekind (Predef_Prims, E_Variable);
-            Set_Ekind (Iface_DT, E_Variable);
+            Mutate_Ekind (Predef_Prims, E_Variable);
+            Mutate_Ekind (Iface_DT, E_Variable);
 
          --  Statically allocated dispatch tables and related entities are
          --  constants.
 
          else
-            Set_Ekind (Predef_Prims, E_Constant);
+            Mutate_Ekind (Predef_Prims, E_Constant);
             Set_Is_Statically_Allocated (Predef_Prims);
             Set_Is_True_Constant (Predef_Prims);
 
-            Set_Ekind (Iface_DT, E_Constant);
+            Mutate_Ekind (Iface_DT, E_Constant);
             Set_Is_Statically_Allocated (Iface_DT);
             Set_Is_True_Constant (Iface_DT);
          end if;
@@ -4898,7 +4898,7 @@ package body Exp_Disp is
             --  objects by making them volatile.
 
             Set_Is_Imported      (Dummy_Object);
-            Set_Ekind            (Dummy_Object, E_Constant);
+            Mutate_Ekind         (Dummy_Object, E_Constant);
             Set_Is_True_Constant (Dummy_Object);
             Set_Related_Type     (Dummy_Object, Typ);
 
@@ -6898,7 +6898,7 @@ package body Exp_Disp is
 
       begin
          Set_Is_Imported  (DT);
-         Set_Ekind        (DT, E_Constant);
+         Mutate_Ekind     (DT, E_Constant);
          Set_Related_Type (DT, Typ);
 
          --  The scope must be set now to call Get_External_Name
@@ -7009,7 +7009,7 @@ package body Exp_Disp is
 
       --  Minimum decoration
 
-      Set_Ekind        (DT_Ptr, E_Variable);
+      Mutate_Ekind     (DT_Ptr, E_Variable);
       Set_Related_Type (DT_Ptr, Typ);
 
       --  Notify back end that the types are associated with a dispatch table
@@ -7163,7 +7163,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'P'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Variable);
+               Mutate_Ekind (Iface_DT_Ptr, E_Variable);
                Set_Is_Tag (Iface_DT_Ptr);
 
                Set_Has_Thunks (Iface_DT_Ptr);
@@ -7212,7 +7212,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'P'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Has_Thunks (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
@@ -7250,7 +7250,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'Y'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Address));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Has_Thunks (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
@@ -7267,7 +7267,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'D'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
                  Is_Library_Level_Tagged_Type (Typ));
@@ -7282,7 +7282,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'Z'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Address));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
                  Is_Library_Level_Tagged_Type (Typ));
@@ -7392,9 +7392,9 @@ package body Exp_Disp is
       end if;
 
       if Is_CPP_Class (Root_Type (Typ)) then
-         Set_Ekind (DT_Ptr, E_Variable);
+         Mutate_Ekind (DT_Ptr, E_Variable);
       else
-         Set_Ekind (DT_Ptr, E_Constant);
+         Mutate_Ekind (DT_Ptr, E_Constant);
       end if;
 
       Set_Is_Tag       (DT_Ptr);

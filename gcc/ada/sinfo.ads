@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package defines the structure of the abstract syntax tree. The Tree
+--  This package documents the structure of the abstract syntax tree. The Atree
 --  package provides a basic tree structure. Sinfo describes how this structure
 --  is used to represent the syntax of an Ada program.
 
@@ -37,8 +37,15 @@
 --  would normally be regarded as the symbol table information. In addition a
 --  number of the tree nodes contain semantic information.
 
---  WARNING: Several files are automatically generated from this package.
---  See below for details.
+--  See the spec of Gen_IL.Gen for instructions on making changes to this file.
+--  Note that the official definition of what nodes have what fields is in
+--  Gen_IL.Gen.Gen_Nodes; if there is a discrepancy between that and the
+--  comments here, Gen_IL.Gen.Gen_Nodes wins.
+--
+--  Offsets of each field are given in parentheses below, but this information
+--  is obsolete, and should be completely ignored. The actual field offsets are
+--  determined by the Gen_IL program. We might want to remove these comments at
+--  some point.
 
 pragma Warnings (Off); -- with/use clauses for children
 with Namet; use Namet;
@@ -49,84 +56,67 @@ pragma Warnings (On);
 
 package Sinfo is
 
-   --  ????Comments below are partly obsolete
+   ----------------------------------------
+   -- Definitions of fields in tree node --
+   ----------------------------------------
 
-   ---------------------------------
-   -- Making Changes to This File --
-   ---------------------------------
+   --  The following fields are common to all nodes:
 
-   --  If changes are made to this file, a number of related steps must be
-   --  carried out to ensure consistency. First, if a field access function is
-   --  added, it appears in these places:
+   --   Nkind         Indicates the kind of the node. This field is present
+   --                 in all nodes.
 
-   --    In sinfo.ads:
-   --      The documentation associated with the field (if semantic)
-   --      The documentation associated with the node
-   --      The spec of the access function
-   --      The spec of the set procedure
-   --      The entries in Is_Syntactic_Field
-   --      The pragma Inline for the access function
-   --      The pragma Inline for the set procedure
-   --    In sinfo.adb:
-   --      The body of the access function
-   --      The body of the set procedure
+   --   Sloc          Location (Source_Ptr) of the corresponding token
+   --                 in the Source buffer. The individual node definitions
+   --                 show which token is referenced by this pointer.
 
-   --  The field chosen must be consistent in all places, and, for a node that
-   --  is a subexpression, must not overlap any of the standard expression
-   --  fields.
+   --   In_List       A flag used to indicate if the node is a member
+   --                 of a node list (see package Nlists).
 
-   --  In addition, if any of the standard expression fields is changed, then
-   --  the utility program which creates the Treeprs spec (in file treeprs.ads)
-   --  must be updated appropriately, since it special cases expression fields.
+   --   Rewrite_Ins   A flag set if a node is marked as a rewrite inserted
+   --                 node as a result of a call to Mark_Rewrite_Insertion.
 
-   --  If a new tree node is added, then the following changes are made:
+   --   Small_Paren_Count
+   --                 A 2-bit count used in subexpression nodes to indicate
+   --                 the level of parentheses. The settings are 0,1,2 and
+   --                 3 for many. If the value is 3, then an auxiliary table
+   --                 is used to indicate the real value, which is computed by
+   --                 Paren_Count. Set to zero for nonsubexpression nodes.
 
-   --    Add it to the documentation in the appropriate place
-   --    Add its fields to this documentation section
-   --    Define it in the appropriate classification in Node_Kind
-   --    Add an entry in Is_Syntactic_Field
-   --    In the body (sinfo), add entries to the access functions for all
-   --     its fields (except standard expression fields) to include the new
-   --     node in the checks.
-   --    Add an appropriate section to the case statement in sprint.adb
-   --    Add an appropriate section to the case statement in sem.adb
-   --    Add an appropriate section to the case statement in exp_util.adb
-   --     (Insert_Actions procedure)
-   --    For a subexpression, add an appropriate section to the case
-   --     statement in sem_eval.adb
-   --    For a subexpression, add an appropriate section to the case
-   --     statement in sem_res.adb
+   --                 Note: the required parentheses surrounding conditional
+   --                 and quantified expressions count as a level of parens
+   --                 for this purpose, so e.g. in X := (if A then B else C);
+   --                 Paren_Count for the right side will be 1.
 
-   --  All back ends must be made aware of the new node kind.
+   --   Comes_From_Source
+   --                 This flag is present in all nodes. It is set if the
+   --                 node is built by the scanner or parser, and clear if
+   --                 the node is built by the analyzer or expander. It
+   --                 indicates that the node corresponds to a construct
+   --                 that appears in the original source program.
 
-   --  Finally, four utility programs must be run:
+   --   Analyzed      This flag is present in all nodes. It is set when
+   --                 a node is analyzed, and is used to avoid analyzing
+   --                 the same node twice. Analysis includes expansion if
+   --                 expansion is active, so in this case if the flag is
+   --                 set it means the node has been analyzed and expanded.
 
-   --    (Optional.) Run CSinfo to check that you have made the changes
-   --     consistently. It checks most of the rules given above. This utility
-   --     reads sinfo.ads and sinfo.adb and generates a report to standard
-   --     output. This step is optional because XSinfo runs CSinfo.
+   --   Error_Posted  This flag is present in all nodes. It is set when
+   --                 an error message is posted which is associated with
+   --                 the flagged node. This is used to avoid posting more
+   --                 than one message on the same node.
 
-   --    Run XSinfo to create sinfo.h, the corresponding C header. This
-   --     utility reads sinfo.ads and generates sinfo.h. Note that it does
-   --     not need to read sinfo.adb, since the contents of the body are
-   --     algorithmically determinable from the spec.
+   --   Link          For a node, points to the Parent. For a list, points
+   --                 to the list header. Note that in the latter case, a
+   --                 client cannot modify the link field. This field is
+   --                 private to the Atree package (but is also modified
+   --                 by the Nlists package).
 
-   --    Run XTreeprs to create treeprs.ads, an updated version of the module
-   --     that is used to drive the tree print routine. This utility reads (but
-   --     does not modify) treeprs.adt, the template that provides the basic
-   --     structure of the file, and then fills in the data from the comments
-   --     in sinfo.ads.
+   --  The following additional fields are common to all entities (that is,
+   --  nodes whose Nkind is in N_Entity):
 
-   --    Run XNmake to create nmake.ads and nmake.adb, the package body and
-   --     spec of the Nmake package which contains functions for constructing
-   --     nodes.
+   --   Ekind         Entity type.
 
-   --  The above steps are done automatically by the build scripts when you do
-   --  a full bootstrap.
-
-   --  Note: sometime we could write a utility that actually generated the body
-   --  of sinfo from the spec instead of simply checking it, since, as noted
-   --  above, the contents of the body can be determined from the spec.
+   --   Convention    Entity convention (Convention_Id value)
 
    --------------------------------
    -- Implicit Nodes in the Tree --
@@ -1328,7 +1318,7 @@ package Sinfo is
    --    expansion of aggregates is also used for in-place array aggregate
    --    assignment or initialization. When the full context is known, the
    --    target of the assignment or initialization is used to generate the
-   --    left-hand side of individual assignment to each sub-component.
+   --    left-hand side of individual assignment to each subcomponent.
 
    --  Expression_Copy (Node2-Sem)
    --    Present in N_Pragma_Argument_Association nodes. Contains a copy of the

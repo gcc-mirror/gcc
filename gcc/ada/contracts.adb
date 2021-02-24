@@ -1580,7 +1580,7 @@ package body Contracts is
       --  in its visible declarations.
 
       if Nkind (Templ) = N_Generic_Package_Declaration then
-         Set_Ekind (Templ_Id, E_Generic_Package);
+         Mutate_Ekind (Templ_Id, E_Generic_Package);
 
          if Present (Visible_Declarations (Specification (Templ))) then
             Decl := First (Visible_Declarations (Specification (Templ)));
@@ -1590,7 +1590,7 @@ package body Contracts is
       --  declarations.
 
       elsif Nkind (Templ) = N_Package_Body then
-         Set_Ekind (Templ_Id, E_Package_Body);
+         Mutate_Ekind (Templ_Id, E_Package_Body);
 
          if Present (Declarations (Templ)) then
             Decl := First (Declarations (Templ));
@@ -1600,9 +1600,9 @@ package body Contracts is
 
       elsif Nkind (Templ) = N_Generic_Subprogram_Declaration then
          if Nkind (Specification (Templ)) = N_Function_Specification then
-            Set_Ekind (Templ_Id, E_Generic_Function);
+            Mutate_Ekind (Templ_Id, E_Generic_Function);
          else
-            Set_Ekind (Templ_Id, E_Generic_Procedure);
+            Mutate_Ekind (Templ_Id, E_Generic_Procedure);
          end if;
 
          --  When the generic subprogram acts as a compilation unit, inspect
@@ -1626,7 +1626,7 @@ package body Contracts is
       --  its declarations.
 
       elsif Nkind (Templ) = N_Subprogram_Body then
-         Set_Ekind (Templ_Id, E_Subprogram_Body);
+         Mutate_Ekind (Templ_Id, E_Subprogram_Body);
 
          if Present (Declarations (Templ)) then
             Decl := First (Declarations (Templ));

@@ -1796,7 +1796,7 @@ package body Sem_Ch6 is
       end if;
 
       if Nkind (N) = N_Subprogram_Body_Stub then
-         Set_Ekind (Defining_Entity (Specification (N)), Kind);
+         Mutate_Ekind (Defining_Entity (Specification (N)), Kind);
       else
          Set_Corresponding_Spec (N, Gen_Id);
       end if;
@@ -1847,13 +1847,13 @@ package body Sem_Ch6 is
 
          --  Visible generic entity is callable within its own body
 
-         Set_Ekind          (Gen_Id,  Ekind (Body_Id));
+         Mutate_Ekind       (Gen_Id,  Ekind (Body_Id));
          Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter,
            Old_Ekind =>
              (E_Function | E_Procedure |
                 E_Generic_Function | E_Generic_Procedure => True,
               others => False));
-         Set_Ekind          (Body_Id, E_Subprogram_Body);
+         Mutate_Ekind       (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
          Set_Scope          (Body_Id, Scope (Gen_Id));
@@ -1864,8 +1864,8 @@ package body Sem_Ch6 is
 
             --  No body to analyze, so restore state of generic unit
 
-            Set_Ekind (Gen_Id, Kind);
-            Set_Ekind (Body_Id, Kind);
+            Mutate_Ekind (Gen_Id, Kind);
+            Mutate_Ekind (Body_Id, Kind);
 
             if Present (First_Ent) then
                Set_First_Entity (Gen_Id, First_Ent);
@@ -1931,7 +1931,7 @@ package body Sem_Ch6 is
 
       Reinit_Field_To_Zero (Gen_Id, Has_Nested_Subprogram,
         Old_Ekind => (E_Function | E_Procedure => True, others => False));
-      Set_Ekind (Gen_Id, Kind);
+      Mutate_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
 
       if Style_Check then
@@ -2026,7 +2026,7 @@ package body Sem_Ch6 is
 
       if Present (Prev) and then Is_Generic_Subprogram (Prev) then
          Insert_Before (N, Null_Body);
-         Set_Ekind (Defining_Entity (N), Ekind (Prev));
+         Mutate_Ekind (Defining_Entity (N), Ekind (Prev));
 
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze_Generic_Subprogram_Body (Null_Body, Prev);
@@ -4622,7 +4622,7 @@ package body Sem_Ch6 is
             Reinit_Field_To_Zero (Body_Id, Receiving_Entry);
          end if;
 
-         Set_Ekind (Body_Id, E_Subprogram_Body);
+         Mutate_Ekind (Body_Id, E_Subprogram_Body);
 
          if Nkind (N) = N_Subprogram_Body_Stub then
             Set_Corresponding_Spec_Of_Stub (N, Spec_Id);
@@ -5787,10 +5787,10 @@ package body Sem_Ch6 is
       end if;
 
       if Nkind (N) = N_Function_Specification then
-         Set_Ekind (Designator, E_Function);
+         Mutate_Ekind (Designator, E_Function);
          Set_Mechanism (Designator, Default_Mechanism);
       else
-         Set_Ekind (Designator, E_Procedure);
+         Mutate_Ekind (Designator, E_Procedure);
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 
@@ -8796,7 +8796,7 @@ package body Sem_Ch6 is
             return Empty;
          end if;
 
-         Set_Ekind           (EF, E_In_Parameter);
+         Mutate_Ekind        (EF, E_In_Parameter);
          Set_Actual_Subtype  (EF, Typ);
          Set_Etype           (EF, Typ);
          Set_Scope           (EF, Scope);
@@ -12984,30 +12984,30 @@ package body Sem_Ch6 is
                end if;
 
                if In_Present (Spec) then
-                  Set_Ekind (Formal_Id, E_In_Out_Parameter);
+                  Mutate_Ekind (Formal_Id, E_In_Out_Parameter);
                else
-                  Set_Ekind (Formal_Id, E_Out_Parameter);
+                  Mutate_Ekind (Formal_Id, E_Out_Parameter);
                end if;
 
             --  But not in earlier versions of Ada
 
             else
                Error_Msg_N ("functions can only have IN parameters", Spec);
-               Set_Ekind (Formal_Id, E_In_Parameter);
+               Mutate_Ekind (Formal_Id, E_In_Parameter);
             end if;
 
          elsif In_Present (Spec) then
-            Set_Ekind (Formal_Id, E_In_Out_Parameter);
+            Mutate_Ekind (Formal_Id, E_In_Out_Parameter);
 
          else
-            Set_Ekind               (Formal_Id, E_Out_Parameter);
+            Mutate_Ekind            (Formal_Id, E_Out_Parameter);
             Set_Never_Set_In_Source (Formal_Id, True);
             Set_Is_True_Constant    (Formal_Id, False);
             Set_Current_Value       (Formal_Id, Empty);
          end if;
 
       else
-         Set_Ekind (Formal_Id, E_In_Parameter);
+         Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
 
       --  Set Is_Known_Non_Null for access parameters since the language

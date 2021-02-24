@@ -1701,7 +1701,7 @@ package body Exp_Ch11 is
          if No (Choice_Parameter (Ehand)) then
             E := Make_Temporary (Loc, 'E');
             Set_Choice_Parameter (Ehand, E);
-            Set_Ekind (E, E_Variable);
+            Mutate_Ekind (E, E_Variable);
             Set_Etype (E, RTE (RE_Exception_Occurrence));
             Set_Scope (E, Current_Scope);
          end if;

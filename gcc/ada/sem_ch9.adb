@@ -1232,9 +1232,9 @@ package body Sem_Ch9 is
       Analyze (Formals);
 
       if Present (Entry_Index_Specification (Formals)) then
-         Set_Ekind (Id, E_Entry_Family);
+         Mutate_Ekind (Id, E_Entry_Family);
       else
-         Set_Ekind (Id, E_Entry);
+         Mutate_Ekind (Id, E_Entry);
       end if;
 
       Set_Etype          (Id, Standard_Void_Type);
@@ -1551,13 +1551,13 @@ package body Sem_Ch9 is
       --  Case of no discrete subtype definition
 
       if No (D_Sdef) then
-         Set_Ekind (Def_Id, E_Entry);
+         Mutate_Ekind (Def_Id, E_Entry);
 
       --  Processing for discrete subtype definition present
 
       else
          Enter_Name (Def_Id);
-         Set_Ekind (Def_Id, E_Entry_Family);
+         Mutate_Ekind (Def_Id, E_Entry_Family);
          Analyze (D_Sdef);
          Make_Index (D_Sdef, N, Def_Id);
 
@@ -1722,11 +1722,11 @@ package body Sem_Ch9 is
          Make_Index (Def, N);
       end if;
 
-      Set_Ekind (Loop_Id, E_Loop);
+      Mutate_Ekind (Loop_Id, E_Loop);
       Set_Scope (Loop_Id, Current_Scope);
       Push_Scope (Loop_Id);
       Enter_Name (Iden);
-      Set_Ekind (Iden, E_Entry_Index_Parameter);
+      Mutate_Ekind (Iden, E_Entry_Index_Parameter);
       Set_Etype (Iden, Etype (Def));
    end Analyze_Entry_Index_Specification;
 
@@ -1808,7 +1808,7 @@ package body Sem_Ch9 is
       Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
-      Set_Ekind (Body_Id, E_Protected_Body);
+      Mutate_Ekind (Body_Id, E_Protected_Body);
       Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
@@ -2024,7 +2024,7 @@ package body Sem_Ch9 is
          Set_Completion_Referenced (T);
       end if;
 
-      Set_Ekind              (T, E_Protected_Type);
+      Mutate_Ekind           (T, E_Protected_Type);
       Set_Is_First_Subtype   (T);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
@@ -2138,7 +2138,7 @@ package body Sem_Ch9 is
       E := First_Entity (Current_Scope);
       while Present (E) loop
          if Ekind (E) = E_Void then
-            Set_Ekind (E, E_Component);
+            Mutate_Ekind (E, E_Component);
             Init_Component_Location (E);
          end if;
 
@@ -2775,12 +2775,12 @@ package body Sem_Ch9 is
       --  its own body.
 
       Enter_Name (Typ);
-      Set_Ekind            (Typ, E_Protected_Type);
+      Mutate_Ekind         (Typ, E_Protected_Type);
       Set_Etype            (Typ, Typ);
       Set_Anonymous_Object (Typ, Obj_Id);
 
       Enter_Name (Obj_Id);
-      Set_Ekind                  (Obj_Id, E_Variable);
+      Mutate_Ekind               (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
@@ -2861,12 +2861,12 @@ package body Sem_Ch9 is
       --  in its own body.
 
       Enter_Name (Typ);
-      Set_Ekind            (Typ, E_Task_Type);
+      Mutate_Ekind         (Typ, E_Task_Type);
       Set_Etype            (Typ, Typ);
       Set_Anonymous_Object (Typ, Obj_Id);
 
       Enter_Name (Obj_Id);
-      Set_Ekind                  (Obj_Id, E_Variable);
+      Mutate_Ekind               (Obj_Id, E_Variable);
       Set_Etype                  (Obj_Id, Typ);
       Set_SPARK_Pragma           (Obj_Id, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (Obj_Id);
@@ -2922,7 +2922,7 @@ package body Sem_Ch9 is
 
       Tasking_Used := True;
       Set_Scope (Body_Id, Current_Scope);
-      Set_Ekind (Body_Id, E_Task_Body);
+      Mutate_Ekind (Body_Id, E_Task_Body);
       Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
@@ -3139,12 +3139,12 @@ package body Sem_Ch9 is
             Set_Completion_Referenced (T);
 
          else
-            Set_Ekind (T, E_Task_Type);
+            Mutate_Ekind (T, E_Task_Type);
             Set_Corresponding_Record_Type (T, Empty);
          end if;
       end if;
 
-      Set_Ekind              (T, E_Task_Type);
+      Mutate_Ekind           (T, E_Task_Type);
       Set_Is_First_Subtype   (T, True);
       Set_Has_Task           (T, True);
       Init_Size_Align        (T);

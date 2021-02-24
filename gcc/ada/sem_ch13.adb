@@ -10216,7 +10216,7 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
-            Set_Ekind (SIdB, E_Function);
+            Mutate_Ekind (SIdB, E_Function);
             Set_Is_Predicate_Function (SIdB);
 
             --  Build function body
@@ -10350,7 +10350,7 @@ package body Sem_Ch13 is
 
                --  Build function declaration
 
-               Set_Ekind (SId, E_Function);
+               Mutate_Ekind (SId, E_Function);
                Set_Is_Predicate_Function_M (SId);
                Set_Predicate_Function_M (Typ, SId);
 
@@ -10565,7 +10565,7 @@ package body Sem_Ch13 is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Predicate"));
 
-      Set_Ekind (Func_Id, E_Function);
+      Mutate_Ekind (Func_Id, E_Function);
       Set_Etype (Func_Id, Standard_Boolean);
       Set_Is_Internal (Func_Id);
       Set_Is_Predicate_Function (Func_Id);

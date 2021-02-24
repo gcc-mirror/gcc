@@ -521,7 +521,7 @@ package body Exp_Intr is
             if No (Choice_Parameter (P)) then
                E := Make_Temporary (Loc, 'E');
                Set_Choice_Parameter (P, E);
-               Set_Ekind (E, E_Variable);
+               Mutate_Ekind (E, E_Variable);
                Set_Etype (E, RTE (RE_Exception_Occurrence));
                Set_Scope (E, Current_Scope);
             end if;

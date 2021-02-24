@@ -885,7 +885,7 @@ package body Exp_Ch3 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Body_Stmts)));
 
-         Set_Ekind          (Proc_Id, E_Procedure);
+         Mutate_Ekind       (Proc_Id, E_Procedure);
          Set_Is_Public      (Proc_Id, Is_Public (A_Type));
          Set_Is_Internal    (Proc_Id);
          Set_Has_Completion (Proc_Id);
@@ -1080,7 +1080,7 @@ package body Exp_Ch3 is
              Statements => New_List (
                Build_Case_Statement (Case_Id, Variant))));
 
-         Set_Ekind       (Func_Id, E_Function);
+         Mutate_Ekind    (Func_Id, E_Function);
          Set_Mechanism   (Func_Id, Default_Mechanism);
          Set_Is_Inlined  (Func_Id, True);
          Set_Is_Pure     (Func_Id, True);
@@ -2376,7 +2376,7 @@ package body Exp_Ch3 is
                                 New_Occurrence_Of (Iface_Comp, Loc)),
                           Attribute_Name => Name_Position))))));
 
-            Set_Ekind       (Func_Id, E_Function);
+            Mutate_Ekind    (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
             Set_Is_Internal (Func_Id, True);
 
@@ -2491,7 +2491,7 @@ package body Exp_Ch3 is
            Make_Defining_Identifier (Loc,
              Chars => Make_TSS_Name (Rec_Type, TSS_CPP_Init_Proc));
 
-         Set_Ekind       (Proc_Id, E_Procedure);
+         Mutate_Ekind    (Proc_Id, E_Procedure);
          Set_Is_Internal (Proc_Id);
 
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -2545,7 +2545,7 @@ package body Exp_Ch3 is
       begin
          Body_Stmts := New_List;
          Body_Node := New_Node (N_Subprogram_Body, Loc);
-         Set_Ekind (Proc_Id, E_Procedure);
+         Mutate_Ekind (Proc_Id, E_Procedure);
 
          Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -7276,10 +7276,10 @@ package body Exp_Ch3 is
                      Link_Entities (New_Id, Next_Entity (Def_Id));
                      Link_Entities (Def_Id, Next_Temp);
 
-                     Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
+                     Set_Chars (Defining_Identifier (N), Chars (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                     Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
-                     Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
+                     Mutate_Ekind (Defining_Identifier (N), Ekind (Def_Id));
+                     Set_Sloc (Defining_Identifier (N), Sloc (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
 
@@ -7536,7 +7536,7 @@ package body Exp_Ch3 is
             Level_Expr : Node_Id;
 
          begin
-            Set_Ekind (Level, Ekind (Def_Id));
+            Mutate_Ekind (Level, Ekind (Def_Id));
             Set_Etype (Level, Standard_Natural);
             Set_Scope (Level, Scope (Def_Id));
 
@@ -9706,7 +9706,7 @@ package body Exp_Ch3 is
             --  primitive operations list. We add the minimum decoration needed
             --  to override interface primitives.
 
-            Set_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
+            Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
 
             Override_Dispatching_Operation
               (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),

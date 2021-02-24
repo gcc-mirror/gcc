@@ -296,7 +296,7 @@ package body SPARK_Specific is
              (Standard_Location,
               Name_Enter (Name_Of_Heap_Variable));
 
-         Set_Ekind       (Heap, E_Variable);
+         Mutate_Ekind    (Heap, E_Variable);
          Set_Is_Internal (Heap, True);
          Set_Etype       (Heap, Standard_Void_Type);
          Set_Scope       (Heap, Standard_Standard);

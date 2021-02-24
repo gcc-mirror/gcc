@@ -23,16 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;
-with Sinfo.Nodes; use Sinfo.Nodes;
-with Einfo.Entities; use Einfo.Entities;
-with Types;  use Types;
-with System; use System;
-with Table;
-with Unchecked_Conversion;
-
-package Atree is
-
 --  This package defines the low-level representation of the tree used to
 --  represent the Ada program internally. Syntactic and semantic information
 --  is combined in this tree. There is no separate symbol table structure.
@@ -54,81 +44,23 @@ package Atree is
 --  syntax tree format. Subsequent processing in the front end traverses the
 --  tree, transforming it in various ways and adding semantic information.
 
-   --  ????The following comments should be moved elsewhere.
+with Alloc;
+with Sinfo.Nodes; use Sinfo.Nodes;
+with Einfo.Entities; use Einfo.Entities;
+with Types;  use Types;
+with System; use System;
+with Table;
+with Unchecked_Conversion;
 
-   ----------------------------------------
-   -- Definitions of fields in tree node --
-   ----------------------------------------
+package Atree is
 
-   --  The representation of the tree is completely hidden, using a functional
-   --  interface for accessing and modifying the contents of nodes. Logically
-   --  a node contains a number of fields, much as though the nodes were
-   --  defined as a record type. The fields in a node are as follows:
-
-   --   Nkind         Indicates the kind of the node. This field is present
-   --                 in all nodes. The type is Node_Kind, which is declared
-   --                 in the package Sinfo.
-
-   --   Sloc          Location (Source_Ptr) of the corresponding token
-   --                 in the Source buffer. The individual node definitions
-   --                 show which token is referenced by this pointer.
-
-   --   In_List       A flag used to indicate if the node is a member
-   --                 of a node list (see package Nlists).
-
-   --   Rewrite_Ins   A flag set if a node is marked as a rewrite inserted
-   --                 node as a result of a call to Mark_Rewrite_Insertion.
-
-   --   Paren_Count   A 2-bit count used in sub-expression nodes to indicate
-   --                 the level of parentheses. The settings are 0,1,2 and
-   --                 3 for many. If the value is 3, then an auxiliary table
-   --                 is used to indicate the real value. Set to zero for
-   --                 non-subexpression nodes.
-
-   --                 Note: the required parentheses surrounding conditional
-   --                 and quantified expressions count as a level of parens
-   --                 for this purpose, so e.g. in X := (if A then B else C);
-   --                 Paren_Count for the right side will be 1.
-
-   --   Comes_From_Source
-   --                 This flag is present in all nodes. It is set if the
-   --                 node is built by the scanner or parser, and clear if
-   --                 the node is built by the analyzer or expander. It
-   --                 indicates that the node corresponds to a construct
-   --                 that appears in the original source program.
-
-   --   Analyzed      This flag is present in all nodes. It is set when
-   --                 a node is analyzed, and is used to avoid analyzing
-   --                 the same node twice. Analysis includes expansion if
-   --                 expansion is active, so in this case if the flag is
-   --                 set it means the node has been analyzed and expanded.
-
-   --   Error_Posted  This flag is present in all nodes. It is set when
-   --                 an error message is posted which is associated with
-   --                 the flagged node. This is used to avoid posting more
-   --                 than one message on the same node.
-
-   --   Link          For a node, points to the Parent. For a list, points
-   --                 to the list header. Note that in the latter case, a
-   --                 client cannot modify the link field. This field is
-   --                 private to the Atree package (but is also modified
-   --                 by the Nlists package).
-
-   --  The following additional fields are present in extended nodes used
-   --  for entities (Nkind in N_Entity).
-
-   --   Ekind         Entity type. This field indicates the type of the
-   --                 entity, it is of type Entity_Kind which is defined
-   --                 in package Einfo.
-
-   --   Convention    Entity convention (Convention_Id value)
-
-   --  Access to fields is generally done through the getters and setters in
-   --  packages Sinfo.Nodes and Einfo.Entities.  However, in specialized
-   --  circumstances (examples are the circuit in generic instantiation to copy
-   --  trees, and in the tree dump routine), it is useful to be able to do
-   --  untyped traversals, and an internal package in Atree allows for direct
-   --  untyped accesses in such cases.
+   --  Access to node fields is generally done through the getters and setters
+   --  in packages Sinfo.Nodes and Einfo.Entities, which are automatically
+   --  generated (see Gen_IL.Gen). However, in specialized circumstances
+   --  (examples are the circuit in generic instantiation to copy trees, and in
+   --  the tree dump routine), it is useful to be able to do untyped
+   --  traversals, and an internal package in Atree allows for direct untyped
+   --  accesses in such cases.
 
    function Last_Node_Id return Node_Id;
    --  Returns Id of last allocated node Id
@@ -334,12 +266,9 @@ package Atree is
    --  of Comes_From_Source from OldN to NewN.
 
    procedure Change_Node (N : Node_Id; New_Kind : Node_Kind);
-   --  This procedure replaces the given node by setting its Nkind field to
-   --  the indicated value and resetting all other fields to their default
-   --  values except for Sloc, which is unchanged, and the Parent pointer
-   --  and list links, which are also unchanged. All other information in
-   --  the original node is lost. The new node has an extension if the
-   --  original node had an extension.????somewhat wrong.
+   --  This procedure replaces the given node by setting its Nkind field to the
+   --  indicated value and resetting all other fields to their default values
+   --  except for certain fields that are preserved (see body for details).
 
    procedure Copy_Node (Source, Destination : Node_Or_Entity_Id);
    --  Copy the entire contents of the source node to the destination node.
@@ -579,19 +508,15 @@ package Atree is
    --  original node, i.e. the old contents of Old_Node.
 
    procedure Replace (Old_Node, New_Node : Node_Id);
-   --  This is similar to Rewrite, except that the old value of Old_Node is
-   --  not saved, and the New_Node is deleted after the replace, since it
-   --     In what sense is it "deleted"????
-   --  is assumed that it can no longer be legitimately needed. The flag
+   --  This is similar to Rewrite, except that the old value of Old_Node
+   --  is not saved. New_Node should not be used after Replace.  The flag
    --  Is_Rewrite_Substitution will be False for the resulting node, unless
    --  it was already true on entry, and Original_Node will not return the
-   --  original contents of the Old_Node, but rather the New_Node value (unless
-   --     How is this "unless" true????
-   --  Old_Node had already been rewritten using Rewrite). Replace also
-   --  preserves the setting of Comes_From_Source.
+   --  original contents of the Old_Node, but rather the New_Node value.
+   --  Replace also preserves the setting of Comes_From_Source.
    --
-   --  Note, New_Node must not contain references to Old_Node, for example as
-   --  descendants, since the rewrite would make such references invalid. If
+   --  Note that New_Node must not contain references to Old_Node, for example
+   --  as descendants, since the rewrite would make such references invalid. If
    --  New_Node does need to reference Old_Node, then these references should
    --  be to a relocated copy of Old_Node (see Relocate_Node procedure).
    --
@@ -614,7 +539,7 @@ package Atree is
    --
    --  Note: Parents are not preserved in original tree nodes that are
    --  retrieved in this way (i.e. their children may have children whose
-   --  pointers which reference some other node). This needs more details???
+   --  Parent pointers reference some other node).
    --
    --  Note: there is no direct mechanism for deleting an original node (in
    --  a manner that can be reversed later). One possible approach is to use
@@ -660,10 +585,8 @@ package Atree is
    --  vanishing fields might be used for totally unrelated fields in the new
    --  node. See Reinit_Field_To_Zero.
 
-   procedure Set_Ekind
+   procedure Mutate_Ekind
      (N : Entity_Id; Val : Entity_Kind) with Inline;
-   --  ????Perhaps should be called Mutate_Ekind.
-   --
    --  Ekind is also like a discriminant, and is mostly treated as above (see
    --  Mutate_Nkind). However, there are a few cases where we set the Ekind
    --  from its initial E_Void value to something else, then set it back to

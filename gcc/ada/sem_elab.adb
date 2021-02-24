@@ -11887,7 +11887,7 @@ package body Sem_Elab is
          --  Partially decorate the elaboration procedure because it will not
          --  be insertred into the tree and analyzed.
 
-         Set_Ekind (Proc_Id, E_Procedure);
+         Mutate_Ekind (Proc_Id, E_Procedure);
          Set_Etype (Proc_Id, Standard_Void_Type);
          Set_Scope (Proc_Id, Unique_Entity (Main_Unit_Entity));
 
@@ -12012,7 +12012,7 @@ package body Sem_Elab is
          --  it will not be inserted into the tree and analyzed.
 
          Task_Obj := Make_Temporary (Loc, 'T');
-         Set_Ekind (Task_Obj, E_Variable);
+         Mutate_Ekind (Task_Obj, E_Variable);
          Set_Etype (Task_Obj, Task_Typ);
 
          --  Associate the dummy task object with the activation call

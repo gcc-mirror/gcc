@@ -1570,7 +1570,7 @@ package body Exp_Prag is
                   --  effects). Assign prefix value to temp on Eval_Statement
                   --  list, so assignment will be executed conditionally.
 
-                  Set_Ekind (Temp, E_Variable);
+                  Mutate_Ekind (Temp, E_Variable);
                   Set_Suppress_Initialization (Temp);
                   Analyze (Decl);
 
@@ -2272,7 +2272,7 @@ package body Exp_Prag is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Pack_Id), "Initial_Condition"));
 
-      Set_Ekind                          (Proc_Id, E_Procedure);
+      Mutate_Ekind                       (Proc_Id, E_Procedure);
       Set_Is_Initial_Condition_Procedure (Proc_Id);
 
       --  Generate:

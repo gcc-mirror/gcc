@@ -65,7 +65,7 @@ package body Sem_Ch11 is
    begin
       Generate_Definition         (Id);
       Enter_Name                  (Id);
-      Set_Ekind                   (Id, E_Exception);
+      Mutate_Ekind                (Id, E_Exception);
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
@@ -233,7 +233,7 @@ package body Sem_Ch11 is
                Set_Etype (H_Scope, Standard_Void_Type);
 
                Enter_Name (Choice);
-               Set_Ekind (Choice, E_Variable);
+               Mutate_Ekind (Choice, E_Variable);
 
                if RTE_Available (RE_Exception_Occurrence) then
                   Set_Etype (Choice, RTE (RE_Exception_Occurrence));

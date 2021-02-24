@@ -260,7 +260,7 @@ package body Exp_Imgv is
          H_Id :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (E), 'H'));
-         Set_Ekind       (H_Id, E_Function);
+         Mutate_Ekind    (H_Id, E_Function);
          Set_Is_Internal (H_Id);
 
          if not Debug_Generated_Code then

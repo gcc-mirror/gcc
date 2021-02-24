@@ -660,7 +660,7 @@ package body Sem_Dist is
       --  Corresponding_Remote_Type attribute, whose presence indicates that
       --  this is the record type used to implement a RAS.
 
-      Set_Ekind (Fat_Type, E_Record_Type);
+      Mutate_Ekind (Fat_Type, E_Record_Type);
       Set_Corresponding_Remote_Type (Fat_Type, User_Type);
 
       Insert_After_And_Analyze (Subpkg_Body, Fat_Type_Decl);

@@ -389,7 +389,7 @@ package body Exp_Attr is
       --       Stmts
       --    end Func_Id;
 
-      Set_Ekind       (Func_Id, E_Function);
+      Mutate_Ekind    (Func_Id, E_Function);
       Set_Is_Internal (Func_Id);
       Set_Is_Pure     (Func_Id);
 
@@ -832,7 +832,7 @@ package body Exp_Attr is
       --       Stmts
       --    end Func_Id;
 
-      Set_Ekind       (Func_Id, E_Function);
+      Mutate_Ekind    (Func_Id, E_Function);
       Set_Is_Internal (Func_Id);
       Set_Is_Pure     (Func_Id);
 
@@ -4838,7 +4838,7 @@ package body Exp_Attr is
          --  Set the entity kind now in order to mark the temporary as a
          --  handler of attribute 'Old's prefix.
 
-         Set_Ekind (Temp, E_Constant);
+         Mutate_Ekind (Temp, E_Constant);
          Set_Stores_Attribute_Old_Prefix (Temp);
 
          --  Push the scope of the related subprogram where _Postcondition
