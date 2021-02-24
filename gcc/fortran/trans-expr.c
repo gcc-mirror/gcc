@@ -613,11 +613,15 @@ class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
    class object of the 'declared' type.  If vptr is not NULL, this is
    used for the temporary class object.
    optional_alloc_ptr is false when the dummy is neither allocatable
-   nor a pointer; that's only relevant for the optional handling.  */
+   nor a pointer; that's only relevant for the optional handling.
+   The optional argument 'derived_array' is used to preserve the parmse
+   expression for deallocation of allocatable components. Assumed rank
+   formal arguments made this necessary.  */
 void
 gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 			   gfc_typespec class_ts, tree vptr, bool optional,
-			   bool optional_alloc_ptr)
+			   bool optional_alloc_ptr,
+			   tree *derived_array)
 {
   gfc_symbol *vtab;
   tree cond_optional = NULL_TREE;
@@ -747,6 +751,13 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	    {
 	      gcc_assert (class_ts.u.derived->components->as->type
 			  == AS_ASSUMED_RANK);
+	      if (derived_array
+		  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (parmse->expr)))
+		{
+		  *derived_array = gfc_create_var (TREE_TYPE (parmse->expr),
+						   "array");
+		  gfc_add_modify (&block, *derived_array , parmse->expr);
+		}
 	      class_array_data_assign (&block, ctree, parmse->expr, false);
 	    }
 	  else
@@ -765,6 +776,9 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 
 	      gfc_init_block (&block);
 	      gfc_conv_descriptor_data_set (&block, ctree, null_pointer_node);
+	      if (derived_array && *derived_array != NULL_TREE)
+		gfc_conv_descriptor_data_set (&block, *derived_array,
+					      null_pointer_node);
 
 	      tmp = build3_v (COND_EXPR, cond_optional, tmp,
 			      gfc_finish_block (&block));
@@ -5665,6 +5679,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     {
       bool finalized = false;
       bool non_unity_length_string = false;
+      tree derived_array = NULL_TREE;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
@@ -5770,7 +5785,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     && e->expr_type == EXPR_VARIABLE
 				     && e->symtree->n.sym->attr.optional,
 				     CLASS_DATA (fsym)->attr.class_pointer
-				     || CLASS_DATA (fsym)->attr.allocatable);
+				     || CLASS_DATA (fsym)->attr.allocatable,
+				     &derived_array);
 	}
       else if (UNLIMITED_POLY (fsym) && e->ts.type != BT_CLASS
 	       && gfc_expr_attr (e).flavor != FL_PROCEDURE)
@@ -6595,6 +6611,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					&& parm_rank == 0
 					&& parmse.loop;
 
+	      /* Scalars passed to an assumed rank argument are converted to
+		 a descriptor. Obtain the data field before deallocating any
+		 allocatable components.  */
+	      if (parm_rank == 0 && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+		tmp = gfc_conv_descriptor_data_get (tmp);
+
 	      if (scalar_res_outside_loop)
 		{
 		  /* Go through the ss chain to find the argument and use
@@ -6610,9 +6632,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      }
 		}
 
-	      if ((e->ts.type == BT_CLASS
-		   && GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
-		  || e->ts.type == BT_DERIVED)
+	      STRIP_NOPS (tmp);
+
+	      if (derived_array != NULL_TREE)
+		tmp = gfc_deallocate_alloc_comp (e->ts.u.derived,
+						 derived_array,
+						 parm_rank);
+	      else if ((e->ts.type == BT_CLASS
+			&& GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+		       || e->ts.type == BT_DERIVED)
 		tmp = gfc_deallocate_alloc_comp (e->ts.u.derived, tmp,
 						 parm_rank);
 	      else if (e->ts.type == BT_CLASS)
