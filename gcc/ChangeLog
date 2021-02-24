@@ -1,3 +1,59 @@
+2021-02-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (mma_assemble_pair): Rename from this...
+	(vsx_assemble_pair): ...to this.
+	(*mma_assemble_pair): Rename from this...
+	(*vsx_assemble_pair): ...to this.
+	(mma_disassemble_pair): Rename from this...
+	(vsx_disassemble_pair): ...to this.
+	(*mma_disassemble_pair): Rename from this...
+	(*vsx_disassemble_pair): ...to this.
+	* config/rs6000/rs6000-builtin.def (BU_MMA_V2, BU_MMA_V3,
+	BU_COMPAT): New macros.
+	(mma_assemble_pair): Rename from this...
+	(vsx_assemble_pair): ...to this.
+	(mma_disassemble_pair): Rename from this...
+	(vsx_disassemble_pair): ...to this.
+	(mma_assemble_pair): New compatibility built-in.
+	(mma_disassemble_pair): Likewise.
+	* config/rs6000/rs6000-call.c (struct builtin_compatibility): New.
+	(RS6000_BUILTIN_COMPAT): Define.
+	(bdesc_compat): New.
+	(mma_expand_builtin): Use VSX_BUILTIN_DISASSEMBLE_PAIR_INTERNAL.
+	(rs6000_gimple_fold_mma_builtin): Use MMA_BUILTIN_DISASSEMBLE_PAIR
+	and VSX_BUILTIN_ASSEMBLE_PAIR.
+	(rs6000_init_builtins): Register compatibility built-ins.
+	(mma_init_builtins): Use VSX_BUILTIN_ASSEMBLE_PAIR,
+	VSX_BUILTIN_ASSEMBLE_PAIR_INTERNAL, VSX_BUILTIN_DISASSEMBLE_PAIR and
+	VSX_BUILTIN_DISASSEMBLE_PAIR_INTERNAL.
+	* doc/extend.texi (__builtin_mma_assemble_pair): Rename from this...
+	(__builtin_vsx_assemble_pair): ...to this.
+	(__builtin_mma_disassemble_pair): Rename from this...
+	(__builtin_vsx_disassemble_pair): ...to this.
+
+2021-02-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/99168
+	* ipa-icf.c (sem_variable::merge): Do not merge 2 variables
+	with different alignment. That leads to an invalid red zone
+	size allocated in runtime.
+
+2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99204
+	* fold-const.c (fold_read_from_constant_string): Check that
+	tree_fits_uhwi_p (index) rather than just that index is INTEGER_CST.
+
+2021-02-23  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (*rotl<mode>3_insert_3): Renamed to...
+	(rotl<mode>3_insert_3): ...this.
+	(plus_ior_xor): New code_iterator.
+	(define_split for GPR rl*imi): New splitter.
+	* config/rs6000/vsx.md (vsx_init_v4si): Use gen_rotldi3_insert_3
+	for integer merging.
+
 2021-02-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def (cse_sve_vl_constants):

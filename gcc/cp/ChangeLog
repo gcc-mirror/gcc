@@ -1,3 +1,21 @@
+2021-02-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99208
+	* decl.c (name_unnamed_type): Check DECL identity, not IDENTIFIER
+	identity.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* pt.c (tsubst_copy_and_build) <case BASELINK>: New case, copied
+	over from tsubst_copy.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (instantiation_dependent_expression_p): Check
+	processing_template_decl before calling
+	potential_constant_expression.
+
 2021-02-22  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99174

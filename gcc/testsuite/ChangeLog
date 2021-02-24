@@ -1,3 +1,61 @@
+2021-02-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-4.c: Add tests for
+	__builtin_vsx_assemble_pair and __builtin_vsx_disassemble_pair.
+	Add __has_builtin tests for built-ins.
+	Update expected instruction counts.
+
+2021-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/99074
+	* g++.dg/warn/Wnonnull11.C: New test.
+
+2021-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99124
+	* gfortran.dg/class_defined_operator_2.f03 : New test.
+	* gfortran.dg/elemental_result_2.f90 : New test.
+	* gfortran.dg/class_assign_4.f90: Correct the non-conforming
+	elemental function with an allocatable result with an operator
+	interface with array dummies and result.
+
+2021-02-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99206
+	* gfortran.dg/reshape_zerosize_4.f90: New test.
+
+2021-02-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99208
+	* g++.dg/modules/pr99208_a.C: New.
+	* g++.dg/modules/pr99208_b.C: New.
+
+2021-02-23  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/99168
+	* c-c++-common/asan/pr99168.c: New test.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* g++.dg/template/non-dependent15.C: New test.
+
+2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99204
+	* gfortran.dg/pr99204.f90: New test.
+
+2021-02-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-init-10.c: New test.
+
+2021-02-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/warn/Wplacement-new-size-1.C,
+	g++.dg/warn/Wplacement-new-size-2.C,
+	g++.dg/warn/Wplacement-new-size-6.C: Adjust for
+	default_packed targets.
+
 2021-02-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99196

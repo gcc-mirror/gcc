@@ -1,3 +1,35 @@
+2021-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/99074
+	* libsupc++/dyncast.cc (__dynamic_cast): Return null when
+	first argument is null.
+
+2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/99181
+	* testsuite/21_strings/char_traits/requirements/char/99181.cc: New
+	test.
+
+2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/99181
+	* include/bits/char_traits.h (char_traits<char>::compare): For
+	constexpr evaluation don't call
+	__gnu_cxx::char_traits<char_type>::compare but do the comparison loop
+	directly.
+
+2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/97549
+	* include/pstl/parallel_backend_serial.h: Remove __pstl::__par_backend.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98384
+	* src/c++17/floating_to_chars.cc (get_ieee_repr): Extract
+	the high- and low-order parts from an IBM long double value
+	in an endian-agnostic way.
+
 2021-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_wait.h (__thread_relax()): Call
