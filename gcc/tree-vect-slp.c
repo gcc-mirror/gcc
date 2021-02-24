@@ -2351,6 +2351,12 @@ next:
 	{
 	  SLP_TREE_REF_COUNT (value)++;
 	  SLP_TREE_CHILDREN (root)[i] = value;
+	  /* ???  We know the original leafs of the replaced nodes will
+	    be referenced by bst_map, only the permutes created by
+	  pattern matching are not.  */
+	  if (SLP_TREE_REF_COUNT (node) == 1)
+	    load_map->remove (node);
+
 	  vect_free_slp_tree (node);
 	}
     }
@@ -2383,6 +2389,12 @@ optimize_load_redistribution (scalar_stmts_to_slp_tree_map_t *bst_map,
 	{
 	  SLP_TREE_REF_COUNT (value)++;
 	  SLP_TREE_CHILDREN (root)[i] = value;
+	  /* ???  We know the original leafs of the replaced nodes will
+	     be referenced by bst_map, only the permutes created by
+	     pattern matching are not.  */
+	  if (SLP_TREE_REF_COUNT (node) == 1)
+	    load_map->remove (node);
+
 	  vect_free_slp_tree (node);
 	}
     }
