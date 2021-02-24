@@ -2429,22 +2429,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // TODO: Implement operator<<, from_stream.
     };
 
-    // Construct from days since 1970/01/01. Magic.
+    // Construct from days since 1970/01/01.
+    // Proposition 6.3 of Neri and Schneider,
+    // "Euclidean Affine Functions and Applications to Calendar Algorithms".
+    // https://arxiv.org/abs/2102.06959
     constexpr year_month_day
     year_month_day::_S_from_days(const days& __dp) noexcept
     {
-      const auto __z = __dp.count() + 719468;
-      const auto __era = (__z >= 0 ? __z : __z - 146096) / 146097;
-      const auto __doe = static_cast<unsigned>(__z - __era * 146097);
-      const auto __yoe
-	= (__doe - __doe / 1460 + __doe / 36524 - __doe / 146096) / 365;
-      const auto __y = static_cast<days::rep>(__yoe) + __era * 400;
-      const auto __doy = __doe - (365 * __yoe + __yoe / 4 - __yoe / 100);
-      const auto __mp = (5 * __doy + 2) / 153;
-      const auto __d = __doy - (153 * __mp + 2) / 5 + 1;
-      const auto __m = __mp < 10 ? __mp + 3 : __mp - 9;
-      return year_month_day{chrono::year(__y + (__m <= 2)),
-			    chrono::month(__m), chrono::day(__d)};
+      constexpr auto __z2    = static_cast<uint32_t>(-1468000);
+      constexpr auto __r2_e3 = static_cast<uint32_t>(536895458);
+
+      const auto __r0 = __dp.count() + __r2_e3;
+
+      const auto __n1 = 4 * __r0 + 3;
+      const auto __q1 = __n1 / 146097;
+      const auto __r1 = __n1 % 146097 / 4;
+
+      constexpr auto __p32 = static_cast<uint64_t>(1) << 32;
+      const auto __n2 = 4 * __r1 + 3;
+      const auto __u2 = static_cast<uint64_t>(2939745) * __n2;
+      const auto __q2 = static_cast<uint32_t>(__u2 / __p32);
+      const auto __r2 = static_cast<uint32_t>(__u2 % __p32) / 2939745 / 4;
+
+      constexpr auto __p16 = static_cast<uint32_t>(1) << 16;
+      const auto __n3 = 2141 * __r2 + 197913;
+      const auto __q3 = __n3 / __p16;
+      const auto __r3 = __n3 % __p16 / 2141;
+
+      const auto __y0 = 100 * __q1 + __q2;
+      const auto __m0 = __q3;
+      const auto __d0 = __r3;
+
+      const auto __j  = __r2 >= 306;
+      const auto __y1 = __y0 + __j;
+      const auto __m1 = __j ? __m0 - 12 : __m0;
+      const auto __d1 = __d0 + 1;
+
+      return year_month_day{chrono::year{__y1 + __z2}, chrono::month{__m1},
+			    chrono::day{__d1}
+      };
     }
 
     // Days since 1970/01/01. Magic.
