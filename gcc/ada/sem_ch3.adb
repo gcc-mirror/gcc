@@ -1326,36 +1326,48 @@ package body Sem_Ch3 is
    ----------------------------
 
    procedure Access_Type_Declaration (T : Entity_Id; Def : Node_Id) is
+
+      procedure Setup_Access_Type (Desig_Typ : Entity_Id);
+      --  After type declaration is analysed with T being an incomplete type,
+      --  this routine will mutate the kind of T to the appropriate access type
+      --  and set its directly designated type to Desig_Typ.
+
+      -----------------------
+      -- Setup_Access_Type --
+      -----------------------
+
+      procedure Setup_Access_Type (Desig_Typ : Entity_Id) is
+      begin
+         if All_Present (Def) or else Constant_Present (Def) then
+            Mutate_Ekind (T, E_General_Access_Type);
+         else
+            Mutate_Ekind (T, E_Access_Type);
+         end if;
+
+         Set_Directly_Designated_Type (T, Desig_Typ);
+      end Setup_Access_Type;
+
+      --  Local variables
+
       P : constant Node_Id := Parent (Def);
       S : constant Node_Id := Subtype_Indication (Def);
 
       Full_Desig : Entity_Id;
 
+   --  Start of processing for Access_Type_Declaration
+
    begin
       --  Check for permissible use of incomplete type
 
       if Nkind (S) /= N_Subtype_Indication then
+
          Analyze (S);
 
          if Nkind (S) in N_Has_Entity
            and then Present (Entity (S))
            and then Ekind (Root_Type (Entity (S))) = E_Incomplete_Type
          then
-            --  The following "if" prevents us from blowing up if the access
-            --  type is illegally completing something else.
-
-            if T in E_Void_Id
-                    | Access_Kind_Id
-                    | E_Private_Type_Id
-                    | E_Limited_Private_Type_Id
-                    | Incomplete_Kind_Id
-            then
-               Set_Directly_Designated_Type (T, Entity (S));
-
-            else
-               pragma Assert (Error_Posted (T));
-               return;
-            end if;
+            Setup_Access_Type (Desig_Typ => Entity (S));
 
             --  If the designated type is a limited view, we cannot tell if
             --  the full view contains tasks, and there is no way to handle
@@ -1366,13 +1378,12 @@ package body Sem_Ch3 is
             if From_Limited_With (Entity (S))
               and then not Is_Class_Wide_Type (Entity (S))
             then
-               Mutate_Ekind (T, E_Access_Type);
                Build_Master_Entity (T);
                Build_Master_Renaming (T);
             end if;
 
          else
-            Set_Directly_Designated_Type (T, Process_Subtype (S, P, T, 'P'));
+            Setup_Access_Type (Desig_Typ => Process_Subtype (S, P, T, 'P'));
          end if;
 
          --  If the access definition is of the form: ACCESS NOT NULL ..
@@ -1404,14 +1415,7 @@ package body Sem_Ch3 is
          end if;
 
       else
-         Set_Directly_Designated_Type (T,
-           Process_Subtype (S, P, T, 'P'));
-      end if;
-
-      if All_Present (Def) or Constant_Present (Def) then
-         Mutate_Ekind (T, E_General_Access_Type);
-      else
-         Mutate_Ekind (T, E_Access_Type);
+         Setup_Access_Type (Desig_Typ => Process_Subtype (S, P, T, 'P'));
       end if;
 
       if not Error_Posted (T) then

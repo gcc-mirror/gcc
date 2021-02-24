@@ -259,7 +259,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Corresponding_Remote_Type, Node_Id),
         Sm (CR_Discriminant, Node_Id),
         Sm (Debug_Renaming_Link, Node_Id),
-        Sm (Directly_Designated_Type, Node_Id),
         Sm (Discriminal_Link, Node_Id),
         Sm (Discriminant_Default_Value, Node_Id),
         Sm (Discriminant_Number, Uint),
@@ -824,10 +823,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Direct_Primitive_Operations, Elist_Id,
             Pre => "Is_Tagged_Type (N)"),
         Sm (Scalar_Range, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
-        Sm (Directly_Designated_Type, Node_Id)));
-   --  ????Directly_Designated_Type was allowed to be Set_, but not get.
-   --  Same for E_Limited_Private_Type. And incomplete.
+        Sm (Scope_Depth_Value, Uint)));
 
    Cc (E_Private_Subtype, Private_Kind,
        (Sm (Direct_Primitive_Operations, Elist_Id,
@@ -836,8 +832,7 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Cc (E_Limited_Private_Type, Private_Kind,
        (Sm (Scalar_Range, Node_Id),
-        Sm (Scope_Depth_Value, Uint),
-        Sm (Directly_Designated_Type, Node_Id)));
+        Sm (Scope_Depth_Value, Uint)));
 
    Cc (E_Limited_Private_Subtype, Private_Kind,
        (Sm (Scope_Depth_Value, Uint)));
@@ -845,8 +840,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Ab (Incomplete_Kind, Incomplete_Or_Private_Kind,
        (Sm (Direct_Primitive_Operations, Elist_Id,
             Pre => "Is_Tagged_Type (N)"),
-        Sm (Non_Limited_View, Node_Id),
-        Sm (Directly_Designated_Type, Node_Id)));
+        Sm (Non_Limited_View, Node_Id)));
 
    Cc (E_Incomplete_Type, Incomplete_Kind,
        (Sm (Scalar_Range, Node_Id)));

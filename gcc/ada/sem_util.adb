@@ -24441,10 +24441,10 @@ package body Sem_Util is
                 (Chars (Related_Id), Suffix, Suffix_Index, Prefix));
 
    begin
-      Mutate_Ekind       (N, Kind);
-      Set_Is_Internal    (N, True);
-      Append_Entity      (N, Scope_Id);
-      Set_Public_Status  (N);
+      Mutate_Ekind      (N, Kind);
+      Set_Is_Internal   (N, True);
+      Append_Entity     (N, Scope_Id);
+      Set_Public_Status (N);
 
       if Kind in Type_Kind then
          Init_Size_Align (N);
