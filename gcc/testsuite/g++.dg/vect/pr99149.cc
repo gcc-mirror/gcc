@@ -1,4 +1,4 @@
-/* { dg-do compile { target { aarch64*-*-* } } } */
+/* { dg-do compile { target { aarch64-*-* } } } */
 /* { dg-additional-options "-w -O3 -march=armv8.3-a -fdump-tree-slp-all" } */
 
 class a {
