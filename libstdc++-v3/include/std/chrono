@@ -1269,9 +1269,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       inline constexpr unsigned __days_per_month[12]
 	= { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-      inline constexpr unsigned __last_day[12]
-	= { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     }
 
     // DAY
@@ -2576,9 +2573,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr chrono::day
       day() const noexcept
       {
-	if (!_M_mdl.ok() || (month() == February && _M_y.is_leap()))
-	  return chrono::day{29};
-	return chrono::day{__detail::__last_day[unsigned(month()) - 1]};
+	const auto __m = static_cast<unsigned>(month());
+
+	// Excluding February, the last day of month __m is either 30 or 31 or,
+	// in another words, it is 30 + b = 30 | b, where b is in {0, 1}.
+
+	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if __m is odd.
+	// Hence, b = __m & 1 = (__m ^ 0) & 1.
+
+	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if __m is even.
+	// Hence, b = (__m ^ 1) & 1.
+
+	// Therefore, b = (__m ^ c) & 1, where c = 0, if __m < 8, or c = 1 if
+	// __m >= 8, that is, c = __m >> 3.
+
+	// The above mathematically justifies this implementation whose
+	// performance does not depend on look-up tables being on the L1 cache.
+	return chrono::day{__m != 2 ? ((__m ^ (__m >> 3)) & 1) | 30
+				    : _M_y.is_leap() ? 29 : 28};
       }
 
       constexpr
