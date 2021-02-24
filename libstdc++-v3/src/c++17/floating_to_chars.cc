@@ -870,10 +870,10 @@ namespace
 
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
     if constexpr (is_same_v<T, __ieee128>)
-      len = __sprintfieee128(buffer, format_string, value, args...);
+      len = __sprintfieee128(buffer, format_string, args..., value);
     else
 #endif
-    len = sprintf(buffer, format_string, value, args...);
+    len = sprintf(buffer, format_string, args..., value);
 
 #if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
     if (saved_rounding_mode != FE_TONEAREST)
