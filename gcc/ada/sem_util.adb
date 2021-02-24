@@ -14625,6 +14625,8 @@ package body Sem_Util is
    --------------------------------
 
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id is
+      S : constant Entity_Id := Scope (Id);
+
       function Inspect_Decls
         (Decls : List_Id;
          Taft  : Boolean := False) return Entity_Id;
@@ -14693,7 +14695,13 @@ package body Sem_Util is
    begin
       --  Deferred constant or incomplete type case
 
-      Prev := Current_Entity_In_Scope (Id);
+      Prev := Current_Entity (Id);
+
+      while Present (Prev) loop
+         exit when Scope (Prev) = S;
+
+         Prev := Homonym (Prev);
+      end loop;
 
       if Present (Prev)
         and then (Is_Incomplete_Type (Prev) or else Ekind (Prev) = E_Constant)
@@ -14706,13 +14714,12 @@ package body Sem_Util is
       --  Private or Taft amendment type case
 
       declare
-         Pkg      : constant Entity_Id := Scope (Id);
-         Pkg_Decl : Node_Id := Pkg;
+         Pkg_Decl : Node_Id;
 
       begin
-         if Present (Pkg)
-           and then Is_Package_Or_Generic_Package (Pkg)
-         then
+         if Present (S) and then Is_Package_Or_Generic_Package (S) then
+            Pkg_Decl := S;
+
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
             end loop;
@@ -14737,7 +14744,7 @@ package body Sem_Util is
             --  Taft amendment type. The incomplete view should be located in
             --  the private declarations of the enclosing scope.
 
-            elsif In_Package_Body (Pkg) then
+            elsif In_Package_Body (S) then
                return Inspect_Decls (Private_Declarations (Pkg_Decl), True);
             end if;
          end if;
