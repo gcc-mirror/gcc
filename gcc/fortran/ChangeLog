@@ -1,3 +1,11 @@
+2021-02-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-expr.c (gfc_conv_procedure_call): Do not add clobber to
+	allocatable intent(out) argument.
+
 2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

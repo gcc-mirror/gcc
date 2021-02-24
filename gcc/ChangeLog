@@ -1,3 +1,10 @@
+2021-02-23  Qian Jianhua  <qianjh@cn.fujitsu.com>
+
+	* config/aarch64/aarch64-cost-tables.h (a64fx_extra_costs): New.
+	* config/aarch64/aarch64.c (a64fx_addrcost_table): New.
+	(a64fx_regmove_cost, a64fx_vector_cost): New.
+	(a64fx_tunings): Use the new added cost tables.
+
 2021-02-22  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/85074
