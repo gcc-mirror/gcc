@@ -12044,23 +12044,23 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	      && integer_onep (TREE_OPERAND (arg00, 0)))
 	    {
 	      tree tem = fold_build2_loc (loc, RSHIFT_EXPR, TREE_TYPE (arg00),
-				      arg01, TREE_OPERAND (arg00, 1));
+					  arg01, TREE_OPERAND (arg00, 1));
 	      tem = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0), tem,
-				 build_int_cst (TREE_TYPE (arg0), 1));
+				     build_one_cst (TREE_TYPE (arg0)));
 	      return fold_build2_loc (loc, code, type,
-				  fold_convert_loc (loc, TREE_TYPE (arg1), tem),
-				  arg1);
+				      fold_convert_loc (loc, TREE_TYPE (arg1),
+							tem), arg1);
 	    }
 	  else if (TREE_CODE (arg01) == LSHIFT_EXPR
 		   && integer_onep (TREE_OPERAND (arg01, 0)))
 	    {
 	      tree tem = fold_build2_loc (loc, RSHIFT_EXPR, TREE_TYPE (arg01),
-				      arg00, TREE_OPERAND (arg01, 1));
+					  arg00, TREE_OPERAND (arg01, 1));
 	      tem = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0), tem,
-				 build_int_cst (TREE_TYPE (arg0), 1));
+				     build_one_cst (TREE_TYPE (arg0)));
 	      return fold_build2_loc (loc, code, type,
-				  fold_convert_loc (loc, TREE_TYPE (arg1), tem),
-				  arg1);
+				      fold_convert_loc (loc, TREE_TYPE (arg1),
+							tem), arg1);
 	    }
 	}
 
