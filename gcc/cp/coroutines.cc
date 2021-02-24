@@ -683,11 +683,14 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
   if (DECL_DECLARED_CONSTEXPR_P (fndecl))
     {
-      /* [dcl.constexpr] 3.3 it shall not be a coroutine.  */
-      error_at (kw_loc, "%qs cannot be used in a %<constexpr%> function",
-		kw_name);
       cp_function_chain->invalid_constexpr = true;
-      return false;
+      if (!is_instantiation_of_constexpr (fndecl))
+	{
+	  /* [dcl.constexpr] 3.3 it shall not be a coroutine.  */
+	  error_at (kw_loc, "%qs cannot be used in a %<constexpr%> function",
+		    kw_name);
+	  return false;
+	}
     }
 
   if (FNDECL_USED_AUTO (fndecl))

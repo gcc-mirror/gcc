@@ -2892,8 +2892,13 @@ cris_expand_prologue (void)
       framesize += size + cfoa_size;
     }
 
+  /* FIXME: -mmax-stackframe=SIZE is obsoleted; use -Wstack-usage=SIZE
+     instead.  Make it an alias?  */
   if (cris_max_stackframe && framesize > cris_max_stackframe)
     warning (0, "stackframe too big: %d bytes", framesize);
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = framesize;
 }
 
 /* The expander for the epilogue pattern.  */

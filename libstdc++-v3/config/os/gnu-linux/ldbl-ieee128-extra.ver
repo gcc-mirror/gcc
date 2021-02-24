@@ -41,6 +41,7 @@ GLIBCXX_IEEE128_3.4.29 {
   _ZNKSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3putES4_bRSt8ios_base[cw]u9__ieee128;
 
   _ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format;
+  _ZSt8to_charsPcS_u9__ieee128*;
 
 } GLIBCXX_3.4.29;
 

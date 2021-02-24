@@ -1,3 +1,18 @@
+2021-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99124
+	* resolve.c (resolve_fl_procedure): Include class results in
+	the test for F2018, C15100.
+	* trans-array.c (get_class_info_from_ss): Do not use the saved
+	descriptor to obtain the class expression for variables. Use
+	gfc_get_class_from_expr instead.
+
+2021-02-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99206
+	* simplify.c (gfc_simplify_reshape): Set string length for
+	character arguments.
+
 2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99171

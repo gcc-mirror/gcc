@@ -60,7 +60,7 @@ struct coro1 {
     PRINT ("get initial_suspend (always)");
     return suspend_always_prt{};
   }
-  suspend_always_prt final_suspend () const {
+  suspend_always_prt final_suspend () const noexcept {
     PRINT ("get final_suspend (always)");
     return suspend_always_prt{};
   }

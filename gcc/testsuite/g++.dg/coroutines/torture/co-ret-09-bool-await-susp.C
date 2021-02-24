@@ -70,7 +70,7 @@ struct coro1 {
     PRINT ("get initial_suspend (always, but really never) ");
     return suspend_always_prt{};
   }
-  auto final_suspend () {
+  auto final_suspend () noexcept {
     PRINT ("get final_suspend (always, but never) ");
     return suspend_always_prt{};
   }

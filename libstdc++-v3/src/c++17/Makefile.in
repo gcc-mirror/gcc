@@ -761,6 +761,10 @@ vpath % $(top_srcdir)/src/c++17
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_from_chars.o: floating_from_chars.cc
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_to_chars.lo: floating_to_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_to_chars.o: floating_to_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

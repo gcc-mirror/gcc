@@ -1904,16 +1904,6 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
       return (x_hard_regno >= 0
 	      && overlaps_hard_reg_set_p (set, mode, x_hard_regno));
     }
-  if (MEM_P (x))
-    {
-      struct address_info ad;
-
-      decompose_mem_address (&ad, x);
-      if (ad.base_term != NULL && uses_hard_regs_p (*ad.base_term, set))
-	return true;
-      if (ad.index_term != NULL && uses_hard_regs_p (*ad.index_term, set))
-	return true;
-    }
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {

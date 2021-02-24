@@ -14,7 +14,7 @@ struct dummy_coro
   void await_resume() { }
   dummy_coro get_return_object() { return {}; }
   dummy_coro initial_suspend() { return {}; }
-  dummy_coro final_suspend() { return {}; }
+  dummy_coro final_suspend() noexcept { return {}; }
   void return_void() { }
   void unhandled_exception() { }
 };

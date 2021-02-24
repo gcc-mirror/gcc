@@ -146,6 +146,16 @@ vect_free_slp_tree (slp_tree node)
     if (child)
       vect_free_slp_tree (child);
 
+  /* If the node defines any SLP only patterns then those patterns are no
+     longer valid and should be removed.  */
+  stmt_vec_info rep_stmt_info = SLP_TREE_REPRESENTATIVE (node);
+  if (rep_stmt_info && STMT_VINFO_SLP_VECT_ONLY_PATTERN (rep_stmt_info))
+    {
+      stmt_vec_info stmt_info = vect_orig_stmt (rep_stmt_info);
+      STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
+      STMT_SLP_TYPE (stmt_info) = STMT_SLP_TYPE (rep_stmt_info);
+    }
+
   delete node;
 }
 
@@ -2341,6 +2351,12 @@ next:
 	{
 	  SLP_TREE_REF_COUNT (value)++;
 	  SLP_TREE_CHILDREN (root)[i] = value;
+	  /* ???  We know the original leafs of the replaced nodes will
+	    be referenced by bst_map, only the permutes created by
+	  pattern matching are not.  */
+	  if (SLP_TREE_REF_COUNT (node) == 1)
+	    load_map->remove (node);
+
 	  vect_free_slp_tree (node);
 	}
     }
@@ -2373,6 +2389,12 @@ optimize_load_redistribution (scalar_stmts_to_slp_tree_map_t *bst_map,
 	{
 	  SLP_TREE_REF_COUNT (value)++;
 	  SLP_TREE_CHILDREN (root)[i] = value;
+	  /* ???  We know the original leafs of the replaced nodes will
+	     be referenced by bst_map, only the permutes created by
+	     pattern matching are not.  */
+	  if (SLP_TREE_REF_COUNT (node) == 1)
+	    load_map->remove (node);
+
 	  vect_free_slp_tree (node);
 	}
     }
@@ -2395,7 +2417,9 @@ vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
   slp_tree node = *ref_node;
   bool found_p = false;
   if (!node || visited->add (node))
-    return false;
+    return node
+	   && SLP_TREE_REPRESENTATIVE (node)
+	   && STMT_VINFO_SLP_VECT_ONLY_PATTERN (SLP_TREE_REPRESENTATIVE (node));
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -6460,6 +6484,11 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
 	  store_info = vect_orig_stmt (store_info);
 	  /* Free the attached stmt_vec_info and remove the stmt.  */
 	  vinfo->remove_stmt (store_info);
+
+	  /* Invalidate SLP_TREE_REPRESENTATIVE in case we released it
+	     to not crash in vect_free_slp_tree later.  */
+	  if (SLP_TREE_REPRESENTATIVE (root) == store_info)
+	    SLP_TREE_REPRESENTATIVE (root) = NULL;
         }
     }
 }

@@ -22,7 +22,7 @@ struct task
 //    static constexpr suspend_n initial_suspend()  { return {2}; }
 #endif
     static constexpr std::suspend_always initial_suspend()  { return {}; }
-    static constexpr std::suspend_never final_suspend() { return {}; }
+    static constexpr std::suspend_never final_suspend() noexcept { return {}; }
     static constexpr void return_void() {}
     static constexpr void unhandled_exception() {}
   };
