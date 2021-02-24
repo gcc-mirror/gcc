@@ -1834,7 +1834,7 @@ __fixunssfSI (SFtype a)
 TYPE
 NAME (TYPE x, int m)
 {
-  unsigned int n = m < 0 ? -m : m;
+  unsigned int n = m < 0 ? -(unsigned int) m : (unsigned int) m;
   TYPE y = n % 2 ? x : 1;
   while (n >>= 1)
     {
