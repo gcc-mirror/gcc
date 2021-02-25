@@ -2294,8 +2294,6 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
   if (slp_tree *leader = load_map->get (root))
     return *leader;
 
-  load_map->put (root, NULL);
-
   slp_tree node;
   unsigned i;
 
@@ -2342,6 +2340,8 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
     }
 
 next:
+  load_map->put (root, NULL);
+
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (root), i , node)
     {
       slp_tree value
@@ -2352,11 +2352,10 @@ next:
 	  SLP_TREE_REF_COUNT (value)++;
 	  SLP_TREE_CHILDREN (root)[i] = value;
 	  /* ???  We know the original leafs of the replaced nodes will
-	    be referenced by bst_map, only the permutes created by
-	  pattern matching are not.  */
+	     be referenced by bst_map, only the permutes created by
+	     pattern matching are not.  */
 	  if (SLP_TREE_REF_COUNT (node) == 1)
 	    load_map->remove (node);
-
 	  vect_free_slp_tree (node);
 	}
     }
@@ -2394,7 +2393,6 @@ optimize_load_redistribution (scalar_stmts_to_slp_tree_map_t *bst_map,
 	     pattern matching are not.  */
 	  if (SLP_TREE_REF_COUNT (node) == 1)
 	    load_map->remove (node);
-
 	  vect_free_slp_tree (node);
 	}
     }
@@ -2417,9 +2415,7 @@ vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
   slp_tree node = *ref_node;
   bool found_p = false;
   if (!node || visited->add (node))
-    return node
-	   && SLP_TREE_REPRESENTATIVE (node)
-	   && STMT_VINFO_SLP_VECT_ONLY_PATTERN (SLP_TREE_REPRESENTATIVE (node));
+    return false;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -2898,23 +2894,24 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
   hash_set<slp_tree> visited_patterns;
   slp_tree_to_load_perm_map_t perm_cache;
-  hash_map<slp_tree, slp_tree> load_map;
 
   /* See if any patterns can be found in the SLP tree.  */
+  bool pattern_found = false;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (vinfo), i, instance)
-    if (vect_match_slp_patterns (instance, vinfo, &visited_patterns,
-				 &perm_cache))
-      {
-	slp_tree root = SLP_INSTANCE_TREE (instance);
-	optimize_load_redistribution (bst_map, vinfo, SLP_TREE_LANES (root),
-				      &load_map, root);
-	if (dump_enabled_p ())
-	  {
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Pattern matched SLP tree\n");
-	    vect_print_slp_graph (MSG_NOTE, vect_location, root);
-	  }
-      }
+    pattern_found |= vect_match_slp_patterns (instance, vinfo,
+					      &visited_patterns, &perm_cache);
+
+  /* If any were found optimize permutations of loads.  */
+  if (pattern_found)
+    {
+      hash_map<slp_tree, slp_tree> load_map;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (vinfo), i, instance)
+	{
+	  slp_tree root = SLP_INSTANCE_TREE (instance);
+	  optimize_load_redistribution (bst_map, vinfo, SLP_TREE_LANES (root),
+					&load_map, root);
+	}
+    }
 
 
 
@@ -2924,6 +2921,16 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
     if ((*it).second)
       vect_free_slp_tree ((*it).second);
   delete bst_map;
+
+  if (pattern_found && dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Pattern matched SLP tree\n");
+      hash_set<slp_tree> visited;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (vinfo), i, instance)
+	vect_print_slp_graph (MSG_NOTE, vect_location,
+			      SLP_INSTANCE_TREE (instance), visited);
+    }
 
   return opt_result::success ();
 }
