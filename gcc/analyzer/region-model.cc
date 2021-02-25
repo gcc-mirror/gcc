@@ -791,6 +791,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    impl_call_memset (cd);
 	    return false;
 	    break;
+	  case BUILT_IN_REALLOC:
+	    impl_call_realloc (cd);
+	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	    impl_call_strcpy (cd);
@@ -840,6 +843,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	return impl_call_calloc (cd);
       else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
 	return impl_call_alloca (cd);
+      else if (is_named_call_p (callee_fndecl, "realloc", call, 2))
+	{
+	  impl_call_realloc (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "error"))
 	{
 	  if (impl_call_error (cd, 3, out_terminate_path))
