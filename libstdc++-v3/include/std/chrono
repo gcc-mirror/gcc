@@ -2455,7 +2455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto __z2    = static_cast<uint32_t>(-1468000);
       constexpr auto __r2_e3 = static_cast<uint32_t>(536895458);
 
-      const auto __r0 = __dp.count() + __r2_e3;
+      const auto __r0 = static_cast<uint32_t>(__dp.count()) + __r2_e3;
 
       const auto __n1 = 4 * __r0 + 3;
       const auto __q1 = __n1 / 146097;
