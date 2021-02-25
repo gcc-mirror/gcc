@@ -31,13 +31,16 @@ class MacroInvocation;
 }
 
 // Object used to store configuration data for macro expansion.
+// NOTE: Keep all these items complying with the latest rustc.
 struct ExpansionCfg
 {
   // features?
-  unsigned int recursion_limit = 50; // TODO: determine default recursion limit
-				     // trace macros?
-				     // should test?
-				     // more default stuff?
+  // TODO: Add `features' when we have it.
+  unsigned int recursion_limit = 1024;
+  bool trace_mac = false;   // trace macro
+  bool should_test = false; // strip #[test] nodes if false
+  bool keep_macs = false;   // keep macro definitions
+  std::string crate_name = "";
 };
 
 // Object used to store shared data (between functions) for macro expansion.
