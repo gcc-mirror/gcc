@@ -112,9 +112,13 @@ public:
   {
     resolved_node = ResolveTypePath::go (path, parent);
     ok = resolved_node != UNKNOWN_NODEID;
-    resolver->insert_resolved_type (path.get_node_id (), resolved_node);
-    resolver->insert_new_definition (path.get_node_id (),
-				     Definition{path.get_node_id (), parent});
+    if (ok)
+      {
+	resolver->insert_resolved_type (path.get_node_id (), resolved_node);
+	resolver->insert_new_definition (path.get_node_id (),
+					 Definition{path.get_node_id (),
+						    parent});
+      }
   }
 
   void visit (AST::ArrayType &type)

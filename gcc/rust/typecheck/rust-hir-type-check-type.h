@@ -232,7 +232,7 @@ public:
 	  }
       }
 
-    rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
+    rust_error_at (path.get_locus (), "failed to type-resolve TypePath: %s",
 		   path.as_string ().c_str ());
   }
 

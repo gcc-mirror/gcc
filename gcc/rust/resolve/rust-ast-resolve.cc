@@ -462,7 +462,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
   else
     {
       rust_error_at (expr->get_locus (), "unknown path %s",
-		     expr->as_string ().c_str (), path_buf.c_str ());
+		     expr->as_string ().c_str ());
     }
 }
 

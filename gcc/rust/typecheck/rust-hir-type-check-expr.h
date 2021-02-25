@@ -168,6 +168,15 @@ public:
     if (function_tyty == nullptr)
       return;
 
+    bool valid_tyty = function_tyty->get_kind () == TyTy::TypeKind::ADT
+		      || function_tyty->get_kind () == TyTy::TypeKind::FNDEF;
+    if (!valid_tyty)
+      {
+	rust_error_at (expr.get_locus (),
+		       "Failed to resolve expression of function call");
+	return;
+      }
+
     infered = TyTy::TypeCheckCallExpr::go (function_tyty, expr, context);
     if (infered == nullptr)
       {
@@ -778,8 +787,6 @@ public:
 		    ? adt->handle_substitions (seg.get_generic_args ())
 		    : adt->infer_substitions ();
       }
-
-    context->insert_type (expr.get_mappings (), infered->clone ());
   }
 
   void visit (HIR::LoopExpr &expr)
