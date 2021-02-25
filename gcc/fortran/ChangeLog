@@ -1,3 +1,15 @@
+2021-02-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2021-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99124
+	* resolve.c (resolve_fl_procedure): Include class results in
+	the test for F2018, C15100.
+	* trans-array.c (get_class_info_from_ss): Do not use the saved
+	descriptor to obtain the class expression for variables. Use
+	gfc_get_class_from_expr instead.
+
 2021-02-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

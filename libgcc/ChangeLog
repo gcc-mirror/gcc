@@ -1,3 +1,12 @@
+2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Hau Hsu  <hsuhau617@gmail.com>
+
+	PR target/99157
+	* config/arm/t-arm: Fix cmse support detection.
+
 2021-01-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/t-linux (IBM128_STATIC_OBJS): Back port from
