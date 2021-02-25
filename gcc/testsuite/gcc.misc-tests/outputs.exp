@@ -116,8 +116,16 @@ if [info exists env(MAKEFLAGS)] {
 # it weren't for
 # https://core.tcl-lang.org/tcl/tktview?name=5bbd044812), but .{i,s,o}
 # and .[iso] will pass even if only the .o is present.
+array unset outests *
 proc outest { test sources opts dirs outputs } {
     global b srcdir subdir
+    global outests
+
+    if { [info exists outests($test)] } {
+	error "multiple outputs.exp tests are named \"$test\", but for sanity, test-names must be unique"
+    }
+    set outests($test) 1
+
     set src {}
     foreach s $sources {
 	lappend src $srcdir/$subdir/$b$s
@@ -307,10 +315,10 @@ outest "$b exe savetmp named2" $mult "-o $b.exe -save-temps" {} {{--1.i --1.s --
 
 # Additional files are created when an @file is used
 if !$skip_atsave {
-outest "$b exe savetmp namedb" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
-outest "$b exe savetmp named2" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp namedb-2" $sing "@/dev/null -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2-2" $mult "@/dev/null -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2-3" $mult "@/dev/null -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
+outest "$b exe savetmp named2-4" $mult "@/dev/null -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
 }
 
 # Setting the main output to a dir selects it as the default aux&dump
@@ -400,9 +408,9 @@ outest "$b exe soddovr namedir2" $mult "-o o/$b.exe -save-temps=obj -dumpdir ./"
 outest "$b exe scddovr namedir0" $sing "-o o/$b-0.exe -save-temps=cwd -dumpdir o/" {o/} {{-0.i -0.s -0.o -0.exe} {}}
 outest "$b exe scddovr namedirb" $sing "-o o/$b.exe -save-temps=cwd -dumpdir o/" {o/} {{-0.i -0.s -0.o .exe} {}}
 outest "$b exe scddovr namedir2" $mult "-o o/$b.exe -save-temps=cwd -dumpdir o/" {o/} {{-1.i -1.s -1.o -2.i -2.s -2.o .exe} {}}
-outest "$b exe ddstovr namedir0" $sing "-o $b-0.exe -save-temps -dumpdir o/" {o/} {{-0.i -0.s -0.o} {-0.exe}}
-outest "$b exe ddstovr namedirb" $sing "-o $b.exe -save-temps -dumpdir o/" {o/} {{-0.i -0.s -0.o} {.exe}}
-outest "$b exe ddstovr namedir2" $mult "-o $b.exe -save-temps -dumpdir o/" {o/} {{-1.i -1.s -1.o -2.i -2.s -2.o} {.exe}}
+outest "$b exe ddstovr namedir0-2" $sing "-o $b-0.exe -save-temps -dumpdir o/" {o/} {{-0.i -0.s -0.o} {-0.exe}}
+outest "$b exe ddstovr namedirb-2" $sing "-o $b.exe -save-temps -dumpdir o/" {o/} {{-0.i -0.s -0.o} {.exe}}
+outest "$b exe ddstovr namedir2-2" $mult "-o $b.exe -save-temps -dumpdir o/" {o/} {{-1.i -1.s -1.o -2.i -2.s -2.o} {.exe}}
 
 
 # Compiler- and driver-generated aux and dump outputs.
@@ -661,14 +669,14 @@ outest "$b lto mult nameddir" $mult "-o dir/$b.exe -O2 -flto -flto-partition=one
 
 if $ltop {
 # -flto -fno-use-linker-plugin
-outest "$b lto sing unnamed" $sing "-O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su $aout}}
-outest "$b lto mult unnamed" $mult "-O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--1.c.???i.icf a--1.c.???r.final a--2.c.???i.icf a--2.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su $aout}}
-outest "$b lto sing named" $sing "-o $b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe}}
-outest "$b lto mult named" $mult "-o $b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe}}
-outest "$b lto sing nameddir" $sing "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
-outest "$b lto mult nameddir" $mult "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
+outest "$b lto sing unnamed-2" $sing "-O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su $aout}}
+outest "$b lto mult unnamed-2" $mult "-O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage $oaout" {} {{a--1.c.???i.icf a--1.c.???r.final a--2.c.???i.icf a--2.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su $aout}}
+outest "$b lto sing named-2" $sing "-o $b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe}}
+outest "$b lto mult named-2" $mult "-o $b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe}}
+outest "$b lto sing nameddir-2" $sing "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--0.c.???i.icf --0.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
+outest "$b lto mult nameddir-2" $mult "-o dir/$b.exe -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage" {dir/} {{--1.c.???i.icf --1.c.???r.final --2.c.???i.icf --2.c.???r.final .wpa.???i.icf .ltrans0.ltrans.???r.final .ltrans0.ltrans.su .exe} {}}
 if !$skip_atsave {
-outest "$b lto sing unnamed" $sing "@/dev/null -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
+outest "$b lto sing unnamed-3" $sing "@/dev/null -O2 -flto -fno-use-linker-plugin -flto-partition=one -fdump-ipa-icf-optimized -fdump-rtl-final -fstack-usage -save-temps $oaout" {} {{a--0.c.???i.icf a--0.c.???r.final a.wpa.???i.icf a.ltrans0.ltrans.???r.final a.ltrans0.ltrans.su a--0.o a--0.s a--0.i a.ltrans0.o a.ltrans.out a.ltrans0.ltrans.o a.ltrans0.ltrans_args a.args.0 a.ltrans0.ltrans.s a.wpa.args.0 a.lto_args a.ld1_args a.ltrans_args a.ltrans0.ltrans.args.0 a.ld_args $aout}}
 }
 }
 
