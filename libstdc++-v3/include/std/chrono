@@ -2481,8 +2481,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __m1 = __j ? __m0 - 12 : __m0;
       const auto __d1 = __d0 + 1;
 
-      return year_month_day{chrono::year{__y1 + __z2}, chrono::month{__m1},
-			    chrono::day{__d1}};
+      return year_month_day{chrono::year{static_cast<int>(__y1 + __z2)},
+			    chrono::month{__m1}, chrono::day{__d1}};
     }
 
     // Days since 1970/01/01.
