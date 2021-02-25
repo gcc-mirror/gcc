@@ -31,6 +31,7 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
+with Errout;         use Errout;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
@@ -39,6 +40,7 @@ with Exp_Dbug;       use Exp_Dbug;
 with Exp_Pakd;       use Exp_Pakd;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
 with Inline;         use Inline;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -3031,7 +3033,415 @@ package body Exp_Ch5 is
       Choice         : Node_Id;
       Chlist         : List_Id;
 
+      function Expand_General_Case_Statement return Node_Id;
+      --  Expand a case statement whose selecting expression is not discrete
+
+      -----------------------------------
+      -- Expand_General_Case_Statement --
+      -----------------------------------
+
+      function Expand_General_Case_Statement return Node_Id is
+         --  expand into a block statement
+
+         Selector : constant Entity_Id :=
+           Make_Temporary (Loc, 'J');
+
+         function Selector_Subtype_Mark return Node_Id is
+           (New_Occurrence_Of (Etype (Expr), Loc));
+
+         Renamed_Name : constant Node_Id :=
+           (if Is_Name_Reference (Expr)
+              then Expr
+              else Make_Qualified_Expression (Loc,
+                     Subtype_Mark => Selector_Subtype_Mark,
+                     Expression   => Expr));
+
+         Selector_Decl : constant Node_Id :=
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => Selector,
+             Subtype_Mark        => Selector_Subtype_Mark,
+             Name                => Renamed_Name);
+
+         First_Alt : constant Node_Id := First (Alternatives (N));
+
+         function Choice_Index_Decl_If_Needed return Node_Id;
+         --  If we are going to need a choice index object (that is, if
+         --  Multidefined_Bindings is true for at least one of the case
+         --  alternatives), then create and return that object's declaration.
+         --  Otherwise, return Empty; no need for a decl in that case because
+         --  it would never be referenced.
+
+         ---------------------------------
+         -- Choice_Index_Decl_If_Needed --
+         ---------------------------------
+
+         function Choice_Index_Decl_If_Needed return Node_Id is
+            Alt : Node_Id := First_Alt;
+         begin
+            while Present (Alt) loop
+               if Multidefined_Bindings (Alt) then
+                  return Make_Object_Declaration
+                    (Sloc => Loc,
+                     Defining_Identifier =>
+                       Make_Temporary (Loc, 'K'),
+                     Object_Definition =>
+                       New_Occurrence_Of (Standard_Positive, Loc));
+               end if;
+
+               Next (Alt);
+            end loop;
+            return Empty; -- decl not needed
+         end Choice_Index_Decl_If_Needed;
+
+         Choice_Index_Decl : constant Node_Id := Choice_Index_Decl_If_Needed;
+
+         function Pattern_Match
+           (Pattern      : Node_Id;
+            Object       : Node_Id;
+            Choice_Index : Natural;
+            Alt          : Node_Id;
+            Suppress_Choice_Index_Update : Boolean := False) return Node_Id;
+         --  Returns a Boolean-valued expression indicating a pattern match
+         --  for a given pattern and object. If Choice_Index is nonzero,
+         --  then Choice_Index is assigned to Choice_Index_Decl (unless
+         --  Suppress_Choice_Index_Update is specified, which should only
+         --  be the case for a recursive call where the caller has already
+         --  taken care of the update). Pattern occurs as a choice (or as a
+         --  subexpression of a choice) of the case statement alternative Alt.
+
+         function Top_Level_Pattern_Match_Condition
+           (Alt : Node_Id) return Node_Id;
+         --  Returns a Boolean-valued expression indicating a pattern match
+         --  for the given alternative's list of choices.
+
+         -------------------
+         -- Pattern_Match --
+         -------------------
+
+         function Pattern_Match
+           (Pattern      : Node_Id;
+            Object       : Node_Id;
+            Choice_Index : Natural;
+            Alt          : Node_Id;
+            Suppress_Choice_Index_Update : Boolean := False) return Node_Id
+         is
+            function Update_Choice_Index return Node_Id is (
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  New_Occurrence_Of
+                    (Defining_Identifier (Choice_Index_Decl), Loc),
+                Expression => Make_Integer_Literal (Loc, Pos (Choice_Index))));
+
+            function PM
+              (Pattern      : Node_Id;
+               Object       : Node_Id;
+               Choice_Index : Natural := Pattern_Match.Choice_Index;
+               Alt          : Node_Id := Pattern_Match.Alt;
+               Suppress_Choice_Index_Update : Boolean :=
+                 Pattern_Match.Suppress_Choice_Index_Update) return Node_Id
+              renames Pattern_Match;
+            --  convenient rename for recursive calls
+
+         begin
+            if Choice_Index /= 0 and not Suppress_Choice_Index_Update then
+               pragma Assert (Present (Choice_Index_Decl));
+
+               --  Add Choice_Index update as a side effect of evaluating
+               --  this condition and try again, this time suppressing
+               --  Choice_Index update.
+
+               return Make_Expression_With_Actions (Loc,
+                        Actions => New_List (Update_Choice_Index),
+                        Expression =>
+                          PM (Pattern, Object,
+                              Suppress_Choice_Index_Update => True));
+            end if;
+
+            if Nkind (Pattern) in N_Has_Etype
+              and then Is_Discrete_Type (Etype (Pattern))
+              and then Compile_Time_Known_Value (Pattern)
+            then
+               return Make_Op_Eq (Loc,
+                        Object,
+                        Make_Integer_Literal (Loc, Expr_Value (Pattern)));
+            end if;
+
+            case Nkind (Pattern) is
+               when N_Aggregate =>
+                  return Result : Node_Id :=
+                    New_Occurrence_Of (Standard_True, Loc)
+                  do
+                     if Is_Array_Type (Etype (Pattern)) then
+                        --  Calling Error_Msg_N during expansion is usually a
+                        --  mistake but is ok for an "unimplemented" message.
+                        Error_Msg_N
+                          ("array-valued case choices unimplemented",
+                          Pattern);
+                        return;
+                     end if;
+
+                     --  positional notation should have been normalized
+                     pragma Assert (No (Expressions (Pattern)));
+
+                     declare
+                        Component_Assoc : Node_Id
+                          := First (Component_Associations (Pattern));
+                        Choice : Node_Id;
+
+                        function Subobject return Node_Id is
+                          (Make_Selected_Component (Loc,
+                             Prefix => New_Copy_Tree (Object),
+                             Selector_Name => New_Occurrence_Of
+                                                (Entity (Choice), Loc)));
+                     begin
+                        while Present (Component_Assoc) loop
+                           Choice := First (Choices (Component_Assoc));
+                           while Present (Choice) loop
+                              pragma Assert
+                                (Is_Entity_Name (Choice)
+                                   and then Ekind (Entity (Choice))
+                                              in E_Discriminant | E_Component);
+
+                              if Box_Present (Component_Assoc) then
+                                 --  Box matches anything
+
+                                 pragma Assert
+                                   (No (Expression (Component_Assoc)));
+                              else
+                                 Result := Make_And_Then (Loc,
+                                             Left_Opnd  => Result,
+                                             Right_Opnd =>
+                                               PM (Pattern =>
+                                                     Expression
+                                                       (Component_Assoc),
+                                                   Object => Subobject));
+                              end if;
+
+                              --  If this component association defines
+                              --  (in the case where the pattern matches)
+                              --  the value of a binding object, then
+                              --  prepend to the statement list for this
+                              --  alternative an assignment to the binding
+                              --  object. This assignment will be conditional
+                              --  if there is more than one choice.
+
+                              if Binding_Chars (Component_Assoc) /= No_Name
+                              then
+                                 declare
+                                    Decl_Chars : constant Name_Id :=
+                                      Binding_Chars (Component_Assoc);
+
+                                    Block_Stmt : constant Node_Id :=
+                                      First (Statements (Alt));
+                                    pragma Assert
+                                      (Nkind (Block_Stmt) = N_Block_Statement);
+                                    pragma Assert (No (Next (Block_Stmt)));
+                                    Decl : Node_Id
+                                      := First (Declarations (Block_Stmt));
+                                    Def_Id : Node_Id := Empty;
+
+                                    Assignment_Stmt : Node_Id;
+                                    Condition       : Node_Id;
+                                    Prepended_Stmt  : Node_Id;
+                                 begin
+                                    --  find the variable to be modified
+                                    while No (Def_Id) or else
+                                      Chars (Def_Id) /= Decl_Chars
+                                    loop
+                                       Def_Id := Defining_Identifier (Decl);
+                                       Next (Decl);
+                                    end loop;
+
+                                    Assignment_Stmt :=
+                                      Make_Assignment_Statement (Loc,
+                                        Name       => New_Occurrence_Of
+                                                        (Def_Id, Loc),
+                                        Expression => Subobject);
+
+                                    --  conditional if multiple choices
+
+                                    if Present (Choice_Index_Decl) then
+                                       Condition :=
+                                         Make_Op_Eq (Loc,
+                                           New_Occurrence_Of
+                                             (Defining_Identifier
+                                                (Choice_Index_Decl), Loc),
+                                          Make_Integer_Literal
+                                            (Loc, Int (Choice_Index)));
+
+                                       Prepended_Stmt :=
+                                         Make_If_Statement (Loc,
+                                           Condition       => Condition,
+                                           Then_Statements =>
+                                             New_List (Assignment_Stmt));
+                                    else
+                                       --  assignment is unconditional
+                                       Prepended_Stmt := Assignment_Stmt;
+                                    end if;
+
+                                    declare
+                                       HSS : constant Node_Id :=
+                                         Handled_Statement_Sequence
+                                           (Block_Stmt);
+                                    begin
+                                       Prepend (Prepended_Stmt,
+                                                Statements (HSS));
+
+                                       Set_Analyzed (Block_Stmt, False);
+                                       Set_Analyzed (HSS, False);
+                                    end;
+                                 end;
+                              end if;
+
+                              Next (Choice);
+                           end loop;
+
+                           Next (Component_Assoc);
+                        end loop;
+                     end;
+                  end return;
+
+               when N_Qualified_Expression =>
+                  --  Make a copy for one of the two uses of Object; the choice
+                  --  of where to use the original and where to use the copy
+                  --  is arbitrary.
+
+                  return Make_And_Then (Loc,
+                    Left_Opnd  => Make_In (Loc,
+                      Left_Opnd  => New_Copy_Tree (Object),
+                      Right_Opnd => New_Copy_Tree (Subtype_Mark (Pattern))),
+                    Right_Opnd =>
+                      PM (Pattern => Expression (Pattern),
+                          Object  => Object));
+
+               when N_Identifier | N_Expanded_Name =>
+                  if Is_Type (Entity (Pattern)) then
+                     return Make_In (Loc,
+                       Left_Opnd  => Object,
+                       Right_Opnd => New_Occurrence_Of
+                                       (Entity (Pattern), Loc));
+                  end if;
+
+               when N_Others_Choice =>
+                  return New_Occurrence_Of (Standard_True, Loc);
+
+               when N_Type_Conversion =>
+                  --  aggregate expansion sometimes introduces conversions
+                  if not Comes_From_Source (Pattern)
+                    and then Base_Type (Etype (Pattern))
+                           = Base_Type (Etype (Expression (Pattern)))
+                  then
+                     return PM (Expression (Pattern), Object);
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+
+            --  Avoid cascading errors
+            pragma Assert (Serious_Errors_Detected > 0);
+            return New_Occurrence_Of (Standard_True, Loc);
+         end Pattern_Match;
+
+         ---------------------------------------
+         -- Top_Level_Pattern_Match_Condition --
+         ---------------------------------------
+
+         function Top_Level_Pattern_Match_Condition
+           (Alt : Node_Id) return Node_Id
+         is
+            Top_Level_Object : constant Node_Id :=
+              New_Occurrence_Of (Selector, Loc);
+
+            Choices : constant List_Id := Discrete_Choices (Alt);
+
+            First_Choice : constant Node_Id := First (Choices);
+            Subsequent : Node_Id := Next (First_Choice);
+
+            Choice_Index : Natural := 0;
+         begin
+            if Multidefined_Bindings (Alt) then
+               Choice_Index := 1;
+            end if;
+
+            return Result : Node_Id :=
+              Pattern_Match (Pattern      => First_Choice,
+                             Object       => Top_Level_Object,
+                             Choice_Index => Choice_Index,
+                             Alt          => Alt)
+            do
+               while Present (Subsequent) loop
+                  if Choice_Index /= 0 then
+                     Choice_Index := Choice_Index + 1;
+                  end if;
+
+                  Result := Make_Or_Else (Loc,
+                    Left_Opnd  => Result,
+                    Right_Opnd => Pattern_Match
+                                    (Pattern      => Subsequent,
+                                     Object       => Top_Level_Object,
+                                     Choice_Index => Choice_Index,
+                                     Alt          => Alt));
+                  Subsequent := Next (Subsequent);
+               end loop;
+            end return;
+         end Top_Level_Pattern_Match_Condition;
+
+         function Elsif_Parts return List_Id;
+         --  Process subsequent alternatives
+
+         -----------------
+         -- Elsif_Parts --
+         -----------------
+
+         function Elsif_Parts return List_Id is
+            Alt : Node_Id := First_Alt;
+            Result : constant List_Id := New_List;
+         begin
+            loop
+               Alt := Next (Alt);
+               exit when No (Alt);
+
+               Append (Make_Elsif_Part (Loc,
+                         Condition => Top_Level_Pattern_Match_Condition (Alt),
+                         Then_Statements => Statements (Alt)),
+                       Result);
+            end loop;
+            return Result;
+         end Elsif_Parts;
+
+         If_Stmt : constant Node_Id :=
+           Make_If_Statement (Loc,
+              Condition       => Top_Level_Pattern_Match_Condition (First_Alt),
+              Then_Statements => Statements (First_Alt),
+              Elsif_Parts     => Elsif_Parts);
+         --  Do we want an implicit "else raise Program_Error" here???
+         --  Perhaps only if Exception-related restrictions are not in effect.
+
+         Declarations : constant List_Id := New_List (Selector_Decl);
+
+      begin
+         if Present (Choice_Index_Decl) then
+            Append_To (Declarations, Choice_Index_Decl);
+         end if;
+
+         return Make_Block_Statement (Loc,
+            Declarations => Declarations,
+            Handled_Statement_Sequence =>
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (If_Stmt)));
+      end Expand_General_Case_Statement;
+
+   --  Start of processing for Expand_N_Case_Statement
+
    begin
+      if Extensions_Allowed and then not Is_Discrete_Type (Etype (Expr)) then
+         Rewrite (N, Expand_General_Case_Statement);
+         Analyze (N);
+         Expand (N);
+         return;
+      end if;
+
       --  Check for the situation where we know at compile time which branch
       --  will be taken.
 
@@ -3557,7 +3967,7 @@ package body Exp_Ch5 is
    ---------------------------
 
    --  First we deal with the case of C and Fortran convention boolean values,
-   --  with zero/non-zero semantics.
+   --  with zero/nonzero semantics.
 
    --  Second, we deal with the obvious rewriting for the cases where the
    --  condition of the IF is known at compile time to be True or False.

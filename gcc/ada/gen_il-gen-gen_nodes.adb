@@ -1213,7 +1213,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Case_Statement_Alternative, Node_Kind,
        (Sy (Discrete_Choices, List_Id),
         Sy (Statements, List_Id, Default_Empty_List),
-        Sm (Has_SP_Choice, Flag)));
+        Sm (Has_SP_Choice, Flag),
+        Sm (Multidefined_Bindings, Flag)));
 
    Cc (N_Compilation_Unit, Node_Kind,
        (Sy (Context_Items, List_Id),
@@ -1241,6 +1242,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag),
         Sy (Inherited_Discriminant, Flag),
+        Sy (Binding_Chars, Name_Id, Default_No_Name),
         Sm (Loop_Actions, List_Id),
         Sm (Was_Default_Init_Box_Association, Flag)));
 

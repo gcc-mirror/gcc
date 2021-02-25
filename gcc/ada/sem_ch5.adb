@@ -1412,6 +1412,9 @@ package body Sem_Ch5 is
       --  the case statement, and as a result it is not a good idea to output
       --  warning messages about unreachable code.
 
+      Is_General_Case_Statement : Boolean := False;
+      --  Set True (later) if type of case expression is not discrete
+
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when the
       --  case statement has a non static choice.
@@ -1453,6 +1456,12 @@ package body Sem_Ch5 is
          Ent     : Entity_Id;
 
       begin
+         if Is_General_Case_Statement then
+            return;
+            --  Processing deferred in this case; decls associated with
+            --  pattern match bindings don't exist yet.
+         end if;
+
          Unblocked_Exit_Count := Unblocked_Exit_Count + 1;
          Statements_Analyzed := True;
 
@@ -1527,6 +1536,35 @@ package body Sem_Ch5 is
          Resolve (Exp);
          Exp_Type := Full_View (Etype (Exp));
 
+      --  For Ada, overloading might be ok because subsequently filtering
+      --  out non-discretes may resolve the ambiguity.
+      --  But GNAT extensions allow casing on non-discretes.
+
+      elsif Extensions_Allowed and then Is_Overloaded (Exp) then
+
+         --  TBD: Generate better ambiguity diagnostics here.
+         --  It would be nice if we could generate all the right error
+         --  messages by calling "Resolve (Exp, Any_Type);" in the
+         --  same way that they are generated a few lines below by the
+         --  call "Analyze_And_Resolve (Exp, Any_Discrete);".
+         --  Unfortunately, Any_Type and Any_Discrete are not treated
+         --  consistently (specifically, by Sem_Type.Covers), so that
+         --  doesn't work.
+
+         Error_Msg_N
+           ("selecting expression of general case statement is ambiguous",
+            Exp);
+         return;
+
+      --  Check for a GNAT-extension "general" case statement (i.e., one where
+      --  the type of the selecting expression is not discrete).
+
+      elsif Extensions_Allowed
+         and then not Is_Discrete_Type (Etype (Exp))
+      then
+         Resolve (Exp, Etype (Exp));
+         Exp_Type := Etype (Exp);
+         Is_General_Case_Statement := True;
       else
          Analyze_And_Resolve (Exp, Any_Discrete);
          Exp_Type := Etype (Exp);
@@ -1578,6 +1616,21 @@ package body Sem_Ch5 is
 
       Analyze_Choices (Alternatives (N), Exp_Type);
       Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
+
+      if Is_General_Case_Statement then
+         --  Work normally done in Process_Statements was deferred; do that
+         --  deferred work now that Check_Choices has had a chance to create
+         --  any needed pattern-match-binding declarations.
+         declare
+            Alt : Node_Id := First (Alternatives (N));
+         begin
+            while Present (Alt) loop
+               Unblocked_Exit_Count := Unblocked_Exit_Count + 1;
+               Analyze_Statements (Statements (Alt));
+               Next (Alt);
+            end loop;
+         end;
+      end if;
 
       if Exp_Type = Universal_Integer and then not Others_Present then
          Error_Msg_N ("case on universal integer requires OTHERS choice", Exp);
