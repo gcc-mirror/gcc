@@ -809,12 +809,36 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () final override;
 
 private:
   HirId base;
+};
+
+class StrType : public BaseType
+{
+public:
+  StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::STR)
+  {}
+
+  StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::STR)
+  {}
+
+  std::string get_name () const override final { return as_string (); }
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () final override;
 };
 
 } // namespace TyTy

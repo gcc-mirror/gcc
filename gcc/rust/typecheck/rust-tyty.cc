@@ -799,6 +799,37 @@ ParamType::resolve ()
   return lookup;
 }
 
+BaseType *
+StrType::clone ()
+{
+  return new StrType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
+StrType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+StrType::as_string () const
+{
+  return "str";
+}
+
+BaseType *
+StrType::unify (BaseType *other)
+{
+  StrRules r (this);
+  return r.unify (other);
+}
+
+bool
+StrType::is_equal (const BaseType &other) const
+{
+  return get_kind () == other.get_kind ();
+}
+
 // rust-tyty-call.h
 
 void

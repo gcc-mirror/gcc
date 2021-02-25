@@ -225,6 +225,14 @@ public:
 	}
 	return;
 
+	case HIR::Literal::STRING: {
+	  auto base = ctx->get_backend ()->string_constant_expression (
+	    literal_value->as_string ());
+	  translated
+	    = ctx->get_backend ()->address_expression (base, expr.get_locus ());
+	}
+	return;
+
       default:
 	rust_fatal_error (expr.get_locus (), "unknown literal");
 	return;

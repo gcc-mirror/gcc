@@ -43,6 +43,7 @@ public:
   virtual void visit (CharType &type) = 0;
   virtual void visit (ReferenceType &type) = 0;
   virtual void visit (ParamType &type) = 0;
+  virtual void visit (StrType &type) = 0;
 };
 
 } // namespace TyTy

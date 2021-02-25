@@ -53,6 +53,7 @@ public:
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
+  void visit (StrType &) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -98,6 +99,7 @@ public:
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
+  void visit (StrType &) override { gcc_unreachable (); }
 
   // call fns
   void visit (FnType &type) override;

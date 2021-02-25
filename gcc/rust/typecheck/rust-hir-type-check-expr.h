@@ -454,6 +454,16 @@ public:
 	}
 	break;
 
+	case HIR::Literal::LitType::STRING: {
+	  TyTy::BaseType *base = nullptr;
+	  auto ok = context->lookup_builtin ("str", &base);
+	  rust_assert (ok);
+
+	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+					     base->get_ref ());
+	}
+	break;
+
       default:
 	gcc_unreachable ();
 	break;

@@ -231,6 +231,14 @@ public:
     gcc_unreachable ();
   }
 
+  virtual void visit (StrType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
 protected:
   BaseRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -866,6 +874,13 @@ public:
     auto other_base_type = type.get_base ();
 
     TyTy::BaseType *base_resolved = base_type->unify (other_base_type);
+    if (base_resolved == nullptr
+	|| base_resolved->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
 				  base_resolved->get_ref ());
   }
@@ -914,6 +929,21 @@ private:
   BaseType *get_base () override { return base; }
 
   ParamType *base;
+};
+
+class StrRules : public BaseRules
+{
+  // FIXME we will need a enum for the StrType like ByteBuf etc..
+
+public:
+  StrRules (StrType *base) : BaseRules (base), base (base) {}
+
+  void visit (StrType &type) override { resolved = type.clone (); }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  StrType *base;
 };
 
 } // namespace TyTy

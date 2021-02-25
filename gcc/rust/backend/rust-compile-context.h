@@ -268,8 +268,6 @@ public:
     return compiler.translated;
   }
 
-  virtual ~TyTyResolveCompile () {}
-
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
 
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
@@ -458,6 +456,14 @@ public:
     Btype *base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base ());
     translated = ctx->get_backend ()->reference_type (base_compiled_type);
+  }
+
+  void visit (TyTy::StrType &type) override
+  {
+    ::Btype *compiled_type = nullptr;
+    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
+    rust_assert (ok);
+    translated = compiled_type;
   }
 
 private:

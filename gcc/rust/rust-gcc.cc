@@ -187,6 +187,8 @@ public:
 
   int get_pointer_size ();
 
+  Btype *raw_str_type ();
+
   Btype *integer_type (bool, int);
 
   Btype *float_type (int);
@@ -801,6 +803,14 @@ int
 Gcc_backend::get_pointer_size ()
 {
   return POINTER_SIZE;
+}
+
+Btype *
+Gcc_backend::raw_str_type ()
+{
+  tree char_ptr = build_pointer_type (char_type_node);
+  tree const_char_type = build_qualified_type (char_ptr, TYPE_QUAL_CONST);
+  return this->make_type (const_char_type);
 }
 
 Btype *
@@ -1427,8 +1437,7 @@ Bexpression *
 Gcc_backend::string_constant_expression (const std::string &val)
 {
   tree index_type = build_index_type (size_int (val.length ()));
-  tree const_char_type
-    = build_qualified_type (unsigned_char_type_node, TYPE_QUAL_CONST);
+  tree const_char_type = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
   tree string_type = build_array_type (const_char_type, index_type);
   TYPE_STRING_FLAG (string_type) = 1;
   tree string_val = build_string (val.length (), val.data ());
