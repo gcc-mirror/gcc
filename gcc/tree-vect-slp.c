@@ -2298,7 +2298,7 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
   unsigned i;
 
   /* For now, we don't know anything about externals so do not do anything.  */
-  if (SLP_TREE_DEF_TYPE (root) != vect_internal_def)
+  if (!root || SLP_TREE_DEF_TYPE (root) != vect_internal_def)
     return NULL;
   else if (SLP_TREE_CODE (root) == VEC_PERM_EXPR)
     {
