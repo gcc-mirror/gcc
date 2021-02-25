@@ -28833,6 +28833,7 @@ is_spec_or_derived (tree etype, tree tmpl)
   if (!etype || !CLASS_TYPE_P (etype))
     return false;
 
+  etype = cv_unqualified (etype);
   tree type = TREE_TYPE (tmpl);
   tree tparms = (INNERMOST_TEMPLATE_PARMS
 		 (DECL_TEMPLATE_PARMS (tmpl)));
@@ -28863,7 +28864,7 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   if (args->length() == 1)
     {
       tree val = (*args)[0];
-      if (is_spec_or_derived (tmpl, TREE_TYPE (val)))
+      if (is_spec_or_derived (TREE_TYPE (val), tmpl))
 	return NULL_TREE;
     }
 
