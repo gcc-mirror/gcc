@@ -4390,11 +4390,22 @@ vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
       gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
       tree innerop;
 
-      if (!is_gimple_assign (def_stmt)
-	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+      if (!is_gimple_assign (def_stmt))
 	return;
 
-      innerop = gimple_assign_rhs1 (def_stmt);
+      switch (gimple_assign_rhs_code (def_stmt))
+	{
+	CASE_CONVERT:
+	  innerop = gimple_assign_rhs1 (def_stmt);
+	  break;
+	case VIEW_CONVERT_EXPR:
+	  innerop = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
+	    return;
+	  break;
+	default:
+	  return;
+	}
 
       if (TREE_CODE (innerop) == SSA_NAME
 	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
