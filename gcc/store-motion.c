@@ -1152,7 +1152,6 @@ one_store_motion_pass (void)
 
   /* Now compute kill & transp vectors.  */
   build_store_vectors ();
-  add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
 
   edge_list = pre_edge_rev_lcm (num_stores, st_transp, st_avloc,

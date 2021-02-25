@@ -3106,7 +3106,6 @@ tree_estimate_probability (bool dry_run)
 {
   basic_block bb;
 
-  add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
   /* We use loop_niter_by_eval, which requires that the loops have
      preheaders.  */
@@ -4289,7 +4288,6 @@ rebuild_frequencies (void)
   if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
     {
       loop_optimizer_init (0);
-      add_noreturn_fake_exit_edges ();
       mark_irreducible_loops ();
       connect_infinite_loops_to_exit ();
       estimate_bb_frequencies (true);
