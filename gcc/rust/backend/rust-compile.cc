@@ -53,11 +53,21 @@ CompileCrate::go ()
 void
 CompileExpr::visit (HIR::CallExpr &expr)
 {
-  Btype *type = ResolvePathType::Compile (expr.get_fnexpr (), ctx);
-  if (type != nullptr)
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_fnexpr ()->get_mappings ().get_hirid (), &tyty))
     {
-      // this assumes all fields are in order from type resolution and if a base
-      // struct was specified those fields are filed via accesors
+      rust_error_at (expr.get_locus (), "unknown type");
+      return;
+    }
+
+  // must be a tuple constructor
+  if (tyty->get_kind () != TyTy::TypeKind::FNDEF)
+    {
+      Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+
+      // this assumes all fields are in order from type resolution and if a
+      // base struct was specified those fields are filed via accesors
       std::vector<Bexpression *> vals;
       expr.iterate_params ([&] (HIR::Expr *argument) mutable -> bool {
 	Bexpression *e = CompileExpr::Compile (argument, ctx);

@@ -93,34 +93,5 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
     = ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
 }
 
-void
-ResolvePathType::visit (HIR::PathInExpression &expr)
-{
-  // need to look up the reference for this identifier
-  NodeId ref_node_id;
-  if (!ctx->get_resolver ()->lookup_resolved_type (
-	expr.get_mappings ().get_nodeid (), &ref_node_id))
-    {
-      return;
-    }
-
-  HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (
-	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
-    {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  TyTy::BaseType *tyty = nullptr;
-  if (!ctx->get_tyctx ()->lookup_type (ref, &tyty))
-    {
-      rust_error_at (expr.get_locus (), "unknown type");
-      return;
-    }
-
-  resolved = TyTyResolveCompile::compile (ctx, tyty);
-}
-
 } // namespace Compile
 } // namespace Rust

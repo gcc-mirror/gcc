@@ -35,30 +35,12 @@ public:
     return resolver.resolved;
   }
 
-  void visit (HIR::PathInExpression &expr);
+  void visit (HIR::PathInExpression &expr) override;
 
 private:
   ResolvePathRef (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
 
   Bexpression *resolved;
-};
-
-class ResolvePathType : public HIRCompileBase
-{
-public:
-  static Btype *Compile (HIR::Expr *expr, Context *ctx)
-  {
-    ResolvePathType resolver (ctx);
-    expr->accept_vis (resolver);
-    return resolver.resolved;
-  }
-
-  void visit (HIR::PathInExpression &expr);
-
-private:
-  ResolvePathType (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
-
-  Btype *resolved;
 };
 
 } // namespace Compile

@@ -755,6 +755,31 @@ public:
 		       "failed to resolve PathInExpression type");
 	return;
       }
+
+    HIR::PathExprSegment seg = expr.get_final_segment ();
+    if (!infered->supports_substitions () && seg.has_generic_args ())
+      {
+	rust_error_at (expr.get_locus (),
+		       "path does not support substitutions");
+	return;
+      }
+
+    if (infered->has_subsititions_defined ())
+      {
+	if (infered->get_kind () != TyTy::TypeKind::ADT)
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "substitutions only support on ADT types so far");
+	    return;
+	  }
+
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
+	infered = seg.has_generic_args ()
+		    ? adt->handle_substitions (seg.get_generic_args ())
+		    : adt->infer_substitions ();
+      }
+
+    context->insert_type (expr.get_mappings (), infered->clone ());
   }
 
   void visit (HIR::LoopExpr &expr)
