@@ -461,6 +461,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	return __t <= make_unsigned_t<_Up>(__int_traits<_Up>::__max);
     }
+
+#if __cplusplus > 202002L
+#define __cpp_lib_to_underlying 202102L
+  /// Convert an object of enumeration type to its underlying type.
+  template<typename _Tp>
+    constexpr underlying_type_t<_Tp>
+    to_underlying(_Tp __value) noexcept
+    { return static_cast<underlying_type_t<_Tp>>(__value); }
+#endif // C++23
 #endif // C++20
 #endif // C++17
 
