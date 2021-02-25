@@ -23066,7 +23066,6 @@ package body Sem_Util is
       --  valid syntactic fields. Par_Nod is the expected parent of the
       --  syntactic field. Flag Semantic should be set when the input is a
       --  semantic field.
-      --  ????So it's visiting sem fields twice?
 
       procedure Visit_Itype (Itype : Entity_Id);
       --  Visit itype Itype. This action may create a new entity for Itype and

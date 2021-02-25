@@ -658,10 +658,6 @@ B Unknown_Normalized_Position_Max       (Entity_Id E);
 #define Unknown_RM_Size einfo__utils__unknown_rm_size
 B Unknown_RM_Size                       (Entity_Id E);
 
-// The following were automatically generated as INLINE functions in the old
-// einfo.h by the spitbol program.
-// Is it important that they be inlined????
-
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);
 

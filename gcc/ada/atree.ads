@@ -549,6 +549,18 @@ package Atree is
    --  a manner that can be reversed later). One possible approach is to use
    --  Rewrite to substitute a null statement for the node to be deleted.
 
+   ----------------------
+   -- Vanishing Fields --
+   ----------------------
+
+   --  The Nkind and Ekind fields are like Ada discriminants governing a
+   --  variant part. They determine which fields are present. If the Nkind
+   --  or Ekind fields are changed, then this can change which fields are
+   --  present. If a field is present for the old kind, but not for the
+   --  new kind, the field vanishes. This requires some care when changing
+   --  kinds, as described below. Note that Ada doesn't even allow direct
+   --  modification of a discriminant.
+
    type Node_Field_Set is array (Node_Field) of Boolean with Pack;
 
    type Entity_Field_Set is array (Entity_Field) of Boolean with Pack;
@@ -594,9 +606,9 @@ package Atree is
    --  Mutate_Nkind). However, there are a few cases where we set the Ekind
    --  from its initial E_Void value to something else, then set it back to
    --  E_Void, then back to the something else, and we expect the "something
-   --  else" fields to retain their value. Two two "something else"s are not
+   --  else" fields to retain their value. The two "something else"s are not
    --  always the same; for example we change from E_Void, to E_Variable, to
-   --  E_Void, to E_Constant. ????This needs to be fixed.
+   --  E_Void, to E_Constant.
 
    procedure Print_Atree_Info (N : Node_Or_Entity_Id);
    --  Called from Treepr to print out information about N that is private to
@@ -648,6 +660,13 @@ package Atree is
          Table_Increment      => Alloc.Node_Offsets_Increment,
          Table_Name           => "Node_Offsets");
 
+      Noff : Node_Offsets.Table_Ptr renames Node_Offsets.Table with
+        Unreferenced;
+      function Nlast return Node_Id'Base renames Node_Offsets.Last with
+        Unreferenced;
+      --  Short names for use in gdb, not used in real code. Note that gdb
+      --  can't find Node_Offsets.Table without a full expanded name.
+
       --  We define the type Slot as a 32-bit modular integer. It is logically
       --  split into the appropriate numbers of components of appropriate size,
       --  but this splitting is not explicit because packed arrays cannot be
@@ -663,11 +682,15 @@ package Atree is
       function Shift_Right (S : Slot; V : Natural) return Slot;
       pragma Import (Intrinsic, Shift_Right);
 
-      type Field_1_Bit  is mod 2**1;
-      type Field_2_Bit  is mod 2**2;
-      type Field_4_Bit  is mod 2**4;
-      type Field_8_Bit  is mod 2**8;
-      type Field_32_Bit is mod 2**32;
+      --  Low-level types for fields of the various supported sizes.
+      --  All fields are a power of 2 number of bits, and are aligned
+      --  to that number of bits:
+
+      type Field_Size_1_Bit  is mod 2**1;
+      type Field_Size_2_Bit  is mod 2**2;
+      type Field_Size_4_Bit  is mod 2**4;
+      type Field_Size_8_Bit  is mod 2**8;
+      type Field_Size_32_Bit is mod 2**32;
 
       Slots_Low_Bound : constant Field_Offset := Field_Offset'First + 1;
 
@@ -681,22 +704,25 @@ package Atree is
       --  Note that Table_Low_Bound is set such that if we try to access
       --  Slots.Table (0), we will get Constraint_Error.
 
-      Noff : Node_Offsets.Table_Ptr renames Node_Offsets.Table;
-      function Nlast return Node_Id'Base renames Node_Offsets.Last;
-      Lots : Slots.Table_Ptr renames Slots.Table;
-      function Slast return Node_Offset'Base renames Slots.Last;
-      --  Work around limitations of gdb; it can't find Node_Offsets.Table,
-      --  etc, without a full expanded name.
+      Slts : Slots.Table_Ptr renames Slots.Table with
+        Unreferenced;
+      function Slast return Node_Offset'Base renames Slots.Last with
+        Unreferenced;
+      --  Short names for use in gdb, not used in real code. Note that gdb
+      --  can't find Slots.Table without a full expanded name.
 
       function Alloc_Node_Id return Node_Id with Inline;
 
-      function Alloc_Slots (Num_Slots : Field_Offset) return Node_Offset
+      function Alloc_Slots (Num_Slots : Slot_Count) return Node_Offset
         with Inline;
+      --  Allocate the slots for a node in the Slots table
 
       --  Each of the following Get_N_Bit_Field functions fetches the field of
       --  the given Field_Type at the given offset. Field_Type'Size must be N.
       --  The offset is measured in units of Field_Type'Size. Likewise for the
-      --  Set_N_Bit_Field procedures.
+      --  Set_N_Bit_Field procedures. These are instantiated in Sinfo.Nodes and
+      --  Einfo.Entities for the various possible Field_Types (Flag, Node_Id,
+      --  Uint, etc).
 
       generic
          type Field_Type is private;
@@ -771,49 +797,55 @@ package Atree is
       --  overloaded, we would use the same names.
 
       function Get_1_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_1_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_1_Bit
          with Inline;
 
       function Get_2_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_2_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_2_Bit
          with Inline;
 
       function Get_4_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_4_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_4_Bit
          with Inline;
 
       function Get_8_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_8_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_8_Bit
          with Inline;
 
       function Get_32_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_32_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_32_Bit
          with Inline;
 
       procedure Set_1_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_1_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_1_Bit)
          with Inline;
 
       procedure Set_2_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_2_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_2_Bit)
          with Inline;
 
       procedure Set_4_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_4_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_4_Bit)
          with Inline;
 
       procedure Set_8_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_8_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_8_Bit)
          with Inline;
 
       procedure Set_32_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_32_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_32_Bit)
          with Inline;
 
+      --  The following are used in "asserts on" mode to validate nodes; an
+      --  exception is raised if invalid node content is detected.
+
       procedure Validate_Node (N : Node_Or_Entity_Id);
+      --  Validate for reading
       procedure Validate_Node_Write (N : Node_Or_Entity_Id);
+      --  Validate for writing
 
       function Is_Valid_Node (U : Union_Id) return Boolean;
+      --  True if U is within the range of Node_Offsets
 
    end Atree_Private_Part;
 

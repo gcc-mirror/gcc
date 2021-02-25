@@ -76,7 +76,7 @@ package body Treepr is
    -- Global Variables --
    ----------------------
 
-   Include_Low_Level : Boolean := False with Warnings => Off;
+   Print_Low_Level_Info : Boolean := False with Warnings => Off;
    --  Set True to print low-level information useful for debugging Atree and
    --  the like.
 
@@ -126,8 +126,6 @@ package body Treepr is
    function From_Union is new Unchecked_Conversion (Union_Id, Uint);
    function From_Union is new Unchecked_Conversion (Union_Id, Ureal);
 
-   --  Print_End_Span is gone. Should be restored????
-
    function Capitalize (S : String) return String;
    procedure Capitalize (S : in out String);
    --  Turns an identifier into Mixed_Case
@@ -138,6 +136,10 @@ package body Treepr is
 
    procedure Print_Init;
    --  Initialize for printing of tree with descendants
+
+   procedure Print_End_Span (N : Node_Id);
+   --  Print contents of End_Span field of node N. The format includes the
+   --  implicit source location as well as the value of the field.
 
    procedure Print_Term;
    --  Clean up after printing of tree with descendants
@@ -185,27 +187,26 @@ package body Treepr is
    procedure Print_Field (Val : Union_Id; Format : UI_Format := Auto);
    procedure Print_Field
      (Prefix : String;
-      Field : String;
-      N : Node_Or_Entity_Id;
-      FD : Field_Descriptor;
+      Field  : String;
+      N      : Node_Or_Entity_Id;
+      FD     : Field_Descriptor;
       Format : UI_Format);
    --  Print representation of Field value (name, tree, string, uint, charcode)
    --  The format parameter controls the format of printing in the case of an
-   --  integer value (see UI_Write for details).????
-   --  Do we really need two of these???
+   --  integer value (see UI_Write for details).
 
    procedure Print_Node_Field
      (Prefix : String;
-      Field : Node_Field;
-      N : Node_Id;
-      FD : Field_Descriptor;
+      Field  : Node_Field;
+      N      : Node_Id;
+      FD     : Field_Descriptor;
       Format : UI_Format := Auto);
 
    procedure Print_Entity_Field
      (Prefix : String;
-      Field : Entity_Field;
-      N : Entity_Id;
-      FD : Field_Descriptor;
+      Field  : Entity_Field;
+      N      : Entity_Id;
+      FD     : Field_Descriptor;
       Format : UI_Format := Auto);
 
    procedure Print_Flag (F : Boolean);
@@ -590,6 +591,24 @@ package body Treepr is
       Print_Term;
    end Print_Elist_Subtree;
 
+   --------------------
+   -- Print_End_Span --
+   --------------------
+
+   procedure Print_End_Span (N : Node_Id) is
+      Val : constant Uint := End_Span (N);
+
+   begin
+      UI_Write (Val);
+      Write_Str (" (Uint = ");
+      Write_Str (UI_Image (Val));
+      Write_Str (")  ");
+
+      if Val /= No_Uint then
+         Write_Location (End_Location (N));
+      end if;
+   end Print_End_Span;
+
    -----------------------
    -- Print_Entity_Info --
    -----------------------
@@ -622,26 +641,28 @@ package body Treepr is
       end if;
 
       declare
-         A : Entity_Field_Array renames Entity_Field_Table (Ekind (Ent)).all;
-         Already_Printed_Above : constant Entity_Field_Set :=
+         Fields : Entity_Field_Array renames
+           Entity_Field_Table (Ekind (Ent)).all;
+         Should_Print : constant Entity_Field_Set :=
+           --  Set of fields that should be printed. False for fields that were
+           --  already printed above.
            (Ekind
-              | Basic_Convention => True, -- Convention was printed
-            others => False);
+            | Basic_Convention => False, -- Convention was printed
+            others => True);
       begin
          --  Outer loop makes flags come out last
 
          for Print_Flags in Boolean loop
-            for Field_Index in A'Range loop
+            for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Entity_Field_Descriptors (A (Field_Index));
+                    Entity_Field_Descriptors (Fields (Field_Index));
                begin
-                  if Already_Printed_Above (A (Field_Index))  then
-                     null; -- Skip the ones already printed
-
-                  elsif (FD.Kind = Flag_Field) = Print_Flags then
+                  if Should_Print (Fields (Field_Index))
+                    and then (FD.Kind = Flag_Field) = Print_Flags
+                  then
                      Print_Entity_Field
-                       (Prefix, A (Field_Index), Ent, FD);
+                       (Prefix, Fields (Field_Index), Ent, FD);
                   end if;
                end;
             end loop;
@@ -693,10 +714,10 @@ package body Treepr is
    function Get_Ureal is new Get_32_Bit_Field
      (Ureal) with Inline;
 
-   function Get_Nkind_Type is new Get_8_Bit_Field
+   function Get_Node_Kind_Type is new Get_8_Bit_Field
      (Node_Kind) with Inline;
 
-   function Get_Ekind_Type is new Get_8_Bit_Field
+   function Get_Entity_Kind_Type is new Get_8_Bit_Field
      (Entity_Kind) with Inline;
 
    function Get_Source_Ptr is new Get_32_Bit_Field
@@ -761,11 +782,11 @@ package body Treepr is
 
    procedure Print_Field
      (Prefix : String;
-      Field : String;
-      N : Node_Or_Entity_Id;
-      FD : Field_Descriptor;
-      Format : UI_Format) is
-
+      Field  : String;
+      N      : Node_Or_Entity_Id;
+      FD     : Field_Descriptor;
+      Format : UI_Format)
+   is
       Printed : Boolean := False;
 
       procedure Print_Initial;
@@ -777,7 +798,7 @@ package body Treepr is
          Print_Str (Prefix);
          Print_Str (Field);
 
-         if Include_Low_Level then
+         if Print_Low_Level_Info then
             Write_Str (" at ");
             Write_Int (Int (FD.Offset));
          end if;
@@ -885,23 +906,22 @@ package body Treepr is
                end if;
             end;
 
-         when Nkind_Type_Field =>
+         when Node_Kind_Type_Field =>
             declare
-               Val : constant Node_Kind := Get_Nkind_Type (N, FD.Offset);
+               Val : constant Node_Kind := Get_Node_Kind_Type (N, FD.Offset);
             begin
                Print_Initial;
                Print_Str_Mixed_Case (Node_Kind'Image (Val));
             end;
 
-         when Ekind_Type_Field =>
+         when Entity_Kind_Type_Field =>
             declare
-               Val : constant Entity_Kind := Get_Ekind_Type (N, FD.Offset);
+               Val : constant Entity_Kind :=
+                 Get_Entity_Kind_Type (N, FD.Offset);
             begin
                Print_Initial;
                Print_Str_Mixed_Case (Entity_Kind'Image (Val));
             end;
-
-            pragma Style_Checks ("M200");
 
          when Union_Id_Field =>
             declare
@@ -917,25 +937,29 @@ package body Treepr is
                      Print_List_Ref (List_Id (Val));
 
                   else
-                     Print_Str ("????union id out of range");
+                     Print_Str ("<invalid union id>");
                   end if;
                end if;
             end;
-            pragma Style_Checks ("M79");
 
          when others =>
             Print_Initial;
-            Print_Str ("????");
+            Print_Str ("<unknown ");
+            Print_Str (Field_Kind'Image (FD.Kind));
+            Print_Str (">");
       end case;
 
       if Printed then
          Print_Eol;
       end if;
 
+   --  If an exception is raised while printing, we try to print some low-level
+   --  information that is useful for debugging.
+
    exception
       when others =>
          declare
-            function Cast is new Unchecked_Conversion (Field_32_Bit, Int);
+            function Cast is new Unchecked_Conversion (Field_Size_32_Bit, Int);
          begin
             Write_Eol;
             Print_Initial;
@@ -965,24 +989,34 @@ package body Treepr is
          end;
    end Print_Field;
 
+   ----------------------
+   -- Print_Node_Field --
+   ----------------------
+
    procedure Print_Node_Field
      (Prefix : String;
-      Field : Node_Field;
-      N : Node_Id;
-      FD : Field_Descriptor;
-      Format : UI_Format := Auto) is
+      Field  : Node_Field;
+      N      : Node_Id;
+      FD     : Field_Descriptor;
+      Format : UI_Format := Auto)
+   is
    begin
       if not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), N, FD, Format);
       end if;
    end Print_Node_Field;
 
+   ------------------------
+   -- Print_Entity_Field --
+   ------------------------
+
    procedure Print_Entity_Field
      (Prefix : String;
-      Field : Entity_Field;
-      N : Entity_Id;
-      FD : Field_Descriptor;
-      Format : UI_Format := Auto) is
+      Field  : Entity_Field;
+      N      : Entity_Id;
+      FD     : Field_Descriptor;
+      Format : UI_Format := Auto)
+   is
    begin
       if not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), N, FD, Format);
@@ -1108,7 +1142,7 @@ package body Treepr is
             Print_Char ('"');
 
          else
-            Print_Str ("<invalid name ???>");
+            Print_Str ("<invalid name>");
          end if;
       end if;
    end Print_Name;
@@ -1154,7 +1188,7 @@ package body Treepr is
          Print_Eol;
       end if;
 
-      if Include_Low_Level then
+      if Print_Low_Level_Info then
          Print_Atree_Info (N);
       end if;
 
@@ -1325,8 +1359,6 @@ package body Treepr is
             Print_Eol;
          end if;
       end if;
-      --  ????Can some of the above be handled by the
-      --  loop below, or by calling Print_Field directly?
 
       if Nkind (N) = N_Integer_Literal and then Print_In_Hex (N) then
          Fmt := Hex;
@@ -1335,8 +1367,11 @@ package body Treepr is
       end if;
 
       declare
-         A : Node_Field_Array renames Node_Field_Table (Nkind (N)).all;
-         Already_Printed_Above : constant Node_Field_Set :=
+         Fields : Node_Field_Array renames Node_Field_Table (Nkind (N)).all;
+         Should_Print : constant Node_Field_Set :=
+           --  Set of fields that should be printed. False for fields that were
+           --  already printed above, and for In_List, which we don't bother
+           --  printing.
            (Nkind
             | Chars
             | Comes_From_Source
@@ -1361,25 +1396,32 @@ package body Treepr is
             | Raises_Constraint_Error
             | Do_Overflow_Check
             | Etype
-            | In_List -- ????wasn't printed by old version
-              => True,
+            | In_List
+              => False,
 
-            others => False);
+            others => True);
       begin
          --  Outer loop makes flags come out last
 
          for Print_Flags in Boolean loop
-            for Field_Index in A'Range loop --  Use Walk_Sinfo_Fields????
+            for Field_Index in Fields'Range loop
                declare
                   FD : Field_Descriptor renames
-                    Node_Field_Descriptors (A (Field_Index));
+                    Node_Field_Descriptors (Fields (Field_Index));
                begin
-                  if Already_Printed_Above (A (Field_Index))  then
-                     null; -- Skip the ones already printed
+                  if Should_Print (Fields (Field_Index))
+                    and then (FD.Kind = Flag_Field) = Print_Flags
+                  then
+                     --  Special case for End_Span, which also prints the
+                     --  End_Location.
 
-                  elsif (FD.Kind = Flag_Field) = Print_Flags then
-                     Print_Node_Field
-                       (Prefix, A (Field_Index), N, FD, Fmt);
+                     if Fields (Field_Index) = End_Span then
+                        Print_End_Span (N);
+
+                     else
+                        Print_Node_Field
+                          (Prefix, Fields (Field_Index), N, FD, Fmt);
+                     end if;
                   end if;
                end;
             end loop;
@@ -1495,27 +1537,9 @@ package body Treepr is
    ---------------------
 
    procedure Print_Node_Kind (N : Node_Id) is
-      Ucase : Boolean;
-      S     : constant String := Node_Kind'Image (Nkind (N));
-
    begin
       if Phase = Printing then
-         Ucase := True;
-
-         --  Note: the call to Fold_Upper in this loop is to get past the GNAT
-         --  bug of 'Image returning lower case instead of upper case.
-         --  ????I'm sure that bug has long been fixed. This code was written
-         --  in 2001. It should call Print_Str_Mixed_Case?
-
-         for J in S'Range loop
-            if Ucase then
-               Write_Char (Fold_Upper (S (J)));
-            else
-               Write_Char (Fold_Lower (S (J)));
-            end if;
-
-            Ucase := (S (J) = '_');
-         end loop;
+         Print_Str_Mixed_Case (Node_Kind'Image (Nkind (N)));
       end if;
    end Print_Node_Kind;
 

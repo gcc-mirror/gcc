@@ -156,12 +156,12 @@ package body Atree is
    pragma Inline (Report);
    --  Invoke the reporting procedure if available
 
-   function Size_In_Slots (N : Node_Or_Entity_Id) return Field_Offset;
+   function Size_In_Slots (N : Node_Or_Entity_Id) return Slot_Count;
    --  Number of slots belonging to N. This can be less than
    --  Size_In_Slots_To_Alloc for entities.
 
-   function Size_In_Slots_To_Alloc (N : Node_Or_Entity_Id) return Field_Offset;
-   function Size_In_Slots_To_Alloc (Kind : Node_Kind) return Field_Offset;
+   function Size_In_Slots_To_Alloc (N : Node_Or_Entity_Id) return Slot_Count;
+   function Size_In_Slots_To_Alloc (Kind : Node_Kind) return Slot_Count;
    --  Number of slots to allocate for a node or entity. For entities, we have
    --  to allocate the max, because we don't know the Ekind when this is
    --  called.
@@ -172,27 +172,32 @@ package body Atree is
    function Off_L (N : Node_Id) return Node_Offset;
    --  Offset of the last slot of N in Slots.Table
 
-   procedure Zero_Slots (F, L : Node_Offset) with Inline;
+   procedure Zero_Slots (First, Last : Node_Offset) with Inline;
    --  Set slots in the range F..L to zero
 
    procedure Zero_Slots (N : Node_Or_Entity_Id) with Inline;
    --  Zero the slots belonging to N
 
-   procedure Copy_Slots (From, To, Num_Slots : Node_Offset) with Inline;
-   --  Copy Num_Slots slots from From to To
+   procedure Copy_Slots (From, To : Node_Offset; Num_Slots : Slot_Count)
+     with Inline;
+   --  Copy Num_Slots slots from From to To. Caller is responsible for ensuring
+   --  that the Num_Slots at To are a reasonable place to copy to.
 
    procedure Copy_Slots (Source, Destination : Node_Id) with Inline;
-   --  Copies the slots of Source to Destination
+   --  Copies the slots of Source to Destination; uses the node kind to
+   --  determine the Num_Slots.
 
    function Get_Field_Value
-     (N : Node_Id; Field : Node_Field) return Field_32_Bit;
-   --  Get any field value as a Field_32_Bit. If the field is smaller than 32
-   --  bits, convert it to Field_32_Bit.
+     (N : Node_Id; Field : Node_Field) return Field_Size_32_Bit;
+   --  Get any field value as a Field_Size_32_Bit. If the field is smaller than
+   --  32 bits, convert it to Field_Size_32_Bit. The Field must be present in
+   --  the Nkind of N.
 
    procedure Set_Field_Value
-     (N : Node_Id; Field : Node_Field; Val : Field_32_Bit);
-   --  Set any field value as a Field_32_Bit. If the field is smaller than 32
-   --  bits, convert it from Field_32_Bit, and Val had better be small enough.
+     (N : Node_Id; Field : Node_Field; Val : Field_Size_32_Bit);
+   --  Set any field value as a Field_Size_32_Bit. If the field is smaller than
+   --  32 bits, convert it from Field_Size_32_Bit, and Val had better be small
+   --  enough. The Field must be present in the Nkind of N.
 
    procedure Check_Vanishing_Fields
      (Old_N : Node_Id; New_Kind : Node_Kind);
@@ -200,9 +205,9 @@ package body Atree is
    --  vanishing fields are in their initial zero state.
 
    function Get_Field_Value
-     (N : Entity_Id; Field : Entity_Field) return Field_32_Bit;
+     (N : Entity_Id; Field : Entity_Field) return Field_Size_32_Bit;
    procedure Set_Field_Value
-     (N : Entity_Id; Field : Entity_Field; Val : Field_32_Bit);
+     (N : Entity_Id; Field : Entity_Field; Val : Field_Size_32_Bit);
    procedure Check_Vanishing_Fields
      (Old_N : Entity_Id; New_Kind : Entity_Kind);
    --  Above are the same as the ones for nodes, but for entities
@@ -213,17 +218,22 @@ package body Atree is
    --  Mutate_Nkind.
 
    procedure Mutate_Nkind
-     (N : Node_Id; Val : Node_Kind; Old_Size : Field_Offset);
+     (N : Node_Id; Val : Node_Kind; Old_Size : Slot_Count);
    --  Called by the other Mutate_Nkind to do all the work. This is needed
    --  because the call in Change_Node, which calls this one directly, happens
    --  after zeroing N's slots, which destroys its Nkind, which prevents us
    --  from properly computing Old_Size.
 
    package Field_Checking is
+      --  Functions for checking field access, used only in assertions
+
       function Field_Present
         (Kind : Node_Kind; Field : Node_Field) return Boolean;
       function Field_Present
         (Kind : Entity_Kind; Field : Entity_Field) return Boolean;
+      --  True if a node/entity of the given Kind has the given Field.
+      --  Always True if assertions are disabled.
+
    end Field_Checking;
 
    package body Field_Checking is
@@ -240,16 +250,20 @@ package body Atree is
 
       procedure Init_Tables;
 
-      function Fields_Present (Kind : Node_Kind) return Node_Field_Set;
-      function Fields_Present (Kind : Entity_Kind) return Entity_Field_Set;
+      function Create_Node_Fields_Present
+        (Kind : Node_Kind) return Node_Field_Set;
+      function Create_Entity_Fields_Present
+        (Kind : Entity_Kind) return Entity_Field_Set;
       --  Computes the set of fields present in each Node/Entity Kind. Used to
       --  initialize the above tables.
 
-      --------------------
-      -- Fields_Present --
-      --------------------
+      --------------------------------
+      -- Create_Node_Fields_Present --
+      --------------------------------
 
-      function Fields_Present (Kind : Node_Kind) return Node_Field_Set is
+      function Create_Node_Fields_Present
+        (Kind : Node_Kind) return Node_Field_Set
+      is
          Result : Node_Field_Set := (others => False);
       begin
          for J in Node_Field_Table (Kind)'Range loop
@@ -257,9 +271,15 @@ package body Atree is
          end loop;
 
          return Result;
-      end Fields_Present;
+      end Create_Node_Fields_Present;
 
-      function Fields_Present (Kind : Entity_Kind) return Entity_Field_Set is
+      --------------------------------
+      -- Create_Entity_Fields_Present --
+      --------------------------------
+
+      function Create_Entity_Fields_Present
+        (Kind : Entity_Kind) return Entity_Field_Set
+      is
          Result : Entity_Field_Set := (others => False);
       begin
          for J in Entity_Field_Table (Kind)'Range loop
@@ -267,20 +287,25 @@ package body Atree is
          end loop;
 
          return Result;
-      end Fields_Present;
+      end Create_Entity_Fields_Present;
+
+      -----------------
+      -- Init_Tables --
+      -----------------
 
       procedure Init_Tables is
       begin
          Node_Fields_Present := new Node_Field_Sets;
 
          for Kind in Node_Kind loop
-            Node_Fields_Present (Kind) := Fields_Present (Kind);
+            Node_Fields_Present (Kind) := Create_Node_Fields_Present (Kind);
          end loop;
 
          Entity_Fields_Present := new Entity_Field_Sets;
 
          for Kind in Entity_Kind loop
-            Entity_Fields_Present (Kind) := Fields_Present (Kind);
+            Entity_Fields_Present (Kind) :=
+              Create_Entity_Fields_Present (Kind);
          end loop;
       end Init_Tables;
 
@@ -347,7 +372,8 @@ package body Atree is
       --  Asserts N is OK, and the Offset in slots is within N. Note that this
       --  does not guarantee that the offset is valid, just that it's not past
       --  the last slot. It could be pointing at unused bits within the node,
-      --  or unused padding at the end.
+      --  or unused padding at the end. The "_Write" version is used when we're
+      --  about to modify the node.
 
       procedure Validate_Node_And_Offset
         (N : Node_Or_Entity_Id; Offset : Field_Offset) is
@@ -384,7 +410,7 @@ package body Atree is
 
             pragma Assert (N'Valid);
             pragma Assert (N <= Node_Offsets.Last);
-            pragma Assert (Off_0 (N) < Off_L (N));
+            pragma Assert (Off_0 (N) <= Off_L (N));
             pragma Assert (Off_L (N) <= Slots.Last);
             pragma Assert (Nkind (N)'Valid);
             pragma Assert (Nkind (N) /= N_Unused_At_End);
@@ -393,15 +419,16 @@ package body Atree is
                pragma Assert (Ekind (N)'Valid);
             end if;
 
-            if Nkind (N) in N_Attribute_Definition_Clause
-                          | N_Has_Entity
-                          | N_Aggregate
-                          | N_Extension_Aggregate
-                          | N_Selected_Component
-                          | N_Use_Package_Clause
-                          | N_Aspect_Specification
-                          | N_Freeze_Entity
-                          | N_Freeze_Generic_Entity
+            if Nkind (N) in
+                N_Aggregate
+              | N_Attribute_Definition_Clause
+              | N_Aspect_Specification
+              | N_Extension_Aggregate
+              | N_Freeze_Entity
+              | N_Freeze_Generic_Entity
+              | N_Has_Entity
+              | N_Selected_Component
+              | N_Use_Package_Clause
             then
                pragma Assert (Entity_Or_Associated_Node (N)'Valid);
             end if;
@@ -433,7 +460,7 @@ package body Atree is
          return Node_Offsets.Last;
       end Alloc_Node_Id;
 
-      function Alloc_Slots (Num_Slots : Field_Offset) return Node_Offset is
+      function Alloc_Slots (Num_Slots : Slot_Count) return Node_Offset is
       begin
          return Result : constant Node_Offset := Slots.Last + 1 do
             Slots.Set_Last (Slots.Last + Num_Slots);
@@ -445,7 +472,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 1);
 
-         function Cast is new Unchecked_Conversion (Field_1_Bit, Field_Type);
+         function Cast is new
+           Unchecked_Conversion (Field_Size_1_Bit, Field_Type);
       begin
          return Cast (Get_1_Bit_Val (N, Offset));
       end Get_1_Bit_Field;
@@ -455,7 +483,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 2);
 
-         function Cast is new Unchecked_Conversion (Field_2_Bit, Field_Type);
+         function Cast is new
+           Unchecked_Conversion (Field_Size_2_Bit, Field_Type);
       begin
          return Cast (Get_2_Bit_Val (N, Offset));
       end Get_2_Bit_Field;
@@ -465,7 +494,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 4);
 
-         function Cast is new Unchecked_Conversion (Field_4_Bit, Field_Type);
+         function Cast is new
+           Unchecked_Conversion (Field_Size_4_Bit, Field_Type);
       begin
          return Cast (Get_4_Bit_Val (N, Offset));
       end Get_4_Bit_Field;
@@ -475,7 +505,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 8);
 
-         function Cast is new Unchecked_Conversion (Field_8_Bit, Field_Type);
+         function Cast is new
+           Unchecked_Conversion (Field_Size_8_Bit, Field_Type);
       begin
          return Cast (Get_8_Bit_Val (N, Offset));
       end Get_8_Bit_Field;
@@ -485,7 +516,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 32);
 
-         function Cast is new Unchecked_Conversion (Field_32_Bit, Field_Type);
+         function Cast is new
+           Unchecked_Conversion (Field_Size_32_Bit, Field_Type);
       begin
          return Cast (Get_32_Bit_Val (N, Offset));
       end Get_32_Bit_Field;
@@ -496,7 +528,8 @@ package body Atree is
          function Get_Field is new Get_32_Bit_Field (Field_Type) with Inline;
       begin
          --  If the field has not yet been set, it will be equal to zero.
-         --  That is of the "wrong" type, so we fetch it as a Field_32_Bit.
+         --  That is of the "wrong" type, so we fetch it as a
+         --  Field_Size_32_Bit.
 
          if Get_32_Bit_Val (N, Offset) = 0 then
             return Default_Val;
@@ -511,7 +544,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 1);
 
-         function Cast is new Unchecked_Conversion (Field_Type, Field_1_Bit);
+         function Cast is new
+           Unchecked_Conversion (Field_Type, Field_Size_1_Bit);
       begin
          Set_1_Bit_Val (N, Offset, Cast (Val));
       end Set_1_Bit_Field;
@@ -521,7 +555,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 2);
 
-         function Cast is new Unchecked_Conversion (Field_Type, Field_2_Bit);
+         function Cast is new
+           Unchecked_Conversion (Field_Type, Field_Size_2_Bit);
       begin
          Set_2_Bit_Val (N, Offset, Cast (Val));
       end Set_2_Bit_Field;
@@ -531,7 +566,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 4);
 
-         function Cast is new Unchecked_Conversion (Field_Type, Field_4_Bit);
+         function Cast is new
+           Unchecked_Conversion (Field_Type, Field_Size_4_Bit);
       begin
          Set_4_Bit_Val (N, Offset, Cast (Val));
       end Set_4_Bit_Field;
@@ -541,7 +577,8 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 8);
 
-         function Cast is new Unchecked_Conversion (Field_Type, Field_8_Bit);
+         function Cast is new
+           Unchecked_Conversion (Field_Type, Field_Size_8_Bit);
       begin
          Set_8_Bit_Val (N, Offset, Cast (Val));
       end Set_8_Bit_Field;
@@ -551,13 +588,14 @@ package body Atree is
       is
          pragma Assert (Field_Type'Size = 32);
 
-         function Cast is new Unchecked_Conversion (Field_Type, Field_32_Bit);
+         function Cast is new
+           Unchecked_Conversion (Field_Type, Field_Size_32_Bit);
       begin
          Set_32_Bit_Val (N, Offset, Cast (Val));
       end Set_32_Bit_Field;
 
       function Get_1_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_1_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_1_Bit
       is
          --  We wish we were using packed arrays, but instead we're simulating
          --  them with modular integers. L here (and elsewhere) is the 'Length
@@ -569,11 +607,11 @@ package body Atree is
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
          V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
-         return Field_1_Bit (Shift_Right (S, V) and 1);
+         return Field_Size_1_Bit (Shift_Right (S, V) and 1);
       end Get_1_Bit_Val;
 
       function Get_2_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_2_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_2_Bit
       is
          L : constant Field_Offset := Slot_Size / 2;
 
@@ -582,11 +620,11 @@ package body Atree is
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
          V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
-         return Field_2_Bit (Shift_Right (S, V) and 3);
+         return Field_Size_2_Bit (Shift_Right (S, V) and 3);
       end Get_2_Bit_Val;
 
       function Get_4_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_4_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_4_Bit
       is
          L : constant Field_Offset := Slot_Size / 4;
 
@@ -595,11 +633,11 @@ package body Atree is
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
          V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
-         return Field_4_Bit (Shift_Right (S, V) and 15);
+         return Field_Size_4_Bit (Shift_Right (S, V) and 15);
       end Get_4_Bit_Val;
 
       function Get_8_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_8_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_8_Bit
       is
          L : constant Field_Offset := Slot_Size / 8;
 
@@ -608,21 +646,21 @@ package body Atree is
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
          V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
-         return Field_8_Bit (Shift_Right (S, V) and 255);
+         return Field_Size_8_Bit (Shift_Right (S, V) and 255);
       end Get_8_Bit_Val;
 
       function Get_32_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_32_Bit
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_32_Bit
       is
          pragma Debug (Validate_Node_And_Offset (N, Offset));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset);
       begin
-         return Field_32_Bit (S);
+         return Field_Size_32_Bit (S);
       end Get_32_Bit_Val;
 
       procedure Set_1_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_1_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_1_Bit)
       is
          L : constant Field_Offset := Slot_Size / 1;
 
@@ -635,7 +673,7 @@ package body Atree is
       end Set_1_Bit_Val;
 
       procedure Set_2_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_2_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_2_Bit)
       is
          L : constant Field_Offset := Slot_Size / 2;
 
@@ -648,7 +686,7 @@ package body Atree is
       end Set_2_Bit_Val;
 
       procedure Set_4_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_4_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_4_Bit)
       is
          L : constant Field_Offset := Slot_Size / 4;
 
@@ -661,7 +699,7 @@ package body Atree is
       end Set_4_Bit_Val;
 
       procedure Set_8_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_8_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_8_Bit)
       is
          L : constant Field_Offset := Slot_Size / 8;
 
@@ -674,7 +712,7 @@ package body Atree is
       end Set_8_Bit_Val;
 
       procedure Set_32_Bit_Val
-        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_32_Bit)
+        (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_32_Bit)
       is
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset));
 
@@ -695,33 +733,33 @@ package body Atree is
    --  etc.
 
    function Get_Field_Value
-     (N : Node_Id; Field : Node_Field) return Field_32_Bit
+     (N : Node_Id; Field : Node_Field) return Field_Size_32_Bit
    is
       pragma Assert (Field_Checking.Field_Present (Nkind (N), Field));
       Desc : Field_Descriptor renames Node_Field_Descriptors (Field);
 
    begin
       case Field_Size (Desc.Kind) is
-         when 1 => return Field_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
-         when 2 => return Field_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
-         when 4 => return Field_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
-         when 8 => return Field_32_Bit (Get_8_Bit_Val (N, Desc.Offset));
+         when 1 => return Field_Size_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
+         when 2 => return Field_Size_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
+         when 4 => return Field_Size_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
+         when 8 => return Field_Size_32_Bit (Get_8_Bit_Val (N, Desc.Offset));
          when others => return Get_32_Bit_Val (N, Desc.Offset);  -- 32
       end case;
    end Get_Field_Value;
 
    procedure Set_Field_Value
-     (N : Node_Id; Field : Node_Field; Val : Field_32_Bit)
+     (N : Node_Id; Field : Node_Field; Val : Field_Size_32_Bit)
    is
       pragma Assert (Field_Checking.Field_Present (Nkind (N), Field));
       Desc : Field_Descriptor renames Node_Field_Descriptors (Field);
 
    begin
       case Field_Size (Desc.Kind) is
-         when 1 => Set_1_Bit_Val (N, Desc.Offset, Field_1_Bit (Val));
-         when 2 => Set_2_Bit_Val (N, Desc.Offset, Field_2_Bit (Val));
-         when 4 => Set_4_Bit_Val (N, Desc.Offset, Field_4_Bit (Val));
-         when 8 => Set_8_Bit_Val (N, Desc.Offset, Field_8_Bit (Val));
+         when 1 => Set_1_Bit_Val (N, Desc.Offset, Field_Size_1_Bit (Val));
+         when 2 => Set_2_Bit_Val (N, Desc.Offset, Field_Size_2_Bit (Val));
+         when 4 => Set_4_Bit_Val (N, Desc.Offset, Field_Size_4_Bit (Val));
+         when 8 => Set_8_Bit_Val (N, Desc.Offset, Field_Size_8_Bit (Val));
          when others => Set_32_Bit_Val (N, Desc.Offset, Val);  -- 32
       end case;
    end Set_Field_Value;
@@ -784,31 +822,31 @@ package body Atree is
    end Check_Vanishing_Fields;
 
    function Get_Field_Value
-     (N : Entity_Id; Field : Entity_Field) return Field_32_Bit
+     (N : Entity_Id; Field : Entity_Field) return Field_Size_32_Bit
    is
       pragma Assert (Field_Checking.Field_Present (Ekind (N), Field));
       Desc : Field_Descriptor renames Entity_Field_Descriptors (Field);
    begin
       case Field_Size (Desc.Kind) is
-         when 1 => return Field_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
-         when 2 => return Field_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
-         when 4 => return Field_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
-         when 8 => return Field_32_Bit (Get_8_Bit_Val (N, Desc.Offset));
+         when 1 => return Field_Size_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
+         when 2 => return Field_Size_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
+         when 4 => return Field_Size_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
+         when 8 => return Field_Size_32_Bit (Get_8_Bit_Val (N, Desc.Offset));
          when others => return Get_32_Bit_Val (N, Desc.Offset);  -- 32
       end case;
    end Get_Field_Value;
 
    procedure Set_Field_Value
-     (N : Entity_Id; Field : Entity_Field; Val : Field_32_Bit)
+     (N : Entity_Id; Field : Entity_Field; Val : Field_Size_32_Bit)
    is
       pragma Assert (Field_Checking.Field_Present (Ekind (N), Field));
       Desc : Field_Descriptor renames Entity_Field_Descriptors (Field);
    begin
       case Field_Size (Desc.Kind) is
-         when 1 => Set_1_Bit_Val (N, Desc.Offset, Field_1_Bit (Val));
-         when 2 => Set_2_Bit_Val (N, Desc.Offset, Field_2_Bit (Val));
-         when 4 => Set_4_Bit_Val (N, Desc.Offset, Field_4_Bit (Val));
-         when 8 => Set_8_Bit_Val (N, Desc.Offset, Field_8_Bit (Val));
+         when 1 => Set_1_Bit_Val (N, Desc.Offset, Field_Size_1_Bit (Val));
+         when 2 => Set_2_Bit_Val (N, Desc.Offset, Field_Size_2_Bit (Val));
+         when 4 => Set_4_Bit_Val (N, Desc.Offset, Field_Size_4_Bit (Val));
+         when 8 => Set_8_Bit_Val (N, Desc.Offset, Field_Size_8_Bit (Val));
          when others => Set_32_Bit_Val (N, Desc.Offset, Val);  -- 32
       end case;
    end Set_Field_Value;
@@ -864,18 +902,18 @@ package body Atree is
    Nkind_Offset : constant Field_Offset :=
      Node_Field_Descriptors (Nkind).Offset;
 
-   procedure Set_Nkind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
+   procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind) is
       pragma Assert (Field_Is_Initial_Zero (N, Nkind));
    begin
-      Set_Nkind_Type (N, Nkind_Offset, Val);
+      Set_Node_Kind_Type (N, Nkind_Offset, Val);
    end Init_Nkind;
 
    procedure Mutate_Nkind
-     (N : Node_Id; Val : Node_Kind; Old_Size : Field_Offset)
+     (N : Node_Id; Val : Node_Kind; Old_Size : Slot_Count)
    is
-      New_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Val);
+      New_Size : constant Slot_Count := Size_In_Slots_To_Alloc (Val);
 
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
@@ -905,7 +943,7 @@ package body Atree is
          Zero_Slots (Off_0 (N) + Old_Size, Slots.Last);
       end if;
 
-      Set_Nkind_Type (N, Nkind_Offset, Val);
+      Set_Node_Kind_Type (N, Nkind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
    end Mutate_Nkind;
 
@@ -917,7 +955,8 @@ package body Atree is
    Ekind_Offset : constant Field_Offset :=
      Entity_Field_Descriptors (Ekind).Offset;
 
-   procedure Set_Ekind_Type is new Set_8_Bit_Field (Entity_Kind) with Inline;
+   procedure Set_Entity_Kind_Type is new Set_8_Bit_Field (Entity_Kind)
+     with Inline;
 
    procedure Mutate_Ekind
      (N : Entity_Id; Val : Entity_Kind)
@@ -934,7 +973,7 @@ package body Atree is
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
-      Set_Ekind_Type (N, Ekind_Offset, Val);
+      Set_Entity_Kind_Type (N, Ekind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
    end Mutate_Ekind;
 
@@ -946,7 +985,7 @@ package body Atree is
    begin
       return Result : constant Node_Id := Alloc_Node_Id do
          declare
-            Sz : constant Field_Offset := Size_In_Slots_To_Alloc (Kind);
+            Sz : constant Slot_Count := Size_In_Slots_To_Alloc (Kind);
             Sl : constant Node_Offset := Alloc_Slots (Sz);
          begin
             Node_Offsets.Table (Result) := Sl;
@@ -988,15 +1027,15 @@ package body Atree is
       pragma Assert (Nkind (N) not in N_Entity);
       pragma Assert (New_Kind not in N_Entity);
 
-      Old_Size : constant Field_Offset := Size_In_Slots (N);
-      New_Size : constant Field_Offset := Size_In_Slots_To_Alloc (New_Kind);
+      Old_Size : constant Slot_Count := Size_In_Slots (N);
+      New_Size : constant Slot_Count := Size_In_Slots_To_Alloc (New_Kind);
 
       Save_Sloc    : constant Source_Ptr := Sloc (N);
       Save_In_List : constant Boolean    := In_List (N);
       Save_CFS     : constant Boolean    := Comes_From_Source (N);
       Save_Posted  : constant Boolean    := Error_Posted (N);
-      Save_CA     : constant Boolean := Check_Actuals (N);
-      Save_Is_IGN : constant Boolean := Is_Ignored_Ghost_Node (N);
+      Save_CA      : constant Boolean    := Check_Actuals (N);
+      Save_Is_IGN  : constant Boolean    := Is_Ignored_Ghost_Node (N);
       Save_Link    : constant Union_Id   := Link (N);
 
       Par_Count : Nat := 0;
@@ -1034,11 +1073,11 @@ package body Atree is
       end if;
    end Change_Node;
 
-   ---------------
-   -- Copy_Node --
-   ---------------
+   ----------------
+   -- Copy_Slots --
+   ----------------
 
-   procedure Copy_Slots (From, To, Num_Slots : Node_Offset) is
+   procedure Copy_Slots (From, To : Node_Offset; Num_Slots : Slot_Count) is
       pragma Assert (From /= To);
 
       All_Slots : Slots.Table_Type renames
@@ -1059,7 +1098,7 @@ package body Atree is
       pragma Debug (Validate_Node_Write (Destination));
       pragma Assert (Source /= Destination);
 
-      S_Size : constant Field_Offset := Size_In_Slots (Source);
+      S_Size : constant Slot_Count := Size_In_Slots (Source);
 
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
@@ -1079,8 +1118,8 @@ package body Atree is
       Save_In_List : constant Boolean  := In_List (Destination);
       Save_Link    : constant Union_Id := Link (Destination);
 
-      S_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Source);
-      D_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Destination);
+      S_Size : constant Slot_Count := Size_In_Slots_To_Alloc (Source);
+      D_Size : constant Slot_Count := Size_In_Slots_To_Alloc (Destination);
 
    begin
       New_Node_Debugging_Output (Source);
@@ -1350,7 +1389,7 @@ package body Atree is
            when N_Character_Literal => N_Defining_Character_Literal,
            when N_Identifier => N_Defining_Identifier,
            when N_Operator_Symbol => N_Defining_Operator_Symbol,
-           when others => N_Abort_Statement); -- can't happen
+           when others => N_Unused_At_Start); -- can't happen
       --  The new NKind, which is the appropriate value of N_Entity based on
       --  the old Nkind. N_xxx is mapped to N_Defining_xxx.
       pragma Assert (New_Kind in N_Entity);
@@ -1554,54 +1593,51 @@ package body Atree is
 
    function New_Copy (Source : Node_Id) return Node_Id is
       pragma Debug (Validate_Node (Source));
-
-      New_Id : Node_Id;
-      S_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Source);
+      S_Size : constant Slot_Count := Size_In_Slots_To_Alloc (Source);
    begin
       if Source <= Empty_Or_Error then
          return Source;
       end if;
 
-      New_Id := Alloc_Node_Id;
-      Node_Offsets.Table (New_Id) := Alloc_Slots (S_Size);
-      Orig_Nodes.Append (New_Id);
-      Copy_Slots (Source, New_Id);
+      return New_Id : constant Node_Id := Alloc_Node_Id do
+         Node_Offsets.Table (New_Id) := Alloc_Slots (S_Size);
+         Orig_Nodes.Append (New_Id);
+         Copy_Slots (Source, New_Id);
 
-      Set_Check_Actuals (New_Id, False);
-      Set_Paren_Count_Of_Copy (Target => New_Id, Source => Source);
-      pragma Assert (Original_Node (Node_Offsets.Last) = Node_Offsets.Last);
+         Set_Check_Actuals (New_Id, False);
+         Set_Paren_Count_Of_Copy (Target => New_Id, Source => Source);
 
-      Allocate_List_Tables (New_Id);
-      Report (Target => New_Id, Source => Source);
+         Allocate_List_Tables (New_Id);
+         Report (Target => New_Id, Source => Source);
 
-      Set_In_List (New_Id, False);
-      Set_Link (New_Id, Empty_List_Or_Node);
+         Set_In_List (New_Id, False);
+         Set_Link (New_Id, Empty_List_Or_Node);
 
-      --  If the original is marked as a rewrite insertion, then unmark the
-      --  copy, since we inserted the original, not the copy.
+         --  If the original is marked as a rewrite insertion, then unmark the
+         --  copy, since we inserted the original, not the copy.
 
-      Set_Rewrite_Ins (New_Id, False);
+         Set_Rewrite_Ins (New_Id, False);
 
-      --  Clear Is_Overloaded since we cannot have semantic interpretations
-      --  of this new node.
+         --  Clear Is_Overloaded since we cannot have semantic interpretations
+         --  of this new node.
 
-      if Nkind (Source) in N_Subexpr then
-         Set_Is_Overloaded (New_Id, False);
-      end if;
+         if Nkind (Source) in N_Subexpr then
+            Set_Is_Overloaded (New_Id, False);
+         end if;
 
-      --  Always clear Has_Aspects, the caller must take care of copying
-      --  aspects if this is required for the particular situation.
+         --  Always clear Has_Aspects, the caller must take care of copying
+         --  aspects if this is required for the particular situation.
 
-      Set_Has_Aspects (New_Id, False);
+         Set_Has_Aspects (New_Id, False);
 
-      --  Mark the copy as Ghost depending on the current Ghost region
+         --  Mark the copy as Ghost depending on the current Ghost region
 
-      Mark_New_Ghost_Node (New_Id);
+         Mark_New_Ghost_Node (New_Id);
 
-      New_Node_Debugging_Output (New_Id);
+         New_Node_Debugging_Output (New_Id);
 
-      pragma Assert (New_Id /= Source);
-      return New_Id;
+         pragma Assert (New_Id /= Source);
+      end return;
    end New_Copy;
 
    ----------------
@@ -1684,10 +1720,9 @@ package body Atree is
       return Node_Offsets.Table (First_Node_Id)'Address;
    end Node_Offsets_Address;
 
-   Slot_Byte_Size : constant := 4;
-   pragma Assert (Slot_Byte_Size * 8 = Slot'Size);
-
    function Slots_Address return System.Address is
+      Slot_Byte_Size : constant := 4;
+      pragma Assert (Slot_Byte_Size * 8 = Slot'Size);
       Extra : constant := Slots_Low_Bound * Slot_Byte_Size;
       --  Slots does not start at 0, so we need to subtract off the extra
       --  amount. We are returning Slots.Table (0)'Address, except that
@@ -2123,7 +2158,7 @@ package body Atree is
       Rewriting_Proc := Proc;
    end Set_Rewriting_Proc;
 
-   function Size_In_Slots_To_Alloc (Kind : Node_Kind) return Field_Offset is
+   function Size_In_Slots_To_Alloc (Kind : Node_Kind) return Slot_Count is
    begin
       return
         (if Kind in N_Entity then Einfo.Entities.Max_Entity_Size
@@ -2133,12 +2168,12 @@ package body Atree is
    end Size_In_Slots_To_Alloc;
 
    function Size_In_Slots_To_Alloc
-     (N : Node_Or_Entity_Id) return Field_Offset is
+     (N : Node_Or_Entity_Id) return Slot_Count is
    begin
       return Size_In_Slots_To_Alloc (Nkind (N));
    end Size_In_Slots_To_Alloc;
 
-   function Size_In_Slots (N : Node_Or_Entity_Id) return Field_Offset is
+   function Size_In_Slots (N : Node_Or_Entity_Id) return Slot_Count is
    begin
       pragma Assert (Nkind (N) /= N_Unused_At_Start);
       return
@@ -2313,11 +2348,9 @@ package body Atree is
    -- Zero_Slots --
    ----------------
 
-   Zero : constant Slot := 0;
-
-   procedure Zero_Slots (F, L : Node_Offset) is
+   procedure Zero_Slots (First, Last : Node_Offset) is
    begin
-      Slots.Table (F .. L) := (others => Zero);
+      Slots.Table (First .. Last) := (others => 0);
    end Zero_Slots;
 
    procedure Zero_Slots (N : Node_Or_Entity_Id) is

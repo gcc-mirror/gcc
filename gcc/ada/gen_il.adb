@@ -25,6 +25,10 @@
 
 package body Gen_IL is
 
+   -----------
+   -- Image --
+   -----------
+
    function Image (X : Root_Int) return String is
       Result : constant String := X'Img;
    begin
@@ -34,6 +38,10 @@ package body Gen_IL is
          return Result;
       end if;
    end Image;
+
+   ----------------
+   -- Capitalize --
+   ----------------
 
    procedure Capitalize (S : in out String) is
       Cap : Boolean := True;
@@ -52,6 +60,10 @@ package body Gen_IL is
          end;
       end loop;
    end Capitalize;
+
+   ----------------
+   -- Capitalize --
+   ----------------
 
    function Capitalize (S : String) return String is
    begin

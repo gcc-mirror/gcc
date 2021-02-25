@@ -20435,7 +20435,7 @@ package body Sem_Ch3 is
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
 
-         if Ekind (Id) = E_In_Parameter then -- ????Above says E_Void
+         if Ekind (Id) = E_In_Parameter then
             Reinit_Field_To_Zero (Id, Discriminal_Link);
          end if;
 

@@ -37,31 +37,6 @@ with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Sinfo.CN is
 
-   procedure Assert_Expression_Fields_Zero (N : Node_Id);
-   --  Asserts that all fields documented in Sinfo as "plus fields for
-   --  expression" have their initial zero value. Note that N_Operator_Symbol
-   --  is not documented as having "plus fields for expression", but it is in
-   --  N_Subexpr, so it does.
-   --  ????This is redundant with Check_Vanishing_Fields in Atree.
-
-   -----------------------------------
-   -- Assert_Expression_Fields_Zero --
-   -----------------------------------
-
-   procedure Assert_Expression_Fields_Zero (N : Node_Id) is
-   begin
-      pragma Assert (Paren_Count (N) = 0);
-      pragma Assert (No (Etype (N)));
-      pragma Assert (not Is_Overloaded (N));
-      pragma Assert (not Is_Static_Expression (N));
-      pragma Assert (not Raises_Constraint_Error (N));
-      pragma Assert (not Must_Not_Freeze (N));
-      pragma Assert (not Do_Range_Check (N));
-      pragma Assert (not Has_Dynamic_Length_Check (N));
-      pragma Assert (not Assignment_OK (N));
-      pragma Assert (not Is_Controlling_Actual (N));
-   end Assert_Expression_Fields_Zero;
-
    ------------------------------------------------------------
    -- Change_Character_Literal_To_Defining_Character_Literal --
    ------------------------------------------------------------
@@ -71,12 +46,6 @@ package body Sinfo.CN is
    is
    begin
       Reinit_Field_To_Zero (N, Char_Literal_Value);
---  ????pragma Assert (No (Node2 (N))); -- Char_Literal_Value is Uint2 out of r
-      pragma Assert (No (Entity (N)));
-      pragma Assert (No (Associated_Node (N)));
-      pragma Assert (not Has_Private_View (N));
-      Assert_Expression_Fields_Zero (N);
-
       Extend_Node (N);
    end Change_Character_Literal_To_Defining_Character_Literal;
 
@@ -98,17 +67,6 @@ package body Sinfo.CN is
 
    procedure Change_Identifier_To_Defining_Identifier (N : Node_Id) is
    begin
-      pragma Assert (No (Entity (N)));
-      pragma Assert (No (Associated_Node (N)));
-      pragma Assert (No (Original_Discriminant (N)));
-      pragma Assert (not Is_Elaboration_Checks_OK_Node (N));
-      pragma Assert (not Is_SPARK_Mode_On_Node (N));
-      pragma Assert (not Is_Elaboration_Warnings_OK_Node (N));
-      pragma Assert (not Has_Private_View (N));
-      pragma Assert (not Redundant_Use (N));
-      pragma Assert (not Atomic_Sync_Required (N));
-      Assert_Expression_Fields_Zero (N);
-
       Extend_Node (N);
    end Change_Identifier_To_Defining_Identifier;
 
@@ -173,13 +131,6 @@ package body Sinfo.CN is
    is
    begin
       Reinit_Field_To_Zero (N, Strval);
---  ????pragma Assert (No (Node3 (N))); -- Strval is Str3, 0 is out of range
-      pragma Assert (No (Entity (N)));
-      pragma Assert (No (Associated_Node (N)));
-      pragma Assert (No (Etype (N)));
-      pragma Assert (not Has_Private_View (N));
-      Assert_Expression_Fields_Zero (N);
-
       Extend_Node (N);
    end Change_Operator_Symbol_To_Defining_Operator_Symbol;
 
@@ -191,12 +142,6 @@ package body Sinfo.CN is
    begin
       Reinit_Field_To_Zero (N, Chars);
       Set_Entity (N, Empty);
---  ????pragma Assert (No (Node1 (N))); -- Chars is Name1 out of range
-      pragma Assert (No (Entity (N)));
-      pragma Assert (No (Associated_Node (N)));
-      pragma Assert (No (Etype (N)));
-      pragma Assert (not Has_Private_View (N));
-
       Mutate_Nkind (N, N_String_Literal);
    end Change_Operator_Symbol_To_String_Literal;
 

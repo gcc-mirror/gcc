@@ -8479,7 +8479,6 @@ package body Sem_Ch12 is
 
          --  Do not copy the associated node, which points to the generic copy
          --  of the aggregate.
-         --  ????We ought to be able to get rid of all the Union_Id conversions
 
          if Nkind (N) = N_Aggregate then
             Set_Aggregate_Bounds
@@ -15624,7 +15623,7 @@ package body Sem_Ch12 is
 
          --  E should be an entity, but it is not always
 
-         elsif Nkind (E) not in N_Entity then -- ????
+         elsif Nkind (E) not in N_Entity then
             return False;
 
          elsif Is_Child_Unit (E)
