@@ -4429,7 +4429,7 @@
 		      (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
-  "<logical>\\t%<w>0, %<w>3, %<w>1, ror (<sizen> - %2)"
+  "<logical>\\t%<w>0, %<w>3, %<w>1, ror #(<sizen> - %2)"
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4454,7 +4454,7 @@
 		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
 		     (match_operand:SI 3 "register_operand" "r"))))]
   ""
-  "<logical>\\t%w0, %w3, %w1, ror (32 - %2)"
+  "<logical>\\t%w0, %w3, %w1, ror #(32 - %2)"
   [(set_attr "type" "logic_shift_imm")]
 )
 

@@ -1,3 +1,74 @@
+2021-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99261
+	* src/c++17/floating_to_chars.cc (sprintf_ld): Add extra args
+	before value to be printed.
+
+2021-02-24  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_precision):
+	Relax the condition that guards the printf code path to accept
+	F128_type as well as long double.
+
+2021-02-24  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year_month_day_last:day): New
+	implementation.
+
+2021-02-24  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year::is_leap): New implementation.
+	* testsuite/std/time/year/2.cc: New test.
+
+2021-02-24  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year_month_day::_M_days_since_epoch):
+	New implementation.
+	* testsuite/std/time/year_month_day/4.cc: New test.
+
+2021-02-24  Cassio Neri  <cassio.neri@gmail.com>
+
+	* include/std/chrono (year_month_day::_S_from_days): New
+	implementation.
+	* testsuite/std/time/year_month_day/3.cc: New test.
+
+2021-02-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98384
+	* testsuite/20_util/to_chars/long_double.cc: Include <optional>.
+	(test01): Simplify verifying the nearby values by using a
+	2-iteration loop and a dedicated output buffer to check that the
+	nearby values are different.  Factor out the printf-based
+	verification into a local function, and check that the leading
+	hex digits agree before comparing to the output of printf.  Also
+	verify the output by round-tripping it through from_chars.
+
+2021-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98389
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Do not match to_chars
+	symbols for long double arguments mangled as 'g'.
+	* config/os/gnu-linux/ldbl-extra.ver: Likewise.
+	* config/os/gnu-linux/ldbl-ieee128-extra.ver: Likewise.
+	* src/c++17/Makefile.am [GLIBCXX_LDBL_ALT128_COMPAT_TRUE]:
+	Use -mabi=ibmlongdouble for floating_to_chars.cc.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/floating_to_chars.cc (floating_type_traits_binary128):
+	New type defining type traits of IEEE binary128 format.
+	(floating_type_traits<__float128>): Define specialization.
+	(floating_type_traits<long double>): Define in terms of
+	floating_type_traits_binary128 when appropriate.
+	(floating_to_shortest_scientific): Handle __float128.
+	(sprintf_ld): New function template for printing a long double
+	or __ieee128 value using sprintf.
+	(__floating_to_chars_shortest, __floating_to_chars_precision):
+	Use sprintf_ld.
+	(to_chars): Define overloads for __float128.
+
+2021-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Undefine 'u' on powerpc*-linux*.
+
 2021-02-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/99074

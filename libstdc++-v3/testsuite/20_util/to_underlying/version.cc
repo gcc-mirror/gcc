@@ -1,6 +1,4 @@
-// { dg-do compile }
-
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,11 +15,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdio>
+// { dg-options "-std=gnu++23" }
+// { dg-do compile { target c++23 } }
 
-namespace gnu
-{
-  std::size_t s;
-  std::FILE* f;
-  std::fpos_t p;
-}
+#include <version>
+
+#ifndef __cpp_lib_to_underlying
+# error "Feature-test macro for to_underlying missing in <version>"
+#elif __cpp_lib_to_underlying != 202102L
+# error "Feature-test macro for to_underlying has wrong value in <version>"
+#endif

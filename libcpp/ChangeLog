@@ -1,3 +1,15 @@
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98718
+	* include/line-map.h
+	* line-map.c
+
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99072
+	* init.c (read_original_filename): Expunge all evidence of the
+	original filename.
+
 2021-02-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99023

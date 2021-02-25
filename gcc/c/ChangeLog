@@ -1,3 +1,8 @@
+2021-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* c-decl.c (free_attr_access_data): Clear attribute arg spec.
+
 2021-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99136

@@ -272,6 +272,7 @@ compatible.
     <listitem><para>GCC 9.2.0: libstdc++.so.6.0.27</para></listitem>
     <listitem><para>GCC 9.3.0: libstdc++.so.6.0.28</para></listitem>
     <listitem><para>GCC 10.1.0: libstdc++.so.6.0.28</para></listitem>
+    <listitem><para>GCC 11.1.0: libstdc++.so.6.0.29</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -346,6 +347,7 @@ compatible.
     <listitem><para>GCC 9.2.0: GLIBCXX_3.4.27, CXXABI_1.3.12</para></listitem>
     <listitem><para>GCC 9.3.0: GLIBCXX_3.4.28, CXXABI_1.3.12</para></listitem>
     <listitem><para>GCC 10.1.0: GLIBCXX_3.4.28, CXXABI_1.3.12</para></listitem>
+    <listitem><para>GCC 11.1.0: GLIBCXX_3.4.29, CXXABI_1.3.13</para></listitem>
 
     </itemizedlist>
     </listitem>
@@ -579,10 +581,10 @@ compatible.
     <listitem><para>GCC 3.3.3: include/c++/3.3.3</para></listitem>
     <listitem><para>GCC 3.4.x: include/c++/3.4.x</para></listitem>
     <listitem><para>GCC 4.x.y: include/c++/4.x.y</para></listitem>
-    <listitem><para>GCC 5.x.0: include/c++/5.x.0</para></listitem>
-    <listitem><para>GCC 6.x.0: include/c++/6.x.0</para></listitem>
-    <listitem><para>GCC 7.x.0: include/c++/7.x.0</para></listitem>
-    <listitem><para>GCC 8.x.0: include/c++/8.x.0</para></listitem>
+    <listitem><para>GCC 5.1.0: include/c++/5.1.0</para></listitem>
+    <listitem>
+      <para>GCC x.y.0: include/c++/x.y.0 (for releases after GCC 5.1.0)</para>
+    </listitem>
     </itemizedlist>
     <para/>
     </listitem>
@@ -1227,7 +1229,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
       on GNU/Linux Systems
 	</link>
       </title>
-	
+
     <subtitle>
       SYRCoSE 2009
     </subtitle>

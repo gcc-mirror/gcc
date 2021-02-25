@@ -428,6 +428,17 @@ region_model::impl_call_operator_delete (const call_details &cd)
   return false;
 }
 
+/* Handle the on_call_pre part of "realloc".  */
+
+void
+region_model::impl_call_realloc (const call_details &)
+{
+  /* Currently we don't support bifurcating state, so there's no good
+     way to implement realloc(3).
+     For now, malloc_state_machine::on_realloc_call has a minimal
+     implementation to suppress false positives.  */
+}
+
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */
 
 void

@@ -1,6 +1,4 @@
-// { dg-do compile }
-
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,11 +15,24 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdio>
+// { dg-options "-std=gnu++23" }
+// { dg-do compile { target c++23 } }
 
-namespace gnu
+#include <utility>
+
+#ifndef __cpp_lib_to_underlying
+# error "Feature-test macro for to_underlying missing in <utility>"
+#elif __cpp_lib_to_underlying != 202102L
+# error "Feature-test macro for to_underlying has wrong value in <utility>"
+#endif
+
+void
+test01()
 {
-  std::size_t s;
-  std::FILE* f;
-  std::fpos_t p;
+  enum E : short { e0, e1, e2 };
+  E e = e0;
+  static_assert( std::is_same_v<decltype(std::to_underlying(e)), short> );
+  static_assert( noexcept(std::to_underlying(e)) );
+  static_assert( std::to_underlying(e1) == 1 );
+  static_assert( std::to_underlying((E)3) == 3 );
 }

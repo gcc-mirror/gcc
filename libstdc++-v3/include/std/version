@@ -250,7 +250,7 @@
 #define __cpp_lib_ssize 201902L
 #define __cpp_lib_starts_ends_with 201711L
 # if _GLIBCXX_USE_CXX11_ABI
-// Only supported with cx11-abi
+// Only supported with cxx11-abi
 #  define __cpp_lib_syncbuf 201803L
 # endif
 #define __cpp_lib_to_address 201711L
@@ -260,6 +260,7 @@
 #if __cplusplus > 202002L
 // c++2b
 #define __cpp_lib_string_contains 202011L
+#define __cpp_lib_to_underlying 202102L
 #endif // C++2b
 #endif // C++20
 #endif // C++17

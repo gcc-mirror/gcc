@@ -3,6 +3,7 @@
    { dg-do link }
    { dg-options "-Wall -flto -fpic -shared" }
    { dg-require-effective-target fpic }
+   { dg-require-effective-target shared }
    { dg-require-effective-target lto } */
 
 #include "pr97172.c"
