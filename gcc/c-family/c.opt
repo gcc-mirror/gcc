@@ -1752,11 +1752,11 @@ flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
 Note a #include translation of a specific header.
 
-flang-info-module-read
-C++ Var(note_module_read_yes)
+flang-info-module-cmi
+C++ Var(note_module_cmi_yes)
 Note Compiled Module Interface pathnames.
 
-flang-info-module-read=
+flang-info-module-cmi=
 C++ Joined RejectNegative MissingArgError(missing module name)
 Note Compiled Module Interface pathname of a specific module or header-unit.
 

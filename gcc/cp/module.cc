@@ -3552,7 +3552,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			   do it again  */
   bool call_init_p : 1; /* This module's global initializer needs
 			   calling.  */
-  bool inform_read_p : 1; /* Inform of a read.  */
+  bool inform_cmi_p : 1; /* Inform of a read/write.  */
   bool visited_p : 1;    /* A walk-once flag. */
   /* Record extensions emitted or permitted.  */
   unsigned extensions : SE_BITS;
@@ -3789,7 +3789,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 
   partition_p = partition;
 
-  inform_read_p = false;
+  inform_cmi_p = false;
   visited_p = false;
 
   extensions = 0;
@@ -18699,7 +18699,7 @@ module_state::do_import (cpp_reader *reader, bool outermost)
     {
       const char *file = maybe_add_cmi_prefix (filename);
       dump () && dump ("CMI is %s", file);
-      if (note_module_read_yes || inform_read_p)
+      if (note_module_cmi_yes || inform_cmi_p)
 	inform (loc, "reading CMI %qs", file);
       fd = open (file, O_RDONLY | O_CLOEXEC | O_BINARY);
       e = errno;
@@ -19695,7 +19695,7 @@ init_modules (cpp_reader *reader)
 					       0, is_pathname, name, len);
 	  }
 	if (auto module = get_module (name))
-	  module->inform_read_p = 1;
+	  module->inform_cmi_p = 1;
 	else
 	  error ("invalid module name %qs", name);
       }
@@ -19903,6 +19903,8 @@ finish_module_processing (cpp_reader *reader)
 		  break;
 		create_dirs (tmp_name);
 	      }
+	  if (note_module_cmi_yes || state->inform_cmi_p)
+	    inform (state->loc, "writing CMI %qs", path);
 	  dump () && dump ("CMI is %s", path);
 	}
 
@@ -19915,7 +19917,7 @@ finish_module_processing (cpp_reader *reader)
 	  if (to.begin ())
 	    {
 	      auto loc = input_location;
-	      /* So crashes finger point the module decl.  */
+	      /* So crashes finger-point the module decl.  */
 	      input_location = state->loc;
 	      state->write (&to, reader);
 	      input_location = loc;
@@ -20085,7 +20087,7 @@ handle_module_option (unsigned code, const char *str, int)
       vec_safe_push (note_includes, str);
       return true;
 
-    case OPT_flang_info_module_read_:
+    case OPT_flang_info_module_cmi_:
       vec_safe_push (note_cmis, str);
       return true;
 

@@ -242,7 +242,7 @@ in the following sections.
 -fext-numeric-literals @gol
 -flang-info-include-translate@r{[}=@var{header}@r{]} @gol
 -flang-info-include-translate-not @gol
--flang-info-module-read@r{[}=@var{module}@r{]} @gol
+-flang-info-module-cmi@r{[}=@var{module}@r{]} @gol
 -stdlib=@var{libstdc++,libc++} @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
@@ -3390,9 +3390,9 @@ translations relating to that specific header.  If @var{header} is of
 the form @code{"user"} or @code{<system>} it will be resolved to a
 specific user or system header using the include path.
 
-@item -flang-info-module-read
-@itemx -flang-info-module-read=@var{module}
-@opindex flang-info-module-read
+@item -flang-info-module-cmi
+@itemx -flang-info-module-cmi=@var{module}
+@opindex flang-info-module-cmi
 Inform of Compiled Module Interface pathnames.  The first will note
 all read CMI pathnames.  The @var{module} form will not reading a
 specific module's CMI.  @var{module} may be a named module or a
@@ -33063,7 +33063,7 @@ option may be helpful in determining whether include translation is
 happening---if it is working correctly, it behaves as if it isn't
 there at all.
 
-The @option{-flang-info-module-read} option can be used to determine
+The @option{-flang-info-module-cmi} option can be used to determine
 where the compiler is reading a CMI from.  Without the option, the
 compiler is silent when such a read is successful.  This option has an
 optional argument, which will restrict the notification to just the
@@ -33142,7 +33142,8 @@ pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
 they override those stored in any imported CMI files.  A repository
 root may be specified in the mapping file by using @samp{$root} as the
-module name in the first active line.
+module name in the first active line.  Use of this option will disable
+any default module->CMI name mapping.
 
 @end table
 
