@@ -1,69 +1,56 @@
-// operator.h -- Go frontend operators.     -*- C++ -*-
+#ifndef OPERATOR_H
+#define OPERATOR_H
 
-// Copyright 2009 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+enum Operator {};
 
-#ifndef GO_OPERATOR_H
-#define GO_OPERATOR_H
-
-// The operators.
-
-// TODO: Will have to be significantly modified to work with Rust and current
-// setup of gccrs
-
-enum Operator
+enum class NegationOperator
 {
-  OPERATOR_INVALID,
-  OPERATOR_OROR,     // ||
-  OPERATOR_ANDAND,   // &&
-  OPERATOR_EQEQ,     // ==
-  OPERATOR_NOTEQ,    // !=
-  OPERATOR_LT,	     // <
-  OPERATOR_LE,	     // <=
-  OPERATOR_GT,	     // >
-  OPERATOR_GE,	     // >=
-  OPERATOR_PLUS,     // +
-  OPERATOR_MINUS,    // -
-  OPERATOR_OR,	     // |
-  OPERATOR_XOR,	     // ^
-  OPERATOR_MULT,     // *
-  OPERATOR_DIV,	     // /
-  OPERATOR_MOD,	     // %
-  OPERATOR_LSHIFT,   // <<
-  OPERATOR_RSHIFT,   // >>
-  OPERATOR_AND,	     // &
-  OPERATOR_NOT,	     // !
-  OPERATOR_BITCLEAR, // &^
-  OPERATOR_CHANOP,   // <-
-
-  OPERATOR_EQ,	       // =
-  OPERATOR_PLUSEQ,     // +=
-  OPERATOR_MINUSEQ,    // -=
-  OPERATOR_OREQ,       // |=
-  OPERATOR_XOREQ,      // ^=
-  OPERATOR_MULTEQ,     // *=
-  OPERATOR_DIVEQ,      // /=
-  OPERATOR_MODEQ,      // %=
-  OPERATOR_LSHIFTEQ,   // <<=
-  OPERATOR_RSHIFTEQ,   // >>=
-  OPERATOR_ANDEQ,      // &=
-  OPERATOR_BITCLEAREQ, // &^=
-  OPERATOR_PLUSPLUS,   // ++
-  OPERATOR_MINUSMINUS, // --
-
-  OPERATOR_COLON,     // :
-  OPERATOR_COLONEQ,   // :=
-  OPERATOR_SEMICOLON, // ;
-  OPERATOR_DOT,	      // .
-  OPERATOR_ELLIPSIS,  // ...
-  OPERATOR_COMMA,     // ,
-  OPERATOR_LPAREN,    // (
-  OPERATOR_RPAREN,    // )
-  OPERATOR_LCURLY,    // {
-  OPERATOR_RCURLY,    // }
-  OPERATOR_LSQUARE,   // [
-  OPERATOR_RSQUARE    // ]
+  NEGATE,
+  NOT
 };
 
-#endif // !defined(GO_OPERATOR_H)
+enum class ArithmeticOrLogicalOperator
+{
+  ADD,	       // std::ops::Add
+  SUBTRACT,    // std::ops::Sub
+  MULTIPLY,    // std::ops::Mul
+  DIVIDE,      // std::ops::Div
+  MODULUS,     // std::ops::Rem
+  BITWISE_AND, // std::ops::BitAnd
+  BITWISE_OR,  // std::ops::BitOr
+  BITWISE_XOR, // std::ops::BitXor
+  LEFT_SHIFT,  // std::ops::Shl
+  RIGHT_SHIFT  // std::ops::Shr
+};
+
+enum class ComparisionOperator
+{
+  EQUAL,	    // std::cmp::PartialEq::eq
+  NOT_EQUAL,	    // std::cmp::PartialEq::ne
+  GREATER_THAN,	    // std::cmp::PartialEq::gt
+  LESS_THAN,	    // std::cmp::PartialEq::lt
+  GREATER_OR_EQUAL, // std::cmp::PartialEq::ge
+  LESS_OR_EQUAL	    // std::cmp::PartialEq::le
+};
+
+enum class LazyBooleanOperator
+{
+  LOGICAL_OR,
+  LOGICAL_AND
+};
+
+enum class CompoundAssignmentOperator
+{
+  ADD,	       // std::ops::AddAssign
+  SUBTRACT,    // std::ops::SubAssign
+  MULTIPLY,    // std::ops::MulAssign
+  DIVIDE,      // std::ops::DivAssign
+  MODULUS,     // std::ops::RemAssign
+  BITWISE_AND, // std::ops::BitAndAssign
+  BITWISE_OR,  // std::ops::BitOrAssign
+  BITWISE_XOR, // std::ops::BitXorAssign
+  LEFT_SHIFT,  // std::ops::ShlAssign
+  RIGHT_SHIFT  // std::ops::ShrAssign
+};
+
+#endif

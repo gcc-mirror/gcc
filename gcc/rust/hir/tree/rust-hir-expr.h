@@ -21,6 +21,7 @@
 
 #include "rust-hir.h"
 #include "rust-hir-path.h"
+#include "operator.h"
 
 namespace Rust {
 namespace HIR {
@@ -355,30 +356,26 @@ protected:
 // Unary prefix - or ! negation or NOT operators.
 class NegationExpr : public OperatorExpr
 {
-public:
-  enum NegationType
-  {
-    NEGATE,
-    NOT
-  };
+private:
+  using ExprType = NegationOperator;
 
   /* Note: overload negation via std::ops::Neg and not via std::ops::Not
    * Negation only works for signed integer and floating-point types, NOT only
    * works for boolean and integer types (via bitwise NOT) */
-  NegationType negation_type;
+  ExprType expr_type;
 
 public:
   std::string as_string () const override;
 
-  NegationType get_negation_type () const { return negation_type; }
+  ExprType get_expr_type () const { return expr_type; }
 
   // Constructor calls OperatorExpr's protected constructor
   NegationExpr (Analysis::NodeMapping mappings,
-		std::unique_ptr<Expr> negated_value, NegationType negation_kind,
+		std::unique_ptr<Expr> negated_value, ExprType expr_kind,
 		std::vector<Attribute> outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (negated_value),
 		    std::move (outer_attribs), locus),
-      negation_type (negation_kind)
+      expr_type (expr_kind)
   {}
 
   void accept_vis (HIRVisitor &vis) override;
@@ -404,20 +401,8 @@ protected:
 // Infix binary operators. +, -, *, /, %, &, |, ^, <<, >>
 class ArithmeticOrLogicalExpr : public OperatorExpr
 {
-public:
-  enum ExprType
-  {
-    ADD,	 // std::ops::Add
-    SUBTRACT,	 // std::ops::Sub
-    MULTIPLY,	 // std::ops::Mul
-    DIVIDE,	 // std::ops::Div
-    MODULUS,	 // std::ops::Rem
-    BITWISE_AND, // std::ops::BitAnd
-    BITWISE_OR,	 // std::ops::BitOr
-    BITWISE_XOR, // std::ops::BitXor
-    LEFT_SHIFT,	 // std::ops::Shl
-    RIGHT_SHIFT	 // std::ops::Shr
-  };
+private:
+  using ExprType = ArithmeticOrLogicalOperator;
 
   // Note: overloading trait specified in comments
   ExprType expr_type;
@@ -489,16 +474,8 @@ protected:
 // Infix binary comparison operators. ==, !=, <, <=, >, >=
 class ComparisonExpr : public OperatorExpr
 {
-public:
-  enum ExprType
-  {
-    EQUAL,	      // std::cmp::PartialEq::eq
-    NOT_EQUAL,	      // std::cmp::PartialEq::ne
-    GREATER_THAN,     // std::cmp::PartialEq::gt
-    LESS_THAN,	      // std::cmp::PartialEq::lt
-    GREATER_OR_EQUAL, // std::cmp::PartialEq::ge
-    LESS_OR_EQUAL     // std::cmp::PartialEq::le
-  };
+private:
+  using ExprType = ComparisionOperator;
 
   // Note: overloading trait specified in comments
   ExprType expr_type;
@@ -571,12 +548,8 @@ protected:
 // Infix binary lazy boolean logical operators && and ||.
 class LazyBooleanExpr : public OperatorExpr
 {
-public:
-  enum ExprType
-  {
-    LOGICAL_OR,
-    LOGICAL_AND
-  };
+private:
+  using ExprType = LazyBooleanOperator;
 
   ExprType expr_type;
 
