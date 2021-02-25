@@ -293,10 +293,20 @@ public:
   Bexpression *conditional_expression (Bfunction *, Btype *, Bexpression *,
 				       Bexpression *, Bexpression *, Location);
 
-  Bexpression *unary_expression (Operator, Bexpression *, Location);
+  Bexpression *negation_expression (NegationOperator op, Bexpression *expr,
+				    Location);
 
-  Bexpression *binary_expression (Operator, Bexpression *, Bexpression *,
-				  Location);
+  Bexpression *arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+						 Bexpression *left,
+						 Bexpression *right, Location);
+
+  Bexpression *comparision_expression (ComparisionOperator op,
+				       Bexpression *left, Bexpression *right,
+				       Location);
+
+  Bexpression *lazy_boolean_expression (LazyBooleanOperator op,
+					Bexpression *left, Bexpression *right,
+					Location);
 
   Bexpression *constructor_expression (Btype *,
 				       const std::vector<Bexpression *> &,
@@ -1624,162 +1634,224 @@ Gcc_backend::conditional_expression (Bfunction *, Btype *btype,
   return this->make_expression (ret);
 }
 
-// Return an expression for the unary operation OP EXPR.
-
-Bexpression *
-Gcc_backend::unary_expression (Operator op, Bexpression *expr,
-			       Location location)
+/* Helper function that converts rust operators to equivalent GCC tree_code.
+   Note that CompoundAssignmentOperator don't get their corresponding tree_code,
+   because they get compiled away when we lower AST to HIR. */
+static enum tree_code
+operator_to_tree_code (NegationOperator op)
 {
-  tree expr_tree = expr->get_tree ();
+  switch (op)
+    {
+    case NegationOperator::NEGATE:
+      return NEGATE_EXPR;
+    case NegationOperator::NOT:
+      return TRUTH_NOT_EXPR;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Note that GCC tree code distinguishes floating point division and integer
+   division. These two types of division are represented as the same rust
+   operator, and can only be distinguished via context(i.e. the TREE_TYPE of the
+   operands). */
+static enum tree_code
+operator_to_tree_code (ArithmeticOrLogicalOperator op, bool floating_point)
+{
+  switch (op)
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+      return PLUS_EXPR;
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      return MINUS_EXPR;
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      return MULT_EXPR;
+    case ArithmeticOrLogicalOperator::DIVIDE:
+      if (floating_point)
+	return RDIV_EXPR;
+      else
+	return TRUNC_DIV_EXPR;
+    case ArithmeticOrLogicalOperator::MODULUS:
+      return TRUNC_MOD_EXPR;
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
+      return BIT_AND_EXPR;
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
+      return BIT_IOR_EXPR;
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      return BIT_XOR_EXPR;
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      return LSHIFT_EXPR;
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      return RSHIFT_EXPR;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static enum tree_code
+operator_to_tree_code (ComparisionOperator op)
+{
+  switch (op)
+    {
+    case ComparisionOperator::EQUAL:
+      return EQ_EXPR;
+    case ComparisionOperator::NOT_EQUAL:
+      return NE_EXPR;
+    case ComparisionOperator::GREATER_THAN:
+      return GT_EXPR;
+    case ComparisionOperator::LESS_THAN:
+      return LT_EXPR;
+    case ComparisionOperator::GREATER_OR_EQUAL:
+      return GE_EXPR;
+    case ComparisionOperator::LESS_OR_EQUAL:
+      return LE_EXPR;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static enum tree_code
+operator_to_tree_code (LazyBooleanOperator op)
+{
+  switch (op)
+    {
+    case LazyBooleanOperator::LOGICAL_OR:
+      return TRUTH_ORIF_EXPR;
+    case LazyBooleanOperator::LOGICAL_AND:
+      return TRUTH_ANDIF_EXPR;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Helper function for deciding if a tree is a floating point node. */
+bool
+is_floating_point (tree t)
+{
+  auto tree_type = TREE_CODE (TREE_TYPE (t));
+  return tree_type == REAL_TYPE || tree_type == COMPLEX_TYPE;
+}
+
+// Return an expression for the negation operation OP EXPR.
+Bexpression *
+Gcc_backend::negation_expression (NegationOperator op, Bexpression *expr,
+				  Location location)
+{
+  /* Check if the expression is an error, in which case we return an error
+     expression. */
+  auto expr_tree = expr->get_tree ();
   if (expr_tree == error_mark_node || TREE_TYPE (expr_tree) == error_mark_node)
     return this->error_expression ();
 
-  tree type_tree = TREE_TYPE (expr_tree);
-  enum tree_code code;
-  switch (op)
+  /* For negation operators, the resulting type should be the same as its
+     operand. */
+  auto tree_type = TREE_TYPE (expr_tree);
+  auto tree_code = operator_to_tree_code (op);
+
+  /* For floating point operations we may need to extend the precision of type.
+     For example, a 64-bit machine may not support operations on float32. */
+  bool floating_point = is_floating_point (expr_tree);
+  if (floating_point)
     {
-      case OPERATOR_MINUS: {
-	tree computed_type = excess_precision_type (type_tree);
-	if (computed_type != NULL_TREE)
-	  {
-	    expr_tree = convert (computed_type, expr_tree);
-	    type_tree = computed_type;
-	  }
-	code = NEGATE_EXPR;
-	break;
-      }
-    case OPERATOR_NOT:
-      code = TRUTH_NOT_EXPR;
-      break;
-    case OPERATOR_XOR:
-      code = BIT_NOT_EXPR;
-      break;
-    default:
-      gcc_unreachable ();
-      break;
+      auto extended_type = excess_precision_type (tree_type);
+      if (extended_type != NULL_TREE)
+	{
+	  expr_tree = convert (extended_type, expr_tree);
+	  tree_type = extended_type;
+	}
     }
 
-  tree ret
-    = fold_build1_loc (location.gcc_location (), code, type_tree, expr_tree);
-  return this->make_expression (ret);
+  /* Construct a new tree and build an expression from it. */
+  auto new_tree = fold_build1_loc (location.gcc_location (), tree_code,
+				   tree_type, expr_tree);
+  return this->make_expression (new_tree);
 }
 
-// Convert a rustfrontend operator to an equivalent tree_code.
-
-static enum tree_code
-operator_to_tree_code (Operator op, tree type)
-{
-  enum tree_code code;
-  switch (op)
-    {
-    case OPERATOR_EQEQ:
-      code = EQ_EXPR;
-      break;
-    case OPERATOR_NOTEQ:
-      code = NE_EXPR;
-      break;
-    case OPERATOR_LT:
-      code = LT_EXPR;
-      break;
-    case OPERATOR_LE:
-      code = LE_EXPR;
-      break;
-    case OPERATOR_GT:
-      code = GT_EXPR;
-      break;
-    case OPERATOR_GE:
-      code = GE_EXPR;
-      break;
-    case OPERATOR_OROR:
-      code = TRUTH_ORIF_EXPR;
-      break;
-    case OPERATOR_ANDAND:
-      code = TRUTH_ANDIF_EXPR;
-      break;
-    case OPERATOR_PLUS:
-      code = PLUS_EXPR;
-      break;
-    case OPERATOR_MINUS:
-      code = MINUS_EXPR;
-      break;
-    case OPERATOR_OR:
-      code = BIT_IOR_EXPR;
-      break;
-    case OPERATOR_XOR:
-      code = BIT_XOR_EXPR;
-      break;
-    case OPERATOR_MULT:
-      code = MULT_EXPR;
-      break;
-    case OPERATOR_DIV:
-      if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == COMPLEX_TYPE)
-	code = RDIV_EXPR;
-      else
-	code = TRUNC_DIV_EXPR;
-      break;
-    case OPERATOR_MOD:
-      code = TRUNC_MOD_EXPR;
-      break;
-    case OPERATOR_LSHIFT:
-      code = LSHIFT_EXPR;
-      break;
-    case OPERATOR_RSHIFT:
-      code = RSHIFT_EXPR;
-      break;
-    case OPERATOR_AND:
-      code = BIT_AND_EXPR;
-      break;
-    case OPERATOR_BITCLEAR:
-      code = BIT_AND_EXPR;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  return code;
-}
-
-// Return an expression for the binary operation LEFT OP RIGHT.
-
+// Return an expression for the arithmetic or logical operation LEFT OP RIGHT.
 Bexpression *
-Gcc_backend::binary_expression (Operator op, Bexpression *left,
-				Bexpression *right, Location location)
+Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+					       Bexpression *left,
+					       Bexpression *right,
+					       Location location)
 {
-  tree left_tree = left->get_tree ();
-  tree right_tree = right->get_tree ();
+  /* Check if either expression is an error, in which case we return an error
+     expression. */
+  auto left_tree = left->get_tree ();
+  auto right_tree = right->get_tree ();
   if (left_tree == error_mark_node || right_tree == error_mark_node)
     return this->error_expression ();
-  enum tree_code code = operator_to_tree_code (op, TREE_TYPE (left_tree));
 
-  bool use_left_type = op != OPERATOR_OROR && op != OPERATOR_ANDAND;
-  tree type_tree
-    = use_left_type ? TREE_TYPE (left_tree) : TREE_TYPE (right_tree);
-  tree computed_type = excess_precision_type (type_tree);
-  if (computed_type != NULL_TREE)
+  /* We need to determine if we're doing floating point arithmetics of integer
+     arithmetics. */
+  bool floating_point = is_floating_point (left_tree);
+
+  /* For arithmetic or logical operators, the resulting type should be the same
+     as the lhs operand. */
+  auto tree_type = TREE_TYPE (left_tree);
+  auto tree_code = operator_to_tree_code (op, floating_point);
+
+  /* For floating point operations we may need to extend the precision of type.
+     For example, a 64-bit machine may not support operations on float32. */
+  if (floating_point)
     {
-      left_tree = convert (computed_type, left_tree);
-      right_tree = convert (computed_type, right_tree);
-      type_tree = computed_type;
+      auto extended_type = excess_precision_type (tree_type);
+      if (extended_type != NULL_TREE)
+	{
+	  left_tree = convert (extended_type, left_tree);
+	  right_tree = convert (extended_type, right_tree);
+	  tree_type = extended_type;
+	}
     }
 
-  // For comparison operators, the resulting type should be boolean.
-  switch (op)
-    {
-    case OPERATOR_EQEQ:
-    case OPERATOR_NOTEQ:
-    case OPERATOR_LT:
-    case OPERATOR_LE:
-    case OPERATOR_GT:
-    case OPERATOR_GE:
-      type_tree = boolean_type_node;
-      break;
-    default:
-      break;
-    }
+  /* Construct a new tree and build an expression from it. */
+  auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
+				   tree_type, left_tree, right_tree);
+  return this->make_expression (new_tree);
+}
 
-  tree ret = fold_build2_loc (location.gcc_location (), code, type_tree,
-			      left_tree, right_tree);
-  return this->make_expression (ret);
+// Return an expression for the comparision operation LEFT OP RIGHT.
+Bexpression *
+Gcc_backend::comparision_expression (ComparisionOperator op, Bexpression *left,
+				     Bexpression *right, Location location)
+{
+  /* Check if either expression is an error, in which case we return an error
+     expression. */
+  auto left_tree = left->get_tree ();
+  auto right_tree = right->get_tree ();
+  if (left_tree == error_mark_node || right_tree == error_mark_node)
+    return this->error_expression ();
+
+  /* For comparision operators, the resulting type should be boolean. */
+  auto tree_type = boolean_type_node;
+  auto tree_code = operator_to_tree_code (op);
+
+  /* Construct a new tree and build an expression from it. */
+  auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
+				   tree_type, left_tree, right_tree);
+  return this->make_expression (new_tree);
+}
+
+// Return an expression for the lazy boolean operation LEFT OP RIGHT.
+Bexpression *
+Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, Bexpression *left,
+				      Bexpression *right, Location location)
+{
+  /* Check if either expression is an error, in which case we return an error
+     expression. */
+  auto left_tree = left->get_tree ();
+  auto right_tree = right->get_tree ();
+  if (left_tree == error_mark_node || right_tree == error_mark_node)
+    return this->error_expression ();
+
+  /* For lazy boolean operators, the resulting type should be the same as the
+     rhs operand. */
+  auto tree_type = TREE_TYPE (right_tree);
+  auto tree_code = operator_to_tree_code (op);
+
+  /* Construct a new tree and build an expression from it. */
+  auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
+				   tree_type, left_tree, right_tree);
+  return this->make_expression (new_tree);
 }
 
 // Return an expression that constructs BTYPE with VALS.

@@ -362,19 +362,32 @@ public:
 			  Bexpression *else_expr, Location)
     = 0;
 
-  // Return an expression for the unary operation OP EXPR.
-  // Supported values of OP are (from operators.h):
-  //    MINUS, NOT, XOR.
-  virtual Bexpression *unary_expression (Operator op, Bexpression *expr,
-					 Location)
+  // Return an expression for the negation operation OP EXPR.
+  // Supported values of OP are enumerated in NegationOperator.
+  virtual Bexpression *negation_expression (NegationOperator op,
+					    Bexpression *expr, Location)
     = 0;
 
-  // Return an expression for the binary operation LEFT OP RIGHT.
-  // Supported values of OP are (from operators.h):
-  //    EQEQ, NOTEQ, LT, LE, GT, GE, PLUS, MINUS, OR, XOR, MULT, DIV, MOD,
-  //    LSHIFT, RSHIFT, AND, NOT.
-  virtual Bexpression *binary_expression (Operator op, Bexpression *left,
-					  Bexpression *right, Location)
+  // Return an expression for the operation LEFT OP RIGHT.
+  // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
+  virtual Bexpression *
+  arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+				    Bexpression *left, Bexpression *right,
+				    Location)
+    = 0;
+
+  // Return an expression for the operation LEFT OP RIGHT.
+  // Supported values of OP are enumerated in ComparisionOperator.
+  virtual Bexpression *comparision_expression (ComparisionOperator op,
+					       Bexpression *left,
+					       Bexpression *right, Location)
+    = 0;
+
+  // Return an expression for the operation LEFT OP RIGHT.
+  // Supported values of OP are enumerated in LazyBooleanOperator.
+  virtual Bexpression *lazy_boolean_expression (LazyBooleanOperator op,
+						Bexpression *left,
+						Bexpression *right, Location)
     = 0;
 
   // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
