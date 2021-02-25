@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { powerpc64le-*-* } } } */
 /* { dg-options "-Os -fno-forward-propagate -fschedule-insns -fno-tree-ter -Wno-psabi" } */
 /* { dg-require-effective-target p8vector_hw } */
 
