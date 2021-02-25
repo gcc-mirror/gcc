@@ -1,3 +1,119 @@
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98718
+	* g++.dg/modules/pr98718_a.C: New.
+	* g++.dg/modules/pr98718_b.C: New.
+
+2021-02-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/co-await-void_type.C: Mark promise
+	final_suspend call as noexcept.
+	* g++.dg/coroutines/co-return-syntax-08-bad-return.C: Likewise.
+	* g++.dg/coroutines/co-return-syntax-10-movable.C: Likewise.
+	* g++.dg/coroutines/co-return-warning-1.C: Likewise.
+	* g++.dg/coroutines/co-yield-syntax-08-needs-expr.C: Likewise.
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C: Likewise.
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C: Likewise.
+	* g++.dg/coroutines/coro-missing-gro.C: Likewise.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ueh.h: Likewise.
+	* g++.dg/coroutines/coro1-allocators.h: Likewise.
+	* g++.dg/coroutines/coro1-refs-and-ctors.h: Likewise.
+	* g++.dg/coroutines/coro1-ret-int-yield-int.h: Likewise.
+	* g++.dg/coroutines/pr94682-preview-this.C: Likewise.
+	* g++.dg/coroutines/pr94752.C: Likewise.
+	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C: Likewise.
+	* g++.dg/coroutines/pr94879-folly-1.C: Likewise.
+	* g++.dg/coroutines/pr94883-folly-2.C: Likewise.
+	* g++.dg/coroutines/pr95050.C: Likewise.
+	* g++.dg/coroutines/pr95345.C: Likewise.
+	* g++.dg/coroutines/pr95440.C: Likewise.
+	* g++.dg/coroutines/pr95591.C: Likewise.
+	* g++.dg/coroutines/pr95711.C: Likewise.
+	* g++.dg/coroutines/pr95813.C: Likewise.
+	* g++.dg/coroutines/symmetric-transfer-00-basic.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-07-tmpl.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-17-capture-comp-ref.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-00-void-return-is-ready.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-01-void-return-is-suspend.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-03-different-GRO-type.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-04-GRO-nontriv.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-06-template-promise-val-1.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-08-template-cast-ret.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-09-bool-await-susp.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-15-default-return_void.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-17-void-ret-coro.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-00-triv.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-04-complex-local-state.C: Likewise.
+	* g++.dg/coroutines/torture/exceptions-test-0.C: Likewise.
+	* g++.dg/coroutines/torture/exceptions-test-01-n4849-a.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-04.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-06-structured-binding.C: Likewise.
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: Likewise.
+
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/99226
+	* c-c++-common/gomp/pr99226.c: New test.
+	* gfortran.dg/gomp/pr99226.f90: New test.
+
+2021-02-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/99123
+	* gcc.target/i386/pr99123.c: New.
+
+2021-02-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/stack-usage-1.c: Adjust for CRIS.
+
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99072
+	* g++.dg/modules/pr99072.H: New.
+
+2021-02-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98342
+	* gfortran.dg/assumed_rank_21.f90 : New test.
+
+2021-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* gcc.dg/pr97172-2.c: New test.
+
+2021-02-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99220
+	* g++.dg/vect/pr99220.cc: New test.
+
+2021-02-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99149
+	* g++.dg/vect/pr99149.cc: Disabled on BE.
+
+2021-02-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96251
+	* g++.dg/coroutines/pr96251.C: New test.
+
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99225
+	* gcc.c-torture/compile/pr99225.c: New test.
+
+2021-02-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99149
+	* g++.dg/vect/pr99149.cc: New test.
+
+2021-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR c/99224
+	* gcc.dg/pr99224.c: New testcase.
+
 2021-02-23  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/mma-builtin-4.c: Add tests for

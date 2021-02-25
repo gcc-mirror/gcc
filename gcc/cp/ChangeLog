@@ -1,3 +1,25 @@
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98718
+	* module.cc (ool): New indirection vector.
+	(loc_spans::maybe_propagate): Location is not optional.
+	(loc_spans::open): Likewise.  Assert monotonically advancing.
+	(module_for_ordinary_loc): Use ool indirection vector.
+	(module_state::write_prepare_maps): Do not count empty macro
+	expansions.  Elide empty spans.
+	(module_state::write_macro_maps): Skip empty expansions.
+	(ool_cmp): New qsort comparator.
+	(module_state::write): Create and destroy ool vector.
+	(name_pending_imports): Fix dump push/pop.
+	(preprocess_module): Likewise.  Add more dumping.
+	(preprocessed_module): Likewise.
+
+2021-02-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96251
+	* coroutines.cc (coro_common_keyword_context_valid_p): Suppress
+	error reporting when instantiating for a constexpr.
+
 2021-02-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99208

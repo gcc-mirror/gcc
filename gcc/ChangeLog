@@ -1,3 +1,77 @@
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/99226
+	* omp-low.c (struct omp_context): Add teams_nested_p and
+	nonteams_nested_p members.
+	(scan_omp_target): Diagnose teams nested inside of target with other
+	directives strictly nested inside of the same target.
+	(check_omp_nesting_restrictions): Set ctx->teams_nested_p or
+	ctx->nonteams_nested_p as needed.
+
+2021-02-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR inline-asm/99123
+	* lra-constraints.c (uses_hard_regs_p): Don't use decompose_mem_address.
+
+2021-02-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_expand_prologue): Set
+	current_function_static_stack_size, if flag_stack_usage_info.
+
+2021-02-24  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (next_insn_prefixed_p): Rename.
+	(rs6000_final_prescan_insn): Adjust.
+	(rs6000_asm_output_opcode): Likewise.
+
+2021-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* attribs.c (attr_access::free_lang_data): Clear attribute arg spec
+	from function arguments.
+
+2021-02-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99220
+	* tree-vect-slp.c (optimize_load_redistribution_1): Remove
+	node from cache when it's about to be deleted.
+
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99225
+	* fold-const.c (fold_binary_loc) <case NE_EXPR>: In (x & (1 << y)) != 0
+	to ((x >> y) & 1) != 0 simplifications use build_one_cst instead of
+	build_int_cst (..., 1).  Formatting fixes.
+
+2021-02-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99149
+	* tree-vect-slp-patterns.c (vect_detect_pair_op): Don't recreate the
+	buffer.
+	(vect_slp_reset_pattern): Remove.
+	(complex_fma_pattern::matches): Remove call to vect_slp_reset_pattern.
+	(complex_mul_pattern::build, complex_fma_pattern::build,
+	complex_fms_pattern::build): Fix ref counts.
+	* tree-vect-slp.c (vect_free_slp_tree): Undo SLP only pattern relevancy
+	when node is being deleted.
+	(vect_match_slp_patterns_2): Correct result of cache hit on patterns.
+	(vect_schedule_slp): Invalidate SLP_TREE_REPRESENTATIVE of removed
+	stores.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize value.
+
+2021-02-24  Matthias Klose  <doko@ubuntu.com>
+
+	Revert:
+	2020-12-07  Matthias Klose  <doko@ubuntu.com>
+
+	* genextract.c (print_header): Undefine ENABLE_RTL_CHECKING
+	and ENABLE_RTL_FLAG_CHECKING.
+
+2021-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR c/99224
+	* builtins.c (fold_builtin_next_arg): Avoid NULL arg.
+
 2021-02-23  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/mma.md (mma_assemble_pair): Rename from this...

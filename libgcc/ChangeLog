@@ -1,3 +1,15 @@
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/99236
+	* libgcc2.c (__powisf2, __powidf2, __powitf2, __powixf2): Perform
+	negation of m in unsigned type.
+
+2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Hau Hsu  <hsuhau617@gmail.com>
+
+	PR target/99157
+	* config/arm/t-arm: Fix cmse support detection.
+
 2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	* dfp-bit.c (BFP_TO_DFP): Fix a comment line that was too long.
