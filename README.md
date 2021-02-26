@@ -50,7 +50,7 @@ Running the compiler itself without make install we can simply invoke the compil
 $ gdb --args ./gcc/rust1 test.rs -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
 
-To invoking the compiler driver (gccrs) we need to:
+To invoke the compiler driver (gccrs) we need to:
 
 ```bash
 $ make install
