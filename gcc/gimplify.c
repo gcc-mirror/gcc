@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
+#include "tree-hash-traits.h"
 #include "omp-general.h"
 #include "omp-low.h"
 #include "gimple-low.h"
@@ -8573,7 +8574,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 {
   struct gimplify_omp_ctx *ctx, *outer_ctx;
   tree c;
-  hash_map<tree, tree> *struct_map_to_clause = NULL;
+  hash_map<tree_operand_hash, tree> *struct_map_to_clause = NULL;
   hash_set<tree> *struct_deref_set = NULL;
   tree *prev_list_p = NULL, *orig_list_p = list_p;
   int handled_depend_iterators = -1;
@@ -9149,12 +9150,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  && TREE_CODE (decl) == INDIRECT_REF
 		  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
 		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
-		      == REFERENCE_TYPE))
+		      == REFERENCE_TYPE)
+		  && (OMP_CLAUSE_MAP_KIND (c)
+		      != GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION))
 		{
 		  pd = &TREE_OPERAND (decl, 0);
 		  decl = TREE_OPERAND (decl, 0);
 		}
 	      bool indir_p = false;
+	      bool component_ref_p = false;
 	      tree orig_decl = decl;
 	      tree decl_ref = NULL_TREE;
 	      if ((region_type & (ORT_ACC | ORT_TARGET | ORT_TARGET_DATA)) != 0
@@ -9165,6 +9169,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    {
 		      decl = TREE_OPERAND (decl, 0);
+		      component_ref_p = true;
 		      if (((TREE_CODE (decl) == MEM_REF
 			    && integer_zerop (TREE_OPERAND (decl, 1)))
 			   || INDIRECT_REF_P (decl))
@@ -9184,8 +9189,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		    }
 		}
-	      else if (TREE_CODE (decl) == COMPONENT_REF)
+	      else if (TREE_CODE (decl) == COMPONENT_REF
+		       && (OMP_CLAUSE_MAP_KIND (c)
+			   != GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION))
 		{
+		  component_ref_p = true;
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    decl = TREE_OPERAND (decl, 0);
 		  if (TREE_CODE (decl) == INDIRECT_REF
@@ -9255,7 +9263,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      if (code == OACC_UPDATE
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
-	      if (DECL_P (decl)
+	      if ((DECL_P (decl)
+		   || (component_ref_p && INDIRECT_REF_P (decl)))
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
@@ -9312,7 +9321,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  gcc_assert (base == decl);
 
 		  splay_tree_node n
-		    = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
+		    = (DECL_P (decl)
+		       ? splay_tree_lookup (ctx->variables,
+					    (splay_tree_key) decl)
+		       : NULL);
 		  bool ptr = (OMP_CLAUSE_MAP_KIND (c)
 			      == GOMP_MAP_ALWAYS_POINTER);
 		  bool attach_detach = (OMP_CLAUSE_MAP_KIND (c)
@@ -9338,7 +9350,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      OMP_CLAUSE_SET_MAP_KIND (c, k);
 		      has_attachments = true;
 		    }
-		  if (n == NULL || (n->value & GOVD_MAP) == 0)
+		  if ((DECL_P (decl)
+		       && (n == NULL || (n->value & GOVD_MAP) == 0))
+		      || (!DECL_P (decl)
+			  && (!struct_map_to_clause
+			      || struct_map_to_clause->get (decl) == NULL)))
 		    {
 		      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 						 OMP_CLAUSE_MAP);
@@ -9357,7 +9373,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   ? DECL_SIZE_UNIT (OMP_CLAUSE_DECL (l))
 			   : TYPE_SIZE_UNIT (TREE_TYPE (OMP_CLAUSE_DECL (l))));
 		      if (struct_map_to_clause == NULL)
-			struct_map_to_clause = new hash_map<tree, tree>;
+			struct_map_to_clause
+			  = new hash_map<tree_operand_hash, tree>;
 		      struct_map_to_clause->put (decl, l);
 		      if (ptr || attach_detach)
 			{
@@ -9391,7 +9408,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			flags |= GOVD_SEEN;
 		      if (has_attachments)
 			flags |= GOVD_MAP_HAS_ATTACHMENTS;
-		      goto do_add_decl;
+		      if (DECL_P (decl))
+			goto do_add_decl;
 		    }
 		  else if (struct_map_to_clause)
 		    {
@@ -9500,6 +9518,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		      else if (*sc != c)
 			{
+			  if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
+					     fb_lvalue)
+			      == GS_ERROR)
+			    {
+			      remove = true;
+			      break;
+			    }
 			  *list_p = OMP_CLAUSE_CHAIN (c);
 			  OMP_CLAUSE_CHAIN (c) = *sc;
 			  *sc = c;
@@ -10916,6 +10941,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    }
 		}
 	    }
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	      && (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA))
+	    {
+	      remove = true;
+	      break;
+	    }
 	  if (!DECL_P (decl))
 	    {
 	      if ((ctx->region_type & ORT_TARGET) != 0
@@ -10962,10 +10993,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		      = OMP_CLAUSE_CHAIN (OMP_CLAUSE_CHAIN (c));
 		}
 	    }
-	  else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
-		   && (code == OMP_TARGET_EXIT_DATA
-		       || code == OACC_EXIT_DATA))
-	    remove = true;
 	  else if (DECL_SIZE (decl)
 		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_POINTER
