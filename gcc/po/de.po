@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2021.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 10.2.0\n"
+"Project-Id-Version: gcc 11.1-b20210207\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-02-05 21:38+0000\n"
-"PO-Revision-Date: 2021-01-20 00:01+0100\n"
+"PO-Revision-Date: 2021-02-26 01:28+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Bookmarks: -1,-1,-1,6017,-1,-1,-1,-1,-1,-1\n"
 
 #: cfgrtl.c:2748
@@ -151,28 +151,26 @@ msgstr "In Datei, eingebunden von"
 
 #. 2
 #: diagnostic.c:732
-#, fuzzy
-#| msgid "In file included from"
 msgid "        included from"
-msgstr "In Datei, eingebunden von"
+msgstr "        eingebunden von"
 
 #: diagnostic.c:733
 msgid "In module"
-msgstr ""
+msgstr "In Modul"
 
 #. 4
 #: diagnostic.c:734
 msgid "of module"
-msgstr ""
+msgstr "von Modul"
 
 #: diagnostic.c:735
 msgid "In module imported at"
-msgstr ""
+msgstr "In Modul, importiert bei"
 
 #. 6
 #: diagnostic.c:736
 msgid "imported at"
-msgstr ""
+msgstr "importiert bei"
 
 #: diagnostic.c:1220
 #, c-format
@@ -817,10 +815,9 @@ msgstr ""
 "Fehler in der deutschen Übersetzung sind an translation-team-de@lists.sourceforge.net zu melden.\n"
 
 #: gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2020 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2021 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2020 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2021 Free Software Foundation, Inc.\n"
 
 #: gcov.c:924
 #, c-format
@@ -867,7 +864,7 @@ msgstr "  -d, --display-progress          Fortschrittsinformationen anzeigen\n"
 #: gcov.c:931
 #, c-format
 msgid "  -D, --debug\t\t\t    Display debugging dumps\n"
-msgstr ""
+msgstr "  -D, --debug\t\t\t    Fehlersuche-Details anzeigen\n"
 
 #: gcov.c:932
 #, c-format
@@ -880,18 +877,18 @@ msgid "  -h, --help                      Print this help, then exit\n"
 msgstr "  -h, --help                      Diese Hilfe anzeigen\n"
 
 #: gcov.c:934
-#, fuzzy, c-format
-#| msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
+#, c-format
 msgid ""
 "  -j, --json-format               Output JSON intermediate format\n"
 "                                    into .gcov.json.gz file\n"
-msgstr "  -i, --json-format               Zwischenformat in .gcov.json.gz-Datei ausgeben\n"
+msgstr ""
+"  -j, --json-format               Zwischenergebnisse im JSON-Format in\n"
+"                                  .gcov.json.gz-Datei ausgeben\n"
 
 #: gcov.c:936
-#, fuzzy, c-format
-#| msgid "  -j, --human-readable            Output human readable numbers\n"
+#, c-format
 msgid "  -H, --human-readable            Output human readable numbers\n"
-msgstr "  -j, --human-readable            Menschenlesbare Zahlen ausgeben\n"
+msgstr "  -H, --human-readable            Menschenlesbare Zahlen ausgeben\n"
 
 #: gcov.c:937
 #, c-format
@@ -970,24 +967,23 @@ msgid "  -x, --hash-filenames            Hash long pathnames\n"
 msgstr "  -x, --hash-filenames            lange Dateinamen hashen\n"
 
 #: gcov.c:952
-#, fuzzy, c-format
-#| msgid "Options:\n"
+#, c-format
 msgid ""
 "\n"
 "Obsolete options:\n"
-msgstr "Optionen:\n"
+msgstr ""
+"\n"
+"Veraltete Optionen:\n"
 
 #: gcov.c:953
-#, fuzzy, c-format
-#| msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
+#, c-format
 msgid "  -i, --json-format               Replaced with -j, --json-format\n"
-msgstr "  -i, --json-format               Zwischenformat in .gcov.json.gz-Datei ausgeben\n"
+msgstr "  -i, --json-format               Ersetzt durch -j, --json-format\n"
 
 #: gcov.c:954
-#, fuzzy, c-format
-#| msgid "  -j, --human-readable            Output human readable numbers\n"
+#, c-format
 msgid "  -j, --human-readable            Replaced with -H, --human-readable\n"
-msgstr "  -j, --human-readable            Menschenlesbare Zahlen ausgeben\n"
+msgstr "  -j, --human-readable            Ersetzt durch -H, --human-readable\n"
 
 #: gcov.c:965
 #, c-format
@@ -1612,10 +1608,8 @@ msgid "callee refers to comdat-local symbols"
 msgstr "Aufgerufene Funktion verweist auf comdat-lokale Symbole"
 
 #: cif-code.def:134
-#, fuzzy
-#| msgid "function attribute mismatch"
 msgid "sanitizer function attribute mismatch"
-msgstr "Fehlzuordnung von Funktionsattributen"
+msgstr "Fehlzuordnung von Attributen der Bereinigungsfunktion"
 
 #: cif-code.def:139
 msgid "function has external linkage when the user requests only inlining static for live patching"
@@ -2873,7 +2867,7 @@ msgstr "MMIX-intern: Dies ist keine Konstante:"
 #: config/msp430/msp430.c:4230
 #, c-format
 msgid "%%d, %%e, %%f, %%g operand modifiers are for memory references or constant values only"
-msgstr ""
+msgstr "Die Operandenmodifizierer %%d, %%e, %%f und %%g sind ausschließlich für Speicherreferenzen oder konstante Werte"
 
 #: config/msp430/msp430.c:4343
 #, c-format
@@ -3097,10 +3091,8 @@ msgid "invalid %%y value, try using the 'Z' constraint"
 msgstr "ungültiger %%y-Wert, bitte »Z«-Bedingung probieren"
 
 #: config/rs6000/rs6000.c:14766
-#, fuzzy
-#| msgid "Enable using IEEE 128-bit floating point instructions."
 msgid "Invalid mixing of IEEE 128-bit and IBM 128-bit floating point types"
-msgstr "IEEE-128-Bit-Gleitkomma-Befehle einschalten."
+msgstr "Unerlaubtes Mischen von IEEE-128-Bit- und IBM-128-Bit-Gleitkommatypen"
 
 #: config/rs6000/rs6000.c:23725
 msgid "AltiVec argument passed to unprototyped function"
@@ -3889,42 +3881,32 @@ msgid "%r%s:%d:%R   in %<constexpr%> expansion of %qs"
 msgstr "%r%s:%d:%R   in %<constexpr%>-Ersetzung von %qs"
 
 #: cp/parser.c:5949
-#, fuzzy
-#| msgid "local variable %qD may not appear in this context"
 msgid "parameter %qD may not appear in this context"
-msgstr "lokale Variable %qD darf in diesem Kontext nicht auftauchen"
+msgstr "Parameter %qD darf in diesem Kontext nicht auftauchen"
 
 #: cp/parser.c:5950
 msgid "local variable %qD may not appear in this context"
 msgstr "lokale Variable %qD darf in diesem Kontext nicht auftauchen"
 
 #: cp/parser.c:20685
-#, fuzzy
-#| msgid "%<~auto%> only available with %<-std=c++14%> or %<-std=gnu++14%>"
 msgid "%<using enum%> only available with %<-std=c++20%> or %<-std=gnu++20%>"
-msgstr "%<~auto%> ist nur mit %<-std=c++14%> oder %<-std=gnu++14%> verfügbar"
+msgstr "%<using enum%> ist nur mit %<-std=c++20%> oder %<-std=gnu++20%> verfügbar"
 
 #: cp/parser.c:20688
-#, fuzzy
-#| msgid "invalid use of dependent type %qT"
 msgid "%<using enum%> of dependent type %qT"
-msgstr "ungültige Verwendung des abhängigen Typen %qT"
+msgstr "%<using enum%> des abhängigen Typen %qT"
 
 #: cp/parser.c:20690
-#, fuzzy
-#| msgid "%qT is not an enumeration type"
 msgid "%<using enum%> of non-enumeration type %q#T"
-msgstr "%qT ist kein Aufzählungstyp"
+msgstr "%<using enum%> an Nicht-Aufzählungstyp %q#T"
 
 #: cp/parser.c:20692
-#, fuzzy
-#| msgid "invalid use of incomplete type %q#T"
 msgid "%<using enum%> of incomplete type %qT"
-msgstr "falsche Verwendung des unvollständigen Typs %q#T"
+msgstr "%<using enum%> an unvollständigem Typ %qT"
 
 #: cp/parser.c:20694
 msgid "%<using enum%> of %qT before its enum-specifier"
-msgstr ""
+msgstr "%<using enum%> von %qT vor seinem enum-specifier"
 
 #: cp/pt.c:2042 cp/semantics.c:5643
 msgid "candidates are:"
@@ -4021,7 +4003,7 @@ msgstr "Elementare Binäroperation"
 
 #: fortran/check.c:70
 msgid " [see %<-fno-allow-invalid-boz%>]"
-msgstr ""
+msgstr " [siehe %<-fno-allow-invalid-boz%>]"
 
 #: fortran/check.c:3717
 #, c-format
@@ -4094,7 +4076,7 @@ msgstr "Array-Zuweisung"
 
 #: fortran/frontend-passes.c:2386
 msgid "Index variable %qs redefined at %L in procedure %qs called from within DO loop at %L"
-msgstr ""
+msgstr "Indexvariable %qs neudefiniert bei %L in Prozedur %qs, aufgerufen aus der DO-Schleife bei %L"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89939
 #. Macros for unified error messages.
@@ -4124,56 +4106,40 @@ msgid "actual argument to INTENT = OUT/INOUT"
 msgstr "effektives Argument für INTENT = OUT/INOUT"
 
 #: fortran/intrinsic.c:4852
-#, fuzzy
-#| msgid "[available in "
 msgid "available since Fortran 77"
-msgstr "[verfügbar in "
+msgstr "verfügbar seit Fortran 77"
 
 #: fortran/intrinsic.c:4856
 msgid "obsolescent in Fortran 95"
-msgstr ""
+msgstr "ausgedient in Fortran 95"
 
 #: fortran/intrinsic.c:4860
-#, fuzzy
-#| msgid "deleting array %q#E"
 msgid "deleted in Fortran 95"
-msgstr "Array %q#E wird gelöscht"
+msgstr "gelöscht in Fortran 95"
 
 #: fortran/intrinsic.c:4864
-#, fuzzy
-#| msgid "PAD= at %L not allowed in Fortran 95"
 msgid "new in Fortran 95"
-msgstr "PAD= bei %L ist in Fortran 95 nicht erlaubt"
+msgstr "neu in Fortran 95"
 
 #: fortran/intrinsic.c:4868
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2003"
-msgstr "Fortran 2018:"
+msgstr "neu in Fortran 2003"
 
 #: fortran/intrinsic.c:4872
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2008"
-msgstr "Fortran 2018:"
+msgstr "neu in Fortran 2008"
 
 #: fortran/intrinsic.c:4876
-#, fuzzy
-#| msgid "Fortran 2018:"
 msgid "new in Fortran 2018"
-msgstr "Fortran 2018:"
+msgstr "neu in Fortran 2018"
 
 #: fortran/intrinsic.c:4880
-#, fuzzy
-#| msgid "GNU Extension:"
 msgid "a GNU Fortran extension"
-msgstr "GNU-Erweiterung:"
+msgstr "eine GNU-Fortran-Erweiterung"
 
 #: fortran/intrinsic.c:4884
-#, fuzzy
-#| msgid "Only retained for backward compatibility."
 msgid "for backward compatibility"
-msgstr "Nur für Rückwärtskompatibilität erhalten."
+msgstr "für Rückwärtskompatibilität"
 
 #: fortran/io.c:1866
 #, c-format
@@ -4594,34 +4560,29 @@ msgid "Argument NCOPIES of REPEAT intrinsic is too large"
 msgstr "Argument NCOPIES des intrinsischen REPEAT ist zu groß"
 
 #: fortran/trans-intrinsic.c:12044
-#, fuzzy, c-format
-#| msgid "POS argument (%ld) out of range 0:%ld in intrinsic IBITS"
+#, c-format
 msgid "FROMPOS argument (%ld) out of range 0:%d in intrinsic MVBITS"
-msgstr "POS-Argument (%ld) außerhalb des Bereichs 0:%ld in intrinsischem IBITS"
+msgstr "FROMPOS-Argument (%ld) außerhalb des Bereichs 0:%d in intrinsischem MVBITS"
 
 #: fortran/trans-intrinsic.c:12056
-#, fuzzy, c-format
-#| msgid "LEN argument (%ld) out of range 0:%ld in intrinsic IBITS"
+#, c-format
 msgid "LEN argument (%ld) out of range 0:%d in intrinsic MVBITS"
-msgstr "LEN-Argument (%ld) außerhalb des Bereichs 0:%ld in intrinsischem IBITS"
+msgstr "LEN-Argument (%ld) außerhalb des Bereichs 0:%d in intrinsischem MVBITS"
 
 #: fortran/trans-intrinsic.c:12068
-#, fuzzy, c-format
-#| msgid "POS argument (%ld) out of range 0:%ld in intrinsic IBITS"
+#, c-format
 msgid "TOPOS argument (%ld) out of range 0:%d in intrinsic MVBITS"
-msgstr "POS-Argument (%ld) außerhalb des Bereichs 0:%ld in intrinsischem IBITS"
+msgstr "TOPOS-Argument (%ld) außerhalb des Bereichs 0:%d in intrinsischem MVBITS"
 
 #: fortran/trans-intrinsic.c:12080
-#, fuzzy, c-format
-#| msgid "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) in intrinsic IBITS"
+#, c-format
 msgid "FROMPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) in intrinsic MVBITS"
-msgstr "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) in intrinsischem IBITS"
+msgstr "FROMPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) in intrinsischem MVBITS"
 
 #: fortran/trans-intrinsic.c:12088
-#, fuzzy, c-format
-#| msgid "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) in intrinsic IBITS"
+#, c-format
 msgid "TOPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) in intrinsic MVBITS"
-msgstr "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) in intrinsischem IBITS"
+msgstr "TOPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) in intrinsischem MVBITS"
 
 #: fortran/trans-io.c:587
 msgid "Unit number in I/O statement too small"
@@ -4768,10 +4729,8 @@ msgid "cannot specify -static with -fsanitize=address"
 msgstr "»-static« kann nicht mit »-fsanitize=Adresse« angegeben werden"
 
 #: gcc.c:1103
-#, fuzzy
-#| msgid "cannot specify -static with -fsanitize=address"
 msgid "cannot specify -static with -fsanitize=hwaddress"
-msgstr "»-static« kann nicht mit »-fsanitize=Adresse« angegeben werden"
+msgstr "»-static« kann nicht mit »-fsanitize=hwaddress« angegeben werden"
 
 #: gcc.c:1105
 msgid "cannot specify -static with -fsanitize=thread"
@@ -5287,7 +5246,7 @@ msgstr "Zeilen mit »D« in Spalte eins als Kommentar behandeln."
 #: fortran/lang.opt:457
 #, no-c-format
 msgid "Issue debug information for compiler-generated auxiliary variables."
-msgstr ""
+msgstr "Fehlersuche-Informationen für compilergenerierte Hilfsvariablen ausgeben."
 
 #: fortran/lang.opt:461
 #, no-c-format
@@ -5768,10 +5727,9 @@ msgid "Like -MD but ignore system header files."
 msgstr "Wie -MD, aber System-Header-Dateien ignorieren."
 
 #: c-family/c.opt:241
-#, fuzzy, no-c-format
-#| msgid "Generate run time type descriptor information."
+#, no-c-format
 msgid "Generate C++ Module dependency information."
-msgstr "Informationen zur Typbeschreibung zur Laufzeit erzeugen."
+msgstr "Informationen zu Abhängigkeiten von C++-Modulen erzeugen."
 
 #: c-family/c.opt:249
 #, no-c-format
@@ -5779,16 +5737,14 @@ msgid "Generate phony targets for all headers."
 msgstr "Unechte Ziele für alle Header erzeugen."
 
 #: c-family/c.opt:253
-#, fuzzy, no-c-format
-#| msgid "-MQ <target>\tAdd a MAKE-quoted target."
+#, no-c-format
 msgid "-MQ <target>\tAdd a target that may require quoting."
-msgstr "-MQ <Ziel>\tMAKE-zitiertes Ziel hinzufügen."
+msgstr "-MQ <Ziel>\tZiel hinzufügen, das möglicherweise Anführungszeichen benötigt."
 
 #: c-family/c.opt:257
-#, fuzzy, no-c-format
-#| msgid "-MT <target>\tAdd an unquoted target."
+#, no-c-format
 msgid "-MT <target>\tAdd a target that does not require quoting."
-msgstr "-MT <Ziel>\tEin Ziel ohne Anführungszeichen hinzufügen."
+msgstr "-MT <Ziel>\tZiel hinzufügen, das keine Anführungszeichen benötigt."
 
 #: c-family/c.opt:261
 #, no-c-format
@@ -5801,10 +5757,9 @@ msgid "-U<macro>\tUndefine <macro>."
 msgstr "-U<Makro>\t<Makro>-Definition aufheben."
 
 #: c-family/c.opt:269
-#, fuzzy, no-c-format
-#| msgid "the %qE attribute cannot be applied to an SVE function type"
+#, no-c-format
 msgid "Warn if the NSObject attribute is applied to a non-typedef."
-msgstr "das Attribut %qE kann nicht auf einen SVE-Funktionstyp angewendet werden"
+msgstr "Warnen, wenn das NSObject-Attribut auf etwas Anderes als typedef angewendet wird."
 
 #: c-family/c.opt:273
 #, no-c-format
@@ -5877,10 +5832,9 @@ msgid "Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=
 msgstr "Die Warnung Walloca-larger-than= ausschalten. Entspricht Walloca-larger-than=<SIZE_MAX> oder größer."
 
 #: c-family/c.opt:355 c-family/c.opt:359
-#, fuzzy, no-c-format
-#| msgid "Warn about multiple declarations of the same object."
+#, no-c-format
 msgid "Warn about mismatched declarations of array parameters and unsafe accesses to them."
-msgstr "Bei mehreren Deklarationen desselben Objektes warnen."
+msgstr "Bei widersprüchlichen Deklarationen von Arrayparametern und unsicherem Zugriff auf diese warnen."
 
 #: c-family/c.opt:363
 #, no-c-format
@@ -6030,10 +5984,9 @@ msgid "Warn for converting NULL from/to a non-pointer type."
 msgstr "Bei Umwandlung von NULL in Nicht-Zeiger-Typ oder umgekehrt warnen."
 
 #: c-family/c.opt:492
-#, fuzzy, no-c-format
-#| msgid "cannot deduce template arguments of %qT, as it has no viable deduction guides"
+#, no-c-format
 msgid "Warn when performing class template argument deduction on a type with no deduction guides."
-msgstr "Templateargumente für %qT können nicht abgeleitet werden, da es keine Ableitungshinweise gibt"
+msgstr "Warnen beim Ableiten von Klassentemplateargumenten an Typen ohne Ableitungshinweise."
 
 #: c-family/c.opt:497
 #, no-c-format
@@ -6076,15 +6029,14 @@ msgid "Mark implicitly-declared copy operations as deprecated if the class has a
 msgstr "Implizit deklarierte Kopieroperationen als deprecated markieren, wenn die Klasse eine benutzerdefinierte Kopieroperation oder einen solchen Destruktor hat."
 
 #: c-family/c.opt:535
-#, fuzzy, no-c-format
-#| msgid "Warn about implicit conversion of enum types."
+#, no-c-format
 msgid "Warn about deprecated arithmetic conversions on operands of enumeration types."
-msgstr "Bei impliziten Umwandlungen von enum-Typen warnen."
+msgstr "Bei veralteten arithmetischen Umwandlungen von Operanden mit Aufzählungstypen warnen."
 
 #: c-family/c.opt:539
 #, no-c-format
 msgid "Warn about deprecated arithmetic conversions on operands where one is of enumeration type and the other is of a floating-point type."
-msgstr ""
+msgstr "Bei veralteten arithmetischen Umwandlungen von Operanden warnen, bei denen der eine von einem Aufzählungstyp ist und der andere eine Gleitkommazahl."
 
 #: c-family/c.opt:544
 #, no-c-format
@@ -6147,10 +6099,9 @@ msgid "This switch is deprecated; use -Werror=implicit-function-declaration inst
 msgstr "Dieser Schalter ist veraltet; stattdessen -Werror=implicit-function-declaration verwenden."
 
 #: c-family/c.opt:596
-#, fuzzy, no-c-format
-#| msgid "Warn when one variable shadows another (globally)."
+#, no-c-format
 msgid "Warn when an exception handler is shadowed by another handler."
-msgstr "Warnen, wenn eine Variable eine andere überdeckt (global)."
+msgstr "Warnen, wenn ein Ausnahmebehandler von einem anderen Behandler überdeckt wird."
 
 #: c-family/c.opt:604
 #, no-c-format
@@ -6375,12 +6326,12 @@ msgstr "Warnen, wenn die Einrückung des Codes nicht der Blockstruktur entsprich
 #: c-family/c.opt:798
 #, no-c-format
 msgid "Warn for deallocation calls with arguments returned from mismatched allocation functions."
-msgstr ""
+msgstr "Warnen bei Deallokationsaufrufen mit Argumenten, die von nicht übereinstimmenden Allokationsfunktionen zurückgegeben werden."
 
 #: c-family/c.opt:803
 #, no-c-format
 msgid "Warn for mismatches between calls to operator new or delete and the corrsponding call to the allocation or deallocation function."
-msgstr ""
+msgstr "Warnen bei Nichtübereinstimmung zwischen Aufrufen der Operatoren %<new%> oder %<delete%> und dem entsprechenden Aufruf der Allokations- oder Deallokationsfunktion."
 
 #: c-family/c.opt:808
 #, no-c-format
@@ -6425,7 +6376,7 @@ msgstr "Warnen, wenn Felder in einer gepackten Struktur nicht ausgerichtet sind.
 #: c-family/c.opt:840
 #, no-c-format
 msgid "Warn when a range-based for-loop is creating unnecessary copies."
-msgstr ""
+msgstr "Warnen, wenn eine bereichsbasierte for-Schleife unnötige Kopien erzeugt."
 
 #: c-family/c.opt:844
 #, no-c-format
@@ -6445,7 +6396,7 @@ msgstr "Warnen, wenn zwei sizeof-Ausdrücke durcheinander geteilt werden, die ni
 #: c-family/c.opt:856
 #, no-c-format
 msgid "Warn about divisions of two sizeof operators when the first one is applied to an array and the divisor does not equal the size of the array element."
-msgstr ""
+msgstr "Bei Divisionen von zwei %<sizeof%>-Operatoren warnen, wenn der erste auf ein Array angewendet wird und der Divisor nicht die Größe des Arrayelements ist."
 
 #: c-family/c.opt:861
 #, no-c-format
@@ -6472,11 +6423,11 @@ msgstr "Bei Pufferüberlauf in Stringfunktionen wie memcpy und strcpy warnen."
 msgid "Under the control of Object Size type, warn about buffer overflow in string manipulation functions like memcpy and strcpy."
 msgstr "Unter der Kontrolle des Object-Size-Typs warnen, wenn Pufferüberläufe in Stringmanipulationsfunktionen wie memcpy und strcpy auftreten."
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99075
 #: c-family/c.opt:885
-#, fuzzy, no-c-format
-#| msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
+#, no-c-format
 msgid "Warn about reading past the end of a source array in string manipulation functions like memchr and memcpy."
-msgstr "Bei Pufferüberlauf in Stringfunktionen wie memcpy und strcpy warnen."
+msgstr "Warnen, wenn das Quellarray über das Ende hinaus gelesen wird, in Speicherfunktionen wie %<memchr%> und %<memcpy%>."
 
 #: c-family/c.opt:889
 #, no-c-format
@@ -6601,7 +6552,7 @@ msgstr "-Wnormalized=[none|id|nfc|nfkc]\tBei nicht-normalisierten Unicode-Zeiche
 #: c-family/c.opt:1025
 #, no-c-format
 msgid "Warn if a class interface has no superclass.  Root classes may use an attribute to suppress this warning."
-msgstr ""
+msgstr "Warnung, wenn eine Klassenschnittstelle keine Superklasse hat. Wurzelklassen können ein Attribut verwenden, um diese Warnung zu unterdrücken."
 
 #: c-family/c.opt:1030
 #, no-c-format
@@ -6896,7 +6847,7 @@ msgstr "Bei fragwürdiger Verwendung der Makros, die variable Argumente ermittel
 #: c-family/c.opt:1310
 #, no-c-format
 msgid "Warn about the most vexing parse syntactic ambiguity."
-msgstr ""
+msgstr "Bei den merkwürdigsten syntaktischen Mehrdeutigkeiten warnen."
 
 #: c-family/c.opt:1314
 #, no-c-format
@@ -6904,8 +6855,7 @@ msgid "Warn if a variable length array is used."
 msgstr "Warnen, wenn ein Array variabler Länge verwendet wird."
 
 #: c-family/c.opt:1318
-#, fuzzy, no-c-format
-#| msgid "-Wvla-larger-than=<number>\tWarn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes. <number> bytes."
+#, no-c-format
 msgid "-Wvla-larger-than=<number>\tWarn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes."
 msgstr "-Wvla-larger-than=<Anzahl>\tBei unbeschränkten Verwendungen von Arrays variabler Länge warnen, und bei Verwendung von Arrays variabler Länge, wenn die Länge <Anzahl> überschreiten kann."
 
@@ -6915,10 +6865,9 @@ msgid "Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_
 msgstr "Die Warnung Wvla-larger-than= ausschalten. Entspricht Wvla-larger-than=<SIZE_MAX> oder größer."
 
 #: c-family/c.opt:1328
-#, fuzzy, no-c-format
-#| msgid "Warn about multiple declarations of the same object."
+#, no-c-format
 msgid "Warn about mismatched declarations of VLA parameters."
-msgstr "Bei mehreren Deklarationen desselben Objektes warnen."
+msgstr "Warnen, wenn Deklarationen von VLA-Parametern nicht übereinstimmen."
 
 #: c-family/c.opt:1332
 #, no-c-format
@@ -7212,58 +7161,54 @@ msgid "Allow implicit conversions between vectors with differing numbers of subp
 msgstr "Implizite Umwandlungen zwischen Vektoren mit unterschiedlicher Anzahl der Teile und/oder abweichenden Elementtypen erlauben."
 
 #: c-family/c.opt:1706
-#, fuzzy, no-c-format
-#| msgid "Enable C++ coroutines (experimental)."
+#, no-c-format
 msgid "Enable C++ modules-ts (experimental)."
-msgstr "C++-Koroutinen einschalten (experimentell)."
+msgstr "C++-modules-ts einschalten (experimentell)."
 
 #: c-family/c.opt:1714
-#, fuzzy, no-c-format
-#| msgid "Enable C++ coroutines (experimental)."
+#, no-c-format
 msgid "Enable C++ header module (experimental)."
-msgstr "C++-Koroutinen einschalten (experimentell)."
+msgstr "C++-Header-Modul einschalten (experimentell)."
 
 #: c-family/c.opt:1721
 #, no-c-format
 msgid "Member functions defined within their class are inline in module purview."
-msgstr ""
+msgstr "Memberfunktionen, die innerhalb ihrer Klasse definiert sind, sind im Zuständigkeitsbereich des Moduls inline."
 
 #: c-family/c.opt:1725
 #, no-c-format
 msgid "Only emit Compiled Module Interface."
-msgstr ""
+msgstr "Nur die Schnittstelle des compilierten Moduls (CMI) ausgeben."
 
 #: c-family/c.opt:1729
 #, no-c-format
 msgid "Mapper for module to CMI files."
-msgstr ""
+msgstr "Zuordnung von Modulen zu CMI-Dateien."
 
 #: c-family/c.opt:1733
-#, fuzzy, no-c-format
-#| msgid "Enable code hoisting."
+#, no-c-format
 msgid "Enable lazy module importing."
-msgstr "Codeanhebung einschalten."
+msgstr "Faules Modul-Importieren einschalten."
 
 #: c-family/c.opt:1741
-#, fuzzy, no-c-format
-#| msgid "Warn about semicolon after in-class function definition."
+#, no-c-format
 msgid "Warn about macros that have conflicting header units definitions."
-msgstr "Bei Semikolon nach Funktionsdefinition innerhalb einer Klasse warnen."
+msgstr "Bei Makros warnen, deren Header-Einheits-Definitionen nicht übereinstimmen."
 
 #: c-family/c.opt:1745
 #, no-c-format
 msgid "Note #include directives translated to import declarations."
-msgstr ""
+msgstr "Hinweisen, wenn #include-Direktiven in import-Deklarationen übersetzt werden."
 
 #: c-family/c.opt:1749
 #, no-c-format
 msgid "Note #include directives not translated to import declarations, and not known to be textual."
-msgstr ""
+msgstr "Hinweisen, wenn #include-Direktiven nicht in import-Deklarationen übersetzt werden und nicht eindeutig textuell sind."
 
 #: c-family/c.opt:1753
 #, no-c-format
 msgid "Note a #include translation of a specific header."
-msgstr ""
+msgstr "Hinweisen, wenn das #include eines bestimmten Headers übersetzt wird."
 
 #: c-family/c.opt:1757
 #, no-c-format
@@ -7358,7 +7303,7 @@ msgstr "Standard-OpenACC-Berechnungsdimensionen angeben."
 #: c-family/c.opt:1870
 #, no-c-format
 msgid "-fopenacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
-msgstr ""
+msgstr "-fopenacc-kernels=[decompose|parloops]\tModus, in dem OpenACC-»kernels«-Konstrukte verarbeitet werden."
 
 #: c-family/c.opt:1883
 #, no-c-format
@@ -7666,16 +7611,14 @@ msgid "Conform to the ISO 2017 C++ standard."
 msgstr "Mit dem ISO-C++-Standard von 2017 übereinstimmen."
 
 #: c-family/c.opt:2211 c-family/c.opt:2215
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020 C++ draft standard (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ standard (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf 2020 übereinstimmen (experimentelle und unvollständige Unterstützung)."
+msgstr "Mit dem ISO-C++-Standard 2020 übereinstimmen (experimentelle und unvollständige Unterstützung)."
 
 #: c-family/c.opt:2219 c-family/c.opt:2223
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020 C++ draft standard (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2023 C++ draft standard (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf 2020 übereinstimmen (experimentelle und unvollständige Unterstützung)."
+msgstr "Mit dem ISO-C++-Standardentwurf 2023 übereinstimmen (experimentelle und unvollständige Unterstützung)."
 
 #: c-family/c.opt:2227 c-family/c.opt:2365
 #, no-c-format
@@ -7749,16 +7692,14 @@ msgid "Conform to the ISO 2017 C++ standard with GNU extensions."
 msgstr "Mit dem ISO-C++-Standard von 2017 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2297 c-family/c.opt:2301
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf für 2020 mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard für 2020 mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
 
 #: c-family/c.opt:2305 c-family/c.opt:2309
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support)."
+#, no-c-format
 msgid "Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf für 2020 mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standardentwurf für 2023 mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
 
 #: c-family/c.opt:2313
 #, no-c-format
@@ -7808,7 +7749,7 @@ msgstr "Veraltet zugunsten von -std=iso9899:1999."
 #: c-family/c.opt:2377
 #, no-c-format
 msgid "-stdlib=[libstdc++|libc++]\tThe standard library to be used for C++ headers and runtime."
-msgstr ""
+msgstr "-stdlib=[libstdc++|libc++]\tDie Standardbibliothek, die für C++-Header und Laufzeit verwendet wird."
 
 #: c-family/c.opt:2394
 #, no-c-format
@@ -8108,7 +8049,7 @@ msgstr "-fgo-dump-<Typ>\tInterne Information des Go-Frontends in Datei ausgeben.
 #: go/lang.opt:62
 #, no-c-format
 msgid "-fgo-embedcfg=<file>\tList embedded files via go:embed."
-msgstr ""
+msgstr "-fgo-embedcfg=<Datei>\tEingebettete Dateien über go:embed auflisten."
 
 #: go/lang.opt:66
 #, no-c-format
@@ -8161,10 +8102,9 @@ msgid "The maximum number of exploded nodes per program point within the analyze
 msgstr "Die maximale Anzahl von expandierten Knoten pro Programmpunkt innerhalb des Analysierers, bevor die Analyse dieses Punkts abbricht."
 
 #: analyzer/analyzer.opt:35
-#, fuzzy, no-c-format
-#| msgid "The maximum number of loop iterations we predict statically."
+#, no-c-format
 msgid "The maximum number of constraints per state."
-msgstr "Die Höchstzahl der Schleifendurchläufe, die statisch vorhergesagt werden."
+msgstr "Die Höchstzahl der Einschränkungen pro Zustand."
 
 #: analyzer/analyzer.opt:39
 #, no-c-format
@@ -8174,7 +8114,7 @@ msgstr "Die Höchstzahl, die eine Aufrufstelle in einem Aufrufstapel innerhalb d
 #: analyzer/analyzer.opt:43
 #, no-c-format
 msgid "The maximum depth of a symbolic value, before approximating the value as unknown."
-msgstr ""
+msgstr "Die maximale Tiefe eines symbolischen Wertes, bevor der Wert als unbekannt approximiert wird."
 
 #: analyzer/analyzer.opt:47
 #, no-c-format
@@ -8184,7 +8124,7 @@ msgstr "Die Mindestzahl an Superknoten innerhalb einer Funktion, die vom Analysi
 #: analyzer/analyzer.opt:51
 #, no-c-format
 msgid "The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format."
-msgstr ""
+msgstr "Die maximale Tiefe der explodierten Knoten, die in einem Dot-Dump erscheinen sollen, bevor auf ein weniger ausführliches Format umgeschaltet wird."
 
 #: analyzer/analyzer.opt:55
 #, no-c-format
@@ -8217,10 +8157,9 @@ msgid "Warn about code paths in which a heap-allocated pointer leaks."
 msgstr "Bei Codepfaden warnen, in denen ein vom Heap reservierter Zeiger nicht freigegeben wird."
 
 #: analyzer/analyzer.opt:79
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which a non-heap pointer is freed."
+#, no-c-format
 msgid "Warn about code paths in which the wrong deallocation function is called."
-msgstr "Bei Codepfaden warnen, in denen ein Zeiger freigegeben wird, der nicht vom Heap kommt."
+msgstr "Bei Codepfaden warnen, in denen die falsche Deallozierungsfunktion aufgerufen wird."
 
 #: analyzer/analyzer.opt:83
 #, no-c-format
@@ -8248,16 +8187,14 @@ msgid "Warn about code paths in which a NULL pointer is dereferenced."
 msgstr "Bei Codepfaden warnen, in denen ein NULL-Zeiger dereferenziert wird."
 
 #: analyzer/analyzer.opt:103
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which a non-heap pointer is freed."
+#, no-c-format
 msgid "Warn about code paths in which a shift with negative count is attempted."
-msgstr "Bei Codepfaden warnen, in denen ein Zeiger freigegeben wird, der nicht vom Heap kommt."
+msgstr "Bei Codepfaden warnen, in denen Bits mit negativer Anzahl geschoben werden."
 
 #: analyzer/analyzer.opt:107
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which a stdio FILE is not closed."
+#, no-c-format
 msgid "Warn about code paths in which a shift with count >= width of type is attempted."
-msgstr "Bei Codepfaden warnen, in denen eine stdio-Datei nicht geschlossen wird."
+msgstr "Bei Codepfaden warnen, in denen Bits mit Anzahl >= Typbreite geschoben werden."
 
 #: analyzer/analyzer.opt:111
 #, no-c-format
@@ -8280,16 +8217,14 @@ msgid "Warn about code paths in which a pointer to a stale stack frame is used."
 msgstr "Bei Codepfaden warnen, in denen ein Zeiger auf einen bereits verschwundenen Stapelrahmen verwendet wird."
 
 #: analyzer/analyzer.opt:127
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which sensitive data is written to a file."
+#, no-c-format
 msgid "Warn about code paths which attempt to write to a const object."
-msgstr "Bei Codepfaden warnen, in denen sensible Daten in eine Datei geschrieben werden."
+msgstr "Bei Codepfaden warnen, in denen in ein const-Objekt geschrieben wird."
 
 #: analyzer/analyzer.opt:131
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in which sensitive data is written to a file."
+#, no-c-format
 msgid "Warn about code paths which attempt to write to a string literal."
-msgstr "Bei Codepfaden warnen, in denen sensible Daten in eine Datei geschrieben werden."
+msgstr "Bei Codepfaden warnen, in denen in ein Stringliteral geschrieben wird."
 
 #: analyzer/analyzer.opt:135
 #, no-c-format
@@ -8309,7 +8244,7 @@ msgstr "Vermeiden, dass mehrere Anweisungen zu einer expandierten Kante zusammen
 #: analyzer/analyzer.opt:147
 #, no-c-format
 msgid "Verify that paths are feasible when emitting diagnostics."
-msgstr ""
+msgstr "Sicherstellen, dass die Codepfade für die ausgegebenen Meldungen machbar sind."
 
 #: analyzer/analyzer.opt:151
 #, no-c-format
@@ -8387,10 +8322,9 @@ msgid "Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 msgstr "Textdarstellung des expandierten Graphen nach SRCFILE.eg-ID.txt wegschreiben."
 
 #: analyzer/analyzer.opt:211
-#, fuzzy, no-c-format
-#| msgid "Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file."
+#, no-c-format
 msgid "Dump analyzer-specific data to a SRCFILE.analyzer.json.gz file."
-msgstr "Aufrufgraphen des Analysierers nach SRCFILE.callgraph.dot wegschreiben."
+msgstr "Daten des Analysierers nach SRCFILE.analyzer.json.gz wegschreiben."
 
 #: analyzer/analyzer.opt:215
 #, no-c-format
@@ -9345,10 +9279,9 @@ msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
 msgstr "-mtune=PROZESSOR\tAusgabe für PROZESSOR optimieren."
 
 #: config/riscv/riscv.opt:84
-#, fuzzy, no-c-format
-#| msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
+#, no-c-format
 msgid "-mcpu=PROCESSOR\tUse architecture of and optimize the output for PROCESSOR."
-msgstr "-mtune=PROZESSOR\tAusgabe für PROZESSOR optimieren."
+msgstr "-mcpu=PROZESSOR\tArchitektur von PROZESSOR verwenden und die Ausgabe dafür optimieren."
 
 #: config/riscv/riscv.opt:88
 #, no-c-format
@@ -9363,7 +9296,7 @@ msgstr "Kleineren, aber langsameren Code für Funktionsprologe und -epiloge verw
 #: config/riscv/riscv.opt:96
 #, no-c-format
 msgid "Convert BASE + LARGE_OFFSET addresses to NEW_BASE + SMALL_OFFSET to allow more memory accesses to be generated as compressed instructions.  Currently targets 32-bit integer load/stores."
-msgstr ""
+msgstr "Adressen der Form BASE + LARGE_OFFSET in NEW_BASE + SMALL_OFFSET konvertieren, damit mehr Speicherzugriffe als komprimierte Anweisungen generiert werden können. Zielt derzeit auf 32-Bit-Integer-Laden/Speichern ab."
 
 #: config/riscv/riscv.opt:102 config/aarch64/aarch64.opt:92
 #, no-c-format
@@ -9432,16 +9365,14 @@ msgid "Use the given offset for addressing the stack-protector guard."
 msgstr "Angegebenen Offset zur Addressierung des Stapelschutz-Wächters verwenden."
 
 #: config/riscv/riscv.opt:192
-#, fuzzy, no-c-format
-#| msgid "Supported ABIs (for use with the -mabi= option):"
+#, no-c-format
 msgid "Supported ISA specs (for use with the -misa-spec= option):"
-msgstr "Unterstützte ABIs (für Verwendung mit Option »-mabi=«):"
+msgstr "Unterstützte ISA-Spezifikationen (für Verwendung mit Option »-misa-spec=«):"
 
 #: config/riscv/riscv.opt:205
-#, fuzzy, no-c-format
-#| msgid "Specify the version of the ptx ISA to use."
+#, no-c-format
 msgid "Set the version of RISC-V ISA spec."
-msgstr "Die Version der PTX-ISA angeben, die verwendet wird."
+msgstr "Die Version der RISC-V-ISA-Spezifikation festlegen."
 
 #: config/m32c/m32c.opt:23
 #, no-c-format
@@ -9561,7 +9492,7 @@ msgstr "Der Pfad zu »devices.csv«. Im Normalfall kann der GCC-Treiber das selb
 #: config/msp430/msp430.opt:136
 #, no-c-format
 msgid "For shift operations by a constant amount, which require an individual instruction to shift by one position, set the maximum number of inline shift instructions (maximum value 64) to emit instead of using the corresponding __mspabi helper function. The default value is 4."
-msgstr ""
+msgstr "Für Bitschiebeoperationen mit konstanter Anzahl, die einen einzelnen Maschinenbefehl zur Verschiebung um eine Stelle erfordern, die maximale Anzahl von Inline-Verschiebeanweisungen (Maximalwert 64) festlegen, die ausgegeben werden sollen, anstatt die entsprechende Hilfsfunktion __mspabi zu verwenden. Der Standardwert ist 4."
 
 #: config/aarch64/aarch64.opt:43
 #, no-c-format
@@ -9585,10 +9516,9 @@ msgid "Generate code which uses only the general registers."
 msgstr "Code erzeugen, der nur die allgemeinen Register verwendet."
 
 #: config/aarch64/aarch64.opt:76
-#, fuzzy, no-c-format
-#| msgid "Generate code for all template instantiations."
+#, no-c-format
 msgid "Generate code to mitigate against straight line speculation."
-msgstr "Code für alle Template-Instanziierungen einschalten."
+msgstr "Code generieren, der Gerade-Linie-Spekulationen abwehrt."
 
 #: config/aarch64/aarch64.opt:80
 #, no-c-format
@@ -10275,16 +10205,14 @@ msgid "-mno-serialize-volatile\tDo not serialize volatile memory references with
 msgstr "-mno-serialize-volatile\t»volatile«-Speicherreferenzen nicht mit MEMW-Befehlen serialisieren."
 
 #: config/xtensa/xtensa.opt:54
-#, fuzzy, no-c-format
-#| msgid "Use EABI."
+#, no-c-format
 msgid "Use call0 ABI."
-msgstr "EABI verwenden."
+msgstr "call0-ABI verwenden."
 
 #: config/xtensa/xtensa.opt:58
-#, fuzzy, no-c-format
-#| msgid "Use fp registers."
+#, no-c-format
 msgid "Use windowed registers ABI."
-msgstr "FP-Register verwenden."
+msgstr "ABI mit Fenster-Registern verwenden."
 
 #: config/i386/cygming.opt:23
 #, no-c-format
@@ -10884,10 +10812,9 @@ msgid "Support PTWRITE built-in functions and code generation."
 msgstr "Eingebaute PTWRITE-Funktionen und Codeerzeugung unterstützen."
 
 #: config/i386/i386.opt:803
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support UINTR built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für BMI unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für UINTR unterstützen."
 
 #: config/i386/i386.opt:807
 #, no-c-format
@@ -11210,63 +11137,54 @@ msgid "Support ENQCMD built-in functions and code generation."
 msgstr "Eingebaute Funktionen und Codeerzeugung für ENQCMD unterstützen."
 
 #: config/i386/i386.opt:1127
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support SERIALIZE built-in functions and code generation."
-msgstr "Eingebaute AES-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codegenerierung für SERIALIZE unterstützen."
 
 #: config/i386/i386.opt:1131
-#, fuzzy, no-c-format
-#| msgid "Support SGX built-in functions and code generation."
+#, no-c-format
 msgid "Support TSXLDTRK built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für SGX unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für TSXLDTRK unterstützen."
 
 #: config/i386/i386.opt:1135
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-TILE built-in functions and code generation."
-msgstr "Eingebaute AES-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für AMX-TILE unterstützen."
 
 #: config/i386/i386.opt:1139
-#, fuzzy, no-c-format
-#| msgid "Support BMI built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-INT8 built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für BMI unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für AMX-INT8 unterstützen."
 
 #: config/i386/i386.opt:1143
-#, fuzzy, no-c-format
-#| msgid "Support F16C built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-BF16 built-in functions and code generation."
-msgstr "Eingebaute F16C-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für AMX-BF16 unterstützen."
 
 #: config/i386/i386.opt:1147
-#, fuzzy, no-c-format
-#| msgid "Support AES built-in functions and code generation."
+#, no-c-format
 msgid "Support HRESET built-in functions and code generation."
-msgstr "Eingebaute AES-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für HRESET unterstützen."
 
 #: config/i386/i386.opt:1151
-#, fuzzy, no-c-format
-#| msgid "Support LWP built-in functions and code generation."
+#, no-c-format
 msgid "Support KL built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für LWP unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für KL unterstützen."
 
 #: config/i386/i386.opt:1155
-#, fuzzy, no-c-format
-#| msgid "Support WAITPKG built-in functions and code generation."
+#, no-c-format
 msgid "Support WIDEKL built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für WAITPKG unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für WIDEKL unterstützen."
 
 #: config/i386/i386.opt:1159
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVXVNNI built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX512F unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVXVNNI unterstützen."
 
 #: config/i386/i386.opt:1164
 #, no-c-format
 msgid "Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property."
-msgstr ""
+msgstr "Property GNU_PROPERTY_X86_ISA_1_NEEDED GNU generieren."
 
 #: config/pa/pa64-hpux.opt:23
 #, no-c-format
@@ -12042,7 +11960,7 @@ msgstr "Separaten »__mcount_loc«-Abschnitt erzeugen, der alle Aufrufe von »_m
 #: config/s390/s390.opt:310
 #, no-c-format
 msgid "Emit fused multiply-add instructions for long doubles in vector registers (wfmaxb, wfmsxb, wfnmaxb, wfnmsxb).  Reassociation pass does not handle fused multiply-adds, therefore code generated by the middle-end is prone to having long fused multiply-add chains.  This is not pipeline-friendly, and the default behavior is to emit separate multiplication and addition instructions for long doubles in vector registers, because measurements show that this improves performance.  This option allows overriding it for testing purposes."
-msgstr ""
+msgstr "Verschmolzene multiply-add-Befehle für long double in Vektorregistern (wfmaxb, wfmsxb, wfnmaxb, wfnmsxb) generieren. Der Durchlauf für Neuverknüpfungen verarbeitet verschmolzene multiply-add-Befehle nicht, daher enthält der vom Mittelteil generierte Code häufig lange verschmolzene multiply-add-Ketten. Das kann die Pipeline nicht gut verarbeiten, daher ist das Standardverhalten, die multiply- und add-Befehle separat zu generieren, soweit es long double in Vektorregistern betrifft. Performancemessungen haben ergeben, dass das besser ist. Diese Option erlaubt das Standardverhalten zu übersteuern, zu Testzwecken."
 
 #: config/rl78/rl78.opt:27 config/rx/elf.opt:26 config/csky/csky.opt:198
 #, no-c-format
@@ -12748,12 +12666,12 @@ msgstr "Maximalzahl der Bytes, die inline kopiert werden."
 #: config/rs6000/rs6000.opt:329
 #, no-c-format
 msgid "Generate unaligned VSX load/store for inline expansion of memcpy/memmove."
-msgstr ""
+msgstr "Unausgerichtete VSX-Lade/Speicher-Befehle für Inline-Expansion von memcpy/memmove generieren."
 
 #: config/rs6000/rs6000.opt:333
 #, no-c-format
 msgid "Generate unaligned VSX vector pair load/store for inline expansion of memcpy/memmove."
-msgstr ""
+msgstr "Unausgerichtete VSX-Lade/Speicher-Befehle für Vektorpaare für Inline-Expansion von memcpy/memmove generieren."
 
 #: config/rs6000/rs6000.opt:337
 #, no-c-format
@@ -12793,13 +12711,12 @@ msgstr "AltiVec-ABI-Erweiterungen nicht verwenden."
 #: config/rs6000/rs6000.opt:367
 #, no-c-format
 msgid "Use the AIX Vector Extended ABI."
-msgstr ""
+msgstr "Die AIX-Vector-Extended-ABI verwenden."
 
 #: config/rs6000/rs6000.opt:371
-#, fuzzy, no-c-format
-#| msgid "Do not use the AltiVec ABI extensions."
+#, no-c-format
 msgid "Do not use the AIX Vector Extended ABI."
-msgstr "AltiVec-ABI-Erweiterungen nicht verwenden."
+msgstr "Die AIX-Vector-Extended-ABI nicht verwenden."
 
 #: config/rs6000/rs6000.opt:376
 #, no-c-format
@@ -12893,10 +12810,9 @@ msgstr "Vektor-/skalare (VSX) Befehle verwenden, die in ISA 2.07 hinzugefügt wu
 
 #: config/rs6000/rs6000.opt:495 config/rs6000/rs6000.opt:499
 #: config/rs6000/rs6000.opt:503
-#, fuzzy, no-c-format
-#| msgid "Fuse certain integer operations together for better performance on power8."
+#, no-c-format
 msgid "Fuse certain integer operations together for better performance on power10."
-msgstr "Bestimmte Ganzzahloperationen verschmelzen, um die Performance auf power8 zu steigern."
+msgstr "Bestimmte Ganzzahloperationen verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:507
 #, no-c-format
@@ -15423,10 +15339,9 @@ msgid "Generate eBPF for the given Linux kernel version."
 msgstr "eBPF für die angegebene Linux-Kernelversion erzeugen."
 
 #: config/bpf/bpf.opt:115
-#, fuzzy, no-c-format
-#| msgid "Generate big-endian eBPF."
+#, no-c-format
 msgid "Generate xBPF."
-msgstr "Big-Endian-eBPF erzeugen."
+msgstr "xBPF erzeugen."
 
 #: config/bpf/bpf.opt:121
 #, no-c-format
@@ -16804,10 +16719,9 @@ msgid "Warn when a vector operation is compiled outside the SIMD."
 msgstr "Warnen, wenn Vektoroperation außerhalb von SIMD kompiliert wird."
 
 #: common.opt:847
-#, fuzzy, no-c-format
-#| msgid "Warn about unprototyped function declarations."
+#, no-c-format
 msgid "Warn about unsupported features in ThreadSanitizer."
-msgstr "Bei Funktionsdeklarationen ohne Prototyp warnen."
+msgstr "Bei nicht unterstützten Features im ThreadSanitizer warnen."
 
 #: common.opt:863
 #, no-c-format
@@ -16827,7 +16741,7 @@ msgstr "-dumpbase <Datei>\tDen Basis-Dateinamen für Ausgaben setzen."
 #: common.opt:884
 #, no-c-format
 msgid "-dumpbase-ext .<ext>    Drop a trailing .<ext> from the dump basename to name auxiliary output files."
-msgstr ""
+msgstr "-dumpbase-ext .<Erw>    Die Dateinamenserweiterung .<Erw> weglassen, beim Benennen der hilfsweisen Ausgabedateien."
 
 #: common.opt:888
 #, no-c-format
@@ -17142,12 +17056,12 @@ msgstr "-fdiagnostics-urls=[never|always|auto]\tURLs in Diagnosemeldungen einbet
 #: common.opt:1341
 #, no-c-format
 msgid "-fdiagnostics-column-unit=[display|byte]\tSelect whether column numbers are output as display columns (default) or raw bytes."
-msgstr ""
+msgstr "-fdiagnostics-column-unit=[display|byte]\tFestlegen, ob Spaltennummern als Anzeigespalten (Standard) ausgegeben werden oder in rohen Bytes gemessen werden."
 
 #: common.opt:1345
 #, no-c-format
 msgid "-fdiagnostics-column-origin=<number>\tSet the number of the first column.  The default is 1-based as per GNU style, but some utilities may expect 0-based, for example."
-msgstr ""
+msgstr "-fdiagnostics-column-origin=<Nummer>\tLegt die Nummer der ersten Spalte fest. Die Vorgabe ist gemäß GNU-Stil 1-basiert, aber einige Dienstprogramme erwarten 0-basierte Spaltennummern."
 
 #: common.opt:1349
 #, no-c-format
@@ -17182,13 +17096,12 @@ msgstr "Angeben, wie jeder Kontrollflusspfad, der mit einer Diagnose verbunden i
 #: common.opt:1395
 #, no-c-format
 msgid "Turn off any diagnostics features that complicate the output, such as line numbers, color, and warning URLs."
-msgstr ""
+msgstr "Alle Diagnosefunktionen deaktivieren, die die Ausgabe verkomplizieren, wie Zeilennummern, Farbe und Warn-URLs."
 
 #: common.opt:1399
-#, fuzzy, no-c-format
-#| msgid "-ftabstop=<number>\tDistance between tab stops for column reporting."
+#, no-c-format
 msgid "-ftabstop=<number>      Distance between tab stops for column reporting."
-msgstr "-ftabstop=<Zahl>\tTabulatorentfernungen für Spaltenmeldungen."
+msgstr "-ftabstop=<Zahl>        Abstand zwischen Tabstopps für Spaltenmeldungen."
 
 #: common.opt:1415
 #, no-c-format
@@ -17403,7 +17316,7 @@ msgstr "Herausziehen aufeinanderfolgender Ladeoperationen einschalten, um Erzeug
 #: common.opt:1654
 #, no-c-format
 msgid "Improve GCC's ability to track column numbers in large source files, at the expense of slower compilation."
-msgstr ""
+msgstr "Verbesserung der Fähigkeit des GCC, Spaltennummern in großen Quelldateien zu verfolgen, auf Kosten einer langsameren Kompilierung."
 
 #: common.opt:1659
 #, no-c-format
@@ -17521,10 +17434,9 @@ msgid "Inline __atomic operations when a lock free instruction sequence is avail
 msgstr "__atomic-Operationen »inline« erzeugen, wenn Lock-freie Befehlssequenz verfügbar ist."
 
 #: common.opt:1791
-#, fuzzy, no-c-format
-#| msgid "-fcf-protection=[full|branch|return|none]\tInstrument functions with checks to verify jump/call/return control-flow transfer instructions have valid targets."
+#, no-c-format
 msgid "-fcf-protection=[full|branch|return|none|check]\tInstrument functions with checks to verify jump/call/return control-flow transfer instructions have valid targets."
-msgstr "-fcf-protection=[full|branch|return|none]\tFunktionen mit zusätzlichen Prüfungen versehen, dass die Sprungziele von jump/call/return gültig sind."
+msgstr "-fcf-protection=[full|branch|return|none|check]\tFunktionen mit zusätzlichen Prüfungen versehen, dass die Sprungziele von jump/call/return gültig sind."
 
 #: common.opt:1814
 #, no-c-format
@@ -17557,10 +17469,9 @@ msgid "Perform interprocedural bitwise constant propagation."
 msgstr "Zwischenprozedurale bitweise Konstantenweitergabe durchführen."
 
 #: common.opt:1842
-#, fuzzy, no-c-format
-#| msgid "Perform interprocedural points-to analysis."
+#, no-c-format
 msgid "Perform interprocedural modref analysis."
-msgstr "Zwischenprozedurale Zeigt-auf-Analyse durchführen."
+msgstr "Prozedurübergreifende modref-Analyse durchführen."
 
 #: common.opt:1846
 #, no-c-format
@@ -17658,10 +17569,9 @@ msgid "Use jump tables for sufficiently large switch statements."
 msgstr "Sprungtabellen für hinreichend große switch-Anweisungen verwenden."
 
 #: common.opt:1953
-#, fuzzy, no-c-format
-#| msgid "Use jump tables for sufficiently large switch statements."
+#, no-c-format
 msgid "Use bit tests for sufficiently large switch statements."
-msgstr "Sprungtabellen für hinreichend große switch-Anweisungen verwenden."
+msgstr "Bittests für hinreichend große switch-Anweisungen verwenden."
 
 #: common.opt:1957
 #, no-c-format
@@ -17949,16 +17859,14 @@ msgid "-fprofile-update=[single|atomic|prefer-atomic]\tSet the profile update me
 msgstr "-fprofile-update=[single|atomic|prefer-atomic]\tMethode für Profilupdates festlegen."
 
 #: common.opt:2233
-#, fuzzy, no-c-format
-#| msgid "Instrument only functions from files where names match any regular expression (separated by a semi-colon)."
+#, no-c-format
 msgid "Instrument only functions from files whose name matches any of the regular expressions (separated by semi-colons)."
 msgstr "Funktionen nur aus Dateien instrumentieren, deren Namen zu einem der regulären Ausdrücke passen (durch Semikolon getrennt)."
 
 #: common.opt:2237
-#, fuzzy, no-c-format
-#| msgid "Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon)."
+#, no-c-format
 msgid "Instrument only functions from files whose name does not match any of the regular expressions (separated by semi-colons)."
-msgstr "Funktionen nur aus Dateien instrumentieren, deren Namen nicht zu allen der regulären Ausdrücke passen (durch Semikolon getrennt)."
+msgstr "Funktionen nur aus Dateien instrumentieren, deren Namen zu keinem der regulären Ausdrücke passen (durch Semikolon getrennt)."
 
 #: common.opt:2253
 #, no-c-format
@@ -17983,12 +17891,12 @@ msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-ge
 #: common.opt:2281
 #, no-c-format
 msgid "Register the profile information in the .gcov_info section instead of using a constructor/destructor."
-msgstr ""
+msgstr "Profilinformation im Abschnitt .gcov_info registrieren, statt einen Konstruktor/Destruktor zu verwenden."
 
 #: common.opt:2285
 #, no-c-format
 msgid "Register the profile information in the specified section instead of using a constructor/destructor."
-msgstr ""
+msgstr "Profilinformation im angegebenen Abschnitt registrieren, statt einen Konstruktor/Destruktor zu verwenden."
 
 #: common.opt:2289
 #, no-c-format
@@ -18706,16 +18614,14 @@ msgid "Enable basic block vectorization (SLP) on trees."
 msgstr "Vektorisierung von Basisblöcken (SLP) auf Bäumen einschalten."
 
 #: common.opt:3027
-#, fuzzy, no-c-format
-#| msgid "-fvect-cost-model=[unlimited|dynamic|cheap]\tSpecifies the cost model for vectorization."
+#, no-c-format
 msgid "-fvect-cost-model=[unlimited|dynamic|cheap|very-cheap]\tSpecifies the cost model for vectorization."
-msgstr "-fvect-cost-model=[unlimited|dynamic|cheap]\tKostenmodell für Vektorisierung angeben."
+msgstr "-fvect-cost-model=[unlimited|dynamic|cheap|very-cheap]\tKostenmodell für Vektorisierung angeben."
 
 #: common.opt:3031
-#, fuzzy, no-c-format
-#| msgid "-fsimd-cost-model=[unlimited|dynamic|cheap]\tSpecifies the vectorization cost model for code marked with a simd directive."
+#, no-c-format
 msgid "-fsimd-cost-model=[unlimited|dynamic|cheap|very-cheap]\tSpecifies the vectorization cost model for code marked with a simd directive."
-msgstr "-fsimd-cost-model=[unlimited|dynamic|cheap]\tVektorisierungs-Kostenmodell angeben, das für mit einer SIMD-Direktive markierten Code verwendet wird."
+msgstr "-fsimd-cost-model=[unlimited|dynamic|cheap|very-cheap]\tVektorisierungs-Kostenmodell angeben, das für mit einer SIMD-Direktive markierten Code verwendet wird."
 
 #: common.opt:3050
 #, no-c-format
@@ -18788,10 +18694,9 @@ msgid "Put zero initialized data in the bss section."
 msgstr "Null-initialisierte Daten in den bss-Abschnitt legen."
 
 #: common.opt:3143
-#, fuzzy, no-c-format
-#| msgid "Save registers around function calls."
+#, no-c-format
 msgid "Clear call-used registers upon function return."
-msgstr "Register bei Funktionsaufrufen sichern."
+msgstr "Register, die beim Funktionsaufruf verwendet wurden, am Ende auf 0 zurücksetzen."
 
 #: common.opt:3147
 #, no-c-format
@@ -18826,12 +18731,12 @@ msgstr "Fehlersuchinformationen im DWARF-v2-Format (oder neuer) erzeugen."
 #: common.opt:3187
 #, no-c-format
 msgid "Use 32-bit DWARF format when emitting DWARF debug information."
-msgstr ""
+msgstr "Wenn DWARF-Debuginformationen erzeugt werden, dann im 32-Bit-Format."
 
 #: common.opt:3191
 #, no-c-format
 msgid "Use 64-bit DWARF format when emitting DWARF debug information."
-msgstr ""
+msgstr "Wenn DWARF-Debuginformationen erzeugt werden, dann im 64-Bit-Format."
 
 #: common.opt:3195
 #, no-c-format
@@ -19056,36 +18961,32 @@ msgstr "ASan-Schutz für Verwendung-nach-Rückkehr-Fehler einschalten."
 #: params.opt:67
 #, no-c-format
 msgid "Enable hwasan instrumentation of statically sized stack-allocated variables."
-msgstr ""
+msgstr "hwasan-Instrumentierung von auf dem Stapel allozierten Variablen fester Größe einschalten."
 
 #: params.opt:71
 #, no-c-format
 msgid "Use random base tag for each frame, as opposed to base always zero."
-msgstr ""
+msgstr "Zufällige Basisadresse für jeden Rahmen wählen, statt immer 0 zu verwenden."
 
 #: params.opt:75
-#, fuzzy, no-c-format
-#| msgid "Enable asan allocas/VLAs protection."
+#, no-c-format
 msgid "Enable hwasan instrumentation of allocas/VLAs."
-msgstr "ASan-Schutz für alloca/VLAs einschalten."
+msgstr "hwasan-Instrumentierung für alloca/VLAs einschalten."
 
 #: params.opt:79
-#, fuzzy, no-c-format
-#| msgid "Enable asan store operations protection."
+#, no-c-format
 msgid "Enable hwasan instrumentation of load operations."
-msgstr "ASan-Schutz für Speicheroperationen einschalten."
+msgstr "hwasan-Instrumentierung für Ladeoperationen einschalten."
 
 #: params.opt:83
-#, fuzzy, no-c-format
-#| msgid "Enable asan store operations protection."
+#, no-c-format
 msgid "Enable hwasan instrumentation of store operations."
-msgstr "ASan-Schutz für Speicheroperationen einschalten."
+msgstr "hwasan-Instrumentierung für Speicheroperationen einschalten."
 
 #: params.opt:87
-#, fuzzy, no-c-format
-#| msgid "invalid argument to built-in function"
+#, no-c-format
 msgid "Enable hwasan instrumentation of builtin functions."
-msgstr "ungültiges Argument für eingebaute Funktion"
+msgstr "hwasan-Instrumentierung für eingebaute Funktionen einschalten."
 
 #: params.opt:91
 #, no-c-format
@@ -19140,7 +19041,7 @@ msgstr "Größtes durch frühes »inline« eines einzelnen Aufrufs abgeschätzte
 #: params.opt:131
 #, no-c-format
 msgid "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in."
-msgstr ""
+msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Gibt an, in welchem Modus Early-VRP arbeiten soll."
 
 #: params.opt:162
 #, no-c-format
@@ -19283,10 +19184,9 @@ msgid "How much can given compilation unit grow because of the interprocedural c
 msgstr "Wie viel die gegebene Übersetzungseinheit durch die interprozedurale Konstantenweitergabe wachsen kann (in Prozent)."
 
 #: params.opt:274
-#, fuzzy, no-c-format
-#| msgid "The size of translation unit to be considered large."
+#, no-c-format
 msgid "The size of translation unit that IPA-CP pass considers large."
-msgstr "Die Größe einer als groß angesehenen Übersetzungseinheit."
+msgstr "Die Größe einer Übersetzungseinheit, ab der der IPA-CP-Durchlauf sie als groß ansieht."
 
 #: params.opt:278
 #, no-c-format
@@ -19294,10 +19194,9 @@ msgid "Maximum size of a list of values associated with each parameter for inter
 msgstr "Maximale Größe einer jedem Parameter zugeordneten Liste von Werten für interprozedurale Konstantenweitergabe."
 
 #: params.opt:282
-#, fuzzy, no-c-format
-#| msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices."
+#, no-c-format
 msgid "Maximum number of statements visited during jump function offset discovery."
-msgstr "Höchstzahl der zusammengesetzten Elemente für einen Parameter in Sprungfunktionen und Gittern."
+msgstr "Höchstzahl der betrachteten Anweisungen für das Entdecken von Sprungfunktionsoffsets."
 
 #: params.opt:286
 #, no-c-format
@@ -19317,7 +19216,7 @@ msgstr "Maximale Anzahl von Operationen in einem Parameterausdruck, die von der 
 #: params.opt:298
 #, no-c-format
 msgid "Maximum number of different predicates used to track properties of loops in IPA analysis."
-msgstr ""
+msgstr "Maximale Anzahl verschiedener Prädikate, die zur Verfolgung der Eigenschaften von Schleifen in der interprozeduralen Analyse verwendet werden."
 
 #: params.opt:302
 #, no-c-format
@@ -19417,7 +19316,7 @@ msgstr "Die Größe einer als groß angesehenen Übersetzungseinheit."
 #: params.opt:378
 #, no-c-format
 msgid "Maximum number of concurrently open C++ module files when lazy loading."
-msgstr ""
+msgstr "Höchstzahl der gleichzeitig offenen C++-Moduldateien beim verzögerten Laden."
 
 #: params.opt:382
 #, no-c-format
@@ -19590,10 +19489,9 @@ msgid "The maximum ratio of insertions to deletions of expressions in GCSE."
 msgstr "Das maximale Verhältnis von Einfügungen zu Löschungen von Ausdrücken in GCSE."
 
 #: params.opt:518
-#, fuzzy, no-c-format
-#| msgid "The maximum amount of memory to be allocated by GCSE."
+#, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE, in kilobytes."
-msgstr "Höchstmenge des von GCSE zu belegenden Speichers."
+msgstr "Höchstmenge des von GCSE zu belegenden Speichers, in Kilobyte."
 
 #: params.opt:522
 #, no-c-format
@@ -20091,39 +19989,35 @@ msgid "The maximum ratio between array size and switch branches for a switch con
 msgstr "Maximales Verhältnis zwischen Arraygröße und Switch-Zweigen, bei dem eine Switch-Umwandlung erfolgt."
 
 #: params.opt:944
-#, fuzzy, no-c-format
-#| msgid "Maximum number of parameters in a SCoP."
+#, no-c-format
 msgid "Maximum number of bases stored in each modref tree."
-msgstr "Höchstzahl der Parameter in einem SCoP."
+msgstr "Höchstzahl der Basen, die pro modref-Baum gespeichert werden."
 
 #: params.opt:948
-#, fuzzy, no-c-format
-#| msgid "Maximum number of parameters in a SCoP."
+#, no-c-format
 msgid "Maximum number of references stored in each modref base."
-msgstr "Höchstzahl der Parameter in einem SCoP."
+msgstr "Höchstzahl der Verweise, die pro modref-Basis gespeichert werden."
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99167
 #: params.opt:952
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination."
+#, no-c-format
 msgid "Maximum number of accesse stored in each modref reference."
-msgstr "Höchstzahl der aktiven lokalen Speicherungen bei RTL-Eliminierung toter Speicherungen."
+msgstr "Höchstzahl der Zugriffe, die pro modref-Verweis gespeichert werden."
 
 #: params.opt:956
-#, fuzzy, no-c-format
-#| msgid "Maximum number of disambiguations to perform per memory access."
+#, no-c-format
 msgid "Maximum number of tests performed by modref query."
-msgstr "Höchstzahl der Auflösungen von Mehrdeutigkeiten pro Speicherzugriff."
+msgstr "Höchstzahl der Tests, die von modref-Anfragen durchgeführt werden."
 
 #: params.opt:960
 #, no-c-format
 msgid "Maximum depth of DFS walk used by modref escape analysis."
-msgstr ""
+msgstr "Höchsttiefe beim Durchlaufen des DFS durch die modref-Escapeanalyse."
 
 #: params.opt:964
-#, fuzzy, no-c-format
-#| msgid "Maximum number of queries into the alias oracle per store."
+#, no-c-format
 msgid "Maximum number of escape points tracked by modref per SSA-name."
-msgstr "Höchstzahl, wie oft das Alias-Orakel pro Speichervorgang befragt wird."
+msgstr "Höchstzahl der Ausstiegspunkte, die von modref pro SSA-Name aufgezeichnet werden."
 
 #: params.opt:968
 #, no-c-format
@@ -20166,15 +20060,14 @@ msgid "Set the maximum number of instructions executed in parallel in reassociat
 msgstr "Höchstzahl der parallel ausgeführten Befehle im neuverbundenen Baum festlegen. Bei 0 die zielabhängige Heuristik verwenden."
 
 #: params.opt:1000
-#, fuzzy, no-c-format
-#| msgid "Emit implicit instantiations of templates."
+#, no-c-format
 msgid "Emit special instrumentation for accesses to volatiles."
-msgstr "Implizite Instanziierungen von Templates ausgeben."
+msgstr "Spezielle Instrumentierung für Zugriff auf volatile-Objekte erzeugen."
 
 #: params.opt:1004
 #, no-c-format
 msgid "Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit()."
-msgstr ""
+msgstr "Instrumentierungsaufrufe für Aufrufe von __tsan_func_entry() und __tsan_func_exit() erzeugen."
 
 #: params.opt:1008
 #, no-c-format
@@ -20249,7 +20142,7 @@ msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionier
 #: params.opt:1064
 #, no-c-format
 msgid "Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2."
-msgstr ""
+msgstr "Steuert, wie der Schleifenvektorisierer partielle Vektoren verwendet. 0 bedeutet nie, 1 bedeutet nur für Schleifen, die nicht unbedingt vektorisiert werden müssen, 2 bedeutet für alle Schleifen. Voreinstellung ist 2."
 
 #: go/gofrontend/expressions.cc:183 c-family/c-warn.c:683 cp/cvt.c:1397
 #, gcc-internal-format
@@ -20909,62 +20802,53 @@ msgid "cannot read function profile from %s"
 msgstr "Funktionsprofil aus %s kann nicht gelesen werden"
 
 #: builtins.c:1128
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound %s exceeds maximum object size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze %s überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:1136
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds the size %E of unterminated array"
+#, gcc-internal-format
 msgid "%K%qD specified bound %s exceeds the size %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet die Größe %E des nicht abgeschlossenen Arrays"
+msgstr "%Kdurch %qD angegebene Grenze %s überschreitet die Größe %E des nicht abgeschlossenen Arrays"
 
 #: builtins.c:1139
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%K%qD specified bound %s may exceed the size of at most %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe von maximal %E des nicht abgeschlossenen Arrays"
+msgstr "%Kdurch %qD angegebene Grenze %s überschreitet möglicherweise die Maximalgröße %E des nicht abgeschlossenen Arrays"
 
 #: builtins.c:1142
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%K%qD specified bound %s exceeds the size of at most %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe von maximal %E des nicht abgeschlossenen Arrays"
+msgstr "%Kdurch %qD angegebene Grenze %s überschreitet die Maximalgröße %E des nicht abgeschlossenen Arrays"
 
 #: builtins.c:1150
-#, fuzzy, gcc-internal-format
-#| msgid "%qs argument missing terminating nul"
+#, gcc-internal-format
 msgid "%K%qD argument missing terminating nul"
-msgstr "Argument für %qs hat kein abschließendes nul-Zeichen"
+msgstr "%KArgument für %qD hat kein abschließendes nul-Zeichen"
 
 #: builtins.c:1159
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%qs specified bound %s exceeds maximum object size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
+msgstr "durch %qs angegebene Grenze %s überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:1167
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds the size %E of unterminated array"
+#, gcc-internal-format
 msgid "%qs specified bound %s exceeds the size %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet die Größe %E des nicht abgeschlossenen Arrays"
+msgstr "durch %qs angegebene Grenze %s überschreitet die Größe %E des nicht abgeschlossenen Arrays"
 
 #: builtins.c:1170
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%qs specified bound %s may exceed the size of at most %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe von maximal %E des nicht abgeschlossenen Arrays"
+msgstr "durch %qs angegebene Grenze %s überschreitet möglicherweise die Maximalgröße %E des nicht abgeschlossenen Arrays"
 
 #: builtins.c:1173
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E may exceed the size of at most %E of unterminated array"
+#, gcc-internal-format
 msgid "%qs specified bound %s exceeds the size of at most %E of unterminated array"
-msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe von maximal %E des nicht abgeschlossenen Arrays"
+msgstr "durch %qs angegebene Grenze %s überschreitet die Maximalgröße %E des nicht abgeschlossenen Arrays"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99275
 #: builtins.c:1181
-#, fuzzy, gcc-internal-format
-#| msgid "%qs argument missing terminating nul"
+#, gcc-internal-format
 msgid "%qsargument missing terminating nul"
 msgstr "Argument für %qs hat kein abschließendes nul-Zeichen"
 
@@ -20976,7 +20860,7 @@ msgstr "das referenzierte Argument wird hier deklariert"
 #: builtins.c:1450
 #, gcc-internal-format
 msgid "offset %qwi outside bounds of constant string"
-msgstr "Adressabstand %wi ist außerhalb der Grenzen der konstanten Zeichenkette"
+msgstr "Offset %qwi ist außerhalb der Grenzen der konstanten Zeichenkette"
 
 #: builtins.c:1454 cp/name-lookup.c:6576
 #, gcc-internal-format
@@ -20991,7 +20875,7 @@ msgstr "Zweites Argument für %<__builtin_prefetch%> muss eine Konstante sein"
 #: builtins.c:2069
 #, gcc-internal-format
 msgid "invalid second argument to %<__builtin_prefetch%>; using zero"
-msgstr "Ungültiges zweites Argument für %<__builtin_prefetch%>; es wird Null verwendet"
+msgstr "Ungültiges zweites Argument für %<__builtin_prefetch%>; es wird 0 verwendet"
 
 #: builtins.c:2077
 #, gcc-internal-format
@@ -21001,24 +20885,22 @@ msgstr "Drittes Argument für %<__builtin_prefetch%> muss eine Konstante sein"
 #: builtins.c:2084
 #, gcc-internal-format
 msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
-msgstr "Ungültiges drittes Argument für %<__builtin_prefetch%>; es wird Null verwendet"
+msgstr "Ungültiges drittes Argument für %<__builtin_prefetch%>; es wird 0 verwendet"
 
 #: builtins.c:3954
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E may exceed maximum object size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:3956 calls.c:1730
 #, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds maximum object size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:3961
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E may exceed maximum object size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die maximale Objektgröße %E"
+msgstr "%Kangegebene Grenze %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:3963
 #, gcc-internal-format
@@ -21026,10 +20908,9 @@ msgid "%Kspecified bound %E exceeds maximum object size %E"
 msgstr "%Kangegebene Grenze %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:3970
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound [%E, %E] may exceed maximum object size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:3972 calls.c:1735
 #, gcc-internal-format
@@ -21037,561 +20918,470 @@ msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
 msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:3978
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound [%E, %E] may exceed maximum object size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kangegebene Grenze [%E, %E] überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:3980
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound [%E, %E] exceeds maximum object size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kangegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:3990
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E may exceed source size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe %E des Quellobjekts"
 
 #: builtins.c:3992
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds source size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet die Größe %E des Quellobjekts"
 
 #: builtins.c:3997
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E may exceed source size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kangegebene Grenze %E überschreitet möglicherweise die Größe %E des Quellobjekts"
 
 #: builtins.c:3999
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E exceeds source size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kangegebene Grenze %E überschreitet die Größe %E des Quellobjekts"
 
 #: builtins.c:4006
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound [%E, %E] may exceed source size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet möglicherweise die Größe %E des Quellobjekts"
 
 #: builtins.c:4008
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound [%E, %E] exceeds source size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die Größe %E des Quellobjekts"
 
 #: builtins.c:4013
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound [%E, %E] may exceed source size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kangegebene Grenze [%E, %E] überschreitet möglicherweise die Größe %E des Quellobjekts"
 
 #: builtins.c:4015
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound [%E, %E] exceeds source size %E"
-msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die maximale Objektgröße %E"
+msgstr "%Kangegebene Grenze [%E, %E] überschreitet die Größe %E des Quellobjekts"
 
 #: builtins.c:4024
-#, fuzzy, gcc-internal-format
-#| msgid "subobject %qD declared here"
+#, gcc-internal-format
 msgid "source object declared here"
-msgstr "Teilobjekt %qD ist hier deklariert"
+msgstr "Quellobjekt ist hier deklariert"
 
 #: builtins.c:4027
-#, fuzzy, gcc-internal-format
-#| msgid "allocated here"
+#, gcc-internal-format
 msgid "source object allocated here"
-msgstr "wurde hier deklariert"
+msgstr "Quellobjekt wird hier alloziert"
 
 #: builtins.c:4042
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified size %E may exceed maximum object size %E"
-msgstr "%K%qD angegebene Größe %E überschreitet maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Größe %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:4044
 #, gcc-internal-format
 msgid "%K%qD specified size %E exceeds maximum object size %E"
-msgstr "%K%qD angegebene Größe %E überschreitet maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Größe %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:4049
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified size %E may exceed maximum object size %E"
-msgstr "%Kangegebene Größe %E überschreitet maximale Objektgröße %E"
+msgstr "%Kangegebene Größe %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:4051
 #, gcc-internal-format
 msgid "%Kspecified size %E exceeds maximum object size %E"
-msgstr "%Kangegebene Größe %E überschreitet maximale Objektgröße %E"
+msgstr "%Kangegebene Größe %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:4058
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%K%qD specified size between %E and %E may exceed maximum object size %E"
-msgstr "%K%qD angegebene Größe zwischen %E und %E überschreitet maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Größe zwischen %E und %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:4060
 #, gcc-internal-format
 msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD angegebene Größe zwischen %E und %E überschreitet maximale Objektgröße %E"
+msgstr "%Kdurch %qD angegebene Größe zwischen %E und %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:4066
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified size between %E and %E exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kspecified size between %E and %E may exceed maximum object size %E"
-msgstr "%Kangegebene Größe zwischen %E und %E überschreitet maximale Objektgröße %E"
+msgstr "%Kangegebene Größe zwischen %E und %E überschreitet möglicherweise die maximale Objektgröße %E"
 
 #: builtins.c:4068
 #, gcc-internal-format
 msgid "%Kspecified size between %E and %E exceeds maximum object size %E"
-msgstr "%Kangegebene Größe zwischen %E und %E überschreitet maximale Objektgröße %E"
+msgstr "%Kangegebene Größe zwischen %E und %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:4078
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E may exceed destination size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet möglicherweise die Größe %E des Zielobjekts"
 
 #: builtins.c:4080
 #, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds destination size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze %E überschreitet die Größe %E des Zielobjekts"
 
 #: builtins.c:4085
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound %E may exceed destination size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kangegebene Grenze %E überschreitet möglicherweise die Größe %E des Zielobjekts"
 
 #: builtins.c:4087
 #, gcc-internal-format
 msgid "%Kspecified bound %E exceeds destination size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kangegebene Grenze %E überschreitet die Größe %E des Zielobjekts"
 
 #: builtins.c:4094
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound [%E, %E] may exceed destination size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet möglicherweise die Größe %E des Zielobjekts"
 
 #: builtins.c:4096
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD specified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%K%qD specified bound [%E, %E] exceeds destination size %E"
-msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kdurch %qD angegebene Grenze [%E, %E] überschreitet die Größe %E des Zielobjekts"
 
 #: builtins.c:4101 builtins.c:4103
-#, fuzzy, gcc-internal-format
-#| msgid "%Kspecified bound %E exceeds destination size %E"
+#, gcc-internal-format
 msgid "%Kspecified bound [%E, %E] exceeds destination size %E"
-msgstr "%Kangegebene Grenze %E überschreitet die Größe der Zielregion %E"
+msgstr "%Kangegebene Grenze [%E, %E] überschreitet die Größe %E des Zielobjekts"
 
 #: builtins.c:4113
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object declared here"
+#, gcc-internal-format
 msgid "destination object declared here"
-msgstr "bei Offset %s des Objekts, das hier deklariert ist"
+msgstr "Zielobjekt ist hier deklariert"
 
 #: builtins.c:4116
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object allocated by %qE here"
+#, gcc-internal-format
 msgid "destination object allocated here"
-msgstr "bei Offset %s zu einem Objekt, das hier von %qE alloziert wurde"
+msgstr "Zielobjekt wird hier alloziert"
 
 #: builtins.c:4143
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
-#| msgid_plural "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may access %E byte in a region of size %E"
-msgstr "%K%qD Lesen von %E Byte aus einer Region der Größe %E"
+msgstr "%K%qD greift möglicherweise auf %E Byte in einer Region der Größe %E zu"
 
 #: builtins.c:4145
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
-#| msgid_plural "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD accessing %E byte in a region of size %E"
-msgstr "%K%qD Lesen von %E Byte aus einer Region der Größe %E"
+msgstr "%K%qD greift auf %E Byte in einer Region der Größe %E zu"
 
 #: builtins.c:4148
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may access %E bytes in a region of size %E"
-msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift möglicherweise auf %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4150
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD accessing %E bytes in a region of size %E"
-msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift auf %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4155
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay access %E byte in a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode greift möglicherweise auf %E Byte in einer Region der Größe %E zu"
 
 #: builtins.c:4157
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kaccessing %E byte in a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode greift auf %E Byte in einer Region der Größe %E zu"
 
 #: builtins.c:4160
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay access %E bytes in a region of size %E"
-msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode greift möglicherweise auf %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4162
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kaccessing %E bytes in a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode greift auf %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4171
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may access %E or more bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift möglicherweise auf %E oder mehr Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4173
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD accessing %E or more bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift auf %E oder mehr Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4178
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay access %E or more bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode greift möglicherweise auf %E oder mehr Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4180
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kaccessing %E or more bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode greift auf %E oder mehr Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4188
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may access between %E and %E bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift möglicherweise auf zwischen %E und %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4190
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD accessing between %E and %E bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD greift auf zwischen %E und %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4196
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay access between %E and %E bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%Kgreift möglicherweise auf zwischen %E und %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4198
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kaccessing between %E and %E bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode greift auf zwischen %E und %E Bytes in einer Region der Größe %E zu"
 
 #: builtins.c:4211
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD writing %wu byte into a region of size %wu"
-#| msgid_plural "%G%qD writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD may write %E byte into a region of size %E"
-msgstr "%G%qD schreibt %wu Byte in eine Region der Größe %wu"
+msgstr "%K%qD schreibt möglicherweise %E Byte in eine Region der Größe %E"
 
 #: builtins.c:4213
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
-#| msgid_plural "%K%qD writing %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
-msgstr "%K%qD das Schreiben von %E Byte in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%K%qD schreibt %E Byte in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4216
-#, fuzzy, gcc-internal-format
-#| msgid "%G%qD writing %wu byte into a region of size %wu"
-#| msgid_plural "%G%qD writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD may write %E bytes into a region of size %E"
-msgstr "%G%qD schreibt %wu Byte in eine Region der Größe %wu"
+msgstr "%K%qD schreibt möglicherweise %E Bytes in eine Region der Größe %E"
 
 #: builtins.c:4218
 #, gcc-internal-format
 msgid "%K%qD writing %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD das Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%K%qD schreibt %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4223
-#, fuzzy, gcc-internal-format
-#| msgid "%Gwriting %wu byte into a region of size %wu"
-#| msgid_plural "%Gwriting %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%Kmay write %E byte into a region of size %E"
-msgstr "%GSchreiben von %wu Byte in eine Region der Größe %wu"
+msgstr "%KCode schreibt möglicherweise %E Byte in eine Region der Größe %E"
 
 #: builtins.c:4225
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting %E byte into a region of size %E overflows the destination"
-#| msgid_plural "%Kwriting %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%Kwriting %E byte into a region of size %E overflows the destination"
-msgstr "%Kdas Schreiben von %E Byte in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%KCode schreibt %E Byte in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4228
-#, fuzzy, gcc-internal-format
-#| msgid "%Gwriting %wu byte into a region of size %wu"
-#| msgid_plural "%Gwriting %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%Kmay write %E bytes into a region of size %E"
-msgstr "%GSchreiben von %wu Byte in eine Region der Größe %wu"
+msgstr "%KCode schreibt %E Bytes in eine Region der Größe %E"
 
 #: builtins.c:4230
-#, fuzzy, gcc-internal-format
-#| msgid "%Kwriting %E byte into a region of size %E overflows the destination"
-#| msgid_plural "%Kwriting %E bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%Kwriting %E bytes into a region of size %E overflows the destination"
-msgstr "%Kdas Schreiben von %E Byte in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%KCode schreibt %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99276
 #: builtins.c:4239
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD may write %E or more bytes into a region of size %E the destination"
-msgstr "%K%qD das Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%K%qD schreibt möglicherweise %E oder mehr Bytes in eine Region der Größe %E"
 
 #: builtins.c:4242 builtins.c:4780
 #, gcc-internal-format
 msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
-msgstr "%K%qD das Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%K%qD schreibt %E oder mehr Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4248
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay write %E or more bytes into a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode schreibt %E oder mehr Bytes in eine Region der Größe %E"
 
 #: builtins.c:4250 builtins.c:4785
 #, gcc-internal-format
 msgid "%Kwriting %E or more bytes into a region of size %E overflows the destination"
-msgstr "%Kdas Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%KCode schreibt %E oder mehr Bytes in eine Region der Größe %E und bringt dadurch die Zielregion zum Überlaufen"
 
 #: builtins.c:4259
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may write between %E and %E bytes into a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD schreibt möglicherweise zwischen %E und %E Bytes in eine Region der Größe %E"
 
 #: builtins.c:4261
 #, gcc-internal-format
 msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD das Schreiben von %E bis %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%K%qD schreibt zwischen %E und %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4268
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay write between %E and %E bytes into a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode schreibt möglicherweise zwischen %E und %E Bytes in eine Region der Größe %E"
 
 #: builtins.c:4270
 #, gcc-internal-format
 msgid "%Kwriting between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%Kdas Schreiben von %E bis %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
+msgstr "%KCode schreibt zwischen %E und %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99278
 #: builtins.c:4285
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
-#| msgid_plural "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may reade %E byte from a region of size %E"
-msgstr "%K%qD Lesen von %E Byte aus einer Region der Größe %E"
+msgstr "%K%qD liest möglicherweise %E Byte aus einer Region der Größe %E"
 
 #: builtins.c:4287
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
-#| msgid_plural "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD reading %E byte from a region of size %E"
-msgstr "%K%qD Lesen von %E Byte aus einer Region der Größe %E"
+msgstr "%K%qD liest %E Byte aus einer Region der Größe %E"
 
 #: builtins.c:4290
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may read %E bytes from a region of size %E"
-msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest möglicherweise %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4292
 #, gcc-internal-format
 msgid "%K%qD reading %E bytes from a region of size %E"
-msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4298
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay read %E byte from a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode liest möglicherweise %E Byte aus einer Region der Größe %E"
 
 #: builtins.c:4300
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kreading %E byte from a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode liest %E Byte aus einer Region der Größe %E"
 
 #: builtins.c:4303
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay read %E bytes from a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode liest möglicherweise %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4305
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kreading %E bytes from a region of size %E"
-msgstr "%KLesen von %E Byte aus einer Region der Größe %E"
+msgstr "%KCode liest %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4314
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may read %E or more bytes from a region of size %E"
-msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest möglicherweise %E oder mehr Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4316
 #, gcc-internal-format
 msgid "%K%qD reading %E or more bytes from a region of size %E"
-msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest %E oder mehr Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4321
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay read %E or more bytes from a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode liest möglicherweise %E oder mehr Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4323
 #, gcc-internal-format
 msgid "%Kreading %E or more bytes from a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode liest %E oder mehr Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4331
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may read between %E and %E bytes from a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest möglicherweise zwischen %E und %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4333
 #, gcc-internal-format
 msgid "%K%qD reading between %E and %E bytes from a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD liest zwischen %E und %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4338
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kmay read between %E and %E bytes from a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode liest möglicherweise zwischen %E und %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4340
 #, gcc-internal-format
 msgid "%Kreading between %E and %E bytes from a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode liest zwischen %E und %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4355
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
-#| msgid_plural "%K%qD reading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD epecting %E byte in a region of size %E"
 msgid_plural "%K%qD expecting %E bytes in a region of size %E"
-msgstr[0] "%K%qD Lesen von %E Byte aus einer Region der Größe %E"
-msgstr[1] "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
+msgstr[0] "%K%qD erwartet %E Byte in einer Region der Größe %E"
+msgstr[1] "%K%qD erwartet %E Bytes in einer Region der Größe %E"
 
 #: builtins.c:4360
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E byte from a region of size %E"
-#| msgid_plural "%Kreading %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kexpecting %E byte in a region of size %E"
 msgid_plural "%Kexpecting %E bytes in a region of size %E"
-msgstr[0] "%KLesen von %E Byte aus einer Region der Größe %E"
-msgstr[1] "%KLesen von %E Bytes aus einer Region der Größe %E"
+msgstr[0] "%KCode erwartet %E Byte in einer Region der Größe %E"
+msgstr[1] "%KCode erwartet %E Bytes in einer Region der Größe %E"
 
 #: builtins.c:4368
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD expecting %E or more bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%K%qD erwartet %E oder mehr Bytes in einer Region der Größe %E"
 
 #: builtins.c:4372
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading %E or more bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kexpecting %E or more bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
+msgstr "%KCode erwartet %E oder mehr Bytes in einer Region der Größe %E"
 
 #: builtins.c:4379
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD expecting between %E and %E bytes in a region of size %E"
-msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%K%qD erwartet zwischen %E und %E Bytes in einer Region der Größe %E"
 
 #: builtins.c:4383
-#, fuzzy, gcc-internal-format
-#| msgid "%Kreading between %E and %E bytes from a region of size %E"
+#, gcc-internal-format
 msgid "%Kexpectting between %E and %E bytes in a region of size %E"
-msgstr "%Kdas Lesen von %E bis %E Bytes aus einer Region der Größe %E"
+msgstr "%KCode erwartet zwischen %E und %E Bytes in einer Region der Größe %E"
 
 #: builtins.c:4546
-#, fuzzy, gcc-internal-format
-#| msgid "%qE output %wu bytes into a destination of size %wu"
+#, gcc-internal-format
 msgid "at offset %s into destination object %qE of size %s"
-msgstr "%qE hat %wu Bytes in das Ziel der Größe %wu ausgegeben"
+msgstr "an Offset %s des Zielobjekts %qE der Größe %s"
 
 #: builtins.c:4549
 #, gcc-internal-format
 msgid "destination object %qE of size %s"
-msgstr ""
+msgstr "Zielobjekt %qE der Größe %s"
 
 #: builtins.c:4555
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object with size %wu allocated by %qE here"
+#, gcc-internal-format
 msgid "at offset %s into destination object of size %s allocated by %qE"
-msgstr "bei Offset %s zu einem Objekt mit der Größe %wu, das hier von %qE alloziert wurde"
+msgstr "an Offset %s des Zielobjekts der Größe %s, alloziert durch %qE"
 
 #: builtins.c:4558
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object with size %wu allocated by %qE here"
+#, gcc-internal-format
 msgid "destination object of size %s allocated by %qE"
-msgstr "bei Offset %s zu einem Objekt mit der Größe %wu, das hier von %qE alloziert wurde"
+msgstr "Zielobjekt der Größe %s, alloziert durch %qE"
 
 #: builtins.c:4566
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to object %qD with size %E declared here"
+#, gcc-internal-format
 msgid "at offset %s into source object %qE of size %s"
-msgstr "bei Offset %s zum Objekt %qD mit Größe %E wurde hier deklariert"
+msgstr "an Offset %s des Quellobjekts %qE der Größe %s"
 
 #: builtins.c:4569
 #, gcc-internal-format
 msgid "source object %qE of size %s"
-msgstr ""
+msgstr "Quellobjekt %qE der Größe %s"
 
 #: builtins.c:4576
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object with size %wu allocated by %qE here"
+#, gcc-internal-format
 msgid "at offset %s into source object of size %s allocated by %qE"
-msgstr "bei Offset %s zu einem Objekt mit der Größe %wu, das hier von %qE alloziert wurde"
+msgstr "an Offset %s des Quellobjekts der Größe %s, alloziert durch %qE"
 
 #: builtins.c:4579
-#, fuzzy, gcc-internal-format
-#| msgid "at offset %s to an object with size %wu allocated by %qE here"
+#, gcc-internal-format
 msgid "source object of size %s allocated by %qE"
-msgstr "bei Offset %s zu einem Objekt mit der Größe %wu, das hier von %qE alloziert wurde"
+msgstr "Quellobjekt der Größe %s, alloziert durch %qE"
 
 #: builtins.c:6384 builtins.c:6457
 #, gcc-internal-format
 msgid "%K%qD specified bound %E equals destination size"
-msgstr "%K%qD angegebene Grenze %E ist genau die Größe des Ziels"
+msgstr "%Kdurch %qD angegebene Grenze %E ist genau die Größe des Zielobjekts"
 
 #: builtins.c:7349 gimplify.c:3383
 #, gcc-internal-format
