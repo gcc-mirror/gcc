@@ -23793,9 +23793,21 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  dw_fde_ref fde = fun->fde;
 	  if (fde->dw_fde_begin)
 	    {
-	      /* We have already generated the labels.  */
-             add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
-                                 fde->dw_fde_end, false);
+	      dw_attr_node *low = get_AT (subr_die, DW_AT_low_pc);
+	      dw_attr_node *high = get_AT (subr_die, DW_AT_high_pc);
+	      if (low && high)
+		{
+		  /* Replace the existing value, it will have come from
+		     the "omp target entrypoint" case below.  */
+		  free (low->dw_attr_val.v.val_lbl_id);
+		  low->dw_attr_val.v.val_lbl_id = xstrdup (fde->dw_fde_begin);
+		  free (high->dw_attr_val.v.val_lbl_id);
+		  high->dw_attr_val.v.val_lbl_id = xstrdup (fde->dw_fde_end);
+		}
+	      else
+		/* We have already generated the labels.  */
+		add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
+				    fde->dw_fde_end, false);
 
 	     /* Offload kernel functions are nested within a parent function
 	        that doesn't actually exist within the offload object.  GDB

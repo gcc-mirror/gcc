@@ -1,3 +1,8 @@
+2021-02-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Replace existing low/high PC
+	attributes, rather than ICE.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* omp-low.cc (install_var_field): Add new 'tree key_expr = NULL_TREE'
