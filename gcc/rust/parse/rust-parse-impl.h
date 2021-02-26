@@ -206,11 +206,11 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
       return true;
       case RIGHT_SHIFT: {
 #if 0
-	/* shit. preferred HACK would be to replace this token in stream with
-	 * '>', but may not be possible at this point. */
-	// FIXME: ensure locations aren't messed up
-	TokenPtr right_angle = Token::make (RIGHT_ANGLE, tok->get_locus () + 1);
-	lexer.replace_current_token (right_angle);
+        /* shit. preferred HACK would be to replace this token in stream with
+         * '>', but may not be possible at this point. */
+        // FIXME: ensure locations aren't messed up
+        TokenPtr right_angle = Token::make (RIGHT_ANGLE, tok->get_locus () + 1);
+        lexer.replace_current_token (right_angle);
 #endif
 
 	// new implementation that should be better
@@ -220,13 +220,13 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
       }
       case GREATER_OR_EQUAL: {
 #if 0
-	// another HACK - replace with equal (as assignment intended, probably)
-	/* FIXME: is this even required? how many people wouldn't leave a space?
-	 * - apparently rustc has this feature */
-	// FIXME: ensure locations aren't messed up
-	TokenPtr equal = Token::make (EQUAL, tok->get_locus () + 1);
-	lexer.replace_current_token (equal);
-	return true;
+        // another HACK - replace with equal (as assignment intended, probably)
+        /* FIXME: is this even required? how many people wouldn't leave a space?
+         * - apparently rustc has this feature */
+        // FIXME: ensure locations aren't messed up
+        TokenPtr equal = Token::make (EQUAL, tok->get_locus () + 1);
+        lexer.replace_current_token (equal);
+        return true;
 #endif
 
 	// new implementation that should be better
@@ -236,13 +236,13 @@ Parser<ManagedTokenSource>::skip_generics_right_angle ()
       }
       case RIGHT_SHIFT_EQ: {
 #if 0
-	// another HACK - replace with greater or equal
-	// FIXME: again, is this really required? rustc has the feature, though
-	// FIXME: ensure locations aren't messed up
-	TokenPtr greater_equal
-	  = Token::make (GREATER_OR_EQUAL, tok->get_locus () + 1);
-	lexer.replace_current_token (greater_equal);
-	return true;
+        // another HACK - replace with greater or equal
+        // FIXME: again, is this really required? rustc has the feature, though
+        // FIXME: ensure locations aren't messed up
+        TokenPtr greater_equal
+          = Token::make (GREATER_OR_EQUAL, tok->get_locus () + 1);
+        lexer.replace_current_token (greater_equal);
+        return true;
 #endif
 
 	// new implementation that should be better
@@ -490,25 +490,37 @@ AST::Attribute
 Parser<ManagedTokenSource>::parse_inner_attribute ()
 {
   if (lexer.peek_token ()->get_id () != HASH)
-    return AST::Attribute::create_empty ();
-
+    {
+      rust_error_at (
+	lexer.peek_token ()->get_locus (),
+	"BUG: token %<#%> is missing, but parse_inner_attribute was invoked.");
+      return AST::Attribute::create_empty ();
+    }
   lexer.skip_token ();
 
   if (lexer.peek_token ()->get_id () != EXCLAM)
-    return AST::Attribute::create_empty ();
-
+    {
+      rust_error_at (lexer.peek_token ()->get_locus (),
+		     "Expect one of `!' or `['");
+      return AST::Attribute::create_empty ();
+    }
   lexer.skip_token ();
 
   if (lexer.peek_token ()->get_id () != LEFT_SQUARE)
-    return AST::Attribute::create_empty ();
-
+    {
+      rust_error_at (lexer.peek_token ()->get_locus (), "Expect `['");
+      return AST::Attribute::create_empty ();
+    }
   lexer.skip_token ();
 
   AST::Attribute actual_attribute = parse_attribute_body ();
+  lexer.skip_token ();
 
   if (lexer.peek_token ()->get_id () != RIGHT_SQUARE)
-    return AST::Attribute::create_empty ();
-
+    {
+      rust_error_at (lexer.peek_token ()->get_locus (), "Expect `]'");
+      return AST::Attribute::create_empty ();
+    }
   lexer.skip_token ();
 
   return actual_attribute;
@@ -8247,55 +8259,55 @@ Parser<ManagedTokenSource>::parse_match_expr (
 #if 0
       // branch on next token - if '{', block expr, otherwise just expr
       if (lexer.peek_token ()->get_id () == LEFT_CURLY)
-	{
-	  // block expr
-	  std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
-	  if (block_expr == nullptr)
-	    {
-	      rust_error_at (
-		lexer.peek_token ()->get_locus (),
-		"failed to parse block expr in match arm in match expr");
-	      // skip somewhere
-	      return nullptr;
-	    }
+        {
+          // block expr
+          std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
+          if (block_expr == nullptr)
+            {
+              rust_error_at (
+                lexer.peek_token ()->get_locus (),
+                "failed to parse block expr in match arm in match expr");
+              // skip somewhere
+              return nullptr;
+            }
 
-	  // create match case block expr and add to cases
-	  std::unique_ptr<AST::MatchCaseBlockExpr> match_case_block (
-	    new AST::MatchCaseBlockExpr (std::move (arm),
-					 std::move (block_expr)));
-	  match_arms.push_back (std::move (match_case_block));
+          // create match case block expr and add to cases
+          std::unique_ptr<AST::MatchCaseBlockExpr> match_case_block (
+            new AST::MatchCaseBlockExpr (std::move (arm),
+                                         std::move (block_expr)));
+          match_arms.push_back (std::move (match_case_block));
 
-	  // skip optional comma
-	  if (lexer.peek_token ()->get_id () == COMMA)
-	    {
-	      lexer.skip_token ();
-	    }
-	}
+          // skip optional comma
+          if (lexer.peek_token ()->get_id () == COMMA)
+            {
+              lexer.skip_token ();
+            }
+        }
       else
-	{
-	  // regular expr
-	  std::unique_ptr<AST::Expr> expr = parse_expr ();
-	  if (expr == nullptr)
-	    {
-	      rust_error_at (lexer.peek_token ()->get_locus (),
-			     "failed to parse expr in match arm in match expr");
-	      // skip somewhere?
-	      return nullptr;
-	    }
+        {
+          // regular expr
+          std::unique_ptr<AST::Expr> expr = parse_expr ();
+          if (expr == nullptr)
+            {
+              rust_error_at (lexer.peek_token ()->get_locus (),
+                             "failed to parse expr in match arm in match expr");
+              // skip somewhere?
+              return nullptr;
+            }
 
-	  // construct match case expr and add to cases
-	  std::unique_ptr<AST::MatchCaseExpr> match_case_expr (
-	    new AST::MatchCaseExpr (std::move (arm), std::move (expr)));
-	  match_arms.push_back (std::move (match_case_expr));
+          // construct match case expr and add to cases
+          std::unique_ptr<AST::MatchCaseExpr> match_case_expr (
+            new AST::MatchCaseExpr (std::move (arm), std::move (expr)));
+          match_arms.push_back (std::move (match_case_expr));
 
-	  // skip REQUIRED comma - if no comma, break
-	  if (lexer.peek_token ()->get_id () != COMMA)
-	    {
-	      // if no comma, must be end of cases
-	      break;
-	    }
-	  lexer.skip_token ();
-	}
+          // skip REQUIRED comma - if no comma, break
+          if (lexer.peek_token ()->get_id () != COMMA)
+            {
+              // if no comma, must be end of cases
+              break;
+            }
+          lexer.skip_token ();
+        }
 #endif
     }
 
