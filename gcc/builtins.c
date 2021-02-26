@@ -1178,7 +1178,7 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 	}
       else
 	warned = warning_at (loc, OPT_Wstringop_overread,
-			     "%qsargument missing terminating nul",
+			     "%qs argument missing terminating nul",
 			     fname);
     }
 
