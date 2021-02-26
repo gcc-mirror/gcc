@@ -11088,7 +11088,12 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE,
 						 quals);
 
-      std_attrs = cp_parser_std_attribute_spec_seq (parser);
+      /* GCC 8 accepted attributes here, and this is the place for standard
+	 C++11 attributes that appertain to the function type.  */
+      if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
+      else
+	std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
       /* Parse optional trailing return type.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
@@ -11097,8 +11102,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
           return_type = cp_parser_trailing_type_id (parser);
         }
 
+      /* Also allow GNU attributes at the very end of the declaration, the
+	 usual place for GNU attributes.  */
       if (cp_next_tokens_can_be_gnu_attribute_p (parser))
-	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
+	gnu_attrs = chainon (gnu_attrs, cp_parser_gnu_attributes_opt (parser));
 
       /* Parse optional trailing requires clause.  */
       trailing_requires_clause = cp_parser_requires_clause_opt (parser, false);
