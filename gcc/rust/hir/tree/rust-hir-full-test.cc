@@ -1687,10 +1687,10 @@ NegationExpr::as_string () const
 
   switch (expr_type)
     {
-        case NegationOperator::NEGATE:
+    case NegationOperator::NEGATE:
       str = "-";
       break;
-        case NegationOperator::NOT:
+    case NegationOperator::NOT:
       str = "!";
       break;
     default:
@@ -1748,22 +1748,22 @@ ComparisonExpr::as_string () const
 
   switch (expr_type)
     {
-        case ComparisonOperator::EQUAL:
+    case ComparisonOperator::EQUAL:
       str += " == ";
       break;
-        case ComparisonOperator::NOT_EQUAL:
+    case ComparisonOperator::NOT_EQUAL:
       str += " != ";
       break;
-        case ComparisonOperator::GREATER_THAN:
+    case ComparisonOperator::GREATER_THAN:
       str += " > ";
       break;
-        case ComparisonOperator::LESS_THAN:
+    case ComparisonOperator::LESS_THAN:
       str += " < ";
       break;
-        case ComparisonOperator::GREATER_OR_EQUAL:
+    case ComparisonOperator::GREATER_OR_EQUAL:
       str += " >= ";
       break;
-        case ComparisonOperator::LESS_OR_EQUAL:
+    case ComparisonOperator::LESS_OR_EQUAL:
       str += " <= ";
       break;
     default:
@@ -1832,10 +1832,10 @@ LazyBooleanExpr::as_string () const
 
   switch (expr_type)
     {
-        case LazyBooleanOperator::LOGICAL_OR:
+    case LazyBooleanOperator::LOGICAL_OR:
       str += " || ";
       break;
-        case LazyBooleanOperator::LOGICAL_AND:
+    case LazyBooleanOperator::LOGICAL_AND:
       str += " && ";
       break;
     default:
@@ -2000,34 +2000,34 @@ ArithmeticOrLogicalExpr::as_string () const
   // get operator string
   switch (expr_type)
     {
-        case ArithmeticOrLogicalOperator::ADD:
+    case ArithmeticOrLogicalOperator::ADD:
       operator_str = "+";
       break;
-        case ArithmeticOrLogicalOperator::SUBTRACT:
+    case ArithmeticOrLogicalOperator::SUBTRACT:
       operator_str = "-";
       break;
-        case ArithmeticOrLogicalOperator::MULTIPLY:
+    case ArithmeticOrLogicalOperator::MULTIPLY:
       operator_str = "*";
       break;
-        case ArithmeticOrLogicalOperator::DIVIDE:
+    case ArithmeticOrLogicalOperator::DIVIDE:
       operator_str = "/";
       break;
-        case ArithmeticOrLogicalOperator::MODULUS:
+    case ArithmeticOrLogicalOperator::MODULUS:
       operator_str = "%";
       break;
-        case ArithmeticOrLogicalOperator::BITWISE_AND:
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
       operator_str = "&";
       break;
-        case ArithmeticOrLogicalOperator::BITWISE_OR:
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
       operator_str = "|";
       break;
-        case ArithmeticOrLogicalOperator::BITWISE_XOR:
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
       operator_str = "^";
       break;
-        case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
       operator_str = "<<";
       break;
-        case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
       operator_str = ">>";
       break;
     default:

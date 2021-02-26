@@ -300,9 +300,8 @@ public:
 						 Bexpression *left,
 						 Bexpression *right, Location);
 
-  Bexpression *comparison_expression (ComparisonOperator op,
-				       Bexpression *left, Bexpression *right,
-				       Location);
+  Bexpression *comparison_expression (ComparisonOperator op, Bexpression *left,
+				      Bexpression *right, Location);
 
   Bexpression *lazy_boolean_expression (LazyBooleanOperator op,
 					Bexpression *left, Bexpression *right,
@@ -1812,7 +1811,7 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
 // Return an expression for the comparison operation LEFT OP RIGHT.
 Bexpression *
 Gcc_backend::comparison_expression (ComparisonOperator op, Bexpression *left,
-				     Bexpression *right, Location location)
+				    Bexpression *right, Location location)
 {
   /* Check if either expression is an error, in which case we return an error
      expression. */

@@ -402,7 +402,8 @@ public:
       = new HIR::ArithmeticOrLogicalExpr (mapping,
 					  std::unique_ptr<HIR::Expr> (lhs),
 					  std::unique_ptr<HIR::Expr> (rhs),
-					  expr.get_expr_type(), expr.get_locus ());
+					  expr.get_expr_type (),
+					  expr.get_locus ());
   }
 
   void visit (AST::ComparisonExpr &expr)
@@ -419,8 +420,8 @@ public:
 
     translated
       = new HIR::ComparisonExpr (mapping, std::unique_ptr<HIR::Expr> (lhs),
-				 std::unique_ptr<HIR::Expr> (rhs), expr.get_expr_type(),
-				 expr.get_locus ());
+				 std::unique_ptr<HIR::Expr> (rhs),
+				 expr.get_expr_type (), expr.get_locus ());
   }
 
   void visit (AST::LazyBooleanExpr &expr)
@@ -437,8 +438,8 @@ public:
 
     translated
       = new HIR::LazyBooleanExpr (mapping, std::unique_ptr<HIR::Expr> (lhs),
-				  std::unique_ptr<HIR::Expr> (rhs), expr.get_expr_type(),
-				  expr.get_locus ());
+				  std::unique_ptr<HIR::Expr> (rhs),
+				  expr.get_expr_type (), expr.get_locus ());
   }
 
   void visit (AST::NegationExpr &expr)
@@ -454,14 +455,16 @@ public:
 				   UNKNOWN_LOCAL_DEFID);
     translated
       = new HIR::NegationExpr (mapping,
-			       std::unique_ptr<HIR::Expr> (negated_value), expr.get_expr_type(),
-			       std::move (outer_attribs), expr.get_locus ());
+			       std::unique_ptr<HIR::Expr> (negated_value),
+			       expr.get_expr_type (), std::move (outer_attribs),
+			       expr.get_locus ());
   }
 
   /* Compound assignment expression is compiled away. */
   void visit (AST::CompoundAssignmentExpr &expr)
   {
-      /* First we need to find the corresponding arithmetic or logical operator. */
+    /* First we need to find the corresponding arithmetic or logical operator.
+     */
     ArithmeticOrLogicalOperator op;
     switch (expr.get_expr_type ())
       {

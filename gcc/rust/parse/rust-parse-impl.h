@@ -12528,9 +12528,10 @@ Parser<ManagedTokenSource>::left_denotation (
       // sum expression - binary infix
       /*return parse_binary_plus_expr (tok, std::move (left),
 				     std::move (outer_attrs), restrictions);*/
-      return parse_arithmetic_or_logical_expr (
-	tok, std::move (left), std::move (outer_attrs),
-	ArithmeticOrLogicalOperator::ADD, restrictions);
+      return parse_arithmetic_or_logical_expr (tok, std::move (left),
+					       std::move (outer_attrs),
+					       ArithmeticOrLogicalOperator::ADD,
+					       restrictions);
     case MINUS:
       // difference expression - binary infix
       /*return parse_binary_minus_expr (tok, std::move (left),
@@ -12600,8 +12601,7 @@ Parser<ManagedTokenSource>::left_denotation (
 				      std::move (outer_attrs), restrictions);*/
       return parse_comparison_expr (tok, std::move (left),
 				    std::move (outer_attrs),
-				    ComparisonOperator::EQUAL,
-				    restrictions);
+				    ComparisonOperator::EQUAL, restrictions);
     case NOT_EQUAL:
       // not equal to expression - binary infix (no associativity)
       /*return parse_binary_not_equal_expr (tok, std::move (left),
@@ -12634,17 +12634,19 @@ Parser<ManagedTokenSource>::left_denotation (
       /*return parse_binary_greater_equal_expr (tok, std::move (left),
 					      std::move (outer_attrs),
 					      restrictions);*/
-      return parse_comparison_expr (
-	tok, std::move (left), std::move (outer_attrs),
-	ComparisonOperator::GREATER_OR_EQUAL, restrictions);
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    ComparisonOperator::GREATER_OR_EQUAL,
+				    restrictions);
     case LESS_OR_EQUAL:
       // less than or equal to expression - binary infix (no associativity)
       /*return parse_binary_less_equal_expr (tok, std::move (left),
 					   std::move (outer_attrs),
 					   restrictions);*/
-      return parse_comparison_expr (
-	tok, std::move (left), std::move (outer_attrs),
-	ComparisonOperator::LESS_OR_EQUAL, restrictions);
+      return parse_comparison_expr (tok, std::move (left),
+				    std::move (outer_attrs),
+				    ComparisonOperator::LESS_OR_EQUAL,
+				    restrictions);
     case OR:
       // lazy logical or expression - binary infix
       return parse_lazy_or_expr (tok, std::move (left), std::move (outer_attrs),
@@ -12692,9 +12694,10 @@ Parser<ManagedTokenSource>::left_denotation (
        * associativity) */
       /*return parse_div_assig_expr (tok, std::move (left),
 				   std::move (outer_attrs), restrictions);*/
-      return parse_compound_assignment_expr (
-	tok, std::move (left), std::move (outer_attrs),
-	CompoundAssignmentOperator::DIVIDE, restrictions);
+      return parse_compound_assignment_expr (tok, std::move (left),
+					     std::move (outer_attrs),
+					     CompoundAssignmentOperator::DIVIDE,
+					     restrictions);
     case PERCENT_EQ:
       /* modulo-assignment expression - binary infix (note right-to-left
        * associativity) */
@@ -12901,8 +12904,7 @@ Parser<ManagedTokenSource>::parse_binary_plus_expr (
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
-				      ArithmeticOrLogicalOperator::ADD,
-				      locus));
+				      ArithmeticOrLogicalOperator::ADD, locus));
 }
 
 // Parses a binary subtraction expression (with Pratt parsing).

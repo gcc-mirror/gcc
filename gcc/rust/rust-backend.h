@@ -379,8 +379,8 @@ public:
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ComparisonOperator.
   virtual Bexpression *comparison_expression (ComparisonOperator op,
-					       Bexpression *left,
-					       Bexpression *right, Location)
+					      Bexpression *left,
+					      Bexpression *right, Location)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
