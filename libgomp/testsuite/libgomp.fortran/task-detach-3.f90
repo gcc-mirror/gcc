@@ -12,16 +12,16 @@ program task_detach_3
 
   !$omp parallel
     !$omp single
-      !$omp task depend(out:dep) detach(detach_event)
+      !$omp task depend (out:dep) detach (detach_event)
         x = x + 1
       !$omp end task
 
       !$omp task
         y = y + 1
-	call omp_fulfill_event(detach_event)
+	call omp_fulfill_event (detach_event)
       !$omp end task
 
-      !$omp task depend(in:dep)
+      !$omp task depend (in:dep)
         z = z + 1
       !$omp end task
     !$omp end single

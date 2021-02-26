@@ -1,3 +1,39 @@
+2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (year_month_day::_S_from_days): Perform
+	all calculations with type uint32_t.
+
+2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document versioning for GCC 11.
+	* doc/html/manual/abi.html: Regenerate.
+
+2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99270
+	* testsuite/27_io/headers/cstdio/types_std.cc: Use pointer to
+	FILE instead of FILE.
+
+2021-02-25  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99265
+	* include/std/chrono (year_month_day::_S_from_days): Cast long
+	to int explicitly.
+
+2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (to_underlying): Define.
+	* include/std/version (__cpp_lib_to_underlying): Define.
+	* testsuite/20_util/to_underlying/1.cc: New test.
+	* testsuite/20_util/to_underlying/version.cc: New test.
+
 2021-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99261

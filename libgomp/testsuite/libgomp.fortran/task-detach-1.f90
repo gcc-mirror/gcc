@@ -11,11 +11,11 @@ program task_detach_1
 
   !$omp parallel
     !$omp single
-      !$omp task detach(detach_event1)
+      !$omp task detach (detach_event1)
         x = x + 1
       !$omp end task
 
-      !$omp task detach(detach_event2)
+      !$omp task detach (detach_event2)
         y = y + 1
 	call omp_fulfill_event (detach_event1)
       !$omp end task

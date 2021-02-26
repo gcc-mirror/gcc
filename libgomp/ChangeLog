@@ -1,3 +1,60 @@
+2021-02-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/98738
+	* libgomp.h (enum gomp_task_kind): Add GOMP_TASK_DETACHED.
+	(struct gomp_task): Replace detach and completion_sem fields with
+	union containing completion_sem and detach_team.  Add deferred_p
+	field.
+	(struct gomp_team): Remove task_detach_queue.
+	* task.c: Include assert.h.
+	(gomp_init_task): Initialize deferred_p and completion_sem fields.
+	Rearrange initialization order of fields.
+	(task_fulfilled_p): Delete.
+	(GOMP_task): Use address of task as the event handle.  Remove
+	initialization of detach field.  Initialize deferred_p field.
+	Use automatic local for completion_sem.  Initialize detach_team field
+	for deferred tasks.
+	(gomp_barrier_handle_tasks): Remove handling of task_detach_queue.
+	Set kind of suspended detach task to GOMP_TASK_DETACHED and
+	decrement task_running_count.  Move finish_cancelled block out of
+	else branch.  Relocate call to gomp_team_barrier_done.
+	(GOMP_taskwait): Handle tasks with completion events that have not
+	been fulfilled.
+	(GOMP_taskgroup_end): Likewise.
+	(omp_fulfill_event): Use address of task as event handle.  Post to
+	completion_sem for undeferred tasks.  Clear detach_team if task
+	has not finished.  For finished tasks, handle post-execution tasks,
+	call gomp_team_barrier_wake if necessary, and free task.
+	* team.c (gomp_new_team): Remove initialization of task_detach_queue.
+	(free_team): Remove free of task_detach_queue.
+	* testsuite/libgomp.c-c++-common/task-detach-1.c: Fix formatting.
+	* testsuite/libgomp.c-c++-common/task-detach-2.c: Fix formatting.
+	* testsuite/libgomp.c-c++-common/task-detach-3.c: Fix formatting.
+	* testsuite/libgomp.c-c++-common/task-detach-4.c: Fix formatting.
+	* testsuite/libgomp.c-c++-common/task-detach-5.c: Fix formatting.
+	Change data-sharing of detach events on enclosing parallel to private.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Likewise.  Remove
+	taskwait directive.
+	* testsuite/libgomp.c-c++-common/task-detach-7.c: New.
+	* testsuite/libgomp.c-c++-common/task-detach-8.c: New.
+	* testsuite/libgomp.c-c++-common/task-detach-9.c: New.
+	* testsuite/libgomp.c-c++-common/task-detach-10.c: New.
+	* testsuite/libgomp.c-c++-common/task-detach-11.c: New.
+	* testsuite/libgomp.fortran/task-detach-1.f90: Fix formatting.
+	* testsuite/libgomp.fortran/task-detach-2.f90: Fix formatting.
+	* testsuite/libgomp.fortran/task-detach-3.f90: Fix formatting.
+	* testsuite/libgomp.fortran/task-detach-4.f90: Fix formatting.
+	* testsuite/libgomp.fortran/task-detach-5.f90: Fix formatting.
+	Change data-sharing of detach events on enclosing parallel to private.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Likewise.  Remove
+	taskwait directive.
+	* testsuite/libgomp.fortran/task-detach-7.f90: New.
+	* testsuite/libgomp.fortran/task-detach-8.f90: New.
+	* testsuite/libgomp.fortran/task-detach-9.f90: New.
+	* testsuite/libgomp.fortran/task-detach-10.f90: New.
+	* testsuite/libgomp.fortran/task-detach-11.f90: New.
+
 2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99171

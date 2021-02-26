@@ -1,3 +1,90 @@
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99213
+	PR c++/94521
+	* g++.dg/diagnostic/local1.C: New test.
+
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99103
+	* g++.dg/cpp1z/class-deduction79.C: New test.
+	* g++.dg/cpp1z/class-deduction80.C: New test.
+
+2021-02-25  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	PR c++/99176
+	* g++.dg/cpp0x/constexpr-nullptr-2.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-cast2.C: New test.
+	* g++.dg/cpp0x/constexpr-cast3.C: New test.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97587
+	* g++.dg/coroutines/coro1-refs-and-ctors.h: Add a CTOR with two
+	reference parms, to distinguish the rvalue ref. variant.
+	* g++.dg/coroutines/pr97587.C: New test.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95822
+	* g++.dg/coroutines/pr95822.C: New test.
+
+2021-02-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/cmse/cmse-18.c: New test.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* g++.dg/modules/pr99166_a.X: Adjust.
+	* g++.dg/modules/pr99166_b.C: Adjust.
+	* g++.dg/modules/pr99166_c.C: Adjust.
+	* g++.dg/modules/pr99166_d.C: Adjust.
+
+2021-02-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/pr95690.f90: CRIS error appears on line 5.
+
+2021-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/simd-complex-num-null-node.cc: New test.
+
+2021-02-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR testsuite/99233
+	* gcc.target/powerpc/pr96264.c: Run it only for powerpc64le.
+
+2021-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR middle-end/97172
+	* gcc.dg/pr97172-2.c: Add dg-require-effective-target shared.
+
+2021-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99253
+	* gcc.dg/vect/pr99253.c: New testcase.
+
+2021-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95798
+	* gcc.target/i386/pr95798-1.c: New test.
+	* gcc.target/i386/pr95798-2.c: New test.
+
+2021-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80635
+	* g++.dg/warn/pr80635-1.C: New test.
+	* g++.dg/warn/pr80635-2.C: New test.
+
+2021-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99193
+	* gcc.dg/analyzer/pr99193-1.c: New test.
+	* gcc.dg/analyzer/pr99193-2.c: New test.
+	* gcc.dg/analyzer/pr99193-3.c: New test.
+	* gcc.dg/analyzer/realloc-1.c: New test.
+
 2021-02-24  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98718

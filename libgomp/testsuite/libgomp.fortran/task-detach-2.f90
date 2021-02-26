@@ -10,13 +10,13 @@ program task_detach_2
   integer (kind=omp_event_handle_kind) :: detach_event1, detach_event2
   integer :: x = 0, y = 0, z = 0
 
-  !$omp parallel num_threads(1)
+  !$omp parallel num_threads (1)
     !$omp single
-      !$omp task detach(detach_event1)
+      !$omp task detach (detach_event1)
         x = x + 1
       !$omp end task
 
-      !$omp task detach(detach_event2)
+      !$omp task detach (detach_event2)
         y = y + 1
 	call omp_fulfill_event (detach_event1)
       !$omp end task

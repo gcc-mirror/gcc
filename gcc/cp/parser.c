@@ -11223,12 +11223,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 /* Parse the (optional) middle of a lambda expression.
 
    lambda-declarator:
-     ( parameter-declaration-clause )
-       decl-specifier-seq [opt]
-       noexcept-specifier [opt]
-       attribute-specifier-seq [opt]
-       trailing-return-type [opt]
-       requires-clause [opt]
+     ( parameter-declaration-clause ) lambda-specifiers requires-clause [opt]
+     lambda-specifiers (C++23)
+
+   lambda-specifiers:
+     decl-specifier-seq [opt] noexcept-specifier [opt]
+       attribute-specifier-seq [opt] trailing-return-type [opt]
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
 
@@ -11248,6 +11248,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree tx_qual = NULL_TREE;
   tree return_type = NULL_TREE;
   tree trailing_requires_clause = NULL_TREE;
+  bool has_param_list = false;
+  location_t omitted_parms_loc = UNKNOWN_LOCATION;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
   /* A lambda op() is const unless explicitly 'mutable'.  */
@@ -11334,42 +11336,80 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 		     "default argument specified for lambda parameter");
 
       parens.require_close (parser);
+      has_param_list = true;
+    }
+  else if (cxx_dialect < cxx23)
+    omitted_parms_loc = cp_lexer_peek_token (parser->lexer)->location;
 
-      /* In the decl-specifier-seq of the lambda-declarator, each
-	 decl-specifier shall either be mutable or constexpr.  */
-      int declares_class_or_enum;
-      if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
-	  && !cp_next_tokens_can_be_gnu_attribute_p (parser))
-	cp_parser_decl_specifier_seq (parser,
-				      CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
-				      &lambda_specs, &declares_class_or_enum);
-      if (lambda_specs.storage_class == sc_mutable)
-	{
-	  LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
-	  quals = TYPE_UNQUALIFIED;
-	  if (lambda_specs.conflicting_specifiers_p)
-	    error_at (lambda_specs.locations[ds_storage_class],
-		      "duplicate %<mutable%>");
-	}
+  /* In the decl-specifier-seq of the lambda-declarator, each
+     decl-specifier shall either be mutable or constexpr.  */
+  int declares_class_or_enum;
+  if (cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer)
+      && !cp_next_tokens_can_be_gnu_attribute_p (parser))
+    cp_parser_decl_specifier_seq (parser,
+				  CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR,
+				  &lambda_specs, &declares_class_or_enum);
 
-      tx_qual = cp_parser_tx_qualifier_opt (parser);
+  if (omitted_parms_loc && lambda_specs.any_specifiers_p)
+    {
+      pedwarn (omitted_parms_loc, 0,
+	       "parameter declaration before lambda declaration "
+	       "specifiers only optional with %<-std=c++2b%> or "
+	       "%<-std=gnu++2b%>");
+      omitted_parms_loc = UNKNOWN_LOCATION;
+    }
 
-      /* Parse optional exception specification.  */
-      exception_spec
-	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
+  if (lambda_specs.storage_class == sc_mutable)
+    {
+      LAMBDA_EXPR_MUTABLE_P (lambda_expr) = 1;
+      quals = TYPE_UNQUALIFIED;
+      if (lambda_specs.conflicting_specifiers_p)
+	error_at (lambda_specs.locations[ds_storage_class],
+		  "duplicate %<mutable%>");
+    }
 
-      std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  tx_qual = cp_parser_tx_qualifier_opt (parser);
+  if (omitted_parms_loc && tx_qual)
+    {
+      pedwarn (omitted_parms_loc, 0,
+	       "parameter declaration before lambda transaction "
+	       "qualifier only optional with %<-std=c++2b%> or "
+	       "%<-std=gnu++2b%>");
+      omitted_parms_loc = UNKNOWN_LOCATION;
+    }
 
-      /* Parse optional trailing return type.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
-        {
-          cp_lexer_consume_token (parser->lexer);
-          return_type = cp_parser_trailing_type_id (parser);
-        }
+  /* Parse optional exception specification.  */
+  exception_spec
+    = cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
 
-      if (cp_next_tokens_can_be_gnu_attribute_p (parser))
-	gnu_attrs = cp_parser_gnu_attributes_opt (parser);
+  if (omitted_parms_loc && exception_spec)
+    {
+      pedwarn (omitted_parms_loc, 0,
+	       "parameter declaration before lambda exception "
+	       "specification only optional with %<-std=c++2b%> or "
+	       "%<-std=gnu++2b%>");
+      omitted_parms_loc = UNKNOWN_LOCATION;
+    }
 
+  std_attrs = cp_parser_std_attribute_spec_seq (parser);
+
+  /* Parse optional trailing return type.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
+    {
+      if (omitted_parms_loc)
+	pedwarn (omitted_parms_loc, 0,
+		 "parameter declaration before lambda trailing "
+		 "return type only optional with %<-std=c++2b%> or "
+		 "%<-std=gnu++2b%>");
+      cp_lexer_consume_token (parser->lexer);
+      return_type = cp_parser_trailing_type_id (parser);
+    }
+
+  if (cp_next_tokens_can_be_gnu_attribute_p (parser))
+    gnu_attrs = cp_parser_gnu_attributes_opt (parser);
+
+  if (has_param_list)
+    {
       /* Parse optional trailing requires clause.  */
       trailing_requires_clause = cp_parser_requires_clause_opt (parser, false);
 

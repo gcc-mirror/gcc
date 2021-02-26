@@ -10,17 +10,17 @@ program task_detach_5
   integer :: x = 0, y = 0, z = 0
   integer :: thread_count
 
-  !$omp parallel firstprivate(detach_event1, detach_event2)
+  !$omp parallel private (detach_event1, detach_event2)
     !$omp single
-      thread_count = omp_get_num_threads()
+      thread_count = omp_get_num_threads ()
     !$omp end single
 
-    !$omp task detach(detach_event1) untied
+    !$omp task detach (detach_event1) untied
       !$omp atomic update
 	x = x + 1
     !$omp end task
 
-    !$omp task detach(detach_event2) untied
+    !$omp task detach (detach_event2) untied
       !$omp atomic update
 	y = y + 1
       call omp_fulfill_event (detach_event1);

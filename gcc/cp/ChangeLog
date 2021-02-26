@@ -1,3 +1,53 @@
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99213
+	PR c++/94521
+	* error.c (dump_scope): Pass TFF_NO_TEMPLATE_BINDINGS instead of
+	TFF_NO_FUNCTION_ARGUMENTS when dumping a function scope.
+
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99103
+	* pt.c (is_spec_or_derived): Drop cv-qualifiers from 'etype'.
+	(maybe_aggr_guide): Fix order of arguments to is_spec_or_derived.
+
+2021-02-25  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	PR c++/99176
+	* constexpr.c (is_std_construct_at): New overload.
+	(is_std_allocator_allocate): New overload.
+	(cxx_eval_call_expression): Use the new overloads.
+	(cxx_eval_constant_expression): Reject casting
+	from void * as per DR 1312.  Don't check can_convert.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97587
+	* coroutines.cc (struct param_info): Track rvalue refs.
+	(morph_fn_to_coro): Track rvalue refs, and call the promise
+	CTOR with the frame copy of passed parms.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95822
+	* coroutines.cc (morph_fn_to_coro): Unconditionally remove any
+	set throwing_cleanup marker.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* module.cc (module_state::inform_cmi_p): Renamed field.
+	(module_state::do_import): Adjust.
+	(init_modules, finish_module_processing): Likewise.
+	(handle_module_option): Likewise.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98318
+	* mapper-client.cc (module_client::open_module_client): Fix typo
+	of fd init.
+
 2021-02-24  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98718

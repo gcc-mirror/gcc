@@ -14,10 +14,10 @@ int main (void)
 
   #pragma omp parallel
     #pragma omp single
-      #pragma omp task detach(detach_event)
+      #pragma omp task detach (detach_event)
       {
 	x++;
-	omp_fulfill_event(detach_event);
+	omp_fulfill_event (detach_event);
       }
 
   assert (x == 1);

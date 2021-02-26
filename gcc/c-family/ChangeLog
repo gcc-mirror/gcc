@@ -1,3 +1,8 @@
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* c.opt (-flang-info-module-cmi): Renamed option.
+
 2021-02-19  Nathan Sidwell  <nathan@acm.org>
 
 	* c.opt (flang-info-module-read, flang-info-module-read=): New.

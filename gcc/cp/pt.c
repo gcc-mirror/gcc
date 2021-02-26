@@ -16826,18 +16826,27 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      /* Wrapper to make a C++20 template parameter object const.  */
 	      op = tsubst_copy (op, args, complain, in_decl);
-	      if (TREE_CODE (op) == TEMPLATE_PARM_INDEX)
+	      if (!CP_TYPE_CONST_P (TREE_TYPE (op)))
 		{
+		  /* The template argument is not const, presumably because
+		     it is still dependent, and so not the const template parm
+		     object.  */
 		  tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-		  return build1 (code, type, op);
+		  gcc_checking_assert (same_type_ignoring_top_level_qualifiers_p
+				       (type, TREE_TYPE (op)));
+		  if (TREE_CODE (op) == CONSTRUCTOR
+		      || TREE_CODE (op) == IMPLICIT_CONV_EXPR)
+		    {
+		      /* Don't add a wrapper to these.  */
+		      op = copy_node (op);
+		      TREE_TYPE (op) = type;
+		    }
+		  else
+		    /* Do add a wrapper otherwise (in particular, if op is
+		       another TEMPLATE_PARM_INDEX).  */
+		    op = build1 (code, type, op);
 		}
-	      else
-		{
-		  gcc_assert (CP_TYPE_CONST_P (TREE_TYPE (op))
-			      || (TREE_CODE (op) == IMPLICIT_CONV_EXPR
-				  && IMPLICIT_CONV_EXPR_NONTYPE_ARG (op)));
-		  return op;
-		}
+	      return op;
 	    }
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
 	  else if (code == VIEW_CONVERT_EXPR && REF_PARENTHESIZED_P (t))
@@ -28833,6 +28842,7 @@ is_spec_or_derived (tree etype, tree tmpl)
   if (!etype || !CLASS_TYPE_P (etype))
     return false;
 
+  etype = cv_unqualified (etype);
   tree type = TREE_TYPE (tmpl);
   tree tparms = (INNERMOST_TEMPLATE_PARMS
 		 (DECL_TEMPLATE_PARMS (tmpl)));
@@ -28863,7 +28873,7 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   if (args->length() == 1)
     {
       tree val = (*args)[0];
-      if (is_spec_or_derived (tmpl, TREE_TYPE (val)))
+      if (is_spec_or_derived (TREE_TYPE (val), tmpl))
 	return NULL_TREE;
     }
 
@@ -29644,22 +29654,24 @@ splice_late_return_type (tree type, tree late_return_type)
       return late_return_type;
     }
 
-  if (tree *auto_node = find_type_usage (&type, is_auto))
-    {
-      tree idx = get_template_parm_index (*auto_node);
-      if (TEMPLATE_PARM_LEVEL (idx) <= processing_template_decl)
-	{
-	  /* In an abbreviated function template we didn't know we were dealing
-	     with a function template when we saw the auto return type, so update
-	     it to have the correct level.  */
-	  tree new_auto = make_auto_1 (TYPE_IDENTIFIER (*auto_node), false);
-	  PLACEHOLDER_TYPE_CONSTRAINTS (new_auto)
-	    = PLACEHOLDER_TYPE_CONSTRAINTS (*auto_node);
-	  TYPE_CANONICAL (new_auto) = canonical_type_parameter (new_auto);
-	  new_auto = cp_build_qualified_type (new_auto, TYPE_QUALS (*auto_node));
-	  *auto_node = new_auto;
-	}
-    }
+  if (tree auto_node = find_type_usage (type, is_auto))
+    if (TEMPLATE_TYPE_LEVEL (auto_node) <= processing_template_decl)
+      {
+	/* In an abbreviated function template we didn't know we were dealing
+	   with a function template when we saw the auto return type, so rebuild
+	   the return type using an auto with the correct level.  */
+	tree new_auto = make_auto_1 (TYPE_IDENTIFIER (auto_node), false);
+	tree auto_vec = make_tree_vec (1);
+	TREE_VEC_ELT (auto_vec, 0) = new_auto;
+	tree targs = add_outermost_template_args (current_template_args (),
+						  auto_vec);
+	/* FIXME: We should also rebuild the constraint to refer to the new
+	   auto.  */
+	PLACEHOLDER_TYPE_CONSTRAINTS (new_auto)
+	  = PLACEHOLDER_TYPE_CONSTRAINTS (auto_node);
+	TYPE_CANONICAL (new_auto) = canonical_type_parameter (new_auto);
+	return tsubst (type, targs, tf_none, NULL_TREE);
+      }
   return type;
 }
 
@@ -29704,10 +29716,8 @@ type_uses_auto (tree type)
       else
 	return NULL_TREE;
     }
-  else if (tree *tp = find_type_usage (&type, is_auto))
-    return *tp;
   else
-    return NULL_TREE;
+    return find_type_usage (type, is_auto);
 }
 
 /* Report ill-formed occurrences of auto types in ARGUMENTS.  If
