@@ -504,8 +504,9 @@ enum WMB_Flags
 extern unsigned walk_module_binding (tree binding, bitmap partitions,
 				     bool (*)(tree decl, WMB_Flags, void *data),
 				     void *data);
-extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
-				    location_t, bool visible_p, bool inline_p);
+extern tree add_imported_namespace (tree ctx, tree name, location_t,
+				    unsigned module,
+				    bool inline_p, bool visible_p);
 extern void note_pending_specializations (tree ns, tree name, bool is_header);
 extern void load_pending_specializations (tree ns, tree name);
 extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);

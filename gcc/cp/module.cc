@@ -2377,8 +2377,10 @@ public:
   }
 
 public:
+  /* This class-member is defined here, but the class was imported.  */
   bool is_member () const
   {
+    gcc_checking_assert (get_entity_kind () == EK_DECL);
     return get_flag_bit<DB_IS_MEMBER_BIT> ();
   }
 public:
@@ -8613,12 +8615,13 @@ trees_out::decl_node (tree decl, walk_kind ref)
   else if (TREE_CODE (ctx) != FUNCTION_DECL
 	   || TREE_CODE (decl) == TEMPLATE_DECL
 	   || (dep_hash->sneakoscope && DECL_IMPLICIT_TYPEDEF_P (decl))
-	   || (DECL_LANG_SPECIFIC (decl)
-	       && DECL_MODULE_IMPORT_P (decl)))
-    dep = dep_hash->add_dependency (decl,
-				    TREE_CODE (decl) == NAMESPACE_DECL
-				    && !DECL_NAMESPACE_ALIAS (decl)
-				    ? depset::EK_NAMESPACE : depset::EK_DECL);
+	   || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl)))
+    {
+      auto kind = (TREE_CODE (decl) == NAMESPACE_DECL
+		   && !DECL_NAMESPACE_ALIAS (decl)
+		   ? depset::EK_NAMESPACE : depset::EK_DECL);
+      dep = dep_hash->add_dependency (decl, kind);
+    }
 
   if (!dep)
     {
@@ -12751,12 +12754,14 @@ struct add_binding_data
   bool met_namespace;
 };
 
+/* Return true if we are, or contain something that is exported.  */
+
 bool
 depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 {
   auto data = static_cast <add_binding_data *> (data_);
 
-  if (TREE_CODE (decl) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (decl))
+  if (!(TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl)))
     {
       tree inner = decl;
 
@@ -12811,7 +12816,7 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 		    d->clear_hidden_binding ();
 		  if (flags & WMB_Export)
 		    OVL_EXPORT_P (d->get_entity ()) = true;
-		  return false;
+		  return bool (flags & WMB_Export);
 		}
 	    }
 	}
@@ -12857,30 +12862,37 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       /* Binding and contents are mutually dependent.  */
       dep->deps.safe_push (data->binding);
 
-      return true;
+      return (flags & WMB_Using
+	      ? flags & WMB_Export : DECL_MODULE_EXPORT_P (decl));
     }
   else if (DECL_NAME (decl) && !data->met_namespace)
     {
       /* Namespace, walk exactly once.  */
       gcc_checking_assert (TREE_PUBLIC (decl));
       data->met_namespace = true;
-      if (data->hash->add_namespace_entities (decl, data->partitions)
-	  || DECL_MODULE_EXPORT_P (decl))
+      if (data->hash->add_namespace_entities (decl, data->partitions))
+	{
+	  /* It contains an exported thing, so it is exported.  */
+	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl));
+	  DECL_MODULE_EXPORT_P (decl) = true;
+	}
+
+      if (DECL_MODULE_PURVIEW_P (decl))
 	{
 	  data->hash->make_dependency (decl, depset::EK_NAMESPACE);
-	  return true;
+
+	  return DECL_MODULE_EXPORT_P (decl);
 	}
     }
 
   return false;
 }
 
-/* Recursively find all the namespace bindings of NS.
-   Add a depset for every binding that contains an export or
-   module-linkage entity.  Add a defining depset for every such decl
-   that we need to write a definition.  Such defining depsets depend
-   on the binding depset.  Returns true if we contain something
-   explicitly exported.  */
+/* Recursively find all the namespace bindings of NS.  Add a depset
+   for every binding that contains an export or module-linkage entity.
+   Add a defining depset for every such decl that we need to write a
+   definition.  Such defining depsets depend on the binding depset.
+   Returns true if we contain something exported.  */
 
 bool
 depset::hash::add_namespace_entities (tree ns, bitmap partitions)
@@ -15088,36 +15100,29 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       tree ns = b->get_entity ();
 
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
+      /* P1815 may have something to say about this.  */
+      gcc_checking_assert (TREE_PUBLIC (ns));
 
-      bool export_p = DECL_MODULE_EXPORT_P (ns);
-      bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
-      bool public_p = TREE_PUBLIC (ns);
-
-      /* We should only be naming public namespaces, or our own
-	 private ones.  Internal linkage ones never get to be written
-	 out -- because that means something erroneously referred to a
-	 member.  However, Davis Herring's paper probably changes that
-	 by permitting them to be written out, but then an error if on
-	 touches them.  (Certain cases cannot be detected until that
-	 point.)  */ 
-      gcc_checking_assert (public_p || !DECL_MODULE_IMPORT_P (ns));
       unsigned flags = 0;
-      if (export_p)
+      if (TREE_PUBLIC (ns))
 	flags |= 1;
-      if (inline_p)
+      if (DECL_NAMESPACE_INLINE_P (ns))
 	flags |= 2;
-      if (public_p)
+      if (DECL_MODULE_PURVIEW_P (ns))
 	flags |= 4;
-      dump () && dump ("Writing namespace:%u %N%s%s%s",
-		       b->cluster, ns, export_p ? ", export" : "",
-		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "");
+      if (DECL_MODULE_EXPORT_P (ns))
+	flags |= 8;
+
+      dump () && dump ("Writing namespace:%u %N%s%s%s%s",
+		       b->cluster, ns,
+		       flags & 1 ? ", public" : "", 
+		       flags & 2 ? ", inline" : "",
+		       flags & 4 ? ", purview" : "",
+		       flags & 8 ? ", export" : "");
       sec.u (b->cluster);
       sec.u (to->name (DECL_NAME (ns)));
       write_namespace (sec, b->deps[0]);
 
-      /* Don't use bools, because this can be near the end of the
-	 section, and it won't save anything anyway.  */
       sec.u (flags);
       write_location (sec, DECL_SOURCE_LOCATION (ns));
     }
@@ -15151,26 +15156,40 @@ module_state::read_namespaces (unsigned num)
       unsigned flags = sec.u ();
       location_t src_loc = read_location (sec);
 
-      if (entity_index >= entity_num || !parent)
+      if (entity_index >= entity_num
+	  || !parent
+	  || (flags & 0xc) == 0x8)
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
 
       tree id = name ? get_identifier (from ()->name (name)) : NULL_TREE;
-      bool public_p = flags & 4;
-      bool inline_p = flags & 2;
-      bool export_p = flags & 1;
 
-      dump () && dump ("Read namespace:%u %P%s%s%s",
-		       entity_index, parent, id, export_p ? ", export" : "",
-		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "");
-      bool visible_p = (export_p
-			|| (public_p && (is_partition () || is_module ())));
-      tree inner = add_imported_namespace (parent, id, mod,
-					   src_loc, visible_p, inline_p);
-      if (export_p && is_partition ())
-	DECL_MODULE_EXPORT_P (inner) = true;
+      dump () && dump ("Read namespace:%u %P%s%s%s%s",
+		       entity_index, parent, id,
+		       flags & 1 ? ", public" : "", 
+		       flags & 2 ? ", inline" : "",
+		       flags & 4 ? ", purview" : "",
+		       flags & 8 ? ", export" : "");
+      bool visible_p = ((flags & 8)
+			|| ((flags & 1)
+			    && (flags & 4)
+			    && (is_partition () || is_module ())));
+      tree inner = add_imported_namespace (parent, id, src_loc, mod,
+					   bool (flags & 2), visible_p);
+      if (!inner)
+	{
+	  sec.set_overrun ();
+	  break;
+	}
+
+      if (is_partition ())
+	{
+	  if (flags & 4)
+	    DECL_MODULE_PURVIEW_P (inner) = true;
+	  if (flags & 8)
+	    DECL_MODULE_EXPORT_P (inner) = true;
+	}
 
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
