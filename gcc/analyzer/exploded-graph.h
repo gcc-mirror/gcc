@@ -879,7 +879,6 @@ public:
   void dump (FILE *fp) const;
   void dump () const;
 
-  bool feasible_p (logger *logger, feasibility_problem **out) const;
   bool feasible_p (logger *logger, feasibility_problem **out,
 		    engine *eng, const exploded_graph *eg) const;
 
