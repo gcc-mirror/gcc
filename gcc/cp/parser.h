@@ -349,6 +349,10 @@ struct GTY(()) cp_parser {
      is terminated by colon.  */
   bool colon_doesnt_start_class_def_p;
 
+  /* TRUE if we are parsing an objective c message, and ':' is permitted
+     to terminate an assignment-expression.  */
+  bool objective_c_message_context_p;
+
   /* If non-NULL, then we are parsing a construct where new type
      definitions are not permitted.  The string stored here will be
      issued as an error message if a type is defined.  */
