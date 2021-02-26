@@ -3352,6 +3352,15 @@ exploded_graph::to_json () const
   return egraph_obj;
 }
 
+exploded_path::exploded_path (const exploded_path &other)
+: m_edges (other.m_edges.length ())
+{
+  int i;
+  const exploded_edge *eedge;
+  FOR_EACH_VEC_ELT (other.m_edges, i, eedge)
+    m_edges.quick_push (eedge);
+}
+
 /* Look for the last use of SEARCH_STMT within this path.
    If found write the edge's index to *OUT_IDX and return true, otherwise
    return false.  */

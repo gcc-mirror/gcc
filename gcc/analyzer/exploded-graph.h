@@ -866,7 +866,6 @@ class exploded_path
 public:
   exploded_path () : m_edges () {}
   exploded_path (const exploded_path &other);
-  exploded_path & operator= (const exploded_path &other);
 
   unsigned length () const { return m_edges.length (); }
 
