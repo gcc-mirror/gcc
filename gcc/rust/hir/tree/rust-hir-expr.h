@@ -356,9 +356,10 @@ protected:
 // Unary prefix - or ! negation or NOT operators.
 class NegationExpr : public OperatorExpr
 {
-private:
+public:
   using ExprType = NegationOperator;
 
+private:
   /* Note: overload negation via std::ops::Neg and not via std::ops::Not
    * Negation only works for signed integer and floating-point types, NOT only
    * works for boolean and integer types (via bitwise NOT) */
@@ -401,9 +402,10 @@ protected:
 // Infix binary operators. +, -, *, /, %, &, |, ^, <<, >>
 class ArithmeticOrLogicalExpr : public OperatorExpr
 {
-private:
+public:
   using ExprType = ArithmeticOrLogicalOperator;
 
+private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -474,9 +476,10 @@ protected:
 // Infix binary comparison operators. ==, !=, <, <=, >, >=
 class ComparisonExpr : public OperatorExpr
 {
-private:
+public:
   using ExprType = ComparisonOperator;
 
+private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -548,9 +551,10 @@ protected:
 // Infix binary lazy boolean logical operators && and ||.
 class LazyBooleanExpr : public OperatorExpr
 {
-private:
+public:
   using ExprType = LazyBooleanOperator;
 
+private:
   ExprType expr_type;
 
   std::unique_ptr<Expr> right_expr;

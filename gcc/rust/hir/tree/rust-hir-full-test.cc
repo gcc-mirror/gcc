@@ -1685,12 +1685,12 @@ NegationExpr::as_string () const
 {
   std::string str;
 
-  switch (negation_type)
+  switch (expr_type)
     {
-    case NEGATE:
+        case NegationOperator::NEGATE:
       str = "-";
       break;
-    case NOT:
+        case NegationOperator::NOT:
       str = "!";
       break;
     default:
@@ -1748,22 +1748,22 @@ ComparisonExpr::as_string () const
 
   switch (expr_type)
     {
-    case EQUAL:
+        case ComparisonOperator::EQUAL:
       str += " == ";
       break;
-    case NOT_EQUAL:
+        case ComparisonOperator::NOT_EQUAL:
       str += " != ";
       break;
-    case GREATER_THAN:
+        case ComparisonOperator::GREATER_THAN:
       str += " > ";
       break;
-    case LESS_THAN:
+        case ComparisonOperator::LESS_THAN:
       str += " < ";
       break;
-    case GREATER_OR_EQUAL:
+        case ComparisonOperator::GREATER_OR_EQUAL:
       str += " >= ";
       break;
-    case LESS_OR_EQUAL:
+        case ComparisonOperator::LESS_OR_EQUAL:
       str += " <= ";
       break;
     default:
@@ -1832,10 +1832,10 @@ LazyBooleanExpr::as_string () const
 
   switch (expr_type)
     {
-    case LOGICAL_OR:
+        case LazyBooleanOperator::LOGICAL_OR:
       str += " || ";
       break;
-    case LOGICAL_AND:
+        case LazyBooleanOperator::LOGICAL_AND:
       str += " && ";
       break;
     default:
@@ -2000,34 +2000,34 @@ ArithmeticOrLogicalExpr::as_string () const
   // get operator string
   switch (expr_type)
     {
-    case ADD:
+        case ArithmeticOrLogicalOperator::ADD:
       operator_str = "+";
       break;
-    case SUBTRACT:
+        case ArithmeticOrLogicalOperator::SUBTRACT:
       operator_str = "-";
       break;
-    case MULTIPLY:
+        case ArithmeticOrLogicalOperator::MULTIPLY:
       operator_str = "*";
       break;
-    case DIVIDE:
+        case ArithmeticOrLogicalOperator::DIVIDE:
       operator_str = "/";
       break;
-    case MODULUS:
+        case ArithmeticOrLogicalOperator::MODULUS:
       operator_str = "%";
       break;
-    case BITWISE_AND:
+        case ArithmeticOrLogicalOperator::BITWISE_AND:
       operator_str = "&";
       break;
-    case BITWISE_OR:
+        case ArithmeticOrLogicalOperator::BITWISE_OR:
       operator_str = "|";
       break;
-    case BITWISE_XOR:
+        case ArithmeticOrLogicalOperator::BITWISE_XOR:
       operator_str = "^";
       break;
-    case LEFT_SHIFT:
+        case ArithmeticOrLogicalOperator::LEFT_SHIFT:
       operator_str = "<<";
       break;
-    case RIGHT_SHIFT:
+        case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
       operator_str = ">>";
       break;
     default:

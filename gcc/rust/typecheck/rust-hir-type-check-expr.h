@@ -524,9 +524,9 @@ public:
     auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
 
     // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
-    switch (expr.get_negation_type ())
+    switch (expr.get_expr_type ())
       {
-	case HIR::NegationExpr::NegationType::NEGATE: {
+	case NegationOperator::NEGATE: {
 	  bool valid
 	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
@@ -546,7 +546,7 @@ public:
 	}
 	break;
 
-	case HIR::NegationExpr::NegationType::NOT: {
+	case NegationOperator::NOT: {
 	  bool valid
 	    = (negated_expr_ty->get_kind () == TyTy::TypeKind::BOOL)
 	      || (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
@@ -913,11 +913,11 @@ private:
     // this will change later when traits are added
     switch (expr_type)
       {
-      case HIR::ArithmeticOrLogicalExpr::ADD:
-      case HIR::ArithmeticOrLogicalExpr::SUBTRACT:
-      case HIR::ArithmeticOrLogicalExpr::MULTIPLY:
-      case HIR::ArithmeticOrLogicalExpr::DIVIDE:
-      case HIR::ArithmeticOrLogicalExpr::MODULUS:
+      case ArithmeticOrLogicalOperator::ADD:
+      case ArithmeticOrLogicalOperator::SUBTRACT:
+      case ArithmeticOrLogicalOperator::MULTIPLY:
+      case ArithmeticOrLogicalOperator::DIVIDE:
+      case ArithmeticOrLogicalOperator::MODULUS:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
 	       || (type->get_kind () == TyTy::TypeKind::FLOAT)
@@ -929,9 +929,9 @@ private:
 		       == TyTy::InferType::FLOAT));
 
 	// integers or bools
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_AND:
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_OR:
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR:
+      case ArithmeticOrLogicalOperator::BITWISE_AND:
+      case ArithmeticOrLogicalOperator::BITWISE_OR:
+      case ArithmeticOrLogicalOperator::BITWISE_XOR:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
 	       || (type->get_kind () == TyTy::TypeKind::BOOL)
@@ -940,8 +940,8 @@ private:
 		       == TyTy::InferType::INTEGRAL));
 
 	// integers only
-      case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
-      case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT:
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
