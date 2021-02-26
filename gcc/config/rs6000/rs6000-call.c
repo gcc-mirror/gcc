@@ -13468,9 +13468,9 @@ rs6000_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_compat); i++, d++)
     {
       tree decl = rs6000_builtin_decls[(int)d->code];
-      gcc_assert (decl != NULL);
-      add_builtin_function (d->name, TREE_TYPE (decl), (int)d->code,
-			    BUILT_IN_MD, NULL, NULL_TREE);
+      if (decl != NULL)
+	add_builtin_function (d->name, TREE_TYPE (decl), (int)d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
     }
 }
 
