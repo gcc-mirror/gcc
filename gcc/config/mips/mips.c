@@ -8400,7 +8400,7 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
   /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
      be a DImode, create a new temp and emit a zero extend at the end.  */
   if (GET_MODE (dest) == DImode
-      && REG_P (dest)
+      && (REG_P (dest) || (SUBREG_P (dest) && !MEM_P (SUBREG_REG (dest))))
       && GET_MODE_BITSIZE (SImode) == width)
     {
       dest1 = dest;
