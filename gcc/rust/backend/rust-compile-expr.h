@@ -298,107 +298,36 @@ public:
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr)
   {
-    Operator op;
-    switch (expr.get_expr_type ())
-      {
-      case HIR::ArithmeticOrLogicalExpr::ADD:
-	op = OPERATOR_PLUS;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::SUBTRACT:
-	op = OPERATOR_MINUS;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::MULTIPLY:
-	op = OPERATOR_MULT;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::DIVIDE:
-	op = OPERATOR_DIV;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::MODULUS:
-	op = OPERATOR_MOD;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_AND:
-	op = OPERATOR_AND;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_OR:
-	op = OPERATOR_OR;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::BITWISE_XOR:
-	op = OPERATOR_XOR;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::LEFT_SHIFT:
-	op = OPERATOR_LSHIFT;
-	break;
-      case HIR::ArithmeticOrLogicalExpr::RIGHT_SHIFT:
-	op = OPERATOR_RSHIFT;
-	break;
-      default:
-	rust_fatal_error (expr.get_locus (), "failed to compile operator");
-	return;
-      }
-
+    auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
     auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+    auto location = expr.get_locus ();
 
-    translated = ctx->get_backend ()->binary_expression (op, lhs, rhs,
-							 expr.get_locus ());
+    translated
+      = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
+							       location);
   }
 
   void visit (HIR::ComparisonExpr &expr)
   {
-    Operator op;
-    switch (expr.get_expr_type ())
-      {
-      case HIR::ComparisonExpr::EQUAL:
-	op = OPERATOR_EQEQ;
-	break;
-      case HIR::ComparisonExpr::NOT_EQUAL:
-	op = OPERATOR_NOTEQ;
-	break;
-      case HIR::ComparisonExpr::GREATER_THAN:
-	op = OPERATOR_GT;
-	break;
-      case HIR::ComparisonExpr::LESS_THAN:
-	op = OPERATOR_LT;
-	break;
-      case HIR::ComparisonExpr::GREATER_OR_EQUAL:
-	op = OPERATOR_GE;
-	break;
-      case HIR::ComparisonExpr::LESS_OR_EQUAL:
-	op = OPERATOR_LE;
-	break;
-      default:
-	rust_fatal_error (expr.get_locus (), "failed to compile operator");
-	return;
-      }
-
+    auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
     auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+    auto location = expr.get_locus ();
 
-    translated = ctx->get_backend ()->binary_expression (op, lhs, rhs,
-							 expr.get_locus ());
+    translated
+      = ctx->get_backend ()->comparision_expression (op, lhs, rhs, location);
   }
 
   void visit (HIR::LazyBooleanExpr &expr)
   {
-    Operator op;
-    switch (expr.get_expr_type ())
-      {
-      case HIR::LazyBooleanExpr::LOGICAL_OR:
-	op = OPERATOR_OROR;
-	break;
-      case HIR::LazyBooleanExpr::LOGICAL_AND:
-	op = OPERATOR_ANDAND;
-	break;
-      default:
-	rust_fatal_error (expr.get_locus (), "failed to compile operator");
-	return;
-      }
-
+    auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
     auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
+    auto location = expr.get_locus ();
 
-    translated = ctx->get_backend ()->binary_expression (op, lhs, rhs,
-							 expr.get_locus ());
+    translated
+      = ctx->get_backend ()->lazy_boolean_expression (op, lhs, rhs, location);
   }
 
   void visit (HIR::NegationExpr &expr)
@@ -415,9 +344,12 @@ public:
 	break;
       }
 
-    Bexpression *negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
-    translated = ctx->get_backend ()->unary_expression (op, negated_expr,
-							expr.get_locus ());
+    auto op = expr.get_expr_type ();
+    auto negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
+    auto location = expr.get_locus ();
+
+    translated
+      = ctx->get_backend ()->negation_expression (op, negated_expr, location);
   }
 
   void visit (HIR::IfExpr &expr)
