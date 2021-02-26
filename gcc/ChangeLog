@@ -1,3 +1,55 @@
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/aarch64/aarch64.md (<optab>_rol<mode>3): Add a '#'
+	mark in front of the immediate quantity.
+	(<optab>_rolsi3_uxtw): Likewise.
+
+2021-02-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/99271
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2_fpcxt): New pattern.
+	(nonsecure_call_value_reg_thumb2_fpcxt): Likewise.
+	(nonsecure_call_reg_thumb2): Restrict to using r4 for the callee
+	address and disable when the FPCXT is not available.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* doc/invoke.texi (flang-info-module-cmi): Renamed option.
+
+2021-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp.c (optimize_load_redistribution_1): Abort on NULL nodes.
+
+2021-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99253
+	* tree-vect-loop.c (check_reduction_path): First compute
+	code, then verify out-of-loop uses.
+
+2021-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/95798
+	* match.pd ((T)(A) + CST -> (T)(A + CST)): Add :s to convert.
+
+2021-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80635
+	* tree-vrp.c (vrp_simplify_cond_using_ranges): Also handle
+	VIEW_CONVERT_EXPR if modes are the same, innerop is integral and
+	has mode precision.
+
+2021-02-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (optimize_load_redistribution_1): Delay
+	load_map population.
+	(vect_match_slp_patterns_2): Revert part of last change.
+	(vect_analyze_slp): Do not interleave optimize_load_redistribution
+	with pattern detection but do it afterwards.  Dump the
+	whole SLP graph after pattern recognition and load
+	redistribution optimization finished.
+
 2021-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/99226

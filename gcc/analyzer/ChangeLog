@@ -1,3 +1,19 @@
+2021-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99193
+	* region-model-impl-calls.cc (region_model::impl_call_realloc): New.
+	* region-model.cc (region_model::on_call_pre): Call it.
+	* region-model.h (region_model::impl_call_realloc): New decl.
+	* sm-malloc.cc (enum wording): Add WORDING_REALLOCATED.
+	(malloc_state_machine::m_realloc): New field.
+	(use_after_free::describe_state_change): Add case for
+	WORDING_REALLOCATED.
+	(use_after_free::describe_final_event): Likewise.
+	(malloc_state_machine::malloc_state_machine): Initialize
+	m_realloc.
+	(malloc_state_machine::on_stmt): Handle realloc by calling...
+	(malloc_state_machine::on_realloc_call): New.
+
 2021-02-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99196
