@@ -4282,7 +4282,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 		  ? warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%K%qD may reade %E byte from a region "
+				? G_("%K%qD may read %E byte from a region "
 				     "of size %E")
 				: G_("%K%qD reading %E byte from a region "
 				     "of size %E")),
@@ -4352,7 +4352,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
     warned = (func
 	      ? warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
-			   "%K%qD epecting %E byte in a region of size %E",
+			   "%K%qD expecting %E byte in a region of size %E",
 			   "%K%qD expecting %E bytes in a region of size %E",
 			   exp, func, range[0], size)
 	      : warning_n (loc, OPT_Wstringop_overread,
@@ -4380,7 +4380,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 			    "a region of size %E",
 			    exp, func, range[0], range[1], size)
 	      : warning_at (loc, OPT_Wstringop_overread,
-			    "%Kexpectting between %E and %E bytes in "
+			    "%Kexpecting between %E and %E bytes in "
 			    "a region of size %E",
 			    exp, range[0], range[1], size));
 
