@@ -1,3 +1,8 @@
+2021-02-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* dwarf2out.cc (gen_subprogram_die): Replace existing low/high PC
+	attributes, rather than ICE.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* omp-offload.cc (omp_finish_file): Add code to create OpenMP requires
