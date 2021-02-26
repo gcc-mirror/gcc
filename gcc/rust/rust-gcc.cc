@@ -300,7 +300,7 @@ public:
 						 Bexpression *left,
 						 Bexpression *right, Location);
 
-  Bexpression *comparision_expression (ComparisionOperator op,
+  Bexpression *comparison_expression (ComparisonOperator op,
 				       Bexpression *left, Bexpression *right,
 				       Location);
 
@@ -1689,21 +1689,21 @@ operator_to_tree_code (ArithmeticOrLogicalOperator op, bool floating_point)
 }
 
 static enum tree_code
-operator_to_tree_code (ComparisionOperator op)
+operator_to_tree_code (ComparisonOperator op)
 {
   switch (op)
     {
-    case ComparisionOperator::EQUAL:
+    case ComparisonOperator::EQUAL:
       return EQ_EXPR;
-    case ComparisionOperator::NOT_EQUAL:
+    case ComparisonOperator::NOT_EQUAL:
       return NE_EXPR;
-    case ComparisionOperator::GREATER_THAN:
+    case ComparisonOperator::GREATER_THAN:
       return GT_EXPR;
-    case ComparisionOperator::LESS_THAN:
+    case ComparisonOperator::LESS_THAN:
       return LT_EXPR;
-    case ComparisionOperator::GREATER_OR_EQUAL:
+    case ComparisonOperator::GREATER_OR_EQUAL:
       return GE_EXPR;
-    case ComparisionOperator::LESS_OR_EQUAL:
+    case ComparisonOperator::LESS_OR_EQUAL:
       return LE_EXPR;
     default:
       gcc_unreachable ();
@@ -1809,9 +1809,9 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
   return this->make_expression (new_tree);
 }
 
-// Return an expression for the comparision operation LEFT OP RIGHT.
+// Return an expression for the comparison operation LEFT OP RIGHT.
 Bexpression *
-Gcc_backend::comparision_expression (ComparisionOperator op, Bexpression *left,
+Gcc_backend::comparison_expression (ComparisonOperator op, Bexpression *left,
 				     Bexpression *right, Location location)
 {
   /* Check if either expression is an error, in which case we return an error
@@ -1821,7 +1821,7 @@ Gcc_backend::comparision_expression (ComparisionOperator op, Bexpression *left,
   if (left_tree == error_mark_node || right_tree == error_mark_node)
     return this->error_expression ();
 
-  /* For comparision operators, the resulting type should be boolean. */
+  /* For comparison operators, the resulting type should be boolean. */
   auto tree_type = boolean_type_node;
   auto tree_code = operator_to_tree_code (op);
 

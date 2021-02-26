@@ -475,7 +475,7 @@ protected:
 class ComparisonExpr : public OperatorExpr
 {
 private:
-  using ExprType = ComparisionOperator;
+  using ExprType = ComparisonOperator;
 
   // Note: overloading trait specified in comments
   ExprType expr_type;

@@ -23,7 +23,7 @@ enum class ArithmeticOrLogicalOperator
   RIGHT_SHIFT  // std::ops::Shr
 };
 
-enum class ComparisionOperator
+enum class ComparisonOperator
 {
   EQUAL,	    // std::cmp::PartialEq::eq
   NOT_EQUAL,	    // std::cmp::PartialEq::ne

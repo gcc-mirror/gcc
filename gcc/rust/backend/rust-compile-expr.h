@@ -316,7 +316,7 @@ public:
     auto location = expr.get_locus ();
 
     translated
-      = ctx->get_backend ()->comparision_expression (op, lhs, rhs, location);
+      = ctx->get_backend ()->comparison_expression (op, lhs, rhs, location);
   }
 
   void visit (HIR::LazyBooleanExpr &expr)
