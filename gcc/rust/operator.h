@@ -1,8 +1,6 @@
 #ifndef OPERATOR_H
 #define OPERATOR_H
 
-enum Operator {};
-
 enum class NegationOperator
 {
   NEGATE,

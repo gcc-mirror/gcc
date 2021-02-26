@@ -332,18 +332,6 @@ public:
 
   void visit (HIR::NegationExpr &expr)
   {
-    Operator op (OPERATOR_INVALID);
-    switch (expr.get_negation_type ())
-      {
-      case HIR::NegationExpr::NegationType::NEGATE:
-	op = OPERATOR_MINUS;
-	break;
-
-      case HIR::NegationExpr::NegationType::NOT:
-	op = OPERATOR_NOT;
-	break;
-      }
-
     auto op = expr.get_expr_type ();
     auto negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
     auto location = expr.get_locus ();
