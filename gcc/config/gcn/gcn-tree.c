@@ -577,9 +577,12 @@ gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
   return decl;
 }
 
-void
-gcn_goacc_adjust_gangprivate_decl (tree var)
+tree
+gcn_goacc_adjust_private_decl (tree var, int level)
 {
+  if (level != GOMP_DIM_GANG)
+    return var;
+
   tree type = TREE_TYPE (var);
   tree lds_type = build_qualified_type (type,
 		    TYPE_QUALS_NO_ADDR_SPACE (type)
@@ -597,6 +600,8 @@ gcn_goacc_adjust_gangprivate_decl (tree var)
 
   if (machfun)
     machfun->use_flat_addressing = true;
+
+  return var;
 }
 
 /* }}}  */

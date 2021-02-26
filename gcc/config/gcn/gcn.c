@@ -6320,8 +6320,8 @@ gcn_dwarf_register_span (rtx rtl)
 #undef  TARGET_GOACC_ADJUST_PROPAGATION_RECORD
 #define TARGET_GOACC_ADJUST_PROPAGATION_RECORD \
   gcn_goacc_adjust_propagation_record
-#undef  TARGET_GOACC_ADJUST_GANGPRIVATE_DECL
-#define TARGET_GOACC_ADJUST_GANGPRIVATE_DECL gcn_goacc_adjust_gangprivate_decl
+#undef  TARGET_GOACC_ADJUST_PRIVATE_DECL
+#define TARGET_GOACC_ADJUST_PRIVATE_DECL gcn_goacc_adjust_private_decl
 #undef  TARGET_GOACC_FORK_JOIN
 #define TARGET_GOACC_FORK_JOIN gcn_fork_join
 #undef  TARGET_GOACC_REDUCTION

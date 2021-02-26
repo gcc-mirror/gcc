@@ -75,6 +75,7 @@
 #include "fold-const.h"
 #include "intl.h"
 #include "opts.h"
+#include "tree-pretty-print.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -167,6 +168,12 @@ static unsigned vector_red_align;
 static unsigned vector_red_partition;
 static GTY(()) rtx vector_red_sym;
 
+/* Shared memory block for gang-private variables.  */
+static unsigned gang_private_shared_size;
+static unsigned gang_private_shared_align;
+static GTY(()) rtx gang_private_shared_sym;
+static hash_map<tree_decl_hash, unsigned int> gang_private_shared_hmap;
+
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
 static GTY(()) tree global_lock_var;
 
@@ -250,6 +257,10 @@ nvptx_option_override (void)
   SET_SYMBOL_DATA_AREA (vector_red_sym, DATA_AREA_SHARED);
   vector_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
   vector_red_partition = 0;
+
+  gang_private_shared_sym = gen_rtx_SYMBOL_REF (Pmode, "__gang_private_shared");
+  SET_SYMBOL_DATA_AREA (gang_private_shared_sym, DATA_AREA_SHARED);
+  gang_private_shared_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
   diagnose_openacc_conflict (TARGET_GOMP, "-mgomp");
   diagnose_openacc_conflict (TARGET_SOFT_STACK, "-msoft-stack");
@@ -5435,6 +5446,10 @@ nvptx_file_end (void)
     write_shared_buffer (asm_out_file, vector_red_sym,
 			 vector_red_align, vector_red_size);
 
+  if (gang_private_shared_size)
+    write_shared_buffer (asm_out_file, gang_private_shared_sym,
+			 gang_private_shared_align, gang_private_shared_size);
+
   if (need_softstack_decl)
     {
       write_var_marker (asm_out_file, false, true, "__nvptx_stacks");
@@ -6662,6 +6677,64 @@ nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
   return false;
 }
 
+/* Implement TARGET_GOACC_ADJUST_PRIVATE_DECL.  */
+
+static tree
+nvptx_goacc_adjust_private_decl (tree decl, int level)
+{
+  if (level != GOMP_DIM_GANG)
+    return decl;
+
+  /* Set "oacc gang-private" attribute for gang-private variable
+     declarations.  */
+  if (!lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (decl)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Setting 'oacc gang-private' attribute for decl:");
+	  print_generic_decl (dump_file, decl, TDF_SLIM);
+	  fputc ('\n', dump_file);
+	}
+      tree id = get_identifier ("oacc gang-private");
+      DECL_ATTRIBUTES (decl) = tree_cons (id, NULL, DECL_ATTRIBUTES (decl));
+    }
+
+  return decl;
+}
+
+/* Implement TARGET_GOACC_EXPAND_VAR_DECL.  */
+
+static rtx
+nvptx_goacc_expand_var_decl (tree var)
+{
+  /* Place "oacc gang-private" variables in shared memory.  */
+  if (VAR_P (var)
+      && lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (var)))
+    {
+      unsigned int offset, *poffset;
+      poffset = gang_private_shared_hmap.get (var);
+      if (poffset)
+	offset = *poffset;
+      else
+	{
+	  unsigned HOST_WIDE_INT align = DECL_ALIGN (var);
+	  gang_private_shared_size
+	    = (gang_private_shared_size + align - 1) & ~(align - 1);
+	  if (gang_private_shared_align < align)
+	    gang_private_shared_align = align;
+
+	  offset = gang_private_shared_size;
+	  bool existed = gang_private_shared_hmap.put (var, offset);
+	  gcc_checking_assert (!existed);
+	  gang_private_shared_size += tree_to_uhwi (DECL_SIZE_UNIT (var));
+	}
+      rtx addr = plus_constant (Pmode, gang_private_shared_sym, offset);
+      return gen_rtx_MEM (TYPE_MODE (TREE_TYPE (var)), addr);
+    }
+
+  return NULL_RTX;
+}
+
 static GTY(()) tree nvptx_previous_fndecl;
 
 static void
@@ -6670,6 +6743,7 @@ nvptx_set_current_function (tree fndecl)
   if (!fndecl || fndecl == nvptx_previous_fndecl)
     return;
 
+  gang_private_shared_hmap.empty ();
   nvptx_previous_fndecl = fndecl;
   vector_red_partition = 0;
   oacc_bcast_partition = 0;
@@ -6833,6 +6907,12 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
 
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_GOACC_ADJUST_PRIVATE_DECL
+#define TARGET_GOACC_ADJUST_PRIVATE_DECL nvptx_goacc_adjust_private_decl
+
+#undef TARGET_GOACC_EXPAND_VAR_DECL
+#define TARGET_GOACC_EXPAND_VAR_DECL nvptx_goacc_expand_var_decl
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nvptx_set_current_function
