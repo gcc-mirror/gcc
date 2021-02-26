@@ -1,6 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -msecure-plt -fPIC" } */
+/* { dg-require-effective-target fpic } */
 /* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } } */
 
 #define FE_TONEAREST 0

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-mdejagnu-cpu=power8 -O3 -fstack-protector-strong -fpic" } */
+/* { dg-require-effective-target fpic } */
 
 char *b;
 int c, d, e, f;
