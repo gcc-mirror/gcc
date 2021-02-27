@@ -1,3 +1,65 @@
+2021-02-26  Alexandre Oliva  <oliva@gnu.org>
+
+	* gcc.target/powerpc/pr67789.c: Revert fpic target requirement
+	duplication.
+	* gcc.target/powerpc/pr83629.c: Likewise.
+	* gcc.target/powerpc/pr84112.c: Likewise.
+
+2021-02-26  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/powerpc/compress-float-ppc-pic.c: Add
+	dg-require-effective-target fpic.
+	* gcc.target/powerpc/ppc-eabi.c: Likewise.
+	* gcc.target/powerpc/pr26350.c: Likewise.
+	* gcc.target/powerpc/pr67789.c: Likewise.
+	* gcc.target/powerpc/pr79439-1.c: Likewise.
+	* gcc.target/powerpc/pr79439-2.c: Likewise.
+	* gcc.target/powerpc/pr79439-3.c: Likewise.
+	* gcc.target/powerpc/pr83629.c: Likewise.
+	* gcc.target/powerpc/pr84112.c: Likewise.
+
+2021-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99281
+	* g++.dg/pr99218.C: New testcase.
+
+2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/lambda-specifiers1.C: New test.
+
+2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95451
+	* g++.dg/cpp1y/lambda-generic-95451.C: New test.
+
+2021-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98810
+	* g++.dg/cpp2a/nontype-class-defarg1.C: New test.
+
+2021-02-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/pcrel-opt-inc-di.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-df.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-di.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-hi.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-qi.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-sf.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-si.c: New test.
+	* gcc.target/powerpc/pcrel-opt-ld-vector.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-df.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-di.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-hi.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-qi.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-sf.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-si.c: New test.
+	* gcc.target/powerpc/pcrel-opt-st-vector.c: New test.
+
+2021-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98990
+	* g++.dg/concepts/abbrev8.C: New test.
+
 2021-02-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99213

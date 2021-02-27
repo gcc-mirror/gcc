@@ -1,3 +1,58 @@
+2021-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/99281
+	* expr.c (store_field): For calls with return-slot optimization
+	and addressable return type expand the store directly.
+
+2021-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR c/99275
+	* builtins.c (warn_string_no_nul): Fix diagnostic formatting.
+
+2021-02-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99279
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Replace assert
+	with an "if" test.
+
+2021-02-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config.gcc: Add rs6000-pcrel-opt.o.
+	* config/rs6000/rs6000-pcrel-opt.c: New file.
+	* config/rs6000/pcrel-opt.md: New file.
+	* config/rs6000/predicates.md: Add d_form_memory predicate.
+	* config/rs6000/rs6000-cpus.def: Add OPTION_MASK_PCREL_OPT.
+	* config/rs6000/rs6000-passes.def: Add pass_pcrel_opt.
+	* config/rs6000/rs6000-protos.h: Add reg_to_non_prefixed(),
+	pcrel_opt_valid_mem_p(), output_pcrel_opt_reloc(),
+	and make_pass_pcrel_opt().
+	* config/rs6000/rs6000.c (reg_to_non_prefixed): Make global.
+	(rs6000_option_override_internal): Add pcrel-opt.
+	(rs6000_delegitimize_address): Support pcrel-opt.
+	(rs6000_opt_masks): Add pcrel-opt.
+	(pcrel_opt_valid_mem_p): New function.
+	(reg_to_non_prefixed): Make global.
+	(rs6000_asm_output_opcode): Reset prepend_p_to_next_insn.
+	(output_pcrel_opt_reloc): New function.
+	* config/rs6000/rs6000.md (loads_extern_addr): New attr.
+	(pcrel_extern_addr): Set loads_extern_addr.
+	Add include for pcrel-opt.md.
+	* config/rs6000/rs6000.opt: Add -mpcrel-opt.
+	* config/rs6000/t-rs6000: Add rules for pcrel-opt.c and
+	pcrel-opt.md.
+
+2021-02-26  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR target/98996
+	* config/mips/mips.c (mips_expand_ext_as_unaligned_load):
+	If TARGET_64BIT and dest is SUBREG, we check the width, if it
+	equal to SImode, we use SImode operation, just like what we are
+	doing for REG one.
+
+2021-02-26  Marek Polacek  <polacek@redhat.com>
+
+	* builtins.c (warn_for_access): Fix typos.
+
 2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/aarch64/aarch64.md (<optab>_rol<mode>3): Add a '#'
