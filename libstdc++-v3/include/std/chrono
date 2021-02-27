@@ -2496,8 +2496,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto constexpr __r2_e3 = static_cast<uint32_t>(536895458);
 
       const auto __y1 = static_cast<uint32_t>(static_cast<int>(_M_y)) - __z2;
-      const auto __m1 = static_cast<uint32_t>(_M_m);
-      const auto __d1 = static_cast<uint32_t>(_M_d);
+      const auto __m1 = static_cast<uint32_t>(static_cast<unsigned>(_M_m));
+      const auto __d1 = static_cast<uint32_t>(static_cast<unsigned>(_M_d));
 
       const auto __j  = static_cast<uint32_t>(__m1 < 3);
       const auto __y0 = __y1 - __j;
