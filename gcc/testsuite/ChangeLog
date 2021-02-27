@@ -1,3 +1,11 @@
+2021-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* substr_10.f90: New test.
+	* substr_9.f90: New test.
+
 2021-02-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

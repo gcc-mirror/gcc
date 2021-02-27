@@ -1,3 +1,14 @@
+2021-02-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.h (gfc_resolve_substring): Add prototype.
+	* primary.c (match_string_constant): Simplify substrings with
+	constant starting and ending points.
+	* resolve.c: Rename resolve_substring to gfc_resolve_substring.
+	(gfc_resolve_ref): Use renamed function gfc_resolve_substring.
+
 2021-02-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
