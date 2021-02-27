@@ -7999,6 +7999,15 @@ package body Sem_Ch13 is
            ("extra parentheses surrounding aggregate not allowed", Aggr);
          return;
 
+      --  Reject the mixing of named and positional entries in the aggregate
+
+      elsif Present (Expressions (Aggr))
+        and then Present (Component_Associations (Aggr))
+      then
+         Error_Msg_N ("cannot mix positional and named entries in "
+                       & "enumeration rep clause", N);
+         return;
+
       --  All tests passed, so set rep clause in place
 
       else
@@ -8013,7 +8022,7 @@ package body Sem_Ch13 is
 
       Elit := First_Literal (Enumtype);
 
-      --  First the positional entries if any
+      --  Process positional entries
 
       if Present (Expressions (Aggr)) then
          Expr := First (Expressions (Aggr));
@@ -8042,11 +8051,10 @@ package body Sem_Ch13 is
             Next (Expr);
             Next (Elit);
          end loop;
-      end if;
 
-      --  Now process the named entries if present
+      --  Process named entries
 
-      if Present (Component_Associations (Aggr)) then
+      elsif Present (Component_Associations (Aggr)) then
          Assoc := First (Component_Associations (Aggr));
          while Present (Assoc) loop
             Choice := First (Choices (Assoc));
