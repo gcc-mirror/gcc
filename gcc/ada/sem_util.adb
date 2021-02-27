@@ -664,6 +664,15 @@ package body Sem_Util is
                return Make_Level_Literal
                         (Scope_Depth (Enclosing_Dynamic_Scope (E)) + 1);
 
+            --  Check if E is an expansion-generated renaming of an iterator
+            --  by examining Related_Expression. If so, determine the
+            --  accessibility level based on the original expression.
+
+            elsif Ekind (E) in E_Constant | E_Variable
+              and then Present (Related_Expression (E))
+            then
+               return Accessibility_Level (Related_Expression (E));
+
             --  Normal object - get the level of the enclosing scope
 
             else
