@@ -1,3 +1,18 @@
+2021-02-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/host-darwin.c (darwin_gt_pch_use_address): Modify
+	diagnostic message to avoid use of a contraction and format
+	warning.
+
+2021-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/99288
+	* gcse.c (gcse_or_cprop_is_too_expensive): Use %wu instead of
+	HOST_WIDE_INT_PRINT_UNSIGNED in warning format string.
+	* ipa-devirt.c (ipa_odr_read_section): Use %wd instead of
+	HOST_WIDE_INT_PRINT_DEC in inform format string.  Fix comment
+	typos.
+
 2021-02-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/99281
