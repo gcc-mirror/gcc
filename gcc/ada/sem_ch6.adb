@@ -9042,7 +9042,7 @@ package body Sem_Ch6 is
             if Needs_BIP_Task_Actuals (E) then
                Discard :=
                  Add_Extra_Formal
-                   (E, RTE (RE_Master_Id),
+                   (E, Standard_Integer,
                     E, BIP_Formal_Suffix (BIP_Task_Master));
 
                Set_Has_Master_Entity (E);
