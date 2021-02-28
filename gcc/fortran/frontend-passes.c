@@ -2648,7 +2648,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)
 		    gfc_error_now ("Variable %qs at %L set to undefined "
-				   "value inside loop  beginning at %L as "
+				   "value inside loop beginning at %L as "
 				   "INTENT(OUT) argument to subroutine %qs",
 				   do_sym->name, &a->expr->where,
 				   &(doloop_list[i].c->loc),
