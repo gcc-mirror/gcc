@@ -1081,7 +1081,8 @@ lto_symtab_merge_symbols (void)
 }
 
 /* Virtual tables may matter for code generation even if they are not
-   directly refernced by the code because they may be used for devirtualizaiton.
+   directly referenced by the code because they may be used for
+   devirtualization.
    For this reason it is important to merge even virtual tables that have no
    associated symbol table entries.  Without doing so we lose optimization
    oppurtunities by losing track of the vtable constructor.

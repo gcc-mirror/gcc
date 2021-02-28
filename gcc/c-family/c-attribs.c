@@ -3343,7 +3343,7 @@ handle_malloc_attribute (tree *node, tree name, tree args, int flags,
 	  error ("%qE attribute argument 1 must take a pointer "
 		 "type as its first argument", name);
 	  inform (DECL_SOURCE_LOCATION (dealloc),
-		  "refernced symbol declared here" );
+		  "referenced symbol declared here");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3356,7 +3356,7 @@ handle_malloc_attribute (tree *node, tree name, tree args, int flags,
 	  error ("%qE attribute argument 1 must take a pointer type "
 		 "as its first argument; have %qT", name, argtype);
 	  inform (DECL_SOURCE_LOCATION (dealloc),
-		  "referenced symbol declared here" );
+		  "referenced symbol declared here");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}

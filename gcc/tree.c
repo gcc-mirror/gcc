@@ -13857,7 +13857,7 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 		    *sam = special_array_member::trail_1;
 		}
 
-      /* For a refernce to a zero- or one-element array member of a union
+      /* For a reference to a zero- or one-element array member of a union
 	 use the size of the union instead of the size of the member.  */
       if (TREE_CODE (argtype) == UNION_TYPE)
 	memsize = TYPE_SIZE_UNIT (argtype);
