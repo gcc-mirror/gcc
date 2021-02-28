@@ -1,3 +1,16 @@
+2021-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90333
+	* parser.c (cp_parser_lambda_declarator_opt): Accept GNU attributes
+	between () and ->.
+
+2021-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97246
+	PR c++/94546
+	* pt.c (extract_fnparm_pack): Check DECL_PACK_P here.
+	(register_parameter_specializations): Not here.
+
 2021-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
