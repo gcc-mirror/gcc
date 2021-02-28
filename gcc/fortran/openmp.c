@@ -3788,11 +3788,11 @@ gfc_omp_requires_add_clause (gfc_omp_requires_kind clause,
       if (clause & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
 	gfc_error ("!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> "
 		   "specified via module %qs use at %L but same clause is "
-		   "not set at for the program unit", clause_name, module_name,
-		   loc);
+		   "not specified for the program unit", clause_name,
+		   module_name, loc);
       else
 	gfc_error ("!$OMP REQUIRES clause %qs specified via module %qs use at "
-		   "%L but same clause is not set at for the program unit",
+		   "%L but same clause is not specified for the program unit",
 		   clause_name, module_name, loc);
       return false;
     }
@@ -5411,7 +5411,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (has_inscan && has_notinscan && is_reduction)
 		  {
 		    gfc_error ("%<inscan%> and non-%<inscan%> %<reduction%> "
-			       "clauses on the same construct %L",
+			       "clauses on the same construct at %L",
 			       &n->where);
 		    break;
 		  }
