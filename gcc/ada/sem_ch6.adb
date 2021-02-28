@@ -1535,14 +1535,12 @@ package body Sem_Ch6 is
             --  Check RM 6.5 (5.9/3)
 
             if Has_Aliased then
-               if Ada_Version < Ada_2012 then
-
-                  --  Shouldn't this test Warn_On_Ada_2012_Compatibility ???
-                  --  Can it really happen (extended return???)
-
+               if Ada_Version < Ada_2012
+                 and then Warn_On_Ada_2012_Compatibility
+               then
                   Error_Msg_N
                     ("ALIASED only allowed for limited return objects "
-                     & "in Ada 2012??", N);
+                     & "in Ada 2012?y?", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N
@@ -1674,9 +1672,9 @@ package body Sem_Ch6 is
                Related_Nod => N);
          end if;
 
-         --  ??? A real run-time accessibility check is needed in cases
-         --  involving dereferences of access parameters. For now we just
-         --  check the static cases.
+         --  Perform static accessibility checks for cases involving
+         --  dereferences of access parameters. Runtime accessibility checks
+         --  get generated elsewhere.
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Limited_View (Etype (Scope_Id))
@@ -3827,7 +3825,8 @@ package body Sem_Ch6 is
          Result : Elist_Id := No_Elist;
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result;
-         --  Mask all types referenced in the subtree rooted at Node
+         --  Mask all types referenced in the subtree rooted at Node as
+         --  formally frozen.
 
          --------------------
          -- Mask_Type_Refs --
@@ -3835,7 +3834,8 @@ package body Sem_Ch6 is
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result is
             procedure Mask_Type (Typ : Entity_Id);
-            --  ??? what does this do?
+            --  Mask a given type as formally frozen when outside the current
+            --  scope, or else freeze the type.
 
             ---------------
             -- Mask_Type --
@@ -5663,17 +5663,6 @@ package body Sem_Ch6 is
                end if;
             end if;
          end;
-      end if;
-
-      --  What is the following code for, it used to be
-
-      --  ???   Set_Suppress_Elaboration_Checks
-      --  ???     (Designator, Elaboration_Checks_Suppressed (Designator));
-
-      --  The following seems equivalent, but a bit dubious
-
-      if Elaboration_Checks_Suppressed (Designator) then
-         Set_Kill_Elaboration_Checks (Designator);
       end if;
 
       --  For a compilation unit, set body required. This flag will only be

@@ -1502,7 +1502,8 @@ package body Exp_Ch3 is
          Typ : constant Entity_Id := Etype (Discr);
 
          procedure Check_Missing_Others (V : Node_Id);
-         --  ???
+         --  Check that a given variant and its nested variants have an others
+         --  choice, and generate a constraint error raise when it does not.
 
          --------------------------
          -- Check_Missing_Others --
@@ -1870,10 +1871,6 @@ package body Exp_Ch3 is
 
       --  Pass the extra accessibility level parameter associated with the
       --  level of the object being initialized when required.
-
-      --  When no entity is present for Id_Ref it may not have been fully
-      --  analyzed, so allow the default value of standard standard to be
-      --  passed ???
 
       if Is_Entity_Name (Id_Ref)
         and then Present (Init_Proc_Level_Formal (Proc))
