@@ -3382,6 +3382,13 @@ package body Sem_Ch13 is
                   | Aspect_Interrupt_Priority
                   | Aspect_Priority
                =>
+                  --  Verify the expression is static when Static_Priorities is
+                  --  enabled.
+
+                  if not Is_OK_Static_Expression (Expr) then
+                     Check_Restriction (Static_Priorities, Expr);
+                  end if;
+
                   if Nkind (N) in N_Subprogram_Body | N_Subprogram_Declaration
                   then
                      --  Analyze the aspect expression
