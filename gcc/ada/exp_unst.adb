@@ -883,9 +883,10 @@ package body Exp_Unst is
                      --  within Subp. Calls to Subp itself or to subprograms
                      --  outside the nested structure do not affect us.
 
-                     if Scope_Within (Ultimate_Alias (Ent), Subp)
-                       and then Is_Subprogram (Ent)
+                     if Is_Subprogram (Ent)
+                       and then not Is_Generic_Subprogram (Ent)
                        and then not Is_Imported (Ent)
+                       and then Scope_Within (Ultimate_Alias (Ent), Subp)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Ent));
                      end if;
