@@ -394,6 +394,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	  fd->non_rect = true;
 	}
     }
+  int accum_iter_precision = 0;
   for (i = 0; i < cnt; i++)
     {
       if (i == 0
@@ -476,12 +477,28 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	{
 	  if (fd->collapse == 1 && !fd->tiling)
 	    iter_type = TREE_TYPE (loop->v);
-	  else if (i == 0
-		   || TYPE_PRECISION (iter_type)
-		      < TYPE_PRECISION (TREE_TYPE (loop->v)))
-	    iter_type
-	      = build_nonstandard_integer_type
-		  (TYPE_PRECISION (TREE_TYPE (loop->v)), 1);
+	  else
+	    {
+	      int loop_precision = TYPE_PRECISION (TREE_TYPE (loop->v));
+	      int iter_type_precision = 0;
+	      const int max_accum_precision
+		= TYPE_PRECISION (long_long_unsigned_type_node);
+
+	      accum_iter_precision += loop_precision;
+
+	      if (i == 0
+		  || (loop_precision >= max_accum_precision
+		      && loop_precision >= TYPE_PRECISION (iter_type)))
+		iter_type_precision = loop_precision;
+	      else if (TYPE_PRECISION (iter_type) < max_accum_precision)
+		iter_type_precision
+		  = MIN (1 << ceil_log2 (accum_iter_precision),
+			 max_accum_precision);
+
+	      if (iter_type_precision)
+		iter_type = build_nonstandard_integer_type
+			      (iter_type_precision, 1);
+	    }
 	}
       else if (iter_type != long_long_unsigned_type_node)
 	{

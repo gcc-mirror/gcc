@@ -7816,7 +7816,10 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
       tile_size = create_tmp_var (diff_type, ".tile_size");
       expr = build_int_cst (diff_type, 1);
       for (int ix = 0; ix < fd->collapse; ix++)
-	expr = fold_build2 (MULT_EXPR, diff_type, counts[ix].tile, expr);
+	{
+	  tree tile = fold_convert (diff_type, counts[ix].tile);
+	  expr = fold_build2 (MULT_EXPR, diff_type, tile, expr);
+	}
       expr = force_gimple_operand_gsi (&gsi, expr, true,
 				       NULL_TREE, true, GSI_SAME_STMT);
       ass = gimple_build_assign (tile_size, expr);

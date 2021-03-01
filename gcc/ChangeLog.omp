@@ -1,3 +1,11 @@
+2021-03-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-expand.cc (expand_oacc_for): Convert .tile variable to
+	diff_type before multiplying.
+	* omp-general.cc (omp_extract_for_data): Use accumulated precision
+	of all collapsed for-loops as precision of iteration variable, up
+	to the precision of a long long.
+
 2021-02-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	* dwarf2out.cc (gen_subprogram_die): Replace existing low/high PC
