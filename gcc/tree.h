@@ -2078,12 +2078,16 @@ extern tree vector_element_bits_tree (const_tree);
    to this type.  */
 #define TYPE_ATTRIBUTES(NODE) (TYPE_CHECK (NODE)->type_common.attributes)
 
+/* Raw access to the alignment field.  */
+#define TYPE_ALIGN_RAW(NODE)			\
+  (TYPE_CHECK (NODE)->type_common.align)
+
 /* The alignment necessary for objects of this type.
    The value is an int, measured in bits and must be a power of two.
    We support also an "alignment" of zero.  */
-#define TYPE_ALIGN(NODE) \
-    (TYPE_CHECK (NODE)->type_common.align \
-     ? ((unsigned)1) << ((NODE)->type_common.align - 1) : 0)
+#define TYPE_ALIGN(NODE)					\
+  (TYPE_ALIGN_RAW (NODE)					\
+   ? ((unsigned)1) << (TYPE_ALIGN_RAW(NODE) - 1) : 0)
 
 /* Specify that TYPE_ALIGN(NODE) is X.  */
 #define SET_TYPE_ALIGN(NODE, X) \

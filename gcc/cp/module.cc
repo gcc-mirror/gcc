@@ -8714,7 +8714,7 @@ trees_out::type_node (tree type)
       else
 	{
 	  if (TYPE_USER_ALIGN (type))
-	    flags = exact_log2 (TYPE_ALIGN (type));
+	    flags = TYPE_ALIGN_RAW (type);
 	}
 
       if (streaming_p ())
@@ -9510,7 +9510,7 @@ trees_in::tree_node (bool is_use)
 	  }
 	else
 	  {
-	    res = build_aligned_type (res, 1u << flags);
+	    res = build_aligned_type (res, (1u << flags) >> 1);
 	    TYPE_USER_ALIGN (res) = true;
 	  }
 
