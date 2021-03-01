@@ -2507,29 +2507,16 @@ package body Checks is
       while Present (Actual_1) and then Present (Formal_1) loop
          Orig_Act_1 := Original_Actual (Actual_1);
 
-         --  Ensure that the actual is an object that is not passed by value.
-         --  Elementary types are always passed by value, therefore actuals of
-         --  such types cannot lead to aliasing. An aggregate is an object in
-         --  Ada 2012, but an actual that is an aggregate cannot overlap with
-         --  another actual.
-
-         if Nkind (Orig_Act_1) = N_Aggregate
-           or else (Nkind (Orig_Act_1) = N_Qualified_Expression
-                     and then Nkind (Expression (Orig_Act_1)) = N_Aggregate)
-         then
-            null;
-
-         elsif Is_Object_Reference (Orig_Act_1) then
+         if Is_Name_Reference (Orig_Act_1) then
             Actual_2 := Next_Actual (Actual_1);
             Formal_2 := Next_Formal (Formal_1);
             while Present (Actual_2) and then Present (Formal_2) loop
                Orig_Act_2 := Original_Actual (Actual_2);
 
-               --  The other actual we are testing against must also denote
-               --  a non pass-by-value object. Generate the check only when
-               --  the mode of the two formals may lead to aliasing.
+               --  Generate the check only when the mode of the two formals may
+               --  lead to aliasing.
 
-               if Is_Object_Reference (Orig_Act_2)
+               if Is_Name_Reference (Orig_Act_2)
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
 
