@@ -314,7 +314,8 @@ proc dmd2dg { base test } {
 	}
 
 	fail_compilation {
-	    puts $fdout "// { dg-do run { xfail *-*-* } }"
+	    puts $fdout "// { dg-do compile }"
+	    puts $fdout "// { dg-final { output-exists-not } }"
 	}
     }
 
