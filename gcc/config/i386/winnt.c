@@ -830,9 +830,20 @@ i386_pe_asm_lto_end (void)
 
 struct seh_frame_state
 {
-  /* SEH records saves relative to the "current" stack pointer, whether
-     or not there's a frame pointer in place.  This tracks the current
-     stack pointer offset from the CFA.  */
+  /* SEH records offsets relative to the lowest address of the fixed stack
+     allocation.  If there is no frame pointer, these offsets are from the
+     stack pointer; if there is a frame pointer, these offsets are from the
+     value of the stack pointer when the frame pointer was established, i.e.
+     the frame pointer minus the offset in the .seh_setframe directive.
+
+     We do not distinguish these two cases, i.e. we consider that the offsets
+     are always relative to the "current" stack pointer.  This means that we
+     need to perform the fixed stack allocation before establishing the frame
+     pointer whenever there are registers to be saved, and this is guaranteed
+     by the prologue provided that we force the frame pointer to point at or
+     below the lowest used register save area, see ix86_compute_frame_layout.
+
+     This tracks the current stack pointer offset from the CFA.  */
   HOST_WIDE_INT sp_offset;
 
   /* The CFA is located at CFA_REG + CFA_OFFSET.  */
