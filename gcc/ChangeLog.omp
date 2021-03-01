@@ -1,3 +1,11 @@
+2021-03-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-expand.c (expand_oacc_for): Convert .tile variable to
+	diff_type before multiplying.
+	* omp-general.c (omp_extract_for_data): Use accumulated precision
+	of all collapsed for-loops as precision of iteration variable, up
+	to the precision of a long long.
+
 2020-08-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-sese.c: Fix comment typo.
