@@ -18794,8 +18794,9 @@ package body Sem_Util is
    ----------------------------
 
    function Is_OK_Volatile_Context
-     (Context : Node_Id;
-      Obj_Ref : Node_Id) return Boolean
+     (Context       : Node_Id;
+      Obj_Ref       : Node_Id;
+      Check_Actuals : Boolean) return Boolean
    is
       function Is_Protected_Operation_Call (Nod : Node_Id) return Boolean;
       --  Determine whether an arbitrary node denotes a call to a protected
@@ -18878,6 +18879,12 @@ package body Sem_Util is
          Func_Id := Id;
          while Present (Func_Id) and then Func_Id /= Standard_Standard loop
             if Ekind (Func_Id) in E_Function | E_Generic_Function then
+
+               --  ??? This routine could just use Return_Applies_To, but it
+               --  is currently wrongly called by unanalyzed return statements
+               --  coming from expression functions.
+               pragma Assert (Func_Id = Return_Applies_To (Id));
+
                return Is_Volatile_Function (Func_Id);
             end if;
 
@@ -18894,9 +18901,17 @@ package body Sem_Util is
    --  Start of processing for Is_OK_Volatile_Context
 
    begin
+      --  For actual parameters within explicit parameter associations switch
+      --  the context to the corresponding subprogram call.
+
+      if Nkind (Context) = N_Parameter_Association then
+         return Is_OK_Volatile_Context (Context       => Parent (Context),
+                                        Obj_Ref       => Obj_Ref,
+                                        Check_Actuals => Check_Actuals);
+
       --  The volatile object appears on either side of an assignment
 
-      if Nkind (Context) = N_Assignment_Statement then
+      elsif Nkind (Context) = N_Assignment_Statement then
          return True;
 
       --  The volatile object is part of the initialization expression of
@@ -18914,7 +18929,7 @@ package body Sem_Util is
          --  function is volatile.
 
          if Is_Return_Object (Obj_Id) then
-            return Within_Volatile_Function (Obj_Id);
+            return Within_Volatile_Function (Scope (Obj_Id));
 
          --  Otherwise this is a normal object initialization
 
@@ -18965,8 +18980,9 @@ package body Sem_Util is
               N_Slice
         and then Prefix (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-                   (Context => Parent (Context),
-                    Obj_Ref => Context)
+                   (Context       => Parent (Context),
+                    Obj_Ref       => Context,
+                    Check_Actuals => Check_Actuals)
       then
          return True;
 
@@ -18998,8 +19014,9 @@ package body Sem_Util is
                              | N_Unchecked_Type_Conversion
         and then Expression (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-                   (Context => Parent (Context),
-                    Obj_Ref => Context)
+                   (Context       => Parent (Context),
+                    Obj_Ref       => Context,
+                    Check_Actuals => Check_Actuals)
       then
          return True;
 
@@ -19014,17 +19031,43 @@ package body Sem_Util is
       elsif Within_Check (Context) then
          return True;
 
-      --  Assume that references to effectively volatile objects that appear
-      --  as actual parameters in a subprogram call are always legal. A full
-      --  legality check is done when the actuals are resolved (see routine
-      --  Resolve_Actuals).
+      --  References to effectively volatile objects that appear as actual
+      --  parameters in subprogram calls can be examined only after call itself
+      --  has been resolved. Before that, assume such references to be legal.
 
-      elsif Within_Subprogram_Call (Context) then
-         return True;
+      elsif Nkind (Context) in N_Subprogram_Call | N_Entry_Call_Statement then
+         if Check_Actuals then
+            declare
+               Call   : Node_Id;
+               Formal : Entity_Id;
+               Subp   : constant Entity_Id := Get_Called_Entity (Context);
+            begin
+               Find_Actual (Obj_Ref, Formal, Call);
+               pragma Assert (Call = Context);
 
-      --  Otherwise the context is not suitable for an effectively volatile
-      --  object.
+               --  An effectively volatile object may act as an actual when the
+               --  corresponding formal is of a non-scalar effectively volatile
+               --  type (SPARK RM 7.1.3(10)).
 
+               if not Is_Scalar_Type (Etype (Formal))
+                 and then Is_Effectively_Volatile_For_Reading (Etype (Formal))
+               then
+                  return True;
+
+               --  An effectively volatile object may act as an actual in a
+               --  call to an instance of Unchecked_Conversion. (SPARK RM
+               --  7.1.3(10)).
+
+               elsif Is_Unchecked_Conversion_Instance (Subp) then
+                  return True;
+
+               else
+                  return False;
+               end if;
+            end;
+         else
+            return True;
+         end if;
       else
          return False;
       end if;
@@ -29537,36 +29580,6 @@ package body Sem_Util is
    begin
       return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
-
-   ----------------------------
-   -- Within_Subprogram_Call --
-   ----------------------------
-
-   function Within_Subprogram_Call (N : Node_Id) return Boolean is
-      Par : Node_Id;
-
-   begin
-      --  Climb the parent chain looking for a function or procedure call
-
-      Par := N;
-      while Present (Par) loop
-         if Nkind (Par) in N_Entry_Call_Statement
-                         | N_Function_Call
-                         | N_Procedure_Call_Statement
-         then
-            return True;
-
-         --  Prevent the search from going too far
-
-         elsif Is_Body_Or_Package_Declaration (Par) then
-            exit;
-         end if;
-
-         Par := Parent (Par);
-      end loop;
-
-      return False;
-   end Within_Subprogram_Call;
 
    ----------------
    -- Wrong_Type --

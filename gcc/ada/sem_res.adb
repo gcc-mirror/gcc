@@ -3755,18 +3755,17 @@ package body Sem_Res is
 
          begin
             case Nkind (N) is
-
-               --  Do not consider object name appearing in the prefix of
-               --  attribute Address as a read.
-
-               when N_Attribute_Reference =>
-
-                  --  Prefix of attribute Address denotes an object, program
-                  --  unit, or label; none of them needs to be flagged here.
-
-                  if Attribute_Name (N) = Name_Address then
-                     return Skip;
+               when N_Allocator =>
+                  if not Is_OK_Volatile_Context (Context       => Parent (N),
+                                                 Obj_Ref       => N,
+                                                 Check_Actuals => True)
+                  then
+                     Error_Msg_N
+                       ("allocator cannot appear in this context"
+                        & " (SPARK RM 7.1.3(10))", N);
                   end if;
+
+                  return Skip;
 
                --  Do not consider nested function calls because they have
                --  already been processed during their own resolution.
@@ -3780,6 +3779,10 @@ package body Sem_Res is
                   if Present (Id)
                     and then Is_Object (Id)
                     and then Is_Effectively_Volatile_For_Reading (Id)
+                    and then
+                      not Is_OK_Volatile_Context (Context       => Parent (N),
+                                                  Obj_Ref       => N,
+                                                  Check_Actuals => True)
                   then
                      Error_Msg_N
                        ("volatile object cannot appear in this context"
@@ -3789,10 +3792,8 @@ package body Sem_Res is
                   return Skip;
 
                when others =>
-                  null;
+                  return OK;
             end case;
-
-            return OK;
          end Flag_Object;
 
          procedure Flag_Objects is new Traverse_Proc (Flag_Object);
@@ -4962,40 +4963,14 @@ package body Sem_Res is
 
             if SPARK_Mode = On and then Comes_From_Source (A) then
 
-               --  An effectively volatile object for reading may act as an
-               --  actual when the corresponding formal is of a non-scalar
-               --  effectively volatile type for reading (SPARK RM 7.1.3(10)).
+               --  Inspect the expression and flag each effectively volatile
+               --  object for reading as illegal because it appears within
+               --  an interfering context. Note that this is usually done
+               --  in Resolve_Entity_Name, but when the effectively volatile
+               --  object for reading appears as an actual in a call, the call
+               --  must be resolved first.
 
-               if not Is_Scalar_Type (F_Typ)
-                 and then Is_Effectively_Volatile_For_Reading (F_Typ)
-               then
-                  null;
-
-               --  An effectively volatile object for reading may act as an
-               --  actual in a call to an instance of Unchecked_Conversion.
-               --  (SPARK RM 7.1.3(10)).
-
-               elsif Is_Unchecked_Conversion_Instance (Nam) then
-                  null;
-
-               --  The actual denotes an object
-
-               elsif Is_Effectively_Volatile_Object_For_Reading (A) then
-                  Error_Msg_N
-                    ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(10))", A);
-
-               --  Otherwise the actual denotes an expression. Inspect the
-               --  expression and flag each effectively volatile object
-               --  for reading as illegal because it apprears within an
-               --  interfering context. Note that this is usually done in
-               --  Resolve_Entity_Name, but when the effectively volatile
-               --  object for reading appears as an actual in a call, the
-               --  call must be resolved first.
-
-               else
-                  Flag_Effectively_Volatile_Objects (A);
-               end if;
+               Flag_Effectively_Volatile_Objects (A);
 
                --  An effectively volatile variable cannot act as an actual
                --  parameter in a procedure call when the variable has enabled
@@ -7890,7 +7865,8 @@ package body Sem_Res is
 
             if Is_Object (E)
               and then Is_Effectively_Volatile_For_Reading (E)
-              and then not Is_OK_Volatile_Context (Par, N)
+              and then
+                not Is_OK_Volatile_Context (Par, N, Check_Actuals => False)
             then
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
