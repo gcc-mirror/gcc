@@ -2986,11 +2986,18 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   info->estimated_stack_size = size_info->estimated_self_stack_size;
 
   /* Code above should compute exactly the same result as
-     ipa_update_overall_fn_summary but because computation happens in
-     different order the roundoff errors result in slight changes.  */
+     ipa_update_overall_fn_summary except for case when speculative
+     edges are present since these are accounted to size but not
+     self_size. Do not compare time since different order the roundoff
+     errors result in slight changes.  */
   ipa_update_overall_fn_summary (node);
-  /* In LTO mode we may have speculative edges set.  */
-  gcc_assert (in_lto_p || size_info->size == size_info->self_size);
+  if (flag_checking)
+    {
+      for (e = node->indirect_calls; e; e = e->next_callee)
+       if (e->speculative)
+	 break;
+      gcc_assert (e || size_info->size == size_info->self_size);
+    }
 }
 
 
