@@ -6490,11 +6490,6 @@ ix86_compute_frame_layout (void)
   offset += frame->nregs * UNITS_PER_WORD;
   frame->reg_save_offset = offset;
 
-  /* On SEH target, registers are pushed just before the frame pointer
-     location.  */
-  if (TARGET_SEH)
-    frame->hard_frame_pointer_offset = offset;
-
   /* Calculate the size of the va-arg area (not including padding, if any).  */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
 
@@ -6660,14 +6655,21 @@ ix86_compute_frame_layout (void)
      the unwind data structure.  */
   if (TARGET_SEH)
     {
-      HOST_WIDE_INT diff;
+      /* Force the frame pointer to point at or below the lowest register save
+	 area, see the SEH code in config/i386/winnt.c for the rationale.  */
+      frame->hard_frame_pointer_offset = frame->sse_reg_save_offset;
 
-      /* If we can leave the frame pointer where it is, do so.  Also, returns
+      /* If we can leave the frame pointer where it is, do so.  Also, return
 	 the establisher frame for __builtin_frame_address (0).  */
-      diff = frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
-      if (diff <= SEH_MAX_FRAME_SIZE
-	  && (diff > 240 || (diff & 15) != 0)
-	  && !crtl->accesses_prior_frames)
+      const HOST_WIDE_INT diff
+	= frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
+      if (diff <= 255)
+	{
+	  /* The resulting diff will be a multiple of 16 lower than 255,
+	     i.e. at most 240 as required by the unwind data structure.  */
+	  frame->hard_frame_pointer_offset += (diff & 15);
+	}
+      else if (diff <= SEH_MAX_FRAME_SIZE && !crtl->accesses_prior_frames)
 	{
 	  /* Ideally we'd determine what portion of the local stack frame
 	     (within the constraint of the lowest 240) is most heavily used.
@@ -8335,17 +8337,6 @@ ix86_expand_prologue (void)
          slower on all targets.  Also sdb didn't like it.  */
       insn = emit_insn (gen_push (hard_frame_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
-
-      /* Push registers now, before setting the frame pointer
-	 on SEH target.  */
-      if (!int_registers_saved
-	  && TARGET_SEH
-	  && !frame.save_regs_using_mov)
-	{
-	  ix86_emit_save_regs ();
-	  int_registers_saved = true;
-	  gcc_assert (m->fs.sp_offset == frame.reg_save_offset);
-	}
 
       if (m->fs.sp_offset == frame.hard_frame_pointer_offset)
 	{

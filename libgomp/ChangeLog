@@ -1,3 +1,8 @@
+2021-02-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/libgomp.c-c++-common/pr96390.c: Require alias
+	support from the target.
+
 2021-02-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

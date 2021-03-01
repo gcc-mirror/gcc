@@ -1,3 +1,68 @@
+2021-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_path::exploded_path): New copy-ctor.
+	* exploded-graph.h (exploded_path::operator=): Drop decl.
+
+2021-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* diagnostic-manager.cc (class epath_finder): New.
+	(epath_finder::get_best_epath): New.
+	(saved_diagnostic::saved_diagnostic): Update for replacement of
+	m_state and m_epath_length with m_best_epath.
+	(saved_diagnostic::~saved_diagnostic): Delete m_best_epath.
+	(saved_diagnostic::to_json): Update "path_length" to be optional.
+	(saved_diagnostic::calc_best_epath): New, based on
+	dedupe_winners::add and parts of dedupe_key::dedupe_key.
+	(saved_diagnostic::get_epath_length): New.
+	(saved_diagnostic::add_duplicate): New.
+	(dedupe_key::dedupe_key): Drop epath param.  Move invocation of
+	stmt_finder to saved_diagnostic::calc_best_epath.
+	(class dedupe_candidate): Delete.
+	(class dedupe_hash_map_traits): Update to use saved_diagnotic *
+	rather than dedupe_candidate * as the value_type/compare_type.
+	(dedupe_winners::~dedupe_winners): Don't delete the values.
+	(dedupe_winners::add): Convert param from shortest_exploded_paths to
+	epath_finder.  Drop "eg" param.  Drop dedupe_candidate, moving
+	path generation and feasiblity checking to
+	epath_finder::get_best_epath.  Update winner-selection for move
+	of epaths from dedupe_candidate to saved_diagnostic.
+	(dedupe_winners::emit_best):  Update for removal of class
+	dedupe_candidate.
+	(dedupe_winners::map_t): Update to use saved_diagnotic * rather
+	than dedupe_candidate * as the value_type/compare_type.
+	(diagnostic_manager::emit_saved_diagnostics): Move
+	shortest_exploded_paths instance into epath_finder and pass that
+	around instead.
+	(diagnostic_manager::emit_saved_diagnostic): Drop epath, stmt
+	and num_dupes params, instead getting these from the
+	saved_diagnostic.  Use correct location in inform_n call.
+	* diagnostic-manager.h (class epath_finder): New forward decl.
+	(saved_diagnostic::status): Drop enum.
+	(saved_diagnostic::set_feasible): Drop.
+	(saved_diagnostic::set_infeasible): Drop.
+	(saved_diagnostic::get_status): Drop.
+	(saved_diagnostic::calc_best_epath): New decl.
+	(saved_diagnostic::get_best_epath): New decl.
+	(saved_diagnostic::get_epath_length): New decl.
+	(saved_diagnostic::set_epath_length): Drop.
+	(saved_diagnostic::get_epath_length): Drop inline implementation.
+	(saved_diagnostic::add_duplicate): New.
+	(saved_diagnostic::get_num_dupes): New.
+	(saved_diagnostic::m_d): Document ownership.
+	(saved_diagnostic::m_trailing_eedge): Make const.
+	(saved_diagnostic::m_status): Drop field.
+	(saved_diagnostic::m_epath_length): Drop field.
+	(saved_diagnostic::m_best_epath): New field.
+	(saved_diagnostic::m_problem): Document ownership.
+	(saved_diagnostic::m_duplicates): New field.
+	(diagnostic_manager::emit_saved_diagnostic): Drop params epath,
+	stmt, and num_dupes.
+	* engine.cc (exploded_graph_annotator::print_saved_diagnostic):
+	Update for changes to saved_diagnostic class.
+	* exploded-graph.h (exploded_path::feasible_p): Drop unused
+	overloaded decl.
+
 2021-02-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99193

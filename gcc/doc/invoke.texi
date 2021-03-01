@@ -13257,7 +13257,7 @@ are shared across multiple compilation units.
 @item modref-max-bases
 @item modref-max-refs
 @item modref-max-accesses
-Specifies the maximal number of base pointers, referneces and accesses stored
+Specifies the maximal number of base pointers, references and accesses stored
 for a single function by mod/ref analysis.
 
 @item modref-max-tests

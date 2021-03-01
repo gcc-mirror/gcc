@@ -1,3 +1,10 @@
+2021-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99301
+	* include/std/chrono (year_month_day::_M_days_since_epoch()):
+	Convert chrono::month and chrono::day to unsigned before
+	converting to uint32_t.
+
 2021-02-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (year_month_day::_S_from_days): Perform

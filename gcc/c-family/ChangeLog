@@ -1,3 +1,10 @@
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99304
+	* c-attribs.c (handle_malloc_attribute): Fix a typo in inform
+	message - refernced -> referenced.  Remove superfluous space before
+	closing paren of function calls.
+
 2021-02-25  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99166

@@ -285,7 +285,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
    - C++ virtual tables keyed to other unit are represented as DECL_EXTERNAL
      variables with DECL_INITIAL set.  We finalize these and keep reachable
      ones around for constant folding purposes.  After inlining we however
-     stop walking their references to let everything static referneced by them
+     stop walking their references to let everything static referenced by them
      to be removed when it is otherwise unreachable.
 
    We maintain queue of both reachable symbols (i.e. defined symbols that needs
