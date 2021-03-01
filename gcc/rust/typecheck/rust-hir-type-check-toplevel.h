@@ -72,8 +72,8 @@ public:
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
-			   struct_decl.get_identifier (), std::move (fields),
-			   std::move (substitions));
+			   struct_decl.get_identifier (), true,
+			   std::move (fields), std::move (substitions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -109,8 +109,8 @@ public:
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
-			   struct_decl.get_identifier (), std::move (fields),
-			   std::move (substitions));
+			   struct_decl.get_identifier (), false,
+			   std::move (fields), std::move (substitions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }

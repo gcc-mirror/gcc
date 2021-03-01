@@ -392,23 +392,25 @@ private:
 class ADTType : public BaseType, public SubstitionRef<ADTType>
 {
 public:
-  ADTType (HirId ref, std::string identifier,
+  ADTType (HirId ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, refs),
       SubstitionRef (std::move (subst_refs)), identifier (identifier),
-      fields (fields)
+      fields (fields), is_tuple (is_tuple)
   {}
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier,
+  ADTType (HirId ref, HirId ty_ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, refs),
       SubstitionRef (std::move (subst_refs)), identifier (identifier),
-      fields (fields)
+      fields (fields), is_tuple (is_tuple)
   {}
+
+  bool get_is_tuple () { return is_tuple; }
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -484,6 +486,7 @@ public:
 private:
   std::string identifier;
   std::vector<StructFieldType *> fields;
+  bool is_tuple;
 };
 
 class FnType : public BaseType

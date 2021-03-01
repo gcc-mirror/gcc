@@ -204,8 +204,8 @@ ADTType::clone ()
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), identifier, cloned_fields,
-		      clone_substs (), get_combined_refs ());
+  return new ADTType (get_ref (), get_ty_ref (), identifier, get_is_tuple (),
+		      cloned_fields, clone_substs (), get_combined_refs ());
 }
 
 ADTType *
@@ -804,6 +804,15 @@ ParamType::resolve ()
 void
 TypeCheckCallExpr::visit (ADTType &type)
 {
+  if (!type.get_is_tuple ())
+    {
+      rust_error_at (
+	call.get_locus (),
+	"expected function, tuple struct or tuple variant, found struct `%s`",
+	type.get_name ().c_str ());
+      return;
+    }
+
   if (call.num_params () != type.num_fields ())
     {
       rust_error_at (call.get_locus (),
