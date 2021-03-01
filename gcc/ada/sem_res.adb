@@ -7701,8 +7701,7 @@ package body Sem_Res is
          Expr    : Node_Id) return Boolean
       is
       begin
-         if Nkind (Context) in
-              N_Assignment_Statement | N_Object_Declaration
+         if Nkind (Context) in N_Assignment_Statement | N_Object_Declaration
            and then Expression (Context) = Expr
          then
             return True;
@@ -7744,6 +7743,11 @@ package body Sem_Res is
          while Present (N) loop
             if Nkind (N) = N_Attribute_Reference then
                return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (N) then
+               return False;
             end if;
 
             N := Parent (N);
