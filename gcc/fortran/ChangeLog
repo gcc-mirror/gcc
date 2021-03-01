@@ -1,3 +1,16 @@
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/99303
+	* openmp.c (gfc_omp_requires_add_clause): Fix up diagnostic message
+	wordings.
+	(resolve_omp_clauses): Likewise.
+
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/99300
+	* frontend-passes.c (doloop_code): Replace double space in diagnostics
+	with a single space.
+
 2021-02-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98342

@@ -1,3 +1,20 @@
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99304
+	* ipa.c (symbol_table::remove_unreachable_nodes): Fix a comment
+	typo - referneced -> referenced.
+	* tree.c (component_ref_size): Fix comment typo -
+	refernce -> reference.
+	* tree-ssa-alias.c (access_path_may_continue_p): Fix comment typo -
+	traling -> trailing.
+	(aliasing_component_refs_p): Fix comment typos -
+	refernce -> reference and refernece -> reference and
+	traling -> trailing.
+	(nonoverlapping_refs_since_match_p): Fix comment typo -
+	referneces -> references.
+	* doc/invoke.texi (--param modref-max-bases): Fix a typo -
+	referneces -> references.
+
 2021-02-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/host-darwin.c (darwin_gt_pch_use_address): Modify
